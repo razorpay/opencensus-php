@@ -1,4 +1,3 @@
-api
-===
+#RazorPay API Backend
 
-Backend for razorpay api
+* Backend engine for the kickass payment gateway Razorpay.
