@@ -7,6 +7,9 @@ class Transaction_Controller extends Base_Controller
 	private $data = array();
 	private $error = array();
 
+	/**
+	* To retrieve last transaction's details
+	*/
 	public function get_index()
 	{
 		;
@@ -17,7 +20,9 @@ class Transaction_Controller extends Base_Controller
 	*/
 	public function post_index()
 	{
-		;
+		// TODO: Implement Basic-Auth check.
+		// tutorial: http://php.net/manual/en/features.http-auth.php;
+		
 	}
 
 	/**

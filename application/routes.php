@@ -32,6 +32,20 @@
 |
 */
 
+Route::post('transactions/refund/{tr_id}', 'transaction@refund');
+
+Route::post('transactions/process/{tr_id}', 'transaction@process');
+
+Route::get('transactions/retrieve', 'transaction@retrieve');
+
+Route::get('transactions/retrieve/{tr_id}', 'transaction@retrieve');
+
+Route::get('transactions/{tr_id}', 'transaction@retrieve');
+
+Route::get('transactions', 'transaction');
+
+Route::post('transactions', 'trasaction');
+
 Route::get('/', function()
 {
 	return View::make('home.index');
