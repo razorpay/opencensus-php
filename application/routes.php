@@ -32,6 +32,8 @@
 |
 */
 
+Route::filter('pattern: *', 'auth');
+
 Route::post('transactions/refund/{tr_id}', 'transaction@refund');
 
 Route::post('transactions/process/{tr_id}', 'transaction@process');
@@ -123,5 +125,6 @@ Route::filter('csrf', function()
 
 Route::filter('auth', function()
 {
-	if (Auth::guest()) return Redirect::to('login');
+	BasicAuth::verify_key();
+	if (!BasicAuth::check()) return Response::error('401');
 });
