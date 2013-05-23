@@ -32,21 +32,19 @@
 |
 */
 
-Route::filter('pattern: *', 'auth');
+Route::get('transactions', 'transaction@index');
 
-Route::post('transactions/refund/{tr_id}', 'transaction@refund');
+Route::get('transactions/(:any)', 'transaction@index');
 
-Route::post('transactions/process/{tr_id}', 'transaction@process');
+Route::post('transactions', 'transaction@index');
 
-Route::get('transactions/retrieve', 'transaction@retrieve');
+Route::post('transactions/(:any)/refund', 'transaction@refund');
 
-Route::get('transactions/retrieve/{tr_id}', 'transaction@retrieve');
+Route::get('transactions/refund', 'transaction@refund');
 
-Route::get('transactions/{tr_id}', 'transaction@retrieve');
+Route::post('transactions/(:any)/process', 'transaction@process');
 
-Route::get('transactions', 'transaction');
-
-Route::post('transactions', 'trasaction');
+Route::get('transactions/success', 'transaction@process');
 
 Route::get('/', function()
 {

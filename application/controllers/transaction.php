@@ -8,17 +8,21 @@ class Transaction_Controller extends Base_Controller
 	private $error = array();
 
 	/**
-	* To retrieve last transaction's details
+	* To retrieve transaction details by `id`
+	* Lists previous transactions if `id` not provided
+	*
+	* @param id (optional)
+	*
 	*/
-	public function get_index()
+	public function get_index ( $id = NULL )
 	{
-		;
+		echo 'transaction: ' . $id;
 	}
 
 	/**
 	* To create a new transaction. Retrieve transaction token.
 	*/
-	public function post_index()
+	public function post_index ()
 	{
 		// TODO: Implement Basic-Auth check.
 		// tutorial: http://php.net/manual/en/features.http-auth.php;
@@ -26,25 +30,17 @@ class Transaction_Controller extends Base_Controller
 	}
 
 	/**
-	* To retrieve previous transaction details.
-	*/
-	public function get_retrieve()
-	{
-		;
-	}
-
-	/**
 	* To refund a transaction.
 	*/
-	public function post_refund()
+	public function post_refund ( $id = NULL )
 	{
-		;
+		echo 'refund: ' . $id;
 	}
 
 	/**
 	* To list previous refunds.
 	*/
-	public function get_refund()
+	public function get_refund ()
 	{
 		;
 	}
@@ -52,15 +48,16 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To process a transaction and make payments.
 	*/
-	public function post_process()
+	public function post_process ( $id = NULL )
 	{
-		;
+		echo 'process: ' . $id;
 	}
 
 	/**
 	* To list only successful transactions.
 	*/
-	public function get_success()
+	public function get_process ()
 	{
 		;
 	}
+}
