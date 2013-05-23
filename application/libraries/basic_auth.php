@@ -32,7 +32,7 @@ class BasicAuth {
 
 	public static function check()
 	{
-		if ((!is_null($Key)) &&
+		if ((!is_null(self::$Key)) &&
 			(!is_null($Merchant)))
 			return true;
 		else
