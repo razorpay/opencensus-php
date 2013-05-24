@@ -382,7 +382,7 @@ class MySQL extends Grammar {
 	 */
 	protected function type_date(Fluent $column)
 	{
-		return 'DATETIME';
+		return 'INT';
 	}
 
 	/**
@@ -393,7 +393,7 @@ class MySQL extends Grammar {
 	 */
 	protected function type_timestamp(Fluent $column)
 	{
-		return 'TIMESTAMP';
+		return 'INT';
 	}
 
 	/**
