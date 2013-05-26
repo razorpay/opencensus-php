@@ -4,8 +4,11 @@ class Transaction_Controller extends Base_Controller
 {
 
 	public $restful = true;
-	private $data = array();
-	private $error = array();
+
+	private function getAuthenticatedMerchant() {
+		//TODO: get the merchant's `id` authenticated via key.
+		return 1;
+	}
 
 	/**
 	* To retrieve transaction details by `id`
@@ -14,9 +17,33 @@ class Transaction_Controller extends Base_Controller
 	* @param id (optional)
 	*
 	*/
-	public function get_index ( $id = NULL )
+	public function get_index ( $token = NULL )
 	{
-		echo 'transaction: ' . $id;
+		$merchantId = $this->getAuthenticatedMerchant();
+
+		$m = Merchant::find($merchantId);
+		if ($m === NULL)
+			return Response::error('401');
+
+		if ($token === NULL) {
+			$t = $m->transactions;
+			if ( empty($t) )
+				return Response::error('404');
+			else
+				return Response::eloquent($t);
+		}
+
+		else {
+			$t = Transaction::where('token','=',$token)->first();
+			if ( $t !== NULL )
+				if ( $t->getMerchant() === $merchantId )
+					return Response::eloquent($t);
+				else
+					return Response::error('401');
+			else
+				return Response::error('404');
+		}
+
 	}
 
 	/**
@@ -24,17 +51,27 @@ class Transaction_Controller extends Base_Controller
 	*/
 	public function post_index ()
 	{
-		// TODO: Implement Basic-Auth check.
-		// tutorial: http://php.net/manual/en/features.http-auth.php;
+		$merchantId = $this->getAuthenticatedMerchant();
+
+		$m = Merchant::find($merchantId);
+		if ($m === NULL)
+			return Response::error('401');
+
+		$t = new Transaction();
+		$t->buildTransaction(Input::get(), $merchantId);
+
+		$t = Transaction::find($t->id);
+
+		return Response::eloquent($t);
 		
 	}
 
 	/**
 	* To refund a transaction.
 	*/
-	public function post_refund ( $id = NULL )
+	public function post_refund ( $token = NULL )
 	{
-		echo 'refund: ' . $id;
+		echo 'refund: ' . $token;
 	}
 
 	/**
@@ -48,9 +85,9 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To process a transaction and make payments.
 	*/
-	public function post_process ( $id = NULL )
+	public function post_process ( $token = NULL )
 	{
-		echo 'process: ' . $id;
+		echo 'process: ' . $token;
 	}
 
 	/**
