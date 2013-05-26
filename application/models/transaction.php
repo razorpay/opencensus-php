@@ -27,8 +27,7 @@
 		{
 			$validation = Validator::make($input, static::$rules);
 			if ($validation->fails()) {
-				echo Response::json($validation->errors);
-				die();
+				return $validation->errors;
 			}
 
 			$card = Card::where('token','=',$input['card'])->first();

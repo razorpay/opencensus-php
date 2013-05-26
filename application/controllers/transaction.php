@@ -58,7 +58,10 @@ class Transaction_Controller extends Base_Controller
 			return Response::error('401');
 
 		$t = new Transaction();
-		$t->buildTransaction(Input::get(), $merchantId);
+		$e = $t->buildTransaction(Input::get(), $merchantId);
+		
+		if ($e !== NULL)
+			return Response::json($e);
 
 		$t = Transaction::find($t->id);
 
