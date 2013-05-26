@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<title>Error 401</title>
+	<title>Error 400</title>
 	<meta name="viewport" content="width=device-width">
 	<style type="text/css">
 		@import url(http://fonts.googleapis.com/css?family=Droid+Sans);
@@ -101,9 +101,9 @@
 		<div class="error-spacer"></div>
 		<div role="main" class="main">
 
-			<h1>I don't think you have access.</h1>
+			<h1>I think you are missing a required parameter.</h1>
 
-			<h2>Unauthorized: 401</h2>
+			<h2>Bad Request: 400</h2>
 
 			<hr>
 
