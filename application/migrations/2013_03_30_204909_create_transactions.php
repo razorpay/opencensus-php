@@ -12,13 +12,14 @@ class Create_Transactions {
         Schema::create('transactions', function($table){
             $table->engine = 'InnoDB';
             
-            $table->string('id', 32)
-                        ->primary();
+            $table->increments('id');
+
+            $table->string('token', 32);
 
             $table->integer('merchant_id')
                   ->unsigned();
 
-            $table->integer('amount')
+            $table->float('amount')
                   ->unsigned();
             
             $table->integer('card_id')

@@ -13,6 +13,7 @@ class Create_Cards {
       $table->engine = 'InnoDB';
       
       $table->increments('id');
+      $table->string('token', 32);
       $table->string('number');
       $table->integer('expiry_month')
             ->unsigned()
