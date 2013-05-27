@@ -13,11 +13,6 @@
 
 		protected $guarded = array('id','amount','card_id');
 
-		function __construct ( $attributes = array(), $exists = false )
-		{
-			parent::__construct ( $attributes, $exists );
-		}
-
 		public function card()
 		{
 			return $this->belongs_to('Card');
