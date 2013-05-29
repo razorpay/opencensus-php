@@ -33,9 +33,9 @@
 		public function buildCard ($input)
 		{
 			$this->setAttr('number',$input['number']);
-			$this->setAttr('expiry_month',(int)$input['expiry_month']);
-			$this->setAttr('expiry_year',(int)$input['expiry_year']);
-			$this->setAttr('cvv',(int)$input['cvv']);
+			$this->setAttr('expiry_month',$input['expiry_month']);
+			$this->setAttr('expiry_year',$input['expiry_year']);
+			$this->setAttr('cvv',$input['cvv']);
 			$this->setAttr('name',strtoupper($input['name']));
 
 			try {

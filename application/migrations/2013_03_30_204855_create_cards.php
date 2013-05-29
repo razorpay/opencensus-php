@@ -14,15 +14,9 @@ class Create_Cards {
       
       $table->increments('id');
       $table->string('number');
-      $table->integer('expiry_month')
-            ->unsigned()
-            ->nullable();
-      $table->integer('expiry_year')
-            ->unsigned()
-            ->nullable();
-      $table->integer('cvv')
-            ->unsigned()
-            ->nullable();
+      $table->string('expiry_month')->nullable();
+      $table->string('expiry_year')->nullable();
+      $table->string('cvv')->nullable();
       $table->integer('cardtype_id')
             ->unsigned()
             ->nullable();
