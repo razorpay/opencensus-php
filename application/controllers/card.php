@@ -21,22 +21,28 @@ class Card_Controller extends Base_Controller
 		if ($m === NULL)
 			return Response::error('401');
 
-		$number = trim(Input::get('number'));
+		$c = new Card();
+		$e = $c->validateAttributes(Input::get());
+		if ($e !== NULL)
+			return $e;
 
-		$card = Card::where('number','=',$number)->first();
+		$card = Card::where('number','=',Input::get('number'))->first();
 
 		if ($card !== NULL) {
+			if ( $card->expiry_month != Input::get('expiry_month') || $card->expiry_year != Input::get('expiry_year') || $card->cvv != Input::get('cvv') )
+				return Response::error('400');
 			$r = CardToken::where('card_id','=',$card->id)->update(array('expired'=>1));
 			$t = new CardToken();
-			$t->buildCardToken($card->id);
+			$e = $t->buildCardToken($card->id);
+			if ($e !== NULL)
+				return $e;
 			$t = CardToken::where('card_id','=',$card->id)->first();
 		}
 
 		else {
-			$c = new Card();
 			$e = $c->buildCard(Input::get());
 			if ($e !== NULL)
-				return Response::json($e);
+				return $e;
 			$t = new CardToken();
 			$t->buildCardToken($c->id);
 			$t = CardToken::where('card_id','=',$c->id)->first();

@@ -26,8 +26,7 @@
 				$this->save();
 			}
 			catch (\Exception $e) {
-				echo Response::error('500');
-				die();
+				return Response::error('500');
 			}
 		}
 

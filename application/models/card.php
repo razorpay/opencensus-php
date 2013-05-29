@@ -22,13 +22,16 @@
 			return $this->has_many('CardToken');
 		}
 
-		public function buildCard ($input)
+		public function validateAttributes ($input)
 		{
 			$validation = Validator::make($input, static::$rules);
 			if ($validation->fails()) {
-				return $validation->errors;
+				return Response::json($validation->errors);
 			}
+		}
 
+		public function buildCard ($input)
+		{
 			$this->setAttr('number',$input['number']);
 			$this->setAttr('expiry_month',(int)$input['expiry_month']);
 			$this->setAttr('expiry_year',(int)$input['expiry_year']);
@@ -39,8 +42,7 @@
 				$this->save();
 			}
 			catch (\Exception $e) {
-				echo Response::error('500');
-				die();
+				return Response::error('500');
 			}
 		}
 

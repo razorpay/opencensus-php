@@ -61,7 +61,7 @@ class Transaction_Controller extends Base_Controller
 		$e = $t->buildTransaction(Input::get(), $merchantId);
 		
 		if ($e !== NULL)
-			return Response::json($e);
+			return $e;
 
 		$t = Transaction::find($t->id);
 

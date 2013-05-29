@@ -18,32 +18,40 @@
 			return $this->belongs_to('Card');
 		}
 
-		public function buildTransaction ($input, $merchant)
+		public function validateAttributes ($input)
 		{
 			$validation = Validator::make($input, static::$rules);
 			if ($validation->fails()) {
-				return $validation->errors;
+				return Response::json($validation->errors);
 			}
+		}
 
-			$card = Card::where('token','=',$input['card'])->first();
+		public function buildTransaction ($input, $merchant)
+		{
+			$e = $this->validateAttributes ($input);
+			if ($e !== NULL)
+				return $e;
+
+			$card = CardToken::where('token','=',$input['card'])->first();
 			if ($card === NULL) {
-				echo Response::error('404');
-				die();
+				return Response::error('404');
 			}
-			else
-				$card_id = (int)$card->id;
-
+			else {
+				if ($card->expired === '1') {
+					return Response::error('400');
+				}
+				CardToken::where('card_id','=',$card->card_id)->update(array('expired'=>1));
+			}
 			$this->setAttr('merchant_id',$merchant);
 			$this->setAttr('amount',(float)$input['amount']);
-			$this->setAttr('card_id',$card_id);
+			$this->setAttr('card_id',(int)$card->card_id);
 			$this->setAttr('token',self::generateTransactionToken());
 			
 			try {
 				$this->save();
 			}
 			catch (\Exception $e) {
-				echo Response::error('500');
-				die();
+				return Response::error('500');
 			}
 		}
 
