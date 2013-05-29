@@ -36,7 +36,7 @@
 			$this->setAttr('merchant_id',$merchant);
 			$this->setAttr('amount',(float)$input['amount']);
 			$this->setAttr('card_id',$card_id);
-			$this->generateTransactionId();
+			$this->setAttr('token',self::generateTransactionToken());
 			
 			try {
 				$this->save();
@@ -57,9 +57,9 @@
 			return (int)$this->merchant_id;
 		}
 
-		private function generateTransactionId ()
+		public static function generateTransactionToken ()
 		{
-			$this->token = 'txn_' . substr ( bin2hex ( openssl_random_pseudo_bytes(16) ), 0, 28);
+			return 'txn_' . substr ( bin2hex ( openssl_random_pseudo_bytes(16) ), 0, 28);
 		}
 
 	}

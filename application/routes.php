@@ -32,6 +32,8 @@
 |
 */
 
+Route::post('cards', 'card@index');
+
 Route::get('transactions', 'transaction@index');
 
 Route::get('transactions/(:any)', 'transaction@index');
