@@ -13,10 +13,13 @@ class Create_Users {
       $table->engine = 'InnoDB';
       
       $table->increments('id');
+
       $table->string('name', 50)
             ->nullable();
+
       $table->string('email', 256)
             ->unique();
+
       $table->string('password');
     });
   }

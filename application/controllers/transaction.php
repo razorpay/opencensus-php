@@ -5,7 +5,7 @@ class Transaction_Controller extends Base_Controller
 
 	public $restful = true;
 
-	private function getAuthenticatedMerchant() {
+	private function get_authenticated_merchant() {
 		//TODO: get the merchant's `id` authenticated via key.
 		return 1;
 	}
@@ -19,9 +19,9 @@ class Transaction_Controller extends Base_Controller
 	*/
 	public function get_index ( $token = NULL )
 	{
-		$merchantId = $this->getAuthenticatedMerchant();
+		$merchant_id = $this->get_authenticated_merchant();
 
-		$m = Merchant::find($merchantId);
+		$m = Merchant::find($merchant_id);
 		if ($m === NULL)
 			return Response::error('401');
 
@@ -36,7 +36,7 @@ class Transaction_Controller extends Base_Controller
 		else {
 			$t = Transaction::where('token','=',$token)->first();
 			if ( $t !== NULL )
-				if ( $t->getMerchant() === $merchantId )
+				if ( $t->get_merchant() === $merchant_id )
 					return Response::eloquent($t);
 				else
 					return Response::error('401');
@@ -51,14 +51,14 @@ class Transaction_Controller extends Base_Controller
 	*/
 	public function post_index ()
 	{
-		$merchantId = $this->getAuthenticatedMerchant();
+		$merchant_id = $this->get_authenticated_merchant();
 
-		$m = Merchant::find($merchantId);
+		$m = Merchant::find($merchant_id);
 		if ($m === NULL)
 			return Response::error('401');
 
 		$t = new Transaction();
-		$e = $t->buildTransaction(Input::get(), $merchantId);
+		$e = $t->build_transaction(Input::get(), $merchant_id);
 		
 		if ($e !== NULL)
 			return $e;

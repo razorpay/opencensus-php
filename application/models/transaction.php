@@ -18,7 +18,7 @@
 			return $this->belongs_to('Card');
 		}
 
-		public function validateAttributes ($input)
+		public function validate_attributes ($input)
 		{
 			$validation = Validator::make($input, static::$rules);
 			if ($validation->fails()) {
@@ -26,9 +26,9 @@
 			}
 		}
 
-		public function buildTransaction ($input, $merchant)
+		public function build_transaction ($input, $merchant)
 		{
-			$e = $this->validateAttributes ($input);
+			$e = $this->validate_attributes ($input);
 			if ($e !== NULL)
 				return $e;
 
@@ -42,10 +42,10 @@
 				}
 				CardToken::where('card_id','=',$card->card_id)->update(array('expired'=>1));
 			}
-			$this->setAttr('merchant_id',$merchant);
-			$this->setAttr('amount',(float)$input['amount']);
-			$this->setAttr('card_id',(int)$card->card_id);
-			$this->setAttr('token',self::generateTransactionToken());
+			$this->set_attr('merchant_id',$merchant);
+			$this->set_attr('amount',(float)$input['amount']);
+			$this->set_attr('card_id',(int)$card->card_id);
+			$this->set_attr('token',self::generate_transaction_token());
 			
 			try {
 				$this->save();
@@ -55,17 +55,17 @@
 			}
 		}
 
-		public function setAttr($key, $value)
+		public function set_attr($key, $value)
 		{
 			$this->{$key} = $value;
 		}
 
-		public function getMerchant ()
+		public function get_merchant ()
 		{
 			return (int)$this->merchant_id;
 		}
 
-		public static function generateTransactionToken ()
+		public static function generate_transaction_token ()
 		{
 			return 'txn_' . substr ( bin2hex ( openssl_random_pseudo_bytes(16) ), 0, 28);
 		}

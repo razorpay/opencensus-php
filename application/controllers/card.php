@@ -5,7 +5,7 @@ class Card_Controller extends Base_Controller
 
 	public $restful = true;
 
-	private function getAuthenticatedMerchant() {
+	private function get_authenticated_merchant() {
 		//TODO: get the merchant's `id` authenticated via key.
 		return 1;
 	}
@@ -15,14 +15,14 @@ class Card_Controller extends Base_Controller
 	*/
 	public function post_index ()
 	{
-		$merchantId = $this->getAuthenticatedMerchant();
+		$merchant_id = $this->get_authenticated_merchant();
 
-		$m = Merchant::find($merchantId);
+		$m = Merchant::find($merchant_id);
 		if ($m === NULL)
 			return Response::error('401');
 
 		$c = new Card();
-		$e = $c->validateAttributes(Input::get());
+		$e = $c->validate_attributes(Input::get());
 		if ($e !== NULL)
 			return $e;
 
@@ -33,18 +33,18 @@ class Card_Controller extends Base_Controller
 				return Response::error('400');
 			$r = CardToken::where('card_id','=',$card->id)->update(array('expired'=>1));
 			$t = new CardToken();
-			$e = $t->buildCardToken($card->id);
+			$e = $t->build_cardtoken($card->id);
 			if ($e !== NULL)
 				return $e;
 			$t = CardToken::where('card_id','=',$card->id)->first();
 		}
 
 		else {
-			$e = $c->buildCard(Input::get());
+			$e = $c->build_card(Input::get());
 			if ($e !== NULL)
 				return $e;
 			$t = new CardToken();
-			$t->buildCardToken($c->id);
+			$t->build_cardtoken($c->id);
 			$t = CardToken::where('card_id','=',$c->id)->first();
 		}
 

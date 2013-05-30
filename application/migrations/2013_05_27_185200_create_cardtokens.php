@@ -24,7 +24,10 @@ class Create_Cardtokens {
 
 			$table->timestamps();
 
-			$table->foreign('card_id')->references('id')->on('cards')->on_delete('SET NULL');
+			$table->foreign('card_id')
+				  ->references('id')
+				  ->on('cards')
+				  ->on_delete('SET NULL');
 		});
 	}
 

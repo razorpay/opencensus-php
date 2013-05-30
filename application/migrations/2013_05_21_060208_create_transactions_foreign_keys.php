@@ -17,7 +17,9 @@ class Create_Transactions_Foreign_Keys {
 	        	  ->on_delete('restrict');
 	        
 	        $table->foreign('card_id')
-	        	  ->references('id')->on('cards')->on_delete('SET NULL');
+	        	  ->references('id')
+	        	  ->on('cards')
+	        	  ->on_delete('SET NULL');
 	        
 	        $table->foreign('status_code')
 	        	  ->references('code')

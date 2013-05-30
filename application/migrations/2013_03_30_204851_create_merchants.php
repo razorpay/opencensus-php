@@ -13,11 +13,16 @@ class Create_Merchants {
       $table->engine = 'InnoDB';
       
       $table->increments('id');
+
       $table->string('email', 256)
             ->unique();
+
       $table->string('pwd');  // For storing passwords in string form. *Not for production*
+
       $table->string('hash');
+
       $table->string('key');
+
       $table->timestamps();
     });
   }

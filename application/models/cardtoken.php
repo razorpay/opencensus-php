@@ -16,11 +16,11 @@
 			return $this->belongs_to('Card');
 		}
 
-		public function buildCardToken ($card_id)
+		public function build_cardtoken ($card_id)
 		{
-			$this->setAttr('card_id',(int)$card_id);
-			$this->setAttr('token',self::generateCardToken());
-			$this->setAttr('expired',0);
+			$this->set_attr('card_id',(int)$card_id);
+			$this->set_attr('token',self::generate_card_token());
+			$this->set_attr('expired',0);
 
 			try {
 				$this->save();
@@ -30,12 +30,12 @@
 			}
 		}
 
-		public static function generateCardToken ()
+		public static function generate_card_token ()
 		{
 			return 'crd_' . substr ( bin2hex ( openssl_random_pseudo_bytes(16) ), 0, 28);
 		}
 
-		public function setAttr($key, $value)
+		public function set_attr($key, $value)
 		{
 			$this->{$key} = $value;
 		}

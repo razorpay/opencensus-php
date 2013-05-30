@@ -13,6 +13,7 @@ class Create_Cardtypes {
       $table->engine = 'InnoDB';
       
       $table->increments('id');
+
       $table->string('type');
     });
   }
