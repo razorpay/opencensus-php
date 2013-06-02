@@ -32,8 +32,6 @@
 |
 */
 
-Route::controller('transactions');
-
 Route::group(array('before' => 'auth.public'), function()
 {
 	Route::post('transactions', 'transaction@index');

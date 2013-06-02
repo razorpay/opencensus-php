@@ -14,7 +14,7 @@ class Transaction_Controller extends Base_Controller
 	*/
 	public function get_index ($token = NULL)
 	{
-		$merchant_id = BasicAuth::Merchant()->id;
+		$merchant_id = (int)BasicAuth::Merchant()->id;
 
 		$m = BasicAuth::Merchant();
 		
@@ -28,7 +28,7 @@ class Transaction_Controller extends Base_Controller
 		else {
 			$t = Transaction::where('token','=', $token)->first();
 		
-			if (is_null($token))
+			if (is_null($t))
 				return Response::error('404');
 			else
 			{
@@ -46,7 +46,7 @@ class Transaction_Controller extends Base_Controller
 	*/
 	public function post_index ()
 	{
-		$merchant_id = BasicAuth::Merchant()->id;
+		$merchant_id = (int)BasicAuth::Merchant()->id;
 
 		$t = new Transaction();
 		

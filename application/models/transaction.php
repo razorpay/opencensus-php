@@ -29,7 +29,7 @@
 		public function build($input, $merchant)
 		{
 			$e = $this->validate_attributes ($input);
-			if (is_null($e))
+			if (!is_null($e))
 				return $e;
 
 			$card = CardToken::where('token','=',$input['card'])->first();
