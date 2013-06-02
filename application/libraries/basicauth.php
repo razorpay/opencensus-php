@@ -8,24 +8,20 @@ class BasicAuth {
 
 	public static function verify_key()
 	{
-		if(isset($_SERVER['PHP_USER_AUTH']))
+		if(isset($_SERVER['PHP_AUTH_USER']))
 		{
-			$key = $_SERVER['PHP_USER_AUTH'];
+			$key = $_SERVER['PHP_AUTH_USER'];
+			
+			self::$Key = Key::find_by_key($key);
 
-
-			if (!is_null($Key))
+			if(is_null(self::$Key or self::$Key->active == 0))
+				return;
+			
+			$merchant_id = self::$Key->merchant_id;
+			$Merchant = Merchant::find($merchant_id);
+			if(!is_null($Merchant))
 			{
-				self::$Key = Key::find($key);
-
-				if(self::$Key->active == 0)
-					return;
-				
-				$merchant_id = self::$Key->merchant_id;
-				$Merchant = Merchant::find($merchant_id);
-				if(!is_null($Merchant))
-				{
-					self::$Merchant = $Merchant;
-				}
+				self::$Merchant = $Merchant;
 			}
 		}
 	}
@@ -33,7 +29,7 @@ class BasicAuth {
 	public static function check()
 	{
 		if ((!is_null(self::$Key)) &&
-			(!is_null($Merchant)))
+			(!is_null(self::$Merchant)))
 			return true;
 		else
 			return false;	
@@ -47,6 +43,16 @@ class BasicAuth {
 	public static function Merchant()
 	{
 		return self::$Merchant;
+	}
+
+	public static function live()
+	{
+		return self::$Key->live;
+	}
+
+	public static function secret()
+	{
+		return self::$Key->secret;
 	}
 
 }

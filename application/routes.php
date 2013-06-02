@@ -32,28 +32,35 @@
 |
 */
 
-Route::post('cards', 'card@index');
+Route::controller('transactions');
 
-Route::get('transactions', 'transaction@index');
+Route::group(array('before' => 'auth.public'), function()
+{
+	Route::post('transactions', 'transaction@index');
+});
 
-Route::get('transactions/(:any)', 'transaction@index');
+Route::group(array('before' => 'auth'), function()
+{
+	Route::post('cards', 'card@index');
 
-Route::post('transactions', 'transaction@index');
+	Route::get('transactions', 'transaction@index');
 
-Route::post('transactions/(:any)/refund', 'transaction@refund');
+	Route::get('transactions/(:any)', 'transaction@index');
 
-Route::get('transactions/refund', 'transaction@refund');
+	Route::post('transactions/(:any)/refund', 'transaction@refund');
 
-Route::post('transactions/(:any)/process', 'transaction@process');
+	Route::get('transactions/refund', 'transaction@refund');
 
-Route::get('transactions/success', 'transaction@process');
+	Route::post('transactions/(:any)/process', 'transaction@process');
+
+	Route::get('transactions/success', 'transaction@process');
+});
 
 Route::get('/', function()
 {
 	return View::make('home.index');
 });
 
-Route::controller('transactions');
 /*
 |--------------------------------------------------------------------------
 | Application 404 & 500 Error Handlers
@@ -123,8 +130,25 @@ Route::filter('csrf', function()
 	if (Request::forged()) return Response::error('500');
 });
 
+/**
+ * Only allows requests with secret keys to get through.
+ */
 Route::filter('auth', function()
 {
 	BasicAuth::verify_key();
-	if (!BasicAuth::check()) return Response::error('401');
+	if (!BasicAuth::check() and
+		BasicAuth::secret())
+		return Response::error('401');
+});
+
+/**
+ * Only allows requests with public keys to get through.
+ */
+Route::filter('auth.public', function()
+{
+	BasicAuth::verify_key();
+	if (!BasicAuth::check() and
+		BasicAuth::secret())
+		return Response::error('401');
+
 });

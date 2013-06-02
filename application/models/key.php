@@ -2,62 +2,42 @@
 
 class Key extends Eloquent {
 
-	
+	private $key_generated = NULL;
 
-	public function __construct()
+	private static $key_row_rules = array(
+		'live' => 'required|size:1|in:0,1',
+		'secret' => 'required|size:1|in:0,1');
+
+	public function generate($data, &$error)
 	{
-		$key = openssl_random_pseudo_bytes(32);
-		$generated = true;
-	}
-
-	public function __construct($key)
-	{
-
-	}
-
-	public function __construct($key, $live, $secret)
-	{
-		this->$key = $key;
-		this->$live = $live;
-		this->$secret = $secret;
-		this->$generated = false;
-	}
-
-	public static function http_basic_auth_key()
-	{
-		if (!isset($_SERVER['PHP_AUTH_USER']))
+		$validation = Validator::make($data, self::$key_row_rules);
+		
+		if ($validation->fails())
 		{
+			$error = $validation->errors;
 			return false;
 		}
 
-		$key = $_SERVER['PHP_AUTH_USER'];
-		
-		Key::where('public', '=', $key)
-			->or_where('private' '=', $key);
+		$this->keys = bin2hex(openssl_random_pseudo_bytes(16));
+		$this->live = $data['live'];
+		$this->secret = $data['secret'];
+		$this->merchant_id = $data['merchant_id'];
+		$this->active = 1;
+		return $this->save();
 	}
 
-	public function is_secret()
+	public function merchant()
 	{
-		return (($generated) ? -1 : $secret);
+		return $this->belongs_to('Merchant');
 	}
 
-	public function is_public()
+	public static function find_by_key($key)
 	{
-		return !(this->is_secret());
+		return Key::where('keys', '=', $key)->first();
 	}
 
-	public function is_live()
+	private static function geernate_key()
 	{
-		return (($generated) ? -1 : $live);
-	}
-
-	public function is_test()
-	{
-		return !(this->is_live());
-	}
-
-	public function is_generated()
-	{
-		return $generated;
+		return bin2hex(openssl_random_pseudo_bytes(16));
 	}
 }

@@ -7,7 +7,7 @@
 		public static $hidden = array('id','merchant_id','card_id');
 
 		private static $rules = array(
-			'amount' => 'required|numeric',
+			'amount' => 'required|integer',
 			'card' => 'required|match:/crd_[0-9a-z]{28}/'
 		);
 
@@ -18,7 +18,7 @@
 			return $this->belongs_to('Card');
 		}
 
-		public function validate_attributes ($input)
+		public function validate_attributes($input)
 		{
 			$validation = Validator::make($input, static::$rules);
 			if ($validation->fails()) {
@@ -26,14 +26,14 @@
 			}
 		}
 
-		public function build_transaction ($input, $merchant)
+		public function build($input, $merchant)
 		{
 			$e = $this->validate_attributes ($input);
-			if ($e !== NULL)
+			if (is_null($e))
 				return $e;
 
 			$card = CardToken::where('token','=',$input['card'])->first();
-			if ($card === NULL) {
+			if (is_null($card)) {
 				return Response::error('404');
 			}
 			else {

@@ -12,8 +12,11 @@ class Create_Keys {
 		Schema::create('keys', function($table){
 			$table->engine = 'InnoDB';
 
-			$table->string('key', 32)
-				  ->primary();
+			$table->increments('id');
+
+			$table->string('keys', 32)
+				  ->unique();
+			
 			$table->integer('merchant_id')
 				  ->unsigned()
 				  ->nullable();

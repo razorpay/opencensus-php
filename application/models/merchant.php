@@ -9,6 +9,11 @@
 			return $this->has_many('Transaction');
 		}
 
+		public function keys()
+		{
+			return $this->has_many('Keys');
+		}
+
 	}
 
 ?>
