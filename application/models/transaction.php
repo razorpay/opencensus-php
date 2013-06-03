@@ -70,6 +70,69 @@
 			return 'txn_' . substr ( bin2hex ( openssl_random_pseudo_bytes(16) ), 0, 28);
 		}
 
+		public static function retrieve($data, &$error)
+		{
+			$txn_query = Transaction::where('merchant_id', '=', $data['merchant_id']);
+
+			if (isset($data['created']))
+			{
+				$created = $data['created'];
+				Transaction::rectify_timestamp($created);
+				
+				$txn_query = $txn_query->where('created_at', '=', $created);
+			}
+			else
+			{
+				if (isset($data['from_created'])) 
+				{
+					$from_created = $data['from_created'];
+					Transaction::rectify_timestamp($from_created);
+
+					$txn_query = $txn_query->where('created_at', '>', $from_created);
+				}
+
+				if (isset($data['to_created']))
+				{
+					$to_created = $data['to_created'];
+					Transaction::rectify_timestamp($to_created);
+
+					$txn_query = $txn_query->where('created_at', '<', $to_created);
+				}
+			}
+
+			if (isset($data['count']))
+			{
+				$count = (int) $data['count'];
+				if ($count > 100)
+					$count = 100;
+				else if ($count < 0)
+					$count = 10;
+				
+				$txn_query = $txn_query->take($count);
+			}
+			else
+			{
+				$txn_query = $txn_query->take(10);
+			}
+
+			$txn_list = $txn_query->get();
+
+			return $txn_list;
+
+
+
+		}
+
+		private static function rectify_timestamp(&$timestamp)
+		{
+			$timestamp = (int) $timestamp;
+			if ($timestamp < 0)
+				$timestamp = 0; // @todo: provide a better default.
+			else if ($timestamp > time())
+				$timestamp = time(); //@todo: consider what to put as max?
+			return true;
+		}
+
 	}
 
 ?>

@@ -18,14 +18,16 @@ class Transaction_Controller extends Base_Controller
 
 		$m = BasicAuth::Merchant();
 		
-		if (is_null($token)) {
+		if (is_null($token)) 
+		{
 			$t = $m->transactions;
 			if (empty($t))
 				return Response::error('404');
 			else
 				return Response::eloquent($t);
 		}
-		else {
+		else 
+		{
 			$t = Transaction::where('token','=', $token)->first();
 		
 			if (is_null($token))
