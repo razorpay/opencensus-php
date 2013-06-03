@@ -36,7 +36,7 @@ class Key extends Eloquent {
 		return Key::where('keys', '=', $key)->first();
 	}
 
-	private static function geernate_key()
+	private static function generate_key()
 	{
 		return bin2hex(openssl_random_pseudo_bytes(16));
 	}
