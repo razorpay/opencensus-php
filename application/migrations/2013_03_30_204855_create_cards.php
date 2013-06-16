@@ -2,77 +2,80 @@
 
 class Create_Cards {
 
-  /**
-   * Make changes to the database.
-   *
-   * @return void
-   */
-  public function up()
-  {
-    Schema::create('cards', function($table){
-      $table->engine = 'InnoDB';
-      
-      $table->increments('id');
+    /**
+     * Make changes to the database.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('cards', function($table){
+                
+            $table->engine = 'InnoDB';
+    
+            $table->increments('id');
 
-      $table->string('number');
+            $table->string('number');
 
-      $table->string('expiry_month')
-            ->nullable();
+            $table->string('expire_month')
+                  ->nullable();
 
-      $table->string('expiry_year')
-            ->nullable();
+            $table->string('expire_year')
+                  ->nullable();
 
-      $table->string('cvv')
-            ->nullable();
+            $table->string('cvv')
+                  ->nullable();
 
-      $table->integer('cardtype_id')
-            ->unsigned()
-            ->nullable();
+            $table->string('type');
 
-      $table->string('name');
+            $table->string('name');
 
-      $table->string('address_line1')
-            ->nullable();
+            /**
+             * Two letter ISO codes representing the country of the card.
+             */
+            $table->string('country', 2);
 
-      $table->string('address_line2')
-            ->nullable();
+            $table->string('address_line1')
+                  ->nullable();
 
-      $table->string('address_state')
-            ->nullable();
+            $table->string('address_line2')
+                  ->nullable();
 
-      $table->integer('address_zip')
-            ->unsigned()
-            ->nullable();
+            $table->string('address_city')
+                  ->nullable();
+            
+            $table->string('address_state')
+                  ->nullable();
 
-      $table->string('address_country')
-            ->nullable();
+            $table->integer('address_zip')
+                  ->unsigned()
+                  ->nullable();
 
-      $table->integer('user_id')
-            ->unsigned()
-            ->nullable();
+            $table->string('address_country')
+                  ->nullable();
 
-      $table->timestamps();
+            $table->boolean('cvv_check')
+                  ->nullable();
 
-      $table->foreign('cardtype_id')
-            ->references('id')
-            ->on('cardtypes')
-            ->on_delete('SET NULL');
+            $table->boolean('address_line1_check')
+                  ->nullable();
 
-      $table->foreign('user_id')
-            ->references('id')
-            ->on('users')
-            ->on_delete('SET NULL');
-    });
-  }
+            $table->boolean('addres_zip_check')
+                  ->nullable();
 
-  /**
-   * Revert the changes to the database.
-   *
-   * @return void
-   */
-  public function down()
-  {
-    Schema::drop('cards');
-  }
+            $table->timestamps();
+
+        });
+    }
+
+    /**
+     * Revert the changes to the database.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::drop('cards');
+    }
 
 }

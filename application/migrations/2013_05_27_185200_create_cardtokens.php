@@ -18,7 +18,11 @@ class Create_Cardtokens {
 				  ->unsigned()
 				  ->nullable();
 
-			$table->string('token', 32);
+			$table->integer('merchant_id')
+				  ->unsigned()
+				  ->nullable();
+
+			$table->string('token', 16);
 
 			$table->boolean('expired');
 
@@ -28,6 +32,10 @@ class Create_Cardtokens {
 				  ->references('id')
 				  ->on('cards')
 				  ->on_delete('SET NULL');
+
+			$table->foreign('merchant_id')
+				  ->references('id')
+				  ->on('merchants');
 		});
 	}
 

@@ -16,8 +16,8 @@ class Create_Transactions_Foreign_Keys {
 	        	  ->on('merchants')
 	        	  ->on_delete('restrict');
 	        
-	        $table->foreign('card_id')
-	        	  ->references('id')
+	        $table->foreign('card_token')
+	        	  ->references('token')
 	        	  ->on('cards')
 	        	  ->on_delete('SET NULL');
 	        
@@ -37,7 +37,7 @@ class Create_Transactions_Foreign_Keys {
 	{
 		Schema::table('transactions', function($table){
 			$table->drop_foreign('transactions_merchant_id_foreign');
-			$table->drop_foreign('transactions_card_id_foreign');
+			$table->drop_foreign('transactions_card_token_foreign');
 			$table->drop_foreign('transactions_status_code_foerign');
 		});
 	}
