@@ -45,6 +45,13 @@ class BasicAuth {
 		return self::$Merchant;
 	}
 
+	public static function MerchantId()
+	{
+		return (int) self::$Merchant->id;
+	}
+
+
+
 	public static function live()
 	{
 		return self::$Key->live;

@@ -1,45 +1,59 @@
 <?php
 
-	class CardToken extends Eloquent {
+class CardToken extends Eloquent {
 
-		public $includes = array('card');
+	public static $hidden = array('id','card_id');
 
-		public static $hidden = array('id','card_id','expired');
-
-		public function transactions()
-		{
-			return $this->has_many('Transaction');
-		}
-
-		public function card()
-		{
-			return $this->belongs_to('Card');
-		}
-
-		public function build_cardtoken ($card_id)
-		{
-			$this->set_attr('card_id',(int)$card_id);
-			$this->set_attr('token',self::generate_card_token());
-			$this->set_attr('expired',0);
-
-			try {
-				$this->save();
-			}
-			catch (\Exception $e) {
-				return Response::error('500');
-			}
-		}
-
-		public static function generate_card_token ()
-		{
-			return 'crd_' . substr ( bin2hex ( openssl_random_pseudo_bytes(16) ), 0, 28);
-		}
-
-		public function set_attr($key, $value)
-		{
-			$this->{$key} = $value;
-		}
-
+	public function card()
+	{
+		return $this->belongs_to('Card');
 	}
+
+	/**
+	 * Generates a new token referencing credit card id.
+	 * @param  array $data  [description]
+	 * @return array/null $error	    [description]
+	 */
+	public static function generate($card_id, $merchant_id)
+	{
+		
+		try 
+		{
+			$token = CardToken::create(array(
+				'card_id' => (int) $card_id,
+				'merchant_id' => (int) $merchant_id,
+				'token' => self::generate_card_token(),
+				'expired' => 0));
+		}
+		catch (\Exception $e) {
+			return array(false, $e->getMessage());
+		}
+
+		return array($token, null);
+	}
+
+	private static function generate_card_token ()
+	{
+		return bin2hex(openssl_random_pseudo_bytes(32));
+	}
+
+	private function set_attr($key, $value)
+	{
+		$this->{$key} = $value;
+	}
+
+	public function set_token_used()
+	{
+		$this->expire = 1;
+		try
+		{
+			$this->save();
+		}
+		catch (\Exception $e)
+		{
+			return $e->getMessage();
+		}
+	}
+}
 
 ?>

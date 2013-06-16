@@ -14,7 +14,7 @@ class Transaction_Controller extends Base_Controller
 	*/
 	public function get_index ($token = NULL)
 	{
-		$merchant_id = (int)BasicAuth::Merchant()->id;
+		$merchant_id = BasicAuth::MerchantId();
 
 		$m = BasicAuth::Merchant();
 		
@@ -48,7 +48,7 @@ class Transaction_Controller extends Base_Controller
 	*/
 	public function post_index ()
 	{
-		$merchant_id = (int)BasicAuth::Merchant()->id;
+		$merchant_id = BasicAuth::MerchantId();
 
 		$t = new Transaction();
 		
