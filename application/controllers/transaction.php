@@ -1,5 +1,7 @@
 <?php
 
+use Service\Transaction as TransactionService;
+
 class Transaction_Controller extends Base_Controller 
 {
 
@@ -44,29 +46,31 @@ class Transaction_Controller extends Base_Controller
 	}
 
 	/**
-	* To create a new transaction. Retrieve transaction token.
+	* To create a new transaction. 
 	*/
-	public function post_index ()
+	public function post_index()
 	{
 		$merchant_id = BasicAuth::MerchantId();
 
-		$t = new Transaction();
+		$txn_service = new TransactionService();
 		
-		$e = $t->build(Input::get(), $merchant_id);
-		
-		if ($e !== NULL)
-			return $e;
+		$input = Input::get();
 
-		$t = Transaction::find($t->id);
-
-		return Response::eloquent($t);
+		list($txn_data, $err) = $txn_service->create($input, $merchant_id);
 		
+		if ($err !== ERR::SUCCESS)
+		{
+			echo "$err has occured.";
+			return $err;
+		}
+
+		return Response::json($txn_data);
 	}
 
 	/**
 	* To refund a transaction.
 	*/
-	public function post_refund ( $token = NULL )
+	public function post_refund($token = NULL )
 	{
 		echo 'refund: ' . $token;
 	}
@@ -74,7 +78,7 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To list previous refunds.
 	*/
-	public function get_refund ()
+	public function get_refund()
 	{
 		;
 	}
@@ -82,7 +86,7 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To process a transaction and make payments.
 	*/
-	public function post_process ( $token = NULL )
+	public function post_process($token = NULL )
 	{
 		echo 'process: ' . $token;
 	}
@@ -90,7 +94,7 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To list only successful transactions.
 	*/
-	public function get_process ()
+	public function get_process()
 	{
 		;
 	}
