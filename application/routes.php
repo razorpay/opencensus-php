@@ -34,12 +34,15 @@
 
 Route::group(array('before' => 'auth.public'), function()
 {
-	Route::post('transactions', 'transaction@index');
+	
 });
 
 Route::group(array('before' => 'auth'), function()
 {
-	Route::post('cards', 'card@index');
+	Route::post('transactions', 'transaction@index');
+	Route::post('tokens', 'card@index');
+
+    Route::get('tokens/(:any)', 'card@retrieve');
 
 	Route::get('transactions', 'transaction@index');
 
@@ -134,8 +137,9 @@ Route::filter('csrf', function()
 Route::filter('auth', function()
 {
 	BasicAuth::verify_key();
-	if (!BasicAuth::check() and
-		BasicAuth::secret())
+
+	if ((BasicAuth::check() == false) or
+		(BasicAuth::secret() == false))
 		return Response::error('401');
 });
 
@@ -145,8 +149,9 @@ Route::filter('auth', function()
 Route::filter('auth.public', function()
 {
 	BasicAuth::verify_key();
-	if (!BasicAuth::check() and
-		BasicAuth::secret())
+
+	if ((BasicAuth::check() == false) or
+		(BasicAuth::secret() == true))
 		return Response::error('401');
 
 });
