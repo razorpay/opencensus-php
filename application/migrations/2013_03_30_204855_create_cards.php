@@ -17,10 +17,10 @@ class Create_Cards {
 
             $table->string('number');
 
-            $table->string('expire_month')
+            $table->string('expiry_month')
                   ->nullable();
 
-            $table->string('expire_year')
+            $table->string('expiry_year')
                   ->nullable();
 
             $table->string('cvv')
@@ -60,7 +60,7 @@ class Create_Cards {
             $table->boolean('address_line1_check')
                   ->nullable();
 
-            $table->boolean('addres_zip_check')
+            $table->boolean('address_zip_check')
                   ->nullable();
 
             $table->timestamps();
