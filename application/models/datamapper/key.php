@@ -1,6 +1,6 @@
-<?php 
+<?php namespace DataMapper;
 
-class Key extends Eloquent {
+class Key extends \Eloquent {
 
 	private $key_generated = NULL;
 
@@ -33,7 +33,9 @@ class Key extends Eloquent {
 
 	public static function find_by_key($key)
 	{
-		return Key::where('keys', '=', $key)->first();
+		$key = Key::where('keys', '=', $key)->first();
+		
+		return $key;
 	}
 
 	private static function generate_key()

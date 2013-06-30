@@ -1,6 +1,6 @@
-<?php
+<?php namespace DataMapper;
 
-	class Merchant extends Eloquent {
+	class Merchant extends \Eloquent {
 
 		public static $hidden = array('id','pwd','hash');
 
