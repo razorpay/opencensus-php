@@ -1,5 +1,8 @@
 <?php
 
+use DataMapper\Key;
+use DataMapper\Merchant;
+
 class BasicAuth {
 	
 	private static $Key = NULL;
@@ -13,8 +16,9 @@ class BasicAuth {
 			$key = $_SERVER['PHP_AUTH_USER'];
 			
 			self::$Key = Key::find_by_key($key);
-
-			if(is_null(self::$Key or self::$Key->active == 0))
+			
+			if ((is_null(self::$Key)) or 
+				(self::$Key->active == 0))
 				return;
 			
 			$merchant_id = self::$Key->merchant_id;
@@ -28,7 +32,7 @@ class BasicAuth {
 
 	public static function check()
 	{
-		if ((!is_null(self::$Key)) &&
+		if ((!is_null(self::$Key)) and
 			(!is_null(self::$Merchant)))
 			return true;
 		else
