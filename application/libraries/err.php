@@ -24,5 +24,11 @@ class ERR
     const CVV_ALREADY_VERIFIED = 0x3;
     const MSG_3 = "The CVV of the card has already been verified previously.";
 
+    const DB_PROBLEM = 0x4;
+    const MSG_4 = "There is a problem with database";
+
+    const INTERNAL_SERVER_ERROR = 0x5;
+    const MSG_5 = "There is a problem with the server.";
+
 }
 
