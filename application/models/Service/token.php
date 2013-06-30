@@ -1,0 +1,67 @@
+<?php namespace Service;
+
+use DataMapper\Card as CardDB;
+use DomainObject\Card as CardDO;
+use DataMapper\CardToken as CardTokenDB;
+use DomainObject\CardToken as CardTokenDO;
+use ERR;
+use Utility;
+use BasicAuth;
+
+class Token
+{
+    /**
+     * Generates a new token referencing credit card info provided.
+     * @param  array $data  [description]
+     * @return array/null $error        [description]
+     */
+	public function generate($input)
+	{
+		$card_db = new CardDB();
+
+        $card_token_do = new CardTokenDO();
+        $card_token_db = new CardTokenDB();
+
+        $merchant_id = BasicAuth::MerchantId();
+        $data['merchant_id'] = $merchant_id;
+
+        $err = $card_token_do->build($input, $data);
+        if ($err !== ERR::SUCCESS)
+        {
+            return array(false, $err);
+        }
+
+        $err = $card_token_db->insert($card_token_do);
+        if ($err !== ERR::SUCCESS)
+        {
+            return array(false, $err);
+        }
+
+        return array($card_token_do, ERR::SUCCESS);
+	}
+
+	public function retrieve($token, $merchant_id)
+    {
+        $card_token_do = new CardTokenDO;
+        $card_token_db = new CardTokenDB;
+
+        $err = $card_token_do->set_token($token);
+        if ($err !== ERR::SUCCESS)
+            return array(false, $err);
+
+        $err = $card_token_do->set_merchant_id($merchant_id);
+
+        $err = $card_token_db->fetch_with_card($card_token_do);
+
+        if ($err !== ERR::SUCCESS)
+            return array(false, $err);
+
+        $flag = CardTokenDO::WITH_OBJECT_FIELD |
+                CardTokenDO::WITH_CARD |
+                CardTokenDO::ONLY_PUBLIC_FIELDS;
+        
+        $token_data = $card_token_do->get_token_data($flag);
+
+        return array($token_data, $err);
+    }
+}
