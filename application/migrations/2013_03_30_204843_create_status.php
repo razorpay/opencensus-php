@@ -2,32 +2,32 @@
 
 class Create_Status {
 
-  /**
-   * Make changes to the database.
-   *
-   * @return void
-   */
-  public function up()
-  {
-    Schema::create('status', function($table){
-      $table->engine = 'InnoDB';
-      
-      $table->integer('code')
-            ->unsigned()
-            ->primary();
+	/**
+	 * Make changes to the database.
+	 *
+	 * @return void
+	 */
+	public function up()
+	{
+		Schema::create('status', function($table){
+			$table->engine = 'InnoDB';
 
-      $table->string('description');
-    });
-  }
+			$table->integer('code')
+				->unsigned()
+				->primary();
 
-  /**
-   * Revert the changes to the database.
-   *
-   * @return void
-   */
-  public function down()
-  {
-    Schema::drop('status');
-  }
+			$table->string('description');
+		});
+	}
+
+	/**
+	 * Revert the changes to the database.
+	 *
+	 * @return void
+	 */
+	public function down()
+	{
+		Schema::drop('status');
+	}
 
 }

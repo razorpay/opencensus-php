@@ -11,21 +11,20 @@ class Create_Transactions_Foreign_Keys {
 	{
 		Schema::table('transactions', function($table){
 
-	        $table->foreign('merchant_id')
-	        	  ->references('id')
-	        	  ->on('merchants')
-	        	  ->on_delete('restrict');
-	        
-	        $table->foreign('card_token')
-	        	  ->references('token')
-	        	  ->on('cardtokens')
-	        	  ->on_delete('SET NULL');
-	        
-	        $table->foreign('status_code')
-	        	  ->references('code')
-	        	  ->on('status')
-	        	  ->on_delete('SET NULL');
-    	});
+			$table->foreign('merchant_id')
+				  ->references('id')
+				  ->on('merchants')
+				  ->on_delete('restrict');
+			
+			$table->foreign('card_token')
+				  ->references('token')
+				  ->on('cardtokens');
+			
+			$table->foreign('status_code')
+				  ->references('code')
+				  ->on('status')
+				  ->on_delete('SET NULL');
+		});
 	}
 
 	/**
@@ -37,7 +36,7 @@ class Create_Transactions_Foreign_Keys {
 	{
 		Schema::table('transactions', function($table){
 			$table->drop_foreign('transactions_merchant_id_foreign');
-			$table->drop_foreign('transactions_card_token_foreign');
+			$table->drop_foreign('transactions_token_foreign');
 			$table->drop_foreign('transactions_status_code_foreign');
 		});
 	}

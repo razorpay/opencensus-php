@@ -2,30 +2,30 @@
 
 class Create_Cardtypes {
 
-  /**
-   * Make changes to the database.
-   *
-   * @return void
-   */
-  public function up()
-  {
-    Schema::create('cardtypes', function($table){
-      $table->engine = 'InnoDB';
-      
-      $table->increments('id');
+	/**
+	 * Make changes to the database.
+	 *
+	 * @return void
+	 */
+	public function up()
+	{
+		Schema::create('cardtypes', function($table){
+			$table->engine = 'InnoDB';
 
-      $table->string('type');
-    });
-  }
+			$table->increments('id');
 
-  /**
-   * Revert the changes to the database.
-   *
-   * @return void
-   */
-  public function down()
-  {
-    Schema::drop('cardtypes');
-  }
+			$table->string('type');
+		});
+	}
+
+	/**
+	 * Revert the changes to the database.
+	 *
+	 * @return void
+	 */
+	public function down()
+	{
+		Schema::drop('cardtypes');
+	}
 
 }

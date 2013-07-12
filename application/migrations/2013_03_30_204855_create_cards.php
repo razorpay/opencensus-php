@@ -17,18 +17,17 @@ class Create_Cards {
 
             $table->string('number');
 
-            $table->string('expiry_month')
-                  ->nullable();
+            $table->string('cardholder');
 
-            $table->string('expiry_year')
-                  ->nullable();
+            $table->string('cvv');
 
-            $table->string('cvv')
-                  ->nullable();
+            $table->string('expiry_month', 2);
+
+            $table->string('expiry_year', 2);
+
+            $table->string('last4', 4);
 
             $table->string('type');
-
-            $table->string('name');
 
             /**
              * Two letter ISO codes representing the country of the card.

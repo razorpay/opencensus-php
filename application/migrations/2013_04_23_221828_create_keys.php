@@ -33,7 +33,7 @@ class Create_Keys {
 				  ->references('id')
 				  ->on('merchants')
 				  ->on_delete('restrict');
-    	});
+		});
 	}
 
 	/**
