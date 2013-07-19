@@ -15,7 +15,7 @@ class CardToken
 
         'expired'     => 0,
         'created_at'  => null,
-        'update_at'   => null
+        'updated_at'  => null
         );
 
     private static $input_attributes = array(
@@ -28,9 +28,14 @@ class CardToken
 
     private $card_do = null;
 
+    private $data = null;
+
+    private $input = null;
+
     private function generate()
     {
         $token = Utility::generate_token(self::$TOKEN_LEN);
+        
         $this->token['token'] = $token;
     }
 
@@ -241,7 +246,13 @@ class CardToken
     {
         if ((array_key_exists($key, $this->data)) and
             (array_key_exists($key, $this->token)))
+        {
             $this->token[$key] = $this->data[$key];
+        }
+        else if ($key === 'card_token_id')
+        {
+            $this->set_id($this->data[$key]);
+        }
     }
 
     public static function input_keys_for_new_token()
@@ -267,7 +278,7 @@ class CardToken
         }
 
         if ($flag & self::WITH_OBJECT_FIELD)
-            $token['object'] = 'card';
+            $token['object'] = 'token';
 
         if ($flag & self::WITH_CARD)
         {

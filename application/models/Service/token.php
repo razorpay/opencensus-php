@@ -6,7 +6,6 @@ use DataMapper\CardToken as CardTokenDB;
 use DomainObject\CardToken as CardTokenDO;
 use ERR;
 use Utility;
-use BasicAuth;
 
 class Token
 {
@@ -17,15 +16,10 @@ class Token
      */
 	public function generate($input)
 	{
-		$card_db = new CardDB();
-
-        $card_token_do = new CardTokenDO();
         $card_token_db = new CardTokenDB();
 
-        $merchant_id = BasicAuth::MerchantId();
-        $data['merchant_id'] = $merchant_id;
+        list($card_token_do, $err) = $this->build_token($input);
 
-        $err = $card_token_do->build($input, $data);
         if ($err !== ERR::SUCCESS)
         {
             return array(false, $err);
@@ -37,10 +31,16 @@ class Token
             return array(false, $err);
         }
 
-        return array($card_token_do, ERR::SUCCESS);
+        $flag = CardTokenDO::WITH_OBJECT_FIELD |
+                CardTokenDO::WITH_CARD |
+                CardTokenDO::ONLY_PUBLIC_FIELDS;
+
+        $token_data = $card_token_do->get_token_data($flag);
+        
+        return array($token_data, ERR::SUCCESS);
 	}
 
-	public function retrieve($token, $merchant_id)
+    public function retrieve($token, $merchant_id)
     {
         $card_token_do = new CardTokenDO;
         $card_token_db = new CardTokenDB;
@@ -64,4 +64,21 @@ class Token
 
         return array($token_data, $err);
     }
+
+    public function build_token($input)
+    {
+        $card_token_do = new CardTokenDO();
+
+        $merchant_id = BasicAuth::MerchantId();
+        $data['merchant_id'] = $merchant_id;
+
+        $err = $card_token_do->build($input, $data);
+        if ($err !== ERR::SUCCESS)
+        {
+            return array(false, $err);
+        }
+
+        return array($card_token_do, ERR::SUCCESS);
+    }
+
 }

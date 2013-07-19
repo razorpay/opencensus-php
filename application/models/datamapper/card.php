@@ -8,7 +8,7 @@ use \ERR;
 
 class Card extends DataMapper
 {
-    const $table = 'cards';
+    const table = 'cards';
 
     /**
      * attributes which can be set by us in db.
@@ -16,6 +16,7 @@ class Card extends DataMapper
     private static $attr_insert = array(
         'number',
         'cardholder',
+        'cvv',
         
         'expiry_month',
         'expiry_year',
@@ -43,7 +44,7 @@ class Card extends DataMapper
         );
 
     private static $attr_update = array(
-        'cvc_check',
+        'cvv_check',
         'address_line1_check',
         'address_zip_check'
         );
@@ -77,8 +78,8 @@ class Card extends DataMapper
 
         try
         {
-            $id = DB::table(static::$table)
-                  ->insert_get_id($this->row);
+            $id = DB::table(self::table)
+                    ->insert_get_id($this->row);
             $card_do->set_id((int) $id);
         }
         catch(Exception $e)

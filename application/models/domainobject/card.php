@@ -33,7 +33,7 @@ class Card
         'address_zip'       => null,
         'address_country'   => null,
 
-        'cvc_check'           => 0,
+        'cvv_check'           => 0,
         'address_line1_check' => 0,
         'address_zip_check'   => 0,
 
@@ -104,7 +104,7 @@ class Card
         {
             if (! in_array($key, static::$input_attributes, true))
             {
-                echo $key . " should not be in this list. __FILE__ __LINE__";
+                echo $key . " should not be in this list." + __FILE__ + " " + __LINE__;
                 return ERR::INVALID_PARAMETERS;
             }
         }
@@ -174,6 +174,7 @@ class Card
 
     private function set_essential()
     {
+        $this->set_attr('id');
         $this->set_attr('number');
         $this->set_attr('cardholder');
         $this->set_attr('expiry_month');
@@ -305,11 +306,24 @@ class Card
     {
         if ((array_key_exists($key, $this->data)) and
             (array_key_exists($key, $this->card)))
+        {
             $this->card[$key] = $this->data[$key];
+        }
         else
         {
-            echo $key . ' is not a valid key.';
-            throw new \InvalidArgumentException($key);
+            if ($key === 'id')
+            {
+                ;
+            }
+            else if ($key === 'card_id')
+            {
+                $this->set_id($this->data[$key]);
+            }
+            else
+            {
+                echo $key . ' is not a valid key.';
+                throw new \InvalidArgumentException($key);
+            }
         }
     }
 

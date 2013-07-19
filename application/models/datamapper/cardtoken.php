@@ -9,7 +9,7 @@ use DomainObject\Card as CardDO;
 
 class CardToken extends DataMapper {
 
-	private static $table = 'cardtokens';
+	const table = 'cardtokens';
 
 	/**
      * attributes which can be set by us in db.
@@ -74,7 +74,7 @@ class CardToken extends DataMapper {
 
         try
         {
-            $id = DB::table(static::$table)
+            $id = DB::table(self::table)
                     ->insert_get_id($this->row);
 
             $card_token_do->set_id($id);
@@ -122,7 +122,7 @@ class CardToken extends DataMapper {
         }
         else if ($card_id === null)
         {
-            throw new \InvalidArgumentException("Card Id not set.");
+            throw new \InvalidArgumentException('card_id not set.');
         }
 
         return ERR::SUCCESS;
@@ -132,12 +132,13 @@ class CardToken extends DataMapper {
     {
         $token = $card_token_do->get_token();
 
-        $merchant_id = $card_token_do->get_merchant_id();
         if ($token === null)
             throw new \InvalidArgumentException("token is null");
 
-        $card_table = Card::$table;
-        $card_token_table = self::$table;
+        $merchant_id = $card_token_do->get_merchant_id();
+        
+        $card_table = Card::table;
+        $card_token_table = self::table;
 
         $card_tokens_cols = array('expired');
 
@@ -146,12 +147,17 @@ class CardToken extends DataMapper {
         try
         {
             $token = DB::table($card_token_table)
-                ->join($card_table, $card_token_table.'.card_id', '=', $card_table.'.id')
-                ->where('token', '=', $token);
+                        ->join($card_table, $card_token_table.'.card_id', '=', $card_table.'.id')
+                        ->where('token', '=', $token);
 
             if ($merchant_id !== null)
                 $token = $token->where('merchant_id', '=', $merchant_id);
-                
+            
+            $card_id = $card_table + '.id' + ' AS ' + 'card_id';
+            $token_id = $card_token_table + '.id' + ' AS ' + 'card_token_id';
+
+            $token = $token->select('*', $card_id, $token_id);
+
             $token = $token->first();
 
             $err = $card_token_do->set($token);
