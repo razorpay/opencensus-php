@@ -20,15 +20,15 @@ class Transaction
         'amount'    =>  'required|integer|max:10000',
         'currency'  =>  'required|max:3',
         'desc'      =>  'max:1000',
-        'process'   =>  'integer|max:1',
+        'process'   =>  'integer|max:1'
         );
 
     private $txn = array(
         'id'            =>  null,
 
-        'txn_id'        =>  null,
+        'uid'           =>  null,
         'merchant_id'   =>  null,
-        'token_id'      =>  null,
+        'token'      =>  null,
 
         'amount'        =>  null,
         'currency'      =>  null,
@@ -39,7 +39,6 @@ class Transaction
 
         'created_at'    =>  0,
         'updated_at'    =>  0
-
         );
 
     private $process_now    = true;
@@ -52,6 +51,8 @@ class Transaction
 
     private $input_verified = false;
 
+    private static $UID_LEN = 16;
+
     public function verify_build_input($input = null)
     {
         if ($this->input === null)
@@ -62,7 +63,9 @@ class Transaction
         if ($err !== ERR::SUCCESS)
             return $err;
 
-        $validation = Validator::make($this->input, self::$rules_build_attributes);
+        $validation = Validator::make(
+                        $this->input, 
+                        self::$rules_build_attributes);
 
         if ($validation->fails()) 
         {
@@ -83,6 +86,22 @@ class Transaction
         $this->input_verified = true;
 
         return ERR::SUCCESS;
+    }
+
+    private function verify_build_input_keys()
+    {
+        $user_keys = array_keys($this->input);
+        $res = array_diff($user_keys, self::$input_build_attributes);
+
+        if (count($res) == 0)
+        {
+            return ERR::SUCCESS;
+        }
+        else 
+        {
+            var_dump($res);
+            return ERR::INVALID_PARAMETERS;
+        }
     }
 
     private function verify_amount()
@@ -118,41 +137,6 @@ class Transaction
         return ERR::SUCCESS;
     }
 
-    private function verify_build_input_keys()
-    {
-        $input_new_token_attributes = CardToken::input_keys_for_new_token();
-
-        $card_attr = 0;
-
-        if (isset($input['card']))
-        {
-            $card_attr = 1;
-        }
-
-        foreach ($this->input as $key => $value)
-        {
-            if (!in_array($key, self::$input_build_attributes))
-            {
-                if (!in_array($key, $input_new_token_attributes))
-                {
-                    return ERR::INVALID_PARAMETERS;
-                }
-                else if ($card_attr === 1)
-                {
-                    return ERR::INVALID_PARAMETERS;
-                }
-                else $card_attr = 2;
-            }
-        }
-
-        if ($card_attr === 0)
-        {
-            return ERR::INVALID_PARAMETERS;
-        }
-
-        return ERR::SUCCESS;
-    }
-
     public function build(array $data, array $input = null)
     {
         if ($this->input_verified === false)
@@ -171,7 +155,11 @@ class Transaction
 
         $this->data = array_merge($this->input, $data);;
 
-        $this->data['txn_id'] = Utility::generate_token(16);
+        $this->data['uid'] = Utility::generate_token(self::$UID_LEN);
+
+        $err = $this->set();
+        if ($err !== ERR::SUCCESS)
+            return $err;
 
         return ERR::SUCCESS;
     }
@@ -192,14 +180,16 @@ class Transaction
         foreach ($this->data as $key=>$value)
         {
             if (array_key_exists($key, $this->txn))
+            {
                 $this->txn[$key] = $value;
+            }
+            else if ($key === 'process')
+            {
+                $this->txn['processed'] = $value;
+                $this->process_now = (bool) $value;
+            }
             else
             {
-                if ($key === 'process')
-                {
-                    $this->txn['processed'] = $value;
-                    $this->process_now = (bool) $value;
-                }
                 throw new \InvalidArgumentException($key . " is not a valid key.");
             }
         }
@@ -220,7 +210,7 @@ class Transaction
         return $this->process_now;
     }
 
-    public functino get_processed()
+    public function get_processed()
     {
         return $this->txn['processed'];
     }
@@ -228,6 +218,57 @@ class Transaction
     public function set_processed($processed)
     {
         $this->txn['processed'] = $processed;
+    }
+
+    public function set_id(/* int */ $id)
+    {
+        $this->txn['id'] = $id;
+    }
+
+
+    const FLAG_DEFAULT          = 0x0;
+    const WITH_CARD             = 0x1;
+    const WITH_OBJECT_FIELD     = 0x2;
+    const ONLY_PUBLIC_FIELDS    = 0x4;
+    public function get_transaction_data($flag = 0x0)
+    {
+        $txn = $this->txn;
+
+        if ($flag & self::ONLY_PUBLIC_FIELDS)
+        {
+            unset(
+                $txn['id'],
+                $txn['merchant_id'],
+                $txn['token']
+                );
+        }
+
+        if ($flag &self::WITH_OBJECT_FIELD)
+        {
+            $txn['object'] = 'transaction';
+        }
+
+        if ($flag & self::ONLY_PUBLIC_FIELDS)
+        {
+            $txn['id'] = $txn['uid'];
+            unset($txn['uid']);
+        }
+
+        if ($flag & self::WITH_CARD)
+        {
+            $card_do_flag = 0x0;
+
+            if ($flag & self::WITH_OBJECT_FIELD)
+                $card_do_flag |= Card::WITH_OBJECT_FIELD;
+            if ($flag & self::ONLY_PUBLIC_FIELDS)
+                $card_do_flag |= Card::ONLY_PUBLIC_FIELDS;
+
+            $card = $this->card_token_do->get_card_do()->get_card_data($card_do_flag);
+
+            $txn['card'] = $card;
+        }
+
+        return $txn;
     }
 }
 

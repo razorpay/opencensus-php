@@ -1,5 +1,7 @@
 <?php
 
+use Service\BasicAuth;
+
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -40,9 +42,10 @@ Route::group(array('before' => 'auth.public'), function()
 Route::group(array('before' => 'auth'), function()
 {
 	Route::post('transactions', 'transaction@index');
+
 	Route::post('tokens', 'card@index');
 
-    Route::get('tokens/(:any)', 'card@retrieve');
+	Route::get('tokens/(:any)', 'card@retrieve');
 
 	Route::get('transactions', 'transaction@index');
 

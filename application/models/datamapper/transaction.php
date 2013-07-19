@@ -8,64 +8,79 @@ use \ERR;
 
 class Transaction {
 
-	const $table = 'transactions';
+	const table = 'transactions';
 
-    /**
-     * attributes which can be set by us in db during insert.
-     */
-    private static $attr_insert = array(
-        'txn_id',
-        'merchant_id',
-        'token_id',
+	/**
+	 * attributes which can be set by us in db during insert.
+	 */
+	private static $attr_insert = array(
+		'uid',
+		'merchant_id',
+		'token',
 
-        'amount',
-        'currency',
-        'processed',
-        'desc',
-        'refund'
-        );
+		'amount',
+		'currency',
+		'processed',
+		'desc'
+		);
 
-    private $row = array();
+	private static $attr_required = array(
+		'uid',
+		'merchant_id',
+		'token',
+		'amount',
+		'currency',
+		'desc'
+		);
 
-    private static $attr_update = array(
-        'decline_code',
-        'decline_message',
-        'processed',
-        'refund'
-        );
+	private static $attr_update = array(
+		'decline_code',
+		'decline_message',
+		'processed',
+		'refund'
+		);
 
-    public function insert(TransactionDO $txn_do)
-    {
-    	$data = $txn_do->get_txn_data();
+	private $row = array();
 
-    	foreach ($data as $key=>$value)
-    	{
-    		if (!in_array($key, self::$attr_insert))
-    		{
-    			continue;
-    		}
+	public function insert(TransactionDO $txn_do)
+	{
+		$data = $txn_do->get_transaction_data();
 
-    		if (($value === null) or 
-    			($value === ''))
-    		{
-    			if (in_array($key, self::$attr_required))
-    			{
-    				throw new \InvalidArgumentException($key);
-    			}
-    		}
-    		else
-    		{
-    			$this->row[$key] = $value;
-    		}
-    	}
+		foreach ($data as $key=>$value)
+		{
+			if (!in_array($key, self::$attr_insert))
+			{
+				continue;
+			}
 
-    	try
-    	{
-    		$id = DB::table(self::$table)
-    				->insert_get_id($this->row);
-    		$txn_do->set_id((int) $id);
-    	}
-    }
+			if (($value === null) or 
+				($value === ''))
+			{
+				if (in_array($key, self::$attr_required))
+				{
+					throw new \InvalidArgumentException($key);
+				}
+			}
+			else
+			{
+				$this->row[$key] = $value;
+			}
+		}
+
+		try
+		{
+			$id = DB::table(self::table)
+					->insert_get_id($this->row);
+			$txn_do->set_id((int) $id);
+		}
+		catch(Exception $e)
+		{
+			var_dump($e);
+			return ERR::DB_PROBLEM;
+		}
+
+		return ERR::SUCCESS;
+	}
 
 	/**
 	 * Retrieves the transactions from database for a particular merchant.
@@ -75,6 +90,9 @@ class Transaction {
 	 */
 	public static function retrieve($data, &$error)
 	{
+		/*
+		 * Create the fluent query.
+		 */
 		$txn_query = Transaction::where('merchant_id', '=', $data['merchant_id']);
 
 		if (isset($data['created']))

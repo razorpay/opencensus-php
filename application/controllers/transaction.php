@@ -1,6 +1,7 @@
 <?php
 
 use Service\Transaction as TransactionService;
+use Service\BasicAuth;
 
 class Transaction_Controller extends Base_Controller 
 {
@@ -60,8 +61,8 @@ class Transaction_Controller extends Base_Controller
 		
 		if ($err !== ERR::SUCCESS)
 		{
-			echo "$err has occured.";
-			return $err;
+			echo (dechex($err)) . " has occured.";
+			return;
 		}
 
 		return Response::json($txn_data);
