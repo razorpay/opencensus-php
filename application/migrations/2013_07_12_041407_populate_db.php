@@ -37,6 +37,7 @@ class Populate_Db {
 		DB::table('cards')->insert(
 			array(
 				'number'		=>	'1234567890',
+				'cardholder'	=>	'shk',
 				'expiry_month'	=>	'01',
 				'expiry_year'	=>	'99',
 				'cvv'			=>	'000',
@@ -49,6 +50,7 @@ class Populate_Db {
 		DB::table('cards')->insert(
 			array(
 				'number'		=>	'1234567891',
+				'cardholder'	=>	'shk',
 				'expiry_month'	=>	'01',
 				'expiry_year'	=>	'12',
 				'cvv'			=>	'000',

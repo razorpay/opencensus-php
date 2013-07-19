@@ -14,7 +14,7 @@ class Create_Transactions {
 			
 			$table->increments('id');
 
-			$table->string('token', 16)
+			$table->string('uid', 16)
 				  ->unique();
 
 			$table->integer('merchant_id')
@@ -26,15 +26,15 @@ class Create_Transactions {
 			$table->string('currency', 3)
 				  ->default('INR');
 
-			$table->string('description');
+			$table->string('desc');
 
 			$table->boolean('livemode');
 
-			$table->string('card_token', 16)
+			$table->string('token', 16)
 				  ->nullable();
 			
 			$table->boolean('processed')
-				  ->default('1');
+				  ->default('0');
 
 			$table->integer('status_code')
 				  ->unsigned()

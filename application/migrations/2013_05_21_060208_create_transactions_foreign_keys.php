@@ -16,7 +16,7 @@ class Create_Transactions_Foreign_Keys {
 				  ->on('merchants')
 				  ->on_delete('restrict');
 			
-			$table->foreign('card_token')
+			$table->foreign('token')
 				  ->references('token')
 				  ->on('cardtokens');
 			

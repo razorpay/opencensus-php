@@ -15,13 +15,11 @@ class Create_Merchants {
 			$table->increments('id');
 
 			$table->string('email', 256)
-				->unique();
+				  ->unique();
 
 			$table->string('pwd');	// For storing passwords in string form. *Not for production*
 
 			$table->string('hash'); // For storing passwords after encrypting them.
-
-			$table->string('key');
 
 			$table->timestamps();
 		});
