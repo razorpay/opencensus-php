@@ -1,6 +1,13 @@
-<?php namespace DataMapper;
+<?php 
 
-class Key extends \Eloquent {
+namespace DataMapper;
+
+use \Validator;
+
+class Key extends \Eloquent
+{
+
+	public static $table  = 'keys';
 
 	private $key_generated = NULL;
 

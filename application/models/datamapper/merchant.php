@@ -1,4 +1,9 @@
-<?php namespace DataMapper;
+<?php 
+
+namespace DataMapper;
+
+use DB;
+use ERR;
 
 	class Merchant extends \Eloquent {
 
@@ -13,7 +18,6 @@
 		{
 			return $this->has_many('Keys');
 		}
-
 	}
 
 ?>
