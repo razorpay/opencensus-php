@@ -18,7 +18,7 @@ class CardToken
         'updated_at'  => null
         );
 
-    private static $input_attributes = array(
+    private static $token_attributes = array(
         'card_id',
         'merchant_id',
         'expired'
@@ -57,40 +57,26 @@ class CardToken
     {
         $data = $this->data;
 
-        foreach($this->data as $key=>$value)
+        $token_keys = array_keys($this->data);
+        $invalid_keys = array_diff($token_keys, self::$token_attributes);
+
+        if (count($invalid_keys) !== 0)
         {
-            if (! in_array($key, self::$input_attributes, true))
-            {
-                echo $key . "should not be in this list.";
-                return ERR::INVALID_PARAMETERS;
-            }
+            return ERR::invalid_keys($invalid_keys);
         }
 
-        $exception = false;
-
-        if ($data === null)
-        {
-            $exception = true;
-        }
-        else if ((!isset($data['merchant_id'])) or 
-                 (empty($data['merchant_id'])) or 
-                 (!is_numeric($data['merchant_id'])))
-        {
-            $exception = true;
-        }
-        
-        if ($exception === true)
+        if (($data === null) or
+            (!isset($data['merchant_id'])) or 
+            (empty($data['merchant_id'])) or 
+            (!is_numeric($data['merchant_id'])))
         {
             throw new \InvalidArgumentException("Invalid arguments");
         }
 
         if (array_key_exists('expired', $data))
         {
-            if (!is_numeric($data['expired']))
-                throw new InvalidArgumentException('Key "expired" can only be 0 or 1');
-            $expired = (int) $data['expired'];
-            if (($expired != 0) or 
-                ($expired != 1))
+            if (($expired !== '0') or 
+                ($expired !== '1'))
                 throw new InvalidArgumentException('Key "expired" can only be 0 or 1');
         }
 

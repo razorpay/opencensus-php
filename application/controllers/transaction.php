@@ -61,7 +61,7 @@ class Transaction_Controller extends Base_Controller
 		
 		if ($err !== ERR::SUCCESS)
 		{
-			echo (dechex($err)) . " has occured.";
+			ERR::print_last_error();
 			return;
 		}
 

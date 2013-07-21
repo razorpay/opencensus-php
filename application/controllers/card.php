@@ -1,6 +1,7 @@
 <?php
 
 use Service\Token;
+use Service\BasicAuth;
 
 class Card_Controller extends Base_Controller 
 {
@@ -8,39 +9,40 @@ class Card_Controller extends Base_Controller
 	public $restful = true;
 
 	/**
-	* To create a new card object. Retrieve one-time use card token.
-	*/
+	 * To create a new card object. Retrieve one-time use card token.
+	 */
 	public function post_index()
 	{
 		$input = Input::get();
 		
-        $token_service = new Token();
+		$token_service = new Token();
 
-		list($token_do, $err) = $token_service->generate($input);
+		list($token_data, $err) = $token_service->generate($input);
 
-		if ($err !== null)
-			var_dump($err);
+		if ($err !== ERR::SUCCESS)
+			ERR::print_last_error();
 		else
-			;//Response::eloquent($token);
+		{
+			return Response::json($token_data);
+		}
 	}
 
-    public function get_retrieve($token)
-    {
-        $token_service = new Token;
+	public function get_retrieve($token)
+	{
+		$token_service = new Token;
 
-        $merchant_id = BasicAuth::MerchantId();
+		$merchant_id = BasicAuth::MerchantId();
 
-        list($token_data, $err) = $token_service->retrieve($token, $merchant_id);
-        
-        if (($token_data === false) or
-        	($err !== ERR::SUCCESS))
-        {
-        	echo $err . " is the error code returned.";
-        	return Response::error('400');
-        }
+		list($token_data, $err) = $token_service->retrieve($token, $merchant_id);
+		
+		if (($token_data === false) or
+			($err !== ERR::SUCCESS))
+		{
+			ERR::print_last_error();
+		}
 
-        return Response::json($token_data);
-    }
+		return Response::json($token_data);
+	}
 
 	
 

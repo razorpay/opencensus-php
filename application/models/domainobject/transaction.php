@@ -69,8 +69,8 @@ class Transaction
 
         if ($validation->fails()) 
         {
-            var_dump($validation->errors);
-            return ERR::INVALID_PARAMETERS;
+            $validation_errors = implode('\n', $validation->errors);
+            return ERR::invalid_parameters($validation_errors);
         }
         
         $err = $this->verify_currency();
@@ -91,30 +91,25 @@ class Transaction
     private function verify_build_input_keys()
     {
         $user_keys = array_keys($this->input);
-        $res = array_diff($user_keys, self::$input_build_attributes);
+        $invalid_keys = array_diff($user_keys, self::$input_build_attributes);
 
-        if (count($res) == 0)
+        if (count($invalid_keys) == 0)
         {
             return ERR::SUCCESS;
         }
         else 
         {
-            var_dump($res);
-            return ERR::INVALID_PARAMETERS;
+            return ERR::invalid_keys($invalid_keys);
         }
     }
 
     private function verify_amount()
     {
-        if (!isset($this->input['currency']))
-            return ERR::INVALID_PARAMETERS;
-
         $amount = (int) $this->input['amount'];
 
-        if ($amount == 0)
-            return ERR::INVALID_AMOUNT;
-        else if ($amount > 12345678)    // some large pre-decided number.
-            return ERR::INVALID_AMOUNT;
+        if (($amount == 0) or
+            ($amount > 12345678))    // some large pre-decided number.
+            return ERR::invalid_parameters('Amount provided is not valid.');
 
         return ERR::SUCCESS;
         // Put any syntactical or logical constraints on amount 
@@ -124,15 +119,12 @@ class Transaction
 
     private function verify_currency()
     {
-        if (!isset($this->input['currency']))
-            return ERR::INVALID_PARAMETERS;
-
         $currency = $this->input['currency'];
 
         // Right now only INR is supported.
 
         if ($currency !== "INR")
-            return ERR::INVALID_CURRENCY;
+            return ERR::invalid_currency($currency . ' provided.');
 
         return ERR::SUCCESS;
     }
@@ -170,7 +162,7 @@ class Transaction
         {
             if ($this->data === null)
             {
-                return ERR::INVALID_PARAMETERS;
+                throw new \InvalidArgumentException('parameter $data not provided.');
             }
             else $data = $this->data;
         }
@@ -263,9 +255,10 @@ class Transaction
             if ($flag & self::ONLY_PUBLIC_FIELDS)
                 $card_do_flag |= Card::ONLY_PUBLIC_FIELDS;
 
-            $card = $this->card_token_do->get_card_do()->get_card_data($card_do_flag);
+            $card_do = $this->card_token_do->get_card_do();
+            $card_data = $card_do->get_card_data($card_do_flag);
 
-            $txn['card'] = $card;
+            $txn['card'] = $card_data;
         }
 
         return $txn;

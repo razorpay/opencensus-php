@@ -43,7 +43,7 @@ class Card
 
     private static $rules = array(
         'number'        => 'required|match:/[0-9]/',
-        'expiry_month'  => 'required|match:/[0-9]{2}/',
+        'expiry_month'  => 'required|match:/[0-9]{2}/|min:1|max:2',
         'expiry_year'   => 'required|match:/[0-9]/|min:2|max:4',
         'cvv'           => 'required|match:/[0-9]/|size:3',
         'cardholder'    => 'required|match:/[a-zA-Z]*/|max:100',
@@ -89,25 +89,72 @@ class Card
 
         if ($validation->fails()) 
         {
-            var_dump($validation->errors);
-            return ERR::INVALID_PARAMETERS;
+            $validation_errors = implode('\n', $validation->errors);
+            return ERR::invalid_parameters($validation_errors);
         }
         
-        $err = $this->check_address_values();
+        $err = $this->verify_address_parameters();
 
         return $err;
     }
 
     private function verify_input_keys()
     {
-        foreach($this->data as $key => $value)
+        $data = $this->data;
+
+        $keys = array_keys($this->data);
+        $invalid_keys = array_diff($keys, self::$input_attributes);
+
+        if (count($invalid_keys) !== 0)
         {
-            if (! in_array($key, static::$input_attributes, true))
+            return ERR::invalid_keys($invalid_keys);
+        }
+        
+        return ERR::SUCCESS;
+    }
+
+    private function verify_address_parameters()
+    {
+        $addr_unset = array();
+
+        foreach(self::$address_attributes as $key)
+        {
+            if ((!isset($this->data[$key])) or
+                (empty($this->data[$key])))
             {
-                echo $key . " should not be in this list." + __FILE__ + " " + __LINE__;
-                return ERR::INVALID_PARAMETERS;
+                array_push($addr_unset, $key);
+            }
+            else
+            {
+                array_push($addr_set, $key);
             }
         }
+
+        if (count($addr_set) > 0)
+        {
+            $addr_unset_count = count($addr_unset);
+            if (($addr_unset_count > 1) or
+                (($addr_unset_count === 1) and 
+                 ($addr_unset_count[0] !== 'address_line2')))
+            {
+                $msg = implode(',', $addr_unset) . ' address values are not set.';
+                return ERR::invalid_parameters($msg);
+            }
+        }
+
+/*
+        $country = upper($this->data['address_country']);
+        $zip = $this->data['zip'];
+
+        if (($country == 'INDIA') or
+            ($country == 'IN'))
+        {
+            if ((strlen($zip) !== 5) or
+                (!is_numeric($zip)))
+                return ERR::INVALID_PARAMETERS;
+        }
+*/
+
         return ERR::SUCCESS;
     }
 
@@ -152,22 +199,14 @@ class Card
         else 
             $this->data = $data;
 
-        try
-        {
-            // Essential attributes
-            $this->set_essential();
-            
-            // Generated attributes
-            $this->set_generated();
+        // Essential attributes
+        $this->set_essential();
+        
+        // Generated attributes
+        $this->set_generated();
 
-            // Address atributes
-            $this->set_address();
-        }
-        catch (\Exception $e)
-        {
-            var_dump($e);
-            return ERR::INTERNAL_SERVER_ERROR;
-        }
+        // Address atributes
+        $this->set_address();
 
         return ERR::SUCCESS;
     }
@@ -190,48 +229,6 @@ class Card
         $this->set_attr('country');
     }
 
-    private function check_address_values()
-    {
-        $addr_set = false;
-        $addr_unset = false;
-
-        foreach(static::$address_attributes as $key)
-        {
-            if($key === 'address_line2')
-                continue;
-            if(empty($this->data[$key]))
-            {
-                $addr_unset = true;
-            }
-            else
-            {
-                $addr_set = true;
-            }
-        }
-
-        if (($addr_set === false) and
-            ($addr_unset === true))
-            return ERR::SUCCESS;
-        else if (($addr_set === true) and
-                 ($addr_unset === true))
-            return ERR::INVALID_PARAMETERS;
-
-/*
-        $country = upper($this->data['address_country']);
-        $zip = $this->data['zip'];
-
-        if (($country == 'INDIA') or
-            ($country == 'IN'))
-        {
-            if ((strlen($zip) !== 5) or
-                (!is_numeric($zip)))
-                return ERR::INVALID_PARAMETERS;
-        }
-*/
-
-        return ERR::SUCCESS;
-    }
-
     private function set_address()
     {
         if(empty($this->data['address_line1']))
@@ -246,8 +243,6 @@ class Card
    
     private function build_meta()
     {
-        $err = ERR::SUCCESS;
-
         try
         {
             $this->data['last4'] = substr($this->data['number'], -4);
@@ -256,10 +251,10 @@ class Card
         }
         catch (InvalidArgumentException $e)
         {
-            $err = ERR::INVALID_PARAMETERS;
+            return ERR::invalid_parameters($e->getMessage());
         }
 
-        return $err;
+        return ERR::SUCCESS;
     }
 
     private function type($number)
@@ -321,8 +316,8 @@ class Card
             }
             else
             {
-                echo $key . ' is not a valid key.';
-                throw new \InvalidArgumentException($key);
+                $msg = $key . ' is not a valid key.';
+                throw new \InvalidArgumentException($msg);
             }
         }
     }
