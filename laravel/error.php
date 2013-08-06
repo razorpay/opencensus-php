@@ -20,7 +20,8 @@ class Error {
 		// For Laravel view errors we want to show a prettier error:
 		$file = $exception->getFile();
 
-		if (str_contains($exception->getFile(), 'eval()') and str_contains($exception->getFile(), 'laravel'.DS.'view.php'))
+		if (str_contains($exception->getFile(), 'eval()') and 
+			str_contains($exception->getFile(), 'laravel'.DS.'view.php'))
 		{
 			$message = 'Error rendering view: ['.View::$last['name'].']'.PHP_EOL.PHP_EOL.$message;
 
@@ -33,20 +34,18 @@ class Error {
 
 		if (Config::get('error.detail'))
 		{
-			$response_body = "<html><h2>Unhandled Exception</h2>
-				<h3>Message:</h3>
-				<pre>".$message."</pre>
-				<h3>Location:</h3>
-				<pre>".$file." on line ".$exception->getLine()."</pre>";
+			$response_body = array(
+				'message' =>	$message,
+				'file'	=>		$file,
+				'line'	=>		$exception->getLine(),
+				);
 
 			if ($trace)
 			{
-				$response_body .= "
-				  <h3>Stack Trace:</h3>
-				  <pre>".$exception->getTraceAsString()."</pre></html>";
+				$response_body['trace'] = $exception->getTraceAsString();
 			}
 
-			$response = Response::make($response_body, 500);
+			$response = Response::json($response_body, 500);
 		}
 
 		// If we're not using detailed error messages, we'll use the event

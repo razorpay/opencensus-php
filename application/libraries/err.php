@@ -23,8 +23,8 @@ class ERR
     const MSG_1 = "The parameters provided are invalid.";
 
     const INVALID_KEYS  = 0x2;
-    const NAME_11 = 'INVALID_KEYS';
-    const MSG_11 = 'Invalid key has been provided';
+    const NAME_2 = 'INVALID_KEYS';
+    const MSG_2 = 'Invalid key has been provided';
 
     const INVALID_CURRENCY = 0x3;
     const NAME_3 = 'INVALID_CURRENCY';
@@ -36,7 +36,6 @@ class ERR
     const CVV_ALREADY_VERIFIED = 0x11;
     const NAME_11 = 'CVV_ALREADY_VERIFIED';
     const MSG_11 = "The CVV of the card has already been verified previously.";
-
 
 
 
@@ -83,7 +82,7 @@ class ERR
         if (self::$ix == 0)
             return;
 
-        $err = self::$err[self::$ix];
+        $err = self::$err[self::$ix-1];
         $code = $err[0];
         $name = constant('self::'.'NAME_' . dechex($err));
         $generic_msg = constant('self::'.'MSG_' . dechex($err));

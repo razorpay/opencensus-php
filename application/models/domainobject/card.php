@@ -89,8 +89,8 @@ class Card
 
         if ($validation->fails()) 
         {
-            $validation_errors = implode('\n', $validation->errors);
-            return ERR::invalid_parameters($validation_errors);
+            // $validation_errors = implode("\n", $validation->errors);
+            return ERR::invalid_parameters($validation->errors->all());
         }
         
         $err = $this->verify_address_parameters();
