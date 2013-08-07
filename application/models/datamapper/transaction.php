@@ -40,7 +40,29 @@ class Transaction {
 		'refund'
 		);
 
+	private static $fetch_params_keys = array(
+		'merchant_id',
+		'created',
+		'from_created',
+		'to_created',
+		'count',
+		'offset'
+		);
+
+	private static $fetch_params_rules = array(
+        'merchant_id'   => 'required|integer',
+        'created'  		=> 'integer',
+        'from_created'  => 'integer',
+        'to_created'    => 'integer',
+        'count'    		=> 'integer|max:100',
+        'offset'     	=> 'integer'
+        );
+
 	private $row = array();
+
+	private $fetch_params = null;
+
+	private $fetch_params_verified = false;
 
 	public function insert(TransactionDO $txn_do)
 	{
@@ -82,66 +104,145 @@ class Transaction {
 		return ERR::SUCCESS;
 	}
 
+
+	const FETCH_DEFAULT 		= 0x0;
+	const FETCH_WITH_CARD		= 0x1;
+	const FETCH_WITH_TOKEN		= 0x2;
+
 	/**
 	 * Retrieves the transactions from database for a particular merchant.
 	 * @param  array $data
 	 * @param  array $error
 	 * @return array $txn_list
 	 */
-	public static function retrieve($data, &$error)
+	public static function fetch($param, $flag = 0x0)
 	{
-		/*
-		 * Create the fluent query.
-		 */
-		$txn_query = Transaction::where('merchant_id', '=', $data['merchant_id']);
-
-		if (isset($data['created']))
+		if (is_int($flag) === false)
 		{
-			$created = $data['created'];
-			Transaction::rectify_timestamp($created);
-			
-			$txn_query = $txn_query->where('created_at', '=', $created);
+			throw new \InvalidArgumentException("$flag is not an integer");
+		}
+
+		if (($this->fetch_params === null) and
+			($param === null)
+			throw new \InvalidArgumentException("$param not provided");
+
+		if ($this->fetch_params === null)
+		{
+			$err = self::validate_fetch_params($param);
+
+			if ($err !== ERR::SUCCESS)
+			{
+				throw new \InvalidArgumentException("Parameters provided for fetching transaction data is invalid.");
+			}
+		}
+		else if ($this->fetch_params_verified === false)
+		{
+			throw new \InvalidArgumentException("Parameters provided for fetching transaction data is invalid.");
 		}
 		else
 		{
-			if (isset($data['from_created'])) 
-			{
-				$from_created = $data['from_created'];
-				Transaction::rectify_timestamp($from_created);
+			$param = $this->fetch_params;
+		}
+		
 
+		/*
+		 * Create the fluent query.
+		 */
+		$query = DB::table(self::table);
+
+		if (isset($param['merchant_id']))
+		{
+			$query->where('merchant_id', '=', $param['merchant_id']);
+		}
+
+		if (isset($param['created']))
+		{
+			$query->where('created_at', '=', $created);
+		}
+		else
+		{
+			if (isset($param['from_created'])) 
+			{
+				$from_created = $param['from_created'];
 				$txn_query = $txn_query->where('created_at', '>', $from_created);
 			}
-
-			if (isset($data['to_created']))
+			
+			if (isset($param['to_created']))
 			{
-				$to_created = $data['to_created'];
-				Transaction::rectify_timestamp($to_created);
-
+				$to_created = $param['to_created'];
 				$txn_query = $txn_query->where('created_at', '<', $to_created);
 			}
 		}
 
-		if (isset($data['count']))
+		if (isset($param['count']))
 		{
-			$count = (int) $data['count'];
-			if ($count > 100)
-				$count = 100;
-			else if ($count < 0)
-				$count = 10;
-			
-			$txn_query = $txn_query->take($count);
+			$query->take($param['count']);
 		}
 		else
 		{
-			$txn_query = $txn_query->take(10);
+			$query->take(10);
 		}
 
-		$txn_list = $txn_query->get();
+		if (isset($param['offset']))
+		{
+			$query->skip($param['offset']);
+		}
+
+		$txn_list = $query->get();
 
 		return $txn_list;
 	}
 
-	private static function rectify_timestamp(&$timestamp)
+	private function validate_fetch_params(array $param)
+	{
+		$param_keys = array_keys($this->data);
+        $invalid_keys = array_diff($param_keys, self::$fetch_params);
+
+        if (count($invalid_keys) !== 0)
+        {
+        	return ERR::invalid_keys($invalid_keys);
+        }
+
+        $validation = Validator::make($param, self::$fetch_params_rules);
+
+        if ($validation->fails()) 
+        {
+            return ERR::invalid_parameters($validation->errors->all());
+        }
+        
+        if ((isset($param['created'])) and
+        	((isset($param['from_created']) or
+        	 (isset($param['to_created'])))))
+        {
+        	; // throw error here
+        }
+
+        if (isset($param['created']))
+        {
+        	; // do few things here
+        }
+
+        if (isset($param['from_created']))
+        {
+        	;
+        }
+
+        if (isset($param['to_created']))
+        {
+        	;
+        }
+
+        if (isset($param['offset']))
+        {
+        	;
+        }
+
+        $this->fetch_params_verified = true;
+
+        return ERR::SUCCESS;
+	}
+
+	private static function check_timestamp(&$timestamp)
 	{
 		$timestamp = (int) $timestamp;
 		if ($timestamp < 0)
@@ -152,5 +253,3 @@ class Transaction {
 	}
 
 }
-
-?>

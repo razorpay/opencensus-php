@@ -116,7 +116,8 @@ class Card
     private function verify_address_parameters()
     {
         $addr_unset = array();
-
+        $addr_set = array();
+        
         foreach(self::$address_attributes as $key)
         {
             if ((!isset($this->data[$key])) or
@@ -192,7 +193,7 @@ class Card
         {
             if ($this->data === null)
             {
-                return ERR::INVALID_PARAMETERS;
+                throw new \InvalidArgumentException("$data not provided");
             }
             else $data = $this->data;
         }

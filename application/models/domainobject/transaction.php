@@ -28,7 +28,7 @@ class Transaction
 
         'uid'           =>  null,
         'merchant_id'   =>  null,
-        'token'      =>  null,
+        'token'         =>  null,
 
         'amount'        =>  null,
         'currency'      =>  null,
@@ -111,6 +111,7 @@ class Transaction
             ($amount > 12345678))    // some large pre-decided number.
             return ERR::invalid_parameters('Amount provided is not valid.');
 
+        $this->input['amount'] = $amount;
         return ERR::SUCCESS;
         // Put any syntactical or logical constraints on amount 
         // before proceeding with the transaction.
