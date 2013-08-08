@@ -45,6 +45,8 @@ class Transaction
 
     private $token_do       = null;
 
+    private $card_do        = null;
+
     private $input          = null;
 
     private $data           = null;
@@ -196,6 +198,11 @@ class Transaction
 
         if (empty($this->txn['token']))
             $this->txn['token'] = $card_token_do->get_token();
+    }
+
+    public function set_card_do(Card $card_do)
+    {
+        $this->card_do = $card_do;
     }
 
     public function process_now()

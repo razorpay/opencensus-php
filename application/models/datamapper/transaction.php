@@ -58,6 +58,19 @@ class Transaction {
         'offset'     	=> 'integer'
         );
 
+	private static $attr_db = array(
+		'id',
+        'uid',
+        'merchant_id',
+        'token',
+        'amount',
+        'currency',
+        'processed',
+        'desc',
+        'refund',
+        'created_at',
+        'updated_at');
+
 	private $row = array();
 
 	private $fetch_params = null;
@@ -123,7 +136,7 @@ class Transaction {
 		}
 
 		if (($this->fetch_params === null) and
-			($param === null)
+			($param === null))
 			throw new \InvalidArgumentException("$param not provided");
 
 		if ($this->fetch_params === null)
@@ -149,6 +162,8 @@ class Transaction {
 		 * Create the fluent query.
 		 */
 		$query = DB::table(self::table);
+
+		$cols = array();
 
 		if (isset($param['merchant_id']))
 		{
@@ -188,7 +203,70 @@ class Transaction {
 			$query->skip($param['offset']);
 		}
 
-		$txn_list = $query->get();
+		if ($flag === self::FETCH_DEFAULT)
+		{
+			$cols = self::$attr_db;
+		}
+		else
+		{
+			$cols = self::table_cols_aliasing_default();
+		}
+
+		if ($flag & self::FETCH_WITH_TOKEN)
+		{
+			$cols = array_merge($cols, CardToken::table_cols_aliasing_default());
+
+			$query->join(CardToken::table, self::table.'.'.'token', '=', CardToken::table.'.'.'token');
+		}
+
+		if ($flag & self::FETCH_WITH_CARD)
+		{
+			$cols = array_merge($cols, Card::table_cols_aliasing_default());
+
+			if (!($flag & self::FETCH_WITH_TOKEN))
+			{
+				$query->join(CardToken::table, self::table.'.'.'token', '=', CardToken::table.'.'.'token');		
+			}
+
+			$query->join(Card::table, CardToken::table.'.'.'card_id', '=', Card::table.'.'.'id');
+		}
+
+		$dataset = $query->get($cols);
+
+		$num = count($result);
+
+		if ($num !== $count)
+		{
+			; // do something here
+		}
+
+		$txn_do_arr 	= array();
+		$token_do_arr 	= array();
+		$card_do_arr 	= array();
+
+		if ($flag === FETCH_DEFAULT)
+		{
+			;
+		}
+		else
+		{
+			$txn_do_arr = bulk_load($dataset, self::$attr_db, 'TransactionDO', self::table.'_');
+		}
+
+		if ($flag & self::FETCH_WITH_TOKEN)
+		{
+			$token_do_arr = bulk_load($dataset, CardToken::get_attr_db(), 'CardTokenDO', CardToken::table);
+
+			for ($i = 0; $i < $count; $i++)
+			{
+				$txn_do_arr[$i]->set_token_do($token_do_arr[$i]);
+			}
+		}
+
+		if ($flag & self::FETCH_WITH_CARD)
+		{
+			$card_do_arr = bulk_load($dataset, Card::get_attr_db(), 'CardDO', Card::table);
+		}
 
 		return $txn_list;
 	}

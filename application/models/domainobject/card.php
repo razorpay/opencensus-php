@@ -159,10 +159,6 @@ class Card
         return ERR::SUCCESS;
     }
 
-    /**
-     * Sets generated card data and verifies validity of card data etc
-     * @return int ERR::SUCCESS on success or error code on error
-     */
     public function build($data = null)
     {
         $this->data = $data;

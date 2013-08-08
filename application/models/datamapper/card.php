@@ -49,6 +49,35 @@ class Card extends DataMapper
         'address_zip_check'
         );
 
+    private static $attr_db = array(
+        'id' ,
+        'number',
+        'cardholder',
+        'cvv',
+
+        'expiry_month',
+        'expiry_year',
+
+        'last4',
+        'type',
+        'country',
+
+
+        'address_line1',
+        'address_line2',
+        'address_state',
+        'address_city',
+        'address_zip',
+        'address_country',
+
+        'cvv_check',
+        'address_line1_check',
+        'address_zip_check',
+
+        'created_at',
+        'updated_at'
+        );
+
     private $row = array();
 
 	public function insert(CardDO $card_do)

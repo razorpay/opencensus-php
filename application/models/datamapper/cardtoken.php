@@ -30,6 +30,18 @@ class CardToken extends DataMapper {
         'expired'
         );
 
+    private static $attr_db = array(
+        'id',
+        'token',
+
+        'card_id',
+        'merchant_id',
+
+        'expired',
+        'created_at',
+        'updated_at'
+        );
+
     private $card_token_do;
 
 	private $row = array();
