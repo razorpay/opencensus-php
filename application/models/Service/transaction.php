@@ -92,7 +92,27 @@ class Transaction
 
     public function retrieve($input)
     {
-        
+        if ($input === null)
+            return array(false, ERR::INVALID_PARAMETERS);
+
+        $txn_db = new TransactionDB;
+
+        $err = $txn_db->validate_fetch_params($input);
+
+        if ($err !== ERR::SUCCESS)
+            return array(false, $err);
+
+        $flag = TransactionDB::FETCH_WITH_CARD;
+        $txn_do_arr = $txn_db->fetch(null, $flag);
+
+        $txn_data_arr = array();
+        $txn_data_arr['count'] = count($txn_do_arr);
+        $txn_data_arr['data'] = array();
+
+        foreach ($txn_do_arr as $txn_do)
+            array_push($txn_data_arr['data'], $txn_do->get_transaction_data($flag));
+
+        return array($txn_data_arr, ERR::SUCCESS);
     }
 
     private function load_token($token_input)

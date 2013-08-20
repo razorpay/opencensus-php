@@ -69,6 +69,26 @@ class Transaction_Controller extends Base_Controller
 	}
 
 	/**
+	 * To retrieve previous transactions.
+	 */
+	public function get_retrieve()
+	{
+		$txn_service = new TransactionService();
+
+		$input = Input::get();
+
+		list($txn_data, $err) = $txn_service->retrieve($input);
+
+		if ($err !== ERR::SUCCESS)
+		{
+			ERR::print_last_error();
+			return;
+		}
+
+		return Response::json($txn_data);
+	}
+
+	/**
 	* To refund a transaction.
 	*/
 	public function post_refund($token = NULL )

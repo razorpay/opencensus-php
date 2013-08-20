@@ -35,7 +35,7 @@ class Transaction
         'processed'     =>  0,
         'desc'          =>  null,
 
-        'refund'        =>  0,
+//        'refund'        =>  0,
 
         'created_at'    =>  0,
         'updated_at'    =>  0
@@ -257,13 +257,33 @@ class Transaction
         if ($flag & self::WITH_CARD)
         {
             $card_do_flag = 0x0;
+            $card_do = null;
 
             if ($flag & self::WITH_OBJECT_FIELD)
                 $card_do_flag |= Card::WITH_OBJECT_FIELD;
             if ($flag & self::ONLY_PUBLIC_FIELDS)
                 $card_do_flag |= Card::ONLY_PUBLIC_FIELDS;
 
-            $card_do = $this->card_token_do->get_card_do();
+            if ((($this->token_do === null) or
+                 ($this->token_do->get_card_do() === null)) and
+                ($this->card_do === null))
+                throw new \InvalidArgumentException('No card present');
+
+            if ($this->token_do !== null)
+            {
+                $card_do = $this->card_token_do->get_card_do();
+
+            }
+            
+            if (($card_do === null) and 
+                ($this->card_do !== null))
+            {
+                $card_do = $this->card_do;
+            }
+
+            if ($card_do === null)
+                throw new \UnexpectedValueException('No card do present to fetch card data');
+
             $card_data = $card_do->get_card_data($card_do_flag);
 
             $txn['card'] = $card_data;
