@@ -19,9 +19,10 @@ class Transaction
         $txn_do = new TransactionDO();
 
         $card_token_do = null;
+        $input['merchant_id'] = BasicAuth::MerchantId();
+
         $txn_input = $input;
 
-        $input['merchant_id'] = BasicAuth::MerchantId();
 
         if (isset($input['token']))
         {
@@ -117,8 +118,6 @@ class Transaction
 
     private function load_token($token_input)
     {
-        $token_input = $input['token'];
-        
         $card_token_do = new CardTokenDO;
         $card_token_db = new CardTokenDB;
 

@@ -5,38 +5,21 @@ namespace DomainObject;
 abstract class DomainObject
 {
 
-    public function set($data = null, $keys = null)
+    abstract public function build(array $input = null);
+
+    public function set(array $data = null)
     {
-        if ($data === null)
+        foreach ($this->data as $key=>$value)
         {
-            if ($this->data === null)
+            if (array_key_exists($key, $this->attr))
             {
-                throw new \InvalidArgumentException('parameter $data not provided.');
+                $this->attr[$key] = $value;
             }
-            else $data = $this->data;
-        }
-        else 
-            $this->data = $data;
-
-        if ($keys === null)
-        {
-            foreach ($this->data as $key=>$value)
+            else 
             {
-                if (array_key_exists($key, $this->txn))
-                {
-                    $this->info[$key] = $value;
-                }
-                else 
-                {
-                    $this->set_property($key);
-                }
+                $this->set_property($key);
             }
         }
-        else
-        {
-            foreach ($this->data as $value)
-        }
-
         return ERR::SUCCESS;
     }
 

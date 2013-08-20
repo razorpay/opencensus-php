@@ -4,9 +4,9 @@ namespace DomainObject;
 use ERR;
 use Utility;
 
-class CardToken
+class CardToken extends DomainObject
 {
-    private $token = array(
+    private $attr = array(
         'id'          => null,
         'token'       => null,
 
@@ -18,7 +18,7 @@ class CardToken
         'updated_at'  => null
         );
 
-    private static $token_attributes = array(
+    private static $input_keys = array(
         'card_id',
         'merchant_id',
         'expired'
@@ -36,14 +36,14 @@ class CardToken
     {
         $token = Utility::generate_token(self::$TOKEN_LEN);
         
-        $this->token['token'] = $token;
+        $this->attr['token'] = $token;
     }
 
-    private function build_card_do()
+    private function build_card_do($input)
     {
         $card_do = new Card();
         
-        $err = $card_do->build($this->input);
+        $err = $card_do->build($input);
         
         if ($err === ERR::SUCCESS)
         {
@@ -53,31 +53,35 @@ class CardToken
         return $err;
     }
 
-    private function verify_data()
+    private function verify_input()
     {
-        $data = $this->data;
+        $input = $this->input;
 
-        $token_keys = array_keys($this->data);
-        $invalid_keys = array_diff($token_keys, self::$token_attributes);
+        if ($input === null)
+        {
+            return invalid_parameter('Input is null');
+        }
+
+        $token_keys = array_keys($input);
+        $invalid_keys = array_diff($token_keys, self::$input_keys);
 
         if (count($invalid_keys) !== 0)
         {
             return ERR::invalid_keys($invalid_keys);
         }
 
-        if (($data === null) or
-            (!isset($data['merchant_id'])) or 
-            (empty($data['merchant_id'])) or 
-            (!is_numeric($data['merchant_id'])))
+        if ((!isset($input['merchant_id'])) or 
+            (empty($input['merchant_id'])) or 
+            (!is_numeric($input['merchant_id'])))
         {
-            throw new \InvalidArgumentException("Invalid arguments");
+            throw new \InvalidArgumentException("merchant id is not set");
         }
 
-        if (array_key_exists('expired', $data))
+        if (array_key_exists('expired', $input))
         {
             if (($expired !== '0') or 
                 ($expired !== '1'))
-                throw new InvalidArgumentException('Key "expired" can only be 0 or 1');
+                throw new \InvalidArgumentException('Key "expired" can only be 0 or 1');
         }
 
         return ERR::SUCCESS;
@@ -88,26 +92,38 @@ class CardToken
      * @param array $data   Data generated and supplied by the application.
      * @return ERR  ERR::SUCCESS on success or proper error code on error.
      */
-    public function build(array $input, array $data)
+    public function build(array $input = null)
     {
+        $card_input_keys = Card::input_keys();
+
+        $card_input = array();
+        foreach ($card_input_keys as $ix)
+        {
+            if (isset($input[$ix]))
+            {
+                $card_input[$ix] = $input[$ix];
+                unset($input[$ix]);
+            }
+        }
+
         $this->input = $input;
 
-        $this->data = $data;
-
-        $err = $this->build_card_do();
+        $err = $this->build_card_do($card_input);
 
         if ($err !== ERR::SUCCESS)
         {
             return $err;
         }
 
-        $err = $this->verify_data();
+        $err = $this->verify_input();
 
         if ($err !== ERR::SUCCESS)
         {
             return $err;
         }
         
+        $this->data = $input;
+
         $this->set();
 
         $this->generate();
@@ -119,7 +135,7 @@ class CardToken
      * @param array $data   The data provided here is added as the 
      *                      properties of this domain object.
      */
-    public function set($data = null)
+    public function set(array $data = null)
     {
         if ($data === null)
         {
@@ -142,17 +158,17 @@ class CardToken
 
     public function get_id()
     {
-        return $this->token['id'];
+        return $this->attr['id'];
     }
 
     public function set_id($id)
     {
-        $this->token['id'] = $id;
+        $this->attr['id'] = $id;
     }
 
     public function get_token()
     {
-        return $this->token['token'];
+        return $this->attr['token'];
     }
 
     public function set_token(/*string*/ $token)
@@ -161,7 +177,7 @@ class CardToken
             (strlen($token) === self::$TOKEN_LEN) and
             (ctype_alnum($token)))
         {
-            $this->token['token'] = $token;
+            $this->attr['token'] = $token;
             return ERR::SUCCESS;
         }
         else
@@ -170,14 +186,14 @@ class CardToken
 
     public function get_card_id()
     {
-        return $this->token['card_id'];
+        return $this->attr['card_id'];
     }
 
     public function set_card_id($card_id = null)
     {
         if ($card_id !== null)
         {
-            $this->token['card_id'] = $card_id;
+            $this->attr['card_id'] = $card_id;
 
             if ($this->card_do !== null)
             {
@@ -190,7 +206,7 @@ class CardToken
 
             if ($card_id !== null)
             {
-                $this->token['card_id'] = $card_id;
+                $this->attr['card_id'] = $card_id;
             }
         }
         else
@@ -218,21 +234,21 @@ class CardToken
 
     public function set_merchant_id($merchant_id)
     {
-        $this->token['merchant_id'] = $merchant_id;
+        $this->attr['merchant_id'] = $merchant_id;
         return ERR::SUCCESS;
     }
 
     public function get_merchant_id()
     {
-        $this->token['merchant_id'];
+        $this->attr['merchant_id'];
     }
 
     private function set_attr($key)
     {
         if ((array_key_exists($key, $this->data)) and
-            (array_key_exists($key, $this->token)))
+            (array_key_exists($key, $this->attr)))
         {
-            $this->token[$key] = $this->data[$key];
+            $this->attr[$key] = $this->data[$key];
         }
         else if ($key === 'card_token_id')
         {
@@ -240,9 +256,9 @@ class CardToken
         }
     }
 
-    public static function input_keys_for_new_token()
+    public static function input_keys()
     {
-        return Card::input_keys_for_new_card();
+        return array_merge(Card::input_keys(), self::$input_keys);
     }
 
     const FLAG_DEFAULT          = 0x0;
@@ -252,18 +268,18 @@ class CardToken
 
     public function get_token_data($flag = 0x0)
     {
-        $token = $this->token;
+        $data = $this->attr;
 
         if ($flag & self::ONLY_PUBLIC_FIELDS)
         {
             unset(
-                $token['id'],
-                $token['card_id'],
-                $token['merchant_id']);
+                $data['id'],
+                $data['card_id'],
+                $data['merchant_id']);
         }
 
         if ($flag & self::WITH_OBJECT_FIELD)
-            $token['object'] = 'token';
+            $data['object'] = 'token';
 
         if ($flag & self::WITH_CARD)
         {
@@ -278,10 +294,10 @@ class CardToken
             $card_do_flag |= Card::NO_CHECK_FIELDS;
             $card = $this->card_do->get_card_data($card_do_flag);
 
-            $token['card'] = $card;
+            $data['card'] = $card;
         }
 
-        return $token;
+        return $data;
     }
 
 }

@@ -5,14 +5,16 @@ namespace DomainObject;
 use \Validator;
 use \Err;
 
-class Card
+class Card extends DomainObject
 {
+    private $input = null;
     /**
      * dump of input data provided goes here.
      */
+
     private $data = null;
 
-    private $card = array(
+    private $attr = array(
         'id'        => null,
         'number'    => null,
         'cardholder'=> null,
@@ -55,7 +57,7 @@ class Card
         'address_zip'       => 'match:/[a-zA-Z1-9]*/|max:10'
         );
 
-    private static $input_attributes = array(
+    private static $input_keys = array(
         'number', 
         'expiry_month', 
         'expiry_year', 
@@ -85,11 +87,10 @@ class Card
      */
     private function verify_input_values()
     {
-        $validation = Validator::make($this->data, self::$rules);
+        $validation = Validator::make($this->input, self::$rules);
 
         if ($validation->fails()) 
         {
-            // $validation_errors = implode("\n", $validation->errors);
             return ERR::invalid_parameters($validation->errors->all());
         }
         
@@ -100,10 +101,10 @@ class Card
 
     private function verify_input_keys()
     {
-        $data = $this->data;
+        $input = $this->input;
 
-        $keys = array_keys($this->data);
-        $invalid_keys = array_diff($keys, self::$input_attributes);
+        $keys = array_keys($this->input);
+        $invalid_keys = array_diff($keys, self::$input_keys);
 
         if (count($invalid_keys) !== 0)
         {
@@ -120,8 +121,8 @@ class Card
         
         foreach(self::$address_attributes as $key)
         {
-            if ((!isset($this->data[$key])) or
-                (empty($this->data[$key])))
+            if ((!isset($this->input[$key])) or
+                (empty($this->input[$key])))
             {
                 array_push($addr_unset, $key);
             }
@@ -159,9 +160,9 @@ class Card
         return ERR::SUCCESS;
     }
 
-    public function build($data = null)
+    public function build(array $input = null)
     {
-        $this->data = $data;
+        $this->input = $input;
 
         $err = $this->verify_input_keys();
 
@@ -171,6 +172,8 @@ class Card
         $err = $this->verify_input_values();
         if ($err !== ERR::SUCCESS)
             return $err;
+
+        $this->data = $input;
 
         $err = $this->build_meta();
         if ($err !== ERR::SUCCESS)
@@ -183,7 +186,7 @@ class Card
         return $err;
     }
 
-    public function set($data = null)
+    public function set(array $data = null)
     {
         if ($data === null)
         {
@@ -240,16 +243,9 @@ class Card
    
     private function build_meta()
     {
-        try
-        {
-            $this->data['last4'] = substr($this->data['number'], -4);
-            $this->data['type'] = $this->type($this->data['number']);
-            $this->data['country'] = $this->country($this->data['number']);
-        }
-        catch (InvalidArgumentException $e)
-        {
-            return ERR::invalid_parameters($e->getMessage());
-        }
+        $this->data['last4'] = substr($this->data['number'], -4);
+        $this->data['type'] = $this->type($this->data['number']);
+        $this->data['country'] = $this->country($this->data['number']);
 
         return ERR::SUCCESS;
     }
@@ -266,40 +262,22 @@ class Card
         return 'IN';
     }
 
-    public function verify_cvv()
-    {
-        $card = $this->$card;
-        if ((!isset($card['cvv'])) or
-            (!isset($card['cardholder'])) or
-            (!isset($this['id'])))
-            return ERR::INVALID_PARAMETERS;
-
-        if (isset($card['cvv']) and
-           (($this->card['cvv'] == '0') or
-            ($this->card['cvv'] == '1')))
-        {   
-            return ERR::CVV_ALREADY_VERIFIED;
-        }
-
-        return ERR::SUCCESS;
-    }
-
     public function set_id($id)
     {
-        $this->card['id'] = $id;
+        $this->attr['id'] = $id;
     }
 
     public function get_id()
     {
-        return $this->card['id'];
+        return $this->attr['id'];
     }
 
     private function set_attr($key)
     {
         if ((array_key_exists($key, $this->data)) and
-            (array_key_exists($key, $this->card)))
+            (array_key_exists($key, $this->attr)))
         {
-            $this->card[$key] = $this->data[$key];
+            $this->attr[$key] = $this->data[$key];
         }
         else
         {
@@ -319,9 +297,9 @@ class Card
         }
     }
 
-    public static function input_keys_for_new_card()
+    public static function input_keys()
     {
-        return self::$input_attributes;
+        return self::$input_keys;
     }
 
     const FLAG_DEFAULT          = 0x0;
@@ -331,29 +309,29 @@ class Card
     
     public function get_card_data($flag = 0x0)
     {
-        $card = $this->card;
+        $data = $this->attr;
 
-        unset($card['created_at']);
-        unset($card['updated_at']);
+        unset($data['created_at']);
+        unset($data['updated_at']);
 
         if ($flag & self::WITH_OBJECT_FIELD)
-            $card['object'] = 'card';
+            $data['object'] = 'card';
 
         if ($flag & self::ONLY_PUBLIC_FIELDS)
         {
-            unset($card['id']);
-            unset($card['number']);
+            unset($data['id']);
+            unset($data['number']);
         }
 
 
         if ($flag & self::NO_CHECK_FIELDS)
         {
             unset(
-                $card['cvv_check'],
-                $card['address_line1_check'],
-                $card['address_zip_check']);
+                $data['cvv_check'],
+                $data['address_line1_check'],
+                $data['address_zip_check']);
         }
 
-        return $card;
+        return $data;
     }
 }
