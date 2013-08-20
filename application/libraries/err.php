@@ -58,7 +58,7 @@ class ERR
         $msg_var = 'MSG_' . dechex($err);
         $msg = constant('self::'.$msg_var);
 
-        array_push(self::$err, array($err, $msg, $info));
+        array_push(self::$err, array($err, $info));
         self::$ix++;
 
         return $err;
@@ -78,7 +78,7 @@ class ERR
     }
 
     public static function print_last_error()
-    {
+    {   
         if (self::$ix == 0)
             return;
 
@@ -88,10 +88,10 @@ class ERR
         $generic_msg = constant('self::'.'MSG_' . dechex($err));
         $specific_msg = $err[1];
 
-        echo 'Err Code: ' + dechex($code) + '\n';
-        echo 'Err Name: ' + $name + '\n';
-        echo 'Err Generic Msg: ' + $generic_msg + '\n';
-        echo 'Err Specific Msg: ' + $specific_msg + '\n';
+        echo 'Err Code: ' . dechex($code) . '\n';
+        echo 'Err Name: ' . $name . '\n';
+        echo 'Err Generic Msg: ' . $generic_msg . '\n';
+        echo 'Err Specific Msg: ' . $specific_msg . '\n';
     }
 
     public static function last_error_str()
@@ -122,7 +122,9 @@ class ERR
 
     public static function invalid_parameters($invalid_parameters)
     {
-        return self::trigger(self::INVALID_PARAMETERS, $invalid_parameters);
+        $e = implode('\n', $invalid_parameters);
+
+        return self::trigger(self::INVALID_PARAMETERS, $e);
     }
 
     public static function invalid_currency($msg)
