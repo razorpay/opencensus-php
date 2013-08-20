@@ -20,7 +20,7 @@ class Card_Controller extends Base_Controller
 		list($token_data, $err) = $token_service->generate($input);
 
 		if ($err !== ERR::SUCCESS)
-			ERR::print_last_error();
+			return ERR::handle_error();
 		else
 		{
 			return Response::json($token_data);
@@ -38,7 +38,7 @@ class Card_Controller extends Base_Controller
 		if (($token_data === false) or
 			($err !== ERR::SUCCESS))
 		{
-			ERR::print_last_error();
+			return ERR::handle_error();
 		}
 
 		return Response::json($token_data);

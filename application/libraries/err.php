@@ -16,7 +16,7 @@ class ERR
     const SUCCESS = 0x0;
 
 /**
- * User errors
+ * Client errors
  */
     const INVALID_PARAMETERS = 0x1;
     const NAME_1 = 'INVALID_PARAMETERS';
@@ -51,7 +51,6 @@ class ERR
     const MSG_5 = "There is a problem with the server.";
 
     private static $err = array();
-    private static $ix  = 0;
 
     public static function trigger($err, $info)
     {
@@ -59,7 +58,6 @@ class ERR
         $msg = constant('self::'.$msg_var);
 
         array_push(self::$err, array($err, $info));
-        self::$ix++;
 
         return $err;
     }
@@ -71,18 +69,19 @@ class ERR
 
     public static function last_error()
     {
-        if (count(self::$err) !== 0)
-        {
-            return self::$err[self::$ix-1][0];
-        }
+        if (count(self::$err))
+            return array_slice(self::$err, -1)[0];
+        else
+            return null;
     }
 
     public static function print_last_error()
     {   
-        if (self::$ix == 0)
+        $err = self::last_error();
+
+        if ($err === null)
             return;
 
-        $err = self::$err[self::$ix-1];
         $code = $err[0];
         $name = constant('self::'.'NAME_' . dechex($err));
         $generic_msg = constant('self::'.'MSG_' . dechex($err));
@@ -94,12 +93,30 @@ class ERR
         echo 'Err Specific Msg: ' . $specific_msg . '\n';
     }
 
-    public static function last_error_str()
+    public static function handle_error()
     {
-        if (self::$ix == 0)
+        $error = self::last_error();
+
+        if ($error === null)
             return;
 
-        $err = self::$err[self::$ix];
+        $err_code_details = new ErrCodeDetails();
+        $err_details = $err_code_details->get_details($error[0]);
+
+        $err['name'] = $err_details['name'];
+        $err['msg'] = $err_details['msg'];
+        $err['info'] = $error[1];
+
+        return Response::json($err, $err_details['http_code']);
+    }
+
+    public static function last_error_str()
+    {
+        $err = self::last_error();
+
+        if ($err === null)
+            return;
+
         $code = $err[0];
         $name = constant('self::'.'NAME_' . dechex($err));
         $generic_msg = constant('self::'.'MSG_' . dechex($err));
@@ -122,8 +139,13 @@ class ERR
 
     public static function invalid_parameters($invalid_parameters)
     {
-        $e = implode('\n', $invalid_parameters);
-
+        if (is_array($invalid_parameters))
+            $e = implode('\n', $invalid_parameters);
+        else if (is_string($invalid_parameters))
+            $e = $invalid_parameters;
+        else
+            throw new \InvalidArgumentException('Not an array or string');
+        
         return self::trigger(self::INVALID_PARAMETERS, $e);
     }
 
@@ -132,5 +154,29 @@ class ERR
         return self::trigger(self::INVALID_CURRENCY, $msg);
     }
 
+    public static function handle_exception($exception, $trace = true)
+    {
+        $err = array();
+        $err['type'] = get_class($exception);
+
+
+        if (Config::get('error.detail'))
+        {
+            $err['message'] = $exception->getMessage();
+            $err['file'] = $exception->getFile();
+            $err['line'] = $exception->getLine();
+
+            if ($trace)
+                $err['trace'] = $exception->getTrace();
+        }
+
+        $response = Response::json($err, 500);
+
+        $response->render();
+        $response->send();
+        $response->foundation->finish();
+
+        exit(1);
+    }
 }
 

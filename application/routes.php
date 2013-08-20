@@ -88,7 +88,8 @@ Event::listen('404', function()
 
 Event::listen('500', function($exception)
 {
-	return Response::error('500');
+	return Err::handle_error('500', $exception);
+	// return Response::error('500');
 });
 
 /*

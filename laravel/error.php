@@ -1,5 +1,7 @@
 <?php namespace Laravel;
 
+use \Err;
+
 class Error {
 
 	/**
@@ -14,6 +16,8 @@ class Error {
 		static::log($exception);
 
 		ob_get_level() and ob_end_clean();
+
+		Err::handle_exception($exception, $trace);
 
 		$message = $exception->getMessage();
 
@@ -42,7 +46,7 @@ class Error {
 
 			if ($trace)
 			{
-				$response_body['trace'] = $exception->getTraceAsString();
+				$response_body['trace'] = $exception->getTrace();
 			}
 
 			$response = Response::json($response_body, 500);

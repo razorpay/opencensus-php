@@ -61,8 +61,7 @@ class Transaction_Controller extends Base_Controller
 		
 		if ($err !== ERR::SUCCESS)
 		{
-			ERR::print_last_error();
-			return;
+			return ERR::handle_error();
 		}
 
 		return Response::json($txn_data);
@@ -81,8 +80,7 @@ class Transaction_Controller extends Base_Controller
 
 		if ($err !== ERR::SUCCESS)
 		{
-			ERR::print_last_error();
-			return;
+			return ERR::handle_error();
 		}
 
 		return Response::json($txn_data);
