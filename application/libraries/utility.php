@@ -9,29 +9,31 @@ class Utility
         return bin2hex(openssl_random_pseudo_bytes($len/2));
     }
 
-    private static function array_prefix($input, $prefix)
+    public static function array_prefix(array $input, $prefix)
     {
         $prefixed_input = array_map(function($val) use($prefix) { return $prefix.$val; }, $input);
 
-        return $prefix_attr_db;
+        return $prefixed_input;
     }
 
-    private static function array_column_prefix($input, $prefix)
+    public static function array_column_prefix(array $input, $prefix)
     {
         $keys = array();
         $len = strlen($prefix);
-        foreach ($input as $key => $value)
+        foreach ($input[0] as $key => $value)
         {
             if (stripos($key, $prefix) === 0)
             {
                 array_push($keys, $key);
             }
         }
+        print_r($input[0][0]);
+        print_r($input);die();
 
-        return array_column($arr, $keys);
+        return array_column($input, $keys);
     }
 
-    private static function array_join_conjunction($input1, $input2, $conjunction)
+    public static function array_join_conjunction(array $input1, array $input2, $conjunction)
     {
         $output = array();
 
