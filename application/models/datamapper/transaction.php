@@ -1,12 +1,15 @@
 <?php 
 
 namespace DataMapper;
-
+use \Config;
+use \PDO;
 use DomainObject\Transaction as TransactionDO;
 use \DB;
 use \ERR;
+use \Validator;
 
-class Transaction {
+class Transaction extends DataMapper
+{
 
 	const table = 'transactions';
 
@@ -41,7 +44,6 @@ class Transaction {
 		);
 
 	private static $fetch_params_keys = array(
-		'merchant_id',
 		'created',
 		'from_created',
 		'to_created',
@@ -50,7 +52,6 @@ class Transaction {
 		);
 
 	private static $fetch_params_rules = array(
-        'merchant_id'   => 'required|integer',
         'created'  		=> 'integer',
         'from_created'  => 'integer',
         'to_created'    => 'integer',
@@ -58,7 +59,7 @@ class Transaction {
         'offset'     	=> 'integer'
         );
 
-	private static $attr_db = array(
+	protected static $attr_db = array(
 		'id',
         'uid',
         'merchant_id',
@@ -67,7 +68,7 @@ class Transaction {
         'currency',
         'processed',
         'desc',
-        'refund',
+//        'refund',
         'created_at',
         'updated_at');
 
@@ -128,16 +129,16 @@ class Transaction {
 	 * @param  array $error
 	 * @return array $txn_list
 	 */
-	public static function fetch($param, $flag = 0x0)
+	public function fetch($param, $flag = 0x0)
 	{
 		if (is_int($flag) === false)
 		{
-			throw new \InvalidArgumentException("$flag is not an integer");
+			throw new \InvalidArgumentException('$flag is not an integer');
 		}
 
 		if (($this->fetch_params === null) and
 			($param === null))
-			throw new \InvalidArgumentException("$param not provided");
+			throw new \InvalidArgumentException('$param not provided');
 
 		if ($this->fetch_params === null)
 		{
@@ -145,7 +146,7 @@ class Transaction {
 
 			if ($err !== ERR::SUCCESS)
 			{
-				throw new \InvalidArgumentException("Parameters provided for fetching transaction data is invalid.");
+				throw new \InvalidArgumentException('Parameters provided for fetching transaction data is invalid.');
 			}
 		}
 		else if ($this->fetch_params_verified === false)
@@ -203,80 +204,109 @@ class Transaction {
 			$query->skip($param['offset']);
 		}
 
+
+		$dataset = $do = $keys = array();
+
 		if ($flag === self::FETCH_DEFAULT)
 		{
 			$cols = self::$attr_db;
+
+			$do = 'Transaction';
+
+			$dataset = $query->get($cols);
 		}
 		else
 		{
-			$cols = self::table_cols_aliasing_default();
-		}
+			$keys = array();
 
-		if ($flag & self::FETCH_WITH_TOKEN)
-		{
-			$cols = array_merge($cols, CardToken::table_cols_aliasing_default());
+			$do	= array();
 
-			$query->join(CardToken::table, self::table.'.'.'token', '=', CardToken::table.'.'.'token');
-		}
+			$cols = static::array_prefix_table_name();
 
-		if ($flag & self::FETCH_WITH_CARD)
-		{
-			$cols = array_merge($cols, Card::table_cols_aliasing_default());
+			$keys['Transaction'] = static::get_attr_db();
 
-			if (!($flag & self::FETCH_WITH_TOKEN))
+			array_push($do, 'Transaction');
+
+			if ($flag & self::FETCH_WITH_TOKEN)
 			{
-				$query->join(CardToken::table, self::table.'.'.'token', '=', CardToken::table.'.'.'token');		
+				$cols = array_merge($cols, CardToken::array_prefix_table_name());
+
+				$keys['CardToken'] = CardToken::get_attr_db();
+
+				array_push($do, 'CardToken');
+
+				$query->join(CardToken::table, self::table.'.'.'token', '=', CardToken::table.'.'.'token');
 			}
 
-			$query->join(Card::table, CardToken::table.'.'.'card_id', '=', Card::table.'.'.'id');
+			if ($flag & self::FETCH_WITH_CARD)
+			{
+				$cols = array_merge($cols, Card::array_prefix_table_name());
+
+				$keys['Card'] = Card::get_attr_db();
+
+				array_push($do, 'Card');
+
+				if (!($flag & self::FETCH_WITH_TOKEN))
+				{
+					$query->join(CardToken::table, self::table.'.'.'token', '=', CardToken::table.'.'.'token');		
+				}
+
+				$query->join(Card::table, CardToken::table.'.'.'card_id', '=', Card::table.'.'.'id');
+			}
+
+			Config::set('database.fetch', PDO::FETCH_NUM);
+			$dataset = $query->get($cols);
+			Config::set('database.fetch', PDO::FETCH_ASSOC);
+
 		}
 
-		$dataset = $query->get($cols);
+		$num = count($dataset);
 
-		$num = count($result);
-
-		if ($num !== $count)
+		if (isset($param['count']) and $num !== $param['count'])
 		{
 			; // do something here
 		}
 
 		$txn_do_arr 	= array();
-		$token_do_arr 	= array();
-		$card_do_arr 	= array();
 
-		if ($flag === FETCH_DEFAULT)
+		if ($flag === self::FETCH_DEFAULT)
 		{
-			;
+			$txn_do_arr = static::bulk_load($dataset, 'Transaction');
 		}
 		else
 		{
-			$txn_do_arr = bulk_load($dataset, self::$attr_db, 'TransactionDO', self::table.'_');
-		}
+			$token_do_arr 	= array();
+			$card_do_arr 	= array();
+		
+			$do_obj_arr = static::bulk_load($dataset, $do, $keys);
 
-		if ($flag & self::FETCH_WITH_CARD)
-		{
-			$card_do_arr = bulk_load($dataset, Card::get_attr_db(), 'CardDO', Card::table);
+			$txn_do_arr = $do_obj_arr['Transaction'];
 
-			if (!($flag &self::FETCH_WITH_TOKEN))
+			if ($flag & self::FETCH_WITH_CARD)
 			{
-				for ($i = 0; $i < $count; $i++)
+				$card_do_arr = $do_obj_arr['Card'];
+
+				if (!($flag &self::FETCH_WITH_TOKEN))
 				{
-					$txn_do_arr[$i]->set_card_do($card_do_arr[$i]);
+					for ($i = 0; $i < $num; $i++)
+					{
+						$txn_do_arr[$i]->set_card_do($card_do_arr[$i]);
+					}
 				}
 			}
-		}
 
-		if ($flag & self::FETCH_WITH_TOKEN)
-		{
-			$token_do_arr = bulk_load($dataset, CardToken::get_attr_db(), 'CardTokenDO', CardToken::table);
-
-			for ($i = 0; $i < $count; $i++)
+			if ($flag & self::FETCH_WITH_TOKEN)
 			{
-				$txn_do_arr[$i]->set_token_do($token_do_arr[$i]);
+				$token_do_arr = $do_obj_arr['CardToken'];
 
-				if ($flag & self::FETCH_WITH_CARD)
+				for ($i = 0; $i < $num; $i++)
 				{
-					$token_do_arr[$i]->set_card_do($card_do_arr[$i]);
+					$txn_do_arr[$i]->set_token_do($token_do_arr[$i]);
+
+					if ($flag & self::FETCH_WITH_CARD)
+					{
+						$token_do_arr[$i]->set_card_do($card_do_arr[$i]);
+					}
 				}
 			}
 		}
@@ -284,10 +314,13 @@ class Transaction {
 		return $txn_do_arr;
 	}
 
-	private function validate_fetch_params(array $param)
+	public function validate_fetch_params(array $param)
 	{
-		$param_keys = array_keys($this->data);
-        $invalid_keys = array_diff($param_keys, self::$fetch_params);
+		$this->fetch_params = $param;
+
+		$param_keys = array_keys($param);
+        
+        $invalid_keys = array_diff($param_keys, self::$fetch_params_keys);
 
         if (count($invalid_keys) !== 0)
         {

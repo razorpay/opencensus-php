@@ -125,8 +125,7 @@ class CardToken
         {
             if ($this->data === null)
             {
-                echo "No data present which can be set.";
-                return ERR::INVALID_PARAMETERS;
+                throw new \InvalidArgumentException('No "data" provided');
             }
             else $data = $this->data;
         }

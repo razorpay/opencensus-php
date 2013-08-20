@@ -49,7 +49,7 @@ class Card extends DataMapper
         'address_zip_check'
         );
 
-    private static $attr_db = array(
+    protected static $attr_db = array(
         'id' ,
         'number',
         'cardholder',
