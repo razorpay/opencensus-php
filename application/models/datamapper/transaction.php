@@ -253,6 +253,19 @@ class Transaction {
 			$txn_do_arr = bulk_load($dataset, self::$attr_db, 'TransactionDO', self::table.'_');
 		}
 
+		if ($flag & self::FETCH_WITH_CARD)
+		{
+			$card_do_arr = bulk_load($dataset, Card::get_attr_db(), 'CardDO', Card::table);
+
+			if (!($flag &self::FETCH_WITH_TOKEN))
+			{
+				for ($i = 0; $i < $count; $i++)
+				{
+					$txn_do_arr[$i]->set_card_do($card_do_arr[$i]);
+				}
+			}
+		}
+
 		if ($flag & self::FETCH_WITH_TOKEN)
 		{
 			$token_do_arr = bulk_load($dataset, CardToken::get_attr_db(), 'CardTokenDO', CardToken::table);
@@ -260,15 +273,15 @@ class Transaction {
 			for ($i = 0; $i < $count; $i++)
 			{
 				$txn_do_arr[$i]->set_token_do($token_do_arr[$i]);
+
+				if ($flag & self::FETCH_WITH_CARD)
+				{
+					$token_do_arr[$i]->set_card_do($card_do_arr[$i]);
+				}
 			}
 		}
 
-		if ($flag & self::FETCH_WITH_CARD)
-		{
-			$card_do_arr = bulk_load($dataset, Card::get_attr_db(), 'CardDO', Card::table);
-		}
-
-		return $txn_list;
+		return $txn_do_arr;
 	}
 
 	private function validate_fetch_params(array $param)
