@@ -1,4 +1,6 @@
-<?php namespace Service;
+<?php 
+
+namespace Service;
 
 use DataMapper\Card as CardDB;
 use DomainObject\Card as CardDO;
@@ -16,6 +18,8 @@ class Token
      */
 	public function generate($input)
 	{
+        $input['merchant_id'] = BasicAuth::MerchantId();
+        
         $card_token_db = new CardTokenDB();
 
         list($card_token_do, $err) = $this->build_token($input);

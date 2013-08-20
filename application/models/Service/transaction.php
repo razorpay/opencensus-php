@@ -21,6 +21,8 @@ class Transaction
         $card_token_do = null;
         $txn_input = $input;
 
+        $input['merchant_id'] = BasicAuth::MerchantId();
+
         if (isset($input['token']))
         {
             list($card_token_do, $err) = $this->load_token($input['token']);
@@ -36,9 +38,7 @@ class Transaction
 
         $txn_do->set_token_do($card_token_do);
 
-        $data['merchant_id'] = BasicAuth::MerchantId();
-
-        $err = $txn_do->build($data, $txn_input);
+        $err = $txn_do->build($txn_input);
 
         if ($err !== ERR::SUCCESS)
         {
@@ -133,17 +133,20 @@ class Transaction
 
     private function separate_token_txn_input($input)
     {
-        $new_token_input_keys = CardTokenDO::input_keys_for_new_token();
+        $token_input_keys = CardTokenDO::input_keys();
+        
         $token_input = array();
         $txn_input = array();
 
         foreach ($input as $key => $value)
         {
-            if (in_array($key, $new_token_input_keys))
+            if (in_array($key, $token_input_keys))
                 $token_input[$key] = $value;
             else
                 $txn_input[$key] = $value;
         }
+
+        $txn_input['merchant_id'] = BasicAuth::MerchantId();
 
         return array($token_input, $txn_input);
     }
