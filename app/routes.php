@@ -41,23 +41,23 @@ Route::group(array('before' => 'auth.public'), function()
 
 Route::group(array('before' => 'auth'), function()
 {
-	Route::post('transactions', 'transaction@index');
+	Route::post('transactions', 'TransactionController@postIndex');
 
-	Route::post('tokens', 'card@index');
+	Route::post('tokens', 'CardController@postIndex');
 
-	Route::get('tokens/(:any)', 'card@retrieve');
+	Route::get('tokens/(:any)', 'CardController@getRetrieve');
 
-	Route::get('transactions', 'transaction@index');
+	Route::get('transactions', 'TransactionController@getIdex');
 
-	Route::get('transactions/(:any)', 'transaction@index');
+	Route::get('transactions/(:any)', 'TransactionController@getIndex');
 
-	Route::post('transactions/(:any)/refund', 'transaction@refund');
+	Route::post('transactions/(:any)/refund', 'TransactionController@postRefund');
 
-	Route::get('transactions/refund', 'transaction@refund');
+	Route::get('transactions/refund', 'TransactionController@getRefund');
 
-	Route::post('transactions/(:any)/process', 'transaction@process');
+	Route::post('transactions/(:any)/process', 'TransactionController@postProcess');
 
-	Route::get('transactions/success', 'transaction@process');
+	Route::get('transactions/success', 'TransactionController@getProcess');
 });
 
 Route::get('/', function()
