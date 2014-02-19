@@ -3,7 +3,7 @@
 use Service\Token;
 use Service\BasicAuth;
 
-class Card_Controller extends Base_Controller 
+class CardController extends BaseController 
 {
 
 	public $restful = true;
@@ -11,7 +11,7 @@ class Card_Controller extends Base_Controller
 	/**
 	 * To create a new card object. Retrieve one-time use card token.
 	 */
-	public function post_index()
+	public function postIndex()
 	{
 		$input = Input::get();
 		
@@ -27,7 +27,7 @@ class Card_Controller extends Base_Controller
 		}
 	}
 
-	public function get_retrieve($token)
+	public function getRetrieve($token)
 	{
 		$token_service = new Token;
 

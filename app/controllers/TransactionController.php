@@ -3,7 +3,7 @@
 use Service\Transaction as TransactionService;
 use Service\BasicAuth;
 
-class Transaction_Controller extends Base_Controller 
+class TransactionController extends Base_Controller 
 {
 
 	public $restful = true;
@@ -15,7 +15,7 @@ class Transaction_Controller extends Base_Controller
 	* @param id (optional)
 	*
 	*/
-	public function get_index ($token = NULL)
+	public function getIndex ($token = NULL)
 	{
 		$merchant_id = BasicAuth::MerchantId();
 
@@ -49,7 +49,7 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To create a new transaction. 
 	*/
-	public function post_index()
+	public function postIndex()
 	{
 		$merchant_id = BasicAuth::MerchantId();
 
@@ -70,7 +70,7 @@ class Transaction_Controller extends Base_Controller
 	/**
 	 * To retrieve previous transactions.
 	 */
-	public function get_retrieve()
+	public function getRetrieve()
 	{
 		$txn_service = new TransactionService();
 
@@ -89,7 +89,7 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To refund a transaction.
 	*/
-	public function post_refund($token = NULL )
+	public function postRefund($token = NULL )
 	{
 		echo 'refund: ' . $token;
 	}
@@ -97,7 +97,7 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To list previous refunds.
 	*/
-	public function get_refund()
+	public function getRefund()
 	{
 		;
 	}
@@ -105,7 +105,7 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To process a transaction and make payments.
 	*/
-	public function post_process($token = NULL )
+	public function postProcess($token = NULL )
 	{
 		echo 'process: ' . $token;
 	}
@@ -113,7 +113,7 @@ class Transaction_Controller extends Base_Controller
 	/**
 	* To list only successful transactions.
 	*/
-	public function get_process()
+	public function getProcess()
 	{
 		;
 	}
