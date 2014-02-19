@@ -62,7 +62,7 @@ Route::group(array('before' => 'auth'), function()
 
 Route::get('/', function()
 {
-	return View::make('home.index');
+	return View::make('hello');
 });
 
 /*
