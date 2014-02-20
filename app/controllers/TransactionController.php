@@ -3,10 +3,8 @@
 use Service\Transaction as TransactionService;
 use Service\BasicAuth;
 
-class TransactionController extends Base_Controller 
+class TransactionController extends BaseController 
 {
-
-	public $restful = true;
 
 	/**
 	* To retrieve transaction details by `id`

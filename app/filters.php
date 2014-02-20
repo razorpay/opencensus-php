@@ -1,5 +1,7 @@
 <?php
 
+use Service\BasicAuth;
+
 /*
 |--------------------------------------------------------------------------
 | Application & Route Filters
@@ -33,15 +35,31 @@ App::after(function($request, $response)
 |
 */
 
+/**
+ * Only allows requests with secret keys to get through.
+ */
 Route::filter('auth', function()
 {
-	if (Auth::guest()) return Redirect::guest('login');
+	BasicAuth::verify_key();
+
+	if ((BasicAuth::check() == false) or
+		(BasicAuth::secret() == false))
+		return Response::view('error.401', array(), 401);
+
 });
 
 
-Route::filter('auth.basic', function()
+/**
+ * Only allows requests with public keys to get through.
+ */
+Route::filter('auth.public', function()
 {
-	return Auth::basic();
+	BasicAuth::verify_key();
+
+	if ((BasicAuth::check() == false) or
+		(BasicAuth::secret() == true))
+		return Response::view('error.401', array(), 401);
+
 });
 
 /*

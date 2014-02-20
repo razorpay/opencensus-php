@@ -6,8 +6,6 @@ use Service\BasicAuth;
 class CardController extends BaseController 
 {
 
-	public $restful = true;
-
 	/**
 	 * To create a new card object. Retrieve one-time use card token.
 	 */
@@ -43,7 +41,4 @@ class CardController extends BaseController
 
 		return Response::json($token_data);
 	}
-
-	
-
 }

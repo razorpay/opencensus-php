@@ -3,7 +3,7 @@
 namespace DomainObject;
 
 use \Validator;
-use \Err;
+use \ERR;
 
 class Card extends DomainObject
 {
@@ -44,17 +44,17 @@ class Card extends DomainObject
         );
 
     private static $rules = array(
-        'number'        => 'required|match:/[0-9]/',
-        'expiry_month'  => 'required|match:/[0-9]{2}/|min:1|max:2',
-        'expiry_year'   => 'required|match:/[0-9]/|min:2|max:4',
-        'cvv'           => 'required|match:/[0-9]/|size:3',
-        'cardholder'    => 'required|match:/[a-zA-Z]*/|max:100',
-        'address_line1'     => 'match:/[a-zA-Z,1-9.]*/|size:100',
-        'address_line2'     => 'match:/[a-zA-Z,1-9. ]*/|size:100',
-        'address_city'      => 'match:/[a-zA-Z,1-9. ]*/|size:100',
-        'address_state'     => 'match:/[a-zA-Z,1-9. ]*/|size:100',
-        'address_country'   => 'match:/[a-zA-Z]*/|size:50',
-        'address_zip'       => 'match:/[a-zA-Z1-9]*/|max:10'
+        'number'        => 'required|regex:/[0-9]/',
+        'expiry_month'  => 'required|regex:/[0-9]{2}/|min:1|max:2',
+        'expiry_year'   => 'required|regex:/[0-9]/|min:2|max:4',
+        'cvv'           => 'required|regex:/[0-9]/|size:3',
+        'cardholder'    => 'required|regex:/[a-zA-Z]*/|max:100',
+        'address_line1'     => 'regex:/[a-zA-Z,1-9.]*/|size:100',
+        'address_line2'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
+        'address_city'      => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
+        'address_state'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
+        'address_country'   => 'regex:/[a-zA-Z]*/|size:50',
+        'address_zip'       => 'regex:/[a-zA-Z1-9]*/|max:10'
         );
 
     private static $input_keys = array(

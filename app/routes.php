@@ -1,7 +1,5 @@
 <?php
 
-use Service\BasicAuth;
-
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -43,11 +41,11 @@ Route::group(array('before' => 'auth'), function()
 {
 	Route::post('transactions', 'TransactionController@postIndex');
 
-	Route::post('tokens', 'CardController@postIndex');
+	Route::post('/tokens', 'CardController@postIndex');
 
 	Route::get('tokens/(:any)', 'CardController@getRetrieve');
 
-	Route::get('transactions', 'TransactionController@getIdex');
+	Route::get('transactions', 'TransactionController@getIndex');
 
 	Route::get('transactions/(:any)', 'TransactionController@getIndex');
 
@@ -92,70 +90,3 @@ Event::listen('500', function($exception)
 	// return Response::error('500');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Route Filters
-|--------------------------------------------------------------------------
-|
-| Filters provide a convenient method for attaching functionality to your
-| routes. The built-in before and after filters are called before and
-| after every request to your application, and you may even create
-| other filters that can be attached to individual routes.
-|
-| Let's walk through an example...
-|
-| First, define a filter:
-|
-|		Route::filter('filter', function()
-|		{
-|			return 'Filtered!';
-|		});
-|
-| Next, attach the filter to a route:
-|
-|		Route::get('/', array('before' => 'filter', function()
-|		{
-|			return 'Hello World!';
-|		}));
-|
-*/
-
-Route::filter('before', function()
-{
-	// Do stuff before every request to your application...
-});
-
-Route::filter('after', function($response)
-{
-	// Do stuff after every request to your application...
-});
-
-Route::filter('csrf', function()
-{
-	if (Request::forged()) return Response::error('500');
-});
-
-/**
- * Only allows requests with secret keys to get through.
- */
-Route::filter('auth', function()
-{
-	BasicAuth::verify_key();
-
-	if ((BasicAuth::check() == false) or
-		(BasicAuth::secret() == false))
-		return Response::error('401');
-});
-
-/**
- * Only allows requests with public keys to get through.
- */
-Route::filter('auth.public', function()
-{
-	BasicAuth::verify_key();
-
-	if ((BasicAuth::check() == false) or
-		(BasicAuth::secret() == true))
-		return Response::error('401');
-
-});

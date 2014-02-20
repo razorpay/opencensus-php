@@ -7,7 +7,7 @@ use \Validator;
 class Key extends \Eloquent
 {
 
-	public static $table  = 'keys';
+	protected $table  = 'keys';
 
 	private $key_generated = NULL;
 
@@ -35,7 +35,8 @@ class Key extends \Eloquent
 
 	public function merchant()
 	{
-		return $this->belongs_to('Merchant');
+		return $this->belongsTo(
+			__NAMESPACE__.'\Merchant');
 	}
 
 	public static function find_by_key($key)

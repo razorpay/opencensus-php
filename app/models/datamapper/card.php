@@ -30,8 +30,7 @@ class Card extends DataMapper
         'address_state',
         'address_city' ,
         'address_zip',
-        'address_country',
-        );
+        'address_country');
 
     private static $attr_required = array(
         'number',
@@ -40,14 +39,12 @@ class Card extends DataMapper
         'expiry_year',
         'last4',
         'type',
-        'country'
-        );
+        'country');
 
     private static $attr_update = array(
         'cvv_check',
         'address_line1_check',
-        'address_zip_check'
-        );
+        'address_zip_check');
 
     protected static $attr_db = array(
         'id' ,
@@ -62,7 +59,6 @@ class Card extends DataMapper
         'type',
         'country',
 
-
         'address_line1',
         'address_line2',
         'address_state',
@@ -75,8 +71,7 @@ class Card extends DataMapper
         'address_zip_check',
 
         'created_at',
-        'updated_at'
-        );
+        'updated_at');
 
     private $row = array();
 
@@ -108,7 +103,7 @@ class Card extends DataMapper
         try
         {
             $id = DB::table(self::table)
-                    ->insert_get_id($this->row);
+                    ->insertGetId($this->row);
             $card_do->set_id((int) $id);
         }
         catch(Exception $e)

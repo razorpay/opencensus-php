@@ -87,7 +87,7 @@ class CardToken extends DataMapper {
         try
         {
             $id = DB::table(self::table)
-                    ->insert_get_id($this->row);
+                    ->insertGetId($this->row);
 
             $card_token_do->set_id($id);
         }
