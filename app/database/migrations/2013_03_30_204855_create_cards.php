@@ -1,6 +1,9 @@
 <?php
 
-class Create_Cards {
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateCards extends Migration {
 
     /**
      * Make changes to the database.
@@ -9,17 +12,17 @@ class Create_Cards {
      */
     public function up()
     {
-        Schema::create('cards', function($table){
+        Schema::create('cards', function(Blueprint $table){
                 
             $table->engine = 'InnoDB';
     
             $table->increments('id');
 
-            $table->string('number');
+            $table->string('number', 19);
 
             $table->string('cardholder');
 
-            $table->string('cvv');
+            $table->string('cvv', 4);
 
             $table->string('expiry_month', 2);
 

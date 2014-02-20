@@ -1,6 +1,9 @@
 <?php
 
-class Create_Transactions {
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateTransactions  extends Migration {
 
 	/**
 	 * Make changes to the database.
@@ -9,7 +12,7 @@ class Create_Transactions {
 	 */
 	public function up()
 	{
-		Schema::create('transactions', function($table){
+		Schema::create('transactions', function(Blueprint $table){
 			$table->engine = 'InnoDB';
 			
 			$table->increments('id');
@@ -45,6 +48,19 @@ class Create_Transactions {
 			
 			$table->timestamps();	// Adds created_at and updated_at columns to the table
 
+			$table->foreign('merchant_id')
+				  ->references('id')
+				  ->on('merchants')
+				  ->on_delete('restrict');
+
+  			$table->foreign('status_code')
+				  ->references('code')
+				  ->on('status')
+				  ->on_delete('SET NULL');
+
+			$table->foreign('token')
+				  ->references('token')
+				  ->on('cardtokens');
 		});
 	}
 
@@ -55,6 +71,15 @@ class Create_Transactions {
 	 */
 	public function down()
 	{
+		Schema::table('transactions', function($table){
+
+			$table->dropForeign('transactions_merchant_id_foreign');
+		
+			$table->drop_foreign('transactions_status_code_foreign');	
+
+			$table->drop_foreign('transactions_token_foreign');
+		});
+
 		Schema::drop('transactions');
 	}
 

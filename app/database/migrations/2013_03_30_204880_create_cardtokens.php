@@ -1,6 +1,9 @@
 <?php
 
-class Create_Cardtokens {
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateCardtokens extends Migration {
 
 	/**
 	 * Make changes to the database.
@@ -9,7 +12,7 @@ class Create_Cardtokens {
 	 */
 	public function up()
 	{
-		Schema::create('cardtokens', function($table){
+		Schema::create('cardtokens', function(Blueprint $table){
 			$table->engine = 'InnoDB';
 
 			$table->increments('id');

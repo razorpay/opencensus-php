@@ -1,6 +1,9 @@
 <?php
 
-class Create_Status {
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateStatus extends Migration {
 
 	/**
 	 * Make changes to the database.
@@ -9,14 +12,14 @@ class Create_Status {
 	 */
 	public function up()
 	{
-		Schema::create('status', function($table){
+		Schema::create('status', function(Blueprint $table){
 			$table->engine = 'InnoDB';
 
 			$table->integer('code')
-				->unsigned()
-				->primary();
+				  ->unsigned()
+				  ->primary();
 
-			$table->string('description');
+			$table->string('description', 500);
 		});
 	}
 

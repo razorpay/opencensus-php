@@ -1,6 +1,9 @@
 <?php
 
-class Create_Cardtypes {
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateCardtypes extends Migration {
 
 	/**
 	 * Make changes to the database.
@@ -9,12 +12,12 @@ class Create_Cardtypes {
 	 */
 	public function up()
 	{
-		Schema::create('cardtypes', function($table){
+		Schema::create('cardtypes', function(Blueprint $table){
 			$table->engine = 'InnoDB';
 
 			$table->increments('id');
 
-			$table->string('type');
+			$table->string('type', 10);
 		});
 	}
 

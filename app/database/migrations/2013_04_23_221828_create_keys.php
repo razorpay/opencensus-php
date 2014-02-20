@@ -1,6 +1,9 @@
 <?php
 
-class Create_Keys {
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateKeys extends Migration {
 
 	/**
 	 * Make changes to the database.
@@ -9,7 +12,7 @@ class Create_Keys {
 	 */
 	public function up()
 	{
-		Schema::create('keys', function($table){
+		Schema::create('keys', function(Blueprint $table){
 			$table->engine = 'InnoDB';
 
 			$table->increments('id');
