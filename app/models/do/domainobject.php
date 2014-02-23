@@ -1,6 +1,6 @@
 <?php
 
-namespace DomainObject;
+namespace DO;
 
 abstract class DomainObject
 {
