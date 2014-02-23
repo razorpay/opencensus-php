@@ -20,6 +20,13 @@ use ERR;
 			return $this->hasMany(
 				__NAMESPACE__.'\Keys');
 		}
+
+		public function transactions()
+		{
+			return DB::table('transactions')
+					 ->where('merchant_id', '=', $this->id)
+					 ->get();
+		}
 	}
 
 ?>

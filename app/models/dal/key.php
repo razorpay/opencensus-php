@@ -39,14 +39,14 @@ class Key extends \Eloquent
 			__NAMESPACE__.'\Merchant');
 	}
 
-	public static function find_by_key($key)
+	public static function findByKey($key)
 	{
 		$key = Key::where('keys', '=', $key)->first();
 		
 		return $key;
 	}
 
-	private static function generate_key()
+	private static function generateKey()
 	{
 		return bin2hex(openssl_random_pseudo_bytes(16));
 	}
