@@ -1,11 +1,10 @@
 <?php 
 
-namespace DataMapper;
+namespace Models\DAL;
 
 use DB;
 use ERR;
-use DomainObject\CardToken as CardTokenDO;
-use DomainObject\Card as CardDO;
+use Models\DO;
 
 class CardToken extends DataMapper {
 
@@ -46,7 +45,7 @@ class CardToken extends DataMapper {
 
 	private $row = array();
 
-	public function insert(CardTokenDO $card_token_do)
+	public function insert(DO\CardToken $card_token_do)
 	{
 
         /* 
@@ -140,7 +139,7 @@ class CardToken extends DataMapper {
         return ERR::SUCCESS;
     }
 
-    public function fetch_with_card(CardTokenDO $card_token_do)
+    public function fetch_with_card(DO\CardToken $card_token_do)
     {
         $token = $card_token_do->get_token();
 

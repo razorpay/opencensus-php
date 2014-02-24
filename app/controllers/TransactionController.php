@@ -1,38 +1,45 @@
 <?php
 
-use Service\Transaction as TransactionService;
+use Service\Transaction;
 use Service\BasicAuth;
 
 class TransactionController extends BaseController 
 {
 
 	/**
-	* To retrieve transaction details by `id`
+	* Retrieves transaction details by `id`
 	* Lists previous transactions if `id` not provided
 	*
-	* @param id (optional)
+	* @param token (optional)
 	*
 	*/
-	public function getIndex ($token = NULL)
+	public function getIndex ($id = null)
 	{
-		$merchant_id = BasicAuth::MerchantId();
+		$merchant_id = BasicAuth::getInstance()->MerchantId();
 
-		$m = BasicAuth::Merchant();
+		$m = BasicAuth::getInstance()->Merchant();
 		
-		if (is_null($token)) 
+		if ($id === null) 
 		{
-			$t = $m->transactions;
+			$t = $m->transactions();
+
 			if (empty($t))
-				return Response::error('404');
+			{
+				return Response::json(array());
+			}
 			else
-				return Response::eloquent($t);
+			{
+				return Response::json($t);
+			}
 		}
 		else 
 		{
-			$t = Transaction::where('token','=', $token)->first();
+			$t = Transaction::where('id', '=', $id)->first();
 		
-			if (is_null($t))
+			if ($t === null)
+			{
 				return Response::error('404');
+			}
 			else
 			{
 				if ($t->get_merchant() === $merchant_id)
@@ -45,15 +52,15 @@ class TransactionController extends BaseController
 	}
 
 	/**
-	* To create a new transaction. 
+	* Create a new transaction. 
 	*/
 	public function postIndex()
 	{
-		$merchant_id = BasicAuth::MerchantId();
-
-		$txn_service = new TransactionService();
+		$txn_service = new Transaction();
 		
 		$input = Input::get();
+
+		$input['merchant_id'] = BasicAuth::getInstance()->MerchantId();
 
 		list($txn_data, $err) = $txn_service->create($input, $merchant_id);
 		
@@ -66,11 +73,11 @@ class TransactionController extends BaseController
 	}
 
 	/**
-	 * To retrieve previous transactions.
+	 * Retrieve previous transactions.
 	 */
 	public function getRetrieve()
 	{
-		$txn_service = new TransactionService();
+		$txn_service = new Transaction();
 
 		$input = Input::get();
 
@@ -85,7 +92,7 @@ class TransactionController extends BaseController
 	}
 
 	/**
-	* To refund a transaction.
+	* Refund a transaction.
 	*/
 	public function postRefund($token = NULL )
 	{
@@ -93,7 +100,7 @@ class TransactionController extends BaseController
 	}
 
 	/**
-	* To list previous refunds.
+	* List previous refunds.
 	*/
 	public function getRefund()
 	{

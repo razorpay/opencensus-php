@@ -1,6 +1,6 @@
 <?php 
 
-namespace DataMapper;
+namespace Models\DAL;
 
 use \Validator;
 

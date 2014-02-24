@@ -1,9 +1,10 @@
 <?php 
 
-namespace DataMapper;
+namespace Models\DAL;
+
 use \Config;
 use \PDO;
-use DomainObject\Transaction as TransactionDO;
+use Models\DO;
 use \DB;
 use \ERR;
 use \Validator;
@@ -78,7 +79,7 @@ class Transaction extends DataMapper
 
 	private $fetch_params_verified = false;
 
-	public function insert(TransactionDO $txn_do)
+	public function insert(DO\Transaction $txn_do)
 	{
 		$data = $txn_do->get_transaction_data();
 

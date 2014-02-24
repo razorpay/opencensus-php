@@ -5,34 +5,47 @@ namespace Service;
 use DataMapper\Key;
 use DataMapper\Merchant;
 
-class BasicAuth {
+class BasicAuth extends \Singleton {
 	
-	private static $Key = NULL;
+	private $Key = NULL;
 
-	private static $Merchant = NULL;
+	private $Merchant = NULL;
 
-	public static function verify_key()
+	public function verify($key)
 	{
-		if(isset($_SERVER['PHP_AUTH_USER']))
+		if ($key === null)
 		{
-			$key = $_SERVER['PHP_AUTH_USER'];
-			
-			self::$Key = Key::find_by_key($key);
-			
-			if ((is_null(self::$Key)) or 
-				(self::$Key->active == 0))
-				return;
-			
-			$merchant_id = self::$Key->merchant_id;
-			$Merchant = Merchant::find($merchant_id);
-			if(!is_null($Merchant))
-			{
-				self::$Merchant = $Merchant;
-			}
+			throw new \InvalidArgumentException('NULL not an accepted key');
 		}
+
+		$Key = Key::findByKey($key);
+		
+		if ($Key === null)
+		{
+			return false;
+		}
+		else if ($Key->active == 0)
+		{
+			return false;
+		}
+		
+		$merchant_id = $Key->merchant_id;
+		
+		$Merchant = Merchant::find($merchant_id);
+
+		if(null == $Merchant)
+		{
+			throw new \InvalidArgumentException("Key does not match any merchant");
+		}
+
+		self::$Key = $Key;
+
+		self::$Merchant = $Merchant;
+
+		return true;
 	}
 
-	public static function check()
+	public function check()
 	{
 		if ((!is_null(self::$Key)) and
 			(!is_null(self::$Merchant)))
@@ -41,31 +54,41 @@ class BasicAuth {
 			return false;	
 	}
 
-	public static function Key()
+	public function Key()
 	{
 		return self::$Key;
 	}
 
-	public static function Merchant()
+	public function Merchant()
 	{
 		return self::$Merchant;
 	}
 
-	public static function MerchantId()
+	public function MerchantId()
 	{
 		return (int) self::$Merchant->id;
 	}
 
-
-
-	public static function live()
+	public function live()
 	{
 		return self::$Key->live;
 	}
 
-	public static function secret()
+	public function verifySecret($key = null)
 	{
-		return self::$Key->secret;
+		return ((self::verify($key)) and
+				(self::secret());
+	}
+
+	public function secret()
+	{
+		return ((self::check()) and
+			    (self::$Key->secret));
+	}
+
+	public function verifyPublic($key = null)
+	{
+		return !self::verifySecret($key);
 	}
 
 }

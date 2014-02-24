@@ -1,5 +1,5 @@
 <?php 
-namespace DomainObject;
+namespace Models\DO;
 
 use ERR;
 use Utility;

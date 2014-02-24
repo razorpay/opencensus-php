@@ -40,11 +40,16 @@ App::after(function($request, $response)
  */
 Route::filter('auth', function()
 {
-	BasicAuth::verify_key();
+	if (isset($_SERVER['PHP_AUTH_USER']))
+	{
+		$key = $_SERVER['PHP_AUTH_USER'];
 
-	if ((BasicAuth::check() == false) or
-		(BasicAuth::secret() == false))
-		return Response::view('error.401', array(), 401);
+		if (BasicAuth::verifySecret($key) == false)
+		{
+			return Response::view('error.401', array(), 401);
+		}
+	}
+	else return Response::view('error.401', array(), 401);
 
 });
 
@@ -54,11 +59,16 @@ Route::filter('auth', function()
  */
 Route::filter('auth.public', function()
 {
-	BasicAuth::verify_key();
+	if (isset($_SERVER['PHP_AUTH_USER']))
+	{
+		$key = $_SERVER['PHP_AUTH_USER'];
 
-	if ((BasicAuth::check() == false) or
-		(BasicAuth::secret() == true))
-		return Response::view('error.401', array(), 401);
+		if (BasicAuth::verifyPublic($key) == false)
+		{
+			return Response::view('error.401', array(), 401);
+		}
+	}
+	else return Response::view('error.401', array(), 401);
 
 });
 

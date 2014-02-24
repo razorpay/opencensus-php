@@ -1,6 +1,6 @@
 <?php
 
-namespace DomainObject;
+namespace Models\DO;
 
 use \Validator;
 use \Err;

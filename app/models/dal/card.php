@@ -1,8 +1,8 @@
 <?php 
 
-namespace DataMapper;
+namespace Models\DAL;
 
-use DomainObject\Card as CardDO;
+use DO;
 use \DB;
 use \ERR;
 
@@ -75,7 +75,7 @@ class Card extends DataMapper
 
     private $row = array();
 
-	public function insert(CardDO $card_do)
+	public function insert(DO\Card $card_do)
     {
         $data = $card_do->get_card_data();
 
