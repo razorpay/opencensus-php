@@ -70,6 +70,13 @@ return array(
 	"url"              => "The :attribute format is invalid.",
 
 	/*
+	 | Defined by user application
+	 */
+	
+	"alpha_space"      => "The :attribute may only contain alphabets and spaces",
+	"address"          => "The :attribute is not a valid address"
+
+	/*
 	|--------------------------------------------------------------------------
 	| Custom Validation Language Lines
 	|--------------------------------------------------------------------------

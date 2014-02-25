@@ -22,26 +22,17 @@ class Token
         
         $card_token_db = new CardTokenDB();
 
-        list($card_token_do, $err) = $this->build_token($input);
+        $card_token_do = $this->build_token($input);
 
-        if ($err !== ERR::SUCCESS)
-        {
-            return array(false, $err);
-        }
-
-        $err = $card_token_db->insert($card_token_do);
-        if ($err !== ERR::SUCCESS)
-        {
-            return array(false, $err);
-        }
-
+		$card_token_db->insert($card_token_do);
+        
         $flag = CardTokenDO::WITH_OBJECT_FIELD |
                 CardTokenDO::WITH_CARD |
                 CardTokenDO::ONLY_PUBLIC_FIELDS;
 
         $token_data = $card_token_do->get_token_data($flag);
         
-        return array($token_data, ERR::SUCCESS);
+        return $token_data;
 	}
 
     public function retrieve($token, $merchant_id)
@@ -49,16 +40,11 @@ class Token
         $card_token_do = new CardTokenDO;
         $card_token_db = new CardTokenDB;
 
-        $err = $card_token_do->set_token($token);
-        if ($err !== ERR::SUCCESS)
-            return array(false, $err);
+        $card_token_do->set_token($token);
+        
+        $card_token_do->set_merchant_id($merchant_id);
 
-        $err = $card_token_do->set_merchant_id($merchant_id);
-
-        $err = $card_token_db->fetch_with_card($card_token_do);
-
-        if ($err !== ERR::SUCCESS)
-            return array(false, $err);
+        $card_token_db->fetch_with_card($card_token_do);
 
         $flag = CardTokenDO::WITH_OBJECT_FIELD |
                 CardTokenDO::WITH_CARD |
@@ -66,7 +52,7 @@ class Token
         
         $token_data = $card_token_do->get_token_data($flag);
 
-        return array($token_data, $err);
+        return $token_data;
     }
 
     public function build_token($input)
@@ -74,15 +60,12 @@ class Token
         $card_token_do = new CardTokenDO();
 
         $merchant_id = BasicAuth::MerchantId();
+
         $data['merchant_id'] = $merchant_id;
 
-        $err = $card_token_do->build($input, $data);
-        if ($err !== ERR::SUCCESS)
-        {
-            return array(false, $err);
-        }
-
-        return array($card_token_do, ERR::SUCCESS);
+        $card_token_do->build($input, $data);
+        
+        return $card_token_do;
     }
 
 }

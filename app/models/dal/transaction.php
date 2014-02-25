@@ -81,7 +81,7 @@ class Transaction extends DataMapper
 
 	public function insert(DO\Transaction $txn_do)
 	{
-		$data = $txn_do->get_transaction_data();
+		$data = $txn_do->getTransactionData();
 
 		foreach ($data as $key=>$value)
 		{
@@ -113,10 +113,7 @@ class Transaction extends DataMapper
 		catch(Exception $e)
 		{
 			var_dump($e);
-			return ERR::DB_PROBLEM;
 		}
-
-		return ERR::SUCCESS;
 	}
 
 
@@ -127,7 +124,7 @@ class Transaction extends DataMapper
 	/**
 	 * Retrieves the transactions from database for a particular merchant.
 	 * @param  array $data
-	 * @param  array $error
+	 * @param  int $flag
 	 * @return array $txn_list
 	 */
 	public function fetch($param, $flag = 0x0)
@@ -143,12 +140,7 @@ class Transaction extends DataMapper
 
 		if ($this->fetch_params === null)
 		{
-			$err = self::validate_fetch_params($param);
-
-			if ($err !== ERR::SUCCESS)
-			{
-				throw new \InvalidArgumentException('Parameters provided for fetching transaction data is invalid.');
-			}
+			self::validateFetchParams($param);
 		}
 		else if ($this->fetch_params_verified === false)
 		{
@@ -272,7 +264,7 @@ class Transaction extends DataMapper
 
 		if ($flag === self::FETCH_DEFAULT)
 		{
-			$txn_do_arr = static::bulk_load($dataset, 'Transaction');
+			$txn_do_arr = static::bulkLoad($dataset, 'Transaction');
 		}
 		else
 		{
@@ -315,7 +307,7 @@ class Transaction extends DataMapper
 		return $txn_do_arr;
 	}
 
-	public function validate_fetch_params(array $param)
+	public function validateFetchParams(array $param)
 	{
 		$this->fetch_params = $param;
 
@@ -325,14 +317,14 @@ class Transaction extends DataMapper
 
         if (count($invalid_keys) !== 0)
         {
-        	return ERR::invalid_keys($invalid_keys);
+            throw new InvalidKeysException($invalid_keys);
         }
 
         $validation = Validator::make($param, self::$fetch_params_rules);
 
         if ($validation->fails()) 
         {
-            return ERR::invalid_parameters($validation->errors->all());
+            throw new \InvalidArgumentException($validation->errors->all());
         }
         
         if ((isset($param['created'])) and
@@ -364,10 +356,9 @@ class Transaction extends DataMapper
 
         $this->fetch_params_verified = true;
 
-        return ERR::SUCCESS;
 	}
 
-	private static function check_timestamp(&$timestamp)
+	private static function checkTimestamp(&$timestamp)
 	{
 		$timestamp = (int) $timestamp;
 		if ($timestamp < 0)

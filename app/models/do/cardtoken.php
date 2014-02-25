@@ -39,27 +39,20 @@ class CardToken extends DomainObject
         $this->attr['token'] = $token;
     }
 
-    private function build_card_do($input)
+    private function buildCardDO($input)
     {
         $card_do = new Card();
         
-        $err = $card_do->build($input);
-        
-        if ($err === ERR::SUCCESS)
-        {
-            $this->card_do = $card_do;
-        }
-
-        return $err;
+        $card_do->build($input);
     }
 
-    private function verify_input()
+    private function verifyInput()
     {
         $input = $this->input;
 
         if ($input === null)
         {
-            return invalid_parameter('Input is null');
+        	throw new \InvalidArgumentException('Input is null');
         }
 
         $token_keys = array_keys($input);
@@ -67,7 +60,7 @@ class CardToken extends DomainObject
 
         if (count($invalid_keys) !== 0)
         {
-            return ERR::invalid_keys($invalid_keys);
+            throw new InvalidKeysException($invalid_keys);
         }
 
         if ((!isset($input['merchant_id'])) or 
@@ -83,14 +76,11 @@ class CardToken extends DomainObject
                 ($expired !== '1'))
                 throw new \InvalidArgumentException('Key "expired" can only be 0 or 1');
         }
-
-        return ERR::SUCCESS;
     }
 
     /**
      * @param array $input  Input supplied by the user goes.
      * @param array $data   Data generated and supplied by the application.
-     * @return ERR  ERR::SUCCESS on success or proper error code on error.
      */
     public function build(array $input = null)
     {
@@ -108,27 +98,15 @@ class CardToken extends DomainObject
 
         $this->input = $input;
 
-        $err = $this->build_card_do($card_input);
+        $this->buildCardDO($card_input);
 
-        if ($err !== ERR::SUCCESS)
-        {
-            return $err;
-        }
-
-        $err = $this->verify_input();
-
-        if ($err !== ERR::SUCCESS)
-        {
-            return $err;
-        }
+        $this->verifyInput();
         
         $this->data = $input;
 
         $this->set();
 
         $this->generate();
-
-        return ERR::SUCCESS;
     }
 
     /**
@@ -150,46 +128,45 @@ class CardToken extends DomainObject
 
         foreach ($this->data as $key=>$value)
         {
-            $this->set_attr($key);
+            $this->setAttr($key);
         }
-
-        return ERR::SUCCESS;
     }
 
-    public function get_id()
+    public function getId()
     {
         return $this->attr['id'];
     }
 
-    public function set_id($id)
+    public function setId($id)
     {
         $this->attr['id'] = $id;
     }
 
-    public function get_token()
+    public function getToken()
     {
         return $this->attr['token'];
     }
 
-    public function set_token(/*string*/ $token)
+    public function setToken(/*string*/ $token)
     {
         if (($token !== null) and
             (strlen($token) === self::$TOKEN_LEN) and
             (ctype_alnum($token)))
         {
             $this->attr['token'] = $token;
-            return ERR::SUCCESS;
         }
         else
-            return ERR::INVALID_PARAMETERS;
+        {
+        	throw new \InvalidArgumentException('invalid parameter');
+        }
     }
 
-    public function get_card_id()
+    public function getCardId()
     {
         return $this->attr['card_id'];
     }
 
-    public function set_card_id($card_id = null)
+    public function setCardId($card_id = null)
     {
         if ($card_id !== null)
         {
@@ -197,12 +174,12 @@ class CardToken extends DomainObject
 
             if ($this->card_do !== null)
             {
-                $this->card_do->set_id($card_id);
+                $this->card_do->setId($card_id);
             }
         }
         else if ($this->card_do !== null)
         {
-            $card_id = $this->$card_do->get_id();
+            $card_id = $this->$card_do->getId();
 
             if ($card_id !== null)
             {
@@ -213,37 +190,34 @@ class CardToken extends DomainObject
         {
             throw new InvalidArgumentException("Failed to get card_id");
         }
-
-        return ERR::SUCCESS;
     }
 
-    public function get_card_do()
+    public function getCardDO()
     {
         return $this->card_do;
     }
 
-    public function set_card_do(Card $card_do)
+    public function setCardDO(Card $card_do)
     {
         if ($this->card_do !== null)
-            return ERR::INVALID_PARAMETERS;
+        {
+            throw new \InvalidArgumentException('message');
+        }
         
         $this->card_do = $card_do;
-
-        return ERR::SUCCESS;
     }
 
-    public function set_merchant_id($merchant_id)
+    public function setMerchantId($merchant_id)
     {
         $this->attr['merchant_id'] = $merchant_id;
-        return ERR::SUCCESS;
     }
 
-    public function get_merchant_id()
+    public function getMerchantId()
     {
         $this->attr['merchant_id'];
     }
 
-    private function set_attr($key)
+    private function setAttr($key)
     {
         if ((array_key_exists($key, $this->data)) and
             (array_key_exists($key, $this->attr)))
@@ -252,11 +226,11 @@ class CardToken extends DomainObject
         }
         else if ($key === 'card_token_id')
         {
-            $this->set_id($this->data[$key]);
+            $this->setId($this->data[$key]);
         }
     }
 
-    public static function input_keys()
+    public static function inputKeys()
     {
         return array_merge(Card::input_keys(), self::$input_keys);
     }
@@ -266,7 +240,7 @@ class CardToken extends DomainObject
     const WITH_OBJECT_FIELD     = 0x2;
     const ONLY_PUBLIC_FIELDS    = 0x4;
 
-    public function get_token_data($flag = 0x0)
+    public function getTokenData($flag = 0x0)
     {
         $data = $this->attr;
 
@@ -292,7 +266,7 @@ class CardToken extends DomainObject
                 $card_do_flag |= Card::ONLY_PUBLIC_FIELDS;
 
             $card_do_flag |= Card::NO_CHECK_FIELDS;
-            $card = $this->card_do->get_card_data($card_do_flag);
+            $card = $this->card_do->getCardData($card_do_flag);
 
             $data['card'] = $card;
         }

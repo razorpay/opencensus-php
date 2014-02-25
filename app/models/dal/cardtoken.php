@@ -55,10 +55,7 @@ class CardToken extends DataMapper {
 
         $this->card_token_do = $card_token_do;
 
-        $err = $this->insert_card();
-
-        if ($err !== ERR::SUCCESS)
-            return $err;
+        $this->insertCard();
 
 		$data = $card_token_do->get_token_data();
 
@@ -83,29 +80,19 @@ class CardToken extends DataMapper {
             }
         }
 
-        try
-        {
-            $id = DB::table(self::table)
-                    ->insertGetId($this->row);
+        $id = DB::table(self::table)
+                ->insertGetId($this->row);
 
-            $card_token_do->set_id($id);
-        }
-        catch(Exception $e)
-        {
-            var_dump($e);
-            return ERR::DB_PROBLEM;
-        }
-
-        return ERR::SUCCESS;
+        $card_token_do->setId($id);
 	}
 
-    private function insert_card()
+    private function insertCard()
     {
         $card_token_do = $this->card_token_do;
 
-        $card_do = $card_token_do->get_card_do();
+        $card_do = $card_token_do->getCardDO();
 
-        $card_id = $card_token_do->get_card_id();
+        $card_id = $card_token_do->getCardId();
 
         if ($card_do !== null)
         {
@@ -119,16 +106,13 @@ class CardToken extends DataMapper {
             {
                 $card_db = new Card();
 
-                $err = $card_db->insert($card_do);
-
-                if ($err !== ERR::SUCCESS)
-                    return $err;
+                $card_db->insert($card_do);
 
                 $this->card_db = $card_db;
 
-                $card_id = $card_do->get_id();
+                $card_id = $card_do->getId();
 
-                $this->card_token_do->set_card_id($card_id);
+                $this->card_token_do->setCardId($card_id);
             }
         }
         else if ($card_id === null)
@@ -136,24 +120,23 @@ class CardToken extends DataMapper {
             throw new \InvalidArgumentException('card_id not set.');
         }
 
-        return ERR::SUCCESS;
     }
 
-    public function fetch_with_card(DO\CardToken $card_token_do)
+    public function fetchWithCard(DO\CardToken $card_token_do)
     {
-        $token = $card_token_do->get_token();
+        $token = $card_token_do->getToken();
 
         if ($token === null)
+        {
             throw new \InvalidArgumentException("token is null");
+        }
 
-        $merchant_id = $card_token_do->get_merchant_id();
+        $merchant_id = $card_token_do->getMerchantId();
         
         $card_table = Card::table;
         $card_token_table = self::table;
 
         $card_tokens_cols = array('expired');
-
-        // $card_cols = array()
 
         try
         {
@@ -171,24 +154,16 @@ class CardToken extends DataMapper {
 
             $token = $token->first();
 
-            $err = $card_token_do->set($token);
-
-            if ($err !== ERR::SUCCESS)
-                return $err;
+            $card_token_do->set($token);
 
             $card_do = new CardDO();
-            $err = $card_do->set($token);
+            $card_do->set($token);
 
-            if ($err !== ERR::SUCCESS)
-                return $err;
-
-            $card_token_do->set_card_do($card_do);
+            $card_token_do->setCardDO($card_do);
         }
         catch (\Exception $e)
         {
             var_dump($e);
         }
-
-        return ERR::SUCCESS;
     }
 }

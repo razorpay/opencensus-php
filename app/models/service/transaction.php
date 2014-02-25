@@ -25,24 +25,24 @@ class Transaction
         }
         else 
         {
-            list($token_input, $txn_input) = $this->separate_token_txn_input($input);
+            list($token_input, $txn_input) = $this->separateTokenTxnInput($input);
 
-            $card_token_do = $this->create_token($token_input);
+            $card_token_do = $this->createToken($token_input);
         }
 
-        $txn_do->set_token_do($card_token_do);
+        $txn_do->setTokenDO($card_token_do);
 
-        $err = $txn_do->build($txn_input);
+        $txn_do->build($txn_input);
 
         $txn_db = new DAL\Transaction();
         
-        $err = $txn_db->insert($txn_do);
+        $txn_db->insert($txn_do);
 
-        $process_now = $txn_do->process_now();
+        $process_now = $txn_do->processNow();
 
         if ($process_now)
         {
-            list($txn_do, $err) = $this->process(null, $txn_do);
+            $txn_do = $this->process(null, $txn_do);
 
         }
         
@@ -50,9 +50,9 @@ class Transaction
                 DO\Transaction::WITH_OBJECT_FIELD |
                 DO\Transaction::ONLY_PUBLIC_FIELDS;
         
-        $txn_data = $txn_do->get_transaction_data($flag);
+        $txn_data = $txn_do->getTransactionData($flag);
 
-        return array($txn_data);
+        return $txn_data;
     }
 
     /**
@@ -63,18 +63,19 @@ class Transaction
     {
         if (($input === null) and ($txn_do === null) or
             ($input !== null) and ($txn_do !== null))
-            return ERR::INVALID_PARAMETERS;
+            throw new \InvalidArgumentException('message');
 
         if (($input !== null) and
             (!is_array($input)))
-            return array(false, ERR::INVALID_PARAMETERS);
+            throw new \InvalidArgumentException('message');
 
         if ($txn_do !== null)
         {
             $gateway = new Gateway;
             $gateway->process($txn_do);
-            $txn_do->set_processed(1);
-            return array($txn_do, ERR::SUCCESS);
+            $txn_do->setProcessed(1);
+
+            return $txn_do;
         }
     }
 
@@ -82,12 +83,10 @@ class Transaction
     {
         $txn_db = new DAL\Transaction;
 
-        $err = $txn_db->validate_fetch_params($input);
-
-        if ($err !== ERR::SUCCESS)
-            return array(false, $err);
+        $txn_db->validate_fetch_params($input);
 
         $flag = DAL\Transaction::FETCH_WITH_CARD;
+        
         $txn_do_arr = $txn_db->fetch(null, $flag);
 
         $txn_data_arr = array();
@@ -99,7 +98,7 @@ class Transaction
             array_push($txn_data_arr['data'], $txn_do->get_transaction_data($flag));
         }
 
-        return array($txn_data_arr, ERR::SUCCESS);
+        return $txn_data_arr;
     }
 
     private function loadToken($token_input)
@@ -107,17 +106,11 @@ class Transaction
         $card_token_do = new DO\CardToken;
         $card_token_db = new DAL\CardToken;
 
-        $card_token_do->set_token($token_input);
-        $err = $card_token_db->fetch_with_card($card_token_do);
+        $card_token_do->setToken($token_input);
+        
+        $card_token_db->fetchWithCard($card_token_do);
 
-        if ($err !== ERR::SUCCESS)
-        {
-            return array(false, $err);
-        }
-        else
-        {
-            return array($card_token_do, $err);
-        }
+        array $card_token_do;
     }
 
     private function separate_token_txn_input($input)
@@ -144,15 +137,15 @@ class Transaction
         return array($token_input, $txn_input);
     }
 
-    private function create_token($token_input)
+    private function createToken($token_input)
     {
         $card_token_db = new DAL\CardToken;
 
         $token_service = new Token;
 
-        list($card_token_do, $err) = $token_service->build_token($token_input);
+        $card_token_do = $token_service->buildToken($token_input);
      
-        $err = $card_token_db->insert($card_token_do);
+        $card_token_db->insert($card_token_do);
         
         return $card_token_do;
     }

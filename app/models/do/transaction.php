@@ -57,15 +57,12 @@ class Transaction extends DomainObject
 
     private static $UID_LEN = 16;
 
-    public function verify_build_input($input = null)
+    public function verifyBuildInput($input = null)
     {
         if ($this->input === null)
             $this->input = $input;
 
-        $err = $this->verify_build_input_keys();
-
-        if ($err !== ERR::SUCCESS)
-            return $err;
+        $this->verifyBuildInputKeys();
 
         $validation = Validator::make(
                         $this->input, 
@@ -73,64 +70,52 @@ class Transaction extends DomainObject
 
         if ($validation->fails()) 
         {
-            return ERR::invalid_parameters($validation->errors->all());
+        	throw new \InvalidArgumentException($validation->errors->all());
         }
         
-        $err = $this->verify_currency();
+        $this->verifyCurrency();
 
-        if ($err !== ERR::SUCCESS)
-            return $err;
-
-        $err = $this->verify_amount();
-
-        if ($err !== ERR::SUCCESS)
-            return $err;
+        $this->verifyAmount();
 
         $this->input_verified = true;
-
-        return ERR::SUCCESS;
     }
 
-    private function verify_build_input_keys()
+    private function verifyBuildInputKeys()
     {
         $user_keys = array_keys($this->input);
         $invalid_keys = array_diff($user_keys, self::$input_keys);
 
-        if (count($invalid_keys) == 0)
+        if (count($invalid_keys) !== 0)
         {
-            return ERR::SUCCESS;
-        }
-        else 
-        {
-            return ERR::invalid_keys($invalid_keys);
+            throw new InvalidKeysException($invalid_keys);
         }
     }
 
-    private function verify_amount()
+    private function verifyAmount()
     {
         $amount = (int) $this->input['amount'];
 
         if (($amount == 0) or
             ($amount > 12345678))    // some large pre-decided number.
-            return ERR::invalid_parameters('Amount provided is not valid.');
+            throw new \InvalidArgumentException('Amount provided is not valid');
 
         $this->input['amount'] = $amount;
-        return ERR::SUCCESS;
+
         // Put any syntactical or logical constraints on amount 
         // before proceeding with the transaction.
 
     }
 
-    private function verify_currency()
+    private function verifyCurrency()
     {
         $currency = $this->input['currency'];
 
         // Right now only INR is supported.
 
         if ($currency !== "INR")
-            return ERR::invalid_currency($currency . ' provided.');
-
-        return ERR::SUCCESS;
+        {
+            return throw new \InvalidCurrencyException($currency);
+        }
     }
 
     public function build(array $input = null)
@@ -139,26 +124,18 @@ class Transaction extends DomainObject
         {
             if ($input === null)
             {
-                return ERR::invalid_parameters('No input provided');
+                throw new \InvalidArgumentException('No input provided');
             }
             
             $this->input = $input;
-            $err = $this->verify_build_input();
-
-            if ($err !== ERR::SUCCESS)
-                return $err;
+            $this->verifyBuildInput();
         }
 
         $this->data = $this->input;
 
         $this->data['uid'] = Utility::generate_token(self::$UID_LEN);
 
-        $err = $this->set();
-
-        if ($err !== ERR::SUCCESS)
-            return $err;
-
-        return ERR::SUCCESS;
+        $this->set();
     }
 
     public function set(array $data = null)
@@ -190,11 +167,9 @@ class Transaction extends DomainObject
                 throw new \InvalidArgumentException($key . " is not a valid key.");
             }
         }
-
-        return ERR::SUCCESS;
     }
 
-    public function set_token_do(CardToken $card_token_do)
+    public function setTokenDO(CardToken $card_token_do)
     {
         $this->card_token_do = $card_token_do;
 
@@ -202,27 +177,27 @@ class Transaction extends DomainObject
             $this->attr['token'] = $card_token_do->get_token();
     }
 
-    public function set_card_do(Card $card_do)
+    public function setCardDO(Card $card_do)
     {
         $this->card_do = $card_do;
     }
 
-    public function process_now()
+    public function processNow()
     {
         return $this->process_now;
     }
 
-    public function get_processed()
+    public function getProcessed()
     {
         return $this->attr['processed'];
     }
 
-    public function set_processed($processed)
+    public function setProcessed($processed)
     {
         $this->attr['processed'] = $processed;
     }
 
-    public function set_id(/* int */ $id)
+    public function setId(/* int */ $id)
     {
         $this->attr['id'] = $id;
     }
@@ -232,7 +207,8 @@ class Transaction extends DomainObject
     const WITH_CARD             = 0x1;
     const WITH_OBJECT_FIELD     = 0x2;
     const ONLY_PUBLIC_FIELDS    = 0x4;
-    public function get_transaction_data($flag = 0x0)
+
+    public function getTransactionData($flag = 0x0)
     {
         $data = $this->attr;
 

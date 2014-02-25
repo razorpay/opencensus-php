@@ -83,38 +83,34 @@ class Card extends DomainObject
     /**
      * Verify credit card attributes syntax
      * @param  arrray $data [description]
-     * @return int ERR::SUCCESS on success or error code on error.
      */
-    private function verify_input_values()
+    private function verifyInputValues()
     {
         $validation = Validator::make($this->input, self::$rules);
 
         if ($validation->fails()) 
         {
-            return ERR::invalid_parameters($validation->errors->all());
+            throw new \InvalidArgumentException($validation->errors->all());
         }
         
-        $err = $this->verify_address_parameters();
-
-        return $err;
+        $this->verify_address_parameters();
     }
 
-    private function verify_input_keys()
+    private function verifyInputKeys()
     {
         $input = $this->input;
 
         $keys = array_keys($this->input);
+
         $invalid_keys = array_diff($keys, self::$input_keys);
 
         if (count($invalid_keys) !== 0)
         {
-            return ERR::invalid_keys($invalid_keys);
+            throw new InvalidKeysException($invalid_keys);
         }
-        
-        return ERR::SUCCESS;
     }
 
-    private function verify_address_parameters()
+    private function verifyAddressParameters()
     {
         $addr_unset = array();
         $addr_set = array();
@@ -140,7 +136,7 @@ class Card extends DomainObject
                  ($addr_unset_count[0] !== 'address_line2')))
             {
                 $msg = implode(',', $addr_unset) . ' address values are not set.';
-                return ERR::invalid_parameters($msg);
+                throw new \InvalidArgumentException($msg);
             }
         }
 
@@ -153,37 +149,25 @@ class Card extends DomainObject
         {
             if ((strlen($zip) !== 5) or
                 (!is_numeric($zip)))
-                return ERR::INVALID_PARAMETERS;
+                throw exception!
         }
 */
 
-        return ERR::SUCCESS;
     }
 
     public function build(array $input = null)
     {
         $this->input = $input;
 
-        $err = $this->verify_input_keys();
+        $this->verifyInputKeys();
 
-        if ($err !== ERR::SUCCESS)
-            return $err;
-
-        $err = $this->verify_input_values();
-        if ($err !== ERR::SUCCESS)
-            return $err;
+        $this->verifyInputValues();
 
         $this->data = $input;
 
-        $err = $this->build_meta();
-        if ($err !== ERR::SUCCESS)
-            return $err;
-        
-        $err = $this->set();
-        if ($err !== ERR::SUCCESS)
-            return $err;
-        
-        return $err;
+        $this->buildMeta();
+
+        $this->set();
     }
 
     public function set(array $data = null)
@@ -200,18 +184,16 @@ class Card extends DomainObject
             $this->data = $data;
 
         // Essential attributes
-        $this->set_essential();
+        $this->setEssential();
         
         // Generated attributes
-        $this->set_generated();
+        $this->setGenerated();
 
         // Address atributes
-        $this->set_address();
-
-        return ERR::SUCCESS;
+        $this->setAddress();
     }
 
-    private function set_essential()
+    private function setEssential()
     {
         $this->set_attr('id');
         $this->set_attr('number');
@@ -221,7 +203,7 @@ class Card extends DomainObject
         $this->set_attr('cvv');
     }
 
-    private function set_generated()
+    private function setGenerated()
     {
         // generated attributes
         $this->set_attr('last4');
@@ -229,7 +211,7 @@ class Card extends DomainObject
         $this->set_attr('country');
     }
 
-    private function set_address()
+    private function setAddress()
     {
         if(empty($this->data['address_line1']))
             return;
@@ -241,13 +223,11 @@ class Card extends DomainObject
         $this->set_attr('address_zip');
     }
    
-    private function build_meta()
+    private function buildMeta()
     {
         $this->data['last4'] = substr($this->data['number'], -4);
         $this->data['type'] = $this->type($this->data['number']);
         $this->data['country'] = $this->country($this->data['number']);
-
-        return ERR::SUCCESS;
     }
 
     private function type($number)
@@ -262,17 +242,17 @@ class Card extends DomainObject
         return 'IN';
     }
 
-    public function set_id($id)
+    public function setId($id)
     {
         $this->attr['id'] = $id;
     }
 
-    public function get_id()
+    public function getId()
     {
         return $this->attr['id'];
     }
 
-    private function set_attr($key)
+    private function setAttr($key)
     {
         if ((array_key_exists($key, $this->data)) and
             (array_key_exists($key, $this->attr)))
@@ -287,7 +267,7 @@ class Card extends DomainObject
             }
             else if ($key === 'card_id')
             {
-                $this->set_id($this->data[$key]);
+                $this->setId($this->data[$key]);
             }
             else
             {
@@ -307,7 +287,7 @@ class Card extends DomainObject
     const WITH_OBJECT_FIELD     = 0x2;
     const ONLY_PUBLIC_FIELDS    = 0x4;
     
-    public function get_card_data($flag = 0x0)
+    public function getCardData($flag = 0x0)
     {
         $data = $this->attr;
 
