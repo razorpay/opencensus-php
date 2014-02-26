@@ -31,36 +31,69 @@ class DomainObject
 	 *
 	 * @var array
 	 */
-	protected $visible = array();
+	protected static $visible = array();
 
 	/**
 	 * Fields hidden for arrays
 	 *
 	 * @var array
 	 */
-	protected $hidden = array();
+	protected static $hidden = array();
 
 	/**
 	 * Fields which will be generated
 	 * during build
 	 * @var array
 	 */
-	protected $generate = array();
+	protected static $generators = array();
+
+	/**
+	 * Validator functions that will be 
+	 * rung during build on input data
+	 */
+	protected static $validators = array();
+
+	/**
+	 * Input keys which will be unset
+	 * before calling fill during build
+	 */
+	protected static $unsetInput = array();
 
 	/**
 	 * The accessors to append to the object's array form.
 	 *
 	 * @var array
 	 */
-	protected $appends = array();
+	protected static $appends = array();
 
 	/**
 	 * Rules to validate input values for building
 	 * the domain object
 	 */
-	protected $buildRules = array();
+	protected static $inputRules = array();
+
+	/**
+	 * Whether or not to throw error when
+	 * calling setting a field not defined
+	 * in $fields array. By default suck keys
+	 * are ignored. If this bool is true, then
+	 * we throw an exception.
+	 * 
+	 * @var boolean
+	 */
+	protected static bool $errorOnUnknowFields = false;
 
 	public function __construct()
+	{
+		;
+	}
+
+	/**
+	 * The "booting" method of the model.
+	 *
+	 * @return void
+	 */
+	protected static function boot()
 	{
 		;
 	}
@@ -69,9 +102,11 @@ class DomainObject
     {
     	$this->validateInput($input);
 
-    	$this->generateFields();
+    	$this->generate($input);
 
-    	$this->set($input);
+    	$this->unsetInput($input);
+
+    	$this->fill($input);
     }
 
     protected function validateInput($input)
@@ -81,33 +116,57 @@ class DomainObject
     	$this->validateInputValues($input);
     }
 
-    protected function validateInputValues()
+    protected function validateInputValues($input)
     {
     	$validation = Validator::make(
                         $input, 
-                        $this->inputRules);
+                        self::$inputRules);
 
         if ($validation->fails()) 
         {
         	throw new \InvalidArgumentException($validation->errors->all());
         }
-        
+
+        $this->runValidators($input);        
     }
 
-    public function generateField($field)
+    protected function runValidators($input)
     {
-		return $this->{'generate'.studly_case($field).'Field'}();
+    	foreach (self::$validators as $validator)
+    	{
+    		$this->{'validate'.$validator}($input);
+    	}
+    }
+
+    public function unsetInput(& $input)
+    {
+    	foreach (self::$unsetInput as $key)
+    	{
+    		unset($input[$key]);
+    	}
+    }
+
+    public function generate($input)
+    {
+    	foreach (self::$generators as $field)
+    	{
+    		$this->generateField($field, $input);
+    	}
+    }
+
+    public function generateField($field, $input)
+    {
+		return $this->{'generate'.studly_case($field).'Field'}($input);
     }
 
     protected function validateInputKeys($input)
     {
-        $invalid_keys = array_diff_key($input, self::$buildRules);
+        $invalid_keys = array_diff_key($input, self::$inputRules);
 
         if (count($invalid_keys) !== 0)
         {
             throw new InvalidKeysException($invalid_keys);
         }
-
     }
 
     public function validateSetKeys(array $keys)
@@ -120,7 +179,7 @@ class DomainObject
     	}
     }
 
-    public function set(array $values)
+    public function fill(array $values)
     {
         $this->validateSetKeys(array_keys($values);
 
@@ -132,28 +191,58 @@ class DomainObject
 
     public function setField($key, $value)
     {
-    	if (! array_key_exists($key, self::$field))
+    	if (! array_key_exists($key, $this->field))
     	{
-	        throw new \InvalidArgumentException($key . " is not a valid key.");
+    		//
+    		// First we will check for the presence of a mutator for the set operation
+			// which simply lets the developers tweak the field as it is set on
+			// the model, such as "json_encoding" an listing of data for storage.
+			//
+			 
+			if ($this->hasSetMutator($key))
+			{
+				$method = 'set'.studly_case($key).'Field';
+
+				return $this->{$method}($value);
+			}
+
+			//
+			// No field defined and no mutator defined.
+			// We throw exception if bool variable is set to true.
+			// 
+			
+			if ($this->errorOnUnknowFields)
+			{
+		        throw new \InvalidKeyException($key . " is not a valid key.");
+		    }
     	}
-		$this->data[$key] = $value;
+    	else
+    	{
+			$this->data[$key] = $value;
+		}
     }
 
+ 	/**
+ 	 * Returns value of the field
+ 	 * 
+ 	 * @param  string  $key
+ 	 * @return mixed
+ 	 */
     public function getField($key)
     {
-    	if (! in_array($key, Rfield))
+    	if (! in_array($key, $this->field))
     	{
     		throw new \InvalidKeyException;
     	}
 
     	if (array_key_exists($key, $this->data))
 		{
-			return $this->attributes[$key];
+			return $this->field[$key];
 		}
     }
 
 	/**
-	 * Dynamically set attributes on the object.
+	 * Dynamically set fields on the object.
 	 *
 	 * @param  string  $key
 	 * @param  mixed   $value
@@ -165,7 +254,7 @@ class DomainObject
 	}
 
 	/**
-	 * Dynamically retrieve attributes on the object.
+	 * Dynamically retrieve fields on the object.
 	 *
 	 * @param  string  $key
 	 * @return mixed
@@ -176,15 +265,78 @@ class DomainObject
 	}
 
 	/**
+	 * Determine if a set mutator exists for an field.
+	 *
+	 * @param  string  $key
+	 * @return bool
+	 */
+	public function hasSetMutator($key)
+	{
+		return method_exists($this, 'set'.studly_case($key).'Field');
+	}
+
+	/**
+	 * DEFAULT: Visible or Non-hidden fields with appends
+	 * FIELDS: Visible or non-hidden fields
+	 * ALL_FIELDS: All fields
+	 * APPENDS: Appends
+	 *
+	 * Child class flags should start from 0x256
+	 * 
+	 */
+
+	const DEFAULT = 0x0;
+	const FIELDS = 0x1;
+	const ALL_FIELDS = 0x2;
+	const APPENDS = 0x3;
+
+	/**
 	 * Return object properties as array
 	 *
 	 * @return array
 	 */
 	public function toArray($flag = 0x0)
 	{
-		$attributes = $this->getArrayableFields();
+		$array = array();
 
-		return $attributes
+		if (($flag & self::FIELDS) or
+			($flag & self::DEFAULT))
+		{
+			$array = $this->getArrayableFields();
+		}
+		else if ($flag & self::ALL_FIELDS)
+		{
+			$array = $this->data;
+		}
+
+		if (($flag & self::APPENDS) or
+			($flag & self::DEFAULT))
+		{
+			$array = array_merge($array, $this->getAppends());
+		}
+
+		return $array
+	}
+
+	/**
+	 * 
+	 */
+	public function getAppends()
+	{
+		$appends = array();
+
+		//
+		// Here we will grab all of the appended, calculated fields to this object
+		// as these fields are not really in the fields array, but are run
+		// when we need to array or JSON the object for convenience to the coder.
+		// 
+
+		foreach (self::$appends as $key)
+		{
+			$appends[$key] = $this->getField($key);
+		}
+
+		return $appends;
 	}
 
 	public function getArrayableFields()
@@ -197,14 +349,19 @@ class DomainObject
 		return array_diff_key($values, array_flip($this->hidden));
 	}
 
-	public function getVisible()
+	public static function getVisible()
 	{
-		return $this->visible;
+		return self::$visible;
 	}
 
-	public function getHidden()
+	public static function getHidden()
 	{
-		return $this->hidden;
+		return self::$hidden;
+	}
+
+	public static function getInputKeys()
+	{
+		return array_keys(self::$inputRules);
 	}
 
 

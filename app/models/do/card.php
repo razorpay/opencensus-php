@@ -7,43 +7,35 @@ use \ERR;
 
 class Card extends DomainObject
 {
-    private $input = null;
-    /**
-     * dump of input data provided goes here.
-     */
+    protected static $fields = array(
+        'id',
+        'number',
+        'cardholder',
+        'cvv',
 
-    private $data = null;
+        'expiry_month',
+        'expiry_year',
 
-    private $attr = array(
-        'id'        => null,
-        'number'    => null,
-        'cardholder'=> null,
-        'cvv'       => null,
+        'last4',
+        'type',
+        'country',
 
-        'expiry_month' => null, 
-        'expiry_year'  => null,
+        'address_line1',
+        'address_line2',
+        'address_state',
+        'address_city',
+        'address_zip',
+        'address_country',
 
-        'last4'   => null,
-        'type'    => null,
-        'country' => null,
+        'cvv_check',
+        'address_line1_check',
+        'address_zip_check',
 
-
-        'address_line1'     => null, 
-        'address_line2'     => null,
-        'address_state'     => null,
-        'address_city'      => null,
-        'address_zip'       => null,
-        'address_country'   => null,
-
-        'cvv_check'           => 0,
-        'address_line1_check' => 0,
-        'address_zip_check'   => 0,
-
-        'created_at'    => null,
-        'updated_at'    => null
+        'created_at',
+        'updated_at'
         );
 
-    private static $rules = array(
+    protected static $buildRules = array(
         'number'        => 'required|digits',
         'expiry_month'  => 'required|numeric|digits:2',
         'expiry_year'   => 'required|numeric|digits_between:2,4',
@@ -57,12 +49,7 @@ class Card extends DomainObject
         'address_zip'       => 'numeric|max:10'
         );
 
-    private static $input_keys = array(
-        'number', 
-        'expiry_month', 
-        'expiry_year', 
-        'cvv',
-        'cardholder',
+    protected static $address_attributes = array(
         'address_line1',
         'address_line2',
         'address_city',
@@ -71,54 +58,21 @@ class Card extends DomainObject
         'address_zip'
         );
 
-    private static $address_attributes = array(
-        'address_line1',
-        'address_line2',
-        'address_city',
-        'address_state',
-        'address_country',
-        'address_zip'
-        );
+    protected static $validators = array('address');
 
-    /**
-     * Verify credit card attributes syntax
-     * @param  arrray $data [description]
-     */
-    private function verifyInputValues()
-    {
-        $validation = Validator::make($this->input, self::$rules);
+    protected static $generators = array('last4', 'country', 'type');
 
-        if ($validation->fails()) 
-        {
-            throw new \InvalidArgumentException($validation->errors->all());
-        }
-        
-        $this->verify_address_parameters();
-    }
+    protected static $appends = array('object');
 
-    private function verifyInputKeys()
-    {
-        $input = $this->input;
-
-        $keys = array_keys($this->input);
-
-        $invalid_keys = array_diff($keys, self::$input_keys);
-
-        if (count($invalid_keys) !== 0)
-        {
-            throw new InvalidKeysException($invalid_keys);
-        }
-    }
-
-    private function verifyAddressParameters()
+    private function validateAddress($input)
     {
         $addr_unset = array();
         $addr_set = array();
         
         foreach(self::$address_attributes as $key)
         {
-            if ((!isset($this->input[$key])) or
-                (empty($this->input[$key])))
+            if ((!isset($input[$key])) or
+                (empty($input[$key])))
             {
                 array_push($addr_unset, $key);
             }
@@ -139,107 +93,23 @@ class Card extends DomainObject
                 throw new \InvalidArgumentException($msg);
             }
         }
-
-/*
-        $country = upper($this->data['address_country']);
-        $zip = $this->data['zip'];
-
-        if (($country == 'INDIA') or
-            ($country == 'IN'))
-        {
-            if ((strlen($zip) !== 5) or
-                (!is_numeric($zip)))
-                throw exception!
-        }
-*/
-
     }
 
-    public function build(array $input = null)
+    public function generateLast4($input)
     {
-        $this->input = $input;
+    	$last4 = substr($input['number', -4]);
 
-        $this->verifyInputKeys();
-
-        $this->verifyInputValues();
-
-        $this->data = $input;
-
-        $this->buildMeta();
-
-        $this->set();
+    	$this->setField('last4', $last4);
     }
 
-    public function set(array $data = null)
+    public function generateType($input)
     {
-        if ($data === null)
-        {
-            if ($this->data === null)
-            {
-                throw new \InvalidArgumentException("$data not provided");
-            }
-            else $data = $this->data;
-        }
-        else 
-            $this->data = $data;
-
-        // Essential attributes
-        $this->setEssential();
-        
-        // Generated attributes
-        $this->setGenerated();
-
-        // Address atributes
-        $this->setAddress();
+    	$this->setField('type', 'visa');
     }
 
-    private function setEssential()
+    public function generateCountry('$input')
     {
-        $this->set_attr('id');
-        $this->set_attr('number');
-        $this->set_attr('cardholder');
-        $this->set_attr('expiry_month');
-        $this->set_attr('expiry_year');
-        $this->set_attr('cvv');
-    }
-
-    private function setGenerated()
-    {
-        // generated attributes
-        $this->set_attr('last4');
-        $this->set_attr('type');
-        $this->set_attr('country');
-    }
-
-    private function setAddress()
-    {
-        if(empty($this->data['address_line1']))
-            return;
-        
-        $this->set_attr('address_line1');
-        $this->set_attr('address_line2');
-        $this->set_attr('address_city');
-        $this->set_attr('address_state');
-        $this->set_attr('address_zip');
-    }
-   
-    private function buildMeta()
-    {
-        $this->data['last4'] = substr($this->data['number'], -4);
-        $this->data['type'] = $this->type($this->data['number']);
-        $this->data['country'] = $this->country($this->data['number']);
-    }
-
-    private function type($number)
-    {
-        return 'visa';
-
-    }
-
-    private function country($number)
-    {
-
-        return 'IN';
+    	$this->setField('country', 'IN');
     }
 
     public function setId($id)
@@ -250,36 +120,6 @@ class Card extends DomainObject
     public function getId()
     {
         return $this->attr['id'];
-    }
-
-    private function setAttr($key)
-    {
-        if ((array_key_exists($key, $this->data)) and
-            (array_key_exists($key, $this->attr)))
-        {
-            $this->attr[$key] = $this->data[$key];
-        }
-        else
-        {
-            if ($key === 'id')
-            {
-                ;
-            }
-            else if ($key === 'card_id')
-            {
-                $this->setId($this->data[$key]);
-            }
-            else
-            {
-                $msg = $key . ' is not a valid key.';
-                throw new \InvalidArgumentException($msg);
-            }
-        }
-    }
-
-    public static function input_keys()
-    {
-        return self::$input_keys;
     }
 
     const FLAG_DEFAULT          = 0x0;
