@@ -15,7 +15,7 @@ class CardController extends BaseController
 		
 		$token_service = new Token();
 
-		list($token_data, $err) = $token_service->generate($input);
+		$token_data = $token_service->generate($input);
 
 		if ($err !== ERR::SUCCESS)
 			return ERR::handle_error();

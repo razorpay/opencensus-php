@@ -35,7 +35,7 @@ class Card extends DomainObject
         'updated_at'
         );
 
-    protected static $buildRules = array(
+    protected static $createRules = array(
         'number'        => 'required|digits',
         'expiry_month'  => 'required|numeric|digits:2',
         'expiry_year'   => 'required|numeric|digits_between:2,4',

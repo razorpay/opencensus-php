@@ -10,40 +10,23 @@ class CardToken extends DataMapper {
 
 	const table = 'cardtokens';
 
-	/**
-     * attributes which can be set by us in db.
-     */
-    private static $attr_insert = array(
-        'token',
-        'card_id',
-        'merchant_id',
-        'expired');
+	protected static $primaryKey = 'id';
 
-    private static $attr_required = array(
-        'token',
-        'card_id',
-        'merchant_id',
-        'expired');
+	protected static $primaryAutoGenerate = true;
 
-    private static $attr_update = array(
-        'expired'
-        );
+	protected static $timestamps = true;
 
     protected static $attr_db = array(
-        'id',
-        'token',
-
-        'card_id',
-        'merchant_id',
-
-        'expired',
-        'created_at',
-        'updated_at'
+        'id' => 'db',
+        'token' => 'db|insert_req',
+        'card_id' => 'db|insert_req',
+        'merchant_id' => 'db|insert_req',
+        'expired' => 'db|insert_req|update_req',
+        'created_at' => 'db',
+        'updated_at' => 'db'
         );
 
     private $card_token_do;
-
-	private $row = array();
 
 	public function insert(DO\CardToken $card_token_do)
 	{
@@ -57,72 +40,19 @@ class CardToken extends DataMapper {
 
         $this->insertCard();
 
-		$data = $card_token_do->get_token_data();
-
-        foreach ($data as $key=>$value)
-        {
-            if (!in_array($key, static::$attr_insert))
-            {
-                continue;
-            }
-
-            if (($value === null) or 
-                ($value === ""))
-            {
-                if (in_array($key, static::$attr_required))
-                {
-                    throw new \InvalidArgumentException($key);
-                }
-            }
-            else
-            {
-                $this->row[$key] = $value;
-            }
-        }
-
-        $id = DB::table(self::table)
-                ->insertGetId($this->row);
-
-        $card_token_do->setId($id);
+        parent::insert($card_token_do);
 	}
 
     private function insertCard()
     {
-        $card_token_do = $this->card_token_do;
+        $card_do = $this->card_token_do->getCard();
 
-        $card_do = $card_token_do->getCardDO();
+        $this->card_db = Card::persist($card_do);
 
-        $card_id = $card_token_do->getCardId();
-
-        if ($card_do !== null)
-        {
-            if ($card_id !== null)
-            {
-                $card_id_tok = $card_token_do->get_card_id();
-                if($card_id !== $card_id_tok)
-                    throw new \LogicException("Card Id in token and card don't match");
-            }
-            else 
-            {
-                $card_db = new Card();
-
-                $card_db->insert($card_do);
-
-                $this->card_db = $card_db;
-
-                $card_id = $card_do->getId();
-
-                $this->card_token_do->setCardId($card_id);
-            }
-        }
-        else if ($card_id === null)
-        {
-            throw new \InvalidArgumentException('card_id not set.');
-        }
-
+        $this->card_token_do->setCardId($card_do->getId());
     }
 
-    public function fetchWithCard(DO\CardToken $card_token_do)
+    public function fetchWithCard($token, $merchant_id)
     {
         $token = $card_token_do->getToken();
 

@@ -14,108 +14,39 @@ class Transaction extends DataMapper
 
 	const table = 'transactions';
 
-	/**
-	 * attributes which can be set by us in db during insert.
-	 */
-	private static $attr_insert = array(
-		'uid',
-		'merchant_id',
-		'token',
-
-		'amount',
-		'currency',
-		'processed',
-		'desc'
-		);
-
-	private static $attr_required = array(
-		'uid',
-		'merchant_id',
-		'token',
-		'amount',
-		'currency',
-		'desc'
-		);
-
-	private static $attr_update = array(
-		'decline_code',
-		'decline_message',
-		'processed',
-		'refund'
-		);
-
-	private static $fetch_params_keys = array(
-		'created',
-		'from_created',
-		'to_created',
-		'count',
-		'offset'
-		);
-
 	private static $fetch_params_rules = array(
-        'created'  		=> 'integer',
-        'from_created'  => 'integer',
-        'to_created'    => 'integer',
-        'count'    		=> 'integer|max:100',
-        'offset'     	=> 'integer'
+        'created'  		=> 'numeric|required_without:from_created,to_created',
+        'from_created'  => 'numeric|required_without:created',
+        'to_created'    => 'numeric|required_without:created',
+        'count'    		=> 'numeric|max:100',
+        'offset'     	=> 'numeric'
+        'merchant_id'	=> 'required'
         );
 
-	protected static $attr_db = array(
-		'id',
-        'uid',
-        'merchant_id',
-        'token',
-        'amount',
-        'currency',
-        'processed',
-        'desc',
+	protected static $attributes = array(
+		'id' => 'db',
+        'uid' => 'db|insert_req',
+        'merchant_id' => 'db|insert_req',
+        'token' => 'db|insert_req',
+        'amount' => 'db|insert_req',
+        'currency' => 'db|insert_req',
+        'processed' => 'db|update_req|insert',
+        'desc' => 'db|insert_req',
 //        'refund',
-        'created_at',
-        'updated_at');
+        'decline_code' => 'db|update_req',
+        'decline_message' => 'db|update_req'
+        'created_at' => 'db',
+        'updated_at' => 'db');
+
+	protected static $timestamps = true;
+
+	protected static $primaryAutoGenerate = true;
 
 	private $row = array();
 
 	private $fetch_params = null;
 
 	private $fetch_params_verified = false;
-
-	public function insert(DO\Transaction $txn_do)
-	{
-		$data = $txn_do->getTransactionData();
-
-		foreach ($data as $key=>$value)
-		{
-			if (!in_array($key, self::$attr_insert))
-			{
-				continue;
-			}
-
-			if (($value === null) or 
-				($value === ''))
-			{
-				if (in_array($key, self::$attr_required))
-				{
-					throw new \InvalidArgumentException($key);
-				}
-			}
-			else
-			{
-				$this->row[$key] = $value;
-			}
-		}
-
-		try
-		{
-			$id = DB::table(self::table)
-					->insertGetId($this->row);
-			$txn_do->set_id((int) $id);
-		}
-		catch(Exception $e)
-		{
-			var_dump($e);
-		}
-	}
-
 
 	const FETCH_DEFAULT 		= 0x0;
 	const FETCH_WITH_CARD		= 0x1;
@@ -129,28 +60,15 @@ class Transaction extends DataMapper
 	 */
 	public function fetch($param, $flag = 0x0)
 	{
-		if (is_int($flag) === false)
+		if (! is_int($flag))
 		{
 			throw new \InvalidArgumentException('$flag is not an integer');
 		}
 
-		if (($this->fetch_params === null) and
-			($param === null))
+		if ($param === null)
 			throw new \InvalidArgumentException('$param not provided');
 
-		if ($this->fetch_params === null)
-		{
-			self::validateFetchParams($param);
-		}
-		else if ($this->fetch_params_verified === false)
-		{
-			throw new \InvalidArgumentException("Parameters provided for fetching transaction data is invalid.");
-		}
-		else
-		{
-			$param = $this->fetch_params;
-		}
-		
+		self::validateFetchParams($param);
 
 		/*
 		 * Create the fluent query.
@@ -159,10 +77,7 @@ class Transaction extends DataMapper
 
 		$cols = array();
 
-		if (isset($param['merchant_id']))
-		{
-			$query->where('merchant_id', '=', $param['merchant_id']);
-		}
+		$query->where('merchant_id', '=', $param['merchant_id']);
 
 		if (isset($param['created']))
 		{
@@ -173,12 +88,14 @@ class Transaction extends DataMapper
 			if (isset($param['from_created'])) 
 			{
 				$from_created = $param['from_created'];
+			
 				$txn_query = $txn_query->where('created_at', '>', $from_created);
 			}
 			
 			if (isset($param['to_created']))
 			{
 				$to_created = $param['to_created'];
+			
 				$txn_query = $txn_query->where('created_at', '<', $to_created);
 			}
 		}
@@ -311,51 +228,7 @@ class Transaction extends DataMapper
 	{
 		$this->fetch_params = $param;
 
-		$param_keys = array_keys($param);
-        
-        $invalid_keys = array_diff($param_keys, self::$fetch_params_keys);
-
-        if (count($invalid_keys) !== 0)
-        {
-            throw new InvalidKeysException($invalid_keys);
-        }
-
-        $validation = Validator::make($param, self::$fetch_params_rules);
-
-        if ($validation->fails()) 
-        {
-            throw new \InvalidArgumentException($validation->errors->all());
-        }
-        
-        if ((isset($param['created'])) and
-        	((isset($param['from_created']) or
-        	 (isset($param['to_created'])))))
-        {
-        	; // throw error here
-        }
-
-        if (isset($param['created']))
-        {
-        	; // do few things here
-        }
-
-        if (isset($param['from_created']))
-        {
-        	;
-        }
-
-        if (isset($param['to_created']))
-        {
-        	;
-        }
-
-        if (isset($param['offset']))
-        {
-        	;
-        }
-
-        $this->fetch_params_verified = true;
-
+		validate(self::$fetch_param_rules, $param);
 	}
 
 	private static function checkTimestamp(&$timestamp)

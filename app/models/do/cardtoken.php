@@ -9,28 +9,28 @@ class CardToken extends DomainObject
     protected static $fields = array(
         'id',
         'token',
-
         'card_id',
         'merchant_id',
-
         'expired',
         'created_at',
         'updated_at'
         );
 
-    protected static $inputRules = array(
-        'card_id' : 'numeric',
-        'merchant_id': 'required|numeric',
-        'expired' : 'sometimes|numeric|digits:1'
+    protected static $createRules = array(
+        'card_id' 	  : 'required|numeric',
+        'merchant_id' : 'required|numeric',
+        'expired' 	  : 'sometimes|numeric|digits:1'
         );
+
+    protected static $do = array(
+    	'one' => array('Card'),
+    	'many' => array());
 
     protected static $generators = array('token');
 
     portected static $appends = array('object');
 
     private static $TOKEN_LEN = 16;
-
-    private $card_do = null;
 
     private function generateToken()
     {
@@ -39,35 +39,26 @@ class CardToken extends DomainObject
         $this->attr['token'] = $token;
     }
 
-    private function buildCardDO($input)
-    {
-        $card_do = new Card();
-        
-        $card_do->build($input);
-    }
-
     /**
      * @param array $input  Input supplied by the user goes.
      * @param array $data   Data generated and supplied by the application.
      */
     public function build(array $input)
     {
-        $card_input_keys = Card::getInputKeys();
+        $card_input_keys = Card::getCreateInputKeys();
 
         $card_input = array();
 
-        foreach ($card_input_keys as $ix)
-        {
-            if (isset($input[$ix]))
-            {
-                $card_input[$ix] = $input[$ix];
-                unset($input[$ix]);
-            }
-        }
+		list($token_input, $card_input) = break_assoc_array(
+			$input, 
+			self::getCreateInputKeys(), 
+			Card::getCreateInputKeys());
 
-        $this->buildCardDO($card_input);
+        $card = Card::create($card_input);
 
-        parent::build();
+        $this->setCard('Card', $card)
+
+        parent::build($input);
     }
 
     public function getId()
@@ -90,7 +81,7 @@ class CardToken extends DomainObject
         if ((strlen($token) === self::$TOKEN_LEN) and
             (ctype_alnum($token)))
         {
-            $this->data['token'] = $token;
+            $this->setField('token', $token);
         }
         else
         {
@@ -103,45 +94,26 @@ class CardToken extends DomainObject
         return $this->getField('card_id');
     }
 
-    public function setCardId($card_id = null)
+    public function setCardId($card_id)
     {
-        if ($card_id !== null)
-        {
-            $this->attr['card_id'] = $card_id;
+    	$this->setField('card_id', $card_id);
 
-            if ($this->card_do !== null)
-            {
-                $this->card_do->setId($card_id);
-            }
-        }
-        else if ($this->card_do !== null)
-        {
-            $card_id = $this->$card_do->getId();
+    	$card = $this->getObject('Card');
 
-            if ($card_id !== null)
-            {
-                $this->attr['card_id'] = $card_id;
-            }
-        }
-        else
+        if ($card !== null)
         {
-            throw new InvalidArgumentException("Failed to get card_id");
+            $card->setPrimary($card_id);
         }
     }
 
-    public function getCardDO()
+    public function getCard()
     {
-        return $this->card_do;
+        return $this->getObject('Card');
     }
 
-    public function setCardDO(Card $card_do)
+    public function setCard(Card $card)
     {
-        if ($this->card_do !== null)
-        {
-            throw new \InvalidArgumentException('message');
-        }
-        
-        $this->card_do = $card_do;
+    	$this->setObject('Card', $card)
     }
 
     public function setMerchantId($merchant_id)

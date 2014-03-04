@@ -10,114 +10,35 @@ class Card extends DataMapper
 {
     const table = 'cards';
 
-    /**
-     * attributes which can be set by us in db.
-     */
-    private static $attr_insert = array(
-        'number',
-        'cardholder',
-        'cvv',
-        
-        'expiry_month',
-        'expiry_year',
+    protected static $timestamps = true;
 
-        'last4',
-        'type',
-        'country',
+    protected static $primaryKey = 'id';
 
-        'address_line1',
-        'address_line2',
-        'address_state',
-        'address_city' ,
-        'address_zip',
-        'address_country');
+    protected static $attributes = array(
+        'id' => 'db',
+        'number' => 'db|insert_req',
+        'cardholder' => 'db|insert_req',
+        'cvv' => 'db|insert_req',
 
-    private static $attr_required = array(
-        'number',
-        'cardholder',
-        'expiry_month',
-        'expiry_year',
-        'last4',
-        'type',
-        'country');
+        'expiry_month' => 'db|insert_req',
+        'expiry_year' => 'db|insert_req',
 
-    private static $attr_update = array(
-        'cvv_check',
-        'address_line1_check',
-        'address_zip_check');
+        'last4' => 'db|insert_req',
+        'type' => 'db|insert_req',
+        'country' => 'db|insert_req',
 
-    protected static $attr_db = array(
-        'id' ,
-        'number',
-        'cardholder',
-        'cvv',
+        'address_line1' => 'db|insert_req',
+        'address_line2' => 'db|insert_req',
+        'address_state' => 'db|insert_req',
+        'address_city' => 'db|insert_req',
+        'address_zip' => 'db|insert_req',
+        'address_country' => 'db|insert_req',
 
-        'expiry_month',
-        'expiry_year',
+        'cvv_check' => 'db|insert|update',
+        'address_line1_check'  => 'db|insert|update',
+        'address_zip_check'  => 'db|insert|update',
 
-        'last4',
-        'type',
-        'country',
+        'created_at' => 'db',
+        'updated_at' => 'db');
 
-        'address_line1',
-        'address_line2',
-        'address_state',
-        'address_city',
-        'address_zip',
-        'address_country',
-
-        'cvv_check',
-        'address_line1_check',
-        'address_zip_check',
-
-        'created_at',
-        'updated_at');
-
-    private $row = array();
-
-	public function insert(DO\Card $card_do)
-    {
-        $data = $card_do->get_card_data();
-
-        foreach ($data as $key=>$value)
-        {
-            if (!in_array($key, static::$attr_insert))
-            {
-                continue;
-            }
-
-            if (($value === null) or 
-                ($value === ''))
-            {
-                if (in_array($key, static::$attr_required))
-                {
-                    throw new \InvalidArgumentException($key);
-                }
-            }
-            else
-            {
-                $this->row[$key] = $value;
-            }
-        }
-
-        try
-        {
-            $id = DB::table(self::table)
-                    ->insertGetId($this->row);
-            $card_do->set_id((int) $id);
-        }
-        catch(Exception $e)
-        {
-            var_dump($e);
-            return ERR::DB_PROBLEM;
-        }
-
-        return ERR::SUCCESS;
-    }
-
-    public function update($domain_object)
-    {
-        ;
-    }
 }
-

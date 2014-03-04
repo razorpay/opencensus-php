@@ -13,8 +13,6 @@ class Transaction
      */
     public function create($input = null)
     {
-        $txn_do = new DO\Transaction();
-
         $card_token_do = null;
 
         $txn_input = $input;
@@ -25,32 +23,28 @@ class Transaction
         }
         else 
         {
-            list($token_input, $txn_input) = $this->separateTokenTxnInput($input);
+			list($token_input, $txn_input) = break_assoc_array(
+											$input, 
+											DO\CardToken::getCreateInputKeys(), 
+											DO\Transaction::getCreateInputKeys());
 
-            $card_token_do = $this->createToken($token_input);
+            $token_service = new Token();
+
+	        $card_token_do = $token_service->generate($token_input);
         }
 
-        $txn_do->setTokenDO($card_token_do);
+        $txn_do = DO\Transaction::create($txn_input);
 
-        $txn_do->build($txn_input);
+        $txn_do->setToken($card_token_do);
 
-        $txn_db = new DAL\Transaction();
+        $txn_db = DAL\Transaction::persist($txn_do);
         
-        $txn_db->insert($txn_do);
-
-        $process_now = $txn_do->processNow();
-
-        if ($process_now)
+        if ($txn_do->processNow())
         {
-            $txn_do = $this->process(null, $txn_do);
-
+            $txn_do = $this->process($txn_do);
         }
         
-        $flag = DO\Transaction::WITH_CARD |
-                DO\Transaction::WITH_OBJECT_FIELD |
-                DO\Transaction::ONLY_PUBLIC_FIELDS;
-        
-        $txn_data = $txn_do->getTransactionData($flag);
+        $txn_data = $txn_do->toArray();
 
         return $txn_data;
     }
@@ -59,21 +53,13 @@ class Transaction
      * Processes a transaction.
      * This function will be re-written.
      */
-    public function process($input, DO\Transaction $txn_do = null)
+    public function process($txn)
     {
-        if (($input === null) and ($txn_do === null) or
-            ($input !== null) and ($txn_do !== null))
-            throw new \InvalidArgumentException('message');
-
-        if (($input !== null) and
-            (!is_array($input)))
-            throw new \InvalidArgumentException('message');
-
-        if ($txn_do !== null)
+        if ($txno isntanceof DO\Transaction)
         {
             $gateway = new Gateway;
             $gateway->process($txn_do);
-            $txn_do->setProcessed(1);
+            $txn->setProcessed(1);
 
             return $txn_do;
         }
@@ -83,7 +69,7 @@ class Transaction
     {
         $txn_db = new DAL\Transaction;
 
-        $txn_db->validate_fetch_params($input);
+        $txn_db->validateFetchParams($input);
 
         $flag = DAL\Transaction::FETCH_WITH_CARD;
         
@@ -95,7 +81,7 @@ class Transaction
 
         foreach ($txn_do_arr as $txn_do)
         {
-            array_push($txn_data_arr['data'], $txn_do->get_transaction_data($flag));
+            array_push($txn_data_arr['data'], $txn_do->toArray($flag));
         }
 
         return $txn_data_arr;
@@ -107,46 +93,9 @@ class Transaction
         $card_token_db = new DAL\CardToken;
 
         $card_token_do->setToken($token_input);
-        
+
         $card_token_db->fetchWithCard($card_token_do);
 
         array $card_token_do;
-    }
-
-    private function separate_token_txn_input($input)
-    {
-        $token_input_keys = DO\CardToken::input_keys();
-        
-        $token_input = array();
-        $txn_input = array();
-
-        foreach ($input as $key => $value)
-        {
-            if (in_array($key, $token_input_keys))
-            {
-                $token_input[$key] = $value;
-            }
-            else
-            {
-                $txn_input[$key] = $value;
-            }
-        }
-
-        $txn_input['merchant_id'] = BasicAuth::MerchantId();
-
-        return array($token_input, $txn_input);
-    }
-
-    private function createToken($token_input)
-    {
-        $card_token_db = new DAL\CardToken;
-
-        $token_service = new Token;
-
-        $card_token_do = $token_service->buildToken($token_input);
-     
-        $card_token_db->insert($card_token_do);
-        
-        return $card_token_do;
     }
 }

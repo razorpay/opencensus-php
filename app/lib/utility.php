@@ -53,117 +53,97 @@ class Utility
     }
 }
 
+if (! function_exists('is_assoc_array'))
+{
+	/**
+	 * Checks if the array is assoc or sequential
+	 * 
+	 * It compares the keys (which for a sequential array are 
+	 * always 0,1,2 etc) to the keys of the keys (which 
+	 * will always be 0,1,2 etc).
+	 *
+	 * @param  array  $array
+	 * @return bool
+	 */
+	function array_merge_intersect(array &$array1, $array2, $array3)
+	{
+		$intersect = array_intersect($array2, $array3);
 
-/**
- * This file is part of the array_column library
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- *
- * @copyright Copyright (c) 2013 Ben Ramsey <http://benramsey.com>
- * @license http://opensource.org/licenses/MIT MIT
- */
+   		$array1 = array_merge($array1, $intersect);
 
-if (!function_exists('array_column')) {
+   		return $array1;
+	}
+}
 
-    /**
-     * Returns the values from a single column of the input array, identified by
-     * the $columnKey.
-     *
-     * Optionally, you may provide an $indexKey to index the values in the returned
-     * array by the values from the $indexKey column in the input array.
-     *
-     * @param array $input A multi-dimensional array (record set) from which to pull
-     *                     a column of values.
-     * @param mixed $columnKey The column of values to return. This value may be the
-     *                         integer key of the column you wish to retrieve, or it
-     *                         may be the string key name for an associative array.
-     * @param mixed $indexKey (Optional.) The column to use as the index/keys for
-     *                        the returned array. This value may be the integer key
-     *                        of the column, or it may be the string key name.
-     * @return array
-     */
-    function array_column($input = null, $columnKey = null, $indexKey = null)
-    {
-        // Using func_get_args() in order to check for proper number of
-        // parameters and trigger errors exactly as the built-in array_column()
-        // does in PHP 5.5.
-        $argc = func_num_args();
-        $params = func_get_args();
 
-        if ($argc < 2) {
-            trigger_error("array_column() expects at least 2 parameters, {$argc} given", E_USER_WARNING);
-            return null;
+if (! function_exists('array_key_values'))
+{
+	function array_key_values($array, $keys)
+	{
+		$return = array();
+
+		foreach ($keys as $key)
+		{
+			$return[$key] = $array[$key];
+		}
+
+		return $key;
+	}
+}
+
+if (! function_exists('validate'))
+{
+	function validate($rules, $data)
+	{
+		$invalid_keys = array_diff_key($data, $rules);
+
+        if (count($invalid_keys) !== 0)
+        {
+            throw new \InvalidKeysException($invalid_keys);
         }
 
-        if (!is_array($params[0])) {
-            trigger_error('array_column() expects parameter 1 to be array, ' . gettype($params[0]) . ' given', E_USER_WARNING);
-            return null;
+        $validation = Validator::make($data, $rules);
+
+        if ($validation->fails()) 
+        {
+            throw new \InvalidArgumentException($validation->errors->all());
         }
+	}
+}
 
-        if (!is_int($params[1])
-            && !is_float($params[1])
-            && !is_string($params[1])
-            && $params[1] !== null
-            && !(is_object($params[1]) && method_exists($params[1], '__toString'))
-        ) {
-            trigger_error('array_column(): The column key should be either a string or an integer', E_USER_WARNING);
-            return false;
-        }
+if (! function_exists('break_assoc_arrays'))
+{
+	function break_assoc_arrays($array, $keys1, $keys2)
+	{
+		$array1 = array();
+		$array2 = array();
 
-        if (isset($params[2])
-            && !is_int($params[2])
-            && !is_float($params[2])
-            && !is_string($params[2])
-            && !(is_object($params[2]) && method_exists($params[2], '__toString'))
-        ) {
-            trigger_error('array_column(): The index key should be either a string or an integer', E_USER_WARNING);
-            return false;
-        }
+		foreach ($array as $key => $value)
+		{
+			if (in_array($key, $keys1))
+			{
+				$array1[$key] = $value;
+			}
+			
+			if(in_array($key, $keys2))
+			{
+				$array2[$key] = $value;
+			}
+		}
 
-        $paramsInput = $params[0];
-        $paramsColumnKey = ($params[1] !== null) ? (string) $params[1] : null;
+		return array($array1, $array2);
+	}
+}
 
-        $paramsIndexKey = null;
-        if (isset($params[2])) {
-            if (is_float($params[2]) || is_int($params[2])) {
-                $paramsIndexKey = (int) $params[2];
-            } else {
-                $paramsIndexKey = (string) $params[2];
-            }
-        }
+if (! function_exists('validate_keys'))
+{
+	function validate_keys($data, $rules)
+	{
+		$invalid_keys = array_diff_keys($data, $rules);
 
-        $resultArray = array();
-
-        foreach ($paramsInput as $row) {
-
-            $key = $value = null;
-            $keySet = $valueSet = false;
-
-            if ($paramsIndexKey !== null && array_key_exists($paramsIndexKey, $row)) {
-                $keySet = true;
-                $key = (string) $row[$paramsIndexKey];
-            }
-
-            if ($paramsColumnKey === null) {
-                $valueSet = true;
-                $value = $row;
-            } elseif (is_array($row) && array_key_exists($paramsColumnKey, $row)) {
-                $valueSet = true;
-                $value = $row[$paramsColumnKey];
-            }
-
-            if ($valueSet) {
-                if ($keySet) {
-                    $resultArray[$key] = $value;
-                } else {
-                    $resultArray[] = $value;
-                }
-            }
-
-        }
-
-        return $resultArray;
-    }
-
+		if (count($invalid_keys) > 0)
+		{
+			throw new \InvalidKeysException($invalid_keys);
+		}
+	}
 }

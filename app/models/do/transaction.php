@@ -8,7 +8,7 @@ use \Utility;
 
 class Transaction extends DomainObject
 {
-    protected static $inputRules = array(
+    protected static $createRules = array(
         'merchant_id'   =>  'required|numeric',
         'amount'        =>  'required|numeric|max:10000',
         'currency'      =>  'required|max:3',
@@ -31,7 +31,11 @@ class Transaction extends DomainObject
 
     protected static $generate = array('uid');
 
-    protected static $validators = array('currency', 'amount');
+    protected static $validators = array('currency');
+
+    protected static $do = array(
+    	'one' => array('card', 'token'),
+    	'many' => array());
 
     private $process_now    = true;
 
@@ -40,18 +44,6 @@ class Transaction extends DomainObject
     private $card_do        = null;
 
     const int $UID_LEN = 16;
-
-    protected function validateAmount($input)
-    {
-        $amount = (int) $input['amount'];
-
-        if (($amount == 0) or
-            ($amount > 12345678))    // some large pre-decided number.
-            throw new \InvalidArgumentException('Amount provided is not valid');
-
-        // Put any syntactical or logical constraints on amount 
-        // before proceeding with the transaction.
-    }
 
     private function validateCurrency($input)
     {
@@ -76,17 +68,21 @@ class Transaction extends DomainObject
     	$this->setField('process', (bool) $value);
     }
 
-    public function setTokenDO(CardToken $card_token_do)
+    public function setToken($token)
     {
-        $this->card_token_do = $card_token_do;
-
-        if (empty($this->attr['token']))
-            $this->attr['token'] = $card_token_do->get_token();
+    	if (is_string($token))
+    	{
+    		$this->setField('token', $token);
+    	}
+    	else if ($token instanceof CardToken)
+    	{
+    		$this->setObject('token', $token);
+    	}
     }
 
-    public function setCardDO(Card $card_do)
+    public function setCard(Card $card)
     {
-        $this->card_do = $card_do;
+        $this->setObject('Card', $card);
     }
 
     public function getProcessNowField()

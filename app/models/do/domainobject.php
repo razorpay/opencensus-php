@@ -20,12 +20,30 @@ class DomainObject
 	protected $data = array();
 
 	/**
+	 * Links to domain objects
+	 *
+	 */
+	protected $objects = array();
+
+	/**
 	 * Fields of the object which can be filled.
 	 *
 	 * @var  array
 	 */
-	protected $fields = array();
-	
+	protected static $fields = array();
+
+	/**
+	 * 'one' defines a single Domain Object
+	 * 'many' means multiple Domain Objects
+	 * These are actually stored in $objects
+	 * array
+	 *
+	 * @var array
+	 */
+	protected static $do = array()
+		'one'	=>	array(),
+		'many'	=>	array());
+
 	/**
 	 * Visible fields for arrays
 	 *
@@ -70,18 +88,27 @@ class DomainObject
 	 * Rules to validate input values for building
 	 * the domain object
 	 */
-	protected static $inputRules = array();
+	protected static $createRules = array();
+
+	/**
+	 * Denotes whether the current object
+	 * has been built from input (true) or
+	 * loaded from storage (false)
+	 * 
+	 * @var boolean
+	 */
+	protected $built = false;
 
 	/**
 	 * Whether or not to throw error when
 	 * calling setting a field not defined
-	 * in $fields array. By default suck keys
+	 * in $fields array. By default such keys
 	 * are ignored. If this bool is true, then
 	 * we throw an exception.
 	 * 
 	 * @var boolean
 	 */
-	protected static bool $errorOnUnknowFields = false;
+	protected static bool $errorOnUnknownKeys = true;
 
 	public function __construct()
 	{
@@ -106,7 +133,18 @@ class DomainObject
 
     	$this->unsetInput($input);
 
+    	$this->setBuilt(true);
+
     	$this->fill($input);
+    }
+
+    public static create(array $input)
+    {
+    	$do = new static();
+
+    	$do->build($input);
+
+    	return $do;
     }
 
     protected function validateInput($input)
@@ -120,7 +158,7 @@ class DomainObject
     {
     	$validation = Validator::make(
                         $input, 
-                        self::$inputRules);
+                        self::$createRules);
 
         if ($validation->fails()) 
         {
@@ -160,8 +198,8 @@ class DomainObject
     }
 
     protected function validateInputKeys($input)
-    {
-        $invalid_keys = array_diff_key($input, self::$inputRules);
+    
+        $invalid_keys = array_diff_key($input, self::$createRules);
 
         if (count($invalid_keys) !== 0)
         {
@@ -196,7 +234,7 @@ class DomainObject
     		//
     		// First we will check for the presence of a mutator for the set operation
 			// which simply lets the developers tweak the field as it is set on
-			// the model, such as "json_encoding" an listing of data for storage.
+			// the model.
 			//
 			 
 			if ($this->hasSetMutator($key))
@@ -211,7 +249,7 @@ class DomainObject
 			// We throw exception if bool variable is set to true.
 			// 
 			
-			if ($this->errorOnUnknowFields)
+			if ($this->errorOnUnknownKeys)
 			{
 		        throw new \InvalidKeyException($key . " is not a valid key.");
 		    }
@@ -241,6 +279,51 @@ class DomainObject
 		}
     }
 
+    /**
+     * Sets the object in $objects
+     * 
+     * @param [type] $key [description]
+     * @param [type] $obj [description]
+     */
+    public function setObject($key, $obj)
+    {
+    	if (array_key_exists($key, self::$do['one']))
+    	{
+    		$this->objects[$key] = $obj;
+    	}
+    	else if (array_key_exists($key, self::$do['many']))
+    	{
+    		if (isset($this->objects[$key]))
+    		{
+    			array_push($this->objects[$key], $obj);
+    		}
+    		else
+    		{
+    			$this->objects[$key] = array($obj);
+    		}
+    	}
+    	else
+    	{
+    		throw new \InvalidKeyException($key . ' is not defined for this domain object');
+    	}
+    }
+
+    public function getObject($key)
+    {
+    	if ((! array_key_exists($key, self::$do['one'])) and
+    		(! array_key_exists($key, self::$do['many'])))
+    	{
+    		if ($this->errorOnUnknownKeys))
+			{
+	    		throw new \InvalidKeyException($key . ' is not defined for this domain object')
+	    	}
+	    }
+    	else if (isset($this->objects[$key]))
+    	{
+    		return $this->objects[$key];
+    	}
+    }
+
 	/**
 	 * Dynamically set fields on the object.
 	 *
@@ -264,8 +347,23 @@ class DomainObject
 		return $this->getField($key);
 	}
 
+	public function setBuilt($value)
+	{
+		if (! is_bool($value))
+		{
+			throw new \InvalidArgumentException('Argument should be boolean');
+		}
+
+		$this->built = $value;
+	}
+
+	public function isBuilt()
+	{
+		return $this->built;
+	}
+
 	/**
-	 * Determine if a set mutator exists for an field.
+	 * Determine if a set mutator exists for a field
 	 *
 	 * @param  string  $key
 	 * @return bool
@@ -359,10 +457,8 @@ class DomainObject
 		return self::$hidden;
 	}
 
-	public static function getInputKeys()
+	public static function getCreateInputKeys()
 	{
-		return array_keys(self::$inputRules);
+		return array_keys(self::$createRules);
 	}
-
-
 }
