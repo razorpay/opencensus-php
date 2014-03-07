@@ -34,6 +34,7 @@ class CreateTransactions  extends Migration {
 			$table->boolean('livemode');
 
 			$table->string('token', 16)
+				  ->unique()
 				  ->nullable();
 			
 			$table->boolean('processed')
@@ -75,9 +76,9 @@ class CreateTransactions  extends Migration {
 
 			$table->dropForeign('transactions_merchant_id_foreign');
 		
-			$table->drop_foreign('transactions_status_code_foreign');	
+			$table->dropForeign('transactions_status_code_foreign');	
 
-			$table->drop_foreign('transactions_token_foreign');
+			$table->dropForeign('transactions_token_foreign');
 		});
 
 		Schema::drop('transactions');

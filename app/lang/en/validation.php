@@ -74,7 +74,7 @@ return array(
 	 */
 	
 	"alpha_space"      => "The :attribute may only contain alphabets and spaces",
-	"address"          => "The :attribute is not a valid address"
+	"address"          => "The :attribute is not a valid address",
 
 	/*
 	|--------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 
-use Service\BasicAuth;
+use Models\Service\BasicAuth;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +44,7 @@ Route::filter('auth', function()
 	{
 		$key = $_SERVER['PHP_AUTH_USER'];
 
-		if (BasicAuth::verifySecret($key) == false)
+		if (BasicAuth::getInstance()->verifySecret($key) == false)
 		{
 			return Response::view('error.401', array(), 401);
 		}

@@ -1,14 +1,13 @@
 <?php
 
-namespace Service;
+namespace Models\Service;
 
-use \ERR;
-use DomainObject\Transaction as TransactionDO;
-use DataMapper\Transaction as TransactionDB;
+use Models\Manager;
+use Models\DAL;
 
 class Gateway
 {
-	public function process(TransactionDO $txn_do)
+	public function process($txn)
 	{
 		return true;
 	}

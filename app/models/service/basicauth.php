@@ -1,15 +1,15 @@
 <?php
 
-namespace Service;
+namespace Models\Service;
 
-use DataMapper\Key;
-use DataMapper\Merchant;
+use Models\DAL;
+use Models\Manager;
 
 class BasicAuth extends \Singleton {
 	
-	private $Key = NULL;
+	private $Key = null;
 
-	private $Merchant = NULL;
+	private $Merchant = null;
 
 	public function verify($key)
 	{
@@ -18,7 +18,7 @@ class BasicAuth extends \Singleton {
 			throw new \InvalidArgumentException('NULL not an accepted key');
 		}
 
-		$Key = Key::findByKey($key);
+		$Key = DAL\Key::findByKey($key);
 		
 		if ($Key === null)
 		{
@@ -31,64 +31,64 @@ class BasicAuth extends \Singleton {
 		
 		$merchant_id = $Key->merchant_id;
 		
-		$Merchant = Merchant::find($merchant_id);
+		$Merchant = DAL\Merchant::find($merchant_id);
 
 		if(null == $Merchant)
 		{
 			throw new \InvalidArgumentException("Key does not match any merchant");
 		}
 
-		self::$Key = $Key;
+		$this->Key = $Key;
 
-		self::$Merchant = $Merchant;
+		$this->Merchant = $Merchant;
 
 		return true;
 	}
 
 	public function check()
 	{
-		if ((!is_null(self::$Key)) and
-			(!is_null(self::$Merchant)))
-			return true;
+		if (($this->Key == null) or
+			($this->Merchant == null))
+			return false;
 		else
-			return false;	
+			return true;	
 	}
 
 	public function Key()
 	{
-		return self::$Key;
+		return $this->Key;
 	}
 
 	public function Merchant()
 	{
-		return self::$Merchant;
+		return $this->Merchant;
 	}
 
 	public function MerchantId()
 	{
-		return (int) self::$Merchant->id;
+		return (int) $this->Merchant->id;
 	}
 
 	public function live()
 	{
-		return self::$Key->live;
+		return $this->Key->live;
 	}
 
 	public function verifySecret($key = null)
 	{
-		return ((self::verify($key)) and
-				(self::secret());
+		return (($this->verify($key)) and
+				($this->secret()));
 	}
 
 	public function secret()
 	{
-		return ((self::check()) and
-			    (self::$Key->secret));
+		return (($this->check()) and
+			    ($this->Key->secret));
 	}
 
 	public function verifyPublic($key = null)
 	{
-		return !self::verifySecret($key);
+		return !$this->verifySecret($key);
 	}
 
 }

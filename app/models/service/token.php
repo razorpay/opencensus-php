@@ -2,11 +2,10 @@
 
 namespace Models\Service;
 
-use Models\DO;
+use Models\Manager;
 use Models\DAL;
-use Utility;
 
-class Token
+class Token extends Service
 {
     /**
      * Generates a new token referencing credit card info provided.
@@ -15,27 +14,26 @@ class Token
      */
 	public function generate($input)
 	{
-        $card_token_do = DO\CardToken::create($input);
+		list($card_input, $card_token_input) = Manager\CardToken::separateTokenAndCardCreateInput($input);
 
-		DAL\CardToken::persist($card_token_do);
+        $card_data = Manager\Card::createValidate($card_input)->getData();
+
+        $card = DAL\Card::create($card_data);
+        
+        $card_token_data = Manager\CardToken::createValidate($card_token_input)->getData();
+
+        $card_token_data['card_id'] = $card->getId();
+
+		$token = DAL\CardToken::create($card_token_data);
 
         // $token_data = $card_token_do->toArray();
         
-        return $card_token_do;
+        return $token;
 	}
 
     public function retrieve($token, $merchant_id)
     {
-        $card_token_do = new CardTokenDO;
-        $card_token_db = new CardTokenDB;
-
-        $card_token_do->set_token($token);
-        
-        $card_token_do->set_merchant_id($merchant_id);
-
-        $card_token_db->fetchWithCard($card_token_do);
-
-        $token_data = $card_token_do->toArray();
+        DAL\CardToken::findByTokenAndMerchantId($token, $merchant_id);
 
         return $token_data;
     }

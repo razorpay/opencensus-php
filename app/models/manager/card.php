@@ -1,45 +1,17 @@
 <?php 
 
-namespace Models\DO;
+namespace Models\Manager;
 
 use \Validator;
-use \ERR;
+use Models\DAL;
 
-class Card extends DomainObject
+class Card extends EntityManager
 {
-    protected static $fields = array(
-        'id',
-        'number',
-        'cardholder',
-        'cvv',
-
-        'expiry_month',
-        'expiry_year',
-
-        'last4',
-        'type',
-        'country',
-
-        'address_line1',
-        'address_line2',
-        'address_state',
-        'address_city',
-        'address_zip',
-        'address_country',
-
-        'cvv_check',
-        'address_line1_check',
-        'address_zip_check',
-
-        'created_at',
-        'updated_at'
-        );
-
     protected static $createRules = array(
-        'number'        => 'required|digits',
+        'number'        => 'required|numeric',
         'expiry_month'  => 'required|numeric|digits:2',
         'expiry_year'   => 'required|numeric|digits_between:2,4',
-        'cvv'           => 'required|numeric|size:3',
+        'cvv'           => 'required|numeric|digits:3',
         'cardholder'    => 'required|regex:/[a-zA-Z ]*/|max:100',
         'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
         'address_line2'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
@@ -61,8 +33,6 @@ class Card extends DomainObject
     protected static $validators = array('address');
 
     protected static $generators = array('last4', 'country', 'type');
-
-    protected static $appends = array('object');
 
     private function validateAddress($input)
     {
@@ -97,9 +67,9 @@ class Card extends DomainObject
 
     public function generateLast4($input)
     {
-    	$last4 = substr($input['number', -4]);
+    	$last4 = substr($input['number'], -4);
 
-    	$this->setField('last4', $last4);
+        $this->setField('number', $last4);
     }
 
     public function generateType($input)
@@ -107,51 +77,10 @@ class Card extends DomainObject
     	$this->setField('type', 'visa');
     }
 
-    public function generateCountry('$input')
+    public function generateCountry($input)
     {
     	$this->setField('country', 'IN');
     }
 
-    public function setId($id)
-    {
-        $this->attr['id'] = $id;
-    }
 
-    public function getId()
-    {
-        return $this->attr['id'];
-    }
-
-    const FLAG_DEFAULT          = 0x0;
-    const NO_CHECK_FIELDS       = 0x1;
-    const WITH_OBJECT_FIELD     = 0x2;
-    const ONLY_PUBLIC_FIELDS    = 0x4;
-    
-    public function getCardData($flag = 0x0)
-    {
-        $data = $this->attr;
-
-        unset($data['created_at']);
-        unset($data['updated_at']);
-
-        if ($flag & self::WITH_OBJECT_FIELD)
-            $data['object'] = 'card';
-
-        if ($flag & self::ONLY_PUBLIC_FIELDS)
-        {
-            unset($data['id']);
-            unset($data['number']);
-        }
-
-
-        if ($flag & self::NO_CHECK_FIELDS)
-        {
-            unset(
-                $data['cvv_check'],
-                $data['address_line1_check'],
-                $data['address_zip_check']);
-        }
-
-        return $data;
-    }
 }

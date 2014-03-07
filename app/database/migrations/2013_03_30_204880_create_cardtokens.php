@@ -50,6 +50,13 @@ class CreateCardtokens extends Migration {
 	 */
 	public function down()
 	{
+		Schema::table('cardtokens', function($table){
+
+			$table->dropForeign('cardtokens_card_id_foreign');
+		
+			$table->dropForeign('cardtokens_merchant_id_foreign');
+		});
+
 		Schema::drop('cardtokens');
 	}
 

@@ -1,7 +1,7 @@
 <?php
 
-use Service\Transaction;
-use Service\BasicAuth;
+use Models\Service\Transaction;
+use Models\Service\BasicAuth;
 
 class TransactionController extends BaseController 
 {
@@ -56,19 +56,12 @@ class TransactionController extends BaseController
 	*/
 	public function postIndex()
 	{
-		$txn_service = new Transaction();
-		
-		$input = Input::get();
+		$input = Input::all();
 
 		$input['merchant_id'] = BasicAuth::getInstance()->MerchantId();
 
-		list($txn_data, $err) = $txn_service->create($input, $merchant_id);
+		$txn_data = Transaction::getNewInstance()->create($input);
 		
-		if ($err !== ERR::SUCCESS)
-		{
-			return ERR::handle_error();
-		}
-
 		return Response::json($txn_data);
 	}
 
@@ -79,7 +72,7 @@ class TransactionController extends BaseController
 	{
 		$txn_service = new Transaction();
 
-		$input = Input::get();
+		$input = Input::all();
 
 		list($txn_data, $err) = $txn_service->retrieve($input);
 

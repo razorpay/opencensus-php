@@ -41,11 +41,11 @@ Route::group(array('before' => 'auth'), function()
 {
 	Route::post('transactions', 'TransactionController@postIndex');
 
-	Route::post('/tokens', 'CardController@postIndex');
+	Route::post('tokens', 'CardController@postIndex');
 
 	Route::get('tokens/(:any)', 'CardController@getRetrieve');
 
-	Route::get('transactions', 'TransactionController@getIndex');
+	Route::get('transactions', 'TransactionController@postIndex');
 
 	Route::get('transactions/(:any)', 'TransactionController@getIndex');
 

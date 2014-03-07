@@ -2,43 +2,78 @@
 
 namespace Models\DAL;
 
-use DO;
-use \DB;
-use \ERR;
-
-class Card extends DataMapper
+class Card extends DAL
 {
-    const table = 'cards';
+    protected $table = 'cards';
 
-    protected static $timestamps = true;
+    protected $fillable = array(
+        'id',
+        'number',
+        'cardholder',
+        'cvv',
 
-    protected static $primaryKey = 'id';
+        'expiry_month',
+        'expiry_year',
 
-    protected static $attributes = array(
-        'id' => 'db',
-        'number' => 'db|insert_req',
-        'cardholder' => 'db|insert_req',
-        'cvv' => 'db|insert_req',
+        'last4',
+        'type',
+        'country',
 
-        'expiry_month' => 'db|insert_req',
-        'expiry_year' => 'db|insert_req',
+        'address_line1',
+        'address_line2',
+        'address_state',
+        'address_city',
+        'address_zip',
+        'address_country',
 
-        'last4' => 'db|insert_req',
-        'type' => 'db|insert_req',
-        'country' => 'db|insert_req',
+        'cvv_check',
+        'address_line1_check',
+        'address_zip_check',
 
-        'address_line1' => 'db|insert_req',
-        'address_line2' => 'db|insert_req',
-        'address_state' => 'db|insert_req',
-        'address_city' => 'db|insert_req',
-        'address_zip' => 'db|insert_req',
-        'address_country' => 'db|insert_req',
+        'created_at',
+        'updated_at'
+        );
 
-        'cvv_check' => 'db|insert|update',
-        'address_line1_check'  => 'db|insert|update',
-        'address_zip_check'  => 'db|insert|update',
+    protected $guarded = array('id');
 
-        'created_at' => 'db',
-        'updated_at' => 'db');
+    protected $appends = array('object');
+
+    public function getId()
+    {
+        return $this->getAttribute('id');
+    }
+
+    const FLAG_DEFAULT          = 0x0;
+    const NO_CHECK_FIELDS       = 0x1;
+    const WITH_OBJECT_FIELD     = 0x2;
+    const ONLY_PUBLIC_FIELDS    = 0x4;
+    
+    public function getCardData($flag = 0x0)
+    {
+        $data = $this->attr;
+
+        unset($data['created_at']);
+        unset($data['updated_at']);
+
+        if ($flag & self::WITH_OBJECT_FIELD)
+            $data['object'] = 'card';
+
+        if ($flag & self::ONLY_PUBLIC_FIELDS)
+        {
+            unset($data['id']);
+            unset($data['number']);
+        }
+
+
+        if ($flag & self::NO_CHECK_FIELDS)
+        {
+            unset(
+                $data['cvv_check'],
+                $data['address_line1_check'],
+                $data['address_zip_check']);
+        }
+
+        return $data;
+    }
 
 }

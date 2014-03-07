@@ -2,49 +2,55 @@
 
 namespace Models\Service;
 
-use ERR;
-use Models\DO;
+use Models\Manager;
 use Models\DAL;
 
-class Transaction
+class Transaction extends Service
 {
     /**
      * Creates an entry for a new transaction.
      */
     public function create($input = null)
     {
-        $card_token_do = null;
+    	$card_token = null;
 
         $txn_input = $input;
-
+        
         if (array_key_exists('token', $input))
         {
-            $card_token_do = $this->loadToken($input['token']);
+        	if (array_key_exists('merchant_id', $input))
+        	{
+            	$card_token = DAL\CardToken::findByTokenAndMerchantId($input['token'], $input['merchant_id']);
+            }
+            else
+            {
+            	throw new \InvalidArgumentException('merchant_id not found');
+            }
+
+            if ($card_token->expired())
+            {
+            	throw new \LogicException('token already used');
+            }
         }
-        else 
+        else
         {
-			list($token_input, $txn_input) = break_assoc_array(
-											$input, 
-											DO\CardToken::getCreateInputKeys(), 
-											DO\Transaction::getCreateInputKeys());
+			list($token_input, $txn_input) = Manager\Transaction::separateTokenTxnInput($input);
 
-            $token_service = new Token();
+            $card_token = Token::getNewInstance()->generate($token_input);
 
-	        $card_token_do = $token_service->generate($token_input);
+	        $txn_input['token'] = $card_token->getToken();
         }
 
-        $txn_do = DO\Transaction::create($txn_input);
+        $data = Manager\Transaction::createValidate($txn_input)->getData();
 
-        $txn_do->setToken($card_token_do);
+        $txn = DAL\Transaction::create($data);
 
-        $txn_db = DAL\Transaction::persist($txn_do);
-        
-        if ($txn_do->processNow())
+        if ($input['process'] == '1')
         {
-            $txn_do = $this->process($txn_do);
+            $txn = $this->process($txn);
         }
-        
-        $txn_data = $txn_do->toArray();
+
+        $txn_data = $txn->toArray();
 
         return $txn_data;
     }
@@ -55,21 +61,21 @@ class Transaction
      */
     public function process($txn)
     {
-        if ($txno isntanceof DO\Transaction)
+        if ($txn instanceof DAL\Transaction)
         {
             $gateway = new Gateway;
-            $gateway->process($txn_do);
+            $gateway->process($txn);
             $txn->setProcessed(1);
 
-            return $txn_do;
+            return $txn;
         }
     }
 
     public function retrieve(array $input)
     {
-        $txn_db = new DAL\Transaction;
+        $txn = new DAL\Transaction;
 
-        $txn_db->validateFetchParams($input);
+        $txn->validateFetchParams($input);
 
         $flag = DAL\Transaction::FETCH_WITH_CARD;
         
@@ -85,17 +91,5 @@ class Transaction
         }
 
         return $txn_data_arr;
-    }
-
-    private function loadToken($token_input)
-    {
-        $card_token_do = new DO\CardToken;
-        $card_token_db = new DAL\CardToken;
-
-        $card_token_do->setToken($token_input);
-
-        $card_token_db->fetchWithCard($card_token_do);
-
-        array $card_token_do;
     }
 }
