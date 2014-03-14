@@ -15,10 +15,8 @@ class CreateKeys extends Migration {
 		Schema::create('keys', function(Blueprint $table){
 			$table->engine = 'InnoDB';
 
-			$table->increments('id');
-
-			$table->string('keys', 32)
-				  ->unique();
+			$table->string('id', 32)
+				  ->primary();
 			
 			$table->integer('merchant_id')
 				  ->unsigned()

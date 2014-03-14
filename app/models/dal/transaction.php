@@ -4,33 +4,40 @@ namespace Models\DAL;
 
 use \Validator;
 
-class Transaction extends DAL
+class Transaction extends UuidDAL
 {
 
 	protected $table = 'transactions';
 
 	private static $fetch_params_rules = array(
         'created'  		=> 'numeric|required_without:from_created,to_created',
-        'from_created'  => 'numeric|required_without:created',
-        'to_created'    => 'numeric|required_without:created',
+        'created_gt'    => 'numeric|required_without:created',
+        'created_lt'    => 'numeric|required_without:created',
         'count'    		=> 'numeric|max:100',
-        'offset'     	=> 'numeric',
-        'merchant_id'	=> 'required'
-        );
+        'skip'          => 'numeric',
+        'merchant_id'	=> 'required');
 
     protected $fillable = array(
-        'uid',
         'merchant_id',
         'token',
         'amount',
         'currency',
         'processed',
         'desc',
-//        'refund',
-        'created_at',
-        'updated_at');
+        'udf');
+//        'refund',);
 
     protected $guarded = array('id');
+
+    public function getUdfAttribute($udf)
+    {
+    	return unserialize($udf);
+    }
+
+    public function setUdfAttribute($value)
+    {
+    	$this->attribute['udf'] = serialize($udf)
+    }
 
 	const FETCH_WITH_CARD		= 0x1024;
 	const FETCH_WITH_TOKEN		= 0x2048;

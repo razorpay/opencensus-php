@@ -4,8 +4,9 @@ namespace Models\DAL;
 
 use \Validator;
 
-class Key extends DAL
+class Key extends UuidDAL
 {
+	protected $fillable = array();
 
 	protected $table  = 'keys';
 
@@ -25,11 +26,11 @@ class Key extends DAL
 			return false;
 		}
 
-		$this->keys = bin2hex(openssl_random_pseudo_bytes(16));
-		$this->live = $data['live'];
-		$this->secret = $data['secret'];
-		$this->merchant_id = $data['merchant_id'];
-		$this->active = 1;
+		$this->attributes['id'] = bin2hex(openssl_random_pseudo_bytes(16));
+		$this->attributes['live'] = $data['live'];
+		$this->attributes['secret'] = $data['secret'];
+		$this->attributes['merchant_id'] = $data['merchant_id'];
+		$this->attributes['active'] = 1;
 		return $this->save();
 	}
 
@@ -37,13 +38,6 @@ class Key extends DAL
 	{
 		return $this->belongsTo(
 			__NAMESPACE__.'\Merchant');
-	}
-
-	public static function findByKey($key)
-	{
-		$key = Key::where('keys', '=', $key)->first();
-		
-		return $key;
 	}
 
 	private static function generateKey()

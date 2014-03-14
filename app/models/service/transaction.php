@@ -18,6 +18,8 @@ class Transaction extends Service
         
         if (array_key_exists('token', $input))
         {
+        	throw new \InvalidArgumentException('token not supported yet');
+
         	if (array_key_exists('merchant_id', $input))
         	{
             	$card_token = DAL\CardToken::findByTokenAndMerchantId($input['token'], $input['merchant_id']);
@@ -34,11 +36,18 @@ class Transaction extends Service
         }
         else
         {
-			list($token_input, $txn_input) = Manager\Transaction::separateTokenTxnInput($input);
+        	if (! array_key_exists('card', $input))
+        	{
+        		throw new \InvalidArgumentException('Card not provided');
+        	}
 
-            $card_token = Token::getNewInstance()->generate($token_input);
+        	$card_input = $input['card'];
 
-	        $txn_input['token'] = $card_token->getToken();
+        	$card_data = Manager\Card::createValidate($card_input)->getData();
+
+			// $card_token = Token::getNewInstance()->generate($token_input);
+
+	    	// $txn_input['token'] = $card_token->getToken();
         }
 
         $data = Manager\Transaction::createValidate($txn_input)->getData();
@@ -61,7 +70,14 @@ class Transaction extends Service
      */
     public function process($txn)
     {
-        if ($txn instanceof DAL\Transaction)
+        if (is_string($txn))
+        {
+        	$txn = Transaction::findByTxn($txn);
+        }
+        else if (! ($txn instanceof DAL\Transaction)
+        {
+        	throw new \InvalidArgumentException('Invalid transaction id');
+        }
         {
             $gateway = new Gateway;
             $gateway->process($txn);
@@ -69,6 +85,7 @@ class Transaction extends Service
 
             return $txn;
         }
+        
     }
 
     public function retrieve(array $input)

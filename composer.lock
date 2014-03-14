@@ -1612,16 +1612,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JeffreyWay/Laravel-4-Generators.git",
-                "reference": "f0149677968893333b416afa48b6d5f804a7bc35"
+                "reference": "b3c2974a87891ddf48bae27b1d5176168016ef94"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JeffreyWay/Laravel-4-Generators/zipball/f0149677968893333b416afa48b6d5f804a7bc35",
-                "reference": "f0149677968893333b416afa48b6d5f804a7bc35",
+                "url": "https://api.github.com/repos/JeffreyWay/Laravel-4-Generators/zipball/b3c2974a87891ddf48bae27b1d5176168016ef94",
+                "reference": "b3c2974a87891ddf48bae27b1d5176168016ef94",
                 "shasum": ""
             },
             "require": {
-                "illuminate/support": "4.1.*",
+                "illuminate/support": "~4.1",
                 "php": ">=5.4.0"
             },
             "require-dev": {
@@ -1651,7 +1651,7 @@
                     "role": "Developer"
                 }
             ],
-            "time": "2014-03-06 14:37:24"
+            "time": "2014-03-13 17:48:09"
         }
     ],
     "packages-dev": [

@@ -5,6 +5,15 @@ namespace Models\DAL;
 class DAL extends \Eloquent
 {
 
+	/**
+	 * Indicates if the IDs are uuid.
+	 *
+	 * @var bool
+	 */
+	public $uuid = false;
+
+
+
 	const THEDEFAULT = 0x0;
 	const FIELDS = 0x1;
 	const ALL_FIELDS = 0x2;

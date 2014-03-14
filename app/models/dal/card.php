@@ -28,11 +28,7 @@ class Card extends DAL
 
         'cvv_check',
         'address_line1_check',
-        'address_zip_check',
-
-        'created_at',
-        'updated_at'
-        );
+        'address_zip_check');
 
     protected $guarded = array('id');
 

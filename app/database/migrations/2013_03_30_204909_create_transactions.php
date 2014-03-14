@@ -15,10 +15,8 @@ class CreateTransactions  extends Migration {
 		Schema::create('transactions', function(Blueprint $table){
 			$table->engine = 'InnoDB';
 			
-			$table->increments('id');
-
-			$table->string('uid', 16)
-				  ->unique();
+			$table->string('id', 32)
+				  ->primary();
 
 			$table->integer('merchant_id')
 				  ->unsigned();
@@ -46,6 +44,8 @@ class CreateTransactions  extends Migration {
 			
 			$table->string('bankresponse')
 				  ->nullable();
+
+			$table->binary('udf');
 			
 			$table->timestamps();	// Adds created_at and updated_at columns to the table
 
