@@ -16,13 +16,14 @@ class Transaction extends EntityManager
         'udf'           =>  'required');
 
     protected static $udfRules = array(
-    	'email'         =>  'required|email|max:250')
+    	'email'         =>  'required|email|max:250',
+    	'contact'       =>  'required|numeric|digits_between:8:12')
 
     protected static $generators = array('process');
 
     protected static $validators = array('currency', 'udf');
 
-    private $process_now    = true;
+    private $process_now = true;
 
     private function validateUdf($input)
     {

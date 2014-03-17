@@ -4,7 +4,7 @@ namespace Models\DAL;
 
 use \Validator;
 
-class Key extends UuidDAL
+class Key extends DAL
 {
 	protected $fillable = array();
 

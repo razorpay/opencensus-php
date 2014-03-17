@@ -18,8 +18,7 @@ class Card extends EntityManager
         'address_city'      => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
         'address_state'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
         'address_country'   => 'regex:/[a-zA-Z]*/|size:50',
-        'address_zip'       => 'numeric|max:10'
-        );
+        'address_zip'       => 'numeric|max:10');
 
     protected static $address_attributes = array(
         'address_line1',

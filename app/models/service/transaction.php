@@ -16,39 +16,16 @@ class Transaction extends Service
 
         $txn_input = $input;
         
-        if (array_key_exists('token', $input))
-        {
-        	throw new \InvalidArgumentException('token not supported yet');
+    	if (! array_key_exists('card', $input))
+    	{
+    		throw new \InvalidArgumentException('Card not provided');
+    	}
 
-        	if (array_key_exists('merchant_id', $input))
-        	{
-            	$card_token = DAL\CardToken::findByTokenAndMerchantId($input['token'], $input['merchant_id']);
-            }
-            else
-            {
-            	throw new \InvalidArgumentException('merchant_id not found');
-            }
+    	$card_input = $input['card'];
 
-            if ($card_token->expired())
-            {
-            	throw new \LogicException('token already used');
-            }
-        }
-        else
-        {
-        	if (! array_key_exists('card', $input))
-        	{
-        		throw new \InvalidArgumentException('Card not provided');
-        	}
+    	$card_data = Manager\Card::createValidate($card_input)->getData();
 
-        	$card_input = $input['card'];
-
-        	$card_data = Manager\Card::createValidate($card_input)->getData();
-
-			// $card_token = Token::getNewInstance()->generate($token_input);
-
-	    	// $txn_input['token'] = $card_token->getToken();
-        }
+    	unset($txn_input['card']);
 
         $data = Manager\Transaction::createValidate($txn_input)->getData();
 
@@ -56,7 +33,7 @@ class Transaction extends Service
 
         if ($input['process'] == '1')
         {
-            $txn = $this->process($txn);
+            $txn = $this->process($txn, $card_data);
         }
 
         $txn_data = $txn->toArray();
@@ -68,7 +45,7 @@ class Transaction extends Service
      * Processes a transaction.
      * This function will be re-written.
      */
-    public function process($txn)
+    public function process($txn, $card)
     {
         if (is_string($txn))
         {
@@ -78,6 +55,8 @@ class Transaction extends Service
         {
         	throw new \InvalidArgumentException('Invalid transaction id');
         }
+
+        // Call gateway with txn data
         {
             $gateway = new Gateway;
             $gateway->process($txn);
