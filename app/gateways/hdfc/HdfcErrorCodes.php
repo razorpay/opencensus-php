@@ -2,9 +2,9 @@
 
 namespace Gateway/HdfcGateway;
 
-class HdfcErrorCodes
+class HdfcErrorCodes extends \Singleton
 {
-	protected static $error = array(
+	protected $error = array(
 		'GW00150' => 'GW00150-Missing required data',
 		'GW00151' => 'GW00151-Invalid Action type',
 		'GW00152' => 'GW00152-Invalid Transaction Amount',
@@ -32,5 +32,22 @@ class HdfcErrorCodes
 		'PY20006' => 'PY20006-Invalid Brand',
 		'PY20001' => 'PY20001-Invalid Action Type',
 		'PY20002' => 'PY20002-Invalid amount');
+
+	protected parseErrorStr($error)
+	{
+		//
+		// All error codes returned by hdfc gateway start with !ERROR!
+		// Let's make sure it's present here
+		//
+		
+		$str = substr($error, 0, 7);
+
+		if ($str !== '!ERROR!')
+		{
+			return 'not a valid error message';
+		}
+
+		
+	}
 
 }

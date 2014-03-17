@@ -1,10 +1,33 @@
 <?php
 
+/**
+ * This file implements the interactions with HDFC gateway 
+ * via the api of FSF gateway (which HDFC uses) and which
+ * we actually interact with.
+ *
+ * The transaction flow for a purchase txn 
+ * in few simple words goes like this:
+ * 1. We send an enroll request for a card
+ * 2. For certain cards (probably cc) we get a 'NOT ENROLLED' response back
+ * 	  2.1. For these cards, we send auth request and complete the txn.
+ * 3. For certain cards (probably dc) we get an 'ENROLLED' response back
+ * 	  3.1. For these cards, we send a request to acquiring bank (hdfc)
+ * 	  	   ACS where the customer enters card fields etc. and the bank
+ * 	  	   redirects to a url provided by us.
+ * 	  3.2. From the redirected url, we send auth request and 
+ * 	  	   complete the txn.
+ * 	  	   
+ */
+
 namespace Gateway\HdfcGateway;
 
 class HdfcGateway extends Gateway\BaseGateway
 {
 
+	/**
+	 * Fields sent in xml format to enroll
+	 * @var array
+	 */
 	protected $fields = array(
 		'id',
 		'password',
@@ -23,6 +46,11 @@ class HdfcGateway extends Gateway\BaseGateway
 		'udf4',
 		'udf5');
 
+	/**
+	 * Mapping of keys from rzp to
+	 * to hdfc gateway for card
+	 * @var array
+	 */
 	protected $card_key_mappings = array(
 		'name' => 'member'
 		'number' => 'card',
@@ -30,26 +58,64 @@ class HdfcGateway extends Gateway\BaseGateway
 		'expiry_year' => 'expyear',
 		'cvv' => 'cvv2');
 
+	/**
+	 * Mapping of keys from rzp to hdfc
+	 * gateway for transaction
+	 * @var array
+	 */
 	protected $txn_key_mappings = array(
 		'amount' => 'amt');
 
-	protected $generators = array('action', 'currencycode');
-
+	/**
+	 * Tranportal username for hdfc gateway
+	 * @var string
+	 */
 	protected $username = "";
 
+	/**
+	 * Tranportal password for hdfc gateway
+	 * @var string
+	 */
 	protected $password = "";
 
+	/**
+	 * Parameters required to construct request
+	 * for enrolling a card
+	 * @param [type] $response [description]
+	 */
 	protected $enrollRequest = array(
 		'url' => 'https://securepgtest.fssnet.co.in/pgway/servlet/MPIVerifyEnrollmentXMLServlet:443',
 		'xml' => '',
-		'header' => array('Content-Type:text/xml');
+		'header' => array('Content-Type:text/xml'),
+		'data' => array());
 
+	/**
+	 * Response received after sending enroll card request
+	 * @var array
+	 */
 	protected $enrollResponse = array();
 
-	protected $authResponse = array(
+	/**
+	 * The assoc array is used to constructing
+	 * auth request for credit cards
+	 * @var array
+	 */
+	protected $authCCRequest = array(
 		'url' => 'https://securepgtest.fssnet.co.in/pgway/servlet/TranPortalXMLServlet',
 		'header' => array('Content-Type:text/xml'),
-		'xml' => '');
+		'xml' => '',
+		'data' => array());
+
+	/**
+	 * The assoc array is used to construct auth
+	 * request for debit cards
+	 * @var array
+	 */
+	protected $authDCRequest = array(
+		'url' => 'https://securepgtest.fssnet.co.in/pgway/servlet/MPIPayerAuthenticationXMLServlet',
+		'header' => array('Content-Type:text/xml'),
+		'xml' => '',
+		'data' => array());
 
 	protected $status;
 
@@ -61,14 +127,7 @@ class HdfcGateway extends Gateway\BaseGateway
 
 	public function process($txn, $card)
 	{
-		if (isset($input['PaRes']))
-		{
-
-		}
-		else
-		{
-			$response = $this->enrollCard($input);
-		}
+		$response = $this->enrollCard($input);
 
 		$this->txn = $txn;
 
@@ -79,6 +138,31 @@ class HdfcGateway extends Gateway\BaseGateway
 		$this->mapKeys($card, $card_key_mappings);
 
 		$this->runGenerators();
+	}
+
+	public function authDCRequest($input)
+	{
+		$authDCRequest['data']
+		$data['paymentid'] = isset($input['MD']) ? $input['MD'] : '';
+		$data['PARes'] = isset($input['PaRes']) ? $input['PaRes'] : '';
+		$data['id'] = 'fill id here';
+		$data['password'] = 'fill password here';
+
+		$xml = $this->createXml($data);
+
+		$response = Requests::post(
+						$authDCRequest['url'],
+						$authDCRequest['header'],
+						$authDCRequest['xml']);
+
+
+		$this->authDCResponse['xml'] = $response->body;
+
+		$this->parseDCAuthResponseXml($authDCResponse['xml']);
+
+		$fields = array('error_text', 'result', 'trackid', 'paymentid', 'ref', 'tranid', 'auth', 'avr', 'postdate');
+
+		$this->getFieldsFromXML($xml, $fields, $this->enrollResponse);
 	}
 
 	protected function enrollCard($input)
@@ -112,7 +196,7 @@ class HdfcGateway extends Gateway\BaseGateway
 			else if ($response['result'] === 'NOT ENROLLED')
 			{
 				$this->status = 'NOT ENROLLED';
-				$this->postAuthRequestToBank()
+				$this->postAuthCCRequestToBank()
 			}
 		}
 		else
@@ -122,7 +206,7 @@ class HdfcGateway extends Gateway\BaseGateway
 		}
 	}
 
-	protected function postAuthRequestToBank()
+	protected function postAuthCCRequestToBank()
 	{
 		// Only need to add zip and addr fields
 		// since other fields have already been added during enroll
@@ -135,13 +219,15 @@ class HdfcGateway extends Gateway\BaseGateway
 		$authRequest['xml'] = $this->createXml($data);
 
 		$response = Requests::post(
-						$authRequest['url'],
-						$authRequest['header'],
-						$authRequest['xml']);
+						$authCCRequest['url'],
+						$authCCRequest['header'],
+						$authCCRequest['xml']);
 
-		$this->authResponse['xml'] = $response->body;
+		$this->authCCResponse['xml'] = $response->body;
 
-		$this->parseAuthResponseXml($authResponse['xml']);
+		$this->parseCCAuthResponseXml($authCCResponse['xml']);
+
+		$this->getFieldsFromXML($xml, $fields, $this->authResponse);
 	}
 
 	protected function postPaymentRequestToBankACS()
@@ -224,10 +310,10 @@ class HdfcGateway extends Gateway\BaseGateway
 		$this->enrollResponse['eci'] = $eci;
 	}
 
-	protected function parseAuthResponseXml($xml)
+	protected function parseCCAuthResponseXml($xml)
 	{
 		$fields = array('result', 'amt', 'trackid', 'payid', 'ref', 'tranid', 'auth', 'avr', 'postdate');
-		// Can also put and get udf fields in above array
+		// Can also get udf fields in above array
 
 		$this->getFieldsFromXML($xml, $fields, $this->authResponse);
 	}
