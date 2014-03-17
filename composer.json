@@ -4,6 +4,7 @@
 	"keywords": ["app", "razorpay"],
 	"require": {
 		"raveren/kint": ">=0.9",
+		"rmccue/requests": ">=1.0",
 		"laravel/framework": "4.1.*",
 		"way/generators": "dev-master"
 	},

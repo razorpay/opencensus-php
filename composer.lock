@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "0cc2773af530c0095872aebc6b0a33e9",
+    "hash": "c9824e7f0bbc2c95a50c232bc7078203",
     "packages": [
         {
             "name": "classpreloader/classpreloader",
@@ -774,6 +774,55 @@
                 "php"
             ],
             "time": "2013-08-12 22:46:16"
+        },
+        {
+            "name": "rmccue/requests",
+            "version": "v1.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/rmccue/Requests.git",
+                "reference": "756374edd59ac69268ed35481a506ebd4e732525"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rmccue/Requests/zipball/756374edd59ac69268ed35481a506ebd4e732525",
+                "reference": "756374edd59ac69268ed35481a506ebd4e732525",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2"
+            },
+            "require-dev": {
+                "satooshi/php-coveralls": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Requests": "library/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "ISC"
+            ],
+            "authors": [
+                {
+                    "name": "Ryan McCue",
+                    "homepage": "http://ryanmccue.info"
+                }
+            ],
+            "description": "A HTTP library written in PHP, for human beings.",
+            "homepage": "http://github.com/rmccue/Requests",
+            "keywords": [
+                "curl",
+                "fsockopen",
+                "http",
+                "idna",
+                "ipv6",
+                "iri",
+                "sockets"
+            ],
+            "time": "2013-10-06 13:30:32"
         },
         {
             "name": "stack/builder",
@@ -1612,12 +1661,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JeffreyWay/Laravel-4-Generators.git",
-                "reference": "b3c2974a87891ddf48bae27b1d5176168016ef94"
+                "reference": "5697d896577c8bd8cbab2a17e4e86f193189cff9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JeffreyWay/Laravel-4-Generators/zipball/b3c2974a87891ddf48bae27b1d5176168016ef94",
-                "reference": "b3c2974a87891ddf48bae27b1d5176168016ef94",
+                "url": "https://api.github.com/repos/JeffreyWay/Laravel-4-Generators/zipball/5697d896577c8bd8cbab2a17e4e86f193189cff9",
+                "reference": "5697d896577c8bd8cbab2a17e4e86f193189cff9",
                 "shasum": ""
             },
             "require": {
@@ -1651,7 +1700,7 @@
                     "role": "Developer"
                 }
             ],
-            "time": "2014-03-13 17:48:09"
+            "time": "2014-03-16 15:40:46"
         }
     ],
     "packages-dev": [
