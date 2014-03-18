@@ -72,9 +72,9 @@ if (! function_exists('validate_keys'))
 	}
 }
 
-if (! function_exists(GetTextBetweenTags())
+if (! function_exists('GetTextBetweenTags'))
 {
-	function GetTextBetweenTags($string, $start, $end)
+	function getTextBetweenTags($string, $start, $end)
 	{
 	    $string = " ".$string;
 		$ini = strpos($string,$start);

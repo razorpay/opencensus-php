@@ -4,41 +4,12 @@ namespace Gateway;
 
 class BaseGateway
 {
-	protected $data = array();
-
-	protected $fields = array();
-
 	protected $txn_key_mappings = array();
 
 	protected $card_key_mappints = array();
 
-	protected $generators = array();
-
-	protected $unset = array();
-
-	protected $port = 443;
-
-	protected $header = "";
-
-	protected $url = "";
-
-	protected $content = "";
-
-	protected $txn;
-
-	protected $card;
-
-	public function process($input)
+	public function process($txn, $card)
 	{
-		if (isset($input['PaRes']))
-		{
-
-		}
-		else
-		{
-			$this->enrollCard($input);
-		}
-
 		$this->txn = $txn;
 
 		$this->card = $card;
@@ -50,12 +21,7 @@ class BaseGateway
 		$this->runGenerators();
 	}
 
-	protected function enrollCard($input)
-	{
-		
-	}
-
-	protected function mapKeys($array, $map)
+	protected function mapKeys($array, $map, &$data)
 	{
 		foreach ($map as $keyOld => $keyNew)
 		{
@@ -107,11 +73,9 @@ class BaseGateway
 
 		$initial_response = $data1;
 
-		$error = GetTextBetweenTags($initialResponse, "<error_text>", "</error_text>");
+		$error = GetTextBetweenTags($initialResponse, "<error_text>", "</error_text");
 
-		$enroll_result = GetTextBetweenTags($initial_response, "<result", "</result>");
-
-		$eci_value = GetTextBetweenTags($initial_response, "<eci>", "</eci>");
+		$enroll_result = GetTextBetweenTags($initial_response, "<result",)
 
 	}
 }

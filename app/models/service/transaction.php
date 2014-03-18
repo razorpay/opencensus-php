@@ -4,6 +4,7 @@ namespace Models\Service;
 
 use Models\Manager;
 use Models\DAL;
+use Gateway\GatewayManager;
 
 class Transaction extends Service
 {
@@ -31,10 +32,7 @@ class Transaction extends Service
 
         $txn = DAL\Transaction::create($data);
 
-        if ($input['process'] == '1')
-        {
-            $txn = $this->process($txn, $card_data);
-        }
+        $txn = $this->process($txn, $card_data);
 
         $txn_data = $txn->toArray();
 
@@ -56,10 +54,18 @@ class Transaction extends Service
         	throw new \InvalidArgumentException('Invalid transaction id');
         }
 
-        // Call gateway with txn data
+        //
+        // Call gateway with required info
+        //
         {
-            $gateway = new Gateway;
+        	$data = array(
+        				'txn' => $txn->toArray(),
+        				'card' => $card);
+
+            $gateway = new GatewayManager();
+
             $gateway->process($txn);
+            
             $txn->setProcessed(1);
 
             return $txn;

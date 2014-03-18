@@ -56,7 +56,9 @@ class Transaction extends UuidDAL
 		}
 
 		if ($param === null)
+		{
 			throw new \InvalidArgumentException('$param not provided');
+		}
 
 		self::validateFetchParams($param);
 
@@ -97,9 +99,9 @@ class Transaction extends UuidDAL
 			$query->take(10);
 		}
 
-		if (isset($param['offset']))
+		if (isset($param['skip']))
 		{
-			$query->skip($param['offset']);
+			$query->skip($param['skip']);
 		}
 
 		return $query->with('cardToken', 'card')->get();
@@ -182,6 +184,9 @@ class Transaction extends UuidDAL
         return $data;
     }
 
-
+    public function hdfc()
+    {
+    	return $this->hasOne('hdfc', 'trackid', 'id');
+    }
 
 }
