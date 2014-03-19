@@ -22,9 +22,12 @@ class CreateHdfcGateway extends Migration {
 
 			$table->string('trackid', 32);
 
-			$table->string('result', 255);
+			$table->string('enroll_result', 255);
 
 			$table->string('status', 50);
+
+			$table->string('auth_result', 255)
+				  ->nullable();
 
 			$table->string('eci', 2);
 

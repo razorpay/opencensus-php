@@ -76,7 +76,7 @@ class DatabaseSeeder extends Seeder {
 
 		DB::table('keys')->insert(
 			array(
-				'keys'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360e',
+				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360e',
 				'merchant_id'	=>	1,
 				'live'			=>	1,
 				'active'		=>	1,
@@ -86,7 +86,7 @@ class DatabaseSeeder extends Seeder {
 		
 		DB::table('keys')->insert(
 			array(
-				'keys'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360f',
+				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360f',
 				'merchant_id'	=>	1,
 				'live'			=>	1,
 				'active'		=>	1,
@@ -96,7 +96,7 @@ class DatabaseSeeder extends Seeder {
 
 		DB::table('keys')->insert(
 			array(
-				'keys'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360g',
+				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360g',
 				'merchant_id'	=>	2,
 				'live'			=>	1,
 				'active'		=>	1,
@@ -106,7 +106,7 @@ class DatabaseSeeder extends Seeder {
 
 		DB::table('keys')->insert(
 			array(
-				'keys'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360h',
+				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360h',
 				'merchant_id'	=>	2,
 				'live'			=>	1,
 				'active'		=>	1,
