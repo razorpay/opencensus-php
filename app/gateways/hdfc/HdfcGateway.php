@@ -89,7 +89,11 @@ class HdfcGateway extends Gateway\BaseGateway
 	 * Response received after sending enroll card request
 	 * @var array
 	 */
-	protected $enrollResponse = array();
+	protected $enrollResponse = array(
+		'fields' => array(
+					 'error_text', 'eci', 'result', 'url', 'PAReq', 'paymentid'),
+		'xml' => '',
+		'data' => array());
 
 	/**
 	 * The assoc array is used to constructing
@@ -103,7 +107,10 @@ class HdfcGateway extends Gateway\BaseGateway
 		'data' => array());
 
 	protected $authCCResponse = array(
-		);
+		'fields' =>  array(
+						'result', 'amt', 'trackid', 'payid', 'ref', 'tranid', 'auth', 'avr', 'postdate'),
+		'xml' => '',
+		'data' => array());
 
 	/**
 	 * The assoc array is used to construct auth
@@ -116,13 +123,31 @@ class HdfcGateway extends Gateway\BaseGateway
 		'xml' => '',
 		'data' => array());
 
-	protected $authDCResponse = array();
+	protected $authDCResponse = array(
+		'fields' => array(
+			'paymentid', 'error_text', 'result', 'ref', 'tranid', 'auth', 'avr', 'postdate'),
+		'xml' => '',
+		'data' => array());
 
 	protected $status;
 
 	public function __construct()
 	{
 		parent::__construct();
+
+		if (static::$config === null)
+		{
+			$config = 
+		}
+	}
+
+	public static getCreds()
+	{
+		$creds = array(
+			HdfcGatewayConfig::id, 
+			HdfcGatewayConfig::password);
+
+		return $creds;
 	}
 
 
@@ -157,10 +182,23 @@ class HdfcGateway extends Gateway\BaseGateway
 		// $authDCRequest['data']
 		$data['paymentid'] = isset($input['MD']) ? $input['MD'] : '';
 		$data['PARes'] = isset($input['PaRes']) ? $input['PaRes'] : '';
-		$data['id'] = 'fill id here';
-		$data['password'] = 'fill password here';
 
-		$xml = $this->createXml($data);
+		$this->model = HdfcGatewayDal::findOrFail($data['paymentid']);
+
+		$this->model->persistBeforeDCAuth($data);
+
+		if ($this->model->result !== HdfcGateway)
+		{
+			throw new \InvalidArgumentException('Result not valid');
+		}
+		else if ($this->model->status !== 'VERES Received')
+		{
+			;
+		}
+
+		list($data['id'], $data['password']) = $this->getCreds();
+
+		$authDCRequest['xml'] = $this->createXml($data);
 
 		$response = Requests::post(
 						$authDCRequest['url'],
@@ -172,9 +210,12 @@ class HdfcGateway extends Gateway\BaseGateway
 
 		$this->parseDCAuthResponseXml($authDCResponse['xml']);
 
-		$fields = array('error_text', 'result', 'trackid', 'paymentid', 'ref', 'tranid', 'auth', 'avr', 'postdate');
+		$this->getFieldsFromXML(
+					$this->authDCResponse['xml'], 
+					$authDCResponse['fields'], 
+					$this->authDCResponse);
 
-		$this->getFieldsFromXML($xml, $fields, $this->enrollResponse);
+		$this->model->persistAfterDCAuth($authDCRequest, $authDCResponse);
 	}
 
 	/**
@@ -187,22 +228,22 @@ class HdfcGateway extends Gateway\BaseGateway
 	 */
 	protected function enrollCard($input)
 	{
-		$this->txn = $txn;
-
-		$this->card = $card;
-
 		// Fields to be sent to HDFC gateway for card-enroll
-		$this->createFieldsForEnroll();
+		$this->createEnrollRequestFields($input);
 
 		// XML generated from the fields
 		$this->enrollRequest['xml'] = $this->createXml($this->data);
 
 		// send the request and get response
-		$this->enrollResponse['xml'] = $this->postRequestForEnroll();
+		$this->enrollResponse['xml'] = $this->postEnrollRequest();
 
 		$this->parseEnrollResponseXml($this->enrollResponse['xml']);
 
-		$this->persistAfterEnroll();
+		$this->validateEnrollResponse();
+
+		$this->model = $this->persistAfterEnroll(
+							$this->enrollRequest['data'],
+							$this->enrollResponse);
 	}
 
 	protected function postAuthCCRequestToBank()
@@ -215,7 +256,9 @@ class HdfcGateway extends Gateway\BaseGateway
 
 		$data['addr'] = "";
 
-		$authRequest['xml'] = $this->createXml($data);
+		$authCCRequest = &($this->authCCRequest);
+
+		$authCCRequest['xml'] = $this->createXml($data);
 
 		$response = Requests::post(
 						$authCCRequest['url'],
@@ -226,9 +269,22 @@ class HdfcGateway extends Gateway\BaseGateway
 
 		$this->parseAuthCCResponseXml();
 
-		$this->getFieldsFromXML($xml, $fields, $this->authCCResponse);
+		// $this->validateResponse
+
+		$this->getFieldsFromXML(
+					$this->authCCResponse['xml'], 
+					$this->authCCResponse['fields'], 
+					$this->authCCResponse['data']);
+
+		$this->model->persistAfterCCAuth(
+						$this->authCCResponse['data']);
 	}
 
+	/**
+	 * Generates a form and auto-submits it on load
+	 * with the fields received in response
+	 * from enrolling the card
+	 */
 	protected function postPaymentRequestToBankACS()
 	{
 		$enrollResponse = $this->enrollResponse;
@@ -266,14 +322,27 @@ class HdfcGateway extends Gateway\BaseGateway
 
 	}
 
-	protected function createFieldsForEnroll()
+	/**
+	 * Collect all fields to be sent for
+	 * enrolling the card
+	 * 
+	 * @param  array $input 
+	 * Contains the 'txn' and 'card' details
+	 */
+	protected function createEnrollFields($input)
 	{
+		$txn = $input['txn'];
+
+		$card = $input['card'];
+
 		$data = &($this->enrollRequest['data']);
 
 		$data['trackid'] = $txn['id'];
 
+		// Convert amount from integer to decimal
 		$data['amt'] = $txn['amount']/100;
 
+		// Collect udf fields
 		$data['udf1'] = 'junk';
 
 		$data['udf2'] = $txn['udf']['email'];
@@ -284,14 +353,38 @@ class HdfcGateway extends Gateway\BaseGateway
 
 		$data['udf5'] = 'junk';
 
-		$this->mapKeys($card, $card_key_mappings, $data);
+		// Collect creds
+		list($data['id'], $data['password']) = static::getCreds();
 
+		// Collect fields related to the card
+		$this->mapKeys($card, $this->card_key_mappings, $data);
+
+		//
+		// Write currency code manually.
+		// Later change it to something better
+		// when we support multiple currencies
+		// 
 		$data['currencycode'] = 356;
 
-		$data['action'] = ($this->txn['process'] === 1) 1 : 4;
+		if ($txn['process'] === 0)
+		{
+			$data['action'] = HdfcGatewayAction::PURCHASE;
+		}
+		else if ($txn['process'] === 1)
+		{
+			$data['action'] = HdfcGatewayAction::HOLD;
+		}
+		else
+		{
+			throw new \InvalidArgumentException('process should be 0 or 1');
+		}
 	}
 
-	protected function postRequestForEnroll()
+	/**
+	 * Makes https request for enrolling card
+	 * @return string xml content received from response
+	 */
+	protected function postEnrollRequest()
 	{
 		$enrollRequest = $this->enrollRequest;
 
@@ -304,23 +397,39 @@ class HdfcGateway extends Gateway\BaseGateway
 		return $response->body;
 	}
 
+	protected function validateEnrollResponse()
+	{
+		$trackid = $this->enrollResponse['data']['trackid'];
+
+		if ($trackid !== $this->enrollRequest['data']['trackid'])
+		{
+			throw new \InvalidArgumentException('Track id do not match');
+		}
+	}
+
+	/**
+	 * Get the fields from xml response 
+	 * of the enrolling crad
+	 *
+	 */
 	protected function parseEnrollResponseXml()
 	{
-		$fields = array('error_text', 'eci', 'result', 'url', 'PAReq', 'paymentid')
-		
-		$this->getFieldsFromXML($xml, $fields, $this->authCCResponse['xml']);
+		$this->getFieldsFromXML(
+					$xml, 
+					$this->enrollResponse['fields'],
+					$this->enrollResponse['xml']);
 
-		$eci = $this->enrollResponse['eci'];
+		$eci = &($this->enrollResponse['eci']);
 		$eci = ($eci === null) '7' : $eci;
-		$this->enrollResponse['eci'] = $eci;
+		// $this->enrollResponse['eci'] = $eci;
 	}
 
 	protected function parseAuthCCResponseXml()
 	{
-		$fields = array('result', 'amt', 'trackid', 'payid', 'ref', 'tranid', 'auth', 'avr', 'postdate');
-		// Can also get udf fields in above array
-
-		$this->getFieldsFromXML($xml, $fields, $this->authResponse['xml']);
+		$this->getFieldsFromXML(
+					$this->authCCResponse['xml'], 
+					$this->authCCResponse['fields'],
+					$this->authCCResponse);
 	}
 
 	protected function createXml($array)

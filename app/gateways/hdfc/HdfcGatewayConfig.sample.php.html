@@ -1,0 +1,9 @@
+<?php
+
+namespace Gateway\HdfcGateway;
+
+final class HdfcGatewayConfig
+{
+	const id = '';
+	const password = '';
+}

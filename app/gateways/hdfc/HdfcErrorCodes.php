@@ -2,7 +2,7 @@
 
 namespace Gateway/HdfcGateway;
 
-class HdfcErrorCodes extends \Singleton
+class HdfcGatewayCodes extends \Singleton
 {
 	protected $error = array(
 		'GW00150' => 'GW00150-Missing required data',
