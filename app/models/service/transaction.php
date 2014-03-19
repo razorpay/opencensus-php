@@ -28,7 +28,7 @@ class Transaction extends Service
 
     	unset($txn_input['card']);
 
-        $data = Manager\Transaction::createValidate($txn_input)->getData();
+    	$data = Manager\Transaction::createValidate($txn_input)->getData();
 
         $txn = DAL\Transaction::create($data);
 
@@ -49,7 +49,7 @@ class Transaction extends Service
         {
         	$txn = Transaction::findByTxn($txn);
         }
-        else if (! ($txn instanceof DAL\Transaction)
+        else if (! ($txn instanceof DAL\Transaction))
         {
         	throw new \InvalidArgumentException('Invalid transaction id');
         }
