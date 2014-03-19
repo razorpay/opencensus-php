@@ -17,7 +17,7 @@ class Transaction extends EntityManager
 
     protected static $udfRules = array(
     	'email'         =>  'required|email|max:250',
-    	'contact'       =>  'required|numeric|digits_between:8:12')
+    	'contact'       =>  'required|numeric|digits_between:8:12');
 
     protected static $generators = array('process');
 

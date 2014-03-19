@@ -36,7 +36,7 @@ class Transaction extends UuidDAL
 
     public function setUdfAttribute($value)
     {
-    	$this->attribute['udf'] = serialize($udf)
+    	$this->attributes['udf'] = serialize($value);
     }
 
 	const FETCH_WITH_CARD		= 0x1024;

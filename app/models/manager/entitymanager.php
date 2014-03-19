@@ -102,7 +102,8 @@ class EntityManager
     protected function validateInputKeys($input, $operation)
     {
     	$rules_var = $operation.'Rules';
-        $invalid_keys = array_keys(array_diff_key($input, static::$$rules_var));
+    	
+    	$invalid_keys = array_keys(array_diff_key($input, static::$$rules_var));
 
         if (count($invalid_keys) > 0)
         {

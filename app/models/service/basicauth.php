@@ -18,7 +18,7 @@ class BasicAuth extends \Singleton {
 			throw new \InvalidArgumentException('NULL not an accepted key');
 		}
 
-		$Key = DAL\Key::findByKey($key);
+		$Key = DAL\Key::find($key);
 		
 		if ($Key === null)
 		{
