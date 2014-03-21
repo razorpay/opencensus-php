@@ -2,6 +2,9 @@
 
 namespace Models\DAL;
 
+use Rhumsaa\Uuid\Uuid;
+use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
+
 class UuidDAL extends DAL
 {
 
@@ -26,6 +29,6 @@ class UuidDAL extends DAL
 
 	public function generateUuid()
 	{
-		return \Uuid::uuid1();
+		return Uuid::uuid1();
 	}
 }

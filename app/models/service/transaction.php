@@ -64,7 +64,7 @@ class Transaction extends Service
 
             $gateway = new GatewayManager();
 
-            $gateway->process($txn);
+            $gateway->process($data);
             
             $txn->setProcessed(1);
 
