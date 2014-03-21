@@ -24,9 +24,12 @@
 
 namespace Gateway\HdfcGateway;
 
-class HdfcGateway extends Gateway\BaseGateway
+use Gateway\BaseGateway;
+use Requests;
+
+class HdfcGateway extends BaseGateway
 {
-	$model;
+	protected $model;
 
 	/**
 	 * Fields sent in xml format to enroll
@@ -56,7 +59,7 @@ class HdfcGateway extends Gateway\BaseGateway
 	 * @var array
 	 */
 	protected $card_key_mappings = array(
-		'name' => 'member'
+		'name' => 'member',
 		'number' => 'card',
 		'expiry_month' => 'expmonth',
 		'expiry_year' => 'expyear',
@@ -80,9 +83,9 @@ class HdfcGateway extends Gateway\BaseGateway
 	 * @param [type] $response [description]
 	 */
 	protected $enrollRequest = array(
-		'url' => 'https://securepgtest.fssnet.co.in/pgway/servlet/MPIVerifyEnrollmentXMLServlet:443',
+		'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIVerifyEnrollmentXMLServlet',
 		'xml' => '',
-		'header' => array('Content-Type:text/xml'),
+		'header' => array('Content-Type'=>'text/xml'),
 		'data' => array());
 
 	/**
@@ -101,7 +104,7 @@ class HdfcGateway extends Gateway\BaseGateway
 	 * @var array
 	 */
 	protected $authCCRequest = array(
-		'url' => 'https://securepgtest.fssnet.co.in/pgway/servlet/TranPortalXMLServlet',
+		'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet',
 		'header' => array('Content-Type:text/xml'),
 		'xml' => '',
 		'data' => array());
@@ -118,7 +121,7 @@ class HdfcGateway extends Gateway\BaseGateway
 	 * @var array
 	 */
 	protected $authDCRequest = array(
-		'url' => 'https://securepgtest.fssnet.co.in/pgway/servlet/MPIPayerAuthenticationXMLServlet',
+		'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIPayerAuthenticationXMLServlet',
 		'header' => array('Content-Type:text/xml'),
 		'xml' => '',
 		'data' => array());
@@ -131,17 +134,7 @@ class HdfcGateway extends Gateway\BaseGateway
 
 	protected $status;
 
-	public function __construct()
-	{
-		parent::__construct();
-
-		if (static::$config === null)
-		{
-			$config = 
-		}
-	}
-
-	public static getCreds()
+	public static function getCreds()
 	{
 		$creds = array(
 			HdfcGatewayConfig::id, 
@@ -167,7 +160,7 @@ class HdfcGateway extends Gateway\BaseGateway
 			else if ($response['result'] === 'NOT ENROLLED')
 			{
 				$this->status = 'NOT ENROLLED';
-				$this->postAuthCCRequestToBank()
+				$this->postAuthCCRequestToBank();
 			}
 		}
 		else
@@ -232,10 +225,12 @@ class HdfcGateway extends Gateway\BaseGateway
 		$this->createEnrollRequestFields($input);
 
 		// XML generated from the fields
-		$this->enrollRequest['xml'] = $this->createXml($this->data);
-
+		$this->enrollRequest['xml'] = $this->createXml($this->enrollRequest['data']);
+		
 		// send the request and get response
-		$this->enrollResponse['xml'] = $this->postEnrollRequest();
+		$this->enrollResponse['response'] = $this->postEnrollRequest();
+		
+		$this->enrollResponse['xml'] = $this->enrollResponse['response']->body;
 
 		$this->parseEnrollResponseXml($this->enrollResponse['xml']);
 
@@ -256,7 +251,7 @@ class HdfcGateway extends Gateway\BaseGateway
 
 		$data['addr'] = "";
 
-		$authCCRequest = &($this->authCCRequest);
+		$authCCRequest = &$this->authCCRequest;
 
 		$authCCRequest['xml'] = $this->createXml($data);
 
@@ -329,13 +324,16 @@ class HdfcGateway extends Gateway\BaseGateway
 	 * @param  array $input 
 	 * Contains the 'txn' and 'card' details
 	 */
-	protected function createEnrollFields($input)
+	protected function createEnrollRequestFields($input)
 	{
 		$txn = $input['txn'];
 
 		$card = $input['card'];
 
-		$data = &($this->enrollRequest['data']);
+		$data = &$this->enrollRequest['data'];
+
+		// Collect creds
+		list($data['id'], $data['password']) = static::getCreds();
 
 		$data['trackid'] = $txn['id'];
 
@@ -353,9 +351,6 @@ class HdfcGateway extends Gateway\BaseGateway
 
 		$data['udf5'] = 'junk';
 
-		// Collect creds
-		list($data['id'], $data['password']) = static::getCreds();
-
 		// Collect fields related to the card
 		$this->mapKeys($card, $this->card_key_mappings, $data);
 
@@ -366,11 +361,13 @@ class HdfcGateway extends Gateway\BaseGateway
 		// 
 		$data['currencycode'] = 356;
 
-		if ($txn['process'] === 0)
+		//dd($txn);
+
+		if ($txn['processed'] === 0)
 		{
 			$data['action'] = HdfcGatewayAction::PURCHASE;
 		}
-		else if ($txn['process'] === 1)
+		else if ($txn['processed'] === 1)
 		{
 			$data['action'] = HdfcGatewayAction::HOLD;
 		}
@@ -388,13 +385,15 @@ class HdfcGateway extends Gateway\BaseGateway
 	{
 		$enrollRequest = $this->enrollRequest;
 
+		$options['verify'] = false;
+
 		$response = Requests::post(
 						$enrollRequest['url'],
 						$enrollRequest['header'],
-						$enrollRequest['xml']);
+						$enrollRequest['xml'],
+						$options);
 
-
-		return $response->body;
+		return $response;
 	}
 
 	protected function validateEnrollResponse()
@@ -415,12 +414,12 @@ class HdfcGateway extends Gateway\BaseGateway
 	protected function parseEnrollResponseXml()
 	{
 		$this->getFieldsFromXML(
-					$xml, 
+					$this->enrollResponse['xml'], 
 					$this->enrollResponse['fields'],
-					$this->enrollResponse['xml']);
+					$this->enrollResponse['data']);
 
-		$eci = &($this->enrollResponse['eci']);
-		$eci = ($eci === null) '7' : $eci;
+		$eci = &$this->enrollResponse['eci'];
+		$eci = ($eci === null) ? '7' : $eci;
 		// $this->enrollResponse['eci'] = $eci;
 	}
 
@@ -436,9 +435,9 @@ class HdfcGateway extends Gateway\BaseGateway
 	{
 		$xml = "";
 
-		foreach ($this->data as $key => $value)
+		foreach ($array as $key => $value)
 		{
-			$xml .= "<$key>$value</$key>"
+			$xml .= "<$key>$value</$key>";
 		}
 
 		return $xml;
@@ -458,7 +457,7 @@ class HdfcGateway extends Gateway\BaseGateway
 	{
 		foreach ($fields as $field)
 		{
-			$array[$field] = GetTextBetweenTags($xml, "<$field>", "</$field">);
+			$array[$field] = GetTextBetweenTags($xml, "<$field>", "</$field>");
 		}
 	}
 }

@@ -8,11 +8,11 @@ class BaseGateway
 
 	protected $card_key_mappints = array();
 
-	public function process($txn, $card)
+	public function process($input)
 	{
-		$this->txn = $txn;
+		$this->txn = $input['txn'];
 
-		$this->card = $card;
+		$this->card = $input['card'];
 
 		$this->mapKeys($txn, $txn_key_mappings);
 
@@ -75,7 +75,6 @@ class BaseGateway
 
 		$error = GetTextBetweenTags($initialResponse, "<error_text>", "</error_text");
 
-		$enroll_result = GetTextBetweenTags($initial_response, "<result",)
-
+		$enroll_result = GetTextBetweenTags($initial_response, "<result>", "</result>");
 	}
 }

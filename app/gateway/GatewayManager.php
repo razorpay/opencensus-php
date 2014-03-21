@@ -13,7 +13,7 @@ class GatewayManager
 
 	protected function gateway($gateway = null)
 	{
-		$gateway = $gateway ?: $this->getDefaultGateway()
+		$gateway = $gateway ?: $this->getDefaultGateway();
 
 		if ( ! isset($this->gateways[$gateway]))
 		{
@@ -27,9 +27,9 @@ class GatewayManager
 	{
 		$method = 'create'.ucfirst($gateway).'Gateway';
 
-		if (method_exists($this, $method)
+		if (method_exists($this, $method))
 		{
-			return $this->method;
+			return $this->$method();
 		}
 
 		throw new \InvalidArgumentException("Gateway $gateway not supported");
@@ -47,7 +47,7 @@ class GatewayManager
 
 	public function createHdfcGateway()
 	{
-		return new HdfcGateway();
+		return new HdfcGateway\HdfcGateway();
 	}
 
 	public function __call($method, $parameters)
