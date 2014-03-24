@@ -94,4 +94,9 @@ class Transaction extends Service
 
         return $txn_data_arr;
     }
+
+    public function bankAcsCallback(array $input)
+    {
+    	dd($input);
+    }
 }

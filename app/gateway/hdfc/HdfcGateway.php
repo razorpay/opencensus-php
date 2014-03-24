@@ -94,7 +94,7 @@ class HdfcGateway extends BaseGateway
 	 */
 	protected $enrollResponse = array(
 		'fields' => array(
-					 'error_text', 'eci', 'result', 'url', 'PAReq', 'paymentid'),
+					'error_text', 'eci', 'result', 'url', 'PAReq', 'paymentid', 'trackid'),
 		'xml' => '',
 		'data' => array());
 
@@ -132,6 +132,15 @@ class HdfcGateway extends BaseGateway
 		'xml' => '',
 		'data' => array());
 
+	/**
+	 * For ENROLLED card cases, we submit a form to bank ACS
+	 * which redirects back to this url (on our server) after
+	 * the customer enter's the requisite details
+	 * 
+	 * @var string
+	 */
+	protected $callbackUrl = 'http://rzp/transactions/callback';
+
 	protected $status;
 
 	public static function getCreds()
@@ -148,11 +157,12 @@ class HdfcGateway extends BaseGateway
 	{
 		$this->enrollCard($input);
 
-		$error = $this->enrollResponse['error_text'];
+		$error = $this->enrollResponse['data']['error_text'];
 
-		if ($error === null)
+		if (($error === null) or
+			($error === ''))
 		{
-			if ($response('result') === 'ENROLLED')
+			if ($this->enrollResponse['data']['result'] === 'ENROLLED')
 			{
 				$this->status = 'ENROLLED';
 				$this->postPaymentRequestToBankACS();
@@ -165,6 +175,7 @@ class HdfcGateway extends BaseGateway
 		}
 		else
 		{
+			throw new \InvalidArgumentException($error . " error received");
 			// if error is not null, then transaction failed.
 			// @todo: see if there are standard error values in fsf doc
 		}
@@ -226,19 +237,24 @@ class HdfcGateway extends BaseGateway
 
 		// XML generated from the fields
 		$this->enrollRequest['xml'] = $this->createXml($this->enrollRequest['data']);
-		
+
+		// d($this->enrollRequest);
+
 		// send the request and get response
 		$this->enrollResponse['response'] = $this->postEnrollRequest();
 		
 		$this->enrollResponse['xml'] = $this->enrollResponse['response']->body;
 
-		$this->parseEnrollResponseXml($this->enrollResponse['xml']);
+		$this->parseEnrollResponseXml();
 
 		$this->validateEnrollResponse();
 
-		$this->model = $this->persistAfterEnroll(
+		// d($this->enrollResponse);
+
+		$this->model = HdfcGatewayDal::persistAfterEnroll(
 							$this->enrollRequest['data'],
-							$this->enrollResponse);
+							$this->enrollResponse['data']);
+		// d($this->model);
 	}
 
 	protected function postAuthCCRequestToBank()
@@ -255,10 +271,13 @@ class HdfcGateway extends BaseGateway
 
 		$authCCRequest['xml'] = $this->createXml($data);
 
+		$options['verify'] = false;
+
 		$response = Requests::post(
 						$authCCRequest['url'],
 						$authCCRequest['header'],
-						$authCCRequest['xml']);
+						$authCCRequest['xml'],
+						$options);
 
 		$this->authCCResponse['xml'] = $response->body;
 
@@ -283,38 +302,28 @@ class HdfcGateway extends BaseGateway
 	protected function postPaymentRequestToBankACS()
 	{
 		$enrollResponse = $this->enrollResponse;
-
-		// $data = array(
-		// 	'PaReq' => $enrollResponse['PAReq'],
-		// 	'MD' => $enrollResponse['paymentid'],
-		// 	'TermUrl' => $this->payResponseUrl);
-
-		// $response = Requests::post(
-		// 				$enrollResponse['url'],
-		// 				array(),
-		// 				$data);
-
 		?>
 
-		<HTML>
-			<BODY OnLoad="OnLoadEvent();">
-			<form name="form1" action="<?= $enrollResponse['url']; ?>" method="post">
-				<input type="hidden" name="PaReq" value="<?= $enrollResponse['PAReq'];?>">
-				<input type="hidden" name="MD" value="<?= $enrollResponse['paymentid'];?>">
-  				<input type="hidden" name="TermUrl" value="<?= $this->calllbackUrl ?>">
+			<!doctype html>
+			<html lang="en">
+			<!-- <BODY OnLoad="OnLoadEvent();"> -->
+			<body>
+			<form name="form1" action="<?= $enrollResponse['data']['url']; ?>" method="post">
+				<input type="text" name="PaReq" value="<?= $enrollResponse['data']['PAReq'];?>">
+				<br />
+				<input type="text" name="MD" value="<?= $enrollResponse['data']['paymentid'];?>">
+				<br />
+  				<input type="text" name="TermUrl" value="<?= $this->callbackUrl ?>">
+  				<br />
+  				<input type="submit" >
  			</form>
-		    <script language="JavaScript">
-		        function OnLoadEvent() 
-			      {
-			        document.form1.submit();
-			      }
-
-			</script>
-			</BODY>
-		</HTML>
+ 			<br>
+ 			Submit within 30 secs max!
+			</body>
+		</html>
 
 		<?php
-
+		exit(0);
 	}
 
 	/**
@@ -361,8 +370,6 @@ class HdfcGateway extends BaseGateway
 		// 
 		$data['currencycode'] = 356;
 
-		//dd($txn);
-
 		if ($txn['processed'] === 0)
 		{
 			$data['action'] = HdfcGatewayAction::PURCHASE;
@@ -402,6 +409,7 @@ class HdfcGateway extends BaseGateway
 
 		if ($trackid !== $this->enrollRequest['data']['trackid'])
 		{
+			die();
 			throw new \InvalidArgumentException('Track id do not match');
 		}
 	}
@@ -418,8 +426,8 @@ class HdfcGateway extends BaseGateway
 					$this->enrollResponse['fields'],
 					$this->enrollResponse['data']);
 
-		$eci = &$this->enrollResponse['eci'];
-		$eci = ($eci === null) ? '7' : $eci;
+		$eci = &$this->enrollResponse['data']['eci'];
+		$eci = (($eci === null) or ($eci === '')) ? '7' : $eci;
 		// $this->enrollResponse['eci'] = $eci;
 	}
 

@@ -34,7 +34,7 @@
 
 Route::group(array('before' => 'auth.public'), function()
 {
-	
+	;
 });
 
 Route::group(array('before' => 'auth'), function()
@@ -57,6 +57,8 @@ Route::group(array('before' => 'auth'), function()
 
 	Route::get('transactions/success', 'TransactionController@getProcess');
 });
+
+	Route::post('transactions/callback', 'TransactionController@postCallback');
 
 Route::get('/', function()
 {

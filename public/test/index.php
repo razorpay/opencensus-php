@@ -4,29 +4,6 @@
 <HTML>
 <HEAD>
 	<TITLE>Sample Page-TranPortal VbyV</TITLE>
-<!-- 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script>
-		$(document).ready(function()
-	  {
-	    $('#txnform').submit(function()
-	    {
-	      var key = $('#usernameInput').val();
-
-	      $.ajax(
-	        {
-	          'username' : key,
-	          'url'      : 'http://rzp/transactions',
-	          'type'     : 'POST',
-	          'success'  : function(){ window.location = 'http://www.website.com/basic-auth-file.php'; },
-	          'error'    : function(){ alert('Bad Login Details');},
-	        }
-	      );
-
-	      return false;
-	    });
-	  });
-	</script>
- -->
  </HEAD>
 
 <BODY>
@@ -44,7 +21,7 @@
 	</tr>
 	<tr>
 		<td colspan="40">Card No: </b> </td>
-		<td><input type="text" name="card[number]" value="1234567890" size="25"></td>
+		<td><input type="text" name="card[number]" value="4012001037490014" size="25"></td>
 	</tr>
 	<TR>
 		<TD colspan="40">CVV:</TD>
@@ -70,8 +47,8 @@
 		<select type="text" name="card[expiry_year]" value="2014">
 			<option value="2011">2011</option> 
 			<option value="2012">2012</option> 
-			<option value="2013"selected>2013</option> 
-			<option value="2014">2014</option> 
+			<option value="2013">2013</option> 
+			<option value="2014" selected>2014</option> 
 			<option value="2015">2015</option> 
 			<option value="2016">2016</option>
 			<option value="2013">2017</option> 
@@ -90,7 +67,7 @@
 		<tr>
 		<TR>
 		<TD colspan='40'>CardHolder/Member Name:</TD>
-		<td><input type="text" name="card[cardholder]" size="25" value="shashank"></td>
+		<td><input type="text" name="card[name]" size="25" value="shashank"></td>
 		<td><input type="text" name="udf[email]" size="25" value="shk@gmail.com"></td>
 		<td><input type="text" name="udf[contact]" size="25" value="1234567890"></td>
 		<input type="hidden" value="INR" name="currency">
