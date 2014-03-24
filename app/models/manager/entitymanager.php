@@ -112,7 +112,7 @@ class EntityManager
     }
 
     protected function validateInputValues($input, $operation)
-    {
+    {	
     	$rules_var = $operation.'Rules';
     	$validation = \Validator::make(
                         $input,
@@ -131,12 +131,13 @@ class EntityManager
     {
     	$operation_function_var = $operation.'Validators';
 
-    	if (isset($$operation_function_var))
+    	if (isset(static::$$operation_function_var))
     	{
 	    	foreach (static::$$operation_function_var as $validator)
 	    	{
-	    		$validate_func = 'validate'.$validator;
-	    		$this->$$validate_func($input);
+	    		$validate_func = 'validate'.ucfirst($validator);
+
+	    		$this->$validate_func($input);
 	    	}
 	    }
     }

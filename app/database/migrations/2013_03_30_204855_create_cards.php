@@ -20,7 +20,7 @@ class CreateCards extends Migration {
 
             $table->string('number', 19);
 
-            $table->string('cardholder');
+            $table->string('name');
 
             $table->string('cvv', 4);
 

@@ -8,11 +8,11 @@ use Models\DAL;
 class Card extends EntityManager
 {
     protected static $createRules = array(
-        'number'        => 'required|numeric',
-        'expiry_month'  => 'required|numeric|digits:2',
+        'number'        => 'required|numeric|luhn',
+        'expiry_month'  => 'required|month',
         'expiry_year'   => 'required|numeric|digits_between:2,4',
         'cvv'           => 'required|numeric|digits:3',
-        'cardholder'    => 'required|regex:/[a-zA-Z ]*/|max:100',
+        'name'          => 'required|alpha_space|max:100',
         'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
         'address_line2'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
         'address_city'      => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
@@ -29,11 +29,11 @@ class Card extends EntityManager
         'address_zip'
         );
 
-    protected static $validators = array('address');
+    protected static $createValidators = array('address');
 
     protected static $generators = array('last4', 'country', 'type');
 
-    private function validateAddress($input)
+    protected function validateAddress($input)
     {
         $addr_unset = array();
         $addr_set = array();
@@ -68,7 +68,7 @@ class Card extends EntityManager
     {
     	$last4 = substr($input['number'], -4);
 
-        $this->setField('number', $last4);
+        $this->setField('last4', $last4);
     }
 
     public function generateType($input)

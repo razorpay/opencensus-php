@@ -9,7 +9,7 @@ class Card extends DAL
     protected $fillable = array(
         'id',
         'number',
-        'cardholder',
+        'name',
         'cvv',
 
         'expiry_month',
