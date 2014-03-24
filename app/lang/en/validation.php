@@ -75,6 +75,8 @@ return array(
 	
 	"alpha_space"      => "The :attribute may only contain alphabets and spaces",
 	"address"          => "The :attribute is not a valid address",
+	"luhn"             => "The :attribute is not valid",
+	"month"            => "The :attribute is not a valid month",
 
 	/*
 	|--------------------------------------------------------------------------
