@@ -66,8 +66,6 @@ class Transaction extends Service
 
             $gateway->process($data);
             
-            $txn->setProcessed(1);
-
             return $txn;
         }
         
@@ -97,6 +95,21 @@ class Transaction extends Service
 
     public function bankAcsCallback(array $input)
     {
-    	dd($input);
+    	unset($input['csrf']);
+    	
+    	$gateway = new GatewayManager();
+
+    	list($processed, $id) = $gateway->bankAcsCallback($input);
+
+    	if ($processed)
+    	{
+    		$txn = DAL\Transaction::where('id', $id)
+    							  ->update(array('processed' => 1));
+			echo "Transaction successful";
+    	}
+    	else
+    	{
+    		echo "Transaction unsuccessful";
+    	}
     }
 }

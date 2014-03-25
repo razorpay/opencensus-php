@@ -30,7 +30,7 @@ if (! function_exists('validate'))
 
         if ($validation->fails()) 
         {
-            throw new \InvalidArgumentException($validation->errors->all());
+            throw new \InvalidArgumentException($validation->messages()->all());
         }
 	}
 }

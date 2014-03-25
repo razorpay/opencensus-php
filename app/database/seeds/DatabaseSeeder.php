@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder {
 		DB::table('cards')->insert(
 			array(
 				'number'		=>	'1234567890',
-				'cardholder'	=>	'shk',
+				'name'	        =>	'shk',
 				'expiry_month'	=>	'01',
 				'expiry_year'	=>	'99',
 				'cvv'			=>	'000',
@@ -56,7 +56,7 @@ class DatabaseSeeder extends Seeder {
 		DB::table('cards')->insert(
 			array(
 				'number'		=>	'1234567891',
-				'cardholder'	=>	'shk',
+				'name'	        =>	'shk',
 				'expiry_month'	=>	'01',
 				'expiry_year'	=>	'12',
 				'cvv'			=>	'000',

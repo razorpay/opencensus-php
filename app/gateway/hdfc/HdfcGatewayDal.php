@@ -24,7 +24,7 @@ class HdfcGatewayDal extends \Eloquent
 			'trackid' => $requestData['trackid'],
 			'action' => $requestData['action'],
 			'enroll_result' => $responseData['result'],
-			'status' => 'VERES Recieved',
+			'status' => 'VERES Received',
 			'eci' => $responseData['eci'],
 			'error_text' => $responseData['error_text']);
 
@@ -53,6 +53,7 @@ class HdfcGatewayDal extends \Eloquent
 		$attributes['auth'] = $data['auth'];
 		$attributes['avr'] = $data['avr'];
 		$attributes['postdate'] = $data['postdate'];
+		
 		$this->save();
 	}
 }
