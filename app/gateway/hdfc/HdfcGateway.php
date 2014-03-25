@@ -141,6 +141,10 @@ class HdfcGateway extends BaseGateway
 	 */
 	protected $callbackUrl = 'http://rzp/transactions/callback';
 
+	protected $bankAcsResponseRules = array(
+		'PaRes' => 'required',
+		'MD' => 'required|numeric|digits_between:1,19');
+
 	protected $status;
 
 	public static function getCreds()
@@ -181,45 +185,66 @@ class HdfcGateway extends BaseGateway
 		}
 	}
 
-	public function authDCRequest($input)
+	public function bankAcsCallback($input)
 	{
-		// $authDCRequest['data']
-		$data['paymentid'] = isset($input['MD']) ? $input['MD'] : '';
-		$data['PARes'] = isset($input['PaRes']) ? $input['PaRes'] : '';
+		$invalid_keys = array_diff_key($input, $this->bankAcsResponseRules);
 
-		$this->model = HdfcGatewayDal::findOrFail($data['paymentid']);
+        if (count($invalid_keys) !== 0)
+        {
+            throw new \InvalidKeysException($invalid_keys);
+        }
 
-		$this->model->persistBeforeDCAuth($data);
+        $validation = \Validator::make($input, $this->bankAcsResponseRules);
 
-		if ($this->model->result !== HdfcGateway)
+        if ($validation->fails()) 
+        {
+        	var_dump($validation->messages()->all());die();
+            throw new \InvalidArgumentException('d');
+        }
+
+        $this->model = HdfcGatewayDal::findOrFail($input['MD']);
+        $this->authDCRequest['data']['paymentid'] = $input['MD'];
+        $this->authDCRequest['data']['PaRes'] = $input['PaRes'];
+
+        $this->authDCRequest();
+        
+        return array(true, $this->model->trackid);
+	}
+
+	public function authDCRequest()
+	{
+		if ($this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
 		{
 			throw new \InvalidArgumentException('Result not valid');
 		}
 		else if ($this->model->status !== 'VERES Received')
 		{
-			;
+			throw new \InvalidArgumentException('Status not valid');
 		}
+
+		$data = &$this->authDCRequest['data'];
 
 		list($data['id'], $data['password']) = $this->getCreds();
 
-		$authDCRequest['xml'] = $this->createXml($data);
+		$this->authDCRequest['xml'] = $this->createXml($data);
+
+		$options['verify'] = false;
 
 		$response = Requests::post(
-						$authDCRequest['url'],
-						$authDCRequest['header'],
-						$authDCRequest['xml']);
-
+						$this->authDCRequest['url'],
+						$this->authDCRequest['header'],
+						$this->authDCRequest['xml'],
+						$options);
 
 		$this->authDCResponse['xml'] = $response->body;
 
-		$this->parseDCAuthResponseXml($authDCResponse['xml']);
-
 		$this->getFieldsFromXML(
 					$this->authDCResponse['xml'], 
-					$authDCResponse['fields'], 
-					$this->authDCResponse);
+					$this->authDCResponse['fields'], 
+					$this->authDCResponse['data']);
 
-		$this->model->persistAfterDCAuth($authDCRequest, $authDCResponse);
+		$this->model->persistAfterDCAuth(
+						$this->authDCResponse['data']);
 	}
 
 	/**
@@ -436,7 +461,7 @@ class HdfcGateway extends BaseGateway
 		$this->getFieldsFromXML(
 					$this->authCCResponse['xml'], 
 					$this->authCCResponse['fields'],
-					$this->authCCResponse);
+					$this->authCCResponse['data']);
 	}
 
 	protected function createXml($array)
