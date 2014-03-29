@@ -1,22 +1,26 @@
 <?php
 
-class InvalidKeyException extends Exception
+namespace Exceptions;
+
+class InvalidKeysException extends InvalidRequestException
 {
-    protected $_keys;
+    protected $keys;
 
     public function __construct(array $keys, $code = 0 , Exception $previous = NULL)
     {
+    	$n = count($keys);
+
         $invalid_keys = implode(', ', $keys);
 
-        $message = $invalid_keys . ' is/are not valid key(s).';
+        $message = $n . ' key(s) is/are invalid => ' . $invalid_keys;
 
-        $this->_keys = $keys;
+        $this->keys = $keys;
 
         parent::__construct($message, $code, $previous);
     }
 
     public function getInvalidKeys()
     {
-        return $this->_keys;
+        return $this->keys;
     }
 }
