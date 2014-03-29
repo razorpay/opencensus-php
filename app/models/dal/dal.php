@@ -2,17 +2,17 @@
 
 namespace Models\DAL;
 
+use Exceptions\DbQueryException;
+
 class DAL extends \Eloquent
 {
 
 	/**
-	 * Indicates if the IDs are uuid.
+	 * Indicates if the primary key is uuid.
 	 *
 	 * @var bool
 	 */
 	public $uuid = false;
-
-
 
 	const THEDEFAULT = 0x0;
 	const FIELDS = 0x1;
@@ -83,4 +83,27 @@ class DAL extends \Eloquent
 		return $this->guarded;
 	}
 
+	public static function createOrFail(array $attributes)
+	{
+		if ( ! is_null($model = static::create($attributes))) return $model;
+
+		$e = array(
+				'model' => get_called_class(),
+				'attributes' => $attributes,
+				'operation' => 'create');
+
+		throw new DbQueryException($e);
+	}
+
+	public static function findOrFail2($id, $columns = array('*'))
+	{
+		if ( ! is_null($model = static::find($id, $columns))) return $model;
+
+		$e = array(
+				'model' => get_called_class(),
+				'attributes' => $id,
+				'operation' => 'find');
+
+		throw new DbQueryException($e);
+	}
 }

@@ -84,3 +84,17 @@ if (! function_exists('GetTextBetweenTags'))
 		return substr($string,$ini,$len);
 	}
 }
+
+if (! function_exists('implode_assoc_array'))
+{
+	function implode_assoc_array(array $array)
+	{
+		$str = '';
+	    foreach($array as $key => $value)
+	    {
+	    	$str .= $key . '=>' . $value . ', ';
+	    }
+
+	    return $str;
+	}
+}
