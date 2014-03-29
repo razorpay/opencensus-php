@@ -30,7 +30,7 @@ class Transaction extends Service
 
     	$data = Manager\Transaction::createValidate($txn_input)->getData();
 
-        $txn = DAL\Transaction::create($data);
+        $txn = DAL\Transaction::createOrFail($data);
 
         $txn = $this->process($txn, $card_data);
 
@@ -41,7 +41,7 @@ class Transaction extends Service
 
     /**
      * Processes a transaction.
-     * This function will be re-written.
+     * This function needs to be re-written.
      */
     public function process($txn, $card)
     {
