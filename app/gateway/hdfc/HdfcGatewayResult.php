@@ -7,9 +7,11 @@ final class HdfcGatewayResult
 	/**
 	 * Result codes received in response for card enrollment
 	 */
-	const ENROLLED = 'ENROLLED';
-	const NOT_ENROLLED = 'NOT ENROLLED';
-	const FSS001 = 'FSS001';
+	const ENROLLED = 1;
+	const NOT_ENROLLED = 2;
+	const FAIL_ENROLLED = 0;
+	const FSS0001_ENROLLED = -1;
+	const UNKNOWN_ERROR_ENROLLED = -2;
 
 	/**
 	 * Result codes received in response for transaction

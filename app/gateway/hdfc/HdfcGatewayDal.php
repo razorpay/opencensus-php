@@ -2,7 +2,7 @@
 
 namespace Gateway\HdfcGateway;
 
-class HdfcGatewayDal extends \Eloquent
+class HdfcGatewayDal extends \Models\DAL\DAL
 {
 	protected $table = 'hdfc';
 	
@@ -17,18 +17,29 @@ class HdfcGatewayDal extends \Eloquent
 		return $this->belongsTo('Transaction', 'trackid', 'id');
 	}
 
-	public static function persistAfterEnroll($requestData, $responseData)
+	public static function persistAfterEnroll($request, $response)
 	{
 		$attributes = array(
+			'id' => $requestData['trackid'],
 			'paymentid' => $responseData['paymentid'],
-			'trackid' => $requestData['trackid'],
 			'action' => $requestData['action'],
 			'enroll_result' => $responseData['result'],
 			'status' => 'VERES Received',
-			'eci' => $responseData['eci'],
-			'error_text' => $responseData['error_text']);
+			'eci' => $responseData['eci']);
 
-		return static::create($attributes);
+		return static::createOrFail($attributes);
+	}
+
+	public static function persistAfterEnrollError($id, array $error)
+	{
+		$attributes = array(
+			'id' => $id,
+			'error_code' => $error['code'],
+			'error_service' => $error['service'],
+			'error_text' => $error['text'],
+			'enroll_result' => HdfcGatewayResult::FAIL_ENROLLED);
+
+		return static::createOrFail($attributes);
 	}
 
 	public function persistAferCCAuth($data)

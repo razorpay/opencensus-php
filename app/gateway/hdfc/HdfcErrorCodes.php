@@ -2,9 +2,9 @@
 
 namespace Gateway/HdfcGateway;
 
-class HdfcGatewayCodes extends \Singleton
+class HdfcGatewayErrorHandler
 {
-	protected $error = array(
+	protected static $error = array(
 		'GW00150' => 'GW00150-Missing required data',
 		'GW00151' => 'GW00151-Invalid Action type',
 		'GW00152' => 'GW00152-Invalid Transaction Amount',
@@ -31,9 +31,15 @@ class HdfcGatewayCodes extends \Singleton
 		'GV00011' => 'GV00011-Invalid expiration date',
 		'PY20006' => 'PY20006-Invalid Brand',
 		'PY20001' => 'PY20001-Invalid Action Type',
-		'PY20002' => 'PY20002-Invalid amount');
+		'PY20002' => 'PY20002-Invalid amount',
 
-	protected parseErrorStr($error)
+		// Below error code is our custom one to handle unknow error cases 
+		// returned from bank.
+		'RP00001' => 'RP00001-Invalid Error Code');
+
+	public static $invalidErrorCode = 'RP00001';
+
+	public static function parseErrorStr($error)
 	{
 		//
 		// All error codes returned by hdfc gateway start with !ERROR!
@@ -44,10 +50,21 @@ class HdfcGatewayCodes extends \Singleton
 
 		if ($str !== '!ERROR!')
 		{
-			return 'not a valid error message';
+			return $this->invalidErrorCode;
 		}
 
-		
+		$errorCode = substr($error, 7);
+
+		if (! array_key_exists($this->error, $errorCode))
+		{
+			return $this->invalidErrorCode;
+		}
+
+		return $errorCode;
 	}
 
+	public static function translateError()
+	{
+		
+	}
 }
