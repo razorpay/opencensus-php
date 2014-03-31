@@ -107,7 +107,7 @@ class EntityManager
 
         if (count($invalid_keys) > 0)
         {
-            throw new \InvalidKeysException($invalid_keys);
+            throw new \Exceptions\InvalidKeysException($invalid_keys);
         }
     }
 
@@ -179,7 +179,7 @@ class EntityManager
     	if ((isset($this->field)) and 
     		(! in_array($key, $this->field)))
     	{
-    		throw new \InvalidKeysException;
+    		throw new \Exceptions\InvalidKeysException;
     	}
 
     	if (array_key_exists($key, $this->data))
@@ -193,7 +193,7 @@ class EntityManager
     	if ((count($this->field) > 0) and 
     		(! in_array($key, $this->field)))
     	{
-    		throw new \InvalidKeysException;
+    		throw new \Exceptions\InvalidKeysException;
     	}
 
     	$this->data[$key] = $value;
