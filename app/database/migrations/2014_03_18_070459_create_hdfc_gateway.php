@@ -15,14 +15,16 @@ class CreateHdfcGateway extends Migration {
 		Schema::create('hdfc', function(Blueprint $table){
 			$table->engine = 'InnoDB';
 
+			$table->string('id', 32);
+				  ->primary();
+
 			$table->bigInteger('paymentid')
-				  ->unsigned();
+				  ->unsigned()
+				  ->nullable();
 
 			$table->string('action', 1);
 
-			$table->string('trackid', 32);
-
-			$table->string('enroll_result', 255);
+			$table->string('enroll_result', 2);
 
 			$table->string('status', 50);
 
@@ -43,7 +45,13 @@ class CreateHdfcGateway extends Migration {
 			$table->string('postdate', 6)
 				  ->nullable();
 
-			$table->string('error_text', 255)
+			$table->string('error_code', 7);
+				  ->nullable();
+
+			$table->string('error_text', 100);
+				  ->nullable();
+
+			$table->string('error_service')
 				  ->nullable();
 
 			$table->timestamps();
