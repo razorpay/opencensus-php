@@ -37,6 +37,14 @@ class HdfcGateway extends BaseGateway
 	protected $model;
 
 	/**
+	 * If during the txn flow, we detect an
+	 * error, or the txn fails for any reason, 
+	 * then this variable is set to true.
+	 * @var boolean
+	 */
+	protected $error = false;
+
+	/**
 	 * Fields sent in xml format to enroll
 	 * @var array
 	 */
@@ -271,6 +279,14 @@ class HdfcGateway extends BaseGateway
 
 		$this->parseEnrollResponseEci();
 
+		if (($this->errors) or
+			(HdfcGatewayResult::isEnrollSuccess($this->enrollResponse) === false)
+		{
+			$error = HdfcGatewayErrorHandler::translateEnrollError($response);
+
+			return array(false, $error);
+		}
+
 		$this->validateEnrollResponse();
 	}
 
@@ -400,10 +416,12 @@ class HdfcGateway extends BaseGateway
 							$this->id,
 							$this->enrollResponse['error']);
 		}
-
-		$this->model = HdfcGatewayDal::persistAfterEnroll(
+		else
+		{
+			$this->model = HdfcGatewayDal::persistAfterEnroll(
 					$this->enrollRequest['data'],
 					$this->enrollResponse['data']);
+		}
 	}
 
 	/**
@@ -429,6 +447,11 @@ class HdfcGateway extends BaseGateway
 		HdfcGatewayUtility::runRequestResponseFlow($request, $response);
 
 		HdfcGatewayResponseXmlDal::saveXml($this->id, $response['xml'], $response['type']);
+
+		if (isset($response['error']['code']))
+		{
+			$this->error = true;
+		}
 	}
 
 	public function refund($txn)
