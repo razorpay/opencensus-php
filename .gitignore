@@ -5,5 +5,4 @@
 .DS_Store
 Thumbs.db
 /app/config/database.php
-/app/storage/
 app/gateway/hdfc/HdfcGatewayConfig.php
