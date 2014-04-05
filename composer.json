@@ -6,8 +6,7 @@
 		"raveren/kint": ">=0.9",
 		"rmccue/requests": ">=1.0",
 		"rhumsaa/uuid": "~2.7",
-		"laravel/framework": "4.1.*",
-		"way/generators": "dev-master"
+		"laravel/framework": "4.1.*"
 	},
 	"autoload": {
 		"classmap": [
