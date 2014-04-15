@@ -6,69 +6,31 @@ use Models\Manager;
 use Models\DAL;
 use Gateway\GatewayManager;
 
-class Transaction extends Service
+class TransactionService extends Service
 {
-    /**
-     * Creates an entry for a new transaction.
-     */
-    public function create($input = null)
-    {
-    	$card_token = null;
+	protected $txn;
 
-        $txn_input = $input;
-        
-    	if (! array_key_exists('card', $input))
-    	{
-    		throw new \InvalidArgumentException('Card not provided');
-    	}
-
-    	$card_input = $input['card'];
-
-    	$card_data = Manager\Card::createValidate($card_input)->getData();
-
-    	unset($txn_input['card']);
-
-    	$data = Manager\Transaction::createValidate($txn_input)->getData();
-
-        $txn = DAL\Transaction::createOrFail($data);
-
-        $txn = $this->process($txn, $card_data);
-
-        $txn_data = $txn->toArray();
-
-        return $txn_data;
-    }
+	public function __construct()
+	{
+		parent::construct();
+		$this->txn = new Transaction\Base();
+	}
 
     /**
      * Processes a transaction.
-     * This function needs to be re-written.
      */
-    public function process($txn, $card)
+    public function transact(array $input)
     {
-        if (is_string($txn))
-        {
-        	$txn = Transaction::findByTxn($txn);
-        }
-        else if (! ($txn instanceof DAL\Transaction))
-        {
-        	throw new \InvalidArgumentException('Invalid transaction id');
-        }
+    	list($txn, $card) = $this->txn->create($input);
 
-        //
-        // Call gateway with required info
-        //
-        {
-        	$data = array(
-        				'txn' => $txn->toArray(),
-        				'card' => $card);
+    	$this->txn->process($txn, $card);
 
-            $gateway = new GatewayManager();
+        return $txn;
+    }
 
-            $gateway->process($data);
-            
-            return $txn;
-        }
-        
+    public function capture($input)
+    {
+    	;
     }
 
     public function retrieve(array $input)
@@ -103,8 +65,7 @@ class Transaction extends Service
 
     	if ($processed)
     	{
-    		$txn = DAL\Transaction::where('id', $id)
-    							  ->update(array('processed' => 1));
+    		$txn = DAL\Transaction::updateProcessed($id);
 			echo "Transaction successful";
     	}
     	else

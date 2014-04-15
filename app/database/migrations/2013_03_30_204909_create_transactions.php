@@ -24,6 +24,8 @@ class CreateTransactions  extends Migration {
 			$table->integer('amount')
 				  ->unsigned();
 			
+			$table->string('status', 10);
+
 			$table->string('currency', 3)
 				  ->default('INR');
 

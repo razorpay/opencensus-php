@@ -39,6 +39,7 @@ class Status
 	const GATEWAY_CARD_DECLINED
 	
 	const GATEWAY_NOT_UNDERSTOOD_ERROR
+	const GATEWAY_UNKNOWN_ERROR
 
 	/**
 	 * Card errors catchable in the app
@@ -72,6 +73,16 @@ class Status
 		const GATEWAY_CARD_INVALID_ZIP_CODE,
 		const GATEWAY_CARD_DECLINED,
 		const GATEWAY_TXN_DENIED_NEGATIVE_BIN);
+
+	public static isGatewayError($error)
+	{
+		return true;
+	}
+
+	public static isCardError($error)
+	{
+		return true;
+	}
 );
 
 

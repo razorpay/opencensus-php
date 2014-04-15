@@ -20,6 +20,7 @@ class Transaction extends UuidDAL
     protected $fillable = array(
         'merchant_id',
         'token',
+        'status',
         'amount',
         'currency',
         'processed',
@@ -187,6 +188,12 @@ class Transaction extends UuidDAL
     public function hdfc()
     {
     	return $this->hasOne('hdfc', 'trackid', 'id');
+    }
+
+    public static function updateProcessed($id)
+    {
+		$txn = static::where('id', $id)
+					  ->update(array('processed' => 1));
     }
 
 }

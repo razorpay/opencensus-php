@@ -19,7 +19,7 @@ class Transaction extends EntityManager
     	'email'         =>  'required|email|max:250',
     	'contact'       =>  'required|numeric|digits_between:8:12');
 
-    protected static $generators = array('process');
+    protected static $generators = array('process', 'status');
 
     protected static $validators = array('currency', 'udf');
 
@@ -56,7 +56,9 @@ class Transaction extends EntityManager
     {
         $currency = $input['currency'];
 
+        //
         // Right now only INR is supported.
+        //
 
         if ($currency !== "INR")
         {
@@ -68,6 +70,11 @@ class Transaction extends EntityManager
     {
     	$this->process_now = (bool) $input['process'];
     	$this->setField('processed', 0);
+    }
+
+    public function generateStatus($input)
+    {
+    	$this->setField('status', 'open');
     }
 
     public function processNow()

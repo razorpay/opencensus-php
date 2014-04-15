@@ -25,6 +25,8 @@
 namespace Gateway\HdfcGateway;
 
 use Gateway\BaseGateway;
+use Exceptions\DbQueryException;
+use Exceptions\InvalidArgumentException;
 
 class HdfcGateway extends BaseGateway
 {
@@ -200,14 +202,22 @@ class HdfcGateway extends BaseGateway
 			}
 			else
 			{
+				// 
 				// No error on the request side, but enroll failed with an invalid enroll code.
 				// 
 				// Bail out and fail transaction.
+				// 
+
+				$error = HdfcGatewayErrorHandler::unknownError();
+
+				return array(false, $error);
 			}
 		}
 		else
 		{
-			$errorCode = HdfcGatewayErrorHandler::getInstance()->parseErrorStr($error);
+			$error = HdfcGatewayErrorHandler::translateError($error['code']);
+
+			return array(false, $error);
 		}
 	}
 
@@ -225,7 +235,7 @@ class HdfcGateway extends BaseGateway
         if ($validation->fails()) 
         {
         	var_dump($validation->messages()->all());die();
-            throw new \InvalidArgumentException('d');
+            throw new InvalidArgumentException('d');
         }
 
         $this->model = HdfcGatewayDal::findOrFail($input['MD']);
@@ -233,7 +243,7 @@ class HdfcGateway extends BaseGateway
         $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
 
         $this->authEnrolledRequest();
-        
+
         return array(true, $this->model->trackid);
 	}
 
@@ -241,11 +251,11 @@ class HdfcGateway extends BaseGateway
 	{
 		if ($this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
 		{
-			throw new \InvalidArgumentException('Result not valid');
+			throw new InvalidArgumentException('Result not valid');
 		}
 		else if ($this->model->status !== 'VERES Received')
 		{
-			throw new \InvalidArgumentException('Status not valid');
+			throw new InvalidArgumentException('Status not valid');
 		}
 
 		$data = &$this->authEnrolledRequest['data'];
@@ -394,7 +404,7 @@ class HdfcGateway extends BaseGateway
 		}
 		else
 		{
-			throw new \InvalidArgumentException('process should be 0 or 1');
+			throw new InvalidArgumentException('process should be 0 or 1');
 		}
 	}
 
@@ -404,7 +414,7 @@ class HdfcGateway extends BaseGateway
 
 		if ($trackid !== $this->id)
 		{
-			throw new \InvalidArgumentException('Track id do not match');
+			throw new InvalidArgumentException('Track id do not match');
 		}
 	}
 
@@ -434,7 +444,7 @@ class HdfcGateway extends BaseGateway
 		$eci = &$this->enrollResponse['data']['eci'];
 		$eci = (($eci === null) or ($eci === '')) ? '7' : $eci;
 
-		$result = &$this->enrollResponse['data']['result']
+		$result = &$this->enrollResponse['data']['result'];
 		
 		if ($result === 'ENROLLED') $result = HdfcGatewayResult::ENROLLED;
 		else if ($result === 'NOT ENROLLED') $result = HdfcGatewayResult::NOT_ENROLLED;
