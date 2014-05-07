@@ -23,14 +23,14 @@ if (! function_exists('validate'))
 
         if (count($invalid_keys) !== 0)
         {
-            throw new \InvalidKeysException($invalid_keys);
+            throw new \Exceptions\InvalidKeysException($invalid_keys);
         }
 
         $validation = Validator::make($data, $rules);
 
         if ($validation->fails()) 
         {
-            throw new \InvalidArgumentException($validation->messages()->all());
+            throw new \Exceptions\InvalidArgumentException($validation->messages()->all());
         }
 	}
 }
@@ -77,8 +77,11 @@ if (! function_exists('GetTextBetweenTags'))
 	function getTextBetweenTags($string, $start, $end)
 	{
 	    $string = " ".$string;
+
 		$ini = strpos($string,$start);
-		if ($ini == 0) return "";
+		
+		if ($ini === false) return null;
+
 		$ini += strlen($start);
 		$len = strpos($string,$end,$ini) - $ini;
 		return substr($string,$ini,$len);
