@@ -43,7 +43,7 @@ Route::group(array('before' => 'auth'), function()
 
 	Route::post('tokens', 'CardController@postIndex');
 
-	Route::get('tokens/(:any)', 'CardController@getRetrieve');
+	Route::get('tokens/{token}', 'CardController@getRetrieve');
 
 	Route::get('transactions', 'TransactionController@postIndex');
 

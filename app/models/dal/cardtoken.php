@@ -75,7 +75,15 @@ class CardToken extends DAL {
 
     public static function findByTokenAndMerchantId($token, $merchant_id)
     {
-    	return self::where('token', $token)->where('merchant_id', $merchant_id)->first();
+        $token;
+
+        try {
+           $token = self::where('token', $token)->where('merchant_id', $merchant_id)->first();
+        } catch(Exception $e) {
+            $token = false;
+        }
+
+        return $token;
     }
 
     public function expired()
