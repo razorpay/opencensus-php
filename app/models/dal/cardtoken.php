@@ -9,7 +9,6 @@ class CardToken extends DAL {
     protected $appends = array('object');
 
     protected $fillable = array(
-        'id',
         'token',
         'card_id',
         'merchant_id',
