@@ -61,8 +61,8 @@ class TransactionController extends BaseController
 		$input['merchant_id'] = BasicAuth::getInstance()->MerchantId();
 
 		$txn_data = Transaction::getNewInstance()->create($input);
-		
-		return Response::json($txn_data);
+
+		return $txn_data;
 	}
 
 	/**

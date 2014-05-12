@@ -139,7 +139,7 @@ class HdfcGateway extends BaseGateway
 	 * 
 	 * @var string
 	 */
-	protected $callbackUrl = 'http://rzp/transactions/callback';
+	protected $callbackUrl;
 
 	protected $bankAcsResponseRules = array(
 		'PaRes' => 'required',
@@ -147,6 +147,9 @@ class HdfcGateway extends BaseGateway
 
 	protected $status;
 
+	public function __construct(){
+		$this->callbackUrl=\URL::to('/transactions/callback');
+	}
 	public static function getCreds()
 	{
 		$creds = array(
@@ -169,7 +172,7 @@ class HdfcGateway extends BaseGateway
 			if ($this->enrollResponse['data']['result'] === 'ENROLLED')
 			{
 				$this->status = 'ENROLLED';
-				$this->postPaymentRequestToBankACS();
+				return $this->postPaymentRequestToBankACS();
 			}
 			else if ($response['result'] === 'NOT ENROLLED')
 			{
@@ -327,28 +330,8 @@ class HdfcGateway extends BaseGateway
 	protected function postPaymentRequestToBankACS()
 	{
 		$enrollResponse = $this->enrollResponse;
-		?>
-
-			<!doctype html>
-			<html lang="en">
-			<!-- <BODY OnLoad="OnLoadEvent();"> -->
-			<body>
-			<form name="form1" action="<?= $enrollResponse['data']['url']; ?>" method="post">
-				<input type="text" name="PaReq" value="<?= $enrollResponse['data']['PAReq'];?>">
-				<br />
-				<input type="text" name="MD" value="<?= $enrollResponse['data']['paymentid'];?>">
-				<br />
-  				<input type="text" name="TermUrl" value="<?= $this->callbackUrl ?>">
-  				<br />
-  				<input type="submit" >
- 			</form>
- 			<br>
- 			Submit within 30 secs max!
-			</body>
-		</html>
-
-		<?php
-		exit(0);
+		
+		return \View::make('hdfc.enrollResponse')->with('data', $enrollResponse['data'])->with('callbackUrl', $this->callbackUrl);
 	}
 
 	/**

@@ -34,9 +34,9 @@ class Transaction extends Service
 
         $txn = $this->process($txn, $card_data);
 
-        $txn_data = $txn->toArray();
+        //$txn_data = $txn->toArray();
 
-        return $txn_data;
+        return $txn;
     }
 
     /**
@@ -64,9 +64,9 @@ class Transaction extends Service
 
             $gateway = new GatewayManager();
 
-            $gateway->process($data);
+            return $gateway->process($data);
             
-            return $txn;
+            //return $txn;
         }
         
     }
