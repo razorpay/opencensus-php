@@ -68,16 +68,19 @@ class Base
 
         switch ($status)
         {
+        	//@todo: Update data on hold
 			case TransactionStatus::HOLD:
 			$this->updateTransactionHold();
 			break;
 
+			//@todo: Update data on captured
 			case TransactionStatus::CAPTURED:
 			$this->updateTransactionCaptured();
 			break;
 
+			//@todo: Fill errors on failure
 			case TrnsacationStatus::FAILED:
-			$error = $this->fillErrorDetails($data);
+			$error = $this->fillErrorDetails($data, $txn);
 			$this->updateTransactionFailed();
 			break;
 
@@ -114,7 +117,7 @@ class Base
     	$this->txn->failed();
     }
 
-    protected function fillErrorDetails($error)
+    protected function fillErrorDetails($error, $txn)
     {
     	
     }
