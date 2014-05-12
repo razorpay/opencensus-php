@@ -14,10 +14,33 @@ class DAL extends \Eloquent
 	 */
 	public $uuid = false;
 
+	
+	/**
+	 * should be default but that's
+	 * php keyword. It returns those attributes
+	 * which are defined in 'visible' and not 
+	 * defined in 'hidden'. At a time only one of
+	 * 'visible' or 'hidden' is defined.
+	 */
 	const THEDEFAULT = 0x0;
+
+	/**
+	 * Same as THEDEFAULT, except that it also
+	 * includes 'appends' attributes.
+	 */
 	const FIELDS = 0x1;
+
+	/**
+	 * All fields, irrespective of 'hidden' or 
+	 * 'visible'. Does not include 'appends' 
+	 * attributes.
+	 */
 	const ALL_FIELDS = 0x2;
-	const APPENDS = 0x3;
+
+	/**
+	 * Returns 'appends' attributes
+	 */
+	const APPENDS = 0x4;
 
 	/**
 	 * Return object properties as array
@@ -31,7 +54,7 @@ class DAL extends \Eloquent
 		if (($flag & static::FIELDS) or
 			($flag & static::THEDEFAULT))
 		{
-			$array = $this->getArrayableFields();
+			$array = $this->getArrayableAttributes();
 		}
 		else if ($flag & static::ALL_FIELDS)
 		{
