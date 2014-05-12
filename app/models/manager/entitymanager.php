@@ -92,6 +92,14 @@ class EntityManager
     	return $manager;
     }
 
+    /**
+     * Verifies validity of input values and keys.
+     * @param  array    $input     Input array supplied
+     * @param  string   $operation Operation for which input 
+     *                             is supplied
+     * 
+     * @return void     throws exception for error
+     */
     protected function validateInput($input, $operation)
     {
     	$this->validateInputKeys($input, $operation);
@@ -99,6 +107,15 @@ class EntityManager
     	$this->validateInputValues($input, $operation);
     }
 
+    /**
+     * Checks that all keys present in the input are allowed.
+     * 
+     * @param  array    $input     Input array supplied
+     * @param  string   $operation Operation for which input 
+     *                             is supplied
+     *                             
+     * @return void     throws exception for error
+     */
     protected function validateInputKeys($input, $operation)
     {
     	$rules_var = $operation.'Rules';
@@ -111,6 +128,15 @@ class EntityManager
         }
     }
 
+    /**
+     * Checks validity and presence of input values.
+     * 
+     * @param  array    $input     Input array supplied
+     * @param  string   $operation Operation for which input 
+     *                             is supplied
+     *                             
+     * @return void     throws exception for error
+     */
     protected function validateInputValues($input, $operation)
     {	
     	$rules_var = $operation.'Rules';
