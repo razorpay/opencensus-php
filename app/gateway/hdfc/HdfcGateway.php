@@ -139,7 +139,7 @@ class HdfcGateway extends BaseGateway
 	 * 
 	 * @var string
 	 */
-	protected $callbackUrl = 'http://rzp/transactions/callback';
+	protected $callbackUrl = 'http://api.razorpay.com/transactions/callback';
 
 	protected $bankAcsResponseRules = array(
 		'PaRes' => 'required',
