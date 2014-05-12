@@ -30,11 +30,12 @@ class CardController extends BaseController
 
 		list($token_data, $err) = $token_service->retrieve($token, $merchant_id);
 		
-		if (($token_data === false) or
-			($err !== ERR::SUCCESS))
-		{
-			return ERR::handle_error();
-		}
+		// NOTE: Error handling doesn't seem to work properly. Please have a look - Abhishek Kandoi<kandoi@razorpay.com>
+		// if (($token_data === false) or
+		// 	($err !== ERR::SUCCESS))
+		// {
+		// 	return ERR::handle_error();
+		// }
 
 		return Response::json($token_data);
 	}

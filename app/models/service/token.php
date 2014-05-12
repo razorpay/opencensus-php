@@ -33,8 +33,16 @@ class Token extends Service
 
     public function retrieve($token, $merchant_id)
     {
-        DAL\CardToken::findByTokenAndMerchantId($token, $merchant_id);
+        $cardtoken = DAL\CardToken::findByTokenAndMerchantId($token, $merchant_id);
+        $err = false;
+        $token_data = false;
 
-        return $token_data;
+        if($cardtoken) {
+            $token_data = $cardtoken->toArray();
+        } else {
+            $err = true;
+        }
+
+        return array($token_data, $err);
     }
 }
