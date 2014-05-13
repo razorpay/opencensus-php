@@ -124,7 +124,7 @@ class EntityManager
 
         if (count($invalid_keys) > 0)
         {
-            throw new \InvalidKeysException($invalid_keys);
+            throw new \Exceptions\InvalidKeysException($invalid_keys);
         }
     }
 

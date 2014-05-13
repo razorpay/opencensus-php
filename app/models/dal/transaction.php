@@ -24,7 +24,8 @@ class Transaction extends UuidDAL
         'currency',
         'processed',
         'desc',
-        'udf');
+        'udf',
+        'id');
 //        'refund',);
 
     protected $guarded = array('id');

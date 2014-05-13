@@ -5,6 +5,8 @@ namespace Models\Service;
 use Models\Manager;
 use Models\DAL;
 use Gateway\GatewayManager;
+use Rhumsaa\Uuid\Uuid;
+use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
 
 class Transaction extends Service
 {
@@ -29,14 +31,15 @@ class Transaction extends Service
     	unset($txn_input['card']);
 
     	$data = Manager\Transaction::createValidate($txn_input)->getData();
-
+        $data['id']=(string)Uuid::uuid1();
+        s($data);
         $txn = DAL\Transaction::createOrFail($data);
 
         $txn = $this->process($txn, $card_data);
 
-        $txn_data = $txn->toArray();
+        //$txn_data = $txn->toArray();
 
-        return $txn_data;
+        return $txn;
     }
 
     /**
@@ -64,9 +67,9 @@ class Transaction extends Service
 
             $gateway = new GatewayManager();
 
-            $gateway->process($data);
+            return $gateway->process($data);
             
-            return $txn;
+            //return $txn;
         }
         
     }

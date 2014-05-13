@@ -1,4 +1,6 @@
 <?php
+use Laracasts\TestDummy\Factory;
+
 
 class TestCase extends Illuminate\Foundation\Testing\TestCase {
 
@@ -15,5 +17,24 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase {
 
 		return require __DIR__.'/../../bootstrap/start.php';
 	}
+
+	public function setUp()
+    {
+        parent::setUp();
+        Artisan::call('migrate');
+        Route::enableFilters();
+        DB::beginTransaction();
+        
+        $key = Factory::create('Models\DAL\Key');
+        $cardtoken= Factory::create('Models\DAL\CardToken');
+        Eloquent::reguard();
+        
+    }
+
+    public function tearDown()
+    {
+       DB::rollback();
+    }
+
 
 }

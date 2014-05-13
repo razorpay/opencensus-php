@@ -2,7 +2,7 @@
 
 namespace Exceptions;
 
-class RazorpayException extends Exception
+class RazorpayException extends \Exception
 {
 	protected $category;
 
