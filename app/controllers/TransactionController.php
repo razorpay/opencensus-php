@@ -120,6 +120,6 @@ class TransactionController extends BaseController
 	{
 		$input = Input::all();
 		$txn_service = new Transaction();
-		$txn_service->bankAcsCallback($input);
+		return $txn_service->bankAcsCallback($input);
 	}
 }

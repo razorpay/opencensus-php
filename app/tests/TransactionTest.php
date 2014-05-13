@@ -5,6 +5,7 @@ class TransactionTest extends TestCase {
 
     public function testCreateTransaction()
     {
+        //GIVEN
         $transaction = [
             'amount'          =>  '100',
             'currency'        =>  'INR',
@@ -28,22 +29,40 @@ class TransactionTest extends TestCase {
                 'contact'   =>  '991889902'
             ),
         ];
-        $crawler = $this->client->request('POST', '/transactions', $transaction);
-        $form = $crawler->selectButton('Submit')->form();
-        $form->setValues(array('TermUrl' => Config::get('app.url').'/transactions/callback'));
-        $uri = $form->getUri();
-        $method = $form->getMethod();
-        $values = $form->getValues();
-        $response = Requests::post($uri, array(), $values);
-        $crawler = new \Symfony\Component\DomCrawler\Crawler('', $uri);
-        $crawler->addContent($response->body);
-        $form = $crawler->selectButton('Submit')->form();
-        $uri = $form->getUri();
-        $method = $form->getMethod();
-        $values = $form->getValues();
-        $response = $this->call('POST', '/transactions/callback', $values);
-        s($response);
+        $cards=include('helpers/cards.php');
+        foreach($cards as $card)
+        {
+            $transaction['card']['number']=$card['PAN'];
+            $expected_response=$card['response'];
+            
+            //WHEN
+            //first request to /transactions route, returns form for submission to acs url
+            $crawler = $this->client->request('POST', '/transactions', $transaction);
+
+            //get the form
+            $form = $crawler->selectButton('Submit')->form();
+
+            //submit to acs url
+            $form->setValues(array('TermUrl' => Config::get('app.url').'/transactions/callback'));
+            $uri = $form->getUri();
+            $method = $form->getMethod();
+            $values = $form->getValues();
+            $response = Requests::post($uri, array(), $values);
+
+            //crawl the repsonse to get callback form
+            $crawler = new \Symfony\Component\DomCrawler\Crawler('', $uri);
+            $crawler->addContent($response->body);
+            $form = $crawler->selectButton('Submit')->form();
+
+            //submit callback form
+            $uri = $form->getUri();
+            $method = $form->getMethod();
+            $values = $form->getValues();
+            $response = $this->call('POST', '/transactions/callback', $values);
+
+            //THEN
+            $this->assertEquals($expected_response, $response->getContent());
+        }
 
     }
-
-}
+ }

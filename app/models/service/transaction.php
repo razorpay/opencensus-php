@@ -107,11 +107,11 @@ class Transaction extends Service
     	{
     		$txn = DAL\Transaction::where('id', $id)
     							  ->update(array('processed' => 1));
-			echo "Transaction successful";
+			return "Transaction successful";
     	}
     	else
     	{
-    		echo "Transaction unsuccessful";
+    		return "Transaction unsuccessful";
     	}
     }
 }
