@@ -24,9 +24,10 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase {
         Artisan::call('migrate');
         Route::enableFilters();
         DB::beginTransaction();
-        
+        Eloquent::unguard();
         $key = Factory::create('Models\DAL\Key');
         $cardtoken= Factory::create('Models\DAL\CardToken');
+        $transaction= Factory::create('Models\DAL\Transaction');
         Eloquent::reguard();
         
     }
