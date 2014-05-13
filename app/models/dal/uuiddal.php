@@ -21,10 +21,10 @@ class UuidDAL extends DAL
 	{
 		parent::boot();
 
-		static::creating(function($model)
+		/*static::creating(function($model)
         {
-            $model->{$model->getKeyName()} = (string)$model->generateUuid();
-        });
+            $model->{$model->getKeyName()} = (string)Uuid::uuid1();
+        });*/
 	}
 
 	public function generateUuid()
