@@ -169,9 +169,9 @@ class HdfcGateway extends BaseGateway
             if ($this->enrollResponse['data']['result'] === 'ENROLLED')
             {
                 $this->status = 'ENROLLED';
-                $this->postPaymentRequestToBankACS();
+                return $this->postPaymentRequestToBankACS();
             }
-            else if ($response['result'] === 'NOT ENROLLED')
+            else if ($this->enrollResponse['data']['result'] === 'NOT ENROLLED')
             {
                 $this->status = 'NOT ENROLLED';
                 $this->postAuthCCRequestToBank();
@@ -320,28 +320,9 @@ class HdfcGateway extends BaseGateway
     protected function postPaymentRequestToBankACS()
     {
         $enrollResponse = $this->enrollResponse;
-        ?>
-
-            <!doctype html>
-            <html lang="en">
-            <!-- <BODY OnLoad="OnLoadEvent();"> -->
-            <body>
-            <form name="form1" action="<?= $enrollResponse['data']['url']; ?>" method="post">
-                <input type="text" name="PaReq" value="<?= $enrollResponse['data']['PAReq'];?>">
-                <br />
-                <input type="text" name="MD" value="<?= $enrollResponse['data']['paymentid'];?>">
-                <br />
-                <input type="text" name="TermUrl" value="<?= $this->callbackUrl ?>">
-                <br />
-                <input type="submit" >
-            </form>
-            <br>
-            Submit within 30 secs max!
-            </body>
-        </html>
-
-        <?php
-        exit(0);
+        return \View::make('hdfc.enrollResponse')
+                    -> with('data', $enrollResponse['data'])
+                    -> with('callbackUrl', $this->callbackUrl );
     }
 
     /**

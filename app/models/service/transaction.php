@@ -32,7 +32,6 @@ class Transaction extends Service
 
     	$data = Manager\Transaction::createValidate($txn_input)->getData();
         $data['id']=(string)Uuid::uuid1();
-        s($data);
         $txn = DAL\Transaction::createOrFail($data);
 
         $txn = $this->process($txn, $card_data);
