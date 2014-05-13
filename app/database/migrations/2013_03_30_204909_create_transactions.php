@@ -15,7 +15,7 @@ class CreateTransactions  extends Migration {
 		Schema::create('transactions', function(Blueprint $table){
 			$table->engine = 'InnoDB';
 			
-			$table->string('id', 32)
+			$table->string('id', 40)
 				  ->primary();
 
 			$table->integer('merchant_id')
