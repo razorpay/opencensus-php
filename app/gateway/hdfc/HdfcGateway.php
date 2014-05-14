@@ -341,9 +341,7 @@ class HdfcGateway extends BaseGateway
     protected function postPaymentRequestToBankACS()
     {
         $enrollResponse = $this->enrollResponse;
-        return \View::make('hdfc.enrollResponse')
-                    -> with('data', $enrollResponse['data'])
-                    -> with('callbackUrl', $this->callbackUrl );
+        return array('data' => $enrollResponse['data'], 'callbackUrl' => $this->callbackUrl );
     }
 
     /**

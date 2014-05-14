@@ -62,7 +62,14 @@ class TransactionController extends BaseController
 
         $txn_data = Transaction::getNewInstance()->create($input);
 
-        return $txn_data;
+        if(isset($txn_data['callbackUrl']))
+        {	
+        	return View::make('hdfc.enrollResponse')
+        					->with('data', $txn_data['data'])
+        					->with('callbackUrl',$txn_data['callbackUrl']);
+        }
+        else return Response::json($txn_data);
+
     }
 
     /**

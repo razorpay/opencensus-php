@@ -40,7 +40,8 @@ class Transaction extends Service
 
         $txn = $this->process($txn, $card_data);
 
-        //$txn_data = $txn->toArray();
+        if(!is_array($txn))
+        $txn = $txn->toArray();
 
         return $txn;
     }
