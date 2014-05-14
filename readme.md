@@ -1,5 +1,7 @@
 #RazorPay API
 
+[![Build Status](https://api.shippable.com/projects/536e6f0a16866c6d01fea8ae/badge/development)](https://www.shippable.com/projects/536e6f0a16866c6d01fea8ae)
+
 ##Set up instructions
 
 * Copy over `api.razorpay.com.conf` to `/etc/apache2/sites-available/`.
