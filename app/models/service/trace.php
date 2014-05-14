@@ -1,0 +1,116 @@
+<?php
+
+namespace Models\Service;
+
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Formatter\JsonFormatter;
+
+class Trace extends Logger
+{
+    const OBJECT = "trace";
+
+    protected static $log_path = '/home/abhi/tmp/rzpapi/transaction.log';
+
+    /**
+     * Name of the application component
+     * eg: transaction
+     *
+     * @var string $component Application component
+     */
+    protected $component;
+
+    /**
+     * Describes the operation for which trace is performed
+     *
+     * @var string $trace_code Trace code
+     */
+    protected $trace_code;
+
+    /**
+     * IP address of the requesting client
+     *
+     * @var string $client_ip Client ip address
+     */
+    protected $client_ip;
+
+    /**
+     * IP address of the server serving the request
+     *
+     * @var string $server_ip Server ip address
+     */
+    protected $server_ip;
+
+    public function __construct()
+    {
+        $this->name = static::OBJECT;
+        $this->handlers = array();
+        $this->processors = array();
+
+        $formatter = new JsonFormatter();
+        $stream = new StreamHandler(static::$log_path);
+        $stream->setFormatter($formatter);
+
+        $this->pushHandler($stream);
+
+        $this->client_ip = \Request::getClientIp();
+        $this->server_ip = \Request::server('SERVER_ADDR');
+    }
+
+    /**
+     * Adds a log record.
+     *
+     * @param  integer $level   The logging level
+     * @param  string  $message The log message
+     * @param  array   $context The log context
+     * @return Boolean Whether the record has been processed
+     */
+    public function addRecord($level, $message, array $context = array())
+    {
+        if (!$this->handlers) {
+            $this->pushHandler(new StreamHandler('php://stderr', static::DEBUG));
+        }
+
+        if (!static::$timezone) {
+            static::$timezone = new \DateTimeZone(date_default_timezone_get() ?: 'UTC');
+        }
+
+        $record = array(
+            'object' => static::OBJECT,
+            'component' => $this->component,
+            'trace_code' => $this->trace_code,
+            'message' => (string) $message,
+            //'context' => $context,
+            'level' => $level,
+            'level_name' => static::getLevelName($level),
+            'client_ip' => $this->client_ip,
+            'server_ip' => $this->server_ip,
+            'timestamp' => \DateTime::createFromFormat('U.u', sprintf('%.6F', microtime(true)), static::$timezone)->setTimezone(static::$timezone),
+            //'channel' => $this->name,
+            'extra' => array(),
+        );
+        // check if any handler will handle this message
+        $handlerKey = null;
+        foreach ($this->handlers as $key => $handler) {
+            if ($handler->isHandling($record)) {
+                $handlerKey = $key;
+                break;
+            }
+        }
+        // none found
+        if (null === $handlerKey) {
+            return false;
+        }
+
+        // found at least one, process message and dispatch it
+        foreach ($this->processors as $processor) {
+            $record = call_user_func($processor, $record);
+        }
+        while (isset($this->handlers[$handlerKey]) &&
+            false === $this->handlers[$handlerKey]->handle($record)) {
+            $handlerKey++;
+        }
+
+        return true;
+    }
+}
