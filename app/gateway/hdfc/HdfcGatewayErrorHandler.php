@@ -1,6 +1,8 @@
 <?php
 
-namespace Gateway/HdfcGateway;
+namespace Gateway\HdfcGateway;
+
+use Exceptions\Status;
 
 class HdfcGatewayErrorHandler
 {
@@ -69,7 +71,7 @@ class HdfcGatewayErrorHandler
         'GV00011' => Status::GATEWAY_CARD_INVALID_EXPIRY_DATE,
         'PY20006' => Status::GATEWAY_CARD_INVALID_BRAND,
         'PY20001' => Status::GATEWAY_TRANSACTION_INVALID_ACTION,
-        'PY20002' => Status::GATEWAY_CARD_INVALID_AMOUNT
+        'PY20002' => Status::GATEWAY_CARD_INVALID_AMOUNT,
         'RP00001' => Status::GATEWAY_UNKNOWN_ERROR);
 
     public static $invalidErrorCode = 'RP00001';
@@ -85,7 +87,7 @@ class HdfcGatewayErrorHandler
 
         if ($str !== '!ERROR!')
         {
-            return $this->invalidErrorCode;
+            return static::$invalidErrorCode;
         }
 
         $errorCode = substr($error, 7);
@@ -98,11 +100,9 @@ class HdfcGatewayErrorHandler
         return $errorCode;
     }
 
-    public static function translateError($model, $error)
+    public static function translateError($error)
     {
-        $errorCode = static::translateErrorCode($error);
-
-        return $error;
+        return static::translateErrorCode($error);
     }
 
     public static function translateErrorCode($errorCode)
@@ -119,6 +119,11 @@ class HdfcGatewayErrorHandler
 
     public static function unknownError()
     {
-        return $this->invalidErrorCode;
+        return static::$invalidErrorCode;
+    }
+
+    public static function translateEnrollError($response)
+    {
+    	return $response['error'];
     }
 }
