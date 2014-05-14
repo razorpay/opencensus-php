@@ -28,7 +28,7 @@ class DbQueryException extends ServerErrorException
     {
     	foreach ($array as $key => $value)
     	{
-    		if in_array($key, $this->fields)
+    		if (in_array($key, $this->fields))
     		{
     			$this->data['key'] = $value;
     		}
