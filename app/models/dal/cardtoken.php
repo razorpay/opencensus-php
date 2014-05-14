@@ -90,4 +90,14 @@ class CardToken extends DAL {
         return (bool)$this->expired;
     }
 
+    public function transactions()
+    {
+        return $this->hasMany('Transaction');
+    }
+
+    public function card()
+    {
+        return $this->belongsTo('Models\DAL\Card', 'card_id', 'id');
+    }
+
 }

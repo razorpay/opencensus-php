@@ -226,4 +226,9 @@ class Transaction extends UuidDAL
         return $this->hasOne('hdfc', 'trackid', 'id');
     }
 
+    public function card_token()
+    {
+        return $this->hasOne('Models\DAL\CardToken', 'token', 'token');
+    }
+
 }
