@@ -10,7 +10,7 @@ class Transaction extends EntityManager
         'merchant_id'   =>  'required|numeric',
         'amount'        =>  'required|numeric|max:10000',
         'currency'      =>  'required|max:3',
-        //'token'         =>  'required',
+        'token'         =>  'required|alpha_num',
         'desc'          =>  'max:1000',
         'process'       =>  'numeric|max:1|digits:1',
         'udf'           =>  'required');

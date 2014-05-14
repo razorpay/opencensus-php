@@ -350,10 +350,11 @@ class HdfcGateway extends BaseGateway
     protected function postPaymentRequestToBankACS()
     {
         $enrollResponse = $this->enrollResponse;
-        $view = \View::make('hdfc.enrollResponse')
-                    -> with('data', $enrollResponse['data'])
-                    -> with('callbackUrl', $this->callbackUrl);
 
+        return array('enrolled', 
+                     array(
+                        'data' => $enrollResponse['data'], 
+                        'callbackUrl' => $this->callbackUrl));
         return array('enrolled', $view);
     }
  
@@ -505,11 +506,13 @@ class HdfcGateway extends BaseGateway
 
         $this->parseRefundResponseXml();
 
-        // $this->validateRefundResponse();
-
         $this->model = HdfcGatewayDal::persistAfterRefund(
             $this->refundRequest['data'],
             $this->refundResponse['data']);
+
+        //TODO
+        //return refund transaction status
+        return true;
     }
 
     /**
@@ -522,6 +525,7 @@ class HdfcGateway extends BaseGateway
     protected function createRefundRequestFields($input)
     {
         $txn = $input['txn'];
+        $card = $input['txn']['card'];
 
         $data = &$this->refundRequest['data'];
 
@@ -533,13 +537,12 @@ class HdfcGateway extends BaseGateway
         // Convert amount from integer to decimal
         $data['amt'] = $txn['amount']/100;
 
-        //TODO
-        $data['member'] = 'shk';
+        $data['member'] = $card['name'];
 
         $data['paymentid'] = $this->model->paymentid;
 
         // Set udf fields
-        $data['udf5'] = 'paymentid';
+        $data['udf5'] = 'PaymentID';
     }
 
     /**

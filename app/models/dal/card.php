@@ -7,7 +7,6 @@ class Card extends DAL
     protected $table = 'cards';
 
     protected $fillable = array(
-        'number',
         'name',
         'cvv',
 
@@ -45,7 +44,7 @@ class Card extends DAL
     
     public function getCardData($flag = 0x0)
     {
-        $data = $this->attr;
+        $data = $this->attributes;
 
         unset($data['created_at']);
         unset($data['updated_at']);

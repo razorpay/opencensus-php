@@ -27,8 +27,10 @@ class Transaction extends Service
 
         $txn = $this->txn->process($txn, $card);
 
-        if ($txn instanceof \Illuminate\View\View) return $txn;
-        else return $txn->toArray();
+        if(!is_array($txn))
+        	$txn = $txn->toArray();
+
+        return $txn;
     }
 
     public function retrieveMultiple(array $input)
@@ -71,13 +73,11 @@ class Transaction extends Service
 
     public function refund($txn_data = NULL)
     {
-        $data = array('txn' => $txn_data->toArrayEx(0x256));
+        $data = array('txn' => $txn_data->toArray());
 
         $gateway = new GatewayManager();
 
-        $status = $gateway->refund($data);
-
-        $txn_data->setRefunded($status);
+        return $gateway->refund($data);
     }
 
     public function bankAcsCallback(array $input)

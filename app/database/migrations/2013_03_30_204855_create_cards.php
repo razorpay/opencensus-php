@@ -18,8 +18,6 @@ class CreateCards extends Migration {
     
             $table->increments('id');
 
-            $table->string('number', 19);
-
             $table->string('name');
 
             $table->string('cvv', 4);

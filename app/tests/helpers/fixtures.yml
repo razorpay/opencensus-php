@@ -4,7 +4,6 @@ Models\DAL\Merchant:
   hash: $2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO
 
 Models\DAL\Card:
-    number: 123456789$integer
     name: $string
     expiry_month: 01
     expiry_year: 99
