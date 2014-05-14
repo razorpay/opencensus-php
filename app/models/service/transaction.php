@@ -77,7 +77,7 @@ class Transaction extends Service
         
     }
 
-    public function retrieve(array $input)
+    public function retrieveMultiple(array $input)
     {
         $txn = new DAL\Transaction;
 
@@ -97,6 +97,31 @@ class Transaction extends Service
         }
 
         return $txn_data_arr;
+    }
+
+    public function retrieve($id = NULL)
+    {
+        Manager\Transaction::validateTransactionId($id);
+
+        $txn = new DAL\Transaction();
+
+        $txn_data = $txn->fetchById($id);
+
+        return $txn_data;
+    }
+
+    /**
+     * Refunds a transaction
+     * Pass \DAL\Transaction object as argument
+     */
+
+    public function refund($txn_data = NULL)
+    {
+        $data = array('txn' => $txn_data->toArray());
+
+        $gateway = new GatewayManager();
+
+        return $gateway->refund($data);
     }
 
     public function bankAcsCallback(array $input)
