@@ -41,14 +41,17 @@ class Trace extends Logger
      */
     protected $server_ip;
 
-    public function __construct()
+    public function __construct($component, $trace_code)
     {
         $this->name = static::OBJECT;
         $this->handlers = array();
         $this->processors = array();
 
+        $this->component = $component;
+        $this->trace_code = $trace_code;
+
         $formatter = new JsonFormatter();
-        $stream = new StreamHandler($this->$log_path);
+        $stream = new StreamHandler($this->log_path);
         $stream->setFormatter($formatter);
 
         $this->pushHandler($stream);
