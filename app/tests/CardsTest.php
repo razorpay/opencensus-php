@@ -1,9 +1,15 @@
 <?php
 class CardsTest extends TestCase {
 
+    /**
+    *  Tests transaction for a particular card number
+    */
+
     private function createTransaction($card_no)
     {
         //GIVEN
+        
+        //create transaction object
         $transaction = [
             'amount'          =>  '100',
             'currency'        =>  'INR',
@@ -26,13 +32,16 @@ class CardsTest extends TestCase {
                 'contact'   =>  '991889902'
             ),
         ];
-        $cards=include('helpers/cards.php');
+
+        //load list of cards with expected responses for each
+        $cards=include('helpers/cards.php');        
         $transaction['card']['number']=$cards[$card_no]['PAN'];
         $expected_response=$cards[$card_no]['response'];
+
         //WHEN
-        //first request to /transactions route, returns form for submission to acs url
         try 
         {
+            //first request to /transactions route, returns form for submission to acs url
             $crawler = $this->client->request('POST', '/transactions', $transaction);
             
             //get the form
@@ -69,6 +78,10 @@ class CardsTest extends TestCase {
         }
 
     }
+
+    /**
+    * Tests for individual cards
+    */
 
     public function testCard0()
     {
