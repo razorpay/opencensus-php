@@ -13,9 +13,10 @@ install:
 before_script:
   - php composer.phar install
   - php composer.phar dump-autoload
+  - mkdir -p shippable/testresults
 
 script:
-  - phpunit
+  - phpunit  --log-junit shippable/testresults/junit.xml 
 
 notifications:
   email: false
