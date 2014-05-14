@@ -7,12 +7,10 @@ php:
 before_script:
   - mkdir -p shippable/testresults
   - sudo apt-get install php5-mcrypt
-  - sudo pear uninstall phpunit/PHPUnit
-  - sudo apt-get install phpunit
   - php composer.phar install
 
 script:
-  - phpunit  --log-junit shippable/testresults/junit.xml tests/calculator_test.php
+  - phpunit
 
 notifications:
   email: false
