@@ -56,4 +56,21 @@ class HdfcGatewayDal extends \Eloquent
         
         $this->save();
     }
+
+    public static function persistAfterRefund($requestData, $responseData)
+    {
+        $attributes = array(
+            'paymentid' => $responseData['paymentid'],
+            'trackid' => $responseData['trackid'],
+            'action' => $requestData['action'],
+            'status' => $responseData['result'],
+            'error_text' => $responseData['error_text']);
+
+        return static::create($attributes);
+    }
+
+    public function persisAfterCapture($data)
+    {
+        ;
+    }
 }
