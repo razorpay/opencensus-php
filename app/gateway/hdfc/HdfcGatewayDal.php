@@ -20,12 +20,12 @@ class HdfcGatewayDal extends \Models\DAL\DAL
     public static function persistAfterEnroll($request, $response)
     {
         $attributes = array(
-            'id' => $requestData['trackid'],
-            'paymentid' => $responseData['paymentid'],
-            'action' => $requestData['action'],
-            'enroll_result' => $responseData['result'],
+            'id' => $request['trackid'],
+            'paymentid' => $response['paymentid'],
+            'action' => $request['action'],
+            'enroll_result' => $response['result'],
             'status' => 'VERES Received',
-            'eci' => $responseData['eci']);
+            'eci' => $response['eci']);
 
         return static::createOrFail($attributes);
     }

@@ -111,7 +111,7 @@ class HdfcGateway extends BaseGateway
     protected $enrollResponse = array(
         'fields' => array(
                     'error_text', 'eci', 'result', 'url', 'PAReq', 'paymentid', 'trackid'),
-        'type' => 'enroll'
+        'type' => 'enroll',
         'xml' => '',
         'data' => array(),
         'error' => array());
@@ -207,17 +207,17 @@ class HdfcGateway extends BaseGateway
         $this->id = $input['txn']['id'];
  
         $this->enrollCard($input);
+
+        $er = $this->enrollResponse;
  
-        $error = $this->enrollResponse['error'];
- 
-        if (isset($this->enrollResponse['error']))
+        if (isset($er['error']) !== null)
         {
-            if ($this->enrollResponse['data']['result'] === HdfcGatewayResult::ENROLLED)
+            if ($er['data']['result'] === HdfcGatewayResult::ENROLLED)
             {
                 $this->status = HdfcGatewayResult::ENROLLED;
-                $this->postPaymentRequestToBankACS();
+                return $this->postPaymentRequestToBankACS();
             }
-            else if ($response['result'] === HdfcGatewayResult::NOT_ENROLLED)
+            else if ($er['data']['result'] === HdfcGatewayResult::NOT_ENROLLED)
             {
                 $this->status = HdfcGatewayResult::NOT_ENROLLED;
                 $this->postAuthNotEnrolledRequestToBank();
@@ -229,17 +229,16 @@ class HdfcGateway extends BaseGateway
                 // 
                 // Bail out and fail transaction.
                 // 
- 
                 $error = HdfcGatewayErrorHandler::unknownError();
  
-                return array(false, $error);
+                return array('failed', $error);
             }
         }
         else
         {
-            $error = HdfcGatewayErrorHandler::translateError($error['code']);
+            $error = HdfcGatewayErrorHandler::translateError($er['error']['code']);
  
-            return array(false, $error);
+            return array('failed', $error);
         }
     }
  
@@ -261,23 +260,24 @@ class HdfcGateway extends BaseGateway
         }
  
         $this->model = HdfcGatewayDal::findOrFail($input['MD']);
+        $this->id = $this->model->id;
         $this->authEnrolledRequest['data']['paymentid'] = $input['MD'];
         $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
  
         $this->authEnrolledRequest();
  
-        return array(true, $this->model->trackid);
+        return array(true, $this->model->id);
     }
  
     public function authEnrolledRequest()
     {
-        if ($this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
+        if ((int) $this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
         {
-            throw new InvalidArgumentException('Result not valid');
+            throw new \InvalidArgumentException('Result not valid');
         }
         else if ($this->model->status !== 'VERES Received')
         {
-            throw new InvalidArgumentException('Status not valid');
+            throw new \InvalidArgumentException('Status not valid');
         }
  
         $data = &$this->authEnrolledRequest['data'];
@@ -311,15 +311,17 @@ class HdfcGateway extends BaseGateway
  
         $this->parseEnrollResponseEci();
  
-        if (($this->errors) or
-            (HdfcGatewayResult::isEnrollSuccess($this->enrollResponse) === false)
+        if (($this->error) or
+            (HdfcGatewayResult::isEnrollSuccess($this->enrollResponse) === false))
         {
-            $error = HdfcGatewayErrorHandler::translateEnrollError($response);
+            $error = HdfcGatewayErrorHandler::translateEnrollError($this->enrollResponse);
  
             return array(false, $error);
         }
  
         $this->validateEnrollResponse();
+
+        $this->persistAfterEnroll();
     }
  
     protected function postAuthNotEnrolledRequestToBank()
@@ -348,9 +350,11 @@ class HdfcGateway extends BaseGateway
     protected function postPaymentRequestToBankACS()
     {
         $enrollResponse = $this->enrollResponse;
-        return \View::make('hdfc.enrollResponse')
+        $view = \View::make('hdfc.enrollResponse')
                     -> with('data', $enrollResponse['data'])
-                    -> with('callbackUrl', $this->callbackUrl );
+                    -> with('callbackUrl', $this->callbackUrl);
+
+        return array('enrolled', $view);
     }
  
     /**
@@ -460,16 +464,13 @@ class HdfcGateway extends BaseGateway
  
         $result = &$this->enrollResponse['data']['result'];
          
-        if ($result === 'ENROLLED') $result = HdfcGatewayResult::ENROLLED;
-        else if ($result === 'NOT ENROLLED') $result = HdfcGatewayResult::NOT_ENROLLED;
-        else if ($result === 'FSS0001') $result = HdfcGatewayResult::FSS0001
-        else $result = HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED = 3;
+        $result = HdfcGatewayResult::resultCode($result);
     }
  
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         HdfcGatewayUtility::runRequestResponseFlow($request, $response);
- 
+    
         HdfcGatewayResponseXmlDal::saveXml($this->id, $response['xml'], $response['type']);
  
         if (isset($response['error']['code']))

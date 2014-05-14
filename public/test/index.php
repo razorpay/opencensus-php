@@ -14,7 +14,7 @@
 	</tr>
 </table>
 <br><br>  
-<form method="post" id="txnform" action="http://d9c6bf091a1a64cb5678d8c1d5e7360f:@api.razorpay.com/transactions">	
+<form method="post" id="txnform" action="http://d9c6bf091a1a64cb5678d8c1d5e7360f:@rzp/transactions">	
 <table border="1" align="center"  width="300">
 	<tr>
 	<th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>

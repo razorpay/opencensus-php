@@ -33,13 +33,23 @@ final class HdfcGatewayResult
      */
     public static function isEnrollSuccess($response)
     {
-        Assert($resopnse['type'] === 'enroll');
+        Assert($response['type'] === 'enroll');
 
-        if ((isset($response['error']['code']) or
-            (isset($response['data']['enroll_result']) <= 0))
+        if ((isset($response['error']['code'])) or
+            (isset($response['data']['eci']) <= 0))
         {
             return false;
         }
 
+    }
+
+    public static function resultCode($result)
+    {
+    	if ($result === 'ENROLLED') $result = HdfcGatewayResult::ENROLLED;
+        else if ($result === 'NOT ENROLLED') $result = HdfcGatewayResult::NOT_ENROLLED;
+        else if ($result === 'FSS0001') $result = HdfcGatewayResult::FSS0001;
+        else $result = HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED;
+
+        return $result;
     }
 }
