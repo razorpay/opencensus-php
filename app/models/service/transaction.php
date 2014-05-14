@@ -8,99 +8,27 @@ use Gateway\GatewayManager;
 use Rhumsaa\Uuid\Uuid;
 use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
 
-class TransactionService extends Service
+class Transaction extends Service
 {
-<<<<<<< HEAD
-	protected $txn;
+    protected $txn;
 
-	public function __construct()
-	{
-		parent::construct();
-		$this->txn = new Transaction\Base();
-	}
-
-    /**
-     * Processes a transaction.
-=======
-    /**
-     * Creates an entry for a new transaction.
-     */
-    public function create($input = null)
+    public function __construct()
     {
-        $card_token = null;
-
-        $txn_input = $input;
-        
-        if (! array_key_exists('card', $input))
-        {
-            throw new \InvalidArgumentException('Card not provided');
-        }
-
-        $card_input = $input['card'];
-
-        $card_data = Manager\Card::createValidate($card_input)->getData();
-
-        unset($txn_input['card']);
-
-        $data = Manager\Transaction::createValidate($txn_input)->getData();
-
-        //TODO
-        //has to be handled better
-        $data['id'] = \Models\DAL\UuidDAL::generateUuid();
-
-        $txn = DAL\Transaction::createOrFail($data);
-
-        $txn = $this->process($txn, $card_data);
-
-        //$txn_data = $txn->toArray();
-
-        return $txn;
+        parent::__construct();
+        $this->txn = new Core\Transaction();
     }
 
     /**
      * Processes a transaction.
-     * This function needs to be re-written.
->>>>>>> development
      */
-    public function transact(array $input)
+    public function process(array $input)
     {
-<<<<<<< HEAD
-    	list($txn, $card) = $this->txn->create($input);
+        list($txn, $card) = $this->txn->create($input);
 
-    	$this->txn->process($txn, $card);
-=======
-        if (is_string($txn))
-        {
-            $txn = Transaction::findByTxn($txn);
-        }
-        else if (! ($txn instanceof DAL\Transaction))
-        {
-            throw new \InvalidArgumentException('Invalid transaction id');
-        }
-
-        //
-        // Call gateway with required info
-        //
-        {
-            $data = array(
-                        'txn' => $txn->toArray(),
-                        'card' => $card);
->>>>>>> development
-
-        return $txn;
-    }
-
-<<<<<<< HEAD
-    public function capture($input)
-    {
-    	;
-=======
-            return $gateway->process($data);
-            
-            //return $txn;
-        }
-        
->>>>>>> development
+        $txn = $this->txn->process($txn, $card);
+//echo get_class($txn);die();
+        if ($txn instanceof \Illuminate\View\View) return $txn;
+        else return $txn->toArray();
     }
 
     public function retrieveMultiple(array $input)
@@ -152,23 +80,6 @@ class TransactionService extends Service
 
     public function bankAcsCallback(array $input)
     {
-<<<<<<< HEAD
-    	unset($input['csrf']);
-    	
-    	$gateway = new GatewayManager();
-
-    	list($processed, $id) = $gateway->bankAcsCallback($input);
-
-    	if ($processed)
-    	{
-    		$txn = DAL\Transaction::updateProcessed($id);
-			echo "Transaction successful";
-    	}
-    	else
-    	{
-    		echo "Transaction unsuccessful";
-    	}
-=======
         unset($input['csrf']);
         
         $gateway = new GatewayManager();
@@ -177,14 +88,13 @@ class TransactionService extends Service
 
         if ($processed)
         {
-            $txn = DAL\Transaction::where('id', $id)
-                                  ->update(array('processed' => 1));
+            $txn = DAL\Transaction::updateProcessed($id);
+
             return "Transaction successful";
         }
         else
         {
             return "Transaction unsuccessful";
         }
->>>>>>> development
     }
 }
