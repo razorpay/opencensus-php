@@ -24,7 +24,10 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase {
 
         //setting up db
         Artisan::call('migrate');
+
         Eloquent::unguard();
+        //Start DB transaction so as to rollback once done
+        DB::beginTransaction();
         $key = Factory::create('Models\DAL\Key');
         $cardtoken= Factory::create('Models\DAL\CardToken');
         $transaction= Factory::create('Models\DAL\Transaction');
@@ -33,8 +36,7 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase {
         //Enable filters
         Route::enableFilters();
 
-        //Start DB transaction so as to rollback once done
-        DB::beginTransaction();
+        
         
         
     }
