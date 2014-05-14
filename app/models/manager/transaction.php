@@ -19,6 +19,11 @@ class Transaction extends EntityManager
     	'email'         =>  'required|email|max:250',
     	'contact'       =>  'required|numeric|digits_between:8:12');
 
+    //TODO
+    //Change it to refundRules, include amount as well
+    protected static $idRules = array(
+        'id'            =>  'required|alpha_num|max:32');
+
     protected static $generators = array('process');
 
     protected static $validators = array('currency', 'udf');
@@ -91,6 +96,15 @@ class Transaction extends EntityManager
 					$input,
 					CardToken::getCreateInputKeys(),
 					Transaction::getCreateInputKeys());
+    }
+
+    public static function validateTransactionId($id = NULL)
+    {
+        $validation = \Validator::make(array('id' => $id), static::$idRules);
+        if ($validation->fails())
+        {
+            throw new \InvalidArgumentException($validation->messages());
+        }
     }
 }
 
