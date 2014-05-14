@@ -1,0 +1,14 @@
+language: php
+
+php:
+  - 5.4
+
+before_script:
+  - mkdir -p shippable/testresults 
+  - php composer.phar install 
+
+script:
+  - phpunit  --log-junit shippable/testresults/junit.xml tests/calculator_test.php
+
+notifications:
+  email: false
