@@ -127,7 +127,7 @@ class Transaction extends Service
 
     public function refund($txn_data = NULL)
     {
-        $data = array('txn' => $txn_data->toArray());
+        $data = array('txn' => $txn_data->toArrayEx(0x256));
 
         $gateway = new GatewayManager();
 

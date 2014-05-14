@@ -178,42 +178,37 @@ class Transaction extends UuidDAL
 
     public function toArrayEx($flag = 0x0)
     {
-        $array = parent::toArray($flag);
+        $data = parent::toArray($flag);
 
-        if ($flag & self::ONLY_PUBLIC_FIELDS)
-        {
-            $array['id'] = $array['uid'];
-            unset($array['uid']);
-        }
+        // TODO
+        // const ONLY_PUBLIC_FIELDS is undefined
+        // if ($flag & self::ONLY_PUBLIC_FIELDS)
+        // {
+        //     $array['id'] = $array['uid'];
+        //     unset($array['uid']);
+        // }
 
         if ($flag & self::WITH_CARD)
         {
-            $card_do = null;
+            $token = $this->card_token()->first();
+            $card_do = NULL;
 
-            if ((($this->card_token_do === null) or
-                 ($this->card_token_do->get_card_do() === null)) and
-                ($this->card_do === null))
+            if ($this->token === null)
             {
                 throw new \InvalidArgumentException('No card present');
             }
 
-            if ($this->card_token_do !== null)
+            if ($token !== null)
             {
-                $card_do = $this->card_token_do->get_card_do();
+                $card_do = $token->card()->first();
             }
             
-            if (($card_do === null) and 
-                ($this->card_do !== null))
-            {
-                $card_do = $this->card_do;
-            }
-
             if ($card_do === null)
             {
                 throw new \UnexpectedValueException('No card do present to fetch card data');
             }
 
-            $card_data = $card_do->toArray($flag);
+            $card_data = $card_do->getCardData();
 
             $data['card'] = $card_data;
         }
