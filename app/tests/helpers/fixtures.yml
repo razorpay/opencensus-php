@@ -1,0 +1,37 @@
+Models\DAL\Merchant:
+  email: $string
+  pwd: $string
+  hash: $2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO
+
+Models\DAL\Card:
+    number: 123456789$integer
+    name: $string
+    expiry_month: 01
+    expiry_year: 99
+    cvv: 000
+    type: visa
+    country: IN
+    last4: 789$integer
+
+Models\DAL\CardToken:
+    card_id: 
+        type: Models\DAL\Card
+    merchant_id:
+        type: Models\DAL\Merchant
+    token: 174bdd3e456c8f6f
+
+Models\DAL\Key:
+    id: d9c6bf091a1a64cb5678d8c1d5e7360f
+    merchant_id: 
+        type: Models\DAL\Merchant
+    live: 1
+    active: 1
+    secret: 1
+
+Models\DAL\Transaction:
+    id: 4b66157a-daa9-11e3-a88f-3c077173
+    merchant_id:
+        type: Models\DAL\Merchant
+    amount: 100
+    currency: INR
+    processed: 1

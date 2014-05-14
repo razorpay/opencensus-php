@@ -2,6 +2,8 @@
 
 namespace Exceptions;
 
+use Exception;
+
 class RazorpayException extends Exception
 {
 	protected $category;

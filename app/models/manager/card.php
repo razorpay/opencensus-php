@@ -13,12 +13,12 @@ class Card extends EntityManager
         'expiry_year'   => 'required|numeric|digits_between:2,4',
         'cvv'           => 'required|numeric|digits:3',
         'name'          => 'required|alpha_space|max:100',
-        'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
-        'address_line2'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
-        'address_city'      => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
-        'address_state'     => 'regex:/[a-zA-Z,1-9. ]*/|size:100',
-        'address_country'   => 'regex:/[a-zA-Z]*/|size:50',
-        'address_zip'       => 'numeric|max:10');
+        'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
+        'address_line2'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
+        'address_city'      => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
+        'address_state'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
+        'address_country'   => 'regex:/[a-zA-Z]*/|max:50',
+        'address_zip'       => 'numeric|digits_between:0,10');
 
     protected static $address_attributes = array(
         'address_line1',
@@ -66,19 +66,19 @@ class Card extends EntityManager
 
     public function generateLast4($input)
     {
-    	$last4 = substr($input['number'], -4);
+        $last4 = substr($input['number'], -4);
 
         $this->setField('last4', $last4);
     }
 
     public function generateType($input)
     {
-    	$this->setField('type', 'visa');
+        $this->setField('type', 'visa');
     }
 
     public function generateCountry($input)
     {
-    	$this->setField('country', 'IN');
+        $this->setField('country', 'IN');
     }
 
 

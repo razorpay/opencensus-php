@@ -40,6 +40,9 @@ class CreateTransactions  extends Migration {
 			$table->boolean('processed')
 				  ->default('0');
 
+			$table->boolean('refunded')
+				  ->default('0');
+
 			$table->integer('status_code')
 				  ->unsigned()
 				  ->nullable();

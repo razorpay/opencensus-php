@@ -12,9 +12,9 @@ class Token extends Service
      * @param  array $data  [description]
      * @return array/null $error        [description]
      */
-	public function generate($input)
-	{
-		list($card_input, $card_token_input) = Manager\CardToken::separateTokenAndCardCreateInput($input);
+    public function generate($input)
+    {
+        list($card_input, $card_token_input) = Manager\CardToken::separateTokenAndCardCreateInput($input);
 
         $card_data = Manager\Card::createValidate($card_input)->getData();
 
@@ -24,17 +24,25 @@ class Token extends Service
 
         $card_token_data['card_id'] = $card->getId();
 
-		$token = DAL\CardToken::create($card_token_data);
+        $token = DAL\CardToken::create($card_token_data);
 
         // $token_data = $card_token_do->toArray();
         
         return $token;
-	}
+    }
 
     public function retrieve($token, $merchant_id)
     {
-        DAL\CardToken::findByTokenAndMerchantId($token, $merchant_id);
+        $cardtoken = DAL\CardToken::findByTokenAndMerchantId($token, $merchant_id);
+        $err = false;
+        $token_data = false;
 
-        return $token_data;
+        if($cardtoken) {
+            $token_data = $cardtoken->toArray();
+        } else {
+            $err = true;
+        }
+
+        return array($token_data, $err);
     }
 }

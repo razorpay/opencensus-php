@@ -4,12 +4,11 @@ namespace Models\DAL;
 
 class CardToken extends DAL {
 
-	protected $table = 'cardtokens';
+    protected $table = 'cardtokens';
 
     protected $appends = array('object');
 
     protected $fillable = array(
-        'id',
         'token',
         'card_id',
         'merchant_id',
@@ -35,7 +34,7 @@ class CardToken extends DAL {
 
     public function setCardId($card_id)
     {
-    	$this->setAttribute('card_id', $card_id);
+        $this->setAttribute('card_id', $card_id);
     }
 
     public function setMerchantId($merchant_id)
@@ -50,14 +49,14 @@ class CardToken extends DAL {
 
     public function getObjectAttribute()
     {
-    	return 'token';
+        return 'token';
     }
 
     const WITH_CARD             = 0x1024;
 
     public function toArrayEx($flag = 0x0)
     {
-    	$array = parent::toArray($flag);
+        $array = parent::toArray($flag);
 
         if ($flag & self::WITH_CARD)
         {
@@ -75,12 +74,20 @@ class CardToken extends DAL {
 
     public static function findByTokenAndMerchantId($token, $merchant_id)
     {
-    	return self::where('token', $token)->where('merchant_id', $merchant_id)->first();
+        $token;
+
+        try {
+           $token = self::where('token', $token)->where('merchant_id', $merchant_id)->first();
+        } catch(Exception $e) {
+            $token = false;
+        }
+
+        return $token;
     }
 
     public function expired()
     {
-    	return (bool)$this->expired;
+        return (bool)$this->expired;
     }
 
 }

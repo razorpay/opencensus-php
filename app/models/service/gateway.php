@@ -7,8 +7,8 @@ use Models\DAL;
 
 class Gateway
 {
-	public function process($txn)
-	{
-		return true;
-	}
+    public function process($txn)
+    {
+        return true;
+    }
 }
