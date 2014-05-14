@@ -1,0 +1,21 @@
+build_environment: Ubuntu 14.04
+language: php
+
+php:
+  - 5.5
+
+install:
+  - sudo apt-get install php5-mcrypt
+  - php -v
+  - cp app/config/testing/database.sample.php app/config/testing/database.php 
+  - mysql -e 'create database `apitesting`;'
+
+before_script:
+  - php composer.phar install
+  - php composer.phar dump-autoload
+
+script:
+  - phpunit
+
+notifications:
+  email: false
