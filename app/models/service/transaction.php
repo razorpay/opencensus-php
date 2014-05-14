@@ -26,7 +26,7 @@ class Transaction extends Service
         list($txn, $card) = $this->txn->create($input);
 
         $txn = $this->txn->process($txn, $card);
-//echo get_class($txn);die();
+
         if ($txn instanceof \Illuminate\View\View) return $txn;
         else return $txn->toArray();
     }
@@ -71,11 +71,13 @@ class Transaction extends Service
 
     public function refund($txn_data = NULL)
     {
-        $data = array('txn' => $txn_data->toArray());
+        $data = array('txn' => $txn_data->toArrayEx(0x256));
 
         $gateway = new GatewayManager();
 
-        return $gateway->refund($data);
+        $status = $gateway->refund($data);
+
+        $txn_data->setRefunded($status);
     }
 
     public function bankAcsCallback(array $input)
