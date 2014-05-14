@@ -10,7 +10,7 @@ class Trace extends Logger
 {
     const OBJECT = "trace";
 
-    protected static $log_path = '/home/abhi/tmp/rzpapi/transaction.log';
+    protected $log_path = '/home/abhi/tmp/rzpapi/transaction.log';
 
     /**
      * Name of the application component
@@ -48,7 +48,7 @@ class Trace extends Logger
         $this->processors = array();
 
         $formatter = new JsonFormatter();
-        $stream = new StreamHandler(static::$log_path);
+        $stream = new StreamHandler($this->$log_path);
         $stream->setFormatter($formatter);
 
         $this->pushHandler($stream);
@@ -80,14 +80,13 @@ class Trace extends Logger
             'component' => $this->component,
             'trace_code' => $this->trace_code,
             'message' => (string) $message,
-            //'context' => $context,
+            'context' => $context,
             'level' => $level,
             'level_name' => static::getLevelName($level),
             'client_ip' => $this->client_ip,
             'server_ip' => $this->server_ip,
             'timestamp' => \DateTime::createFromFormat('U.u', sprintf('%.6F', microtime(true)), static::$timezone)->setTimezone(static::$timezone),
             //'channel' => $this->name,
-            'extra' => array(),
         );
         // check if any handler will handle this message
         $handlerKey = null;
