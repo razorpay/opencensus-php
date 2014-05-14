@@ -160,6 +160,8 @@ class Transaction extends UuidDAL
     public function setRefunded($refunded)
     {
         $this->setAttribute('refunded', $refunded);
+
+        $this->save();
     }
 
     public function getObjectAttribute()

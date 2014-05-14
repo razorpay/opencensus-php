@@ -121,7 +121,9 @@ class Transaction extends Service
 
         $gateway = new GatewayManager();
 
-        return $gateway->refund($data);
+        $status = $gateway->refund($data);
+
+        $txn_data->setRefunded($status);
     }
 
     public function bankAcsCallback(array $input)

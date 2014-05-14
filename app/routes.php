@@ -49,7 +49,7 @@ Route::group(array('before' => 'auth'), function()
 
 	Route::get('transactions', 'TransactionController@getIndex');
 
-	Route::post('transactions/(:any)/refund', 'TransactionController@postRefund');
+	Route::post('transactions/{transaction_id}/refund', 'TransactionController@postRefund');
 
 	Route::get('transactions/refund', 'TransactionController@getRefund');
 

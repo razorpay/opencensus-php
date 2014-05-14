@@ -508,11 +508,13 @@ class HdfcGateway extends BaseGateway
 
         $this->parseRefundResponseXml();
 
-        // $this->validateRefundResponse();
-
         $this->model = HdfcGatewayDal::persistAfterRefund(
             $this->refundRequest['data'],
             $this->refundResponse['data']);
+
+        //TODO
+        //return refund transaction status
+        return true;
     }
 
     /**
@@ -542,7 +544,7 @@ class HdfcGateway extends BaseGateway
         $data['paymentid'] = $this->model->paymentid;
 
         // Set udf fields
-        $data['udf5'] = 'paymentid';
+        $data['udf5'] = 'PaymentID';
     }
 
     /**
