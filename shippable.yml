@@ -1,3 +1,5 @@
+language: php
+ 
 php:
    - 5.5
  
@@ -8,10 +10,11 @@ install:
   - mysql -e 'create database `apitesting`;'
 
 before_script:
+  - mkdir -p shippable/testresults
+  - sudo apt-get install php5-mcrypt
   - php composer.phar install
   - php composer.phar dump-autoload
-  - mkdir -p shippable/testresults
-
+  
 script:
   - phpunit  --log-junit shippable/testresults/junit.xml 
 
