@@ -8,3 +8,10 @@
 * Copy over `app/config/database.sample.php` to `app/config/database.php` and add db name & password.
 * `php artisan migrate` (Creates tables)
 * `php artisan db:seed` (Optional)
+
+#Testing
+
+* Do a `php composer.phar install` to get new packages.
+* Create a seperate db for testing. Copy over `app/config/testing/database.sample.php` to `app/config/database.php` and add db name & password.
+* Install php unit `sudo apt-get install phpunit`
+* Run `phpunit` in api root. Preferably run as `phpunit --debug` for better view of tests when running manually.ll
