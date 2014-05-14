@@ -7,7 +7,6 @@ php:
 before_script:
   - mkdir -p shippable/testresults
   - sudo apt-get install php5-mcrypt
-  - sudo php5enmod mcrypt
   - php composer.phar install
 
 script:
