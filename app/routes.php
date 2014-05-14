@@ -45,7 +45,9 @@ Route::group(array('before' => 'auth'), function()
 
 	Route::get('tokens/{token}', 'CardController@getRetrieve');
 
-	Route::get('transactions/(:any)', 'TransactionController@getIndex');
+	Route::get('transactions/{id}', 'TransactionController@getIndex');
+
+	Route::get('transactions', 'TransactionController@getIndex');
 
 	Route::post('transactions/(:any)/refund', 'TransactionController@postRefund');
 

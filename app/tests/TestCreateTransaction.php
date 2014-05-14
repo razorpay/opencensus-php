@@ -1,9 +1,7 @@
-<?php
+ <?php
 
-class TransactionCreateTest extends TestCase {
-
-
-    public function testCreateTransaction()
+class TestCreateTransaction extends TestCase {
+    public function createTransaction($card_no)
     {
         //GIVEN
         $transaction = [
@@ -11,7 +9,7 @@ class TransactionCreateTest extends TestCase {
             'currency'        =>  'INR',
             'process'         =>  '1',
             'card' => array(
-                'number'     => '4012001037490014',
+                'number'     => '',
                 'name'       => 'Harshil',
                 'expiry_month'    =>'12',
                 'expiry_year'     => '2014',
@@ -29,17 +27,14 @@ class TransactionCreateTest extends TestCase {
             ),
         ];
         $cards=include('helpers/cards.php');
-        foreach($cards as $card)
+        $transaction['card']['number']=$cards[$card_no]['PAN'];
+        $expected_response=$cards[$card_no]['response'];
+        //WHEN
+        //first request to /transactions route, returns form for submission to acs url
+        try 
         {
-            $transaction['card']['number']=$card['PAN'];
-            $expected_response=$card['response'];
-            
-            /* The following tests do work, they have been commented out because errors are not handled yet. */
-            /*
-            //WHEN
-            //first request to /transactions route, returns form for submission to acs url
             $crawler = $this->client->request('POST', '/transactions', $transaction);
-
+            
             //get the form
             $form = $crawler->selectButton('Submit')->form();
 
@@ -62,12 +57,16 @@ class TransactionCreateTest extends TestCase {
             $response = $this->call('POST', '/transactions/callback', $values);
 
             //THEN
-            $this->assertEquals($expected_response, $response->getContent());*/
-
-            $this->assertEquals($expected_response, $expected_response); //Remove this line once above
-
+            if($response->getContent()==$expected_response)
+            {
+                echo "Card ".$transaction['card']['number'].' successfull';
+            }
+            $this->assertEquals($expected_response, $response->getContent());
+        } 
+        catch (Exception $e) 
+        {
+            $this->fail('Card '.$transaction['card']['number'].' failed.');
         }
 
     }
-
- }
+}
