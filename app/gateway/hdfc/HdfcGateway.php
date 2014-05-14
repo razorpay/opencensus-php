@@ -525,6 +525,7 @@ class HdfcGateway extends BaseGateway
     protected function createRefundRequestFields($input)
     {
         $txn = $input['txn'];
+        $card = $input['txn']['card'];
 
         $data = &$this->refundRequest['data'];
 
@@ -536,8 +537,7 @@ class HdfcGateway extends BaseGateway
         // Convert amount from integer to decimal
         $data['amt'] = $txn['amount']/100;
 
-        //TODO
-        $data['member'] = 'shashank';
+        $data['member'] = $card['name'];
 
         $data['paymentid'] = $this->model->paymentid;
 
