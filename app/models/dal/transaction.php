@@ -26,7 +26,18 @@ class Transaction extends UuidDAL
         'desc',
         'udf',
         'id');
-//        'refund',);
+
+    protected $visible = array(
+        'id',
+        'amount',
+        'currency',
+        'livemode',
+        'refunded',
+        'processed',
+        'udf',
+        'created_at',
+        'updated_at'
+        );
 
     protected $guarded = array('id');
 
@@ -123,6 +134,14 @@ class Transaction extends UuidDAL
 		return true;
 	}
 
+    public static function fetchById($id = NULL)
+    {
+        if (!is_null($id))
+            return self::findOrFail($id);
+        else
+            throw new \InvalidArgumentException('No transaction id present');
+    }
+
     public function getProcessed()
     {
         return $this->getAttribute('processed');
@@ -133,9 +152,24 @@ class Transaction extends UuidDAL
         $this->setAttribute('processed', $processed);
     }
 
+    public function getRefunded()
+    {
+        return $this->getAttribute('refunded');
+    }
+
+    public function setRefunded($refunded)
+    {
+        $this->setAttribute('refunded', $refunded);
+    }
+
     public function getObjectAttribute()
     {
     	return 'transaction';
+    }
+
+    public function getMerchantId()
+    {
+        return (int)$this->getAttribute('merchant_id');
     }
 
     const WITH_CARD             = 0x256;
