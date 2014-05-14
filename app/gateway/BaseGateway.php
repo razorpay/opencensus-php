@@ -8,6 +8,7 @@ class BaseGateway
 
     protected $card_key_mappints = array();
 
+    //not being used. Only HdfcGateway->process is used.
     public function process($input)
     {
         $this->txn = $input['txn'];
