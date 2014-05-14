@@ -537,7 +537,7 @@ class HdfcGateway extends BaseGateway
         $data['amt'] = $txn['amount']/100;
 
         //TODO
-        $data['member'] = 'shk';
+        $data['member'] = 'shashank';
 
         $data['paymentid'] = $this->model->paymentid;
 

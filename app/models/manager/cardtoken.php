@@ -6,7 +6,7 @@ use Utility;
 class CardToken extends EntityManager
 {
     protected static $createRules = array(
-        'merchant_id' => 'required|numeric',
+        'merchant_id' => 'required|numeric'
         );
 
     protected static $generators = array('token', 'expired');

@@ -24,9 +24,21 @@ class Transaction extends Service
             throw new \InvalidArgumentException('Card not provided');
         }
 
-        $card_input = $input['card'];
+        list($card_input, $card_token_input) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
 
         $card_data = Manager\Card::createValidate($card_input)->getData();
+
+        $card = DAL\Card::create($card_data);
+
+        $card_token_input['merchant_id'] = $input['merchant_id'];
+        
+        $card_token_data = Manager\CardToken::createValidate($card_token_input)->getData();
+
+        $card_token_data['card_id'] = $card->getId();
+
+        $token = DAL\CardToken::create($card_token_data);
+
+        $txn_input['token'] = $token->getToken();
 
         unset($txn_input['card']);
 
@@ -39,9 +51,6 @@ class Transaction extends Service
         $txn = DAL\Transaction::createOrFail($data);
 
         $txn = $this->process($txn, $card_data);
-
-        if(!is_array($txn))
-        $txn = $txn->toArray();
 
         return $txn;
     }
