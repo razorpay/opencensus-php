@@ -48,9 +48,6 @@ class Transaction
 
         $data = Manager\Transaction::createValidate($txn_input)->getData();
 
-        //@todo: this needs to be handled better
-        $data['id'] = \Models\DAL\UuidDAL::generateUuid();
-
         $txn = DAL\Transaction::createOrFail($data);
 
         return array($txn, $card_data);

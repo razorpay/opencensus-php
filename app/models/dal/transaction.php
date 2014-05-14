@@ -26,7 +26,7 @@ class Transaction extends UuidDAL
         'processed',
         'desc',
         'udf',
-        'id');
+        );
 
     protected $visible = array(
         'id',

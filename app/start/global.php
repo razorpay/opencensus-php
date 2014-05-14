@@ -85,3 +85,5 @@ require app_path().'/filters.php';
 require_once app_path().'/lib//utility.php';
 require_once app_path().'/lib//utility2.php';
 require app_path().'/lib/validation.php';
+
+Models\DAL\Transaction::creating('Models\DAL\UuidDAL@generateUuid');
