@@ -7,7 +7,6 @@ class Card extends DAL
     protected $table = 'cards';
 
     protected $fillable = array(
-        'number',
         'name',
         'cvv',
 
