@@ -15,22 +15,22 @@ class Transaction extends Service
      */
     public function create($input = null)
     {
-    	$card_token = null;
+        $card_token = null;
 
         $txn_input = $input;
         
-    	if (! array_key_exists('card', $input))
-    	{
-    		throw new \InvalidArgumentException('Card not provided');
-    	}
+        if (! array_key_exists('card', $input))
+        {
+            throw new \InvalidArgumentException('Card not provided');
+        }
 
-    	$card_input = $input['card'];
+        $card_input = $input['card'];
 
-    	$card_data = Manager\Card::createValidate($card_input)->getData();
+        $card_data = Manager\Card::createValidate($card_input)->getData();
 
-    	unset($txn_input['card']);
+        unset($txn_input['card']);
 
-    	$data = Manager\Transaction::createValidate($txn_input)->getData();
+        $data = Manager\Transaction::createValidate($txn_input)->getData();
 
         //TODO
         //has to be handled better
@@ -53,20 +53,20 @@ class Transaction extends Service
     {
         if (is_string($txn))
         {
-        	$txn = Transaction::findByTxn($txn);
+            $txn = Transaction::findByTxn($txn);
         }
         else if (! ($txn instanceof DAL\Transaction))
         {
-        	throw new \InvalidArgumentException('Invalid transaction id');
+            throw new \InvalidArgumentException('Invalid transaction id');
         }
 
         //
         // Call gateway with required info
         //
         {
-        	$data = array(
-        				'txn' => $txn->toArray(),
-        				'card' => $card);
+            $data = array(
+                        'txn' => $txn->toArray(),
+                        'card' => $card);
 
             $gateway = new GatewayManager();
 
@@ -126,21 +126,21 @@ class Transaction extends Service
 
     public function bankAcsCallback(array $input)
     {
-    	unset($input['csrf']);
-    	
-    	$gateway = new GatewayManager();
+        unset($input['csrf']);
+        
+        $gateway = new GatewayManager();
 
-    	list($processed, $id) = $gateway->bankAcsCallback($input);
+        list($processed, $id) = $gateway->bankAcsCallback($input);
 
-    	if ($processed)
-    	{
-    		$txn = DAL\Transaction::where('id', $id)
-    							  ->update(array('processed' => 1));
-			return "Transaction successful";
-    	}
-    	else
-    	{
-    		return "Transaction unsuccessful";
-    	}
+        if ($processed)
+        {
+            $txn = DAL\Transaction::where('id', $id)
+                                  ->update(array('processed' => 1));
+            return "Transaction successful";
+        }
+        else
+        {
+            return "Transaction unsuccessful";
+        }
     }
 }

@@ -16,8 +16,8 @@ class Transaction extends EntityManager
         'udf'           =>  'required');
 
     protected static $udfRules = array(
-    	'email'         =>  'required|email|max:250',
-    	'contact'       =>  'required|numeric|digits_between:8:12');
+        'email'         =>  'required|email|max:250',
+        'contact'       =>  'required|numeric|digits_between:8:12');
 
     //TODO
     //Change it to refundRules, include amount as well
@@ -32,27 +32,27 @@ class Transaction extends EntityManager
 
     private function validateUdf($input)
     {
-    	$udf = $input['udf'];
+        $udf = $input['udf'];
 
-    	if (!is_array($udf))
-    	{
-    		throw new \InvalidArgumentException('Not an array');
-    	}
+        if (!is_array($udf))
+        {
+            throw new \InvalidArgumentException('Not an array');
+        }
 
-    	if (count($udf) > 15)
-    	{
-    		throw new \InvalidArgumentException('keys greater than 15');
-    	}
+        if (count($udf) > 15)
+        {
+            throw new \InvalidArgumentException('keys greater than 15');
+        }
 
-    	foreach ($udf as $key => $value)
-    	{
-    		if (is_array($value))
-    			throw new \InvalidArgumentException('SHould not be an array');
+        foreach ($udf as $key => $value)
+        {
+            if (is_array($value))
+                throw new \InvalidArgumentException('SHould not be an array');
 
-    		if (strlen($value) > 1024)
-    			throw new \InvalidArgumentException('Value too large!');
+            if (strlen($value) > 1024)
+                throw new \InvalidArgumentException('Value too large!');
 
-    	}
+        }
 
 
     }
@@ -71,8 +71,8 @@ class Transaction extends EntityManager
 
     public function generateProcess($input)
     {
-    	$this->process_now = (bool) $input['process'];
-    	$this->setField('processed', 0);
+        $this->process_now = (bool) $input['process'];
+        $this->setField('processed', 0);
     }
 
     public function processNow()
@@ -92,10 +92,10 @@ class Transaction extends EntityManager
 
     public static function separateTokenTxnInput($input)
     {
-    	return break_assoc_array(
-					$input,
-					CardToken::getCreateInputKeys(),
-					Transaction::getCreateInputKeys());
+        return break_assoc_array(
+                    $input,
+                    CardToken::getCreateInputKeys(),
+                    Transaction::getCreateInputKeys());
     }
 
     public static function validateTransactionId($id = NULL)

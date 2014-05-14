@@ -66,19 +66,19 @@ class Card extends EntityManager
 
     public function generateLast4($input)
     {
-    	$last4 = substr($input['number'], -4);
+        $last4 = substr($input['number'], -4);
 
         $this->setField('last4', $last4);
     }
 
     public function generateType($input)
     {
-    	$this->setField('type', 'visa');
+        $this->setField('type', 'visa');
     }
 
     public function generateCountry($input)
     {
-    	$this->setField('country', 'IN');
+        $this->setField('country', 'IN');
     }
 
 
