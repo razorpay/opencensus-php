@@ -20,7 +20,7 @@ class CreateHdfcGateway extends Migration {
 
 			$table->string('action', 1);
 
-			$table->string('trackid', 40);
+			$table->string('trackid', 32);
 
 			$table->string('enroll_result', 255);
 

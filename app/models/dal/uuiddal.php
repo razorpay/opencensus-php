@@ -27,8 +27,8 @@ class UuidDAL extends DAL
         });*/
 	}
 
-	public function generateUuid()
+	public static function generateUuid()
 	{
-		return Uuid::uuid1();
+		return str_replace("-", "", Uuid::uuid1());
 	}
 }
