@@ -182,13 +182,13 @@ class Transaction extends UuidDAL
 
         // TODO
         // const ONLY_PUBLIC_FIELDS is undefined
-        // if ($flag & self::ONLY_PUBLIC_FIELDS)
+        // if ($flag and self::ONLY_PUBLIC_FIELDS)
         // {
         //     $array['id'] = $array['uid'];
         //     unset($array['uid']);
         // }
 
-        if ($flag & self::WITH_CARD)
+        if ($flag and self::WITH_CARD)
         {
             $token = $this->card_token()->first();
             $card_do = NULL;
