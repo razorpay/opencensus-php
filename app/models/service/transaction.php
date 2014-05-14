@@ -5,6 +5,8 @@ namespace Models\Service;
 use Models\Manager;
 use Models\DAL;
 use Gateway\GatewayManager;
+use Rhumsaa\Uuid\Uuid;
+use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
 
 class Transaction extends Service
 {
@@ -13,30 +15,44 @@ class Transaction extends Service
      */
     public function create($input = null)
     {
-    	$card_token = null;
+        $card_token = null;
 
         $txn_input = $input;
         
-    	if (! array_key_exists('card', $input))
-    	{
-    		throw new \InvalidArgumentException('Card not provided');
-    	}
+        if (! array_key_exists('card', $input))
+        {
+            throw new \InvalidArgumentException('Card not provided');
+        }
 
-    	$card_input = $input['card'];
+        list($card_input, $card_token_input) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
 
-    	$card_data = Manager\Card::createValidate($card_input)->getData();
+        $card_data = Manager\Card::createValidate($card_input)->getData();
 
-    	unset($txn_input['card']);
+        $card = DAL\Card::create($card_data);
 
-    	$data = Manager\Transaction::createValidate($txn_input)->getData();
+        $card_token_input['merchant_id'] = $input['merchant_id'];
+        
+        $card_token_data = Manager\CardToken::createValidate($card_token_input)->getData();
+
+        $card_token_data['card_id'] = $card->getId();
+
+        $token = DAL\CardToken::create($card_token_data);
+
+        $txn_input['token'] = $token->getToken();
+
+        unset($txn_input['card']);
+
+        $data = Manager\Transaction::createValidate($txn_input)->getData();
+
+        //TODO
+        //has to be handled better
+        $data['id'] = \Models\DAL\UuidDAL::generateUuid();
 
         $txn = DAL\Transaction::createOrFail($data);
 
         $txn = $this->process($txn, $card_data);
 
-        $txn_data = $txn->toArray();
-
-        return $txn_data;
+        return $txn;
     }
 
     /**
@@ -47,31 +63,31 @@ class Transaction extends Service
     {
         if (is_string($txn))
         {
-        	$txn = Transaction::findByTxn($txn);
+            $txn = Transaction::findByTxn($txn);
         }
         else if (! ($txn instanceof DAL\Transaction))
         {
-        	throw new \InvalidArgumentException('Invalid transaction id');
+            throw new \InvalidArgumentException('Invalid transaction id');
         }
 
         //
         // Call gateway with required info
         //
         {
-        	$data = array(
-        				'txn' => $txn->toArray(),
-        				'card' => $card);
+            $data = array(
+                        'txn' => $txn->toArray(),
+                        'card' => $card);
 
             $gateway = new GatewayManager();
 
-            $gateway->process($data);
+            return $gateway->process($data);
             
-            return $txn;
+            //return $txn;
         }
         
     }
 
-    public function retrieve(array $input)
+    public function retrieveMultiple(array $input)
     {
         $txn = new DAL\Transaction;
 
@@ -93,23 +109,50 @@ class Transaction extends Service
         return $txn_data_arr;
     }
 
+    public function retrieve($id = NULL)
+    {
+        Manager\Transaction::validateTransactionId($id);
+
+        $txn = new DAL\Transaction();
+
+        $txn_data = $txn->fetchById($id);
+
+        return $txn_data;
+    }
+
+    /**
+     * Refunds a transaction
+     * Pass \DAL\Transaction object as argument
+     */
+
+    public function refund($txn_data = NULL)
+    {
+        $data = array('txn' => $txn_data->toArrayEx(0x256));
+
+        $gateway = new GatewayManager();
+
+        $status = $gateway->refund($data);
+
+        $txn_data->setRefunded($status);
+    }
+
     public function bankAcsCallback(array $input)
     {
-    	unset($input['csrf']);
-    	
-    	$gateway = new GatewayManager();
+        unset($input['csrf']);
+        
+        $gateway = new GatewayManager();
 
-    	list($processed, $id) = $gateway->bankAcsCallback($input);
+        list($processed, $id) = $gateway->bankAcsCallback($input);
 
-    	if ($processed)
-    	{
-    		$txn = DAL\Transaction::where('id', $id)
-    							  ->update(array('processed' => 1));
-			echo "Transaction successful";
-    	}
-    	else
-    	{
-    		echo "Transaction unsuccessful";
-    	}
+        if ($processed)
+        {
+            $txn = DAL\Transaction::where('id', $id)
+                                  ->update(array('processed' => 1));
+            return "Transaction successful";
+        }
+        else
+        {
+            return "Transaction unsuccessful";
+        }
     }
 }

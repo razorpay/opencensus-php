@@ -6,120 +6,138 @@ use Models\Service\BasicAuth;
 class TransactionController extends BaseController 
 {
 
-	/**
-	* Retrieves transaction details by `id`
-	* Lists previous transactions if `id` not provided
-	*
-	* @param token (optional)
-	*
-	*/
-	public function getIndex ($id = null)
-	{
-		$merchant_id = BasicAuth::getInstance()->MerchantId();
+    /**
+    * Retrieves transaction details by `id`
+    * Lists previous transactions if `id` not provided
+    *
+    * @param token (optional)
+    *
+    */
+    public function getIndex ($id = null)
+    {
+        $merchant_id = BasicAuth::getInstance()->MerchantId();
 
-		$m = BasicAuth::getInstance()->Merchant();
-		
-		if ($id === null) 
-		{
-			$t = $m->transactions();
+        $m = BasicAuth::getInstance()->Merchant();
+        
+        if ($id === null) 
+        {
+            $t = $m->transactions();
 
-			if (empty($t))
-			{
-				return Response::json(array());
-			}
-			else
-			{
-				return Response::json($t);
-			}
-		}
-		else 
-		{
-			$t = Transaction::where('id', '=', $id)->first();
-		
-			if ($t === null)
-			{
-				return Response::error('404');
-			}
-			else
-			{
-				if ($t->get_merchant() === $merchant_id)
-					return Response::eloquent($t);
-				else
-					return Response::error('401');
-			}
-		}
+            if (empty($t))
+            {
+                return Response::json(array());
+            }
+            else
+            {
+                return Response::json($t);
+            }
+        }
+        else 
+        {
+            $t = Transaction::where('id', '=', $id)->first();
+        
+            if ($t === null)
+            {
+                return Response::error('404');
+            }
+            else
+            {
+                if ($t->get_merchant() === $merchant_id)
+                    return Response::eloquent($t);
+                else
+                    return Response::error('401');
+            }
+        }
 
-	}
+    }
 
-	/**
-	* Create a new transaction. 
-	*/
-	public function postIndex()
-	{
-		$input = Input::all();
+    /**
+    * Create a new transaction. 
+    */
+    public function postIndex()
+    {
+        $input = Input::all();
 
-		$input['merchant_id'] = BasicAuth::getInstance()->MerchantId();
+        $input['merchant_id'] = BasicAuth::getInstance()->MerchantId();
 
-		$txn_data = Transaction::getNewInstance()->create($input);
-		
-		return Response::json($txn_data);
-	}
+        $txn_data = Transaction::getNewInstance()->create($input);
 
-	/**
-	 * Retrieve previous transactions.
-	 */
-	public function getRetrieve()
-	{
-		$txn_service = new Transaction();
+        if(isset($txn_data['callbackUrl']))
+        {	
+        	return View::make('hdfc.enrollResponse')
+        					->with('data', $txn_data['data'])
+        					->with('callbackUrl',$txn_data['callbackUrl']);
+        }
+        else return Response::json($txn_data);
 
-		$input = Input::all();
+    }
 
-		list($txn_data, $err) = $txn_service->retrieve($input);
+    /**
+     * Retrieve previous transactions.
+     */
+    public function getRetrieve()
+    {
+        $txn_service = new Transaction();
 
-		if ($err !== ERR::SUCCESS)
-		{
-			return ERR::handle_error();
-		}
+        $input = Input::all();
 
-		return Response::json($txn_data);
-	}
+        list($txn_data, $err) = $txn_service->retrieveMultiple($input);
 
-	/**
-	* Refund a transaction.
-	*/
-	public function postRefund($token = NULL )
-	{
-		echo 'refund: ' . $token;
-	}
+        if ($err !== ERR::SUCCESS)
+        {
+            return ERR::handle_error();
+        }
 
-	/**
-	* List previous refunds.
-	*/
-	public function getRefund()
-	{
-		;
-	}
+        return Response::json($txn_data);
+    }
 
-	/**
-	* To process a transaction and make payments.
-	*/
-	public function postProcess($token = NULL )
-	{
-		echo 'process: ' . $token;
-	}
+    /**
+    * Refund a transaction.
+    */
+    public function postRefund($id = NULL)
+    {
+        $txn_service = new Transaction();
 
-	/**
-	* To list only successful transactions.
-	*/
-	public function getProcess()
-	{
-		;
-	}
+        $txn_data = $txn_service->retrieve($id);
 
-	public function postCallback()
-	{
-		$input = Input::all();
-		$txn_service = new Transaction();
-		$txn_service->bankAcsCallback($input);
-	}
+        $merchant_id = BasicAuth::getInstance()->MerchantId();
+
+        if ($merchant_id !== $txn_data->getMerchantId())
+            die("Jhootbolegasaale");
+
+        $txn_service->refund($txn_data);
+        
+        return Response::json($txn_data);
+    }
+
+    /**
+    * List previous refunds.
+    */
+    public function getRefund()
+    {
+        ;
+    }
+
+    /**
+    * To process a transaction and make payments.
+    */
+    public function postProcess($token = NULL )
+    {
+        echo 'process: ' . $token;
+    }
+
+    /**
+    * To list only successful transactions.
+    */
+    public function getProcess()
+    {
+        ;
+    }
+
+    public function postCallback()
+    {
+        $input = Input::all();
+        $txn_service = new Transaction();
+        return $txn_service->bankAcsCallback($input);
+    }
 }

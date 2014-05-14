@@ -6,7 +6,7 @@ use Utility;
 class CardToken extends EntityManager
 {
     protected static $createRules = array(
-        'merchant_id' => 'required|numeric',
+        'merchant_id' => 'required|numeric'
         );
 
     protected static $generators = array('token', 'expired');
@@ -22,15 +22,15 @@ class CardToken extends EntityManager
 
     protected function generateExpired()
     {
-    	$this->setField('expired', 0);
+        $this->setField('expired', 0);
     }
 
     public static function separateTokenAndCardCreateInput($input)
     {
-    	return \break_assoc_array(
-					$input,
-					Card::getCreateInputKeys(),
-					CardToken::getCreateInputKeys());
+        return \break_assoc_array(
+                    $input,
+                    Card::getCreateInputKeys(),
+                    CardToken::getCreateInputKeys());
     }
 
 }
