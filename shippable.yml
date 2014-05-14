@@ -1,13 +1,14 @@
+build_environment: Ubuntu 14.04
 language: php
 
 php:
-  - 5.4
+  - 5.5
 
 before_script:
   - mkdir -p shippable/testresults
   - sudo apt-get install php5-mcrypt
   - sudo php5enmod mcrypt
-  - php composer.phar install 
+  - php composer.phar install
 
 script:
   - phpunit  --log-junit shippable/testresults/junit.xml tests/calculator_test.php
