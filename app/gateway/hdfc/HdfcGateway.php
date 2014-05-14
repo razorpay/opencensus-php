@@ -220,7 +220,7 @@ class HdfcGateway extends BaseGateway
             else if ($er['data']['result'] === HdfcGatewayResult::NOT_ENROLLED)
             {
                 $this->status = HdfcGatewayResult::NOT_ENROLLED;
-                $this->postAuthNotEnrolledRequestToBank();
+                return $this->postAuthNotEnrolledRequestToBank();
             }
             else
             {
@@ -340,6 +340,13 @@ class HdfcGateway extends BaseGateway
  
         $this->model->persistAfterCCAuth(
                         $this->authNotEnrolledResponse['data']);
+        
+        $notEnrollResponse = $this->authNotEnrolledResponse;
+        
+        return array('not enrolled', 
+                     array(
+                        'data' => $notEnrollResponse['data'], 
+                        ));
     }
  
     /**
@@ -355,7 +362,6 @@ class HdfcGateway extends BaseGateway
                      array(
                         'data' => $enrollResponse['data'], 
                         'callbackUrl' => $this->callbackUrl));
-        return array('enrolled', $view);
     }
  
     /**
