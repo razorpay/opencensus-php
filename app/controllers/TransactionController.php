@@ -74,7 +74,7 @@ class TransactionController extends BaseController
 
 		$input = Input::all();
 
-		list($txn_data, $err) = $txn_service->retrieve($input);
+		list($txn_data, $err) = $txn_service->retrieveMultiple($input);
 
 		if ($err !== ERR::SUCCESS)
 		{
@@ -87,9 +87,20 @@ class TransactionController extends BaseController
 	/**
 	* Refund a transaction.
 	*/
-	public function postRefund($token = NULL )
+	public function postRefund($id = NULL)
 	{
-		echo 'refund: ' . $token;
+		$txn_service = new Transaction();
+
+		$txn_data = $txn_service->retrieve($id);
+
+		$merchant_id = BasicAuth::getInstance()->MerchantId();
+
+		if ($merchant_id !== $txn_data->getMerchantId())
+			die("Jhootbolegasaale");
+
+		$txn_service->refund($txn_data);
+		
+		return Response::json($txn_data);
 	}
 
 	/**
