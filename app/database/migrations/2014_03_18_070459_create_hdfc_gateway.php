@@ -15,8 +15,9 @@ class CreateHdfcGateway extends Migration {
         Schema::create('hdfc', function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->string('id', 32)
-                  ->primary();
+            $table->increments('id');
+
+            $table->string('trackid', 32);
 
             $table->bigInteger('paymentid')
                   ->unsigned()
@@ -24,7 +25,7 @@ class CreateHdfcGateway extends Migration {
 
             $table->string('action', 1);
 
-            $table->string('enroll_result', 2);
+            $table->string('result', 2);
 
             $table->string('status', 50);
 
@@ -56,7 +57,7 @@ class CreateHdfcGateway extends Migration {
 
             $table->timestamps();
 
-            $table->foreign('id')
+            $table->foreign('trackid')
                   ->references('id')
                   ->on('transactions')
                   ->on_delete('restrict');
@@ -72,7 +73,7 @@ class CreateHdfcGateway extends Migration {
     {
         Schema::table('hdfc', function($table){
 
-            $table->dropForeign('hdfc_id_foreign');
+            $table->dropForeign('hdfc_trackid_foreign');
         });
 
         Schema::drop('hdfc');

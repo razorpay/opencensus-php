@@ -13,6 +13,8 @@ final class HdfcGatewayResult
     const FSS0001_ENROLLED = -1;
     const UNKNOWN_ERROR_ENROLLED = -2;
 
+    const FAIL_REFUND = 3;
+
     /**
      * Result codes received in response for transaction
      * authorization

@@ -164,14 +164,17 @@ class HdfcGateway extends BaseGateway
     protected $refundRequest = array(
         'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIPayerAuthenticationXMLServlet',
         'header' => array('Content-Type:text/xml'),
+        'type' => 'refund',
         'xml' => '',
         'data' => array());
 
     protected $refundResponse = array(
         'fields' => array(
             'error_text', 'trackid', 'paymentid', 'result', 'auth', 'amt', 'ref'),
+        'type' => 'refund',
         'xml' => '',
-        'data' => array());
+        'data' => array(),
+        'error' => array());
 
     /**
      * For ENROLLED card cases, we submit a form to bank ACS
@@ -193,7 +196,7 @@ class HdfcGateway extends BaseGateway
         $this->callbackUrl=\URL::to('transactions/callback');
     }
 
-    public static function getCreds()
+    public static function getCredentials()
     {
         $creds = HdfcGatewayConfig::getCreds(); 
         return $creds;
@@ -268,7 +271,7 @@ class HdfcGateway extends BaseGateway
  
     public function authEnrolledRequest()
     {
-        if ((int) $this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
+        if ((int) $this->model->result !== HdfcGatewayResult::ENROLLED)
         {
             throw new \InvalidArgumentException('Result not valid');
         }
@@ -279,7 +282,7 @@ class HdfcGateway extends BaseGateway
  
         $data = &$this->authEnrolledRequest['data'];
  
-        list($data['id'], $data['password']) = $this->getCreds();
+        list($data['id'], $data['password']) = $this->getCredentials();
  
         $this->runRequestResponseFlow(
             $this->authEnrolledRequest,
@@ -305,7 +308,7 @@ class HdfcGateway extends BaseGateway
         $this->runRequestResponseFlow(
             $this->enrollRequest,
             $this->enrollResponse);
- 
+
         $this->parseEnrollResponseEci();
  
         if (($this->error) or
@@ -377,7 +380,7 @@ class HdfcGateway extends BaseGateway
         $data = &$this->enrollRequest['data'];
  
         // Collect creds
-        list($data['id'], $data['password']) = static::getCreds();
+        list($data['id'], $data['password']) = static::getCredentials();
  
         $data['trackid'] = $txn['id'];
          
@@ -455,6 +458,23 @@ class HdfcGateway extends BaseGateway
                     $this->enrollResponse['data']);
         }
     }
+
+    protected function persistAfterRefund()
+    {
+        if (isset($this->refundResponse['error']['code']))
+        {
+            $this->model = HdfcGatewayDal::persistAfterRefundError(
+                            $this->id,
+                            $this->refundRequest['data']['paymentid'],
+                            $this->refundResponse['error']);
+        }
+        else
+        {
+            $this->model = HdfcGatewayDal::persistAfterRefund(
+                    $this->refundRequest['data'],
+                    $this->refundResponse['data']);
+        }
+    }
  
     /**
      * Get the fields from xml response 
@@ -483,35 +503,20 @@ class HdfcGateway extends BaseGateway
         }
     }
 
-    protected function parseRefundResponseXml()
-    {
-        $this->getFieldsFromXML(
-                    $this->refundResponse['xml'], 
-                    $this->refundResponse['fields'],
-                    $this->refundResponse['data']);
-
-    }
-
     public function refund($input)
     {
-        $this->model = HdfcGatewayDal::where('trackid','=',$input['txn']['id'])->firstOrFail();
+        $this->model = HdfcGatewayDal::retrieve($input['txn']['id']);
+
+        $this->id = $input['txn']['id'];
 
         // Fields to be sent to HDFC gateway for refund
         $this->createRefundRequestFields($input);
 
-        // XML generated from the fields
-        $this->refundRequest['xml'] = $this->createXml($this->refundRequest['data']);
+        $this->runRequestResponseFlow(
+            $this->refundRequest,
+            $this->refundResponse);
 
-        // Send the request and get response
-        $this->refundResponse['response'] = $this->postRefundRequest();
-
-        $this->refundResponse['xml'] = $this->refundResponse['response']->body;
-
-        $this->parseRefundResponseXml();
-
-        $this->model = HdfcGatewayDal::persistAfterRefund(
-            $this->refundRequest['data'],
-            $this->refundResponse['data']);
+        $this->persistAfterRefund();
 
         //TODO
         //return refund transaction status
@@ -535,17 +540,23 @@ class HdfcGateway extends BaseGateway
         // Collect credentials
         list($data['id'], $data['password']) = static::getCredentials();
 
-        $data['action'] = HdfcGatewayAction::REFUND;
+        $data['action'] = HdfcGatewayAction::REFUND; //credit
 
         // Convert amount from integer to decimal
-        $data['amt'] = $txn['amount']/100;
+        $data['amt'] = $txn['amount']/100; //currencycode
+        //action = 2
+        //transid
+        //trackid
+        //udf=blank
 
-        $data['member'] = $card['name'];
+        $data['member'] = $card['name']; //cardholdername
 
         $data['paymentid'] = $this->model->paymentid;
 
+        
+
         // Set udf fields
-        $data['udf5'] = 'PaymentID';
+        //$data['udf5'] = 'PaymentID';
     }
 
     /**

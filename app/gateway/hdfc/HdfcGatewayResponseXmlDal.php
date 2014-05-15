@@ -14,13 +14,13 @@ class HdfcGatewayResponseXmlDal extends DAL
 
     public function transaction()
     {
-        return $this->belongsTo('Transaction', 'id', 'id');
+        return $this->belongsTo('Transaction', 'trackid', 'id');
     }
 
     public static function saveXml($id, $xml, $responseType)
     {
         $attributes = array(
-            'id' => $id,
+            'trackid' => $id,
             $responseType => $xml);
 
         switch($responseType)
@@ -31,11 +31,20 @@ class HdfcGatewayResponseXmlDal extends DAL
 
             case 'auth_enrolled':
             case 'auth_not_enrolled':
-            	$responseFieldXml = $responseType;
+                $responseFieldXml = $responseType;
                 $model = static::findOrFail($id);
                 $model->$responseFieldXml = $xml;
                 $model->save();
                 return $model;
+                break;
+
+            case 'refund':
+                // $responseFieldXml = $responseType;
+                // $model = static::where('trackid','=',$id)->firstOrFail();;
+                // $model->$responseFieldXml = $xml;
+                // $model->save();
+                // return $model;
+                return static::createOrFail($attributes);
                 break;
 
             default:

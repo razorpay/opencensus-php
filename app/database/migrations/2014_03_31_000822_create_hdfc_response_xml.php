@@ -16,15 +16,20 @@ class CreateHdfcResponseXml extends Migration {
         {
             $table->engine = 'InnoDB';
 
-            $table->string('id', 32)
-                  ->primary();
+            $table->increments('id');
 
-            $table->text('enroll');
+            $table->string('trackid', 32);
+
+            $table->text('enroll')
+                  ->nullable();
 
             $table->text('auth_enrolled')
                   ->nullable();
 
             $table->text('auth_not_enrolled')
+                  ->nullable();
+
+            $table->text('refund')
                   ->nullable();
 
             $table->timestamps();
