@@ -27,20 +27,6 @@ class Trace extends Logger
      */
     protected $trace_code;
 
-    /**
-     * IP address of the requesting client
-     *
-     * @var string $client_ip Client ip address
-     */
-    protected $client_ip;
-
-    /**
-     * IP address of the server serving the request
-     *
-     * @var string $server_ip Server ip address
-     */
-    protected $server_ip;
-
     public function __construct($component, $trace_code)
     {
         $this->name = static::OBJECT;
@@ -56,8 +42,13 @@ class Trace extends Logger
 
         $this->pushHandler($stream);
 
-        $this->client_ip = \Request::getClientIp();
-        $this->server_ip = \Request::server('SERVER_ADDR');
+        $this->pushProcessor(function($record)
+            {
+                $record['extra']['client_ip'] = \Request::getClientIp();
+                $record['extra']['server_ip'] = \Request::server('SERVER_ADDR');
+
+                return $record;
+            });
     }
 
     /**
@@ -86,9 +77,8 @@ class Trace extends Logger
             'context' => $context,
             'level' => $level,
             'level_name' => static::getLevelName($level),
-            'client_ip' => $this->client_ip,
-            'server_ip' => $this->server_ip,
             'timestamp' => \DateTime::createFromFormat('U.u', sprintf('%.6F', microtime(true)), static::$timezone)->setTimezone(static::$timezone),
+            'extra' => array(),
             //'channel' => $this->name,
         );
         // check if any handler will handle this message
