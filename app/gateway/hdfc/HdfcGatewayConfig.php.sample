@@ -4,6 +4,6 @@ namespace Gateway\HdfcGateway;
 
 final class HdfcGatewayConfig
 {
-    const id = '';
-    const password = '';
+    const id = getenv('HDFC_ID');
+    const password = getenv('HDFC_PASSWORD');
 }
