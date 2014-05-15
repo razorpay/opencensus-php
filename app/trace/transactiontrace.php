@@ -38,11 +38,25 @@ class TransactionTrace extends \Singleton
             'transactions' => 'RETRIEVE_TRANSACTIONS',
             'transactions/*' => 'RETRIEVE_TRANSACTION'));
 
+    /**
+     * Operations for which the transaction id is to be updated
+     */
+    protected static $updateTransactionOperations = array(
+        'REFUND_TRANSACTION',
+        'PROCESS_TRANSACTION',
+        'RETRIEVE_TRANSACTION');
+
     protected $trace;
 
-    protected function __construct()
+    public function initialize()
     {
-        $this->trace = new Trace(static::COMPONENT, static::getOperation());
+        $operation = static::getOperation();
+        $this->trace = new Trace(static::COMPONENT, $operation);
+
+        if(in_array($operation, static::$updateTransactionOperations)) {
+            $transaction_id = \Request::segment(2);
+            static::setTransactionId($transaction_id);
+        }
     }
 
     private static function getOperation()
@@ -72,7 +86,6 @@ class TransactionTrace extends \Singleton
         $context = array(
             'transaction' => array(
                 'id' => static::$transaction_id,
-                'operation' => static::getOperation(),
                 'status_code' => $status_code));
 
         $this->trace->addRecord($level, $message, $context);

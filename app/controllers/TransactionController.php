@@ -11,6 +11,7 @@ class TransactionController extends BaseController
     public function __construct()
     {
         $trace = TransactionTrace::getInstance();
+        $trace->initialize();
     }
 
     /**
