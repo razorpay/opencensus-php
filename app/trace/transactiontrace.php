@@ -3,6 +3,7 @@
 namespace Trace;
 
 use Trace\Trace;
+use Monolog\Logger;
 
 class TransactionTrace extends \Singleton
 {
@@ -14,6 +15,7 @@ class TransactionTrace extends \Singleton
     const CARD_NOT_PROVIDED = 'CARD_NOT_PROVIDED';
     const MERCHANT_ID_MISMATCH = 'MERCHANT_ID_MISMATCH';
     const REQUEST_FOR_REFUND = 'REQUEST_FOR_REFUND';
+    const INVALID_TRANSACTION_ID = 'INVALID_TRANSACTION_ID';
 
     /**
      * Transaction id of the current process
@@ -55,7 +57,17 @@ class TransactionTrace extends \Singleton
         return false;
     }
 
-    public function info($message, $status_code)
+    public static function setTransactionId($id)
+    {
+        static::$transaction_id = $id;
+    }
+
+    public static function getTransactionId($id)
+    {
+        return static::$transaction_id;
+    }
+
+    public function addRecord($level, $message, $status_code)
     {
         $context = array(
             'transaction' => array(
@@ -63,8 +75,12 @@ class TransactionTrace extends \Singleton
                 'operation' => static::getOperation(),
                 'status_code' => $status_code));
 
-        $this->trace->info($message, $context);
+        $this->trace->addRecord($level, $message, $context);
     }
 
+    public function info($message, $status_code)
+    {
+        $this->addRecord(Logger::INFO, $message, $status_code);
+    }
     
 }
