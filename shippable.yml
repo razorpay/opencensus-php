@@ -18,7 +18,6 @@ before_script:
   - sudo apt-get install php5-mcrypt
   - php composer.phar install
   - php composer.phar dump-autoload
-  - mysql -ushippable -e "show databases;"
 
 script:
   - phpunit --log-junit shippable/testresults/junit.xml 
