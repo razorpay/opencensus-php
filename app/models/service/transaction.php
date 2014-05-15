@@ -7,6 +7,7 @@ use Models\DAL;
 use Gateway\GatewayManager;
 use Rhumsaa\Uuid\Uuid;
 use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
+use Models\Service\TransactionTrace;
 
 class Transaction extends Service
 {

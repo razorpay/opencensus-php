@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Service;
+namespace Trace;
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;

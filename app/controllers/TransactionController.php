@@ -2,9 +2,16 @@
 
 use Models\Service\Transaction;
 use Models\Service\BasicAuth;
+use Models\Service\Trace;
+use Trace\TransactionTrace;
 
 class TransactionController extends BaseController 
 {
+
+    public function __construct()
+    {
+        $trace = TransactionTrace::getInstance();
+    }
 
     /**
     * Retrieves transaction details by `id`

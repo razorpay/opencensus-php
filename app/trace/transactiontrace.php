@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\Service;
+namespace Trace;
 
-use Models\Service\Trace;
+use Trace\Trace;
 
 class TransactionTrace extends \Singleton
 {
@@ -11,6 +11,9 @@ class TransactionTrace extends \Singleton
     // status codes for operations
     const GATEWAY_HDFC_ACS_CALLBACK_SUCCESSFUL = 'GATEWAY_HDFC_ACS_CALLBACK_SUCCESSFUL';
     const GATEWAY_HDFC_ACS_REQUEST_TIMEOUT = 'GATEWAY_HDFC_ACS_REQUEST_TIMEOUT';
+    const CARD_NOT_PROVIDED = 'CARD_NOT_PROVIDED';
+    const MERCHANT_ID_MISMATCH = 'MERCHANT_ID_MISMATCH';
+    const REQUEST_FOR_REFUND = 'REQUEST_FOR_REFUND';
 
     /**
      * Transaction id of the current process
