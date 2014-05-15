@@ -4,6 +4,9 @@ namespace Gateway\HdfcGateway;
 
 final class HdfcGatewayConfig
 {
-    static $id = getenv('HDFC_ID');
-    static $password = getenv('HDFC_PASSWORD');
+    public static function getCreds(){
+		$id = getenv('HDFC_ID');
+	 	$password = getenv('HDFC_PASSWORD');
+	 	return array($id, $password);
+	} 
 }

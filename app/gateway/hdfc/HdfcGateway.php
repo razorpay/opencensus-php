@@ -195,10 +195,7 @@ class HdfcGateway extends BaseGateway
 
     public static function getCreds()
     {
-        $creds = array(
-            HdfcGatewayConfig::$id, 
-            HdfcGatewayConfig::$password);
- 
+        $creds = HdfcGatewayConfig::getCreds(); 
         return $creds;
     }
  
