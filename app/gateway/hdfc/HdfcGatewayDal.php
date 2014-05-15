@@ -23,7 +23,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
             'trackid' => $request['trackid'],
             'paymentid' => $response['paymentid'],
             'action' => $request['action'],
-            'result' => $response['result'],
+            'enroll_result' => $response['result'],
             'status' => 'VERES Received',
             'eci' => $response['eci']);
 
@@ -37,70 +37,88 @@ class HdfcGatewayDal extends \Models\DAL\DAL
             'error_code' => $error['code'],
             'error_service' => $error['service'],
             'error_text' => $error['text'],
-            'result' => HdfcGatewayResult::FAIL_ENROLLED);
+            'enroll_result' => HdfcGatewayResult::FAIL_ENROLLED);
 
         return static::createOrFail($attributes);
     }
 
-    public function persistAfterCCAuth($data)
+    public function persistAferCCAuth($data)
     {
-        $attributes['status'] = 'PaRes Received';
-        if(isset($data['error_text'])) $attributes['error_text'] = $data['error_text'];
-        $attributes['auth_result'] = $data['result'];
-        $attributes['ref'] = $data['ref'];
-        $attributes['auth'] = $data['auth'];
-        $attributes['avr'] = $data['avr'];
-        $attributes['postdate'] = $data['postdate'];
+        $this->attributes = array(
+            'status' => 'PaRes Received',
+            'error_text' => $data['error_text'],
+            'auth_result' => $data['result'],
+            'ref' => $data['ref'],
+            'auth' => $data['auth'],
+            'avr' => $data['avr'],
+            'postdate' => $data['postdate']);
 
         $this->save();
     }
 
     public function persistAfterDCAuth($data)
     {
-        $attributes['status'] = 'PaRes Received';
-        $attributes['error_text'] = $data['error_text'];
-        $attributes['auth_result'] = $data['result'];
-        $attributes['ref'] = $data['ref'];
-        $attributes['auth'] = $data['auth'];
-        $attributes['avr'] = $data['avr'];
-        $attributes['postdate'] = $data['postdate'];
+        $this->attributes = array(
+            'status' => 'PaRes Received',
+            'error_text' => $data['error_text'],
+            'auth_result' => $data['result'],
+            'ref' => $data['ref'],
+            'auth' => $data['auth'],
+            'avr' => $data['avr'],
+            'postdate' => $data['postdate']);
         
         $this->save();
     }
     
-    public static function persistAfterRefund($requestData, $responseData)
+    public static function persistAfterSupportTxn($requestData, $responseData)
     {
         $attributes = array(
             'trackid' => $responseData['trackid'],
-            'paymentid' => $responseData['paymentid'],
+            'paymentid' => $responseData['payid'],
             'action' => $requestData['action'],
             'status' => $responseData['result'],
-            'error_text' => $responseData['error_text']);
+            'ref' => $responseData['ref'],
+            'auth' => $responseData['auth'],
+            'avr' => $responseData['avr'],
+            'postdate' => $responseData['postdate']);
 
         return static::create($attributes);
     }
 
-    public static function persistAfterRefundError($id, $paymentid, array $error)
+    public static function persistAfterSupportTxnError($id, $paymentid, array $error, $type)
     {
+        $action = '';
+        $status = '';
+        switch($type)
+        {
+            case 'refund':
+                $action = HdfcGatewayAction::REFUND;
+                $status = HdfcGatewayResult::NOT_REFUNDED;
+                break;
+            case 'capture':
+                $action = HdfcGatewayAction::CAPTURE;
+                $status = HdfcGatewayResult::NOT_CAPTURED;
+                break;
+        }
+
         $attributes = array(
             'trackid' => $id,
             'paymentid' => $paymentid,
             'error_code' => $error['code'],
-            'error_service' => $error['service'],
-            'error_text' => $error['text'],
-            'action' => HdfcGatewayAction::REFUND,
-            'result' => HdfcGatewayResult::FAIL_REFUND);
+            'error_text' => $error['result'],
+            'action' => $action,
+            'status' => $status);
 
         return static::createOrFail($attributes);
-    }
-
-    public function persisAfterCapture($data)
-    {
-        ;
     }
 
     public static function retrieve($id)
     {
         return static::where('trackid','=',$id)->firstOrFail();
+    }
+
+    public function getTrackId()
+    {
+        return $this->getAttribute('trackid');
     }
 }
