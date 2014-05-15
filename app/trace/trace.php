@@ -10,7 +10,7 @@ class Trace extends Logger
 {
     const OBJECT = "trace";
 
-    protected $log_path = '/home/abhi/tmp/rzpapi/transaction.log';
+    protected $logPath = '/home/abhi/tmp/rzpapi/transaction.log';
 
     /**
      * Name of the application component
@@ -23,21 +23,21 @@ class Trace extends Logger
     /**
      * Describes the operation for which trace is performed
      *
-     * @var string $trace_code Trace code
+     * @var string $traceCode Trace code
      */
-    protected $trace_code;
+    protected $traceCode;
 
-    public function __construct($component, $trace_code)
+    public function __construct($component, $traceCode)
     {
         $this->name = static::OBJECT;
         $this->handlers = array();
         $this->processors = array();
 
         $this->component = $component;
-        $this->trace_code = $trace_code;
+        $this->traceCode = $traceCode;
 
         $formatter = new JsonFormatter();
-        $stream = new StreamHandler($this->log_path);
+        $stream = new StreamHandler($this->logPath);
         $stream->setFormatter($formatter);
 
         $this->pushHandler($stream);
@@ -72,7 +72,7 @@ class Trace extends Logger
         $record = array(
             'object' => static::OBJECT,
             'component' => $this->component,
-            'trace_code' => $this->trace_code,
+            'trace_code' => $this->traceCode,
             'message' => (string) $message,
             'context' => $context,
             'level' => $level,

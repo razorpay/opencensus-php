@@ -20,9 +20,9 @@ class TransactionTrace extends \Singleton
     /**
      * Transaction id of the current process
      *
-     * @var int $transaction_id Transaction id
+     * @var int $transactionId Transaction id
      */
-    protected static $transaction_id;
+    protected static $transactionId;
 
     /**
      * Request => Operation mapping
@@ -40,6 +40,8 @@ class TransactionTrace extends \Singleton
 
     /**
      * Operations for which the transaction id is to be updated
+     *
+     * @var array $updateTransactionOperations Transaction id update operations
      */
     protected static $updateTransactionOperations = array(
         'REFUND_TRANSACTION',
@@ -54,8 +56,9 @@ class TransactionTrace extends \Singleton
         $this->trace = new Trace(static::COMPONENT, $operation);
 
         if(in_array($operation, static::$updateTransactionOperations)) {
-            $transaction_id = \Request::segment(2);
-            static::setTransactionId($transaction_id);
+            // grabs and uses transaction id from request url
+            $transactionId = \Request::segment(2);
+            static::setTransactionId($transactionId);
         }
     }
 
@@ -73,27 +76,27 @@ class TransactionTrace extends \Singleton
 
     public static function setTransactionId($id)
     {
-        static::$transaction_id = $id;
+        static::$transactionId = $id;
     }
 
     public static function getTransactionId($id)
     {
-        return static::$transaction_id;
+        return static::$transactionId;
     }
 
-    public function addRecord($level, $message, $status_code)
+    public function addRecord($level, $message, $statusCode)
     {
         $context = array(
             'transaction' => array(
-                'id' => static::$transaction_id,
-                'status_code' => $status_code));
+                'id' => static::$transactionId,
+                'status_code' => $statusCode));
 
         $this->trace->addRecord($level, $message, $context);
     }
 
-    public function info($message, $status_code)
+    public function info($message, $statusCode)
     {
-        $this->addRecord(Logger::INFO, $message, $status_code);
+        $this->addRecord(Logger::INFO, $message, $statusCode);
     }
     
 }
