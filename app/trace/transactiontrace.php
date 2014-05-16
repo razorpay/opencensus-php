@@ -25,9 +25,9 @@ class TransactionTrace extends \Singleton
     /**
      * Status of the transaction
      *
-     * @var string $status Transaction status
+     * @var string $transactionStatus Transaction status
      */
-    protected static $status;
+    protected static $transactionStatus;
 
     /**
      * Request => Operation mapping
@@ -89,12 +89,22 @@ class TransactionTrace extends \Singleton
         return static::$transactionId;
     }
 
+    public static function setTransactionStatus($status)
+    {
+        static::$transactionStatus = $status;
+    }
+
+    public static function getTransactionStatus($status)
+    {
+        return static::$transactionStatus;
+    }
+
     public function addRecord($level, $message, $event)
     {
         $context = array(
             'object' => 'transaction',
             'id' => static::$transactionId,
-            'status' => static::$status,
+            'status' => static::$transactionStatus,
             'event' => $event);
 
         $this->trace->addRecord($level, $message, $context);
