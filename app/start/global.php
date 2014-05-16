@@ -78,6 +78,11 @@ Event::listen('transaction.new', function($txn_id)
 		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::OPEN);
 	});
 
+Event::listen('transaction.approve', function()
+	{
+		TransactionTrace::setTransactionStatus('approved');
+	});
+
 /*
 |--------------------------------------------------------------------------
 | Require The Filters File
