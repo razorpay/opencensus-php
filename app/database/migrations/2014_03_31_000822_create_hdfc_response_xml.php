@@ -29,8 +29,12 @@ class CreateHdfcResponseXml extends Migration {
             $table->text('auth_not_enrolled')
                   ->nullable();
 
+            $table->text('capture')
+                  ->nullable();
+
             $table->text('refund')
                   ->nullable();
+
 
             $table->timestamps();
         });

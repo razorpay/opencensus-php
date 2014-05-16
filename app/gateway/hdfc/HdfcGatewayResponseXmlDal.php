@@ -32,18 +32,14 @@ class HdfcGatewayResponseXmlDal extends DAL
             case 'auth_enrolled':
             case 'auth_not_enrolled':
                 $responseFieldXml = $responseType;
-                $model = static::findOrFail($id);
+                $model = static::where('trackid','=',$id)->firstOrFail();
                 $model->$responseFieldXml = $xml;
                 $model->save();
                 return $model;
                 break;
 
             case 'refund':
-                // $responseFieldXml = $responseType;
-                // $model = static::where('trackid','=',$id)->firstOrFail();;
-                // $model->$responseFieldXml = $xml;
-                // $model->save();
-                // return $model;
+            case 'capture':
                 return static::createOrFail($attributes);
                 break;
 
