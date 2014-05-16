@@ -43,6 +43,7 @@ class HdfcGatewayUtility
         $response['error']['code'] = $error;
         $response['error']['service'] = self::getFieldFromXML($response['xml'], 'error_service_tag');
         $response['error']['text'] = self::getFieldFromXML($response['xml'], 'error_text');
+        $response['error']['result'] = self::getFieldFromXML($response['xml'], 'result');
 
         return true;
     }
