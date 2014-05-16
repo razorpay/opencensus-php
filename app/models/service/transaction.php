@@ -115,15 +115,12 @@ class Transaction extends Service
 
         list($processed, $id) = $gateway->bankAcsCallback($input);
 
-        if ($processed)
-        {
-            $txn = DAL\Transaction::updateProcessed($id);
+        $txn = new DAL\Transaction();
 
-            return "Transaction successful";
-        }
-        else
-        {
-            return "Transaction unsuccessful";
-        }
+        $txn_data = $txn->fetchById($id);
+
+        $txn_data->setProcessed($processed);
+
+        echo $txn_data;
     }
 }
