@@ -182,6 +182,12 @@ class Transaction extends UuidDAL
         $this->save();
     }
 
+    public function updateStatus($status)
+    {
+        $this->setAttribute('status', $status);
+        $this->save();
+    }
+
     public function getObjectAttribute()
     {
         return 'transaction';

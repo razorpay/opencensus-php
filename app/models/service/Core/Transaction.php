@@ -127,7 +127,7 @@ class Transaction
 
     protected function updateTransactionFailed()
     {
-        $this->txn->failed();
+        $this->txn->updateStatus(TransactionStatus::FAILED);
     }
 
     protected function fillErrorDetails($error, $txn)
