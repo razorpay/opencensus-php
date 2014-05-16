@@ -33,8 +33,9 @@ class Transaction extends UuidDAL
         'amount',
         'currency',
         'livemode',
-        'refunded',
         'processed',
+        'captured',
+        'refunded',
         'udf',
         'created_at',
         'updated_at'
@@ -143,6 +144,11 @@ class Transaction extends UuidDAL
             throw new \InvalidArgumentException('No transaction id present');
     }
 
+    public static function fetchUncaptured($from_time = 86400)
+    {
+        return self::whereRaw('created_at > ? AND captured = 0 AND processed = 1', array(time() - $from_time))->get();
+    }
+
     public function getProcessed()
     {
         return $this->getAttribute('processed');
@@ -153,6 +159,17 @@ class Transaction extends UuidDAL
         $this->setAttribute('processed', $processed);
     }
 
+    public function getCaptured()
+    {
+        return $this->getAttribute('captured');
+    }
+
+    public function setCaptured($captured)
+    {
+        $this->setAttribute('captured', $captured);
+        $this->save();
+    }
+
     public function getRefunded()
     {
         return $this->getAttribute('refunded');
@@ -161,7 +178,6 @@ class Transaction extends UuidDAL
     public function setRefunded($refunded)
     {
         $this->setAttribute('refunded', $refunded);
-
         $this->save();
     }
 
@@ -224,9 +240,9 @@ class Transaction extends UuidDAL
 
     public static function updateProcessed($id)
     {
-		$txn = static::where('id', $id)
-					  ->update(array('processed' => 1));
-	}
+        $txn = static::where('id', $id)
+                    ->update(array('processed' => 1));
+    }
 
     public function card_token()
     {

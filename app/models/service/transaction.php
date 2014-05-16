@@ -55,6 +55,15 @@ class Transaction extends Service
         return $txn_data_arr;
     }
 
+    public function retrieveUncaptured($from_time = 86400)
+    {
+        $txn = new DAL\Transaction();
+
+        $txn_array = $txn->fetchUncaptured($from_time);
+
+        return $txn_array;
+    }
+
     public function retrieve($id = NULL)
     {
         Manager\Transaction::validateTransactionId($id);
@@ -77,7 +86,25 @@ class Transaction extends Service
 
         $gateway = new GatewayManager();
 
-        return $gateway->refund($data);
+        $status = $gateway->refund($data);
+
+        $txn_data->setRefunded($status);
+    }
+
+    /**
+     * Captures a transaction
+     * Pass \DAL\Transaction object as argument
+     */
+
+    public function capture($txn_data = NULL)
+    {
+        $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
+
+        $gateway = new GatewayManager();
+
+        $status = $gateway->capture($data);
+
+        $txn_data->setCaptured($status);
     }
 
     public function bankAcsCallback(array $input)
