@@ -1,6 +1,6 @@
 #RazorPay API
 
-[![Build Status](https://api.shippable.com/projects/536e6f0a16866c6d01fea8ae/badge/master)](https://www.shippable.com/projects/536e6f0a16866c6d01fea8ae)
+[![Build Status](https://api.shippable.com/projects/536e6f0a16866c6d01fea8ae/badge/development)](https://www.shippable.com/projects/536e6f0a16866c6d01fea8ae)
 
 ##Set up instructions
 
