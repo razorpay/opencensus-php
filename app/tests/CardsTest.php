@@ -37,45 +37,75 @@ class CardsTest extends TestCase {
         $cards=include('helpers/cards.php');        
         $transaction['card']['number']=$cards[$card_no]['PAN'];
         $expected_response=$cards[$card_no]['response'];
+        $cardtype=$cards[$card_no]['type'];
+        $response;
+        switch($cardtype){
 
-        //WHEN
-        try 
-        {
-            //first request to /transactions route, returns form for submission to acs url
-            $crawler = $this->client->request('POST', '/transactions', $transaction);
-            
-            //get the form
-            $form = $crawler->selectButton('Submit')->form();
+            case "timeout":
+                try
+                {
+                $crawler = $this->client->request('POST', '/transactions', $transaction);
+                }
+                catch(Requests_Exception $e)
+                {
+                    $this->assertTrue(true);
+                    return;
+                }
 
-            //submit to acs url
-            $form->setValues(array('TermUrl' => Config::get('app.url').'/transactions/callback'));
-            $uri = $form->getUri();
-            $method = $form->getMethod();
-            $values = $form->getValues();
-            $response = Requests::post($uri, array(), $values);
+            break;
 
-            //crawl the repsonse to get callback form
-            $crawler = new \Symfony\Component\DomCrawler\Crawler('', $uri);
-            $crawler->addContent($response->body);
-            $form = $crawler->selectButton('Submit')->form();
+            case "CC":
+                $response = $this->call('POST', '/transactions', $transaction);
+            break;
 
-            //submit callback form
-            $uri = $form->getUri();
-            $method = $form->getMethod();
-            $values = $form->getValues();
-            $response = $this->call('POST', '/transactions/callback', $values);
+            case "DC":
+                //first request to /transactions route, returns form for submission to acs url
+                $crawler = $this->client->request('POST', '/transactions', $transaction);
+                
+                //get the form
+                $form = $crawler->selectButton('Submit')->form();
 
-            //THEN
-            if($response->getContent()==$expected_response)
-            {
-                echo "Card ".$transaction['card']['number'].' successfull';
-            }
-            $this->assertEquals($expected_response, $response->getContent());
-        } 
-        catch (Exception $e) 
-        {
-            $this->fail('Card '.$transaction['card']['number'].' failed.');
+                //submit to acs url
+                $form->setValues(array('TermUrl' => Config::get('app.url').'/transactions/callback'));
+
+                $uri = $form->getUri();
+                $method = $form->getMethod();
+                $values = $form->getValues();
+
+                $response = Requests::post($uri, array(), $values);
+
+                //crawl the repsonse to get callback form
+                $crawler = new \Symfony\Component\DomCrawler\Crawler('', $uri);
+                $crawler->addContent($response->body);
+
+                $form = $crawler->selectButton('Submit')->form();
+
+                //submit callback form
+                $uri = $form->getUri();
+                $method = $form->getMethod();
+                $values = $form->getValues();
+
+                $response = $this->call('POST', '/transactions/callback', $values);
+            break;
+
+            default: 
+                $this->fail("Invalid Cards.php file");
+            break;
         }
+
+
+            
+            //THEN
+            $content = $response->getContent();
+
+            //check output is json
+            $this->assertJson($content);
+
+            //check processed flag matches as in card.php
+            //@todo shift to matching to actual error code rreturned once errors are implemented
+            $output=json_decode($content, true);
+            $this->assertEquals($expected_response, $output['processed']);
+        return;
 
     }
 
