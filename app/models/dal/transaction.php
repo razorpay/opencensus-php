@@ -156,7 +156,7 @@ class Transaction extends UuidDAL
 
     public function setProcessed($processed)
     {
-        $this->setAttribute('processed', $processed);
+        $this->setAttribute('processed', (int)$processed);
         $this->save();
     }
 

@@ -121,6 +121,6 @@ class Transaction extends Service
 
         $txn_data->setProcessed($processed);
 
-        echo $txn_data;
+        return $txn_data;
     }
 }
