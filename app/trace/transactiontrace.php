@@ -27,14 +27,14 @@ class TransactionTrace extends Singleton
      *
      * @var string $transactionStatus Transaction status
      */
-    protected static $transactionStatus;
+    protected $transactionStatus;
 
     /**
      * Previous status of the transaction
      *
      * @var string $transactionPreviousStatus Transaction's previous status
      */
-    protected static $transactionPreviousStatus;
+    protected $transactionPreviousStatus;
 
     /**
      * Request => Operation mapping
@@ -98,31 +98,38 @@ class TransactionTrace extends Singleton
 
     public static function setTransactionStatus($status)
     {
-        static::$transactionStatus = $status;
+        $instance = static::getInstance();
+        $instance->transactionPreviousStatus = $instance->transactionStatus;
+        $instance->transactionStatus = $status;
     }
 
     public static function getTransactionStatus($status)
     {
-        return static::$transactionStatus;
+        $instance = static::getInstance();
+        return $instance->transactionStatus;
     }
 
     public static function setTransactionPreviousStatus($status)
     {
-        static::$transactionPreviousStatus = $status;
+        $instance = static::getInstance();
+        $instance->transactionPreviousStatus = $status;
     }
 
     public static function getTransactionPreviousStatus($status)
     {
-        return static::$transactionPreviousStatus;
+        $instance = static::getInstance();
+        return $instance->transactionPreviousStatus;
     }
 
     public function addRecord($level, $message, $event)
     {
+        $instance = static::getInstance();
+
         $context = array(
             'object' => 'transaction',
             'id' => static::$transactionId,
-            'status' => static::$transactionStatus,
-            'previous_status' => static::$transactionPreviousStatus,
+            'status' => $instance->transactionStatus,
+            'previous_status' => $instance->transactionPreviousStatus,
             'event' => $event);
 
         $this->trace->addRecord($level, $message, $context);
