@@ -1,6 +1,25 @@
 <?php
 require_once('helpers/Transaction.php');
+use Laracasts\TestDummy\Factory;
 class CardsTest extends Transaction {
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        //Start DB transaction so as to rollback once done
+        DB::beginTransaction();
+        Eloquent::unguard();
+        $key = Factory::create('Models\DAL\Key');
+        Eloquent::reguard();        
+    }
+
+    public function tearDown()
+    {
+        //Undo DB Changes after test
+        DB::rollback();
+    }
+
 
     /**
     * Tests for individual cards
