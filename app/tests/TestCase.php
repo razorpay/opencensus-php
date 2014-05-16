@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * Base test case class provided by laravel all, test cases inherit it
+ * ALl test cases follow, GIVEN, WHEN, THEN structure
+ */
+
 use Laracasts\TestDummy\Factory;
 
 

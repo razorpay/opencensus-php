@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * Tests all cards in cards.php to ensure they return expected response,
+ * All test cases follow, GIVEN, WHEN, THEN structure
+ */
+
 require_once('helpers/Transaction.php');
 use Laracasts\TestDummy\Factory;
 class CardsTest extends Transaction {
@@ -9,6 +15,8 @@ class CardsTest extends Transaction {
 
         //Start DB transaction so as to rollback once done
         DB::beginTransaction();
+
+        //Seed the db with required data
         Eloquent::unguard();
         $key = Factory::create('Models\DAL\Key');
         Eloquent::reguard();        
@@ -22,8 +30,8 @@ class CardsTest extends Transaction {
 
 
     /**
-    * Tests for individual cards
-    */
+     * Tests for individual cards
+     */
 
     public function testCard0()
     {

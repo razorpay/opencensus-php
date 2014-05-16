@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * Transaction class, inherited by all classes that need to create transactions.
+ * ALl test cases follow, GIVEN, WHEN, THEN structure
+ */
+
 class Transaction extends TestCase {
     protected function createTransaction($card_no)
     {
@@ -6,6 +12,8 @@ class Transaction extends TestCase {
 
         //load list of cards with expected responses for each
         $cards=include('cards.php');
+
+        //get details of requested cards
         $expected_response=$cards[$card_no]['response'];
         $cardtype=$cards[$card_no]['type'];
         $response;
@@ -37,6 +45,7 @@ class Transaction extends TestCase {
     
         switch($cardtype){
 
+            //in case timeout is expected
             case "timeout":
                 try
                 {
@@ -49,10 +58,12 @@ class Transaction extends TestCase {
                 }
             break;
 
+            //in case card is a CC (no secure code)
             case "CC":
                 $response = $this->call('POST', '/transactions', $transaction);
             break;
 
+            //in case card is a DC (secure code)
             case "DC":
                 //first request to /transactions route, returns form for submission to acs url
                 $crawler = $this->client->request('POST', '/transactions', $transaction);
@@ -93,7 +104,7 @@ class Transaction extends TestCase {
             //THEN
             $content = $response->getContent();
 
-            //check output is json
+            //Ensure output is json
             $this->assertJson($content);
 
             //check processed flag matches as in card.php
