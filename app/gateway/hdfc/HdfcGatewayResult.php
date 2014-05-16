@@ -13,15 +13,15 @@ final class HdfcGatewayResult
     const FSS0001_ENROLLED = -1;
     const UNKNOWN_ERROR_ENROLLED = -2;
 
-    const FAIL_REFUND = 3;
 
     /**
      * Result codes received in response for transaction
      * authorization
      */
-    const CAPUTRED = 'CAPTURED';
+    const CAPTURED = 'CAPTURED';
     const APPROVED = 'APPROVED';
     const NOT_CAPTURED = 'NOT CAPTURED';
+    const NOT_REFUNDED = 'NOT REFUNDED';
     const NOT_APPROVED = 'NOT APPROVED';
     const DENIED_BY_RISK = 'DENIED BY RISK';
     const HOST_TIMEOUT = 'HOST TIMEOUT';
