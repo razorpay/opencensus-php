@@ -2,7 +2,7 @@
 
 use Monolog\Logger;
 
-class TransactionTrace extends \Singleton
+class TransactionTrace extends Singleton
 {
     const COMPONENT = 'transaction';
 
@@ -28,6 +28,13 @@ class TransactionTrace extends \Singleton
      * @var string $transactionStatus Transaction status
      */
     protected static $transactionStatus;
+
+    /**
+     * Previous status of the transaction
+     *
+     * @var string $transactionPreviousStatus Transaction's previous status
+     */
+    protected static $transactionPreviousStatus;
 
     /**
      * Request => Operation mapping
@@ -97,6 +104,16 @@ class TransactionTrace extends \Singleton
     public static function getTransactionStatus($status)
     {
         return static::$transactionStatus;
+    }
+
+    public static function setTransactionPreviousStatus($status)
+    {
+        static::$transactionPreviousStatus = $status;
+    }
+
+    public static function getTransactionPreviousStatus($status)
+    {
+        return static::$transactionPreviousStatus;
     }
 
     public function addRecord($level, $message, $event)
