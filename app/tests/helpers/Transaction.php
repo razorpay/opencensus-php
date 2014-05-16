@@ -40,14 +40,13 @@ class Transaction extends TestCase {
             case "timeout":
                 try
                 {
-                $crawler = $this->client->request('POST', '/transactions', $transaction);
+                $response = $this->call('POST', '/transactions', $transaction);
                 }
                 catch(Requests_Exception $e)
                 {
                     $this->assertTrue(true);
                     return true;
                 }
-
             break;
 
             case "CC":

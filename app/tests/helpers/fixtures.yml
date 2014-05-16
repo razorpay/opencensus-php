@@ -26,11 +26,3 @@ Models\DAL\Key:
     live: 1
     active: 1
     secret: 1
-
-Models\DAL\Transaction:
-    id: 4b66157a-daa9-11e3-a88f-3c077173
-    merchant_id:
-        type: Models\DAL\Merchant
-    amount: 100
-    currency: INR
-    processed: 1
