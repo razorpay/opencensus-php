@@ -69,6 +69,17 @@ class HdfcGatewayDal extends \Models\DAL\DAL
         
         $this->save();
     }
+
+    public function persistAfterDCAuthError($error)
+    {
+        $this->attributes = array(
+            'status' => 'PaRes Error',
+            'error_code' => $error['code'],
+            'error_service' => $error['service'],
+            'error_text' => $error['text']);
+        
+        $this->save();
+    }
     
     public static function persistAfterSupportTxn($requestData, $responseData)
     {

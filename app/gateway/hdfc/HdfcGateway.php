@@ -268,9 +268,7 @@ class HdfcGateway extends BaseGateway
 
         $this->authEnrolledRequest();
 
-        // TODO
-        // Check result and return boolean accordingly, not true always
-        return array(true, $this->id);
+        return array(!$this->error, $this->id);
     }
  
     public function authEnrolledRequest()
@@ -292,8 +290,7 @@ class HdfcGateway extends BaseGateway
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
  
-        $this->model->persistAfterDCAuth(
-                        $this->authEnrolledResponse['data']);
+        $this->persistAfterDCAuth();
     }
  
     /**
@@ -460,6 +457,22 @@ class HdfcGateway extends BaseGateway
             $this->model = HdfcGatewayDal::persistAfterEnroll(
                     $this->enrollRequest['data'],
                     $this->enrollResponse['data']);
+        }
+    }
+
+    protected function persistAfterDCAuth()
+    {
+        if (isset($this->authEnrolledResponse['error']['code']))
+        {
+            $this->model->persistAfterDCAuthError($this->authEnrolledResponse['error']);
+
+            return false;
+        }
+        else
+        {
+            $this->model->persistAfterDCAuth($this->authEnrolledResponse['data']);
+
+            return true;
         }
     }
 
