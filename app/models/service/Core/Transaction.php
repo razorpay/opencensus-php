@@ -81,6 +81,10 @@ class Transaction
             case TransactionStatus::ENROLLED:
             return $data;
 
+            case TransactionStatus::NOT_ENROLLED:
+            $txn->setProcessed($data['data']['processed']);
+            return $txn;
+
             //@todo: Update data on hold
             case TransactionStatus::HOLD:
             $this->updateTransactionHold();

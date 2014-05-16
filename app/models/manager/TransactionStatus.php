@@ -9,6 +9,7 @@ class TransactionStatus
 	const HOLD = 'hold';
 	const CAPTURED = 'captured';
 	const ENROLLED = 'enrolled';
+	const NOT_ENROLLED = 'not enrolled';
 	const FAILED = 'failed';
 	const REFUNDED = 'refunded';
 	const PARTIALLY_REFUNDED = 'prefunded';
