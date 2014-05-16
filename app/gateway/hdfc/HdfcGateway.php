@@ -260,18 +260,20 @@ class HdfcGateway extends BaseGateway
         }
  
         $this->model = HdfcGatewayDal::findOrFail($input['MD']);
-        $this->id = $this->model->id;
+        $this->id = $this->model->getTrackid();
         $this->authEnrolledRequest['data']['paymentid'] = $input['MD'];
         $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
- 
+
         $this->authEnrolledRequest();
- 
-        return array(true, $this->model->id);
+
+        // TODO
+        // Check result and return boolean accordingly, not true always
+        return array(true, $this->id);
     }
  
     public function authEnrolledRequest()
     {
-        if ((int) $this->model->result !== HdfcGatewayResult::ENROLLED)
+        if ((int) $this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
         {
             throw new \InvalidArgumentException('Result not valid');
         }

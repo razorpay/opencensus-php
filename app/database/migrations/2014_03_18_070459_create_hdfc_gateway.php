@@ -25,7 +25,7 @@ class CreateHdfcGateway extends Migration {
 
             $table->string('action', 1);
 
-            $table->string('result', 2);
+            $table->string('enroll_result', 2);
 
             $table->string('status', 50);
 
