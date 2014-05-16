@@ -122,6 +122,7 @@ class TransactionTrace extends Singleton
             'object' => 'transaction',
             'id' => static::$transactionId,
             'status' => static::$transactionStatus,
+            'previous_status' => static::$transactionPreviousStatus,
             'event' => $event);
 
         $this->trace->addRecord($level, $message, $context);
