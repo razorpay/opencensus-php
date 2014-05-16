@@ -37,6 +37,8 @@ class HdfcGateway extends BaseGateway
     protected $id;
  
     protected $model;
+
+    const INR_CODE = 356;
  
     /**
      * If during the txn flow, we detect an
@@ -142,7 +144,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $authEnrolledRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIPayerauthEnrolledticationXMLServlet',
+        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIPayerAuthenticationXMLServlet',
         'type' => 'auth_enrolled',
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
@@ -158,20 +160,20 @@ class HdfcGateway extends BaseGateway
  
     /**
      * The assoc array is used to construct
-     * request for refunds
+     * request for refunds/captures
      * @var array
      */
-    protected $refundRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIPayerAuthenticationXMLServlet',
+    protected $supportTxnRequest = array(
+        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet',
         'header' => array('Content-Type:text/xml'),
         'type' => 'refund',
         'xml' => '',
         'data' => array());
 
-    protected $refundResponse = array(
+    protected $supportTxnResponse = array(
         'fields' => array(
-            'error_text', 'trackid', 'paymentid', 'result', 'auth', 'amt', 'ref'),
-        'type' => 'refund',
+            'error_text', 'trackid', 'payid', 'result', 'auth', 'amt', 'ref', 'postdate', 'avr'),
+        'type' => '',
         'xml' => '',
         'data' => array(),
         'error' => array());
@@ -408,11 +410,11 @@ class HdfcGateway extends BaseGateway
         // Later change it to something better
         // when we support multiple currencies
         // 
-        $data['currencycode'] = 356;
+        $data['currencycode'] = self::INR_CODE;
  
         if ($txn['processed'] === 0)
         {
-            $data['action'] = HdfcGatewayAction::PURCHASE;
+            $data['action'] = HdfcGatewayAction::AUTH;
         }
         else if ($txn['processed'] === 1)
         {
@@ -461,20 +463,25 @@ class HdfcGateway extends BaseGateway
         }
     }
 
-    protected function persistAfterRefund()
+    protected function persistAfterSupportTxn($type = 'capture')
     {
-        if (isset($this->refundResponse['error']['code']))
+        if (isset($this->supportTxnResponse['error']['code']))
         {
-            $this->model = HdfcGatewayDal::persistAfterRefundError(
+            $this->model = HdfcGatewayDal::persistAfterSupportTxnError(
                             $this->id,
-                            $this->refundRequest['data']['paymentid'],
-                            $this->refundResponse['error']);
+                            $this->supportTxnRequest['data']['transid'],
+                            $this->supportTxnResponse['error'],
+                            $type);
+
+            return false;
         }
         else
         {
-            $this->model = HdfcGatewayDal::persistAfterRefund(
-                    $this->refundRequest['data'],
-                    $this->refundResponse['data']);
+            $this->model = HdfcGatewayDal::persistAfterSupportTxn(
+                    $this->supportTxnRequest['data'],
+                    $this->supportTxnResponse['data']);
+
+            return true;
         }
     }
  
@@ -511,75 +518,73 @@ class HdfcGateway extends BaseGateway
 
         $this->id = $input['txn']['id'];
 
+        $this->supportTxnResponse['type'] = 'refund';
+
         // Fields to be sent to HDFC gateway for refund
-        $this->createRefundRequestFields($input);
+        $this->createSupportTxnRequestFields($input, HdfcGatewayAction::REFUND);
 
         $this->runRequestResponseFlow(
-            $this->refundRequest,
-            $this->refundResponse);
+            $this->supportTxnRequest,
+            $this->supportTxnResponse);
 
-        $this->persistAfterRefund();
+        $status = $this->persistAfterSupportTxn('refund');
 
-        //TODO
-        //return refund transaction status
-        return true;
+        return $status;
+    }
+
+    public function capture($input)
+    {
+        $this->model = HdfcGatewayDal::retrieve($input['txn']['id']);
+
+        $this->id = $input['txn']['id'];
+
+        $this->supportTxnResponse['type'] = 'capture';
+
+        $this->createSupportTxnRequestFields($input, HdfcGatewayAction::CAPTURE);
+
+        $this->runRequestResponseFlow(
+            $this->supportTxnRequest,
+            $this->supportTxnResponse);
+
+        $status = $this->persistAfterSupportTxn('capture');
+
+        return $status;
     }
 
     /**
      * Collect all fields to be sent for
-     * transaction refund
+     * transaction refund/capture
      * 
      * @param  array $input 
      * Contains the 'txn' details
      */
-    protected function createRefundRequestFields($input)
+    protected function createSupportTxnRequestFields($input, $action)
     {
         $txn = $input['txn'];
         $card = $input['txn']['card'];
 
-        $data = &$this->refundRequest['data'];
+        $data = &$this->supportTxnRequest['data'];
 
         // Collect credentials
-        list($data['id'], $data['password']) = static::getCredentials();
+        list($data['ID'], $data['password']) = static::getCredentials();
 
-        $data['action'] = HdfcGatewayAction::REFUND; //credit
+        $data['action'] = $action;
 
         // Convert amount from integer to decimal
-        $data['amt'] = $txn['amount']/100; //currencycode
-        //action = 2
-        //transid
-        //trackid
-        //udf=blank
+        $data['amt'] = $txn['amount']/100;
 
-        $data['member'] = $card['name']; //cardholdername
+        $data['currencycode'] = self::INR_CODE;
 
-        $data['paymentid'] = $this->model->paymentid;
+        $data['member'] = $card['name'];
 
-        
+        $data['transid'] = $this->model->paymentid;
+
+        $data['trackid'] = $this->id;
 
         // Set udf fields
-        //$data['udf5'] = 'PaymentID';
+        $data['udf1'] = $data['udf2'] = $data['udf3'] = $data['udf4'] = $data['udf5'] = '';
     }
 
-    /**
-     * Makes https request for refunding transaction
-     * @return string xml content received from response
-     */
-    protected function postRefundRequest()
-    {
-        $refundRequest = $this->refundRequest;
-
-        $options['verify'] = false;
-
-        $response = Requests::post(
-                        $refundRequest['url'],
-                        $refundRequest['header'],
-                        $refundRequest['xml'],
-                        $options);
-
-        return $response;
-    }
- 
     public function void()
     {
         ;
