@@ -111,6 +111,24 @@ class TransactionController extends BaseController
     }
 
     /**
+     * Captures transactions from the past 1 day
+     */
+    
+    public function capture()
+    {
+        $txn_service = new Transaction();
+
+        $txn_array = $txn_service->retrieveUncaptured();
+
+        foreach ($txn_array as $txn)
+        {
+            $txn_service->capture($txn);
+        }
+
+        return Response::json($txn_array);
+    }
+
+    /**
     * List previous refunds.
     */
     public function getRefund()
