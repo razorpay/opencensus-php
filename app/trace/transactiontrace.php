@@ -6,7 +6,7 @@ class TransactionTrace extends \Singleton
 {
     const COMPONENT = 'transaction';
 
-    // status codes for operations
+    // string code for events
     const REQUEST_FOR_NEW_TRANSACTION = 'REQUEST_FOR_NEW_TRANSACTION';
     const GATEWAY_HDFC_ACS_CALLBACK_SUCCESSFUL = 'GATEWAY_HDFC_ACS_CALLBACK_SUCCESSFUL';
     const GATEWAY_HDFC_ACS_REQUEST_TIMEOUT = 'GATEWAY_HDFC_ACS_REQUEST_TIMEOUT';
@@ -21,6 +21,13 @@ class TransactionTrace extends \Singleton
      * @var int $transactionId Transaction id
      */
     protected static $transactionId;
+
+    /**
+     * Status of the transaction
+     *
+     * @var string $status Transaction status
+     */
+    protected static $status;
 
     /**
      * Request => Operation mapping
@@ -82,18 +89,19 @@ class TransactionTrace extends \Singleton
         return static::$transactionId;
     }
 
-    public function addRecord($level, $message, $statusCode)
+    public function addRecord($level, $message, $event)
     {
         $context = array(
-            'transaction' => array(
-                'id' => static::$transactionId,
-                'status_code' => $statusCode));
+            'object' => 'transaction',
+            'id' => static::$transactionId,
+            'status' => static::$status,
+            'event' => $event);
 
         $this->trace->addRecord($level, $message, $context);
     }
 
-    public function info($message, $statusCode)
+    public function info($message, $event)
     {
-        $this->addRecord(Logger::INFO, $message, $statusCode);
+        $this->addRecord(Logger::INFO, $message, $event);
     }
 }
