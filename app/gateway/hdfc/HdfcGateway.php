@@ -334,19 +334,23 @@ class HdfcGateway extends BaseGateway
         $data['zip'] = "";
  
         $data['addr'] = "";
+
+        $this->authNotEnrolledRequest['data'] = $data;
  
         $this->runRequestResponseFlow(
             $this->authNotEnrolledRequest,
             $this->authNotEnrolledResponse);
- 
+
         $this->model->persistAfterCCAuth(
                         $this->authNotEnrolledResponse['data']);
-        
+
         $notEnrollResponse = $this->authNotEnrolledResponse;
+
+        $notEnrollResponse['data']['processed'] = ($notEnrollResponse['data']['result'] == 'APPROVED') ? 1 : 0;
         
         return array('not enrolled', 
                      array(
-                        'data' => $notEnrollResponse['data'], 
+                        'data' => $notEnrollResponse['data']
                         ));
     }
  

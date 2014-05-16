@@ -42,11 +42,10 @@ class HdfcGatewayDal extends \Models\DAL\DAL
         return static::createOrFail($attributes);
     }
 
-    public function persistAferCCAuth($data)
+    public function persistAfterCCAuth($data)
     {
         $this->attributes = array(
-            'status' => 'PaRes Received',
-            'error_text' => $data['error_text'],
+            'status' => 'CC Authed',
             'auth_result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
@@ -60,7 +59,6 @@ class HdfcGatewayDal extends \Models\DAL\DAL
     {
         $this->attributes = array(
             'status' => 'PaRes Received',
-            'error_text' => $data['error_text'],
             'auth_result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
