@@ -71,6 +71,12 @@ App::down(function()
 	return Response::make("Be right back!", 503);
 });
 
+// event listeners for tracing purposes
+Event::listen('transaction.new', function($txn_id)
+	{
+		TransactionTrace::setTransactionId($txn_id);
+	});
+
 /*
 |--------------------------------------------------------------------------
 | Require The Filters File

@@ -1,8 +1,5 @@
 <?php
 
-namespace Trace;
-
-use Trace\Trace;
 use Monolog\Logger;
 
 class TransactionTrace extends \Singleton
@@ -10,6 +7,7 @@ class TransactionTrace extends \Singleton
     const COMPONENT = 'transaction';
 
     // status codes for operations
+    const REQUEST_FOR_NEW_TRANSACTION = 'REQUEST_FOR_NEW_TRANSACTION';
     const GATEWAY_HDFC_ACS_CALLBACK_SUCCESSFUL = 'GATEWAY_HDFC_ACS_CALLBACK_SUCCESSFUL';
     const GATEWAY_HDFC_ACS_REQUEST_TIMEOUT = 'GATEWAY_HDFC_ACS_REQUEST_TIMEOUT';
     const CARD_NOT_PROVIDED = 'CARD_NOT_PROVIDED';
@@ -98,5 +96,4 @@ class TransactionTrace extends \Singleton
     {
         $this->addRecord(Logger::INFO, $message, $statusCode);
     }
-    
 }
