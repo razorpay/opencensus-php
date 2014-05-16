@@ -75,6 +75,7 @@ App::down(function()
 Event::listen('transaction.new', function($txn_id)
 	{
 		TransactionTrace::setTransactionId($txn_id);
+		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::OPEN);
 	});
 
 /*
