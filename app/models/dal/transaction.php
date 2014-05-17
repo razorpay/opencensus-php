@@ -15,7 +15,8 @@ class Transaction extends UuidDAL
         'created_lt'    => 'numeric|required_without:created',
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
-        'merchant_id'   => 'required');
+        'merchant_id'   => 'required',
+        'hold'          => 'in:1,0');
 
     protected $fillable = array(
         'merchant_id',
@@ -26,6 +27,7 @@ class Transaction extends UuidDAL
         'processed',
         'desc',
         'udf',
+        'hold'
         );
 
     protected $visible = array(
@@ -265,6 +267,11 @@ class Transaction extends UuidDAL
     public function setError($error = false)
     {
         $this->error = $error;
+    }
+
+    public function checkIfHold()
+    {
+        return $this->getAttribute('hold');
     }
 
 }

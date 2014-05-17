@@ -13,7 +13,8 @@ class Transaction extends EntityManager
         'token'         =>  'required|alpha_num',
         'desc'          =>  'max:1000',
         'process'       =>  'numeric|max:1|digits:1',
-        'udf'           =>  'required');
+        'udf'           =>  'required',
+        'hold'          =>  'in:1,0');
 
     protected static $udfRules = array(
         'email'         =>  'required|email|max:250',

@@ -54,6 +54,9 @@ class CreateTransactions  extends Migration {
                   ->nullable();
 
             $table->binary('udf');
+
+            $table->boolean('hold')
+                  ->default('0');
             
             $table->timestamps();   // Adds created_at and updated_at columns to the table
 
