@@ -2,7 +2,7 @@
 
 /**
  * Tests that support transactions (capture/refund) are working fine.
- * creates a transaction using card 13 and then attempts to capture it followed by refund it
+ * creates a hold transaction using card 13 and then attempts to capture it followed by refund it
  * Is successful if captured successfully folowed by successful refund.
  * All test cases follow, GIVEN, WHEN, THEN structure
  */
@@ -38,7 +38,7 @@ class SupportTest extends Transaction {
         
         //GIVEN
         //create an auth transaction using card 12
-        $response = $this->createTransaction(12);
+        $response = $this->createTransaction(12, true);
 
         //get its transaction id
         $id=$response->id;
@@ -54,7 +54,7 @@ class SupportTest extends Transaction {
     {      
         //WHEN
         //call for capture of transactions
-        $response = $this->action('GET', 'TransactionController@capture');
+        $response = $this->action('POST', 'TransactionController@postCapture', array('transaction_id'=>$id));
         $content=$response->getContent();
 
         //THEN
@@ -63,8 +63,8 @@ class SupportTest extends Transaction {
         $capture=json_decode($content);
 
         //Check if transaction id matches, and captured sucessfully
-        $this->assertEquals($capture[0]->id, $id);
-        $this->assertTrue($capture[0]->captured);
+        $this->assertEquals($capture->id, $id);
+        $this->assertTrue($capture->captured);
     }
 
     /**

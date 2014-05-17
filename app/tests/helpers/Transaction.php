@@ -6,7 +6,13 @@
  */
 
 class Transaction extends TestCase {
-    protected function createTransaction($card_no)
+    /**
+     * Creates a transaction & tests it is corrrectly created
+     * @param $card_no The array index of card in cards.php to be used for transaction
+     * @param $hold If transaction is to be of hold type (not captured automatically)
+     * @return created transaction object in json
+     */
+    protected function createTransaction($card_no, $hold=false)
     {
         //GIVEN
 
@@ -40,6 +46,7 @@ class Transaction extends TestCase {
                 'email'     =>  'lol@lko.com',
                 'contact'   =>  '991889902'
             ),
+            'hold'      => (int)$hold
         ];
 
     
@@ -121,10 +128,17 @@ class Transaction extends TestCase {
             $output=json_decode($content);
             $this->assertEquals($expected_response, $output->processed);
             
-            //If expected response is to be successfull, end the test here
-            if($expected_response) return $output;
+            //If expected response is to be successfull, do following sets of tests
+            if($expected_response){
+                if(!$hold)
+                    //By default transaction should be captured
+                    $this->assertTrue($output->captured);
+                else
+                    $this->assertEquals($output->captured, 0);
+                return $output;
+            }
 
-            //Checking for error codes & messages of unsuccessful cards
+            //Tests for unsuccessful cards
             $error_code=$cards[$card_no]['code'];
             $error_message=$cards[$card_no]['message'];
 
