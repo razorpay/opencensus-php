@@ -23,7 +23,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
             'trackid' => $request['trackid'],
             'paymentid' => $response['paymentid'],
             'action' => $request['action'],
-            'enroll_result' => $response['result'],
+            'enroll_result' => $response['enroll_result'],
             'status' => 'VERES Received',
             'eci' => $response['eci']);
 

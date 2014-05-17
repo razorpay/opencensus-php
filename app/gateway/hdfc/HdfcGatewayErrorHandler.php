@@ -134,4 +134,22 @@ class HdfcGatewayErrorHandler
     {
     	return $response['error'];
     }
+
+    public static function parseErrorInString($result)
+    {
+        $error_codes = array_keys(static::$error);
+        $error = array();
+        
+        foreach($error_codes as $error_code)
+        {
+            if (strpos($result, $error_code) !== false)
+            {
+                $error['code'] = $error_code;
+                $error['message'] = static::$error[$error_code];
+                return $error;
+            }
+        }
+
+        return false;
+    }
 }

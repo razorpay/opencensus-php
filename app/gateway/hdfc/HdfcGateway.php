@@ -214,24 +214,21 @@ class HdfcGateway extends BaseGateway
  
         if (isset($er['error']) !== null)
         {
-            if ($er['data']['result'] === HdfcGatewayResult::ENROLLED)
+            if ($er['data']['enroll_result'] === HdfcGatewayResult::ENROLLED)
             {
                 $this->status = HdfcGatewayResult::ENROLLED;
                 return $this->postPaymentRequestToBankACS();
             }
-            else if ($er['data']['result'] === HdfcGatewayResult::NOT_ENROLLED)
+            else if ($er['data']['enroll_result'] === HdfcGatewayResult::NOT_ENROLLED)
             {
                 $this->status = HdfcGatewayResult::NOT_ENROLLED;
                 return $this->postAuthNotEnrolledRequestToBank();
             }
             else
             {
-                // 
-                // No error on the request side, but enroll failed with an invalid enroll code.
-                // 
-                // Bail out and fail transaction.
-                // 
-                $error = HdfcGatewayErrorHandler::unknownError();
+                $error = HdfcGatewayErrorHandler::parseErrorInString($this->enrollResponse['data']['result']);
+                if ($error === false)
+                    $error = HdfcGatewayErrorHandler::unknownError();
  
                 return array('failed', $error);
             }
@@ -268,7 +265,14 @@ class HdfcGateway extends BaseGateway
 
         $this->authEnrolledRequest();
 
-        return array(!$this->error, $this->id);
+        $error = $processed = false;
+
+        if ($this->error)
+            $error = HdfcGatewayErrorHandler::parseErrorInString($this->authEnrolledResponse['error']['text']);
+        else
+            $processed = true;
+
+        return array($processed, $this->id, $error);
     }
  
     public function authEnrolledRequest()
@@ -514,7 +518,7 @@ class HdfcGateway extends BaseGateway
  
         $result = &$this->enrollResponse['data']['result'];
          
-        $result = HdfcGatewayResult::resultCode($result);
+        $this->enrollResponse['data']['enroll_result'] = HdfcGatewayResult::resultCode($result);
     }
  
     protected function runRequestResponseFlow(array &$request, array &$response)
