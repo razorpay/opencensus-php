@@ -37,6 +37,7 @@ class Transaction extends UuidDAL
         'captured',
         'refunded',
         'udf',
+        'error',
         'created_at',
         'updated_at'
         );
@@ -259,6 +260,11 @@ class Transaction extends UuidDAL
     public function merchant()
     {
         return $this->belongsTo('Models\DAL\Merchant');
+    }
+
+    public function setError($error = false)
+    {
+        $this->error = $error;
     }
 
 }

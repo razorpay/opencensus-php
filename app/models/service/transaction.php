@@ -113,13 +113,20 @@ class Transaction extends Service
         
         $gateway = new GatewayManager();
 
-        list($processed, $id) = $gateway->bankAcsCallback($input);
+        list($processed, $id, $error) = $gateway->bankAcsCallback($input);
 
         $txn = new DAL\Transaction();
 
         $txn_data = $txn->fetchById($id);
 
-        $txn_data->setProcessed($processed);
+        if ($processed === true)
+        {
+            $txn_data->setProcessed($processed);
+        }
+        else
+        {
+            $txn_data->setError($error);
+        }
 
         return $txn_data;
     }
