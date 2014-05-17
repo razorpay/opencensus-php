@@ -49,7 +49,7 @@ final class HdfcGatewayResult
     {
     	if ($result === 'ENROLLED') $result = HdfcGatewayResult::ENROLLED;
         else if ($result === 'NOT ENROLLED') $result = HdfcGatewayResult::NOT_ENROLLED;
-        else if ($result === 'FSS0001') $result = HdfcGatewayResult::FSS0001;
+        else if ($result === 'FSS0001-Authentication Not Available') $result = HdfcGatewayResult::FSS0001_ENROLLED;
         else $result = HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED;
 
         return $result;
