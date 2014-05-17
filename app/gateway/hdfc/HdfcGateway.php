@@ -166,7 +166,7 @@ class HdfcGateway extends BaseGateway
     protected $supportTxnRequest = array(
         'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet',
         'header' => array('Content-Type:text/xml'),
-        'type' => 'refund',
+        'type' => '',
         'xml' => '',
         'data' => array());
 
@@ -535,6 +535,7 @@ class HdfcGateway extends BaseGateway
 
         $this->id = $input['txn']['id'];
 
+        $this->supportTxnRequest['type'] = 'refund';
         $this->supportTxnResponse['type'] = 'refund';
 
         // Fields to be sent to HDFC gateway for refund
@@ -555,6 +556,7 @@ class HdfcGateway extends BaseGateway
 
         $this->id = $input['txn']['id'];
 
+        $this->supportTxnRequest['type'] = 'capture';
         $this->supportTxnResponse['type'] = 'capture';
 
         $this->createSupportTxnRequestFields($input, HdfcGatewayAction::CAPTURE);
