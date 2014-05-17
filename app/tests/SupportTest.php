@@ -41,7 +41,7 @@ class SupportTest extends Transaction {
         $response = $this->createTransaction(12);
 
         //get its transaction id
-        $id=$response['id'];
+        $id=$response->id;
 
         $this->capture($id);
         $this->refund($id);

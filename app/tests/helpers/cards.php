@@ -14,22 +14,31 @@ return [
 	[
 	'PAN' => '4012001038488884',
 	'response' => 0,
-	'type' => 'CC'
+	'type' => 'CC',
+	'code' => "FSS0001",
+	'message' => "Authentication Not Available"
 	],
 	[
 	'PAN' => '4012001036298889',
 	'response' => 0,
-	'type' => 'CC'
+	'type' => 'CC',
+	'code' => "FSS0001",
+	'message' => "Authentication Not Available"
+
 	],
 	[
 	'PAN' => '4012001036853337',
 	'response' => 0,
-	'type' => 'DC'
+	'type' => 'DC',
+	'code' => "GV00007",
+	'message' => "Signature Validation Failed"
 	],
 	[
 	'PAN' => '4012001036983332',
 	'response' => 0,
-	'type' => 'DC'
+	'type' => 'DC',
+	'code' => "GV00008",
+	'message' => "Signature Validation Failed"
 	],
 	[
 	'PAN' => '4012001037141112',
@@ -49,17 +58,23 @@ return [
 	[
 	'PAN' => '4012001037461114',
 	'response' => 0,
-	'type' => 'DC'
+	'type' => 'DC',
+	'code' => "GV00004",
+	'message' => "PARes Status Not Sucessful"
 	],
 	[
 	'PAN' => '4012001037484447',
 	'response' => 0,
-	'type' => 'DC'
+	'type' => 'DC',
+	'code' => "FSS0001",
+	'message' => "Authentication Not Available"
 	],
 	[
 	'PAN' => '4012001037490006',
 	'response' => 0,
-	'type' => 'DC'
+	'type' => 'DC',
+	'code' => "FSS0001",
+	'message' => "Authentication Not Available"
 	],
 	[
 	'PAN' => '4012001037490014',

@@ -118,9 +118,22 @@ class Transaction extends TestCase {
 
             //check processed flag matches as in card.php
             //@todo shift to matching to actual error code rreturned once errors are implemented
-            $output=json_decode($content, true);
-            $this->assertEquals($expected_response, $output['processed']);
+            $output=json_decode($content);
+            $this->assertEquals($expected_response, $output->processed);
+            
+            //If expected response is to be successfull, end the test here
+            if($expected_response) return $output;
+
+            //Checking for error codes & messages of unsuccessful cards
+            $error_code=$cards[$card_no]['code'];
+            $error_message=$cards[$card_no]['message'];
+
+            $this->assertEquals($output->error->code, $error_code);
+            $this->assertEquals($output->error->message, $error_message);
+
             return $output;
+            
+            
 
     }
 }
