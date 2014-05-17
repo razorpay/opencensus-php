@@ -60,20 +60,30 @@ $baseurl = "api.razorpay.com"
 			<option value="2016">2020</option> 
 			</select>
 		</TD></tr>  
-		<TR>
+		<tr>
 		<TD colspan='40'>Amount:</TD>
 		<td><input type="text" name="amount" size="25" value="500"></td>
-		<tr>
+		</tr>
 		<TR>
 		<TD colspan='40'>Process:</TD>
 		<td><input type="text" name="process" size="25" value="1"></td>
-		<tr>
+		</tr>
+		<TR>
+		<TD colspan='40'>Hold:</TD>
+		<td>
+		<select name="hold">
+			<option value="0" selected>No</option> 
+			<option value="1">Yes</option> 
+			</select>
+		</td>
+		</tr>
 		<TR>
 		<TD colspan='40'>CardHolder/Member Name:</TD>
 		<td><input type="text" name="card[name]" size="25" value="shashank"></td>
 		<td><input type="text" name="udf[email]" size="25" value="shk@gmail.com"></td>
 		<td><input type="text" name="udf[contact]" size="25" value="1234567890"></td>
 		<input type="hidden" value="INR" name="currency">
+		</TR>
 		<tr>
 	<td colspan="100" align="center"><input type="submit" value="  Submit  "></td>
 	</tr>
@@ -83,8 +93,17 @@ $baseurl = "api.razorpay.com"
 </form>	
 </table>
 <br><br>
-<div style="text-align:center"><a href="http://<?=$baseurl?>/capture">Test Capture</a><br/>
-Test Refund<form method="post" action="http://<?=$baseurl?>/transactions/refund"><input type="text" name="transaction_id" /><input type="submit" value="Refund"/></form></div>
+<div style="text-align:center">
+<h3>Test Capture/Refund</h3>
+<form method="post" action="http://<?=$baseurl?>/transactions/refund">
+<input type="text" name="transaction_id" placeholder="Enter transaction id to refund"/>
+<input type="submit" value="Refund"/>
+</form>
+<form method="post" action="http://<?=$baseurl?>/transactions/capture">
+<input type="text" name="transaction_id" placeholder="Enter transaction id to capture"/>
+<input type="submit" value="Capture"/>
+</form>
+</div>
 
 <table width="96%" border="0" cellspacing="0" cellpadding="0">
 <tr>
