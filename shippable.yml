@@ -15,7 +15,6 @@ install:
 
 before_script:
   - mkdir -p shippable/testresults
-  - sudo apt-get install php5-mcrypt
   - php composer.phar install
   - php composer.phar dump-autoload
 
