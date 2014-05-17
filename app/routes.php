@@ -51,12 +51,6 @@ Route::group(array('before' => 'auth'), function()
 
 	Route::post('transactions/refund', 'TransactionController@postRefund');
 
-	Route::get('transactions/refund', 'TransactionController@getRefund');
-
-	Route::post('transactions/(:any)/process', 'TransactionController@postProcess');
-
-	Route::get('transactions/success', 'TransactionController@getProcess');
-
 	//@todo: temporary
 	//create an artisan command and get rid of this
 	Route::get('capture', 'TransactionController@capture');
