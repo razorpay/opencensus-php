@@ -17,35 +17,37 @@ class TransactionController extends BaseController
     {
         $merchant_id = BasicAuth::getInstance()->MerchantId();
 
-        $m = BasicAuth::getInstance()->Merchant();
-        
+        $merchant = BasicAuth::getInstance()->Merchant();
         if ($id === null) 
         {
-            $t = $m->transactions();
-
-            if (empty($t))
+            $transactions = $merchant->transactions;
+            if (empty($transactions))
             {
                 return Response::json(array());
             }
             else
             {
-                return Response::json($t);
+                return Response::json($transactions);
             }
         }
         else 
         {
-            $t = Transaction::where('id', '=', $id)->first();
-        
-            if ($t === null)
+            $transactionObject = new Transaction;
+            $transaction=$transactionObject->retrieve($id);
+            if ($transaction === null)
             {
                 return Response::error('404');
             }
             else
             {
-                if ($t->get_merchant() === $merchant_id)
-                    return Response::eloquent($t);
+                if ((int)$transaction->merchant->id === $merchant_id)
+                {
+                    return Response::json($transaction);
+                }
                 else
+                {
                     return Response::error('401');
+                }
             }
         }
 

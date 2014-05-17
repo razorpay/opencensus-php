@@ -256,4 +256,9 @@ class Transaction extends UuidDAL
         return $this->hasOne('Models\DAL\CardToken', 'token', 'token');
     }
 
+    public function merchant()
+    {
+        return $this->belongsTo('Models\DAL\Merchant');
+    }
+
 }
