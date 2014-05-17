@@ -1,20 +1,23 @@
-<?php set_time_limit(0); ?> 
+<?php 
+set_time_limit(0);
+$baseurl = "api.razorpay.com"	
+?> 
 
 <!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
 <HTML>
 <HEAD>
-	<TITLE>Sample Page-TranPortal VbyV</TITLE>
+	<TITLE>Testing Page-TranPortal VbyV</TITLE>
  </HEAD>
 
 <BODY>
 <table border="1" align="center"  width="100%" >
 	<tr>
-	<td align="left" width="90%"><font  size = 5 color = darkblue face = verdana ><b>Sample Page</td>
+	<td align="left" width="90%"><font  size = 5 color = darkblue face = verdana ><b>Testing Page</td>
 	<td align="right"width="10%"><IMG SRC="images/fss1.JPG" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
 	</tr>
 </table>
-<br><br>  
-<form method="post" id="txnform" action="http://d9c6bf091a1a64cb5678d8c1d5e7360f:@api.razorpay.com/transactions">	
+<br><br>
+<form method="post" id="txnform" action="http://d9c6bf091a1a64cb5678d8c1d5e7360f:@<?=$baseurl?>/transactions">	
 <table border="1" align="center"  width="300">
 	<tr>
 	<th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>
@@ -77,8 +80,12 @@
 	<tr>
 	<th colspan="50" bgcolor="brown" height="15"></th>
 	</tr>
+</form>	
 </table>
 <br><br>
+<div style="text-align:center"><a href="http://<?=$baseurl?>/capture">Test Capture</a><br/>
+Test Refund<form method="post" action="http://<?=$baseurl?>/transactions/refund"><input type="text" name="transaction_id" /><input type="submit" value="Refund"/></form></div>
+
 <table width="96%" border="0" cellspacing="0" cellpadding="0">
 <tr>
 	<td height="2" bgcolor="black" class="titleline"></td> 
@@ -90,7 +97,7 @@
 	<td align="right"width="10%"><IMG SRC="images/fss1.JPG" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
 	</tr>
 </table>
-</form>	
+
 </BODY>
 </HTML>
 <!-- Disclaimer:- Important Note in Sample Pages
