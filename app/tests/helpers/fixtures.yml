@@ -1,4 +1,5 @@
 Models\DAL\Merchant:
+  id: $string$string$string
   email: $string@$string.$string
   pwd: $string
   hash: $2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO
@@ -28,7 +29,6 @@ Models\DAL\Key:
     secret: 1
 
 Models\DAL\Transaction:
-    id: 4b66157a-daa9-11e3-a88f-3c077173
     merchant_id:
         type: Models\DAL\Merchant
     amount: 100
