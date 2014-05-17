@@ -46,6 +46,7 @@ class Transaction extends TestCase {
         switch($cardtype){
 
             //in case timeout is expected
+            // @todo This should be handled internally by transactioncontroller rather than here
             case "timeout":
                 try
                 {
@@ -53,8 +54,16 @@ class Transaction extends TestCase {
                 }
                 catch(Requests_Exception $e)
                 {
-                    $this->assertTrue(true);
-                    return true;
+                    //check if timeout has occured
+                    if(strpos($e->xdebug_message, 'Operation timed out'))
+                    {
+                        $this->assertTrue(true);
+                        return true;
+                    }
+
+                    $this->fail('Unhandled Exception: '.$e->xdebug_message);
+                    return false;
+                    
                 }
             break;
 
