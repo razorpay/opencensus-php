@@ -97,8 +97,8 @@ class Transaction
 
             //@todo: Fill errors on failure
             case TransactionStatus::FAILED:
-            $error = $this->fillErrorDetails($data, $txn);
             $this->updateTransactionFailed();
+            $txn = $this->fillErrorDetails($data, $txn);
             break;
 
             default:
@@ -136,6 +136,8 @@ class Transaction
 
     protected function fillErrorDetails($error, $txn)
     {
-        
+        $txn->error = $error;
+
+        return $txn;
     }
 }
