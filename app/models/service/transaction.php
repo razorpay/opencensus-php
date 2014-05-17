@@ -100,6 +100,8 @@ class Transaction extends Service
     {
         $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
 
+        if($txn_data->captured) return;
+
         $gateway = new GatewayManager();
 
         $status = $gateway->capture($data);
@@ -126,6 +128,11 @@ class Transaction extends Service
         else
         {
             $txn_data->setError($error);
+        }
+
+        if(! $txn_data->checkIfHold())
+        {
+            $this->capture($txn_data);
         }
 
         return $txn_data;

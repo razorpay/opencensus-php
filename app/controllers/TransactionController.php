@@ -116,6 +116,7 @@ class TransactionController extends BaseController
 
     /**
      * Captures transactions from the past 1 day
+     * 
      */
     
     public function capture()
@@ -130,6 +131,24 @@ class TransactionController extends BaseController
         }
 
         return Response::json($txn_array);
+    }
+
+    /**
+     * Captures a specific transaction which was put on hold earlier
+     * 
+     */
+    
+    public function postCapture()
+    {
+        $id = Input::get('transaction_id');
+
+        $txn_service = new Transaction();
+
+        $txn = $txn_service->retrieve($id);
+
+        $txn_service->capture($txn);
+
+        return Response::json($txn);
     }
 
     /**
