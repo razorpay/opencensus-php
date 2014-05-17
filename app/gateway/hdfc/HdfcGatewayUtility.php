@@ -81,7 +81,7 @@ class HdfcGatewayUtility
 
         // send the request and get response
         $response['response'] = self::postRequest($request);
-        
+
         $response['xml'] = $response['response']->body;
 
         self::parseResponseXml($response);
