@@ -94,8 +94,10 @@ class TransactionController extends BaseController
     /**
     * Refund a transaction.
     */
-    public function postRefund($id = NULL)
+    public function postRefund()
     {
+        $id= Input::get('transaction_id');
+
         $txn_service = new Transaction();
 
         $txn_data = $txn_service->retrieve($id);

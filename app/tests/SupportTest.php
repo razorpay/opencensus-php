@@ -74,7 +74,7 @@ class SupportTest extends Transaction {
     {
         //WHEN
         //call for refund of transactions
-        $response = $this->action('POST', 'TransactionController@postRefund',  array('id' => $id));
+        $response = $this->action('POST', 'TransactionController@postRefund',  array('transaction_id' => $id));
         $content=$response->getContent();
 
         //THEN
