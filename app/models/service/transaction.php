@@ -81,7 +81,10 @@ class Transaction extends Service
      */
 
     public function refund($txn_data = NULL)
-    {
+    {   
+        //Don't continue if already refunded
+        if($txn_data->refunded) return;
+
         $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
 
         $gateway = new GatewayManager();
@@ -98,9 +101,10 @@ class Transaction extends Service
 
     public function capture($txn_data = NULL)
     {
-        $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
-
+        //Don't continue if already captured
         if($txn_data->captured) return;
+
+        $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
 
         $gateway = new GatewayManager();
 

@@ -107,7 +107,7 @@ class TransactionController extends BaseController
         $merchant_id = BasicAuth::getInstance()->MerchantId();
 
         if ($merchant_id !== $txn_data->getMerchantId())
-            die("Jhootbolegasaale");
+            return Response::error('404');
 
         $txn_service->refund($txn_data);
         
