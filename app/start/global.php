@@ -78,11 +78,35 @@ Event::listen('transaction.new', function($txn_id)
 		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::OPEN);
 	});
 
+Event::listen('transaction.enroll', function()
+	{
+		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::ENROLLED);
+	});
+
 Event::listen('transaction.approve', function()
 	{
 		TransactionTrace::setTransactionStatus('approved');
 	});
 
+Event::listen('transaction.capture', function()
+	{
+		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::CAPTURED);
+	});
+
+Event::listen('transaction.refund', function()
+	{
+		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::REFUNDED);
+	});
+
+Event::listen('transaction.hold', function()
+	{
+		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::HOLD);
+	});
+
+Event::listen('transaction.fail', function()
+	{
+		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::FAILED);
+	});
 /*
 |--------------------------------------------------------------------------
 | Require The Filters File
