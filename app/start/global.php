@@ -85,21 +85,24 @@ Event::listen('transaction.enroll', function()
 
 Event::listen('transaction.approve', function()
 	{
-		TransactionTrace::setTransactionStatus('approved');
+		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::APPROVED);
 	});
 
-Event::listen('transaction.capture', function()
+Event::listen('transaction.capture', function($txn_id)
 	{
+		TransactionTrace::setTransactionId($txn_id);
 		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::CAPTURED);
 	});
 
-Event::listen('transaction.refund', function()
+Event::listen('transaction.refund', function($txn_id)
 	{
+		TransactionTrace::setTransactionId($txn_id);
 		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::REFUNDED);
 	});
 
-Event::listen('transaction.hold', function()
+Event::listen('transaction.hold', function($txn_id)
 	{
+		TransactionTrace::setTransactionId($txn_id);
 		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::HOLD);
 	});
 
