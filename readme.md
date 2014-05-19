@@ -18,3 +18,4 @@
 * Install php unit `sudo apt-get install phpunit`
 * Run `phpunit` in api root. Preferably run as `phpunit --debug` for better view of tests when running manually.
 * To test individual cards do `phpunit --filter testCard12` and so on for card 0 to 12.
+* In case you are on 12.04, see [this question](http://stackoverflow.com/questions/1528717/phpunit-require-once-error) on how to fix the PHPUnit install.
