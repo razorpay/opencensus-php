@@ -73,8 +73,25 @@ class Transaction
                     'card' => $card);
 
         $gateway = new GatewayManager();
+        $status;
+        $data;
+        
+        try{
+            list($status, $data) = $gateway->process($txnInfo);
+        }
+        catch(\Requests_Exception $e)
+        {   
+            //check if timeout has occured
+            if(strpos($e->xdebug_message, 'Operation timed out'))
+            {   
+                $status= TransactionStatus::TIMEOUT;
+                $data['code'] = "TIMEOUT";
+                $data['message'] = 'Request timed out';
+            }
+            else throw $e;         
+        }
 
-        list($status, $data) = $gateway->process($txnInfo);
+        
 
         switch ($status)
         {
@@ -97,6 +114,11 @@ class Transaction
 
             //@todo: Fill errors on failure
             case TransactionStatus::FAILED:
+            $this->updateTransactionFailed();
+            $txn = $this->fillErrorDetails($data, $txn);
+            break;
+
+            case TransactionStatus::TIMEOUT:
             $this->updateTransactionFailed();
             $txn = $this->fillErrorDetails($data, $txn);
             break;

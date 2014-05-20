@@ -16,4 +16,5 @@ class TransactionStatus
 	const CHARGEBACK = 'chargeback';
 	const SETTLEMENT_SENT = 'settlement_sent';
 	const SETTLED = 'settled';
+	const TIMEOUT = 'timeout';
 }
