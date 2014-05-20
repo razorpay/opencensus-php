@@ -23,9 +23,9 @@ class TransactionTrace extends Trace
         'transaction_id');
 
     protected static $fields = array(
-        'NEW_TRANSACTION' => array(
+        self::NEW_TRANSACTION => array(
             'status'),
-        'REFUND_SUCCESSFUL' => array(
+        self::REFUND_SUCCESSFUL => array(
             'status',
             'previous_status'),
         );
