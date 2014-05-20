@@ -71,45 +71,6 @@ App::down(function()
 	return Response::make("Be right back!", 503);
 });
 
-// event listeners for tracing purposes
-Event::listen('transaction.new', function($txn_id)
-	{
-		TransactionTrace::setTransactionId($txn_id);
-		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::OPEN);
-	});
-
-Event::listen('transaction.enroll', function()
-	{
-		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::ENROLLED);
-	});
-
-Event::listen('transaction.approve', function()
-	{
-		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::APPROVED);
-	});
-
-Event::listen('transaction.capture', function($txn_id)
-	{
-		TransactionTrace::setTransactionId($txn_id);
-		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::CAPTURED);
-	});
-
-Event::listen('transaction.refund', function($txn_id)
-	{
-		TransactionTrace::setTransactionId($txn_id);
-		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::REFUNDED);
-	});
-
-Event::listen('transaction.hold', function($txn_id)
-	{
-		TransactionTrace::setTransactionId($txn_id);
-		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::HOLD);
-	});
-
-Event::listen('transaction.fail', function()
-	{
-		TransactionTrace::setTransactionStatus(Models\Manager\TransactionStatus::FAILED);
-	});
 /*
 |--------------------------------------------------------------------------
 | Require The Filters File

@@ -30,7 +30,7 @@ class Trace extends Logger
     protected static $compulsoryFields = array();
 
     /**
-     * Values for compulsory fields required for each trace
+     * Values for compulsory fields
      *
      * @var array $compulsoryFieldValues Values for compulsory fields
      */
