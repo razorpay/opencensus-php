@@ -69,6 +69,26 @@ class Trace extends Logger
             });
     }
 
+    /**
+     * Updates compulsory as well as other values
+     *
+     * @param array $traceMessage
+     */
+    protected function updateAllValues($code, $traceMessage)
+    {
+        foreach($traceMessage as $key => $value)
+        {
+            if(in_array($key, static::$compulsoryFields))
+            {
+                $this->compulsoryFieldValues[$key] = $traceMessage[$key];
+            }
+            else if(in_array($key, static::$fields[$code]))
+            {
+                $this->values[$key] = $traceMessage[$key];
+            }
+        }
+    }
+
     public function addRecord($level, $message, array $context = array())
     {
         $context = array_merge($this->compulsoryFieldValues, $this->values);

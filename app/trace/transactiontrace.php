@@ -30,26 +30,6 @@ class TransactionTrace extends Trace
             'previous_status'),
         );
 
-    /**
-     * Updates compulsory as well as other values
-     *
-     * @param array $traceMessage
-     */
-    protected function updateAllValues($code, $traceMessage)
-    {
-        foreach($traceMessage as $key => $value)
-        {
-            if(in_array($key, static::$compulsoryFields))
-            {
-                $this->compulsoryFieldValues[$key] = $traceMessage[$key];
-            }
-            else if(in_array($key, static::$fields[$code]))
-            {
-                $this->values[$key] = $traceMessage[$key];
-            }
-        }
-    }
-
     public function debug($code, array $traceMessage = array())
     {
         $message = $traceMessage['message'];
