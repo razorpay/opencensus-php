@@ -1,142 +1,140 @@
 <?php
 
+namespace Trace;
+
 use Monolog\Logger;
+use Trace\Trace;
 
-class TransactionTrace extends Singleton
+class TransactionTrace extends Trace
 {
-    const COMPONENT = 'transaction';
-
     // string code for events
-    const REQUEST_FOR_NEW_TRANSACTION = 'REQUEST_FOR_NEW_TRANSACTION';
+    const NEW_TRANSACTION = 'NEW_TRANSACTION';
     const GATEWAY_HDFC_ACS_CALLBACK_SUCCESSFUL = 'GATEWAY_HDFC_ACS_CALLBACK_SUCCESSFUL';
     const GATEWAY_HDFC_ACS_REQUEST_TIMEOUT = 'GATEWAY_HDFC_ACS_REQUEST_TIMEOUT';
     const CARD_NOT_PROVIDED = 'CARD_NOT_PROVIDED';
     const MERCHANT_ID_MISMATCH = 'MERCHANT_ID_MISMATCH';
-    const REQUEST_FOR_REFUND = 'REQUEST_FOR_REFUND';
+    const REFUND_SUCCESSFUL = 'REFUND_SUCCESSFUL';
     const INVALID_TRANSACTION_ID = 'INVALID_TRANSACTION_ID';
 
-    /**
-     * Transaction id of the current process
-     *
-     * @var int $transactionId Transaction id
-     */
-    protected static $transactionId;
+    protected $component = 'transaction';
+
+    protected static $compulsoryFields = array(
+        'message',
+        'transaction_id');
+
+    protected static $fields = array(
+        'NEW_TRANSACTION' => array(
+            'status'),
+        'REFUND_SUCCESSFUL' => array(
+            'status',
+            'previous_status'),
+        );
 
     /**
-     * Status of the transaction
+     * Updates compulsory as well as other values
      *
-     * @var string $transactionStatus Transaction status
+     * @param array $traceMessage
      */
-    protected $transactionStatus;
-
-    /**
-     * Previous status of the transaction
-     *
-     * @var string $transactionPreviousStatus Transaction's previous status
-     */
-    protected $transactionPreviousStatus;
-
-    /**
-     * Request => Operation mapping
-     *
-     * @var array $operations Operation mapping
-     */
-    protected static $operations = array(
-        'POST' => array(
-            'transactions' => 'CREATE_TRANSACTION',
-            'transactions/*/refund' => 'REFUND_TRANSACTION',
-            'transactions/*/process' => 'PROCESS_TRANSACTION'),
-        'GET' => array(
-            'transactions' => 'RETRIEVE_TRANSACTIONS',
-            'transactions/*' => 'RETRIEVE_TRANSACTION'));
-
-    /**
-     * Operations for which the transaction id is to be updated
-     *
-     * @var array $updateTransactionOperations Transaction id update operations
-     */
-    protected static $updateTransactionOperations = array(
-        'REFUND_TRANSACTION',
-        'PROCESS_TRANSACTION',
-        'RETRIEVE_TRANSACTION');
-
-    protected $trace;
-
-    public function initialize()
+    protected function updateAllValues($code, $traceMessage)
     {
-        $operation = static::getOperation();
-        $this->trace = new Trace(static::COMPONENT, $operation);
-
-        if(in_array($operation, static::$updateTransactionOperations)) {
-            // grabs and uses transaction id from request url
-            $transactionId = \Request::segment(2);
-            static::setTransactionId($transactionId);
-        }
-    }
-
-    private static function getOperation()
-    {
-        $method = \Request::method();
-        foreach (static::$operations[$method] as $pattern => $operation) {
-            if(\Request::is($pattern))
+        foreach($traceMessage as $key => $value)
+        {
+            if(in_array($key, static::$compulsoryFields))
             {
-                return $operation;
+                $this->compulsoryFieldValues[$key] = $traceMessage[$key];
+            }
+            else if(in_array($key, static::$fields[$code]))
+            {
+                $this->values[$key] = $traceMessage[$key];
             }
         }
-        return false;
     }
 
-    public static function setTransactionId($id)
+    public function debug($code, array $traceMessage = array())
     {
-        static::$transactionId = $id;
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::DEBUG, $message);
     }
 
-    public static function getTransactionId($id)
+    public function info($code, array $traceMessage = array())
     {
-        return static::$transactionId;
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::INFO, $message);
     }
 
-    public static function setTransactionStatus($status)
+    public function notice($code, array $traceMessage = array())
     {
-        $instance = static::getInstance();
-        $instance->transactionPreviousStatus = $instance->transactionStatus;
-        $instance->transactionStatus = $status;
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::NOTICE, $message);
     }
 
-    public static function getTransactionStatus($status)
+    public function warning($code, array $traceMessage = array())
     {
-        $instance = static::getInstance();
-        return $instance->transactionStatus;
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::WARNING, $message);
     }
 
-    public static function setTransactionPreviousStatus($status)
+    public function error($code, array $traceMessage = array())
     {
-        $instance = static::getInstance();
-        $instance->transactionPreviousStatus = $status;
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::ERROR, $message);
     }
 
-    public static function getTransactionPreviousStatus($status)
+    public function critical($code, array $traceMessage = array())
     {
-        $instance = static::getInstance();
-        return $instance->transactionPreviousStatus;
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::CRITICAL, $message);
     }
 
-    public function addRecord($level, $message, $event)
+    public function alert($code, array $traceMessage = array())
     {
-        $instance = static::getInstance();
+        $message = $traceMessage['message'];
 
-        $context = array(
-            'object' => 'transaction',
-            'id' => static::$transactionId,
-            'status' => $instance->transactionStatus,
-            'previous_status' => $instance->transactionPreviousStatus,
-            'event' => $event);
+        unset($traceMessage['message']);
 
-        $this->trace->addRecord($level, $message, $context);
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::ALERT, $message);
     }
 
-    public function info($message, $event)
+    public function emergency($code, array $traceMessage = array())
     {
-        $this->addRecord(Logger::INFO, $message, $event);
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::EMERGENCY, $message);
     }
 }

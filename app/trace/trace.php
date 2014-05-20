@@ -1,14 +1,18 @@
 <?php
 
+namespace Trace;
+
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\JsonFormatter;
 
 class Trace extends Logger
 {
-    const OBJECT = "trace";
+    // used as channel for Monolog\Logger
+    const CHANNEL = "trace";
 
-    protected $logPath = '/home/abhi/tmp/rzpapi/transaction.log';
+    // path of file used for logging
+    const LOGPATH = '/home/abhi/tmp/rzpapi/transaction.log';
 
     /**
      * Name of the application component
@@ -19,23 +23,39 @@ class Trace extends Logger
     protected $component;
 
     /**
-     * Describes the operation for which trace is performed
+     * Fields required for each trace
      *
-     * @var string $traceCode Trace code
+     * @var array $compulsoryFields Compulsory fields
      */
-    protected $traceCode;
+    protected static $compulsoryFields = array();
 
-    public function __construct($component, $traceCode)
+    /**
+     * Values for compulsory fields required for each trace
+     *
+     * @var array $compulsoryFieldValues Values for compulsory fields
+     */
+    protected $compulsoryFieldValues = array();
+
+    /**
+     * Fields corresponding to a particular trace
+     *
+     * @var array $values Fields
+     */
+    protected static $fields = array();
+
+    /**
+     * Values corresponding to fields
+     *
+     * @var array $values Field values
+     */
+    protected $values = array();
+
+    public function __construct()
     {
-        $this->name = static::OBJECT;
-        $this->handlers = array();
-        $this->processors = array();
-
-        $this->component = $component;
-        $this->traceCode = $traceCode;
+        parent::__construct(static::CHANNEL);
 
         $formatter = new JsonFormatter();
-        $stream = new StreamHandler($this->logPath);
+        $stream = new StreamHandler(static::LOGPATH);
         $stream->setFormatter($formatter);
 
         $this->pushHandler($stream);
@@ -49,58 +69,10 @@ class Trace extends Logger
             });
     }
 
-    /**
-     * Adds a log record.
-     *
-     * @param  integer $level   The logging level
-     * @param  string  $message The log message
-     * @param  array   $context The log context
-     * @return Boolean Whether the record has been processed
-     */
     public function addRecord($level, $message, array $context = array())
     {
-        if (!$this->handlers) {
-            $this->pushHandler(new StreamHandler('php://stderr', static::DEBUG));
-        }
+        $context = array_merge($this->compulsoryFieldValues, $this->values);
 
-        if (!static::$timezone) {
-            static::$timezone = new \DateTimeZone(date_default_timezone_get() ?: 'UTC');
-        }
-
-        $record = array(
-            'object' => static::OBJECT,
-            'component' => $this->component,
-            'trace_code' => $this->traceCode,
-            'message' => (string) $message,
-            'context' => $context,
-            'level' => $level,
-            'level_name' => static::getLevelName($level),
-            'timestamp' => \DateTime::createFromFormat('U.u', sprintf('%.6F', microtime(true)), static::$timezone)->setTimezone(static::$timezone),
-            'extra' => array(),
-            //'channel' => $this->name,
-        );
-        // check if any handler will handle this message
-        $handlerKey = null;
-        foreach ($this->handlers as $key => $handler) {
-            if ($handler->isHandling($record)) {
-                $handlerKey = $key;
-                break;
-            }
-        }
-        // none found
-        if (null === $handlerKey) {
-            return false;
-        }
-
-        // found at least one, process message and dispatch it
-        foreach ($this->processors as $processor) {
-            $record = call_user_func($processor, $record);
-        }
-        while (isset($this->handlers[$handlerKey]) &&
-            false === $this->handlers[$handlerKey]->handle($record)) {
-            $handlerKey++;
-        }
-
-        return true;
+        parent::addRecord($level, $message, $context);
     }
 }
