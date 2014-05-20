@@ -28,7 +28,6 @@ class Transaction extends TestCase {
         $transaction = [
             'amount'          =>  '100',
             'currency'        =>  'INR',
-            'process'         =>  '1',
             'card' => array(
                 'number'     => $cards[$card_no]['PAN'],
                 'name'       => 'Harshil',
@@ -126,15 +125,19 @@ class Transaction extends TestCase {
             //check processed flag matches as in card.php
             //@todo shift to matching to actual error code rreturned once errors are implemented
             $output=json_decode($content);
-            $this->assertEquals($expected_response, $output->processed);
-            
+          
             //If expected response is to be successfull, do following sets of tests
             if($expected_response){
                 if(!$hold)
+                {
                     //By default transaction should be captured
-                    $this->assertTrue($output->captured);
+                    $this->assertEquals('captured', $output->status);
+                }  
                 else
-                    $this->assertEquals($output->captured, 0);
+                {
+                    //if hold is set to true, it stops at auth
+                    $this->assertEquals('auth', $output->status);
+                }
                 return $output;
             }
 

@@ -7,7 +7,7 @@ Models\DAL\Merchant:
 Models\DAL\Card:
     name: $string
     expiry_month: 01
-    expiry_year: 99
+    expiry_year: 1999
     cvv: 000
     type: visa
     country: IN
@@ -33,4 +33,4 @@ Models\DAL\Transaction:
         type: Models\DAL\Merchant
     amount: 100
     currency: INR
-    processed: 0
+    status: open

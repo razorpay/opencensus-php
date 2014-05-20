@@ -64,7 +64,7 @@ class SupportTest extends Transaction {
 
         //Check if transaction id matches, and captured sucessfully
         $this->assertEquals($capture->id, $id);
-        $this->assertTrue($capture->captured);
+        $this->assertEquals($capture->status, 'captured');
     }
 
     /**
@@ -84,7 +84,7 @@ class SupportTest extends Transaction {
 
         //Check if transaction id matches, and refunded sucessfully
         $this->assertEquals($refund->id, $id);
-        $this->assertTrue($refund->refunded);
+        $this->assertEquals($refund->status, 'refunded');
     }
 
 }
