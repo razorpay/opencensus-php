@@ -2,6 +2,7 @@
 
 namespace Trace;
 
+use Config;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\FilterHandler;
@@ -51,14 +52,17 @@ class Trace extends Logger
      */
     protected $values = array();
 
-    public function __construct($minLevelOrList = Logger::INFO)
+    public function __construct()
     {
         parent::__construct(static::CHANNEL);
 
         $formatter = new JsonFormatter();
+
         $stream = new StreamHandler(static::LOGPATH);
         $stream->setFormatter($formatter);
-        $filter = new FilterHandler($stream, $minLevelOrList);
+
+        $minLevel = Config::get('app.debug') ? Logger::DEBUG : Logger::INFO;
+        $filter = new FilterHandler($stream, $minLevel);
 
         $this->pushHandler($filter);
 
