@@ -10,7 +10,7 @@ class Card extends EntityManager
     protected static $createRules = array(
         'number'        => 'required|numeric|luhn',
         'expiry_month'  => 'required|month',
-        'expiry_year'   => 'required|numeric|digits_between:2,4',
+        'expiry_year'   => 'required|expiry_year',
         'cvv'           => 'required|numeric|digits:3',
         'name'          => 'required|alpha_space|max:100',
         'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',

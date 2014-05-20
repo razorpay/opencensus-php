@@ -50,3 +50,20 @@ Validator::extend('month', function($attribute, $value, $parameters)
 
 	return true;
 });
+
+Validator::extend('expiry_year', function($attribute, $value, $parameters)
+{
+	$year = $value;
+
+	if ((is_numeric($year) === false) or
+		(strlen($year) > 4))
+	{
+		return false;
+	}
+
+	$year = intval($year);
+
+	if ($year<date("Y")) return false;
+
+	return true;
+});
