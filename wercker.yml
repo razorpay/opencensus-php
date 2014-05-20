@@ -1,5 +1,5 @@
-- add-ssh-key:
-      keyname: bitbucket
+add-ssh-key:
+  - keyname: bitbucket
 box: wercker/php
 build:
     # The steps that will be executed on build
@@ -16,3 +16,5 @@ build:
       #- script:
       #    name: run unit tests
       #    code: phpunit
+
+      
