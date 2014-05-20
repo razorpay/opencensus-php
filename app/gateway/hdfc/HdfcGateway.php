@@ -570,7 +570,7 @@ class HdfcGateway extends BaseGateway
             $this->supportTxnRequest,
             $this->supportTxnResponse);
 
-        $error;
+        $error=array();
         if($this->supportTxnResponse['error'])
         {
             $error = HdfcGatewayErrorHandler::parseErrorInString($this->supportTxnResponse['error']['result']);

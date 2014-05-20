@@ -82,7 +82,7 @@ class Transaction
             return $data;
 
             case TransactionStatus::NOT_ENROLLED:
-            $txn->setProcessed($data['data']['processed']);
+            $txn->setStatus('auth');
             return $txn;
 
             //@todo: Update data on hold
