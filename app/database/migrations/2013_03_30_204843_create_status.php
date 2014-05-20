@@ -12,15 +12,7 @@ class CreateStatus extends Migration {
      */
     public function up()
     {
-        Schema::create('status', function(Blueprint $table){
-            $table->engine = 'InnoDB';
-
-            $table->integer('code')
-                  ->unsigned()
-                  ->primary();
-
-            $table->string('description', 500);
-        });
+        Schema::dropIfExists('status');
     }
 
     /**
@@ -30,7 +22,7 @@ class CreateStatus extends Migration {
      */
     public function down()
     {
-        Schema::drop('status');
+        Schema::dropIfExists('status');
     }
 
 }
