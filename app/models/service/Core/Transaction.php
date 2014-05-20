@@ -86,8 +86,8 @@ class Transaction
             return $txn;
 
             //@todo: Update data on hold
-            case TransactionStatus::HOLD:
-            $this->updateTransactionHold();
+            case TransactionStatus::AUTH:
+            $this->updateTransactionAuth();
             break;
 
             //@todo: Update data on captured
@@ -119,24 +119,29 @@ class Transaction
         ;
     }
 
-    protected function updateTransactionHold()
+    protected function updateTransactionAuth()
     {
-        $this->txn->updateStatus(TransactionStatus::HOLD);
+        $this->txn->setStatus(TransactionStatus::AUTH);
     }
 
     protected function updateTransactionCaptured()
     {
-        $this->txn->updateStatus(TransactionStatus::CAPTURED);
+        $this->txn->setStatus(TransactionStatus::CAPTURED);
     }
 
     protected function updateTransactionFailed()
     {
-        $this->txn->updateStatus(TransactionStatus::FAILED);
+        $this->txn->setStatus(TransactionStatus::FAILED);
+    }
+
+    protected function updateTransactionCaptureFailed()
+    {
+        $this->txn->setStatus(TransactionStatus::CAPTURE_FAILED);
     }
 
     protected function fillErrorDetails($error, $txn)
-    {
-        $txn->error = $error;
+    {   
+        $txn->setError($error);
 
         return $txn;
     }
