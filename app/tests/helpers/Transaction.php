@@ -8,8 +8,8 @@
 class Transaction extends TestCase {
     /**
      * Creates a transaction & tests it is corrrectly created
-     * @param $card_no The array index of card in cards.php to be used for transaction
-     * @param $hold If transaction is to be of hold type (not captured automatically)
+     * @param $card_no Numeric The array index of card in cards.php to be used for transaction
+     * @param $hold Boolean True if transaction is to be of hold type (not captured automatically)
      * @return created transaction object in json
      */
     protected function createTransaction($card_no, $hold=false)
