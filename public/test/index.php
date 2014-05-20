@@ -65,10 +65,6 @@ $baseurl = "api.razorpay.com"
 		<td><input type="text" name="amount" size="25" value="500"></td>
 		</tr>
 		<TR>
-		<TD colspan='40'>Process:</TD>
-		<td><input type="text" name="process" size="25" value="1"></td>
-		</tr>
-		<TR>
 		<TD colspan='40'>Hold:</TD>
 		<td>
 		<select name="hold">
