@@ -7,11 +7,6 @@ return [
 	'type' => 'timeout'
 	],
 	[
-	'PAN' => '4012001038443335',
-	'response' => 1,
-	'type' => 'CC'
-	],
-	[
 	'PAN' => '4012001038488884',
 	'response' => 0,
 	'type' => 'CC',
@@ -78,6 +73,11 @@ return [
 	],
 	[
 	'PAN' => '4012001037490014',
+	'response' => 1,
+	'type' => 'DC'
+	],
+	[
+	'PAN' => '4012001037141112',
 	'response' => 1,
 	'type' => 'DC'
 	]
