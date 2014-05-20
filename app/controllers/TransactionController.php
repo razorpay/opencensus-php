@@ -5,7 +5,6 @@ use Models\Service\BasicAuth;
 
 class TransactionController extends BaseController 
 {
-
     /**
     * Retrieves transaction details by `id`
     * Lists previous transactions if `id` not provided
