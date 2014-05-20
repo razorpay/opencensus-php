@@ -4,7 +4,9 @@ return [
 	[
 	'PAN' => '4012001036275556',
 	'response' => 0,
-	'type' => 'timeout'
+	'type' => 'CC',
+	'code' => "TIMEOUT",
+	'message' => "Request timed out"
 	],
 	[
 	'PAN' => '4012001038488884',

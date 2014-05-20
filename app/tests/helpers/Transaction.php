@@ -51,28 +51,6 @@ class Transaction extends TestCase {
     
         switch($cardtype){
 
-            //in case timeout is expected
-            // @todo This should be handled internally by transactioncontroller rather than here
-            case "timeout":
-                try
-                {
-                $response = $this->call('POST', '/transactions', $transaction);
-                }
-                catch(Requests_Exception $e)
-                {
-                    //check if timeout has occured
-                    if(strpos($e->xdebug_message, 'Operation timed out'))
-                    {
-                        $this->assertTrue(true);
-                        return true;
-                    }
-
-                    $this->fail('Unhandled Exception: '.$e->xdebug_message);
-                    return false;
-                    
-                }
-            break;
-
             //in case card is a CC (no secure code)
             case "CC":
                 $response = $this->call('POST', '/transactions', $transaction);
