@@ -4,6 +4,7 @@ namespace Trace;
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FilterHandler;
 use Monolog\Formatter\JsonFormatter;
 
 class Trace extends Logger
@@ -50,15 +51,16 @@ class Trace extends Logger
      */
     protected $values = array();
 
-    public function __construct()
+    public function __construct($minLevelOrList = Logger::INFO)
     {
         parent::__construct(static::CHANNEL);
 
         $formatter = new JsonFormatter();
         $stream = new StreamHandler(static::LOGPATH);
         $stream->setFormatter($formatter);
+        $filter = new FilterHandler($stream, $minLevelOrList);
 
-        $this->pushHandler($stream);
+        $this->pushHandler($filter);
 
         $this->pushProcessor(function($record)
             {
