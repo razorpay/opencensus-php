@@ -24,7 +24,7 @@ class CreateCards extends Migration {
 
             $table->string('expiry_month', 2);
 
-            $table->string('expiry_year', 2);
+            $table->string('expiry_year', 4);
 
             $table->string('last4', 4);
 

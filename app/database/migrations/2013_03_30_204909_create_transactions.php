@@ -24,51 +24,41 @@ class CreateTransactions  extends Migration {
             $table->integer('amount')
                   ->unsigned();
             
-            $table->string('status', 10);
+            $table->enum('status', array(
+                                        'open',
+                                        'auth',
+                                        'capture_failed',
+                                        'captured',
+                                        'refunded',
+                                        'settlement_sent',
+                                        'settled',
+                                        'failed'
+                                        ));
 
             $table->string('currency', 3)
                   ->default('INR');
 
-            $table->string('desc');
+            $table->string('description');
 
             $table->boolean('livemode');
 
             $table->string('token', 16)
                   ->unique()
                   ->nullable();
-            
-            $table->boolean('processed')
-                  ->default('0');
-
-            $table->boolean('captured')
-                  ->default('0');
-
-            $table->boolean('refunded')
-                  ->default('0');
-
-            $table->integer('status_code')
-                  ->unsigned()
-                  ->nullable();
-            
-            $table->string('bankresponse')
-                  ->nullable();
-
-            $table->binary('udf');
 
             $table->boolean('hold')
                   ->default('0');
-            
+
+            $table->string('error', 10);
+
+            $table->binary('udf');
+
             $table->timestamps();   // Adds created_at and updated_at columns to the table
 
             $table->foreign('merchant_id')
                   ->references('id')
                   ->on('merchants')
                   ->on_delete('restrict');
-
-            $table->foreign('status_code')
-                  ->references('code')
-                  ->on('status')
-                  ->on_delete('SET NULL');
 
             $table->foreign('token')
                   ->references('token')
@@ -85,9 +75,7 @@ class CreateTransactions  extends Migration {
     {
         Schema::table('transactions', function($table){
 
-            $table->dropForeign('transactions_merchant_id_foreign');
-        
-            $table->dropForeign('transactions_status_code_foreign');    
+            $table->dropForeign('transactions_merchant_id_foreign');   
 
             $table->dropForeign('transactions_token_foreign');
         });
