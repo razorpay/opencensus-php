@@ -416,8 +416,9 @@ class HdfcGateway extends BaseGateway
         // when we support multiple currencies
         // 
         $data['currencycode'] = self::INR_CODE;
- 
-        if ($txn['processed'] === 0)
+        
+        $data['action'] = HdfcGatewayAction::AUTH;
+        /*if ($txn['process'] === 0)
         {
             $data['action'] = HdfcGatewayAction::AUTH;
         }
@@ -428,7 +429,7 @@ class HdfcGateway extends BaseGateway
         else
         {
             throw new InvalidArgumentException('process should be 0 or 1');
-        }
+        }*/
     }
  
     protected function validateEnrollResponse()
@@ -569,9 +570,17 @@ class HdfcGateway extends BaseGateway
             $this->supportTxnRequest,
             $this->supportTxnResponse);
 
+        $error;
+        if($this->supportTxnResponse['error'])
+        {
+            $error = HdfcGatewayErrorHandler::parseErrorInString($this->supportTxnResponse['error']['result']);
+            if ($error === false)
+                    $error = HdfcGatewayErrorHandler::unknownError();
+        }
+        
         $status = $this->persistAfterSupportTxn('capture');
 
-        return $status;
+        return array($status, $error);
     }
 
     /**
