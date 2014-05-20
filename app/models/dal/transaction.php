@@ -15,8 +15,8 @@ class Transaction extends UuidDAL
         'created_lt'    => 'numeric|required_without:created',
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
-        'merchant_id'   => 'required',
-        'hold'          => 'in:1,0');
+        'merchant_id'   => 'required'
+        );
 
     protected $fillable = array(
         'merchant_id',
@@ -24,10 +24,9 @@ class Transaction extends UuidDAL
         'status',
         'amount',
         'currency',
-        'processed',
-        'desc',
+        'hold',
+        'description',
         'udf',
-        'hold'
         );
 
     protected $visible = array(
@@ -35,9 +34,8 @@ class Transaction extends UuidDAL
         'amount',
         'currency',
         'livemode',
-        'processed',
-        'captured',
-        'refunded',
+        'status',
+        'hold',
         'udf',
         'error',
         'created_at',
@@ -147,45 +145,25 @@ class Transaction extends UuidDAL
             throw new \InvalidArgumentException('No transaction id present');
     }
 
-    public static function fetchUncaptured($from_time = 86400)
-    {
-        return self::whereRaw('created_at > ? AND captured = 0 AND processed = 1', array(time() - $from_time))->get();
-    }
 
     public function getProcessed()
     {
-        return $this->getAttribute('processed');
+        return ($this->getAttribute('status')=='auth');
     }
 
-    public function setProcessed($processed)
-    {
-        $this->setAttribute('processed', (int)$processed);
-        $this->save();
-    }
 
     public function getCaptured()
     {
-        return $this->getAttribute('captured');
-    }
-
-    public function setCaptured($captured)
-    {
-        $this->setAttribute('captured', $captured);
-        $this->save();
+        return ($this->getAttribute('status')=='captured');
     }
 
     public function getRefunded()
     {
-        return $this->getAttribute('refunded');
+        return ($this->getAttribute('status')=='refunded');
     }
 
-    public function setRefunded($refunded)
-    {
-        $this->setAttribute('refunded', $refunded);
-        $this->save();
-    }
 
-    public function updateStatus($status)
+    public function setStatus($status)
     {
         $this->setAttribute('status', $status);
         $this->save();
@@ -251,7 +229,7 @@ class Transaction extends UuidDAL
     public static function updateProcessed($id)
     {
         $txn = static::where('id', $id)
-                    ->update(array('processed' => 1));
+                    ->update(array('status' => 'auth'));
     }
 
     public function card_token()
@@ -266,6 +244,8 @@ class Transaction extends UuidDAL
 
     public function setError($error = false)
     {
+        $this->setAttribute('error', $error['code']);
+        $this->save();
         $this->error = $error;
     }
 

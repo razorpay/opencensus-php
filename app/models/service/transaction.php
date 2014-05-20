@@ -55,15 +55,6 @@ class Transaction extends Service
         return $txn_data_arr;
     }
 
-    public function retrieveUncaptured($from_time = 86400)
-    {
-        $txn = new DAL\Transaction();
-
-        $txn_array = $txn->fetchUncaptured($from_time);
-
-        return $txn_array;
-    }
-
     public function retrieve($id = NULL)
     {
         Manager\Transaction::validateTransactionId($id);
@@ -83,7 +74,7 @@ class Transaction extends Service
     public function refund($txn_data = NULL)
     {   
         //Don't continue if already refunded
-        if($txn_data->refunded) return;
+        if($txn_data->getRefunded()) return;
 
         $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
 
@@ -91,7 +82,7 @@ class Transaction extends Service
 
         $status = $gateway->refund($data);
 
-        $txn_data->setRefunded($status);
+        if($status) $txn_data->setStatus('refunded');
     }
 
     /**
@@ -102,15 +93,20 @@ class Transaction extends Service
     public function capture($txn_data = NULL)
     {
         //Don't continue if already captured
-        if($txn_data->captured) return;
+        //if($txn_data->getCaptured()) return;
 
         $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
 
         $gateway = new GatewayManager();
 
-        $status = $gateway->capture($data);
+        list($status, $error) = $gateway->capture($data);
 
-        $txn_data->setCaptured($status);
+        if($status) $txn_data->setStatus('captured');
+        else
+        {
+            $txn_data->setStatus('capture_failed');
+            $txn_data->setError($error);
+        }
     }
 
     public function bankAcsCallback(array $input)
@@ -127,17 +123,18 @@ class Transaction extends Service
 
         if ($processed === true)
         {
-            $txn_data->setProcessed($processed);
+            $txn_data->setStatus('auth');
+            if(! $txn_data->checkIfHold())
+            {
+                $this->capture($txn_data);
+            }
         }
         else
-        {
+        {   
+            $txn_data->setStatus('failed');
             $txn_data->setError($error);
         }
 
-        if(! $txn_data->checkIfHold())
-        {
-            $this->capture($txn_data);
-        }
 
         return $txn_data;
     }

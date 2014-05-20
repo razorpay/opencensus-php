@@ -12,9 +12,9 @@ class Transaction extends EntityManager
         'currency'      =>  'required|max:3',
         'token'         =>  'required|alpha_num',
         'desc'          =>  'max:1000',
-        'process'       =>  'numeric|max:1|digits:1',
-        'udf'           =>  'required',
-        'hold'          =>  'in:1,0');
+        'hold'       =>  'numeric|max:1|digits:1',
+        'udf'           =>  'required'
+        );
 
     protected static $udfRules = array(
         'email'         =>  'required|email|max:250',
@@ -25,11 +25,9 @@ class Transaction extends EntityManager
     protected static $idRules = array(
         'id'            =>  'required|alpha_num|max:32');
 
-    protected static $generators = array('process', 'status');
+    protected static $generators = array('status');
 
     protected static $validators = array('currency', 'udf');
-
-    private $process_now = true;
 
     private function validateUdf($input)
     {
@@ -72,30 +70,19 @@ class Transaction extends EntityManager
         }
     }
 
-    public function generateProcess($input)
-    {
-        $this->process_now = (bool) $input['process'];
-        $this->setField('processed', 0);
-    }
-
     public function generateStatus($input)
     {
     	$this->setField('status', 'open');
     }
 
-    public function processNow()
+    public function getStatus()
     {
-        return $this->process_now;
+        return $this->getField('status');
     }
 
-    public function getProcessed()
+    public function setStatus($status)
     {
-        return $this->getField('processed');
-    }
-
-    public function setProcessed($processed)
-    {
-        $this->setField('processed', $processed);
+        $this->setField('status', $status);
     }
 
     public static function separateTokenTxnInput($input)
