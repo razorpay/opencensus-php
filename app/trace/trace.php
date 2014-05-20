@@ -95,4 +95,92 @@ class Trace extends Logger
 
         parent::addRecord($level, $message, $context);
     }
+
+    public function debug($code, array $traceMessage = array())
+    {
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::DEBUG, $message);
+    }
+
+    public function info($code, array $traceMessage = array())
+    {
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::INFO, $message);
+    }
+
+    public function notice($code, array $traceMessage = array())
+    {
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::NOTICE, $message);
+    }
+
+    public function warning($code, array $traceMessage = array())
+    {
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::WARNING, $message);
+    }
+
+    public function error($code, array $traceMessage = array())
+    {
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::ERROR, $message);
+    }
+
+    public function critical($code, array $traceMessage = array())
+    {
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::CRITICAL, $message);
+    }
+
+    public function alert($code, array $traceMessage = array())
+    {
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::ALERT, $message);
+    }
+
+    public function emergency($code, array $traceMessage = array())
+    {
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        $this->addRecord(Logger::EMERGENCY, $message);
+    }
 }
