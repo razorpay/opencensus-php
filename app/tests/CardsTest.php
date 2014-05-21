@@ -1,87 +1,39 @@
 <?php
-class CardsTest extends TestCase {
 
-    /**
-    *  Tests transaction for a particular card number
-    */
+/**
+ * Tests all cards in cards.php to ensure they return expected response,
+ * Purchase transactions are used, also tests if transactions are automatically 
+ * captured on successful transactions. Hold Transactions are tested in support test
+ * All test cases follow, GIVEN, WHEN, THEN structure
+ */
 
-    private function createTransaction($card_no)
+require_once('helpers/Transaction.php');
+use Laracasts\TestDummy\Factory;
+class CardsTest extends Transaction {
+
+    public function setUp()
     {
-        //GIVEN
-        
-        //create transaction object
-        $transaction = [
-            'amount'          =>  '100',
-            'currency'        =>  'INR',
-            'process'         =>  '1',
-            'card' => array(
-                'number'     => '',
-                'name'       => 'Harshil',
-                'expiry_month'    =>'12',
-                'expiry_year'     => '2014',
-                'cvv'             => '566',
-                'address_line1'   => '21, Rameshwar',
-                'address_line2'   => 'jaipurwa',
-                'address_city'    => 'jaipur',
-                'address_state'   =>  'Rajasathan',
-                'address_country' =>  'India',
-                'address_zip'     =>  '123345',
-            ),
-            'udf' => array(
-                'email'     =>  'lol@lko.com',
-                'contact'   =>  '991889902'
-            ),
-        ];
+        parent::setUp();
 
-        //load list of cards with expected responses for each
-        $cards=include('helpers/cards.php');        
-        $transaction['card']['number']=$cards[$card_no]['PAN'];
-        $expected_response=$cards[$card_no]['response'];
+        //Start DB transaction so as to rollback once done
+        DB::beginTransaction();
 
-        //WHEN
-        try 
-        {
-            //first request to /transactions route, returns form for submission to acs url
-            $crawler = $this->client->request('POST', '/transactions', $transaction);
-            
-            //get the form
-            $form = $crawler->selectButton('Submit')->form();
-
-            //submit to acs url
-            $form->setValues(array('TermUrl' => Config::get('app.url').'/transactions/callback'));
-            $uri = $form->getUri();
-            $method = $form->getMethod();
-            $values = $form->getValues();
-            $response = Requests::post($uri, array(), $values);
-
-            //crawl the repsonse to get callback form
-            $crawler = new \Symfony\Component\DomCrawler\Crawler('', $uri);
-            $crawler->addContent($response->body);
-            $form = $crawler->selectButton('Submit')->form();
-
-            //submit callback form
-            $uri = $form->getUri();
-            $method = $form->getMethod();
-            $values = $form->getValues();
-            $response = $this->call('POST', '/transactions/callback', $values);
-
-            //THEN
-            if($response->getContent()==$expected_response)
-            {
-                echo "Card ".$transaction['card']['number'].' successfull';
-            }
-            $this->assertEquals($expected_response, $response->getContent());
-        } 
-        catch (Exception $e) 
-        {
-            $this->fail('Card '.$transaction['card']['number'].' failed.');
-        }
-
+        //Seed the db with required data
+        Eloquent::unguard();
+        $key = Factory::create('Models\DAL\Key');
+        Eloquent::reguard();        
     }
 
+    public function tearDown()
+    {
+        //Undo DB Changes after test
+        DB::rollback();
+    }
+
+
     /**
-    * Tests for individual cards
-    */
+     * Tests for individual cards
+     */
 
     public function testCard0()
     {

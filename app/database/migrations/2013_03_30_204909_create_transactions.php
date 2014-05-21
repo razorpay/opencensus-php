@@ -5,86 +5,85 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateTransactions  extends Migration {
 
-	/**
-	 * Make changes to the database.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		Schema::create('transactions', function(Blueprint $table){
-			$table->engine = 'InnoDB';
-			
-			$table->string('id', 32)
-				  ->primary();
+    /**
+     * Make changes to the database.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('transactions', function(Blueprint $table){
+            $table->engine = 'InnoDB';
+            
+            $table->string('id', 32)
+                  ->primary();
 
-			$table->integer('merchant_id')
-				  ->unsigned();
+            $table->integer('merchant_id')
+                  ->unsigned();
 
-			$table->integer('amount')
-				  ->unsigned();
-			
-			$table->string('currency', 3)
-				  ->default('INR');
+            $table->integer('amount')
+                  ->unsigned();
+            
+            $table->enum('status', array(
+                                        'open',
+                                        'auth',
+                                        'capture_failed',
+                                        'captured',
+                                        'refunded',
+                                        'settlement_sent',
+                                        'settled',
+                                        'failed'
+                                        ));
 
-			$table->string('desc');
+            $table->string('currency', 3)
+                  ->default('INR');
 
-			$table->boolean('livemode');
+            $table->string('description');
 
-			$table->string('token', 16)
-				  ->unique()
-				  ->nullable();
-			
-			$table->boolean('processed')
-				  ->default('0');
+            $table->boolean('livemode');
 
-			$table->boolean('refunded')
-				  ->default('0');
+            $table->string('token', 16)
+                  ->unique()
+                  ->nullable();
 
-			$table->integer('status_code')
-				  ->unsigned()
-				  ->nullable();
-			
-			$table->string('bankresponse')
-				  ->nullable();
+            $table->boolean('hold')
+                  ->default('0');
 
-			$table->binary('udf');
-			
-			$table->timestamps();	// Adds created_at and updated_at columns to the table
+            $table->string('error', 10);
 
-			$table->foreign('merchant_id')
-				  ->references('id')
-				  ->on('merchants')
-				  ->on_delete('restrict');
+            $table->binary('udf');
 
-  			$table->foreign('status_code')
-				  ->references('code')
-				  ->on('status')
-				  ->on_delete('SET NULL');
 
-			$table->foreign('token')
-				  ->references('token')
-				  ->on('cardtokens');
-		});
-	}
+            // Adds created_at and updated_at columns to the table
+            $table->integer('created_at');  
+            $table->integer('updated_at');
 
-	/**
-	 * Revert the changes to the database.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
-		Schema::table('transactions', function($table){
+            $table->foreign('merchant_id')
+                  ->references('id')
+                  ->on('merchants')
+                  ->on_delete('restrict');
 
-			$table->dropForeign('transactions_merchant_id_foreign');
-		
-			$table->dropForeign('transactions_status_code_foreign');	
+            $table->foreign('token')
+                  ->references('token')
+                  ->on('cardtokens');
+        });
+    }
 
-			$table->dropForeign('transactions_token_foreign');
-		});
+    /**
+     * Revert the changes to the database.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('transactions', function($table){
 
-		Schema::drop('transactions');
-	}
+            $table->dropForeign('transactions_merchant_id_foreign');   
+
+            $table->dropForeign('transactions_token_foreign');
+        });
+
+        Schema::drop('transactions');
+    }
 
 }

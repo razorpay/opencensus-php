@@ -5,7 +5,6 @@ use Models\Service\BasicAuth;
 
 class TransactionController extends BaseController 
 {
-
     /**
     * Retrieves transaction details by `id`
     * Lists previous transactions if `id` not provided
@@ -13,40 +12,62 @@ class TransactionController extends BaseController
     * @param token (optional)
     *
     */
-    public function getIndex ($id = null)
-    {
+    public function getIndex ($param=NULL)
+    {   
         $merchant_id = BasicAuth::getInstance()->MerchantId();
-
-        $m = BasicAuth::getInstance()->Merchant();
+        $merchant = BasicAuth::getInstance()->Merchant();
         
-        if ($id === null) 
-        {
-            $t = $m->transactions();
+        $input = Input::all();
+        $input['merchant_id'] = $merchant_id;
 
-            if (empty($t))
-            {
-                return Response::json(array());
-            }
-            else
-            {
-                return Response::json($t);
-            }
-        }
-        else 
+        switch($param)
         {
-            $t = Transaction::where('id', '=', $id)->first();
-        
-            if ($t === null)
-            {
-                return Response::error('404');
-            }
-            else
-            {
-                if ($t->get_merchant() === $merchant_id)
-                    return Response::eloquent($t);
+            case 'uncaptured':
+                //uncaptured is same as auth
+                $param = 'auth';
+            case 'open':
+            case 'auth':
+            case 'captured':
+            case 'settled':
+                //For all above set the status parameter              
+                $input['status'] = $param;
+            case NULL:
+                //Common for all above 
+                $txn_service = new Transaction();
+
+                $txn_data= $txn_service->retrieveMultiple($input);
+
+                //dd($txn_data);
+
+                return Response::json($txn_data);
+            break;
+
+            //Case for checking if a valid UUID is given for transaction id
+            case (preg_match("/^[0-9a-f]{8}[0-9a-f]{4}[1-5][0-9a-f]{3}[89ab][0-9a-f]{3}[0-9a-f]{12}$/i", $param) ? true : false ) :
+                $transactionObject = new Transaction;
+                $transaction=$transactionObject->retrieve($param);
+                
+                if ($transaction === null)
+                {
+                    return Response::view('error.404', array(), 404);
+                }
                 else
-                    return Response::error('401');
-            }
+                {
+                    if ((int)$transaction->merchant->id === $merchant_id)
+                    {
+                        return Response::json($transaction);
+                    }
+                    else
+                    {
+                        return Response::view('error.401', array(), 401);
+                    }
+                }
+                break;
+
+            default:
+               return Response::view('error.401', array(), 401);
+               break;
+
         }
 
     }
@@ -60,7 +81,7 @@ class TransactionController extends BaseController
 
         $input['merchant_id'] = BasicAuth::getInstance()->MerchantId();
 
-        $txn_data = Transaction::getNewInstance()->create($input);
+        $txn_data = Transaction::getNewInstance()->process($input);
 
         if(isset($txn_data['callbackUrl']))
         {	
@@ -73,29 +94,12 @@ class TransactionController extends BaseController
     }
 
     /**
-     * Retrieve previous transactions.
-     */
-    public function getRetrieve()
-    {
-        $txn_service = new Transaction();
-
-        $input = Input::all();
-
-        list($txn_data, $err) = $txn_service->retrieveMultiple($input);
-
-        if ($err !== ERR::SUCCESS)
-        {
-            return ERR::handle_error();
-        }
-
-        return Response::json($txn_data);
-    }
-
-    /**
     * Refund a transaction.
     */
-    public function postRefund($id = NULL)
+    public function postRefund()
     {
+        $id= Input::get('transaction_id');
+
         $txn_service = new Transaction();
 
         $txn_data = $txn_service->retrieve($id);
@@ -103,11 +107,48 @@ class TransactionController extends BaseController
         $merchant_id = BasicAuth::getInstance()->MerchantId();
 
         if ($merchant_id !== $txn_data->getMerchantId())
-            die("Jhootbolegasaale");
+            return Response::view('error.404', array(), 404);
 
         $txn_service->refund($txn_data);
         
         return Response::json($txn_data);
+    }
+
+    /**
+     * Captures transactions from the past 1 day
+     * 
+     */
+    
+    public function capture()
+    {
+        $txn_service = new Transaction();
+
+        $txn_array = $txn_service->retrieveUncaptured();
+
+        foreach ($txn_array as $txn)
+        {
+            $txn_service->capture($txn);
+        }
+
+        return Response::json($txn_array);
+    }
+
+    /**
+     * Captures a specific transaction which was put on hold earlier
+     * 
+     */
+    
+    public function postCapture()
+    {
+        $id = Input::get('transaction_id');
+
+        $txn_service = new Transaction();
+
+        $txn = $txn_service->retrieve($id);
+
+        $txn_service->capture($txn);
+
+        return Response::json($txn);
     }
 
     /**

@@ -1,6 +1,6 @@
 #RazorPay API
 
-[![Build Status](https://api.shippable.com/projects/536e6f0a16866c6d01fea8ae/badge/master)](https://www.shippable.com/projects/536e6f0a16866c6d01fea8ae)
+[![wercker status](https://app.wercker.com/status/1d1fe880039df1e76548e43566a144bb/m "wercker status")](https://app.wercker.com/project/bykey/1d1fe880039df1e76548e43566a144bb)
 
 ##Set up instructions
 
@@ -18,3 +18,4 @@
 * Install php unit `sudo apt-get install phpunit`
 * Run `phpunit` in api root. Preferably run as `phpunit --debug` for better view of tests when running manually.
 * To test individual cards do `phpunit --filter testCard12` and so on for card 0 to 12.
+* In case you are on 12.04, see [this question](http://stackoverflow.com/questions/1528717/phpunit-require-once-error) on how to fix the PHPUnit install.

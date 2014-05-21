@@ -9,32 +9,36 @@ class Transaction extends UuidDAL
 
     protected $table = 'transactions';
 
-    private static $fetch_params_rules = array(
-        'created'       => 'numeric|required_without:from_created,to_created',
-        'created_gt'    => 'numeric|required_without:created',
-        'created_lt'    => 'numeric|required_without:created',
+    private static $fetch_param_rules = array(
+        'created'       => 'numeric',
+        'from_created'  => 'numeric',
+        'to_created'    => 'numeric',
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
-        'merchant_id'   => 'required');
+        'merchant_id'   => 'required',
+        'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled'
+        );
 
     protected $fillable = array(
         'merchant_id',
         'token',
+        'status',
         'amount',
         'currency',
-        'processed',
-        'desc',
+        'hold',
+        'description',
         'udf',
-        'id');
+        );
 
     protected $visible = array(
         'id',
         'amount',
         'currency',
         'livemode',
-        'refunded',
-        'processed',
+        'status',
+        'hold',
         'udf',
+        'error',
         'created_at',
         'updated_at'
         );
@@ -62,16 +66,10 @@ class Transaction extends UuidDAL
      */
     public static function fetch($param)
     {
-        if (! is_int($flag))
-        {
-            throw new \InvalidArgumentException('$flag is not an integer');
-        }
-
         if ($param === null)
         {
             throw new \InvalidArgumentException('$param not provided');
         }
-
         self::validateFetchParams($param);
 
         $cols = array();
@@ -83,23 +81,24 @@ class Transaction extends UuidDAL
 
         if (isset($param['created']))
         {
-            $query->where('created_at', '=', $created);
+            $query->where('created_at', '=', $param['created']);
         }
         else
         {
             if (isset($param['from_created'])) 
             {
-                $from_created = $param['from_created'];
-            
-                $txn_query = $txn_query->where('created_at', '>', $from_created);
+                $query = $query->where('created_at', '>', $param['from_created']);
             }
             
             if (isset($param['to_created']))
             {
-                $to_created = $param['to_created'];
-            
-                $txn_query = $txn_query->where('created_at', '<', $to_created);
+                $query = $query->where('created_at', '<', $param['to_created']);
             }
+        }
+
+        if(isset($param['status']))
+        {
+            $query = $query->where('status', '=', $param['status']);
         }
 
         if (isset($param['count']))
@@ -116,11 +115,11 @@ class Transaction extends UuidDAL
             $query->skip($param['skip']);
         }
 
-        return $query->with('cardToken', 'card')->get();
+        return $query->with('card_token.card')->get();
     }
 
     public static function validateFetchParams(array $param)
-    {
+    {   
         validate(self::$fetch_param_rules, $param);
     }
 
@@ -142,25 +141,27 @@ class Transaction extends UuidDAL
             throw new \InvalidArgumentException('No transaction id present');
     }
 
+
     public function getProcessed()
     {
-        return $this->getAttribute('processed');
+        return ($this->getAttribute('status')=='auth');
     }
 
-    public function setProcessed($processed)
+
+    public function getCaptured()
     {
-        $this->setAttribute('processed', $processed);
+        return ($this->getAttribute('status')=='captured');
     }
 
     public function getRefunded()
     {
-        return $this->getAttribute('refunded');
+        return ($this->getAttribute('status')=='refunded');
     }
 
-    public function setRefunded($refunded)
-    {
-        $this->setAttribute('refunded', $refunded);
 
+    public function setStatus($status)
+    {
+        $this->setAttribute('status', $status);
         $this->save();
     }
 
@@ -221,9 +222,32 @@ class Transaction extends UuidDAL
         return $this->hasOne('hdfc', 'trackid', 'id');
     }
 
+    public static function updateProcessed($id)
+    {
+        $txn = static::where('id', $id)
+                    ->update(array('status' => 'auth'));
+    }
+
     public function card_token()
     {
         return $this->hasOne('Models\DAL\CardToken', 'token', 'token');
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo('Models\DAL\Merchant');
+    }
+
+    public function setError($error = false)
+    {
+        $this->setAttribute('error', $error['code']);
+        $this->save();
+        $this->error = $error;
+    }
+
+    public function checkIfHold()
+    {
+        return $this->getAttribute('hold');
     }
 
 }

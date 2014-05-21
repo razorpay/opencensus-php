@@ -5,69 +5,80 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateHdfcGateway extends Migration {
 
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		Schema::create('hdfc', function(Blueprint $table){
-			$table->engine = 'InnoDB';
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('hdfc', function(Blueprint $table){
+            $table->engine = 'InnoDB';
 
-			$table->bigInteger('paymentid')
-				  ->unsigned();
+            $table->increments('id');
 
-			$table->string('action', 1);
+            $table->string('trackid', 32);
 
-			$table->string('trackid', 32);
+            $table->bigInteger('paymentid')
+                  ->unsigned()
+                  ->nullable();
 
-			$table->string('enroll_result', 255);
+            $table->string('action', 1);
 
-			$table->string('status', 50);
+            $table->string('enroll_result', 2);
 
-			$table->string('auth_result', 255)
-				  ->nullable();
+            $table->string('status', 50);
 
-			$table->string('eci', 2);
+            $table->string('auth_result', 255)
+                  ->nullable();
 
-			$table->string('auth', 6)
-				  ->nullable();
+            $table->string('eci', 2);
 
-			$table->string('ref', 12)
-				  ->nullable();
+            $table->string('auth', 6)
+                  ->nullable();
 
-			$table->string('avr', 3)
-				  ->nullable();
+            $table->string('ref', 12)
+                  ->nullable();
 
-			$table->string('postdate', 6)
-				  ->nullable();
+            $table->string('avr', 3)
+                  ->nullable();
 
-			$table->string('error_text', 255)
-				  ->nullable();
+            $table->string('postdate', 6)
+                  ->nullable();
 
-			$table->timestamps();
+            $table->string('error_code', 7)
+                  ->nullable();
 
-			$table->foreign('trackid')
-				  ->references('id')
-				  ->on('transactions')
-				  ->on_delete('restrict');
-		});
-	}
+            $table->string('error_text', 100)
+                  ->nullable();
 
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
-		Schema::table('hdfc', function($table){
+            $table->string('error_service')
+                  ->nullable();
 
-			$table->dropForeign('hdfc_trackid_foreign');
-		});
+            // Adds created_at and updated_at columns to the table
+            $table->integer('created_at');  
+            $table->integer('updated_at');
 
-		Schema::drop('hdfc');
-	}
+            $table->foreign('trackid')
+                  ->references('id')
+                  ->on('transactions')
+                  ->on_delete('restrict');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('hdfc', function($table){
+
+            $table->dropForeign('hdfc_trackid_foreign');
+        });
+
+        Schema::drop('hdfc');
+    }
 
 }

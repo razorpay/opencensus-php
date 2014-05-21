@@ -4,7 +4,7 @@ namespace Exceptions;
 
 class ServerErrorException extends RazorpayException
 {
-	$publicMessage;
+	protected $publicMessage;
 
     public function __construct($message, $code = 0 , Exception $previous = NULL)
     {

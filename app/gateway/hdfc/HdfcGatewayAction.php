@@ -6,6 +6,7 @@ class HdfcGatewayAction
 {
     const PURCHASE = 1;
     const REFUND = 2;
-    const HOLD = 4;
+    const AUTH = 4;
     const CAPTURE = 5;
+    const INQUIRY = 8;
 }

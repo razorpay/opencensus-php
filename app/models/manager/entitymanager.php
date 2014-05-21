@@ -205,7 +205,7 @@ class EntityManager
         if ((isset($this->field)) and 
             (! in_array($key, $this->field)))
         {
-            throw new \InvalidKeysException;
+            throw new \Exceptions\InvalidKeysException;
         }
 
         if (array_key_exists($key, $this->data))

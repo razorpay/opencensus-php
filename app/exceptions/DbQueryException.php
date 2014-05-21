@@ -21,14 +21,14 @@ class DbQueryException extends ServerErrorException
     	$message = 'Failed '. $this->data['operation'].' operation on '.$table.' table with attributes '.
     			   implode_assoc_array($attributes);
 
-        parent::__construct($message, 0, $previous);
+        parent::__construct($message, Status::DB_ERROR, $previous);
     }
 
     public function set(array $array)
     {
     	foreach ($array as $key => $value)
     	{
-    		if in_array($key, $this->fields)
+    		if (in_array($key, $this->fields))
     		{
     			$this->data['key'] = $value;
     		}

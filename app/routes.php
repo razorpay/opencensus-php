@@ -45,17 +45,17 @@ Route::group(array('before' => 'auth'), function()
 
 	Route::get('tokens/{token}', 'CardController@getRetrieve');
 
-	Route::get('transactions/{id}', 'TransactionController@getIndex');
+	Route::get('transactions/{param}', 'TransactionController@getIndex');
 
 	Route::get('transactions', 'TransactionController@getIndex');
 
-	Route::post('transactions/{transaction_id}/refund', 'TransactionController@postRefund');
+	Route::post('transactions/refund', 'TransactionController@postRefund');
 
-	Route::get('transactions/refund', 'TransactionController@getRefund');
+	Route::post('transactions/capture', 'TransactionController@postCapture');
 
-	Route::post('transactions/(:any)/process', 'TransactionController@postProcess');
-
-	Route::get('transactions/success', 'TransactionController@getProcess');
+	//@todo: temporary
+	//create an artisan command and get rid of this
+	Route::get('capture', 'TransactionController@capture');
 });
 
 	Route::post('transactions/callback', 'TransactionController@postCallback');
@@ -83,7 +83,7 @@ Route::get('/', function()
 
 Event::listen('404', function()
 {
-	return Response::error('404');
+    return Response::view('error.404', array(), 404);
 });
 
 Event::listen('500', function($exception)

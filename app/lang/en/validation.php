@@ -77,6 +77,7 @@ return array(
 	"address"          => "The :attribute is not a valid address",
 	"luhn"             => "The :attribute is not valid",
 	"month"            => "The :attribute is not a valid month",
+	"expiry_year"            => "The :attribute is invalid. Must be in the future",
 
 	/*
 	|--------------------------------------------------------------------------
