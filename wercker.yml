@@ -19,7 +19,7 @@ build:
           code: composer install --no-interaction --prefer-source
       - script:
           name: run unit tests
-          code: phpunit
+          code: phpunit --log-junit $WERCKER_REPORT_ARTIFACTS_DIR/junit.xml --coverage-html $WERCKER_REPORT_ARTIFACTS_DIR
     after-steps:
         - sherzberg/slack-notify:
             subdomain: razorpay
