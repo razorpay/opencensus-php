@@ -1,0 +1,24 @@
+box: wercker/php
+services:
+    - wercker/mysql
+build:
+    # The steps that will be executed on build
+    steps:
+      # A custom script step, name value is used in the UI
+      # and the code value contains the command that get executed
+      - script:
+          name: copy db config
+          code:  cp app/config/testing/database.wercker.php app/config/testing/database.php 
+      - script:
+          name: copy HDFC config
+          code: cp app/gateway/hdfc/HdfcGatewayConfig.wercker.php app/gateway/hdfc/HdfcGatewayConfig.php
+      - script:
+          name: install dependencies
+          code: composer install --no-interaction --prefer-source
+      - script:
+          name: run unit tests
+          code: phpunit
+      # Add more steps here:
+      #- script:
+      #    name: run unit tests
+      #    code: phpunit
