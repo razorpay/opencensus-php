@@ -52,7 +52,7 @@ class TransactionRetrieveTest extends TestCase {
 
         //Testing retrieval of specific transactions with /transactions/$id
         //GIVEN
-        $id=$transactions[0]->id;
+        $id=$transactions->data[0]->id;
 
         //WHEN
         $response = $this->call('GET', "/transactions/$id");
@@ -60,8 +60,34 @@ class TransactionRetrieveTest extends TestCase {
 
         //THEN
         $this->assertJson($content);
-        $transaction = json_decode($content, true);
-        $this->assertEquals($transaction['id'], $id);
+        $transaction = json_decode($content);
+        $this->assertEquals($transaction->id, $id);
+
+        //Testing retrieval of transactions with a specific status & count
+        //GIVEN
+        $status=$transactions->data[0]->status;
+
+        //WHEN
+        $response = $this->call('GET', "/transactions/".$status."?count=1");
+        $content = $response->getContent();
+
+        //THEN
+        $this->assertJson($content);
+        $transaction = json_decode($content);
+        $this->assertEquals($transaction->data[0]->id, $id);
+
+
+        //GIVEN
+        $created_at=$transactions->data[0]->created_at;
+
+        //WHEN
+        $response = $this->call('GET', "/transactions/?created=".$created_at);
+        $content = $response->getContent();
+
+        //THEN
+        $this->assertJson($content);
+        $transaction = json_decode($content);
+        $this->assertEquals($transaction->data[0]->id, $id);
     }
     
 }
