@@ -45,7 +45,7 @@ Route::group(array('before' => 'auth'), function()
 
 	Route::get('tokens/{token}', 'CardController@getRetrieve');
 
-	Route::get('transactions/{id}', 'TransactionController@getIndex');
+	Route::get('transactions/{param}', 'TransactionController@getIndex');
 
 	Route::get('transactions', 'TransactionController@getIndex');
 
@@ -83,7 +83,7 @@ Route::get('/', function()
 
 Event::listen('404', function()
 {
-	return Response::error('404');
+    return Response::view('error.404', array(), 404);
 });
 
 Event::listen('500', function($exception)
