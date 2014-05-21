@@ -1,6 +1,6 @@
 #RazorPay API
 
-[![Build Status](https://api.shippable.com/projects/536e6f0a16866c6d01fea8ae/badge/development)](https://www.shippable.com/projects/536e6f0a16866c6d01fea8ae)
+[![wercker status](https://app.wercker.com/status/1d1fe880039df1e76548e43566a144bb/m "wercker status")](https://app.wercker.com/project/bykey/1d1fe880039df1e76548e43566a144bb)
 
 ##Set up instructions
 
