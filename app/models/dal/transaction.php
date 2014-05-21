@@ -9,13 +9,14 @@ class Transaction extends UuidDAL
 
     protected $table = 'transactions';
 
-    private static $fetch_params_rules = array(
-        'created'       => 'numeric|required_without:from_created,to_created',
-        'created_gt'    => 'numeric|required_without:created',
-        'created_lt'    => 'numeric|required_without:created',
+    private static $fetch_param_rules = array(
+        'created'       => 'numeric',
+        'from_created'  => 'numeric',
+        'to_created'    => 'numeric',
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
-        'merchant_id'   => 'required'
+        'merchant_id'   => 'required',
+        'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled'
         );
 
     protected $fillable = array(
@@ -65,16 +66,10 @@ class Transaction extends UuidDAL
      */
     public static function fetch($param)
     {
-        if (! is_int($flag))
-        {
-            throw new \InvalidArgumentException('$flag is not an integer');
-        }
-
         if ($param === null)
         {
             throw new \InvalidArgumentException('$param not provided');
         }
-
         self::validateFetchParams($param);
 
         $cols = array();
@@ -86,23 +81,24 @@ class Transaction extends UuidDAL
 
         if (isset($param['created']))
         {
-            $query->where('created_at', '=', $created);
+            $query->where('created_at', '=', $param['created']);
         }
         else
         {
             if (isset($param['from_created'])) 
             {
-                $from_created = $param['from_created'];
-            
-                $txn_query = $txn_query->where('created_at', '>', $from_created);
+                $query = $query->where('created_at', '>', $param['from_created']);
             }
             
             if (isset($param['to_created']))
             {
-                $to_created = $param['to_created'];
-            
-                $txn_query = $txn_query->where('created_at', '<', $to_created);
+                $query = $query->where('created_at', '<', $param['to_created']);
             }
+        }
+
+        if(isset($param['status']))
+        {
+            $query = $query->where('status', '=', $param['status']);
         }
 
         if (isset($param['count']))
@@ -119,11 +115,11 @@ class Transaction extends UuidDAL
             $query->skip($param['skip']);
         }
 
-        return $query->with('cardToken', 'card')->get();
+        return $query->with('card_token.card')->get();
     }
 
     public static function validateFetchParams(array $param)
-    {
+    {   
         validate(self::$fetch_param_rules, $param);
     }
 

@@ -36,23 +36,12 @@ class Transaction extends Service
     public function retrieveMultiple(array $input)
     {
         $txn = new DAL\Transaction;
-
-        $txn->validateFetchParams($input);
-
-        $flag = DAL\Transaction::FETCH_WITH_CARD;
         
-        $txn_do_arr = $txn_db->fetch(null, $flag);
+        $txn_data_arr = $txn->fetch($input);
 
-        $txn_data_arr = array();
-        $txn_data_arr['count'] = count($txn_do_arr);
-        $txn_data_arr['data'] = array();
+        $count = count($txn_data_arr);
 
-        foreach ($txn_do_arr as $txn_do)
-        {
-            array_push($txn_data_arr['data'], $txn_do->toArray($flag));
-        }
-
-        return $txn_data_arr;
+        return array('count' => $count, 'data' => $txn_data_arr->toArray());
     }
 
     public function retrieve($id = NULL)
