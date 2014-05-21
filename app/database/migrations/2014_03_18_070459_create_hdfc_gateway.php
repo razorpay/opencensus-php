@@ -55,7 +55,9 @@ class CreateHdfcGateway extends Migration {
             $table->string('error_service')
                   ->nullable();
 
-            $table->timestamps();
+            // Adds created_at and updated_at columns to the table
+            $table->integer('created_at');  
+            $table->integer('updated_at');
 
             $table->foreign('trackid')
                   ->references('id')

@@ -63,7 +63,9 @@ class CreateCards extends Migration {
             $table->boolean('address_zip_check')
                   ->nullable();
 
-            $table->timestamps();
+            // Adds created_at and updated_at columns to the table
+            $table->integer('created_at');  
+            $table->integer('updated_at');
 
         });
     }

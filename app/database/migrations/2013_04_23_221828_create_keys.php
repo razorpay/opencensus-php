@@ -28,8 +28,10 @@ class CreateKeys extends Migration {
                   
             $table->boolean('active');
                   
-            $table->timestamps();    // Adds created_at and updated_at columns to the table
-
+            // Adds created_at and updated_at columns to the table
+            $table->integer('created_at');  
+            $table->integer('updated_at');
+            
             $table->foreign('merchant_id')
                   ->references('id')
                   ->on('merchants')

@@ -30,7 +30,9 @@ class CreateCardtokens extends Migration {
 
             $table->boolean('expired');
 
-            $table->timestamps();
+            // Adds created_at and updated_at columns to the table
+            $table->integer('created_at');  
+            $table->integer('updated_at');
 
             $table->foreign('card_id')
                   ->references('id')

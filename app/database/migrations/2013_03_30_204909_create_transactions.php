@@ -53,7 +53,10 @@ class CreateTransactions  extends Migration {
 
             $table->binary('udf');
 
-            $table->timestamps();   // Adds created_at and updated_at columns to the table
+
+            // Adds created_at and updated_at columns to the table
+            $table->integer('created_at');  
+            $table->integer('updated_at');
 
             $table->foreign('merchant_id')
                   ->references('id')

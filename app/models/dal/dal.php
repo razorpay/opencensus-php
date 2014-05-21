@@ -129,4 +129,9 @@ class DAL extends \Eloquent
 
         throw new DbQueryException($e);
     }
+
+    protected function getDateFormat()
+    {
+        return 'U';
+    }
 }
