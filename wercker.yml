@@ -10,10 +10,10 @@ build:
       # and the code value contains the command that get executed
       - script:
           name: copy db config
-          code:  cp app/config/testing/database.wercker.php app/config/testing/database.php 
+          code:  cp app/config/testing/database.php.wercker app/config/testing/database.php 
       - script:
           name: copy HDFC config
-          code: cp app/gateway/hdfc/HdfcGatewayConfig.wercker.php app/gateway/hdfc/HdfcGatewayConfig.php
+          code: cp app/gateway/hdfc/HdfcGatewayConfig.php.wercker app/gateway/hdfc/HdfcGatewayConfig.php
       - script:
           name: install dependencies
           code: composer install --no-interaction --prefer-source
