@@ -53,8 +53,8 @@ deploy:
       - script:
           name: start application
           code: ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan up)"
-      after-steps:
-        - sherzberg/slack-notify:
-            subdomain: razorpay
-            token: $SLACK_TOKEN
-            channel: general
+    after-steps:
+      - sherzberg/slack-notify:
+          subdomain: razorpay
+          token: $SLACK_TOKEN
+          channel: general
