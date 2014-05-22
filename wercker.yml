@@ -50,7 +50,7 @@ deploy:
           code: ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan down)"
       - script:
           name: copy with rsync over ssh
-          code: rsync -avz --force --delete --progress --exclude-from=$WERCKER_OUTPUT_DIR/.gitignore "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" $WERCKER_OUTPUT_DIR/ ubuntu@api.razorpay.com:/home/ubuntu/api/
+          code: rsync -avz --force --delete --progress --exclude-from=.gitignore "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" $WERCKER_OUTPUT_DIR/ ubuntu@api.razorpay.com:/home/ubuntu/api/
       - script:
           name: Install dependencies
           code: ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php composer.phar install --no-interaction)"
