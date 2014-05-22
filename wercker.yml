@@ -1,5 +1,3 @@
-add-ssh-key:
-  - keyname: bitbucket
 box: wercker/php
 services:
     - wercker/mysql
