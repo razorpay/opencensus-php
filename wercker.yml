@@ -37,29 +37,30 @@ deploy:
       - script:
           name: Create lease on AWS
           code: wget https://ac.razorpay.com/invite/$concierge_token
-      - mktemp:
-          envvar: PRIVATEKEY_PATH
       - create-file:
           name: write key
-          filename: $PRIVATEKEY_PATH
+          filename: /tmp/privatekey_rzp.pem
           content: $AWS_deploykey
           overwrite: true
           hide-from-log: true
       - script:
+          name: set private key permissions
+          code: chmod 600 /tmp/privatekey_rzp.pem
+      - script:
           name: Put application in maintenance mode
-          code: ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan down)"
+          code: ssh -i /tmp/privatekey_rzp.pem -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan down)"
       - script:
           name: copy with rsync over ssh
-          code: rsync -avz --force --delete --progress --exclude-from=.gitignore "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" $WERCKER_OUTPUT_DIR/ ubuntu@api.razorpay.com:/home/ubuntu/api/
+          code: rsync -avz --force --delete --progress --exclude-from=.gitignore "ssh -i /tmp/privatekey_rzp.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" $WERCKER_OUTPUT_DIR/ ubuntu@api.razorpay.com:/home/ubuntu/api/
       - script:
           name: Install dependencies
-          code: ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php composer.phar install --no-interaction)"
+          code: ssh -i /tmp/privatekey_rzp.pem -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php composer.phar install --no-interaction)"
       - script:
           name: Perform DB migrations
-          code: ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan migrate)"
+          code: ssh -i /tmp/privatekey_rzp.pem -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan migrate)"
       - script:
           name: start application
-          code: ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan up)"
+          code: ssh -i /tmp/privatekey_rzp.pem -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan up)"
     after-steps:
       - sherzberg/slack-notify:
           subdomain: razorpay
