@@ -21,10 +21,6 @@ build:
       - script:
           name: run unit tests
           code: phpunit
-      - script:
-          name: copy output for deployment
-          code: |-
-            rsync -avz --exclude '.git' "$WERCKER_SOURCE_DIR/" "$WERCKER_OUTPUT_DIR"
     after-steps:
         - sherzberg/slack-notify:
             subdomain: razorpay
@@ -51,7 +47,7 @@ deploy:
           code: ssh -i /tmp/privatekey_rzp.pem -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan down)"
       - script:
           name: copy with rsync over ssh
-          code: rsync -avz --force --delete --progress --exclude-from=.gitignore "ssh -i /tmp/privatekey_rzp.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" $WERCKER_OUTPUT_DIR/ ubuntu@api.razorpay.com:/home/ubuntu/api/
+          code: rsync -avz --force --delete --progress --exclude '.git/*' --exclude 'app/storage/*' --exclude-from=.gitignore -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" $WERCKER_SOURCE_DIR/ ubuntu@api.razorpay.com:/home/ubuntu/api/
       - script:
           name: Install dependencies
           code: ssh -i /tmp/privatekey_rzp.pem -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php composer.phar install --no-interaction)"
