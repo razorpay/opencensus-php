@@ -13,6 +13,9 @@ build:
           name: copy HDFC config
           code: cp app/gateway/hdfc/HdfcGatewayConfig.php.wercker app/gateway/hdfc/HdfcGatewayConfig.php
       - script:
+          name: set composer to use github oauth token
+          code: composer config -g github-oauth.github.com $github_token
+      - script:
           name: install dependencies
           code: composer install --no-interaction
       - script:
@@ -43,7 +46,7 @@ deploy:
           code: ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php artisan down)"
       - script:
           name: copy with rsync over ssh
-          code: rsync -avz -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" $WERCKER_OUTPUT_DIR/ ubuntu@api.razorpay.com:/home/ubuntu/api/
+          code: rsync -rltvzP -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" $WERCKER_OUTPUT_DIR/ ubuntu@api.razorpay.com:/home/ubuntu/api/
       - script:
           name: Regenerate autoload files
           code: ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no api.razorpay.com "(cd ~/api/ && php composer.phar dump-autoload)"
