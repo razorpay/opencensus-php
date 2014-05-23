@@ -8,6 +8,6 @@ return array(
   |--------------------------------------------------------------------------
   */
 
-  'logpath' => '/var/log/trace.log',
+  'logpath' => storage_path().'/logs/trace.log',
 
 );
