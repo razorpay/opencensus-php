@@ -13,9 +13,6 @@ class Trace extends Logger
     // used as channel for Monolog\Logger
     const CHANNEL = "trace";
 
-    // path of file used for logging
-    const LOGPATH = '/home/abhi/tmp/rzpapi/transaction.log';
-
     /**
      * Name of the application component
      * eg: transaction
@@ -58,7 +55,7 @@ class Trace extends Logger
 
         $formatter = new JsonFormatter();
 
-        $stream = new StreamHandler(static::LOGPATH);
+        $stream = new StreamHandler(Config::get('trace.logpath'));
         $stream->setFormatter($formatter);
 
         $minLevel = Config::get('app.debug') ? Logger::DEBUG : Logger::INFO;
