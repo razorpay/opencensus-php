@@ -12,11 +12,12 @@ class TransactionTrace extends Trace
     const TRANSACTION_CREATED               = 'TRANSACTION_CREATED';
     const TRANSACTION_CREATE_FAILED         = 'TRANSACTION_CREATE_FAILED';
     const TRANSACTION_AUTHED                = 'TRANSACTION_AUTHED';
-    const TRANSACTION_AUTH_FAILED           = 'TRANSACTION_AUTH_FAILED';
+    const TRANSACTION_FAILED                = 'TRANSACTION_FAILED';
     const TRANSACTION_REFUNDED              = 'TRANSACTION_REFUNDED';
     const TRANSACTION_REFUND_FAILED         = 'TRANSACTION_REFUND_FAILED';
     const TRANSACTION_CAPTURED              = 'TRANSACTION_CAPTURED';
     const TRANSACTION_CAPTURE_FAILED        = 'TRANSACTION_CAPTURE_FAILED';
+    const TRANSACTION_EXCEPTION             = 'TRANSACTION_EXCEPTION';
 
     protected $component = 'transaction';
 
@@ -45,7 +46,7 @@ class TransactionTrace extends Trace
             'status',
             'hold'
         ),
-        self::TRANSACTION_AUTH_FAILED           => array(
+        self::TRANSACTION_FAILED           => array(
             'id',
             'amount',
             'currency',
@@ -79,6 +80,14 @@ class TransactionTrace extends Trace
             'status'
         ),
         self::TRANSACTION_CAPTURE_FAILED    => array(
+            'id',
+            'amount',
+            'currency',
+            'livemode',
+            'status',
+            'error'
+        ),
+        self::TRANSACTION_EXCEPTION    => array(
             'id',
             'amount',
             'currency',

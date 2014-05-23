@@ -144,7 +144,7 @@ class Transaction extends Service
             $txn_data->setStatus('failed');
             $txn_data->setError($error);
             
-            $this->trace->error(TransactionTrace::TRANSACTION_AUTH_FAILED, $txn_data->toArray() + array('message' => 'Transaction Auth Failed'));
+            $this->trace->error(TransactionTrace::TRANSACTION_FAILED, $txn_data->toArray() + array('message' => 'Transaction Auth Failed'));
         }
 
 
