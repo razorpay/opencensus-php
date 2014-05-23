@@ -35,21 +35,21 @@ class Transaction extends EntityManager
 
         if (!is_array($udf))
         {
-            throw new \InvalidArgumentException('Not an array');
+            throw new \InvalidArgumentException('Transaction Exception: Udf not an array');
         }
 
         if (count($udf) > 15)
         {
-            throw new \InvalidArgumentException('keys greater than 15');
+            throw new \InvalidArgumentException('Transaction Exception: Udf keys greater than 15');
         }
 
         foreach ($udf as $key => $value)
         {
             if (is_array($value))
-                throw new \InvalidArgumentException('SHould not be an array');
+                throw new \InvalidArgumentException('Transaction Exception: Udf should not be an array');
 
             if (strlen($value) > 1024)
-                throw new \InvalidArgumentException('Value too large!');
+                throw new \InvalidArgumentException('Transaction Exception: Udf value too large!');
 
         }
 
@@ -66,7 +66,7 @@ class Transaction extends EntityManager
 
         if ($currency !== "INR")
         {
-            throw new \InvalidCurrencyException($currency);
+            throw new \InvalidCurrencyException('Transaction Exception: Invalid currency '.$currency);
         }
     }
 
@@ -98,7 +98,7 @@ class Transaction extends EntityManager
         $validation = \Validator::make(array('id' => $id), static::$idRules);
         if ($validation->fails())
         {
-            throw new \InvalidArgumentException($validation->messages());
+            throw new \InvalidArgumentException('Transaction Exception: '.$validation->messages());
         }
     }
 }

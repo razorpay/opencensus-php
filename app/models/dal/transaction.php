@@ -138,7 +138,7 @@ class Transaction extends UuidDAL
         if (! (NULL === $id))
             return self::findOrFail($id);
         else
-            throw new \InvalidArgumentException('No transaction id present');
+            throw new \InvalidArgumentException('Transaction Exception: No transaction id present');
     }
 
 
@@ -196,7 +196,7 @@ class Transaction extends UuidDAL
 
             if ($this->token === null)
             {
-                throw new \InvalidArgumentException('No card present');
+                throw new \InvalidArgumentException('Transaction Exception: No card present');
             }
 
             if ($token !== null)
@@ -206,7 +206,7 @@ class Transaction extends UuidDAL
             
             if ($card_do === null)
             {
-                throw new \UnexpectedValueException('No card do present to fetch card data');
+                throw new \UnexpectedValueException('Transaction Exception: No card do present to fetch card data');
             }
 
             $card_data = $card_do->getCardData();
@@ -240,7 +240,8 @@ class Transaction extends UuidDAL
 
     public function setError($error = false)
     {
-        $this->setAttribute('error', $error['code']);
+        if(isset($error['code'])) $this->setAttribute('error', $error['code']);
+        else $this->setAttribute('error', $error);
         $this->save();
         $this->error = $error;
     }

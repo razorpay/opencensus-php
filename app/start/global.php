@@ -51,7 +51,12 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 */
 
 App::error(function(Exception $exception, $code)
-{
+{	
+	if(strpos($exception->getMessage(), 'Transaction Error:')!=False)
+	{
+		$trace = new Trace\TransactionTrace();
+		$trace->info(TransactionTrace::TRANSACTION_EXCEPTION, array('message'=>$exception->message));
+	}
 	Log::error($exception);
 });
 
