@@ -25,8 +25,11 @@ class Transaction extends Service
     public function process(array $input)
     {
         $this->trace->info(TransactionTrace::NEW_TRANSACTION_REQUEST, $input + array('message' => 'New Transaction Requested'));
+        
         list($txn, $card) = $this->txn->create($input);
+        
         $this->trace->info(TransactionTrace::TRANSACTION_CREATED, $txn->toArray() + array('message' => 'New Transaction Created'));
+        
         $txn = $this->txn->process($txn, $card);
 
         if(!is_array($txn))
@@ -79,7 +82,7 @@ class Transaction extends Service
         }
         else
         {
-            $this->trace->info(TransactionTrace::TRANSACTION_REFUND_FAILED, $txn_data->toArray() + array('message' => 'Transaction Refund Request Failed'));
+            $this->trace->error(TransactionTrace::TRANSACTION_REFUND_FAILED, $txn_data->toArray() + array('message' => 'Transaction Refund Request Failed'));
         }
     }
 
@@ -108,7 +111,8 @@ class Transaction extends Service
         {
             $txn_data->setStatus('capture_failed');
             $txn_data->setError($error);
-            $this->trace->info(TransactionTrace::TRANSACTION_CAPTURE_FAILED, $txn_data->toArray() + array('message' => 'Transaction Capture Request Failed'));
+            
+            $this->trace->error(TransactionTrace::TRANSACTION_CAPTURE_FAILED, $txn_data->toArray() + array('message' => 'Transaction Capture Request Failed'));
         }
     }
 
@@ -127,7 +131,9 @@ class Transaction extends Service
         if ($processed === true)
         {
             $txn_data->setStatus('auth');
+            
             $this->trace->info(TransactionTrace::TRANSACTION_AUTHED, $txn_data->toArray() + array('message' => 'Transaction Auth Successfull'));
+            
             if(! $txn_data->checkIfHold())
             {
                 $this->capture($txn_data);
@@ -137,7 +143,8 @@ class Transaction extends Service
         {   
             $txn_data->setStatus('failed');
             $txn_data->setError($error);
-            $this->trace->info(TransactionTrace::TRANSACTION_AUTH_FAILED, $txn_data->toArray() + array('message' => 'Transaction Auth Failed'));
+            
+            $this->trace->error(TransactionTrace::TRANSACTION_AUTH_FAILED, $txn_data->toArray() + array('message' => 'Transaction Auth Failed'));
         }
 
 

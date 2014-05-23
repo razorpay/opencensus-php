@@ -7,6 +7,7 @@ use Models\Manager\TransactionStatus;
 use Models\DAL;
 use Gateway\GatewayManager;
 use Exceptions;
+use Trace\TransactionTrace;
 
 class Transaction
 {
@@ -14,6 +15,12 @@ class Transaction
 
     protected $card;
 
+    protected $trace;
+
+    public function __construct()
+    {
+        $this->trace = new TransactionTrace();
+    }
     /**
      * Creates an entry for a new transaction.
      */
@@ -25,6 +32,8 @@ class Transaction
         
         if (! array_key_exists('card', $input))
         {
+            $this->trace->error(TransactionTrace::TRANSACTION_CREATE_FAILED, $input + array('message' => 'Invalid Arguement Exception. Card not provided.'));
+        
             throw new \Exceptions\InvalidArgumentException('Card not provided');
         }
 
@@ -60,7 +69,7 @@ class Transaction
     {
         if (! ($txn instanceof DAL\Transaction))
         {
-            throw new Exceptions\InvalidArgumentException('Invalid transaction id');
+            throw new Exceptions\InvalidArgumentException('Transaction Exception: Invalid transaction id');
         }
 
         $this->txn = $txn;
@@ -82,7 +91,7 @@ class Transaction
         catch(\Requests_Exception $e)
         {   
             //check if timeout has occured
-            if(strpos($e->xdebug_message, 'Operation timed out'))
+            if(strpos($e->getMessage(), 'Operation timed out'))
             {   
                 $status= TransactionStatus::TIMEOUT;
                 $data['code'] = "TIMEOUT";
@@ -124,7 +133,7 @@ class Transaction
             break;
 
             default:
-            throw new \LogicException($status . ' is an invalid status');
+            throw new \LogicException('Transaction Exception: '.$status . ' is an invalid status');
         }
 
         return $txn;
@@ -144,11 +153,13 @@ class Transaction
     protected function updateTransactionAuth()
     {
         $this->txn->setStatus(TransactionStatus::AUTH);
+        $this->trace->info(TransactionTrace::TRANSACTION_AUTHED, $this->txn->toArray() + array('message' => 'Transaction Auth Successfull'));   
     }
 
     protected function updateTransactionCaptured()
     {
         $this->txn->setStatus(TransactionStatus::CAPTURED);
+        $this->trace->info(TransactionTrace::TRANSACTION_CAPTURED, $this->txn->toArray() + array('message' => 'Transaction Capture Successfull'));
     }
 
     protected function updateTransactionFailed()
@@ -164,7 +175,8 @@ class Transaction
     protected function fillErrorDetails($error, $txn)
     {   
         $txn->setError($error);
-
+        $this->trace->error(TransactionTrace::TRANSACTION_FAILED, $txn->toArray() + array('message' => 'Transaction Failed'));
+        
         return $txn;
     }
 }
