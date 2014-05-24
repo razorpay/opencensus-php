@@ -32,9 +32,7 @@ class Transaction
         
         if (! array_key_exists('card', $input))
         {
-            $this->trace->error(TransactionTrace::TRANSACTION_CREATE_FAILED, $input + array('message' => 'Invalid Arguement Exception. Card not provided.'));
-        
-            throw new \Exceptions\InvalidArgumentException('Card not provided');
+            throw new \Exceptions\InvalidArgumentException(' Transcation Exception: Card not provided');
         }
 
         list($card_input, $card_token_input) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
@@ -151,12 +149,16 @@ class Transaction
     protected function updateTransactionAuth()
     {
         $this->txn->setStatus(TransactionStatus::AUTH);
+
+        //Logging
         $this->trace->info(TransactionTrace::TRANSACTION_AUTHED, $this->txn->toArray() + array('message' => 'Transaction Auth Successfull'));   
     }
 
     protected function updateTransactionCaptured()
     {
         $this->txn->setStatus(TransactionStatus::CAPTURED);
+
+        //Logging
         $this->trace->info(TransactionTrace::TRANSACTION_CAPTURED, $this->txn->toArray() + array('message' => 'Transaction Capture Successfull'));
     }
 
@@ -173,6 +175,8 @@ class Transaction
     protected function fillErrorDetails($error, $txn)
     {   
         $txn->setError($error);
+
+        //Logging
         $this->trace->error(TransactionTrace::TRANSACTION_FAILED, $txn->toArray() + array('message' => 'Transaction Failed'));
         
         return $txn;

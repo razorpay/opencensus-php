@@ -24,10 +24,12 @@ class Transaction extends Service
      */
     public function process(array $input)
     {
+        //Logging
         $this->trace->info(TransactionTrace::NEW_TRANSACTION_REQUEST, $input + array('message' => 'New Transaction Requested'));
         
         list($txn, $card) = $this->txn->create($input);
         
+        //Logging
         $this->trace->info(TransactionTrace::TRANSACTION_CREATED, $txn->toArray() + array('message' => 'New Transaction Created'));
         
         $txn = $this->txn->process($txn, $card);
@@ -74,14 +76,19 @@ class Transaction extends Service
 
         $gateway = new GatewayManager();
 
-        $status = $gateway->refund($data);
+        list($status, $error) = $gateway->refund($data);
 
         if($status){
             $txn_data->setStatus('refunded');
+
+            //Logging
             $this->trace->info(TransactionTrace::TRANSACTION_REFUNDED, $txn_data->toArray() + array('message' => 'Transaction Refunded'));
         }
         else
-        {
+        {   
+            $txn_data->setError($error);
+
+            //Logging
             $this->trace->error(TransactionTrace::TRANSACTION_REFUND_FAILED, $txn_data->toArray() + array('message' => 'Transaction Refund Request Failed'));
         }
     }
@@ -105,6 +112,8 @@ class Transaction extends Service
         if($status)
         {
             $txn_data->setStatus('captured');
+
+            //Logging
             $this->trace->info(TransactionTrace::TRANSACTION_CAPTURED, $txn_data->toArray() + array('message' => 'Transaction Captured'));
         }
         else
@@ -112,6 +121,7 @@ class Transaction extends Service
             $txn_data->setStatus('capture_failed');
             $txn_data->setError($error);
             
+            //Logging
             $this->trace->error(TransactionTrace::TRANSACTION_CAPTURE_FAILED, $txn_data->toArray() + array('message' => 'Transaction Capture Request Failed'));
         }
     }
@@ -132,6 +142,7 @@ class Transaction extends Service
         {
             $txn_data->setStatus('auth');
             
+            //Logging
             $this->trace->info(TransactionTrace::TRANSACTION_AUTHED, $txn_data->toArray() + array('message' => 'Transaction Auth Successfull'));
             
             if(! $txn_data->checkIfHold())
@@ -144,6 +155,7 @@ class Transaction extends Service
             $txn_data->setStatus('failed');
             $txn_data->setError($error);
             
+            //Logging
             $this->trace->error(TransactionTrace::TRANSACTION_FAILED, $txn_data->toArray() + array('message' => 'Transaction Auth Failed'));
         }
 
