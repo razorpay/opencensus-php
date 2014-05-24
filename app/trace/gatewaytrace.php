@@ -17,10 +17,10 @@ class GatewayTrace extends Trace
     const ENROLLED_AUTH_REQUEST = 'ENROLLED_AUTH_REQUEST';
     const ENROLLED_AUTH_RESPONSE = 'ENROLLED_AUTH_RESPONSE';
     const ENROLLED_AUTH_ERROR = 'ENROLLED_AUTH_ERROR';
-    const CARD_ENROLLED = 'CARD_ENROLLED';
-    const GATEWAY_ACS_CALLBACK_SUCCESSFUL = 'GATEWAY_HDFC_ACS_CALLBACK_SUCCESSFUL';
-    const GATEWAY_ACS_REQUEST_TIMEOUT = 'GATEWAY_HDFC_ACS_REQUEST_TIMEOUT';
-    const TRACKID_MISMATCH = 'TRACKID_MISMATCH';
+    const SUPPORT_REQUEST = 'SUPPORT_REQUEST';
+    const SUPPORT_RESPONSE = 'SUPPORT_RESPONSE';
+    const SUPPORT_ERROR = 'SUPPORT_ERROR';
+    
 
     protected $component = 'gateway';
 
@@ -71,10 +71,20 @@ class GatewayTrace extends Trace
             'data',
             'error'
         ),
-        self::CARD_ENROLLED => array(),
-        self::GATEWAY_ACS_CALLBACK_SUCCESSFUL => array(),
-        self::GATEWAY_ACS_REQUEST_TIMEOUT => array(),
-        self::TRACKID_MISMATCH => array(
-            'response_track_id'),
-        );
+        self::SUPPORT_REQUEST => array(
+            'url',
+            'type',
+            'data'
+        ),
+        self::SUPPORT_RESPONSE => array(
+            'type',
+            'data'
+        ),
+        self::SUPPORT_ERROR => array(
+            'type',
+            'data',
+            'error'
+        ),
+        
+    );
 }
