@@ -25,12 +25,12 @@ class Transaction extends Service
     public function process(array $input)
     {
         //Logging
-        $this->trace->info(TransactionTrace::NEW_TRANSACTION_REQUEST, $input + array('message' => 'New Transaction Requested'));
+        $this->trace->debug(TransactionTrace::NEW_TRANSACTION_REQUEST, $input + array('message' => 'New Transaction Requested'));
         
         list($txn, $card) = $this->txn->create($input);
         
         //Logging
-        $this->trace->info(TransactionTrace::TRANSACTION_CREATED, $txn->toArray() + array('message' => 'New Transaction Created'));
+        $this->trace->debug(TransactionTrace::TRANSACTION_CREATED, $txn->toArray() + array('message' => 'New Transaction Created'));
         
         $txn = $this->txn->process($txn, $card);
 
