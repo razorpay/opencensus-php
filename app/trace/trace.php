@@ -79,6 +79,9 @@ class Trace extends Logger
      */
     protected function updateAllValues($code, $traceMessage)
     {
+        $this->compulsoryFieldValues = array();
+        $this->values = array();
+
         foreach($traceMessage as $key => $value)
         {
             if(in_array($key, static::$compulsoryFields))
