@@ -27,6 +27,7 @@ namespace Gateway\HdfcGateway;
 use Gateway\BaseGateway;
 use Exceptions\DbQueryException;
 use Exceptions\InvalidArgumentException;
+use Trace\GatewayTrace;
  
 class HdfcGateway extends BaseGateway
 {
@@ -178,6 +179,11 @@ class HdfcGateway extends BaseGateway
         'data' => array(),
         'error' => array());
 
+    protected $stripFieldsList = array(
+        'password', 'amt', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
+        'PAReq', 'zip', 'addr', 'PaRes'
+    );
+
     /**
      * For ENROLLED card cases, we submit a form to bank ACS
      * which redirects back to this url (on our server) after
@@ -195,6 +201,7 @@ class HdfcGateway extends BaseGateway
  
     public function __construct()
     {
+        parent::__construct();
         $this->callbackUrl=\URL::to('transactions/callback');
     }
 
@@ -229,7 +236,9 @@ class HdfcGateway extends BaseGateway
                 $error = HdfcGatewayErrorHandler::parseErrorInString($this->enrollResponse['data']['result']);
                 if ($error === false)
                     $error = HdfcGatewayErrorHandler::unknownError();
- 
+                
+                $this->trace->error(GatewayTrace::ENROLL_ERROR, array('message' => "Enrollement Error", 'error' => $error));
+
                 return array('failed', $error);
             }
         }
@@ -247,15 +256,14 @@ class HdfcGateway extends BaseGateway
  
         if (count($invalid_keys) !== 0)
         {
-            throw new Exceptions\InvalidKeysException($invalid_keys);
+            throw new Exceptions\InvalidKeysException('Gateway Exception: '.$invalid_keys);
         }
  
         $validation = \Validator::make($input, $this->bankAcsResponseRules);
  
         if ($validation->fails()) 
         {
-            var_dump($validation->messages()->all());die();
-            throw new InvalidArgumentException('d');
+            throw new InvalidArgumentException('Gateway Exception: Invalid Arguements '.$validation->messages()->all());
         }
  
         $this->model = HdfcGatewayDal::findOrFail($input['MD']);
@@ -279,17 +287,20 @@ class HdfcGateway extends BaseGateway
     {
         if ((int) $this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
         {
-            throw new \InvalidArgumentException('Result not valid');
+            throw new \InvalidArgumentException('Gateway Exception: Result not valid');
         }
         else if ($this->model->status !== 'VERES Received')
         {
-            throw new \InvalidArgumentException('Status not valid');
+            throw new \InvalidArgumentException('Gateway Exception: Status not valid');
         }
  
         $data = &$this->authEnrolledRequest['data'];
  
         list($data['id'], $data['password']) = $this->getCredentials();
- 
+        
+        $log_content = $this->stripSensitive($this->authEnrolledRequest) + array('message'=>'Auth request sent for enrolled card');
+        $this->trace->info(GatewayTrace::ENROLLED_AUTH_REQUEST, $log_content);
+
         $this->runRequestResponseFlow(
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
@@ -309,7 +320,10 @@ class HdfcGateway extends BaseGateway
     {
         // Fields to be sent to HDFC gateway for card-enroll
         $this->createEnrollRequestFields($input);
- 
+
+        $log_content = $this->stripSensitive($this->enrollRequest) + array('message'=>'Enrollment request sent');
+        $this->trace->info(GatewayTrace::ENROLL_REQUEST, $log_content);
+
         $this->runRequestResponseFlow(
             $this->enrollRequest,
             $this->enrollResponse);
@@ -320,7 +334,10 @@ class HdfcGateway extends BaseGateway
             (HdfcGatewayResult::isEnrollSuccess($this->enrollResponse) === false))
         {
             $error = HdfcGatewayErrorHandler::translateEnrollError($this->enrollResponse);
- 
+            
+            $log_content = $this->stripSensitive($this->enrollResponse) + array('message'=>'Enrollment request failed') + array('error'=> $error);
+            $this->trace->error(GatewayTrace::ENROLL_ERROR, $log_content);
+
             return array(false, $error);
         }
  
@@ -340,10 +357,14 @@ class HdfcGateway extends BaseGateway
         $data['addr'] = "";
 
         $this->authNotEnrolledRequest['data'] = $data;
- 
+        
+        $log_content = $this->stripSensitive($this->authNotEnrolledRequest) + array('message'=>'Not Enrolled request sent');
+        $this->trace->info(GatewayTrace::NOT_ENROLLED_REQUEST, $log_content);
+
         $this->runRequestResponseFlow(
             $this->authNotEnrolledRequest,
             $this->authNotEnrolledResponse);
+
 
         $this->model->persistAfterCCAuth(
                         $this->authNotEnrolledResponse['data']);
@@ -352,6 +373,16 @@ class HdfcGateway extends BaseGateway
 
         $notEnrollResponse['data']['processed'] = ($notEnrollResponse['data']['result'] == 'APPROVED') ? 1 : 0;
         
+        if($notEnrollResponse['data']['processed'])
+        {
+            $log_content = $this->stripSensitive($notEnrollResponse) + array('message'=>'Not Enrolled request successfull');
+            $this->trace->info(GatewayTrace::NOT_ENROLLED_RESPONSE, $log_content);
+        }
+        else
+        {
+            $log_content = $this->stripSensitive($notEnrollResponse) + array('message'=>'Not Enrolled request failed');
+            $this->trace->info(GatewayTrace::NOT_ENROLLED_FAILED, $log_content);
+        }
         return array('not enrolled', 
                      array(
                         'data' => $notEnrollResponse['data']
@@ -438,7 +469,7 @@ class HdfcGateway extends BaseGateway
  
         if ($trackid !== $this->id)
         {
-            throw new InvalidArgumentException('Track id do not match');
+            throw new InvalidArgumentException('Gateway Exception: Track id do not match');
         }
     }
 
@@ -449,7 +480,7 @@ class HdfcGateway extends BaseGateway
         if ($trackid !== $this->enrollRequest['data']['trackid'])
         {
             die();
-            throw new \InvalidArgumentException('Track id do not match');
+            throw new \InvalidArgumentException('Gateway Exception: Track id do not match');
         }
     }
  
@@ -460,12 +491,18 @@ class HdfcGateway extends BaseGateway
             $this->model = HdfcGatewayDal::persistAfterEnrollError(
                             $this->id,
                             $this->enrollResponse['error']);
+
+            $log_content = $this->stripSensitive($this->enrollResponse) + array('message'=>'Enrollment request failed');
+            $this->trace->error(GatewayTrace::ENROLL_ERROR, $log_content);
         }
         else
         {
             $this->model = HdfcGatewayDal::persistAfterEnroll(
                     $this->enrollRequest['data'],
                     $this->enrollResponse['data']);
+
+            $log_content = $this->stripSensitive($this->enrollResponse) + array('message'=>'Enrollment response');
+            $this->trace->info(GatewayTrace::ENROLL_RESPONSE, $log_content);
         }
     }
 
@@ -475,11 +512,17 @@ class HdfcGateway extends BaseGateway
         {
             $this->model->persistAfterDCAuthError($this->authEnrolledResponse['error']);
 
+            $log_content = $this->stripSensitive($this->authEnrolledResponse) + array('message'=>'Auth response for enrolled card');
+            $this->trace->error(GatewayTrace::ENROLLED_AUTH_ERROR, $log_content);
+
             return false;
         }
         else
         {
             $this->model->persistAfterDCAuth($this->authEnrolledResponse['data']);
+
+            $log_content = $this->stripSensitive($this->authEnrolledResponse) + array('message'=>'Auth error for enrolled card');
+            $this->trace->info(GatewayTrace::ENROLLED_AUTH_RESPONSE, $log_content);
 
             return true;
         }
@@ -620,5 +663,18 @@ class HdfcGateway extends BaseGateway
     public function void()
     {
         ;
+    }
+
+    /**
+     * Stips sensetive data before calling trace class to avoid sensitive data from logging
+     */
+    private function stripSensitive($content)
+    {   
+        $data=$content;
+        if(isset($data['data']))
+        {
+        $data['data'] = array_diff_key($data['data'], array_flip($this->stripFieldsList));
+        }   
+        return $data;
     }
 }
