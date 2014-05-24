@@ -52,10 +52,15 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 
 App::error(function(Exception $exception, $code)
 {	
-	if(strpos($exception->getMessage(), 'Transaction Error:')!=False)
+	if(strpos($exception->getMessage(), 'Transaction Exception:')!=False)
 	{
 		$trace = new Trace\TransactionTrace();
-		$trace->info(TransactionTrace::TRANSACTION_EXCEPTION, array('message'=>$exception->message));
+		$trace->error(TransactionTrace::TRANSACTION_EXCEPTION, array('message'=>$exception->getMessage, 'file'=>$exception->getFile()));
+	}
+	if(strpos($exception->getMessage(), 'Gateway Exception:')!=False)
+	{
+		$trace = new Trace\GatewayTrace();
+		$trace->error(GatewayTrace::GATEWAY_EXCEPTION, array('message'=>$exception->getMessage, 'file'=>$exception->getFile()));
 	}
 	Log::error($exception);
 });
