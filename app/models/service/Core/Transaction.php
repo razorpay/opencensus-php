@@ -91,7 +91,7 @@ class Transaction
         catch(\Requests_Exception $e)
         {   
             //check if timeout has occured
-            if(strpos($e->getMessage(), 'Operation timed out'))
+            if(strpos($e->getMessage(), 'Operation timed out') || strpos($e->getMessage(), 'Network is unreachable'))
             {   
                 $status= TransactionStatus::TIMEOUT;
                 $data['code'] = "TIMEOUT";
@@ -99,8 +99,6 @@ class Transaction
             }
             else throw $e;         
         }
-
-        
 
         switch ($status)
         {
