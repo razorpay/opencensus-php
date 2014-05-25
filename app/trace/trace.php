@@ -65,6 +65,29 @@ class Trace extends Logger
 
         $this->pushProcessor(function($record)
             {
+                unset($record['datetime']);
+
+                $timezone = new \DateTimeZone(date_default_timezone_get() ?: 'UTC');
+                $microtime = microtime(true);
+                $milliseconds = sprintf("%03d", round(($microtime - floor($microtime)) * 1000));
+                $date = \DateTime::createFromFormat('U.u', sprintf('%.6F', $microtime), $timezone);
+                $date->setTimezone($timezone);
+
+                $timestamp = $date->format('Y-m-d\TH:i:s') . '.' . $milliseconds;
+
+                // reordering record to bring timestamp to first position
+                $tmp = array();
+                $tmp['timestamp'] = $timestamp;
+                foreach($record as $key => $value)
+                {
+                    $tmp[$key] = $value;
+                }
+
+                return $tmp;
+            });
+
+        $this->pushProcessor(function($record)
+            {
                 $record['extra']['client_ip'] = \Request::getClientIp();
                 $record['extra']['server_ip'] = \Request::server('SERVER_ADDR');
 
