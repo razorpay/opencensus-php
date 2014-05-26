@@ -133,7 +133,7 @@ class HdfcGateway extends BaseGateway
  
     protected $authNotEnrolledResponse = array(
         'fields' =>  array(
-                        'result', 'amt', 'trackid', 'payid', 'ref', 'tranid', 'auth', 'avr', 'postdate'),
+                        'result', 'amt', 'trackid', 'ref', 'tranid', 'auth', 'avr', 'postdate'),
         'type' => 'auth_not_enrolled',
         'xml' => '',
         'data' => array(),
@@ -173,7 +173,7 @@ class HdfcGateway extends BaseGateway
 
     protected $supportTxnResponse = array(
         'fields' => array(
-            'error_text', 'trackid', 'payid', 'result', 'auth', 'amt', 'ref', 'postdate', 'avr'),
+            'error_text', 'trackid', 'tranid', 'result', 'auth', 'amt', 'ref', 'postdate', 'avr'),
         'type' => '',
         'xml' => '',
         'data' => array(),
@@ -312,7 +312,7 @@ class HdfcGateway extends BaseGateway
         $this->runRequestResponseFlow(
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
- 
+
         $this->persistAfterDCAuth();
     }
  

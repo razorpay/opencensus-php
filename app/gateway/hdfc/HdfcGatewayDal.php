@@ -50,6 +50,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
             'ref' => $data['ref'],
             'auth' => $data['auth'],
             'avr' => $data['avr'],
+            'paymentid' => $data['tranid'],
             'postdate' => $data['postdate']);
 
         $this->save();
@@ -83,7 +84,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
     {
         $attributes = array(
             'trackid' => $responseData['trackid'],
-            'paymentid' => $responseData['payid'],
+            'paymentid' => $responseData['tranid'],
             'action' => $requestData['action'],
             'status' => $responseData['result'],
             'ref' => $responseData['ref'],
