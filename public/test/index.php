@@ -100,11 +100,11 @@ $action_url=$merchant_id.':'.$hash.'@'.$baseurl;
 <br><br>
 <div style="text-align:center">
 <h3>Test Capture/Refund</h3>
-<form method="post" action="http://<?=$action_url?>/transactions/refund">
+<form method="post" action="http://<?=$baseurl?>/transactions/refund">
 <input type="text" name="transaction_id" placeholder="Enter transaction id to refund"/>
 <input type="submit" value="Refund"/>
 </form>
-<form method="post" action="http://<?=$action_url?>/transactions/capture">
+<form method="post" action="http://<?=$baseurl?>/transactions/capture">
 <input type="text" name="transaction_id" placeholder="Enter transaction id to capture"/>
 <input type="submit" value="Capture"/>
 </form>
