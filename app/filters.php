@@ -40,19 +40,41 @@ App::after(function($request, $response)
  */
 Route::filter('auth', function()
 {
-	$_SERVER['PHP_AUTH_USER'] = 'd9c6bf091a1a64cb5678d8c1d5e7360f';
-	if (isset($_SERVER['PHP_AUTH_USER']))
-	{
-		$key = $_SERVER['PHP_AUTH_USER'];
-
-		if (BasicAuth::getInstance()->verifySecret($key) == false)
+  
+	if (!isset($_SERVER['PHP_AUTH_USER']))
+	{	
+		if (isset($_SERVER['PHP_AUTH_PW']))
 		{
+			$key = $_SERVER['PHP_AUTH_PW'];
+
+			if (BasicAuth::getInstance()->verifySecret($key) == false)
+			{
+				return Response::view('error.401', array(), 401);
+			}
+		}
+		else
+		{
+			header("WWW-Authenticate: " ."Basic realm=\"Protected Area\"");
 			return Response::view('error.401', array(), 401);
 		}
 	}
 	else 
-	{
-		return Response::view('error.401', array(), 401);
+	{ 
+		$merchant_id = isset($_SERVER['PHP_AUTH_USER']);
+		
+		if (isset($_SERVER['PHP_AUTH_PW']))
+		{
+			$hash = $_SERVER['PHP_AUTH_PW'];
+			
+			if(BasicAuth::getInstance()->authenticate(array('id' => $merchant_id, 'hash' => $hash))==false)
+			{
+				return Response::view('error.401', array(), 401);
+			}
+		}
+		else
+		{
+			return Response::view('error.401', array(), 401);
+		}
 	}
 
 });
