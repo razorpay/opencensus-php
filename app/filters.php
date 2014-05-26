@@ -38,11 +38,17 @@ App::after(function($request, $response)
 /**
  * Only allows requests with secret keys to get through.
  */
-Route::filter('auth', function()
+Route::filter('auth', function($route, $request)
 {
-  
-	if (!isset($_SERVER['PHP_AUTH_USER']))
+	if (!isset($_SERVER['PHP_AUTH_PW']) && !isset($_SERVER['PHP_AUTH_USER']))
+	{
+		//Used by first request from browser thaty checks if HTTP AUTH is expected
+		return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
+	}
+
+	if (!isset($_SERVER['PHP_AUTH_USER']) || $_SERVER['PHP_AUTH_USER'] == '')
 	{	
+		// For private key based auth
 		if (isset($_SERVER['PHP_AUTH_PW']))
 		{
 			$key = $_SERVER['PHP_AUTH_PW'];
@@ -54,14 +60,13 @@ Route::filter('auth', function()
 		}
 		else
 		{
-			header("WWW-Authenticate: " ."Basic realm=\"Protected Area\"");
 			return Response::view('error.401', array(), 401);
 		}
 	}
 	else 
 	{ 
+		//For time based hash auth
 		$merchant_id = isset($_SERVER['PHP_AUTH_USER']);
-		
 		if (isset($_SERVER['PHP_AUTH_PW']))
 		{
 			$hash = $_SERVER['PHP_AUTH_PW'];
@@ -69,6 +74,13 @@ Route::filter('auth', function()
 			if(BasicAuth::getInstance()->authenticate(array('id' => $merchant_id, 'hash' => $hash))==false)
 			{
 				return Response::view('error.401', array(), 401);
+			}
+			else
+			{
+				//Change transaction to hold type if called by public key auth
+				if(isset($_POST['hold'])){
+					$request->merge(array('hold'=>1));
+				} 
 			}
 		}
 		else
