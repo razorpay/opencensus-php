@@ -251,4 +251,16 @@ class Transaction extends UuidDAL
         return ($this->getAttribute('hold') == '1');
     }
 
+    public function setCapturable($status = true)
+    {
+        $this->capturable = $status;
+    }
+
+    public function unsetAndGetCapturable()
+    {
+        $capturable = $this->capturable;
+        unset($this->capturable);
+        return $capturable;
+    }
+
 }

@@ -105,6 +105,8 @@ class Transaction
 
             case TransactionStatus::NOT_ENROLLED:
             $txn->setStatus('auth');
+            if (! $txn->getHold())
+                $txn->setCapturable(true);
             return $txn;
 
             //@todo: Update data on hold

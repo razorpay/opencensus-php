@@ -34,6 +34,9 @@ class Transaction extends Service
         
         $txn = $this->txn->process($txn, $card);
 
+        if ($txn instanceof \Models\DAL\Transaction && $txn->unsetAndGetCapturable())
+            $this->capture($txn);
+
         if(!is_array($txn))
             $txn = $txn->toArray();
 
