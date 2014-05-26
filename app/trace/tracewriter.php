@@ -6,7 +6,6 @@ use Config;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\FilterHandler;
-use Monolog\Handler\BufferHandler;
 use Monolog\Formatter\JsonFormatter;
 
 class TraceWriter extends Logger
