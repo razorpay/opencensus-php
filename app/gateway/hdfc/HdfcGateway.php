@@ -387,7 +387,7 @@ class HdfcGateway extends BaseGateway
         if($notEnrollResponse['data']['processed'])
         {
             //Logging
-            $log_content = $this->stripSensitive($notEnrollResponse) + array('message'=>'Not Enrolled request successfull');
+            $log_content = $this->stripSensitive($notEnrollResponse) + array('message'=>'Not Enrolled request successful');
             $this->trace->info(GatewayTrace::NOT_ENROLLED_RESPONSE, $log_content);
         }
         else
