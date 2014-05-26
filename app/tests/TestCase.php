@@ -33,6 +33,10 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase {
 
         //Enable filters
         Route::enableFilters();
+
+        //Auth
+        $_SERVER['PHP_AUTH_USER'] = '';
+        $_SERVER['PHP_AUTH_PW'] = 'd9c6bf091a1a64cb5678d8c1d5e7360f';
     }
 
 }
