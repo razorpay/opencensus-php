@@ -246,9 +246,9 @@ class Transaction extends UuidDAL
         $this->error = $error;
     }
 
-    public function checkIfHold()
+    public function getHold()
     {
-        return $this->getAttribute('hold');
+        return ($this->getAttribute('hold') == '1');
     }
 
 }

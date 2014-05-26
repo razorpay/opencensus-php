@@ -145,7 +145,7 @@ class Transaction extends Service
             //Logging
             $this->trace->info(TransactionTrace::TRANSACTION_AUTHED, $txn_data->toArray() + array('message' => 'Transaction Auth Successfull'));
             
-            if(! $txn_data->checkIfHold())
+            if(! $txn_data->getHold())
             {
                 $this->capture($txn_data);
             }
