@@ -258,7 +258,7 @@ class Transaction extends UuidDAL
 
     public function unsetAndGetCapturable()
     {
-        $capturable = $this->capturable;
+        $capturable = (isset($this->capturable)) ? $this->capturable : false;
         unset($this->capturable);
         return $capturable;
     }
