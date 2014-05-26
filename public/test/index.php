@@ -1,6 +1,15 @@
 <?php 
 set_time_limit(0);
-$baseurl = "api.razorpay.com"	
+$baseurl = "api.razorpay.com";
+
+$merchant_id=1;
+$time=time();
+$hash = hash_hmac('sha256', $time, 'd9c6bf091a1a64cb5678d8c1d5e7360f');
+$hash = $hash.$time;
+
+$action_url=$merchant_id.':'.$hash.'@'.$baseurl;
+
+
 ?> 
 
 <!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
@@ -17,7 +26,7 @@ $baseurl = "api.razorpay.com"
 	</tr>
 </table>
 <br><br>
-<form method="post" id="txnform" action="http://d9c6bf091a1a64cb5678d8c1d5e7360f:@<?=$baseurl?>/transactions">	
+<form method="post" id="txnform" action="http://<?=$action_url?>/transactions">	
 <table border="1" align="center"  width="300">
 	<tr>
 	<th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>
@@ -91,11 +100,11 @@ $baseurl = "api.razorpay.com"
 <br><br>
 <div style="text-align:center">
 <h3>Test Capture/Refund</h3>
-<form method="post" action="http://<?=$baseurl?>/transactions/refund">
+<form method="post" action="http://<?=$action_url?>/transactions/refund">
 <input type="text" name="transaction_id" placeholder="Enter transaction id to refund"/>
 <input type="submit" value="Refund"/>
 </form>
-<form method="post" action="http://<?=$baseurl?>/transactions/capture">
+<form method="post" action="http://<?=$action_url?>/transactions/capture">
 <input type="text" name="transaction_id" placeholder="Enter transaction id to capture"/>
 <input type="submit" value="Capture"/>
 </form>
