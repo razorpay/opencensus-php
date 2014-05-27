@@ -3,6 +3,7 @@
 namespace Trace;
 
 use Config;
+use Request;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\FilterHandler;
@@ -48,6 +49,14 @@ class TraceWriter extends Logger
                 }
 
                 return $tmp;
+            });
+
+        $this->pushProcessor(function($record)
+            {
+                $record['extra']['client_ip'] = Request::getClientIp();
+                $record['extra']['server_ip'] = Request::server('SERVER_ADDR');
+
+                return $record;
             });
     }
 }
