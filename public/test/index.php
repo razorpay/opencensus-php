@@ -97,13 +97,13 @@ $action_url=$merchant_id.':'.$hash.'@'.$baseurl;
 <br><br>
 <div style="text-align:center">
 <h3>Test Capture/Refund</h3>
-<form method="post" action="http://<?=$baseurl?>/transactions/refund">
-<input type="text" name="transaction_id" placeholder="Enter transaction id to refund"/>
-<input type="submit" value="Refund"/>
+<form name ="refund" method="post" action="http://<?=$action_url?>/transactions/">
+<input type="text" id="refund_id" placeholder="Enter transaction id to refund"/>
+<input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
-<form method="post" action="http://<?=$baseurl?>/transactions/capture">
-<input type="text" name="transaction_id" placeholder="Enter transaction id to capture"/>
-<input type="submit" value="Capture"/>
+<form name ="capture" method="post" action="http://<?=$action_url?>/transactions/">
+<input type="text" id="capture_id" placeholder="Enter transaction id to capture"/>
+<input type="submit" value="Capture" onClick="javascript:document.capture.action = document.capture.action + document.getElementById('capture_id').value +'/capture'; document.capture.submit(); return false;"/>
 </form>
 </div>
 
