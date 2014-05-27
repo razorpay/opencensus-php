@@ -12,13 +12,13 @@ class Transaction extends EntityManager
         'currency'      =>  'required|max:3',
         'token'         =>  'required|alpha_num',
         'desc'          =>  'max:1000',
-        'hold'       =>  'numeric|max:1|digits:1',
+        'hold'          =>  'numeric|max:1|digits:1',
         'udf'           =>  'required'
         );
 
     protected static $udfRules = array(
         'email'         =>  'required|email|max:250',
-        'contact'       =>  'required|numeric|digits_between:8:12');
+        'contact'       =>  'required|numeric|digits_between:8,12');
 
     //TODO
     //Change it to refundRules, include amount as well
@@ -27,9 +27,9 @@ class Transaction extends EntityManager
 
     protected static $generators = array('status');
 
-    protected static $validators = array('currency', 'udf');
+    protected static $createValidators = array('currency', 'udf');
 
-    private function validateUdf($input)
+    protected function validateUdf($input)
     {
         $udf = $input['udf'];
 
@@ -43,20 +43,16 @@ class Transaction extends EntityManager
             throw new \InvalidArgumentException('Transaction Exception: Udf keys greater than 15');
         }
 
-        foreach ($udf as $key => $value)
+        $validation = \Validator::make($udf, static::$udfRules);
+
+        if ($validation->fails())
         {
-            if (is_array($value))
-                throw new \InvalidArgumentException('Transaction Exception: Udf should not be an array');
-
-            if (strlen($value) > 1024)
-                throw new \InvalidArgumentException('Transaction Exception: Udf value too large!');
-
+            var_dump($validation->messages()->all()); die();
+            throw new \InvalidArgumentException('message');
         }
-
-
     }
 
-    private function validateCurrency($input)
+    protected function validateCurrency($input)
     {
         $currency = $input['currency'];
 
