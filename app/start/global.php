@@ -14,7 +14,7 @@
 ClassLoader::addDirectories(array(
 
 	app_path().'/commands',
-  app_path().'/trace',
+	app_path().'/trace',
 	app_path().'/controllers',
 	app_path().'/gateway',
 	app_path().'/models',
