@@ -44,7 +44,9 @@ class HdfcGatewayErrorHandler
 
         // Below error code is our custom one to handle unknow error cases 
         // returned from bank.
-        'RP00001'   => 'Invalid Error Code');
+        'RP00001'   => 'Invalid Error Code',
+        'RP00002'   => 'Uncaptured Transaction'
+        );
 
     /**
      * Maps error codes from HDFC Gateway to the 

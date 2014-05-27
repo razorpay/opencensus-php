@@ -73,6 +73,7 @@ class Transaction extends Service
     public function refund($txn_data = NULL)
     {   
         //Don't continue if already refunded
+
         if($txn_data->getRefunded())
         {
             $txn_data->setError([
@@ -81,7 +82,14 @@ class Transaction extends Service
             ]);
             return;
         }
-
+        if(! $txn_data->getCaptured())
+        {
+            $txn_data->setError([
+                'code' => 'RP00002',
+                'message' => 'Uncaptured Transaction'
+            ]);
+            return;
+        }
         $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
 
         $gateway = new GatewayManager();

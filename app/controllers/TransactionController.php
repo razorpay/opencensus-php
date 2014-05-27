@@ -96,12 +96,11 @@ class TransactionController extends BaseController
     /**
     * Refund a transaction.
     */
-    public function postRefund()
+    public function postRefund($id)
     {
-        $id= Input::get('transaction_id');
 
         $txn_service = new Transaction();
-
+        
         $txn_data = $txn_service->retrieve($id);
 
         $merchant_id = BasicAuth::getInstance()->MerchantId();
@@ -138,9 +137,8 @@ class TransactionController extends BaseController
      * 
      */
     
-    public function postCapture()
+    public function postCapture($id)
     {
-        $id = Input::get('transaction_id');
 
         $txn_service = new Transaction();
 

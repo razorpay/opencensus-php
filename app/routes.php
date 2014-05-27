@@ -49,9 +49,9 @@ Route::group(array('before' => 'auth'), function()
 
 	Route::get('transactions', 'TransactionController@getIndex');
 
-	Route::post('transactions/refund', 'TransactionController@postRefund');
+	Route::post('transactions/{id}/refund', 'TransactionController@postRefund');
 
-	Route::post('transactions/capture', 'TransactionController@postCapture');
+	Route::post('transactions/{id}/capture', 'TransactionController@postCapture');
 
 	//@todo: temporary
 	//create an artisan command and get rid of this
