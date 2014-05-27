@@ -2,16 +2,13 @@
 
 namespace Trace;
 
+use Queue;
 use Config;
 use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Handler\FilterHandler;
-use Monolog\Formatter\JsonFormatter;
+use Trace\TraceHandler;
 
-class Trace extends Logger
+class Trace
 {
-    // used as channel for Monolog\Logger
-    const CHANNEL = "trace";
 
     /**
      * Name of the application component
@@ -49,52 +46,6 @@ class Trace extends Logger
      */
     protected $values = array();
 
-    public function __construct()
-    {
-        parent::__construct(static::CHANNEL);
-
-        $formatter = new JsonFormatter();
-
-        $stream = new StreamHandler(Config::get('trace.logpath'));
-        $stream->setFormatter($formatter);
-
-        $minLevel = Config::get('app.debug') ? Logger::DEBUG : Logger::INFO;
-        $filter = new FilterHandler($stream, $minLevel);
-
-        $this->pushHandler($filter);
-
-        $this->pushProcessor(function($record)
-            {
-                unset($record['datetime']);
-
-                $timezone = new \DateTimeZone(date_default_timezone_get() ?: 'UTC');
-                $microtime = microtime(true);
-                $milliseconds = sprintf("%03d", round(($microtime - floor($microtime)) * 1000));
-                $date = \DateTime::createFromFormat('U.u', sprintf('%.6F', $microtime), $timezone);
-                $date->setTimezone($timezone);
-
-                $timestamp = $date->format('Y-m-d\TH:i:s') . '.' . $milliseconds;
-
-                // reordering record to bring timestamp to first position
-                $tmp = array();
-                $tmp['timestamp'] = $timestamp;
-                foreach($record as $key => $value)
-                {
-                    $tmp[$key] = $value;
-                }
-
-                return $tmp;
-            });
-
-        $this->pushProcessor(function($record)
-            {
-                $record['extra']['client_ip'] = \Request::getClientIp();
-                $record['extra']['server_ip'] = \Request::server('SERVER_ADDR');
-
-                return $record;
-            });
-    }
-
     /**
      * Updates compulsory as well as other values
      *
@@ -118,11 +69,14 @@ class Trace extends Logger
         }
     }
 
-    public function addRecord($level, $message, array $context = array())
+    public function queueRecord($level, $message, array $context = array())
     {
         $context = array_merge($this->compulsoryFieldValues, $this->values);
 
-        parent::addRecord($level, $message, $context);
+        Queue::push('Trace\TraceHandler', array(
+            'level' => $level,
+            'message' => $message,
+            'context' => $context));
     }
 
     public function debug($code, array $traceMessage = array())
@@ -133,7 +87,7 @@ class Trace extends Logger
 
         $this->updateAllValues($code, $traceMessage);
 
-        $this->addRecord(Logger::DEBUG, $message);
+        $this->queueRecord(Logger::DEBUG, $message);
     }
 
     public function info($code, array $traceMessage = array())
@@ -144,7 +98,7 @@ class Trace extends Logger
 
         $this->updateAllValues($code, $traceMessage);
 
-        $this->addRecord(Logger::INFO, $message);
+        $this->queueRecord(Logger::INFO, $message);
     }
 
     public function notice($code, array $traceMessage = array())
@@ -155,7 +109,7 @@ class Trace extends Logger
 
         $this->updateAllValues($code, $traceMessage);
 
-        $this->addRecord(Logger::NOTICE, $message);
+        $this->queueRecord(Logger::NOTICE, $message);
     }
 
     public function warning($code, array $traceMessage = array())
@@ -166,7 +120,7 @@ class Trace extends Logger
 
         $this->updateAllValues($code, $traceMessage);
 
-        $this->addRecord(Logger::WARNING, $message);
+        $this->queueRecord(Logger::WARNING, $message);
     }
 
     public function error($code, array $traceMessage = array())
@@ -177,7 +131,7 @@ class Trace extends Logger
 
         $this->updateAllValues($code, $traceMessage);
 
-        $this->addRecord(Logger::ERROR, $message);
+        $this->queueRecord(Logger::ERROR, $message);
     }
 
     public function critical($code, array $traceMessage = array())
@@ -188,7 +142,7 @@ class Trace extends Logger
 
         $this->updateAllValues($code, $traceMessage);
 
-        $this->addRecord(Logger::CRITICAL, $message);
+        $this->queueRecord(Logger::CRITICAL, $message);
     }
 
     public function alert($code, array $traceMessage = array())
@@ -199,7 +153,7 @@ class Trace extends Logger
 
         $this->updateAllValues($code, $traceMessage);
 
-        $this->addRecord(Logger::ALERT, $message);
+        $this->queueRecord(Logger::ALERT, $message);
     }
 
     public function emergency($code, array $traceMessage = array())
@@ -210,6 +164,6 @@ class Trace extends Logger
 
         $this->updateAllValues($code, $traceMessage);
 
-        $this->addRecord(Logger::EMERGENCY, $message);
+        $this->queueRecord(Logger::EMERGENCY, $message);
     }
 }
