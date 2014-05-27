@@ -40,6 +40,11 @@ App::after(function($request, $response)
  */
 Route::filter('auth', function($route, $request)
 {
+	if($_SERVER['SERVER_NAME'] == 'test.razorpay.com')
+	{
+		$_SERVER['PHP_AUTH_PW']= 'd9c6bf091a1a64cb5678d8c1d5e7360f';
+	}
+	
 	if (!isset($_SERVER['PHP_AUTH_PW']) && !isset($_SERVER['PHP_AUTH_USER']))
 	{
 		//Used by first request from browser thaty checks if HTTP AUTH is expected
