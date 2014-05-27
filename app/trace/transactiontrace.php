@@ -2,7 +2,6 @@
 
 namespace Trace;
 
-use Monolog\Logger;
 use Trace\Trace;
 
 class TransactionTrace extends Trace
