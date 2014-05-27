@@ -1,5 +1,4 @@
 <?php 
-set_time_limit(0);
 $baseurl = "api.razorpay.com";
 
 $merchant_id=1;
@@ -8,8 +7,6 @@ $hash = hash_hmac('sha256', $time, 'd9c6bf091a1a64cb5678d8c1d5e7360f');
 $hash = $hash.$time;
 
 $action_url=$merchant_id.':'.$hash.'@'.$baseurl;
-
-
 ?> 
 
 <!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
