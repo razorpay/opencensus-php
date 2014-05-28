@@ -14,7 +14,7 @@ class Card extends DAL
         'expiry_year',
 
         'last4',
-        'type',
+        'network',
         'country',
 
         'address_line1',

@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder {
 				'expiry_month'	=>	'01',
 				'expiry_year'	=>	'99',
 				'cvv'			=>	'000',
-				'type'			=>	'visa',
+				'network'			=>	'visa',
 				'country'		=>	'IN',
 				'last4'			=>	'7890',
 				)
@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder {
 				'expiry_month'	=>	'01',
 				'expiry_year'	=>	'12',
 				'cvv'			=>	'000',
-				'type'			=>	'visa',
+				'network'			=>	'visa',
 				'country'		=>	'IN',
 				'last4'			=>	'7891',
 				)

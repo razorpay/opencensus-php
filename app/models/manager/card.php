@@ -31,7 +31,7 @@ class Card extends EntityManager
 
     protected static $createValidators = array('address');
 
-    protected static $generators = array('last4', 'country', 'type');
+    protected static $generators = array('last4', 'country', 'network');
 
     protected function validateAddress($input)
     {
@@ -71,9 +71,9 @@ class Card extends EntityManager
         $this->setField('last4', $last4);
     }
 
-    public function generateType($input)
+    public function generateNetwork($input)
     {
-        $this->setField('type', 'visa');
+        $this->setField('network', 'visa');
     }
 
     public function generateCountry($input)
