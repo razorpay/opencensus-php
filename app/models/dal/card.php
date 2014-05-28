@@ -16,6 +16,8 @@ class Card extends DAL
         'last4',
         'network',
         'country',
+        'type',
+        'bank',
 
         'address_line1',
         'address_line2',
