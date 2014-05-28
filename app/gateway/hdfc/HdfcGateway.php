@@ -692,7 +692,7 @@ class HdfcGateway extends BaseGateway
 
         $data['member'] = $card['name'];
 
-        $data['transid'] = $this->model->paymentid;
+        $data['transid'] = $this->model->transactionid;
 
         $data['trackid'] = $this->id;
 
