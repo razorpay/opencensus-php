@@ -27,7 +27,7 @@ class ChangePaymentidToTransactionidInHdfcTable extends Migration {
 	{
 		Schema::table('hdfc', function(Blueprint $table)
 		{
-			//
+			$table->renameColumn('transactionid', 'paymentid');
 		});
 	}
 
