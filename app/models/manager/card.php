@@ -73,38 +73,66 @@ class Card extends EntityManager
 
     public function generateNetwork($input)
     {
+        $network = "";
+
         $iin = intval(substr($input['number'], 0, 6));
 
         $cardDetails = DAL\CardDetail::find($iin);
 
-        $this->setField('network', $cardDetails->brand);
+        if(null !== $cardDetails)
+        {
+            $network = $cardDetails->brand;
+        }
+
+        $this->setField('network', $network);
     }
 
     public function generateType($input)
     {
+        $type = "";
+
         $iin = intval(substr($input['number'], 0, 6));
 
         $cardDetails = DAL\CardDetail::find($iin);
 
-        $this->setField('type', $cardDetails->card_type);
+        if(null !== $cardDetails)
+        {
+            $type = $cardDetails->card_type;
+        }
+
+        $this->setField('type', $type);
     }
 
     public function generateBank($input)
     {
+        $bank = "";
+
         $iin = intval(substr($input['number'], 0, 6));
 
         $cardDetails = DAL\CardDetail::find($iin);
 
-        $this->setField('bank', $cardDetails->bank);
+        if(null !== $cardDetails)
+        {
+            $bank = $cardDetails->bank;
+        }
+
+        $this->setField('bank', $bank);
     }
 
     public function generateCountry($input)
     {
+        $country = "";
+
         $iin = intval(substr($input['number'], 0, 6));
 
         $cardDetails = DAL\CardDetail::find($iin);
 
-        $this->setField('country', $cardDetails->country_code);
+        if(null !== $cardDetails)
+        {
+            $country = $cardDetails->country_code;
+        }
+
+        $this->setField('country', $country);
     }
 
 
