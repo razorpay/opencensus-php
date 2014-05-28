@@ -66,10 +66,8 @@ return [
 	],
 	[
 	'PAN' => '4012001037484447',
-	'response' => 0,
-	'type' => 'DC',
-	'code' => "FSS0001",
-	'message' => "Authentication Not Available"
+	'response' => 1,
+	'type' => 'DC'
 	],
 	[
 	'PAN' => '4012001037490006',
