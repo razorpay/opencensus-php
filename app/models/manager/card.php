@@ -31,7 +31,7 @@ class Card extends EntityManager
 
     protected static $createValidators = array('address');
 
-    protected static $generators = array('last4', 'country', 'network');
+    protected static $generators = array('last4', 'country', 'network', 'type', 'bank');
 
     protected function validateAddress($input)
     {
@@ -73,12 +73,38 @@ class Card extends EntityManager
 
     public function generateNetwork($input)
     {
-        $this->setField('network', 'visa');
+        $iin = intval(substr($input['number'], 0, 6));
+
+        $cardDetails = DAL\CardDetail::find($iin);
+
+        $this->setField('network', $cardDetails->brand);
+    }
+
+    public function generateType($input)
+    {
+        $iin = intval(substr($input['number'], 0, 6));
+
+        $cardDetails = DAL\CardDetail::find($iin);
+
+        $this->setField('type', $cardDetails->card_type);
+    }
+
+    public function generateBank($input)
+    {
+        $iin = intval(substr($input['number'], 0, 6));
+
+        $cardDetails = DAL\CardDetail::find($iin);
+
+        $this->setField('bank', $cardDetails->bank);
     }
 
     public function generateCountry($input)
     {
-        $this->setField('country', 'IN');
+        $iin = intval(substr($input['number'], 0, 6));
+
+        $cardDetails = DAL\CardDetail::find($iin);
+
+        $this->setField('country', $cardDetails->country_code);
     }
 
 
