@@ -3,6 +3,7 @@
 namespace Trace;
 
 use Config;
+use App;
 use Request;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -23,7 +24,7 @@ class TraceWriter extends Logger
         $stream = new StreamHandler(Config::get('trace.logpath'));
         $stream->setFormatter($formatter);
 
-        $minLevel = Config::get('app.debug') ? Logger::DEBUG : Logger::INFO;
+        $minLevel = App::environment('local') ? Logger::DEBUG : Logger::INFO;
         $filter = new FilterHandler($stream, $minLevel);
 
         $this->pushHandler($filter);
