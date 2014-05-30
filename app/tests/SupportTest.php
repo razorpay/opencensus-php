@@ -21,7 +21,7 @@ class SupportTest extends Transaction {
         //Seed the db with required data
         Eloquent::unguard();
         $key = Factory::create('Models\DAL\Key');
-        Eloquent::reguard();        
+        Eloquent::reguard();
     }
 
     public function tearDown()
@@ -35,10 +35,10 @@ class SupportTest extends Transaction {
     */
 
     public function testSupport(){
-        
+
         //GIVEN
         //create an auth transaction using card 12
-        $response = $this->createTransaction(12, true);
+        $response = $this->createTransaction(1, true);
 
         //get its transaction id
         $id=$response->id;
@@ -51,7 +51,7 @@ class SupportTest extends Transaction {
      * Tests capture transactions, attempts to capture all past transactions & ensures that the transaction specified by id is captured.
      */
     private function capture($id)
-    {      
+    {
         //WHEN
         //call for capture of transactions
         $response = $this->action('POST', 'TransactionController@postCapture', array('id'=>$id));
