@@ -45,6 +45,15 @@ class Transaction extends EntityManager
 
         $validation = \Validator::make($udf, static::$udfRules);
 
+        foreach ($udf as $key => $value)
+        {
+            if (is_array($value))
+                throw new \InvalidArgumentException('Transaction Exception: Udf should not be an array');
+
+            if (strlen($value) > 1024)
+                throw new \InvalidArgumentException('Transaction Exception: Udf value [' . $key .'] too large!');
+        }
+
         if ($validation->fails())
         {
             var_dump($validation->messages()->all()); die();
