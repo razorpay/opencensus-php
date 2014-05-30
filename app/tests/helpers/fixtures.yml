@@ -14,7 +14,7 @@ Models\DAL\Card:
     last4: 789$integer
 
 Models\DAL\CardToken:
-    card_id: 
+    card_id:
         type: Models\DAL\Card
     merchant_id:
         type: Models\DAL\Merchant
@@ -22,11 +22,11 @@ Models\DAL\CardToken:
 
 Models\DAL\Key:
     id: d9c6bf091a1a64cb5678d8c1d5e7360f
-    merchant_id: 
+    merchant_id:
         type: Models\DAL\Merchant
     live: 1
     active: 1
-    secret: 1
+    secret: $2y$10$UVD2ZERxHs0QyL7gaElrWOfvwAx11m.G374AGKpPnyn8VK4FN5Yry
 
 Models\DAL\Transaction:
     merchant_id:
