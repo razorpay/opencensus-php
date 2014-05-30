@@ -1,7 +1,6 @@
 Models\DAL\Merchant:
   id: $string$string$string
   email: $string@$string.$string
-  pwd: $string
   hash: $2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO
 
 Models\DAL\Card:
