@@ -3,7 +3,7 @@
 use Models\Service\Transaction;
 use Models\Service\BasicAuth;
 
-class TransactionController extends BaseController 
+class TransactionController extends BaseController
 {
     /**
     * Retrieves transaction details by `id`
@@ -13,10 +13,10 @@ class TransactionController extends BaseController
     *
     */
     public function getIndex ($param=NULL)
-    {   
+    {
         $merchant_id = BasicAuth::getInstance()->MerchantId();
         $merchant = BasicAuth::getInstance()->Merchant();
-        
+
         $input = Input::all();
         $input['merchant_id'] = $merchant_id;
 
@@ -29,10 +29,10 @@ class TransactionController extends BaseController
             case 'auth':
             case 'captured':
             case 'settled':
-                //For all above set the status parameter              
+                //For all above set the status parameter
                 $input['status'] = $param;
             case NULL:
-                //Common for all above 
+                //Common for all above
                 $txn_service = new Transaction();
 
                 $txn_data= $txn_service->retrieveMultiple($input);
@@ -46,7 +46,7 @@ class TransactionController extends BaseController
             case (preg_match("/^[0-9a-f]{8}[0-9a-f]{4}[1-5][0-9a-f]{3}[89ab][0-9a-f]{3}[0-9a-f]{12}$/i", $param) ? true : false ) :
                 $transactionObject = new Transaction;
                 $transaction=$transactionObject->retrieve($param);
-                
+
                 if ($transaction === null)
                 {
                     return Response::view('error.404', array(), 404);
@@ -73,7 +73,7 @@ class TransactionController extends BaseController
     }
 
     /**
-    * Create a new transaction. 
+    * Create a new transaction.
     */
     public function postIndex()
     {
@@ -83,13 +83,16 @@ class TransactionController extends BaseController
 
         $txn_data = Transaction::getNewInstance()->process($input);
 
-        if(isset($txn_data['callbackUrl']))
-        {	
+        //Check for call from API
+        $headers = getallheaders();
+        if(!isset($headers['Razorpay-API']) && isset($txn_data['callbackUrl']))
+        {
         	return View::make('hdfc.enrollResponse')
         					->with('data', $txn_data['data'])
         					->with('callbackUrl',$txn_data['callbackUrl']);
         }
-        else return Response::json($txn_data);
+
+        return Response::json($txn_data);
 
     }
 
@@ -100,7 +103,7 @@ class TransactionController extends BaseController
     {
 
         $txn_service = new Transaction();
-        
+
         $txn_data = $txn_service->retrieve($id);
 
         $merchant_id = BasicAuth::getInstance()->MerchantId();
@@ -109,15 +112,15 @@ class TransactionController extends BaseController
             return Response::view('error.404', array(), 404);
 
         $txn_service->refund($txn_data);
-        
+
         return Response::json($txn_data);
     }
 
     /**
      * Captures transactions from the past 1 day
-     * 
+     *
      */
-    
+
     public function capture()
     {
         $txn_service = new Transaction();
@@ -134,9 +137,9 @@ class TransactionController extends BaseController
 
     /**
      * Captures a specific transaction which was put on hold earlier
-     * 
+     *
      */
-    
+
     public function postCapture($id)
     {
 
