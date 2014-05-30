@@ -34,13 +34,11 @@
 
 Route::group(array('before' => 'auth.public'), function()
 {
-	;
+	Route::post('transactions', 'TransactionController@postIndex');
 });
 
-Route::group(array('before' => 'auth'), function()
+Route::group(array('before' => 'auth.private'), function()
 {
-	Route::post('transactions', 'TransactionController@postIndex');
-
 	Route::post('tokens', 'CardController@postIndex');
 
 	Route::get('tokens/{token}', 'CardController@getRetrieve');
@@ -91,4 +89,3 @@ Event::listen('500', function($exception)
 	return Err::handle_error('500', $exception);
 	// return Response::error('500');
 });
-
