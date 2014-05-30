@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder {
 		DB::table('merchants')->insert(
 			array(
 				'email'	=>	'hm@gmail.com',
-				'pwd'	=>	'password',
 				'hash'	=>	Hash::make('password')
 				)
 			);
@@ -27,7 +26,6 @@ class DatabaseSeeder extends Seeder {
 		DB::table('merchants')->insert(
 			array(
 				'email'	=>	'shk@gmail.com',
-				'pwd'	=>	'password',
 				'hash'	=>	Hash::make('password')
 				)
 			);
@@ -35,7 +33,6 @@ class DatabaseSeeder extends Seeder {
 		DB::table('merchants')->insert(
 			array(
 				'email'	=>	'abd@gmail.com',
-				'pwd'	=>	'password',
 				'hash'	=>	Hash::make('password')
 				)
 			);
