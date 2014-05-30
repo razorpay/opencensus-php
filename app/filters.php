@@ -40,52 +40,41 @@ App::after(function($request, $response)
  */
 Route::filter('auth', function($route, $request)
 {
-	if (!isset($_SERVER['PHP_AUTH_PW']) && !isset($_SERVER['PHP_AUTH_USER']))
+	if (!isset($_SERVER['PHP_AUTH_PW']) || !isset($_SERVER['PHP_AUTH_USER']))
 	{
 		//Used by first request from browser thaty checks if HTTP AUTH is expected
 		return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
 	}
 
-	if (!isset($_SERVER['PHP_AUTH_USER']) || $_SERVER['PHP_AUTH_USER'] == '')
-	{	
+	if (! is_numeric($_SERVER['PHP_AUTH_USER']))
+	{
 		// For private key based auth
-		if (isset($_SERVER['PHP_AUTH_PW']))
-		{
-			$key = $_SERVER['PHP_AUTH_PW'];
+			$key_id = $_SERVER['PHP_AUTH_USER'];
+			$key_secret = $_SERVER['PHP_AUTH_PW'];
 
-			if (BasicAuth::getInstance()->verifySecret($key) == false)
+			if (BasicAuth::getInstance()->verifySecret($key_id, $key_secret) == false)
 			{
+
 				return Response::view('error.401', array(), 401);
 			}
-		}
-		else
-		{
-			return Response::view('error.401', array(), 401);
-		}
 	}
-	else 
-	{ 
+	else
+	{
 		//For time based hash auth
-		$merchant_id = isset($_SERVER['PHP_AUTH_USER']);
-		if (isset($_SERVER['PHP_AUTH_PW']))
+		$merchant_id = $_SERVER['PHP_AUTH_USER'];
+		$hash = $_SERVER['PHP_AUTH_PW'];
+
+		if(BasicAuth::getInstance()->verifyPublic($merchant_id, $hash) == false)
 		{
-			$hash = $_SERVER['PHP_AUTH_PW'];
-			
-			if(BasicAuth::getInstance()->authenticate(array('id' => $merchant_id, 'hash' => $hash))==false)
-			{
-				return Response::view('error.401', array(), 401);
-			}
-			else
-			{
-				//Change transaction to hold type if called by public key auth
-				if(isset($_POST['hold'])){
-					$request->merge(array('hold'=>1));
-				} 
-			}
+			return Response::view('error.401', array(), 401);
 		}
 		else
 		{
-			return Response::view('error.401', array(), 401);
+			//Change transaction to hold type if called by public key auth
+			if(isset($_POST['hold']))
+			{
+				$request->merge(array('hold'=>1));
+			}
 		}
 	}
 
