@@ -42,11 +42,12 @@ Route::filter('auth.private', function($route, $request)
 {
 	if (!isset($_SERVER['PHP_AUTH_PW']) || !isset($_SERVER['PHP_AUTH_USER']))
 	{
-		//Used by first request from browser thaty checks if HTTP AUTH is expected
+		//Used by first request from browser that checks if HTTP AUTH is expected
 		return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
 	}
 
-	if(! call_user_func('privateAuth'))	return Response::view('error.401', array(), 401);
+	if(! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
+		return Response::view('error.401', array(), 401);
 });
 
 
@@ -57,13 +58,14 @@ Route::filter('auth.public', function($route, $request)
 {
 		if (!isset($_SERVER['PHP_AUTH_PW']) || !isset($_SERVER['PHP_AUTH_USER']))
 		{
-			//Used by first request from browser thaty checks if HTTP AUTH is expected
+			//Used by first request from browser that checks if HTTP AUTH is expected
 			return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
 		}
 
-		if(! call_user_func('publicAuth'))
+		if(! BasicAuth::getInstance()->verifyPublic($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
 		{
-			if(! call_user_func('privateAuth'))	return Response::view('error.401', array(), 401);
+			if(! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
+				return Response::view('error.401', array(), 401);
 		}
 		else
 		{
@@ -108,28 +110,3 @@ Route::filter('csrf', function()
 		throw new Illuminate\Session\TokenMismatchException;
 	}
 });
-
-/*
-|--------------------------------------------------------------------------
-| Custom Filter Functions
-|--------------------------------------------------------------------------
-|
-| Following functions are used by the custom filters used for auth
-|
-*/
-
-function privateAuth()
-{
-		$key_id = $_SERVER['PHP_AUTH_USER'];
-		$key_secret = $_SERVER['PHP_AUTH_PW'];
-
-		return BasicAuth::getInstance()->verifySecret($key_id, $key_secret);
-}
-
-function publicAuth()
-{
-		$merchant_id = $_SERVER['PHP_AUTH_USER'];
-		$hash = $_SERVER['PHP_AUTH_PW'];
-
-		return BasicAuth::getInstance()->verifyPublic($merchant_id, $hash);
-}
