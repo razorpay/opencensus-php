@@ -84,8 +84,7 @@ class TransactionController extends BaseController
         $txn_data = Transaction::getNewInstance()->process($input);
 
         //Check for call from API
-        $headers = getallheaders();
-        if(!isset($headers['Razorpay-API']) && isset($txn_data['callbackUrl']))
+        if(Request::header('Razorpay-API') != 1 && isset($txn_data['callbackUrl']))
         {
         	return View::make('hdfc.enrollResponse')
         					->with('data', $txn_data['data'])
