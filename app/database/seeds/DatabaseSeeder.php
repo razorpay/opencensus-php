@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder {
 			array(
 				'email'	=>	'hm@gmail.com',
 				'pwd'	=>	'password',
-				'hash'	=>	Hash::make('password');
+				'hash'	=>	Hash::make('password')
 				)
 			);
 
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder {
 			array(
 				'email'	=>	'shk@gmail.com',
 				'pwd'	=>	'password',
-				'hash'	=>	Hash::make('password');
+				'hash'	=>	Hash::make('password')
 				)
 			);
 
@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder {
 			array(
 				'email'	=>	'abd@gmail.com',
 				'pwd'	=>	'password',
-				'hash'	=>	Hash::make('password');
+				'hash'	=>	Hash::make('password')
 				)
 			);
 
