@@ -193,6 +193,7 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
         $txn_service = new Transaction();
-        return $txn_service->bankAcsCallback($input);
+        $data = $txn_service->bankAcsCallback($input);
+        return View::make('gateway.callback')->with('data', $data);
     }
 }

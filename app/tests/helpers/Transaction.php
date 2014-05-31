@@ -54,6 +54,7 @@ class Transaction extends TestCase {
             //in case card is a CC (no secure code)
             case "CC":
                 $response = $this->call('POST', '/transactions', $transaction);
+                $content = $response->getContent();
             break;
 
             //in case card is a DC (secure code)
@@ -85,6 +86,13 @@ class Transaction extends TestCase {
                 $values = $form->getValues();
 
                 $response = $this->call('POST', '/transactions/callback', $values);
+                //Actual output is JS, but line 63 of the output contains the data in JSON
+                $content = $response->getContent();
+                $arr = explode("\n", $content);
+                $line = $arr[62];
+                // 11 = strlen("var data = ")
+                //-1 = to split the ; from end of js
+                $content = substr($line, 11,-1); 
             break;
 
             default: 
@@ -92,14 +100,10 @@ class Transaction extends TestCase {
             break;
         }
 
-
-            
             //THEN
-            $content = $response->getContent();
-
+        
             //Ensure output is json
             $this->assertJson($content);
-
             //check processed flag matches as in card.php
             //@todo shift to matching to actual error code rreturned once errors are implemented
             $output=json_decode($content);
