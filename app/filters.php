@@ -110,3 +110,20 @@ Route::filter('csrf', function()
 		throw new Illuminate\Session\TokenMismatchException;
 	}
 });
+
+/*
+|--------------------------------------------------------------------------
+| X-Frame Protection Filter
+|--------------------------------------------------------------------------
+|
+| The X-Frame filter is responsible for protecting your application against
+| cross-site iframing. By default laravel does this but we have explicitly
+| removed that so this filter needs to be applied everywhere we don't need
+| iframe support
+|
+*/
+
+Route::filter('sameorigin', function($route, $response)
+{
+	header('X-Frame-Options: SAMEORIGIN');
+});
