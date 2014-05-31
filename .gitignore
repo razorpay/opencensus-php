@@ -1,0 +1,7 @@
+/bootstrap/compiled.php
+/vendor
+.env.*.php
+.env.php
+.DS_Store
+Thumbs.db
+database.php
