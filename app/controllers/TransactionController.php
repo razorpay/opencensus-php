@@ -90,8 +90,22 @@ class TransactionController extends BaseController
         					->with('data', $txn_data['data'])
         					->with('callbackUrl',$txn_data['callbackUrl']);
         }
-
         return Response::json($txn_data);
+
+    }
+
+    /**
+     * Creates a new transaction on a JSONP Request
+     */
+    public function getJSONP()
+    {
+        $input = Input::all();
+        unset($input['callback']);
+        unset($input['key']);
+        unset($input['_']);
+        $input['merchant_id'] = BasicAuth::getInstance()->MerchantId();        
+        $txn_data = Transaction::getNewInstance()->process($input);
+        return Response::json($txn_data)->setCallback(Input::get('callback'));
 
     }
 

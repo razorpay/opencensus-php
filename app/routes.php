@@ -42,7 +42,9 @@ Route::group(array('before' => 'auth.private'), function()
 	Route::post('tokens', 'CardController@postIndex');
 
 	Route::get('tokens/{token}', 'CardController@getRetrieve');
-
+	
+	Route::get('transactions/jsonp', 'TransactionController@getJSONP');
+	
 	Route::get('transactions/{param}', 'TransactionController@getIndex');
 
 	Route::get('transactions', 'TransactionController@getIndex');
@@ -54,6 +56,7 @@ Route::group(array('before' => 'auth.private'), function()
 	//@todo: temporary
 	//create an artisan command and get rid of this
 	Route::get('capture', 'TransactionController@capture');
+
 });
 
 	Route::post('transactions/callback', 'TransactionController@postCallback');
