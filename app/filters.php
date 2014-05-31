@@ -18,8 +18,8 @@ App::before(function($request)
 	//
 });
 
-
 App::after(function($request, $response)
+
 {
 	//
 });
@@ -123,7 +123,7 @@ Route::filter('csrf', function()
 |
 */
 
-Route::filter('sameorigin', function($route, $response)
+Route::filter('sameorigin', function($route, $request, $response)
 {
-	header('X-Frame-Options: SAMEORIGIN');
+	$response->headers->set('X-Frame-Options', 'SAMEORIGIN');
 });
