@@ -12,16 +12,17 @@ class CreateHashes extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create('hashes', function(Blueprint $table){
-            $table->engine = 'InnoDB';
-
-            $table->string('hash', 64)
-                  ->primary();
-                  
-            // Adds created_at and updated_at columns to the table
-            $table->integer('created_at');  
-            $table->integer('updated_at');
-        });
+		// Schema::create('hashes', function(Blueprint $table){
+    //         $table->engine = 'InnoDB';
+		//
+    //         $table->string('hash', 64)
+    //               ->primary();
+    //
+    //         // Adds created_at and updated_at columns to the table
+    //         $table->integer('created_at');
+    //         $table->integer('updated_at');
+    //     });
+		Schema::dropIfExists('hashes');
 	}
 
 	/**
@@ -31,7 +32,7 @@ class CreateHashes extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop('hashes');
+		Schema::dropIfExists('hashes');
 	}
 
 }
