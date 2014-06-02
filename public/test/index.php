@@ -1,13 +1,10 @@
-<?php 
+<?php
 $baseurl = "api.razorpay.com";
 
-$merchant_id=1;
-$time=time();
-$hash = hash_hmac('sha256', $time, 'd9c6bf091a1a64cb5678d8c1d5e7360f');
-$hash = $hash.$time;
+$key_id = 'd9c6bf091a1a64cb5678d8c1d5e7360f';
 
-$action_url=$merchant_id.':'.$hash.'@'.$baseurl;
-?> 
+$action_url=$key_id.'@'.$baseurl;
+?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
 <HTML>
@@ -23,7 +20,7 @@ $action_url=$merchant_id.':'.$hash.'@'.$baseurl;
 	</tr>
 </table>
 <br><br>
-<form method="post" id="txnform" action="http://<?=$action_url?>/transactions">	
+<form method="post" id="txnform" action="http://<?=$action_url?>/transactions">
 <table border="1" align="center"  width="300">
 	<tr>
 	<th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>
@@ -39,33 +36,33 @@ $action_url=$merchant_id.':'.$hash.'@'.$baseurl;
 	<TR>
 		<TD colspan ='40'>ExpMonth:</TD>
 		<TD colspan='40'><select type="text" name="card[expiry_month]" value="1" >
-			<option value="1">1</option> 
-			<option value="2">2</option> 
-			<option value="3">3</option> 
-			<option value="4">4</option> 
-			<option value="5">5</option> 
-			<option value="6">6</option> 
-			<option value="7">7</option> 
-			<option value="8">8</option> 
-			<option value="9">9</option> 
-			<option value="10">10</option> 
-			<option value="11">11</option> 
-			<option value="12" selected>12</option> 
+			<option value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+			<option value="4">4</option>
+			<option value="5">5</option>
+			<option value="6">6</option>
+			<option value="7">7</option>
+			<option value="8">8</option>
+			<option value="9">9</option>
+			<option value="10">10</option>
+			<option value="11">11</option>
+			<option value="12" selected>12</option>
 			</select>
 		ExpYear:
 		<select type="text" name="card[expiry_year]" value="2014">
-			<option value="2011">2011</option> 
-			<option value="2012">2012</option> 
-			<option value="2013">2013</option> 
-			<option value="2014" selected>2014</option> 
-			<option value="2015">2015</option> 
+			<option value="2011">2011</option>
+			<option value="2012">2012</option>
+			<option value="2013">2013</option>
+			<option value="2014" selected>2014</option>
+			<option value="2015">2015</option>
 			<option value="2016">2016</option>
-			<option value="2013">2017</option> 
-			<option value="2014">2018</option> 
-			<option value="2015">2019</option> 
-			<option value="2016">2020</option> 
+			<option value="2013">2017</option>
+			<option value="2014">2018</option>
+			<option value="2015">2019</option>
+			<option value="2016">2020</option>
 			</select>
-		</TD></tr>  
+		</TD></tr>
 		<tr>
 		<TD colspan='40'>Amount:</TD>
 		<td><input type="text" name="amount" size="25" value="500"></td>
@@ -74,8 +71,8 @@ $action_url=$merchant_id.':'.$hash.'@'.$baseurl;
 		<TD colspan='40'>Hold:</TD>
 		<td>
 		<select name="hold">
-			<option value="0" selected>No</option> 
-			<option value="1">Yes</option> 
+			<option value="0" selected>No</option>
+			<option value="1">Yes</option>
 			</select>
 		</td>
 		</tr>
@@ -92,7 +89,7 @@ $action_url=$merchant_id.':'.$hash.'@'.$baseurl;
 	<tr>
 	<th colspan="50" bgcolor="brown" height="15"></th>
 	</tr>
-</form>	
+</form>
 </table>
 <br><br>
 <div style="text-align:center">
@@ -109,7 +106,7 @@ $action_url=$merchant_id.':'.$hash.'@'.$baseurl;
 
 <table width="96%" border="0" cellspacing="0" cellpadding="0">
 <tr>
-	<td height="2" bgcolor="black" class="titleline"></td> 
+	<td height="2" bgcolor="black" class="titleline"></td>
 </tr>
 </table>
 <table border="1" align="center"  width="100%" >
@@ -125,5 +122,5 @@ $action_url=$merchant_id.':'.$hash.'@'.$baseurl;
 - This is a sample demonstration page only ment for demonstration, this page should not be used in production
 - Transaction data should only be accepted once from a browser at the point of input, and then kept in a way that does not allow others to modify it (example server session, database  etc.)
 - Any transaction information displayed to a customer, such as amount,card no  should be passed only as display information and the actual transactional data should be retrieved from the secure source last thing at the point of processing the transaction.
-- Any information passed through the customer's browser can potentially be modified/edited/changed/deleted by the customer, or even by third parties to fraudulently alter the transaction data/information. Therefore, all transaction information should not be passed through the browser to Payment Gateway in a way that could potentially be modified (example hidden form fields). 
+- Any information passed through the customer's browser can potentially be modified/edited/changed/deleted by the customer, or even by third parties to fraudulently alter the transaction data/information. Therefore, all transaction information should not be passed through the browser to Payment Gateway in a way that could potentially be modified (example hidden form fields).
  -->

@@ -62,7 +62,7 @@ Route::filter('auth.public', function($route, $request)
 			return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
 		}
 
-		if(! BasicAuth::getInstance()->verifyPublic($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
+		if(! BasicAuth::getInstance()->verifyPublic($_SERVER['PHP_AUTH_USER']))
 		{
 			if(! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
 				return Response::view('error.401', array(), 401);

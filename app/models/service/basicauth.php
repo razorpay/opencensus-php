@@ -80,47 +80,38 @@ class BasicAuth extends \Singleton {
 
 
 
-    public function verifyPublic($merchant_id = null, $hash = null)
+    public function verifyPublic($key_id = null)
     {
-        if ($merchant_id === null || $hash === null)
+        if ($key_id === null)
         {
             throw new \InvalidArgumentException('Invalid Credentials');
         }
 
-        $time = substr($hash, 64);
-        $hash = substr($hash , 0, 64);
+        $Key = DAL\Key::find($key_id);
 
-        //Time difference between merchant & our gateway shouldn't be more than 30 mins (Allowing for user to fill details)
-        if($time > time()+1800 || $time < time()-1800) return false;
-
-        //Hash once used is not allowed
-        if(DAL\Hash::find($hash)) return false;
-
-        $merchant = DAL\Merchant::find($merchant_id);
-
-        if(null == $merchant)
+        if ($Key === null)
         {
-            throw new \InvalidArgumentException("Invalid Merchant Id");
+            return false;
+        }
+        else if ($Key->active == 0)
+        {
+            return false;
+        }
+        
+        $merchant_id = $Key->merchant_id;
+
+        $Merchant = DAL\Merchant::find($merchant_id);
+
+        if(null == $Merchant)
+        {
+            throw new \InvalidArgumentException("Key does not match any merchant");
         }
 
-        $keys = DAL\Key::where('merchant_id', '=', $merchant_id)->where('active', '=', '1')->get();
+        $this->Key = $Key;
 
-        foreach($keys as $key)
-        {
-            $hash_stored = hash_hmac('sha256', $time, $key->id);
+        $this->Merchant = $Merchant;
 
-            if(md5($hash)==md5($hash_stored))
-            {
-                $this->key = $key;
-
-                $this->Merchant = $merchant;
-
-                $hash = DAL\Hash::create(array('hash'=>$hash));
-
-                return true;
-            }
-        }
-        return false;
+        return true;
     }
 
 }
