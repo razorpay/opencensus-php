@@ -46,6 +46,53 @@ class Trace
      */
     protected $values = array();
 
+    public function __call($name, $arguments)
+    {
+        $code = $arguments[0];
+        $traceMessage = $arguments[1];
+
+        $level;
+
+        $message = $traceMessage['message'];
+
+        unset($traceMessage['message']);
+
+        $this->updateAllValues($code, $traceMessage);
+
+        // determine level based on function called
+        switch ($name) {
+            case 'debug':
+                $level = Logger::DEBUG;
+                break;
+            case 'info':
+                $level = Logger::INFO;
+                break;
+            case 'notice':
+                $level = Logger::NOTICE;
+                break;
+            case 'warning':
+                $level = Logger::WARNING;
+                break;
+            case 'error':
+                $level = Logger::ERROR;
+                break;
+            case 'critical':
+                $level = Logger::CRITICAL;
+                break;
+            case 'alert':
+                $level = Logger::ALERT;
+                break;
+            case 'emergency':
+                $level = Logger::EMERGENCY;
+                break;
+            default:
+                $level = 100;
+                break;
+        }
+
+        $this->queueRecord($level, $message);
+    }
+
     /**
      * Updates compulsory as well as other values
      *
@@ -77,93 +124,5 @@ class Trace
             'level' => $level,
             'message' => $message,
             'context' => $context));
-    }
-
-    public function debug($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->queueRecord(Logger::DEBUG, $message);
-    }
-
-    public function info($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->queueRecord(Logger::INFO, $message);
-    }
-
-    public function notice($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->queueRecord(Logger::NOTICE, $message);
-    }
-
-    public function warning($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->queueRecord(Logger::WARNING, $message);
-    }
-
-    public function error($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->queueRecord(Logger::ERROR, $message);
-    }
-
-    public function critical($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->queueRecord(Logger::CRITICAL, $message);
-    }
-
-    public function alert($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->queueRecord(Logger::ALERT, $message);
-    }
-
-    public function emergency($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->queueRecord(Logger::EMERGENCY, $message);
     }
 }
