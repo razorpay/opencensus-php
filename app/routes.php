@@ -36,6 +36,9 @@ Route::group(array('after' => 'sameorigin'), function()
 	Route::group(array('before' => 'auth.public'), function()
 	{
 		Route::post('transactions', 'TransactionController@postIndex');
+
+		Route::get('transactions/jsonp', 'TransactionController@getJSONP');
+		
 	});
 
 	Route::group(array('before' => 'auth.private'), function()
@@ -43,8 +46,6 @@ Route::group(array('after' => 'sameorigin'), function()
 		Route::post('tokens', 'CardController@postIndex');
 
 		Route::get('tokens/{token}', 'CardController@getRetrieve');
-
-		Route::get('transactions/jsonp', 'TransactionController@getJSONP');
 
 		Route::get('transactions/{param}', 'TransactionController@getIndex');
 
