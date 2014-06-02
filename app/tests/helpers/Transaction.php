@@ -12,7 +12,7 @@ class Transaction extends TestCase {
      * @param $hold Boolean True if transaction is to be of hold type (not captured automatically)
      * @return created transaction object in json
      */
-    protected function createTransaction($card_no, $hold=false)
+    protected function createTransaction($card_no)
     {
         //GIVEN
 
@@ -45,10 +45,10 @@ class Transaction extends TestCase {
                 'email'     =>  'lol@lko.com',
                 'contact'   =>  '991889902'
             ),
-            'hold'      => (int)$hold
+            // 'hold'      => (int)$hold
         ];
 
-    
+
         switch($cardtype){
 
             //in case card is a CC (no secure code)
@@ -61,7 +61,7 @@ class Transaction extends TestCase {
             case "DC":
                 //first request to /transactions route, returns form for submission to acs url
                 $crawler = $this->client->request('POST', '/transactions', $transaction);
-                
+
                 //get the form
                 $form = $crawler->selectButton('Submit')->form();
 
@@ -92,34 +92,34 @@ class Transaction extends TestCase {
                 $line = $arr[62];
                 // 11 = strlen("var data = ")
                 //-1 = to split the ; from end of js
-                $content = substr($line, 11,-1); 
+                $content = substr($line, 11,-1);
             break;
 
-            default: 
+            default:
                 $this->fail("Invalid Cards.php file");
             break;
         }
 
             //THEN
-        
+
             //Ensure output is json
             $this->assertJson($content);
             //check processed flag matches as in card.php
             //@todo shift to matching to actual error code rreturned once errors are implemented
             $output=json_decode($content);
-          
+
             //If expected response is to be successfull, do following sets of tests
             if($expected_response){
-                if(!$hold)
-                {
-                    //By default transaction should be captured
-                    $this->assertEquals('captured', $output->status);
-                }  
-                else
-                {
+                // if(!$hold)
+                // {
+                //     //By default transaction should be captured
+                //     $this->assertEquals('captured', $output->status);
+                // }
+                // else
+                // {
                     //if hold is set to true, it stops at auth
                     $this->assertEquals('auth', $output->status);
-                }
+                // }
                 return $output;
             }
 
@@ -131,8 +131,8 @@ class Transaction extends TestCase {
             $this->assertEquals($output->error->message, $error_message);
 
             return $output;
-            
-            
+
+
 
     }
 }

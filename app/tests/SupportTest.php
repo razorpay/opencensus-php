@@ -38,7 +38,7 @@ class SupportTest extends Transaction {
 
         //GIVEN
         //create an auth transaction using card 12
-        $response = $this->createTransaction(1, true);
+        $response = $this->createTransaction(1);
 
         //get its transaction id
         $id=$response->id;
