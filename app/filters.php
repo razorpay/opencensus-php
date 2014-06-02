@@ -15,7 +15,11 @@ use Models\Service\BasicAuth;
 
 App::before(function($request)
 {
-	//
+	if($_SERVER['HTTP_HOST'] == 'api.razorpay.com' && !Request::secure()){
+							$response['error']['message'] = "Razorpay API is only available over HTTPS";
+							$response['error']['code'] = "NONHTTPS";
+							return Response::json($response);
+	}
 });
 
 App::after(function($request, $response)
