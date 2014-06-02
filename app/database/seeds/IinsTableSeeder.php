@@ -11,23 +11,12 @@ class IinsTableSeeder extends Seeder
         DB::table('iins')->delete();
 
         $records = self::getIinRecordsFromFile(storage_path().'/iins/iins.csv');
+        $columns = array('iin', 'card_category', 'brand', 'card_type', 'country_code', 'bank');
+
         foreach ($records as $index => $record) {
-            $iin = $record[0];
-            $card_category = $record[1];
-            $brand = $record[2];
-            $card_type = $record[3];
-            $country_code = $record[4];
-            $bank = $record[5];
+            $record = array_combine($columns, $record);
 
-            $cardDetail = new CardDetail;
-            $cardDetail->iin = $iin;
-            $cardDetail->card_category = $card_category;
-            $cardDetail->brand = $brand;
-            $cardDetail->card_type = $card_type;
-            $cardDetail->country_code = $country_code;
-            $cardDetail->bank = $bank;
-
-            $cardDetail->save();
+            $cardDetail = CardDetail::create($record);
         }
     }
 
