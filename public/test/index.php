@@ -67,7 +67,7 @@ $action_url=$key_id.'@'.$baseurl;
 		<TD colspan='40'>Amount:</TD>
 		<td><input type="text" name="amount" size="25" value="500"></td>
 		</tr>
-		<TR>
+		<!--<TR>
 		<TD colspan='40'>Hold:</TD>
 		<td>
 		<select name="hold">
@@ -75,7 +75,7 @@ $action_url=$key_id.'@'.$baseurl;
 			<option value="1">Yes</option>
 			</select>
 		</td>
-		</tr>
+	</tr>-->
 		<TR>
 		<TD colspan='40'>CardHolder/Member Name:</TD>
 		<td><input type="text" name="card[name]" size="25" value="shashank"></td>
