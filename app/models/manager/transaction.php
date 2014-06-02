@@ -12,7 +12,7 @@ class Transaction extends EntityManager
         'currency'      =>  'required|max:3',
         'token'         =>  'required|alpha_num',
         'desc'          =>  'max:1000',
-        'hold'          =>  'numeric|max:1|digits:1',
+        // 'hold'          =>  'numeric|max:1|digits:1',
         'udf'           =>  'required'
         );
 
@@ -107,4 +107,3 @@ class Transaction extends EntityManager
         }
     }
 }
-

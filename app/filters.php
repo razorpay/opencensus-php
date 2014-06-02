@@ -67,13 +67,13 @@ Route::filter('auth.public', function($route, $request)
 			if(! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
 				return Response::view('error.401', array(), 401);
 		}
-		else
-		{
-			if(isset($_POST['hold']))
-			{
-				$request->merge(array('hold'=>1));
-			}
-		}
+		// else
+		// {
+		// 	if(isset($_POST['hold']))
+		// 	{
+		// 		$request->merge(array('hold'=>1));
+		// 	}
+		// }
 });
 
 /*

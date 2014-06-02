@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\Service\Core;
 
@@ -29,7 +29,7 @@ class Transaction
         $card_token = null;
 
         $txn_input = $input;
-        
+
         if (! array_key_exists('card', $input))
         {
             throw new \Exceptions\InvalidArgumentException(' Transcation Exception: Card not provided');
@@ -42,7 +42,7 @@ class Transaction
         $card = DAL\Card::create($card_data);
 
         $card_token_input['merchant_id'] = $input['merchant_id'];
-        
+
         $card_token_data = Manager\CardToken::createValidate($card_token_input)->getData();
 
         $card_token_data['card_id'] = $card->getId();
@@ -82,20 +82,20 @@ class Transaction
         $gateway = new GatewayManager();
         $status;
         $data;
-        
+
         try{
             list($status, $data) = $gateway->process($txnInfo);
         }
         catch(\Requests_Exception $e)
-        {   
+        {
             //check if timeout has occured
             if(strpos($e->getMessage(), 'Operation timed out') || strpos($e->getMessage(), 'Network is unreachable'))
-            {   
+            {
                 $status= TransactionStatus::TIMEOUT;
                 $data['code'] = "TIMEOUT";
                 $data['message'] = 'Request timed out';
             }
-            else throw $e;         
+            else throw $e;
         }
 
         switch ($status)
@@ -105,8 +105,8 @@ class Transaction
 
             case TransactionStatus::NOT_ENROLLED:
             $txn->setStatus('auth');
-            if (! $txn->getHold())
-                $txn->setCapturable(true);
+            // if (! $txn->getHold())
+            //     $txn->setCapturable(true);
             return $txn;
 
             //@todo: Update data on hold
@@ -139,7 +139,7 @@ class Transaction
 
     /**
      * Capture a preivous auth transaction
-     * 
+     *
      * @param  [type] $txn [description]
      * @return [type]      [description]
      */
@@ -153,7 +153,7 @@ class Transaction
         $this->txn->setStatus(TransactionStatus::AUTH);
 
         //Logging
-        $this->trace->info(TransactionTrace::TRANSACTION_AUTHED, $this->txn->toArray() + array('message' => 'Transaction Auth Successfull'));   
+        $this->trace->info(TransactionTrace::TRANSACTION_AUTHED, $this->txn->toArray() + array('message' => 'Transaction Auth Successfull'));
     }
 
     protected function updateTransactionCaptured()
@@ -175,12 +175,12 @@ class Transaction
     }
 
     protected function fillErrorDetails($error, $txn)
-    {   
+    {
         $txn->setError($error);
 
         //Logging
         $this->trace->error(TransactionTrace::TRANSACTION_FAILED, $txn->toArray() + array('message' => 'Transaction Failed'));
-        
+
         return $txn;
     }
 }

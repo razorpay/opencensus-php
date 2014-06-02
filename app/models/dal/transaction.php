@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\DAL;
 
@@ -25,7 +25,7 @@ class Transaction extends UuidDAL
         'status',
         'amount',
         'currency',
-        'hold',
+        // 'hold',
         'description',
         'udf',
         );
@@ -36,7 +36,7 @@ class Transaction extends UuidDAL
         'currency',
         'livemode',
         'status',
-        'hold',
+        // 'hold',
         'udf',
         'error',
         'created_at',
@@ -85,11 +85,11 @@ class Transaction extends UuidDAL
         }
         else
         {
-            if (isset($param['from_created'])) 
+            if (isset($param['from_created']))
             {
                 $query = $query->where('created_at', '>', $param['from_created']);
             }
-            
+
             if (isset($param['to_created']))
             {
                 $query = $query->where('created_at', '<', $param['to_created']);
@@ -119,7 +119,7 @@ class Transaction extends UuidDAL
     }
 
     public static function validateFetchParams(array $param)
-    {   
+    {
         validate(self::$fetch_param_rules, $param);
     }
 
@@ -203,7 +203,7 @@ class Transaction extends UuidDAL
             {
                 $card_do = $token->card()->first();
             }
-            
+
             if ($card_do === null)
             {
                 throw new \UnexpectedValueException('Transaction Exception: No card do present to fetch card data');
@@ -246,21 +246,21 @@ class Transaction extends UuidDAL
         $this->error = $error;
     }
 
-    public function getHold()
-    {
-        return ($this->getAttribute('hold') == '1');
-    }
+    // public function getHold()
+    // {
+    //     return ($this->getAttribute('hold') == '1');
+    // }
 
-    public function setCapturable($status = true)
-    {
-        $this->capturable = $status;
-    }
+    // public function setCapturable($status = true)
+    // {
+    //     $this->capturable = $status;
+    // }
 
-    public function unsetAndGetCapturable()
-    {
-        $capturable = (isset($this->capturable)) ? $this->capturable : false;
-        unset($this->capturable);
-        return $capturable;
-    }
+    // public function unsetAndGetCapturable()
+    // {
+    //     $capturable = (isset($this->capturable)) ? $this->capturable : false;
+    //     unset($this->capturable);
+    //     return $capturable;
+    // }
 
 }
