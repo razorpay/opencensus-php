@@ -78,6 +78,7 @@ return array(
 	"luhn"             => "The :attribute is not valid",
 	"month"            => "The :attribute is not a valid month",
 	"expiry_year"            => "The :attribute is invalid. Must be in the future",
+	"card_type"        => "The :attribute is not a valid card type",
 
 	/*
 	|--------------------------------------------------------------------------
