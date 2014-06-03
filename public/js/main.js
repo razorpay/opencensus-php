@@ -7,6 +7,10 @@ $(document).ready(function()
         grey: '#999999'
     };
 
+    rzpd.config = {
+        intervalValue: 'day'
+    };
+
     rzpd.views = {
         toggleLivemode: function() {
             $('#livemode .button-wrap').toggleClass("button-active");
@@ -19,15 +23,15 @@ $(document).ready(function()
         },
 
         setChart: function(ChartDiv, ChartType, ChartTitle, ChartData, ChartOptions) {
-            // if ($scope.intervalValue == 'day') {
-            //     intv = null;
-            // }
-            // if ($scope.intervalValue == 'week') {
-            //     intv = 24 * 3600 * 7 * 1000;
-            // }
-            // if ($scope.intervalValue == 'month') {
-            //     intv = 24 * 3600 * 30 * 1000;
-            // }
+            if (rzpd.config.intervalValue == 'day') {
+                intv = null;
+            }
+            if (rzpd.config.intervalValue == 'week') {
+                intv = 24 * 3600 * 7 * 1000;
+            }
+            if (rzpd.config.intervalValue == 'month') {
+                intv = 24 * 3600 * 30 * 1000;
+            }
 
             settings = {
                 chart : {
@@ -60,15 +64,15 @@ $(document).ready(function()
                         month : '%b',
                         year : '%Y'
                     },
-                    lineColor : '#292929',
+                    lineColor : rzpd.colors.grey,
                     labels : {
+                        staggerLines: staggerLinesVal,
                         style : {
                             fontFamily : '"Lato", sans-serif',
                             fontWeight : 'bold'
 
                         }
                     }
-
                 },
                 yAxis : {
                     lineColor : rzpd.colors.grey,
@@ -133,33 +137,9 @@ $(document).ready(function()
             });
         },
 
-        plotTransactionsChart: function(data, intv)
+        plotTransactionsChart: function(data)
         {
             rzpd.views.setChart('transactions-line-chart', 'area', 'Transactions', [{'data': data}], {
-                xAxis : {
-                    type : 'datetime',
-                    tickInterval : intv,
-                    endOnTick : true,
-                    dateTimeLabelFormats : {
-                        second : '%H:%M',
-                        minute : '%H:%M',
-                        hour : '%H:%M',
-                        day : '%e. %b',
-                        week : '%d.%m',
-                        month : '%b',
-                        year : '%Y'
-                    },
-                    lineColor : rzpd.colors.grey,
-                    labels : {
-                        staggerLines: staggerLinesVal,
-                        style : {
-                            fontFamily : '"Lato", sans-serif',
-                            fontWeight : 'bold'
-
-                        }
-                    }
-                },
-
                 yAxis : {
                     title : {
                         text : ''
@@ -181,9 +161,6 @@ $(document).ready(function()
                     }
                 },
                 tooltip : {
-                    // formatter : function() {
-                    //     return '' + $.datepicker.formatDate('dd.mm.yy', new Date(this.x)) + ': ' + this.y + ' ' + $scope.activeCurrencySymbol;
-                    // }
                     pointFormat: '<b>₹{point.y:,.0f}</b>',
                     dateTimeLabelFormats: {
                         second : '%H:%M',
@@ -218,7 +195,6 @@ $(document).ready(function()
                     var chartData = [];
                     var chartDataTest = [];
                     $(result.data).each(function(i, s) {
-
                         date_hour = s.created_at.split(' ');
                         date = date_hour[0].split('-');
                         chartData.push([Date.UTC(date[0], parseInt(date[1] - 1), date[2]),parseInt(s.amount)/100]);
@@ -244,7 +220,9 @@ $(document).ready(function()
                         intv = 24 * 3600 * 30 * 12 * 1000;
                     }
 
-                    rzpd.views.plotTransactionsChart(chartData, intv);
+                    rzpd.config.intv = intv;
+
+                    rzpd.views.plotTransactionsChart(chartData);
                 }
             });
         }
