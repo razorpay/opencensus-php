@@ -4,7 +4,7 @@
 	<div class="grid grid-pad">
 		<div class="col-1-4 spaced-right-box">
 			<div class="content boxed spaced-bottom-box" id="livemode">
-				<div class="button-desc active-desc">Test</div>
+				<div class="button-desc active">Test</div>
 				<div class="button-wrap">
 					<div class="button-bg">
 						<div class="button-switch"></div>
@@ -60,6 +60,17 @@
 						<div class="data-item col-1-4">
 							<div class="data-item-value">₹1,25,000</div>
 							<div class="data-item-desc">Total Volume (INR)</div>
+						</div>
+					</div>
+					<div class="analytics-wrapper">
+						<div id="controls-wrapper">
+							<h2 class="col-1-3">Overview</h2>
+							<div class="btn-group">
+								<a class="btn active" id="interval-day">Day</a>
+								<a class="btn" id="interval-week">Week</a>
+								<a class="btn" id="interval-month">Month</a>
+								<a class="btn" id="interval-year">Year</a>
+							</div>
 						</div>
 					</div>
 				</div>
