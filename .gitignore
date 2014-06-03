@@ -5,3 +5,8 @@
 .DS_Store
 Thumbs.db
 database.php
+grunt.json
+node_modules/
+layout.blade.php
+dev/
+prod/

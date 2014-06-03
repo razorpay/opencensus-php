@@ -1,0 +1,163 @@
+/* Colours */
+
+rzp-blue = #29B7D6
+rzp-gray = #999999
+/*rzp-gray = #727272*/
+
+/* Mixins */
+
+transition(n)
+	transition all n ease-in 0s
+	-o-transition all n ease-in 0s
+	-moz-transition all n ease-in 0s
+	-webkit-transition all n ease-in 0s
+
+/* Styles */
+
+html
+	height 100%
+
+body
+	font-family 'Lato',sans-serif
+	font-size 10px
+	color rzp-gray
+
+/* Header */
+
+header
+	position fixed
+	background rzp-blue
+	color rgb(255,255,255)
+	height 48px
+	width 100%
+	font-size 1.5em
+	font-weight 300
+	z-index 1000
+	top 0
+	#nav
+		height 48px
+		width 100%
+		padding 5px 0 0 20px
+		#logo img
+			float left
+			height 32px
+		#centernav, #rightnav
+			display inline
+			list-style-type none
+			li
+				display inline
+				list-style-type none
+				padding 0 5px 0 5px
+				position relative
+		#centernav
+			text-align center
+		#rightnav
+			text-align right
+			li.button
+				border solid 1px rgba(255,255,255,0.8)
+				border-radius 4px
+				padding 2px 0px 5px 0px
+				a
+					padding 8px
+		ul a
+			display inline-block
+			text-decoration none
+			color rgba(255,255,255,0.8)
+			padding 8px 4px
+			transition(0.1s)
+			&:hover
+				color rgba(255,255,255,1)
+				transition(0.1s)
+
+/* Main */
+
+#main
+	margin-top 70px
+
+.spaced-right-box
+	padding-right 50px
+
+.spaced-bottom-box
+	margin-bottom 30px
+
+.boxed
+	border 1px solid rzp-gray
+
+/* Live mode toggle */
+
+#livemode
+	min-height 70px
+	text-align center
+	padding 20px 0
+	.active-desc
+		color rzp-blue
+	.button-desc
+		font-size 1.5em
+		height 26px
+		display inline-block
+		margin 0 20px
+		padding-top 3px
+	.button-wrap
+		width 45px
+		cursor pointer
+		display inline-block
+		vertical-align top
+	.button-bg
+		width 100%
+		height 26px
+		background-color #FFF
+		border-radius 40px
+		border 1px solid rzp-gray
+		color #fff
+		transition all 0.2s ease
+	.button-switch
+		transition all 0.2s ease
+		position relative
+		left 0px
+		width 12px
+		height 12px
+		border solid 12px rzp-blue
+		border-radius 12px
+		transition(0.2s)
+	.button-active .button-switch
+		left 19px
+
+
+/* Sidebar */
+
+#sidebar
+	padding 10px 0 30px 0
+	min-height 300px
+	h2
+		font-weight normal
+		border-bottom 1px solid rzp-gray
+		.title
+			display inline-block
+			position relative
+			top 9px
+			background #fff
+			padding 0 5px
+			margin-left 15px
+	ul
+		margin 10px 0
+		li
+			margin 5px 0
+			font-size 1.5em
+			color rzp-blue
+			a
+				margin-left 30px
+				padding 0 5px
+				position relative
+				top 9px
+				text-decoration none
+				color inherit
+		.active
+			border-bottom 2px solid rzp-blue
+			a
+				background #fff
+
+/* Dashboard */
+
+#dashboard
+	min-height 550px
+	border 1px solid rzp-blue
