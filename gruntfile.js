@@ -36,8 +36,8 @@ module.exports = function(grunt){
 		concat: {
 			development: {
 				files: {
-					'public/css/dev/style.css': ['public/css/lib/simplegrid.css','public/css/lib/reset.css','public/css/fonts.css','public/css/style.css'],
-					'public/js/dev/pre.js': ['public/js/lib/jquery.min.js'],
+					'public/css/dev/style.css': ['public/css/lib/simplegrid.css','public/css/lib/pikaday.css','public/css/lib/reset.css','public/css/fonts.css','public/css/style.css'],
+					'public/js/dev/pre.js': ['public/js/lib/jquery.min.js','public/js/lib/moment.min.js','public/js/lib/pikaday.js'],
 					'public/js/dev/post.js': ['public/js/main.js']
 				}
 			},
@@ -47,7 +47,7 @@ module.exports = function(grunt){
 		cssmin: {
 			development: {},
 			production: {
-				src: ['public/css/lib/simplegrid.css','public/css/lib/reset.css','public/css/fonts.css','public/css/style.css'],
+				src: ['public/css/lib/simplegrid.css','public/css/lib/pikaday.css','public/css/lib/reset.css','public/css/fonts.css','public/css/style.css'],
 				dest: 'public/css/prod/style.css'
 			}
 		},
@@ -56,7 +56,7 @@ module.exports = function(grunt){
 			development: {},
 			production: {
 				files: {
-					'public/js/prod/pre.js': ['public/js/lib/jquery.min.js'],
+					'public/js/prod/pre.js': ['public/js/lib/jquery.min.js','public/js/lib/moment.min.js','public/js/lib/pikaday.js'],
 					'public/js/dev/post.js': ['public/js/main.js']
 				}
 			}

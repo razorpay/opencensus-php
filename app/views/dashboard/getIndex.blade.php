@@ -65,11 +65,15 @@
 					<div class="analytics-wrapper">
 						<div id="controls-wrapper">
 							<h2 class="col-1-3">Overview</h2>
-							<div class="btn-group">
+							<div class="col-1-3 btn-group">
 								<a class="btn active" id="interval-day">Day</a>
 								<a class="btn" id="interval-week">Week</a>
 								<a class="btn" id="interval-month">Month</a>
 								<a class="btn" id="interval-year">Year</a>
+							</div>
+							<div class="col-1-3" id="datepicker-group">
+								<input type="text" class="datepicker" id="date-start">-
+								<input type="text" class="datepicker" id="date-end">
 							</div>
 						</div>
 					</div>
