@@ -29,7 +29,7 @@ module.exports = function(grunt){
 		},
 
 		jshint: {
-			development: [],
+			development: ['public/js/main.js'],
 			production: []
 		},
 
@@ -37,6 +37,8 @@ module.exports = function(grunt){
 			development: {
 				files: {
 					'public/css/dev/style.css': ['public/css/lib/simplegrid.css','public/css/lib/reset.css','public/css/fonts.css','public/css/style.css'],
+					'public/js/dev/pre.js': ['public/js/lib/jquery.min.js'],
+					'public/js/dev/post.js': ['public/js/main.js']
 				}
 			},
 			production: {}
@@ -53,7 +55,10 @@ module.exports = function(grunt){
 		uglify: {
 			development: {},
 			production: {
-				files: {}
+				files: {
+					'public/js/prod/pre.js': ['public/js/lib/jquery.min.js'],
+					'public/js/dev/post.js': ['public/js/main.js']
+				}
 			}
 		},
 
@@ -71,11 +76,11 @@ module.exports = function(grunt){
 				renameFiles: true
 			},
 			development: {
-				src: ['public/css/dev/style.css'],
+				src: ['public/css/dev/style.css','public/js/dev/pre.js','public/js/dev/post.js'],
 				dest: ['app/views/layout.blade.php']
 			},
 			production: {
-				src: ['public/css/prod/style.css'],
+				src: ['public/css/prod/style.css','public/js/prod/pre.js','public/js/prod/post.js'],
 				dest: ['app/views/layout.blade.php']
 			}
 		},

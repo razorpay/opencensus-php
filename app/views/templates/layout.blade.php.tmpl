@@ -7,10 +7,10 @@
     <meta name="author" content="Razorpay">
     <link rel="shortcut icon" href="{{asset('images/favicon.png')}}">
     <title>Razorpay - Dashboard</title>
-    <!--Core CSS -->
     @section('css')
-        <link href="{{asset('css/<!-- @echo DEST -->/style.css')}}" type="text/css" rel="stylesheet" />
+    <link href="{{asset('css/<!-- @echo DEST -->/style.css')}}" type="text/css" rel="stylesheet" />
     @show
+    <script type="text/javascript" src="{{asset('js/<!-- @echo DEST -->/pre.js')}}"></script>
 </head>
 <body>
     <header>
@@ -32,5 +32,8 @@
     <div id="main">
         @yield('content')
     </div>
+    @section('js')
+    <script type="text/javascript" src="{{asset('js/<!-- @echo DEST -->/post.js')}}"></script>
+    @show
 </body>
 </html>
