@@ -23,7 +23,7 @@ build:
           code: mkdir ./report
       - script:
           name: run unit tests
-          code: phpunit --coverage-clover ./report
+          code: phpunit --coverage-html ./report/clover.xml
       - script:
           name: Code Coverage
           code: cp -R ./report/ $WERCKER_REPORT_ARTIFACTS_DIR/
@@ -47,33 +47,33 @@ deploy:
           hide-from-log: true
       - script:
           name: Put application in maintenance mode
-          code: |
-                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null \
-                -o StrictHostKeyChecking=no api.razorpay.com \
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no api.razorpay.com
                 "(cd ~/api/ && php artisan down)"
       - script:
           name: copy with rsync over ssh
-          code: |
-                rsync -avz --force --delete --progress --size-only \
-                --exclude 'app/storage/*' \
-                --exclude-from=.gitignore \
-                -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" \
+          code: >
+                rsync -avz --force --delete --progress --size-only
+                --exclude 'app/storage/*'
+                --exclude-from=.gitignore
+                -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
                 ./ ubuntu@api.razorpay.com:/home/ubuntu/api/
       - script:
           name: Install dependencies
-          code: |
-                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null \
-                -o StrictHostKeyChecking=no api.razorpay.com \
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no api.razorpay.com
                 "(cd ~/api/ && php composer.phar install --no-interaction)"
       - script:
           name: Perform DB migrations
-          code: |
-                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null \
-                -o StrictHostKeyChecking=no api.razorpay.com \
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no api.razorpay.com
                 "(cd ~/api/ && php artisan migrate)"
       - script:
           name: start application
-          code: |
-                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null \
-                -o StrictHostKeyChecking=no api.razorpay.com \
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no api.razorpay.com
                 "(cd ~/api/ && php artisan up)"
