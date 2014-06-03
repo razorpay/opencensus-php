@@ -15,4 +15,14 @@
             <directory>./app/tests/</directory>
         </testsuite>
     </testsuites>
+    <filter>
+    <whitelist>
+      <directory suffix=".php">./app/</directory>
+      <exclude>
+      <file>./app/config/database.php</file>
+      <file>./app/config/testing/database.php</file>
+      <file>./app/gateway/hdfc/HdfcGatewayConfig.php</file>
+      </exclude>
+    </whitelist>
+  </filter>
 </phpunit>

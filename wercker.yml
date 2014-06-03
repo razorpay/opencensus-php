@@ -23,7 +23,7 @@ build:
           code: mkdir ./report
       - script:
           name: run unit tests
-          code: phpunit --coverage-html ./report/clover.xml
+          code: phpunit --coverage-html ./report
       - script:
           name: Code Coverage
           code: cp -R ./report/ $WERCKER_REPORT_ARTIFACTS_DIR/
