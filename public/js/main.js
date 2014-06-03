@@ -158,7 +158,6 @@ $(document).ready(function()
 
                         }
                     }
-
                 },
 
                 yAxis : {
@@ -216,9 +215,7 @@ $(document).ready(function()
 
                         date_hour = s.created_at.split(' ');
                         date = date_hour[0].split('-');
-                        dat = new Date(date[0], parseInt(date[1] - 1), date[2]);
-
-                        chartData.push([dat.getTime(),parseInt(s.amount)/100]);
+                        chartData.push([Date.UTC(date[0], parseInt(date[1] - 1), date[2]),parseInt(s.amount)/100]);
                     });
 
                     staggerLinesVal = 1;
@@ -240,6 +237,7 @@ $(document).ready(function()
                     if (group == 'year') {
                         intv = 24 * 3600 * 30 * 12 * 1000;
                     }
+
                     rzpd.views.plotTransactionsChart(chartData, intv);
                 }
             });
