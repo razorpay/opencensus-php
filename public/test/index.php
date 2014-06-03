@@ -2,8 +2,10 @@
 $baseurl = "api.razorpay.com";
 
 $key_id = 'd9c6bf091a1a64cb5678d8c1d5e7360f';
+$secret = 'thisissupersecret';
 
-$action_url=$key_id.'@'.$baseurl;
+$public_url=$key_id.'@'.$baseurl;
+$private_url = $key_id.':'.$secret.'@'.$baseurl;
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
@@ -20,7 +22,7 @@ $action_url=$key_id.'@'.$baseurl;
 	</tr>
 </table>
 <br><br>
-<form method="post" id="txnform" action="http://<?=$action_url?>/transactions">
+<form method="post" id="txnform" action="http://<?=$public_url?>/transactions">
 <table border="1" align="center"  width="300">
 	<tr>
 	<th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>
@@ -94,11 +96,11 @@ $action_url=$key_id.'@'.$baseurl;
 <br><br>
 <div style="text-align:center">
 <h3>Test Capture/Refund</h3>
-<form name ="refund" method="post" action="http://<?=$action_url?>/transactions/">
+<form name ="refund" method="post" action="http://<?=$private_url?>/transactions/">
 <input type="text" id="refund_id" placeholder="Enter transaction id to refund"/>
 <input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
-<form name ="capture" method="post" action="http://<?=$action_url?>/transactions/">
+<form name ="capture" method="post" action="http://<?=$private_url?>/transactions/">
 <input type="text" id="capture_id" placeholder="Enter transaction id to capture"/>
 <input type="submit" value="Capture" onClick="javascript:document.capture.action = document.capture.action + document.getElementById('capture_id').value +'/capture'; document.capture.submit(); return false;"/>
 </form>
