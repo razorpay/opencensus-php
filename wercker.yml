@@ -30,6 +30,11 @@ build:
       - script:
           name: remove git & coverage files
           code: (rm -rf .git) && (rm -rf report)
+    after-steps:
+      - sherzberg/slack-notify:
+          subdomain: razorpay
+          token: $SLACK_TOKEN
+          channel: general
 deploy:
     steps:
       - add-to-known_hosts:
@@ -77,3 +82,8 @@ deploy:
                 ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
                 -o StrictHostKeyChecking=no api.razorpay.com
                 "(cd ~/api/ && php artisan up)"
+    after-steps:
+      - sherzberg/slack-notify:
+          subdomain: razorpay
+          token: $SLACK_TOKEN
+          channel: general
