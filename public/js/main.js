@@ -80,8 +80,16 @@ $(document).ready(function()
                 plotOptions : {
                     area : {
                         fillOpacity : 0.1,
-                        lineWidth : 3,
-                        shadow : false
+                        lineWidth : 2,
+                        marker : {
+                            radius : 3,
+                            lineWidth: 2,
+                            states: {
+                                hover: {
+                                    lineWidth: 2
+                                }
+                            }
+                        }
                     }
                 },
                 colors : [rzpd.colors.blue],
@@ -96,7 +104,6 @@ $(document).ready(function()
 
 
             settings = jQuery.extend(settings, ChartOptions);
-            console.log(settings);
 
             new Highcharts.Chart(settings);
         },
@@ -128,7 +135,6 @@ $(document).ready(function()
 
         plotTransactionsChart: function(data, intv)
         {
-            console.log(data);
             rzpd.views.setChart('transactions-line-chart', 'area', 'Transactions', [{'data': data}], {
                 xAxis : {
                     type : 'datetime',
@@ -143,7 +149,7 @@ $(document).ready(function()
                         month : '%b',
                         year : '%Y'
                     },
-                    lineColor : '#292929',
+                    lineColor : rzpd.colors.grey,
                     labels : {
                         staggerLines: staggerLinesVal,
                         style : {
@@ -161,7 +167,7 @@ $(document).ready(function()
                     },
                     labels : {
                         formatter : function() {
-                            return 'Rs. ' + this.value; //+ $scope.activeCurrencySymbol;
+                            return '₹' + this.value;
                         },
                         style : {
                             fontFamily : '"Lato", sans-serif',
@@ -179,7 +185,7 @@ $(document).ready(function()
                     // formatter : function() {
                     //     return '' + $.datepicker.formatDate('dd.mm.yy', new Date(this.x)) + ': ' + this.y + ' ' + $scope.activeCurrencySymbol;
                     // }
-                    pointFormat: '<b>Rs. {point.y:,.0f}</b>',
+                    pointFormat: '<b>₹{point.y:,.0f}</b>',
                     dateTimeLabelFormats: {
                         day : '%b %Y'
                     }
