@@ -186,7 +186,13 @@ $(document).ready(function()
                     // }
                     pointFormat: '<b>₹{point.y:,.0f}</b>',
                     dateTimeLabelFormats: {
-                        day : '%b %Y'
+                        second : '%H:%M',
+                        minute : '%H:%M',
+                        hour : '%H:%M',
+                        day : '%e %b',
+                        week : '%d.%m',
+                        month : '%b',
+                        year : '%Y'
                     }
                 }
             });
