@@ -35,6 +35,9 @@ class Transaction
             throw new \Exceptions\InvalidArgumentException(' Transcation Exception: Card not provided');
         }
 
+        if(strlen($input['card']['expiry_year']) == 2)
+            $input['card']['expiry_year'] = '20'.$input['card']['expiry_year'];
+
         list($card_input, $card_token_input) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
 
         $card_data = Manager\Card::createValidate($card_input)->getData();

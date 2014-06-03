@@ -12,13 +12,7 @@ class CreateCardtypes extends Migration {
      */
     public function up()
     {
-        Schema::create('cardtypes', function(Blueprint $table){
-            $table->engine = 'InnoDB';
-
-            $table->increments('id');
-
-            $table->string('type', 10);
-        });
+        Schema::dropIfExists('cardtypes');
     }
 
     /**
@@ -28,7 +22,7 @@ class CreateCardtypes extends Migration {
      */
     public function down()
     {
-        Schema::drop('cardtypes');
+        Schema::dropIfExists('cardtypes');
     }
 
 }
