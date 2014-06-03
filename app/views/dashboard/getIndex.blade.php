@@ -76,6 +76,9 @@
 								<input type="text" class="datepicker" id="date-end">
 							</div>
 						</div>
+						<div id="transactions-line-chart">
+							
+						</div>
 					</div>
 				</div>
 			</div>
