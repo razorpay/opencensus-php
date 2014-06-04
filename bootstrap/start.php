@@ -29,7 +29,7 @@ $env = $app->detectEnvironment( function () {
     // Look for ./environment.php
     if (file_exists(__DIR__ . '/environment.php' )) 
     {
-    return require __DIR__ . '/environment.php';
+        return require __DIR__ . '/environment.php';
     }
 });
 
