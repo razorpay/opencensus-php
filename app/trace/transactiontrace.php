@@ -21,6 +21,21 @@ class TransactionTrace extends Trace
 
     protected $component = 'transaction';
 
+    protected static $defaults = array('message');
+
+    protected static $defaultMessage = array(
+        self::NEW_TRANSACTION_REQUEST       => 'Request for new transaction received',
+        self::TRANSACTION_CREATED           => 'New transaction created',
+        self::TRANSACTION_CREATE_FAILED     => 'Transaction creation failed',
+        self::TRANSACTION_AUTHED            => 'Transaction authenticated successfully',
+        self::TRANSACTION_FAILED            => 'Transaction failed',
+        self::TRANSACTION_REFUNDED          => 'Transaction refunded successfully',
+        self::TRANSACTION_REFUND_FAILED     => 'Transaction refund failed',
+        self::TRANSACTION_CAPTURED          => 'Transaction captured successfully',
+        self::TRANSACTION_CAPTURE_FAILED    => 'Transaction capture failed',
+        self::TRANSACTION_EXCEPTION         => 'Transaction exception occured'
+        );
+
     protected static $compulsoryFields = array(
         'message',);
 

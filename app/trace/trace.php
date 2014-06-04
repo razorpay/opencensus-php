@@ -19,6 +19,15 @@ class Trace
     protected $component;
 
     /**
+     * Fields which have a default value if not provided
+     * eg: messages
+     *
+     *
+     * @var array $defaults Default fields
+     */
+    protected static $defaults = array();
+
+    /**
      * Fields required for each trace
      *
      * @var array $compulsoryFields Compulsory fields
@@ -53,6 +62,8 @@ class Trace
 
         $level;
 
+        $traceMessage = $this->setDefaultValues($code, $traceMessage);
+
         $message = $traceMessage['message'];
 
         unset($traceMessage['message']);
@@ -66,6 +77,29 @@ class Trace
         $this->queueRecord(
             constant('\Monolog\Logger::'.$level), 
             $message);
+    }
+
+    /**
+     * Set default values of fields
+     * for which developer did not provide a value
+     *
+     * @param string $code
+     * @param array $traceMessage
+     * @return array $traceMessage
+     */
+    public function setDefaultValues($code, $traceMessage)
+    {
+        foreach(static::$defaults as $index => $default)
+        {
+            if(!array_key_exists($default, $traceMessage))
+            {
+                $defaults_var = 'default'.ucfirst($default);
+
+                $traceMessage[$default] = static::${$defaults_var}[$code];
+            }
+        }
+
+        return $traceMessage;
     }
 
     /**
