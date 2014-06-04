@@ -9,6 +9,7 @@ class HdfcGatewayUtility
     public static function postRequest($request)
     {
         $options['verify'] = false;
+        $options['timeout'] = HdfcGatewayConfig::TIMEOUT;
 
         $response = Requests::post(
                         $request['url'],
