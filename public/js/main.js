@@ -18,7 +18,9 @@ $(document).ready(function()
     rzpd.config = {
         intervalValue: 'day',
         currentTab: 'dashboard',
-        childDivLoadCount: 0
+        childDivLoadCount: 0,
+        fromDate: new Date(),
+
     };
 
     rzpd.views = {
@@ -131,22 +133,22 @@ $(document).ready(function()
             rzpd.views.date_start = new Pikaday({
                 field: document.getElementById('date-start'),
                 firstDay: 1,
-                defaultDate: new Date(),
+                defaultDate: new Date(moment().subtract('days',1).format('LL')),
                 setDefaultDate: true,
                 yearRange: [2014,2020],
                 onClose: function() {
-                    console.log(this.getMoment().format('Do MMMM YYYY'));
+                    
                 }
             });
 
             rzpd.views.date_end = new Pikaday({
                 field: document.getElementById('date-end'),
                 firstDay: 1,
-                defaultDate: new Date(),
+                defaultDate: new Date(moment().format('LL')),
                 setDefaultDate: true,
                 yearRange: [2014,2020],
                 onClose: function() {
-                    console.log(this.getMoment().format('Do MMMM YYYY'));
+                    
                 }
             });
         },
