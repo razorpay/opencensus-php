@@ -227,22 +227,42 @@ $(document).ready(function()
 
                     rzpd.config.intv = intv;
 
+                    rzpd.views.hideLoader();
+                    rzpd.views.showDiv(parentDiv);
                     rzpd.views.plotTransactionsChart(chartData);
                 }
             });
+        },
+
+        renderDashboard: function() {
+            rzpd.hooks.plotTransactionsChart('#dashboard');
         }
 
     };
 
-    /* DASHBOARD event listeners */
+    /* Event listeners */
 
     $('#livemode .button-wrap').click(rzpd.hooks.toggleLivemode);
-    
     $('.btn-group .btn').click(rzpd.hooks.changeGraphInterval);
-
     if (document.getElementById("datepicker-group"))
         rzpd.views.renderDatepickers();
 
-    if (document.getElementById("transactions-line-chart"))
-        rzpd.hooks.plotTransactionsChart();
+    /* Routing (using path.js) */
+
+    Path.map("#!/").to(function(){
+        rzpd.hooks.renderDashboard();
+    }).enter(rzpd.views.changePanel);
+
+    Path.map("#!/payments").to(function(){
+        
+    }).enter(rzpd.views.changePanel);
+
+    Path.map("#!/customers").to(function(){
+        
+    }).enter(rzpd.views.changePanel);
+
+
+    Path.root("#!/");
+
+    Path.listen();
 });
