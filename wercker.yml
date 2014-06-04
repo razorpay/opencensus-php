@@ -37,6 +37,9 @@ build:
           channel: general
 deploy:
     steps:
+      - script:
+          name: Change to production mode
+          code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
       - add-to-known_hosts:
           hostname: api.razorpay.com
       - script:
