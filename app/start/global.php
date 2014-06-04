@@ -14,7 +14,7 @@
 ClassLoader::addDirectories(array(
 
 	app_path().'/commands',
-  app_path().'/trace',
+	app_path().'/trace',
 	app_path().'/controllers',
 	app_path().'/gateway',
 	app_path().'/models',
@@ -35,6 +35,7 @@ ClassLoader::addDirectories(array(
 |
 */
 
+
 Log::useFiles(storage_path().'/logs/laravel.log');
 
 /*
@@ -51,7 +52,17 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 */
 
 App::error(function(Exception $exception, $code)
-{
+{	
+	if(strpos($exception->getMessage(), 'Transaction Exception:')!=False)
+	{
+		$trace = new Trace\TransactionTrace();
+		$trace->error(TransactionTrace::TRANSACTION_EXCEPTION, array('message'=>$exception->getMessage, 'file'=>$exception->getFile()));
+	}
+	if(strpos($exception->getMessage(), 'Gateway Exception:')!=False)
+	{
+		$trace = new Trace\GatewayTrace();
+		$trace->error(GatewayTrace::GATEWAY_EXCEPTION, array('message'=>$exception->getMessage, 'file'=>$exception->getFile()));
+	}
 	Log::error($exception);
 });
 

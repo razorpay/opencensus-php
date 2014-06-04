@@ -27,6 +27,7 @@ namespace Gateway\HdfcGateway;
 use Gateway\BaseGateway;
 use Exceptions\DbQueryException;
 use Exceptions\InvalidArgumentException;
+use Trace\GatewayTrace;
  
 class HdfcGateway extends BaseGateway
 {
@@ -100,7 +101,7 @@ class HdfcGateway extends BaseGateway
      * @param [type] $response [description]
      */
     protected $enrollRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIVerifyEnrollmentXMLServlet',
+        'url' => HdfcGatewayUrls::TEST_ENROLL_URL,
         'type' => 'enroll',
         'xml' => '',
         'header' => array('Content-Type'=>'text/xml'),
@@ -124,7 +125,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $authNotEnrolledRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet',
+        'url' => HdfcGatewayUrls::TEST_AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_not_enrolled',
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
@@ -132,7 +133,7 @@ class HdfcGateway extends BaseGateway
  
     protected $authNotEnrolledResponse = array(
         'fields' =>  array(
-                        'result', 'amt', 'trackid', 'payid', 'ref', 'tranid', 'auth', 'avr', 'postdate'),
+                        'result', 'amt', 'trackid', 'ref', 'tranid', 'auth', 'avr', 'postdate'),
         'type' => 'auth_not_enrolled',
         'xml' => '',
         'data' => array(),
@@ -144,7 +145,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $authEnrolledRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIPayerAuthenticationXMLServlet',
+        'url' => HdfcGatewayUrls::TEST_AUTH_ENROLLED_URL,
         'type' => 'auth_enrolled',
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
@@ -164,7 +165,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $supportTxnRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet',
+        'url' => HdfcGatewayUrls::TEST_SUPPORT_TXN_URL,
         'header' => array('Content-Type:text/xml'),
         'type' => '',
         'xml' => '',
@@ -172,11 +173,21 @@ class HdfcGateway extends BaseGateway
 
     protected $supportTxnResponse = array(
         'fields' => array(
-            'error_text', 'trackid', 'payid', 'result', 'auth', 'amt', 'ref', 'postdate', 'avr'),
+            'error_text', 'trackid', 'tranid', 'result', 'auth', 'amt', 'ref', 'postdate', 'avr'),
         'type' => '',
         'xml' => '',
         'data' => array(),
         'error' => array());
+
+    /**
+     * The array is used to specify fields that are not to be logged by trace class
+     * they are stripped by calling stripSensitive function of this class on the request/response object
+     * @var array
+     */
+    protected $stripFieldsList = array(
+        'password', 'amt', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'member',
+        'card', 'expmonth', 'expyear', 'cvv2', 'PAReq', 'zip', 'addr', 'PaRes'
+    );
 
     /**
      * For ENROLLED card cases, we submit a form to bank ACS
@@ -195,6 +206,7 @@ class HdfcGateway extends BaseGateway
  
     public function __construct()
     {
+        parent::__construct();
         $this->callbackUrl=\URL::to('transactions/callback');
     }
 
@@ -229,7 +241,11 @@ class HdfcGateway extends BaseGateway
                 $error = HdfcGatewayErrorHandler::parseErrorInString($this->enrollResponse['data']['result']);
                 if ($error === false)
                     $error = HdfcGatewayErrorHandler::unknownError();
- 
+                
+                //Logging
+                $log_content = array('message' => "Enrollment Error", 'error' => $error) + $this->stripSensitive($this->enrollResponse);
+                $this->trace->error(GatewayTrace::ENROLL_ERROR, $log_content);
+
                 return array('failed', $error);
             }
         }
@@ -247,15 +263,14 @@ class HdfcGateway extends BaseGateway
  
         if (count($invalid_keys) !== 0)
         {
-            throw new Exceptions\InvalidKeysException($invalid_keys);
+            throw new Exceptions\InvalidKeysException('Gateway Exception: '.$invalid_keys);
         }
  
         $validation = \Validator::make($input, $this->bankAcsResponseRules);
  
         if ($validation->fails()) 
         {
-            var_dump($validation->messages()->all());die();
-            throw new InvalidArgumentException('d');
+            throw new InvalidArgumentException('Gateway Exception: Invalid Arguements '.$validation->messages()->all());
         }
  
         $this->model = HdfcGatewayDal::findOrFail($input['MD']);
@@ -279,21 +294,27 @@ class HdfcGateway extends BaseGateway
     {
         if ((int) $this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
         {
-            throw new \InvalidArgumentException('Result not valid');
+            throw new \InvalidArgumentException('Gateway Exception: Result not valid');
         }
         else if ($this->model->status !== 'VERES Received')
         {
-            throw new \InvalidArgumentException('Status not valid');
+            throw new \InvalidArgumentException('Gateway Exception: Status not valid');
         }
  
         $data = &$this->authEnrolledRequest['data'];
  
         list($data['id'], $data['password']) = $this->getCredentials();
- 
+        
+        //Logging
+        $log_content = $this->stripSensitive(
+            $this->authEnrolledRequest) + array('message'=>'Auth request sent for enrolled card');
+        
+        $this->trace->debug(GatewayTrace::ENROLLED_AUTH_REQUEST, $log_content);
+
         $this->runRequestResponseFlow(
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
- 
+
         $this->persistAfterDCAuth();
     }
  
@@ -309,7 +330,11 @@ class HdfcGateway extends BaseGateway
     {
         // Fields to be sent to HDFC gateway for card-enroll
         $this->createEnrollRequestFields($input);
- 
+
+        //Logging
+        $log_content = $this->stripSensitive($this->enrollRequest) + array('message'=>'Enrollment request sent');
+        $this->trace->debug(GatewayTrace::ENROLL_REQUEST, $log_content);
+
         $this->runRequestResponseFlow(
             $this->enrollRequest,
             $this->enrollResponse);
@@ -320,7 +345,11 @@ class HdfcGateway extends BaseGateway
             (HdfcGatewayResult::isEnrollSuccess($this->enrollResponse) === false))
         {
             $error = HdfcGatewayErrorHandler::translateEnrollError($this->enrollResponse);
- 
+            
+            //Logging
+            $log_content = $this->stripSensitive($this->enrollResponse) + array('message'=>'Enrollment request failed') + array('error'=> $error);
+            $this->trace->error(GatewayTrace::ENROLL_ERROR, $log_content);
+
             return array(false, $error);
         }
  
@@ -340,10 +369,15 @@ class HdfcGateway extends BaseGateway
         $data['addr'] = "";
 
         $this->authNotEnrolledRequest['data'] = $data;
- 
+        
+        //Logging
+        $log_content = $this->stripSensitive($this->authNotEnrolledRequest) + array('message'=>'Not Enrolled request sent');
+        $this->trace->debug(GatewayTrace::NOT_ENROLLED_REQUEST, $log_content);
+
         $this->runRequestResponseFlow(
             $this->authNotEnrolledRequest,
             $this->authNotEnrolledResponse);
+
 
         $this->model->persistAfterCCAuth(
                         $this->authNotEnrolledResponse['data']);
@@ -352,7 +386,19 @@ class HdfcGateway extends BaseGateway
 
         $notEnrollResponse['data']['processed'] = ($notEnrollResponse['data']['result'] == 'APPROVED') ? 1 : 0;
         
-        return array('not enrolled', 
+        if($notEnrollResponse['data']['processed'])
+        {
+            //Logging
+            $log_content = $this->stripSensitive($notEnrollResponse) + array('message'=>'Not Enrolled request successful');
+            $this->trace->info(GatewayTrace::NOT_ENROLLED_RESPONSE, $log_content);
+        }
+        else
+        {
+            //Logging
+            $log_content = $this->stripSensitive($notEnrollResponse) + array('message'=>'Not Enrolled request failed');
+            $this->trace->error(GatewayTrace::NOT_ENROLLED_FAILED, $log_content);
+        }
+        return array('not enrolled',
                      array(
                         'data' => $notEnrollResponse['data']
                         ));
@@ -438,7 +484,7 @@ class HdfcGateway extends BaseGateway
  
         if ($trackid !== $this->id)
         {
-            throw new InvalidArgumentException('Track id do not match');
+            throw new InvalidArgumentException('Gateway Exception: Track id do not match');
         }
     }
 
@@ -448,8 +494,7 @@ class HdfcGateway extends BaseGateway
 
         if ($trackid !== $this->enrollRequest['data']['trackid'])
         {
-            die();
-            throw new \InvalidArgumentException('Track id do not match');
+            throw new \InvalidArgumentException('Gateway Exception: Track id do not match');
         }
     }
  
@@ -460,12 +505,20 @@ class HdfcGateway extends BaseGateway
             $this->model = HdfcGatewayDal::persistAfterEnrollError(
                             $this->id,
                             $this->enrollResponse['error']);
+
+            //Logging
+            $log_content = $this->stripSensitive($this->enrollResponse) + array('message'=>'Enrollment request failed');
+            $this->trace->error(GatewayTrace::ENROLL_ERROR, $log_content);
         }
         else
         {
             $this->model = HdfcGatewayDal::persistAfterEnroll(
                     $this->enrollRequest['data'],
                     $this->enrollResponse['data']);
+
+            //Logging
+            $log_content = $this->stripSensitive($this->enrollResponse) + array('message'=>'Enrollment response');
+            $this->trace->info(GatewayTrace::ENROLL_RESPONSE, $log_content);
         }
     }
 
@@ -475,11 +528,19 @@ class HdfcGateway extends BaseGateway
         {
             $this->model->persistAfterDCAuthError($this->authEnrolledResponse['error']);
 
+            //Logging
+            $log_content = $this->stripSensitive($this->authEnrolledResponse) + array('message'=>'Auth error for enrolled card');
+            $this->trace->error(GatewayTrace::ENROLLED_AUTH_ERROR, $log_content);
+            
             return false;
         }
         else
         {
             $this->model->persistAfterDCAuth($this->authEnrolledResponse['data']);
+
+            //Logging
+            $log_content = $this->stripSensitive($this->authEnrolledResponse) + array('message'=>'Auth response for enrolled card');
+            $this->trace->info(GatewayTrace::ENROLLED_AUTH_RESPONSE, $log_content);
 
             return true;
         }
@@ -494,6 +555,10 @@ class HdfcGateway extends BaseGateway
                             $this->supportTxnRequest['data']['transid'],
                             $this->supportTxnResponse['error'],
                             $type);
+            
+            //Logging
+            $log_content = $this->stripSensitive($this->supportTxnResponse) + array('message'=>'Support Request Failed');
+            $this->trace->error(GatewayTrace::SUPPORT_ERROR, $log_content);
 
             return false;
         }
@@ -502,6 +567,10 @@ class HdfcGateway extends BaseGateway
             $this->model = HdfcGatewayDal::persistAfterSupportTxn(
                     $this->supportTxnRequest['data'],
                     $this->supportTxnResponse['data']);
+
+            //Logging
+            $log_content = $this->stripSensitive($this->supportTxnResponse) + array('message'=>'Support Request Successful');
+            $this->trace->info(GatewayTrace::SUPPORT_RESPONSE, $log_content);
 
             return true;
         }
@@ -546,13 +615,25 @@ class HdfcGateway extends BaseGateway
         // Fields to be sent to HDFC gateway for refund
         $this->createSupportTxnRequestFields($input, HdfcGatewayAction::REFUND);
 
+        //Logging
+        $log_content = $this->stripSensitive($this->supportTxnRequest) + array('message'=>'Support Request Sent');
+        $this->trace->debug(GatewayTrace::SUPPORT_REQUEST, $log_content);
+
         $this->runRequestResponseFlow(
             $this->supportTxnRequest,
             $this->supportTxnResponse);
 
+        $error=array();
+        if($this->supportTxnResponse['error'])
+        {
+            $error = HdfcGatewayErrorHandler::parseErrorInString($this->supportTxnResponse['error']['result']);
+            if ($error === false)
+                    $error = HdfcGatewayErrorHandler::unknownError();
+        }
+        
         $status = $this->persistAfterSupportTxn('refund');
 
-        return $status;
+        return array($status, $error);
     }
 
     public function capture($input)
@@ -565,6 +646,10 @@ class HdfcGateway extends BaseGateway
         $this->supportTxnResponse['type'] = 'capture';
 
         $this->createSupportTxnRequestFields($input, HdfcGatewayAction::CAPTURE);
+
+        //Logging
+        $log_content = $this->stripSensitive($this->supportTxnRequest) + array('message'=>'Support Request Sent');
+        $this->trace->debug(GatewayTrace::SUPPORT_REQUEST, $log_content);
 
         $this->runRequestResponseFlow(
             $this->supportTxnRequest,
@@ -609,7 +694,7 @@ class HdfcGateway extends BaseGateway
 
         $data['member'] = $card['name'];
 
-        $data['transid'] = $this->model->paymentid;
+        $data['transid'] = $this->model->transactionid;
 
         $data['trackid'] = $this->id;
 
@@ -620,5 +705,20 @@ class HdfcGateway extends BaseGateway
     public function void()
     {
         ;
+    }
+
+    /**
+     * Stips sensitive data before calling trace class to avoid sensitive data from logging
+     */
+    private function stripSensitive($content)
+    {   
+        if(isset($content['data']))
+        {
+            $data = $content['data'];
+            $data = array_diff_key($data, array_flip($this->stripFieldsList));
+            $content = array('data' => $data) + $content;
+        }   
+    
+        return $content;
     }
 }

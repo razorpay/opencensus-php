@@ -6,7 +6,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
 {
     protected $table = 'hdfc';
     
-    protected $primaryKey = 'paymentid';
+    protected $primaryKey = 'transactionid';
 
     public $incrementing = false;
 
@@ -21,7 +21,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
     {
         $attributes = array(
             'trackid' => $request['trackid'],
-            'paymentid' => $response['paymentid'],
+            'transactionid' => $response['paymentid'],
             'action' => $request['action'],
             'enroll_result' => $response['enroll_result'],
             'status' => 'VERES Received',
@@ -50,6 +50,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
             'ref' => $data['ref'],
             'auth' => $data['auth'],
             'avr' => $data['avr'],
+            'transactionid' => $data['tranid'],
             'postdate' => $data['postdate']);
 
         $this->save();
@@ -83,7 +84,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
     {
         $attributes = array(
             'trackid' => $responseData['trackid'],
-            'paymentid' => $responseData['payid'],
+            'transactionid' => $responseData['tranid'],
             'action' => $requestData['action'],
             'status' => $responseData['result'],
             'ref' => $responseData['ref'],
@@ -94,7 +95,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
         return static::create($attributes);
     }
 
-    public static function persistAfterSupportTxnError($id, $paymentid, array $error, $type)
+    public static function persistAfterSupportTxnError($id, $transactionid, array $error, $type)
     {
         $action = '';
         $status = '';
@@ -112,7 +113,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
 
         $attributes = array(
             'trackid' => $id,
-            'paymentid' => $paymentid,
+            'transactionid' => $transactionid,
             'error_code' => $error['code'],
             'error_text' => $error['result'],
             'action' => $action,

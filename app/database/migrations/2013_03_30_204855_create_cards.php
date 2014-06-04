@@ -20,15 +20,17 @@ class CreateCards extends Migration {
 
             $table->string('name');
 
-            $table->string('cvv', 4);
-
             $table->string('expiry_month', 2);
 
             $table->string('expiry_year', 4);
 
             $table->string('last4', 4);
 
-            $table->string('type');
+            $table->string('network');
+
+            $table->string('type', 6);
+
+            $table->string('bank', 100);
 
             /**
              * Two letter ISO codes representing the country of the card.

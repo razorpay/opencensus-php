@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder {
 		Eloquent::unguard();
 
 		$this->seed();
+
+		$this->call('IinsTableSeeder');
 	}
 
 	private function seed()
@@ -19,24 +21,21 @@ class DatabaseSeeder extends Seeder {
 		DB::table('merchants')->insert(
 			array(
 				'email'	=>	'hm@gmail.com',
-				'pwd'	=>	'password',
-				'hash'	=>	'$2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO'
+				'hash'	=>	Hash::make('password')
 				)
 			);
 
 		DB::table('merchants')->insert(
 			array(
 				'email'	=>	'shk@gmail.com',
-				'pwd'	=>	'password',
-				'hash'	=>	'$2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO'
+				'hash'	=>	Hash::make('password')
 				)
 			);
-	
+
 		DB::table('merchants')->insert(
 			array(
 				'email'	=>	'abd@gmail.com',
-				'pwd'	=>	'password',
-				'hash'	=>	'$2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO'
+				'hash'	=>	Hash::make('password')
 				)
 			);
 
@@ -45,8 +44,7 @@ class DatabaseSeeder extends Seeder {
 				'name'	        =>	'shk',
 				'expiry_month'	=>	'01',
 				'expiry_year'	=>	'99',
-				'cvv'			=>	'000',
-				'type'			=>	'visa',
+				'network'		=>	'visa',
 				'country'		=>	'IN',
 				'last4'			=>	'7890',
 				)
@@ -57,8 +55,7 @@ class DatabaseSeeder extends Seeder {
 				'name'	        =>	'shk',
 				'expiry_month'	=>	'01',
 				'expiry_year'	=>	'12',
-				'cvv'			=>	'000',
-				'type'			=>	'visa',
+				'network'		=>	'visa',
 				'country'		=>	'IN',
 				'last4'			=>	'7891',
 				)
@@ -78,17 +75,17 @@ class DatabaseSeeder extends Seeder {
 				'merchant_id'	=>	1,
 				'live'			=>	1,
 				'active'		=>	1,
-				'secret'		=>	0
+				'secret'		=>	Hash::make('thisissupersecret')
 				)
 			);
-		
+
 		DB::table('keys')->insert(
 			array(
 				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360f',
 				'merchant_id'	=>	1,
-				'live'			=>	1,
+				'live'			=>	0,
 				'active'		=>	1,
-				'secret'		=>	1
+				'secret'		=>	Hash::make('thisissupersecret')
 				)
 			);
 
@@ -98,7 +95,7 @@ class DatabaseSeeder extends Seeder {
 				'merchant_id'	=>	2,
 				'live'			=>	1,
 				'active'		=>	1,
-				'secret'		=>	0
+				'secret'		=>	Hash::make('thisissupersecret')
 				)
 			);
 
@@ -106,9 +103,9 @@ class DatabaseSeeder extends Seeder {
 			array(
 				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360h',
 				'merchant_id'	=>	2,
-				'live'			=>	1,
+				'live'			=>	0,
 				'active'		=>	1,
-				'secret'		=>	1
+				'secret'		=>	Hash::make('thisissupersecret')
 				)
 			);
 	}

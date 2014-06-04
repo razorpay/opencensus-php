@@ -12,7 +12,7 @@ class DbQueryException extends ServerErrorException
 
 	protected $data = array();
 
-    public function __construct(array $data, Exception $previous = NULL)
+    public function __construct(array $data, Exception $previous = null)
     {
     	$this->set($data);
 

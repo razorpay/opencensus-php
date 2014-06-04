@@ -14,7 +14,7 @@ class CreateTransactions  extends Migration {
     {
         Schema::create('transactions', function(Blueprint $table){
             $table->engine = 'InnoDB';
-            
+
             $table->string('id', 32)
                   ->primary();
 
@@ -23,7 +23,7 @@ class CreateTransactions  extends Migration {
 
             $table->integer('amount')
                   ->unsigned();
-            
+
             $table->enum('status', array(
                                         'open',
                                         'auth',
@@ -47,7 +47,7 @@ class CreateTransactions  extends Migration {
                   ->nullable();
 
             $table->boolean('hold')
-                  ->default('0');
+                  ->default('1');
 
             $table->string('error', 10);
 
@@ -55,7 +55,7 @@ class CreateTransactions  extends Migration {
 
 
             // Adds created_at and updated_at columns to the table
-            $table->integer('created_at');  
+            $table->integer('created_at');
             $table->integer('updated_at');
 
             $table->foreign('merchant_id')
@@ -78,7 +78,7 @@ class CreateTransactions  extends Migration {
     {
         Schema::table('transactions', function($table){
 
-            $table->dropForeign('transactions_merchant_id_foreign');   
+            $table->dropForeign('transactions_merchant_id_foreign');
 
             $table->dropForeign('transactions_token_foreign');
         });

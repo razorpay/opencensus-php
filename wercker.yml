@@ -1,5 +1,3 @@
-add-ssh-key:
-  - keyname: bitbucket
 box: wercker/php
 services:
     - wercker/mysql
@@ -10,18 +8,85 @@ build:
       # and the code value contains the command that get executed
       - script:
           name: copy db config
-          code:  cp app/config/testing/database.wercker.php app/config/testing/database.php 
+          code:  cp app/config/testing/database.php.wercker app/config/testing/database.php
       - script:
           name: copy HDFC config
-          code: cp app/gateway/hdfc/HdfcGatewayConfig.wercker.php app/gateway/hdfc/HdfcGatewayConfig.php
+          code: cp app/gateway/hdfc/HdfcGatewayConfig.php.wercker app/gateway/hdfc/HdfcGatewayConfig.php
+      - script:
+          name: set composer to use github oauth token
+          code: composer config -g github-oauth.github.com $github_token
       - script:
           name: install dependencies
-          code: composer install --no-interaction --prefer-source
+          code: composer install --no-interaction
+      - script:
+          name: create report dir
+          code: mkdir ./report
       - script:
           name: run unit tests
-          code: phpunit
+          code: phpunit --coverage-html ./report
+      - script:
+          name: Code Coverage
+          code: cp -R ./report/ $WERCKER_REPORT_ARTIFACTS_DIR/
+      - script:
+          name: remove git & coverage files
+          code: (rm -rf .git) && (rm -rf report)
     after-steps:
-        - sherzberg/slack-notify:
-            subdomain: razorpay
-            token: $SLACK_TOKEN
-            channel: general
+      - sherzberg/slack-notify:
+          subdomain: razorpay
+          token: $SLACK_TOKEN
+          channel: general
+deploy:
+    steps:
+      - script:
+          name: Change to production mode
+          code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
+      - add-to-known_hosts:
+          hostname: api.razorpay.com
+      - script:
+          name: Create lease on AWS
+          code: wget -O /dev/null https://ac.razorpay.com/invite/$concierge_token --quiet 
+      - mktemp:
+          envvar: PRIVATEKEY_PATH
+      - create-file:
+          name: write key
+          filename: $PRIVATEKEY_PATH
+          content: $AWS_deploykey
+          overwrite: true
+          hide-from-log: true
+      - script:
+          name: Put application in maintenance mode
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no api.razorpay.com
+                "(cd ~/api/ && php artisan down)"
+      - script:
+          name: copy with rsync over ssh
+          code: >
+                rsync -avz --force --delete --progress --size-only
+                --exclude 'app/storage/*'
+                --exclude-from=.gitignore
+                -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+                ./ ubuntu@api.razorpay.com:/home/ubuntu/api/
+      - script:
+          name: Install dependencies
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no api.razorpay.com
+                "(cd ~/api/ && php composer.phar install --no-interaction)"
+      - script:
+          name: Perform DB migrations
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no api.razorpay.com
+                "(cd ~/api/ && php artisan migrate)"
+      - script:
+          name: start application
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no api.razorpay.com
+                "(cd ~/api/ && php artisan up)"
+    after-steps:
+      - sherzberg/slack-notify:
+          subdomain: razorpay
+          token: $SLACK_TOKEN
+          channel: general

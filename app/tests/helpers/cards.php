@@ -9,6 +9,11 @@ return [
 	'message' => "Request timed out"
 	],
 	[
+	'PAN' => '4012001038443335',
+	'response' => 1,
+	'type' => 'CC'
+	],
+	[
 	'PAN' => '4012001038488884',
 	'response' => 0,
 	'type' => 'CC',

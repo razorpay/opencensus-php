@@ -15,11 +15,15 @@ use Models\Service\BasicAuth;
 
 App::before(function($request)
 {
-	//
+	if(isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] == 'api.razorpay.com' && !Request::secure()){
+							$response['error']['message'] = "Razorpay API is only available over HTTPS";
+							$response['error']['code'] = "NONHTTPS";
+							return Response::json($response);
+	}
 });
 
-
 App::after(function($request, $response)
+
 {
 	//
 });
@@ -38,42 +42,42 @@ App::after(function($request, $response)
 /**
  * Only allows requests with secret keys to get through.
  */
-Route::filter('auth', function()
+Route::filter('auth.private', function($route, $request)
 {
-	$_SERVER['PHP_AUTH_USER'] = 'd9c6bf091a1a64cb5678d8c1d5e7360f';
-	if (isset($_SERVER['PHP_AUTH_USER']))
+	if (!isset($_SERVER['PHP_AUTH_PW']) || !isset($_SERVER['PHP_AUTH_USER']))
 	{
-		$key = $_SERVER['PHP_AUTH_USER'];
-
-		if (BasicAuth::getInstance()->verifySecret($key) == false)
-		{
-			return Response::view('error.401', array(), 401);
-		}
+		//Used by first request from browser that checks if HTTP AUTH is expected
+		return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
 	}
-	else 
-	{
+
+	if(! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
 		return Response::view('error.401', array(), 401);
-	}
-
 });
 
 
 /**
- * Only allows requests with public keys to get through.
+ * Allows requests with public keys (time based hash) to get through. (Also allows private key based requests too
  */
-Route::filter('auth.public', function()
+Route::filter('auth.public', function($route, $request)
 {
-	if (isset($_SERVER['PHP_AUTH_USER']))
-	{
-		$key = $_SERVER['PHP_AUTH_USER'];
-
-		if (BasicAuth::verifyPublic($key) == false)
+		if (!isset($_SERVER['PHP_AUTH_PW']) || !isset($_SERVER['PHP_AUTH_USER']))
 		{
-			return Response::view('error.401', array(), 401);
+			//Used by first request from browser that checks if HTTP AUTH is expected
+			return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
 		}
-	}
-	else return Response::view('error.401', array(), 401);
 
+		if(! BasicAuth::getInstance()->verifyPublic($_SERVER['PHP_AUTH_USER']))
+		{
+			if(! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
+				return Response::view('error.401', array(), 401);
+		}
+		// else
+		// {
+		// 	if(isset($_POST['hold']))
+		// 	{
+		// 		$request->merge(array('hold'=>1));
+		// 	}
+		// }
 });
 
 /*
@@ -109,4 +113,21 @@ Route::filter('csrf', function()
 	{
 		throw new Illuminate\Session\TokenMismatchException;
 	}
+});
+
+/*
+|--------------------------------------------------------------------------
+| X-Frame Protection Filter
+|--------------------------------------------------------------------------
+|
+| The X-Frame filter is responsible for protecting your application against
+| cross-site iframing. By default laravel does this but we have explicitly
+| removed that so this filter needs to be applied everywhere we don't need
+| iframe support
+|
+*/
+
+Route::filter('sameorigin', function($route, $request, $response)
+{
+	$response->headers->set('X-Frame-Options', 'SAMEORIGIN');
 });

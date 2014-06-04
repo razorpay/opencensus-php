@@ -1,12 +1,20 @@
 <?php
 
 namespace Gateway;
+use Trace\GatewayTrace;
 
 class BaseGateway
 {
     protected $txn_key_mappings = array();
 
     protected $card_key_mappints = array();
+
+    protected $trace;
+
+    public function __construct()
+    { 
+        $this->trace=new GatewayTrace;
+    }
 
     //not being used. Only HdfcGateway->process is used.
     public function process($input)
@@ -78,4 +86,5 @@ class BaseGateway
 
         $enroll_result = GetTextBetweenTags($initial_response, "<result>", "</result>");
     }
+    
 }

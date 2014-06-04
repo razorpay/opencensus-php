@@ -21,7 +21,7 @@ class SupportTest extends Transaction {
         //Seed the db with required data
         Eloquent::unguard();
         $key = Factory::create('Models\DAL\Key');
-        Eloquent::reguard();        
+        Eloquent::reguard();
     }
 
     public function tearDown()
@@ -31,14 +31,18 @@ class SupportTest extends Transaction {
     }
 
     /**
-    * Main test function, that is run by phpunit for testign the support transactions, calls other functions
-    */
-
+     * Tests the support transactions, calls capture & refund
+     * @group testSupport
+     * @group testCapture
+     * @group testRefund
+     */
     public function testSupport(){
-        
+        echo "\nTesting: Support Transactions \n";
+        echo "Creating New Transaction... \n";
+
         //GIVEN
         //create an auth transaction using card 12
-        $response = $this->createTransaction(12, true);
+        $response = $this->createTransaction(1);
 
         //get its transaction id
         $id=$response->id;
@@ -51,10 +55,14 @@ class SupportTest extends Transaction {
      * Tests capture transactions, attempts to capture all past transactions & ensures that the transaction specified by id is captured.
      */
     private function capture($id)
-    {      
+    {
+        echo "Testing: Capture Transaction \n";
+        echo "Expected Reponse: Status = Captured \n";
+        ob_flush();
+
         //WHEN
         //call for capture of transactions
-        $response = $this->action('POST', 'TransactionController@postCapture', array('transaction_id'=>$id));
+        $response = $this->action('POST', 'TransactionController@postCapture', array('id'=>$id));
         $content=$response->getContent();
 
         //THEN
@@ -72,9 +80,13 @@ class SupportTest extends Transaction {
      */
     private function refund($id)
     {
+        echo "Testing: Refund Transaction \n";
+        echo "Expected Reponse: Status = Refunded \n";
+        ob_flush();
+
         //WHEN
         //call for refund of transactions
-        $response = $this->action('POST', 'TransactionController@postRefund',  array('transaction_id' => $id));
+        $response = $this->action('POST', 'TransactionController@postRefund',  array('id' => $id));
         $content=$response->getContent();
 
         //THEN

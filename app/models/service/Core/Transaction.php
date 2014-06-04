@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\Service\Core;
 
@@ -7,6 +7,7 @@ use Models\Manager\TransactionStatus;
 use Models\DAL;
 use Gateway\GatewayManager;
 use Exceptions;
+use Trace\TransactionTrace;
 
 class Transaction
 {
@@ -14,53 +15,59 @@ class Transaction
 
     protected $card;
 
+    protected $trace;
+
+    public function __construct()
+    {
+        $this->trace = new TransactionTrace();
+    }
     /**
      * Creates an entry for a new transaction.
      */
     public function create($input = null)
     {
-        $card_token = null;
+        $cardToken = null;
 
-        $txn_input = $input;
-        
+        $txnInput = $input;
+
         if (! array_key_exists('card', $input))
         {
-            throw new \Exceptions\InvalidArgumentException('Card not provided');
+            throw new \Exceptions\InvalidArgumentException(' Transcation Exception: Card not provided');
         }
 
-        list($card_input, $card_token_input) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
+        if(strlen($input['card']['expiry_year']) == 2)
+            $input['card']['expiry_year'] = '20'.$input['card']['expiry_year'];
 
-        $card_data = Manager\Card::createValidate($card_input)->getData();
+        list($cardInput, $tokenInput) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
 
-        $card = DAL\Card::create($card_data);
+        $cardData = (new Card)->createAndReturnWithSensitiveData($cardInput);
 
-        $card_token_input['merchant_id'] = $input['merchant_id'];
-        
-        $card_token_data = Manager\CardToken::createValidate($card_token_input)->getData();
+        $token = (new Token)->create(
+                    $tokenInput, 
+                    $input['merchant_id'],
+                    $cardData['id']);
 
-        $card_token_data['card_id'] = $card->getId();
+        $txnInput['token'] = $token->token;
 
-        $token = DAL\CardToken::create($card_token_data);
+        unset($txnInput['card']);
 
-        $txn_input['token'] = $token->getToken();
-
-        unset($txn_input['card']);
-
-        $data = Manager\Transaction::createValidate($txn_input)->getData();
+        $data = Manager\Transaction::createValidate($txnInput)->getData();
 
         $txn = DAL\Transaction::createOrFail($data);
 
-        return array($txn, $card_data);
+        return array($txn, $cardData);
     }
 
     /**
      * Processes a transaction.
      */
-    public function process($txn, $card)
+    public function process(
+        DAL\Transaction $txn,
+        array $cardData)
     {
         if (! ($txn instanceof DAL\Transaction))
         {
-            throw new Exceptions\InvalidArgumentException('Invalid transaction id');
+            throw new Exceptions\InvalidArgumentException('Transaction Exception: Invalid transaction id');
         }
 
         $this->txn = $txn;
@@ -70,36 +77,44 @@ class Transaction
         //
         $txnInfo = array(
                     'txn' => $txn->toArray(),
-                    'card' => $card);
+                    'card' => $cardData);
 
         $gateway = new GatewayManager();
-        $status;
-        $data;
         
-        try{
+        $status = null;
+        $data = null;
+
+        try
+        {
             list($status, $data) = $gateway->process($txnInfo);
         }
         catch(\Requests_Exception $e)
-        {   
+        {
             //check if timeout has occured
-            if(strpos($e->xdebug_message, 'Operation timed out'))
-            {   
-                $status= TransactionStatus::TIMEOUT;
+            if(strpos($e->getMessage(), 'Operation timed out') || strpos($e->getMessage(), 'Network is unreachable'))
+            {
+                $status = TransactionStatus::FAILED;
                 $data['code'] = "TIMEOUT";
                 $data['message'] = 'Request timed out';
             }
-            else throw $e;         
+            else throw $e;
         }
 
-        
+        return $this->updateTransactionStatus($status, $data, $txn);
+    }
+
+    function updateTransactionStatus($status, $data, $txn)
+    {
 
         switch ($status)
         {
-            case TransactionStatus::ENROLLED:
+            case 'enrolled':
             return $data;
 
-            case TransactionStatus::NOT_ENROLLED:
-            $txn->setStatus('auth');
+            case 'not enrolled':
+            $txn->setStatus(TransactionStatus::AUTH);
+            // if (! $txn->getHold())
+            //     $txn->setCapturable(true);
             return $txn;
 
             //@todo: Update data on hold
@@ -118,13 +133,13 @@ class Transaction
             $txn = $this->fillErrorDetails($data, $txn);
             break;
 
-            case TransactionStatus::TIMEOUT:
+            case 'timeout':
             $this->updateTransactionFailed();
             $txn = $this->fillErrorDetails($data, $txn);
             break;
 
             default:
-            throw new \LogicException($status . ' is an invalid status');
+            throw new \LogicException('Transaction Exception: '.$status . ' is an invalid status');
         }
 
         return $txn;
@@ -132,7 +147,7 @@ class Transaction
 
     /**
      * Capture a preivous auth transaction
-     * 
+     *
      * @param  [type] $txn [description]
      * @return [type]      [description]
      */
@@ -144,11 +159,21 @@ class Transaction
     protected function updateTransactionAuth()
     {
         $this->txn->setStatus(TransactionStatus::AUTH);
+
+        //Logging
+        $this->trace->info(
+            TransactionTrace::TRANSACTION_AUTHED, 
+            $this->txn->toArray() + array('message' => 'Transaction Auth Successfull'));
     }
 
     protected function updateTransactionCaptured()
     {
         $this->txn->setStatus(TransactionStatus::CAPTURED);
+
+        //Logging
+        $this->trace->info(
+            TransactionTrace::TRANSACTION_CAPTURED, 
+            $this->txn->toArray() + array('message' => 'Transaction Capture Successfull'));
     }
 
     protected function updateTransactionFailed()
@@ -162,8 +187,13 @@ class Transaction
     }
 
     protected function fillErrorDetails($error, $txn)
-    {   
+    {
         $txn->setError($error);
+
+        //Logging
+        $this->trace->error(
+            TransactionTrace::TRANSACTION_FAILED, 
+            $txn->toArray() + array('message' => 'Transaction Failed'));
 
         return $txn;
     }

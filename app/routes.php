@@ -31,34 +31,38 @@
 |		});
 |
 */
-
-Route::group(array('before' => 'auth.public'), function()
+Route::group(array('after' => 'sameorigin'), function()
 {
-	;
+	Route::group(array('before' => 'auth.public'), function()
+	{
+		Route::post('transactions', 'TransactionController@postIndex');
+
+		Route::get('transactions/jsonp', 'TransactionController@getJSONP');
+		
+	});
+
+	Route::group(array('before' => 'auth.private'), function()
+	{
+		Route::post('tokens', 'CardController@postIndex');
+
+		Route::get('tokens/{token}', 'CardController@getRetrieve');
+
+		Route::get('transactions/{param}', 'TransactionController@getIndex');
+
+		Route::get('transactions', 'TransactionController@getIndex');
+
+		Route::post('transactions/{id}/refund', 'TransactionController@postRefund');
+
+		Route::post('transactions/{id}/capture', 'TransactionController@postCapture');
+
+		//@todo: temporary
+		//create an artisan command and get rid of this
+		Route::get('capture', 'TransactionController@capture');
+
+	});
 });
 
-Route::group(array('before' => 'auth'), function()
-{
-	Route::post('transactions', 'TransactionController@postIndex');
-
-	Route::post('tokens', 'CardController@postIndex');
-
-	Route::get('tokens/{token}', 'CardController@getRetrieve');
-
-	Route::get('transactions/{param}', 'TransactionController@getIndex');
-
-	Route::get('transactions', 'TransactionController@getIndex');
-
-	Route::post('transactions/refund', 'TransactionController@postRefund');
-
-	Route::post('transactions/capture', 'TransactionController@postCapture');
-
-	//@todo: temporary
-	//create an artisan command and get rid of this
-	Route::get('capture', 'TransactionController@capture');
-});
-
-	Route::post('transactions/callback', 'TransactionController@postCallback');
+Route::post('transactions/callback', 'TransactionController@postCallback');
 
 Route::get('/', function()
 {
@@ -91,4 +95,3 @@ Event::listen('500', function($exception)
 	return Err::handle_error('500', $exception);
 	// return Response::error('500');
 });
-

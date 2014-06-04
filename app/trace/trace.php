@@ -2,19 +2,13 @@
 
 namespace Trace;
 
+use Queue;
 use Config;
 use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Handler\FilterHandler;
-use Monolog\Formatter\JsonFormatter;
+use Trace\TraceHandler;
 
-class Trace extends Logger
+class Trace
 {
-    // used as channel for Monolog\Logger
-    const CHANNEL = "trace";
-
-    // path of file used for logging
-    const LOGPATH = '/home/abhi/tmp/rzpapi/transaction.log';
 
     /**
      * Name of the application component
@@ -52,27 +46,26 @@ class Trace extends Logger
      */
     protected $values = array();
 
-    public function __construct()
+    public function __call($name, $arguments)
     {
-        parent::__construct(static::CHANNEL);
+        $code = $arguments[0];
+        $traceMessage = $arguments[1];
 
-        $formatter = new JsonFormatter();
+        $level;
 
-        $stream = new StreamHandler(static::LOGPATH);
-        $stream->setFormatter($formatter);
+        $message = $traceMessage['message'];
 
-        $minLevel = Config::get('app.debug') ? Logger::DEBUG : Logger::INFO;
-        $filter = new FilterHandler($stream, $minLevel);
+        unset($traceMessage['message']);
 
-        $this->pushHandler($filter);
+        $this->updateAllValues($code, $traceMessage);
 
-        $this->pushProcessor(function($record)
-            {
-                $record['extra']['client_ip'] = \Request::getClientIp();
-                $record['extra']['server_ip'] = \Request::server('SERVER_ADDR');
-
-                return $record;
-            });
+        // determine level based on function called
+        $level = strtoupper($name);
+        
+        // Queue logging the record
+        $this->queueRecord(
+            constant('\Monolog\Logger::'.$level), 
+            $message);
     }
 
     /**
@@ -82,6 +75,9 @@ class Trace extends Logger
      */
     protected function updateAllValues($code, $traceMessage)
     {
+        $this->compulsoryFieldValues = array();
+        $this->values = array();
+
         foreach($traceMessage as $key => $value)
         {
             if(in_array($key, static::$compulsoryFields))
@@ -95,98 +91,13 @@ class Trace extends Logger
         }
     }
 
-    public function addRecord($level, $message, array $context = array())
+    public function queueRecord($level, $message, array $context = array())
     {
         $context = array_merge($this->compulsoryFieldValues, $this->values);
 
-        parent::addRecord($level, $message, $context);
-    }
-
-    public function debug($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->addRecord(Logger::DEBUG, $message);
-    }
-
-    public function info($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->addRecord(Logger::INFO, $message);
-    }
-
-    public function notice($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->addRecord(Logger::NOTICE, $message);
-    }
-
-    public function warning($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->addRecord(Logger::WARNING, $message);
-    }
-
-    public function error($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->addRecord(Logger::ERROR, $message);
-    }
-
-    public function critical($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->addRecord(Logger::CRITICAL, $message);
-    }
-
-    public function alert($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->addRecord(Logger::ALERT, $message);
-    }
-
-    public function emergency($code, array $traceMessage = array())
-    {
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        $this->addRecord(Logger::EMERGENCY, $message);
+        Queue::push('Trace\TraceHandler', array(
+            'level' => $level,
+            'message' => $message,
+            'context' => $context));
     }
 }

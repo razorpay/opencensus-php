@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\DAL;
 
@@ -25,7 +25,7 @@ class Transaction extends UuidDAL
         'status',
         'amount',
         'currency',
-        'hold',
+        // 'hold',
         'description',
         'udf',
         );
@@ -36,7 +36,7 @@ class Transaction extends UuidDAL
         'currency',
         'livemode',
         'status',
-        'hold',
+        // 'hold',
         'udf',
         'error',
         'created_at',
@@ -85,11 +85,11 @@ class Transaction extends UuidDAL
         }
         else
         {
-            if (isset($param['from_created'])) 
+            if (isset($param['from_created']))
             {
                 $query = $query->where('created_at', '>', $param['from_created']);
             }
-            
+
             if (isset($param['to_created']))
             {
                 $query = $query->where('created_at', '<', $param['to_created']);
@@ -119,7 +119,7 @@ class Transaction extends UuidDAL
     }
 
     public static function validateFetchParams(array $param)
-    {   
+    {
         validate(self::$fetch_param_rules, $param);
     }
 
@@ -133,12 +133,12 @@ class Transaction extends UuidDAL
         return true;
     }
 
-    public static function fetchById($id = NULL)
+    public static function fetchById($id = null)
     {
-        if (! (NULL === $id))
+        if (! (null === $id))
             return self::findOrFail($id);
         else
-            throw new \InvalidArgumentException('No transaction id present');
+            throw new \InvalidArgumentException('Transaction Exception: No transaction id present');
     }
 
 
@@ -196,17 +196,17 @@ class Transaction extends UuidDAL
 
             if ($this->token === null)
             {
-                throw new \InvalidArgumentException('No card present');
+                throw new \InvalidArgumentException('Transaction Exception: No card present');
             }
 
             if ($token !== null)
             {
                 $card_do = $token->card()->first();
             }
-            
+
             if ($card_do === null)
             {
-                throw new \UnexpectedValueException('No card do present to fetch card data');
+                throw new \UnexpectedValueException('Transaction Exception: No card do present to fetch card data');
             }
 
             $card_data = $card_do->getCardData();
@@ -240,14 +240,27 @@ class Transaction extends UuidDAL
 
     public function setError($error = false)
     {
-        $this->setAttribute('error', $error['code']);
+        if(isset($error['code'])) $this->setAttribute('error', $error['code']);
+        else $this->setAttribute('error', $error);
         $this->save();
         $this->error = $error;
     }
 
-    public function checkIfHold()
-    {
-        return $this->getAttribute('hold');
-    }
+    // public function getHold()
+    // {
+    //     return ($this->getAttribute('hold') == '1');
+    // }
+
+    // public function setCapturable($status = true)
+    // {
+    //     $this->capturable = $status;
+    // }
+
+    // public function unsetAndGetCapturable()
+    // {
+    //     $capturable = (isset($this->capturable)) ? $this->capturable : false;
+    //     unset($this->capturable);
+    //     return $capturable;
+    // }
 
 }

@@ -6,44 +6,10 @@ use Models\DAL;
 use Models\Manager;
 
 class BasicAuth extends \Singleton {
-    
+
     private $Key = null;
 
     private $Merchant = null;
-
-    public function verify($key)
-    {
-        if ($key === null)
-        {
-            throw new \InvalidArgumentException('NULL not an accepted key');
-        }
-
-        $Key = DAL\Key::find($key);
-        
-        if ($Key === null)
-        {
-            return false;
-        }
-        else if ($Key->active == 0)
-        {
-            return false;
-        }
-        
-        $merchant_id = $Key->merchant_id;
-        
-        $Merchant = DAL\Merchant::find($merchant_id);
-
-        if(null == $Merchant)
-        {
-            throw new \InvalidArgumentException("Key does not match any merchant");
-        }
-
-        $this->Key = $Key;
-
-        $this->Merchant = $Merchant;
-
-        return true;
-    }
 
     public function check()
     {
@@ -51,7 +17,7 @@ class BasicAuth extends \Singleton {
             ($this->Merchant == null))
             return false;
         else
-            return true;    
+            return true;
     }
 
     public function Key()
@@ -74,21 +40,78 @@ class BasicAuth extends \Singleton {
         return $this->Key->live;
     }
 
-    public function verifySecret($key = null)
+    public function verifySecret($key_id = null, $key_secret = null)
     {
-        return (($this->verify($key)) and
-                ($this->secret()));
+        if ($key_id === null || $key_secret === null )
+        {
+            throw new \InvalidArgumentException('Invalid Key Details');
+        }
+
+        $Key = DAL\Key::find($key_id);
+
+        if ($Key === null)
+        {
+            return false;
+        }
+        else if ($Key->active == 0)
+        {
+            return false;
+        }
+        else if (! \Hash::check($key_secret, $Key->secret))
+        {
+          return false;
+        }
+
+        $merchant_id = $Key->merchant_id;
+
+        $Merchant = DAL\Merchant::find($merchant_id);
+
+        if(null == $Merchant)
+        {
+            throw new \InvalidArgumentException("Key does not match any merchant");
+        }
+
+        $this->Key = $Key;
+
+        $this->Merchant = $Merchant;
+
+        return true;
     }
 
-    public function secret()
-    {
-        return (($this->check()) and
-                ($this->Key->secret));
-    }
 
-    public function verifyPublic($key = null)
+
+    public function verifyPublic($key_id = null)
     {
-        return !$this->verifySecret($key);
+        if ($key_id === null)
+        {
+            throw new \InvalidArgumentException('Invalid Credentials');
+        }
+
+        $Key = DAL\Key::find($key_id);
+
+        if ($Key === null)
+        {
+            return false;
+        }
+        else if ($Key->active == 0)
+        {
+            return false;
+        }
+        
+        $merchant_id = $Key->merchant_id;
+
+        $Merchant = DAL\Merchant::find($merchant_id);
+
+        if(null == $Merchant)
+        {
+            throw new \InvalidArgumentException("Key does not match any merchant");
+        }
+
+        $this->Key = $Key;
+
+        $this->Merchant = $Merchant;
+
+        return true;
     }
 
 }

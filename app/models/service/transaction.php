@@ -1,21 +1,22 @@
-<?php 
+<?php
 
 namespace Models\Service;
 
 use Models\Manager;
 use Models\DAL;
 use Gateway\GatewayManager;
-use Rhumsaa\Uuid\Uuid;
-use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
+use Trace\TransactionTrace;
 
 class Transaction extends Service
 {
     protected $txn;
+    protected $trace;
 
     public function __construct()
     {
         parent::__construct();
         $this->txn = new Core\Transaction();
+        $this->trace = new TransactionTrace();
     }
 
     /**
@@ -23,11 +24,19 @@ class Transaction extends Service
      */
     public function process(array $input)
     {
-        list($txn, $card) = $this->txn->create($input);
+        $this->trace->debug(
+        	TransactionTrace::NEW_TRANSACTION_REQUEST, 
+        	$input + array('message' => 'New Transaction Requested'));
 
-        $txn = $this->txn->process($txn, $card);
+        list($txn, $cardData) = $this->txn->create($input);
 
-        if(!is_array($txn))
+        $this->trace->debug(
+        	TransactionTrace::TRANSACTION_CREATED, 
+        	$txn->toArray() + array('message' => 'New Transaction Created'));
+
+        $txn = $this->txn->process($txn, $cardData);
+
+        if(! is_array($txn))
             $txn = $txn->toArray();
 
         return $txn;
@@ -36,7 +45,7 @@ class Transaction extends Service
     public function retrieveMultiple(array $input)
     {
         $txn = new DAL\Transaction;
-        
+
         $txn_data_arr = $txn->fetch($input);
 
         $count = count($txn_data_arr);
@@ -44,7 +53,7 @@ class Transaction extends Service
         return array('count' => $count, 'data' => $txn_data_arr->toArray());
     }
 
-    public function retrieve($id = NULL)
+    public function retrieve($id = null)
     {
         Manager\Transaction::validateTransactionId($id);
 
@@ -61,17 +70,48 @@ class Transaction extends Service
      */
 
     public function refund($txn_data = NULL)
-    {   
+    {
         //Don't continue if already refunded
-        if($txn_data->getRefunded()) return;
 
+        if($txn_data->getRefunded())
+        {
+            $txn_data->setError([
+                'code' => 'FSS00002',
+                'message' => 'Duplicate Transaction Request'
+            ]);
+            return;
+        }
+        if(! $txn_data->getCaptured())
+        {
+            $txn_data->setError([
+                'code' => 'RP00002',
+                'message' => 'Uncaptured Transaction'
+            ]);
+            return;
+        }
         $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
 
         $gateway = new GatewayManager();
 
-        $status = $gateway->refund($data);
+        list($status, $error) = $gateway->refund($data);
 
-        if($status) $txn_data->setStatus('refunded');
+        if($status){
+            $txn_data->setStatus('refunded');
+
+            //Logging
+            $this->trace->info(
+            	TransactionTrace::TRANSACTION_REFUNDED, 
+            	$txn_data->toArray() + array('message' => 'Transaction Refunded'));
+        }
+        else
+        {
+            $txn_data->setError($error);
+
+            //Logging
+            $this->trace->error(
+            	TransactionTrace::TRANSACTION_REFUND_FAILED, 
+            	$txn_data->toArray() + array('message' => 'Transaction Refund Request Failed'));
+        }
     }
 
     /**
@@ -79,29 +119,49 @@ class Transaction extends Service
      * Pass \DAL\Transaction object as argument
      */
 
-    public function capture($txn_data = NULL)
+    public function capture($txnData = null)
     {
         //Don't continue if already captured
-        if($txn_data->getCaptured()) return;
+        if($txnData->getCaptured())
+        {
+            $txnData->setError([
+                'code' => 'FSS00002',
+                'message' => 'Duplicate Transaction Request'
+            ]);
+            return;
+        }
 
-        $data = array('txn' => $txn_data->toArrayEx(DAL\Transaction::WITH_CARD));
+        $data = array('txn' => $txnData->toArrayEx(DAL\Transaction::WITH_CARD));
 
         $gateway = new GatewayManager();
 
         list($status, $error) = $gateway->capture($data);
 
-        if($status) $txn_data->setStatus('captured');
+        if($status)
+        {
+            $txnData->setStatus(Manager\TransactionStatus::CAPTURED);
+
+            //Logging
+            $this->trace->info(
+            	TransactionTrace::TRANSACTION_CAPTURED, 
+            	$txnData->toArray() + array('message' => 'Transaction Captured'));
+        }
         else
         {
-            $txn_data->setStatus('capture_failed');
-            $txn_data->setError($error);
+            $txnData->setStatus('capture_failed');
+            $txnData->setError($error);
+
+            //Logging
+            $this->trace->error(
+            	TransactionTrace::TRANSACTION_CAPTURE_FAILED, 
+            	$txnData->toArray() + array('message' => 'Transaction Capture Request Failed'));
         }
     }
 
     public function bankAcsCallback(array $input)
     {
         unset($input['csrf']);
-        
+
         $gateway = new GatewayManager();
 
         list($processed, $id, $error) = $gateway->bankAcsCallback($input);
@@ -112,16 +172,27 @@ class Transaction extends Service
 
         if ($processed === true)
         {
-            $txn_data->setStatus('auth');
-            if(! $txn_data->checkIfHold())
-            {
-                $this->capture($txn_data);
-            }
+            $txn_data->setStatus(Manager\TransactionStatus::AUTH);
+
+            //Logging
+            $this->trace->info(
+            	TransactionTrace::TRANSACTION_AUTHED, 
+            	$txn_data->toArray() + array('message' => 'Transaction Auth Successfull'));
+
+            // if(! $txn_data->getHold())
+            // {
+            //     $this->capture($txn_data);
+            // }
         }
         else
-        {   
-            $txn_data->setStatus('failed');
+        {
+            $txn_data->setStatus(Manager\TransactionStatus::FAILED);
             $txn_data->setError($error);
+
+            //Logging
+            $this->trace->error(
+            	TransactionTrace::TRANSACTION_FAILED, 
+            	$txn_data->toArray() + array('message' => 'Transaction Auth Failed'));
         }
 
 

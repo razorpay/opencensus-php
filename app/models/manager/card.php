@@ -4,6 +4,7 @@ namespace Models\Manager;
 
 use \Validator;
 use Models\DAL;
+use Models\Service;
 
 class Card extends EntityManager
 {
@@ -31,7 +32,7 @@ class Card extends EntityManager
 
     protected static $createValidators = array('address');
 
-    protected static $generators = array('last4', 'country', 'type');
+    protected static $generators = array('last4');
 
     protected function validateAddress($input)
     {
@@ -71,15 +72,21 @@ class Card extends EntityManager
         $this->setField('last4', $last4);
     }
 
-    public function generateType($input)
+    public function fillNetworkDetails($details)
     {
-        $this->setField('type', 'visa');
+        $network = CardNetwork::detectNetwork(
+            $this->getField('number'));
+
+        $this->setField('network', $network);
+
+        if ($details)
+        {
+            $arr = array(
+                'type' => $details['card_type'],
+                'bank' => $details['bank'],
+                'country' => $details['country']);
+
+            $this->fill($arr);
+        }
     }
-
-    public function generateCountry($input)
-    {
-        $this->setField('country', 'IN');
-    }
-
-
 }

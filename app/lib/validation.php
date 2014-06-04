@@ -67,3 +67,17 @@ Validator::extend('expiry_year', function($attribute, $value, $parameters)
 
 	return true;
 });
+
+Validator::extend('card_type', function($attribute, $value, $parameters)
+{
+	$type = $value;
+
+	$supportedTypes = array('CREDIT', 'DEBIT');
+
+	if(in_array($type, $supportedTypes))
+	{
+		return true;
+	}
+
+	return false;
+});
