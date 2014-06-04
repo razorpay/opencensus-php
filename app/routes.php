@@ -13,6 +13,8 @@
 
 Route::get('/login', 'MerchantController@getLogin');
 
+Route::get('/register', 'MerchantController@getRegister');
+
 // Route::group(array('before' => 'auth'), function()
 // {
 

@@ -12,4 +12,9 @@ class MerchantController extends BaseController {
 		return View::make('merchants.getLogin');
 	}
 
+	public function getRegister()
+	{
+		return View::make('merchants.getRegister');
+	}
+
 }

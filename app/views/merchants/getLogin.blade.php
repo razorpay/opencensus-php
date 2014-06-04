@@ -2,7 +2,7 @@
 
 @section('content')
 	<div class="grid grid-pad">
-		<div class="centered" id="login-wrapper">
+		<div class="centered form-wrapper">
 			<div class="content">
 				<h2>Sign In</h2>
 				<form method="POST" action="/login">
@@ -18,7 +18,7 @@
 							<a class="forgot" href="./reset">Forgot Password?</a>
 						</div>
 					</div>
-					<button id="login-button">Sign In</button>
+					<button id="form-button">Sign In</button>
 				</form>
 				<div class="form-footer">
 					<div class="footer-text">
