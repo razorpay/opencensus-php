@@ -390,20 +390,24 @@ $(document).ready(function()
 
     /* Routing (using path.js) */
 
-    Path.map("#!/").to(function(){
-        rzpd.hooks.renderDashboard();
-    }).enter(rzpd.hooks.changePanel);
+    if (document.getElementById('dashboard-wrapper') !== null)
+    {
+        Path.map("#!/").to(function(){
+            rzpd.hooks.renderDashboard();
+        }).enter(rzpd.hooks.changePanel);
 
-    Path.map("#!/transactions").to(function(){
-        rzpd.hooks.renderTransactions();
-    }).enter(rzpd.hooks.changePanel);
+        Path.map("#!/transactions").to(function(){
+            rzpd.hooks.renderTransactions();
+        }).enter(rzpd.hooks.changePanel);
 
-    Path.map("#!/logs").to(function(){
-        rzpd.hooks.renderLogs();
-    }).enter(rzpd.hooks.changePanel);
+        Path.map("#!/logs").to(function(){
+            rzpd.hooks.renderLogs();
+        }).enter(rzpd.hooks.changePanel);
 
 
-    Path.root("#!/");
+        Path.root("#!/");
 
-    Path.listen();
+        Path.listen();
+    }
+
 });
