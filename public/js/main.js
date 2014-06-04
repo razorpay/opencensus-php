@@ -7,6 +7,8 @@ $(document).ready(function()
         grey: '#999999'
     };
 
+    rzpd.tabs = ['dashboard','payments','customers','transfers','recipients','plans','logs'];
+
     rzpd.config = {
         intervalValue: 'day'
     };
@@ -117,8 +119,7 @@ $(document).ready(function()
             new Highcharts.Chart(settings);
         },
 
-        renderDatepickers: function()
-        {
+        renderDatepickers: function() {
             rzpd.views.date_start = new Pikaday({
                 field: document.getElementById('date-start'),
                 firstDay: 1,
@@ -142,8 +143,7 @@ $(document).ready(function()
             });
         },
 
-        plotTransactionsChart: function(data)
-        {
+        plotTransactionsChart: function(data) {
             rzpd.views.setChart('transactions-line-chart', 'area', 'Transactions', [{'data': data}], {
                 yAxis : {
                     title : {
@@ -178,6 +178,31 @@ $(document).ready(function()
                     }
                 }
             });
+        },
+
+        showLoader: function() {
+            $('#loader').removeClass('hidden');
+        },
+
+        hideLoader: function() {
+            $('#loader').addClass('hidden');
+        },
+
+        showDiv: function(div) {
+            $(div).removeClass('hidden');
+        },
+
+        hideDiv: function(div) {
+            $(div).addClass('hidden');
+        },
+
+        hidePanels: function(div) {
+            rzpd.views.hideDiv('.panel');
+        },
+
+        changePanel: function() {
+            rzpd.views.hidePanels();
+            rzpd.views.showLoader();
         }
     };
 
@@ -191,7 +216,7 @@ $(document).ready(function()
             rzpd.views.changeGraphInterval($(this));
         },
 
-        plotTransactionsChart: function() {
+        plotTransactionsChart: function(parentDiv) {
             $.ajax({
                 url: './sample.json',
                 type: 'GET',

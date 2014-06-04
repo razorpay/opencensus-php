@@ -43,7 +43,14 @@
 		</div>
 		<div class="col-9-12 spaced-right-box">
 			<div class="content boxed" id="dashboard-wrapper">
-				<div id="dashboard">
+				<div id="loader" class="spinner hidden">
+					<div class="rect1"></div>
+					<div class="rect2"></div>
+					<div class="rect3"></div>
+					<div class="rect4"></div>
+					<div class="rect5"></div>
+				</div>
+				<div id="dashboard" class="hidden panel">
 					<div class="horizontal-data-wrapper">
 						<div class="data-item col-1-4">
 							<div class="data-item-value">₹2,449</div>
