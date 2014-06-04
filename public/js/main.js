@@ -85,6 +85,11 @@ $(document).ready(function()
                     area : {
                         fillOpacity : 0.1,
                         lineWidth : 2,
+                        states : {
+                            hover: {
+                                lineWidth: 2
+                            }
+                        },
                         marker : {
                             radius : 3,
                             lineWidth: 2,
