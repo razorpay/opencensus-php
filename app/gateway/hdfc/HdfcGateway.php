@@ -306,7 +306,9 @@ class HdfcGateway extends BaseGateway
         list($data['id'], $data['password']) = $this->getCredentials();
         
         //Logging
-        $log_content = $this->stripSensitive($this->authEnrolledRequest) + array('message'=>'Auth request sent for enrolled card');
+        $log_content = $this->stripSensitive(
+            $this->authEnrolledRequest) + array('message'=>'Auth request sent for enrolled card');
+        
         $this->trace->debug(GatewayTrace::ENROLLED_AUTH_REQUEST, $log_content);
 
         $this->runRequestResponseFlow(
@@ -396,7 +398,7 @@ class HdfcGateway extends BaseGateway
             $log_content = $this->stripSensitive($notEnrollResponse) + array('message'=>'Not Enrolled request failed');
             $this->trace->error(GatewayTrace::NOT_ENROLLED_FAILED, $log_content);
         }
-        return array('not enrolled', 
+        return array('not enrolled',
                      array(
                         'data' => $notEnrollResponse['data']
                         ));

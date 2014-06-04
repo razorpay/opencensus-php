@@ -14,6 +14,7 @@ class HdfcGatewayErrorHandler
         'GW00152'   => 'Invalid Transaction Amount',
         'GW00153'   => 'Invalid Transaction ID',
         'GW00154'   => 'Invalid Terminal ID',
+        'GW00159'   => 'Card Number Missing',
         'GW00181'   => 'Failed Credit Greater Than Debit check',
         'GW00205'   => 'Invalid Subsequent Transaction',
         'GW00157'   => 'Invalid Payment Instrument',
