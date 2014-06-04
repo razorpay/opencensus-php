@@ -19,7 +19,7 @@ class CreateHdfcGateway extends Migration {
 
             $table->string('trackid', 32);
 
-            $table->bigInteger('paymentid')
+            $table->bigInteger('transactionid')
                   ->unsigned()
                   ->nullable();
 

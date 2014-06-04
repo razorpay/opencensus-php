@@ -20,8 +20,6 @@ class CreateMerchants extends Migration {
             $table->string('email', 255)
                   ->unique();
 
-            $table->string('pwd', 50);  // For storing passwords in string form. *Not for production*
-
             $table->string('hash', 100); // For storing passwords after encrypting them.
 
             $table->integer('created_at');  

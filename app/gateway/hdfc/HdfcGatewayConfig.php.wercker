@@ -4,6 +4,8 @@ namespace Gateway\HdfcGateway;
 
 final class HdfcGatewayConfig
 {
+    const TIMEOUT = 30;
+
     public static function getCreds(){
         $id = getenv('HDFC_ID');
         $password = getenv('HDFC_PASSWORD');
