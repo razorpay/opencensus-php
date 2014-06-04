@@ -12,7 +12,7 @@ class TransactionController extends BaseController
     * @param token (optional)
     *
     */
-    public function getIndex ($param=NULL)
+    public function getIndex($param = null)
     {
         $merchant_id = BasicAuth::getInstance()->MerchantId();
         $merchant = BasicAuth::getInstance()->Merchant();

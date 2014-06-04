@@ -6,7 +6,7 @@ class InvalidKeysException extends InvalidRequestException
 {
     protected $keys;
 
-    public function __construct(array $keys, $code = 0 , Exception $previous = NULL)
+    public function __construct(array $keys, $code = 0 , Exception $previous = null)
     {
     	$n = count($keys);
 
