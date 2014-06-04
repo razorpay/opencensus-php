@@ -11,7 +11,7 @@
 						<input type="password" placeholder="Password" name="password">
 						<input type="password" placeholder="Confirm Password" name="password-confirm">
 					</div>
-					<button id="form-button">Sign Up</button>
+					<button id="form-button">Register</button>
 				</form>
 				<div class="form-footer">
 					<div class="footer-text">
