@@ -21,6 +21,22 @@ class GatewayTrace extends Trace
     const SUPPORT_RESPONSE = 'SUPPORT_RESPONSE';
     const SUPPORT_ERROR = 'SUPPORT_ERROR';
     
+    protected static $defaults = array('message');
+
+    protected static $defaultMessage = array(
+        self::ENROLL_REQUEST                => 'Request for enrollment sent',
+        self::ENROLL_RESPONSE               => 'Enrollment response received',
+        self::ENROLL_ERROR                  => 'Error in enrollment',
+        self::NOT_ENROLLED_REQUEST          => 'Request for not-enrolled card',
+        self::NOT_ENROLLED_RESPONSE         => 'Response for not-enrolled card received',
+        self::NOT_ENROLLED_ERROR            => 'Error occured for not-enrolled card',
+        self::ENROLLED_AUTH_REQUEST         => 'Authentication request sent for enrolled card',
+        self::ENROLLED_AUTH_RESPONSE        => 'Authentication response received for enrolled card',
+        self::ENROLLED_AUTH_ERROR           => 'Error occured for enrolled card',
+        self::SUPPORT_REQUEST               => 'Support request',
+        self::SUPPORT_RESPONSE              => 'Support response',
+        self::SUPPORT_ERROR                 => 'Error occured for support'
+        );
 
     protected $component = 'gateway';
 
