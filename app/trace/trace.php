@@ -60,37 +60,12 @@ class Trace
         $this->updateAllValues($code, $traceMessage);
 
         // determine level based on function called
-        switch ($name) {
-            case 'debug':
-                $level = Logger::DEBUG;
-                break;
-            case 'info':
-                $level = Logger::INFO;
-                break;
-            case 'notice':
-                $level = Logger::NOTICE;
-                break;
-            case 'warning':
-                $level = Logger::WARNING;
-                break;
-            case 'error':
-                $level = Logger::ERROR;
-                break;
-            case 'critical':
-                $level = Logger::CRITICAL;
-                break;
-            case 'alert':
-                $level = Logger::ALERT;
-                break;
-            case 'emergency':
-                $level = Logger::EMERGENCY;
-                break;
-            default:
-                $level = 100;
-                break;
-        }
-
-        $this->queueRecord($level, $message);
+        $level = strtoupper($name);
+        
+        // Queue logging the record
+        $this->queueRecord(
+            constant('\Monolog\Logger::'.$level), 
+            $message);
     }
 
     /**
