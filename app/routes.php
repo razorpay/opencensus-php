@@ -11,4 +11,11 @@
 |
 */
 
-Route::get('/', 'HomeController@getIndex');
+Route::get('/login', 'MerchantController@getLogin');
+
+// Route::group(array('before' => 'auth'), function()
+// {
+
+	Route::get('/', 'MerchantController@getIndex');
+
+// }
