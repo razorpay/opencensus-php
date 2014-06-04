@@ -133,9 +133,9 @@ class Transaction extends UuidDAL
         return true;
     }
 
-    public static function fetchById($id = NULL)
+    public static function fetchById($id = null)
     {
-        if (! (NULL === $id))
+        if (! (null === $id))
             return self::findOrFail($id);
         else
             throw new \InvalidArgumentException('Transaction Exception: No transaction id present');

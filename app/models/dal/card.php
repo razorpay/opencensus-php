@@ -8,7 +8,6 @@ class Card extends DAL
 
     protected $fillable = array(
         'name',
-        'cvv',
 
         'expiry_month',
         'expiry_year',
@@ -32,7 +31,7 @@ class Card extends DAL
 
     protected $guarded = array('id');
 
-    protected $appends = array('object');
+//    protected $appends = array('object');
 
     public function getId()
     {
@@ -71,5 +70,4 @@ class Card extends DAL
 
         return $data;
     }
-
 }

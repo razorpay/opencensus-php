@@ -26,9 +26,9 @@ class Transaction
      */
     public function create($input = null)
     {
-        $card_token = null;
+        $cardToken = null;
 
-        $txn_input = $input;
+        $txnInput = $input;
 
         if (! array_key_exists('card', $input))
         {
@@ -38,35 +38,32 @@ class Transaction
         if(strlen($input['card']['expiry_year']) == 2)
             $input['card']['expiry_year'] = '20'.$input['card']['expiry_year'];
 
-        list($card_input, $card_token_input) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
+        list($cardInput, $tokenInput) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
 
-        $card_data = Manager\Card::createValidate($card_input)->getData();
+        $cardData = (new Card)->createAndReturnWithSensitiveData($cardInput);
 
-        $card = DAL\Card::create($card_data);
+        $token = (new Token)->create(
+                    $tokenInput, 
+                    $input['merchant_id'],
+                    $cardData['id']);
 
-        $card_token_input['merchant_id'] = $input['merchant_id'];
+        $txnInput['token'] = $token->token;
 
-        $card_token_data = Manager\CardToken::createValidate($card_token_input)->getData();
+        unset($txnInput['card']);
 
-        $card_token_data['card_id'] = $card->getId();
-
-        $token = DAL\CardToken::create($card_token_data);
-
-        $txn_input['token'] = $token->getToken();
-
-        unset($txn_input['card']);
-
-        $data = Manager\Transaction::createValidate($txn_input)->getData();
+        $data = Manager\Transaction::createValidate($txnInput)->getData();
 
         $txn = DAL\Transaction::createOrFail($data);
 
-        return array($txn, $card_data);
+        return array($txn, $cardData);
     }
 
     /**
      * Processes a transaction.
      */
-    public function process($txn, $card)
+    public function process(
+        DAL\Transaction $txn,
+        array $cardData)
     {
         if (! ($txn instanceof DAL\Transaction))
         {
@@ -80,13 +77,15 @@ class Transaction
         //
         $txnInfo = array(
                     'txn' => $txn->toArray(),
-                    'card' => $card);
+                    'card' => $cardData);
 
         $gateway = new GatewayManager();
-        $status;
-        $data;
+        
+        $status = null;
+        $data = null;
 
-        try{
+        try
+        {
             list($status, $data) = $gateway->process($txnInfo);
         }
         catch(\Requests_Exception $e)
@@ -94,20 +93,26 @@ class Transaction
             //check if timeout has occured
             if(strpos($e->getMessage(), 'Operation timed out') || strpos($e->getMessage(), 'Network is unreachable'))
             {
-                $status= TransactionStatus::TIMEOUT;
+                $status = TransactionStatus::FAILED;
                 $data['code'] = "TIMEOUT";
                 $data['message'] = 'Request timed out';
             }
             else throw $e;
         }
 
+        return $this->updateTransactionStatus($status, $data, $txn);
+    }
+
+    function updateTransactionStatus($status, $data, $txn)
+    {
+
         switch ($status)
         {
-            case TransactionStatus::ENROLLED:
+            case 'enrolled':
             return $data;
 
-            case TransactionStatus::NOT_ENROLLED:
-            $txn->setStatus('auth');
+            case 'not enrolled':
+            $txn->setStatus(TransactionStatus::AUTH);
             // if (! $txn->getHold())
             //     $txn->setCapturable(true);
             return $txn;
@@ -128,7 +133,7 @@ class Transaction
             $txn = $this->fillErrorDetails($data, $txn);
             break;
 
-            case TransactionStatus::TIMEOUT:
+            case 'timeout':
             $this->updateTransactionFailed();
             $txn = $this->fillErrorDetails($data, $txn);
             break;
@@ -156,7 +161,9 @@ class Transaction
         $this->txn->setStatus(TransactionStatus::AUTH);
 
         //Logging
-        $this->trace->info(TransactionTrace::TRANSACTION_AUTHED, $this->txn->toArray() + array('message' => 'Transaction Auth Successfull'));
+        $this->trace->info(
+            TransactionTrace::TRANSACTION_AUTHED, 
+            $this->txn->toArray() + array('message' => 'Transaction Auth Successfull'));
     }
 
     protected function updateTransactionCaptured()
@@ -164,7 +171,9 @@ class Transaction
         $this->txn->setStatus(TransactionStatus::CAPTURED);
 
         //Logging
-        $this->trace->info(TransactionTrace::TRANSACTION_CAPTURED, $this->txn->toArray() + array('message' => 'Transaction Capture Successfull'));
+        $this->trace->info(
+            TransactionTrace::TRANSACTION_CAPTURED, 
+            $this->txn->toArray() + array('message' => 'Transaction Capture Successfull'));
     }
 
     protected function updateTransactionFailed()
@@ -182,7 +191,9 @@ class Transaction
         $txn->setError($error);
 
         //Logging
-        $this->trace->error(TransactionTrace::TRANSACTION_FAILED, $txn->toArray() + array('message' => 'Transaction Failed'));
+        $this->trace->error(
+            TransactionTrace::TRANSACTION_FAILED, 
+            $txn->toArray() + array('message' => 'Transaction Failed'));
 
         return $txn;
     }
