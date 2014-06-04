@@ -20,20 +20,8 @@
 					<li class="active" data-tab="dashboard">
 						<a href="./#!/">Dashboard</a>
 					</li>
-					<li data-tab="payments">
-						<a href="./#!/payments">Payments</a>
-					</li>
-					<li data-tab="customers">
-						<a href="./#!/customers">Customers</a>
-					</li>
-					<li data-tab="transfers">
-						<a href="./#!/transfers">Transfers</a>
-					</li>
-					<li data-tab="recipients">
-						<a href="./#!/recipients">Recipients</a>
-					</li>
-					<li data-tab="plans">
-						<a href="./#!/plans">Plans</a>
+					<li data-tab="transactions">
+						<a href="./#!/transactions">Transactions</a>
 					</li>
 					<li data-tab="logs">
 						<a href="./#!/logs">Logs</a>

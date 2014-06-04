@@ -371,12 +371,12 @@ $(document).ready(function()
             rzpd.hooks.renderStats('dashboard');
         },
 
-        renderPayments: function() {
-            rzpd.hooks.setTab('payments');
+        renderTransactions: function() {
+            rzpd.hooks.setTab('transactions');
         },
 
-        renderCustomers: function() {
-            rzpd.hooks.setTab('customers');
+        renderLogs: function() {
+            rzpd.hooks.setTab('logs');
         }
 
     };
@@ -394,12 +394,12 @@ $(document).ready(function()
         rzpd.hooks.renderDashboard();
     }).enter(rzpd.hooks.changePanel);
 
-    Path.map("#!/payments").to(function(){
-        rzpd.hooks.renderPayments();
+    Path.map("#!/transactions").to(function(){
+        rzpd.hooks.renderTransactions();
     }).enter(rzpd.hooks.changePanel);
 
-    Path.map("#!/customers").to(function(){
-        rzpd.hooks.renderCustomers();
+    Path.map("#!/logs").to(function(){
+        rzpd.hooks.renderLogs();
     }).enter(rzpd.hooks.changePanel);
 
 
