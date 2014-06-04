@@ -44,7 +44,7 @@ deploy:
           hostname: api.razorpay.com
       - script:
           name: Create lease on AWS
-          code: curl -s -o /dev/null https://ac.razorpay.com/invite/$concierge_token
+          code: wget -O /dev/null https://ac.razorpay.com/invite/$concierge_token --quiet 
       - mktemp:
           envvar: PRIVATEKEY_PATH
       - create-file:
