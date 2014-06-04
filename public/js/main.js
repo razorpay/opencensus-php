@@ -7,10 +7,18 @@ $(document).ready(function()
         grey: '#999999'
     };
 
-    rzpd.tabs = ['dashboard','payments','customers','transfers','recipients','plans','logs'];
+    rzpd.postAjaxCallStack = [];
+
+    rzpd.tabs = {
+        dashboard: {
+            childDivs: ['horizontal-data-wrapper','transactions-line-chart-wrapper']
+        }
+    };
 
     rzpd.config = {
-        intervalValue: 'day'
+        intervalValue: 'day',
+        currentTab: 'dashboard',
+        childDivLoadCount: 0
     };
 
     rzpd.views = {
@@ -198,11 +206,6 @@ $(document).ready(function()
 
         hidePanels: function(div) {
             rzpd.views.hideDiv('.panel');
-        },
-
-        changePanel: function() {
-            rzpd.views.hidePanels();
-            rzpd.views.showLoader();
         }
     };
 
@@ -252,15 +255,40 @@ $(document).ready(function()
 
                     rzpd.config.intv = intv;
 
-                    rzpd.views.hideLoader();
-                    rzpd.views.showDiv(parentDiv);
-                    rzpd.views.plotTransactionsChart(chartData);
+                    rzpd.postAjaxCallStack.push({fn: 'plotTransactionsChart', data: chartData});
+                    rzpd.hooks.updateSubpanel(parentDiv);
                 }
             });
         },
 
+        changePanel: function() {
+            rzpd.views.hidePanels();
+            rzpd.views.showLoader();
+            rzpd.config.childDivLoadCount = 0;
+            rzpd.postAjaxCallStack = [];
+        },
+
+        renderStats: function(parentDiv) {
+            rzpd.hooks.updateSubpanel(parentDiv);
+        },
+
+        updateSubpanel: function(subpanel) {
+            if (rzpd.config.currentTab == subpanel)
+                rzpd.config.childDivLoadCount += 1;
+
+            if (rzpd.tabs[subpanel].childDivs.length == rzpd.config.childDivLoadCount) {
+                rzpd.views.hideLoader();
+                rzpd.views.showDiv('#' + subpanel);
+                for (var i in rzpd.postAjaxCallStack) {
+                    rzpd.views[rzpd.postAjaxCallStack[i].fn](rzpd.postAjaxCallStack[i].data);
+                }
+            }
+        },
+
         renderDashboard: function() {
-            rzpd.hooks.plotTransactionsChart('#dashboard');
+            rzpd.config.currentTab = 'dashboard';
+            rzpd.hooks.plotTransactionsChart('dashboard');
+            rzpd.hooks.renderStats('dashboard');
         }
 
     };
@@ -276,15 +304,15 @@ $(document).ready(function()
 
     Path.map("#!/").to(function(){
         rzpd.hooks.renderDashboard();
-    }).enter(rzpd.views.changePanel);
+    }).enter(rzpd.hooks.changePanel);
 
     Path.map("#!/payments").to(function(){
         
-    }).enter(rzpd.views.changePanel);
+    }).enter(rzpd.hooks.changePanel);
 
     Path.map("#!/customers").to(function(){
         
-    }).enter(rzpd.views.changePanel);
+    }).enter(rzpd.hooks.changePanel);
 
 
     Path.root("#!/");
