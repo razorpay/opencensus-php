@@ -101,7 +101,7 @@ class HdfcGateway extends BaseGateway
      * @param [type] $response [description]
      */
     protected $enrollRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIVerifyEnrollmentXMLServlet',
+        'url' => HdfcGatewayUrls::TEST_ENROLL_URL,
         'type' => 'enroll',
         'xml' => '',
         'header' => array('Content-Type'=>'text/xml'),
@@ -125,7 +125,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $authNotEnrolledRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet',
+        'url' => HdfcGatewayUrls::TEST_AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_not_enrolled',
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
@@ -145,7 +145,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $authEnrolledRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIPayerAuthenticationXMLServlet',
+        'url' => HdfcGatewayUrls::TEST_AUTH_ENROLLED_URL,
         'type' => 'auth_enrolled',
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
@@ -165,7 +165,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $supportTxnRequest = array(
-        'url' => 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet',
+        'url' => HdfcGatewayUrls::TEST_SUPPORT_TXN_URL,
         'header' => array('Content-Type:text/xml'),
         'type' => '',
         'xml' => '',
