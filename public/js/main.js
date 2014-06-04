@@ -206,6 +206,10 @@ $(document).ready(function()
 
         hidePanels: function(div) {
             rzpd.views.hideDiv('.panel');
+        },
+
+        highlightTabInSidebar: function(tab) {
+            $("[data-tab='" + tab + "']").addClass('active').siblings('li').removeClass('active');
         }
     };
 
@@ -285,10 +289,24 @@ $(document).ready(function()
             }
         },
 
+        setTab: function(tab) {
+            tab = tab || 'dashboard';
+            rzpd.config.currentTab = tab;
+            rzpd.views.highlightTabInSidebar(tab);
+        },
+
         renderDashboard: function() {
-            rzpd.config.currentTab = 'dashboard';
+            rzpd.hooks.setTab('dashboard');
             rzpd.hooks.plotTransactionsChart('dashboard');
             rzpd.hooks.renderStats('dashboard');
+        },
+
+        renderPayments: function() {
+            rzpd.hooks.setTab('payments');
+        },
+
+        renderCustomers: function() {
+            rzpd.hooks.setTab('customers');
         }
 
     };
@@ -307,11 +325,11 @@ $(document).ready(function()
     }).enter(rzpd.hooks.changePanel);
 
     Path.map("#!/payments").to(function(){
-        
+        rzpd.hooks.renderPayments();
     }).enter(rzpd.hooks.changePanel);
 
     Path.map("#!/customers").to(function(){
-        
+        rzpd.hooks.renderCustomers();
     }).enter(rzpd.hooks.changePanel);
 
 

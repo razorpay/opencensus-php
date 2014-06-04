@@ -17,25 +17,25 @@
 					<div class="title">Features</div>
 				</h2>
 				<ul>
-					<li class="active">
+					<li class="active" data-tab="dashboard">
 						<a href="./#!/">Dashboard</a>
 					</li>
-					<li>
+					<li data-tab="payments">
 						<a href="./#!/payments">Payments</a>
 					</li>
-					<li>
+					<li data-tab="customers">
 						<a href="./#!/customers">Customers</a>
 					</li>
-					<li>
+					<li data-tab="transfers">
 						<a href="./#!/transfers">Transfers</a>
 					</li>
-					<li>
+					<li data-tab="recipients">
 						<a href="./#!/recipients">Recipients</a>
 					</li>
-					<li>
+					<li data-tab="plans">
 						<a href="./#!/plans">Plans</a>
 					</li>
-					<li>
+					<li data-tab="logs">
 						<a href="./#!/logs">Logs</a>
 					</li>
 				</ul>
