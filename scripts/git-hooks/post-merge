@@ -10,6 +10,5 @@ check_run() {
 	echo "$changed_files" | grep --quiet "$1" && eval "$2"
 }
  
-# Example usage
-# In this example it's used to run `npm install` if package.json changed and `bower install` if `bower.json` changed.
-check_run composer.lock "composer.phar install; composer.phar dump-autoload"
+check_run composer.lock "composer.phar install"
+composer.phar dump-autoload
