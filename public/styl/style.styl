@@ -12,6 +12,27 @@ transition(n)
 	-moz-transition all n ease-in 0s
 	-webkit-transition all n ease-in 0s
 
+border-radius(n)
+	-webkit-border-radius n
+	-moz-border-radius n
+	border-radius 12px
+
+border-radius-left(n)
+	-webkit-border-top-left-radius n
+	-webkit-border-bottom-left-radius n
+	-moz-border-radius-topleft n
+	-moz-border-radius-bottomleft n
+	border-top-left-radius n
+	border-bottom-left-radius n
+
+border-radius-right(n)
+	-webkit-border-top-right-radius n
+	-webkit-border-bottom-right-radius n
+	-moz-border-radius-topright n
+	-moz-border-radius-bottomright n
+	border-top-right-radius n
+	border-bottom-right-radius n
+
 /* Styles */
 
 html
@@ -55,7 +76,7 @@ header
 			text-align right
 			li.button
 				border solid 1px rgba(255,255,255,0.8)
-				border-radius 4px
+				border-radius(4px)
 				padding 2px 0px 5px 0px
 				a
 					padding 8px
@@ -109,7 +130,7 @@ header
 		width 100%
 		height 26px
 		background-color #FFF
-		border-radius 40px
+		border-radius(40px)
 		border 1px solid rzp-gray
 		color #fff
 		transition all 0.2s ease
@@ -120,7 +141,7 @@ header
 		width 12px
 		height 12px
 		border solid 12px rzp-blue
-		border-radius 12px
+		border-radius(12px)
 		transition(0.2s)
 	.button-active .button-switch
 		left 19px
@@ -200,10 +221,10 @@ header
 			margin 0 -3px 0 0
 			border-right 0
 		#interval-day
-			-webkit-border-top-left-radius 3px
-			-webkit-border-bottom-left-radius 3px
+			border-radius-left(3px)
 		#interval-year
 			border-right 1px solid rzp-gray
+			border-radius-right(3px)
 			-webkit-border-top-right-radius 3px
 			-webkit-border-bottom-right-radius 3px
 		.btn.active
