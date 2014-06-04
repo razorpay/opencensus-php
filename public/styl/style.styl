@@ -2,6 +2,7 @@
 
 rzp-blue = #29B7D6
 rzp-gray = #999999
+rzp-light-gray = #EEE
 /*rzp-gray = #727272*/
 
 /* Mixins */
@@ -15,7 +16,7 @@ transition(n)
 border-radius(n)
 	-webkit-border-radius n
 	-moz-border-radius n
-	border-radius 12px
+	border-radius n
 
 border-radius-left(n)
 	-webkit-border-top-left-radius n
@@ -106,6 +107,9 @@ header
 
 .hidden
 	display none
+
+.centered
+	margin 0 auto
 
 /* Live mode toggle */
 
@@ -298,3 +302,85 @@ header
 	20%
 		transform scaleY(1.0)
 		-webkit-transform scaleY(1.0)
+
+/* Login */
+
+#login-wrapper
+	margin-top 100px
+	width 500px
+	min-height 340px
+	border-radius(5px)
+	h2
+		color black
+		text-align center
+		font-size 2.5em
+		font-weight 300
+		padding 12px 0
+	form
+		padding 7px 0 20px
+		.text
+			input
+				width 70%
+				display block
+				outline none
+				border 0
+				border-bottom 1px solid rzp-gray
+				color rzp-blue
+				padding 5px 0
+				line-height 1.3em
+				margin 10px auto
+		a, .text>input
+			font-size 1.6em
+			font-weight 300
+			font-family 'Lato',sans-serif
+		a
+			margin 5px auto
+			text-decoration none
+			color rzp-gray
+			&:hover
+				text-decoration none
+			&:focus
+				outline none
+			&:focus, &:hover
+				color black
+		.row
+			width 70%
+			height 20px
+			margin 30px auto
+		.remember
+			label
+				font-size 1.6em
+				font-family 'Lato', sans-serif
+				font-weight 300
+				color rzp-blue
+			input[type="checkbox"]
+				background-color rzp-blue
+				outline none
+				border 0
+				margin-right 5px
+		.forgot-wrap
+			text-align right
+		#login-button
+			display block
+			margin 30px auto 5px
+			width 70%
+			background-color rzp-blue
+			border-radius(3px)
+			outline none
+			border 0
+			color white
+			font-family 'Lato',sans-serif
+			font-weight 300
+			font-size 1.6em
+			height 35px
+			padding 5px 0
+			cursor pointer
+	.form-footer
+		padding 15px
+		text-align center
+		.footer-text
+			margin 0 auto
+			font-size 1.6em
+			a
+				text-decoration none
+				color rzp-blue
