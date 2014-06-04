@@ -43,7 +43,7 @@
 		</div>
 		<div class="col-9-12 spaced-right-box">
 			<div class="content boxed" id="dashboard-wrapper">
-				<div id="loader" class="spinner hidden">
+				<div id="loader" class="spinner">
 					<div class="rect1"></div>
 					<div class="rect2"></div>
 					<div class="rect3"></div>
@@ -69,7 +69,7 @@
 							<div class="data-item-desc">Total Volume (INR)</div>
 						</div>
 					</div>
-					<div class="analytics-wrapper">
+					<div id="transactions-line-chart-wrapper">
 						<div id="controls-wrapper">
 							<h2 class="col-1-3">Overview</h2>
 							<div class="col-1-3 btn-group">
