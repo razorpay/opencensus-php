@@ -31,9 +31,11 @@ class SupportTest extends Transaction {
     }
 
     /**
-    * Main test function, that is run by phpunit for testign the support transactions, calls other functions
-    */
-
+     * Tests the support transactions, calls capture & refund
+     * @group testSupport
+     * @group testCapture
+     * @group testRefund
+     */
     public function testSupport(){
 
         //GIVEN
