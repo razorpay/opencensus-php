@@ -87,6 +87,14 @@
 							
 						</div>
 					</div>
+					<div id="count-line-chart-wrapper">
+						<div id="transaction-count-line-chart" class="col-1-2">
+							
+						</div>
+						<div id="customer-count-line-chart">
+							
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

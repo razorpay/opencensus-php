@@ -11,16 +11,14 @@ $(document).ready(function()
 
     rzpd.tabs = {
         dashboard: {
-            childDivs: ['horizontal-data-wrapper','transactions-line-chart-wrapper']
+            childDivs: ['horizontal-data-wrapper','transactions-line-chart-wrapper','transaction-count-line-chart']
         }
     };
 
     rzpd.config = {
         intervalValue: 'day',
         currentTab: 'dashboard',
-        childDivLoadCount: 0,
-        fromDate: new Date(),
-
+        childDivLoadCount: 0
     };
 
     rzpd.views = {
@@ -190,6 +188,43 @@ $(document).ready(function()
             });
         },
 
+        plotTransactionCountChart: function(data) {
+            rzpd.views.setChart('transaction-count-line-chart', 'area', 'Successful Transactions', [{'data': data}], {
+                yAxis : {
+                    title : {
+                        text : ''
+                    },
+                    labels : {
+                        formatter : function() {
+                            return this.value;
+                        },
+                        style : {
+                            fontFamily : '"Lato", sans-serif',
+                            fontWeight : 'bold'
+                        }
+                    },
+                    gridLineColor : '#d9d9d9',
+                    gridLineWidth : '1',
+                    style : {
+                        fontFamily : '"Lato", sans-serif',
+                        fontWeight : 'bold'
+                    }
+                },
+                tooltip : {
+                    pointFormat: '<b>{point.y}</b>',
+                    dateTimeLabelFormats: {
+                        second : '%H:%M',
+                        minute : '%H:%M',
+                        hour : '%H:%M',
+                        day : '%e %b',
+                        week : '%d.%m',
+                        month : '%b',
+                        year : '%Y'
+                    }
+                },
+            });
+        },
+
         showLoader: function() {
             $('#loader').removeClass('hidden');
         },
@@ -229,7 +264,9 @@ $(document).ready(function()
             $.ajax({
                 url: './sample.json',
                 type: 'GET',
-                success: function(result){
+                success: function(result) {
+                    rzpd.hooks.plotTransactionCountChart(parentDiv,result);
+
                     var group = "day";
                     var chartData = [];
                     var chartDataTest = [];
@@ -265,6 +302,37 @@ $(document).ready(function()
                     rzpd.hooks.updateSubpanel(parentDiv);
                 }
             });
+        },
+
+        plotTransactionCountChart: function(parentDiv, result) {
+            var group = 'day';
+            var chartData = [];
+            $(result.data).each(function(i, s) {
+                date_hour = s.created_at.split(' ');
+                date = date_hour[0].split('-');
+                chartData.push([Date.UTC(date[0], parseInt(date[1] - 1), date[2]), parseInt(s.cnt)]);
+            });
+
+
+            staggerLinesVal = 1;
+            if (group == 'day') {
+                intv = null;
+            }
+            if (group == 'week') {
+                intv = 24 * 3600 * 7 * 1000;
+                if( chartData.length > 8 ) {
+                    staggerLinesVal = 2;
+                    intv = 48 * 3600 * 7 * 1000;
+                }
+            }
+            if (group == 'month') {
+                intv = 24 * 3600 * 30 * 1000;
+            }
+            
+            rzpd.config.intv = intv;
+
+            rzpd.postAjaxCallStack.push({fn: 'plotTransactionCountChart', data: chartData});
+            rzpd.hooks.updateSubpanel(parentDiv);
         },
 
         changePanel: function() {
