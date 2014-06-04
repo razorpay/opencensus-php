@@ -41,6 +41,8 @@ class CardsTest extends Transaction {
      */
     public function testCard0()
     {
+        echo "\nTesting: CC Transaction \n";
+        echo "Expected Response: Timeout Transaction \n";
         $this->createTransaction(0);
     }
 
@@ -50,6 +52,8 @@ class CardsTest extends Transaction {
      */
     public function testCard1()
     {
+        echo "\nTesting: CC Transaction \n";
+        echo "Expected Response: Successful Auth \n";
         $this->createTransaction(1);
     }
 
@@ -60,6 +64,8 @@ class CardsTest extends Transaction {
      */
     public function testCard2()
     {
+        echo "\nTesting: CC transaction \n";
+        echo "Expected Response: Fails with Auth Not Available error. \n";
         $this->createTransaction(2);
     }
 
@@ -70,6 +76,8 @@ class CardsTest extends Transaction {
      */
     public function testCard3()
     {
+        echo "\nTesting: CC transaction \n";
+        echo "Expected Response: Fails with Auth Not Available error. \n";
         $this->createTransaction(3);
     }
 
@@ -80,6 +88,8 @@ class CardsTest extends Transaction {
      */
     public function testCard4()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Fails with Signature Failure error. \n";
         $this->createTransaction(4);
     }
 
@@ -90,6 +100,8 @@ class CardsTest extends Transaction {
      */
     public function testCard5()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Fails with Signature Failure error. \n";
         $this->createTransaction(5);
     }
 
@@ -99,6 +111,8 @@ class CardsTest extends Transaction {
      */
     public function testCard6()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Successful Auth \n";
         $this->createTransaction(6);
     }
 
@@ -108,6 +122,8 @@ class CardsTest extends Transaction {
      */
     public function testCard7()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Successful Auth \n";
         $this->createTransaction(7);
     }
 
@@ -117,6 +133,8 @@ class CardsTest extends Transaction {
      */
     public function testCard8()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Successful Auth \n";
         $this->createTransaction(8);
     }
 
@@ -127,6 +145,8 @@ class CardsTest extends Transaction {
      */
     public function testCard9()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Fails with Pares Not Success error. \n";
         $this->createTransaction(9);
     }
 
@@ -137,6 +157,8 @@ class CardsTest extends Transaction {
      */
     public function testCard10()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Fails with Auth Not Available error. \n";
         $this->createTransaction(10);
     }
 
@@ -147,6 +169,8 @@ class CardsTest extends Transaction {
      */
     public function testCard11()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Fails with Auth Not Available error. \n";
         $this->createTransaction(11);
     }
 
@@ -156,6 +180,8 @@ class CardsTest extends Transaction {
      */
     public function testCard12()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Sucessfull Auth \n";
         $this->createTransaction(12);
     }
 
@@ -165,6 +191,8 @@ class CardsTest extends Transaction {
      */
     public function testCard13()
     {
+        echo "\nTesting: DC transaction \n";
+        echo "Expected Response: Successful Auth \n";
         $this->createTransaction(13);
     }
 }

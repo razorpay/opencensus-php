@@ -41,6 +41,10 @@ class TransactionRetrieveTest extends TestCase {
     {
 
     	//Testing retrieval of all transactions with /transactions
+      echo "\nTesting: Retrieval of transactions \n";
+      echo "Test: Retrieval of all by calling /transactions \n";
+      ob_flush();
+
     	//GIVEN - Nothing
 
     	//WHEN
@@ -52,6 +56,8 @@ class TransactionRetrieveTest extends TestCase {
         $transactions=json_decode($content);
 
         //Testing retrieval of specific transactions with /transactions/$id
+        echo "Test: Retrieval by ID at /transactions/id \n";
+        ob_flush();
         //GIVEN
         $id=$transactions->data[0]->id;
 
@@ -65,6 +71,9 @@ class TransactionRetrieveTest extends TestCase {
         $this->assertEquals($transaction->id, $id);
 
         //Testing retrieval of transactions with a specific status & count
+        echo "Test: Retrieval of transactions using status & count at /transactions/{status}/?count={count} \n";
+        ob_flush();
+
         //GIVEN
         $status=$transactions->data[0]->status;
 
@@ -77,7 +86,8 @@ class TransactionRetrieveTest extends TestCase {
         $transaction = json_decode($content);
         $this->assertEquals($transaction->data[0]->id, $id);
 
-
+        echo "Test: Retrieval of transactions using created_at timestamp at /transactions/?created_at={timestamp} \n";
+        ob_flush();
         //GIVEN
         $created_at=$transactions->data[0]->created_at;
 

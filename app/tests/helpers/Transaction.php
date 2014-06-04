@@ -14,6 +14,9 @@ class Transaction extends TestCase {
      */
     protected function createTransaction($card_no)
     {
+        //flush any previous output
+        ob_flush();
+        
         //GIVEN
 
         //load list of cards with expected responses for each
