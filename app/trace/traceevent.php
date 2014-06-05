@@ -45,15 +45,15 @@ class TraceEvent
         self::GATEWAY_ENROLL_REQUEST                => 'Request for enrollment sent',
         self::GATEWAY_ENROLL_RESPONSE               => 'Enrollment response received',
         self::GATEWAY_ENROLL_ERROR                  => 'Error in enrollment',
-        self::GATEWAY_NOT_ENROLLED_REQUEST          => 'Request for not-enrolled card',
+        self::GATEWAY_NOT_ENROLLED_REQUEST          => 'Request for not-enrolled card sent',
         self::GATEWAY_NOT_ENROLLED_RESPONSE         => 'Response for not-enrolled card received',
         self::GATEWAY_NOT_ENROLLED_ERROR            => 'Error occured for not-enrolled card',
         self::GATEWAY_ENROLLED_AUTH_REQUEST         => 'Authentication request sent for enrolled card',
         self::GATEWAY_ENROLLED_AUTH_RESPONSE        => 'Authentication response received for enrolled card',
-        self::GATEWAY_ENROLLED_AUTH_ERROR           => 'Error occured for enrolled card',
-        self::GATEWAY_SUPPORT_REQUEST               => 'Support request',
-        self::GATEWAY_SUPPORT_RESPONSE              => 'Support response',
-        self::GATEWAY_SUPPORT_ERROR                 => 'Error occured for support',
+        self::GATEWAY_ENROLLED_AUTH_ERROR           => 'Authentication error occured for enrolled card',
+        self::GATEWAY_SUPPORT_REQUEST               => 'Support request sent',
+        self::GATEWAY_SUPPORT_RESPONSE              => 'Support response received',
+        self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
         self::GATEWAY_EXCEPTION                     => 'Gateway exception occured'
     );
 
