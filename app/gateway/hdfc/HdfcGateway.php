@@ -244,7 +244,7 @@ class HdfcGateway extends BaseGateway
                     $error = HdfcGatewayErrorHandler::unknownError();
                 
                 //Logging
-                $log_content = array('message' => "Enrollment Error", 'error' => $error) + $this->stripSensitive($this->enrollResponse);
+                $log_content = array('error' => $error) + $this->stripSensitive($this->enrollResponse);
                 $this->trace->error(TraceEvent::GATEWAY_ENROLL_ERROR, $log_content);
 
                 return array('failed', $error);
@@ -308,7 +308,7 @@ class HdfcGateway extends BaseGateway
         
         //Logging
         $log_content = $this->stripSensitive(
-            $this->authEnrolledRequest) + array('message'=>'Auth request sent for enrolled card');
+            $this->authEnrolledRequest);
         
         $this->trace->debug(TraceEvent::GATEWAY_ENROLLED_AUTH_REQUEST, $log_content);
 
@@ -333,7 +333,7 @@ class HdfcGateway extends BaseGateway
         $this->createEnrollRequestFields($input);
 
         //Logging
-        $log_content = $this->stripSensitive($this->enrollRequest) + array('message'=>'Enrollment request sent');
+        $log_content = $this->stripSensitive($this->enrollRequest);
         $this->trace->debug(TraceEvent::GATEWAY_ENROLL_REQUEST, $log_content);
 
         $this->runRequestResponseFlow(
@@ -348,7 +348,7 @@ class HdfcGateway extends BaseGateway
             $error = HdfcGatewayErrorHandler::translateEnrollError($this->enrollResponse);
             
             //Logging
-            $log_content = $this->stripSensitive($this->enrollResponse) + array('message'=>'Enrollment request failed') + array('error'=> $error);
+            $log_content = $this->stripSensitive($this->enrollResponse) + array('error'=> $error);
             $this->trace->error(TraceEvent::GATEWAY_ENROLL_ERROR, $log_content);
 
             return array(false, $error);
@@ -372,7 +372,7 @@ class HdfcGateway extends BaseGateway
         $this->authNotEnrolledRequest['data'] = $data;
         
         //Logging
-        $log_content = $this->stripSensitive($this->authNotEnrolledRequest) + array('message'=>'Not Enrolled request sent');
+        $log_content = $this->stripSensitive($this->authNotEnrolledRequest);
         $this->trace->debug(TraceEvent::GATEWAY_NOT_ENROLLED_REQUEST, $log_content);
 
         $this->runRequestResponseFlow(
@@ -390,14 +390,14 @@ class HdfcGateway extends BaseGateway
         if($notEnrollResponse['data']['processed'])
         {
             //Logging
-            $log_content = $this->stripSensitive($notEnrollResponse) + array('message'=>'Not Enrolled request successful');
+            $log_content = $this->stripSensitive($notEnrollResponse);
             $this->trace->info(TraceEvent::GATEWAY_NOT_ENROLLED_RESPONSE, $log_content);
         }
         else
         {
             //Logging
-            $log_content = $this->stripSensitive($notEnrollResponse) + array('message'=>'Not Enrolled request failed');
-            $this->trace->error(TraceEvent::GATEWAY_NOT_ENROLLED_FAILED, $log_content);
+            $log_content = $this->stripSensitive($notEnrollResponse);
+            $this->trace->error(TraceEvent::GATEWAY_NOT_ENROLLED_ERROR, $log_content);
         }
         return array('not enrolled',
                      array(
@@ -508,7 +508,7 @@ class HdfcGateway extends BaseGateway
                             $this->enrollResponse['error']);
 
             //Logging
-            $log_content = $this->stripSensitive($this->enrollResponse) + array('message'=>'Enrollment request failed');
+            $log_content = $this->stripSensitive($this->enrollResponse);
             $this->trace->error(TraceEvent::GATEWAY_ENROLL_ERROR, $log_content);
         }
         else
@@ -518,7 +518,7 @@ class HdfcGateway extends BaseGateway
                     $this->enrollResponse['data']);
 
             //Logging
-            $log_content = $this->stripSensitive($this->enrollResponse) + array('message'=>'Enrollment response');
+            $log_content = $this->stripSensitive($this->enrollResponse);
             $this->trace->info(TraceEvent::GATEWAY_ENROLL_RESPONSE, $log_content);
         }
     }
@@ -530,7 +530,7 @@ class HdfcGateway extends BaseGateway
             $this->model->persistAfterDCAuthError($this->authEnrolledResponse['error']);
 
             //Logging
-            $log_content = $this->stripSensitive($this->authEnrolledResponse) + array('message'=>'Auth error for enrolled card');
+            $log_content = $this->stripSensitive($this->authEnrolledResponse);
             $this->trace->error(TraceEvent::GATEWAY_ENROLLED_AUTH_ERROR, $log_content);
             
             return false;
@@ -540,7 +540,7 @@ class HdfcGateway extends BaseGateway
             $this->model->persistAfterDCAuth($this->authEnrolledResponse['data']);
 
             //Logging
-            $log_content = $this->stripSensitive($this->authEnrolledResponse) + array('message'=>'Auth response for enrolled card');
+            $log_content = $this->stripSensitive($this->authEnrolledResponse);
             $this->trace->info(TraceEvent::GATEWAY_ENROLLED_AUTH_RESPONSE, $log_content);
 
             return true;
@@ -558,7 +558,7 @@ class HdfcGateway extends BaseGateway
                             $type);
             
             //Logging
-            $log_content = $this->stripSensitive($this->supportTxnResponse) + array('message'=>'Support Request Failed');
+            $log_content = $this->stripSensitive($this->supportTxnResponse);
             $this->trace->error(TraceEvent::GATEWAY_SUPPORT_ERROR, $log_content);
 
             return false;
@@ -570,7 +570,7 @@ class HdfcGateway extends BaseGateway
                     $this->supportTxnResponse['data']);
 
             //Logging
-            $log_content = $this->stripSensitive($this->supportTxnResponse) + array('message'=>'Support Request Successful');
+            $log_content = $this->stripSensitive($this->supportTxnResponse);
             $this->trace->info(TraceEvent::GATEWAY_SUPPORT_RESPONSE, $log_content);
 
             return true;
@@ -617,7 +617,7 @@ class HdfcGateway extends BaseGateway
         $this->createSupportTxnRequestFields($input, HdfcGatewayAction::REFUND);
 
         //Logging
-        $log_content = $this->stripSensitive($this->supportTxnRequest) + array('message'=>'Support Request Sent');
+        $log_content = $this->stripSensitive($this->supportTxnRequest);
         $this->trace->debug(TraceEvent::GATEWAY_SUPPORT_REQUEST, $log_content);
 
         $this->runRequestResponseFlow(
@@ -649,7 +649,7 @@ class HdfcGateway extends BaseGateway
         $this->createSupportTxnRequestFields($input, HdfcGatewayAction::CAPTURE);
 
         //Logging
-        $log_content = $this->stripSensitive($this->supportTxnRequest) + array('message'=>'Support Request Sent');
+        $log_content = $this->stripSensitive($this->supportTxnRequest);
         $this->trace->debug(TraceEvent::GATEWAY_SUPPORT_REQUEST, $log_content);
 
         $this->runRequestResponseFlow(

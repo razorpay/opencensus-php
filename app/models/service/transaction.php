@@ -27,13 +27,13 @@ class Transaction extends Service
     {
         $this->trace->debug(
         	TraceEvent::NEW_TRANSACTION_REQUEST, 
-        	$input + array('message' => 'New Transaction Requested'));
+        	$input);
 
         list($txn, $cardData) = $this->txn->create($input);
 
         $this->trace->debug(
         	TraceEvent::TRANSACTION_CREATED, 
-        	$txn->toArray() + array('message' => 'New Transaction Created'));
+        	$txn->toArray());
 
         $txn = $this->txn->process($txn, $cardData);
 
@@ -102,7 +102,7 @@ class Transaction extends Service
             //Logging
             $this->trace->info(
             	TraceEvent::TRANSACTION_REFUNDED, 
-            	$txn_data->toArray() + array('message' => 'Transaction Refunded'));
+            	$txn_data->toArray());
         }
         else
         {
@@ -145,7 +145,7 @@ class Transaction extends Service
             //Logging
             $this->trace->info(
             	TraceEvent::TRANSACTION_CAPTURED, 
-            	$txnData->toArray() + array('message' => 'Transaction Captured'));
+            	$txnData->toArray());
         }
         else
         {
@@ -178,7 +178,7 @@ class Transaction extends Service
             //Logging
             $this->trace->info(
             	TraceEvent::TRANSACTION_AUTHED, 
-            	$txn_data->toArray() + array('message' => 'Transaction Auth Successfull'));
+            	$txn_data->toArray());
 
             // if(! $txn_data->getHold())
             // {

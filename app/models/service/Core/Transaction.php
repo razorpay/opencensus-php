@@ -166,7 +166,7 @@ class Transaction
         //Logging
         $this->trace->info(
             TraceEvent::TRANSACTION_AUTHED, 
-            $this->txn->toArray() + array('message' => 'Transaction Auth Successfull'));
+            $this->txn->toArray());
     }
 
     protected function updateTransactionCaptured()
@@ -176,7 +176,7 @@ class Transaction
         //Logging
         $this->trace->info(
             TraceEvent::TRANSACTION_CAPTURED, 
-            $this->txn->toArray() + array('message' => 'Transaction Capture Successfull'));
+            $this->txn->toArray());
     }
 
     protected function updateTransactionFailed()
@@ -196,7 +196,7 @@ class Transaction
         //Logging
         $this->trace->error(
             TraceEvent::TRANSACTION_FAILED, 
-            $txn->toArray() + array('message' => 'Transaction Failed'));
+            $txn->toArray());
 
         return $txn;
     }
