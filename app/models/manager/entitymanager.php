@@ -146,8 +146,7 @@ class EntityManager
 
         if ($validation->fails())
         {
-            var_dump($validation->messages()->all()); die();
-            throw new \InvalidArgumentException('message');
+            throw new \InvalidArgumentException(join("\n",$validation->messages()->all()));
         }
 
         $this->runValidators($input, $operation);        
