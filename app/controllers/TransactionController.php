@@ -109,11 +109,21 @@ class TransactionController extends BaseController
             return Response::json($txn_data)->setCallback(Input::get('callback'));
         }
         catch(Exception $e){
-            return Response::json([
-                'exception'=>$e->getMessage()
-            ])->setCallback(Input::get('callback'));
+            if('dev' === app()->env){
+                return Response::json([
+                    'exception'=>$e->getMessage(),
+                    'file'=>$e->getFile(),
+                    'line'=>$e->getLine(),
+                    'code'=>$e->getCode(),
+                    'trace'=>$e->getTrace()
+                ])->setCallback(Input::get('callback'));
+            }
+            else{
+                return Response::json([
+                    'exception'=>'An error occured'
+                ])->setCallback(Input::get('callback'));
+            }
         }
-
     }
 
     /**
