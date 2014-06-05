@@ -11,8 +11,8 @@ class Transaction extends UuidDAL
 
     private static $fetch_param_rules = array(
         'created'       => 'numeric',
-        'from_created'  => 'numeric',
-        'to_created'    => 'numeric',
+        'from'          => 'numeric',
+        'to'            => 'numeric',
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
         'merchant_id'   => 'required',
@@ -77,7 +77,7 @@ class Transaction extends UuidDAL
         /*
          * Create the query.
          */
-        $query = self::where('merchant_id', '=', $param['merchant_id'])->orderBy('created_at','desc');
+        $query = self::where('merchant_id', '=', $param['merchant_id'])->orderBy('updated_at','desc');
 
         if (isset($param['created']))
         {
@@ -85,14 +85,14 @@ class Transaction extends UuidDAL
         }
         else
         {
-            if (isset($param['from_created']))
+            if (isset($param['from']))
             {
-                $query = $query->where('created_at', '>', $param['from_created']);
+                $query = $query->where('updated_at', '>', $param['from']);
             }
 
-            if (isset($param['to_created']))
+            if (isset($param['to']))
             {
-                $query = $query->where('created_at', '<', $param['to_created']);
+                $query = $query->where('updated_at', '<', $param['to']);
             }
         }
 
