@@ -103,9 +103,16 @@ class TransactionController extends BaseController
         unset($input['callback']);
         unset($input['key']);
         unset($input['_']);
-        $input['merchant_id'] = BasicAuth::getInstance()->MerchantId();        
-        $txn_data = Transaction::getNewInstance()->process($input);
-        return Response::json($txn_data)->setCallback(Input::get('callback'));
+        try{
+            $input['merchant_id'] = BasicAuth::getInstance()->MerchantId();        
+            $txn_data = Transaction::getNewInstance()->process($input);
+            return Response::json($txn_data)->setCallback(Input::get('callback'));
+        }
+        catch(Exception $e){
+            return Response::json([
+                'exception'=>$e->getMessage()
+            ])->setCallback(Input::get('callback'));
+        }
 
     }
 
