@@ -77,7 +77,7 @@ class Transaction extends UuidDAL
         /*
          * Create the query.
          */
-        $query = self::where('merchant_id', '=', $param['merchant_id']);
+        $query = self::where('merchant_id', '=', $param['merchant_id'])->orderBy('created_at','desc');
 
         if (isset($param['created']))
         {
