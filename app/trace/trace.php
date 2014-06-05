@@ -6,6 +6,8 @@ use Queue;
 use Config;
 use Monolog\Logger;
 use Trace\TraceHandler;
+use Trace\TraceEvent;
+use Trace\TraceFields;
 
 class Trace
 {
@@ -17,15 +19,6 @@ class Trace
      * @var string $component Application component
      */
     protected $component;
-
-    /**
-     * Fields which have a default value if not provided
-     * eg: messages
-     *
-     *
-     * @var array $defaults Default fields
-     */
-    protected static $defaults = array();
 
     /**
      * Fields required for each trace
@@ -42,13 +35,6 @@ class Trace
     protected $compulsoryFieldValues = array();
 
     /**
-     * Fields corresponding to a particular trace
-     *
-     * @var array $values Fields
-     */
-    protected static $fields = array();
-
-    /**
      * Values corresponding to fields
      *
      * @var array $values Field values
@@ -62,7 +48,11 @@ class Trace
 
         $level;
 
-        $traceMessage = $this->setDefaultValues($code, $traceMessage);
+        if(! array_key_exists('message', $traceMessage))
+        {
+            $traceMessage['message'] = TraceEvent::translateEvent($code);
+        }
+        // $traceMessage = $this->setDefaultValues($code, $traceMessage);
 
         $message = $traceMessage['message'];
 
@@ -118,7 +108,7 @@ class Trace
             {
                 $this->compulsoryFieldValues[$key] = $traceMessage[$key];
             }
-            else if(in_array($key, static::$fields[$code]))
+            else if(in_array($key, TraceFields::get($code)))
             {
                 $this->values[$key] = $traceMessage[$key];
             }
