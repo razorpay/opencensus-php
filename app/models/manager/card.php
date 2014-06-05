@@ -84,7 +84,7 @@ class Card extends EntityManager
             $arr = array(
                 'type' => $details['card_type'],
                 'bank' => $details['bank'],
-                'country' => $details['country']);
+                'country' => $details['country_code']);
 
             $this->fill($arr);
         }
