@@ -6,6 +6,7 @@ use Models\Manager;
 use Models\DAL;
 use Gateway\GatewayManager;
 use Trace\TransactionTrace;
+use Trace\TraceEvent;
 
 class Transaction extends Service
 {
@@ -25,13 +26,13 @@ class Transaction extends Service
     public function process(array $input)
     {
         $this->trace->debug(
-        	TransactionTrace::NEW_TRANSACTION_REQUEST, 
+        	TraceEvent::NEW_TRANSACTION_REQUEST, 
         	$input + array('message' => 'New Transaction Requested'));
 
         list($txn, $cardData) = $this->txn->create($input);
 
         $this->trace->debug(
-        	TransactionTrace::TRANSACTION_CREATED, 
+        	TraceEvent::TRANSACTION_CREATED, 
         	$txn->toArray() + array('message' => 'New Transaction Created'));
 
         $txn = $this->txn->process($txn, $cardData);
@@ -100,7 +101,7 @@ class Transaction extends Service
 
             //Logging
             $this->trace->info(
-            	TransactionTrace::TRANSACTION_REFUNDED, 
+            	TraceEvent::TRANSACTION_REFUNDED, 
             	$txn_data->toArray() + array('message' => 'Transaction Refunded'));
         }
         else
@@ -109,7 +110,7 @@ class Transaction extends Service
 
             //Logging
             $this->trace->error(
-            	TransactionTrace::TRANSACTION_REFUND_FAILED, 
+            	TraceEvent::TRANSACTION_FAILED, 
             	$txn_data->toArray() + array('message' => 'Transaction Refund Request Failed'));
         }
     }
@@ -143,7 +144,7 @@ class Transaction extends Service
 
             //Logging
             $this->trace->info(
-            	TransactionTrace::TRANSACTION_CAPTURED, 
+            	TraceEvent::TRANSACTION_CAPTURED, 
             	$txnData->toArray() + array('message' => 'Transaction Captured'));
         }
         else
@@ -153,7 +154,7 @@ class Transaction extends Service
 
             //Logging
             $this->trace->error(
-            	TransactionTrace::TRANSACTION_CAPTURE_FAILED, 
+            	TraceEvent::TRANSACTION_FAILED,
             	$txnData->toArray() + array('message' => 'Transaction Capture Request Failed'));
         }
     }
@@ -176,7 +177,7 @@ class Transaction extends Service
 
             //Logging
             $this->trace->info(
-            	TransactionTrace::TRANSACTION_AUTHED, 
+            	TraceEvent::TRANSACTION_AUTHED, 
             	$txn_data->toArray() + array('message' => 'Transaction Auth Successfull'));
 
             // if(! $txn_data->getHold())
@@ -191,7 +192,7 @@ class Transaction extends Service
 
             //Logging
             $this->trace->error(
-            	TransactionTrace::TRANSACTION_FAILED, 
+            	TraceEvent::TRANSACTION_FAILED, 
             	$txn_data->toArray() + array('message' => 'Transaction Auth Failed'));
         }
 

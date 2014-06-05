@@ -8,6 +8,7 @@ use Models\DAL;
 use Gateway\GatewayManager;
 use Exceptions;
 use Trace\TransactionTrace;
+use Trace\TraceEvent;
 
 class Transaction
 {
@@ -164,7 +165,7 @@ class Transaction
 
         //Logging
         $this->trace->info(
-            TransactionTrace::TRANSACTION_AUTHED, 
+            TraceEvent::TRANSACTION_AUTHED, 
             $this->txn->toArray() + array('message' => 'Transaction Auth Successfull'));
     }
 
@@ -174,7 +175,7 @@ class Transaction
 
         //Logging
         $this->trace->info(
-            TransactionTrace::TRANSACTION_CAPTURED, 
+            TraceEvent::TRANSACTION_CAPTURED, 
             $this->txn->toArray() + array('message' => 'Transaction Capture Successfull'));
     }
 
@@ -194,7 +195,7 @@ class Transaction
 
         //Logging
         $this->trace->error(
-            TransactionTrace::TRANSACTION_FAILED, 
+            TraceEvent::TRANSACTION_FAILED, 
             $txn->toArray() + array('message' => 'Transaction Failed'));
 
         return $txn;

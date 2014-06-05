@@ -56,12 +56,12 @@ App::error(function(Exception $exception, $code)
 	if(strpos($exception->getMessage(), 'Transaction Exception:')!=False)
 	{
 		$trace = new Trace\TransactionTrace();
-		$trace->error(TransactionTrace::TRANSACTION_EXCEPTION, array('message'=>$exception->getMessage, 'file'=>$exception->getFile()));
+		$trace->error(TraceEvent::TRANSACTION_EXCEPTION, array('message'=>$exception->getMessage, 'file'=>$exception->getFile()));
 	}
 	if(strpos($exception->getMessage(), 'Gateway Exception:')!=False)
 	{
 		$trace = new Trace\GatewayTrace();
-		$trace->error(GatewayTrace::GATEWAY_EXCEPTION, array('message'=>$exception->getMessage, 'file'=>$exception->getFile()));
+		$trace->error(TraceEvent::GATEWAY_EXCEPTION, array('message'=>$exception->getMessage, 'file'=>$exception->getFile()));
 	}
 	Log::error($exception);
 });
