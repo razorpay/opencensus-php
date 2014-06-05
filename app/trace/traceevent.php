@@ -15,6 +15,23 @@ class TraceEvent
     // const TRANSACTION_CAPTURE_FAILED        = 'TRANSACTION_CAPTURE_FAILED';
     const TRANSACTION_EXCEPTION             = 'TRANSACTION_EXCEPTION';
 
+    // Gateway related trace events
+    const GATEWAY_ENROLL_REQUEST = 'GATEWAY_ENROLL_REQUEST';
+    const GATEWAY_ENROLL_RESPONSE = 'GATEWAY_ENROLL_RESPONSE';
+    const GATEWAY_ENROLL_ERROR = 'GATEWAY_ENROLL_ERROR';
+    const GATEWAY_NOT_ENROLLED_REQUEST = 'GATEWAY_NOT_ENROLLED_REQUEST';
+    const GATEWAY_NOT_ENROLLED_RESPONSE = 'GATEWAY_NOT_ENROLLED_RESPONSE';
+    const GATEWAY_NOT_ENROLLED_ERROR = 'GATEWAY_NOT_ENROLLED_ERROR';
+    const GATEWAY_ENROLLED_AUTH_REQUEST = 'GATEWAY_ENROLLED_AUTH_REQUEST';
+    const GATEWAY_ENROLLED_AUTH_RESPONSE = 'GATEWAY_ENROLLED_AUTH_RESPONSE';
+    const GATEWAY_ENROLLED_AUTH_ERROR = 'GATEWAY_ENROLLED_AUTH_ERROR';
+    const GATEWAY_SUPPORT_REQUEST = 'GATEWAY_SUPPORT_REQUEST';
+    const GATEWAY_SUPPORT_RESPONSE = 'GATEWAY_SUPPORT_RESPONSE';
+    const GATEWAY_SUPPORT_ERROR = 'GATEWAY_SUPPORT_ERROR';
+    const GATEWAY_EXCEPTION = 'GATEWAY_EXCEPTION';
+
+
+
     protected static $message = array(
         self::NEW_TRANSACTION_REQUEST       => 'Request for new transaction received',
         self::TRANSACTION_CREATED           => 'New transaction created',
@@ -23,18 +40,32 @@ class TraceEvent
         self::TRANSACTION_FAILED            => 'Transaction failed',
         self::TRANSACTION_REFUNDED          => 'Transaction refunded successfully',
         self::TRANSACTION_CAPTURED          => 'Transaction captured successfully',
-        self::TRANSACTION_EXCEPTION         => 'Transaction exception occured'
+        self::TRANSACTION_EXCEPTION         => 'Transaction exception occured',
+
+        self::GATEWAY_ENROLL_REQUEST                => 'Request for enrollment sent',
+        self::GATEWAY_ENROLL_RESPONSE               => 'Enrollment response received',
+        self::GATEWAY_ENROLL_ERROR                  => 'Error in enrollment',
+        self::GATEWAY_NOT_ENROLLED_REQUEST          => 'Request for not-enrolled card',
+        self::GATEWAY_NOT_ENROLLED_RESPONSE         => 'Response for not-enrolled card received',
+        self::GATEWAY_NOT_ENROLLED_ERROR            => 'Error occured for not-enrolled card',
+        self::GATEWAY_ENROLLED_AUTH_REQUEST         => 'Authentication request sent for enrolled card',
+        self::GATEWAY_ENROLLED_AUTH_RESPONSE        => 'Authentication response received for enrolled card',
+        self::GATEWAY_ENROLLED_AUTH_ERROR           => 'Error occured for enrolled card',
+        self::GATEWAY_SUPPORT_REQUEST               => 'Support request',
+        self::GATEWAY_SUPPORT_RESPONSE              => 'Support response',
+        self::GATEWAY_SUPPORT_ERROR                 => 'Error occured for support',
+        self::GATEWAY_EXCEPTION                     => 'Gateway exception occured'
     );
 
     /**
      * Translate event code to message
      *
-     * @param $event event code
+     * @param $eventCode event code
      * @return 
      */
-    public static function translateEvent($event)
+    public static function translateEvent($eventCode)
     {
-        $eventMessage = self::$message[$event];
+        $eventMessage = self::$message[$eventCode];
 
         return $eventMessage;
     }
