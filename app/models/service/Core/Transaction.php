@@ -32,11 +32,13 @@ class Transaction
 
         if (! array_key_exists('card', $input))
         {
-            throw new \Exceptions\InvalidArgumentException(' Transcation Exception: Card not provided');
+            throw new \Exceptions\InvalidArgumentException(' Transaction Exception: Card not provided');
         }
 
         if(strlen($input['card']['expiry_year']) == 2)
             $input['card']['expiry_year'] = '20'.$input['card']['expiry_year'];
+
+        $input['card']['number'] = str_replace(' ', '', $input['card']['number']);
 
         list($cardInput, $tokenInput) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
 

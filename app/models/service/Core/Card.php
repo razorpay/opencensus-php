@@ -35,7 +35,6 @@ class Card
         $this->manager = Manager\Card::createValidate($input);
 
         $details = DAL\CardDetail::retrieveDetails($this->manager->getField('number'));
-
         $this->manager->fillNetworkDetails($details);
     }
 }
