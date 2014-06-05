@@ -294,11 +294,11 @@ class HdfcGateway extends BaseGateway
     {
         if ((int) $this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
         {
-            throw new \InvalidArgumentException('Gateway Exception: Result not valid');
+            throw new InvalidArgumentException('Gateway Exception: Result not valid');
         }
         else if ($this->model->status !== 'VERES Received')
         {
-            throw new \InvalidArgumentException('Gateway Exception: Status not valid');
+            throw new InvalidArgumentException('Gateway Exception: Status not valid');
         }
  
         $data = &$this->authEnrolledRequest['data'];
@@ -494,7 +494,7 @@ class HdfcGateway extends BaseGateway
 
         if ($trackid !== $this->enrollRequest['data']['trackid'])
         {
-            throw new \InvalidArgumentException('Gateway Exception: Track id do not match');
+            throw new InvalidArgumentException('Gateway Exception: Track id do not match');
         }
     }
  
