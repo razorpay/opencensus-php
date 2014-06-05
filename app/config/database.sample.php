@@ -55,7 +55,23 @@ return array(
 		'mysql' => array(
 			'driver'    => 'mysql',
 			'host'      => 'localhost',
-			'database'  => 'database',
+			'database'  => 'rzp-dashboard',
+			'username'  => 'root',
+			'password'  => '',
+			'charset'   => 'utf8',
+			'collation' => 'utf8_unicode_ci',
+			'prefix'    => '',
+		),
+
+		'mysql_api' => array(
+			'read' => array(
+				'host'  => 'localhost',
+			),
+			'write' => array(
+				'host' 	=> ''
+			),
+			'driver'    => 'mysql',
+			'database'  => 'rzp-api',
 			'username'  => 'root',
 			'password'  => '',
 			'charset'   => 'utf8',
