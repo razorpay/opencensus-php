@@ -41,18 +41,6 @@ class Trace extends \Singleton
      */
     protected $values = array();
 
-    // protected static $instance = null;
-
-    // public function getInstance()
-    // {
-    //     if (self::$instance === null)
-    //     {
-    //         self::$instance = new static;
-    //     }
-
-    //     return self::$instances;
-    // }
-
     protected $traceWriter = null;
 
     public function __call($name, $arguments)
@@ -95,7 +83,6 @@ class Trace extends \Singleton
             {
                 $this->traceWriter = new TraceWriter();
             }
-
             $this->traceWriter->addRecord(
                 constant('\Monolog\Logger::'.$level),
                 $message,
@@ -155,5 +142,31 @@ class Trace extends \Singleton
             'level' => $level,
             'message' => $message,
             'context' => $context));
+    }
+
+    public function getRecords()
+    {
+        if ($this->traceWriter !== null)
+        {
+            $records = $this->traceWriter->getRecords();
+            $rec = array();
+            $i = 0;
+            foreach ($records as $record)
+            {
+                unset(
+                    $record['formatted'],
+                    $record['level']);
+
+                $record = array_assoc_flatten($record, $i);
+
+                array_push($record, null);
+
+                $rec = array_merge($rec, $record);
+
+                $i++;
+            }
+
+            return $rec;
+        }
     }
 }
