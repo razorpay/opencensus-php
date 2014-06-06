@@ -21,6 +21,7 @@
 		"classmap": [
 			"app/commands",
 			"app/controllers",
+			"app/dashboard",
 			"app/trace",
 			"app/gateway",
 			"app/models",
