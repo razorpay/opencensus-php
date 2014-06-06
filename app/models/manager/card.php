@@ -12,7 +12,7 @@ class Card extends EntityManager
         'number'        => 'required|numeric|luhn',
         'expiry_month'  => 'required|month',
         'expiry_year'   => 'required|expiry_year',
-        'cvv'           => 'required|numeric|digits:3',
+        'cvv'           => 'required|numeric|digits_between:3,4',
         'name'          => 'required|alpha_space|max:100',
         'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
         'address_line2'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
