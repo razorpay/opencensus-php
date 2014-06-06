@@ -60,4 +60,14 @@ class TraceWriter extends Logger
                 return $record;
             });
     }
+
+    public function fire($job, $trace)
+    {
+        $writer = new TraceWriter();
+
+        $writer->addRecord($trace['level'], $trace['message'], $trace['context']);
+
+        $job->delete();
+    }
+
 }

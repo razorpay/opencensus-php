@@ -6,10 +6,8 @@ use Queue;
 use Config;
 use Monolog\Logger;
 use Trace\TraceHandler;
-use Trace\TraceEvent;
-use Trace\TraceFields;
 
-class Trace
+class Trace extends \Singlerton
 {
 
     /**
@@ -35,6 +33,13 @@ class Trace
     protected $compulsoryFieldValues = array();
 
     /**
+     * Fields corresponding to a particular trace
+     *
+     * @var array $values Fields
+     */
+    protected static $fields = array();
+
+    /**
      * Values corresponding to fields
      *
      * @var array $values Field values
@@ -47,12 +52,6 @@ class Trace
         $traceMessage = $arguments[1];
 
         $level;
-
-        if(! array_key_exists('message', $traceMessage))
-        {
-            $traceMessage['message'] = TraceEvent::translateEvent($code);
-        }
-        // $traceMessage = $this->setDefaultValues($code, $traceMessage);
 
         $message = $traceMessage['message'];
 
@@ -67,29 +66,8 @@ class Trace
         $this->queueRecord(
             constant('\Monolog\Logger::'.$level), 
             $message);
-    }
 
-    /**
-     * Set default values of fields
-     * for which developer did not provide a value
-     *
-     * @param string $code
-     * @param array $traceMessage
-     * @return array $traceMessage
-     */
-    public function setDefaultValues($code, $traceMessage)
-    {
-        foreach(static::$defaults as $index => $default)
-        {
-            if(!array_key_exists($default, $traceMessage))
-            {
-                $defaults_var = 'default'.ucfirst($default);
-
-                $traceMessage[$default] = static::${$defaults_var}[$code];
-            }
-        }
-
-        return $traceMessage;
+        $this->traceWriter = new TraceWriter();
     }
 
     /**
@@ -108,7 +86,7 @@ class Trace
             {
                 $this->compulsoryFieldValues[$key] = $traceMessage[$key];
             }
-            else if(in_array($key, TraceFields::get($code)))
+            else if(in_array($key, static::$fields[$code]))
             {
                 $this->values[$key] = $traceMessage[$key];
             }
@@ -119,9 +97,26 @@ class Trace
     {
         $context = array_merge($this->compulsoryFieldValues, $this->values);
 
-        Queue::push('Trace\TraceHandler', array(
+        $handlers = $this->traceWriter->getHandlers();
+
+        if (in_array('TestHandler', $handlers))
+        {
+            $handlers['TestHandler']->addRecord(
+                $trace['level'], 
+                $trace['message'], 
+                $trace['context']);
+        }
+
+        Queue::push('Trace\TraceWriter', array(
             'level' => $level,
             'message' => $message,
             'context' => $context));
+    }
+
+    public function getRecords()
+    {
+        $records = $this->traceWriter->getRecords();
+
+        return $records;
     }
 }
