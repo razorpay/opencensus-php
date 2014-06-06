@@ -11,13 +11,23 @@
 |
 */
 
-Route::get('/login', 'MerchantController@getLogin');
 
-Route::get('/register', 'MerchantController@getRegister');
+Route::group(array('before' => 'auth'), function()
+{
+    Route::get('/', 'MerchantController@getIndex');
 
-// Route::group(array('before' => 'auth'), function()
-// {
+    Route::get('/transactions', 'MerchantController@getTransactions');
 
-	Route::get('/', 'MerchantController@getIndex');
+    Route::get('/logout', 'MerchantController@getLogout');
+});
 
-// }
+Route::group(array('before' => 'guest'), function()
+{
+    Route::get('/login', 'MerchantController@getLogin');
+    
+    Route::post('/login', 'MerchantController@postLogin');
+
+    Route::get('/register', 'MerchantController@getRegister');
+    
+    Route::post('/register', 'MerchantController@postRegister');
+});
