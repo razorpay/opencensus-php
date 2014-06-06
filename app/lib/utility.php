@@ -75,4 +75,28 @@ if (! function_exists('is_assoc_array'))
 	}
 }
 
+if (! function_exists('array_assoc_flatten'))
+{
+    function array_assoc_flatten(array $array, $parent_key = null)
+    {
+        $return = array();
+    
+        foreach ($array as $key => $value) 
+        {
+            $key = ($parent_key === null) ? $key : $parent_key . '.' . $key;
+            if (is_array($value))
+            {
+                $tmp = array_assoc_flatten($value, $key);
+                $return = array_merge($return, $tmp);
+            }
+            else
+            {
+                $return[$key] = $value;
+            }
+        }
+
+        return $return;
+    }
+}
+
 
