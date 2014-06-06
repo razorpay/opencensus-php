@@ -95,7 +95,7 @@ class Transaction
         catch(\Requests_Exception $e)
         {
             //check if timeout has occured
-            if(strpos($e->getMessage(), 'Operation timed out') || strpos($e->getMessage(), 'Network is unreachable'))
+            if(strpos($e->getMessage(), 'Operation timed out')  !==false || strpos($e->getMessage(), 'Network is unreachable') !==false || strpos($e->getMessage(), 'Name or service not known')!==false )
             {
                 $status = TransactionStatus::FAILED;
                 $data['code'] = "TIMEOUT";
