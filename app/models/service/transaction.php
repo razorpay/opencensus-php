@@ -5,7 +5,7 @@ namespace Models\Service;
 use Models\Manager;
 use Models\DAL;
 use Gateway\GatewayManager;
-use Trace\TransactionTrace;
+use Trace\Trace;
 use Trace\TraceEvent;
 
 class Transaction extends Service
@@ -17,7 +17,7 @@ class Transaction extends Service
     {
         parent::__construct();
         $this->txn = new Core\Transaction();
-        $this->trace = new TransactionTrace();
+        $this->trace = Trace::getInstance();
     }
 
     /**

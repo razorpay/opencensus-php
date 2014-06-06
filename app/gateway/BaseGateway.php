@@ -1,7 +1,8 @@
 <?php
 
 namespace Gateway;
-use Trace\GatewayTrace;
+
+use Trace\Trace;
 
 class BaseGateway
 {
@@ -13,7 +14,7 @@ class BaseGateway
 
     public function __construct()
     { 
-        $this->trace=new GatewayTrace;
+        $this->trace = Trace::getInstance();
     }
 
     //not being used. Only HdfcGateway->process is used.

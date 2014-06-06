@@ -7,7 +7,7 @@ use Models\Manager\TransactionStatus;
 use Models\DAL;
 use Gateway\GatewayManager;
 use Exceptions;
-use Trace\TransactionTrace;
+use Trace\Trace;
 use Trace\TraceEvent;
 
 class Transaction
@@ -20,8 +20,9 @@ class Transaction
 
     public function __construct()
     {
-        $this->trace = new TransactionTrace();
+        $this->trace = Trace::getInstance();
     }
+
     /**
      * Creates an entry for a new transaction.
      */
@@ -33,7 +34,7 @@ class Transaction
 
         if (! array_key_exists('card', $input))
         {
-            throw new \Exceptions\InvalidArgumentException(' Transaction Exception: Card not provided');
+            throw new \Exceptions\InvalidArgumentException('Transaction Exception: Card not provided');
         }
 
         if(strlen($input['card']['expiry_year']) == 2)
