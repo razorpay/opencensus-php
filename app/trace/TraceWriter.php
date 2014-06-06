@@ -19,6 +19,8 @@ class TraceWriter extends Logger
 
     protected $debug = false;
 
+    protected $testHandler = null;
+
     public function __construct()
     {
         parent::__construct(static::CHANNEL);
@@ -36,7 +38,7 @@ class TraceWriter extends Logger
     {
         $this->pushStreamHandler();
 
-        if ($this->debugOption('screen'))
+        if ($this->debug)
         {
             $this->pushTestHandler();
         }
@@ -50,8 +52,12 @@ class TraceWriter extends Logger
 
         if ($this->debugOption('chrome'))
         {
-            $chromePHPHandle = new Handler\ChromePHPHandler();
+            $chromePHPFormatter = new Formatter\ChromePHPFormatter();
 
+            $chromePHPHandle = new Handler\ChromePHPHandler();
+            
+            $chromePHPHandle->setFormatter($chromePHPFormatter);
+            
             $this->pushHandler($chromePHPHandle);
         }
     }
@@ -71,18 +77,24 @@ class TraceWriter extends Logger
             $this->pushProcessor($processor);
         }
 
-        $this->pushWebProcessor();
+        if (\App::environment('dev') === false)
+            $this->pushWebProcessor();
     }
 
     protected function pushTestHandler()
     {
-        $htmlFormatter = new Formatter\HtmlFormatter();
+        $lineFormatter = new Formatter\LineFormatter(null, null, true);
 
         $testHandler = new Handler\TestHandler();
-        
-        $testHandler->setFormatter($htmlFormatter);
+
+        $jsonFormatter = new Formatter\JsonFormatter();
+        $scalarFormatter = new Formatter\ScalarFormatter();
+
+        $testHandler->setFormatter($lineFormatter);
 
         $this->pushHandler($testHandler);
+
+        $this->testHandler = $testHandler;
     }
 
     protected function pushStreamHandler()
@@ -146,6 +158,8 @@ class TraceWriter extends Logger
         
         $record = ['timestamp' => $timestamp] + $record;
 
+        unset($record['datetime']);
+
         return $record;
     }
 
@@ -174,5 +188,13 @@ class TraceWriter extends Logger
                 throw new \InvalidArgumentException($option . ' in debug not defined');
         }
         else return false;
+    }
+
+    public function getRecords()
+    {
+        if ($this->testHandler !== null)
+        {
+            return $this->testHandler->getRecords();
+        }
     }
 }

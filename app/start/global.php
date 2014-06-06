@@ -1,5 +1,7 @@
 <?php
 
+use Whoops\Handler\PrettyPageHandler;
+
 /*
 |--------------------------------------------------------------------------
 | Register The Laravel Class Loader
@@ -53,17 +55,48 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 
 App::error(function(Exception $exception, $code)
 {	
+    //d($exception);
 	if(strpos($exception->getMessage(), 'Transaction Exception:')!=False)
 	{
 		$trace = new Trace\TransactionTrace();
 		$trace->error(Trace\TraceEvent::TRANSACTION_EXCEPTION, array('message'=>$exception->getMessage(), 'file'=>$exception->getFile()));
 	}
+
 	if(strpos($exception->getMessage(), 'Gateway Exception:')!=False)
 	{
 		$trace = new Trace\GatewayTrace();
 		$trace->error(Trace\TraceEvent::GATEWAY_EXCEPTION, array('message'=>$exception->getMessage(), 'file'=>$exception->getFile()));
 	}
+
 	Log::error($exception);
+
+    // Use the Laravel IoC container to get the Whoops\Run instance, if whoops
+    // is available (which will be the case, by default, in the dev
+    // environment)
+
+    if((App::bound('whoops')) and
+       (Config::get('app.debug'))) 
+    {
+        // Retrieve the whoops handler in charge of displaying exceptions:
+        $whoopsDisplayHandler = App::make("whoops.handler");
+     
+        // Laravel will use the PrettyPageHandler by default, unless this
+        // is an AJAX request, in which case it'll use the JsonResponseHandler:
+        if($whoopsDisplayHandler instanceof PrettyPageHandler) 
+        {
+     
+            // Set a custom page title for our error page:
+            $whoopsDisplayHandler->setPageTitle("Mayday! Mayday! Don't push the code!");
+     
+            // Set the "open:" link for files to our editor of choice:
+            $whoopsDisplayHandler->setEditor("sublime");
+
+            $records = Trace\Trace::getInstance()->getRecords();
+            
+            $whoopsDisplayHandler->addDataTable('Trace', $records);
+        }
+    }
+
 });
 
 /*
