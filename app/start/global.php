@@ -16,6 +16,7 @@ use Whoops\Handler\PrettyPageHandler;
 ClassLoader::addDirectories(array(
 
 	app_path().'/commands',
+	app_path().'/dashboard',
 	app_path().'/trace',
 	app_path().'/controllers',
 	app_path().'/gateway',

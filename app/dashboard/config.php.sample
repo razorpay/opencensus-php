@@ -1,0 +1,13 @@
+<?php
+
+namespace Dashboard;
+
+final class Config
+{
+    const Url = 'https://dashboard.razorpay.com';
+
+    public static function getUrl()
+    {
+        return self::Url;
+    } 
+}
