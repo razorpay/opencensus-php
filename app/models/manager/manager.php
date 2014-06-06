@@ -20,6 +20,11 @@ class Manager
     protected $data = array();
 
     /**
+     * Error messages generated during build
+     */
+    protected $error = array();
+
+    /**
      * Fields which will be generated
      * during build
      * @var array
@@ -68,26 +73,26 @@ class Manager
         ;
     }
 
-    public function build(array $input)
+    public function build(array $input, $rules = 'create')
     {
         $this->input = $input;
 
-        $this->validateInput($input, 'create');
+        $this->validateInput($input, $rules);
 
-        $this->generate($input);
+        $this->generate($input, $rules);
 
-        $this->unsetInput($input, 'create');
+        $this->unsetInput($input, $rules);
 
         $this->setBuilt(true);
 
         $this->fill($input);
     }
 
-    public static function createValidate(array $input)
+    public static function createValidate(array $input, $rules = 'create')
     {
         $manager = new static();
 
-        $manager->build($input);
+        $manager->build($input, $rules);
 
         return $manager;
     }
@@ -124,7 +129,7 @@ class Manager
 
         if (count($invalid_keys) > 0)
         {
-            throw new \Exceptions\InvalidKeysException($invalid_keys);
+            throw new \InvalidArgumentException('Invalid parameters.');
         }
     }
 
@@ -146,7 +151,7 @@ class Manager
 
         if ($validation->fails())
         {
-            throw new \InvalidArgumentException(join("\n",$validation->messages()->all()));
+            $this->error = $validation->messages()->all();
         }
 
         $this->runValidators($input, $operation);        
@@ -169,17 +174,23 @@ class Manager
 
     public function unsetInput(& $input, $operation)
     {
-        foreach (static::${'unset'.ucfirst($operation).'Input'} as $key)
+        if (isset(static::${'unset'.ucfirst($operation).'Input'}))
         {
-            unset($input[$key]);
+            foreach (static::${'unset'.ucfirst($operation).'Input'} as $key)
+            {
+                unset($input[$key]);
+            }
         }
     }
 
-    public function generate($input)
+    public function generate($input, $rules)
     {
-        foreach (static::$generators as $field)
+        if (isset(static::${$rules . 'Generators'}))
         {
-            $this->generateField($field, $input);
+            foreach (static::${$rules . 'Generators'} as $field)
+            {
+                $this->generateField($field, $input);
+            }
         }
     }
 
@@ -204,7 +215,7 @@ class Manager
         if ((isset($this->field)) and 
             (! in_array($key, $this->field)))
         {
-            throw new \Exceptions\InvalidKeysException;
+            throw new \InvalidArgumentException();
         }
 
         if (array_key_exists($key, $this->data))
@@ -218,7 +229,7 @@ class Manager
         if ((count($this->field) > 0) and 
             (! in_array($key, $this->field)))
         {
-            throw new \InvalidKeysException;
+            throw new \InvalidArgumentException();
         }
 
         $this->data[$key] = $value;
@@ -270,6 +281,9 @@ class Manager
 
     public function getData()
     {
-        return $this->data;
+        return array(
+            $this->error,
+            $this->data
+        );
     }
 }
