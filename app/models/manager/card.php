@@ -9,7 +9,7 @@ use Models\Service;
 class Card extends EntityManager
 {
     protected static $createRules = array(
-        'number'        => 'required|numeric|luhn',
+        'number'        => 'required|numeric|luhn|digits_between:13,19',
         'expiry_month'  => 'required|month',
         'expiry_year'   => 'required|expiry_year',
         'cvv'           => 'required|numeric|digits_between:3,4',
