@@ -12,6 +12,7 @@ class TraceFields
             'currency',
             'hold'
         ),
+
         TraceEvent::TRANSACTION_CREATED           => array(
             'id',
             'amount',
@@ -20,6 +21,7 @@ class TraceFields
             'status',
             'hold'
         ),
+
         TraceEvent::TRANSACTION_AUTHED          => array(
             'id',
             'amount',
@@ -28,9 +30,9 @@ class TraceFields
             'status',
             'hold'
         ),
-        TraceEvent::TRANSACTION_CREATE_FAILED      => array(
 
-        ),
+        TraceEvent::TRANSACTION_CREATE_FAILED      => array(),
+
         TraceEvent::TRANSACTION_FAILED           => array(
             'id',
             'amount',
@@ -39,6 +41,7 @@ class TraceFields
             'status',
             'error'
         ),
+
         TraceEvent::TRANSACTION_REFUNDED           => array(
             'id',
             'amount',
@@ -46,6 +49,7 @@ class TraceFields
             'livemode',
             'status'
         ),
+
         TraceEvent::TRANSACTION_CAPTURED         => array(
             'id',
             'amount',
@@ -53,6 +57,7 @@ class TraceFields
             'livemode',
             'status'
         ),
+
         TraceEvent::TRANSACTION_EXCEPTION    => array(
             'id',
             'amount',
@@ -68,57 +73,69 @@ class TraceFields
             'type',
             'data'
         ),
+
         TraceEvent::GATEWAY_ENROLL_RESPONSE => array(
             'type',
             'data'
         ),
+
         TraceEvent::GATEWAY_ENROLL_ERROR => array(
             'type',
             'data',
             'error'
         ),
+
         TraceEvent::GATEWAY_NOT_ENROLLED_REQUEST => array(
             'url',
             'type',
             'data'
         ),
+
         TraceEvent::GATEWAY_NOT_ENROLLED_RESPONSE => array(
             'type',
             'data'
         ),
+
         TraceEvent::GATEWAY_NOT_ENROLLED_ERROR => array(
             'type',
             'data',
             'error'
         ),
+
         TraceEvent::GATEWAY_ENROLLED_AUTH_REQUEST => array(
             'url',
             'type',
             'data'
         ),
+
         TraceEvent::GATEWAY_ENROLLED_AUTH_RESPONSE => array(
             'type',
             'data'
         ),
+
         TraceEvent::GATEWAY_ENROLLED_AUTH_ERROR => array(
             'type',
             'data',
             'error'
         ),
+
         TraceEvent::GATEWAY_SUPPORT_REQUEST => array(
             'url',
             'type',
             'data'
         ),
+
         TraceEvent::GATEWAY_SUPPORT_RESPONSE => array(
             'type',
             'data'
         ),
+
         TraceEvent::GATEWAY_SUPPORT_ERROR => array(
             'type',
             'data',
             'error'
         ),
+
         TraceEvent::GATEWAY_EXCEPTION => array(
             'file'
         ),
