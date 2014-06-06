@@ -101,10 +101,16 @@ class Transaction extends Service
         if($status){
             $txnData->setStatus('refunded');
 
+            $txn_arr = $txn_data->toArray();
+
             //Logging
             $this->trace->info(
                 TraceEvent::TRANSACTION_REFUNDED, 
-                $txnData->toArray());
+                $txn_arr);
+
+            //Analytics
+            $txn_arr['merchant_id'] = $txnData->merchant_id;
+            \Dashboard\Transaction::getInstance()->queueRecord($txn_arr);
         }
         else
         {
