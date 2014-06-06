@@ -4,7 +4,11 @@ namespace Trace;
 
 class TraceEvent
 {
-    const NEW_TRANSACTION_REQUEST           = 'NEW_TRANSACTION_REQUEST';
+    /*
+     * Transaction component error messages
+     */
+    
+    const TRANSACTION_NEW_REQUEST           = 'TRANSACTION_NEW_REQUEST';
     const TRANSACTION_CREATED               = 'TRANSACTION_CREATED';
     const TRANSACTION_CREATE_FAILED         = 'TRANSACTION_CREATE_FAILED';
     const TRANSACTION_AUTHED                = 'TRANSACTION_AUTHED';
@@ -15,7 +19,10 @@ class TraceEvent
     // const TRANSACTION_CAPTURE_FAILED        = 'TRANSACTION_CAPTURE_FAILED';
     const TRANSACTION_EXCEPTION             = 'TRANSACTION_EXCEPTION';
 
-    // Gateway related trace events
+    /*
+     * Gateway component error messages
+     */
+
     const GATEWAY_ENROLL_REQUEST = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE = 'GATEWAY_ENROLL_RESPONSE';
     const GATEWAY_ENROLL_ERROR = 'GATEWAY_ENROLL_ERROR';
@@ -33,7 +40,7 @@ class TraceEvent
 
 
     protected static $message = array(
-        self::NEW_TRANSACTION_REQUEST       => 'Request for new transaction received',
+        self::TRANSACTION_NEW_REQUEST       => 'Request for new transaction received',
         self::TRANSACTION_CREATED           => 'New transaction created',
         self::TRANSACTION_CREATE_FAILED     => 'Transaction creation failed',
         self::TRANSACTION_AUTHED            => 'Transaction authenticated successfully',

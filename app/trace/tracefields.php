@@ -7,7 +7,7 @@ use Trace\TraceEvent;
 class TraceFields
 {
     protected static $fields = array(
-        TraceEvent::NEW_TRANSACTION_REQUEST       => array(
+        TraceEvent::TRANSACTION_NEW_REQUEST       => array(
             'amount',
             'currency',
             'hold'

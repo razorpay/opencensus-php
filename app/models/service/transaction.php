@@ -26,7 +26,7 @@ class Transaction extends Service
     public function process(array $input)
     {
         $this->trace->debug(
-            TraceEvent::NEW_TRANSACTION_REQUEST, 
+            TraceEvent::TRANSACTION_NEW_REQUEST, 
             $input);
 
         list($txn, $cardData) = $this->txn->create($input);
