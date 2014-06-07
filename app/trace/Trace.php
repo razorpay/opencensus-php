@@ -25,14 +25,14 @@ class Trace extends \Singleton
      *
      * @var array $compulsoryFields Compulsory fields
      */
-    protected static $compulsoryFields = array();
+    protected static $commonFields = array();
 
     /**
      * Values for compulsory fields
      *
      * @var array $compulsoryFieldValues Values for compulsory fields
      */
-    protected $compulsoryFieldValues = array();
+    protected $commonValues = array();
 
     /**
      * Values corresponding to fields
@@ -43,51 +43,41 @@ class Trace extends \Singleton
 
     protected $traceWriter = null;
 
-    public function __call($name, $arguments)
+    protected function __construct()
     {
-        $code = $arguments[0];
+        parent::__construct();
 
-        $traceMessage = $arguments[1];
+        $this->traceWriter = new TraceWriter();
+    }
 
-        $level = null;
+    public function __call($name, $args)
+    {
+        list($code, $values) = $this->validate($args);
 
-        if(! array_key_exists('message', $traceMessage))
+        $message = TraceEvent::getMessage($code);
+
+        $context = $this->getContext($code, $values);
+
+        $this->traceWriter->{$name}($message, $context);
+    }
+
+    protected function validate($args)
+    {
+        $code = $args[0];
+
+        TraceEvent::checkCode($code);
+
+        $context = array();
+
+        if (isset($args[1]))
+            $context = $args[1];
+
+        if (! is_array($context))
         {
-            $traceMessage['message'] = TraceEvent::translateEvent($code);
+            throw new \InvalidArgumentException('Context supplied should be array');
         }
 
-        // $traceMessage = $this->setDefaultValues($code, $traceMessage);
-
-        $message = $traceMessage['message'];
-
-        unset($traceMessage['message']);
-
-        $this->updateAllValues($code, $traceMessage);
-
-        // determine level based on function called
-        $level = strtoupper($name);
-        
-        $context = array_merge($this->compulsoryFieldValues, $this->values);
-
-        if (Config::get('trace.queue'))
-        {
-            // Queue logging the record
-            $this->queueRecord(
-                constant('\Monolog\Logger::'.$level), 
-                $message,
-                $context);
-        }
-        else
-        {
-            if ($this->traceWriter === null)
-            {
-                $this->traceWriter = new TraceWriter();
-            }
-            $this->traceWriter->addRecord(
-                constant('\Monolog\Logger::'.$level),
-                $message,
-                $context);
-        }
+        return array($code, $context);
     }
 
     /**
@@ -95,78 +85,103 @@ class Trace extends \Singleton
      * for which developer did not provide a value
      *
      * @param string $code
-     * @param array $traceMessage
-     * @return array $traceMessage
+     * @param array $record
+     * @return array $record
      */
-    public function setDefaultValues($code, $traceMessage)
+    public function setCommonValues($code, $record)
     {
         foreach(static::$defaults as $index => $default)
         {
-            if(!array_key_exists($default, $traceMessage))
+            if(!array_key_exists($default, $record))
             {
                 $defaults_var = 'default'.ucfirst($default);
 
-                $traceMessage[$default] = static::${$defaults_var}[$code];
+                $record[$default] = static::${$defaults_var}[$code];
             }
         }
 
-        return $traceMessage;
+        return $record;
     }
 
     /**
-     * Updates compulsory as well as other values
+     * Returns context array to be logged with trace record
      *
-     * @param array $traceMessage
+     * @param array $record
      */
-    protected function updateAllValues($code, $traceMessage)
+    protected function getContext($code, $record)
     {
-        $this->compulsoryFieldValues = array();
+        $this->commonValues = array();
+
         $this->values = array();
 
-        foreach($traceMessage as $key => $value)
+        $fields = TraceFields::getFields($code);
+
+        foreach($record as $key => $value)
         {
-            if(in_array($key, static::$compulsoryFields))
+            if(in_array($key, static::$commonFields))
             {
-                $this->compulsoryFieldValues[$key] = $traceMessage[$key];
+                $this->commonValues[$key] = $record[$key];
             }
-            else if(in_array($key, TraceFields::get($code)))
+            else if(in_array($key, $fields))
             {
-                $this->values[$key] = $traceMessage[$key];
+                $this->values[$key] = $record[$key];
             }
         }
+
+        $context = array_merge($this->commonValues, $this->values);
+
+        TraceFields::checkFields($code, array_keys($context));
+
+        return $context;
+
     }
 
-    public function queueRecord($level, $message, array $context = array())
-    {
-        Queue::push('Trace\TraceWriter', array(
-            'level' => $level,
-            'message' => $message,
-            'context' => $context));
-    }
-
+    /**
+     * In debug mode, this function returns all
+     * the log records logged till now
+     * 
+     * @return array Log records with context and extras
+     */
     public function getRecords()
     {
-        if ($this->traceWriter !== null)
+        return $this->traceWriter->getRecords();
+    }
+
+    /**
+     * In debug mode, this function returns all the 
+     * log records logged till now.
+     * The array returned is only one level deep 
+     * with sub-arrays keys combined with their parent
+     * ones
+     * 
+     * @return array One level deep log records
+     */
+    public function getFlattenedRecordsForScreen()
+    {
+        $records = $this->getRecords();
+
+        $rec = array();
+
+        $i = 0;
+
+        foreach ($records as $record)
         {
-            $records = $this->traceWriter->getRecords();
-            $rec = array();
-            $i = 0;
-            foreach ($records as $record)
-            {
-                unset(
-                    $record['formatted'],
-                    $record['level']);
+            unset(
+                $record['formatted'],
+                $record['level']);
 
-                $record = array_assoc_flatten($record, $i);
+            $record = array_assoc_flatten($record, $i);
 
-                array_push($record, null);
+            //
+            // Add a null for better output
+            //
+            array_push($record, null);
 
-                $rec = array_merge($rec, $record);
+            $rec = array_merge($rec, $record);
 
-                $i++;
-            }
-
-            return $rec;
+            $i++;
         }
+
+        return $rec;
     }
 }

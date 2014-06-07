@@ -91,7 +91,7 @@ App::error(function(Exception $exception, $code)
             // Set the "open:" link for files to our editor of choice:
             $whoopsDisplayHandler->setEditor("sublime");
 
-            $records = Trace\Trace::getInstance()->getRecords();
+            $records = Trace\Trace::getInstance()->getFlattenedRecordsForScreen();
             
             $whoopsDisplayHandler->addDataTable('Trace', $records);
         }

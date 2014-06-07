@@ -197,4 +197,28 @@ class TraceWriter extends Logger
             return $this->testHandler->getRecords();
         }
     }
+
+    public function addRecord($level, $message, array $context = array())
+    {
+        if ($this->config['queue'])
+        {
+            // Queue the logging the record
+            $this->queueRecord(
+                $level,
+                $message,
+                $context);
+        }
+        else
+        {
+            parent::addRecord($level, $message, $context);
+        }
+    }
+
+    public function queueRecord($level, $message, array $context = array())
+    {
+        Queue::push(__NAMESPACE__.'\TraceWriter', array(
+            'level' => $level,
+            'message' => $message,
+            'context' => $context));
+    }
 }
