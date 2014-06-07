@@ -31,7 +31,14 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
 
-        $data = Service\Transaction::getInstance()->fetchFromApi($input);
+        $data = Service\Transaction::getInstance()->fetchListFromApi($input);
+
+        return $data;
+    }
+
+    public function getTransaction($id = NULL)
+    {
+        $data = Service\Transaction::getInstance()->fetchTxnFromApi($id);
 
         return $data;
     }

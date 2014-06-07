@@ -14,7 +14,7 @@ class Transaction extends Service
         'year'  =>  31536000 //365 * 24 * 60 * 60
     );
 
-    public function fetchFromApi(array $input)
+    public function fetchListFromApi(array $input)
     {
         list($error,$options) = Manager\Transaction::createValidate($input, 'fetch')->getData();
 
@@ -23,6 +23,24 @@ class Transaction extends Service
             static::setApiCredentials();
             $response = static::$api->transaction->fetch($options);
             $data = Manager\Transaction::mapKeys($response);
+        }
+        else
+        {
+            $data = $error;
+        }
+
+        return $data;
+    }
+
+    public function fetchTxnFromApi($id)
+    {
+        list($error, $data) = Manager\Transaction::createValidate(['id' => $id], 'fetch')->getData();
+
+        if (empty($error))
+        {
+            $id = $data['id'];
+            static::setApiCredentials();
+            $data = (array)static::$api->transaction->get($id);
         }
         else
         {

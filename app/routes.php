@@ -20,7 +20,9 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/transactions', 'TransactionController@getTransactions');
 
-    Route::get('/transactions/analytics', 'TransactionController@getAnalytics');
+    Route::get('/transactions/{id}', 'TransactionController@getTransaction');
+
+    Route::get('/analytics/transactions', 'TransactionController@getAnalytics');
 });
 
 Route::group(array('before' => 'guest'), function()
