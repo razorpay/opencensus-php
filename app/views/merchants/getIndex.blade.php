@@ -103,6 +103,12 @@
 						</ul>
 					</div>
 				</div>
+				<div id="transaction-one" class="hidden panel">
+					<div id="transaction-details">
+						<h2>Details</h2>
+						<div class="details grid"></div>
+					</div>
+				</div>
 				<div id="refunds" class="hidden panel">
 					<div class="list-wrapper">
 						<h2>Recent Refunds</h2>

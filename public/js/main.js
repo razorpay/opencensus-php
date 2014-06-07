@@ -247,6 +247,12 @@ $(document).ready(function()
             $('#' + div).html(html);
         },
 
+        renderTxnDetails: function(data) {
+            var html = '';
+            html += '<div class="col-1-4 key">ID</div><div class="col-9-12">' + data.id + '</div><div class="col-1-4 key">Amount</div><div class="col-9-12">₹' + data.amount + '</div><div class="col-1-4 key">Created At</div><div class="col-9-12">' + moment(data.created_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + '</div><div class="col-1-4 key">Updated At</div><div class="col-9-12">' + moment(data.updated_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + '</div><div class="col-1-4 key">Status</div><div class="col-9-12">' + data.status + '</div>';
+            $('#transaction-details .details').html(html);
+        },
+
         showLoader: function() {
             $('#loader').removeClass('hidden');
         },
@@ -304,7 +310,7 @@ $(document).ready(function()
             var group = rzpd.config.timeScale;
 
             $.ajax({
-                url: './transactions/analytics',
+                url: '/analytics/transactions',
                 type: 'GET',
                 data: {
                     type: group,
@@ -353,7 +359,7 @@ $(document).ready(function()
             var group = 'day';
 
             $.ajax({
-                url: './transactions/analytics',
+                url: '/analytics/transactions',
                 type: 'GET',
                 data: {
                     type: group,
@@ -438,6 +444,17 @@ $(document).ready(function()
             });
         },
 
+        fetchTxnDetails: function(txn_id) {
+            $.ajax({
+                url: '/transactions/' + txn_id,
+                success: function(result) {
+                    rzpd.views.hideLoader();
+                    rzpd.views.showDiv('#transaction-one');
+                    rzpd.views.renderTxnDetails(result);
+                }
+            });
+        },
+
         updateSubpanel: function(subpanel) {
             if (rzpd.config.currentTab == subpanel)
                 rzpd.config.childDivLoadCount += 1;
@@ -469,6 +486,11 @@ $(document).ready(function()
             rzpd.hooks.renderTransactionsList('transactions');
         },
 
+        renderTransaction: function(txn_id) {
+            rzpd.hooks.setTab('transactions');
+            rzpd.hooks.fetchTxnDetails(txn_id);
+        },
+
         renderRefunds: function() {
             rzpd.hooks.setTab('refunds');
             rzpd.hooks.renderRefundsList('refunds');
@@ -498,9 +520,14 @@ $(document).ready(function()
             rzpd.hooks.renderDashboard();
         }).enter(rzpd.hooks.resetPanels);
 
+        Path.map("#!/transactions/:txn_id").to(function(){
+            rzpd.hooks.renderTransaction(this.params.txn_id);
+        }).enter(rzpd.hooks.resetPanels);
+
         Path.map("#!/transactions").to(function(){
             rzpd.hooks.renderTransactions();
         }).enter(rzpd.hooks.resetPanels);
+
 
         Path.map("#!/logs").to(function(){
             rzpd.hooks.renderLogs();
