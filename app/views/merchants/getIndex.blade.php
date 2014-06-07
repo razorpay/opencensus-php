@@ -3,7 +3,7 @@
 @section('content')
 	<div class="grid grid-pad">
 		<div class="col-1-4 spaced-right-box">
-			<div class="content boxed spaced-bottom-box" id="livemode">
+			<!-- <div class="content boxed spaced-bottom-box" id="livemode">
 				<div class="button-desc active">Test</div>
 				<div class="button-wrap">
 					<div class="button-bg">
@@ -11,7 +11,7 @@
 					</div>
 				</div>
 				<div class="button-desc">Live</div>
-			</div>
+			</div> -->
 			<div class="content boxed" id="sidebar">
 				<h2 class="lined">
 					<div class="title">Features</div>
