@@ -23,6 +23,12 @@
 					<li data-tab="transactions">
 						<a href="./#!/transactions">Transactions</a>
 					</li>
+					<li data-tab="refunds">
+						<a href="./#!/refunds">Refunds</a>
+					</li>
+					<li data-tab="settlements">
+						<a href="./#!/settlements">Settlements</a>
+					</li>
 					<li data-tab="logs">
 						<a href="./#!/logs">Logs</a>
 					</li>
@@ -93,6 +99,14 @@
 					<div id="transaction-list-wrapper">
 						<h2>Recent Transactions</h2>
 						<ul class="transaction-list" id="transaction-list-all" data-type="txn-list">
+							
+						</ul>
+					</div>
+				</div>
+				<div id="refunds" class="hidden panel">
+					<div id="refund-list-wrapper">
+						<h2>Recent Transactions</h2>
+						<ul class="refund-list" id="refund-list" data-type="txn-list">
 							
 						</ul>
 					</div>
