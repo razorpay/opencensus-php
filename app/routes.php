@@ -16,9 +16,11 @@ Route::group(array('before' => 'auth'), function()
 {
     Route::get('/', 'MerchantController@getIndex');
 
-    Route::get('/transactions', 'MerchantController@getTransactions');
-
     Route::get('/logout', 'MerchantController@getLogout');
+
+    Route::get('/transactions', 'TransactionController@getTransactions');
+
+    Route::get('/transactions/analytics', 'TransactionController@getAnalytics');
 });
 
 Route::group(array('before' => 'guest'), function()
@@ -31,3 +33,5 @@ Route::group(array('before' => 'guest'), function()
     
     Route::post('/register', 'MerchantController@postRegister');
 });
+
+Route::post('/transactions', 'TransactionController@postIndex');
