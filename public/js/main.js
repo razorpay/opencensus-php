@@ -11,7 +11,10 @@ $(document).ready(function()
 
     rzpd.tabs = {
         dashboard: {
-            childDivs: ['horizontal-data-wrapper','transactions-line-chart-wrapper','transaction-count-line-chart']
+            childDivs: ['horizontal-data-wrapper','transactions-line-chart-wrapper','transaction-count-line-chart-half']
+        },
+        transactions: {
+            childDivs: ['transaction-count-line-chart-full']
         }
     };
 
@@ -44,16 +47,6 @@ $(document).ready(function()
         },
 
         setChart: function(ChartDiv, ChartType, ChartTitle, ChartData, ChartOptions) {
-            if (rzpd.config.timeScale == 'day') {
-                intv = null;
-            }
-            if (rzpd.config.timeScale == 'week') {
-                intv = 24 * 3600 * 7 * 1000;
-            }
-            if (rzpd.config.timeScale == 'month') {
-                intv = 24 * 3600 * 30 * 1000;
-            }
-
             settings = {
                 chart : {
                     renderTo : ChartDiv,
@@ -74,7 +67,7 @@ $(document).ready(function()
                 },
                 xAxis : {
                     type : 'datetime',
-                    tickInterval : intv,
+                    tickInterval : rzpd.config.intv,
                     endOnTick : false,
                     dateTimeLabelFormats : {
                         second : '%H:%M',
@@ -164,8 +157,8 @@ $(document).ready(function()
             });
         },
 
-        plotTransactionsChart: function(data) {
-            rzpd.views.setChart('transactions-line-chart', 'area', 'Transactions', [{'data': data}], {
+        plotTransactionsChart: function(data, div) {
+            rzpd.views.setChart(div, 'area', 'Transactions', [{'data': data}], {
                 yAxis : {
                     title : {
                         text : ''
@@ -201,8 +194,8 @@ $(document).ready(function()
             });
         },
 
-        plotTransactionCountChart: function(data) {
-            rzpd.views.setChart('transaction-count-line-chart', 'area', 'Successful Transactions', [{'data': data}], {
+        plotTransactionCountChart: function(data, div) {
+            rzpd.views.setChart(div, 'area', 'Successful Transactions', [{'data': data}], {
                 yAxis : {
                     title : {
                         text : ''
@@ -303,9 +296,9 @@ $(document).ready(function()
                     to: rzpd.config.to
                 },
                 success: function(result) {
-                    rzpd.hooks.plotTransactionCountChart(parentDiv,result);
+                    rzpd.hooks.parseTransactionCountChart(parentDiv,result, group);
 
-                    var chartData = [];
+                    var chartData = [], intv;
 
                     $(result.data).each(function(i, s) {
                         chartData.push([s.created_at * 1000,parseInt(s.amount)]);
@@ -332,17 +325,34 @@ $(document).ready(function()
                     }
 
                     rzpd.config.intv = intv;
+                    var div = $('#' + parentDiv + ' div[data-chart="txn-volume-line"]').attr('id');
 
-                    rzpd.postAjaxCallStack.push({fn: 'plotTransactionsChart', data: chartData});
+                    rzpd.postAjaxCallStack.push({fn: 'plotTransactionsChart', data: chartData, div: div});
                     rzpd.hooks.updateSubpanel(parentDiv);
                 }
             });
         },
 
-        plotTransactionCountChart: function(parentDiv, result) {
-            var group = rzpd.config.timeScale;
+        plotTransactionCountChart: function(parentDiv) {
+            var group = 'day';
 
-            var chartData = [];
+            $.ajax({
+                url: './transactions/analytics',
+                type: 'GET',
+                data: {
+                    type: group,
+                    from: parseInt(rzpd.config.defaultStartDates[group].getTime()/1000),
+                    to: parseInt(new Date(moment().format('LL')).getTime()/1000)
+                },
+                success: function(result) {
+                    rzpd.hooks.parseTransactionCountChart(parentDiv,result, group);
+                }
+            });
+        },
+
+        parseTransactionCountChart: function(parentDiv, result, group) {
+            var chartData = [], intv;
+
             $(result.data).each(function(i, s) {
                 chartData.push([s.created_at * 1000, parseInt(s.count)]);
             });
@@ -364,7 +374,9 @@ $(document).ready(function()
             
             rzpd.config.intv = intv;
 
-            rzpd.postAjaxCallStack.push({fn: 'plotTransactionCountChart', data: chartData});
+            var div = $('#' + parentDiv + ' div[data-chart="txn-count-line"]').attr('id');
+
+            rzpd.postAjaxCallStack.push({fn: 'plotTransactionCountChart', data: chartData, div: div});
             rzpd.hooks.updateSubpanel(parentDiv);
         },
 
@@ -387,7 +399,7 @@ $(document).ready(function()
                 rzpd.views.hideLoader();
                 rzpd.views.showDiv('#' + subpanel);
                 for (var i in rzpd.postAjaxCallStack) {
-                    rzpd.views[rzpd.postAjaxCallStack[i].fn](rzpd.postAjaxCallStack[i].data);
+                    rzpd.views[rzpd.postAjaxCallStack[i].fn](rzpd.postAjaxCallStack[i].data, rzpd.postAjaxCallStack[i].div);
                 }
             }
         },
@@ -406,6 +418,7 @@ $(document).ready(function()
 
         renderTransactions: function() {
             rzpd.hooks.setTab('transactions');
+            rzpd.hooks.plotTransactionCountChart('transactions');
         },
 
         renderLogs: function() {
