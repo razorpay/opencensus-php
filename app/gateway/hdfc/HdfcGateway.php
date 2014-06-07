@@ -221,6 +221,7 @@ class HdfcGateway extends BaseGateway
     {
         $this->id = $input['txn']['id'];
  
+        // Enroll card
         $this->enrollCard($input);
 
         $er = $this->enrollResponse;
@@ -230,16 +231,19 @@ class HdfcGateway extends BaseGateway
             if ($er['data']['enroll_result'] === HdfcGatewayResult::ENROLLED)
             {
                 $this->status = HdfcGatewayResult::ENROLLED;
+ 
                 return $this->postPaymentRequestToBankACS();
             }
             else if ($er['data']['enroll_result'] === HdfcGatewayResult::NOT_ENROLLED)
             {
                 $this->status = HdfcGatewayResult::NOT_ENROLLED;
+ 
                 return $this->postAuthNotEnrolledRequestToBank();
             }
             else
             {
                 $error = HdfcGatewayErrorHandler::parseErrorInString($this->enrollResponse['data']['result']);
+ 
                 if ($error === false)
                     $error = HdfcGatewayErrorHandler::unknownError();
                 
@@ -334,6 +338,7 @@ class HdfcGateway extends BaseGateway
 
         //Logging
         $log_content = $this->stripSensitive($this->enrollRequest);
+
         $this->trace->debug(TraceEvent::GATEWAY_ENROLL_REQUEST, $log_content);
 
         $this->runRequestResponseFlow(
@@ -370,9 +375,10 @@ class HdfcGateway extends BaseGateway
         $data['addr'] = "";
 
         $this->authNotEnrolledRequest['data'] = $data;
-        
+
         //Logging
         $log_content = $this->stripSensitive($this->authNotEnrolledRequest);
+
         $this->trace->debug(TraceEvent::GATEWAY_NOT_ENROLLED_REQUEST, $log_content);
 
         $this->runRequestResponseFlow(
@@ -401,8 +407,7 @@ class HdfcGateway extends BaseGateway
         }
         return array('not enrolled',
                      array(
-                        'data' => $notEnrollResponse['data']
-                        ));
+                        'data' => $notEnrollResponse['data']));
     }
  
     /**
@@ -465,18 +470,6 @@ class HdfcGateway extends BaseGateway
         $data['currencycode'] = self::INR_CODE;
         
         $data['action'] = HdfcGatewayAction::AUTH;
-        /*if ($txn['process'] === 0)
-        {
-            $data['action'] = HdfcGatewayAction::AUTH;
-        }
-        else if ($txn['processed'] === 1)
-        {
-            $data['action'] = HdfcGatewayAction::HOLD;
-        }
-        else
-        {
-            throw new InvalidArgumentException('process should be 0 or 1');
-        }*/
     }
  
     protected function validateEnrollResponse()
