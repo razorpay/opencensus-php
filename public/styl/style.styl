@@ -43,6 +43,7 @@ html
 body
 	font-family 'Lato',sans-serif
 	font-size 10px
+	font-weight 300
 	color rzp-gray
 
 /* Header */
@@ -54,7 +55,6 @@ header
 	height 48px
 	width 100%
 	font-size 1.5em
-	font-weight 300
 	z-index 1000
 	top 0
 	#nav
@@ -158,8 +158,8 @@ header
 	padding 10px 0 30px 0
 	min-height 300px
 	h2
-		font-weight normal
 		border-bottom 1px solid rzp-gray
+		font-weight 300
 		.title
 			display inline-block
 			position relative
@@ -181,8 +181,17 @@ header
 				top 9px
 				text-decoration none
 				color inherit
+		li:hover
+			border-bottom 1px solid rzp-blue
+			padding-bottom 1px
+			a
+				background #FFF
 		.active
+			font-weight 400
 			border-bottom 2px solid rzp-blue
+			&:hover
+				padding-bottom 0px
+				border-bottom 2px solid rzp-blue
 			a
 				background #fff
 
@@ -208,7 +217,6 @@ header
 		display inline-block
 	h2
 		font-size 2em
-		font-weight 300
 	#datepicker-group
 		text-align right
 	.datepicker
@@ -335,7 +343,6 @@ header
 				margin 10px auto
 		a, .text>input
 			font-size 1.6em
-			font-weight 300
 			font-family 'Lato',sans-serif
 		a
 			margin 5px auto
@@ -355,7 +362,6 @@ header
 			label
 				font-size 1.6em
 				font-family 'Lato', sans-serif
-				font-weight 300
 				color rzp-blue
 			input[type="checkbox"]
 				background-color rzp-blue
@@ -374,7 +380,6 @@ header
 			border 0
 			color white
 			font-family 'Lato',sans-serif
-			font-weight 300
 			font-size 1.6em
 			height 35px
 			padding 5px 0
