@@ -2,8 +2,8 @@
 
 use Models\Service;
 
-class MerchantController extends BaseController {
-
+class MerchantController extends BaseController
+{
     public function getIndex()
     {
         return View::make('merchants.getIndex');
@@ -50,15 +50,6 @@ class MerchantController extends BaseController {
                 ->with('data', $data)
                 ->with('error', $error);
         }
-    }
-
-    public function getTransactions()
-    {
-        $input = Input::all();
-
-        $data = Service\Transaction::getInstance()->fetch($input);
-
-        return $data;
     }
 
     public function getLogout()
