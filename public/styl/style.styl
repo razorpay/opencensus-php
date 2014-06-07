@@ -265,30 +265,34 @@ header
 
 /* Transactions */
 
-#transaction-list-wrapper
+.list-wrapper
 	padding 0 40px 0 30px
-	.transaction-list
-		margin-top 20px
-		li
-			padding 0 10px
-			font-size 1.4em
-			a
-				span
-					margin 7px 0
-				color rzp-gray
-				text-decoration none
-				.amount
-					font-weight 400
-				.status
-					text-align right
-				.date
-					text-align right
-			a:hover
-				text-decoration none
-		li:hover
-			background-color rzp-light-gray
 	h2
 		font-weight 300
+
+#refunds .list-wrapper
+	padding-top 30px
+
+.transaction-list
+	margin-top 20px
+	li
+		padding 0 10px
+		font-size 1.4em
+		a
+			span
+				margin 7px 0
+			color rzp-gray
+			text-decoration none
+			.amount
+				font-weight 400
+			.status
+				text-align right
+			.date
+				text-align right
+		a:hover
+			text-decoration none
+	li:hover
+		background-color rzp-light-gray
 
 /* Loader */
 

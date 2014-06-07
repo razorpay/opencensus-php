@@ -15,6 +15,12 @@ $(document).ready(function()
         },
         transactions: {
             childDivs: ['transaction-count-line-chart-full', 'transaction-list-all']
+        },
+        refunds: {
+            childDivs: ['refund-list']
+        },
+        settlements: {
+            childDivs: ['settle-list']
         }
     };
 
@@ -233,8 +239,11 @@ $(document).ready(function()
 
         renderTransactionsList: function(data, div) {
             var html = '';
-            for (var i in data)
-                html += '<li class="transaction-list-item"><a href="#!/transactions/'+data[i].transaction_id+'" class="grid"><div class="col-1-2"><span class="amount col-1-4">₹' + data[i].amount + '</span><span class="id col-9-12">' + data[i].transaction_id + '</span></div><span class="status col-1-4">' + data[i].status + '</span><span class="date col-1-4">' + moment(data[i].updated_at, 'X').format('DD-MM-YYYY HH:MM') + '</span></a></li>';
+            if (data.length === 0)
+                html = "<div class='error'>Abe Koi Txn Karega Tab Dikhega Na.</div>";
+            else
+                for (var i in data)
+                    html += '<li class="transaction-list-item"><a href="#!/transactions/'+data[i].transaction_id+'" class="grid"><div class="col-1-2"><span class="amount col-1-4">₹' + data[i].amount + '</span><span class="id col-9-12">' + data[i].transaction_id + '</span></div><span class="status col-1-4">' + data[i].status + '</span><span class="date col-1-4">' + moment(data[i].updated_at, 'X').format('DD-MM-YYYY HH:MM') + '</span></a></li>';
             $('#' + div).html(html);
         },
 
@@ -413,6 +422,22 @@ $(document).ready(function()
             });
         },
 
+        renderRefundsList: function(parentDiv) {
+            $.ajax({
+                url: '/transactions',
+                data: {
+                    count: 10,
+                    status: 'refunded'
+                },
+                success: function(result) {
+                    var div = $('#' + parentDiv + ' ul[data-type="txn-list"]').attr('id');
+
+                    rzpd.postAjaxCallStack.push({fn: 'renderTransactionsList', data: result, div: div});
+                    rzpd.hooks.updateSubpanel(parentDiv);
+                }
+            });
+        },
+
         updateSubpanel: function(subpanel) {
             if (rzpd.config.currentTab == subpanel)
                 rzpd.config.childDivLoadCount += 1;
@@ -444,10 +469,18 @@ $(document).ready(function()
             rzpd.hooks.renderTransactionsList('transactions');
         },
 
+        renderRefunds: function() {
+            rzpd.hooks.setTab('refunds');
+            rzpd.hooks.renderRefundsList('refunds');
+        },
+
+        renderSettlements: function() {
+            rzpd.hooks.setTab('settlements');
+        },
+
         renderLogs: function() {
             rzpd.hooks.setTab('logs');
         }
-
     };
 
     /* Event listeners */
@@ -473,6 +506,13 @@ $(document).ready(function()
             rzpd.hooks.renderLogs();
         }).enter(rzpd.hooks.resetPanels);
 
+        Path.map("#!/refunds").to(function(){
+            rzpd.hooks.renderRefunds();
+        }).enter(rzpd.hooks.resetPanels);
+
+        Path.map("#!/settlements").to(function(){
+            rzpd.hooks.renderSettlements();
+        }).enter(rzpd.hooks.resetPanels);
 
         Path.root("#!/");
 

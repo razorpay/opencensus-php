@@ -96,7 +96,7 @@
 							
 						</div>
 					</div>
-					<div id="transaction-list-wrapper">
+					<div class="list-wrapper">
 						<h2>Recent Transactions</h2>
 						<ul class="transaction-list" id="transaction-list-all" data-type="txn-list">
 							
@@ -104,9 +104,9 @@
 					</div>
 				</div>
 				<div id="refunds" class="hidden panel">
-					<div id="refund-list-wrapper">
-						<h2>Recent Transactions</h2>
-						<ul class="refund-list" id="refund-list" data-type="txn-list">
+					<div class="list-wrapper">
+						<h2>Recent Refunds</h2>
+						<ul class="transaction-list" id="refund-list" data-type="txn-list">
 							
 						</ul>
 					</div>
