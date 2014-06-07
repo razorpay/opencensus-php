@@ -14,6 +14,8 @@ class CreateMerchants extends Migration {
     {
         Schema::create('merchants', function(Blueprint $table)
         {
+            $table->engine = 'InnoDB';
+
             $table->increments('id');
 
             $table->string('name', 200);
