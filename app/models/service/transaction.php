@@ -114,6 +114,7 @@ class Transaction extends Service
     //@todo: see if this function can be improved.
     protected function fillMissing($input, $array)
     {
+        $data = [];
         for ($i = $input['from']; $i <= $input['to']; $i = strtotime('+1 ' . $input['type'], $i) )
         {
             $flag = false;
