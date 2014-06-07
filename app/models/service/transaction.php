@@ -38,16 +38,24 @@ class Transaction extends Service
 
         if (empty($error))
         {
-            foreach (static::$timeIntervals as $type => $interval)
+            switch ($data['status'])
             {
-                $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type);
+                case 'captured':
+                    foreach (static::$timeIntervals as $type => $interval)
+                    {
+                        $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type);
 
-                if (NULL === $obj || strtotime($obj->created_at) < ($data['created_at'] - $interval))
-                    $this->create($data, $type);
-                else
-                    $this->update($data, $obj);
+                        if (NULL === $obj || strtotime($obj->created_at) < ($data['created_at'] - $interval))
+                            $this->create($data, $type);
+                        else
+                            $this->update($data, $obj);
+                    }
+                    return $data;
+                    break;
+                default:
+                    return $data;
+                    break;
             }
-            return $data;
         }
         else
             return $error;

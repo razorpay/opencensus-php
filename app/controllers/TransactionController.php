@@ -8,9 +8,9 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
 
-        $error = Service\Transaction::getInstance()->process($input);
+        $status = Service\Transaction::getInstance()->process($input);
 
-        return $error;
+        return $status;
     }
 
     public function getAnalytics()
