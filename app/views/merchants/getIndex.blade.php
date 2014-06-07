@@ -71,12 +71,12 @@
 								<input type="text" class="datepicker" id="date-end">
 							</div>
 						</div>
-						<div id="transactions-line-chart" data-chart="txn-volume-line">
+						<div id="transactions-line-chart" data-type="txn-volume-line">
 							
 						</div>
 					</div>
 					<div id="count-line-chart-wrapper">
-						<div id="transaction-count-line-chart-half" class="col-1-2" data-chart="txn-count-line">
+						<div id="transaction-count-line-chart-half" class="col-1-2" data-type="txn-count-line">
 							
 						</div>
 						<div id="customer-count-line-chart">
@@ -86,9 +86,15 @@
 				</div>
 				<div id="transactions" class="hidden panel">
 					<div id="count-line-chart-wrapper">
-						<div id="transaction-count-line-chart-full" data-chart="txn-count-line">
+						<div id="transaction-count-line-chart-full" data-type="txn-count-line">
 							
 						</div>
+					</div>
+					<div id="transaction-list-wrapper">
+						<h2>Recent Transactions</h2>
+						<ul class="transaction-list" id="transaction-list-all" data-type="txn-list">
+							
+						</ul>
 					</div>
 				</div>
 			</div>

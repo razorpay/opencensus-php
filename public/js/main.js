@@ -14,7 +14,7 @@ $(document).ready(function()
             childDivs: ['horizontal-data-wrapper','transactions-line-chart-wrapper','transaction-count-line-chart-half']
         },
         transactions: {
-            childDivs: ['transaction-count-line-chart-full']
+            childDivs: ['transaction-count-line-chart-full', 'transaction-list-all']
         }
     };
 
@@ -231,6 +231,13 @@ $(document).ready(function()
             });
         },
 
+        renderTransactionsList: function(data, div) {
+            var html = '';
+            for (var i in data)
+                html += '<li class="transaction-list-item"><a href="#!/transactions/'+data[i].transaction_id+'" class="grid"><div class="col-1-2"><span class="amount col-1-4">₹' + data[i].amount + '</span><span class="id col-9-12">' + data[i].transaction_id + '</span></div><span class="status col-1-4">' + data[i].status + '</span><span class="date col-1-4">' + moment(data[i].updated_at, 'X').format('DD-MM-YYYY HH:MM') + '</span></a></li>';
+            $('#' + div).html(html);
+        },
+
         showLoader: function() {
             $('#loader').removeClass('hidden');
         },
@@ -325,7 +332,7 @@ $(document).ready(function()
                     }
 
                     rzpd.config.intv = intv;
-                    var div = $('#' + parentDiv + ' div[data-chart="txn-volume-line"]').attr('id');
+                    var div = $('#' + parentDiv + ' div[data-type="txn-volume-line"]').attr('id');
 
                     rzpd.postAjaxCallStack.push({fn: 'plotTransactionsChart', data: chartData, div: div});
                     rzpd.hooks.updateSubpanel(parentDiv);
@@ -374,7 +381,7 @@ $(document).ready(function()
             
             rzpd.config.intv = intv;
 
-            var div = $('#' + parentDiv + ' div[data-chart="txn-count-line"]').attr('id');
+            var div = $('#' + parentDiv + ' div[data-type="txn-count-line"]').attr('id');
 
             rzpd.postAjaxCallStack.push({fn: 'plotTransactionCountChart', data: chartData, div: div});
             rzpd.hooks.updateSubpanel(parentDiv);
@@ -389,6 +396,21 @@ $(document).ready(function()
 
         renderStats: function(parentDiv) {
             rzpd.hooks.updateSubpanel(parentDiv);
+        },
+
+        renderTransactionsList: function(parentDiv) {
+            $.ajax({
+                url: '/transactions',
+                data: {
+                    count: 10
+                },
+                success: function(result) {
+                    var div = $('#' + parentDiv + ' ul[data-type="txn-list"]').attr('id');
+
+                    rzpd.postAjaxCallStack.push({fn: 'renderTransactionsList', data: result, div: div});
+                    rzpd.hooks.updateSubpanel(parentDiv);
+                }
+            });
         },
 
         updateSubpanel: function(subpanel) {
@@ -419,6 +441,7 @@ $(document).ready(function()
         renderTransactions: function() {
             rzpd.hooks.setTab('transactions');
             rzpd.hooks.plotTransactionCountChart('transactions');
+            rzpd.hooks.renderTransactionsList('transactions');
         },
 
         renderLogs: function() {

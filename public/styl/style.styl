@@ -1,10 +1,9 @@
 /* Colours */
 
 rzp-blue = #29B7D6
-rzp-gray = #999999
 rzp-red = #E74C3C
-rzp-light-gray = #EEE
-/*rzp-gray = #727272*/
+rzp-light-gray = #EFEFEF
+rzp-gray = #727272
 
 /* Mixins */
 
@@ -263,6 +262,33 @@ header
 			line-height 1.5
 		.data-item-desc
 			font-size 1.5em
+
+/* Transactions */
+
+#transaction-list-wrapper
+	padding 0 40px 0 30px
+	.transaction-list
+		margin-top 20px
+		li
+			padding 0 10px
+			font-size 1.4em
+			a
+				span
+					margin 7px 0
+				color rzp-gray
+				text-decoration none
+				.amount
+					font-weight 400
+				.status
+					text-align right
+				.date
+					text-align right
+			a:hover
+				text-decoration none
+		li:hover
+			background-color rzp-light-gray
+	h2
+		font-weight 300
 
 /* Loader */
 
