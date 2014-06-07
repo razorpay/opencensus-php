@@ -16,11 +16,20 @@ $(document).ready(function()
     };
 
     rzpd.config = {
-        timeInterval: 'day',
-        fromTime: '',
+        timeScale: 'day',
+        defaultDates: true,
+        defaultStartDates: {
+            'day': new Date(moment().subtract('months',1).format('LL')),
+            'week': new Date(moment().subtract('months',1).format('LL')),
+            'month': new Date(moment().subtract('months',5).format('LL')),
+            'year': new Date(moment().subtract('years',5).format('LL')),
+        },
         currentTab: 'dashboard',
         childDivLoadCount: 0
     };
+
+    rzpd.config.from = parseInt(rzpd.config.defaultStartDates[rzpd.config.timeScale].getTime()/1000);
+    rzpd.config.to = parseInt(new Date(moment().format('LL')).getTime()/1000);
 
     rzpd.views = {
         toggleLivemode: function() {
@@ -28,20 +37,20 @@ $(document).ready(function()
             $('.button-desc').toggleClass('active');
         },
 
-        changeGraphInterval: function(el) {
+        changeGraphScale: function(el) {
             $('.btn-group .btn').removeClass('active');
-            rzpd.config.timeInterval = el.data('interval');
+            rzpd.config.timeScale = el.data('interval');
             el.addClass("active");
         },
 
         setChart: function(ChartDiv, ChartType, ChartTitle, ChartData, ChartOptions) {
-            if (rzpd.config.timeInterval == 'day') {
+            if (rzpd.config.timeScale == 'day') {
                 intv = null;
             }
-            if (rzpd.config.timeInterval == 'week') {
+            if (rzpd.config.timeScale == 'week') {
                 intv = 24 * 3600 * 7 * 1000;
             }
-            if (rzpd.config.timeInterval == 'month') {
+            if (rzpd.config.timeScale == 'month') {
                 intv = 24 * 3600 * 30 * 1000;
             }
 
@@ -134,11 +143,11 @@ $(document).ready(function()
                 field: document.getElementById('date-start'),
                 firstDay: 1,
                 format: 'DD-MM-YYYY',
-                defaultDate: new Date(moment().subtract('days',1).format('LL')),
+                defaultDate: rzpd.config.defaultStartDates[rzpd.config.timeScale],
                 setDefaultDate: true,
                 yearRange: [2014,2020],
                 onClose: function() {
-                    
+                    rzpd.hooks.changeGraphInterval();
                 }
             });
 
@@ -150,7 +159,7 @@ $(document).ready(function()
                 setDefaultDate: true,
                 yearRange: [2014,2020],
                 onClose: function() {
-                    
+                    rzpd.hooks.changeGraphInterval();
                 }
             });
         },
@@ -260,20 +269,38 @@ $(document).ready(function()
             rzpd.views.toggleLivemode();
         },
 
+        setDates: function() {
+            if (rzpd.config.defaultDates === true)
+                rzpd.views.date_start.setDate(rzpd.config.defaultStartDates[rzpd.config.timeScale]);
+
+            rzpd.config.from = parseInt(rzpd.views.date_start.getDate().getTime()/1000);
+            rzpd.config.to = parseInt(rzpd.views.date_end.getDate().getTime()/1000);
+        },
+
+        changeGraphScale: function() {
+            rzpd.views.changeGraphScale($(this));
+            rzpd.hooks.setDates();
+            rzpd.hooks.resetPanels();
+            rzpd.hooks.renderDashboard();
+        },
+
         changeGraphInterval: function() {
-            rzpd.views.changeGraphInterval($(this));
+            rzpd.config.defaultDates = false;
+            rzpd.hooks.setDates();
             rzpd.hooks.resetPanels();
             rzpd.hooks.renderDashboard();
         },
 
         plotTransactionsChart: function(parentDiv) {
-            var group = rzpd.config.timeInterval;
+            var group = rzpd.config.timeScale;
 
             $.ajax({
                 url: './transactions/analytics',
                 type: 'GET',
                 data: {
-                    type: group
+                    type: group,
+                    from: rzpd.config.from,
+                    to: rzpd.config.to
                 },
                 success: function(result) {
                     rzpd.hooks.plotTransactionCountChart(parentDiv,result);
@@ -313,7 +340,7 @@ $(document).ready(function()
         },
 
         plotTransactionCountChart: function(parentDiv, result) {
-            var group = rzpd.config.timeInterval;
+            var group = rzpd.config.timeScale;
 
             var chartData = [];
             $(result.data).each(function(i, s) {
@@ -390,7 +417,7 @@ $(document).ready(function()
     /* Event listeners */
 
     $('#livemode .button-wrap').click(rzpd.hooks.toggleLivemode);
-    $('.btn-group .btn').click(rzpd.hooks.changeGraphInterval);
+    $('.btn-group .btn').click(rzpd.hooks.changeGraphScale);
     if (document.getElementById("datepicker-group"))
         rzpd.views.renderDatepickers();
 
