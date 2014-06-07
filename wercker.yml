@@ -28,8 +28,8 @@ build:
           name: Code Coverage
           code: cp -R ./report/ $WERCKER_REPORT_ARTIFACTS_DIR/
       - script:
-          name: remove git & coverage files
-          code: (rm -rf .git) && (rm -rf report)
+          name: remove coverage files
+          code: rm -rf report
     after-steps:
       - sherzberg/slack-notify:
           subdomain: razorpay
@@ -40,17 +40,34 @@ deploy:
       - script:
           name: Change to production mode
           code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
-      - add-to-known_hosts:
-          hostname: api.razorpay.com
       - script:
           name: Create lease on AWS
-          code: wget -O /dev/null https://ac.razorpay.com/invite/$concierge_token --quiet 
+          code: wget -O /dev/null https://ac.razorpay.com/invite/$concierge_token --quiet
+      - add-to-known_hosts:
+          hostname: ac.razorpay.com
+      - mktemp:
+          envvar: WINKEY_PATH
+      - create-file:
+          name: write key
+          filename: $WINKEY_PATH
+          content: $WINKEY
+          overwrite: true
+          hide-from-log: true
+      - script:
+          name: Upload for sonarqube
+          code: >
+                rsync -avz --force --delete --progress
+                --exclude-from=.gitignore
+                -e "ssh -i $WINKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+                ./ administrator@ac.razorpay.com:/cygdrive/c/codebase/api
+      - add-to-known_hosts:
+          hostname: api.razorpay.com
       - mktemp:
           envvar: PRIVATEKEY_PATH
       - create-file:
           name: write key
           filename: $PRIVATEKEY_PATH
-          content: $AWS_deploykey
+          content: $FOO_PRIVATE
           overwrite: true
           hide-from-log: true
       - script:
