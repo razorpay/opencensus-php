@@ -61,10 +61,10 @@
 						<div id="controls-wrapper">
 							<h2 class="col-1-3">Overview</h2>
 							<div class="col-1-3 btn-group">
-								<a class="btn active" id="interval-day">Day</a>
-								<a class="btn" id="interval-week">Week</a>
-								<a class="btn" id="interval-month">Month</a>
-								<a class="btn" id="interval-year">Year</a>
+								<a class="btn active" data-interval="day" id="interval-day">Day</a>
+								<a class="btn" data-interval="week" id="interval-week">Week</a>
+								<a class="btn" data-interval="month" id="interval-month">Month</a>
+								<a class="btn" data-interval="year" id="interval-year">Year</a>
 							</div>
 							<div class="col-1-3" id="datepicker-group">
 								<input type="text" class="datepicker" id="date-start">-

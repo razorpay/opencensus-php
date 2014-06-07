@@ -16,7 +16,8 @@ $(document).ready(function()
     };
 
     rzpd.config = {
-        intervalValue: 'day',
+        timeInterval: 'day',
+        fromTime: '',
         currentTab: 'dashboard',
         childDivLoadCount: 0
     };
@@ -29,17 +30,18 @@ $(document).ready(function()
 
         changeGraphInterval: function(el) {
             $('.btn-group .btn').removeClass('active');
+            rzpd.config.timeInterval = el.data('interval');
             el.addClass("active");
         },
 
         setChart: function(ChartDiv, ChartType, ChartTitle, ChartData, ChartOptions) {
-            if (rzpd.config.intervalValue == 'day') {
+            if (rzpd.config.timeInterval == 'day') {
                 intv = null;
             }
-            if (rzpd.config.intervalValue == 'week') {
+            if (rzpd.config.timeInterval == 'week') {
                 intv = 24 * 3600 * 7 * 1000;
             }
-            if (rzpd.config.intervalValue == 'month') {
+            if (rzpd.config.timeInterval == 'month') {
                 intv = 24 * 3600 * 30 * 1000;
             }
 
@@ -64,7 +66,7 @@ $(document).ready(function()
                 xAxis : {
                     type : 'datetime',
                     tickInterval : intv,
-                    endOnTick : true,
+                    endOnTick : false,
                     dateTimeLabelFormats : {
                         second : '%H:%M',
                         minute : '%H:%M',
@@ -131,6 +133,7 @@ $(document).ready(function()
             rzpd.views.date_start = new Pikaday({
                 field: document.getElementById('date-start'),
                 firstDay: 1,
+                format: 'DD-MM-YYYY',
                 defaultDate: new Date(moment().subtract('days',1).format('LL')),
                 setDefaultDate: true,
                 yearRange: [2014,2020],
@@ -142,6 +145,7 @@ $(document).ready(function()
             rzpd.views.date_end = new Pikaday({
                 field: document.getElementById('date-end'),
                 firstDay: 1,
+                format: 'DD-MM-YYYY',
                 defaultDate: new Date(moment().format('LL')),
                 setDefaultDate: true,
                 yearRange: [2014,2020],
@@ -181,7 +185,7 @@ $(document).ready(function()
                         hour : '%H:%M',
                         day : '%e %b',
                         week : '%d.%m',
-                        month : '%b',
+                        month : '%b %Y',
                         year : '%Y'
                     }
                 }
@@ -218,7 +222,7 @@ $(document).ready(function()
                         hour : '%H:%M',
                         day : '%e %b',
                         week : '%d.%m',
-                        month : '%b',
+                        month : '%b %Y',
                         year : '%Y'
                     }
                 },
@@ -258,22 +262,26 @@ $(document).ready(function()
 
         changeGraphInterval: function() {
             rzpd.views.changeGraphInterval($(this));
+            rzpd.hooks.resetPanels();
+            rzpd.hooks.renderDashboard();
         },
 
         plotTransactionsChart: function(parentDiv) {
+            var group = rzpd.config.timeInterval;
+
             $.ajax({
-                url: './sample.json',
+                url: './transactions/analytics',
                 type: 'GET',
+                data: {
+                    type: group
+                },
                 success: function(result) {
                     rzpd.hooks.plotTransactionCountChart(parentDiv,result);
 
-                    var group = "day";
                     var chartData = [];
-                    var chartDataTest = [];
+
                     $(result.data).each(function(i, s) {
-                        date_hour = s.created_at.split(' ');
-                        date = date_hour[0].split('-');
-                        chartData.push([Date.UTC(date[0], parseInt(date[1] - 1), date[2]),parseInt(s.amount)/100]);
+                        chartData.push([s.created_at * 1000,parseInt(s.amount)]);
                     });
 
                     staggerLinesVal = 1;
@@ -305,14 +313,12 @@ $(document).ready(function()
         },
 
         plotTransactionCountChart: function(parentDiv, result) {
-            var group = 'day';
+            var group = rzpd.config.timeInterval;
+
             var chartData = [];
             $(result.data).each(function(i, s) {
-                date_hour = s.created_at.split(' ');
-                date = date_hour[0].split('-');
-                chartData.push([Date.UTC(date[0], parseInt(date[1] - 1), date[2]), parseInt(s.cnt)]);
+                chartData.push([s.created_at * 1000, parseInt(s.count)]);
             });
-
 
             staggerLinesVal = 1;
             if (group == 'day') {
@@ -335,7 +341,7 @@ $(document).ready(function()
             rzpd.hooks.updateSubpanel(parentDiv);
         },
 
-        changePanel: function() {
+        resetPanels: function() {
             rzpd.views.hidePanels();
             rzpd.views.showLoader();
             rzpd.config.childDivLoadCount = 0;
@@ -394,15 +400,15 @@ $(document).ready(function()
     {
         Path.map("#!/").to(function(){
             rzpd.hooks.renderDashboard();
-        }).enter(rzpd.hooks.changePanel);
+        }).enter(rzpd.hooks.resetPanels);
 
         Path.map("#!/transactions").to(function(){
             rzpd.hooks.renderTransactions();
-        }).enter(rzpd.hooks.changePanel);
+        }).enter(rzpd.hooks.resetPanels);
 
         Path.map("#!/logs").to(function(){
             rzpd.hooks.renderLogs();
-        }).enter(rzpd.hooks.changePanel);
+        }).enter(rzpd.hooks.resetPanels);
 
 
         Path.root("#!/");
