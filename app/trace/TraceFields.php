@@ -146,10 +146,26 @@ class TraceFields
      *
      * @param $eventCode event code
      */
-    public static function get($eventCode)
+    public static function getFields($eventCode)
     {
         $fields = self::$fields[$eventCode];
 
         return $fields;
+    }
+
+    public static function checkFields($code, $fields)
+    {
+        $requiredFields = self::getFields($code);
+
+        $missingFields = array_diff($requiredFields, $fields);
+
+        if (count($missingFields) > 0)
+        {
+            // @todo: Finalize the fields to be logged and remote the extra ones. 
+            // Currently all log messages have invalid fields defined.
+            // throw new \InvalidArgumentException(
+            //     implode(',', $missingFields) . ' are missing from trace record');
+        }
+
     }
 }
