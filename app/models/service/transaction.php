@@ -145,7 +145,7 @@ class Transaction extends Service
             }
 
             if ($flag == false)
-                $data[] = ['amount' => 0, 'count' => 0, 'created_at' => $i];
+                $data[] = ['amount' => '0', 'count' => '0', 'created_at' => "$i"];
         }
         return $data;
     }
