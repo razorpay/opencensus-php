@@ -50,7 +50,7 @@ deploy:
       - create-file:
           name: write key
           filename: $WINKEY_PATH
-          content: $WINKEY
+          content: $WINKEY_PRIVATE
           overwrite: true
           hide-from-log: true
       - script:
@@ -67,7 +67,7 @@ deploy:
       - create-file:
           name: write key
           filename: $PRIVATEKEY_PATH
-          content: $FOO_PRIVATE
+          content: $AWS_deploykey
           overwrite: true
           hide-from-log: true
       - script:
@@ -81,6 +81,7 @@ deploy:
           code: >
                 rsync -avz --force --delete --progress --size-only
                 --exclude 'app/storage/*'
+                --exclude '.git'
                 --exclude-from=.gitignore
                 -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
                 ./ ubuntu@api.razorpay.com:/home/ubuntu/api/
