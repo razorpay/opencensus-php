@@ -38,7 +38,7 @@ class TraceEvent
     const GATEWAY_EXCEPTION                 = 'GATEWAY_EXCEPTION';
 
 
-    protected static $message = array(
+    protected static $messages = array(
         self::TRANSACTION_NEW_REQUEST       => 'Request for new transaction received',
         self::TRANSACTION_CREATED           => 'New transaction created',
         self::TRANSACTION_CREATE_FAILED     => 'Transaction creation failed',
@@ -68,10 +68,21 @@ class TraceEvent
      * @param $eventCode event code
      * @return 
      */
-    public static function translateEvent($eventCode)
+    public static function getMessage($code)
     {
-        $eventMessage = self::$message[$eventCode];
+        if (! isset(self::$messages[$code]))
+        {
+            throw new \InvalidArgumentException('Message for $code not defined');
+        }
 
-        return $eventMessage;
+        return self::$messages[$code];
+    }
+
+    public static function checkCode($code)
+    {
+        if (! defined(__NAMESPACE__."\TraceEvent::$code"))
+        {
+            throw new \InvalidArgumentException(__NAMESPACE__."\TraceEvent::$code not defined");
+        }
     }
 }
