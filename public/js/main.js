@@ -444,6 +444,22 @@ $(document).ready(function()
             });
         },
 
+        renderSettlementsList: function(parentDiv) {
+            $.ajax({
+                url: '/transactions',
+                data: {
+                    count: 10,
+                    status: 'settled'
+                },
+                success: function(result) {
+                    var div = $('#' + parentDiv + ' ul[data-type="txn-list"]').attr('id');
+
+                    rzpd.postAjaxCallStack.push({fn: 'renderTransactionsList', data: result, div: div});
+                    rzpd.hooks.updateSubpanel(parentDiv);
+                }
+            });
+        },
+
         fetchTxnDetails: function(txn_id) {
             $.ajax({
                 url: '/transactions/' + txn_id,
@@ -498,6 +514,7 @@ $(document).ready(function()
 
         renderSettlements: function() {
             rzpd.hooks.setTab('settlements');
+            rzpd.hooks.renderSettlementsList('settlements');
         },
 
         renderLogs: function() {

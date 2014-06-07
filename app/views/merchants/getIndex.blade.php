@@ -117,6 +117,14 @@
 						</ul>
 					</div>
 				</div>
+				<div id="settlements" class="hidden panel">
+					<div class="list-wrapper">
+						<h2>Recent Settlements</h2>
+						<ul class="transaction-list" id="settle-list" data-type="txn-list">
+							
+						</ul>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
