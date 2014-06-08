@@ -47,19 +47,19 @@
 				<div id="dashboard" class="hidden panel">
 					<div class="horizontal-data-wrapper">
 						<div class="data-item col-1-4">
-							<div class="data-item-value">₹2,449</div>
+							<div class="data-item-value" id="last-transfer-stat">₹2,449</div>
 							<div class="data-item-desc">Last Transfer</div>
 						</div>
 						<div class="data-item col-1-4">
-							<div class="data-item-value">813</div>
+							<div class="data-item-value" id="total-txn-stat"></div>
 							<div class="data-item-desc">Total Transactions</div>
 						</div>
 						<div class="data-item col-1-4">
-							<div class="data-item-value">97%</div>
+							<div class="data-item-value" id="success-stat"></div>
 							<div class="data-item-desc">Success Rate</div>
 						</div>
 						<div class="data-item col-1-4">
-							<div class="data-item-value">₹1,25,000</div>
+							<div class="data-item-value" id="total-amount-stat"></div>
 							<div class="data-item-desc">Total Volume (INR)</div>
 						</div>
 					</div>

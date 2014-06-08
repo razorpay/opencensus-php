@@ -38,7 +38,7 @@ $(document).ready(function()
     };
 
     rzpd.config.from = parseInt(rzpd.config.defaultStartDates[rzpd.config.timeScale].getTime()/1000);
-    rzpd.config.to = parseInt(new Date(moment().format('LL')).getTime()/1000);
+    rzpd.config.to = parseInt(new Date(moment().add('days',1).format('LL')).getTime()/1000);
 
     rzpd.views = {
         toggleLivemode: function() {
@@ -275,6 +275,12 @@ $(document).ready(function()
 
         highlightTabInSidebar: function(tab) {
             $("[data-tab='" + tab + "']").addClass('active').siblings('li').removeClass('active');
+        },
+
+        renderStats: function(data) {
+            $('#total-txn-stat').html(data.txns);
+            $('#success-stat').html(data.success);
+            $('#total-amount-stat').html(data.amount);
         }
     };
 
@@ -410,6 +416,16 @@ $(document).ready(function()
         },
 
         renderStats: function(parentDiv) {
+            $.ajax({
+                url: '/analytics/aggregations',
+                success: function(result) {
+                    var data = {};
+                    data.success = result.data.successful_txn_count * 100/result.data.txn_count + '%';
+                    data.amount = '₹' + result.data.total_amount;
+                    data.txns = result.data.txn_count;
+                    rzpd.views.renderStats(data);
+                }
+            });
             rzpd.hooks.updateSubpanel(parentDiv);
         },
 
