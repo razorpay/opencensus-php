@@ -41,6 +41,16 @@ class Trace extends \Singleton
      */
     protected $values = array();
 
+    protected static $traceFunctions = array(
+        'debug',
+        'info',
+        'notice',
+        'warning',
+        'error',
+        'critical',
+        'alert',
+        'emergency');
+
     protected $traceWriter = null;
 
     protected function __construct()
@@ -52,6 +62,8 @@ class Trace extends \Singleton
 
     public function __call($name, $args)
     {
+        $this->checkFunction($name);
+
         list($code, $values) = $this->validate($args);
 
         $message = TraceEvent::getMessage($code);
@@ -59,6 +71,14 @@ class Trace extends \Singleton
         $context = $this->getContext($code, $values);
 
         $this->traceWriter->{$name}($message, $context);
+    }
+
+    public function checkFunction($name)
+    {
+        if (! in_array($name, self::$traceFunctions))
+        {
+            throw new \BadMethodCallException($name . ' is not a valid function call');
+        }
     }
 
     protected function validate($args)
