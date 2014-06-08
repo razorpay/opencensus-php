@@ -23,7 +23,8 @@
 			"app/database/seeds",
 			"app/tests/TestCase.php",
 			"app/lib",
-			"app/exceptions"
+			"app/exceptions",
+            "app/constants"
 		]
 	},
 	"scripts": {
