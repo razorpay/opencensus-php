@@ -23,6 +23,8 @@ Route::group(array('before' => 'auth'), function()
     Route::get('/transactions/{id}', 'TransactionController@getTransaction');
 
     Route::get('/analytics/transactions', 'TransactionController@getAnalytics');
+
+    Route::get('/analytics/aggregations', 'TransactionController@getAggregations');
 });
 
 Route::group(array('before' => 'guest'), function()
