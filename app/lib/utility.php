@@ -53,18 +53,8 @@ class Utility
     }
 }
 
-if (! function_exists('is_assoc_array'))
+if (! function_exists('array_merge_intersect'))
 {
-	/**
-	 * Checks if the array is assoc or sequential
-	 * 
-	 * It compares the keys (which for a sequential array are 
-	 * always 0,1,2 etc) to the keys of the keys (which 
-	 * will always be 0,1,2 etc).
-	 *
-	 * @param  array  $array
-	 * @return bool
-	 */
 	function array_merge_intersect(array &$array1, $array2, $array3)
 	{
 		$intersect = array_intersect($array2, $array3);

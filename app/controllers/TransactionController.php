@@ -35,7 +35,7 @@ class TransactionController extends BaseController
                 //Common for all above
                 $txn_service = new Transaction();
 
-                $txn_data= $txn_service->retrieveMultiple($input);
+                $txn_data = $txn_service->retrieveMultiple($input);
 
                 //dd($txn_data);
 
@@ -214,3 +214,4 @@ class TransactionController extends BaseController
         return View::make('gateway.callback')->with('data', $data);
     }
 }
+

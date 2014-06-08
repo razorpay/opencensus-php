@@ -35,8 +35,8 @@ if (! function_exists('validate'))
 	}
 }
 
-// if (! function_exists('break_assoc_array'))
-// {
+if (! function_exists('break_assoc_array'))
+{
 	function break_assoc_array($array, $keys1, $keys2)
 	{
 		$array1 = array();
@@ -57,7 +57,7 @@ if (! function_exists('validate'))
 
 		return array($array1, $array2);
 	}
-//}
+}
 
 if (! function_exists('validate_keys'))
 {
