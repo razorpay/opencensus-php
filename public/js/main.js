@@ -38,7 +38,7 @@ $(document).ready(function()
     };
 
     rzpd.config.from = parseInt(rzpd.config.defaultStartDates[rzpd.config.timeScale].getTime()/1000);
-    rzpd.config.to = parseInt(new Date(moment().add('days',1).format('LL')).getTime()/1000);
+    rzpd.config.to = parseInt(new Date(moment().format('LL')).getTime()/1000);
 
     rzpd.views = {
         toggleLivemode: function() {
