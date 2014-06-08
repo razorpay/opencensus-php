@@ -59,6 +59,7 @@ class Transaction extends Service
             switch ($data['status'])
             {
                 case 'captured':
+                    $this->aggregate($data);
                     foreach (static::$timeIntervals as $type => $interval)
                     {
                         $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type);
@@ -100,12 +101,27 @@ class Transaction extends Service
         DAL\Transaction::createOrFail($data);
     }
 
+    protected function aggregate($data)
+    {
+        $merchant_details = DAL\Merchant::getAggregations($data);
+        if (NULL === $merchant_details)
+            DAL\Merchant::createAggregations($data);
+        else
+            DAL\Merchant::updateAggregations($data, $merchant_details);
+    }
+
     protected function update($data, $obj)
     {
         $obj->updateAmount($data['amount']);
         $obj->updateCount(1);
 
         $obj->save();
+    }
+
+    public function getAggregations($merchant_id)
+    {
+        $data = DAL\Merchant::getAggregations(array('merchant_id' => $merchant_id));
+        return $data;
     }
 
     public function getAnalytics($input)

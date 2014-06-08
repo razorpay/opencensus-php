@@ -28,6 +28,36 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         );
     }
 
+    public static function getAggregations($data)
+    {
+        $data = \DB::table('aggregations')->where('merchant_id','=',$data['merchant_id'])->first();
+        return $data;
+    }
+
+    public static function createAggregations($data)
+    {
+        $obj = array(
+            'merchant_id'           =>  $data['merchant_id'],
+            'total_amount'          =>  $data['amount'],
+            'successful_txn_count'  =>  1,
+            'txn_count'             =>  1,
+            'created_at'            =>  time(),
+            'updated_at'            =>  time()
+        );
+        \DB::table('aggregations')->insert($obj);
+    }
+
+    public static function updateAggregations($data, $merchant_details)
+    {
+        $obj = array(
+            'total_amount'          =>  (int)$data['amount'] + (int)$merchant_details->total_amount,
+            'successful_txn_count'  =>  (int)$merchant_details->successful_txn_count + 1,
+            'txn_count'             =>  (int)$merchant_details->txn_count + 1,
+            'updated_at'            =>  time()
+        );
+        \DB::table('aggregations')->where('merchant_id','=',$data['merchant_id'])->update($obj);
+    }
+
     /**
      * Get the unique identifier for the user.
      *

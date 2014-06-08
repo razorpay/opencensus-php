@@ -27,6 +27,18 @@ class TransactionController extends BaseController
         );
     }
 
+    public function getAggregations()
+    {
+        $merchant_id = Auth::id();
+
+        $data = Service\Transaction::getInstance()->getAggregations($merchant_id);
+
+        return array(
+            'data' => $data,
+            'mode' => 'test'
+        );
+    }
+
     public function getTransactions()
     {
         $input = Input::all();
