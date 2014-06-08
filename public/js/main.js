@@ -420,7 +420,7 @@ $(document).ready(function()
                 url: '/analytics/aggregations',
                 success: function(result) {
                     var data = {};
-                    data.success = result.data.successful_txn_count * 100/result.data.txn_count + '%';
+                    data.success = parseInt(result.data.successful_txn_count * 100/result.data.txn_count) + '%';
                     data.amount = '₹' + result.data.total_amount;
                     data.txns = result.data.txn_count;
                     rzpd.views.renderStats(data);
