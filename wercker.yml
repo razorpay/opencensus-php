@@ -44,23 +44,6 @@ deploy:
           name: Create lease on AWS
           code: wget -O /dev/null https://ac.razorpay.com/invite/$concierge_token --quiet
       - add-to-known_hosts:
-          hostname: ac.razorpay.com
-      - mktemp:
-          envvar: WINKEY_PATH
-      - create-file:
-          name: write key
-          filename: $WINKEY_PATH
-          content: $WINKEY_PRIVATE
-          overwrite: true
-          hide-from-log: true
-      - script:
-          name: Upload for sonarqube
-          code: >
-                rsync -avz --force --delete --progress
-                --exclude-from=.gitignore
-                -e "ssh -i $WINKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-                ./ administrator@ac.razorpay.com:/cygdrive/c/codebase/api
-      - add-to-known_hosts:
           hostname: api.razorpay.com
       - mktemp:
           envvar: PRIVATEKEY_PATH
@@ -79,7 +62,7 @@ deploy:
       - script:
           name: copy with rsync over ssh
           code: >
-                rsync -avz --force --delete --progress --size-only
+                rsync -avz --force --delete --progress
                 --exclude 'app/storage/*'
                 --exclude '.git'
                 --exclude-from=.gitignore
