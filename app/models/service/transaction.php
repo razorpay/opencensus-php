@@ -71,7 +71,7 @@ class Transaction extends Service
                     {
                         $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type);
 
-                        if (NULL === $obj || strtotime($obj->created_at) < ($data['created_at'] - $interval))
+                        if (NULL === $obj || strtotime($obj->created_at) < ($data['updated_at'] - $interval))
                             $this->create($data, $type);
                         else
                             $this->update($data, $obj);
@@ -94,16 +94,16 @@ class Transaction extends Service
         switch($type)
         {
             case 'day':
-                $data['created_at'] = strtotime(date('j F Y', $data['created_at']));
+                $data['created_at'] = strtotime(date('j F Y', $data['updated_at']));
                 break;
             case 'week':
-                $data['created_at'] = strtotime(date('o-\\WW', $data['created_at']));
+                $data['created_at'] = strtotime(date('o-\\WW', $data['updated_at']));
                 break;
             case 'month':
-                $data['created_at'] = strtotime(date('M Y', $data['created_at']));
+                $data['created_at'] = strtotime(date('M Y', $data['updated_at']));
                 break;
             case 'year':
-                $data['created_at'] = strtotime("1 Jan " . date('Y', $data['created_at']));
+                $data['created_at'] = strtotime("1 Jan " . date('Y', $data['updated_at']));
                 break;
         }
         $data['type'] = $type;

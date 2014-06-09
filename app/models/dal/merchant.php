@@ -41,8 +41,8 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             'total_amount'          =>  $data['amount'],
             'successful_txn_count'  =>  1,
             'txn_count'             =>  1,
-            'created_at'            =>  time(),
-            'updated_at'            =>  time()
+            'created_at'            =>  $data['updated_at'],
+            'updated_at'            =>  $data['updated_at']
         );
         \DB::table('aggregations')->insert($obj);
     }
@@ -53,7 +53,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             'total_amount'          =>  (int)$data['amount'] + (int)$merchant_details->total_amount,
             'successful_txn_count'  =>  (int)$merchant_details->successful_txn_count + 1,
             'txn_count'             =>  (int)$merchant_details->txn_count + 1,
-            'updated_at'            =>  time()
+            'updated_at'            =>  $data['created_at']
         );
         \DB::table('aggregations')->where('merchant_id','=',$data['merchant_id'])->update($obj);
     }

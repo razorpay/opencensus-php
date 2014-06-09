@@ -30,7 +30,8 @@ class Transaction extends Manager
         'merchant_id'   =>  'required|numeric',
         'amount'        =>  'required|numeric|max:10000',
         'status'        =>  'required|in:captured,refunded,prefunded',
-        'created_at'    =>  'required|numeric'
+        'created_at'    =>  'required|numeric',
+        'updated_at'    =>  'required|numeric'
     );
 
     protected static $analyticsRules = array(
