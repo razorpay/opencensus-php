@@ -50,6 +50,11 @@ class Transaction extends Service
         return $data;
     }
 
+    /**
+     * Processes incoming transaction records to generate analytics.
+     * @param  array  $input transaction array
+     * @return bool          status
+     */
     public function process(array $input)
     {
         list($error, $data) = Manager\Transaction::createValidate($input, 'process')->getData();
@@ -59,7 +64,9 @@ class Transaction extends Service
             switch ($data['status'])
             {
                 case 'captured':
+
                     $this->aggregate($data);
+
                     foreach (static::$timeIntervals as $type => $interval)
                     {
                         $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type);
@@ -69,15 +76,17 @@ class Transaction extends Service
                         else
                             $this->update($data, $obj);
                     }
-                    return $data;
+
+                    return true;
                     break;
+
                 default:
-                    return $data;
+                    return false;
                     break;
             }
         }
         else
-            return $error;
+            return false;
     }
 
     protected function create($data, $type)

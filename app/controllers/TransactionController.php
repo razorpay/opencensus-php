@@ -10,7 +10,7 @@ class TransactionController extends BaseController
 
         $status = Service\Transaction::getInstance()->process($input);
 
-        return $status;
+        return ['status' => $status];
     }
 
     public function getAnalytics()
