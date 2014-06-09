@@ -39,7 +39,7 @@ Route::group(array('after' => 'sameorigin'), function()
 		Route::post(Constants\URL::TXN_CREATE, 'TransactionController@postIndex');
 
 		Route::get(Constants\URL::TXN_JSONP, 'TransactionController@getJSONP');
-		
+
 	});
 
 	Route::group(array('before' => 'auth.private'), function()
@@ -64,7 +64,8 @@ Route::post(Constants\URL::TXN_CALLBACK, 'TransactionController@postCallback');
 
 Route::get('/', function()
 {
-	return View::make('hello');
+	$response['message'] = "Welcome to Razorpay API.";
+	return Response::json($response);
 });
 
 /*
