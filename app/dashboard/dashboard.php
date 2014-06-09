@@ -35,16 +35,11 @@ class Dashboard
 
     public static function validateAndBuild($data = array())
     {
-        $diff = array_diff_key($data, static::$fields);
-        foreach ($diff as $key => $value)
-            unset($data[$key]);
-
-        foreach (static::$fields as $key => $value)
-            if ($key !== $value)
-            {
-                $data[$value] = $data[$key];
+        foreach($data as $key => $value)
+        {
+            if (!in_array($key, static::$fields))
                 unset($data[$key]);
-            }
+        }
 
         return $data;
     }
@@ -66,6 +61,9 @@ class Dashboard
             array(),
             $data['message']
         );
+
+        if (json_decode($response->body)->status === FALSE);
+            \Dashboard\Transaction::getInstance()->queueRecord($data['message']);
 
         $job->delete();
     }
