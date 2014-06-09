@@ -6,8 +6,13 @@
 		"rmccue/requests": ">=1.0",
 		"rhumsaa/uuid": "~2.7",
 		"laravel/framework": "4.1.*",
-		"doctrine/dbal": "~2.3"
+		"doctrine/dbal": "~2.3",
+		"razorpay/razorpay-php":"dev-master"
 	},
+	"repositories": [{
+		"type": "vcs",
+		"url": "git@bitbucket.org:razorpay/rzp-php.git"
+	}],
 	"require-dev": {
 		"raveren/kint": ">=0.9",
 		"laracasts/testdummy": "1.*"
