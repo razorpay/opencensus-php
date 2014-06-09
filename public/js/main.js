@@ -79,8 +79,8 @@ $(document).ready(function()
                         second : '%H:%M',
                         minute : '%H:%M',
                         hour : '%H:%M',
-                        day : '%e. %b',
-                        week : '%d.%m',
+                        day : '%e %b',
+                        week : '%d/%m',
                         month : '%b',
                         year : '%Y'
                     },
@@ -192,7 +192,7 @@ $(document).ready(function()
                         minute : '%H:%M',
                         hour : '%H:%M',
                         day : '%e %b',
-                        week : '%d.%m',
+                        week : '%d/%m',
                         month : '%b %Y',
                         year : '%Y'
                     }
@@ -229,7 +229,7 @@ $(document).ready(function()
                         minute : '%H:%M',
                         hour : '%H:%M',
                         day : '%e %b',
-                        week : '%d.%m',
+                        week : '%d/%m',
                         month : '%b %Y',
                         year : '%Y'
                     }
