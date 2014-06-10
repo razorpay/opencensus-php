@@ -15,6 +15,8 @@ build:
       - script:
           name: set composer to use github oauth token
           code: composer config -g github-oauth.github.com $github_token
+      - add-ssh-key:
+          keyname: RZP_API
       - script:
           name: install dependencies
           code: composer install --no-interaction
@@ -65,16 +67,9 @@ deploy:
                 rsync -avz --force --delete --progress
                 --exclude 'app/storage/*'
                 --exclude '.git'
-                --exclude-from=.gitignore
+                --exclude-from=.rsyncignore
                 -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
                 ./ ubuntu@api.razorpay.com:/home/ubuntu/api/
-      - script:
-          name: Install dependencies
-          code: >
-                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
-                -o StrictHostKeyChecking=no api.razorpay.com
-                "(cd ~/api/ && php composer.phar install --no-interaction)"
-      - script:
           name: Perform DB migrations
           code: >
                 ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
