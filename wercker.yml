@@ -65,8 +65,6 @@ deploy:
           name: copy with rsync over ssh
           code: >
                 rsync -avz --force --delete --progress
-                --exclude 'app/storage/*'
-                --exclude '.git'
                 --exclude-from=.rsyncignore
                 -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
                 ./ ubuntu@api.razorpay.com:/home/ubuntu/api/
