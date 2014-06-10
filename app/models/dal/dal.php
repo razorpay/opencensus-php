@@ -134,4 +134,9 @@ class DAL extends \Eloquent
     {
         return 'U';
     }
+
+    public function getDates()
+    {
+        return array();
+    }
 }
