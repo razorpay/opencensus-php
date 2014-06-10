@@ -10,7 +10,7 @@ final class URL
 
     const TXN_CAPTURE = 'transactions/{id}/capture';
 
-    const TXN_JSONP = 'transactins/jsonp';
+    const TXN_JSONP = 'transactions/jsonp';
 
     const TXN_RETRIEVE = 'transactions/{param?}';
 
