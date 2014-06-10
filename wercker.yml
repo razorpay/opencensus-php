@@ -68,6 +68,7 @@ deploy:
                 --exclude-from=.rsyncignore
                 -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
                 ./ ubuntu@api.razorpay.com:/home/ubuntu/api/
+      - script:
           name: Perform DB migrations
           code: >
                 ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
