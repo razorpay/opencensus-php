@@ -10,18 +10,22 @@ use Laracasts\TestDummy\Factory;
 
 class TransactionRetrieveTest extends TestCase {
 
-	public function setUp()
+    public function setUp()
     {
-    	parent::setUp();
+        parent::setUp();
 
         //Start DB transaction so as to rollback once done
         DB::beginTransaction();
 
         //Seed the db with required data
         Eloquent::unguard();
-        $merchant=Factory::create('Models\DAL\Merchant', ['id' => 1]);
+
+        $merchant = Factory::create('Models\DAL\Merchant', ['id' => 1]);
+
         $key = Factory::create('Models\DAL\Key', ['merchant_id'=>1]);
-        $transaction=Factory::create('Models\DAL\Transaction', ['merchant_id'=>1]);
+
+        $transaction = Factory::create('Models\DAL\Transaction', ['merchant_id'=>1]);
+
         Eloquent::reguard();
     }
 
@@ -31,39 +35,55 @@ class TransactionRetrieveTest extends TestCase {
         DB::rollback();
     }
 
-	/**
-	* Tests the /transactions & /transactions/$id route.
-	* Should return valid json with list of all transactions in case 1
-	* Should return valid json with details of transaction specified by id in case 2
-    * @group testGetTransactions
-	*/
+    protected function retrieveTransactionsDefault()
+    {
+        $response = $this->call('GET', '/transactions');
+
+        $content = $response->getContent();
+
+        return json_decode($content);
+    }
 
     /**
-     * @group testRetrieveTransaction
+    * Tests the /transactions & /transactions/$id route.
+    * Should return valid json with list of all transactions in case 1
+    * Should return valid json with details of transaction specified by id in case 2
+    * 
+    * @group testRetrieveTransaction
     */
-	public function testRetrieveTransaction()
+    public function testRetrieveTransaction()
     {
 
-    	//Testing retrieval of all transactions with /transactions
-      echo "\nTesting: Retrieval of transactions \n";
-      echo "Test: Retrieval of all by calling /transactions \n";
-      ob_flush();
+        //Testing retrieval of all transactions with /transactions
+        echo "\nTesting: Retrieval of transactions \n";
+        echo "Test: Retrieval of all by calling /transactions \n";
+        ob_flush();
 
-    	//GIVEN - Nothing
-
-    	//WHEN
+        //GIVEN - Nothing
+        //WHEN
         $response = $this->call('GET', '/transactions');
+
         $content = $response->getContent();
 
         //THEN
         $this->assertJson($content);
-        $transactions=json_decode($content);
 
+        $transactions = json_decode($content);
+    }
+
+    /**
+     * @group testRetrieveTransactionWithId
+     */
+    public function testRetrieveTransactionWithId()
+    {
         //Testing retrieval of specific transactions with /transactions/$id
         echo "Test: Retrieval by ID at /transactions/id \n";
         ob_flush();
+
+        $transactions = $this->retrieveTransactionsDefault();
+
         //GIVEN
-        $id=$transactions->data[0]->id;
+        $id = $transactions->data[0]->id;
 
         //WHEN
         $response = $this->call('GET', "/transactions/$id");
@@ -71,15 +91,24 @@ class TransactionRetrieveTest extends TestCase {
 
         //THEN
         $this->assertJson($content);
+        
         $transaction = json_decode($content);
+        
         $this->assertEquals($transaction->id, $id);
+    }
 
+    /**
+     * @group testRetrieveTransactionWithStatusAndCount
+     */
+    public function testRetrieveTransactionWithStatusAndCount()
+    {
         //Testing retrieval of transactions with a specific status & count
         echo "Test: Retrieval of transactions using status & count at /transactions/{status}/?count={count} \n";
         ob_flush();
 
         //GIVEN
-        $status=$transactions->data[0]->status;
+        $status = $transactions->data[0]->status;
+        $id = $transactions->data[0]->id;
 
         //WHEN
         $response = $this->call('GET', "/transactions/".$status."?count=1");
@@ -87,13 +116,24 @@ class TransactionRetrieveTest extends TestCase {
 
         //THEN
         $this->assertJson($content);
-        $transaction = json_decode($content);
-        $this->assertEquals($transaction->data[0]->id, $id);
 
+        $transaction = json_decode($content);
+
+        $this->assertEquals($transaction->data[0]->id, $id);
+    }
+
+    /**
+     * @group testRetrieveTransactionWithCreateAt
+     */
+    public function testRetrieveTransactionsWithCreatedAt()
+    {
         echo "Test: Retrieval of transactions using created_at timestamp at /transactions/?created_at={timestamp} \n";
         ob_flush();
+        $transactions = $this->retrieveTransactionsDefault();
+        $id = $transactions->data[0]->id;
+
         //GIVEN
-        $created_at=$transactions->data[0]->created_at;
+        $created_at = $transactions->data[0]->created_at;
 
         //WHEN
         $response = $this->call('GET', "/transactions/?created=".$created_at);
