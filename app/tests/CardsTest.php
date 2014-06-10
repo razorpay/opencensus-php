@@ -7,8 +7,10 @@
  * All test cases follow, GIVEN, WHEN, THEN structure
  */
 
-require_once('helpers/Transaction.php');
 use Laracasts\TestDummy\Factory;
+
+require_once('helpers/Transaction.php');
+
 class CardsTest extends Transaction {
 
     public function setUp()

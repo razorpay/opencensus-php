@@ -7,6 +7,7 @@
  */
 
 use Laracasts\TestDummy\Factory;
+
 class TransactionRetrieveTest extends TestCase {
 
 	public function setUp()
@@ -34,9 +35,12 @@ class TransactionRetrieveTest extends TestCase {
 	* Tests the /transactions & /transactions/$id route.
 	* Should return valid json with list of all transactions in case 1
 	* Should return valid json with details of transaction specified by id in case 2
-  * @group testGetTransactions
+    * @group testGetTransactions
 	*/
 
+    /**
+     * @group testRetrieveTransaction
+    */
 	public function testRetrieveTransaction()
     {
 
