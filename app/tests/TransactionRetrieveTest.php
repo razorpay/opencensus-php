@@ -105,6 +105,7 @@ class TransactionRetrieveTest extends TestCase {
         //Testing retrieval of transactions with a specific status & count
         echo "Test: Retrieval of transactions using status & count at /transactions/{status}/?count={count} \n";
         ob_flush();
+        $transactions = $this->retrieveTransactionsDefault();
 
         //GIVEN
         $status = $transactions->data[0]->status;
