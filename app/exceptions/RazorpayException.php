@@ -6,17 +6,17 @@ use Exception;
 
 class RazorpayException extends Exception
 {
-	protected $category;
+    protected $category;
 
     public function __construct($category, $message, $code = 0 , Exception $previous = null)
     {
-    	$this->category = $category;
-
+        $this->category = $category;
+        
         parent::__construct($message, $code, $previous);
     }
 
     public function getCategory()
     {
-    	return $this->category;
+        return $this->category;
     }
 }
