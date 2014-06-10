@@ -4,11 +4,6 @@ namespace Constants;
 
 final class URL
 {
-    public static function tmp()
-    {
-        echo 'yay';
-    }
-
     const TXN_CREATE = 'transactions';
 
     const TXN_REFUND = 'transactions/{id}/refund';
