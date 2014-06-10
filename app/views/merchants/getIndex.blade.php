@@ -29,8 +29,19 @@
 					<li data-tab="settlements">
 						<a href="./#!/settlements">Settlements</a>
 					</li>
-					<li data-tab="logs">
-						<a href="./#!/logs">Logs</a>
+				</ul>
+				<h2 class="lined">
+					<div class="title">Settings</div>
+				</h2>
+				<ul>
+					<li data-tab="keys">
+						<a href="./#!/keys">API Keys</a>
+					</li>
+					<li data-tab="activation">
+						<a href="./#!/activation">Activation</a>
+					</li>
+					<li data-tab="account">
+						<a href="./#!/account">Account</a>
 					</li>
 				</ul>
 			</div>

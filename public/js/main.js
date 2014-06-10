@@ -274,7 +274,8 @@ $(document).ready(function()
         },
 
         highlightTabInSidebar: function(tab) {
-            $("[data-tab='" + tab + "']").addClass('active').siblings('li').removeClass('active');
+            $('#sidebar li').removeClass('active');
+            $("[data-tab='" + tab + "']").addClass('active');
         },
 
         renderStats: function(data) {
@@ -539,8 +540,16 @@ $(document).ready(function()
             rzpd.hooks.renderSettlementsList('settlements');
         },
 
-        renderLogs: function() {
-            rzpd.hooks.setTab('logs');
+        renderKeys: function() {
+            rzpd.hooks.setTab('keys');
+        },
+
+        renderAccount: function() {
+            rzpd.hooks.setTab('account');
+        },
+
+        renderActivation: function() {
+            rzpd.hooks.setTab('activation');
         }
     };
 
@@ -567,17 +576,24 @@ $(document).ready(function()
             rzpd.hooks.renderTransactions();
         }).enter(rzpd.hooks.resetPanels);
 
-
-        Path.map("#!/logs").to(function(){
-            rzpd.hooks.renderLogs();
-        }).enter(rzpd.hooks.resetPanels);
-
         Path.map("#!/refunds").to(function(){
             rzpd.hooks.renderRefunds();
         }).enter(rzpd.hooks.resetPanels);
 
         Path.map("#!/settlements").to(function(){
             rzpd.hooks.renderSettlements();
+        }).enter(rzpd.hooks.resetPanels);
+
+        Path.map("#!/keys").to(function(){
+            rzpd.hooks.renderKeys();
+        }).enter(rzpd.hooks.resetPanels);
+
+        Path.map("#!/account").to(function(){
+            rzpd.hooks.renderAccount();
+        }).enter(rzpd.hooks.resetPanels);
+
+        Path.map("#!/activation").to(function(){
+            rzpd.hooks.renderActivation();
         }).enter(rzpd.hooks.resetPanels);
 
         Path.root("#!/");
