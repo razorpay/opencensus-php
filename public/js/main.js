@@ -419,10 +419,16 @@ $(document).ready(function()
             $.ajax({
                 url: '/analytics/aggregations',
                 success: function(result) {
-                    var data = {};
-                    data.success = parseInt(result.data.successful_txn_count * 100/result.data.txn_count) + '%';
-                    data.amount = '₹' + result.data.total_amount;
-                    data.txns = result.data.txn_count;
+                    var data = {
+                        success: '0%',
+                        amount: '₹0',
+                        txns: 0
+                    };
+                    if (result.data !== null) {
+                        data.success = parseInt(result.data.successful_txn_count * 100/result.data.txn_count) + '%';
+                        data.amount = '₹' + result.data.total_amount;
+                        data.txns = result.data.txn_count;
+                    }
                     rzpd.views.renderStats(data);
                 }
             });
