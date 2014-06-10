@@ -1,10 +1,8 @@
 <?php
+require('../../../vendor/autoload.php');//Load API
 use Razorpay\Api\Api;
-var_dump($_POST);
-/*
-require('config.php');
+require('config.php');//Load API Credentials
 
-use Razorpay\Api\Api;
 $api = new Api(RZP_KEY_ID,RZP_KEY_SECRET);
 
 if(!isset($_POST['id'])) die("Transaction id required");
@@ -18,11 +16,9 @@ if($amount === $transaction->amount && $transaction->error === '' && $transactio
 {
 	//Transaction was successful
 	//Do your server side handling
-	$response = $api->transaction->capture($id);
-	echo json_encode($response);
+	echo json_encode($transaction);
 }
 else
 {
-	die($transaction->error);
+	die("There was an error in processing your request");
 }
-*/
