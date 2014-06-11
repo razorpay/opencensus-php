@@ -4,14 +4,11 @@ namespace Models\DAL;
 
 class Merchant extends DAL
 {
+    protected $table = 'merchants';
 
-    protected $hidden = array('id','pwd','hash');
-
-    // public function transactions()
-    // {
-    //  return $this->hasMany(
-    //      __NAMESPACE__.'\Transaction');
-    // }
+    protected $fillable = array(
+        'id'
+    );
 
     public function keys()
     {
