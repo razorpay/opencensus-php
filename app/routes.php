@@ -81,6 +81,11 @@ Route::$method(
     URL::TXN_CALLBACK_URL, 
     'TransactionController@postCallback');
 
+Route::group(array('before' => 'auth.app'), function()
+{
+	Route::post('merchants', 'MerchantController@postIndex');
+});
+
 Route::get('/', function()
 {
     $response['message'] = "Welcome to Razorpay API.";

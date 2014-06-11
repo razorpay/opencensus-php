@@ -133,7 +133,6 @@ class BasicAuth extends \Singleton {
                 break;
             }
 
-
         if ($verify === false)
             return false;
 
