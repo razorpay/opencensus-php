@@ -15,7 +15,7 @@ class CreateTransactions  extends Migration {
         Schema::create('transactions', function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->string('id', 32)
+            $table->string('id', Constants\Fields::ID_LENGTH)
                   ->primary();
 
             $table->integer('merchant_id')
@@ -35,7 +35,7 @@ class CreateTransactions  extends Migration {
                                         'failed'
                                         ));
 
-            $table->string('currency', 3)
+            $table->string('currency', Constants\Fields::CURRENCY_LENGTH)
                   ->default('INR');
 
             $table->string('description');

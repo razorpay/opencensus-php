@@ -35,7 +35,7 @@ class CreateCards extends Migration {
             /**
              * Two letter ISO codes representing the country of the card.
              */
-            $table->string('country', 2);
+            $table->string('country', Constants\Fields::COUNTRY_LENGTH);
 
             $table->string('address_line1')
                   ->nullable();

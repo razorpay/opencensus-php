@@ -18,7 +18,7 @@ class CreateHdfcResponseXml extends Migration {
 
             $table->increments('id');
 
-            $table->string('trackid', 32);
+            $table->string('trackid', Constants\Fields::ID_LENGTH);
 
             $table->text('enroll')
                   ->nullable();

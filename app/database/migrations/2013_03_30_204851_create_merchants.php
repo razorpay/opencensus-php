@@ -17,7 +17,7 @@ class CreateMerchants extends Migration {
 
             $table->increments('id');
 
-            $table->string('email', 255)
+            $table->string('email', Constants\Fields::ID_LENGTH)
                   ->unique();
 
             $table->string('hash', 100); // For storing passwords after encrypting them.

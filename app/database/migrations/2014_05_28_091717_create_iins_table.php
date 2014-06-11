@@ -15,10 +15,15 @@ class CreateIinsTable extends Migration {
         Schema::create('iins', function(Blueprint $table)
         {
             $table->integer('iin')->primary();
+
             $table->string('card_category', 26);
+
             $table->string('brand', 10);
+
             $table->string('card_type', 6);
-            $table->string('country_code', 2);
+
+            $table->string('country_code', Constants\Fields::COUNTRY_LENGTH);
+
             $table->string('bank', 100);
         });
     }
