@@ -18,8 +18,8 @@ class Service
         return new static;
     }
 
-    public static function setApiCredentials($key = 'd9c6bf091a1a64cb5678d8c1d5e7360f', $secret = 'thisissupersecret')
+    public static function setApiCredentials($merchant_id = NULL, $secret = 'a128a3994372ccd2a63a8a64202a92e04eb83e54')
     {
-        static::$api = new Api($key, $secret);
+        static::$api = new Api($merchant_id, $secret);
     }
 }

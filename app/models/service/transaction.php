@@ -20,7 +20,9 @@ class Transaction extends Service
 
         if (empty($error))
         {
-            static::setApiCredentials();
+            $merchant_id = \Auth::id();
+            static::setApiCredentials($merchant_id);
+
             $response = static::$api->transaction->fetch($options);
             $data = Manager\Transaction::mapKeys($response);
         }
@@ -34,12 +36,14 @@ class Transaction extends Service
 
     public function fetchTxnFromApi($id)
     {
-        list($error, $data) = Manager\Transaction::createValidate(['id' => $id], 'fetch')->getData();
+        list($error, $options) = Manager\Transaction::createValidate(['id' => $id], 'fetch')->getData();
 
         if (empty($error))
         {
-            $id = $data['id'];
-            static::setApiCredentials();
+            $merchant_id = \Auth::id();
+            static::setApiCredentials($merchant_id);
+
+            $id = $options['id'];
             $data = (array)static::$api->transaction->get($id);
         }
         else
