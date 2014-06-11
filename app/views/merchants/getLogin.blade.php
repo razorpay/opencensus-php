@@ -5,7 +5,7 @@
         <div class="centered form-wrapper">
             <div class="content">
                 <h2>Sign In</h2>
-                <form method="POST" action="/login">
+                {{ Form::open(array('action' => array('MerchantController@postLogin'))) }}
                     <div class="text">
                         <input type="text" name="email" placeholder="Email" autofocus>
                         <input type="password" placeholder="Password" name="password">
@@ -15,14 +15,14 @@
                             <input type="checkbox" name="remember" id="remember-input"><label for="remember-input">Remember Me</label>
                         </div>
                         <div class="forgot-wrap col-1-2">
-                            <a class="forgot" href="./reset">Forgot Password?</a>
+                            <a class="forgot" href="/password/reset">Forgot Password?</a>
                         </div>
                     </div>
                     <button id="form-button">Sign In</button>
-                </form>
+                {{ Form::close() }}
                 <div class="form-footer">
                     <div class="footer-text">
-                        Don't have a Razorpay account? <a href="./register">Sign Up</a> today.
+                        Don't have a Razorpay account? <a href="/register">Sign Up</a> today.
                     </div>
                 </div>
                 @if (isset($error) && !empty($error))

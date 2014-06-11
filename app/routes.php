@@ -30,12 +30,23 @@ Route::group(array('before' => 'auth'), function()
 Route::group(array('before' => 'guest'), function()
 {
     Route::get('/login', 'MerchantController@getLogin');
-    
-    Route::post('/login', 'MerchantController@postLogin');
 
     Route::get('/register', 'MerchantController@getRegister');
-    
-    Route::post('/register', 'MerchantController@postRegister');
+
+    Route::get('/password/reset', 'PasswordController@getRemind');
+
+    Route::get('/password/reset/{token}', 'PasswordController@getReset');
+
+    Route::group(array('before' => 'csrf'), function()
+    {
+        Route::post('/login', 'MerchantController@postLogin');
+
+        Route::post('/register', 'MerchantController@postRegister');
+
+        Route::post('/password/reset', 'PasswordController@postRemind');
+
+        Route::post('/password/reset/{token}', 'PasswordController@postReset');
+    });
 });
 
 Route::post('/transactions', 'TransactionController@postIndex');

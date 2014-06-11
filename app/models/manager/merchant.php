@@ -11,21 +11,25 @@ class Merchant extends Manager
         'name'                  => 'required|alpha_space|max:200',
         'email'                 => 'required|email|unique:merchants',
         'password'              => 'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50'
+        'password_confirmation' => 'required|between:6,50',
+        '_token'                => 'required'
     );
 
     protected static $loginRules = array(
         'email'     =>      'required|email',
         'password'  =>      'required|between:6,50',
-        'remember'  =>      'in:on'
+        'remember'  =>      'in:on',
+        '_token'    =>      'required'
     );
 
     protected static $unsetRegisterInput = array(
-        'password_confirmation'
+        'password_confirmation',
+        '_token'
     );
 
     protected static $unsetLoginInput = array(
-        'password'
+        'password',
+        '_token'
     );
 
     protected static $registerGenerators = array('password');
