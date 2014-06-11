@@ -124,9 +124,23 @@ class TraceWriter extends Logger
             'request_client_ip' => Request::getClientIp(),
             'request_server_ip' => Request::server('SERVER_ADDR'));
 
+        $this->unsetUrlForSensitiveUrls($server);
+
         $processor = new Processor\WebProcessor();
 
         $this->pushProcessor($processor);
+    }
+
+    protected function unsetUrlForSensitiveUrls(& $server)
+    {
+        $sensitiveUrls = \Constants\URL::getDoNotLogURLs();
+
+        if (in_array($server['request_url'], $sensitiveUrls))
+        {
+            unset(
+                $server['request_uri'],
+                $server['request_url']);
+        }
     }
 
     /**

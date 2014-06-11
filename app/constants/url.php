@@ -27,4 +27,12 @@ final class URL
     const TXN_CALLBACK_URL = 'transactions/callback';
 
     const TXN_CALLBACK_METHOD = 'post';
+
+    protected static $doNotLogURLs = array(
+        self::TXN_JSONP_URL);
+
+    public static function getDoNotLogURLs()
+    {
+        return self::$doNotLogURLs;
+    }
 }
