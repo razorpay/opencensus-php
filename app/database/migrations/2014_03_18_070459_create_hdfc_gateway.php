@@ -3,6 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use Gateway\HdfcGateway\HdfcGatewayConstants;
+
 class CreateHdfcGateway extends Migration {
 
     /**
@@ -25,31 +27,31 @@ class CreateHdfcGateway extends Migration {
 
             $table->string('action', 1);
 
-            $table->string('enroll_result', 2);
+            $table->string('enroll_result', HdfcGatewayConstants::ENROLL_RESULT_LENGTH);
 
-            $table->string('status', 50);
+            $table->string('status', HdfcGatewayConstants::STATUS_LENGTH);
 
-            $table->string('auth_result', 255)
+            $table->string('auth_result', HdfcGatewayConstants::AUTH_RESULT_LENGTH)
                   ->nullable();
 
-            $table->string('eci', 2);
+            $table->string('eci', HdfcGatewayConstants::ECI_LENGTH);
 
-            $table->string('auth', 6)
+            $table->string('auth', HdfcGatewayConstants::AUTH_LENGTH)
                   ->nullable();
 
-            $table->string('ref', 12)
+            $table->string('ref', HdfcGatewayConstants::REF_LENGTH)
                   ->nullable();
 
-            $table->string('avr', 3)
+            $table->string('avr', HdfcGatewayConstants::AVR_LENGTH)
                   ->nullable();
 
-            $table->string('postdate', 6)
+            $table->string('postdate', HdfcGatewayConstants::POSTDATE_LENGTH)
                   ->nullable();
 
-            $table->string('error_code', 7)
+            $table->string('error_code', HdfcGatewayConstants::ERROR_CODE_LENGTH)
                   ->nullable();
 
-            $table->string('error_text', 100)
+            $table->string('error_text', HdfcGatewayConstants::ERROR_TEXT_LENGTH)
                   ->nullable();
 
             $table->string('error_service')
