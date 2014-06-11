@@ -1,5 +1,7 @@
 <?php
 
+use Constants\URL;
+
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -11,61 +13,78 @@
 |
 | Let's respond to a simple GET request to http://example.com/hello:
 |
-|		Route::get('hello', function()
-|		{
-|			return 'Hello World!';
-|		});
+|       Route::get('hello', function()
+|       {
+|           return 'Hello World!';
+|       });
 |
 | You can even respond to more than one URI:
 |
-|		Route::post(array('hello', 'world'), function()
-|		{
-|			return 'Hello World!';
-|		});
+|       Route::post(array('hello', 'world'), function()
+|       {
+|           return 'Hello World!';
+|       });
 |
 | It's easy to allow URI wildcards using (:num) or (:any):
 |
-|		Route::put('hello/(:any)', function($name)
-|		{
-|			return "Welcome, $name.";
-|		});
+|       Route::put('hello/(:any)', function($name)
+|       {
+|           return "Welcome, $name.";
+|       });
 |
 */
 
 Route::group(array('after' => 'sameorigin'), function()
 {
-	Route::group(array('before' => 'auth.public'), function()
-	{
-		Route::post(Constants\URL::TXN_CREATE, 'TransactionController@postIndex');
+    Route::group(array('before' => 'auth.public'), function()
+    {
+        $method = URL::TXN_CREATE_METHOD;
+        Route::$method(
+            URL::TXN_CREATE_URL, 
+            'TransactionController@postIndex');
 
-		Route::get(Constants\URL::TXN_JSONP, 'TransactionController@getJSONP');
+        $method = URL::TXN_JSONP_METHOD;
+        Route::$method(
+            URL::TXN_JSONP_URL, 
+            'TransactionController@getJSONP');
+    });
 
-	});
+    Route::group(array('before' => 'auth.private'), function()
+    {
+        Route::post('tokens', 'CardController@postIndex');
 
-	Route::group(array('before' => 'auth.private'), function()
-	{
-		Route::post('tokens', 'CardController@postIndex');
+        Route::get('tokens/{token}', 'CardController@getRetrieve');
 
-		Route::get('tokens/{token}', 'CardController@getRetrieve');
+        $method = URL::TXN_RETRIEVE_METHOD; 
+        Route::$method(
+            URL::TXN_RETRIEVE_URL, 
+            'TransactionController@getIndex');
 
-		Route::get(Constants\URL::TXN_RETRIEVE, 'TransactionController@getIndex');
+        $method = URL::TXN_REFUND_METHOD;
+        Route::$method(
+            URL::TXN_REFUND_URL, 
+            'TransactionController@postRefund');
 
-		Route::post(Constants\URL::TXN_REFUND, 'TransactionController@postRefund');
+        $method = URL::TXN_CAPTURE_METHOD;
+        Route::$method(
+            URL::TXN_CAPTURE_URL, 
+            'TransactionController@postCapture');
 
-		Route::post(Constants\URL::TXN_CAPTURE, 'TransactionController@postCapture');
-
-		//@todo: temporary
-		//create an artisan command and get rid of this
-		Route::get('capture', 'TransactionController@capture');
-	});
+        //@todo: temporary
+        //create an artisan command and get rid of this
+        Route::get('capture', 'TransactionController@capture');
+    });
 });
 
-Route::post(Constants\URL::TXN_CALLBACK, 'TransactionController@postCallback');
+$method = URL::TXN_CALLBACK_METHOD;
+Route::$method(
+    URL::TXN_CALLBACK_URL, 
+    'TransactionController@postCallback');
 
 Route::get('/', function()
 {
-	$response['message'] = "Welcome to Razorpay API.";
-	return Response::json($response);
+    $response['message'] = "Welcome to Razorpay API.";
+    return Response::json($response);
 });
 
 /*
@@ -91,6 +110,6 @@ Event::listen('404', function()
 
 Event::listen('500', function($exception)
 {
-	return Err::handle_error('500', $exception);
-	// return Response::error('500');
+    return Err::handle_error('500', $exception);
+    // return Response::error('500');
 });
