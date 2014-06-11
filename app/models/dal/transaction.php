@@ -133,27 +133,24 @@ class Transaction extends UuidDAL
         return true;
     }
 
-    public static function fetchById($id = null)
+    public static function fetchById($id)
     {
-        if (! (null === $id))
-            return self::findOrFail($id);
-        else
-            throw new \InvalidArgumentException('Transaction Exception: No transaction id present');
+        return self::findOrFail2($id);
     }
 
 
-    public function getProcessed()
+    public function isProcessed()
     {
         return ($this->getAttribute('status')=='auth');
     }
 
 
-    public function getCaptured()
+    public function isCaptured()
     {
         return ($this->getAttribute('status')=='captured');
     }
 
-    public function getRefunded()
+    public function isRefunded()
     {
         return ($this->getAttribute('status')=='refunded');
     }

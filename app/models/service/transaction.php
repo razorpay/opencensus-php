@@ -74,7 +74,7 @@ class Transaction extends Service
     {
         //Don't continue if already refunded
 
-        if($txnData->getRefunded())
+        if($txnData->isRefunded())
         {
             $txnData->setError([
                 'code' => 'FSS00002',
@@ -82,7 +82,8 @@ class Transaction extends Service
             ]);
             return;
         }
-        if(! $txnData->getCaptured())
+
+        if(! $txnData->isCaptured())
         {
             $txnData->setError([
                 'code' => 'RP00002',
@@ -90,6 +91,7 @@ class Transaction extends Service
             ]);
             return;
         }
+        
         $data = array('txn' => $txnData->toArrayEx(DAL\Transaction::WITH_CARD));
 
         $gateway = new GatewayManager();

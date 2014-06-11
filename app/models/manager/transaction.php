@@ -100,9 +100,11 @@ class Transaction extends EntityManager
     public static function validateTransactionId($id = NULL)
     {
         $validation = \Validator::make(array('id' => $id), static::$idRules);
+        
         if ($validation->fails())
         {
-            throw new \InvalidArgumentException('Transaction Exception: '.$validation->messages());
+            throw new \InvalidArgumentException(
+                'Transaction Exception: '. $validation->messages());
         }
     }
 }
