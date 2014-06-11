@@ -13,7 +13,16 @@ class Merchant extends Service
 
         if (empty($error))
         {
-            $merchant = DAL\Merchant::createOrFail($data);
+            $merchant_data = DAL\Merchant::createOrFail($data)->toArray();
+            
+            $key_data = Manager\Merchant::generateKeyData();
+
+            $merchant_key_data = Manager\Merchant::mergeMerchantAndKey($merchant_data, $key_data);
+
+            Request::setCredentials($merchant_key_data['merchant_id']);
+            $response = Request::POST('merchants', $merchant_key_data);
+
+            $data = $key_data;
         }
 
         return [$error, $data];

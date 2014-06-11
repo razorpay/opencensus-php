@@ -49,4 +49,21 @@ class Merchant extends Manager
             'remember', isset($input['remember']) && $input['remember'] === 'on'
         );
     }
+
+    public static function mergeMerchantAndKey($merchant_data, $key_data)
+    {
+        return array(
+            'merchant_id'   =>  $merchant_data['id'],
+            'key_id'        =>  $key_data['key_id'],
+            'secret'        =>  \Hash::make($key_data['secret'])
+        );
+    }
+
+    public static function generateKeyData()
+    {
+        return array(
+            'key_id'    =>  bin2hex(openssl_random_pseudo_bytes(16)),
+            'secret'    =>  bin2hex(openssl_random_pseudo_bytes(32))
+        );
+    }
 }
