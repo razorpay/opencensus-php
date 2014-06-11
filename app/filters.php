@@ -50,7 +50,9 @@ Route::filter('auth.private', function($route, $request)
 		return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
 	}
 
-	if(! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
+	if(		! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']) &&
+			! BasicAuth::getInstance()->verifyApp($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])
+		)
 		return Response::view('error.401', array(), 401);
 });
 
@@ -78,6 +80,18 @@ Route::filter('auth.public', function($route, $request)
 		// 		$request->merge(array('hold'=>1));
 		// 	}
 		// }
+});
+
+Route::filter('auth.app', function($route, $request)
+{
+	if (!isset($_SERVER['PHP_AUTH_PW']) || !isset($_SERVER['PHP_AUTH_USER']))
+	{
+		//Used by first request from browser that checks if HTTP AUTH is expected
+		return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
+	}
+
+	if (! BasicAuth::getInstance()->verifyApp($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
+		return Response::view('error.401', array(), 401);
 });
 
 /*
