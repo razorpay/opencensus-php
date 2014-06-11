@@ -14,10 +14,7 @@ class BasicAuth extends \Singleton {
     private $App = null;
 
     private static $Apps = array(
-        'dashboard' =>  array(
-            'id'        =>  'd4$hb04rd',
-            'secret'    =>  'a128a3994372ccd2a63a8a64202a92e04eb83e54'
-        )
+        'dashboard' =>  'a128a3994372ccd2a63a8a64202a92e04eb83e54'
     );
 
     public function check()
@@ -121,17 +118,15 @@ class BasicAuth extends \Singleton {
         return true;
     }
 
-    public function verifyApp($key_id = NULL, $key_secret = NULL)
+    public function verifyApp($merchant_id = NULL, $secret = NULL)
     {
-        if ($key_id === NULL || $key_secret === NULL)
+        if ($merchant_id === NULL || $secret === NULL)
             throw new \InvalidArgumentException('Invalid Key Details');
 
         $verify = false;
 
-        foreach (static::$Apps as $name => $credentials)
-            if (    $credentials['id'] === $key_id &&
-                    $credentials['secret'] === $key_secret
-                )
+        foreach (static::$Apps as $name => $key)
+            if ($key === $secret)
             {
                 $verify = true;
                 $this->App = $name;
@@ -142,16 +137,7 @@ class BasicAuth extends \Singleton {
         if ($verify === false)
             return false;
 
-        $input = \Input::all();
-
-        if (!isset($input['merchant_id']))
-            return false;
-        else
-            $merchant_id = $input['merchant_id'];
-
         $this->Merchant = DAL\Merchant::find($merchant_id);
-
-        unset($input['merchant_id']);
 
         return true;
     }
