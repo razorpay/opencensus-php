@@ -8,9 +8,11 @@ final class Fields
 
     const EMAIL_MAX_LENGTH = 255;
 
-    const COUNTRY_LENGTH = 3;
+    // 2 letter ISO country code
+    const COUNTRY_LENGTH = 2;
 
-    const CURRENCY_LENGTH = 2;
+    // 3 letter ISO currency code
+    const CURRENCY_LENGTH = 3;
 
     const KEY_SECRET_HASH_LENTH = 100;
 }

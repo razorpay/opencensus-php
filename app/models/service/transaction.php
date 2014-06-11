@@ -125,7 +125,7 @@ class Transaction extends Service
     public function capture($txnData = null)
     {
         //Don't continue if already captured
-        if($txnData->getCaptured())
+        if($txnData->isCaptured())
         {
             $txnData->setError([
                 'code' => 'FSS00002',
