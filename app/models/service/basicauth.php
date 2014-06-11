@@ -78,8 +78,6 @@ class BasicAuth extends \Singleton {
         return true;
     }
 
-
-
     public function verifyPublic($key_id = null)
     {
         if ($key_id === null)
@@ -100,7 +98,7 @@ class BasicAuth extends \Singleton {
         
         $merchant_id = $Key->merchant_id;
 
-        $Merchant = DAL\Merchant::find($merchant_id);
+        $Merchant = DAL\Merchant::findOrFail2($merchant_id);
 
         if(null == $Merchant)
         {

@@ -15,7 +15,7 @@ class CreateKeys extends Migration {
         Schema::create('keys', function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->string('id', Constants\Fields::ID_LENGTH)
+            $table->char('id', Constants\Fields::ID_LENGTH)
                   ->primary();
             
             $table->integer('merchant_id')

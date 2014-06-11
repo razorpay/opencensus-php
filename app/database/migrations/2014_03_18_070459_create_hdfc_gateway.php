@@ -19,7 +19,7 @@ class CreateHdfcGateway extends Migration {
 
             $table->increments('id');
 
-            $table->string('trackid', Constants\Fields::ID_LENGTH);
+            $table->char('trackid', Constants\Fields::ID_LENGTH);
 
             $table->bigInteger('transactionid')
                   ->unsigned()

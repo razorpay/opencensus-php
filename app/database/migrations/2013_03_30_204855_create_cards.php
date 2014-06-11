@@ -24,7 +24,7 @@ class CreateCards extends Migration {
 
             $table->string('expiry_year', 4);
 
-            $table->string('last4', 4);
+            $table->char('last4', 4);
 
             $table->string('network');
 
@@ -35,7 +35,7 @@ class CreateCards extends Migration {
             /**
              * Two letter ISO codes representing the country of the card.
              */
-            $table->string('country', Constants\Fields::COUNTRY_LENGTH);
+            $table->char('country', Constants\Fields::COUNTRY_LENGTH);
 
             $table->string('address_line1')
                   ->nullable();

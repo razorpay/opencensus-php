@@ -22,7 +22,7 @@ class CreateIinsTable extends Migration {
 
             $table->string('card_type', 6);
 
-            $table->string('country_code', Constants\Fields::COUNTRY_LENGTH);
+            $table->char('country_code', Constants\Fields::COUNTRY_LENGTH);
 
             $table->string('bank', 100);
         });

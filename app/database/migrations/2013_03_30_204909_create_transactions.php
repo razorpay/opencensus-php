@@ -15,7 +15,7 @@ class CreateTransactions  extends Migration {
         Schema::create('transactions', function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->string('id', Constants\Fields::ID_LENGTH)
+            $table->char('id', Constants\Fields::ID_LENGTH)
                   ->primary();
 
             $table->integer('merchant_id')
@@ -35,14 +35,14 @@ class CreateTransactions  extends Migration {
                                         'failed'
                                         ));
 
-            $table->string('currency', Constants\Fields::CURRENCY_LENGTH)
+            $table->char('currency', Constants\Fields::CURRENCY_LENGTH)
                   ->default('INR');
 
             $table->string('description');
 
             $table->boolean('livemode');
 
-            $table->string('token', 16)
+            $table->char('token', 16)
                   ->unique()
                   ->nullable();
 

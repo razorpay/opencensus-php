@@ -25,7 +25,7 @@ class CreateCardtokens extends Migration {
                   ->unsigned()
                   ->nullable();
 
-            $table->string('token', 16)
+            $table->char('token', 16)
                   ->unique();
 
             $table->boolean('expired');

@@ -278,9 +278,12 @@ class HdfcGateway extends BaseGateway
             throw new InvalidArgumentException('Gateway Exception: Invalid Arguements '.$validation->messages()->all());
         }
  
-        $this->model = HdfcGatewayDal::findOrFail($input['MD']);
+        $this->model = HdfcGatewayDal::findOrFail2($input['MD']);
+
         $this->id = $this->model->getTrackid();
+
         $this->authEnrolledRequest['data']['paymentid'] = $input['MD'];
+
         $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
 
         $this->authEnrolledRequest();
