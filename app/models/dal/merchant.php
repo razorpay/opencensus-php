@@ -4,12 +4,15 @@ namespace Models\DAL;
 
 class Merchant extends DAL
 {
+    protected $table = 'merchants';
 
     protected $hidden = array(
         'id',
-        'pwd',
-        'hash',
-        'amount');
+        'balance');
+
+    protected $fillable = array(
+        'id'
+    );
 
     public function keys()
     {
