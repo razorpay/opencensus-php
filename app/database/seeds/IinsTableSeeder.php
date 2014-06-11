@@ -13,11 +13,14 @@ class IinsTableSeeder extends Seeder
         $records = self::getIinRecordsFromFile(storage_path().'/iins/iins.csv');
         $columns = array('iin', 'card_category', 'brand', 'card_type', 'country_code', 'bank');
 
+        $assocRecords = array();
         foreach ($records as $index => $record) {
             $record = array_combine($columns, $record);
 
-            $cardDetail = CardDetail::create($record);
+            $assocRecords[] = $record;
         }
+
+        DB::table('iins')->insert($assocRecords);
     }
 
     /**
