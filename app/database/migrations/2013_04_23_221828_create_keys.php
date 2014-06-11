@@ -22,7 +22,7 @@ class CreateKeys extends Migration {
                   ->unsigned()
                   ->nullable();
 
-            $table->string('secret', 100);
+            $table->string('secret', KEY_SECRET_HASH_LENTH);
 
             $table->boolean('live');
                   

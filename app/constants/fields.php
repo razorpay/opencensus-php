@@ -11,4 +11,6 @@ final class Fields
     const COUNTRY_LENGTH = 3;
 
     const CURRENCY_LENGTH = 2;
+
+    const KEY_SECRET_HASH_LENTH = 100;
 }
