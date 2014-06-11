@@ -15,12 +15,9 @@ class CreateMerchants extends Migration {
         Schema::create('merchants', function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->increments('id');
-
-            $table->string('email', Constants\Fields::EMAIL_MAX_LENGTH)
-                  ->unique();
-
-            $table->string('hash', 100); // For storing passwords after encrypting them.
+            $table->integer('id')
+                  ->unsigned()
+                  ->primary();
 
             $table->integer('created_at');  
             $table->integer('updated_at');

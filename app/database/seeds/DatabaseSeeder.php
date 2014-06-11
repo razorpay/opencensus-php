@@ -20,22 +20,17 @@ class DatabaseSeeder extends Seeder {
 	{
 		DB::table('merchants')->insert(
 			array(
-				'email'	=>	'hm@gmail.com',
-				'hash'	=>	Hash::make('password')
+				'id'			=>	1,
+				'created_at'	=>	time(),
+				'updated_at'	=>	time()
 				)
 			);
 
 		DB::table('merchants')->insert(
 			array(
-				'email'	=>	'shk@gmail.com',
-				'hash'	=>	Hash::make('password')
-				)
-			);
-
-		DB::table('merchants')->insert(
-			array(
-				'email'	=>	'abd@gmail.com',
-				'hash'	=>	Hash::make('password')
+				'id'	=>	2,
+				'created_at'	=>	time(),
+				'updated_at'	=>	time()
 				)
 			);
 
