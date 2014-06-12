@@ -121,44 +121,28 @@ class Transaction extends Service
      * Captures a transaction
      * Pass \DAL\Transaction object as argument
      */
-
-    public function capture($txnData = null)
+    public function capture($id)
     {
-        //Don't continue if already captured
-        if($txnData->isCaptured())
+        $txn = DAL\Transaction::findOrFail($id);
+
+        //
+        // Don't continue if already captured
+        // 
+        if ($txn->isCaptured())
         {
-            $txnData->setError([
+            $txn->setError([
                 'code' => 'FSS00002',
                 'message' => 'Duplicate Transaction Request'
             ]);
+
             return;
         }
 
-        $data = array('txn' => $txnData->toArrayEx(DAL\Transaction::WITH_CARD));
+        $txn = $this->txn->capture($txn);
 
-        $gateway = new GatewayManager();
+        $merchant_id = $txn->merchant_id;
 
-        list($status, $error) = $gateway->capture($data);
-
-        if($status)
-        {
-            $txnData->setStatus(Manager\TransactionStatus::CAPTURED);
-
-            //Logging
-            $this->trace->info(
-                TraceEvent::TRANSACTION_CAPTURED, 
-                $txnData->toArray());
-        }
-        else
-        {
-            $txnData->setStatus('capture_failed');
-            $txnData->setError($error);
-
-            //Logging
-            $this->trace->error(
-                TraceEvent::TRANSACTION_FAILED,
-                $txnData->toArray() + array('message' => 'Transaction Capture Request Failed'));
-        }
+        return $txn->toArray();
     }
 
     public function bankAcsCallback(array $input)

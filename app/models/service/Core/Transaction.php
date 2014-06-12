@@ -219,9 +219,35 @@ class Transaction
      * @param  [type] $txn [description]
      * @return [type]      [description]
      */
-    public function capture($txn)
+    public function capture(DAL\Transaction $txn)
     {
-        ;
+        $data = array('txn' => $txn->toArrayEx(DAL\Transaction::WITH_CARD));
+
+        $gateway = new GatewayManager();
+
+        list($status, $error) = $gateway->capture($data);
+
+        if($status)
+        {
+            $txn->setStatus(Manager\TransactionStatus::CAPTURED);
+
+            //Logging
+            $this->trace->info(
+                TraceEvent::TRANSACTION_CAPTURED, 
+                $txn->toArray());
+        }
+        else
+        {
+            $txn->setStatus('capture_failed');
+            $txn->setError($error);
+
+            //Logging
+            $this->trace->error(
+                TraceEvent::TRANSACTION_FAILED,
+                $txn->toArray() + array('message' => 'Transaction Capture Request Failed'));
+        }
+
+        return $txn;
     }
 
     protected function updateTransactionAuth()

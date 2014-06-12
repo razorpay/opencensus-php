@@ -141,18 +141,18 @@ class Transaction extends UuidDAL
 
     public function isProcessed()
     {
-        return ($this->getAttribute('status')=='auth');
+        return ($this->getAttribute('status') == 'auth');
     }
 
 
     public function isCaptured()
     {
-        return ($this->getAttribute('status')=='captured');
+        return ($this->getAttribute('status') == 'captured');
     }
 
     public function isRefunded()
     {
-        return ($this->getAttribute('status')=='refunded');
+        return ($this->getAttribute('status') == 'refunded');
     }
 
     public function setStatus($status)
