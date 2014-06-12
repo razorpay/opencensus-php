@@ -42,7 +42,10 @@ class MerchantController extends BaseController
         if (empty($error))
         {
             // @todo: render this to a view; send activation mail
-            die('You have registered successfully');
+            \Auth::loginUsingId($data['id']);
+
+            return View::make('merchants.getKeys')
+                        ->with('data', $data);
         }
         else
         {

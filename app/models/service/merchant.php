@@ -22,7 +22,7 @@ class Merchant extends Service
             Request::setCredentials($merchant_key_data['merchant_id']);
             $response = Request::POST('merchants', $merchant_key_data);
 
-            $data = $key_data;
+            $data = array_merge($merchant_data, $key_data);
         }
 
         return [$error, $data];
