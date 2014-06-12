@@ -19,8 +19,7 @@ class CreateKeys extends Migration {
                   ->primary();
             
             $table->integer('merchant_id')
-                  ->unsigned()
-                  ->nullable();
+                  ->unsigned();
 
             $table->string('secret', Constants\Fields::KEY_SECRET_HASH_LENTH);
 
@@ -32,7 +31,9 @@ class CreateKeys extends Migration {
                   
             $table->integer('created_at');  
             $table->integer('updated_at');
-            
+            $table->integer('expired_at')
+                  ->nullable();
+
             $table->foreign('merchant_id')
                   ->references('id')
                   ->on('merchants')

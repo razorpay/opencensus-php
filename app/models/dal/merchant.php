@@ -13,7 +13,7 @@ class Merchant extends DAL
     public function keys()
     {
         return $this->hasMany(
-            __NAMESPACE__.'\Keys');
+            __NAMESPACE__.'\Key');
     }
 
     public function transactions()
