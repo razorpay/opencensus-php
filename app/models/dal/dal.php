@@ -135,8 +135,17 @@ class DAL extends \Eloquent
         return 'U';
     }
 
-    public function getDates()
+    protected function asDateTime($value)
     {
-        return array();
+        // If this value is an integer, we will assume it is a UNIX timestamp's value
+        // and return as it is. Otherwise we will call the parent function to handle it.
+        if (is_numeric($value))
+        {
+            return $value;
+        }
+        else
+        {
+            return parent::asDateTime($value);
+        }
     }
 }
