@@ -3,20 +3,22 @@
 namespace Dashboard;
 
 use Queue;
+use Config;
 use Requests;
 
 class Dashboard
 {
     /**
-     * Dashboard URL
-     */
-    protected static $url;
-
-    /**
      * Resource specifier
      * For example, transactions, cards, etc.
      */
     protected static $resource;
+
+    /**
+     * Configuration array
+     * @var array
+     */
+    protected $config = array();
 
     /**
      * Fields to be sent as part of the request
@@ -25,7 +27,12 @@ class Dashboard
 
     public function __construct()
     {
-        static::$url = Config::getUrl();
+        $this->config = Config::get('dashboard');
+    }
+
+    protected function getUrl()
+    {
+        return $this->config['url'];
     }
 
     public static function getInstance()
@@ -57,7 +64,7 @@ class Dashboard
     public function postRequest($job, $data)
     {
         $response = Requests::post(
-            static::$url . '/' . $data['resource'],
+            $this->getUrl() . $data['resource'],
             array(),
             $data['message']
         );
