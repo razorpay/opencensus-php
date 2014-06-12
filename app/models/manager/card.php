@@ -32,6 +32,8 @@ class Card extends EntityManager
 
     protected static $createValidators = array('address');
 
+    protected static $modifiers = array('number', 'expiry_year');
+
     protected static $generators = array('last4');
 
     protected function validateAddress($input)
@@ -72,10 +74,25 @@ class Card extends EntityManager
         $this->setField('last4', $last4);
     }
 
+    public function modifyNumber(& $input)
+    {
+        $input['number'] = str_replace(' ', '', $input['number']);
+        $input['number'] = str_replace('-', '', $input['number']);
+    }
+
+    public function modifyExpiryYear(& $input)
+    {
+        if(strlen($input['expiry_year']) == 2)
+        {
+            $input['expiry_year'] = '20'.$input['expiry_year'];
+        }
+    }
+
     public function fillNetworkDetails($details)
     {
-        $network = CardNetwork::detectNetwork(
-            $this->getField('number'));
+        $number = $this->getField('number');
+
+        $network = CardNetwork::detectNetwork($number);
 
         $this->setField('network', $network);
 
