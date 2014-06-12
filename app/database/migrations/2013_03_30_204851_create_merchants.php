@@ -22,6 +22,9 @@ class CreateMerchants extends Migration {
 
             $table->string('hash', 100); // For storing passwords after encrypting them.
 
+            $table->integer('balance')
+                  ->default(0);
+
             $table->integer('created_at');  
             $table->integer('updated_at');
         });
