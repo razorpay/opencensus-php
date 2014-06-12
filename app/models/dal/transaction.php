@@ -155,7 +155,6 @@ class Transaction extends UuidDAL
         return ($this->getAttribute('status')=='refunded');
     }
 
-
     public function setStatus($status)
     {
         $this->setAttribute('status', $status);
@@ -237,27 +236,13 @@ class Transaction extends UuidDAL
 
     public function setError($error = false)
     {
-        if(isset($error['code'])) $this->setAttribute('error', $error['code']);
-        else $this->setAttribute('error', $error);
+        if(isset($error['code'])) 
+            $this->setAttribute('error', $error['code']);
+        else 
+            $this->setAttribute('error', $error);
+        
         $this->save();
+        
         $this->error = $error;
     }
-
-    // public function getHold()
-    // {
-    //     return ($this->getAttribute('hold') == '1');
-    // }
-
-    // public function setCapturable($status = true)
-    // {
-    //     $this->capturable = $status;
-    // }
-
-    // public function unsetAndGetCapturable()
-    // {
-    //     $capturable = (isset($this->capturable)) ? $this->capturable : false;
-    //     unset($this->capturable);
-    //     return $capturable;
-    // }
-
 }

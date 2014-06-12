@@ -7,6 +7,7 @@ use Models\Manager\TransactionStatus;
 use Models\DAL;
 use Gateway\GatewayManager;
 use Exceptions;
+use Exceptions\InvalidArgumentException;
 use Trace\Trace;
 use Trace\TraceEvent;
 
@@ -24,56 +25,93 @@ class Transaction
     }
 
     /**
-     * Creates an entry for a new transaction.
+     * Creates card, token and txn entities
+     * 
+     * @param  array $input Input required for creating
+     *                      card, token and txn entities
+     *                      
+     * @return array        Returns an array containing
+     *                      DAL\Transaction object and
+     *                      card data array
      */
-    public function create($input = null)
+    public function createEntitites($input = null)
     {
         $cardToken = null;
 
         $txnInput = $input;
 
+        // Check that card key exists
         if (! array_key_exists('card', $input))
         {
-            throw new \Exceptions\InvalidArgumentException('Transaction Exception: Card not provided');
+            throw new InvalidArgumentException(
+                'Transaction Exception: Card not provided');
         }
 
-        if(strlen($input['card']['expiry_year']) == 2)
-            $input['card']['expiry_year'] = '20'.$input['card']['expiry_year'];
+        //
+        // Now separate inputs required for creating card and token
+        // 
+        list($cardInput, $tokenInput) = 
+            Manager\CardToken::separateTokenAndCardCreateInput(
+                $input['card']);
 
-        $input['card']['number'] = str_replace(' ', '', $input['card']['number']);
-
-        list($cardInput, $tokenInput) = Manager\CardToken::separateTokenAndCardCreateInput($input['card']);
-
+        //
+        // Creates card entity. But since we don't store
+        // number and cvv for now, we get back a card data
+        // array with number and cvv inserted after storing
+        // card details (DAL\Card)
+        // 
         $cardData = (new Card)->createAndReturnWithSensitiveData($cardInput);
 
+        //
+        // Create token. Links to card id and merchant id
+        // 
         $token = (new Token)->create(
                     $tokenInput, 
                     $input['merchant_id'],
                     $cardData['id']);
 
+        // Links txn to token
         $txnInput['token'] = $token->token;
 
+        // Remove card key from input. Isn't needed
         unset($txnInput['card']);
 
-        $data = Manager\Transaction::createValidate($txnInput)->getData();
-
-        $txn = DAL\Transaction::createOrFail($data);
+        // Create txn entity and store.
+        $txn = $this->create($txnInput);
 
         return array($txn, $cardData);
     }
 
     /**
+     * Creates an entry for a new transaction
+     * 
+     * @param  array $input Input relevant to creating
+     *                      a txn row in db
+     *                      
+     * @return DAL\Transaction  A DAL\Transaction object
+     */
+    public function create($input)
+    {
+        $data = Manager\Transaction::createValidate($input)->getData();
+
+        return DAL\Transaction::createOrFail($data);
+    }
+
+    /**
      * Processes a transaction.
+     * Passes data along to the gateway
+     * which does the actual processing.
+     * After return, updates transaction status.
+     * 
+     * @param  DAL\Transaction $txn      Transaction object
+     * @param  array           $cardData card data array
+     * 
+     * @return DAL\Transaction           Transaction object
      */
     public function process(
         DAL\Transaction $txn,
         array $cardData)
     {
-        if (! ($txn instanceof DAL\Transaction))
-        {
-            throw new Exceptions\InvalidArgumentException('Transaction Exception: Invalid transaction id');
-        }
-
         $this->txn = $txn;
 
         //
@@ -94,21 +132,47 @@ class Transaction
         }
         catch(\Requests_Exception $e)
         {
-            //check if timeout has occured
-            if(strpos($e->getMessage(), 'Operation timed out')  !==false || strpos($e->getMessage(), 'Network is unreachable') !==false || strpos($e->getMessage(), 'Name or service not known')!==false )
+            if ($this->checkTimeout($e))
             {
                 $status = TransactionStatus::FAILED;
-                $data['code'] = "TIMEOUT";
+                $data['code'] = 'TIMEOUT';
                 $data['message'] = 'Request timed out';
             }
-            else throw $e;
+            else
+                throw $e;
         }
 
-        return $this->updateTransactionStatus($status, $data, $txn);
+        return $this->updateTransactionStatus($status, $data);
     }
 
-    function updateTransactionStatus($status, $data, $txn)
+    /**
+     * Checks whether the requests exception that we caught
+     * is actually because of timeout in the network call.
+     * 
+     * @param  Requests_Exception $e The caught requests exception
+     * 
+     * @return boolean               true/false
+     */
+    protected function checkTimeout(\Requests_Exception $e)
     {
+        //check if timeout has occured
+        if ((strpos($e->getMessage(), 'Operation timed out')  !== false) or 
+            (strpos($e->getMessage(), 'Network is unreachable') !==false) or 
+            (strpos($e->getMessage(), 'Name or service not known') !== false) or
+            (strpos($e->getMessage(), 'Failed to connect') !== false) or 
+            (strpos($e->getMessage(), 'Could not resolve host') !== false))
+        {
+            return true;
+        }
+        else 
+        {
+            return false;
+        }
+    }
+
+    function updateTransactionStatus($status, $data)
+    {
+        $txn = $this->txn;
 
         switch ($status)
         {
@@ -116,34 +180,34 @@ class Transaction
             return $data;
 
             case 'not enrolled':
-            $txn->setStatus(TransactionStatus::AUTH);
-            // if (! $txn->getHold())
-            //     $txn->setCapturable(true);
+                $txn->setStatus(TransactionStatus::AUTH);
+
             return $txn;
 
             //@todo: Update data on hold
             case TransactionStatus::AUTH:
-            $this->updateTransactionAuth();
-            break;
+                $this->updateTransactionAuth();
+                break;
 
             //@todo: Update data on captured
             case TransactionStatus::CAPTURED:
-            $this->updateTransactionCaptured();
-            break;
+                $this->updateTransactionCaptured();
+                break;
 
             //@todo: Fill errors on failure
             case TransactionStatus::FAILED:
-            $this->updateTransactionFailed();
-            $txn = $this->fillErrorDetails($data, $txn);
-            break;
+                $this->updateTransactionFailed();
+                $txn = $this->fillErrorDetails($data, $txn);
+                break;
 
             case 'timeout':
-            $this->updateTransactionFailed();
-            $txn = $this->fillErrorDetails($data, $txn);
-            break;
+                $this->updateTransactionFailed();
+                $txn = $this->fillErrorDetails($data, $txn);
+                break;
 
             default:
-            throw new \LogicException('Transaction Exception: '.$status . ' is an invalid status');
+                throw new \LogicException(
+                    'Transaction Exception: ' . $status . ' is an invalid status');
         }
 
         return $txn;

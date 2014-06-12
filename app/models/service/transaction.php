@@ -29,7 +29,7 @@ class Transaction extends Service
             TraceEvent::TRANSACTION_NEW_REQUEST, 
             $input);
 
-        list($txn, $cardData) = $this->txn->create($input);
+        list($txn, $cardData) = $this->txn->createEntitites($input);
 
         $this->trace->debug(
             TraceEvent::TRANSACTION_CREATED, 
