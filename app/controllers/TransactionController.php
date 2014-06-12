@@ -169,17 +169,14 @@ class TransactionController extends BaseController
      * Captures a specific transaction which was put on hold earlier
      *
      */
-
     public function postCapture($id)
     {
 
-        $txn_service = new Transaction();
+        $txnService = new Transaction();
 
-        $txn = $txn_service->retrieve($id);
+        $txnData = $txnService->capture($id);
 
-        $txn_service->capture($txn);
-
-        return Response::json($txn);
+        return Response::json($txnData);
     }
 
     /**

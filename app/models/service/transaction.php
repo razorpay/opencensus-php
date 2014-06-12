@@ -142,6 +142,8 @@ class Transaction extends Service
 
         $merchant_id = $txn->merchant_id;
 
+        $ledger = (new DAL\Ledger)->updateRecords($txn);
+
         return $txn->toArray();
     }
 
