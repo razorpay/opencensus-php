@@ -60,4 +60,22 @@ class MerchantController extends BaseController
         \Auth::logout();
         return Redirect::action('MerchantController@getLogin');
     }
+
+    public function getCsv()
+    {
+        $input = Input::only(
+            'id', 'secret'
+        );
+
+        if (!isset($input['id']) || !isset($input['secret']))
+            return;
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=rzp.csv');
+
+        $output = fopen('php://output', 'w');
+
+        fputcsv($output, array('rzp_id', 'rzp_secret'));
+        fputcsv($output, array($input['id'], $input['secret']));
+    }
 }

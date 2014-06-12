@@ -25,6 +25,8 @@ Route::group(array('before' => 'auth'), function()
     Route::get('/analytics/transactions', 'TransactionController@getAnalytics');
 
     Route::get('/analytics/aggregations', 'TransactionController@getAggregations');
+
+    Route::get('/keys/csv', 'MerchantController@getCsv');
 });
 
 Route::group(array('before' => 'guest'), function()
