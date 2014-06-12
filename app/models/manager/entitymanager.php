@@ -27,6 +27,14 @@ class EntityManager
     protected static $generators = array();
 
     /**
+     * Fields which will be modified before
+     * input validation
+     * 
+     * @var array
+     */
+    protected static $modifiers = array();
+
+    /**
      * Validator functions that will be 
      * rung during build on input data
      */
@@ -71,6 +79,8 @@ class EntityManager
     public function build(array $input)
     {
         $this->input = $input;
+
+        $this->modify($input);
 
         $this->validateInput($input, 'create');
 
@@ -183,9 +193,22 @@ class EntityManager
         }
     }
 
+    public function modify(& $input)
+    {
+        foreach (static::$modifiers as $field)
+        {
+            $this->modifyField($field, $input);
+        }
+    }
+
     public function generateField($field, $input)
     {
         $this->{'generate'.studly_case($field)}($input);
+    }
+
+    public function modifyField($field, & $input)
+    {
+        $this->{'modify'.studly_case($field)}($input);
     }
 
     public function fill(array $values)
