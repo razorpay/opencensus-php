@@ -78,4 +78,11 @@ class MerchantController extends BaseController
         fputcsv($output, array('rzp_id', 'rzp_secret'));
         fputcsv($output, array($input['id'], $input['secret']));
     }
+
+    public function getAccount()
+    {
+        $merchant = Service\Merchant::getInstance()->fetch(\Auth::id());
+
+        return $merchant;
+    }
 }

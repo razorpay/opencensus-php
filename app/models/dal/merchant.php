@@ -9,7 +9,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
 {
     protected $table = 'merchants';
 
-    protected $hidden = array('password');
+    protected $hidden = array('password', 'remember_token');
 
     protected $fillable = array(
         'name',

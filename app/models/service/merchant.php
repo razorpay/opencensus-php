@@ -45,4 +45,11 @@ class Merchant extends Service
         else
             return [['Email or password is invalid.'], $data];
     }
+
+    public function fetch($merchant_id)
+    {
+        $merchant = DAL\Merchant::findOrFail($merchant_id)->toArray();
+
+        return $merchant;
+    }
 }

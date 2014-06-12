@@ -21,6 +21,9 @@ $(document).ready(function()
         },
         settlements: {
             childDivs: ['settle-list']
+        },
+        account: {
+            childDivs: ['password-reset']
         }
     };
 
@@ -282,6 +285,11 @@ $(document).ready(function()
             $('#total-txn-stat').html(data.txns);
             $('#success-stat').html(data.success);
             $('#total-amount-stat').html(data.amount);
+        },
+
+        renderAccountDetails: function(data) {
+            $('#account-name').html(data.name);
+            $('#account-email').html(data.email);
         }
     };
 
@@ -494,6 +502,16 @@ $(document).ready(function()
             });
         },
 
+        fetchAccountDetails: function(parentDiv) {
+            $.ajax({
+                url: '/account',
+                success: function(result) {
+                    rzpd.views.renderAccountDetails(result);
+                    rzpd.hooks.updateSubpanel(parentDiv);
+                }
+            });
+        },
+
         updateSubpanel: function(subpanel) {
             if (rzpd.config.currentTab == subpanel)
                 rzpd.config.childDivLoadCount += 1;
@@ -546,6 +564,7 @@ $(document).ready(function()
 
         renderAccount: function() {
             rzpd.hooks.setTab('account');
+            rzpd.hooks.fetchAccountDetails('account');
         },
 
         renderActivation: function() {

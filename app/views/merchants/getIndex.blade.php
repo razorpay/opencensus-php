@@ -136,6 +136,14 @@
 						</ul>
 					</div>
 				</div>
+				<div id="account" class="hidden panel">
+					<div class="account-details grid">
+						<div class="col-1-3">Name</div>
+						<div class="col-2-3" id="account-name"></div>
+						<div class="col-1-3">Email</div>
+						<div class="col-2-3" id="account-email"></div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
