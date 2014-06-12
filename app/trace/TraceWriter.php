@@ -83,14 +83,11 @@ class TraceWriter extends Logger
 
     protected function pushTestHandler()
     {
-        $lineFormatter = new Formatter\LineFormatter(null, null, true);
+        $scalarFormatter = new Formatter\ScalarFormatter();
 
         $testHandler = new Handler\TestHandler();
 
-        $jsonFormatter = new Formatter\JsonFormatter();
-        $scalarFormatter = new Formatter\ScalarFormatter();
-
-        $testHandler->setFormatter($lineFormatter);
+        $testHandler->setFormatter($scalarFormatter);
 
         $this->pushHandler($testHandler);
 
