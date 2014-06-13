@@ -48,7 +48,7 @@ class SupportTest extends Transaction {
         $id=$response->id;
 
         $this->capture($id);
-        //$this->refund($id);
+        $this->refund($id);
     }
 
     /**
@@ -71,8 +71,8 @@ class SupportTest extends Transaction {
         $capture=json_decode($content);
 
         //Check if transaction id matches, and captured sucessfully
-        $this->assertEquals($capture->id, $id);
-        $this->assertEquals($capture->status, 'capture_failed');
+        $this->assertEquals($id, $capture->id);
+        $this->assertEquals('captured', $capture->status);
     }
 
     /**
@@ -95,8 +95,8 @@ class SupportTest extends Transaction {
         $refund=json_decode($content);
 
         //Check if transaction id matches, and refunded sucessfully
-        $this->assertEquals($refund->id, $id);
-        $this->assertEquals($refund->status, 'refunded');
+        $this->assertEquals($id, $refund->id);
+        $this->assertEquals('refunded', $refund->status);
     }
 
 }
