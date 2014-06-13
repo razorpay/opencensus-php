@@ -15,7 +15,7 @@ class Merchant extends Service
         {
             $merchant_data = DAL\Merchant::createOrFail($data)->toArray();
             
-            $key_data = Manager\Merchant::generateKeyData();
+            $key_data = Manager\Key::generateKeyData();
 
             $merchant_key_data = Manager\Merchant::mergeMerchantAndKey($merchant_data, $key_data);
 
@@ -51,5 +51,36 @@ class Merchant extends Service
         $merchant = DAL\Merchant::findOrFail($merchant_id)->toArray();
 
         return $merchant;
+    }
+
+    public function fetchKeysFromApi($merchant_id)
+    {
+        Request::setCredentials($merchant_id);
+        $response = Request::GET('merchants/keys');
+
+        return $response;
+    }
+
+    public function rollKeys(array $input)
+    {
+        list($error, $data) = Manager\Key::createValidate($input, 'create')->getData();
+
+        if (empty($error))
+        {
+            $key_data = Manager\Key::generateKeyData();
+            $key_data['status'] = true;
+
+            $arr = Manager\Key::buildKeyUpdateData($data, $key_data);
+
+            Request::setCredentials($data['merchant_id']);
+            $response = Request::PUT('merchants/keys', $arr);
+
+            if ($response->status === false)
+                return ['status' => false];
+            else
+                return $key_data;
+        }
+        else
+            return ['status' => false];
     }
 }

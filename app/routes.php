@@ -29,6 +29,10 @@ Route::group(array('before' => 'auth'), function()
     Route::get('/keys/csv', 'MerchantController@getCsv');
 
     Route::get('/account', 'MerchantController@getAccount');
+
+    Route::get('/keys', 'MerchantController@getKeys');
+
+    Route::post('/keys', 'MerchantController@postKeys');
 });
 
 Route::group(array('before' => 'guest'), function()

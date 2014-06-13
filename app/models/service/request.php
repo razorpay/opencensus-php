@@ -22,4 +22,19 @@ class Request extends Service
         $response = \Requests::post(self::API_BASE . $url, array(), $data, $options);
         return json_decode($response->body);
     }
+
+    public static function PUT($url, $data = [])
+    {
+        $options = ['auth' => [self::$ID,self::$PASSWORD]];
+        $response = \Requests::put(self::API_BASE . $url, array(), $data, $options);
+        return json_decode($response->body);
+    }
+
+    public static function GET($url, $data = [])
+    {
+        $qs = http_build_query($data);
+        $options = ['auth' => [self::$ID,self::$PASSWORD]];
+        $response = \Requests::get(self::API_BASE . $url . '?' . $qs, array(), $options);
+        return json_decode($response->body);
+    }
 }

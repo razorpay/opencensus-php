@@ -85,4 +85,22 @@ class MerchantController extends BaseController
 
         return $merchant;
     }
+
+    public function getKeys()
+    {
+        $keys = Service\Merchant::getInstance()->fetchKeysFromApi(\Auth::id());
+        
+        return $keys;
+    }
+
+    public function postKeys()
+    {
+        $input = Input::all();
+
+        $input['merchant_id'] = \Auth::id();
+
+        $data = Service\Merchant::getInstance()->rollKeys($input);
+
+        return $data;
+    }
 }
