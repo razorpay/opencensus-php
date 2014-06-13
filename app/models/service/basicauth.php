@@ -53,7 +53,7 @@ class BasicAuth extends \Singleton {
             throw new \InvalidArgumentException('Invalid Key Details');
         }
 
-        $Key = DAL\Key::find($key_id);
+        $Key = DAL\Key::retrieve($key_id);
 
         if ($Key === null)
         {
