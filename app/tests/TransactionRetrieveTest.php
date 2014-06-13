@@ -48,7 +48,7 @@ class TransactionRetrieveTest extends TestCase {
     * Tests the /transactions & /transactions/$id route.
     * Should return valid json with list of all transactions in case 1
     * Should return valid json with details of transaction specified by id in case 2
-    * 
+    *
     * @group testRetrieveTransaction
     */
     public function testRetrieveTransaction()
@@ -91,10 +91,10 @@ class TransactionRetrieveTest extends TestCase {
 
         //THEN
         $this->assertJson($content);
-        
+
         $transaction = json_decode($content);
-        
-        $this->assertEquals($transaction->id, $id);
+
+        $this->assertEquals($id, $transaction->id);
     }
 
     /**
@@ -120,7 +120,7 @@ class TransactionRetrieveTest extends TestCase {
 
         $transaction = json_decode($content);
 
-        $this->assertEquals($transaction->data[0]->id, $id);
+        $this->assertEquals($id, $transaction->data[0]->id);
     }
 
     /**
@@ -143,7 +143,7 @@ class TransactionRetrieveTest extends TestCase {
         //THEN
         $this->assertJson($content);
         $transaction = json_decode($content);
-        $this->assertEquals($transaction->data[0]->id, $id);
+        $this->assertEquals($id, $transaction->data[0]->id);
     }
 
 }

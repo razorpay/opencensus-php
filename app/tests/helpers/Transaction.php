@@ -16,7 +16,7 @@ class Transaction extends TestCase {
     {
         //flush any previous output
         ob_flush();
-        
+
         //GIVEN
 
         //load list of cards with expected responses for each
@@ -66,7 +66,18 @@ class Transaction extends TestCase {
                 $crawler = $this->client->request('POST', '/transactions', $transaction);
 
                 //get the form
+                try
+                {
                 $form = $crawler->selectButton('Submit')->form();
+                }
+                catch(Exception $e)
+                {
+                  if(strpos($e->getMessage(), 'node list is empty') != False)
+                  {
+                    $this->fail('Transaction Timed out');
+                  }
+                  else throw $e;
+                }
 
                 //submit to acs url
                 $form->setValues(array('TermUrl' => Config::get('app.url').'/transactions/callback'));
@@ -130,8 +141,8 @@ class Transaction extends TestCase {
             $error_code=$cards[$card_no]['code'];
             $error_message=$cards[$card_no]['message'];
 
-            $this->assertEquals($output->error->code, $error_code);
-            $this->assertEquals($output->error->message, $error_message);
+            $this->assertEquals($error_code, $output->error->code);
+            $this->assertEquals($error_message, $output->error->message);
 
             return $output;
 
