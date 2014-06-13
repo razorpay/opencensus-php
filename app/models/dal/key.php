@@ -16,6 +16,10 @@ class Key extends DAL
         'active'
     );
 
+    protected $hidden = array(
+        'secret',
+    );
+
     public function scopeNotExpired($query)
     {
         return $query->where('expired_at', '=', NULL)->orWhere('expired_at', '>', time());
@@ -31,5 +35,13 @@ class Key extends DAL
     {
         return $this->belongsTo(
             __NAMESPACE__.'\Merchant');
+    }
+
+    public static function getKeysForMerchant($merchant_id, $expired = false)
+    {
+        if ($expired == true)
+            return self::where('merchant_id','=',$merchant_id)->get();
+        else
+            return self::where('merchant_id','=',$merchant_id)->notExpired()->get();
     }
 }
