@@ -24,6 +24,9 @@ $(document).ready(function()
         },
         account: {
             childDivs: ['password-reset']
+        },
+        keys: {
+            childDivs: ['key-generate']
         }
     };
 
@@ -246,7 +249,7 @@ $(document).ready(function()
                 html = "<div class='error'>Abe Koi Txn Karega Tab Dikhega Na.</div>";
             else
                 for (var i in data)
-                    html += '<li class="transaction-list-item"><a href="#!/transactions/'+data[i].transaction_id+'" class="grid"><div class="col-1-2"><span class="amount col-1-4">₹' + data[i].amount + '</span><span class="id col-9-12">' + data[i].transaction_id + '</span></div><span class="status col-1-4">' + data[i].status + '</span><span class="date col-1-4">' + moment(data[i].updated_at, 'X').format('DD-MM-YYYY HH:MM') + '</span></a></li>';
+                    html += '<li class="transaction-list-item"><a href="#!/transactions/'+data[i].transaction_id+'" class="grid"><div class="col-1-2"><span class="amount col-1-4">₹' + data[i].amount + '</span><span class="id col-9-12">' + data[i].transaction_id + '</span></div><span class="status col-1-4">' + data[i].status + '</span><span class="date col-1-4">' + moment(data[i].updated_at, 'X').format('DD-MM-YYYY HH:mm') + '</span></a></li>';
             $('#' + div).html(html);
         },
 
@@ -290,6 +293,38 @@ $(document).ready(function()
         renderAccountDetails: function(data) {
             $('#account-name').html(data.name);
             $('#account-email').html(data.email);
+        },
+
+        renderKeys: function(data) {
+            var html = '';
+            for (var i in data) {
+                var mode = (data[i].live == '0') ? 'Test' : 'Live';
+                var expires = (data[i].expired_at === null) ? false : true;
+                html += '<ul class="key-wrapper"><li><div class="field key">Key ID</div><div class="value key">' + data[i].id + '</div><a class="roll-href" title="Roll Key"><img class="roll-icon" src="/img/refresh.png"></a></li><li><div class="field">Created At</div><div class="value">' + moment(data[i].created_at, 'X').format('MMMM Do YYYY, HH:mm') + '</div></li>';
+                if (expires === true)
+                    html += '<li><div class="field">Expires At</div><div class="value">' + moment(data[i].expired_at, 'X').format('MMMM Do YYYY, HH:mm') + '</div></li>';
+                html += '<li><div class="field">Mode</div><div class="value">' + mode + '</div></li></ul><div class="roll-key-form-wrapper hidden"><span class="close-button"><img src="/img/close.png"></span><form class="roll-key-form" id="' + data[i].id + '"><div>Generate new key and</div><label><input type="radio" name="delay_roll" value="true" checked="checked"><span>Allow old key to work for 24 hours.</span></label><label><input type="radio" name="delay_roll" value="false"><span>Block old key immediately.</span></label><div><button class="roll-key-button">Roll Key</button><img class="hidden roll-key-form-loader" src="/img/loader.gif"></div><div class="result"></div></form></div>';
+            }
+            $('#keys').html(html);
+            $('.roll-href').click(rzpd.views.showRollForm);
+        },
+
+        showRollForm: function() {
+            rzpd.views.showDiv($(this).closest('ul').next());
+            $('.close-button').click(rzpd.views.hideRollForm);
+            $('.roll-key-form').submit(rzpd.hooks.generateKeys);
+        },
+
+        hideRollForm: function() {
+            rzpd.views.hideDiv($(this).parents('.roll-key-form-wrapper'));
+        },
+
+        showNewKeys: function(form, data) {
+            form.find('.result').html('<div>ID: ' + data.key_id + '<br>Secret: ' + data.secret + '</div><div>Click <a href="/keys/csv?id=' + data.key_id + '&secret=' + data.secret + '">here</a> to download credentials. You will not be able to view the credentials again.</div>');
+        },
+
+        showKeyError: function(form) {
+            form.find('.result').html('Something went wrong. Try again later.');
         }
     };
 
@@ -512,6 +547,46 @@ $(document).ready(function()
             });
         },
 
+        fetchKeys: function(parentDiv) {
+            $.ajax({
+                url: '/keys',
+                success: function(result) {
+                    rzpd.views.renderKeys(result);
+                    rzpd.hooks.updateSubpanel(parentDiv);
+                }
+            });
+        },
+
+        generateKeys: function(e) {
+            var that = $(this);
+
+            rzpd.views.showDiv(that.find('.roll-key-form-loader'));
+            that.find('button').attr('disabled','disabled');
+
+            $.ajax({
+                url: '/keys',
+                type: 'POST',
+                data: {
+                    id: that.attr('id'),
+                    delay_roll: that.find('input[name="delay_roll"]:checked').val()
+                },
+                success: function(result) {
+                    if (result.status === true)
+                        rzpd.views.showNewKeys(that, result);
+                    else
+                        rzpd.views.showKeyError(that);
+                },
+                error: function(x, e) {
+                    rzpd.views.showKeyError(that);
+                },
+                complete: function() {
+                    rzpd.views.hideDiv(that.find('.roll-key-form-loader'));
+                    that.find('button').removeAttr('disabled');
+                }
+            });
+            e.preventDefault();
+        },
+
         updateSubpanel: function(subpanel) {
             if (rzpd.config.currentTab == subpanel)
                 rzpd.config.childDivLoadCount += 1;
@@ -560,6 +635,7 @@ $(document).ready(function()
 
         renderKeys: function() {
             rzpd.hooks.setTab('keys');
+            rzpd.hooks.fetchKeys('keys');
         },
 
         renderAccount: function() {

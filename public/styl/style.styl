@@ -253,13 +253,14 @@ header
 .horizontal-data-wrapper
 	min-height 120px
 	border-bottom 1px solid rzp-blue
+	background-color rzp-blue
+	color white
 	.data-item
 		display inline-block
 		text-align center
 		margin 30px 0
 		.data-item-value
 			font-size 2.5em
-			color rzp-blue
 			line-height 1.5
 		.data-item-desc
 			font-size 1.5em
@@ -315,6 +316,61 @@ header
 	font-size 1.5em
 	div
 		padding 5px 0
+
+/* Keys */
+
+.key-wrapper
+	padding 30px
+	font-size 1.5em
+	li
+		margin 5px
+	.key
+		font-size 1.6em
+	.field
+		text-align left
+		width 150px
+	.field, .value
+		display inline-block
+	a
+		cursor pointer
+	.roll-icon
+		height 20px
+		margin-left 20px
+		opacity 0.7
+		&:hover
+			opacity 1
+
+.roll-key-form-wrapper
+	background-color rzp-blue
+	padding 20px 30px
+	font-weight 400
+	font-size 1.3em
+	color rzp-light-gray
+	.close-button
+		float right
+		img
+			cursor pointer
+			height 20px
+	div
+		margin-bottom 10px
+	span
+		margin 0 10px
+	.roll-key-button
+		margin-top 15px
+		width 10%
+		background-color white
+		outline none
+		border 0
+		color rzp-blue
+		font-family 'Lato',sans-serif
+		font-size 1.2em
+		padding 5px 0
+		cursor pointer
+	.roll-key-form-loader
+		margin-left 10px
+	a
+		color white
+
 
 /* Loader */
 
