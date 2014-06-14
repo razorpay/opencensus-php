@@ -469,7 +469,8 @@ $(document).ready(function()
                         txns: 0
                     };
                     if (result.data !== null) {
-                        data.success = parseInt(result.data.successful_txn_count * 100/result.data.txn_count) + '%';
+                        if (parseInt(result.data.txn_count) !== 0)
+                            data.success = parseInt(result.data.successful_txn_count * 100/result.data.txn_count) + '%';
                         data.amount = '₹' + result.data.total_amount;
                         data.txns = result.data.txn_count;
                     }
