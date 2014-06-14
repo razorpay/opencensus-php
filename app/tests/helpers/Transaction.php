@@ -103,7 +103,7 @@ class Transaction extends TestCase {
                 //Actual output is JS, but line 63 of the output contains the data in JSON
                 $content = $response->getContent();
                 $arr = explode("\n", $content);
-                $line = $arr[62];
+                $line = $arr[67];
                 // 11 = strlen("var data = ")
                 //-1 = to split the ; from end of js
                 $content = substr($line, 11,-1);
