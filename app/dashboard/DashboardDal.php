@@ -6,10 +6,12 @@ class DashboardDal extends \Models\DAL\DAL
 {
     protected $table = 'dashboard_logs';
 
-    public static function persistAfterFail($json)
+    protected $guarded = array();
+
+    public static function persistAfterFail($data)
     {
         $attributes = array(
-            'json'  =>  $json
+            'json'  =>  json_encode($data)
         );
 
         return static::createOrFail($attributes);

@@ -71,7 +71,7 @@ class Dashboard
 
         /* For debugging purposes, persist failed requests */
         if (json_decode($response->body)->status === FALSE);
-            Dashboard\DashboardDal::persistAfterFail($data['message']);
+            DashboardDal::persistAfterFail($data['message']);
 
         $job->delete();
     }
