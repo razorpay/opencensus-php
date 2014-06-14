@@ -70,7 +70,9 @@ class DatabaseSeeder extends Seeder {
 				'merchant_id'	=>	1,
 				'live'			=>	1,
 				'active'		=>	1,
-				'secret'		=>	Hash::make('thisissupersecret')
+				'secret'		=>	Hash::make('thisissupersecret'),
+				'created_at'	=>	time(),
+				'updated_at'	=>	time()
 				)
 			);
 
@@ -80,7 +82,9 @@ class DatabaseSeeder extends Seeder {
 				'merchant_id'	=>	1,
 				'live'			=>	0,
 				'active'		=>	1,
-				'secret'		=>	Hash::make('thisissupersecret')
+				'secret'		=>	Hash::make('thisissupersecret'),
+				'created_at'	=>	time(),
+				'updated_at'	=>	time()
 				)
 			);
 
@@ -90,7 +94,9 @@ class DatabaseSeeder extends Seeder {
 				'merchant_id'	=>	2,
 				'live'			=>	1,
 				'active'		=>	1,
-				'secret'		=>	Hash::make('thisissupersecret')
+				'secret'		=>	Hash::make('thisissupersecret'),
+				'created_at'	=>	time(),
+				'updated_at'	=>	time()
 				)
 			);
 
@@ -100,7 +106,9 @@ class DatabaseSeeder extends Seeder {
 				'merchant_id'	=>	2,
 				'live'			=>	0,
 				'active'		=>	1,
-				'secret'		=>	Hash::make('thisissupersecret')
+				'secret'		=>	Hash::make('thisissupersecret'),
+				'created_at'	=>	time(),
+				'updated_at'	=>	time()
 				)
 			);
 	}
