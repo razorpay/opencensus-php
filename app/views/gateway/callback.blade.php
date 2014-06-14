@@ -1,3 +1,8 @@
+<!doctype html>
+<head>
+    <title>Razorpay - Transaction in progress</title>
+</head>
+<body>
 <script>
 // everything is wrapped in the XD function to reduce namespace collisions
 var XD = function(){
@@ -61,5 +66,8 @@ var XD = function(){
 }();
 
 var data = {{$data}};
-XD.postMessage(data,'*',window.parent);//Will talk to parent by default
+XD.postMessage(data,'*',window.parent);
 </script>
+Your transaction is currently in progress. Please wait.
+</body>
+</html>
