@@ -101,7 +101,7 @@ class Transaction extends Service
         if($status){
             $txnData->setStatus('refunded');
 
-            $txn_arr = $txn_data->toArray();
+            $txn_arr = $txnData->toArray();
 
             //Logging
             $this->trace->info(
