@@ -69,8 +69,9 @@ class Dashboard
             $data['message']
         );
 
+        /* For debugging purposes, persist failed requests */
         if (json_decode($response->body)->status === FALSE);
-            \Dashboard\Transaction::getInstance()->queueRecord($data['message']);
+            Dashboard\DashboardDal::persistAfterFail($data['message']);
 
         $job->delete();
     }
