@@ -87,4 +87,17 @@ class HdfcGatewayUtility
 
         self::parseResponseXml($response);
     }
+
+    /**
+     * Unsets specified fields
+     */
+    public static function unsetFields($data, $fields)
+    {   
+        if ($data === null)
+            return null;
+
+        $data = array_diff_key($data, array_flip($fields));
+
+        return $data;
+    }
 }
