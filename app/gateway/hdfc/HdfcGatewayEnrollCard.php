@@ -259,6 +259,13 @@ trait HdfcGatewayEnrollCard
             $this->enrollResponse);
     }
 
+    /**
+     * Sets enroll status. In case of error it's false
+     * The other allowed values are 'ENROLLED'
+     * and NOT_ENROLLED
+     *
+     * @return  void
+     */
     protected function setEnrollStatus()
     {
         //
@@ -272,6 +279,11 @@ trait HdfcGatewayEnrollCard
             $this->enrollStatus = $this->enrollResponse['data']['enroll_result'];
     }
 
+    /**
+     * Returns enrollStatus
+     * 
+     * @return void
+     */
     protected function getEnrollStatus()
     {
         return $this->enrollStatus;

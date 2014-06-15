@@ -269,6 +269,11 @@ class HdfcGateway extends BaseGateway
         ;
     }
 
+    /**
+     * After enroll is done, auth is required
+     * 
+     * @return void
+     */
     protected function auth()
     {
         $this->decideAuthStepAfterEnroll();
@@ -324,7 +329,7 @@ class HdfcGateway extends BaseGateway
 
     /**
      * Stips sensitive data before calling trace class to 
-     * avoid sensitive data from logging
+     * prevent sensitive data from being traced
      */
     protected function trace($level, $message, array $context)
     {
