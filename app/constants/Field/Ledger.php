@@ -6,11 +6,13 @@ class Ledger
 {
     const ID = Common::ID;
 
-    const NAME = 'name';
+    const AMOUNT = 'amount';
 
-    const SECRET = 'secret';
+    const ACTION = 'action';
 
-    const ACTIVE = 'active';
+    const FEE = 'fee';
 
-    const EXPIRED_AT = 'expired_at';
+    const BALANCE = 'balance';
+
+    const PENDING = 'pending';
 }

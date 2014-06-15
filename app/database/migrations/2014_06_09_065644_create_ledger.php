@@ -27,18 +27,18 @@ class CreateLedger  extends Migration {
             $table->integer(Common::MERCHANT_ID)
                   ->unsigned();
 
-            $table->integer('amount')
+            $table->integer(Ledger::AMOUNT)
                   ->unsigned();
 
-            $table->string('action', 10);
+            $table->string(Ledger::ACTION, 10);
 
-            $table->integer('fee')
+            $table->integer(Ledger::FEE)
                   ->unsigned();
 
-            $table->integer('balance')
+            $table->integer(Ledger::BALANCE)
                   ->unsigned();
 
-            $table->boolean('pending')
+            $table->boolean(Ledger::PENDING)
                   ->default(0);
 
             // Adds created_at and updated_at columns to the table
@@ -49,7 +49,7 @@ class CreateLedger  extends Migration {
 
             $table->foreign(Common::MERCHANT_ID)
                   ->references(Constants\Field\Merchant::ID)
-                  ->on(Table::MERCHANTS)
+                  ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
     }

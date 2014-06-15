@@ -16,7 +16,7 @@ class CreateMerchants extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::MERCHANTS, function(Blueprint $table){
+        Schema::create(Table::MERCHANT, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
             $table->integer(Merchant::ID)
@@ -38,7 +38,7 @@ class CreateMerchants extends Migration {
      */
     public function down()
     {
-        Schema::drop(Table::MERCHANTS);
+        Schema::drop(Table::MERCHANT);
     }
 
 }

@@ -16,7 +16,7 @@ class CreateIinsTable extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::IINS, function(Blueprint $table)
+        Schema::create(Table::IIN, function(Blueprint $table)
         {
             $table->integer(IIN::IIN)->primary();
 
@@ -39,7 +39,7 @@ class CreateIinsTable extends Migration {
      */
     public function down()
     {
-        Schema::drop(Table::IINS);
+        Schema::drop(Table::IIN);
     }
 
 }

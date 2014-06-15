@@ -16,7 +16,7 @@ class CreateCardtokens extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::TOKENS, function(Blueprint $table){
+        Schema::create(Table::TOKEN, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
             $table->increments(Token::ID);
@@ -40,12 +40,12 @@ class CreateCardtokens extends Migration {
 
             $table->foreign('card_id')
                   ->references('id')
-                  ->on(Table::CARDS)
+                  ->on(Table::CARD)
                   ->on_delete('SET NULL');
 
             $table->foreign(Common::MERCHANT_ID)
                   ->references(\Constants\Field\Merchant::ID)
-                  ->on(Table::MERCHANTS);
+                  ->on(Table::MERCHANT);
         });
     }
 
@@ -56,14 +56,14 @@ class CreateCardtokens extends Migration {
      */
     public function down()
     {
-        Schema::table(Table::TOKENS, function($table){
+        Schema::table(Table::TOKEN, function($table){
 
-            $table->dropForeign(Table::TOKENS.'_card_id_foreign');
+            $table->dropForeign(Table::TOKEN.'_card_id_foreign');
         
-            $table->dropForeign(Table::TOKENS.'_merchant_id_foreign');
+            $table->dropForeign(Table::TOKEN.'_merchant_id_foreign');
         });
 
-        Schema::drop(Table::TOKENS);
+        Schema::drop(Table::TOKEN);
     }
 
 }

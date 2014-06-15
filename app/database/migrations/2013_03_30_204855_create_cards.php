@@ -16,7 +16,7 @@ class CreateCards extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::CARDS, function(Blueprint $table){
+        Schema::create(Table::CARD, function(Blueprint $table){
                 
             $table->engine = 'InnoDB';
     
@@ -83,7 +83,7 @@ class CreateCards extends Migration {
      */
     public function down()
     {
-        Schema::drop(Table::CARDS);
+        Schema::drop(Table::CARD);
     }
 
 }

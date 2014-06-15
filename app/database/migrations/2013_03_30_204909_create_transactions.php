@@ -16,7 +16,7 @@ class CreateTransactions  extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::TRANSACTIONS, function(Blueprint $table){
+        Schema::create(Table::TRANSACTION, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
             $table->char(Transaction::ID, Constants\Fields::ID_LENGTH)
@@ -64,12 +64,12 @@ class CreateTransactions  extends Migration {
 
             $table->foreign(Common::MERCHANT_ID)
                   ->references(Constants\Field\Merchant::ID)
-                  ->on(Table::MERCHANTS)
+                  ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
             $table->foreign(Transaction::TOKEN)
                   ->references('token')
-                  ->on(Table::TOKENS);
+                  ->on(Table::TOKEN);
         });
     }
 
@@ -80,14 +80,14 @@ class CreateTransactions  extends Migration {
      */
     public function down()
     {
-        Schema::table(Table::TRANSACTIONS, function($table){
+        Schema::table(Table::TRANSACTION, function($table){
 
             $table->dropForeign('transactions_merchant_id_foreign');
 
             $table->dropForeign('transactions_token_foreign');
         });
 
-        Schema::drop(Table::TRANSACTIONS);
+        Schema::drop(Table::TRANSACTION);
     }
 
 }

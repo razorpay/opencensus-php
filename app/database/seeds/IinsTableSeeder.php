@@ -10,7 +10,7 @@ class IinsTableSeeder extends Seeder
     {
         // empty `iins` table
         DB::disableQueryLog();
-        DB::table(Table::IINS)->delete();
+        DB::table(Table::IIN)->delete();
 
         $records = self::getIinRecordsFromFile(storage_path().'/iins/iins.csv');
 
@@ -31,7 +31,7 @@ class IinsTableSeeder extends Seeder
             $assocRecords[] = $record;
         }
 
-        DB::table(Table::IINS)->insert($assocRecords);
+        DB::table(Table::IIN)->insert($assocRecords);
     }
 
     /**

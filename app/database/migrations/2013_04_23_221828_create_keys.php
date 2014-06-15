@@ -16,7 +16,7 @@ class CreateKeys extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::KEYS, function(Blueprint $table){
+        Schema::create(Table::KEY, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
             $table->char(Key::ID, Constants\Fields::ID_LENGTH)
@@ -40,7 +40,7 @@ class CreateKeys extends Migration {
 
             $table->foreign(Common::MERCHANT_ID)
                   ->references(Constants\Field\Merchant::ID)
-                  ->on(Table::MERCHANTS)
+                  ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
     }
@@ -52,7 +52,7 @@ class CreateKeys extends Migration {
      */
     public function down()
     {
-        Schema::drop(Table::KEYS);
+        Schema::drop(Table::KEY);
     }
 
 }

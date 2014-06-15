@@ -4,17 +4,17 @@ namespace Constants;
 
 class Table
 {
-    const TRANSACTIONS = 'transactions';
+    const TRANSACTION = 'transactions';
 
-    const CARDS = 'cards';
+    const CARD = 'cards';
 
-    const MERCHANTS = 'merchants';
+    const MERCHANT = 'merchants';
 
-    const TOKENS = 'cardtokens';
+    const TOKEN = 'cardtokens';
 
     const LEDGER = 'ledger';
 
-    const KEYS = 'keys';
+    const KEY = 'keys';
 
-    const IINS = 'iins';
+    const IIN = 'iins';
 }
