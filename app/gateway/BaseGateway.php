@@ -6,9 +6,9 @@ use Trace\Trace;
 
 class BaseGateway
 {
-    protected $txn_key_mappings = array();
+    protected $txnKeyMappings = array();
 
-    protected $card_key_mappints = array();
+    protected $cardKeyMappings = array();
 
     protected $trace;
 
@@ -18,15 +18,15 @@ class BaseGateway
     }
 
     //not being used. Only HdfcGateway->process is used.
-    public function process($input)
+    public function process(array $input)
     {
         $this->txn = $input['txn'];
 
         $this->card = $input['card'];
 
-        $this->mapKeys($txn, $txn_key_mappings);
+        $this->mapKeys($txn, $txnKeyMappings);
 
-        $this->mapKeys($card, $card_key_mappings);
+        $this->mapKeys($card, $cardKeyMappings);
 
         $this->runGenerators();
     }
