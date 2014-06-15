@@ -5,7 +5,8 @@
  * ALl test cases follow, GIVEN, WHEN, THEN structure
  */
 
-class Transaction extends TestCase {
+class Transaction extends TestCase 
+{
     /**
      * Creates a transaction & tests it is corrrectly created
      * @param $card_no Numeric The array index of card in cards.php to be used for transaction
@@ -137,16 +138,13 @@ class Transaction extends TestCase {
                 return $output;
             }
 
-            //Tests for unsuccessful cards
-            $error_code=$cards[$card_no]['code'];
-            $error_message=$cards[$card_no]['message'];
+            // Tests for unsuccessful cards
+            $error_code = $cards[$card_no]['code'];
+            $error_message = $cards[$card_no]['message'];
 
             $this->assertEquals($error_code, $output->error->code);
             $this->assertEquals($error_message, $output->error->message);
 
             return $output;
-
-
-
     }
 }
