@@ -26,32 +26,27 @@ final class HdfcGatewayResult
     const DENIED_BY_RISK = 'DENIED BY RISK';
     const HOST_TIMEOUT = 'HOST TIMEOUT';
 
-    /**
-     * Returns whether the enroll response is a success
-     * or not.
-     * 
-     * @param  [type]  $response [description]
-     * @return boolean           [description]
-     */
-    public static function isEnrollSuccess($response)
+    public static function getResultCode($result)
     {
-        Assert($response['type'] === 'enroll');
+        $success = true;
 
-        if ((isset($response['error']['code'])) or
-            (isset($response['data']['eci']) <= 0))
+        switch ($result)
         {
-            return false;
+            case 'ENROLLED':
+                $result = HdfcGatewayResult::ENROLLED;
+                break;
+            case 'NOT ENROLLED':
+                $result = HdfcGatewayResult::NOT_ENROLLED;
+                break;
+            case 'FSS0001-Authentication Not Available':
+                $result = HdfcGatewayResult::FSS0001_ENROLLED;
+                $success = false;
+                break;
+            default:
+                $result = HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED;
+                $success = false;
         }
 
-    }
-
-    public static function resultCode($result)
-    {
-    	if ($result === 'ENROLLED') $result = HdfcGatewayResult::ENROLLED;
-        else if ($result === 'NOT ENROLLED') $result = HdfcGatewayResult::NOT_ENROLLED;
-        else if ($result === 'FSS0001-Authentication Not Available') $result = HdfcGatewayResult::FSS0001_ENROLLED;
-        else $result = HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED;
-
-        return $result;
+        return array($result, $success);
     }
 }
