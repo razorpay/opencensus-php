@@ -2,40 +2,42 @@
 
 namespace Models\DAL;
 
+use Constants\Field;
+
 class Card extends DAL
 {
-    protected $table = 'cards';
+    protected $table = \Constants\Table::CARD;
 
     protected $fillable = array(
-        'name',
+        Field\Card::NAME,
 
-        'expiry_month',
-        'expiry_year',
+        Field\Card::EXPIRY_MONTH,
+        Field\Card::EXPIRY_YEAR,
 
-        'last4',
-        'network',
-        'country',
-        'type',
-        'bank',
+        Field\Card::LAST4,
+        Field\Card::NETWORK,
+        Field\Card::COUNTRY,
+        Field\Card::TYPE,
+        Field\Card::BANK,
 
-        'address_line1',
-        'address_line2',
-        'address_state',
-        'address_city',
-        'address_zip',
-        'address_country',
+        Field\Card::ADDRESS_LINE,
+        Field\Card::ADDRESS_LINE2,
+        Field\Card::ADDRESS_STATE,
+        Field\Card::ADDRESS_CITY,
+        Field\Card::ADDRESS_ZIP,
+        Field\Card::ADDRESS_COUNTRY,
 
         'cvv_check',
         'address_line1_check',
         'address_zip_check');
 
-    protected $guarded = array('id');
+    protected $guarded = array(Field\Card::ID);
 
 //    protected $appends = array('object');
 
     public function getId()
     {
-        return $this->getAttribute('id');
+        return $this->getAttribute(Field\Card::ID);
     }
 
     const FLAG_DEFAULT          = 0x0;

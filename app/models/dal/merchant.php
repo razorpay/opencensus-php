@@ -2,16 +2,18 @@
 
 namespace Models\DAL;
 
+use \Constants\Field;
+
 class Merchant extends DAL
 {
-    protected $table = 'merchants';
+    protected $table = \Constants\Table::MERCHANT;
 
     protected $hidden = array(
-        'id',
-        'balance');
+        Field\Merchant::ID,
+        Field\Merchant::BALANCE);
 
     protected $fillable = array(
-        'id'
+        Field\Merhcant::ID
     );
 
     public function keys()

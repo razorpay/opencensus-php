@@ -2,12 +2,12 @@
 
 namespace Models\DAL;
 
-use \Validator;
+use \Constants\Field;
 
 class Transaction extends UuidDAL
 {
 
-    protected $table = 'transactions';
+    protected $table = \Constants\Table::TRANSACTION;
 
     private static $fetch_param_rules = array(
         'created'       => 'numeric',
@@ -20,30 +20,29 @@ class Transaction extends UuidDAL
         );
 
     protected $fillable = array(
-        'merchant_id',
-        'token',
-        'status',
-        'amount',
-        'currency',
+        Field\Common::MERCHANT_ID,
+        Field\Transaction::TOKEN,
+        Field\Transaction::STATUS,
+        Field\Transaction::AMOUNT,
+        Field\Transaction::CURRENCY,
         // 'hold',
-        'description',
-        'udf',
-        );
+        Field\Transaction::DESCRIPTION,
+        Field\Transaction::UDF);
 
     protected $visible = array(
-        'id',
-        'amount',
-        'currency',
+        Field\Transaction::ID,
+        Field\Transaction::AMOUNT,
+        Field\Transaction::CURRENCY,
         'livemode',
-        'status',
+        Field\Transaction::STATUS,
         // 'hold',
-        'udf',
-        'error',
-        'created_at',
-        'updated_at'
+        Field\Transaction::UDF,
+        Field\Transaction::ERROR,
+        Field\Common::CREATED_AT,
+        Field\Common::UPDATED_AT
         );
 
-    protected $guarded = array('id');
+    protected $guarded = array(Field\Transaction::ID);
 
     public function getUdfAttribute($udf)
     {
@@ -52,7 +51,7 @@ class Transaction extends UuidDAL
 
     public function setUdfAttribute($value)
     {
-        $this->attributes['udf'] = serialize($value);
+        $this->attributes[Field\Transaction::UDF] = serialize($value);
     }
 
     const FETCH_WITH_CARD       = 0x1024;
@@ -77,28 +76,32 @@ class Transaction extends UuidDAL
         /*
          * Create the query.
          */
-        $query = self::where('merchant_id', '=', $param['merchant_id'])->orderBy('updated_at','desc');
+        $query = self::where(Field\Common::MERCHANT_ID, '=', $param['merchant_id'])
+                     ->orderBy('updated_at','desc');
 
         if (isset($param['created']))
         {
-            $query->where('created_at', '=', $param['created']);
+            $query->where(
+                      Field\Common::CREATED_AT, 
+                      '=', 
+                      $param['created']);
         }
         else
         {
             if (isset($param['from']))
             {
-                $query = $query->where('updated_at', '>', $param['from']);
+                $query = $query->where(Field\Common::UPDATED_AT, '>', $param['from']);
             }
 
             if (isset($param['to']))
             {
-                $query = $query->where('updated_at', '<', $param['to']);
+                $query = $query->where(Field\Common::UPDATED_AT, '<', $param['to']);
             }
         }
 
         if(isset($param['status']))
         {
-            $query = $query->where('status', '=', $param['status']);
+            $query = $query->where(Field\Common::STATUS, '=', $param['status']);
         }
 
         if (isset($param['count']))
@@ -141,23 +144,23 @@ class Transaction extends UuidDAL
 
     public function isProcessed()
     {
-        return ($this->getAttribute('status') == 'auth');
+        return ($this->getAttribute(Field\Transaction::STATUS) == 'auth');
     }
 
 
     public function isCaptured()
     {
-        return ($this->getAttribute('status') == 'captured');
+        return ($this->getAttribute(Field\Transaction::STATUS) == 'captured');
     }
 
     public function isRefunded()
     {
-        return ($this->getAttribute('status') == 'refunded');
+        return ($this->getAttribute(Field\Transaction::STATUS) == 'refunded');
     }
 
     public function setStatus($status)
     {
-        $this->setAttribute('status', $status);
+        $this->setAttribute(Field\Transaction::STATUS, $status);
         $this->save();
     }
 
@@ -221,7 +224,7 @@ class Transaction extends UuidDAL
     public static function updateProcessed($id)
     {
         $txn = static::where('id', $id)
-                    ->update(array('status' => 'auth'));
+                    ->update(array(Field\Transaction::STATUS => 'auth'));
     }
 
     public function card_token()

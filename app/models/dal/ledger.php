@@ -2,18 +2,20 @@
 
 namespace Models\DAL;
 
+use \Constants\Field;
+
 class Ledger extends UuidDAL
 {
-    protected $table = 'ledger';
+    protected $table = \Constants\Table::LEDGER;
 
     protected $fillable = array(
         'ref',
-        'action',
-        'merchant_id',
-        'amount',
-        'pending',
-        'fee',
-        'balance');
+        Field\Ledger::ACTION,
+        Field\Common::MERCHANT_ID,
+        Field\Ledger::AMOUNT,
+        Field\Ledger::PENDING,
+        Field\Ledger::FEE,
+        Field\Ledger::BALANCE);
     
     public static function updateRecords($txn)
     {
@@ -33,10 +35,10 @@ class Ledger extends UuidDAL
 
             $data = array(
                 'ref'           => $txn->id,
-                'merchant_id'   => $merchant->id,
-                'action'        => 'capture',
-                'fee'           => $fee,
-                'balance'       => $merchant->amount);
+                Field\Common::MERCHANT_ID   => $merchant->id,
+                Field\Ledger::ACTION        => 'capture',
+                Field\Ledger::FEE           => $fee,
+                Field\Ledger::BALANCE       => $merchant->amount);
 
             $ledger = static::createOrFail($data);
         });

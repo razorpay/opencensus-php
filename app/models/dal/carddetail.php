@@ -2,11 +2,14 @@
 
 namespace Models\DAL;
 
+use \Constants\Table;
+use \Constants\Field\IIN;
+
 class CardDetail extends DAL
 {
-    protected $table = 'iins';
+    protected $table = Table::IIN;
 
-    protected $primaryKey = 'iin';
+    protected $primaryKey = IIN::IIN;
 
     public $incrementing = false;
 

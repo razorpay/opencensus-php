@@ -2,17 +2,19 @@
 
 namespace Models\DAL;
 
+use \Constants\Field;
+
 class CardToken extends DAL {
 
-    protected $table = 'cardtokens';
+    protected $table = \Constants\Table::TOKEN;
 
     protected $appends = array('object');
 
     protected $fillable = array(
         'token',
         'card_id',
-        'merchant_id',
-        'expired'
+        Field\Common::MERCHANT_ID,
+        Field\Token::EXPIRED
         );
 
     protected $guarded = array('id');
