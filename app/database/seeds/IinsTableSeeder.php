@@ -1,6 +1,8 @@
 <?php
 
 use Models\DAL\CardDetail;
+use Constants\Field\IIN;
+use Constants\Table;
 
 class IinsTableSeeder extends Seeder
 {
@@ -8,19 +10,28 @@ class IinsTableSeeder extends Seeder
     {
         // empty `iins` table
         DB::disableQueryLog();
-        DB::table('iins')->delete();
+        DB::table(Table::IINS)->delete();
 
         $records = self::getIinRecordsFromFile(storage_path().'/iins/iins.csv');
-        $columns = array('iin', 'card_category', 'brand', 'card_type', 'country_code', 'bank');
+
+        $columns = array(
+            IIN::IIN, 
+            IIN::CATEGORY, 
+            IIN::BRAND,
+            IIN::TYPE,
+            IIN::COUNTRY,
+            IIN::BANK);
 
         $assocRecords = array();
-        foreach ($records as $index => $record) {
+
+        foreach ($records as $index => $record) 
+        {
             $record = array_combine($columns, $record);
 
             $assocRecords[] = $record;
         }
 
-        DB::table('iins')->insert($assocRecords);
+        DB::table(Table::IINS)->insert($assocRecords);
     }
 
     /**
@@ -37,7 +48,8 @@ class IinsTableSeeder extends Seeder
         {
             $file_handle = fopen($path, 'r');
 
-            while(($iin_record = fgetcsv($file_handle)) !== FALSE) {
+            while(($iin_record = fgetcsv($file_handle)) !== FALSE) 
+            {
                 array_push($records, $iin_record);
             }
 
