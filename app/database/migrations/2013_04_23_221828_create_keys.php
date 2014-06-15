@@ -3,6 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use Constants\Field\Key;
+use Constants\Field\Common;
+use Constants\Table;
+
 class CreateKeys extends Migration {
 
     /**
@@ -12,31 +16,31 @@ class CreateKeys extends Migration {
      */
     public function up()
     {
-        Schema::create('keys', function(Blueprint $table){
+        Schema::create(Table::KEYS, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->char('id', Constants\Fields::ID_LENGTH)
+            $table->char(Key::ID, Constants\Fields::ID_LENGTH)
                   ->primary();
             
-            $table->integer('merchant_id')
+            $table->integer(Common::MERCHANT_ID)
                   ->unsigned();
 
-            $table->string('secret', Constants\Fields::KEY_SECRET_HASH_LENTH);
+            $table->string(Key::SECRET, Constants\Fields::KEY_SECRET_HASH_LENTH);
 
             $table->boolean('live')
                   ->default(0);
                   
-            $table->boolean('active')
+            $table->boolean(Key::ACTIVE)
                   ->default(1);
                   
-            $table->integer('created_at');  
-            $table->integer('updated_at');
-            $table->integer('expired_at')
+            $table->integer(Common::CREATED_AT);  
+            $table->integer(Common::UPDATED_AT);
+            $table->integer(Key::EXPIRED_AT)
                   ->nullable();
 
-            $table->foreign('merchant_id')
-                  ->references('id')
-                  ->on('merchants')
+            $table->foreign(Common::MERCHANT_ID)
+                  ->references(Constants\Field\Merchant::ID)
+                  ->on(Table::MERCHANTS)
                   ->on_delete('restrict');
         });
     }
@@ -48,7 +52,7 @@ class CreateKeys extends Migration {
      */
     public function down()
     {
-        Schema::drop('keys');
+        Schema::drop(Table::KEYS);
     }
 
 }

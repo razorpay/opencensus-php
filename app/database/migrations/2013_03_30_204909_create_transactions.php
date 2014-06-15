@@ -3,6 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use Constants\Table;
+use Constants\Field\Transaction;
+use Constants\Field\Common;
+
 class CreateTransactions  extends Migration {
 
     /**
@@ -12,19 +16,19 @@ class CreateTransactions  extends Migration {
      */
     public function up()
     {
-        Schema::create('transactions', function(Blueprint $table){
+        Schema::create(Table::TRANSACTIONS, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->char('id', Constants\Fields::ID_LENGTH)
+            $table->char(Transaction::ID, Constants\Fields::ID_LENGTH)
                   ->primary();
 
-            $table->integer('merchant_id')
+            $table->integer(Common::MERCHANT_ID)
                   ->unsigned();
 
-            $table->integer('amount')
+            $table->integer(Transaction::AMOUNT)
                   ->unsigned();
 
-            $table->enum('status', array(
+            $table->enum(Transaction::STATUS, array(
                                         'open',
                                         'auth',
                                         'capture_failed',
@@ -35,14 +39,14 @@ class CreateTransactions  extends Migration {
                                         'failed'
                                         ));
 
-            $table->char('currency', Constants\Fields::CURRENCY_LENGTH)
+            $table->char(Transaction::CURRENCY, Constants\Fields::CURRENCY_LENGTH)
                   ->default('INR');
 
-            $table->string('description');
+            $table->string(Transaction::DESCRIPTION);
 
             $table->boolean('livemode');
 
-            $table->char('token', 16)
+            $table->char(Transaction::TOKEN, 16)
                   ->unique()
                   ->nullable();
 
@@ -55,17 +59,17 @@ class CreateTransactions  extends Migration {
 
 
             // Adds created_at and updated_at columns to the table
-            $table->integer('created_at');
-            $table->integer('updated_at');
+            $table->integer(Common::CREATED_AT);
+            $table->integer(Common::UPDATED_AT);
 
-            $table->foreign('merchant_id')
-                  ->references('id')
-                  ->on('merchants')
+            $table->foreign(Common::MERCHANT_ID)
+                  ->references(Constants\Field\Merchant::ID)
+                  ->on(Table::MERCHANTS)
                   ->on_delete('restrict');
 
-            $table->foreign('token')
+            $table->foreign(Transaction::TOKEN)
                   ->references('token')
-                  ->on('cardtokens');
+                  ->on(Table::TOKENS);
         });
     }
 
@@ -76,14 +80,14 @@ class CreateTransactions  extends Migration {
      */
     public function down()
     {
-        Schema::table('transactions', function($table){
+        Schema::table(Table::TRANSACTIONS, function($table){
 
             $table->dropForeign('transactions_merchant_id_foreign');
 
             $table->dropForeign('transactions_token_foreign');
         });
 
-        Schema::drop('transactions');
+        Schema::drop(Table::TRANSACTIONS);
     }
 
 }

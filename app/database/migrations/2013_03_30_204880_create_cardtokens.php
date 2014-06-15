@@ -3,6 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use Constants\Field\Common;
+use Constants\Field\Token;
+use Constants\Table;
+
 class CreateCardtokens extends Migration {
 
     /**
@@ -12,36 +16,36 @@ class CreateCardtokens extends Migration {
      */
     public function up()
     {
-        Schema::create('cardtokens', function(Blueprint $table){
+        Schema::create(Table::TOKENS, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->increments('id');
+            $table->increments(Token::ID);
 
             $table->integer('card_id')
                   ->unsigned()
                   ->nullable();
 
-            $table->integer('merchant_id')
+            $table->integer(Common::MERCHANT_ID)
                   ->unsigned()
                   ->nullable();
 
             $table->char('token', 16)
                   ->unique();
 
-            $table->boolean('expired');
+            $table->boolean(TOKEN::EXPIRED);
 
             // Adds created_at and updated_at columns to the table
-            $table->integer('created_at');  
-            $table->integer('updated_at');
+            $table->integer(Common::CREATED_AT);  
+            $table->integer(Common::UPDATED_AT);
 
             $table->foreign('card_id')
                   ->references('id')
-                  ->on('cards')
+                  ->on(Table::CARDS)
                   ->on_delete('SET NULL');
 
-            $table->foreign('merchant_id')
-                  ->references('id')
-                  ->on('merchants');
+            $table->foreign(Common::MERCHANT_ID)
+                  ->references(\Constants\Field\Merchant::ID)
+                  ->on(Table::MERCHANTS);
         });
     }
 
@@ -52,14 +56,14 @@ class CreateCardtokens extends Migration {
      */
     public function down()
     {
-        Schema::table('cardtokens', function($table){
+        Schema::table(Table::TOKENS, function($table){
 
-            $table->dropForeign('cardtokens_card_id_foreign');
+            $table->dropForeign(Table::TOKENS.'_card_id_foreign');
         
-            $table->dropForeign('cardtokens_merchant_id_foreign');
+            $table->dropForeign(Table::TOKENS.'_merchant_id_foreign');
         });
 
-        Schema::drop('cardtokens');
+        Schema::drop(Table::TOKENS);
     }
 
 }

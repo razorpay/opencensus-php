@@ -3,6 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use Constants\Field\IIN;
+use Constants\Field\Common;
+use Constants\Table;
+
 class CreateIinsTable extends Migration {
 
     /**
@@ -12,19 +16,19 @@ class CreateIinsTable extends Migration {
      */
     public function up()
     {
-        Schema::create('iins', function(Blueprint $table)
+        Schema::create(Table::IINS, function(Blueprint $table)
         {
-            $table->integer('iin')->primary();
+            $table->integer(IIN::IIN)->primary();
 
-            $table->string('card_category', 26);
+            $table->string(IIN::CATEGORY, 26);
 
-            $table->string('brand', 10);
+            $table->string(IIN::BRAND, 10);
 
-            $table->string('card_type', 6);
+            $table->string(IIN::TYPE, 6);
 
-            $table->char('country_code', Constants\Fields::COUNTRY_LENGTH);
+            $table->char(IIN::COUNTRY, Constants\Fields::COUNTRY_LENGTH);
 
-            $table->string('bank', 100);
+            $table->string(IIN::BANK, 100);
         });
     }
 
@@ -35,7 +39,7 @@ class CreateIinsTable extends Migration {
      */
     public function down()
     {
-        Schema::drop('iins');
+        Schema::drop(Table::IINS);
     }
 
 }

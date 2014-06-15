@@ -3,6 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use Constants\Field\Merchant;
+use Constants\Field\Common;
+use Constants\Table;
+
 class CreateMerchants extends Migration {
 
     /**
@@ -12,18 +16,18 @@ class CreateMerchants extends Migration {
      */
     public function up()
     {
-        Schema::create('merchants', function(Blueprint $table){
+        Schema::create(Table::MERCHANTS, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->integer('id')
+            $table->integer(Merchant::ID)
                   ->unsigned()
                   ->primary();
 
-            $table->integer('balance')
+            $table->integer(Merchant::BALANCE)
                   ->default(0);
 
-            $table->integer('created_at');  
-            $table->integer('updated_at');
+            $table->integer(Common::CREATED_AT);  
+            $table->integer(Common::UPDATED_AT);
         });
     }
 
@@ -34,7 +38,7 @@ class CreateMerchants extends Migration {
      */
     public function down()
     {
-        Schema::drop('merchants');
+        Schema::drop(Table::MERCHANTS);
     }
 
 }
