@@ -6,48 +6,45 @@ use Exceptions\Status;
 
 class HdfcGatewayErrorHandler
 {
-    protected static $error = array(
-        'FSS0001'   => 'Authentication Not Available',
-        'FSS00002'  => 'Duplicate Transaction Request',
-        'GW00150'   => 'Missing Required Data',
-        'GW00151'   => 'Invalid Action type',
-        'GW00152'   => 'Invalid Transaction Amount',
-        'GW00153'   => 'Invalid Transaction ID',
-        'GW00154'   => 'Invalid Terminal ID',
-        'GW00159'   => 'Card Number Missing',
-        'GW00181'   => 'Failed Credit Greater Than Debit check',
-        'GW00205'   => 'Invalid Subsequent Transaction',
-        'GW00157'   => 'Invalid Payment Instrument',
-        'GW00165'   => 'Invalid Track ID data',
-        'GW00166'   => 'Invalid Card Number data',
-        'GW00167'   => 'Invalid Currency Code data',
-        'GW00170'   => 'Terminal ID Mismatch',
-        'GW00171'   => 'Payment Instrument Mismatch',
-        'GW00160'   => 'Invalid Brand.',
-        'GW00161'   => 'Invalid Card/Member Name data',
-        'GW00162'   => 'Invalid User Defined data',
-        'GW00163'   => 'Invalid Address data',
-        'GW00164'   => 'Invalid Zip Code data',
-        'GW00177'   => 'Failed Support Greater Than Auth check',
-        'GW00183'   => 'Card Verification Digit Required',
-        'GW00201'   => 'Support Error Auth not found',
-        'GW00258'   => 'Transaction Denied: Negative BIN',
-        'GW00259'   => 'Transaction Denied: Declined Card',
-        'GV00004'   => 'PARes Status Not Sucessful',
-        'GV00005'   => 'Certificate Chain Validation Failed',
-        'GV00006'   => 'Certificate Chain Validation Error',
-        'GV00007'   => 'Signature Validation Failed',
-        'GV00008'   => 'Signature Validation Failed',
-        'GV00011'   => 'Invalid Expiration Date',
-        'PY20006'   => 'Invalid Brand',
-        'PY20001'   => 'Invalid Action Type',
-        'PY20002'   => 'Invalid amount',
-
-        // Below error code is our custom one to handle unknow error cases 
-        // returned from bank.
-        'RP00001'   => 'Invalid Error Code',
-        'RP00002'   => 'Uncaptured Transaction'
-        );
+    protected static $errorMessages = array(
+        HdfcGatewayErrorCode::FSS0001   => 'Authentication Not Available',
+        HdfcGatewayErrorCode::FSS00002  => 'Duplicate Transaction Request',
+        HdfcGatewayErrorCode::GW00150   => 'Missing Required Data',
+        HdfcGatewayErrorCode::GW00151   => 'Invalid Action type',
+        HdfcGatewayErrorCode::GW00152   => 'Invalid Transaction Amount',
+        HdfcGatewayErrorCode::GW00153   => 'Invalid Transaction ID',
+        HdfcGatewayErrorCode::GW00154   => 'Invalid Terminal ID',
+        HdfcGatewayErrorCode::GW00159   => 'Card Number Missing',
+        HdfcGatewayErrorCode::GW00181   => 'Failed Credit Greater Than Debit check',
+        HdfcGatewayErrorCode::GW00205   => 'Invalid Subsequent Transaction',
+        HdfcGatewayErrorCode::GW00157   => 'Invalid Payment Instrument',
+        HdfcGatewayErrorCode::GW00165   => 'Invalid Track ID data',
+        HdfcGatewayErrorCode::GW00166   => 'Invalid Card Number data',
+        HdfcGatewayErrorCode::GW00167   => 'Invalid Currency Code data',
+        HdfcGatewayErrorCode::GW00170   => 'Terminal ID Mismatch',
+        HdfcGatewayErrorCode::GW00171   => 'Payment Instrument Mismatch',
+        HdfcGatewayErrorCode::GW00160   => 'Invalid Brand.',
+        HdfcGatewayErrorCode::GW00161   => 'Invalid Card/Member Name data',
+        HdfcGatewayErrorCode::GW00162   => 'Invalid User Defined data',
+        HdfcGatewayErrorCode::GW00163   => 'Invalid Address data',
+        HdfcGatewayErrorCode::GW00164   => 'Invalid Zip Code data',
+        HdfcGatewayErrorCode::GW00177   => 'Failed Support Greater Than Auth check',
+        HdfcGatewayErrorCode::GW00183   => 'Card Verification Digit Required',
+        HdfcGatewayErrorCode::GW00201   => 'Support Error Auth not found',
+        HdfcGatewayErrorCode::GW00258   => 'Transaction Denied: Negative BIN',
+        HdfcGatewayErrorCode::GW00259   => 'Transaction Denied: Declined Card',
+        HdfcGatewayErrorCode::GV00004   => 'PARes Status Not Sucessful',
+        HdfcGatewayErrorCode::GV00005   => 'Certificate Chain Validation Failed',
+        HdfcGatewayErrorCode::GV00006   => 'Certificate Chain Validation Error',
+        HdfcGatewayErrorCode::GV00007   => 'Signature Validation Failed',
+        HdfcGatewayErrorCode::GV00008   => 'Signature Validation Failed',
+        HdfcGatewayErrorCode::GV00011   => 'Invalid Expiration Date',
+        HdfcGatewayErrorCode::PY20006   => 'Invalid Brand',
+        HdfcGatewayErrorCode::PY20001   => 'Invalid Action Type',
+        HdfcGatewayErrorCode::PY20002   => 'Invalid amount',
+        HdfcGatewayErrorCode::RP00001   => 'Invalid Error Code',
+        HdfcGatewayErrorCode::RP00002   => 'Uncaptured Transaction',
+        HdfcGatewayErrorCode::RP00003   => 'Invalid enroll code');
 
     /**
      * Maps error codes from HDFC Gateway to the 
@@ -55,43 +52,43 @@ class HdfcGatewayErrorHandler
      * @var array
      */
     protected static $errorMap = array(
-        'FSS0001'   => Status::GATEWAY_AUTHENTICATION_NOT_AVAILABLE,
-        'FSS00002'  => Status::GATEWAY_DUPLICATE_TRANSACTION_REQUEST,
-        'GW00150'   => Status::GATEWAY_TRANSACTION_MISSING_DATA,
-        'GW00151'   => Status::GATEWAY_TRANSACTION_INVALID_ACTION,
-        'GW00152'   => Status::GATEWAY_CARD_INVALID_AMOUNT,
-        'GW00153'   => Status::GATEWAY_TRANSACTION_INVALID_ID,
-        'GW00154'   => Status::GATEWAY_GATEWAY_INVALID_TERMINAL_ID,
-        'GW00181'   => Status::GATEWAY_TRANSACTION_CREDIT_LESS_THAN_DEBIT,
-        'GW00205'   => STATUS::GATEWAY_GATEWAY_SUBSEQUENT_TRANSACTION,
-        'GW00157'   => Status::GATEWAY_NOT_UNDERSTOOD_ERROR,
-        'GW00165'   => Status::GATEWAY_TRANSACTION_INVALID_ID,
-        'GW00166'   => Status::GATEWAY_CARD_INVALID_NUMBER,
-        'GW00167'   => Status::GATEWAY_TRANSACTION_INVALID_CURRENCY,
-        'GW00170'   => Status::GATEWAY_GATEWAY_INVALID_TERMINAL_ID,
-        'GW00171'   => Status::GATEWAY_NOT_UNDERSTOOD_ERROR,
-        'GW00160'   => Status::GATEWAY_CARD_INVALID_BRAND,
-        'GW00161'   => Status::GATEWAY_CARD_INVALID_NAME,
-        'GW00162'   => Status::GATEWAY_TRANSACTION_INVALID_UDF,
-        'GW00163'   => Status::GATEWAY_CARD_INVALID_ADDRESS,
-        'GW00164'   => Status::GATEWAY_CARD_INVALID_ZIP,
-        'GW00183'   => Status::GATEWAY_CARD_MISSING_CVC,
-        'GW00177'   => Status::GATEWAY_SUPPORT_FAILED,
-        'GW00201'   => Status::GATEWAY_SUPPORT_AUTH_NOT_FOUND,
-        'GW00258'   => Status::GATEWAY_TRASACTION_DENIED_NEGATIVE_BIN,
-        'GW00259'   => Status::GATEWAY_CARD_DECLINED,
-        'GV00004'   => Status::GATEWAY_PARES_NOT_SUCCESFUL,
-        'GV00005'   => Status::GATEWAY_GATEWAY_CERTIFICATE_VALIDATION_FAILED,
-        'GV00006'   => Status::GATEWAY_GATEWAY_CERTIFICATE_VALIDATION_FAILED,
-        'GV00007'   => Status::GATEWAY_SIGNATURE_VALIDATION_FAILED,
-        'GV00008'   => Status::GATEWAY_SIGNATURE_VALIDATION_FAILED,
-        'GV00011'   => Status::GATEWAY_CARD_INVALID_EXPIRY_DATE,
-        'PY20006'   => Status::GATEWAY_CARD_INVALID_BRAND,
-        'PY20001'   => Status::GATEWAY_TRANSACTION_INVALID_ACTION,
-        'PY20002'   => Status::GATEWAY_CARD_INVALID_AMOUNT,
-        'RP00001'   => Status::GATEWAY_UNKNOWN_ERROR);
+        HdfcGatewayErrorCode::FSS0001   => Status::GATEWAY_AUTHENTICATION_NOT_AVAILABLE,
+        HdfcGatewayErrorCode::FSS00002  => Status::GATEWAY_TRANSACTION_DUPLICATE_REQUEST,
+        HdfcGatewayErrorCode::GW00150   => Status::GATEWAY_TRANSACTION_MISSING_DATA,
+        HdfcGatewayErrorCode::GW00151   => Status::GATEWAY_TRANSACTION_INVALID_ACTION,
+        HdfcGatewayErrorCode::GW00152   => Status::GATEWAY_CARD_INVALID_AMOUNT,
+        HdfcGatewayErrorCode::GW00153   => Status::GATEWAY_TRANSACTION_INVALID_ID,
+        HdfcGatewayErrorCode::GW00154   => Status::GATEWAY_GATEWAY_INVALID_TERMINAL_ID,
+        HdfcGatewayErrorCode::GW00181   => Status::GATEWAY_TRANSACTION_CREDIT_LESS_THAN_DEBIT,
+        HdfcGatewayErrorCode::GW00205   => Status::GATEWAY_GATEWAY_SUBSEQUENT_TRANSACTION,
+        HdfcGatewayErrorCode::GW00157   => Status::GATEWAY_NOT_UNDERSTOOD_ERROR,
+        HdfcGatewayErrorCode::GW00165   => Status::GATEWAY_TRANSACTION_INVALID_ID,
+        HdfcGatewayErrorCode::GW00166   => Status::GATEWAY_CARD_INVALID_NUMBER,
+        HdfcGatewayErrorCode::GW00167   => Status::GATEWAY_TRANSACTION_INVALID_CURRENCY,
+        HdfcGatewayErrorCode::GW00170   => Status::GATEWAY_GATEWAY_INVALID_TERMINAL_ID,
+        HdfcGatewayErrorCode::GW00171   => Status::GATEWAY_NOT_UNDERSTOOD_ERROR,
+        HdfcGatewayErrorCode::GW00160   => Status::GATEWAY_CARD_INVALID_BRAND,
+        HdfcGatewayErrorCode::GW00161   => Status::GATEWAY_CARD_INVALID_NAME,
+        HdfcGatewayErrorCode::GW00162   => Status::GATEWAY_TRANSACTION_INVALID_UDF,
+        HdfcGatewayErrorCode::GW00163   => Status::GATEWAY_CARD_INVALID_ADDRESS,
+        HdfcGatewayErrorCode::GW00164   => Status::GATEWAY_CARD_INVALID_ZIP,
+        HdfcGatewayErrorCode::GW00183   => Status::GATEWAY_CARD_MISSING_CVC,
+        HdfcGatewayErrorCode::GW00177   => Status::GATEWAY_SUPPORT_FAILED,
+        HdfcGatewayErrorCode::GW00201   => Status::GATEWAY_SUPPORT_AUTH_NOT_FOUND,
+        HdfcGatewayErrorCode::GW00258   => Status::GATEWAY_TRANSACTION_DENIED_NEGATIVE_BIN,
+        HdfcGatewayErrorCode::GW00259   => Status::GATEWAY_CARD_DECLINED,
+        HdfcGatewayErrorCode::GV00004   => Status::GATEWAY_PARES_NOT_SUCCESFUL,
+        HdfcGatewayErrorCode::GV00005   => Status::GATEWAY_GATEWAY_CERTIFICATE_VALIDATION_FAILED,
+        HdfcGatewayErrorCode::GV00006   => Status::GATEWAY_GATEWAY_CERTIFICATE_VALIDATION_FAILED,
+        HdfcGatewayErrorCode::GV00007   => Status::GATEWAY_SIGNATURE_VALIDATION_FAILED,
+        HdfcGatewayErrorCode::GV00008   => Status::GATEWAY_SIGNATURE_VALIDATION_FAILED,
+        HdfcGatewayErrorCode::GV00011   => Status::GATEWAY_CARD_INVALID_EXPIRY_DATE,
+        HdfcGatewayErrorCode::PY20006   => Status::GATEWAY_CARD_INVALID_BRAND,
+        HdfcGatewayErrorCode::PY20001   => Status::GATEWAY_TRANSACTION_INVALID_ACTION,
+        HdfcGatewayErrorCode::PY20002   => Status::GATEWAY_CARD_INVALID_AMOUNT,
+        HdfcGatewayErrorCode::RP00001   => Status::GATEWAY_UNKNOWN_ERROR);
 
-    public static $invalidErrorCode = 'RP00001';
+    public static $invalidErrorCode = HdfcGatewayErrorCode::RP00001;
 
     public static function parseErrorStr($error)
     {
@@ -124,12 +121,12 @@ class HdfcGatewayErrorHandler
 
     public static function translateErrorCode($errorCode)
     {
-        if (! array_key_exists($this->error, $errorCode))
+        if (! array_key_exists($errorCode, self::$errorMap))
         {
-            $errorCode = $this->invalidErrorCode;
+            $errorCode = self::$invalidErrorCode;
         }
         
-        $newErrorCode = $this->error[$errorCode];
+        $newErrorCode = self::$errorMap[$errorCode];
 
         return $newErrorCode;   
     }
@@ -146,19 +143,34 @@ class HdfcGatewayErrorHandler
 
     public static function parseErrorInString($result)
     {
-        $error_codes = array_keys(static::$error);
+        $error_codes = array_keys(static::$errorMessages);
         $error = array();
-        
         foreach($error_codes as $error_code)
         {
             if (strpos($result, $error_code) !== false)
             {
                 $error['code'] = $error_code;
-                $error['message'] = static::$error[$error_code];
+                $error['message'] = static::$errorMessages[$error_code];
                 return $error;
             }
         }
 
         return false;
+    }
+
+    public static function getInvalidEnrollCodeError()
+    {
+        $error['code'] = HdfcGatewayErrorCode::RP00003;
+        $error['message'] = static::$errorMessages[HdfcGatewayErrorCode::RP00003];
+
+        return $error;
+    }
+
+    public static function getError($code)
+    {
+        $error['code'] = constant(__NAMESPACE__.'\HdfcGatewayErrorCode::'.$code);
+        $error['message'] = static::$errorMessages[$error['code']];
+
+        return $error;
     }
 }
