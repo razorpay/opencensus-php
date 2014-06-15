@@ -27,11 +27,17 @@ namespace Gateway\HdfcGateway;
 use Gateway\BaseGateway;
 use Exceptions\DbQueryException;
 use Exceptions\InvalidArgumentException;
-use Trace\GatewayTrace;
 use Trace\TraceEvent;
- 
+use Trace\Trace;
+
 class HdfcGateway extends BaseGateway
 {
+    use HdfcGatewayEnrollCard;
+
+    use HdfcGatewayAuth;
+
+    use HdfcGatewaySupportTxn;
+
     /**
      * Rzp transaction id
      * @var string
@@ -77,7 +83,7 @@ class HdfcGateway extends BaseGateway
      * to hdfc gateway for card
      * @var array
      */
-    protected $card_key_mappings = array(
+    protected $cardKeyMappings = array(
         'name' => 'member',
         'number' => 'card',
         'expiry_month' => 'expmonth',
@@ -99,7 +105,7 @@ class HdfcGateway extends BaseGateway
     /**
      * Parameters required to construct request
      * for enrolling a card
-     * @param [type] $response [description]
+     * @var array 
      */
     protected $enrollRequest = array(
         'url' => HdfcGatewayUrls::TEST_ENROLL_URL,
@@ -118,11 +124,11 @@ class HdfcGateway extends BaseGateway
         'type' => 'enroll',
         'xml' => '',
         'data' => array(),
-        'error' => array());
+        'error' => null);
  
     /**
      * The assoc array is used to constructing
-     * auth request for credit cards
+     * auth request for enrolled card cases
      * @var array
      */
     protected $authNotEnrolledRequest = array(
@@ -132,13 +138,18 @@ class HdfcGateway extends BaseGateway
         'xml' => '',
         'data' => array());
  
+    /**
+     * The assoc array is used to construct auth
+     * request for not enrolled card cases
+     * @var array
+     */
     protected $authNotEnrolledResponse = array(
         'fields' =>  array(
                         'result', 'amt', 'trackid', 'ref', 'tranid', 'auth', 'avr', 'postdate'),
         'type' => 'auth_not_enrolled',
         'xml' => '',
         'data' => array(),
-        'error' => array());
+        'error' => null);
  
     /**
      * The assoc array is used to construct auth
@@ -158,7 +169,7 @@ class HdfcGateway extends BaseGateway
         'type' => 'auth_enrolled',
         'xml' => '',
         'data' => array(),
-        'error' => array());
+        'error' => null);
  
     /**
      * The assoc array is used to construct
@@ -178,7 +189,7 @@ class HdfcGateway extends BaseGateway
         'type' => '',
         'xml' => '',
         'data' => array(),
-        'error' => array());
+        'error' => null);
 
     /**
      * The array is used to specify fields that are not to be logged by trace class
@@ -203,81 +214,70 @@ class HdfcGateway extends BaseGateway
         'PaRes' => 'required',
         'MD' => 'required|numeric|digits_between:1,19');
  
+    /**
+     * Either ENROLLED or NOT_ENROLLED
+     * or false for enroll failure.
+     * Default is null
+     * @var 
+     */
+    protected $enrollStatus = null;
+    
     protected $status;
  
     public function __construct()
     {
         parent::__construct();
-        $this->callbackUrl=\URL::to('transactions/callback');
+
+        $this->callbackUrl = \URL::to(\Constants\URL::TXN_CALLBACK_URL);
     }
 
     public static function getCredentials()
     {
-        $creds = HdfcGatewayConfig::getCreds(); 
+        $creds = HdfcGatewayConfig::getCreds();
+
         return $creds;
     }
  
-    public function process($input)
+    public function process(array $input)
     {
-        $this->id = $input['txn']['id'];
- 
         // Enroll card
-        $this->enrollCard($input);
-
-        $er = $this->enrollResponse;
- 
-        if (isset($er['error']) !== null)
+        if ($this->enrollCard($input))
         {
-            if ($er['data']['enroll_result'] === HdfcGatewayResult::ENROLLED)
-            {
-                $this->status = HdfcGatewayResult::ENROLLED;
- 
-                return $this->postPaymentRequestToBankACS();
-            }
-            else if ($er['data']['enroll_result'] === HdfcGatewayResult::NOT_ENROLLED)
-            {
-                $this->status = HdfcGatewayResult::NOT_ENROLLED;
- 
-                return $this->postAuthNotEnrolledRequestToBank();
-            }
-            else
-            {
-                $error = HdfcGatewayErrorHandler::parseErrorInString($this->enrollResponse['data']['result']);
- 
-                if ($error === false)
-                    $error = HdfcGatewayErrorHandler::unknownError();
-                
-                //Logging
-                $log_content = array('error' => $error) + $this->stripSensitive($this->enrollResponse);
-                $this->trace->error(TraceEvent::GATEWAY_ENROLL_ERROR, $log_content);
-
-                return array('failed', $error);
-            }
+            return $this->auth();
         }
         else
         {
-            $error = HdfcGatewayErrorHandler::translateError($er['error']['code']);
- 
-            return array('failed', $error);
+            // $error = HdfcGatewayErrorHandler::translateError($er['error']['code']);
+            $er = $this->enrollResponse;
+
+            return array('failed', $er['error']);
         }
     }
  
-    public function bankAcsCallback($input)
+    public function refund(array $input)
     {
-        $invalid_keys = array_diff_key($input, $this->bankAcsResponseRules);
- 
-        if (count($invalid_keys) !== 0)
-        {
-            throw new Exceptions\InvalidKeysException('Gateway Exception: '.$invalid_keys);
-        }
- 
-        $validation = \Validator::make($input, $this->bankAcsResponseRules);
- 
-        if ($validation->fails()) 
-        {
-            throw new InvalidArgumentException('Gateway Exception: Invalid Arguements '.$validation->messages()->all());
-        }
- 
+        return $this->supportTxn($input, 'refund');
+    }
+
+    public function capture(array $input)
+    {
+        return $this->supportTxn($input, 'capture');
+    }
+
+    public function void()
+    {
+        ;
+    }
+
+    protected function auth()
+    {
+        $this->decideAuthStepAfterEnroll();
+    }
+
+    public function bankAcsCallback(array $input)
+    {
+        $this->validateBankAcsCallbackFields();
+
         $this->model = HdfcGatewayDal::findOrFail2($input['MD']);
 
         $this->id = $this->model->getTrackid();
@@ -286,7 +286,7 @@ class HdfcGateway extends BaseGateway
 
         $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
 
-        $this->authEnrolledRequest();
+        $this->postAuthEnrolledRequest();
 
         $error = $processed = false;
 
@@ -297,297 +297,7 @@ class HdfcGateway extends BaseGateway
 
         return array($processed, $this->id, $error);
     }
- 
-    public function authEnrolledRequest()
-    {
-        if ((int) $this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
-        {
-            throw new InvalidArgumentException('Gateway Exception: Result not valid');
-        }
-        else if ($this->model->status !== 'VERES Received')
-        {
-            throw new InvalidArgumentException('Gateway Exception: Status not valid');
-        }
- 
-        $data = &$this->authEnrolledRequest['data'];
- 
-        list($data['id'], $data['password']) = $this->getCredentials();
-        
-        //Logging
-        $log_content = $this->stripSensitive(
-            $this->authEnrolledRequest);
-        
-        $this->trace->debug(TraceEvent::GATEWAY_ENROLLED_AUTH_REQUEST, $log_content);
 
-        $this->runRequestResponseFlow(
-            $this->authEnrolledRequest,
-            $this->authEnrolledResponse);
-
-        $this->persistAfterDCAuth();
-    }
- 
-    /**
-     * Sends request for enrolling the card
-     * with hdfc gateway
-     * 
-     * @param  array $input 
-     * Should contain 'txn' and 'card' arrays
-     * 
-     */
-    protected function enrollCard($input)
-    {
-        // Fields to be sent to HDFC gateway for card-enroll
-        $this->createEnrollRequestFields($input);
-
-        //Logging
-        $log_content = $this->stripSensitive($this->enrollRequest);
-
-        $this->trace->debug(TraceEvent::GATEWAY_ENROLL_REQUEST, $log_content);
-
-        $this->runRequestResponseFlow(
-            $this->enrollRequest,
-            $this->enrollResponse);
-
-        $this->parseEnrollResponseEci();
- 
-        if (($this->error) or
-            (HdfcGatewayResult::isEnrollSuccess($this->enrollResponse) === false))
-        {
-            $error = HdfcGatewayErrorHandler::translateEnrollError($this->enrollResponse);
-            
-            //Logging
-            $log_content = $this->stripSensitive($this->enrollResponse) + array('error'=> $error);
-            $this->trace->error(TraceEvent::GATEWAY_ENROLL_ERROR, $log_content);
-
-            return array(false, $error);
-        }
- 
-        $this->validateEnrollResponse();
-
-        $this->persistAfterEnroll();
-    }
- 
-    protected function postAuthNotEnrolledRequestToBank()
-    {
-        // Only need to add zip and addr fields
-        // since other fields have already been added during enroll
-        $data = $this->enrollRequest['data'];
- 
-        $data['zip'] = "";
- 
-        $data['addr'] = "";
-
-        $this->authNotEnrolledRequest['data'] = $data;
-
-        //Logging
-        $log_content = $this->stripSensitive($this->authNotEnrolledRequest);
-
-        $this->trace->debug(TraceEvent::GATEWAY_NOT_ENROLLED_REQUEST, $log_content);
-
-        $this->runRequestResponseFlow(
-            $this->authNotEnrolledRequest,
-            $this->authNotEnrolledResponse);
-
-
-        $this->model->persistAfterCCAuth(
-                        $this->authNotEnrolledResponse['data']);
-
-        $notEnrollResponse = $this->authNotEnrolledResponse;
-
-        $notEnrollResponse['data']['processed'] = ($notEnrollResponse['data']['result'] == 'APPROVED') ? 1 : 0;
-        
-        if($notEnrollResponse['data']['processed'])
-        {
-            //Logging
-            $log_content = $this->stripSensitive($notEnrollResponse);
-            $this->trace->info(TraceEvent::GATEWAY_NOT_ENROLLED_RESPONSE, $log_content);
-        }
-        else
-        {
-            //Logging
-            $log_content = $this->stripSensitive($notEnrollResponse);
-            $this->trace->error(TraceEvent::GATEWAY_NOT_ENROLLED_ERROR, $log_content);
-        }
-        return array('not enrolled',
-                     array(
-                        'data' => $notEnrollResponse['data']));
-    }
- 
-    /**
-     * Generates a form and auto-submits it on load
-     * with the fields received in response
-     * from enrolling the card
-     */
-    protected function postPaymentRequestToBankACS()
-    {
-        $enrollResponse = $this->enrollResponse;
-
-        return array('enrolled', 
-                     array(
-                        'data' => $enrollResponse['data'], 
-                        'callbackUrl' => $this->callbackUrl));
-    }
- 
-    /**
-     * Collect all fields to be sent for
-     * enrolling the card
-     * 
-     * @param  array $input 
-     * Contains the 'txn' and 'card' details
-     */
-    protected function createEnrollRequestFields($input)
-    {
-        $txn = $input['txn'];
- 
-        $card = $input['card'];
- 
-        $data = &$this->enrollRequest['data'];
- 
-        // Collect creds
-        list($data['id'], $data['password']) = static::getCredentials();
- 
-        $data['trackid'] = $txn['id'];
-         
-        // Convert amount from integer to decimal
-        $data['amt'] = $txn['amount']/100;
- 
-        // Collect udf fields
-        $data['udf1'] = 'junk';
- 
-        $data['udf2'] = $txn['udf']['email'];
- 
-        $data['udf3'] = $txn['udf']['contact'];
-         
-        $data['udf4'] = 'junk';
- 
-        $data['udf5'] = 'junk';
- 
-        // Collect fields related to the card
-        $this->mapKeys($card, $this->card_key_mappings, $data);
- 
-        //
-        // Write currency code manually.
-        // Later change it to something better
-        // when we support multiple currencies
-        // 
-        $data['currencycode'] = self::INR_CODE;
-        
-        $data['action'] = HdfcGatewayAction::AUTH;
-    }
- 
-    protected function validateEnrollResponse()
-    {
-        $trackid = $this->enrollResponse['data']['trackid'];
- 
-        if ($trackid !== $this->id)
-        {
-            throw new InvalidArgumentException('Gateway Exception: Track id do not match');
-        }
-    }
-
-    protected function validateRefundResponse()
-    {
-        $trackid = $this->enrollResponse['data']['trackid'];
-
-        if ($trackid !== $this->enrollRequest['data']['trackid'])
-        {
-            throw new InvalidArgumentException('Gateway Exception: Track id do not match');
-        }
-    }
- 
-    protected function persistAfterEnroll()
-    {
-        if (isset($this->enrollResponse['error']['code']))
-        {
-            $this->model = HdfcGatewayDal::persistAfterEnrollError(
-                            $this->id,
-                            $this->enrollResponse['error']);
-
-            //Logging
-            $log_content = $this->stripSensitive($this->enrollResponse);
-            $this->trace->error(TraceEvent::GATEWAY_ENROLL_ERROR, $log_content);
-        }
-        else
-        {
-            $this->model = HdfcGatewayDal::persistAfterEnroll(
-                    $this->enrollRequest['data'],
-                    $this->enrollResponse['data']);
-
-            //Logging
-            $log_content = $this->stripSensitive($this->enrollResponse);
-            $this->trace->info(TraceEvent::GATEWAY_ENROLL_RESPONSE, $log_content);
-        }
-    }
-
-    protected function persistAfterDCAuth()
-    {
-        if (isset($this->authEnrolledResponse['error']['code']))
-        {
-            $this->model->persistAfterDCAuthError($this->authEnrolledResponse['error']);
-
-            //Logging
-            $log_content = $this->stripSensitive($this->authEnrolledResponse);
-            $this->trace->error(TraceEvent::GATEWAY_ENROLLED_AUTH_ERROR, $log_content);
-            
-            return false;
-        }
-        else
-        {
-            $this->model->persistAfterDCAuth($this->authEnrolledResponse['data']);
-
-            //Logging
-            $log_content = $this->stripSensitive($this->authEnrolledResponse);
-            $this->trace->info(TraceEvent::GATEWAY_ENROLLED_AUTH_RESPONSE, $log_content);
-
-            return true;
-        }
-    }
-
-    protected function persistAfterSupportTxn($type = 'capture')
-    {
-        if (isset($this->supportTxnResponse['error']['code']))
-        {
-            $this->model = HdfcGatewayDal::persistAfterSupportTxnError(
-                            $this->id,
-                            $this->supportTxnRequest['data']['transid'],
-                            $this->supportTxnResponse['error'],
-                            $type);
-            
-            //Logging
-            $log_content = $this->stripSensitive($this->supportTxnResponse);
-            $this->trace->error(TraceEvent::GATEWAY_SUPPORT_ERROR, $log_content);
-
-            return false;
-        }
-        else
-        {
-            $this->model = HdfcGatewayDal::persistAfterSupportTxn(
-                    $this->supportTxnRequest['data'],
-                    $this->supportTxnResponse['data']);
-
-            //Logging
-            $log_content = $this->stripSensitive($this->supportTxnResponse);
-            $this->trace->info(TraceEvent::GATEWAY_SUPPORT_RESPONSE, $log_content);
-
-            return true;
-        }
-    }
- 
-    /**
-     * Get the fields from xml response 
-     * of the enrolling crad
-     *
-     */
-    protected function parseEnrollResponseEci()
-    {
-        $eci = &$this->enrollResponse['data']['eci'];
-        $eci = (($eci === null) or ($eci === '')) ? '7' : $eci;
- 
-        $result = &$this->enrollResponse['data']['result'];
-         
-        $this->enrollResponse['data']['enroll_result'] = HdfcGatewayResult::resultCode($result);
-    }
- 
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         HdfcGatewayUtility::runRequestResponseFlow($request, $response);
@@ -600,122 +310,37 @@ class HdfcGateway extends BaseGateway
         }
     }
 
-    public function refund($input)
+    protected function getModel($id)
     {
-        $this->model = HdfcGatewayDal::retrieve($input['txn']['id']);
-
-        $this->id = $input['txn']['id'];
-
-        $this->supportTxnRequest['type'] = 'refund';
-        $this->supportTxnResponse['type'] = 'refund';
-
-        // Fields to be sent to HDFC gateway for refund
-        $this->createSupportTxnRequestFields($input, HdfcGatewayAction::REFUND);
-
-        //Logging
-        $log_content = $this->stripSensitive($this->supportTxnRequest);
-        $this->trace->debug(TraceEvent::GATEWAY_SUPPORT_REQUEST, $log_content);
-
-        $this->runRequestResponseFlow(
-            $this->supportTxnRequest,
-            $this->supportTxnResponse);
-
-        $error=array();
-        if($this->supportTxnResponse['error'])
-        {
-            $error = HdfcGatewayErrorHandler::parseErrorInString($this->supportTxnResponse['error']['result']);
-            if ($error === false)
-                    $error = HdfcGatewayErrorHandler::unknownError();
-        }
+        $this->model = HdfcGatewayDal::retrieve($id);
         
-        $status = $this->persistAfterSupportTxn('refund');
-
-        return array($status, $error);
+        $this->id = $id;
     }
 
-    public function capture($input)
+    protected function setId($id)
     {
-        $this->model = HdfcGatewayDal::retrieve($input['txn']['id']);
-
-        $this->id = $input['txn']['id'];
-
-        $this->supportTxnRequest['type'] = 'capture';
-        $this->supportTxnResponse['type'] = 'capture';
-
-        $this->createSupportTxnRequestFields($input, HdfcGatewayAction::CAPTURE);
-
-        //Logging
-        $log_content = $this->stripSensitive($this->supportTxnRequest);
-        $this->trace->debug(TraceEvent::GATEWAY_SUPPORT_REQUEST, $log_content);
-
-        $this->runRequestResponseFlow(
-            $this->supportTxnRequest,
-            $this->supportTxnResponse);
-
-        $error=array();
-        if($this->supportTxnResponse['error'])
-        {
-            $error = HdfcGatewayErrorHandler::parseErrorInString($this->supportTxnResponse['error']['result']);
-            if ($error === false)
-                    $error = HdfcGatewayErrorHandler::unknownError();
-        }
-        
-        $status = $this->persistAfterSupportTxn('capture');
-
-        return array($status, $error);
+        $this->id = $id;
     }
 
     /**
-     * Collect all fields to be sent for
-     * transaction refund/capture
-     * 
-     * @param  array $input 
-     * Contains the 'txn' details
+     * Stips sensitive data before calling trace class to 
+     * avoid sensitive data from logging
      */
-    protected function createSupportTxnRequestFields($input, $action)
+    protected function trace($level, $message, array $context)
     {
-        $txn = $input['txn'];
-        $card = $input['txn']['card'];
-
-        $data = &$this->supportTxnRequest['data'];
-
-        // Collect credentials
-        list($data['ID'], $data['password']) = static::getCredentials();
-
-        $data['action'] = $action;
-
-        // Convert amount from integer to decimal
-        $data['amt'] = $txn['amount']/100;
-
-        $data['currencycode'] = self::INR_CODE;
-
-        $data['member'] = $card['name'];
-
-        $data['transid'] = $this->model->transactionid;
-
-        $data['trackid'] = $this->id;
-
-        // Set udf fields
-        $data['udf1'] = $data['udf2'] = $data['udf3'] = $data['udf4'] = $data['udf5'] = '';
-    }
-
-    public function void()
-    {
-        ;
-    }
-
-    /**
-     * Stips sensitive data before calling trace class to avoid sensitive data from logging
-     */
-    private function stripSensitive($content)
-    {   
-        if(isset($content['data']))
+        if (isset($context['data']))
         {
-            $data = $content['data'];
-            $data = array_diff_key($data, array_flip($this->stripFieldsList));
-            $content = array('data' => $data) + $content;
-        }   
+            //
+            // If 'data' field is present, then we make sure that
+            // no field defined in 'stripFieldsList' are present
+            // in data. If so, then unset them. This is to 
+            // ensure extraneous or sensitive fields aren't traced.
+            //
+            $context['data'] = HdfcGatewayUtility::unsetFields(
+                                $context['data'], 
+                                $this->stripFieldsList);
+        }
     
-        return $content;
+        $this->trace->addRecord($level, $message, $context);
     }
 }
