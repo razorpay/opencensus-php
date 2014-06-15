@@ -201,14 +201,6 @@ class TraceWriter extends Logger
         else return false;
     }
 
-    public function getRecords()
-    {
-        if ($this->testHandler !== null)
-        {
-            return $this->testHandler->getRecords();
-        }
-    }
-
     public function addRecord($level, $message, array $context = array())
     {
         if ($this->config['queue'])
@@ -231,5 +223,57 @@ class TraceWriter extends Logger
             'level' => $level,
             'message' => $message,
             'context' => $context));
+    }
+
+    /**
+     * In debug mode, this function returns all
+     * the log records logged till now
+     * 
+     * @return array Log records with context and extras
+     */
+    public function getRecords()
+    {
+        if ($this->testHandler !== null)
+        {
+            return $this->testHandler->getRecords();
+        }
+    }
+
+    /**
+     * In debug mode, this function returns all the 
+     * log records logged till now.
+     * The array returned is only one level deep 
+     * with sub-arrays keys combined with their parent
+     * ones
+     * 
+     * @return array One level deep log records
+     */
+    public function getFlattenedRecordsForScreen()
+    {
+        $records = $this->getRecords();
+
+        $rec = array();
+
+        $i = 0;
+
+        foreach ($records as $record)
+        {
+            unset(
+                $record['formatted'],
+                $record['level']);
+
+            $record = array_assoc_flatten($record, $i);
+
+            //
+            // Add a null for better output
+            //
+            array_push($record, null);
+
+            $rec = array_merge($rec, $record);
+
+            $i++;
+        }
+
+        return $rec;
     }
 }

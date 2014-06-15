@@ -9,7 +9,7 @@ use Trace\TraceHandler;
 use Trace\TraceEvent;
 use Trace\TraceFields;
 
-class Trace extends \Singleton
+class Trace extends TraceWriter
 {
 
     /**
@@ -41,63 +41,45 @@ class Trace extends \Singleton
      */
     protected $values = array();
 
-    protected static $traceFunctions = array(
-        'debug',
-        'info',
-        'notice',
-        'warning',
-        'error',
-        'critical',
-        'alert',
-        'emergency');
+    protected static $instance = null;
 
-    protected $traceWriter = null;
-
-    protected function __construct()
+    public function __construct()
     {
         parent::__construct();
 
-        $this->traceWriter = new TraceWriter();
+        //$this->traceWriter = new TraceWriter();
     }
 
-    public function __call($name, $args)
+    /**
+     * Returns instance of class if present.
+     * Otherwise creates one, stores it and then returns it.
+     * 
+     * @return self the instance of class which extends
+     *              this abstract class
+     */
+    public static function getInstance()
     {
-        $this->checkFunction($name);
-
-        list($code, $values) = $this->validate($args);
-
-        $message = TraceEvent::getMessage($code);
-
-        $context = $this->getContext($code, $values);
-
-        $this->traceWriter->{$name}($message, $context);
-    }
-
-    public function checkFunction($name)
-    {
-        if (! in_array($name, self::$traceFunctions))
+        //$cls = get_called_class(); // late-static-bound class name
+        
+        if (!isset(self::$instance)) 
         {
-            throw new \BadMethodCallException($name . ' is not a valid function call');
-        }
-    }
-
-    protected function validate($args)
-    {
-        $code = $args[0];
-
-        TraceEvent::checkCode($code);
-
-        $context = array();
-
-        if (isset($args[1]))
-            $context = $args[1];
-
-        if (! is_array($context))
-        {
-            throw new \InvalidArgumentException('Context supplied should be array');
+            self::$instance = new static;
         }
 
-        return array($code, $context);
+        return self::$instance;
+    }
+
+    public function addRecord($level, $message, array $context = array())
+    {
+        $traceCode = $message;
+
+        TraceEvent::checkCode($traceCode);
+
+        $message = TraceEvent::getMessage($traceCode);
+
+        $context = $this->getContext($traceCode, $context);
+
+        parent::addRecord($level, $message, $context);
     }
 
     /**
@@ -153,55 +135,5 @@ class Trace extends \Singleton
         TraceFields::checkFields($code, array_keys($context));
 
         return $context;
-
-    }
-
-    /**
-     * In debug mode, this function returns all
-     * the log records logged till now
-     * 
-     * @return array Log records with context and extras
-     */
-    public function getRecords()
-    {
-        return $this->traceWriter->getRecords();
-    }
-
-    /**
-     * In debug mode, this function returns all the 
-     * log records logged till now.
-     * The array returned is only one level deep 
-     * with sub-arrays keys combined with their parent
-     * ones
-     * 
-     * @return array One level deep log records
-     */
-    public function getFlattenedRecordsForScreen()
-    {
-        $records = $this->getRecords();
-
-        $rec = array();
-
-        $i = 0;
-
-        foreach ($records as $record)
-        {
-            unset(
-                $record['formatted'],
-                $record['level']);
-
-            $record = array_assoc_flatten($record, $i);
-
-            //
-            // Add a null for better output
-            //
-            array_push($record, null);
-
-            $rec = array_merge($rec, $record);
-
-            $i++;
-        }
-
-        return $rec;
     }
 }
