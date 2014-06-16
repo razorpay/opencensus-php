@@ -5,23 +5,23 @@ namespace Gateway\HdfcGateway;
 use Trace\Trace;
 use Trace\TraceEvent;
 
-trait HdfcGatewayEnrollCard 
+trait HdfcGatewayEnrollCard
 {
     /**
      * Sends request for enrolling the card
      * with hdfc gateway
-     * 
-     * @param  array $input 
+     *
+     * @param  array $input
      * Should contain 'txn' and 'card' arrays
-     * 
+     *
      */
     protected function enrollCard(array $input)
     {
         $this->setId($input['txn']['id']);
 
-        // 
+        //
         // Fields to be sent to HDFC gateway for card-enrollment
-        // 
+        //
         $this->createEnrollRequestFields($input);
 
         $this->trace(
@@ -44,17 +44,17 @@ trait HdfcGatewayEnrollCard
         if ($this->error)
         {
             return false;
-        } 
+        }
 
         // Checks and sets eci if needed
         $this->checkAndSetEci();
- 
+
         //
         // Checks for enroll result.
-        // 
+        //
         // If enroll result is anything other than
         // 'ENROLLED' and 'NOT ENROLLED' then we
-        // consider enroll as failed and set an error 
+        // consider enroll as failed and set an error
         // message to that effect
         //
         if ($this->isEnrollSuccess() === false)
@@ -72,58 +72,58 @@ trait HdfcGatewayEnrollCard
 
         return true;
     }
- 
+
     /**
      * Collect all fields to be sent for
      * enrolling the card
-     * 
-     * @param  array $input 
+     *
+     * @param  array $input
      * Contains the 'txn' and 'card' details
      */
     protected function createEnrollRequestFields($input)
     {
         $txn = $input['txn'];
- 
+
         $card = $input['card'];
- 
+
         $data = &$this->enrollRequest['data'];
- 
+
         // Collect creds
         list($data['id'], $data['password']) = static::getCredentials();
- 
+
         $data['trackid'] = $txn['id'];
-         
+
         // Convert amount from integer to decimal
         $data['amt'] = $txn['amount']/100;
- 
+
         // Collect udf fields
         $data['udf1'] = 'junk';
- 
+
         $data['udf2'] = $txn['udf']['email'];
- 
+
         $data['udf3'] = $txn['udf']['contact'];
-         
+
         $data['udf4'] = 'junk';
- 
+
         $data['udf5'] = 'junk';
- 
+
         // Collect fields related to the card
         $this->mapKeys($card, $this->cardKeyMappings, $data);
- 
+
         //
         // Write currency code manually.
         // Later change it to something better
         // when we support multiple currencies
-        // 
+        //
         $data['currencycode'] = self::INR_CODE;
-        
+
         $data['action'] = HdfcGatewayAction::AUTH;
     }
- 
+
     protected function validateEnrollResponse()
     {
         $trackid = $this->enrollResponse['data']['trackid'];
- 
+
         if ($trackid !== $this->id)
         {
             throw new InvalidArgumentException('Gateway Exception: Track id do not match');
@@ -133,9 +133,9 @@ trait HdfcGatewayEnrollCard
     /**
      * Stores relevant enroll response
      * fields in db depending on whether
-     * enroll succeded or there was an 
+     * enroll succeded or there was an
      * error.
-     * 
+     *
      * @return void
      */
     protected function persistAfterEnroll()
@@ -165,36 +165,36 @@ trait HdfcGatewayEnrollCard
     }
 
     /**
-     * Get the fields from xml response 
+     * Get the fields from xml response
      * of the enrolling crad
      */
     protected function parseEnrollResponseEci()
     {
         $result = &$this->enrollResponse['data']['result'];
-         
+
         $this->enrollResponse['data']['enroll_result'] = HdfcGatewayResult::resultCode($result);
     }
 
     /**
      * Check eci value and set it to 7 if not defined.
      * See eci field definition for more info.
-     * 
+     *
      * @return void
      */
     protected function checkAndSetEci()
     {
         $eci = &$this->enrollResponse['data']['eci'];
- 
+
         $eci = (($eci === null) or ($eci === '')) ? '7' : $eci;
     }
 
     /**
      *
      * Checks for enroll result.
-     * 
+     *
      * If enroll result is anything other than
      * 'ENROLLED' and 'NOT ENROLLED' then we
-     * consider enroll as failed and set an error 
+     * consider enroll as failed and set an error
      * message to that effect
      *
      *
@@ -203,7 +203,7 @@ trait HdfcGatewayEnrollCard
     protected function isEnrollSuccess()
     {
         $result = &$this->enrollResponse['data']['result'];
-        
+
         //
         // Check enroll result code.
         // 'enrollSuccess' variable tells us whether
@@ -233,24 +233,24 @@ trait HdfcGatewayEnrollCard
 
         if ($enrollResult === HdfcGatewayResult::FSS0001_ENROLLED)
         {
-            $this->enrollResponse['error'] = 
+            $this->enrollResponse['error'] =
                 HdfcGatewayErrorHandler::getError(HdfcGatewayErrorCode::FSS0001);
         }
         else if ($enrollResult === HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED)
         {
             //
-            // If enroll failed with an invalid code, set error 
+            // If enroll failed with an invalid code, set error
             // for that and mark the operation as failure.
             //
 
-            $this->enrollResponse['error'] = 
+            $this->enrollResponse['error'] =
                 HdfcGatewayErrorHandler::getInvalidEnrollCodeError();
         }
         else
         {
             throw new \LogicException('Should not reach here');
         }
-        
+
         $this->error = true;
 
         $this->trace(
@@ -270,7 +270,8 @@ trait HdfcGatewayEnrollCard
     {
         //
         // By default, enrollStatus should be null
-        // 
+        //
+
         Assert($this->enrollStatus === null);
 
         if ($this->error)
@@ -281,7 +282,7 @@ trait HdfcGatewayEnrollCard
 
     /**
      * Returns enrollStatus
-     * 
+     *
      * @return void
      */
     protected function getEnrollStatus()

@@ -5,7 +5,7 @@
  * ALl test cases follow, GIVEN, WHEN, THEN structure
  */
 
-class Transaction extends TestCase 
+class Transaction extends TestCase
 {
     /**
      * Creates a transaction & tests it is corrrectly created
@@ -73,7 +73,7 @@ class Transaction extends TestCase
                 }
                 catch(Exception $e)
                 {
-                  if(strpos($e->getMessage(), 'node list is empty') != False)
+                  if(strpos($e->getMessage(), 'node list is empty') !== False)
                   {
                     $this->fail('Transaction Timed out');
                   }
@@ -119,6 +119,7 @@ class Transaction extends TestCase
 
             //Ensure output is json
             $this->assertJson($content);
+
             //check processed flag matches as in card.php
             //@todo shift to matching to actual error code rreturned once errors are implemented
             $output=json_decode($content);
@@ -134,7 +135,7 @@ class Transaction extends TestCase
                 // {
                     //if hold is set to true, it stops at auth
                     $this->assertEquals('auth', $output->status);
-                // }
+                // }s
                 return $output;
             }
 

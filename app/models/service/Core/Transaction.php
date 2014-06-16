@@ -26,10 +26,10 @@ class Transaction
 
     /**
      * Creates card, token and txn entities
-     * 
+     *
      * @param  array $input Input required for creating
      *                      card, token and txn entities
-     *                      
+     *
      * @return array        Returns an array containing
      *                      DAL\Transaction object and
      *                      card data array
@@ -49,8 +49,8 @@ class Transaction
 
         //
         // Now separate inputs required for creating card and token
-        // 
-        list($cardInput, $tokenInput) = 
+        //
+        list($cardInput, $tokenInput) =
             Manager\CardToken::separateTokenAndCardCreateInput(
                 $input['card']);
 
@@ -59,14 +59,14 @@ class Transaction
         // number and cvv for now, we get back a card data
         // array with number and cvv inserted after storing
         // card details (DAL\Card)
-        // 
+        //
         $cardData = (new Card)->createAndReturnWithSensitiveData($cardInput);
 
         //
         // Create token. Links to card id and merchant id
-        // 
+        //
         $token = (new Token)->create(
-                    $tokenInput, 
+                    $tokenInput,
                     $input['merchant_id'],
                     $cardData['id']);
 
@@ -84,10 +84,10 @@ class Transaction
 
     /**
      * Creates an entry for a new transaction
-     * 
+     *
      * @param  array $input Input relevant to creating
      *                      a txn row in db
-     *                      
+     *
      * @return DAL\Transaction  A DAL\Transaction object
      */
     public function create($input)
@@ -102,10 +102,10 @@ class Transaction
      * Passes data along to the gateway
      * which does the actual processing.
      * After return, updates transaction status.
-     * 
+     *
      * @param  DAL\Transaction $txn      Transaction object
      * @param  array           $cardData card data array
-     * 
+     *
      * @return DAL\Transaction           Transaction object
      */
     public function process(
@@ -122,7 +122,7 @@ class Transaction
                     'card' => $cardData);
 
         $gateway = new GatewayManager();
-        
+
         $status = null;
         $data = null;
 
@@ -148,23 +148,23 @@ class Transaction
     /**
      * Checks whether the requests exception that we caught
      * is actually because of timeout in the network call.
-     * 
+     *
      * @param  Requests_Exception $e The caught requests exception
-     * 
+     *
      * @return boolean               true/false
      */
     protected function checkTimeout(\Requests_Exception $e)
     {
         //check if timeout has occured
-        if ((strpos($e->getMessage(), 'Operation timed out')  !== false) or 
-            (strpos($e->getMessage(), 'Network is unreachable') !==false) or 
+        if ((strpos($e->getMessage(), 'Operation timed out')  !== false) or
+            (strpos($e->getMessage(), 'Network is unreachable') !==false) or
             (strpos($e->getMessage(), 'Name or service not known') !== false) or
-            (strpos($e->getMessage(), 'Failed to connect') !== false) or 
+            (strpos($e->getMessage(), 'Failed to connect') !== false) or
             (strpos($e->getMessage(), 'Could not resolve host') !== false))
         {
             return true;
         }
-        else 
+        else
         {
             return false;
         }
@@ -181,8 +181,7 @@ class Transaction
 
             case 'not enrolled':
                 $txn->setStatus(TransactionStatus::AUTH);
-
-            return $txn;
+                return $txn;
 
             //@todo: Update data on hold
             case TransactionStatus::AUTH:
@@ -233,7 +232,7 @@ class Transaction
 
             //Logging
             $this->trace->info(
-                TraceEvent::TRANSACTION_CAPTURED, 
+                TraceEvent::TRANSACTION_CAPTURED,
                 $txn->toArray());
         }
         else
@@ -256,7 +255,7 @@ class Transaction
 
         //Logging
         $this->trace->info(
-            TraceEvent::TRANSACTION_AUTHED, 
+            TraceEvent::TRANSACTION_AUTHED,
             $this->txn->toArray());
     }
 
@@ -266,7 +265,7 @@ class Transaction
 
         //Logging
         $this->trace->info(
-            TraceEvent::TRANSACTION_CAPTURED, 
+            TraceEvent::TRANSACTION_CAPTURED,
             $this->txn->toArray());
     }
 
@@ -286,7 +285,7 @@ class Transaction
 
         //Logging
         $this->trace->error(
-            TraceEvent::TRANSACTION_FAILED, 
+            TraceEvent::TRANSACTION_FAILED,
             $txn->toArray());
 
         return $txn;

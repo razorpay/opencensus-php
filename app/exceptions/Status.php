@@ -9,10 +9,10 @@ class Status
 	/**
 	 * HDFC gateway specific error codes
 	 */
-	
+
 	/**
 	 * General gateway specific error codes
-	 * Isn't specific to hdfc gateway and 
+	 * Isn't specific to hdfc gateway and
 	 * should be generally valid for gateways that
 	 * are added in future
 	 */
@@ -52,22 +52,22 @@ class Status
 	/**
 	 * Card errors catchable in the app
 	 */
-	const APP_CARD_INVALID_NAME            = 1120;
-	const APP_CARD_INVALID_EXPIRY_MONTH    = 1121;
-	const APP_CARD_INVALID_EXPIRY_YEAR     = 1122;
-	const APP_CARD_INVALID_CVC             = 1123;
-	const APP_CARD_INVALID_BRAND           = 1124;
-	const APP_CARD_INVALID_CURRENCY        = 1125;
-	const APP_CARD_INVALID_AMOUNT          = 1126;
-	const APP_CARD_INVALID_UDF             = 1127;
-	const APP_CARD_INVALID_NUMBER          = 1128;
-	const APP_CARD_EXPIRED                 = 1129;
+	const RZP_CARD_INVALID_NAME            = 1120;
+	const RZP_CARD_INVALID_EXPIRY_MONTH    = 1121;
+	const RZP_CARD_INVALID_EXPIRY_YEAR     = 1122;
+	const RZP_CARD_INVALID_CVC             = 1123;
+	const RZP_CARD_INVALID_BRAND           = 1124;
+	const RZP_CARD_INVALID_CURRENCY        = 1125;
+	const RZP_CARD_INVALID_AMOUNT          = 1126;
+	const RZP_CARD_INVALID_UDF             = 1127;
+	const RZP_CARD_INVALID_NUMBER          = 1128;
+	const RZP_CARD_EXPIRED                 = 1129;
 
 	/**
-	 * 
+	 *
 	 */
 	const RZP_TXN_INVALID_CURRENCY = 1150;
-
+    //const
 
 	/**
 	 * Server errors

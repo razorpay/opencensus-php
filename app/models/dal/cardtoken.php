@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\DAL;
 
@@ -41,12 +41,12 @@ class CardToken extends DAL {
 
     public function setMerchantId($merchant_id)
     {
-        $this->setAttribute('merchant_id', $merchant_id);
+        $this->setAttribute(Field\Common::MERCHANT_ID, $merchant_id);
     }
 
     public function getMerchantId()
     {
-        $this->getAttribute('merchant_id');
+        $this->getAttribute(Field\Common::MERCHANT_ID);
     }
 
     public function getObjectAttribute()
@@ -65,7 +65,7 @@ class CardToken extends DAL {
             $card_do_flag = 0x0;
 
             $card_do_flag |= Card::NO_CHECK_FIELDS;
-        
+
             $card = $this->card_do->toArray($card_do_flag);
 
             $array['card'] = $card;
@@ -78,9 +78,15 @@ class CardToken extends DAL {
     {
         $token;
 
-        try {
-           $token = self::where('token', $token)->where('merchant_id', $merchant_id)->first();
-        } catch(Exception $e) {
+        try
+        {
+           $token = self::where('token', $token)
+                        ->where(Field\Common::MERCHANT_ID, $merchant_id)
+                        ->first();
+
+        }
+        catch(Exception $e)
+        {
             $token = false;
         }
 
@@ -89,7 +95,7 @@ class CardToken extends DAL {
 
     public function expired()
     {
-        return (bool)$this->expired;
+        return (bool)$this->getAttribute(Field\Token::EXPIRED);
     }
 
     public function transactions()
@@ -99,7 +105,7 @@ class CardToken extends DAL {
 
     public function card()
     {
-        return $this->belongsTo('Models\DAL\Card', 'card_id', 'id');
+        return $this->belongsTo(__NAMESPACE__.'\Card', 'card_id', 'id');
     }
 
 }

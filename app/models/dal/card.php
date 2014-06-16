@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\DAL;
 
@@ -44,7 +44,7 @@ class Card extends DAL
     const NO_CHECK_FIELDS       = 0x1;
     const WITH_OBJECT_FIELD     = 0x2;
     const ONLY_PUBLIC_FIELDS    = 0x4;
-    
+
     public function getCardData($flag = 0x0)
     {
         $data = $this->attributes;

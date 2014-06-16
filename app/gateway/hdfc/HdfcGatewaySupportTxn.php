@@ -8,7 +8,7 @@ use Trace\TraceEvent;
 
 trait HdfcGatewaySupportTxn
 {
-        protected function supportTxn($input, $type)
+    protected function supportTxn($input, $type)
     {
         $this->getModel($input['txn']['id']);
 
@@ -16,8 +16,8 @@ trait HdfcGatewaySupportTxn
         // Mark the type of support txn.
         // It will be either 'capture' or 'refund'
         //
-        
-        Assert(($type === 'captured') or 
+
+        Assert(($type === 'capture') or
                ($type === 'refund'));
 
         $this->supportTxnRequest['type'] = $type;
@@ -27,13 +27,16 @@ trait HdfcGatewaySupportTxn
         //
         // Fill the fields required for the txn
         //
+        $constType = constant(__NAMESPACE__.'\HdfcGatewayAction::'.strtoupper($type));
+        //$capsType = strtoupper($type);
+
         $this->createSupportTxnRequestFields(
-                    $input, 
-                    HdfcGatewayAction::strtoupper($type));
+                    $input,
+                    $constType);
 
         $this->trace(
-            TRACE::DEBUG, 
-            TraceEvent::GATEWAY_SUPPORT_REQUEST, 
+            TRACE::DEBUG,
+            TraceEvent::GATEWAY_SUPPORT_REQUEST,
             $this->supportTxnRequest);
 
         $this->runRequestResponseFlow(
@@ -41,6 +44,7 @@ trait HdfcGatewaySupportTxn
             $this->supportTxnResponse);
 
 
+        $error = null;
         if($this->error)
         {
             $error = HdfcGatewayErrorHandler::parseErrorInString(
@@ -49,7 +53,7 @@ trait HdfcGatewaySupportTxn
             if ($error === false)
                     $error = HdfcGatewayErrorHandler::unknownError();
         }
-        
+
         $status = $this->persistAfterSupportTxn('refund');
 
         return array($status, $error);
@@ -58,20 +62,20 @@ trait HdfcGatewaySupportTxn
     /**
      * Collect all fields to be sent for
      * transaction refund/capture
-     * 
-     * @param  array $input 
+     *
+     * @param  array $input
      * Contains the 'txn' details
      */
     protected function createSupportTxnRequestFields($input, $action)
     {
         $txn = $input['txn'];
-        
+
         $card = $input['txn']['card'];
 
         $data = &$this->supportTxnRequest['data'];
 
         // Collect credentials
-        list($data['ID'], $data['password']) = static::getCredentials();
+        list($data['id'], $data['password']) = static::getCredentials();
 
         $data['action'] = $action;
 
@@ -99,7 +103,7 @@ trait HdfcGatewaySupportTxn
             throw new InvalidArgumentException('Gateway Exception: Track id do not match');
         }
     }
- 
+
     protected function persistAfterSupportTxn($type = 'capture')
     {
         if ($this->error)
@@ -109,7 +113,7 @@ trait HdfcGatewaySupportTxn
                             $this->supportTxnRequest['data']['transid'],
                             $this->supportTxnResponse['error'],
                             $type);
-            
+
             $this->trace(
                 Trace::ERROR,
                 TraceEvent::GATEWAY_SUPPORT_ERROR,

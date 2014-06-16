@@ -10,7 +10,7 @@ class Transaction
 
     const STATUS = 'status';
 
-    const CURRENCY = 'curency';
+    const CURRENCY = 'currency';
 
     const DESCRIPTION = 'description';
 

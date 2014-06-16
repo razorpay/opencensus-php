@@ -1,11 +1,11 @@
 <?php
- 
+
 /**
- * This file implements the interactions with HDFC gateway 
+ * This file implements the interactions with HDFC gateway
  * via the api of FSF gateway (which HDFC uses) and which
  * we actually interact with.
  *
- * The transaction flow for a purchase/auth txn 
+ * The transaction flow for a purchase/auth txn
  * in few simple words goes like this:
  * 1. We send an enroll request for a card
  * 2. For certain cards (probably cc) we get a 'NOT ENROLLED' response back
@@ -14,16 +14,16 @@
  *    3.1. For these cards, we send a request to acquiring bank (hdfc)
  *         ACS where the customer enters card fields etc. and the bank
  *         redirects to a url provided by us.
- *    3.2. From the redirected url, we send auth request and 
+ *    3.2. From the redirected url, we send auth request and
  *         complete the txn.
- *         
- * Note: Refer to HDFC FSF Payment Gateway Integration 
+ *
+ * Note: Refer to HDFC FSF Payment Gateway Integration
  *       Version 4.0 pdf document
- * 
+ *
  */
- 
+
 namespace Gateway\HdfcGateway;
- 
+
 use Gateway\BaseGateway;
 use Exceptions\DbQueryException;
 use Exceptions\InvalidArgumentException;
@@ -43,19 +43,19 @@ class HdfcGateway extends BaseGateway
      * @var string
      */
     protected $id;
- 
+
     protected $model;
 
     const INR_CODE = 356;
- 
+
     /**
      * If during the txn flow, we detect an
-     * error, or the txn fails for any reason, 
+     * error, or the txn fails for any reason,
      * then this variable is set to true.
      * @var boolean
      */
     protected $error = false;
- 
+
     /**
      * Fields sent in xml format to enroll
      * @var array
@@ -77,7 +77,7 @@ class HdfcGateway extends BaseGateway
         'udf3',
         'udf4',
         'udf5');
- 
+
     /**
      * Mapping of keys from rzp to
      * to hdfc gateway for card
@@ -89,23 +89,23 @@ class HdfcGateway extends BaseGateway
         'expiry_month' => 'expmonth',
         'expiry_year' => 'expyear',
         'cvv' => 'cvv2');
- 
+
     /**
      * Tranportal username for hdfc gateway
      * @var string
      */
     protected $username = "";
- 
+
     /**
      * Tranportal password for hdfc gateway
      * @var string
      */
     protected $password = "";
- 
+
     /**
      * Parameters required to construct request
      * for enrolling a card
-     * @var array 
+     * @var array
      */
     protected $enrollRequest = array(
         'url' => HdfcGatewayUrls::TEST_ENROLL_URL,
@@ -113,7 +113,7 @@ class HdfcGateway extends BaseGateway
         'xml' => '',
         'header' => array('Content-Type'=>'text/xml'),
         'data' => array());
- 
+
     /**
      * Response received after sending enroll card request
      * @var array
@@ -125,7 +125,7 @@ class HdfcGateway extends BaseGateway
         'xml' => '',
         'data' => array(),
         'error' => null);
- 
+
     /**
      * The assoc array is used to constructing
      * auth request for enrolled card cases
@@ -137,7 +137,7 @@ class HdfcGateway extends BaseGateway
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
- 
+
     /**
      * The assoc array is used to construct auth
      * request for not enrolled card cases
@@ -150,7 +150,7 @@ class HdfcGateway extends BaseGateway
         'xml' => '',
         'data' => array(),
         'error' => null);
- 
+
     /**
      * The assoc array is used to construct auth
      * request for debit cards
@@ -162,7 +162,7 @@ class HdfcGateway extends BaseGateway
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
- 
+
     protected $authEnrolledResponse = array(
         'fields' => array(
             'paymentid', 'error_text', 'result', 'ref', 'tranid', 'auth', 'avr', 'postdate'),
@@ -170,7 +170,7 @@ class HdfcGateway extends BaseGateway
         'xml' => '',
         'data' => array(),
         'error' => null);
- 
+
     /**
      * The assoc array is used to construct
      * request for refunds/captures
@@ -205,25 +205,25 @@ class HdfcGateway extends BaseGateway
      * For ENROLLED card cases, we submit a form to bank ACS
      * which redirects back to this url (on our server) after
      * the customer enter's the requisite details
-     * 
+     *
      * @var string
      */
     protected $callbackUrl;
- 
+
     protected $bankAcsResponseRules = array(
         'PaRes' => 'required',
         'MD' => 'required|numeric|digits_between:1,19');
- 
+
     /**
      * Either ENROLLED or NOT_ENROLLED
      * or false for enroll failure.
      * Default is null
-     * @var 
+     * @var
      */
     protected $enrollStatus = null;
-    
+
     protected $status;
- 
+
     public function __construct()
     {
         parent::__construct();
@@ -237,7 +237,7 @@ class HdfcGateway extends BaseGateway
 
         return $creds;
     }
- 
+
     public function process(array $input)
     {
         // Enroll card
@@ -253,7 +253,7 @@ class HdfcGateway extends BaseGateway
             return array('failed', $er['error']);
         }
     }
- 
+
     public function refund(array $input)
     {
         return $this->supportTxn($input, 'refund');
@@ -271,17 +271,17 @@ class HdfcGateway extends BaseGateway
 
     /**
      * After enroll is done, auth is required
-     * 
+     *
      * @return void
      */
     protected function auth()
     {
-        $this->decideAuthStepAfterEnroll();
+        return $this->decideAuthStepAfterEnroll();
     }
 
     public function bankAcsCallback(array $input)
     {
-        $this->validateBankAcsCallbackFields();
+        $this->validateBankAcsCallbackFields($input);
 
         $this->model = HdfcGatewayDal::findOrFail2($input['MD']);
 
@@ -306,9 +306,9 @@ class HdfcGateway extends BaseGateway
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         HdfcGatewayUtility::runRequestResponseFlow($request, $response);
-    
+
         HdfcGatewayResponseXmlDal::saveXml($this->id, $response['xml'], $response['type']);
- 
+
         if (isset($response['error']['code']))
         {
             $this->error = true;
@@ -318,7 +318,7 @@ class HdfcGateway extends BaseGateway
     protected function getModel($id)
     {
         $this->model = HdfcGatewayDal::retrieve($id);
-        
+
         $this->id = $id;
     }
 
@@ -328,7 +328,7 @@ class HdfcGateway extends BaseGateway
     }
 
     /**
-     * Stips sensitive data before calling trace class to 
+     * Stips sensitive data before calling trace class to
      * prevent sensitive data from being traced
      */
     protected function trace($level, $message, array $context)
@@ -338,14 +338,14 @@ class HdfcGateway extends BaseGateway
             //
             // If 'data' field is present, then we make sure that
             // no field defined in 'stripFieldsList' are present
-            // in data. If so, then unset them. This is to 
+            // in data. If so, then unset them. This is to
             // ensure extraneous or sensitive fields aren't traced.
             //
             $context['data'] = HdfcGatewayUtility::unsetFields(
-                                $context['data'], 
+                                $context['data'],
                                 $this->stripFieldsList);
         }
-    
+
         $this->trace->addRecord($level, $message, $context);
     }
 }

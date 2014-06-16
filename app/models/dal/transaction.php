@@ -82,8 +82,8 @@ class Transaction extends UuidDAL
         if (isset($param['created']))
         {
             $query->where(
-                      Field\Common::CREATED_AT, 
-                      '=', 
+                      Field\Common::CREATED_AT,
+                      '=',
                       $param['created']);
         }
         else
@@ -239,13 +239,13 @@ class Transaction extends UuidDAL
 
     public function setError($error = false)
     {
-        if(isset($error['code'])) 
+        if(isset($error['code']))
             $this->setAttribute('error', $error['code']);
-        else 
+        else
             $this->setAttribute('error', $error);
-        
+
         $this->save();
-        
+
         $this->error = $error;
     }
 }
