@@ -13,7 +13,7 @@ class Merchant extends DAL
         Field\Merchant::BALANCE);
 
     protected $fillable = array(
-        Field\Merhcant::ID
+        Field\Merchant::ID
     );
 
     public function keys()

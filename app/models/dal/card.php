@@ -20,7 +20,7 @@ class Card extends DAL
         Field\Card::TYPE,
         Field\Card::BANK,
 
-        Field\Card::ADDRESS_LINE,
+        Field\Card::ADDRESS_LINE1,
         Field\Card::ADDRESS_LINE2,
         Field\Card::ADDRESS_STATE,
         Field\Card::ADDRESS_CITY,

@@ -101,7 +101,7 @@ class Transaction extends UuidDAL
 
         if(isset($param['status']))
         {
-            $query = $query->where(Field\Common::STATUS, '=', $param['status']);
+            $query = $query->where(Field\Transaction::STATUS, '=', $param['status']);
         }
 
         if (isset($param['count']))

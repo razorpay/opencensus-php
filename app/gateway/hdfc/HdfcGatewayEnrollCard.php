@@ -271,7 +271,7 @@ trait HdfcGatewayEnrollCard
         //
         // By default, enrollStatus should be null
         // 
-        Assert($this->enrolLStatus === null);
+        Assert($this->enrollStatus === null);
 
         if ($this->error)
             $this->enrollStatus = false;
