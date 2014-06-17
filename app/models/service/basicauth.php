@@ -137,4 +137,9 @@ class BasicAuth extends \Singleton {
         return true;
     }
 
+    public function getMerchantIdInArray(array & $array)
+    {
+        $array[\Constants\Field\Common::MERCHANT_ID] = $this->MerchantId();
+    }
+
 }
