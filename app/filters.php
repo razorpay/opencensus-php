@@ -44,6 +44,12 @@ Route::filter('auth.basic', function()
 	return Auth::basic();
 });
 
+Route::filter('auth.internal', function()
+{
+	if ($_SERVER['REMOTE_ADDR'] !== $_SERVER['SERVER_ADDR'] || $_SERVER['REMOTE_ADDR'] !== \Config::get('api.ip'))
+		return Response::view('error.401', array(), 401);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Guest Filter

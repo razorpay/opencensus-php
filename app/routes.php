@@ -57,4 +57,7 @@ Route::group(array('before' => 'guest'), function()
     });
 });
 
-Route::post('/transactions', 'TransactionController@postIndex');
+Route::group(array('before' => 'auth.internal'), function()
+{
+    Route::post('/transactions', 'TransactionController@postIndex');
+});

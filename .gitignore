@@ -10,3 +10,4 @@ node_modules/
 layout.blade.php
 dev/
 prod/
+app/config/api.php
