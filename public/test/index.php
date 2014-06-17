@@ -1,5 +1,5 @@
 <?php
-$baseurl = "rzp";
+$baseurl = "api.razorpay.com";
 
 $key_id = 'd9c6bf091a1a64cb5678d8c1d5e7360f';
 $secret = 'thisissupersecret';
@@ -22,7 +22,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 	</tr>
 </table>
 <br><br>
-<form method="post" id="txnform" action="http://<?=$public_url?>/transactions">
+<form method="post" id="txnform" action="//<?=$public_url?>/transactions">
 <table border="1" align="center"  width="300">
 	<tr>
 	<th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>
