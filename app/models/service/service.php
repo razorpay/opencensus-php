@@ -3,6 +3,7 @@
 namespace Models\Service;
 
 use Razorpay\Api\Api;
+use Config;
 
 class Service
 {
@@ -18,8 +19,9 @@ class Service
         return new static;
     }
 
-    public static function setApiCredentials($merchant_id = NULL, $secret = 'a128a3994372ccd2a63a8a64202a92e04eb83e54')
+    public static function setApiCredentials($merchant_id = NULL)
     {
+        $secret = Config::get('api.auth_pass');
         static::$api = new Api($merchant_id, $secret);
     }
 }
