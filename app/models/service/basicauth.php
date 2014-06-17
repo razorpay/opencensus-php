@@ -13,10 +13,6 @@ class BasicAuth extends \Singleton {
 
     private $App = null;
 
-    private static $Apps = array(
-        'dashboard' =>  'a128a3994372ccd2a63a8a64202a92e04eb83e54'
-    );
-
     public function check()
     {
         if (($this->Key == null) or
@@ -101,7 +97,7 @@ class BasicAuth extends \Singleton {
         {
             return false;
         }
-        
+
         $merchant_id = $Key->merchant_id;
 
         $Merchant = DAL\Merchant::findOrFail2($merchant_id);
@@ -125,8 +121,8 @@ class BasicAuth extends \Singleton {
 
         $verify = false;
 
-        foreach (static::$Apps as $name => $key)
-            if ($key === $secret)
+        foreach (\Config::get('applications') as $name => $app)
+            if ($app['auth_pass'] === $secret)
             {
                 $verify = true;
                 $this->App = $name;

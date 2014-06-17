@@ -27,7 +27,7 @@ class Dashboard
 
     public function __construct()
     {
-        $this->config = Config::get('dashboard');
+        $this->config = Config::get('applications.dashboard');
     }
 
     protected function getUrl()
