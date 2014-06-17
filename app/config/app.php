@@ -26,7 +26,7 @@ return array(
 	|
 	*/
 
-	'url' => 'http://manage.razorpay.dev',
+	'url' => 'https://dashboard.razorpay.com',
 
 	/*
 	|--------------------------------------------------------------------------
