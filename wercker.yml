@@ -13,6 +13,9 @@ build:
           name: copy HDFC config
           code: cp app/gateway/hdfc/HdfcGatewayConfig.php.wercker app/gateway/hdfc/HdfcGatewayConfig.php
       - script:
+          name: copy internal app auth config
+          code:  cp app/config/applications.sample.php app/config/applications.php
+      - script:
           name: set composer to use github oauth token
           code: composer config -g github-oauth.github.com $github_token
       - add-ssh-key:

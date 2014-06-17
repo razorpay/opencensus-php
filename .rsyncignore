@@ -4,6 +4,7 @@
 .DS_Store
 Thumbs.db
 /app/config/database.php
+/app/config/applications.php
 /app/config/testing/database.php
 /app/gateway/hdfc/HdfcGatewayConfig.php
 /bootstrap/environment.php
