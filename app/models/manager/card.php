@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\Manager;
 
@@ -32,7 +32,7 @@ class Card extends EntityManager
 
     protected static $createValidators = array('address');
 
-    protected static $modifiers = array('number', 'expiry_year');
+    protected static $modifiers = array('expiry_year');
 
     protected static $generators = array('last4');
 
@@ -40,7 +40,7 @@ class Card extends EntityManager
     {
         $addr_unset = array();
         $addr_set = array();
-        
+
         foreach(self::$address_attributes as $key)
         {
             if ((!isset($input[$key])) or
@@ -58,7 +58,7 @@ class Card extends EntityManager
         {
             $addr_unset_count = count($addr_unset);
             if (($addr_unset_count > 1) or
-                (($addr_unset_count === 1) and 
+                (($addr_unset_count === 1) and
                  ($addr_unset_count[0] !== 'address_line2')))
             {
                 $msg = implode(',', $addr_unset) . ' address values are not set.';
@@ -72,12 +72,6 @@ class Card extends EntityManager
         $last4 = substr($input['number'], -4);
 
         $this->setField('last4', $last4);
-    }
-
-    public function modifyNumber(& $input)
-    {
-        $input['number'] = str_replace(' ', '', $input['number']);
-        $input['number'] = str_replace('-', '', $input['number']);
     }
 
     public function modifyExpiryYear(& $input)
@@ -105,5 +99,13 @@ class Card extends EntityManager
 
             $this->fill($arr);
         }
+    }
+
+    public static function modifyNumber($number)
+    {
+        $number = str_replace(' ', '', $number);
+        $number = str_replace('-', '', $number);
+
+        return $number;
     }
 }

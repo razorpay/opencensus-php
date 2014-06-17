@@ -11,6 +11,8 @@ class Card
 
     public function create($input)
     {
+        $input['number'] = Manager\Card::modifyNumber($input['number']);
+
         $this->validateAndFillNetworkDetails($input);
 
         $data = $this->manager->getData();
@@ -24,6 +26,8 @@ class Card
     {
         $card = $this->create($input);
 
+        $input['number'] = Manager\Card::modifyNumber($input['number']);
+
         return array_merge(
             $card->toArray(),
             ['number' => $input['number'],
@@ -35,6 +39,7 @@ class Card
         $this->manager = Manager\Card::createValidate($input);
 
         $details = DAL\CardDetail::retrieveDetails($this->manager->getField('number'));
+
         $this->manager->fillNetworkDetails($details);
     }
 }
