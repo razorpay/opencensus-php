@@ -29,11 +29,12 @@ class TransactionController extends BaseController
                 //
                 // For all above set the status parameter
                 //
-                BasicAuth::getInstance()->getMerchantIdInArray($input);
                 $input[Field\Transaction::STATUS] = $param;
 
             case null:
                 //Common for all above
+                BasicAuth::getInstance()->getMerchantIdInArray($input);
+
                 $txnList = (new Transaction)->retrieveMultiple($input);
                 return Response::json($txnList);
 

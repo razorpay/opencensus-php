@@ -11,7 +11,7 @@ class RazorpayException extends Exception
     public function __construct($category, $message, $code = 0 , Exception $previous = null)
     {
         $this->category = $category;
-        
+
         parent::__construct($message, $code, $previous);
     }
 

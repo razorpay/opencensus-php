@@ -12,9 +12,7 @@ class InvalidArgumentException extends RazorpayException
         {
             $this->messageArray = $message;
 
-            $messages = implode('\n ', $message);
-            
-            parent::__construct($message, $code, $previous);
+            $message = implode('\n ', $message);
         }
 
         parent::__construct('Invalid Arguments', $message, $code, $previous);

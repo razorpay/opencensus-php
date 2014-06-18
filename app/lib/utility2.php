@@ -28,7 +28,7 @@ if (! function_exists('validate'))
 
         $validation = Validator::make($data, $rules);
 
-        if ($validation->fails()) 
+        if ($validation->fails())
         {
             throw new \Exceptions\InvalidArgumentException($validation->messages()->all());
         }
@@ -48,7 +48,7 @@ if (! function_exists('break_assoc_array'))
 			{
 				$array1[$key] = $value;
 			}
-			
+
 			if(in_array($key, $keys2))
 			{
 				$array2[$key] = $value;
@@ -79,7 +79,7 @@ if (! function_exists('GetTextBetweenTags'))
 	    $string = " ".$string;
 
 		$ini = strpos($string,$start);
-		
+
 		if ($ini === false) return null;
 
 		$ini += strlen($start);
