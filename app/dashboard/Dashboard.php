@@ -63,15 +63,14 @@ class Dashboard
 
     public function postRequest($job, $data)
     {
-        // $response = Requests::post(
-        //     $this->getUrl() . $data['resource'],
-        //     array(),
-        //     $data['message']
-        // );
+        $response = Requests::post(
+            $this->getUrl() . $data['resource'],
+            array(),
+            $data['message']
+        );
 
-        //  For debugging purposes, persist failed requests
-        // if (json_decode($response->body)->status === FALSE);
-        //     DashboardDal::persistAfterFail($data['message']);
+        /* For debugging purposes, persist requests */
+        DashboardDal::persistAfterFail($data['message']);
 
         $job->delete();
     }
