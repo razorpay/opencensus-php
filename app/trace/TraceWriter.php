@@ -55,9 +55,9 @@ class TraceWriter extends Logger
             $chromePHPFormatter = new Formatter\ChromePHPFormatter();
 
             $chromePHPHandle = new Handler\ChromePHPHandler();
-            
+
             $chromePHPHandle->setFormatter($chromePHPFormatter);
-            
+
             $this->pushHandler($chromePHPHandle);
         }
     }
@@ -65,6 +65,10 @@ class TraceWriter extends Logger
     protected function defineProcessors()
     {
         $callback = array($this, 'timestampProcessor');
+
+        $this->pushProcessor($callback);
+
+        $callback = array($this, 'traceCodeProcessor');
 
         $this->pushProcessor($callback);
 
@@ -143,33 +147,47 @@ class TraceWriter extends Logger
     /**
      * Adds timestamp in the format specified and needed
      * by splunk server
-     * 
-     * @param  [type] $record [description]
-     * @return [type]         [description]
+     *
+     * @param  array $record Array of content to be logged
+     * @return array         Array of content to be logged
+     *                       after modifications
      */
     public function timestampProcessor($record)
     {
         //unset($record['datetime']);
 
         $timezone = new \DateTimeZone(date_default_timezone_get() ?: 'UTC');
-        
+
         $microtime = microtime(true);
-        
+
         $milliseconds = sprintf("%03d", round(($microtime - floor($microtime)) * 1000));
-        
+
         $date = \DateTime::createFromFormat('U.u', sprintf('%.6F', $microtime), $timezone);
-        
+
         $date->setTimezone($timezone);
 
         $timestamp = $date->format('Y-m-d\TH:i:s') . '.' . $milliseconds;
 
         //
         // reordering records to bring timestamp to first position
-        // 
-        
+        //
+
         $record = ['timestamp' => $timestamp] + $record;
 
         unset($record['datetime']);
+
+        return $record;
+    }
+
+    public function traceCodeProcessor($record)
+    {
+        $code = $record['message'];
+
+        $message = TraceEvent::getMessage($code);
+
+        $record['message'] = $message;
+
+        $record = ['code' => $code] + $record;
 
         return $record;
     }
@@ -228,7 +246,7 @@ class TraceWriter extends Logger
     /**
      * In debug mode, this function returns all
      * the log records logged till now
-     * 
+     *
      * @return array Log records with context and extras
      */
     public function getRecords()
@@ -240,12 +258,12 @@ class TraceWriter extends Logger
     }
 
     /**
-     * In debug mode, this function returns all the 
+     * In debug mode, this function returns all the
      * log records logged till now.
-     * The array returned is only one level deep 
+     * The array returned is only one level deep
      * with sub-arrays keys combined with their parent
      * ones
-     * 
+     *
      * @return array One level deep log records
      */
     public function getFlattenedRecordsForScreen()
