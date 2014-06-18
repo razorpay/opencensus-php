@@ -96,6 +96,10 @@ class Transaction extends Service
             ]);
             return;
         }
+
+        $txn = $this->txn->refund($txn);
+
+        return $txn->toArray();
     }
 
     /**

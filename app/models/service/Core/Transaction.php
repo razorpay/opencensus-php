@@ -255,6 +255,8 @@ class Transaction
                 TraceEvent::TRANSACTION_REFUND_FAILED,
                 $txnData->toArray());
         }
+
+        return $txn;
     }
 
     /**
