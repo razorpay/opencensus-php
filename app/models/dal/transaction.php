@@ -171,7 +171,7 @@ class Transaction extends UuidDAL
 
     public function getMerchantId()
     {
-        return (int)$this->getAttribute('merchant_id');
+        return (int)$this->getAttribute(Field\Common::MERCHANT_ID);
     }
 
     const WITH_CARD             = 0x256;
@@ -247,5 +247,17 @@ class Transaction extends UuidDAL
         $this->save();
 
         $this->error = $error;
+    }
+
+    public static function findByIdAndMerchantId($id, $merchantId)
+    {
+        return static::where(Field\Common::MERCHANT_ID, $merchantId)
+                     ->find($id);
+    }
+
+    public static function findByIdAndMerchantIdOrFail($id, $merchantId)
+    {
+        return static::where(Field\Common::MERCHANT_ID, $merchantId)
+                     ->findOrFail2($id);
     }
 }

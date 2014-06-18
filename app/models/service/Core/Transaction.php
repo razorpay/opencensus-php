@@ -34,7 +34,7 @@ class Transaction
      *                      DAL\Transaction object and
      *                      card data array
      */
-    public function createEntitites($input = null)
+    public function createEntitites(array $input)
     {
         $cardToken = null;
 
@@ -174,21 +174,28 @@ class Transaction
     {
         $txn = $this->txn;
 
+        if ($status === 'enrolled')
+            return $data;
+
         switch ($status)
         {
+            //
+            // This case means that card (DC) is enrolled.
+            // Now a form will be displayed and submitted
+            // to bank ACS for for customer to enter 3d-secure
+            // or OTP.
+            //
             case 'enrolled':
             return $data;
 
-            case 'not enrolled':
-                $txn->setStatus(TransactionStatus::AUTH);
-                return $txn;
+            // case 'not enrolled':
+            //     $txn->setStatus(TransactionStatus::AUTH);
+            //     return $txn;
 
-            //@todo: Update data on hold
             case TransactionStatus::AUTH:
                 $this->updateTransactionAuth();
                 break;
 
-            //@todo: Update data on captured
             case TransactionStatus::CAPTURED:
                 $this->updateTransactionCaptured();
                 break;
@@ -213,10 +220,49 @@ class Transaction
     }
 
     /**
+     * Refunds a transaction
+     * Pass \DAL\Transaction object as argument
+     */
+    public function refund(DAL\Transaction $txn)
+    {
+        $data = array(
+            'txn' => $txn->toArrayEx(
+                        DAL\Transaction::WITH_CARD));
+
+        list($status, $error) = (new GatewayManager)->refund($data);
+
+        if ($status)
+        {
+            $txn->setStatus(TransactionStatus::REFUNDED);
+
+            $txnArray = $txn->toArray();
+
+            //Logging
+            $this->trace->info(
+                TraceEvent::TRANSACTION_REFUNDED,
+                $txnArray);
+
+            //Analytics
+            //$txnArray['merchant_id'] = $txn->getMerchantId();
+            \Dashboard\Transaction::getInstance()->queueRecord($txnArray);
+        }
+        else
+        {
+            $txn->setError($error);
+
+            //Logging
+            $this->trace->error(
+                TraceEvent::TRANSACTION_REFUND_FAILED,
+                $txnData->toArray());
+        }
+    }
+
+    /**
      * Capture a preivous auth transaction
      *
-     * @param  [type] $txn [description]
-     * @return [type]      [description]
+     * @param  DAL\Transaction $txn DAL\Transaction object
+     *
+     * @return array                Transaction array
      */
     public function capture(DAL\Transaction $txn)
     {
@@ -234,16 +280,18 @@ class Transaction
             $this->trace->info(
                 TraceEvent::TRANSACTION_CAPTURED,
                 $txn->toArray());
+
+            $ledger = (new DAL\Ledger)->updateRecords($txn);
         }
         else
         {
-            $txn->setStatus('capture_failed');
+            $txn->setStatus(TransactionStatus::CAPTURE_FAILED);
             $txn->setError($error);
 
             //Logging
             $this->trace->error(
-                TraceEvent::TRANSACTION_FAILED,
-                $txn->toArray() + array('message' => 'Transaction Capture Request Failed'));
+                TraceEvent::TRANSACTION_CAPTURE_FAILED,
+                $txn->toArray());
         }
 
         return $txn;
