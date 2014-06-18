@@ -238,6 +238,13 @@ class HdfcGateway extends BaseGateway
         return $creds;
     }
 
+    /**
+     * [process description]
+     * @param  array  $input
+     * @return array
+     * The return array consists of two vars,
+     * 'status' and 'error'
+     */
     public function process(array $input)
     {
         // Enroll card
@@ -279,9 +286,18 @@ class HdfcGateway extends BaseGateway
         return $this->decideAuthStepAfterEnroll();
     }
 
+    /**
+     * After card enroll and bank ACS form submission,
+     * bank redirects to us with 'MD' field and PaRes.
+     * Next step is auth.
+     *
+     * @param  array  $input [description]
+     *
+     * @return array         [description]
+     */
     public function bankAcsCallback(array $input)
     {
-        $this->validateBankAcsCallbackFields($input);
+        validate($this->bankAcsResponseRules, $input);
 
         $this->model = HdfcGatewayDal::findOrFail2($input['MD']);
 
@@ -309,6 +325,15 @@ class HdfcGateway extends BaseGateway
 
         HdfcGatewayResponseXmlDal::saveXml($this->id, $response['xml'], $response['type']);
 
+        //
+        // This step is very crucial for deciding future steps in
+        // transaction flow.
+        //
+        // For any operation, whether enroll, auth or support,
+        // the success or failure at different stages is decided on the basis of
+        // $this->error variable.
+        // Be careful before making any change around here.
+        //
         if (isset($response['error']['code']))
         {
             $this->error = true;
@@ -328,7 +353,7 @@ class HdfcGateway extends BaseGateway
     }
 
     /**
-     * Stips sensitive data before calling trace class to
+     * Strips sensitive data before calling trace class to
      * prevent sensitive data from being traced
      */
     protected function trace($level, $message, array $context)

@@ -53,22 +53,6 @@ trait HdfcGatewayAuth
                         'callbackUrl' => $this->callbackUrl));
     }
 
-    protected function validateBankAcsCallbackFields(array $input)
-    {
-        $invalid_keys = array_diff_key($input, $this->bankAcsResponseRules);
-
-        if (count($invalid_keys) !== 0)
-        {
-            throw new Exceptions\InvalidKeysException('Gateway Exception: '.$invalid_keys);
-        }
-
-        $validation = \Validator::make($input, $this->bankAcsResponseRules);
-
-        if ($validation->fails())
-        {
-            throw new InvalidArgumentException('Gateway Exception: Invalid Arguements '.$validation->messages()->all());
-        }
-    }
 
     public function postAuthEnrolledRequest()
     {
@@ -76,11 +60,10 @@ trait HdfcGatewayAuth
         // Verify that the card is already enrolled.
         // Throw exception otherwise.
         //
-        if ((int) $this->model->enroll_result !== HdfcGatewayResult::ENROLLED)
-        {
-            throw new LogicException('Gateway Exception: Result not valid');
-        }
-        else if ($this->model->status !== 'VERES Received')
+
+        Assert((int) $this->model->enroll_result === HdfcGatewayResult::ENROLLED);
+
+        if ($this->model->status !== 'VERES Received')
         {
             throw new InvalidArgumentException('Gateway Exception: Status not valid');
         }
@@ -106,6 +89,23 @@ trait HdfcGatewayAuth
 
     protected function postAuthNotEnrolledRequestToBank()
     {
+        $this->createAuthNotEnrolledRequestFields();
+
+        $this->runRequestResponseFlow(
+            $this->authNotEnrolledRequest,
+            $this->authNotEnrolledResponse);
+
+        $this->model->persistAfterCCAuth(
+                        $this->authNotEnrolledResponse['data']);
+
+        $this->traceAuthNotEnrolledResponse();
+
+        return array('auth',
+                    array('data' => $this->authNotEnrolledResponse['data']));
+    }
+
+    protected function createAuthNotEnrolledRequestFields()
+    {
         //
         // Only need to add zip and addr fields
         // since other fields have already been added during enroll
@@ -122,42 +122,34 @@ trait HdfcGatewayAuth
             Trace::DEBUG,
             TraceEvent::GATEWAY_NOT_ENROLLED_REQUEST,
             $this->authNotEnrolledRequest);
+    }
 
-        $this->runRequestResponseFlow(
-            $this->authNotEnrolledRequest,
-            $this->authNotEnrolledResponse);
+    protected function traceAuthNotEnrolledResponse()
+    {
+        $response = &$this->authNotEnrolledResponse;
 
+        $response['data']['processed'] = ($response['data']['result'] == 'APPROVED') ? 1 : 0;
 
-        $this->model->persistAfterCCAuth(
-                        $this->authNotEnrolledResponse['data']);
-
-        $notEnrollResponse = $this->authNotEnrolledResponse;
-
-        $notEnrollResponse['data']['processed'] = ($notEnrollResponse['data']['result'] == 'APPROVED') ? 1 : 0;
-
-        if($notEnrollResponse['data']['processed'])
+        if($response['data']['processed'])
         {
             $this->trace(
                 Trace::INFO,
                 TraceEvent::GATEWAY_NOT_ENROLLED_RESPONSE,
-                $notEnrollResponse);
+                $response);
         }
         else
         {
             $this->trace(
                 Trace::ERROR,
                 TraceEvent::GATEWAY_NOT_ENROLLED_ERROR,
-                $notEnrollResponse);
+                $response);
         }
 
-        return array('not enrolled',
-                     array(
-                        'data' => $notEnrollResponse['data']));
     }
 
     protected function persistAfterDCAuth()
     {
-        if (isset($this->authEnrolledResponse['error']['code']))
+        if ($this->error)
         {
             $this->model->persistAfterDCAuthError($this->authEnrolledResponse['error']);
 
