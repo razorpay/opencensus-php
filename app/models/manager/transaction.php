@@ -8,7 +8,7 @@ class Transaction extends EntityManager
 {
     protected static $createRules = array(
         'merchant_id'   =>  'required|numeric',
-        'amount'        =>  'required|numeric|max:10000',
+        'amount'        =>  'required|numeric|max:500000',
         'currency'      =>  'required|max:3',
         'token'         =>  'required|alpha_num',
         'desc'          =>  'max:1000',
