@@ -3,6 +3,7 @@
 use Models\Service\Transaction;
 use Models\Service\BasicAuth;
 use Constants\Field;
+use Models\Manager\TransactionStatus;
 
 class TransactionController extends BaseController
 {
@@ -21,11 +22,11 @@ class TransactionController extends BaseController
 
         switch($param)
         {
-            case 'open':
-            case 'auth':
-            case 'captured':
-            case 'settled':
-
+            case TransactionStatus::OPEN:
+            case TransactionStatus::AUTH:
+            case TransactionStatus::CAPTURED:
+            case TransactionStatus::SETTLED:
+            case TransactionStatus::FAILED:
                 //
                 // For all above set the status parameter
                 //
