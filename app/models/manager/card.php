@@ -35,7 +35,7 @@ class Card extends EntityManager
 
     protected static $generators = array('last4');
 
-    protected function validateExpiryYear($input)
+    protected function validateExpiryDate($input)
     {
         $month = $input['expiry_month'];
         $year = $input['expiry_year'];

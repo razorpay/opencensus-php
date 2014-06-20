@@ -29,13 +29,13 @@ class EntityManager
     /**
      * Fields which will be modified before
      * input validation
-     * 
+     *
      * @var array
      */
     protected static $modifiers = array();
 
     /**
-     * Validator functions that will be 
+     * Validator functions that will be
      * rung during build on input data
      */
     protected static $validators = array();
@@ -56,7 +56,7 @@ class EntityManager
      * Denotes whether the current object
      * has been built from input (true) or
      * loaded from storage (false)
-     * 
+     *
      * @var boolean
      */
     protected $built = false;
@@ -105,9 +105,9 @@ class EntityManager
     /**
      * Verifies validity of input values and keys.
      * @param  array    $input     Input array supplied
-     * @param  string   $operation Operation for which input 
+     * @param  string   $operation Operation for which input
      *                             is supplied
-     * 
+     *
      * @return void     throws exception for error
      */
     protected function validateInput($input, $operation)
@@ -115,21 +115,23 @@ class EntityManager
         $this->validateInputKeys($input, $operation);
 
         $this->validateInputValues($input, $operation);
+
+        $this->runValidators($input, $operation);
     }
 
     /**
      * Checks that all keys present in the input are allowed.
-     * 
+     *
      * @param  array    $input     Input array supplied
-     * @param  string   $operation Operation for which input 
+     * @param  string   $operation Operation for which input
      *                             is supplied
-     *                             
+     *
      * @return void     throws exception for error
      */
     protected function validateInputKeys($input, $operation)
     {
         $rules_var = $operation.'Rules';
-        
+
         $invalid_keys = array_keys(array_diff_key($input, static::$$rules_var));
 
         if (count($invalid_keys) > 0)
@@ -140,15 +142,15 @@ class EntityManager
 
     /**
      * Checks validity and presence of input values.
-     * 
+     *
      * @param  array    $input     Input array supplied
-     * @param  string   $operation Operation for which input 
+     * @param  string   $operation Operation for which input
      *                             is supplied
-     *                             
+     *
      * @return void     throws exception for error
      */
     protected function validateInputValues($input, $operation)
-    {   
+    {
         $rules_var = $operation.'Rules';
         $validation = \Validator::make(
                         $input,
@@ -158,8 +160,6 @@ class EntityManager
         {
             throw new \InvalidArgumentException(join("\n",$validation->messages()->all()));
         }
-
-        $this->runValidators($input, $operation);        
     }
 
     protected function runValidators($input, $operation)
@@ -170,7 +170,7 @@ class EntityManager
         {
             foreach (static::$$operation_function_var as $validator)
             {
-                $validate_func = 'validate'.ucfirst($validator);
+                $validate_func = 'validate'.studly_case($validator);
 
                 $this->$validate_func($input);
             }
@@ -218,13 +218,13 @@ class EntityManager
 
     /**
      * Returns value of the field
-     * 
+     *
      * @param  string  $key
      * @return mixed
      */
     public function getField($key)
     {
-        if ((isset($this->field)) and 
+        if ((isset($this->field)) and
             (! in_array($key, $this->field)))
         {
             throw new \Exceptions\InvalidKeysException;
@@ -238,7 +238,7 @@ class EntityManager
 
     public function setField($key, $value)
     {
-        if ((count($this->field) > 0) and 
+        if ((count($this->field) > 0) and
             (! in_array($key, $this->field)))
         {
             throw new \InvalidKeysException;
