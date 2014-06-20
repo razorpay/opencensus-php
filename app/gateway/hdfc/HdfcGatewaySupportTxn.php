@@ -8,6 +8,16 @@ use Trace\TraceEvent;
 
 trait HdfcGatewaySupportTxn
 {
+    /**
+     * Forms the crux of doing support
+     * transactions (capture and refund).
+     *
+     * @param  array    $input array containing txn
+     *                         and card details
+     * @param  string   $type  should be either 'capture'
+     *                         or 'refund'
+     * @return array
+     */
     protected function supportTxn($input, $type)
     {
         $this->getModel($input['txn']['id']);
@@ -32,18 +42,19 @@ trait HdfcGatewaySupportTxn
             $this->supportTxnRequest,
             $this->supportTxnResponse);
 
-
         $error = null;
 
         $status = ! ($this->error);
 
         if($this->error)
         {
-            $error = HdfcGatewayErrorHandler::parseErrorInString(
+            $error = HdfcGatewayErrorHandler::translateError(
                         $this->supportTxnResponse['error']['result']);
+            // $error = HdfcGatewayErrorHandler::parseErrorInString(
+            //             $this->supportTxnResponse['error']['result']);
 
-            if ($error === false)
-                    $error = HdfcGatewayErrorHandler::unknownError();
+            // if ($error === false)
+            //         $error = HdfcGatewayErrorHandler::unknownError();
         }
 
         $this->persistAfterSupportTxn('refund');
@@ -100,6 +111,12 @@ trait HdfcGatewaySupportTxn
         $data['udf1'] = $data['udf2'] = $data['udf3'] = $data['udf4'] = $data['udf5'] = '';
     }
 
+    /**
+     * Checks that trackid is in response is same as the
+     * one in request sent
+     *
+     * @return void
+     */
     protected function validateRefundResponse()
     {
         $trackid = $this->supportTxnResponse['data']['trackid'];
