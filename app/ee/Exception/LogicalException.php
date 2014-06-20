@@ -1,6 +1,6 @@
 <?php
 
-namespace Exceptions;
+namespace EE\Exception;
 
 class LogicException extends RazorpayException
 {
