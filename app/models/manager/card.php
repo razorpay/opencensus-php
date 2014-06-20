@@ -9,11 +9,11 @@ use Models\Service;
 class Card extends EntityManager
 {
     protected static $createRules = array(
-        'number'        => 'required|numeric|luhn|digits_between:12,19',
-        'expiry_month'  => 'required|month',
-        'expiry_year'   => 'required|expiry_year',
-        'cvv'           => 'required|numeric|digits_between:3,4',
-        'name'          => 'required|alpha_space|max:100',
+        'number'            => 'required|numeric|luhn|digits_between:12,19',
+        'expiry_month'      => 'required|numeric|digits_between:1,2|max:12',
+        'expiry_year'       => 'required|numeric|digits:4|year_length',
+        'cvv'               => 'required|numeric|digits_between:3,4',
+        'name'              => 'required|alpha_space|max:100',
         'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
         'address_line2'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
         'address_city'      => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
@@ -27,14 +27,28 @@ class Card extends EntityManager
         'address_city',
         'address_state',
         'address_country',
-        'address_zip'
-        );
+        'address_zip');
 
-    protected static $createValidators = array('address');
+    protected static $createValidators = array('address', 'expiry_date');
 
     protected static $modifiers = array('expiry_year');
 
     protected static $generators = array('last4');
+
+    protected function validateExpiryYear($input)
+    {
+        $month = $input['expiry_month'];
+        $year = $input['expiry_year'];
+
+        $currentMonth = date('M');
+        $currentYear = date('Y');
+
+        if (($month < $currentMonth) &&
+            ($year < $currentYear))
+        {
+            throw new \InvalidCardException('slkfdsf');
+        }
+    }
 
     protected function validateAddress($input)
     {
