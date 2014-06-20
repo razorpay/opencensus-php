@@ -57,6 +57,11 @@ class HdfcGateway extends BaseGateway
     protected $error = false;
 
     /**
+     * @var  \EE\Error\Error
+     */
+    protected $errorObj = null;
+
+    /**
      * Fields sent in xml format to enroll
      * @var array
      */
@@ -244,6 +249,11 @@ class HdfcGateway extends BaseGateway
      * @return array
      * The return array consists of two vars,
      * 'status' and 'error'
+     *
+     * 'status' can be either
+     * enrolled/auth/failed
+     *
+     * 'error' is the error object
      */
     public function process(array $input)
     {
@@ -254,10 +264,7 @@ class HdfcGateway extends BaseGateway
         }
         else
         {
-            // $error = HdfcGatewayErrorHandler::translateError($er['error']['code']);
-            $er = $this->enrollResponse;
-
-            return array('failed', $er['error']);
+            return $this->getErrorOnEnrollFailure();
         }
     }
 

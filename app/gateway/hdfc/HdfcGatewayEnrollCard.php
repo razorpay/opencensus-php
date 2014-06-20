@@ -73,6 +73,16 @@ trait HdfcGatewayEnrollCard
         return true;
     }
 
+    protected function getErrorOnEnrollFailure()
+    {
+        $er = $this->enrollResponse;
+
+        $error = HdfcGatewayErrorHandler::translateError(
+                      $er['error']['code']);
+
+        return array('failed', $error);
+    }
+
     /**
      * Collect all fields to be sent for
      * enrolling the card

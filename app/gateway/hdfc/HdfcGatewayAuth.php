@@ -75,7 +75,7 @@ trait HdfcGatewayAuth
 
         $data = &$this->authEnrolledRequest['data'];
 
-        list($data['id'], $data['password']) = HdfcGatewayConfig::getCreds();//static::getCredentials();
+        list($data['id'], $data['password']) = static::getCredentials();
 
         $this->runRequestResponseFlow(
             $this->authEnrolledRequest,
