@@ -8,6 +8,8 @@ class RazorpayException extends Exception
 {
     protected $category;
 
+    protected $error = null;
+
     public function __construct($category, $message, $code = 0 , Exception $previous = null)
     {
         $this->category = $category;
@@ -18,5 +20,15 @@ class RazorpayException extends Exception
     public function getCategory()
     {
         return $this->category;
+    }
+
+    protected function setError($error)
+    {
+        $this->error = $error;
+    }
+
+    public function getError()
+    {
+        return $this->error;
     }
 }
