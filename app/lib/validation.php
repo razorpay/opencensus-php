@@ -70,7 +70,7 @@ Validator::extend('card_type', function($attribute, $value, $parameters)
 	return false;
 });
 
-Validator::extend('year_length', function($attribute, $value, $parameters))
+Validator::extend('year_length', function($attribute, $value, $parameters)
 {
     $year = $value;
 
@@ -79,7 +79,7 @@ Validator::extend('year_length', function($attribute, $value, $parameters))
         throw new \InvalidArgumentException('year should be numeric');
     }
 
-    $len = strlen(string($year));
+    $len = strlen((string)$year);
 
     if (($len === 2) or
         ($len === 4))
@@ -88,4 +88,4 @@ Validator::extend('year_length', function($attribute, $value, $parameters))
     }
 
     return false;
-}
+});
