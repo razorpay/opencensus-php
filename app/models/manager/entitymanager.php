@@ -2,7 +2,7 @@
 
 namespace Models\Manager;
 
-use EE\Exception\InvalidKeysException;
+use EE\Exception\ExtraFieldsException;
 use EE\Exception\InvalidArgumentException;
 
 class EntityManager
@@ -139,7 +139,7 @@ class EntityManager
 
         if (count($invalid_keys) > 0)
         {
-            throw new InvalidKeysException($invalid_keys);
+            throw new ExtraFieldsException($invalid_keys);
         }
     }
 
@@ -230,7 +230,7 @@ class EntityManager
         if ((isset($this->field)) and
             (! in_array($key, $this->field)))
         {
-            throw new InvalidKeysException;
+            throw new ExtraFieldsException;
         }
 
         if (array_key_exists($key, $this->data))
@@ -244,7 +244,7 @@ class EntityManager
         if ((count($this->field) > 0) and
             (! in_array($key, $this->field)))
         {
-            throw new InvalidKeysException;
+            throw new ExtraFieldsException;
         }
 
         $this->data[$key] = $value;

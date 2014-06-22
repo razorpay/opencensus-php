@@ -7,7 +7,7 @@ use Models\DAL;
 use Models\Service;
 
 use EE\Exception;
-use EE\Exception\InvalidCardException;
+use EE\Exception\CardErrorException;
 use EE\Error\ErrorCode;
 
 class Card extends EntityManager
@@ -45,17 +45,17 @@ class Card extends EntityManager
         {
             parent::build($input);
         }
-        catch (Exception\InvalidCardException $e)
+        catch (Exception\CardErrorException $e)
         {
             throw $e;
         }
         catch (Exception\InvalidArgumentException $e)
         {
-            throw new InvalidCardException($e->getMessageBag(), 0, $e);
+            throw new CardErrorException($e->getMessageBag(), 0, $e);
         }
         catch (Exception\InvalidKeysException $e)
         {
-            throw new InvalidCardException($e->getMessageBag(), 0, $e);
+            throw new CardErrorException($e->getMessageBag(), 0, $e);
         }
     }
 
@@ -70,7 +70,7 @@ class Card extends EntityManager
         if (($month < $currentMonth) &&
             ($year < $currentYear))
         {
-            throw new InvalidCardException(
+            throw new CardErrorException(
                 'Expiry date should not be in the past',
                 ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE);
         }
