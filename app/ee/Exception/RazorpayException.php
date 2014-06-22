@@ -3,23 +3,15 @@
 namespace EE\Exception;
 
 use Exception;
+use Response;
 
 class RazorpayException extends Exception
 {
-    protected $category;
-
     protected $error = null;
 
-    public function __construct($category, $message, $code = 0 , Exception $previous = null)
+    public function __construct($message, $code = 0 , Exception $previous = null)
     {
-        $this->category = $category;
-
         parent::__construct($message, $code, $previous);
-    }
-
-    public function getCategory()
-    {
-        return $this->category;
     }
 
     protected function setError($error)
@@ -30,5 +22,19 @@ class RazorpayException extends Exception
     public function getError()
     {
         return $this->error;
+    }
+
+    public function getPublicError()
+    {
+        return $this->error->getPublicError();
+    }
+
+    public function generateJsonResponse()
+    {
+        $error = $this->getPublicError();
+
+        $httpStatusCode = $error->getHttpStatusCode();
+
+        return Response::json($error->toArray(), $httpStatusCode);
     }
 }
