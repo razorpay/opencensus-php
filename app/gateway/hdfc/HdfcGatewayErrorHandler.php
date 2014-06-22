@@ -65,27 +65,21 @@ class HdfcGatewayErrorHandler
     	return $response['error'];
     }
 
-    public static function parseErrorInString($result)
+    public static function parseErrorInString($code)
     {
-        $error_codes = array_keys(static::$errorMessages);
-        $error = array();
-        foreach($error_codes as $error_code)
-        {
-            if (strpos($result, $error_code) !== false)
-            {
-                $error['code'] = $error_code;
-                $error['message'] = static::$errorMessages[$error_code];
-                return $error;
-            }
-        }
+        if (defined('HdfcGatewayErrorCode::'.$code) === false)
+            return false;
 
-        return false;
+        $error['code'] = $code;
+        $error['message'] = HdfcGatewayErrorHandler::$errorMessages[$code];
+
+        return $error;
     }
 
     public static function getInvalidEnrollCodeError()
     {
         $error['code'] = HdfcGatewayErrorCode::RP00003;
-        $error['message'] = static::$errorMessages[HdfcGatewayErrorCode::RP00003];
+        $error['message'] = HdfcGatewayErrorCode::$errorMessages[HdfcGatewayErrorCode::RP00003];
 
         return $error;
     }

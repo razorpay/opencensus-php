@@ -319,7 +319,9 @@ class HdfcGateway extends BaseGateway
         $error = $processed = false;
 
         if ($this->error)
-            $error = HdfcGatewayErrorHandler::parseErrorInString($this->authEnrolledResponse['error']['text']);
+        {
+            $error = HdfcGatewayErrorHandler::parseErrorInString($this->authEnrolledResponse['error']['code']);
+        }
         else
             $processed = true;
 
@@ -368,7 +370,7 @@ class HdfcGateway extends BaseGateway
         if (isset($context['data']))
         {
             //
-            // If 'data' field is present, then we make sure that
+            // If 'data' field is present, then make sure that
             // no field defined in 'stripFieldsList' are present
             // in data. If so, then unset them. This is to
             // ensure extraneous or sensitive fields aren't traced.
