@@ -29,7 +29,7 @@
 			"app/database/seeds",
 			"app/tests/TestCase.php",
 			"app/lib",
-			"app/exceptions",
+			"app/ee",
             "app/constants"
 		]
 	},
