@@ -6,6 +6,10 @@ use \Validator;
 use Models\DAL;
 use Models\Service;
 
+use EE\Exception;
+use EE\Exception\InvalidCardException;
+use EE\Error\ErrorCode;
+
 class Card extends EntityManager
 {
     protected static $createRules = array(
@@ -35,6 +39,26 @@ class Card extends EntityManager
 
     protected static $generators = array('last4');
 
+    public function build(array $input)
+    {
+        try
+        {
+            parent::build($input);
+        }
+        catch (Exception\InvalidCardException $e)
+        {
+            throw $e;
+        }
+        catch (Exception\InvalidArgumentException $e)
+        {
+            throw new InvalidCardException($e->getMessageBag(), 0, $e);
+        }
+        catch (Exception\InvalidKeysException $e)
+        {
+            throw new InvalidCardException($e->getMessageBag(), 0, $e);
+        }
+    }
+
     protected function validateExpiryDate($input)
     {
         $month = $input['expiry_month'];
@@ -46,7 +70,9 @@ class Card extends EntityManager
         if (($month < $currentMonth) &&
             ($year < $currentYear))
         {
-            throw new \InvalidCardException('slkfdsf');
+            throw new InvalidCardException(
+                'Expiry date should not be in the past',
+                ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE);
         }
     }
 

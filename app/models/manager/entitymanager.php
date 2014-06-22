@@ -2,6 +2,9 @@
 
 namespace Models\Manager;
 
+use EE\Exception\InvalidKeysException;
+use EE\Exception\InvalidArgumentException;
+
 class EntityManager
 {
 
@@ -136,7 +139,7 @@ class EntityManager
 
         if (count($invalid_keys) > 0)
         {
-            throw new \Exceptions\InvalidKeysException($invalid_keys);
+            throw new InvalidKeysException($invalid_keys);
         }
     }
 
@@ -158,7 +161,7 @@ class EntityManager
 
         if ($validation->fails())
         {
-            throw new \InvalidArgumentException(join("\n",$validation->messages()->all()));
+            throw new InvalidArgumentException($validation->messages());
         }
     }
 
@@ -227,7 +230,7 @@ class EntityManager
         if ((isset($this->field)) and
             (! in_array($key, $this->field)))
         {
-            throw new \Exceptions\InvalidKeysException;
+            throw new InvalidKeysException;
         }
 
         if (array_key_exists($key, $this->data))
@@ -241,7 +244,7 @@ class EntityManager
         if ((count($this->field) > 0) and
             (! in_array($key, $this->field)))
         {
-            throw new \InvalidKeysException;
+            throw new InvalidKeysException;
         }
 
         $this->data[$key] = $value;
@@ -274,7 +277,7 @@ class EntityManager
     {
         if (! is_bool($value))
         {
-            throw new \InvalidArgumentException('Argument should be boolean');
+            throw new InvalidArgumentException('Argument should be boolean');
         }
 
         $this->built = $value;
