@@ -2,17 +2,54 @@
 
 namespace EE\Exception;
 
-class CardErrorException extends RazorpayException
+use Illuminate\Support\MessageBag;
+
+class CardErrorException extends BadRequestException
 {
-	protected $field;
 
-    public function __construct($field, $message, $code = 0 , Exception $previous = NULL)
-    {
-        parent::__construct('Card Error', $message, $code, $previous);
-    }
+    /**
+     * Card field for which the public error will be shown
+     * @var string
+     */
+    protected $cardField = null;
 
-    public function getField()
+    public function __construct(
+        $message = '',
+        $code = 0,
+        \Exception $previous = null)
     {
-    	return $this->field;
+        $intcode = 0;
+
+        parent::__construct($message, $intcode, $previous);
+
+        if (($message !== null) and
+            (is_string($message) === false))
+        {
+            list($field, $desc) = $this->getFirstPair();
+
+            $errorCode = '\EE\Error\ErrorCode::CARD_ERROR_INVALID_'.strtoupper($field);
+
+            if (defined($errorCode) === false)
+            {
+                throw new \InvalidArgumentException($field . ' error not defined');
+            }
+
+            $errorCode = constant($errorCode);
+
+            $this->error = new \EE\Error\Error($errorCode, $desc);
+        }
+        else if ($code !== 0)
+        {
+            if (defined('\EE\Error\ErrorCode::'.$code))
+            {
+                $error = new \EE\Error\Error($code, $message);
+
+                $this->setError($error);
+            }
+            else
+            {
+                throw new \InvalidArgumentException($code . ' is not defined');
+            }
+        }
     }
 }
