@@ -12,7 +12,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 <HTML>
 <HEAD>
 	<TITLE>Testing Page-TranPortal VbyV</TITLE>
- </HEAD>
+</HEAD>
 
 <BODY>
 <table border="1" align="center"  width="100%" >
@@ -37,34 +37,9 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 	</TR>
 	<TR>
 		<TD colspan ='40'>ExpMonth:</TD>
-		<TD colspan='40'><select type="text" name="card[expiry_month]" value="1" >
-			<option value="1">1</option>
-			<option value="2">2</option>
-			<option value="3">3</option>
-			<option value="4">4</option>
-			<option value="5">5</option>
-			<option value="6">6</option>
-			<option value="7">7</option>
-			<option value="8">8</option>
-			<option value="9">9</option>
-			<option value="10">10</option>
-			<option value="11">11</option>
-			<option value="12" selected>12</option>
-			</select>
+        <td><input type="text" name="card[expiry_month]" value="11"></td>
 		ExpYear:
-		<select type="text" name="card[expiry_year]" value="2014">
-			<option value="2011">2011</option>
-			<option value="2012">2012</option>
-			<option value="2013">2013</option>
-			<option value="2014" selected>2014</option>
-			<option value="2015">2015</option>
-			<option value="2016">2016</option>
-			<option value="2013">2017</option>
-			<option value="2014">2018</option>
-			<option value="2015">2019</option>
-			<option value="2016">2020</option>
-			</select>
-		</TD></tr>
+        <td><input type="text" name="card[expiry_year]" value="2015"></td>
 		<tr>
 		<TD colspan='40'>Amount:</TD>
 		<td><input type="text" name="amount" size="25" value="500"></td>
