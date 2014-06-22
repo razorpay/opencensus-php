@@ -57,12 +57,12 @@ class Error
     {
         $pos = strpos($code, '_');
 
-        $category = strtolower(substr($code, $pos));
+        $category = substr($code, 0, $pos);
 
         $this->attributes['category'] = $category;
     }
 
-    protected function setData(array $data)
+    protected function setData($data)
     {
         $this->attributes['data'] = $data;
     }
@@ -77,7 +77,7 @@ class Error
             throw new \InvalidArgumentException('desc should be string');
         }
 
-        $this->attribute['desc'] = $desc;
+        $this->attributes['desc'] = $desc;
     }
 
     protected function getAttribute($attr)
@@ -87,9 +87,6 @@ class Error
 
     protected function constructPublicError()
     {
-        $code = $this->getAttribute('code');
-        $desc = $this->getAttribute('desc');
-
         $this->publicError = new PublicError();
 
         switch ($this->getAttribute('category'))
@@ -98,7 +95,7 @@ class Error
                 $this->handleGatewayErrors();
                 break;
             case ErrorCategory::CARD:
-                $this->handleCardErrors($code, $desc);
+                $this->handleCardErrors();
                 break;
             case ErrorCategory::DB:
                 // @todo fill this case
@@ -114,6 +111,11 @@ class Error
         $publicError = new PublicError($code, $description);
     }
 
+    public function getPublicError()
+    {
+        return $this->publicError;
+    }
+
     protected function handleGatewayErrors()
     {
         $code = $this->getAttribute('code');
@@ -121,7 +123,7 @@ class Error
 
         switch ($code)
         {
-            case Error::GATEWAY_REQUEST_TIMEOUT:
+            case ErrorCode::GATEWAY_REQUEST_TIMEOUT:
                 $this->publicError->setGatewayTimeout();
                 return;
 
