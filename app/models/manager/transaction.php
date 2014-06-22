@@ -20,46 +20,49 @@ class Transaction extends EntityManager
         'email'         =>  'required|email|max:250',
         'contact'       =>  'required|numeric|digits_between:8,12');
 
-    //TODO
-    //Change it to refundRules, include amount as well
-    protected static $idRules = array(
-        'id'            =>  'required|alpha_num|max:32');
-
     protected static $generators = array('status');
 
     protected static $createValidators = array('currency', 'udf');
 
+    /**
+     * Validates Udf fields. email and contact is
+     * currently compulsory
+     *
+     * @param  array $input  input array
+     * @return void
+     */
     protected function validateUdf($input)
     {
         $udf = $input['udf'];
 
         if (!is_array($udf))
         {
-            throw new \InvalidArgumentException('Transaction Exception: Udf not an array');
+            throw new BadRequestException(
+                'Udf should be provided as an array');
         }
 
         if (count($udf) > 15)
         {
-            throw new \InvalidArgumentException('Transaction Exception: Udf keys greater than 15');
+            throw new BadRequestException('Number of fields in udf should be less than or equal to 15');
         }
 
         $validation = \Validator::make($udf, static::$udfRules);
 
+        if ($validation->fails())
+        {
+            throw new UdfErrorException($validation->messages());
+        }
+
         foreach ($udf as $key => $value)
         {
             if (is_array($value))
-                throw new \InvalidArgumentException('Transaction Exception: Udf values should not be an array');
+                throw new BadRequestException('Udf values themselves should not be an array');
 
             if (strlen($value) > 1024)
-                throw new \InvalidArgumentException('Transaction Exception: Udf value [' . $value .'] too large!');
+                throw new BadRequestException('Udf value [' . $value .'] too large!');
 
             if (strlen($key) > 1024)
-                throw new \InvalidArgumentException('Transaction Exception: Udf value [' . $key .'] too large!');
-        }
-
-        if ($validation->fails())
-        {
-            throw new \InvalidArgumentException(join("\n",$validation->messages()->all()));
+                throw new BadRequestException('Udf value [' . $key .'] too large!');
         }
     }
 
@@ -73,7 +76,7 @@ class Transaction extends EntityManager
 
         if ($currency !== "INR")
         {
-            throw new \InvalidCurrencyException('Transaction Exception: Invalid currency '.$currency);
+            throw new BadRequestException('Invalid currency: '.$currency.'. Only INR supported.');
         }
     }
 
@@ -90,24 +93,5 @@ class Transaction extends EntityManager
     public function setStatus($status)
     {
         $this->setField('status', $status);
-    }
-
-    public static function separateTokenTxnInput($input)
-    {
-        return break_assoc_array(
-                    $input,
-                    CardToken::getCreateInputKeys(),
-                    Transaction::getCreateInputKeys());
-    }
-
-    public static function validateTransactionId($id = NULL)
-    {
-        $validation = \Validator::make(array('id' => $id), static::$idRules);
-
-        if ($validation->fails())
-        {
-            throw new \InvalidArgumentException(
-                'Transaction Exception: '. $validation->messages());
-        }
     }
 }

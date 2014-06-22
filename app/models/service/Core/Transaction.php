@@ -44,7 +44,7 @@ class Transaction
         // Check that card key exists
         if (! array_key_exists('card', $input))
         {
-            throw new InvalidArgumentException(
+            throw new BadRequestException(
                 'Transaction Exception: Card not provided');
         }
 
