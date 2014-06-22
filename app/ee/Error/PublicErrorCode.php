@@ -2,7 +2,7 @@
 
 namespace EE\Error;
 
-class ErrorClass
+class PublicErrorCode
 {
     const GATEWAY_ERROR = 'gateway_error';
 
