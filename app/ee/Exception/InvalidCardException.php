@@ -4,7 +4,7 @@ namespace EE\Exception;
 
 use Illuminate\Support\MessageBag;
 
-class InvalidCardException extends InvalidArgumentException
+class InvalidCardException extends BadRequestException
 {
 
     /**
@@ -14,26 +14,20 @@ class InvalidCardException extends InvalidArgumentException
     protected $cardField = null;
 
     public function __construct(
-        $message,
+        $message = '',
         $code = 0,
-        Exception $previous = null)
+        \Exception $previous = null)
     {
-        $array = null;
+        $intcode = 0;
 
-        if ($message instanceof MessageBag)
-        {
-            $array = $message->getMessages();
-        }
-        else if (is_array($message))
-        {
-            $array = $message;
-        }
+        parent::__construct($message, $intcode, $previous);
 
-        if ($array !== null)
+        if (($message !== null) and
+            (is_string($message) === false))
         {
-            list($field, $desc) = $this->getFirstKeyAndValue($array);
+            list($field, $desc) = $this->getFirstPair();
 
-            $errorCode = '\EE\Error\ErrorCode::API_CARD_INVALID'.$field;
+            $errorCode = '\EE\Error\ErrorCode::CARD_ERROR_INVALID_'.strtoupper($field);
 
             if (defined($errorCode) === false)
             {
@@ -42,25 +36,20 @@ class InvalidCardException extends InvalidArgumentException
 
             $errorCode = constant($errorCode);
 
-            $this->error = new \EE\Error\Error($errorCode, array(), $desc);
+            $this->error = new \EE\Error\Error($errorCode, $desc);
         }
         else if ($code !== 0)
         {
             if (defined('\EE\Error\ErrorCode::'.$code))
             {
-                $this->error = new \EE\Error\Error($code);
+                $error = new \EE\Error\Error($code, $message);
+
+                $this->setError($error);
+            }
+            else
+            {
+                throw new \InvalidArgumentException($code . ' is not defined');
             }
         }
-    }
-
-    protected function getFirstKeyAndValue(array $array)
-    {
-        $keys = array_keys($messages);
-
-        $field = $keys[0];
-
-        $value = $messages[$field];
-
-        return array($field, $value);
     }
 }
