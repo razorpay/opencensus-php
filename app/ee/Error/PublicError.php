@@ -55,11 +55,24 @@ class PublicError
         $this->httpStatusCode = 500;
     }
 
-    public function setCardError($code, $desc)
+    public function setBadRequestError($description, $field = null)
+    {
+        $tihs->setErrorCode(PublicErrorCode::BAD_REQUEST_ERROR);
+
+        $this->setErrorDescription($description);
+
+        $this->setField($field);
+
+        $this->setHttpStatusCode(400);
+    }
+
+    public function setCardError($code, $desc, $field)
     {
         $this->setErrorCode($code);
 
         $this->setErrorDescription($desc);
+
+        $this->setField($field);
 
         $this->setHttpStatusCode(400);
     }
@@ -77,6 +90,12 @@ class PublicError
     public function setDescription($desc)
     {
         $this->error['description'] = $desc;
+    }
+
+    public function setField($field)
+    {
+        if ($field !== null)
+            $this->error['field'] = $field;
     }
 
     public function getErrorArray()
