@@ -8,30 +8,34 @@ class Error
         'category' => null,
         'code' => null,
         'data' => null,
-        'desc' => null);
+        'desc' => null,
+        'field' => null);
 
     protected $publicError = null;
 
-    public function __construct($code, $desc = null)
+    public function __construct($code, $desc = null, $field = null)
     {
         $data = null;
-        $this->fill($code, $data, $desc);
+
+        $this->fill($code, $desc, $field);
     }
 
-    public function fill($code, $data, $desc = null)
+    public function fill($code, $desc = null, $field = null)
     {
         $this->setCode($code);
 
         $this->setCategory($code);
 
-        $this->setData($data);
+        // $this->setData($data);
 
         $this->setDesc($desc);
+
+        $this->setField($field);
 
         $this->constructPublicError();
     }
 
-    public function setCodeAndCategory($code)
+    protected function setCodeAndCategory($code)
     {
         $this->setCode($code);
 
@@ -40,6 +44,9 @@ class Error
 
     protected function setCode($code)
     {
+        if ($code === 0)
+            return;
+
         if (ErrorCode::errorCodeExists($code) === false)
         {
             throw new \InvalidArgumentException('Error code is not valid. Code: ' . $code);
@@ -48,13 +55,11 @@ class Error
         $this->attributes['code'] = $code;
     }
 
-    protected function getCode()
-    {
-        return $this->attributes['code'];
-    }
-
     protected function setCategory($code)
     {
+        if ($code === 0)
+            return;
+
         $pos = strpos($code, '_');
 
         $category = substr($code, 0, $pos);
@@ -80,6 +85,11 @@ class Error
         $this->attributes['desc'] = $desc;
     }
 
+    protected function setField($field)
+    {
+        $this->attribute['field'] = $field;
+    }
+
     protected function getAttribute($attr)
     {
         return $this->attributes[$attr];
@@ -96,6 +106,9 @@ class Error
                 break;
             case ErrorCategory::CARD:
                 $this->handleCardErrors();
+                break;
+            case ErrorCategory::BAD_REQUEST:
+                $this->handleBadRequestErrors();
                 break;
             case ErrorCategory::DB:
                 // @todo fill this case
@@ -116,10 +129,36 @@ class Error
         return $this->publicError;
     }
 
+    public function getCode()
+    {
+        return $this->getAttribute['code'];
+    }
+
+    public function getDesc()
+    {
+        return $this->getAttribute['desc'];
+    }
+
+    public function getField()
+    {
+        return $this->getAttribute['field'];
+    }
+
+    protected function handleBadRequestErrors()
+    {
+        $code = $this->getCode();
+        $desc = $this->getDesc();
+        $field = $this->getField();
+
+        $this->publicError->setBadRequestError(
+            $desc,
+            $field);
+    }
+
     protected function handleGatewayErrors()
     {
         $code = $this->getAttribute('code');
-        $data = $this->getAttribute('data');
+        // $data = $this->getAttribute('data');
 
         switch ($code)
         {
