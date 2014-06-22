@@ -6,6 +6,7 @@ use Models\Manager;
 use Models\Manager\TransactionStatus;
 use Models\DAL;
 use Gateway\GatewayManager;
+use EE\Exception\GatewayTimeoutException;
 use Exceptions;
 use Exceptions\InvalidArgumentException;
 use Trace\Trace;
@@ -48,35 +49,33 @@ class Transaction
         }
 
         //
-        // Now separate inputs required for creating card and token
-        //
-        list($cardInput, $tokenInput) =
-            Manager\CardToken::separateTokenAndCardCreateInput(
-                $input['card']);
-
-        //
         // Creates card entity. But since we don't store
         // number and cvv for now, we get back a card data
-        // array with number and cvv inserted after storing
-        // card details (DAL\Card)
+        // array instead of DAL\Card with number and cvv inserted
+        // after storing card details (DAL\Card)
         //
-        $cardData = (new Card)->createAndReturnWithSensitiveData($cardInput);
+        $cardData = (new Card)->createAndReturnWithSensitiveData($input['card']);
 
         //
         // Create token. Links to card id and merchant id
         //
         $token = (new Token)->create(
-                    $tokenInput,
                     $input['merchant_id'],
                     $cardData['id']);
 
-        // Links txn to token
+        //
+        //  Links txn to token
+        //
         $txnInput['token'] = $token->token;
 
+        //
         // Remove card key from input. Isn't needed
+        //
         unset($txnInput['card']);
 
-        // Create txn entity and store.
+        //
+        // Create txn entity and saves
+        //
         $txn = $this->create($txnInput);
 
         return array($txn, $cardData);
@@ -130,44 +129,18 @@ class Transaction
         {
             list($status, $data) = $gateway->process($txnInfo);
         }
-        catch(\Requests_Exception $e)
+        catch(GatewayTimeoutException $e)
         {
-            if ($this->checkTimeout($e))
-            {
-                $status = TransactionStatus::FAILED;
-                $data['code'] = 'TIMEOUT';
-                $data['message'] = 'Request timed out';
-            }
-            else
-                throw $e;
+            $status = TransactionStatus::FAILED;
+
+            $error = $e->getError();
+
+            $this->updateTransactionFailed($error);
+
+            throw $e;
         }
 
         return $this->updateTransactionStatus($status, $data);
-    }
-
-    /**
-     * Checks whether the requests exception that we caught
-     * is actually because of timeout in the network call.
-     *
-     * @param  Requests_Exception $e The caught requests exception
-     *
-     * @return boolean               true/false
-     */
-    protected function checkTimeout(\Requests_Exception $e)
-    {
-        //check if timeout has occured
-        if ((strpos($e->getMessage(), 'Operation timed out')  !== false) or
-            (strpos($e->getMessage(), 'Network is unreachable') !==false) or
-            (strpos($e->getMessage(), 'Name or service not known') !== false) or
-            (strpos($e->getMessage(), 'Failed to connect') !== false) or
-            (strpos($e->getMessage(), 'Could not resolve host') !== false))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
     }
 
     function updateTransactionStatus($status, $data)
@@ -319,7 +292,7 @@ class Transaction
             $this->txn->toArray());
     }
 
-    protected function updateTransactionFailed()
+    protected function updateTransactionFailed($error)
     {
         $this->txn->setStatus(TransactionStatus::FAILED);
     }

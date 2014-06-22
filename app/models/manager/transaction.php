@@ -48,9 +48,12 @@ class Transaction extends EntityManager
         foreach ($udf as $key => $value)
         {
             if (is_array($value))
-                throw new \InvalidArgumentException('Transaction Exception: Udf should not be an array');
+                throw new \InvalidArgumentException('Transaction Exception: Udf values should not be an array');
 
             if (strlen($value) > 1024)
+                throw new \InvalidArgumentException('Transaction Exception: Udf value [' . $value .'] too large!');
+
+            if (strlen($key) > 1024)
                 throw new \InvalidArgumentException('Transaction Exception: Udf value [' . $key .'] too large!');
         }
 
@@ -100,7 +103,7 @@ class Transaction extends EntityManager
     public static function validateTransactionId($id = NULL)
     {
         $validation = \Validator::make(array('id' => $id), static::$idRules);
-        
+
         if ($validation->fails())
         {
             throw new \InvalidArgumentException(

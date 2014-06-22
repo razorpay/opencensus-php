@@ -7,13 +7,13 @@ use Models\DAL;
 
 class Token
 {
-    public function create($input, $merchantId, $cardId)
+    public function create($merchantId, $cardId)
     {
         $input['merchant_id'] = $merchantId;
 
-        $data = Manager\CardToken::createValidate($input)->getData();
+        $input['card_id'] = $cardId;
 
-        $data['card_id'] = $cardId;
+        $data = Manager\CardToken::createValidate($input)->getData();
 
         $token = DAL\CardToken::createOrFail($data);
 

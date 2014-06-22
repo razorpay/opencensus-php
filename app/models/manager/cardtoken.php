@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace Models\Manager;
 
 use Utility;
@@ -6,8 +6,8 @@ use Utility;
 class CardToken extends EntityManager
 {
     protected static $createRules = array(
-        'merchant_id' => 'required|numeric'
-        );
+        'merchant_id' => 'required|numeric',
+        'card_id'     => 'required|numeric');
 
     protected static $generators = array('token', 'expired');
 
@@ -16,7 +16,7 @@ class CardToken extends EntityManager
     protected function generateToken()
     {
         $token = Utility::generate_token(static::$TOKEN_LEN);
-        
+
         $this->setField('token', $token);
     }
 
@@ -24,13 +24,4 @@ class CardToken extends EntityManager
     {
         $this->setField('expired', 0);
     }
-
-    public static function separateTokenAndCardCreateInput($input)
-    {
-        return \break_assoc_array(
-                    $input,
-                    Card::getCreateInputKeys(),
-                    CardToken::getCreateInputKeys());
-    }
-
 }
