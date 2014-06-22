@@ -42,6 +42,14 @@ class Handler
         {
             return $this->invalidCardExceptionHandler($e, $code);
         });
+
+        //
+        // Register bad request exception handler
+        //
+        App::error(function(BadRequestException $e, $code)
+        {
+            return $this->badRequestExceptionHandler($e, $code);
+        });
     }
 
     public function whoopsExceptionDisplayHandler()
@@ -84,6 +92,15 @@ class Handler
     }
 
     public function generateJsonResponse(\Exception $exception)
+    {
+        $error = $exception->getPublicError();
+
+        $httpStatusCode = $error->getHttpStatusCode();
+
+        return Response::json($error->toArray(), $httpStatusCode);
+    }
+
+    protected function badRequestExceptionHandler(BadRequestException $exception, $code)
     {
         $error = $exception->getPublicError();
 
