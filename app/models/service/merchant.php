@@ -9,9 +9,10 @@ class Merchant extends Service
 {
     public function create(array $input)
     {
-        list($merchant, $key) = Manager\Merchant::separateMerchantAndKeyCreateInput($input);
+        $merchantId['id'] = $input['merchant_id'];
 
-        $merchant_data = Manager\Merchant::createValidate($merchant)->getData();
+        $merchant_data = Manager\Merchant::createValidate($merchantId)->getData();
+
         $key_data = Manager\Key::createValidate($key)->getData();
 
         DAL\Merchant::createOrFail($merchant_data);
@@ -20,7 +21,7 @@ class Merchant extends Service
 
     public function updateKey(array $input)
     {
-        $old = DAL\Key::where('id','=',$input['old_id'])->first();
+        $old = DAL\Key::find($input['old_id']);
 
         if ($old === null)
             return ['status' => false];
@@ -42,8 +43,8 @@ class Merchant extends Service
         return ['status' => true];
     }
 
-    public function fetchKeys($merchant_id)
+    public function fetchKeys($merchantId)
     {
-        return DAL\Key::getKeysForMerchant($merchant_id);
+        return DAL\Key::getKeysForMerchant($merchantId);
     }
 }
