@@ -23,7 +23,7 @@ if (! function_exists('validate'))
 
         if (count($invalid_keys) !== 0)
         {
-            throw new \Exceptions\InvalidKeysException($invalid_keys);
+            throw new \Exceptions\ExtraFieldsException($invalid_keys);
         }
 
         $validation = Validator::make($data, $rules);
@@ -67,7 +67,7 @@ if (! function_exists('validate_keys'))
 
 		if (count($invalid_keys) > 0)
 		{
-			throw new \InvalidKeysException($invalid_keys);
+			throw new \ExtraFieldsException($invalid_keys);
 		}
 	}
 }

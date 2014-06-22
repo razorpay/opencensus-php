@@ -56,7 +56,7 @@ class Transaction extends Service
 
     public function retrieve($id, $merchantId)
     {
-        Manager\Transaction::validateTransactionId($id);
+        Manager\UniqueId::verifyUid($id, true);
 
         $txn = DAL\Transaction::findByIdAndMerchantId($id, $merchantId);
 
@@ -67,8 +67,11 @@ class Transaction extends Service
     }
 
     /**
-     * Captures a transaction
-     * Pass \DAL\Transaction object as argument
+     * Refunds a transaction
+     *
+     * @param  string   $id
+     * @param  integer  $merchantId
+     * @return DAL\Transaction
      */
     public function refund($id, $merchantId)
     {
@@ -77,24 +80,17 @@ class Transaction extends Service
         if ($txn === null)
             return null;
 
-        //Don't continue if already refunded
-
+        //
+        // Don't continue if already refunded
+        //
         if($txn->isRefunded())
         {
-            $txn->setError([
-                'code' => 'FSS00002',
-                'message' => 'Duplicate Transaction Request'
-            ]);
-            return;
+            throw new BadRequestException('This transaction has already been refunded');
         }
 
         if($txn->isCaptured() === false)
         {
-            $txn->setError([
-                'code' => 'RP00002',
-                'message' => 'Uncaptured Transaction'
-            ]);
-            return;
+            throw new BadRequestException('This transaction has already been captured');
         }
 
         $txn = $this->txn->refund($txn);
@@ -104,7 +100,10 @@ class Transaction extends Service
 
     /**
      * Captures a transaction
-     * Pass \DAL\Transaction object as argument
+     *
+     * @param  string   $id
+     * @param  integer  $merchantId
+     * @return DAL\Transaction
      */
     public function capture($id, $merchantId)
     {
@@ -118,12 +117,7 @@ class Transaction extends Service
         //
         if ($txn->isCaptured())
         {
-            $txn->setError([
-                'code' => 'FSS00002',
-                'message' => 'Duplicate Transaction Request'
-            ]);
-
-            return;
+            throw new BadRequestException('This transaction has already been captured');
         }
 
         $txn = $this->txn->capture($txn);
