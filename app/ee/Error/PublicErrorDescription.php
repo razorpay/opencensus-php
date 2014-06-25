@@ -2,7 +2,7 @@
 
 namespace EE\Error;
 
-class PublicErrorMessage
+class PublicErrorDescription
 {
     const API_KEY_NOT_PROVIDED =
         'The API key is missing. Please supply your API Key along with API Secret';
@@ -31,6 +31,34 @@ class PublicErrorMessage
     const CARD_INVALID_EXPIRY_YEAR =
         'The card expiry year provided is not valid.';
 
-    const GATEWAY_REQUEST_TIMED_OUT =
+    const GATEWAY_REQUEST_TIMEOUT =
         'The gateway request to submit payment information timed out. Please submit your details again';
+
+    const GATEWAY_ERROR =
+        'There is a problem with the gateway causing the transaction to fail';
+
+    const SERVER_ERROR =
+        'Looks like nemo is again playing with our server. Please try your request again!';
+
+    const CARD_ERROR_INVALID_BRAND =
+        'Currently the given card\'s brand is not supported by us';
+
+    const CARD_ERROR_INVALID_NUMBER =
+        'The card number is invalid';
+
+    const CARD_ERROR_INVALID_NAME =
+        'The cardholder name given is invalid';
+
+    const CARD_ERROR_INVALID_EXPIRY_DATE =
+        'The card expiry date is not valid';
+
+    const CARD_ERROR_CARD_DECLINED =
+        'The card was declined';
+
+    const CARD_ERROR_INSUFFICIENT_BALANCE =
+        'The card has insufficient balance';
+
+    const GATEWAY_ERROR_INVALID_AMOUNT =
+        'The amount provided is invalid';
+
 }
