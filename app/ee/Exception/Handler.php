@@ -28,27 +28,11 @@ class Handler
         });
 
         //
-        // Register gateway timeout exception handler
+        // Register base gateway exception handler
         //
-        App::error(function(GatewayTimeoutException $e, $code)
+        App::error(function(BaseException $e, $code)
         {
-            return $this->gatewayTimeoutExceptionHandler($e, $code);
-        });
-
-        //
-        // Register gateway timeout exception handler
-        //
-        App::error(function(InvalidCardException $e, $code)
-        {
-            return $this->invalidCardExceptionHandler($e, $code);
-        });
-
-        //
-        // Register bad request exception handler
-        //
-        App::error(function(BadRequestException $e, $code)
-        {
-            return $this->badRequestExceptionHandler($e, $code);
+            return $this->baseExceptionHandler($e, $code);
         });
     }
 
@@ -81,6 +65,11 @@ class Handler
         }
     }
 
+    public function baseExceptionHandler(BaseException $exception, $code)
+    {
+        return $exception->generateJsonResponse();
+    }
+
     public function gatewayTimeoutExceptionHandler(GatewayTimeoutException $exception, $code)
     {
         return $exception->generateJsonResponse();
@@ -93,19 +82,11 @@ class Handler
 
     public function generateJsonResponse(\Exception $exception)
     {
-        $error = $exception->getPublicError();
-
-        $httpStatusCode = $error->getHttpStatusCode();
-
-        return Response::json($error->toArray(), $httpStatusCode);
+        return $exception->generateJsonResponse();
     }
 
     protected function badRequestExceptionHandler(BadRequestException $exception, $code)
     {
-        $error = $exception->getPublicError();
-
-        $httpStatusCode = $error->getHttpStatusCode();
-
-        return Response::json($error->toArray(), $httpStatusCode);
+        return $exception->generateJsonResponse();
     }
 }
