@@ -18,7 +18,9 @@ class Transaction
 
     const HOLD = 'hold';
 
-    const ERROR = 'error';
+    const ERROR_CODE = 'error_code';
+
+    const ERROR_DESCRIPTION = 'error_description';
 
     const UDF = 'udf';
 }
