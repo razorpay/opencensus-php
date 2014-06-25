@@ -28,11 +28,11 @@ trait MessageFormats
 
     protected function handleMessageBagInstance(MessageBag $bag)
     {
-        $this->messageBag = $message;
+        $this->messageBag = $bag;
 
-        $this->messageArray = $message->getMessages();
+        $this->messageArray = $bag->getMessages();
 
-        $message = implode('\n', $message->all());
+        $message = implode('\n', $bag->all());
 
         $this->setFirstPair();
 
