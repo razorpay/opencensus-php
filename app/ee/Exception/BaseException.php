@@ -5,7 +5,7 @@ namespace EE\Exception;
 use Exception;
 use Response;
 
-class RazorpayException extends Exception
+class BaseException extends Exception
 {
     protected $error = null;
 
@@ -36,5 +36,10 @@ class RazorpayException extends Exception
         $httpStatusCode = $error->getHttpStatusCode();
 
         return Response::json($error->toArray(), $httpStatusCode);
+    }
+
+    public function setGatewayErrorCodeAndDesc($code, $desc)
+    {
+        $this->error->setGatewayErrorCodeAndDesc($code, $desc);
     }
 }
