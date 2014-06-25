@@ -7,8 +7,8 @@ use Models\Manager\TransactionStatus;
 use Models\DAL;
 use Gateway\GatewayManager;
 use EE\Exception\GatewayTimeoutException;
+use EE\Exception;
 use Exceptions;
-use Exceptions\InvalidArgumentException;
 use Trace\Trace;
 use Trace\TraceEvent;
 
@@ -120,16 +120,14 @@ class Transaction
                     'txn' => $txn->toArray(),
                     'card' => $cardData);
 
-        $gateway = new GatewayManager();
-
         $status = null;
         $data = null;
 
         try
         {
-            list($status, $data) = $gateway->process($txnInfo);
+            list($status, $error) = $this->callGatewayFunction('process', $txnInfo);
         }
-        catch(GatewayTimeoutException $e)
+        catch(Exception\BaseException $e)
         {
             $status = TransactionStatus::FAILED;
 
@@ -140,7 +138,7 @@ class Transaction
             throw $e;
         }
 
-        return $this->updateTransactionStatus($status, $data);
+        return $this->updateTransactionStatus($status, $error);
     }
 
     function updateTransactionStatus($status, $data)
@@ -173,15 +171,9 @@ class Transaction
                 $this->updateTransactionCaptured();
                 break;
 
-            //@todo: Fill errors on failure
             case TransactionStatus::FAILED:
-                $this->updateTransactionFailed();
-                $txn = $this->fillErrorDetails($data, $txn);
-                break;
-
-            case 'timeout':
-                $this->updateTransactionFailed();
-                $txn = $this->fillErrorDetails($data, $txn);
+                $error = $data;
+                $this->updateTransactionFailed($error);
                 break;
 
             default:
@@ -202,7 +194,7 @@ class Transaction
             'txn' => $txn->toArrayEx(
                         DAL\Transaction::WITH_CARD));
 
-        list($status, $error) = (new GatewayManager)->refund($data);
+        list($status, $error) = $this->callGatewayFunction('refund', $data);
 
         if ($status)
         {
@@ -243,9 +235,7 @@ class Transaction
     {
         $data = array('txn' => $txn->toArrayEx(DAL\Transaction::WITH_CARD));
 
-        $gateway = new GatewayManager();
-
-        list($status, $error) = $gateway->capture($data);
+        list($status, $error) = $this->callGatewayFunction('capture', $data);
 
         if($status)
         {
@@ -255,8 +245,6 @@ class Transaction
             $this->trace->info(
                 TraceEvent::TRANSACTION_CAPTURED,
                 $txn->toArray());
-
-            $ledger = (new DAL\Ledger)->updateRecords($txn);
         }
         else
         {
@@ -269,6 +257,7 @@ class Transaction
                 $txn->toArray());
         }
 
+        $txn->save();
         return $txn;
     }
 
@@ -294,7 +283,20 @@ class Transaction
 
     protected function updateTransactionFailed($error)
     {
+        $code = $error->getPublicErrorCode();
+
+        $desc = $error->getPublicErrorDescription();
+
         $this->txn->setStatus(TransactionStatus::FAILED);
+
+        $this->txn->setError($code, $desc);
+
+        $this->txn->save();
+
+        //Logging
+        $this->trace->error(
+            TraceEvent::TRANSACTION_FAILED,
+            $this->txn->toArray());
     }
 
     protected function updateTransactionCaptureFailed()
@@ -302,15 +304,12 @@ class Transaction
         $this->txn->setStatus(TransactionStatus::CAPTURE_FAILED);
     }
 
-    protected function fillErrorDetails($error, $txn)
+    protected function callGatewayFunction($method, $args)
     {
-        $txn->setError($error);
+        list($status, $error) = (new GatewayManager)->$method($args);
 
-        //Logging
-        $this->trace->error(
-            TraceEvent::TRANSACTION_FAILED,
-            $txn->toArray());
+        // $ledger = (new DAL\Ledger)->updateRecords($txn);
 
-        return $txn;
+        return array($status, $error);
     }
 }
