@@ -49,11 +49,11 @@ class Card extends EntityManager
         {
             throw $e;
         }
-        catch (Exception\InvalidArgumentException $e)
+        catch (Exception\ValidationFailureException $e)
         {
             throw new CardErrorException($e->getMessageBag(), 0, $e);
         }
-        catch (Exception\InvalidKeysException $e)
+        catch (Exception\ExtraFieldsException $e)
         {
             throw new CardErrorException($e->getMessageBag(), 0, $e);
         }

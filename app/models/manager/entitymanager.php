@@ -3,7 +3,7 @@
 namespace Models\Manager;
 
 use EE\Exception\ExtraFieldsException;
-use EE\Exception\InvalidArgumentException;
+use EE\Exception\ValidationFailureException;
 
 class EntityManager
 {
@@ -161,7 +161,7 @@ class EntityManager
 
         if ($validation->fails())
         {
-            throw new InvalidArgumentException($validation->messages());
+            throw new ValidationFailureException($validation->messages());
         }
     }
 
