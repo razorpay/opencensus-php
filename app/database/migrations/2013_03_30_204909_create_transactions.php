@@ -17,7 +17,8 @@ class CreateTransactions  extends Migration
      */
     public function up()
     {
-        Schema::create(Table::TRANSACTION, function(Blueprint $table){
+        Schema::create(Table::TRANSACTION, function(Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->char(Transaction::ID, Constants\Fields::ID_LENGTH)
@@ -54,11 +55,15 @@ class CreateTransactions  extends Migration
             $table->boolean('hold')
                   ->default('1');
 
-            $table->string('error_code', 20)
-                  ->nullable();
+            // @todo: remove from here during migration overhaul
+            $table->string('error', 10);
 
-            $table->string('error_description', 100)
-                  ->nullable();
+            // @todo: uncomment these during migration combination.
+            // $table->string(Transaction::ERROR_CODE, 20)
+            //       ->nullable();
+
+            // $table->string(Transaction::ERROR_DESCRIPTION, 100)
+            //       ->nullable();
 
             $table->binary('udf');
 
