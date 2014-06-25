@@ -7,7 +7,8 @@ use Constants\Table;
 use Constants\Field\Transaction;
 use Constants\Field\Common;
 
-class CreateTransactions  extends Migration {
+class CreateTransactions  extends Migration
+{
 
     /**
      * Make changes to the database.
@@ -53,10 +54,13 @@ class CreateTransactions  extends Migration {
             $table->boolean('hold')
                   ->default('1');
 
-            $table->string('error', 10);
+            $table->string('error_code', 20)
+                  ->nullable();
+
+            $table->string('error_description', 100)
+                  ->nullable();
 
             $table->binary('udf');
-
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Common::CREATED_AT);

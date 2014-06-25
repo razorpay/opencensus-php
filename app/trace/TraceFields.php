@@ -7,13 +7,13 @@ use Trace\TraceEvent;
 class TraceFields
 {
     protected static $fields = array(
-        TraceEvent::TRANSACTION_NEW_REQUEST       => array(
+        TraceEvent::TRANSACTION_NEW_REQUEST => array(
             'amount',
             'currency',
             'hold'
         ),
 
-        TraceEvent::TRANSACTION_CREATED           => array(
+        TraceEvent::TRANSACTION_CREATED => array(
             'id',
             'amount',
             'currency',
@@ -22,7 +22,7 @@ class TraceFields
             'hold'
         ),
 
-        TraceEvent::TRANSACTION_AUTHED          => array(
+        TraceEvent::TRANSACTION_AUTHED => array(
             'id',
             'amount',
             'currency',
@@ -31,9 +31,9 @@ class TraceFields
             'hold'
         ),
 
-        TraceEvent::TRANSACTION_CREATE_FAILED      => array(),
+        TraceEvent::TRANSACTION_CREATE_FAILED => array(),
 
-        TraceEvent::TRANSACTION_FAILED           => array(
+        TraceEvent::TRANSACTION_FAILED => array(
             'id',
             'amount',
             'currency',
@@ -42,7 +42,34 @@ class TraceFields
             'error'
         ),
 
-        TraceEvent::TRANSACTION_REFUNDED           => array(
+        TraceEvent::TRANSACTION_AUTH_FAILED => array(
+            'id',
+            'amount',
+            'currency',
+            'livemode',
+            'status',
+            'error'
+        ),
+
+        TraceEvent::TRANSACTION_REFUND_FAILED => array(
+            'id',
+            'amount',
+            'currency',
+            'livemode',
+            'status',
+            'error'
+        ),
+
+        TraceEvent::TRANSACTION_CAPTURE_FAILED => array(
+            'id',
+            'amount',
+            'currency',
+            'livemode',
+            'status',
+            'error'
+        ),
+
+        TraceEvent::TRANSACTION_REFUNDED => array(
             'id',
             'amount',
             'currency',
@@ -50,7 +77,7 @@ class TraceFields
             'status'
         ),
 
-        TraceEvent::TRANSACTION_CAPTURED         => array(
+        TraceEvent::TRANSACTION_CAPTURED => array(
             'id',
             'amount',
             'currency',
@@ -58,7 +85,7 @@ class TraceFields
             'status'
         ),
 
-        TraceEvent::TRANSACTION_EXCEPTION    => array(
+        TraceEvent::TRANSACTION_EXCEPTION => array(
             'id',
             'amount',
             'currency',
@@ -161,7 +188,7 @@ class TraceFields
 
         if (count($missingFields) > 0)
         {
-            // @todo: Finalize the fields to be logged and remote the extra ones. 
+            // @todo: Finalize the fields to be logged and remote the extra ones.
             // Currently all log messages have invalid fields defined.
             // throw new \InvalidArgumentException(
             //     implode(',', $missingFields) . ' are missing from trace record');

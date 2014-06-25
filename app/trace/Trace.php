@@ -53,15 +53,15 @@ class Trace extends TraceWriter
     /**
      * Returns instance of class if present.
      * Otherwise creates one, stores it and then returns it.
-     * 
+     *
      * @return self the instance of class which extends
      *              this abstract class
      */
     public static function getInstance()
     {
         //$cls = get_called_class(); // late-static-bound class name
-        
-        if (!isset(self::$instance)) 
+
+        if (!isset(self::$instance))
         {
             self::$instance = new static;
         }
@@ -79,7 +79,7 @@ class Trace extends TraceWriter
 
         $context = $this->getContext($traceCode, $context);
 
-        parent::addRecord($level, $message, $context);
+        parent::addRecord($level, $traceCode, $context);
     }
 
     /**

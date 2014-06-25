@@ -1,12 +1,12 @@
 <?php
 
-namespace Exceptions;
+namespace EE\Exception;
 
-class LogicException extends RazorpayException
+class ServerErrorException extends BaseException
 {
-	$publicMessage;
+	protected $publicMessage;
 
-    public function __construct($message, $code = 0 , Exception $previous = NULL)
+    public function __construct($message, $code = 0 , Exception $previous = null)
     {
         parent::__construct('Server Error', $message, $code, $previous);
     }

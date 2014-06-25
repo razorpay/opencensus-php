@@ -23,12 +23,12 @@ if (! function_exists('validate'))
 
         if (count($invalid_keys) !== 0)
         {
-            throw new \Exceptions\InvalidKeysException($invalid_keys);
+            throw new \Exceptions\ExtraFieldsException($invalid_keys);
         }
 
         $validation = Validator::make($data, $rules);
 
-        if ($validation->fails()) 
+        if ($validation->fails())
         {
             throw new \Exceptions\InvalidArgumentException($validation->messages()->all());
         }
@@ -48,7 +48,7 @@ if (! function_exists('break_assoc_array'))
 			{
 				$array1[$key] = $value;
 			}
-			
+
 			if(in_array($key, $keys2))
 			{
 				$array2[$key] = $value;
@@ -67,7 +67,7 @@ if (! function_exists('validate_keys'))
 
 		if (count($invalid_keys) > 0)
 		{
-			throw new \InvalidKeysException($invalid_keys);
+			throw new \ExtraFieldsException($invalid_keys);
 		}
 	}
 }
@@ -79,7 +79,7 @@ if (! function_exists('GetTextBetweenTags'))
 	    $string = " ".$string;
 
 		$ini = strpos($string,$start);
-		
+
 		if ($ini === false) return null;
 
 		$ini += strlen($start);

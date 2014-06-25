@@ -25,10 +25,10 @@
 namespace Gateway\HdfcGateway;
 
 use Gateway\BaseGateway;
-use Exceptions\DbQueryException;
-use Exceptions\InvalidArgumentException;
+use EE\Exception;
 use Trace\TraceEvent;
 use Trace\Trace;
+use EE\Error\ErrorCode;
 
 class HdfcGateway extends BaseGateway
 {
@@ -55,6 +55,11 @@ class HdfcGateway extends BaseGateway
      * @var boolean
      */
     protected $error = false;
+
+    /**
+     * @var  \EE\Error\Error
+     */
+    protected $errorObj = null;
 
     /**
      * Fields sent in xml format to enroll
@@ -238,6 +243,18 @@ class HdfcGateway extends BaseGateway
         return $creds;
     }
 
+    /**
+     * [process description]
+     * @param  array  $input
+     * @return array
+     * The return array consists of two vars,
+     * 'status' and 'error'
+     *
+     * 'status' can be either
+     * enrolled/auth/failed
+     *
+     * 'error' is the error object
+     */
     public function process(array $input)
     {
         // Enroll card
@@ -247,10 +264,7 @@ class HdfcGateway extends BaseGateway
         }
         else
         {
-            // $error = HdfcGatewayErrorHandler::translateError($er['error']['code']);
-            $er = $this->enrollResponse;
-
-            return array('failed', $er['error']);
+            $this->throwException($this->enrollResponse['error']['code']);
         }
     }
 
@@ -279,9 +293,18 @@ class HdfcGateway extends BaseGateway
         return $this->decideAuthStepAfterEnroll();
     }
 
+    /**
+     * After card enroll and bank ACS form submission,
+     * bank redirects to us with 'MD' field and PaRes.
+     * Next step is auth.
+     *
+     * @param  array  $input
+     *
+     * @return array
+     */
     public function bankAcsCallback(array $input)
     {
-        $this->validateBankAcsCallbackFields($input);
+        validate($this->bankAcsResponseRules, $input);
 
         $this->model = HdfcGatewayDal::findOrFail2($input['MD']);
 
@@ -296,9 +319,14 @@ class HdfcGateway extends BaseGateway
         $error = $processed = false;
 
         if ($this->error)
-            $error = HdfcGatewayErrorHandler::parseErrorInString($this->authEnrolledResponse['error']['text']);
+        {
+            // $error = HdfcGatewayErrorHandler::getMappedError($this->authEnrolledResponse['error']['code']);
+            $this->throwException($this->authEnrolledResponse['error']['code']);
+        }
         else
+        {
             $processed = true;
+        }
 
         return array($processed, $this->id, $error);
     }
@@ -309,6 +337,15 @@ class HdfcGateway extends BaseGateway
 
         HdfcGatewayResponseXmlDal::saveXml($this->id, $response['xml'], $response['type']);
 
+        //
+        // This step is very crucial for deciding future steps in
+        // transaction flow.
+        //
+        // For any operation, whether enroll, auth or support,
+        // the success or failure at different stages is decided on the basis of
+        // $this->error variable.
+        // Be careful before making any change around here.
+        //
         if (isset($response['error']['code']))
         {
             $this->error = true;
@@ -328,7 +365,7 @@ class HdfcGateway extends BaseGateway
     }
 
     /**
-     * Stips sensitive data before calling trace class to
+     * Strips sensitive data before calling trace class to
      * prevent sensitive data from being traced
      */
     protected function trace($level, $message, array $context)
@@ -336,7 +373,7 @@ class HdfcGateway extends BaseGateway
         if (isset($context['data']))
         {
             //
-            // If 'data' field is present, then we make sure that
+            // If 'data' field is present, then make sure that
             // no field defined in 'stripFieldsList' are present
             // in data. If so, then unset them. This is to
             // ensure extraneous or sensitive fields aren't traced.
@@ -347,5 +384,40 @@ class HdfcGateway extends BaseGateway
         }
 
         $this->trace->addRecord($level, $message, $context);
+    }
+
+    protected function throwException($gatewayErrorCode)
+    {
+        $gatewayErrorMessage = HdfcGatewayErrorHandler::getErrorMessage($gatewayErrorCode);
+
+        $appErrorCode = HdfcGatewayErrorHandler::getMappedError($gatewayErrorCode);
+
+        $exception = null;
+
+        switch ($appErrorCode)
+        {
+            case ErrorCode::CARD_ERROR_INVALID_BRAND:
+            case ErrorCode::CARD_ERROR_INVALID_NAME:
+            case ErrorCode::CARD_ERROR_INVALID_NUMBER:
+            case ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE:
+            case ErrorCode::CARD_ERROR_CARD_DECLINED:
+                $exception = new Exception\CardErrorException($appErrorCode);
+
+                break;
+
+            case ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF:
+            case ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN:
+            case ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT:
+            break;
+            default:
+                $exception = new Exception\GatewayErrorException($appErrorCode);
+                break;
+        }
+
+        $exception->setGatewayErrorCodeAndDesc(
+            $gatewayErrorCode,
+            $gatewayErrorMessage);
+
+        throw $exception;
     }
 }

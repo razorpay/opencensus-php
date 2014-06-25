@@ -73,6 +73,15 @@ trait HdfcGatewayEnrollCard
         return true;
     }
 
+    protected function getErrorOnEnrollFailure()
+    {
+        $er = $this->enrollResponse;
+
+        $error = HdfcGatewayErrorHandler::getMappedError($er['error']['code']);
+
+        return array('failed', $error);
+    }
+
     /**
      * Collect all fields to be sent for
      * enrolling the card
@@ -218,7 +227,7 @@ trait HdfcGatewayEnrollCard
     }
 
     /**
-     * In case enroll failed with a an invalid enroll result
+     * In case enroll failed with an invalid enroll result
      * or with FSS0001 enroll result, then an error is
      * set here.
      *
@@ -231,27 +240,31 @@ trait HdfcGatewayEnrollCard
 
         $enrollResult = $this->enrollResponse['data']['enroll_result'];
 
-        if ($enrollResult === HdfcGatewayResult::FSS0001_ENROLLED)
-        {
-            $this->enrollResponse['error'] =
-                HdfcGatewayErrorHandler::getError(HdfcGatewayErrorCode::FSS0001);
-        }
-        else if ($enrollResult === HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED)
-        {
-            //
-            // If enroll failed with an invalid code, set error
-            // for that and mark the operation as failure.
-            //
-
-            $this->enrollResponse['error'] =
-                HdfcGatewayErrorHandler::getInvalidEnrollCodeError();
-        }
-        else
-        {
-            throw new \LogicException('Should not reach here');
-        }
-
         $this->error = true;
+
+        switch ($enrollResult)
+        {
+            case HdfcGatewayResult::FSS0001_ENROLLED:
+                $code = HdfcGatewayErrorCode::FSS0001;
+
+                $this->enrollResponse['error']['code'] = $code;
+
+                $this->enrollResponse['error']['text'] = HdfcGatewayErrorHandler::getErrorMessage($code);
+                break;
+
+            case HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED:
+                //
+                // If enroll failed with an invalid code, set error
+                // for that and mark the operation as failure.
+                //
+
+                $this->enrollResponse['error'] =
+                    HdfcGatewayErrorHandler::getInvalidEnrollCodeError();
+                break;
+
+            default:
+                throw new \LogicException('Should not reach here');
+        }
 
         $this->trace(
             Trace::ERROR,

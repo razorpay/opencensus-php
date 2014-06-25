@@ -3,21 +3,79 @@
 namespace Gateway\HdfcGateway;
 
 use Requests;
+use EE\Exception\GatewayTimeoutException;
 
 class HdfcGatewayUtility
 {
     public static function postRequest($request)
     {
         $options['verify'] = false;
-        $options['timeout'] = HdfcGatewayConfig::TIMEOUT;
 
-        $response = Requests::post(
-                        $request['url'],
-                        $request['header'],
-                        $request['xml'],
-                        $options);
+        $timeout = HdfcGatewayConfig::TIMEOUT;
+
+        if (! \App::environment('production'))
+        {
+            $timeout = 30;
+        }
+
+        $options['timeout'] = $timeout;
+
+        $response = null;
+
+        try
+        {
+            $response = Requests::post(
+                            $request['url'],
+                            $request['header'],
+                            $request['xml'],
+                            $options);
+        }
+        catch(\Requests_Exception $e)
+        {
+            if (self::checkTimeout($e))
+            {
+                $exception = new GatewayTimeoutException($e->getMessage(), $e);
+
+                $desc = HdfcGatewayErrorCode::$errorMessages[HdfcGatewayErrorCode::RP00004];
+
+                $exception->setGatewayErrorCodeAndDesc(
+                    HdfcGatewayErrorCode::RP00004,
+                    $desc);
+
+                throw $exception;
+            }
+            else
+            {
+                throw $e;
+            }
+        }
 
         return $response;
+    }
+
+    /**
+     * Checks whether the requests exception that we caught
+     * is actually because of timeout in the network call.
+     *
+     * @param  Requests_Exception $e The caught requests exception
+     *
+     * @return boolean               true/false
+     */
+    protected static function checkTimeout(\Requests_Exception $e)
+    {
+        //check if timeout has occured
+        if ((strpos($e->getMessage(), 'Operation timed out')  !== false) or
+            (strpos($e->getMessage(), 'Network is unreachable') !==false) or
+            (strpos($e->getMessage(), 'Name or service not known') !== false) or
+            (strpos($e->getMessage(), 'Failed to connect') !== false) or
+            (strpos($e->getMessage(), 'Could not resolve host') !== false))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public static function createXml($array)
@@ -37,7 +95,7 @@ class HdfcGatewayUtility
         $error = self::getFieldFromXML($response['xml'], 'error_code_tag');
 
         if ($error === null)
-        { 
+        {
             return false;
         }
 
@@ -77,7 +135,7 @@ class HdfcGatewayUtility
 
     public static function runRequestResponseFlow(array &$request, array &$response)
     {
-        // XML generated from the fields
+        // Create xml from the fields
         $request['xml'] = self::createXml($request['data']);
 
         // send the request and get response
@@ -92,7 +150,7 @@ class HdfcGatewayUtility
      * Unsets specified fields
      */
     public static function unsetFields($data, $fields)
-    {   
+    {
         if ($data === null)
             return null;
 

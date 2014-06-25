@@ -13,7 +13,7 @@ Validator::extend('address', function($attribute, $value, $parameters)
 Validator::extend('luhn', function($attribute, $value, $parameters)
 {
 	$number = $value;
-	
+
 	$sumTable = array(
 		array(0,1,2,3,4,5,6,7,8,9),
 		array(0,2,4,6,8,1,3,5,7,9));
@@ -22,7 +22,7 @@ Validator::extend('luhn', function($attribute, $value, $parameters)
 	$flip = 0;
 	$len = strlen($number);
 
-	for ($i = $len - 1; $i >= 0; $i--) 
+	for ($i = $len - 1; $i >= 0; $i--)
 	{
 		try{
 			$sum += $sumTable[$flip++ & 0x1][$number[$i]];
@@ -56,23 +56,6 @@ Validator::extend('month', function($attribute, $value, $parameters)
 	return true;
 });
 
-Validator::extend('expiry_year', function($attribute, $value, $parameters)
-{
-	$year = $value;
-
-	if ((is_numeric($year) === false) or
-		(strlen($year) > 4))
-	{
-		return false;
-	}
-
-	$year = intval($year);
-
-	if ($year<date("Y")) return false;
-
-	return true;
-});
-
 Validator::extend('card_type', function($attribute, $value, $parameters)
 {
 	$type = $value;
@@ -85,4 +68,24 @@ Validator::extend('card_type', function($attribute, $value, $parameters)
 	}
 
 	return false;
+});
+
+Validator::extend('year_length', function($attribute, $value, $parameters)
+{
+    $year = $value;
+
+    if (is_numeric($year) === false)
+    {
+        throw new \InvalidArgumentException('year should be numeric');
+    }
+
+    $len = strlen((string)$year);
+
+    if (($len === 2) or
+        ($len === 4))
+    {
+        return true;
+    }
+
+    return false;
 });

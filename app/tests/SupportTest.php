@@ -41,11 +41,11 @@ class SupportTest extends Transaction {
         echo "Creating New Transaction... \n";
 
         //GIVEN
-        //create an auth transaction using card 12
+        //create an auth transaction using card 1
         $response = $this->createTransaction(1);
 
         //get its transaction id
-        $id=$response->id;
+        $id = $response->id;
 
         $this->capture($id);
         $this->refund($id);
@@ -60,17 +60,17 @@ class SupportTest extends Transaction {
         echo "Expected Reponse: Status = Captured \n";
         ob_flush();
 
-        //WHEN
-        //call for capture of transactions
+        // WHEN
+        // call for capture of transactions
         $response = $this->action('POST', 'TransactionController@postCapture', array('id'=>$id));
-        $content=$response->getContent();
+        $content = $response->getContent();
 
-        //THEN
-        //ensure output is json
+        // THEN
+        // ensure output is json
         $this->assertJson($content);
-        $capture=json_decode($content);
+        $capture = json_decode($content);
 
-        //Check if transaction id matches, and captured sucessfully
+        // Check if transaction id matches, and captured sucessfully
         $this->assertEquals($id, $capture->id);
         $this->assertEquals('captured', $capture->status);
     }

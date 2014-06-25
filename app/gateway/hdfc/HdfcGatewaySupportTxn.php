@@ -8,6 +8,16 @@ use Trace\TraceEvent;
 
 trait HdfcGatewaySupportTxn
 {
+    /**
+     * Forms the crux of doing support
+     * transactions (capture and refund).
+     *
+     * @param  array    $input array containing txn
+     *                         and card details
+     * @param  string   $type  should be either 'capture'
+     *                         or 'refund'
+     * @return array
+     */
     protected function supportTxn($input, $type)
     {
         $this->getModel($input['txn']['id']);
@@ -16,23 +26,12 @@ trait HdfcGatewaySupportTxn
         // Mark the type of support txn.
         // It will be either 'capture' or 'refund'
         //
-
-        Assert(($type === 'capture') or
-               ($type === 'refund'));
-
-        $this->supportTxnRequest['type'] = $type;
-
-        $this->supportTxnResponse['type'] = $type;
+        $this->setSupportTxnType($type);
 
         //
         // Fill the fields required for the txn
         //
-        $constType = constant(__NAMESPACE__.'\HdfcGatewayAction::'.strtoupper($type));
-        //$capsType = strtoupper($type);
-
-        $this->createSupportTxnRequestFields(
-                    $input,
-                    $constType);
+        $this->createSupportTxnRequestFields($input);
 
         $this->trace(
             TRACE::DEBUG,
@@ -43,20 +42,28 @@ trait HdfcGatewaySupportTxn
             $this->supportTxnRequest,
             $this->supportTxnResponse);
 
-
         $error = null;
+
+        $status = ! ($this->error);
+
+        $this->persistAfterSupportTxn('refund');
+
         if($this->error)
         {
-            $error = HdfcGatewayErrorHandler::parseErrorInString(
-                        $this->supportTxnResponse['error']['result']);
-
-            if ($error === false)
-                    $error = HdfcGatewayErrorHandler::unknownError();
+            $this->throwException($this->supportTxnResponse['error']['code']);
         }
 
-        $status = $this->persistAfterSupportTxn('refund');
-
         return array($status, $error);
+    }
+
+    protected function setSupportTxnType($type)
+    {
+        Assert(($type === 'capture') or
+               ($type === 'refund'));
+
+        $this->supportTxnRequest['type'] = $type;
+
+        $this->supportTxnResponse['type'] = $type;
     }
 
     /**
@@ -66,7 +73,7 @@ trait HdfcGatewaySupportTxn
      * @param  array $input
      * Contains the 'txn' details
      */
-    protected function createSupportTxnRequestFields($input, $action)
+    protected function createSupportTxnRequestFields($input)
     {
         $txn = $input['txn'];
 
@@ -76,6 +83,10 @@ trait HdfcGatewaySupportTxn
 
         // Collect credentials
         list($data['id'], $data['password']) = static::getCredentials();
+
+        $type = $this->supportTxnRequest['type'];
+
+        $action = constant(__NAMESPACE__.'\HdfcGatewayAction::'.strtoupper($type));
 
         $data['action'] = $action;
 
@@ -94,11 +105,17 @@ trait HdfcGatewaySupportTxn
         $data['udf1'] = $data['udf2'] = $data['udf3'] = $data['udf4'] = $data['udf5'] = '';
     }
 
+    /**
+     * Checks that trackid is in response is same as the
+     * one in request sent
+     *
+     * @return void
+     */
     protected function validateRefundResponse()
     {
-        $trackid = $this->enrollResponse['data']['trackid'];
+        $trackid = $this->supportTxnResponse['data']['trackid'];
 
-        if ($trackid !== $this->enrollRequest['data']['trackid'])
+        if ($trackid !== $this->supportTxnRequest['data']['trackid'])
         {
             throw new InvalidArgumentException('Gateway Exception: Track id do not match');
         }
@@ -118,8 +135,6 @@ trait HdfcGatewaySupportTxn
                 Trace::ERROR,
                 TraceEvent::GATEWAY_SUPPORT_ERROR,
                 $this->supportTxnResponse);
-
-            return false;
         }
         else
         {
@@ -129,10 +144,8 @@ trait HdfcGatewaySupportTxn
 
             $this->trace(
                 Trace::INFO,
-                TraceEvent::GATEWAY_SUPPORT_ERROR,
+                TraceEvent::GATEWAY_SUPPORT_RESPONSE,
                 $this->supportTxnResponse);
-
-            return true;
         }
     }
 }

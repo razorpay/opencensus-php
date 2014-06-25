@@ -49,9 +49,4 @@ class Key extends DAL
         else
             return self::where(Field\Common::MERCHANT_ID,'=',$merchant_id)->notExpired()->get();
     }
-
-    public static function retrieve($key_id)
-    {
-        return self::where(Field\Key::ID,'=',$key_id)->notExpired()->first();
-    }
 }

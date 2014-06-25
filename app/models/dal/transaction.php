@@ -3,6 +3,7 @@
 namespace Models\DAL;
 
 use \Constants\Field;
+use \Models\Manager\TransactionStatus;
 
 class Transaction extends UuidDAL
 {
@@ -37,10 +38,10 @@ class Transaction extends UuidDAL
         Field\Transaction::STATUS,
         // 'hold',
         Field\Transaction::UDF,
-        Field\Transaction::ERROR,
+        Field\Transaction::ERROR_CODE,
+        Field\Transaction::ERROR_DESCRIPTION,
         Field\Common::CREATED_AT,
-        Field\Common::UPDATED_AT
-        );
+        Field\Common::UPDATED_AT);
 
     protected $guarded = array(Field\Transaction::ID);
 
@@ -77,7 +78,7 @@ class Transaction extends UuidDAL
          * Create the query.
          */
         $query = self::where(Field\Common::MERCHANT_ID, '=', $param['merchant_id'])
-                     ->orderBy('updated_at','desc');
+                     ->orderBy(Field\Common::UPDATED_AT, 'desc');
 
         if (isset($param['created']))
         {
@@ -144,24 +145,33 @@ class Transaction extends UuidDAL
 
     public function isProcessed()
     {
-        return ($this->getAttribute(Field\Transaction::STATUS) == 'auth');
+        return ($this->getAttribute(Field\Transaction::STATUS) == TransactionStatus::AUTH);
     }
 
 
     public function isCaptured()
     {
-        return ($this->getAttribute(Field\Transaction::STATUS) == 'captured');
+        return ($this->getAttribute(Field\Transaction::STATUS) == TransactionStatus::CAPTURED);
     }
 
     public function isRefunded()
     {
-        return ($this->getAttribute(Field\Transaction::STATUS) == 'refunded');
+        return ($this->getAttribute(Field\Transaction::STATUS) == TransactionStatus::REFUNDED);
+    }
+
+    public function isFailed()
+    {
+        return ($this->getAttribute(Field\Transaction::STATUS) == TransactionStatus::FAILED);
+    }
+
+    protected function isStatus($status)
+    {
+        return ($this->getAttribute(Field\Transaction::STATUS) == $status);
     }
 
     public function setStatus($status)
     {
         $this->setAttribute(Field\Transaction::STATUS, $status);
-        $this->save();
     }
 
     public function getObjectAttribute()
@@ -171,7 +181,7 @@ class Transaction extends UuidDAL
 
     public function getMerchantId()
     {
-        return (int)$this->getAttribute('merchant_id');
+        return (int)$this->getAttribute(Field\Common::MERCHANT_ID);
     }
 
     const WITH_CARD             = 0x256;
@@ -237,15 +247,21 @@ class Transaction extends UuidDAL
         return $this->belongsTo('Models\DAL\Merchant');
     }
 
-    public function setError($error = false)
+    public function setError($code, $desc)
     {
-        if(isset($error['code']))
-            $this->setAttribute('error', $error['code']);
-        else
-            $this->setAttribute('error', $error);
+        $this->setAttribute(Field\Transaction::ERROR_CODE, $code);
+        $this->setAttribute(Field\Transaction::ERROR_DESCRIPTION, $desc);
+    }
 
-        $this->save();
+    public static function findByIdAndMerchantId($id, $merchantId)
+    {
+        return static::where(Field\Common::MERCHANT_ID, $merchantId)
+                     ->find($id);
+    }
 
-        $this->error = $error;
+    public static function findByIdAndMerchantIdOrFail($id, $merchantId)
+    {
+        return static::where(Field\Common::MERCHANT_ID, $merchantId)
+                     ->findOrFail2($id);
     }
 }

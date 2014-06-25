@@ -49,7 +49,7 @@ class BasicAuth extends \Singleton {
             throw new \InvalidArgumentException('Invalid Key Details');
         }
 
-        $Key = DAL\Key::retrieve($key_id);
+        $Key = DAL\Key::find($key_id);
 
         if ($Key === null)
         {
@@ -135,6 +135,11 @@ class BasicAuth extends \Singleton {
         $this->Merchant = DAL\Merchant::find($merchant_id);
 
         return true;
+    }
+
+    public function getMerchantIdInArray(array & $array)
+    {
+        $array[\Constants\Field\Common::MERCHANT_ID] = $this->MerchantId();
     }
 
 }
