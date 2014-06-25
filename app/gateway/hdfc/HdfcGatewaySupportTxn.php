@@ -46,18 +46,12 @@ trait HdfcGatewaySupportTxn
 
         $status = ! ($this->error);
 
+        $this->persistAfterSupportTxn('refund');
+
         if($this->error)
         {
-            $error = HdfcGatewayErrorHandler::translateError(
-                        $this->supportTxnResponse['error']['result']);
-            // $error = HdfcGatewayErrorHandler::parseErrorInString(
-            //             $this->supportTxnResponse['error']['result']);
-
-            // if ($error === false)
-            //         $error = HdfcGatewayErrorHandler::unknownError();
+            $this->throwException($this->supportTxnResponse['error']['code']);
         }
-
-        $this->persistAfterSupportTxn('refund');
 
         return array($status, $error);
     }

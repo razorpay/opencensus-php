@@ -15,7 +15,7 @@ class HdfcGatewayUtility
 
         if (! \App::environment('production'))
         {
-            $timeout = 5;
+            $timeout = 30;
         }
 
         $options['timeout'] = $timeout;
@@ -34,10 +34,20 @@ class HdfcGatewayUtility
         {
             if (self::checkTimeout($e))
             {
-                throw new GatewayTimeoutException($e->getMessage(), $e);
+                $exception = new GatewayTimeoutException($e->getMessage(), $e);
+
+                $desc = HdfcGatewayErrorCode::$errorMessages[HdfcGatewayErrorCode::RP00004];
+
+                $exception->setGatewayErrorCodeAndDesc(
+                    HdfcGatewayErrorCode::RP00004,
+                    $desc);
+
+                throw $exception;
             }
             else
+            {
                 throw $e;
+            }
         }
 
         return $response;
@@ -125,7 +135,7 @@ class HdfcGatewayUtility
 
     public static function runRequestResponseFlow(array &$request, array &$response)
     {
-        // XML generated from the fields
+        // Create xml from the fields
         $request['xml'] = self::createXml($request['data']);
 
         // send the request and get response

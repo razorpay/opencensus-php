@@ -25,10 +25,10 @@
 namespace Gateway\HdfcGateway;
 
 use Gateway\BaseGateway;
-use Exceptions\DbQueryException;
-use Exceptions\InvalidArgumentException;
+use EE\Exception;
 use Trace\TraceEvent;
 use Trace\Trace;
+use EE\Error\ErrorCode;
 
 class HdfcGateway extends BaseGateway
 {
@@ -264,7 +264,7 @@ class HdfcGateway extends BaseGateway
         }
         else
         {
-            return $this->getErrorOnEnrollFailure();
+            $this->throwException($this->enrollResponse['error']['code']);
         }
     }
 
@@ -298,9 +298,9 @@ class HdfcGateway extends BaseGateway
      * bank redirects to us with 'MD' field and PaRes.
      * Next step is auth.
      *
-     * @param  array  $input [description]
+     * @param  array  $input
      *
-     * @return array         [description]
+     * @return array
      */
     public function bankAcsCallback(array $input)
     {
@@ -320,10 +320,13 @@ class HdfcGateway extends BaseGateway
 
         if ($this->error)
         {
-            $error = HdfcGatewayErrorHandler::parseErrorInString($this->authEnrolledResponse['error']['code']);
+            // $error = HdfcGatewayErrorHandler::getMappedError($this->authEnrolledResponse['error']['code']);
+            $this->throwException($this->authEnrolledResponse['error']['code']);
         }
         else
+        {
             $processed = true;
+        }
 
         return array($processed, $this->id, $error);
     }
@@ -381,5 +384,40 @@ class HdfcGateway extends BaseGateway
         }
 
         $this->trace->addRecord($level, $message, $context);
+    }
+
+    protected function throwException($gatewayErrorCode)
+    {
+        $gatewayErrorMessage = HdfcGatewayErrorHandler::getErrorMessage($gatewayErrorCode);
+
+        $appErrorCode = HdfcGatewayErrorHandler::getMappedError($gatewayErrorCode);
+
+        $exception = null;
+
+        switch ($appErrorCode)
+        {
+            case ErrorCode::CARD_ERROR_INVALID_BRAND:
+            case ErrorCode::CARD_ERROR_INVALID_NAME:
+            case ErrorCode::CARD_ERROR_INVALID_NUMBER:
+            case ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE:
+            case ErrorCode::CARD_ERROR_CARD_DECLINED:
+                $exception = new Exception\CardErrorException($appErrorCode);
+
+                break;
+
+            case ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF:
+            case ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN:
+            case ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT:
+            break;
+            default:
+                $exception = new Exception\GatewayErrorException($appErrorCode);
+                break;
+        }
+
+        $exception->setGatewayErrorCodeAndDesc(
+            $gatewayErrorCode,
+            $gatewayErrorMessage);
+
+        throw $exception;
     }
 }

@@ -65,7 +65,7 @@ trait HdfcGatewayAuth
 
         if ($this->model->status !== 'VERES Received')
         {
-            throw new InvalidArgumentException('Gateway Exception: Status not valid');
+            throw new \InvalidArgumentException('Gateway Exception: Status not valid');
         }
 
         $this->trace(
@@ -99,6 +99,11 @@ trait HdfcGatewayAuth
                         $this->authNotEnrolledResponse['data']);
 
         $this->traceAuthNotEnrolledResponse();
+
+        if ($this->error)
+        {
+            $this->throwException($this->supportTxnResponse['error']['code']);
+        }
 
         return array('auth',
                     array('data' => $this->authNotEnrolledResponse['data']));

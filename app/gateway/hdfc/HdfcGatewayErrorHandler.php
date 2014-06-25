@@ -2,11 +2,10 @@
 
 namespace Gateway\HdfcGateway;
 
-use Exceptions\Status;
+use EE\Error\Error;
 
 class HdfcGatewayErrorHandler
 {
-
     public static function parseErrorStr($error)
     {
         //
@@ -60,35 +59,34 @@ class HdfcGatewayErrorHandler
         return static::$invalidErrorCode;
     }
 
-    public static function translateEnrollError($response)
-    {
-    	return $response['error'];
-    }
-
-    public static function parseErrorInString($code)
-    {
-        if (defined('HdfcGatewayErrorCode::'.$code) === false)
-            return false;
-
-        $error['code'] = $code;
-        $error['message'] = HdfcGatewayErrorHandler::$errorMessages[$code];
-
-        return $error;
-    }
-
     public static function getInvalidEnrollCodeError()
     {
         $error['code'] = HdfcGatewayErrorCode::RP00003;
-        $error['message'] = HdfcGatewayErrorCode::$errorMessages[HdfcGatewayErrorCode::RP00003];
+        $error['text'] = HdfcGatewayErrorCode::$errorMessages[HdfcGatewayErrorCode::RP00003];
 
         return $error;
     }
 
-    public static function getError($code)
+    public static function getErrorMessage($code)
     {
-        $error['code'] = constant(__NAMESPACE__.'\HdfcGatewayErrorCode::'.$code);
-        $error['message'] = static::$errorMessages[$error['code']];
+        return HdfcGatewayErrorCode::$errorMessages[$code];
+    }
 
-        return $error;
+    public static function getMappedError($code)
+    {
+        $appErrorCode = null;
+
+        if (defined(__NAMESPACE__.'\HdfcGatewayErrorCode::'.$code) === false)
+        {
+            throw new \InvalidArgumentException('should not reach here for now');
+            $appErrorCode = self::getInvalidEnrollCodeError();
+            // $appErrorMessage = HdfcGateway
+        }
+        else
+        {
+            $appErrorCode = HdfcGatewayErrorCode::$errorMap[$code];
+        }
+
+        return $appErrorCode;
     }
 }
