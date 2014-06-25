@@ -2,7 +2,7 @@
 
 namespace EE\Error;
 
-class ErrorCategory
+class ErrorClass
 {
     const GATEWAY = 'GATEWAY';
 
