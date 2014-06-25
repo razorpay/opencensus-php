@@ -32,25 +32,25 @@ class PublicError
     {
         $this->setErrorCode(PublicErrorCode::GATEWAY_ERROR);
 
-        $this->setDescription('Request to gateway timed out.');
+        $this->setDescription(PublicErrorDescription::GATEWAY_REQUEST_TIMEOUT);
 
         $this->setHttpStatusCode(504);
     }
 
     public function setGatewayError($httpStatusCode = 502)
     {
-        $this->error['class'] = ErrorClass::GATEWAY_ERROR;
+        $this->error['code'] = PublicErrorCode::GATEWAY_ERROR;
 
-        $this->setDescription('Some wizardry happened on gateway side causing the txn/request to fail');
+        $this->setDescription(PublicErrorDescription::GATEWAY_ERROR);
 
         $this->setHttpStatusCode($httpStatusCode);
     }
 
     public function setServerError()
     {
-        $this->setErrorClass(ErrorClass::GATEWAY_ERROR);
+        $this->setErrorCode(PublicErrorCode::SERVER_ERROR);
 
-        $this->setDescription('Looks like nemo is again playing with our server. Please try your request again!');
+        $this->setDescription(PublicErrorCode::SERVER_ERROR);
 
         $this->httpStatusCode = 500;
     }
@@ -82,6 +82,11 @@ class PublicError
         $this->error['code'] = $code;
     }
 
+    public function getErrorCode()
+    {
+        return $this->error['code'];
+    }
+
     public function setErrorDescription($description)
     {
         $this->error['description'] = $description;
@@ -90,6 +95,11 @@ class PublicError
     public function setDescription($desc)
     {
         $this->error['description'] = $desc;
+    }
+
+    public function getErrorDescription()
+    {
+        return $this->error['description'];
     }
 
     public function setField($field)
