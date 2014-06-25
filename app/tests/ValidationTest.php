@@ -18,17 +18,17 @@ class ValidationTest extends TestCase {
         //Start DB transaction so as to rollback once done
         DB::beginTransaction();
         $this->input = [
-            'number'=>42,//Intentionally invalid for first test case
-            'expiry_month'=>'02',
-            'expiry_year'=>'2014',
-            'cvv'=>'123',
-            'name'=>'Abhay',
-            'address_line1'=>105,
-            'address_line2'=>105,
-            'address_city'=>104,
-            'address_state'=>200,
-            'address_country'=>'IN',
-            'address_zip'=>'244713',
+            'number' => 42, //Intentionally invalid for first test case
+            'expiry_month' => '02',
+            'expiry_year' => '2014',
+            'cvv' => '123',
+            'name' => 'Abhay',
+            'address_line1' => 105,
+            'address_line2' => 105,
+            'address_city' => 104,
+            'address_state' => 200,
+            'address_country' => 'IN',
+            'address_zip' => '244713',
         ];
         $this->card = new Card();
     }
@@ -40,8 +40,8 @@ class ValidationTest extends TestCase {
     }
     public function testShortCardNumber()
     {
-        
-        $this->setExpectedException('InvalidArgumentException');
+
+        $this->setExpectedException('EE\Exception\CardErrorException');
         $this->card->build($this->input);
     }
     public function test4DigitCVV()
