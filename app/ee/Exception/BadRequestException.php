@@ -4,7 +4,7 @@ namespace EE\Exception;
 
 use Illuminate\Support\messageBag;
 
-class BadRequestException extends RazorpayException
+class BadRequestException extends BaseException
 {
     use MessageFormats;
 

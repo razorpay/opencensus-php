@@ -2,7 +2,7 @@
 
 namespace EE\Exception;
 
-class LogicException extends RazorpayException
+class LogicException extends BaseException
 {
     public function __construct($message, $code = 0 , Exception $previous = NULL)
     {

@@ -4,7 +4,7 @@ namespace EE\Exception;
 
 use Illuminate\Support\MessageBag;
 
-class UdfErrorException extends RazorpayException
+class UdfErrorException extends BaseException
 {
     use MessageFormats;
 

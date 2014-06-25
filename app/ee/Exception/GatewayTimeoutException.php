@@ -5,11 +5,11 @@ namespace EE\Exception;
 use EE\Error\Error;
 use EE\Error\ErrorCode;
 
-class GatewayTimeoutException extends RazorpayException
+class GatewayTimeoutException extends BaseException
 {
     public function __construct($curlErrorMessage, \Exception $previous = null)
     {
-        $code = ErrorCode::GATEWAY_REQUEST_TIMEOUT;
+        $code = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
 
         $this->error = new Error($code, $curlErrorMessage);
 

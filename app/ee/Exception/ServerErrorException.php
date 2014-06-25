@@ -2,7 +2,7 @@
 
 namespace EE\Exception;
 
-class ServerErrorException extends RazorpayException
+class ServerErrorException extends BaseException
 {
 	protected $publicMessage;
 
