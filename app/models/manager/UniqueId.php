@@ -2,9 +2,9 @@
 
 namespace Models\Manager;
 
-class UniqueID
+class UniqueId
 {
-    const ID_LENGTH = \Constnats\Fields::ID_LENGTH;
+    const ID_LENGTH = \Constants\Fields::ID_LENGTH;
 
     const ID_KEY = \Constants\Field\Common::ID;
 
@@ -41,6 +41,7 @@ class UniqueID
     public static function verifyUid($id, $throw = false)
     {
         $uniqueIdCheckRegex = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
+
         return preg_match($uniqueIdCheckRegex, $id);
 
         if ($throw)
