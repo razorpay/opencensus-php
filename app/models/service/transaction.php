@@ -7,6 +7,7 @@ use Models\DAL;
 use Gateway\GatewayManager;
 use Trace\Trace;
 use Trace\TraceEvent;
+use EE\Exception\BadRequestException;
 
 class Transaction extends Service
 {
@@ -85,12 +86,12 @@ class Transaction extends Service
         //
         if($txn->isRefunded())
         {
-            throw new BadRequestException('This transaction has already been refunded');
+            throw new BadRequestException('This transaction has already been refunded.');
         }
 
         if($txn->isCaptured() === false)
         {
-            throw new BadRequestException('This transaction has already been captured');
+            throw new BadRequestException('This transaction has not been captured.');
         }
 
         $txn = $this->txn->refund($txn);
@@ -125,6 +126,16 @@ class Transaction extends Service
         return $txn->toArray();
     }
 
+    /**
+     * After card enroll, bank redirects to us
+     * and we send it to gateway for further
+     * processing. Next step is auth.
+     *
+     * @param  array  $input Contains fields provided
+     *                       by bank
+     *
+     * @return DAL\Transaciton
+     */
     public function bankAcsCallback(array $input)
     {
         unset($input['csrf']);
@@ -154,6 +165,7 @@ class Transaction extends Service
         else
         {
             $txn->setStatus(Manager\TransactionStatus::FAILED);
+
             $txn->setError($error);
 
             //Logging
