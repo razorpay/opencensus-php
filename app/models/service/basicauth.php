@@ -93,7 +93,7 @@ class BasicAuth extends \Singleton {
             return false;
         }
 
-        $merchantId = $Key->merchantId;
+        $merchantId = $Key->getAttribute(\Constants\Field\Common::MERCHANT_ID);
 
         $Merchant = DAL\Merchant::findOrFail($merchantId);
 

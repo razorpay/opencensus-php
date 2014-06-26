@@ -19,6 +19,8 @@ class ServerErrorException extends BaseException
         $this->previous = $previous;
 
         $error = new \EE\Error\Error($code, null, null, $data);
+
+        $this->error = $error;
     }
 
     public function getData()
