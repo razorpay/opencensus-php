@@ -43,5 +43,4 @@ class ModifyTransactionErrorFields extends Migration {
             $table->dropColumn('error_description');
         });
     }
-
 }
