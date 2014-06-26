@@ -141,33 +141,15 @@ class Transaction extends Service
      *
      * @return DAL\Transaciton
      */
-    public function bankAcsCallback(array $input)
+    public function bankAcsCallback($id, array $input)
     {
         unset($input['csrf']);
 
-        try
-        {
+        $txn = DAL\Transaction::findOrFail2($id);
 
-            $id = $this->core->callGatewayFunction(TransactionAction::CALLBACK, $input);
+        $input['txn'] = $txn->toArray();
 
-            $txn = DAL\Transaction::findOrFail2($id);
-
-            $txnArray = $txn->toArray();
-
-            $this->core->updateTransactionSuccess($txn, TransactionStatus::AUTH);
-        }
-        catch (BaseException $e)
-        {
-            $txn->setStatus(TransactionStatus::FAILED);
-
-            $txn->setError($error);
-            $txn->save();
-
-            //Logging
-            $this->trace->error(
-                TraceEvent::TRANSACTION_AUTH_FAILED,
-                $txnArray);
-        }
+        $txn = $this->core->callback($txn, $input);
 
         return $txn;
     }

@@ -47,9 +47,17 @@ trait HdfcGatewayAuth
     {
         $enrollResponse = $this->enrollResponse;
 
+        $callbackUrl = $this->callbackUrl;
+
+        $pos = strrpos($callbackUrl, '/');
+
+        $callbackUrl = substr($callbackUrl, 0, $pos);
+
+        $callbackUrl .= '/'.$this->id;
+
         return array(
                 'data' => $enrollResponse['data'],
-                'callbackUrl' => $this->callbackUrl);
+                'callbackUrl' => $callbackUrl);
     }
 
 
@@ -91,8 +99,6 @@ trait HdfcGatewayAuth
         {
             $this->throwException($this->authEnrolledResponse['error']['code']);
         }
-
-        return $this->id;
     }
 
     protected function postAuthNotEnrolledRequestToBank()
@@ -157,29 +163,33 @@ trait HdfcGatewayAuth
 
     }
 
+    protected function traceAuthEnrolledResponse()
+    {
+        if ($this->error)
+        {
+            $this->trace(
+                Trace::ERROR,
+                TraceEvent::GATEWAY_ENROLLED_AUTH_ERROR,
+                $this->authEnrolledResponse);
+        }
+        else
+        {
+            $this->trace(
+                Trace::INFO,
+                TraceEvent::GATEWAY_ENROLLED_AUTH_RESPONSE,
+                $this->authEnrolledResponse);
+        }
+    }
+
     protected function persistAfterAuthEnrolled()
     {
         if ($this->error)
         {
             $this->model->persistAfterAuthEnrolledError($this->authEnrolledResponse['error']);
-
-            $this->trace(
-                Trace::ERROR,
-                TraceEvent::GATEWAY_ENROLLED_AUTH_ERROR,
-                $this->authEnrolledResponse);
-
-            return false;
         }
         else
         {
             $this->model->persistAfterAuthEnrolled($this->authEnrolledResponse['data']);
-
-            $this->trace(
-                Trace::INFO,
-                TraceEvent::GATEWAY_ENROLLED_AUTH_RESPONSE,
-                $this->authEnrolledResponse);
-
-            return true;
         }
     }
 

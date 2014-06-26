@@ -127,17 +127,17 @@ class Transaction
 
         try
         {
-            $callbackData = $this->callGatewayFunction('process', $txnInfo);
+            $callbackData = $this->callGatewayFunction(
+                                TransactionAction::AUTH,
+                                $txnInfo);
         }
         catch(BaseException $e)
         {
             $status = TransactionStatus::FAILED;
 
-            $error = $e->getError();
-
             $this->updateTransactionFailed(
                     $txn,
-                    $error,
+                    $e->getError(),
                     TraceEvent::TRANSACTION_AUTH_FAILED);
 
             throw $e;
@@ -162,7 +162,30 @@ class Transaction
         return $this->updateTransactionSuccess($txn, TransactionStatus::AUTH);
     }
 
-    function updateTransactionSuccess($txn, $status)
+    public function callback(
+        DAL\Transaction $txn,
+        array $input)
+    {
+        try
+        {
+            $this->callGatewayFunction(TransactionAction::CALLBACK, $input);
+
+            $this->updateTransactionSuccess($txn, TransactionStatus::AUTH);
+        }
+        catch (BaseException $e)
+        {
+            $this->updateTransactionFailed(
+                $txn,
+                $e->getError(),
+                TraceEvent::TRANSACTION_AUTH_FAILED);
+
+            throw $e;
+        }
+
+        return $txn;
+    }
+
+    protected function updateTransactionSuccess($txn, $status)
     {
         switch ($status)
         {
@@ -240,7 +263,8 @@ class Transaction
 
         try
         {
-            $this->callGatewayFunction('capture', $data);
+            $this->callGatewayFunction(
+                    TransactionAction::CAPTURE, $data);
 
             $this->updateTransactionSuccess($txn, TransactionStatus::CAPTURED);
         }
@@ -309,9 +333,9 @@ class Transaction
             $txn->toArray());
     }
 
-    public function callGatewayFunction($method, $args)
+    public function callGatewayFunction($action, $input)
     {
-        $data = (new GatewayManager)->$method($args);
+        $data = (new GatewayManager)->$action($input);
 
         // $ledger = (new DAL\Ledger)->updateRecords($txn);
 

@@ -40,12 +40,12 @@ Route::group(array('after' => 'sameorigin'), function()
     {
         $method = URL::TXN_CREATE_METHOD;
         Route::$method(
-            URL::TXN_CREATE_URL, 
+            URL::TXN_CREATE_URL,
             'TransactionController@postIndex');
 
         $method = URL::TXN_JSONP_METHOD;
         Route::$method(
-            URL::TXN_JSONP_URL, 
+            URL::TXN_JSONP_URL,
             'TransactionController@getJSONP');
     });
 
@@ -55,19 +55,19 @@ Route::group(array('after' => 'sameorigin'), function()
 
         Route::get('tokens/{token}', 'CardController@getRetrieve');
 
-        $method = URL::TXN_RETRIEVE_METHOD; 
+        $method = URL::TXN_RETRIEVE_METHOD;
         Route::$method(
-            URL::TXN_RETRIEVE_URL, 
+            URL::TXN_RETRIEVE_URL,
             'TransactionController@getIndex');
 
         $method = URL::TXN_REFUND_METHOD;
         Route::$method(
-            URL::TXN_REFUND_URL, 
+            URL::TXN_REFUND_URL,
             'TransactionController@postRefund');
 
         $method = URL::TXN_CAPTURE_METHOD;
         Route::$method(
-            URL::TXN_CAPTURE_URL, 
+            URL::TXN_CAPTURE_URL,
             'TransactionController@postCapture');
 
         //@todo: temporary
@@ -78,7 +78,7 @@ Route::group(array('after' => 'sameorigin'), function()
 
 $method = URL::TXN_CALLBACK_METHOD;
 Route::$method(
-    URL::TXN_CALLBACK_URL, 
+    URL::TXN_CALLBACK_URL,
     'TransactionController@postCallback');
 
 Route::group(array('before' => 'auth.app'), function()

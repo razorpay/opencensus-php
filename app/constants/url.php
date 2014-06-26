@@ -24,7 +24,7 @@ final class URL
 
     const TXN_RETRIEVE_METHOD = 'get';
 
-    const TXN_CALLBACK_URL = 'transactions/callback';
+    const TXN_CALLBACK_URL = 'transactions/callback/{id}';
 
     const TXN_CALLBACK_METHOD = 'post';
 

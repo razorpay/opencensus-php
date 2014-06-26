@@ -196,11 +196,11 @@ class TransactionController extends BaseController
         ;
     }
 
-    public function postCallback()
+    public function postCallback($id)
     {
         $input = Input::all();
 
-        $data = (new Transaction)->bankAcsCallback($input);
+        $data = (new Transaction)->bankAcsCallback($id, $input);
 
         return View::make('gateway.callback')->with('data', $data);
     }

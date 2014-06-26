@@ -189,7 +189,6 @@ class Transaction extends TestCase
         // second request
         // submit to acs url
         //
-        $form->setValues(array('TermUrl' => Config::get('app.url').'/transactions/callback'));
 
         $uri = $form->getUri();
         $method = $form->getMethod();
@@ -222,9 +221,22 @@ class Transaction extends TestCase
         $method = $form->getMethod();
         $values = $form->getValues();
 
-        $response = $this->call('POST', '/transactions/callback', $values);
+        $id = $this->getIdFromUri($uri);
+
+        $url = '/transactions/callback/'.$id;
+
+        $response = $this->call('POST', $url, $values);
 
         return $response;
+    }
+
+    protected function getIdFromUri($uri)
+    {
+        $pos = strrpos($uri, '/');
+
+        $id = substr($uri, $pos + 1);
+
+        return $id;
     }
 
     protected function getTransactionArray($card)

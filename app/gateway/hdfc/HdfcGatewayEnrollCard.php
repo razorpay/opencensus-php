@@ -144,6 +144,8 @@ trait HdfcGatewayEnrollCard
                             $this->id,
                             $this->enrollResponse['error']);
 
+            $this->id = $this->model->id;
+
             $this->trace(
                 Trace::ERROR,
                 TraceEvent::GATEWAY_ENROLL_ERROR,

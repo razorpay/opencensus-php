@@ -190,7 +190,7 @@ class HdfcGateway extends BaseGateway
      */
     protected $stripFieldsList = array(
         'password', 'amt', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'member',
-        'card', 'expmonth', 'expyear', 'cvv2', 'PAReq', 'zip', 'addr', 'PaRes'
+        'card', 'expmonth', 'expyear', 'cvv2', 'PAReq', 'zip', 'addr', 'PaRes', 'number', 'cvv'
     );
 
     /**
@@ -204,7 +204,8 @@ class HdfcGateway extends BaseGateway
 
     protected $bankAcsResponseRules = array(
         'PaRes' => 'required',
-        'MD' => 'required|numeric|digits_between:1,19');
+        'MD'    => 'required|numeric|digits_between:1,19',
+        'txn'   => 'required');
 
     /**
      * Either ENROLLED or NOT_ENROLLED
@@ -229,23 +230,22 @@ class HdfcGateway extends BaseGateway
     }
 
     /**
-     * [process description]
+     * Does card auth
+     *
      * @param  array  $input
-     * @return array
-     * The return array consists of two vars,
-     * 'status' and 'error'
-     *
-     * 'status' can be either
-     * enrolled/auth/failed
-     *
-     * 'error' is the error object
+     * @return void
      */
-    public function process(array $input)
+    public function auth(array $input)
     {
+        //
         // Enroll card
+        //
         $this->enrollCard($input);
 
-        return $this->auth();
+        //
+        // After enroll is done, auth is to be done
+        //
+        return $this->decideAuthStepAfterEnroll();
     }
 
     public function refund(array $input)
@@ -268,16 +268,6 @@ class HdfcGateway extends BaseGateway
     }
 
     /**
-     * After enroll is done, auth is required
-     *
-     * @return void
-     */
-    protected function auth()
-    {
-        return $this->decideAuthStepAfterEnroll();
-    }
-
-    /**
      * After card enroll and bank ACS form submission,
      * bank redirects to us with 'MD' field and PaRes.
      * Next step is auth.
@@ -290,11 +280,18 @@ class HdfcGateway extends BaseGateway
     {
         validate($this->bankAcsResponseRules, $input);
 
+        $this->id = $input['txn']['id'];
+
         $this->model = HdfcGatewayDal::findOrFail2($input['MD']);
 
-        $this->id = $this->model->getTrackid();
+        $trackid = $this->model->getTrackid();
 
-        return $this->postAuthEnrolledRequest($input);
+        if ($this->id !== $trackid)
+        {
+            throw new \LogicException('app txn '. $this->id . ' should be equal to track id . '. $trackid);
+        }
+
+        $this->postAuthEnrolledRequest($input);
     }
 
     protected function runRequestResponseFlow(array &$request, array &$response)
