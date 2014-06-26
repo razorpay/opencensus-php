@@ -43,7 +43,7 @@ trait HdfcGatewayEnrollCard
         //
         if ($this->error)
         {
-            return false;
+            $this->throwException($this->enrollResponse['error']['code']);
         }
 
         // Checks and sets eci if needed
@@ -61,7 +61,7 @@ trait HdfcGatewayEnrollCard
         {
             $this->setErrorOnEnrollFailure();
 
-            return false;
+            $this->throwException($this->enrollResponse['error']['code']);
         }
 
         $this->validateEnrollResponse();
@@ -69,17 +69,6 @@ trait HdfcGatewayEnrollCard
         $this->persistAfterEnroll();
 
         $this->setEnrollStatus();
-
-        return true;
-    }
-
-    protected function getErrorOnEnrollFailure()
-    {
-        $er = $this->enrollResponse;
-
-        $error = HdfcGatewayErrorHandler::getMappedError($er['error']['code']);
-
-        return array('failed', $error);
     }
 
     /**

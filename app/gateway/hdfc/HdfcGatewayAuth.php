@@ -22,7 +22,7 @@ trait HdfcGatewayAuth
         switch ($this->enrollStatus)
         {
             case HdfcGatewayResult::ENROLLED:
-                return $this->postPaymentRequestToBankACS();
+                return $this->getFieldsForFormSubmitToBankACS();
 
             case HdfcGatewayResult::NOT_ENROLLED:
                 return $this->postAuthNotEnrolledRequestToBank();
@@ -33,29 +33,30 @@ trait HdfcGatewayAuth
     }
 
     /**
-     * Generates a form and auto-submits it on load
+     * The fields provided here are used for generating
+     * the form.
+     *
+     * The form generated in view is auto-submitted on load
      * with the fields received in response
      * from enrolling the card.
-     *
-     * The fields provided here are used for generating
-     * the view/form.
      *
      * @return array Array containing values to post
      *               request to bank ACS.
      */
-    protected function postPaymentRequestToBankACS()
+    protected function getFieldsForFormSubmitToBankACS()
     {
         $enrollResponse = $this->enrollResponse;
 
-        return array('enrolled',
-                     array(
-                        'data' => $enrollResponse['data'],
-                        'callbackUrl' => $this->callbackUrl));
+        return array(
+                'data' => $enrollResponse['data'],
+                'callbackUrl' => $this->callbackUrl);
     }
 
 
-    public function postAuthEnrolledRequest()
+    public function postAuthEnrolledRequest($input)
     {
+        $this->createAuthEnrolledRequestFields($input);
+
         //
         // Verify that the card is already enrolled.
         // Throw exception otherwise.
@@ -84,7 +85,14 @@ trait HdfcGatewayAuth
         //
         // Store the response data
         //
-        $this->persistAfterDCAuth();
+        $this->persistAfterAuthEnrolled();
+
+        if ($this->error)
+        {
+            $this->throwException($this->authEnrolledResponse['error']['code']);
+        }
+
+        return $this->id;
     }
 
     protected function postAuthNotEnrolledRequestToBank()
@@ -95,18 +103,15 @@ trait HdfcGatewayAuth
             $this->authNotEnrolledRequest,
             $this->authNotEnrolledResponse);
 
-        $this->model->persistAfterCCAuth(
+        $this->model->persistAfterAuthNotEnrolled(
                         $this->authNotEnrolledResponse['data']);
 
         $this->traceAuthNotEnrolledResponse();
 
         if ($this->error)
         {
-            $this->throwException($this->supportTxnResponse['error']['code']);
+            $this->throwException($this->authNotEnrolledResponse['error']['code']);
         }
-
-        return array('auth',
-                    array('data' => $this->authNotEnrolledResponse['data']));
     }
 
     protected function createAuthNotEnrolledRequestFields()
@@ -152,11 +157,11 @@ trait HdfcGatewayAuth
 
     }
 
-    protected function persistAfterDCAuth()
+    protected function persistAfterAuthEnrolled()
     {
         if ($this->error)
         {
-            $this->model->persistAfterDCAuthError($this->authEnrolledResponse['error']);
+            $this->model->persistAfterAuthEnrolledError($this->authEnrolledResponse['error']);
 
             $this->trace(
                 Trace::ERROR,
@@ -167,7 +172,7 @@ trait HdfcGatewayAuth
         }
         else
         {
-            $this->model->persistAfterDCAuth($this->authEnrolledResponse['data']);
+            $this->model->persistAfterAuthEnrolled($this->authEnrolledResponse['data']);
 
             $this->trace(
                 Trace::INFO,
@@ -176,6 +181,13 @@ trait HdfcGatewayAuth
 
             return true;
         }
+    }
+
+    protected function createAuthEnrolledRequestFields($input)
+    {
+        $this->authEnrolledRequest['data']['paymentid'] = $input['MD'];
+
+        $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
     }
 
 }

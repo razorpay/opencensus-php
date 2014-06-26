@@ -258,26 +258,25 @@ class HdfcGateway extends BaseGateway
     public function process(array $input)
     {
         // Enroll card
-        if ($this->enrollCard($input))
-        {
-            return $this->auth();
-        }
-        else
-        {
-            $this->throwException($this->enrollResponse['error']['code']);
-        }
+        $this->enrollCard($input);
+
+        return $this->auth();
     }
 
     public function refund(array $input)
     {
-        return $this->supportTxn($input, 'refund');
+        $this->supportTxn($input, 'refund');
     }
 
     public function capture(array $input)
     {
-        return $this->supportTxn($input, 'capture');
+        $this->supportTxn($input, 'capture');
     }
 
+    /**
+     * HDFC gateway does not provide void
+     * @return void
+     */
     public function void()
     {
         ;
@@ -302,7 +301,7 @@ class HdfcGateway extends BaseGateway
      *
      * @return array
      */
-    public function bankAcsCallback(array $input)
+    public function callback(array $input)
     {
         validate($this->bankAcsResponseRules, $input);
 
@@ -310,25 +309,7 @@ class HdfcGateway extends BaseGateway
 
         $this->id = $this->model->getTrackid();
 
-        $this->authEnrolledRequest['data']['paymentid'] = $input['MD'];
-
-        $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
-
-        $this->postAuthEnrolledRequest();
-
-        $error = $processed = false;
-
-        if ($this->error)
-        {
-            // $error = HdfcGatewayErrorHandler::getMappedError($this->authEnrolledResponse['error']['code']);
-            $this->throwException($this->authEnrolledResponse['error']['code']);
-        }
-        else
-        {
-            $processed = true;
-        }
-
-        return array($processed, $this->id, $error);
+        return $this->postAuthEnrolledRequest($input);
     }
 
     protected function runRequestResponseFlow(array &$request, array &$response)

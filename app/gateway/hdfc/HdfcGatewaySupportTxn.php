@@ -42,18 +42,12 @@ trait HdfcGatewaySupportTxn
             $this->supportTxnRequest,
             $this->supportTxnResponse);
 
-        $error = null;
-
-        $status = ! ($this->error);
-
         $this->persistAfterSupportTxn('refund');
 
         if($this->error)
         {
             $this->throwException($this->supportTxnResponse['error']['code']);
         }
-
-        return array($status, $error);
     }
 
     protected function setSupportTxnType($type)

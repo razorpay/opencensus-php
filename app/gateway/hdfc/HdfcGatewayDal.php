@@ -5,7 +5,7 @@ namespace Gateway\HdfcGateway;
 class HdfcGatewayDal extends \Models\DAL\DAL
 {
     protected $table = 'hdfc';
-    
+
     protected $primaryKey = 'transactionid';
 
     public $incrementing = false;
@@ -42,7 +42,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
         return static::createOrFail($attributes);
     }
 
-    public function persistAfterCCAuth($data)
+    public function persistAfterAuthNotEnrolled($data)
     {
         $this->attributes = array(
             'status' => 'CC Authed',
@@ -56,7 +56,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
         $this->save();
     }
 
-    public function persistAfterDCAuth($data)
+    public function persistAfterAuthEnrolled($data)
     {
         $this->attributes = array(
             'status' => 'PaRes Received',
@@ -65,21 +65,21 @@ class HdfcGatewayDal extends \Models\DAL\DAL
             'auth' => $data['auth'],
             'avr' => $data['avr'],
             'postdate' => $data['postdate']);
-        
+
         $this->save();
     }
 
-    public function persistAfterDCAuthError($error)
+    public function persistAfterAuthEnrolledError($error)
     {
         $this->attributes = array(
             'status' => 'PaRes Error',
             'error_code' => $error['code'],
             'error_service' => $error['service'],
             'error_text' => $error['text']);
-        
+
         $this->save();
     }
-    
+
     public static function persistAfterSupportTxn($requestData, $responseData)
     {
         $attributes = array(
