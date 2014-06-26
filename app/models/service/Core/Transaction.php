@@ -14,7 +14,7 @@ use Models\Manager\TransactionAction;
 
 
 use Trace\Trace;
-use Trace\TraceEvent;
+use Trace\TraceCode;
 
 class Transaction
 {
@@ -138,7 +138,7 @@ class Transaction
             $this->updateTransactionFailed(
                     $txn,
                     $e->getError(),
-                    TraceEvent::TRANSACTION_AUTH_FAILED);
+                    TraceCode::TRANSACTION_AUTH_FAILURE);
 
             throw $e;
         }
@@ -177,7 +177,7 @@ class Transaction
             $this->updateTransactionFailed(
                 $txn,
                 $e->getError(),
-                TraceEvent::TRANSACTION_AUTH_FAILED);
+                TraceCode::TRANSACTION_AUTH_FAILURE);
 
             throw $e;
         }
@@ -241,7 +241,7 @@ class Transaction
 
             //Logging
             $this->trace->error(
-                TraceEvent::TRANSACTION_REFUND_FAILED,
+                TraceCode::TRANSACTION_REFUND_FAILURE,
                 $txnData->toArray());
 
             throw $e;
@@ -276,7 +276,7 @@ class Transaction
 
             //Logging
             $this->trace->error(
-                TraceEvent::TRANSACTION_CAPTURE_FAILED,
+                TraceCode::TRANSACTION_CAPTURE_FAILURE,
                 $txn->toArray());
 
             throw $e;
@@ -291,7 +291,7 @@ class Transaction
 
         //Logging
         $this->trace->info(
-            TraceEvent::TRANSACTION_AUTH_SUCCESS,
+            TraceCode::TRANSACTION_AUTH_SUCCESS,
             $txn->toArray());
     }
 
@@ -301,7 +301,7 @@ class Transaction
 
         //Logging
         $this->trace->info(
-            TraceEvent::TRANSACTION_CAPTURE_SUCCESS,
+            TraceCode::TRANSACTION_CAPTURE_SUCCESS,
             $txn->toArray());
     }
 
@@ -311,7 +311,7 @@ class Transaction
 
         //Logging
         $this->trace->info(
-            TraceEvent::TRANSACTION_REFUND_SUCCESS,
+            TraceCode::TRANSACTION_REFUND_SUCCESS,
             $txn->toArray());
     }
 
@@ -329,7 +329,7 @@ class Transaction
 
         //Logging
         $this->trace->error(
-            TraceEvent::TRANSACTION_FAILED,
+            TraceCode::TRANSACTION_FAILED,
             $txn->toArray());
     }
 

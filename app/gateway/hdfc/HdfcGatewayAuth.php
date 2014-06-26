@@ -3,7 +3,7 @@
 namespace Gateway\HdfcGateway;
 
 use Trace\Trace;
-use Trace\TraceEvent;
+use Trace\TraceCode;
 
 trait HdfcGatewayAuth
 {
@@ -79,7 +79,7 @@ trait HdfcGatewayAuth
 
         $this->trace(
             Trace::DEBUG,
-            TraceEvent::GATEWAY_ENROLLED_AUTH_REQUEST,
+            TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST,
             $this->authEnrolledRequest);
 
         $data = &$this->authEnrolledRequest['data'];
@@ -136,7 +136,7 @@ trait HdfcGatewayAuth
 
         $this->trace(
             Trace::DEBUG,
-            TraceEvent::GATEWAY_NOT_ENROLLED_REQUEST,
+            TraceCode::GATEWAY_NOT_ENROLLED_REQUEST,
             $this->authNotEnrolledRequest);
     }
 
@@ -150,14 +150,14 @@ trait HdfcGatewayAuth
         {
             $this->trace(
                 Trace::INFO,
-                TraceEvent::GATEWAY_NOT_ENROLLED_RESPONSE,
+                TraceCode::GATEWAY_NOT_ENROLLED_RESPONSE,
                 $response);
         }
         else
         {
             $this->trace(
                 Trace::ERROR,
-                TraceEvent::GATEWAY_NOT_ENROLLED_ERROR,
+                TraceCode::GATEWAY_NOT_ENROLLED_ERROR,
                 $response);
         }
 
@@ -169,14 +169,14 @@ trait HdfcGatewayAuth
         {
             $this->trace(
                 Trace::ERROR,
-                TraceEvent::GATEWAY_ENROLLED_AUTH_ERROR,
+                TraceCode::GATEWAY_ENROLLED_AUTH_ERROR,
                 $this->authEnrolledResponse);
         }
         else
         {
             $this->trace(
                 Trace::INFO,
-                TraceEvent::GATEWAY_ENROLLED_AUTH_RESPONSE,
+                TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,
                 $this->authEnrolledResponse);
         }
     }

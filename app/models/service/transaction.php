@@ -6,7 +6,7 @@ use Models\Manager;
 use Models\DAL;
 use Gateway\GatewayManager;
 use Trace\Trace;
-use Trace\TraceEvent;
+use Trace\TraceCode;
 use EE\Exception\BadRequestException;
 use Models\Manager\TransactionAction;
 use Models\Manager\TransactionStatus;
@@ -29,13 +29,13 @@ class Transaction extends Service
     public function process(array $input)
     {
         $this->trace->debug(
-            TraceEvent::TRANSACTION_NEW_REQUEST,
+            TraceCode::TRANSACTION_NEW_REQUEST,
             $input);
 
         list($txn, $cardData) = $this->core->createEntitites($input);
 
         $this->trace->debug(
-            TraceEvent::TRANSACTION_CREATED,
+            TraceCode::TRANSACTION_CREATED,
             $txn->toArray());
 
         $data = $this->core->process($txn, $cardData);

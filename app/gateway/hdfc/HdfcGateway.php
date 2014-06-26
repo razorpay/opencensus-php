@@ -26,7 +26,7 @@ namespace Gateway\HdfcGateway;
 
 use Gateway\BaseGateway;
 use EE\Exception;
-use Trace\TraceEvent;
+use Trace\TraceCode;
 use Trace\Trace;
 use EE\Error\ErrorCode;
 

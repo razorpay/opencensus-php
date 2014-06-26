@@ -4,7 +4,7 @@
 namespace Gateway\HdfcGateway;
 
 use Trace\Trace;
-use Trace\TraceEvent;
+use Trace\TraceCode;
 
 trait HdfcGatewaySupportTxn
 {
@@ -35,7 +35,7 @@ trait HdfcGatewaySupportTxn
 
         $this->trace(
             TRACE::DEBUG,
-            TraceEvent::GATEWAY_SUPPORT_REQUEST,
+            TraceCode::GATEWAY_SUPPORT_REQUEST,
             $this->supportTxnRequest);
 
         $this->runRequestResponseFlow(
@@ -127,7 +127,7 @@ trait HdfcGatewaySupportTxn
 
             $this->trace(
                 Trace::ERROR,
-                TraceEvent::GATEWAY_SUPPORT_ERROR,
+                TraceCode::GATEWAY_SUPPORT_ERROR,
                 $this->supportTxnResponse);
         }
         else
@@ -138,7 +138,7 @@ trait HdfcGatewaySupportTxn
 
             $this->trace(
                 Trace::INFO,
-                TraceEvent::GATEWAY_SUPPORT_RESPONSE,
+                TraceCode::GATEWAY_SUPPORT_RESPONSE,
                 $this->supportTxnResponse);
         }
     }

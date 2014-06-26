@@ -6,7 +6,7 @@ use Queue;
 use Config;
 use Monolog\Logger;
 use Trace\TraceHandler;
-use Trace\TraceEvent;
+use Trace\TraceCode;
 use Trace\TraceFields;
 
 class Trace extends TraceWriter
@@ -73,9 +73,9 @@ class Trace extends TraceWriter
     {
         $traceCode = $message;
 
-        TraceEvent::checkCode($traceCode);
+        TraceCode::checkCode($traceCode);
 
-        $message = TraceEvent::getMessage($traceCode);
+        $message = TraceCode::getMessage($traceCode);
 
         $context = $this->getContext($traceCode, $context);
 

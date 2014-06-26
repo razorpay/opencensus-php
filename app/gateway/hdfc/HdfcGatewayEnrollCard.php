@@ -3,7 +3,7 @@
 namespace Gateway\HdfcGateway;
 
 use Trace\Trace;
-use Trace\TraceEvent;
+use Trace\TraceCode;
 
 trait HdfcGatewayEnrollCard
 {
@@ -26,7 +26,7 @@ trait HdfcGatewayEnrollCard
 
         $this->trace(
             Trace::DEBUG,
-            TraceEvent::GATEWAY_ENROLL_REQUEST,
+            TraceCode::GATEWAY_ENROLL_REQUEST,
             $this->enrollRequest);
 
         //
@@ -148,7 +148,7 @@ trait HdfcGatewayEnrollCard
 
             $this->trace(
                 Trace::ERROR,
-                TraceEvent::GATEWAY_ENROLL_ERROR,
+                TraceCode::GATEWAY_ENROLL_ERROR,
                 $this->enrollResponse);
         }
         else
@@ -159,7 +159,7 @@ trait HdfcGatewayEnrollCard
 
             $this->trace(
                 Trace::INFO,
-                TraceEvent::GATEWAY_ENROLL_RESPONSE,
+                TraceCode::GATEWAY_ENROLL_RESPONSE,
                 $this->enrollResponse);
         }
     }
@@ -259,7 +259,7 @@ trait HdfcGatewayEnrollCard
 
         $this->trace(
             Trace::ERROR,
-            TraceEvent::GATEWAY_ENROLL_ERROR,
+            TraceCode::GATEWAY_ENROLL_ERROR,
             $this->enrollResponse);
     }
 

@@ -183,7 +183,7 @@ class TraceWriter extends Logger
     {
         $code = $record['message'];
 
-        $message = TraceEvent::getMessage($code);
+        $message = TraceCode::getMessage($code);
 
         $record['message'] = $message;
 

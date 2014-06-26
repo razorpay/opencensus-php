@@ -2,27 +2,18 @@
 
 namespace Trace;
 
-use Trace\TraceEvent;
+use Trace\TraceCode;
 
 class TraceFields
 {
     protected static $fields = array(
-        TraceEvent::TRANSACTION_NEW_REQUEST => array(
+        TraceCode::TRANSACTION_NEW_REQUEST => array(
             'amount',
             'currency',
             'hold'
         ),
 
-        TraceEvent::TRANSACTION_CREATED => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status',
-            'hold'
-        ),
-
-        TraceEvent::TRANSACTION_AUTH_SUCCESS => array(
+        TraceCode::TRANSACTION_CREATED => array(
             'id',
             'amount',
             'currency',
@@ -31,9 +22,18 @@ class TraceFields
             'hold'
         ),
 
-        TraceEvent::TRANSACTION_CREATE_FAILED => array(),
+        TraceCode::TRANSACTION_AUTH_SUCCESS => array(
+            'id',
+            'amount',
+            'currency',
+            'livemode',
+            'status',
+            'hold'
+        ),
 
-        TraceEvent::TRANSACTION_FAILED => array(
+        TraceCode::TRANSACTION_CREATE_FAILED => array(),
+
+        TraceCode::TRANSACTION_FAILED => array(
             'id',
             'amount',
             'currency',
@@ -42,7 +42,7 @@ class TraceFields
             'error'
         ),
 
-        TraceEvent::TRANSACTION_AUTH_FAILED => array(
+        TraceCode::TRANSACTION_AUTH_FAILURE => array(
             'id',
             'amount',
             'currency',
@@ -51,7 +51,7 @@ class TraceFields
             'error'
         ),
 
-        TraceEvent::TRANSACTION_REFUND_FAILED => array(
+        TraceCode::TRANSACTION_REFUND_FAILURE => array(
             'id',
             'amount',
             'currency',
@@ -60,7 +60,7 @@ class TraceFields
             'error'
         ),
 
-        TraceEvent::TRANSACTION_CAPTURE_FAILED => array(
+        TraceCode::TRANSACTION_CAPTURE_FAILURE => array(
             'id',
             'amount',
             'currency',
@@ -69,7 +69,7 @@ class TraceFields
             'error'
         ),
 
-        TraceEvent::TRANSACTION_REFUND_SUCCESS => array(
+        TraceCode::TRANSACTION_REFUND_SUCCESS => array(
             'id',
             'amount',
             'currency',
@@ -77,7 +77,7 @@ class TraceFields
             'status'
         ),
 
-        TraceEvent::TRANSACTION_CAPTURE_SUCCESS => array(
+        TraceCode::TRANSACTION_CAPTURE_SUCCESS => array(
             'id',
             'amount',
             'currency',
@@ -85,7 +85,7 @@ class TraceFields
             'status'
         ),
 
-        TraceEvent::TRANSACTION_EXCEPTION => array(
+        TraceCode::TRANSACTION_EXCEPTION => array(
             'id',
             'amount',
             'currency',
@@ -95,75 +95,75 @@ class TraceFields
         ),
 
 
-        TraceEvent::GATEWAY_ENROLL_REQUEST => array(
+        TraceCode::GATEWAY_ENROLL_REQUEST => array(
             'url',
             'type',
             'data'
         ),
 
-        TraceEvent::GATEWAY_ENROLL_RESPONSE => array(
+        TraceCode::GATEWAY_ENROLL_RESPONSE => array(
             'type',
             'data'
         ),
 
-        TraceEvent::GATEWAY_ENROLL_ERROR => array(
+        TraceCode::GATEWAY_ENROLL_ERROR => array(
             'type',
             'data',
             'error'
         ),
 
-        TraceEvent::GATEWAY_NOT_ENROLLED_REQUEST => array(
+        TraceCode::GATEWAY_NOT_ENROLLED_REQUEST => array(
             'url',
             'type',
             'data'
         ),
 
-        TraceEvent::GATEWAY_NOT_ENROLLED_RESPONSE => array(
+        TraceCode::GATEWAY_NOT_ENROLLED_RESPONSE => array(
             'type',
             'data'
         ),
 
-        TraceEvent::GATEWAY_NOT_ENROLLED_ERROR => array(
+        TraceCode::GATEWAY_NOT_ENROLLED_ERROR => array(
             'type',
             'data',
             'error'
         ),
 
-        TraceEvent::GATEWAY_ENROLLED_AUTH_REQUEST => array(
+        TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST => array(
             'url',
             'type',
             'data'
         ),
 
-        TraceEvent::GATEWAY_ENROLLED_AUTH_RESPONSE => array(
+        TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE => array(
             'type',
             'data'
         ),
 
-        TraceEvent::GATEWAY_ENROLLED_AUTH_ERROR => array(
+        TraceCode::GATEWAY_ENROLLED_AUTH_ERROR => array(
             'type',
             'data',
             'error'
         ),
 
-        TraceEvent::GATEWAY_SUPPORT_REQUEST => array(
+        TraceCode::GATEWAY_SUPPORT_REQUEST => array(
             'url',
             'type',
             'data'
         ),
 
-        TraceEvent::GATEWAY_SUPPORT_RESPONSE => array(
+        TraceCode::GATEWAY_SUPPORT_RESPONSE => array(
             'type',
             'data'
         ),
 
-        TraceEvent::GATEWAY_SUPPORT_ERROR => array(
+        TraceCode::GATEWAY_SUPPORT_ERROR => array(
             'type',
             'data',
             'error'
         ),
 
-        TraceEvent::GATEWAY_EXCEPTION => array(
+        TraceCode::GATEWAY_EXCEPTION => array(
             'file'
         ),
     );
