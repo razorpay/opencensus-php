@@ -39,12 +39,16 @@ class HdfcGateway extends BaseGateway
     use HdfcGatewaySupportTxn;
 
     /**
-     * Rzp transaction id
+     * App transaction id
      * @var string
      */
     protected $id;
 
-    protected $model;
+    /**
+     * Curent Hdfc Transaction DAL
+     * @var DAL\HdfcGatewayDal
+     */
+    protected $model = null;
 
     const INR_CODE = 356;
 
@@ -55,11 +59,6 @@ class HdfcGateway extends BaseGateway
      * @var boolean
      */
     protected $error = false;
-
-    /**
-     * @var  \EE\Error\Error
-     */
-    protected $errorObj = null;
 
     /**
      * Fields sent in xml format to enroll
@@ -94,18 +93,6 @@ class HdfcGateway extends BaseGateway
         'expiry_month' => 'expmonth',
         'expiry_year' => 'expyear',
         'cvv' => 'cvv2');
-
-    /**
-     * Tranportal username for hdfc gateway
-     * @var string
-     */
-    protected $username = "";
-
-    /**
-     * Tranportal password for hdfc gateway
-     * @var string
-     */
-    protected $password = "";
 
     /**
      * Parameters required to construct request
@@ -226,8 +213,6 @@ class HdfcGateway extends BaseGateway
      * @var
      */
     protected $enrollStatus = null;
-
-    protected $status;
 
     public function __construct()
     {
