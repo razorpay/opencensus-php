@@ -2,7 +2,7 @@
 
 namespace Models\DAL;
 
-use Exceptions\DbQueryException;
+use EE\Exception\DbQueryException;
 
 class DAL extends \Eloquent
 {

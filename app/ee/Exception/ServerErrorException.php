@@ -17,10 +17,7 @@ class ServerErrorException extends BaseException
         $this->code = $code;
 
         $this->previous = $previous;
-    }
 
-    public function generateJson()
-    {
         $error = new \EE\Error\Error($code, null, null, $data);
     }
 

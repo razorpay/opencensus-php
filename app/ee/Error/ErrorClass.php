@@ -12,5 +12,9 @@ class ErrorClass
 
     const TRACE = 'TRACE';
 
+    const BAD_REQUEST = 'bad_request';
+
     const EXCEPTION = 'EXCEPTION';
+
+    const UDF = 'udf';
 }

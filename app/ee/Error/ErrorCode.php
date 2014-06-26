@@ -84,7 +84,7 @@ class ErrorCode
     const API_TRANSACTION_INVALID_AMOUNT                            = 'API_TRANSACTION_INVALID_AMOUNT';
 
     const DB_RECORD_NOT_FOUND                                       = 'DB_RECORD_NOT_FOUND';
-    const DB_QUERY_FATAL_ERROR                                      = 'DB_QUERY_FAILED';
+    const DB_QUERY_FATAL_ERROR                                      = 'DB_QUERY_FATAL_ERROR';
     const DB_QUERY_INVALID_SYNTAX                                   = 'DB_QUERY_INVALID_SYNTAX';
 
     public static $gatewayUncatchableErrors = array(

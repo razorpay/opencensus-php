@@ -141,7 +141,7 @@ class Error
                 break;
             case ErrorClass::DB:
                 // @todo fill this case
-                $this->handleDBErrors();
+                $this->handleServerErrors();
                 break;
             case ErrorClass::TRACE:
                 // @todo
