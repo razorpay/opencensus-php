@@ -2,22 +2,30 @@
 
 namespace EE\Exception;
 
+use EE\Error\Error;
+
 class ServerErrorException extends BaseException
 {
-	protected $publicMessage;
+    protected $data = null;
 
-    public function __construct($message, $code = 0 , Exception $previous = null)
+    protected $code = null;
+
+    public function __construct($code, $data = null, Exception $previous = null)
     {
-        parent::__construct('Server Error', $message, $code, $previous);
+        $this->data = $data;
+
+        $this->code = $code;
+
+        $this->previous = $previous;
     }
 
-    public function setPublicMessage($publicMessage)
+    public function generateJson()
     {
-    	$this->publicMessage = $publicMessage;
+        $error = new \EE\Error\Error($code, null, null, $data);
     }
 
-    public function getPublicMessage()
+    public function getData()
     {
-    	return $this->publicMessage;
+        return $this->data;
     }
 }
