@@ -174,6 +174,12 @@ class Transaction extends UuidDAL
         $this->setAttribute(Field\Transaction::STATUS, $status);
     }
 
+    public function setStatusAndSave($status)
+    {
+        $this->setAttribute(Field\Transaction::STATUS, $status);
+        $this->save();
+    }
+
     public function getObjectAttribute()
     {
         return 'transaction';
