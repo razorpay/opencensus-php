@@ -58,4 +58,9 @@ class Key extends DAL
     {
         return self::where(Field\Key::ID,'=',$key_id)->notExpired()->first();
     }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(Field\Common::MERCHANT_ID);
+    }
 }

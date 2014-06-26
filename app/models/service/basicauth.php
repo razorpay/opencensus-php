@@ -64,7 +64,7 @@ class BasicAuth extends \Singleton {
           return false;
         }
 
-        $merchantId = $Key->merchantId;
+        $merchantId = $Key->getMerchantId();
 
         $Merchant = DAL\Merchant::findOrFail($merchantId);
 
@@ -93,7 +93,7 @@ class BasicAuth extends \Singleton {
             return false;
         }
 
-        $merchantId = $Key->getAttribute(\Constants\Field\Common::MERCHANT_ID);
+        $merchantId = $Key->getMerchantId();
 
         $Merchant = DAL\Merchant::findOrFail($merchantId);
 
@@ -129,7 +129,7 @@ class BasicAuth extends \Singleton {
 
     public function getMerchantIdInArray(array & $array)
     {
-        $array[\Constants\Field\Common::merchantId] = $this->MerchantId();
+        $array[\Constants\Field\Common::MERCHANT_ID] = $this->MerchantId();
     }
 
 }
