@@ -11,11 +11,11 @@ class TraceEvent
     const TRANSACTION_NEW_REQUEST           = 'TRANSACTION_NEW_REQUEST';
     const TRANSACTION_CREATED               = 'TRANSACTION_CREATED';
     const TRANSACTION_CREATE_FAILED         = 'TRANSACTION_CREATE_FAILED';
-    const TRANSACTION_AUTHED                = 'TRANSACTION_AUTHED';
+    const TRANSACTION_AUTH_SUCCESS                = 'TRANSACTION_AUTH_SUCCESS';
     const TRANSACTION_AUTH_FAILED           = 'TRANSACTION_AUTH_FAILED';
-    const TRANSACTION_REFUNDED              = 'TRANSACTION_REFUNDED';
+    const TRANSACTION_REFUND_SUCCESS              = 'TRANSACTION_REFUND_SUCCESS';
     const TRANSACTION_REFUND_FAILED         = 'TRANSACTION_REFUND_FAILED';
-    const TRANSACTION_CAPTURED              = 'TRANSACTION_CAPTURED';
+    const TRANSACTION_CAPTURE_SUCCESS              = 'TRANSACTION_CAPTURE_SUCCESS';
     const TRANSACTION_CAPTURE_FAILED        = 'TRANSACTION_CAPTURE_FAILED';
     const TRANSACTION_EXCEPTION             = 'TRANSACTION_EXCEPTION';
 
@@ -43,12 +43,12 @@ class TraceEvent
         self::TRANSACTION_NEW_REQUEST       => 'Request for new transaction received',
         self::TRANSACTION_CREATED           => 'New transaction created',
         self::TRANSACTION_CREATE_FAILED     => 'Transaction creation failed',
-        self::TRANSACTION_AUTHED            => 'Transaction authenticated successfully',
+        self::TRANSACTION_AUTH_SUCCESS            => 'Transaction authenticated successfully',
         self::TRANSACTION_AUTH_FAILED       => 'Transaction auth failed',
         self::TRANSACTION_FAILED            => 'Transaction failed',
-        self::TRANSACTION_REFUNDED          => 'Transaction refunded successfully',
+        self::TRANSACTION_REFUND_SUCCESS          => 'Transaction refunded successfully',
         self::TRANSACTION_REFUND_FAILED     => 'Transaction refund failed',
-        self::TRANSACTION_CAPTURED          => 'Transaction captured successfully',
+        self::TRANSACTION_CAPTURE_SUCCESS          => 'Transaction captured successfully',
         self::TRANSACTION_CAPTURE_FAILED    => 'Transaction capture failed',
         self::TRANSACTION_EXCEPTION         => 'Transaction exception occured',
         self::TRANSACTION_FAILED            => 'Transaction failed',

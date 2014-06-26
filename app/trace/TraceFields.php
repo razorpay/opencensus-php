@@ -22,7 +22,7 @@ class TraceFields
             'hold'
         ),
 
-        TraceEvent::TRANSACTION_AUTHED => array(
+        TraceEvent::TRANSACTION_AUTH_SUCCESS => array(
             'id',
             'amount',
             'currency',
@@ -69,7 +69,7 @@ class TraceFields
             'error'
         ),
 
-        TraceEvent::TRANSACTION_REFUNDED => array(
+        TraceEvent::TRANSACTION_REFUND_SUCCESS => array(
             'id',
             'amount',
             'currency',
@@ -77,7 +77,7 @@ class TraceFields
             'status'
         ),
 
-        TraceEvent::TRANSACTION_CAPTURED => array(
+        TraceEvent::TRANSACTION_CAPTURE_SUCCESS => array(
             'id',
             'amount',
             'currency',
