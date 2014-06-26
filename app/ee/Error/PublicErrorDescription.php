@@ -61,4 +61,9 @@ class PublicErrorDescription
     const GATEWAY_ERROR_INVALID_AMOUNT =
         'The amount provided is invalid';
 
+    const BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED =
+        'This transaction has already been captured';
+
+    const BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED =
+        'This transaction has already been refunded';
 }
