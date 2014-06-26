@@ -2,21 +2,23 @@
 
 namespace Models\Service\Core;
 
+use EE\Exception\BaseException;
+
+use Gateway\GatewayManager;
+
+use Models\DAL;
+
 use Models\Manager;
 use Models\Manager\TransactionStatus;
-use Models\DAL;
-use Gateway\GatewayManager;
-use EE\Exception\GatewayTimeoutException;
-use EE\Exception;
-use Exceptions;
+use Models\Manager\TransactionAction;
+
+
 use Trace\Trace;
 use Trace\TraceEvent;
 
 class Transaction
 {
     protected $txn;
-
-    protected $card;
 
     protected $trace;
 
@@ -125,61 +127,63 @@ class Transaction
 
         try
         {
-            list($status, $error) = $this->callGatewayFunction('process', $txnInfo);
+            $callbackData = $this->callGatewayFunction('process', $txnInfo);
         }
-        catch(Exception\BaseException $e)
+        catch(BaseException $e)
         {
             $status = TransactionStatus::FAILED;
 
             $error = $e->getError();
 
-            $this->updateTransactionFailed($error);
+            $this->updateTransactionFailed(
+                    $txn,
+                    $error,
+                    TraceEvent::TRANSACTION_AUTH_FAILED);
 
             throw $e;
         }
 
-        return $this->updateTransactionStatus($status, $error);
-    }
-
-    function updateTransactionStatus($status, $data)
-    {
-        $txn = $this->txn;
-
-        if ($status === 'enrolled')
-            return $data;
-
-        switch ($status)
+        if ($callbackData !== null)
         {
             //
             // This case means that card (DC) is enrolled.
             // Now a form will be displayed and submitted
             // to bank ACS for for customer to enter 3d-secure
             // or OTP.
+            // The data field required for generating the
+            // form is returned by gateway.
+            // It's now returned further to wherever it
+            // will be used to display form.
             //
-            case 'enrolled':
-            return $data;
 
-            // case 'not enrolled':
-            //     $txn->setStatus(TransactionStatus::AUTH);
-            //     return $txn;
+            return $callbackData;
+        }
 
+        return $this->updateTransactionSuccess($txn, TransactionStatus::AUTH);
+    }
+
+    function updateTransactionSuccess($txn, $status)
+    {
+        switch ($status)
+        {
             case TransactionStatus::AUTH:
-                $this->updateTransactionAuth();
+                $this->updateTransactionAuth($txn);
                 break;
 
             case TransactionStatus::CAPTURED:
-                $this->updateTransactionCaptured();
+                $this->updateTransactionCaptured($txn);
                 break;
 
-            case TransactionStatus::FAILED:
-                $error = $data;
-                $this->updateTransactionFailed($error);
+            case TransactionStatus::REFUNDED:
+                $this->updateTransactionRefunded($txn);
                 break;
 
             default:
                 throw new \LogicException(
                     'Transaction Exception: ' . $status . ' is an invalid status');
         }
+
+        $txn->save();
 
         return $txn;
     }
@@ -194,31 +198,30 @@ class Transaction
             'txn' => $txn->toArrayEx(
                         DAL\Transaction::WITH_CARD));
 
-        list($status, $error) = $this->callGatewayFunction('refund', $data);
-
-        if ($status)
+        try
         {
-            $txn->setStatus(TransactionStatus::REFUNDED);
+            $this->callGatewayFunction(TransactionAction::REFUND, $data);
 
-            $txnArray = $txn->toArray();
+            $this->updateTransactionSuccess($txn, TransactionStatus::REFUNDED);
 
-            //Logging
-            $this->trace->info(
-                TraceEvent::TRANSACTION_REFUNDED,
-                $txnArray);
-
-            //Analytics
-            //$txnArray['merchant_id'] = $txn->getMerchantId();
-            \Dashboard\Transaction::getInstance()->queueRecord($txnArray);
+            //
+            // Analytics
+            //
+            \Dashboard\Transaction::getInstance()
+                                  ->queueRecord($txn->toArray());
         }
-        else
+        catch(BaseException $e)
         {
+            $error = $e->getError();
+
             $txn->setError($error);
 
             //Logging
             $this->trace->error(
                 TraceEvent::TRANSACTION_REFUND_FAILED,
                 $txnData->toArray());
+
+            throw $e;
         }
 
         return $txn;
@@ -235,81 +238,83 @@ class Transaction
     {
         $data = array('txn' => $txn->toArrayEx(DAL\Transaction::WITH_CARD));
 
-        list($status, $error) = $this->callGatewayFunction('capture', $data);
-
-        if($status)
+        try
         {
-            $txn->setStatus(Manager\TransactionStatus::CAPTURED);
+            $this->callGatewayFunction('capture', $data);
 
-            //Logging
-            $this->trace->info(
-                TraceEvent::TRANSACTION_CAPTURED,
-                $txn->toArray());
+            $this->updateTransactionSuccess($txn, TransactionStatus::CAPTURED);
         }
-        else
+        catch (BaseException $e)
         {
             $txn->setStatus(TransactionStatus::CAPTURE_FAILED);
             $txn->setError($error);
+            $txn->save();
 
             //Logging
             $this->trace->error(
                 TraceEvent::TRANSACTION_CAPTURE_FAILED,
                 $txn->toArray());
+
+            throw $e;
         }
 
-        $txn->save();
         return $txn;
     }
 
-    protected function updateTransactionAuth()
+    protected function updateTransactionAuth($txn)
     {
-        $this->txn->setStatus(TransactionStatus::AUTH);
+        $txn->setStatus(TransactionStatus::AUTH);
 
         //Logging
         $this->trace->info(
-            TraceEvent::TRANSACTION_AUTHED,
-            $this->txn->toArray());
+            TraceEvent::TRANSACTION_AUTH_SUCCESS,
+            $txn->toArray());
     }
 
-    protected function updateTransactionCaptured()
+    protected function updateTransactionCaptured($txn)
     {
-        $this->txn->setStatus(TransactionStatus::CAPTURED);
+        $txn->setStatus(TransactionStatus::CAPTURED);
 
         //Logging
         $this->trace->info(
-            TraceEvent::TRANSACTION_CAPTURED,
-            $this->txn->toArray());
+            TraceEvent::TRANSACTION_CAPTURE_SUCCESS,
+            $txn->toArray());
     }
 
-    protected function updateTransactionFailed($error)
+    protected function updateTransactionRefunded($txn)
+    {
+        $txn->setStatus(TransactionStatus::REFUNDED);
+
+        //Logging
+        $this->trace->info(
+            TraceEvent::TRANSACTION_REFUND_SUCCESS,
+            $txn->toArray());
+    }
+
+    protected function updateTransactionFailed($txn, $error, $traceCode)
     {
         $code = $error->getPublicErrorCode();
 
         $desc = $error->getPublicErrorDescription();
 
-        $this->txn->setStatus(TransactionStatus::FAILED);
+        $txn->setStatus(TransactionStatus::FAILED);
 
-        $this->txn->setError($code, $desc);
+        $txn->setError($code, $desc);
 
-        $this->txn->save();
+        $txn->save();
 
         //Logging
         $this->trace->error(
             TraceEvent::TRANSACTION_FAILED,
-            $this->txn->toArray());
+            $txn->toArray());
     }
 
-    protected function updateTransactionCaptureFailed()
+    public function callGatewayFunction($method, $args)
     {
-        $this->txn->setStatus(TransactionStatus::CAPTURE_FAILED);
-    }
-
-    protected function callGatewayFunction($method, $args)
-    {
-        list($status, $error) = (new GatewayManager)->$method($args);
+        $data = (new GatewayManager)->$method($args);
 
         // $ledger = (new DAL\Ledger)->updateRecords($txn);
 
-        return array($status, $error);
+        return $data;
     }
 }

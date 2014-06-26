@@ -8,6 +8,8 @@ use Gateway\GatewayManager;
 use Trace\Trace;
 use Trace\TraceEvent;
 use EE\Exception\BadRequestException;
+use Models\Manager\TransactionAction;
+use Models\Manager\TransactionStatus;
 
 class Transaction extends Service
 {
@@ -17,7 +19,7 @@ class Transaction extends Service
     public function __construct()
     {
         parent::__construct();
-        $this->txn = new Core\Transaction();
+        $this->core = new Core\Transaction();
         $this->trace = Trace::getInstance();
     }
 
@@ -30,29 +32,29 @@ class Transaction extends Service
             TraceEvent::TRANSACTION_NEW_REQUEST,
             $input);
 
-        list($txn, $cardData) = $this->txn->createEntitites($input);
+        list($txn, $cardData) = $this->core->createEntitites($input);
 
         $this->trace->debug(
             TraceEvent::TRANSACTION_CREATED,
             $txn->toArray());
 
-        $txn = $this->txn->process($txn, $cardData);
+        $data = $this->core->process($txn, $cardData);
 
-        if(! is_array($txn))
-            $txn = $txn->toArray();
+        if($data instanceof DAL\Transaction)
+            $data = $data->toArray();
 
-        return $txn;
+        return $data;
     }
 
     public function retrieveMultiple(array $input)
     {
         $txn = new DAL\Transaction;
 
-        $txnDataArr = $txn->fetch($input);
+        $txns = $txn->fetch($input);
 
-        $count = count($txnDataArr);
+        $count = count($txns);
 
-        return array('count' => $count, 'data' => $txnDataArr->toArray());
+        return array('count' => $count, 'data' => $txns->toArray());
     }
 
     public function retrieve($id, $merchantId)
@@ -86,15 +88,17 @@ class Transaction extends Service
         //
         if($txn->isRefunded())
         {
-            throw new BadRequestException('This transaction has already been refunded.');
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED);
         }
 
         if($txn->isCaptured() === false)
         {
-            throw new BadRequestException('This transaction has not been captured.');
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
         }
 
-        $txn = $this->txn->refund($txn);
+        $txn = $this->core->refund($txn);
 
         return $txn->toArray();
     }
@@ -118,10 +122,11 @@ class Transaction extends Service
         //
         if ($txn->isCaptured())
         {
-            throw new BadRequestException('This transaction has already been captured');
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
         }
 
-        $txn = $this->txn->capture($txn);
+        $txn = $this->core->capture($txn);
 
         return $txn->toArray();
     }
@@ -140,33 +145,23 @@ class Transaction extends Service
     {
         unset($input['csrf']);
 
-        $gateway = new GatewayManager();
-
-        list($processed, $id, $error) = $gateway->bankAcsCallback($input);
-
-        $txn = DAL\Transaction::findOrFail2($id);
-
-        $txnArray = $txn->toArray();
-
-        if ($processed === true)
+        try
         {
-            $txn->setStatus(Manager\TransactionStatus::AUTH);
 
-            //Logging
-            $this->trace->info(
-                TraceEvent::TRANSACTION_AUTHED,
-                $txnArray);
+            $id = $this->core->callGatewayFunction(TransactionAction::CALLBACK, $input);
 
-            // if(! $txnData->getHold())
-            // {
-            //     $this->capture($txnData);
-            // }
+            $txn = DAL\Transaction::findOrFail2($id);
+
+            $txnArray = $txn->toArray();
+
+            $this->core->updateTransactionSuccess($txn, TransactionStatus::AUTH);
         }
-        else
+        catch (BaseException $e)
         {
-            $txn->setStatus(Manager\TransactionStatus::FAILED);
+            $txn->setStatus(TransactionStatus::FAILED);
 
             $txn->setError($error);
+            $txn->save();
 
             //Logging
             $this->trace->error(
