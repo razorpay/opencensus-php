@@ -23,7 +23,7 @@ class PublicErrorDescription
         'The card number provided exceeds 19 (maximum) number of digits';
 
     const CARD_NUMBER_FAILS_LUHN_CHECK =
-        'The card number provided fails LUHN\' check and hence is invalid';
+        'The card number provided fails Luhn\'s check and hence is invalid';
 
     const CARD_INVALID_EXPIRY_MONTH =
         'The card expiry month provided is not valid. It should be between 1 - 12.';

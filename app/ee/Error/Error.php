@@ -15,20 +15,22 @@ class Error
 
     protected $publicError = null;
 
-    public function __construct($code, $desc = null, $field = null)
+    public function __construct(
+        $code,
+        $desc = null,
+        $field = null,
+        $data = null)
     {
-        $data = null;
-
-        $this->fill($code, $desc, $field);
+        $this->fill($code, $desc, $field, $data);
     }
 
-    public function fill($code, $desc = null, $field = null)
+    public function fill($code, $desc = null, $field = null, $data = null)
     {
         $this->setCode($code);
 
         $this->setClass($code);
 
-        // $this->setData($data);
+        $this->setData($data);
 
         $this->setDesc($desc);
 
@@ -242,15 +244,6 @@ class Error
 
     protected function handleServerErrors()
     {
-        $code = $this->getAttribute('code');
-        $data = $this->getAttribute('data');
-
-        switch ($code)
-        {
-            case Error::DB_RECORD_NOT_FOUND:
-            case Error::DB_QUERY_FAILED:
-            case Error::DB_QUERY_INVALID_SYNTAX:
-                break;
-        }
+        $this->publicError->setServerError();
     }
 }
