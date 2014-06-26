@@ -23,22 +23,8 @@ class CardErrorException extends BaseException
     {
         $intcode = 0;
 
-        if (($message === null) and
-            ($code !== 0))
-        {
-            if (defined('\EE\Error\ErrorCode::'.$code) === false)
-            {
-                throw new \InvalidArgumentException($code . ' is not a valid code');
-            }
-
-            $message = constant('\EE\Error\PublicErrorDescription::'.$code);
-
-            $error = new \EE\Error\Error($code, $message);
-
-            $this->setError($error);
-
+        if ($this->onlyCode($message, $code, $previous))
             return;
-        }
 
         $message = $this->constructStringMessage($message);
 

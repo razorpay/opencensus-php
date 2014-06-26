@@ -26,6 +26,31 @@ trait MessageFormats
         return $message;
     }
 
+    public function onlyCode($message, $code, $previous)
+    {
+        if (($message === null) and
+            ($code !== 0))
+        {
+            if (defined('\EE\Error\ErrorCode::'.$code) === false)
+            {
+                throw new \InvalidArgumentException($code . ' is not a valid code');
+            }
+
+            $message = constant('\EE\Error\PublicErrorDescription::'.$code);
+
+            $error = new \EE\Error\Error($code, $message);
+
+            $this->setError($error);
+
+            parent::__construct($message, 0, $previous);
+
+            return true;
+        }
+
+        return false;
+    }
+
+
     protected function handleMessageBagInstance(MessageBag $bag)
     {
         $this->messageBag = $bag;
