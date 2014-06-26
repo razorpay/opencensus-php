@@ -2,10 +2,6 @@
 
 namespace EE\Exception;
 
-use Illuminate\Support\MessageBag;
-use EE\Error\Error;
-use EE\Error\PublicErrorDescription;
-
 class CardErrorException extends BaseException
 {
     use MessageFormats;
