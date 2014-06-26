@@ -14,11 +14,11 @@ class DAL extends \Eloquent
      */
     public $uuid = false;
 
-    
+
     /**
      * should be default but that's
      * php keyword. It returns those attributes
-     * which are defined in 'visible' and not 
+     * which are defined in 'visible' and not
      * defined in 'hidden'. At a time only one of
      * 'visible' or 'hidden' is defined.
      */
@@ -31,8 +31,8 @@ class DAL extends \Eloquent
     const FIELDS = 0x1;
 
     /**
-     * All fields, irrespective of 'hidden' or 
-     * 'visible'. Does not include 'appends' 
+     * All fields, irrespective of 'hidden' or
+     * 'visible'. Does not include 'appends'
      * attributes.
      */
     const ALL_FIELDS = 0x2;
@@ -71,7 +71,7 @@ class DAL extends \Eloquent
     }
 
     /**
-     * 
+     *
      */
     public function getAppends()
     {
@@ -81,7 +81,7 @@ class DAL extends \Eloquent
         // Here we will grab all of the appended, calculated fields to this object
         // as these fields are not really in the fields array, but are run
         // when we need to array or JSON the object for convenience to the coder.
-        // 
+        //
 
         foreach ($this->appends as $key)
         {
@@ -118,7 +118,7 @@ class DAL extends \Eloquent
         throw new DbQueryException($e);
     }
 
-    public static function findOrFail2($id, $columns = array('*'))
+    public static function findOrFail($id, $columns = array('*'))
     {
         if ( ! (NULL === $model = static::find($id, $columns))) return $model;
 

@@ -145,7 +145,7 @@ class Transaction extends Service
     {
         unset($input['csrf']);
 
-        $txn = DAL\Transaction::findOrFail2($id);
+        $txn = DAL\Transaction::findOrFail($id);
 
         $input['txn'] = $txn->toArray();
 
