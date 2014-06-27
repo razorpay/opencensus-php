@@ -282,7 +282,7 @@ class HdfcGateway extends BaseGateway
 
         $this->id = $input['txn']['id'];
 
-        $this->model = HdfcGatewayDal::findOrFail2($input['MD']);
+        $this->model = HdfcGatewayDal::findOrFail($input['MD']);
 
         $trackid = $this->model->getTrackid();
 

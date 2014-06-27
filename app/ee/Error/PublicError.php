@@ -50,7 +50,7 @@ class PublicError
     {
         $this->setErrorCode(PublicErrorCode::SERVER_ERROR);
 
-        $this->setDescription(PublicErrorCode::SERVER_ERROR);
+        $this->setDescription(PublicErrorDescription::SERVER_ERROR);
 
         $this->httpStatusCode = 500;
     }

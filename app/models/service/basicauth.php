@@ -49,7 +49,7 @@ class BasicAuth extends \Singleton {
             throw new \InvalidArgumentException('Invalid Key Details');
         }
 
-        $Key = DAL\Key::find($key_id);
+        $Key = DAL\Key::findNotExpired($key_id);
 
         if ($Key === null)
         {
@@ -64,14 +64,9 @@ class BasicAuth extends \Singleton {
           return false;
         }
 
-        $merchant_id = $Key->merchant_id;
+        $merchantId = $Key->getMerchantId();
 
-        $Merchant = DAL\Merchant::find($merchant_id);
-
-        if(null == $Merchant)
-        {
-            throw new \InvalidArgumentException("Key does not match any merchant");
-        }
+        $Merchant = DAL\Merchant::findOrFail($merchantId);
 
         $this->Key = $Key;
 
@@ -98,14 +93,9 @@ class BasicAuth extends \Singleton {
             return false;
         }
 
-        $merchant_id = $Key->merchant_id;
+        $merchantId = $Key->getMerchantId();
 
-        $Merchant = DAL\Merchant::findOrFail2($merchant_id);
-
-        if(null == $Merchant)
-        {
-            throw new \InvalidArgumentException("Key does not match any merchant");
-        }
+        $Merchant = DAL\Merchant::findOrFail($merchantId);
 
         $this->Key = $Key;
 
@@ -114,9 +104,9 @@ class BasicAuth extends \Singleton {
         return true;
     }
 
-    public function verifyApp($merchant_id = NULL, $secret = NULL)
+    public function verifyApp($merchantId = NULL, $secret = NULL)
     {
-        if ($merchant_id === NULL || $secret === NULL)
+        if ($merchantId === NULL || $secret === NULL)
             throw new \InvalidArgumentException('Invalid Key Details');
 
         $verify = false;
@@ -132,7 +122,7 @@ class BasicAuth extends \Singleton {
         if ($verify === false)
             return false;
 
-        $this->Merchant = DAL\Merchant::find($merchant_id);
+        $this->Merchant = DAL\Merchant::find($merchantId);
 
         return true;
     }

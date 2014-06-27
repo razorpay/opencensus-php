@@ -34,6 +34,11 @@ class Handler
         {
             return $this->baseExceptionHandler($e, $code);
         });
+
+        App::error(function(ServerErrorException $e, $code)
+        {
+            return $this->serverErrorExceptionHandler($e, $code);
+        });
     }
 
     public function whoopsExceptionDisplayHandler()
@@ -67,7 +72,15 @@ class Handler
 
     public function baseExceptionHandler(BaseException $exception, $code)
     {
+        if (App::environment('dev') and
+            $exception instanceof ServerErrorException)
+            return;
         return $exception->generateJsonResponse();
+    }
+
+    public function serverErrorExceptionHandler(ServerErrorException $exception, $code)
+    {
+        return;
     }
 
     public function gatewayTimeoutExceptionHandler(GatewayTimeoutException $exception, $code)

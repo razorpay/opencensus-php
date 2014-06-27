@@ -11,12 +11,13 @@ class Merchant extends Service
     {
         $merchantId['id'] = $input['merchant_id'];
 
-        $merchant_data = Manager\Merchant::createValidate($merchantId)->getData();
+        $merchantData = Manager\Merchant::createValidate($merchantId)->getData();
 
-        $key_data = Manager\Key::createValidate($key)->getData();
+        $keyData = Manager\Key::createValidate($key)->getData();
 
-        DAL\Merchant::createOrFail($merchant_data);
-        DAL\Key::createOrFail($key_data);
+        DAL\Merchant::createOrFail($merchantData);
+
+        DAL\Key::createOrFail($keyData);
     }
 
     public function updateKey(array $input)
@@ -24,10 +25,15 @@ class Merchant extends Service
         $old = DAL\Key::find($input['old_id']);
 
         if ($old === null)
+        {
             return ['status' => false];
+        }
 
+        // @todo: remove the magic number
         $time = ($input['delay_roll'] == 'true') ? 86400 : 0;
+
         $old->setExpired($time);
+        $old->save();
 
         unset($input['delay_roll']);
         unset($input['old_id']);
@@ -35,7 +41,8 @@ class Merchant extends Service
         try
         {
             DAL\Key::createOrFail($input);
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             return ['status' => false];
         }

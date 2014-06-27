@@ -56,7 +56,6 @@ class ErrorCode
     const GATEWAY_ERROR_CARD_INVALID_ZIP                            = 'GATEWAY_ERROR_CARD_INVALID_ZIP';
     const GATEWAY_ERROR_CARD_INVALID_CVV                            = 'GATEWAY_ERROR_CARD_INVALID_CVV';
     const GATEWAY_ERROR_CARD_MISSING_CVV                            = 'GATEWAY_ERROR_CARD_MISSING_CVV';
-    const CARD_ERROR_CARD_DECLINED                                  = 'CARD_ERROR_CARD_DECLINED';
 
     /**
      * Card errors catchable in the app
@@ -69,6 +68,7 @@ class ErrorCode
     const CARD_ERROR_INVALID_AMOUNT                                 = 'CARD_ERROR_INVALID_AMOUNT';
     const CARD_ERROR_INVALID_NUMBER                                 = 'CARD_ERROR_INVALID_NUMBER';
     const CARD_ERROR_INVALID_EXPIRY_DATE                            = 'CARD_ERROR_INVALID_EXPIRY_DATE';
+    const CARD_ERROR_CARD_DECLINED                                  = 'CARD_ERROR_CARD_DECLINED';
     const CARD_ERROR_INSUFFICIENT_BALANCE                           = 'CARD_ERROR_INSUFFICIENT_BALANCE';
 
     const UDF_ERROR_INVALID_EMAIL                                   = 'UDF_ERROR_INVALID_EMAIL';
@@ -84,7 +84,7 @@ class ErrorCode
     const API_TRANSACTION_INVALID_AMOUNT                            = 'API_TRANSACTION_INVALID_AMOUNT';
 
     const DB_RECORD_NOT_FOUND                                       = 'DB_RECORD_NOT_FOUND';
-    const DB_QUERY_FAILED                                           = 'DB_QUERY_FAILED';
+    const DB_QUERY_FATAL_ERROR                                      = 'DB_QUERY_FATAL_ERROR';
     const DB_QUERY_INVALID_SYNTAX                                   = 'DB_QUERY_INVALID_SYNTAX';
 
     public static $gatewayUncatchableErrors = array(

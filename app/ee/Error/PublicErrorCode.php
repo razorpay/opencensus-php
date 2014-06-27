@@ -8,8 +8,6 @@ class PublicErrorCode
 
     const BAD_REQUEST = 'bad_request';
 
-    const PAYMENT_ERROR = 'payment_error';
-
     const SERVER_ERROR = 'server_error';
 
     public static function verify($errorClass)

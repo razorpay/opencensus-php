@@ -137,17 +137,10 @@ class Transaction extends UuidDAL
         return true;
     }
 
-    public static function fetchById($id)
-    {
-        return self::findOrFail2($id);
-    }
-
-
     public function isProcessed()
     {
         return ($this->getAttribute(Field\Transaction::STATUS) == TransactionStatus::AUTH);
     }
-
 
     public function isCaptured()
     {
@@ -268,6 +261,6 @@ class Transaction extends UuidDAL
     public static function findByIdAndMerchantIdOrFail($id, $merchantId)
     {
         return static::where(Field\Common::MERCHANT_ID, $merchantId)
-                     ->findOrFail2($id);
+                     ->findOrFail($id);
     }
 }
