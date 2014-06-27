@@ -33,7 +33,7 @@ class Card extends EntityManager
         'address_country',
         'address_zip');
 
-    protected static $createValidators = array('address', 'expiry_date');
+    protected static $createValidators = array('expiry_date');
 
     protected static $modifiers = array('expiry_year');
 
@@ -50,10 +50,6 @@ class Card extends EntityManager
             throw $e;
         }
         catch (Exception\ValidationFailureException $e)
-        {
-            throw new CardErrorException($e->getMessageBag(), 0, $e);
-        }
-        catch (Exception\ExtraFieldsException $e)
         {
             throw new CardErrorException($e->getMessageBag(), 0, $e);
         }
@@ -102,7 +98,10 @@ class Card extends EntityManager
                  ($addr_unset_count[0] !== 'address_line2')))
             {
                 $msg = implode(',', $addr_unset) . ' address values are not set.';
-                throw new \InvalidArgumentException($msg);
+
+                // throw new CardErrorException(
+                //     'Expiry date should not be in the past',
+                //     ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE);
             }
         }
     }
