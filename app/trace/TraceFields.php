@@ -190,7 +190,7 @@ class TraceFields
         {
             // @todo: Finalize the fields to be logged and remote the extra ones.
             // Currently all log messages have invalid fields defined.
-            // throw new \InvalidArgumentException(
+            // throw new Exception\InvalidArgumentException(
             //     implode(',', $missingFields) . ' are missing from trace record');
         }
 

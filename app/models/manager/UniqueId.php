@@ -2,6 +2,8 @@
 
 namespace Models\Manager;
 
+use EE\Exception\InvalidArgumentException;
+
 class UniqueId
 {
     const ID_LENGTH = \Constants\Fields::ID_LENGTH;
@@ -22,7 +24,7 @@ class UniqueId
         }
         else
         {
-            throw new \InvalidArgumentException('invalid uid: ' . $id);
+            throw new InvalidArgumentException('invalid uid: ' . $id);
         }
     }
 
@@ -32,7 +34,7 @@ class UniqueId
 
         if (! isset($id[$key]))
         {
-            throw new \InvalidArgumentException('id key not set');
+            throw new InvalidArgumentException('id key not set');
         }
 
         return self::verifyUid($id[$key]);
@@ -46,7 +48,7 @@ class UniqueId
 
         if ($throw)
         {
-            throw new \InvalidArgumentException($id . ' is not a valid id');
+            throw new InvalidArgumentException($id . ' is not a valid id');
         }
     }
 }

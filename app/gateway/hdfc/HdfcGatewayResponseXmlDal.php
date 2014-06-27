@@ -2,12 +2,13 @@
 
 namespace Gateway\HdfcGateway;
 
+use EE\Exception\InvalidArgumentException;
 use Models\DAL\DAL;
 
 class HdfcGatewayResponseXmlDal extends DAL
 {
     protected $table = 'hdfc_response_xml';
-    
+
     public $incrementing = false;
 
     protected $guarded = array();
@@ -44,7 +45,7 @@ class HdfcGatewayResponseXmlDal extends DAL
                 break;
 
             default:
-                throw new \InvalidArgumentException('Wrong responseType => '.$responseType);
+                throw new InvalidArgumentException('Wrong responseType => '.$responseType);
         }
     }
 }

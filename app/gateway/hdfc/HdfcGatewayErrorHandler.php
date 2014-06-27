@@ -3,6 +3,7 @@
 namespace Gateway\HdfcGateway;
 
 use EE\Error\Error;
+use EE\Exception\InvalidArgumentException;
 
 class HdfcGatewayErrorHandler
 {
@@ -48,7 +49,7 @@ class HdfcGatewayErrorHandler
 
         if (isset(ErrorMap::$errorMap[$errorCode]) === false)
         {
-            throw new \InvalidArgumentException('Error mapping for this code not defined. code: '.$errorCode);
+            throw new InvalidArgumentException('Error mapping for this code not defined. code: '.$errorCode);
         }
 
         return ErrorCode::$errorMap[$errorCode];
@@ -78,7 +79,7 @@ class HdfcGatewayErrorHandler
 
         if (defined(__NAMESPACE__.'\HdfcGatewayErrorCode::'.$code) === false)
         {
-            throw new \InvalidArgumentException('should not reach here for now');
+            throw new InvalidArgumentException('should not reach here for now');
             $appErrorCode = self::getInvalidEnrollCodeError();
             // $appErrorMessage = HdfcGateway
         }

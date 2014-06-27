@@ -2,6 +2,8 @@
 
 namespace Trace;
 
+use EE\Ecxeption\InvalidArgumentException;
+
 class TraceCode
 {
     /*
@@ -77,7 +79,7 @@ class TraceCode
     {
         if (! isset(self::$messages[$code]))
         {
-            throw new \InvalidArgumentException('Message for $code not defined');
+            throw new InvalidArgumentException('Message for $code not defined');
         }
 
         return self::$messages[$code];
@@ -87,7 +89,8 @@ class TraceCode
     {
         if (! defined(__NAMESPACE__."\TraceCode::$code"))
         {
-            throw new \InvalidArgumentException(__NAMESPACE__."\TraceCode::$code not defined");
+            throw new InvalidArgumentException(
+                __NAMESPACE__.'\TraceCode::'.$code.'not defined');
         }
     }
 }

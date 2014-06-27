@@ -4,19 +4,20 @@ namespace Models\Service;
 
 use Models\DAL;
 use Models\Manager;
+use EE\Exception\InvalidArgumentException;
 
 class BasicAuth extends \Singleton {
 
-    private $Key = null;
+    private $key = null;
 
-    private $Merchant = null;
+    private $merchant = null;
 
     private $App = null;
 
     public function check()
     {
-        if (($this->Key == null) or
-            ($this->Merchant == null))
+        if (($this->key == null) or
+            ($this->merchant == null))
             return false;
         else
             return true;
@@ -24,91 +25,83 @@ class BasicAuth extends \Singleton {
 
     public function Key()
     {
-        return $this->Key;
+        return $this->key;
     }
 
     public function Merchant()
     {
-        return $this->Merchant;
+        return $this->merchant;
     }
 
     public function MerchantId()
     {
-        return (int) $this->Merchant->id;
+        $id = $this->merchant->getId();
+        return (int) $id;
     }
 
     public function live()
     {
-        return $this->Key->live;
+        return $this->key->live;
     }
 
-    public function verifySecret($key_id = null, $key_secret = null)
+    public function verifySecret($keyId, $keySecret)
     {
-        if ($key_id === null || $key_secret === null )
-        {
-            throw new \InvalidArgumentException('Invalid Key Details');
-        }
+        $key = DAL\Key::findNotExpired($keyId);
 
-        $Key = DAL\Key::findNotExpired($key_id);
-
-        if ($Key === null)
+        if ($key === null)
         {
             return false;
         }
-        else if ($Key->active == 0)
+
+        if ($key->active == 0)
         {
             return false;
         }
-        else if (! \Hash::check($key_secret, $Key->secret))
+
+        $check = \Hash::check($keySecret, $key->getSecret());
+
+        if ($check === false)
         {
-          return false;
+            return false;
         }
 
-        $merchantId = $Key->getMerchantId();
+        $merchantId = $key->getMerchantId();
 
-        $Merchant = DAL\Merchant::findOrFail($merchantId);
+        $merchant = DAL\Merchant::findOrFail($merchantId);
 
-        $this->Key = $Key;
+        $this->key = $key;
 
-        $this->Merchant = $Merchant;
+        $this->merchant = $merchant;
 
         return true;
     }
 
-    public function verifyPublic($key_id = null)
+    public function verifyPublic($keyId)
     {
-        if ($key_id === null)
-        {
-            throw new \InvalidArgumentException('Invalid Credentials');
-        }
+        $key = DAL\Key::find($keyId);
 
-        $Key = DAL\Key::find($key_id);
-
-        if ($Key === null)
+        if ($key === null)
         {
             return false;
         }
-        else if ($Key->active == 0)
+        else if ($key->active == 0)
         {
             return false;
         }
 
-        $merchantId = $Key->getMerchantId();
+        $merchantId = $key->getMerchantId();
 
-        $Merchant = DAL\Merchant::findOrFail($merchantId);
+        $merchant = DAL\Merchant::findOrFail($merchantId);
 
-        $this->Key = $Key;
+        $this->key = $key;
 
-        $this->Merchant = $Merchant;
+        $this->merchant = $merchant;
 
         return true;
     }
 
-    public function verifyApp($merchantId = NULL, $secret = NULL)
+    public function verifyApp($merchantId, $secret)
     {
-        if ($merchantId === NULL || $secret === NULL)
-            throw new \InvalidArgumentException('Invalid Key Details');
-
         $verify = false;
 
         foreach (\Config::get('applications') as $name => $app)
@@ -122,7 +115,7 @@ class BasicAuth extends \Singleton {
         if ($verify === false)
             return false;
 
-        $this->Merchant = DAL\Merchant::find($merchantId);
+        $this->merchant = DAL\Merchant::find($merchantId);
 
         return true;
     }

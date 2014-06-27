@@ -2,6 +2,7 @@
 
 namespace Gateway\HdfcGateway;
 
+use EE\Exception\InvalidArgumentException;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -74,7 +75,7 @@ trait HdfcGatewayAuth
 
         if ($this->model->status !== 'VERES Received')
         {
-            throw new \InvalidArgumentException('Gateway Exception: Status not valid');
+            throw new InvalidArgumentException('Gateway Exception: Status not valid');
         }
 
         $this->trace(
