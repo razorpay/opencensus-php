@@ -72,7 +72,7 @@ if (! function_exists('validate_keys'))
 	}
 }
 
-if (! function_exists('GetTextBetweenTags'))
+if (! function_exists('getTextBetweenTags'))
 {
 	function getTextBetweenTags($string, $start, $end)
 	{
