@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\DAL;
 
@@ -26,6 +26,11 @@ class Merchant extends DAL
     {
         return $this->hasMany(
             __NAMESPACE__.'\Transaction');
+    }
+
+    public function getId()
+    {
+        return $this->getAttribute(Field\Merchant::ID);
     }
 }
 
