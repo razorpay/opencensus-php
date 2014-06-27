@@ -2,13 +2,19 @@
 
 namespace EE\Exception;
 
-class ExtraFieldsException
+use EE\Error\Error;
+use EE\Error\ErrorCode;
+
+class ExtraFieldsException extends BaseException
 {
     protected $fields;
 
     protected $count;
 
-    public function __construct($fields, $code = 0 , Exception $previous = null)
+    public function __construct(
+        $fields,
+        $code = ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        Exception $previous = null)
     {
         $this->fields = $fields;
 
@@ -27,11 +33,9 @@ class ExtraFieldsException
 
         $intcode = 0;
 
-        $this->error(
-            \EE\Error\ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
-            $message);
+        $this->error = new Error($code, $message);
 
-        parent::__construct($message, $intcode, $previous);
+        parent::__construct($message, $code, $previous);
     }
 
     public function getExtraFields()

@@ -72,9 +72,14 @@ class Handler
 
     public function baseExceptionHandler(BaseException $exception, $code)
     {
-        if (App::environment('dev') and
-            $exception instanceof ServerErrorException)
-            return;
+        if (App::environment('dev'))
+        {
+            if ($exception instanceof ServerErrorException)
+                return;
+
+            return $exception->generateDebugJsonResponse();
+        }
+
         return $exception->generateJsonResponse();
     }
 

@@ -9,9 +9,22 @@ class BaseException extends Exception
 {
     protected $error = null;
 
-    public function __construct($message, $code = 0 , Exception $previous = null)
+    /**
+     * Constructor for base exception of the
+     * application
+     *
+     * @param string    $message
+     * @param string    $code
+     * @param Exception $previous
+     */
+    public function __construct(
+        /* string */ $message,
+        /* string */ $code = '',
+        Exception $previous = null)
     {
-        parent::__construct($message, $code, $previous);
+        $this->message = $message;
+        $this->previous = $previous;
+        $this->code = $code;
     }
 
     protected function setError($error)
@@ -29,11 +42,20 @@ class BaseException extends Exception
         return $this->error->getPublicError();
     }
 
-    public function generateJsonResponse()
+    public function generatePublicJsonResponse()
     {
         $error = $this->getPublicError();
 
         $httpStatusCode = $error->getHttpStatusCode();
+
+        return Response::json($error->toArray(), $httpStatusCode);
+    }
+
+    public function generateDebugJsonResponse()
+    {
+        $error = $this->getError();
+
+        $httpStatusCode = $error->getPublicError()->getHttpStatusCode();
 
         return Response::json($error->toArray(), $httpStatusCode);
     }

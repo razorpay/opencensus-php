@@ -14,14 +14,12 @@ class UdfErrorException extends BaseException
 
     public function __construct(
         $message = '',
-        $code = 0,
+        $code = '',
         \Exception $previous = null)
     {
-        $intcode = 0;
-
         $message = $this->constructStringMessage($messsage);
 
-        parent::__construct($message, $intcode, $previous);
+        parent::__construct($message, $code, $previous);
 
         $this->constructError($message, $code);
     }

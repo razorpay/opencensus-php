@@ -83,26 +83,8 @@ class ErrorCode
     const API_TRANSACTION_INVALID_CURRENCY                          = 'API_TRANSACTION_INVALID_CURRENCY';
     const API_TRANSACTION_INVALID_AMOUNT                            = 'API_TRANSACTION_INVALID_AMOUNT';
 
-    const DB_RECORD_NOT_FOUND                                       = 'DB_RECORD_NOT_FOUND';
-    const DB_QUERY_FATAL_ERROR                                      = 'DB_QUERY_FATAL_ERROR';
-    const DB_QUERY_INVALID_SYNTAX                                   = 'DB_QUERY_INVALID_SYNTAX';
-
-    public static $gatewayUncatchableErrors = array(
-        self::GATEWAY_CARD_INVALID_AMOUNT,
-        self::GATEWAY_CARD_INVALID_ADDRESS,
-        self::GATEWAY_CARD_INVALID_ZIP_CODE,
-        self::GATEWAY_CARD_DECLINED,
-        self::GATEWAY_TXN_DENIED_NEGATIVE_BIN);
-
-    public static function isGatewayError($error)
-    {
-        ;
-    }
-
-    public static function isCardError($error)
-    {
-        return true;
-    }
+    const SERVER_ERROR_INVALID_ARGUMENT                             = 'SERVER_ERROR_INVALID_ARGUMENT';
+    const SERVER_ERROR_DB_QUERY_FAILED                              = 'SERVER_ERROR_DB_QUERY_FAILED';
 
     public static function errorCodeExists($code)
     {

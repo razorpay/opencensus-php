@@ -20,6 +20,6 @@ class GatewayErrorException extends BaseException
 
         $desc = $error->getPublicErrorDescription();
 
-        parent::__construct($desc, 0, $previous);
+        parent::__construct($desc, $code, $previous);
     }
 }

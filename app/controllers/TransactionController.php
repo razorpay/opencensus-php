@@ -74,15 +74,17 @@ class TransactionController extends BaseController
 
         $txn_data = Transaction::getNewInstance()->process($input);
 
-        //Check for call from API
+        //
+        // Check for call from API
+        //
         if(Request::header('Razorpay-API') != 1 && isset($txn_data['callbackUrl']))
         {
         	return View::make('hdfc.enrollResponse')
                 ->with('data', $txn_data['data'])
                 ->with('callbackUrl',$txn_data['callbackUrl']);
         }
-        return Response::json($txn_data);
 
+        return Response::json($txn_data);
     }
 
     /**
@@ -91,36 +93,15 @@ class TransactionController extends BaseController
     public function getJSONP()
     {
         $input = Input::all();
+
         unset($input['callback']);
         unset($input['_']);
 
-        try
-        {
-            $input['merchant_id'] = BasicAuth::getInstance()->MerchantId();
+        $input['merchant_id'] = BasicAuth::getInstance()->MerchantId();
 
-            $txn_data = (new Transaction)->process($input);
+        $txn = (new Transaction)->process($input);
 
-            return Response::json($txn_data)->setCallback(Input::get('callback'));
-        }
-        catch(Exception $e)
-        {
-            if(App::environment('dev'))
-            {
-                return Response::json([
-                    'exception'=>$e->getMessage(),
-                    'file'=>$e->getFile(),
-                    'line'=>$e->getLine(),
-                    'code'=>$e->getCode(),
-                    'trace'=>$e->getTrace()
-                ])->setCallback(Input::get('callback'));
-            }
-            else
-            {
-                return Response::json([
-                    'exception'=>'An error occured'
-                ])->setCallback(Input::get('callback'));
-            }
-        }
+        return Response::json($txn)->setCallback(Input::get('callback'));
     }
 
     /**
@@ -132,14 +113,7 @@ class TransactionController extends BaseController
 
         $txn = (new Transaction)->refund($id, $merchantId);
 
-        if ($txn === null)
-        {
-            return Response::view('error.404', array(), 404);
-        }
-        else
-        {
-            return Response::json($txn);
-        }
+        return Response::json($txn);
     }
 
     /**
@@ -170,14 +144,7 @@ class TransactionController extends BaseController
 
         $txn = (new Transaction)->capture($id, $merchantId);
 
-        if ($txn === null)
-        {
-            return Response::view('error.404', array(), 404);
-        }
-        else
-        {
-            return Response::json($txn);
-        }
+        return Response::json($txn);
     }
 
     /**

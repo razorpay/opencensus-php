@@ -13,7 +13,7 @@ class BaseGateway
     protected $trace;
 
     public function __construct()
-    { 
+    {
         $this->trace = Trace::getInstance();
     }
 
@@ -85,7 +85,7 @@ class BaseGateway
 
         $error = GetTextBetweenTags($initialResponse, "<error_text>", "</error_text");
 
-        $enroll_result = GetTextBetweenTags($initial_response, "<result>", "</result>");
+        $enrollResult = getTextBetweenTags($initial_response, "<result>", "</result>");
     }
-    
+
 }

@@ -6,12 +6,28 @@ use EE\Error\Error;
 
 class ServerErrorException extends BaseException
 {
+    /**
+     * Aim should be to fill the value of these attributes.
+     * The child classes should provide the field values
+     * and 'data' variable should store values corresponding
+     * to those fields. Note that it's not binding though
+     *
+     * @var array
+     */
+    protected $fields = array();
+
     protected $data = null;
 
     protected $code = null;
 
-    public function __construct($code, $data = null, Exception $previous = null)
+    public function __construct(
+        $message,
+        $code,
+        $data = null,
+        Exception $previous = null)
     {
+        $data['message'] = $message;
+
         $this->data = $data;
 
         $this->code = $code;
@@ -21,6 +37,8 @@ class ServerErrorException extends BaseException
         $error = new \EE\Error\Error($code, null, null, $data);
 
         $this->error = $error;
+
+        parent::__construct($message, $code, $previous);
     }
 
     public function getData()

@@ -12,9 +12,9 @@ class ErrorClass
 
     const TRACE = 'TRACE';
 
-    const BAD_REQUEST = 'bad_request';
+    const BAD_REQUEST = 'BAD_REQUEST';
 
-    const EXCEPTION = 'EXCEPTION';
+    const UDF = 'UDF';
 
-    const UDF = 'udf';
+    const SERVER = 'SERVER';
 }

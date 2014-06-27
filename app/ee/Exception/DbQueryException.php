@@ -17,12 +17,12 @@ class DbQueryException extends ServerErrorException
         'attributes',
         'query');
 
-    protected $data = array();
-
     public function __construct(array $data, Exception $previous = null)
     {
-        $code = ErrorCode::DB_QUERY_FATAL_ERROR;
+        $code = ErrorCode::SERVER_ERROR_DB_QUERY_FAILED;
 
-        parent::__construct($code, $data, $previous);
+        $message = 'DB query failed to execute successfully';
+
+        parent::__construct($message, $code, $data, $previous);
     }
 }

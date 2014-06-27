@@ -13,6 +13,6 @@ class GatewayTimeoutException extends BaseException
 
         $this->error = new Error($code, $curlErrorMessage);
 
-        parent::__construct($curlErrorMessage, 0, $previous);
+        parent::__construct($curlErrorMessage, $code, $previous);
     }
 }

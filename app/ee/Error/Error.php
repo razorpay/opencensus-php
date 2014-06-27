@@ -2,6 +2,8 @@
 
 namespace EE\Error;
 
+use EE\Exception\InvalidArgumentException;
+
 class Error
 {
     protected $attributes = array(
@@ -60,7 +62,7 @@ class Error
 
         if (ErrorCode::errorCodeExists($code) === false)
         {
-            throw new \InvalidArgumentException('Error code is not valid. Code: ' . $code);
+            throw new InvalidArgumentException('Error code is not valid. Code: ' . $code);
         }
 
         $this->attributes['code'] = $code;
@@ -75,9 +77,12 @@ class Error
 
         $class = substr($code, 0, $pos);
 
+        if ($class == 'BAD')
+            $class = ErrorClass::BAD_REQUEST;
+
         if (defined(__NAMESPACE__.'\ErrorClass::'.$class) === false)
         {
-            throw \InvalidNewArgument($class . ' is not a valid class');
+            throw new InvalidArgumentException($class . ' is not a valid class');
         }
 
         $this->attributes['class'] = $class;
@@ -95,7 +100,7 @@ class Error
 
         if (! is_string($desc))
         {
-            throw new \InvalidArgumentException('desc should be string');
+            throw new InvalidArgumentException('desc should be string');
         }
 
         $this->attributes['desc'] = $desc;
@@ -139,7 +144,7 @@ class Error
             case ErrorClass::BAD_REQUEST:
                 $this->handleBadRequestErrors();
                 break;
-            case ErrorClass::DB:
+            case ErrorClass::SERVER:
                 // @todo fill this case
                 $this->handleServerErrors();
                 break;
@@ -245,5 +250,15 @@ class Error
     protected function handleServerErrors()
     {
         $this->publicError->setServerError();
+    }
+
+    protected function getErrorArray()
+    {
+        return $this->attributes;
+    }
+    public function toArray()
+    {
+        return array(
+            'error' => $this->getErrorArray());
     }
 }
