@@ -54,9 +54,14 @@ class Key extends DAL
         return $query->get();
     }
 
-    public static function findNotExpired($key_id)
+    public static function findNotExpired($keyId)
     {
-        return self::where(Field\Key::ID,'=',$key_id)->notExpired()->first();
+        return self::notExpired()->find($keyId);
+    }
+
+    public function getSecret()
+    {
+        return $this->getAttribute(Field\Key::SECRET);
     }
 
     public function getMerchantId()
