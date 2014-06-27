@@ -5,7 +5,7 @@ namespace Models\Manager;
 class CardNetwork
 {
     const MASTERCARD = 'mastercard';
-    
+
     const VISA = 'visa';
 
     const RUPAY = 'rupay';
@@ -51,31 +51,32 @@ class CardNetwork
             if ($regex === null)
             {
                 $func = 'is'.studly_case($network);
-                if (self::{$func}($number))
+                if (self::{$func}($number) === true)
                 {
                     return $network;
-                }
-                else
-                {
-                    throw new \InvalidArgumentException('card network not detected');
                 }
             }
             else
             {
                 $ret =  preg_match($regex, $number);
-                
+
                 if ($ret === 1)
                     return $network;
-                else if ($ret === false)
-                    throw new \LogicException('card network not detected');
             }
         }
-            throw new \LogicException('card network not detected');
+
+
 
     }
 
     public static function isMaestro($number)
     {
         return in_array(substr($number, 0, 4), self::$maestroFirstFour);
+    }
+
+    public static function isRupay($number)
+    {
+        // @todo: determine regex for this one.
+        return false;
     }
 }
