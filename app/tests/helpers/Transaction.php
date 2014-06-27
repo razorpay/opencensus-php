@@ -85,7 +85,7 @@ class Transaction extends TestCase
 
             $this->assertEquals($card['exception'], get_class($e));
 
-            $content = $e->generateJsonResponse()->getContent();
+            $content = $e->generatePublicJsonResponse()->getContent();
         }
 
         // THEN
