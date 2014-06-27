@@ -6,7 +6,7 @@ class PublicErrorCode
 {
     const GATEWAY_ERROR = 'gateway_error';
 
-    const BAD_REQUEST = 'bad_request';
+    const BAD_REQUEST_ERROR = 'bad_request_error';
 
     const SERVER_ERROR = 'server_error';
 

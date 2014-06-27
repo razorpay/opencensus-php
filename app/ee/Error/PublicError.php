@@ -57,7 +57,7 @@ class PublicError
 
     public function setBadRequestError($description, $field = null)
     {
-        $tihs->setErrorCode(PublicErrorCode::BAD_REQUEST_ERROR);
+        $this->setErrorCode(PublicErrorCode::BAD_REQUEST_ERROR);
 
         $this->setErrorDescription($description);
 
