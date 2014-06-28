@@ -17,21 +17,10 @@ class Transaction extends TestCase
      * @param $hold Boolean True if transaction is to be of hold type (not captured automatically)
      * @return created transaction object in json
      */
-    protected function createTransaction($card_no)
+    protected function createTransaction($card)
     {
-        //
-        // flush any previous output
-        //
-        ob_flush();
-
         //GIVEN
 
-        //
-        // load list of cards with expected responses for each
-        //
-        $cards = include('cards.php');
-
-        $card = $cards[$card_no];
         $this->card = $card;
 
         //get details of requested card
@@ -42,7 +31,7 @@ class Transaction extends TestCase
         $response = null;
         $content = null;
 
-        $transaction = $this->getTransactionArray($card);
+        $transaction = $this->getTransactionArray($card['PAN']);
         $e = null;
 
         try
@@ -74,7 +63,7 @@ class Transaction extends TestCase
                     break;
 
                 default:
-                    $this->fail("Invalid Cards.php file");
+                    $this->fail("Invalid Cards type");
 
             }
         }
@@ -83,7 +72,18 @@ class Transaction extends TestCase
             if (isset($card['exception']) === false)
                 throw $e;
 
-            $this->assertEquals($card['exception'], get_class($e));
+            $expected = $card['exception'];
+            $actual = get_class($e);
+            if ($expected !== $actual)
+            {
+                throw $e;
+            }
+            else
+            {
+                $this->assertEquals(
+                    $expected,
+                    $actual);
+            }
 
             $content = $e->generatePublicJsonResponse()->getContent();
         }
@@ -114,16 +114,15 @@ class Transaction extends TestCase
         }
         else
         {
-            $this->unsuccessfulCardsAsserts($output, $e);
+            $this->unsuccessfulCardAsserts($output, $e);
         }
     }
 
-    public function unsuccessfulCardsAsserts($output, $e)
+    public function unsuccessfulCardAsserts($output, $e)
     {
         //
         // Tests for unsuccessful cards
         //
-
         $card = $this->card;
 
         $internalError = $e->getError();
@@ -132,13 +131,22 @@ class Transaction extends TestCase
 
         $this->assertEquals($card['public_error_code'], $output->error->code);
 
-        $this->assertEquals($card['public_error_desc'], $output->error->description);
+        if (isset($card['public_error_desc']))
+            $this->assertEquals($card['public_error_desc'], $output->error->description);
 
-        $this->assertEquals($card['gateway_error_code'], $internalError->getGatewayErrorCode());
+        if (isset($card['gateway_error_code']))
+        {
+            $this->assertEquals($card['gateway_error_code'], $internalError->getGatewayErrorCode());
 
-        $gatewayErrorDesc = \Gateway\HdfcGateway\HdfcGatewayErrorCode::$errorMessages[$card['gateway_error_code']];
+            $gatewayErrorDesc = \Gateway\HdfcGateway\HdfcGatewayErrorCode::$errorMessages[$card['gateway_error_code']];
 
-        $this->assertEquals($gatewayErrorDesc, $internalError->getGatewayErrorDesc());
+            $this->assertEquals($gatewayErrorDesc, $internalError->getGatewayErrorDesc());
+        }
+
+        if (isset($card['field']))
+        {
+            $this->assertEquals($card['field'], $output->error->field);
+        }
 
         return $output;
     }
@@ -239,17 +247,16 @@ class Transaction extends TestCase
         return $id;
     }
 
-    protected function getTransactionArray($card)
+    protected function getTransactionArray($number)
     {
         //
         // default transaction object
-        //
         //
         $transaction = [
             'amount'          =>  '100',
             'currency'        =>  'INR',
             'card' => array(
-                'number'     => $card['PAN'],
+                'number'     => $number,
                 'name'       => 'Harshil',
                 'expiry_month'    =>'12',
                 'expiry_year'     => '2014',

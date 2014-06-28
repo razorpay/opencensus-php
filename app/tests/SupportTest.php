@@ -22,6 +22,8 @@ class SupportTest extends Transaction {
         Eloquent::unguard();
         $key = Factory::create('Models\DAL\Key');
         Eloquent::reguard();
+
+        $this->cards = include(__DIR__.'/helpers/cards.php');
     }
 
     public function tearDown()
@@ -42,7 +44,7 @@ class SupportTest extends Transaction {
 
         //GIVEN
         //create an auth transaction using card 1
-        $response = $this->createTransaction(1);
+        $response = $this->createTransaction($this->cards[1]);
 
         //get its transaction id
         $id = $response->id;

@@ -11,7 +11,10 @@ use Laracasts\TestDummy\Factory;
 
 require_once('helpers/Transaction.php');
 
-class CardsTest extends Transaction {
+class CardsTest extends Transaction
+{
+
+    protected $cards = array();
 
     public function setUp()
     {
@@ -24,6 +27,11 @@ class CardsTest extends Transaction {
         Eloquent::unguard();
         $key = Factory::create('Models\DAL\Key');
         Eloquent::reguard();
+
+        //
+        // load list of cards with expected responses for each
+        //
+        $this->cards = include(__DIR__.'/helpers/cards.php');
     }
 
     public function tearDown()
@@ -45,7 +53,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: CC Transaction \n";
         echo "Expected Response: Timeout Transaction \n";
-        $this->createTransaction(0);
+        $this->createTransaction($this->cards[0]);
     }
 
     /**
@@ -56,7 +64,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: CC Transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction(1);
+        $this->createTransaction($this->cards[1]);
     }
 
     /**
@@ -68,7 +76,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: CC transaction \n";
         echo "Expected Response: Fails with Auth Not Available error. \n";
-        $this->createTransaction(2);
+        $this->createTransaction($this->cards[2]);
     }
 
     /**
@@ -80,7 +88,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: CC transaction \n";
         echo "Expected Response: Fails with Auth Not Available error. \n";
-        $this->createTransaction(3);
+        $this->createTransaction($this->cards[3]);
     }
 
     /**
@@ -92,7 +100,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Signature Failure error. \n";
-        $this->createTransaction(4);
+        $this->createTransaction($this->cards[4]);
     }
 
     /**
@@ -104,7 +112,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Signature Failure error. \n";
-        $this->createTransaction(5);
+        $this->createTransaction($this->cards[5]);
     }
 
     /**
@@ -115,7 +123,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction(6);
+        $this->createTransaction($this->cards[6]);
     }
 
     /**
@@ -126,7 +134,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction(7);
+        $this->createTransaction($this->cards[7]);
     }
 
     /**
@@ -137,7 +145,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction(8);
+        $this->createTransaction($this->cards[8]);
     }
 
     /**
@@ -149,7 +157,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Pares Not Success error. \n";
-        $this->createTransaction(9);
+        $this->createTransaction($this->cards[9]);
     }
 
     /**
@@ -161,7 +169,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Auth Not Available error. \n";
-        $this->createTransaction(10);
+        $this->createTransaction($this->cards[10]);
     }
 
     /**
@@ -173,7 +181,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Auth Not Available error. \n";
-        $this->createTransaction(11);
+        $this->createTransaction($this->cards[11]);
     }
 
     /**
@@ -184,7 +192,7 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Sucessfull Auth \n";
-        $this->createTransaction(12);
+        $this->createTransaction($this->cards[12]);
     }
 
     /**
@@ -195,6 +203,6 @@ class CardsTest extends Transaction {
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction(13);
+        $this->createTransaction($this->cards[13]);
     }
 }
