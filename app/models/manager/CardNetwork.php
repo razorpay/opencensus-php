@@ -64,9 +64,6 @@ class CardNetwork
                     return $network;
             }
         }
-
-
-
     }
 
     public static function isMaestro($number)

@@ -137,6 +137,12 @@ class Card extends EntityManager
                 'country' => $details['country_code']);
 
             $this->fill($arr);
+
+            if ($network === null)
+            {
+                // @todo: trace
+                return;
+            }
         }
     }
 
