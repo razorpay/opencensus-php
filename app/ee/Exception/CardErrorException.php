@@ -17,14 +17,10 @@ class CardErrorException extends BaseException
         $code = 0,
         \Exception $previous = null)
     {
-        $intcode = 0;
-
         if ($this->onlyCode($message, $code, $previous))
             return;
 
         $message = $this->constructStringMessage($message);
-
-        parent::__construct($message, $intcode, $previous);
 
         $this->constructError($message, $code);
     }

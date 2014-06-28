@@ -42,7 +42,7 @@ trait MessageFormats
 
             $this->setError($error);
 
-            parent::__construct($message, 0, $previous);
+            parent::__construct($message, $code, $previous);
 
             return true;
         }
@@ -136,26 +136,29 @@ trait MessageFormats
 
     protected function constructError($message, $code)
     {
-        if (($message !== null) and
-            (is_string($message) === false))
+        if ($message !== null)
         {
             list($field, $desc) = $this->getFirstPair();
 
-            $errorCode = $this->getErrorCode($field);
+            $code = $this->getErrorCode($field);
 
-            $this->error = new \EE\Error\Error($errorCode, $desc);
+            $this->error = new \EE\Error\Error($code, $desc, $field);
+
+            parent::__construct($desc, $code, null);
         }
         else if ($code !== 0)
         {
             $this->generateError($code, $message);
+
+            parent::__construct($message, $code, null);
         }
     }
 
     protected function getErrorCode($field)
     {
-        $className = __CLASSNAME__;
+        $className = __CLASS__;
 
-        $pos = strrpos($className, '\'');
+        $pos = strrpos($className, '\\');
 
         $pos2 = strrpos($className, 'Exception');
 
@@ -163,16 +166,16 @@ trait MessageFormats
 
         $code = '';
 
-        switch($field)
+        switch($category)
         {
             case 'BadRequest':
                 $code = '\EE\Error\ErrorCode::BAD_REQUEST_ERROR';
                 break;
             case 'UdfError':
-                $code = '\EE\Error\ErrorCode::CARD_ERROR_INVALID_'.strtoupper($field);
+                $code = '\EE\Error\ErrorCode::UDF_ERROR_INVALID_'.strtoupper($field);
                 break;
             case 'CardError':
-                $code = '\EE\Error\ErrorCode::UDF_ERROR_INVALID_'.strtoupper($field);
+                $code = '\EE\Error\ErrorCode::CARD_ERROR_INVALID_'.strtoupper($field);
                 break;
         }
 
