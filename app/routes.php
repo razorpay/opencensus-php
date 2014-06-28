@@ -69,10 +69,10 @@ Route::group(array('after' => 'sameorigin'), function()
         Route::$method(
             URL::TXN_CAPTURE_URL,
             'TransactionController@postCapture');
-
-        //@todo: temporary
-        //create an artisan command and get rid of this
-        Route::get('capture', 'TransactionController@capture');
+        // 
+        // //@todo: temporary
+        // //create an artisan command and get rid of this
+        // Route::get('capture', 'TransactionController@capture');
     });
 });
 
