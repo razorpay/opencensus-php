@@ -74,6 +74,12 @@ class Handler
     {
         if (App::environment('dev'))
         {
+            //
+            // Throw ServerErrorException (internal server errors)
+            // for 'dev' environment to help debugging.
+            // For non-dev, only public json is shown.
+            // @todo: log exception for non-dev environments;
+            //
             if ($exception instanceof ServerErrorException)
                 return;
 
