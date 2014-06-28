@@ -86,7 +86,7 @@ class Handler
             return $exception->generateDebugJsonResponse();
         }
 
-        return $exception->generateJsonResponse();
+        return $exception->generatePublicJsonResponse();
     }
 
     public function serverErrorExceptionHandler(ServerErrorException $exception, $code)
