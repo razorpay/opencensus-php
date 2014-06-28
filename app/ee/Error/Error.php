@@ -219,8 +219,9 @@ class Error
     {
         $code = $this->getAttribute('code');
         $desc = $this->getAttribute('desc');
+        $field = $this->getAttribute('field');
 
-        $this->publicError->setCardError($code, $desc);
+        $this->publicError->setCardError($code, $desc, $field);
     }
 
     protected function handleAPIErrors()

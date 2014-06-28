@@ -66,13 +66,20 @@ class PublicError
         $this->setHttpStatusCode(400);
     }
 
-    public function setCardError($code, $desc, $field)
+    public function setCardError($code, $desc, $field = null)
     {
+        if (defined(__NAMESPACE__.'\PublicErrorCode::'.$code) === false)
+        {
+            throw new \EE\Exception\InvalidArgumentException(
+                $code . ' not a valid public errorcode');
+        }
+
         $this->setErrorCode($code);
 
         $this->setErrorDescription($desc);
 
-        $this->setField($field);
+        if ($field !== null)
+            $this->setField($field);
 
         $this->setHttpStatusCode(400);
     }
