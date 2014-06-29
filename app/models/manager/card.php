@@ -98,10 +98,6 @@ class Card extends EntityManager
                  ($addr_unset_count[0] !== 'address_line2')))
             {
                 $msg = implode(',', $addr_unset) . ' address values are not set.';
-
-                // throw new CardErrorException(
-                //     'Expiry date should not be in the past',
-                //     ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE);
             }
         }
     }
@@ -115,7 +111,8 @@ class Card extends EntityManager
 
     public function modifyExpiryYear(& $input)
     {
-        if(strlen($input['expiry_year']) == 2)
+        if ((isset($input['expiry_year'])) and
+            (strlen($input['expiry_year']) == 2))
         {
             $input['expiry_year'] = '20'.$input['expiry_year'];
         }
