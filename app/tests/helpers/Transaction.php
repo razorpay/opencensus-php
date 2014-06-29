@@ -13,26 +13,18 @@ class Transaction extends TestCase
 
     /**
      * Creates a transaction & tests it is corrrectly created
-     * @param $card_no Numeric The array index of card in cards.php to be used for transaction
-     * @param $hold Boolean True if transaction is to be of hold type (not captured automatically)
-     * @return created transaction object in json
      */
-    protected function createTransaction($card)
+    protected function runTestFlow($testData)
     {
         //GIVEN
 
-        $this->card = $card;
-
-        //get details of requested card
-        $expected_response = $card['response'];
-
-        $cardtype = $card['type'];
+        $cardtype = $testData['type'];
 
         $response = null;
         $content = null;
 
-        $transaction = $this->getTransactionArray($card['PAN']);
         $e = null;
+        $txn = $testData['request']['content'];
 
         try
         {
@@ -42,7 +34,7 @@ class Transaction extends TestCase
                 // in case card is a CC (no secure code)
                 //
                 case "CC":
-                    $response = $this->call('POST', '/transactions', $transaction);
+                    $response = $this->call('POST', '/transactions', $txn);
                     $content = $response->getContent();
                     break;
 
@@ -51,10 +43,15 @@ class Transaction extends TestCase
                 //
                 case "DC":
 
-                    $content = $this->hitDCTransactionEndpoints($transaction);
-
+                    $response = $this->hitDCTransactionEndpoints($txn);
+                    $content = $response->getContent();
                     $arr = explode("\n", $content);
 
+                    //
+                    // Actual output is JS, but line 63 of the
+                    // output contains the data in JSON
+                    //
+                    // @todo: explain this part better.
                     $line = $arr[67];
 
                     // 11 = strlen("var data = ")
@@ -69,86 +66,98 @@ class Transaction extends TestCase
         }
         catch (BaseException $e)
         {
-            if (isset($card['exception']) === false)
+            if (isset($testData['exception']) === false)
                 throw $e;
 
-            $expected = $card['exception'];
+            $expected = $testData['exception']['class'];
+
             $actual = get_class($e);
+
             if ($expected !== $actual)
             {
                 throw $e;
             }
-            else
-            {
-                $this->assertEquals(
-                    $expected,
-                    $actual);
-            }
 
-            $content = $e->generatePublicJsonResponse()->getContent();
+            $this->assertEquals(
+                $expected,
+                $actual);
+
+            unset($testData['exception']['class']);
+
+            $response = $e->generatePublicJsonResponse();
+
+            $content = $response->getContent();
+
+            $this->unsuccessfulCardAsserts($testData['exception'], $e);
         }
 
         // THEN
+
+        //
+        // Match the status codes if it's defined
+        //
+        if (isset($testData['response']['status_code']))
+            $this->assertEquals(
+                $testData['response']['status_code'],
+                $response->status_code);
 
         //
         // Ensure output is json
         //
         $this->assertJson($content);
 
-        //
-        // check processed flag matches as in card.php
-        // @todo shift to matching to actual error code
-        // returned once errors are implemented
-        //
-        $output = json_decode($content);
+        $content = json_decode($content, true);
 
-        //
-        // If expected response is to be successfull,
-        // do following sets of tests
-        //
-        if ($expected_response)
-        {
-            $this->assertEquals(Models\Manager\TransactionStatus::AUTH, $output->status);
+        $expectedContent = $testData['response']['content'];
+        $actualContent = $content;
 
-            return $output;
-        }
-        else
-        {
-            $this->unsuccessfulCardAsserts($output, $e);
-        }
+        $this->match($expectedContent, $actualContent);
     }
 
-    public function unsuccessfulCardAsserts($output, $e)
+    public function unsuccessfulCardAsserts($expected, $actual)
     {
-        //
-        // Tests for unsuccessful cards
-        //
-        $card = $this->card;
-
         $internalError = $e->getError();
 
-        $this->assertEquals($card['internal_error_code'], $internalError->getCode());
+        $code = $expected['code'];
 
-        $this->assertEquals($card['public_error_code'], $output->error->code);
+        $this->assertEquals($code, $internalError->getCode());
 
-        if (isset($card['public_error_desc']))
-            $this->assertEquals($card['public_error_desc'], $output->error->description);
-
-        if (isset($card['gateway_error_code']))
+        if (isset($expected['gateway_error_code']))
         {
-            $this->assertEquals($card['gateway_error_code'], $internalError->getGatewayErrorCode());
+            $this->assertEquals($expected['gateway_error_code'], $internalError->getGatewayErrorCode());
 
             $gatewayErrorDesc = \Gateway\HdfcGateway\HdfcGatewayErrorCode::$errorMessages[$card['gateway_error_code']];
 
             $this->assertEquals($gatewayErrorDesc, $internalError->getGatewayErrorDesc());
         }
 
-        if (isset($card['field']))
+        if (isset($expected['field']))
         {
-            $this->assertEquals($card['field'], $output->error->field);
+            $this->assertEquals($card['field'], $actual['field']);
         }
 
-        return $output;
+    }
+
+    public function match($expected, $actual)
+    {
+        foreach ($expected as $key => $value)
+        {
+            if (is_array($value))
+            {
+                if (isset($actual[$key]))
+                {
+                    $this->match($expected[$key], $actual[$key]);
+                }
+                else
+                {
+                    $this->assertArrayHasKey($key, $actual);
+                }
+            }
+            else
+            {
+                $this->assertEquals($value, $actual[$key]);
+            }
+        }
     }
 
     protected function hitDCTransactionEndpoints(array $transaction)
@@ -165,12 +174,7 @@ class Transaction extends TestCase
 
         $response = $this->dcTransactionSubmitCallbackForm($form);
 
-        //
-        // Actual output is JS, but line 63 of the output contains the data in JSON
-        //
-        $content = $response->getContent();
-
-        return $content;
+        return $response;
     }
 
     protected function dcTransactionSubmitToAcsUrl($crawler)
@@ -247,7 +251,7 @@ class Transaction extends TestCase
         return $id;
     }
 
-    protected function getTransactionArray($number)
+    protected function getDefaultTransactionArray()
     {
         //
         // default transaction object
@@ -256,17 +260,17 @@ class Transaction extends TestCase
             'amount'          =>  '100',
             'currency'        =>  'INR',
             'card' => array(
-                'number'     => $number,
-                'name'       => 'Harshil',
-                'expiry_month'    =>'12',
-                'expiry_year'     => '2014',
-                'cvv'             => '566',
-                'address_line1'   => '21, Rameshwar',
-                'address_line2'   => 'jaipurwa',
-                'address_city'    => 'jaipur',
-                'address_state'   =>  'Rajasathan',
-                'address_country' =>  'India',
-                'address_zip'     =>  '123345',
+                'number'            => '4012001038443335',
+                'name'              => 'Harshil',
+                'expiry_month'      => '12',
+                'expiry_year'       => '2014',
+                'cvv'               => '566',
+                'address_line1'     => '21, Rameshwar',
+                'address_line2'     => 'jaipurwa',
+                'address_city'      => 'jaipur',
+                'address_state'     => 'Rajasathan',
+                'address_country'   => 'India',
+                'address_zip'       => '123345',
             ),
             'udf' => array(
                 'email'     =>  'lol@lko.com',
@@ -276,5 +280,29 @@ class Transaction extends TestCase
         ];
 
         return $transaction;
+    }
+
+    protected function replaceDefualtValues(array & $content)
+    {
+        $data = $this->getDefaultTransactionArray();
+
+        $this->replaceValuesRecursively($data, $content);
+
+        $content = $data;
+    }
+
+    protected function replaceValuesRecursively(array & $data, array $toReplace)
+    {
+        foreach ($toReplace as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $this->replaceValuesRecursively($data[$key], $value);
+            }
+            else
+            {
+                $data[$key] = $value;
+            }
+        }
     }
 }

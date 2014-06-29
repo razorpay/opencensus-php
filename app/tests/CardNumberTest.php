@@ -193,7 +193,7 @@ class CardNumberTest extends Transaction
         $name = lcfirst(substr($func, 4));
 
         $card = $this->cards[$name];
-        $this->createTransaction($card);
+//        $this->createTransaction($card);
     }
 
     protected function getTransactionArray($number)

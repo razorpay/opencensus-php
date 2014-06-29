@@ -14,7 +14,7 @@ require_once('helpers/Transaction.php');
 class CardsTest extends Transaction
 {
 
-    protected $cards = array();
+    protected $testData = array();
 
     public function setUp()
     {
@@ -29,9 +29,9 @@ class CardsTest extends Transaction
         Eloquent::reguard();
 
         //
-        // load list of cards with expected responses for each
+        // load test data
         //
-        $this->cards = include(__DIR__.'/helpers/cards.php');
+        $this->testData = include(__DIR__.'/helpers/cards.php');
     }
 
     public function tearDown()
@@ -49,22 +49,22 @@ class CardsTest extends Transaction
      * @group testReponseTimeOut
      * @group testFailure
      */
-    public function testCard0()
+    public function testCardTimeout()
     {
         echo "\nTesting: CC Transaction \n";
         echo "Expected Response: Timeout Transaction \n";
-        $this->createTransaction($this->cards[0]);
+        $this->startTest();
     }
 
     /**
      * @group testSuccess
      * @group testCC
      */
-    public function testCard1()
+    public function testCreditCardSuccess()
     {
         echo "\nTesting: CC Transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction($this->cards[1]);
+        $this->startTest();
     }
 
     /**
@@ -72,11 +72,11 @@ class CardsTest extends Transaction
      * @group testCC
      * @group testResponseAuthNotAvailable
      */
-    public function testCard2()
+    public function testCreditCardAuthNotAvailable1()
     {
         echo "\nTesting: CC transaction \n";
         echo "Expected Response: Fails with Auth Not Available error. \n";
-        $this->createTransaction($this->cards[2]);
+        $this->startTest();
     }
 
     /**
@@ -84,11 +84,11 @@ class CardsTest extends Transaction
      * @group testCC
      * @group testResponseAuthNotAvailable
      */
-    public function testCard3()
+    public function testCCAuthNotAvailable2()
     {
         echo "\nTesting: CC transaction \n";
         echo "Expected Response: Fails with Auth Not Available error. \n";
-        $this->createTransaction($this->cards[3]);
+        $this->startTest([3]);
     }
 
     /**
@@ -96,11 +96,11 @@ class CardsTest extends Transaction
      * @group testDC
      * @group testResponseSignatureFailure
      */
-    public function testCard4()
+    public function testSignatureFailure1()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Signature Failure error. \n";
-        $this->createTransaction($this->cards[4]);
+        $this->startTest();
     }
 
     /**
@@ -108,44 +108,44 @@ class CardsTest extends Transaction
      * @group testDC
      * @group testResponseSignatureFailure
      */
-    public function testCard5()
+    public function testSignatureFailure2()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Signature Failure error. \n";
-        $this->createTransaction($this->cards[5]);
+        $this->startTest();
     }
 
     /**
      * @group testSuccess
      * @group testDC
      */
-    public function testCard6()
+    public function testDebitCardSuccess1()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction($this->cards[6]);
+        $this->startTest([6]);
     }
 
     /**
      * @group testSuccess
      * @group testDC
      */
-    public function testCard7()
+    public function testDebitCardSuccess2()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction($this->cards[7]);
+        $this->startTest();
     }
 
     /**
      * @group testSuccess
      * @group testDC
      */
-    public function testCard8()
+    public function testDebitCardSuccess3()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction($this->cards[8]);
+        $this->startTest();
     }
 
     /**
@@ -153,11 +153,11 @@ class CardsTest extends Transaction
      * @group testDC
      * @group testResponseParesNotSuccess
      */
-    public function testCard9()
+    public function testParesNotSuccess()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Pares Not Success error. \n";
-        $this->createTransaction($this->cards[9]);
+        $this->startTest();
     }
 
     /**
@@ -165,11 +165,11 @@ class CardsTest extends Transaction
      * @group testDC
      * @group testResponseAuthNotAvailable
      */
-    public function testCard10()
+    public function testDebitCardAuthNotAvailable1()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Auth Not Available error. \n";
-        $this->createTransaction($this->cards[10]);
+        $this->startTest();
     }
 
     /**
@@ -177,32 +177,46 @@ class CardsTest extends Transaction
      * @group testDC
      * @group testResponseAuthNotAvailable
      */
-    public function testCard11()
+    public function testDebitCardAuthNotAvailable2()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Fails with Auth Not Available error. \n";
-        $this->createTransaction($this->cards[11]);
+        $this->startTest();
     }
 
     /**
      * @group testSuccess
      * @group testDC
      */
-    public function testCard12()
+    public function testDebitCardSuccess4()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Sucessfull Auth \n";
-        $this->createTransaction($this->cards[12]);
+        $this->startTest();
     }
 
     /**
      * @group testSuccess
      * @group testDC
      */
-    public function testCard13()
+    public function testDebitCardSuccess5()
     {
         echo "\nTesting: DC transaction \n";
         echo "Expected Response: Successful Auth \n";
-        $this->createTransaction($this->cards[13]);
+        $this->startTest();
+    }
+
+    public function startTest()
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $func = $trace[1]['function'];
+
+        $name = lcfirst(substr($func, 4));
+
+        $testData = $this->testData[$name];
+
+        $this->replaceDefualtValues($testData['request']['content']);
+
+        $this->runTestFlow($testData);
     }
 }

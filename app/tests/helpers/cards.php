@@ -7,114 +7,282 @@ use Gateway\HdfcGateway\HdfcGatewayErrorCode;
 
 //contain array of test cards
 return [
-    [
-    'PAN' => '4012001036275556',
-    'response' => 0,
-    'type' => 'CC',
-    'exception' => 'EE\Exception\GatewayTimeoutException',
-    'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-    'public_error_code'   => PublicErrorCode::GATEWAY_ERROR,
-    'public_error_desc'   => PublicErrorDescription::GATEWAY_REQUEST_TIMEOUT,
-    'gateway_error_code'  => HdfcGatewayErrorCode::RP00004,
+    'cardTimeout' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001036275556',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_REQUEST_TIMEOUT,
+                ],
+            ],
+            'status_code' => 200,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayTimeoutException',
+            'code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+            'gateway_error_code'  => HdfcGatewayErrorCode::RP00004,
+        ],
+        'type' => 'CC'
     ],
-    [
-    'PAN' => '4012001038443335',
-    'response' => 1,
-    'type' => 'CC'
+
+    'creditCardSuccess' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001038443335',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'auth',
+            ],
+        ],
+        'type' => 'CC',
     ],
-    [
-    'PAN' => '4012001038488884',
-    'response' => 0,
-    'type' => 'CC',
-    'exception' => 'EE\Exception\GatewayErrorException',
-    'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
-    'public_error_code'   => PublicErrorCode::GATEWAY_ERROR,
-    'public_error_desc'   => PublicErrorDescription::GATEWAY_ERROR,
-    'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
+
+    'creditCardAuthNotAvailable1' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001038488884',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
+        ],
+        'type' => 'CC'
     ],
-    [
-    'PAN' => '4012001036298889',
-    'response' => 0,
-    'type' => 'CC',
-    'exception' => 'EE\Exception\GatewayErrorException',
-    'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
-    'public_error_code'   => PublicErrorCode::GATEWAY_ERROR,
-    'public_error_desc'   => PublicErrorDescription::GATEWAY_ERROR,
-    'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
+    'creditCardAuthNotAvailable2' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001036298889',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
+        ],
+        'type' => 'CC'
     ],
-    [
-    'PAN' => '4012001036853337',
-    'response' => 0,
-    'type' => 'DC',
-    'exception' => 'EE\Exception\GatewayErrorException',
-    'internal_error_code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
-    'public_error_code'   => PublicErrorCode::GATEWAY_ERROR,
-    'public_error_desc'   => PublicErrorDescription::GATEWAY_ERROR,
-    'gateway_error_code'  => HdfcGatewayErrorCode::GV00007,
+
+    'signatureFailure1' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001036853337',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
+            'gateway_error_code'  => HdfcGatewayErrorCode::GV00007,
+        ],
+        'type' => 'DC'
     ],
-    [
-    'PAN' => '4012001036983332',
-    'response' => 0,
-    'type' => 'DC',
-    'exception' => 'EE\Exception\GatewayErrorException',
-    'internal_error_code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
-    'public_error_code'   => PublicErrorCode::GATEWAY_ERROR,
-    'public_error_desc'   => PublicErrorDescription::GATEWAY_ERROR,
-    'gateway_error_code'  => HdfcGatewayErrorCode::GV00008,
+    'signatureFailure2' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001036983332',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
+            'gateway_error_code'  => HdfcGatewayErrorCode::GV00008,
+        ],
+        'type' => 'DC'
     ],
-    [
-    'PAN' => '4012001037141112',
-    'response' => 1,
-    'type' => 'DC'
+    'debitCardSuccess1' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037141112',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'auth',
+            ],
+        ],
+        'type' => 'DC'
     ],
-    [
-    'PAN' => '4005559876540',
-    'response' => 1,
-    'type' => 'DC'
+
+    'debitCardSuccess2' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037141112',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'auth',
+            ],
+        ],
+        'type' => 'DC'
     ],
-    [
-    'PAN' => '4012001037167778',
-    'response' => 1,
-    'type' => 'DC'
+
+    'debitCardSuccess3' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778',
+                ],
+            ],
+        ],
+        'response' => [
+            'status' => 'auth',
+        ],
+        'type' => 'DC'
     ],
-    [
-    'PAN' => '4012001037461114',
-    'response' => 0,
-    'type' => 'DC',
-    'exception' => 'EE\Exception\GatewayErrorException',
-    'internal_error_code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
-    'public_error_code'   => PublicErrorCode::GATEWAY_ERROR,
-    'public_error_desc'   => PublicErrorDescription::GATEWAY_ERROR,
-    'gateway_error_code'  => HdfcGatewayErrorCode::GV00004,
+    'debitCardSuccess4' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037490014',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'auth',
+            ],
+        ],
+        'type' => 'DC'
     ],
-    [
-    'PAN' => '4012001037484447',
-    'response' => 0,
-    'type' => 'DC',
-    'exception' => 'EE\Exception\GatewayErrorException',
-    'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
-    'public_error_code'   => PublicErrorCode::GATEWAY_ERROR,
-    'public_error_desc'   => PublicErrorDescription::GATEWAY_ERROR,
-    'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
+    'debitCardSuccess5' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037141112',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'auth',
+            ],
+        ],
+        'type' => 'DC'
     ],
-    [
-    'PAN' => '4012001037490006',
-    'response' => 0,
-    'type' => 'DC',
-    'exception' => 'EE\Exception\GatewayErrorException',
-    'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
-    'public_error_code'   => PublicErrorCode::GATEWAY_ERROR,
-    'public_error_desc'   => PublicErrorDescription::GATEWAY_ERROR,
-    'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
+    'paresNotSuccess' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037461114',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
+            'gateway_error_code'  => HdfcGatewayErrorCode::GV00004,
+        ],
+        'type' => 'DC'
     ],
-    [
-    'PAN' => '4012001037490014',
-    'response' => 1,
-    'type' => 'DC'
+    'debitCardAuthNotAvailable1' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037484447',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
+        ],
+        'type' => 'DC'
     ],
-    [
-    'PAN' => '4012001037141112',
-    'response' => 1,
-    'type' => 'DC'
-    ]
+    'debitCardAuthNotAvailable2' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001037490006',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
+        ],
+        'type' => 'DC'
+    ],
 ];
