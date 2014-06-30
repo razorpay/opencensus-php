@@ -22,7 +22,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_REQUEST_TIMEOUT,
                 ],
             ],
-            'status_code' => 200,
+            'status_code' => 504,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayTimeoutException',
@@ -182,7 +182,9 @@ return [
             ],
         ],
         'response' => [
-            'status' => 'auth',
+            'content' => [
+                'status' => 'auth',
+            ],
         ],
         'type' => 'DC'
     ],

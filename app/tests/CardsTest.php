@@ -84,7 +84,7 @@ class CardsTest extends Transaction
      * @group testCC
      * @group testResponseAuthNotAvailable
      */
-    public function testCCAuthNotAvailable2()
+    public function testCreditCardAuthNotAvailable2()
     {
         echo "\nTesting: CC transaction \n";
         echo "Expected Response: Fails with Auth Not Available error. \n";

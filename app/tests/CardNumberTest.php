@@ -18,115 +18,6 @@ require_once('helpers/Transaction.php');
 
 class CardNumberTest extends Transaction
 {
-
-    protected $cards = array(
-        'shortCardNumber' => [
-                'PAN' => '4012',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        'nonNumericCardNumber' => [
-                'PAN' => '2123abc34098ddd',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        'cardNumberWithSpaces' => [
-                'PAN' => '40 1 2001 0384 43 33 5',
-                'response' => 0,
-                'type' => 'CC',
-                'response' => 1,
-            ],
-        'longCardNumber' => [
-                'PAN' => '4012001036275556243234234',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field'               => 'number',
-            ],
-        'jcbCardNumber' => [
-                'PAN' => '34',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        'amexCardNumber' => [
-                'PAN' => '40',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        'nonLuhnCardNumber' => [
-                'PAN' => '1234567890123456',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        'wrongCardExpiryMonth' => [
-                'PAN' => '1234567890123456',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        'wrongCardExpiryYear' => [
-                'PAN' => '1234567890123456',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        'wrongCardExpiryDate' => [
-                'PAN' => '1234567890123456',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        'wrongEmailInTransaction' => [
-                'PAN' => '1234567890123456',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        'wrongContactInTransaction' => [
-                'PAN' => '1234567890123456',
-                'response' => 0,
-                'type' => 'CC',
-                'exception' => 'EE\Exception\CardErrorException',
-                'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'public_error_code'   => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
-                'field' => 'number',
-            ],
-        );
-
     public function setUp()
     {
         parent::setUp();
@@ -138,6 +29,11 @@ class CardNumberTest extends Transaction
         Eloquent::unguard();
         $key = Factory::create('Models\DAL\Key');
         Eloquent::reguard();
+
+        //
+        // load test data
+        //
+        $this->testData = include(__DIR__.'/helpers/cardNumbers.php');
     }
 
     public function tearDown()
@@ -166,17 +62,27 @@ class CardNumberTest extends Transaction
         $this->runNumberTest();
     }
 
-    public function testAmexCardNumber()
-    {
-        $this->runNumberTest();
-    }
-
-    public function testJcbCardNumber()
-    {
-        $this->runNumberTest();
-    }
-
     public function testNonLuhnCardNumber()
+    {
+        $this->runNumberTest();
+    }
+
+    public function testInvalidCardExpiryMonth()
+    {
+        $this->runNumberTest();
+    }
+
+    public function testInvalidCardExpiryYear()
+    {
+        $this->runNumberTest();
+    }
+
+    public function testInvalidCardExpiryDate()
+    {
+        $this->runNumberTest();
+    }
+
+    public function invalidEmailInTransaction()
     {
         $this->runNumberTest();
     }
@@ -190,10 +96,14 @@ class CardNumberTest extends Transaction
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];
+
         $name = lcfirst(substr($func, 4));
 
-        $card = $this->cards[$name];
-//        $this->createTransaction($card);
+        $testData = $this->testData[$name];
+
+        $this->replaceDefualtValues($testData['request']['content']);
+
+        $this->runTestFlow($testData);
     }
 
     protected function getTransactionArray($number)

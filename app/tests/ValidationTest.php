@@ -19,8 +19,8 @@ class ValidationTest extends TestCase {
         DB::beginTransaction();
         $this->input = [
             'number' => 42, //Intentionally invalid for first test case
-            'expiry_month' => '02',
-            'expiry_year' => '2014',
+            'expiry_month' => '1',
+            'expiry_year' => '2017',
             'cvv' => '123',
             'name' => 'Abhay',
             'address_line1' => 105,

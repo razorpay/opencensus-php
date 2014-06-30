@@ -36,6 +36,7 @@ class Transaction extends TestCase
                 case "CC":
                     $response = $this->call('POST', '/transactions', $txn);
                     $content = $response->getContent();
+                    $statusCode = $response->getStatusCode();
                     break;
 
                 //
@@ -45,6 +46,7 @@ class Transaction extends TestCase
 
                     $response = $this->hitDCTransactionEndpoints($txn);
                     $content = $response->getContent();
+                    $statusCode = $response->getStatusCode();
                     $arr = explode("\n", $content);
 
                     //
@@ -88,7 +90,11 @@ class Transaction extends TestCase
 
             $content = $response->getContent();
 
-            $this->unsuccessfulCardAsserts($testData['exception'], $e);
+            $internalError = $e->getErrorArray();
+
+            $statusCode = $e->getPublicError()->getHttpStatusCode();
+
+            $this->unsuccessfulCardAsserts($testData['exception'], $internalError['error']);
         }
 
         // THEN
@@ -99,7 +105,7 @@ class Transaction extends TestCase
         if (isset($testData['response']['status_code']))
             $this->assertEquals(
                 $testData['response']['status_code'],
-                $response->status_code);
+                $statusCode);
 
         //
         // Ensure output is json
@@ -112,28 +118,26 @@ class Transaction extends TestCase
         $actualContent = $content;
 
         $this->match($expectedContent, $actualContent);
+
+        return $content;
     }
 
     public function unsuccessfulCardAsserts($expected, $actual)
     {
-        $internalError = $e->getError();
-
-        $code = $expected['code'];
-
-        $this->assertEquals($code, $internalError->getCode());
+        $this->assertEquals($expected['code'], $actual['code']);
 
         if (isset($expected['gateway_error_code']))
         {
-            $this->assertEquals($expected['gateway_error_code'], $internalError->getGatewayErrorCode());
+            $this->assertEquals($expected['gateway_error_code'], $actual['gateway_error_code']);
 
-            $gatewayErrorDesc = \Gateway\HdfcGateway\HdfcGatewayErrorCode::$errorMessages[$card['gateway_error_code']];
+            $gatewayErrorDesc = \Gateway\HdfcGateway\HdfcGatewayErrorCode::$errorMessages[$actual['gateway_error_code']];
 
-            $this->assertEquals($gatewayErrorDesc, $internalError->getGatewayErrorDesc());
+            $this->assertEquals($gatewayErrorDesc, $actual['gateway_error_desc']);
         }
 
         if (isset($expected['field']))
         {
-            $this->assertEquals($card['field'], $actual['field']);
+            $this->assertEquals($expected['field'], $actual['field']);
         }
 
     }
