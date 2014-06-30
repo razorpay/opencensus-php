@@ -5,7 +5,6 @@ use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
 use Gateway\HdfcGateway\HdfcGatewayErrorCode;
 
-//contain array of test cards
 return [
     'cardTimeout' => [
         'request' => [
@@ -29,7 +28,6 @@ return [
             'code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
             'gateway_error_code'  => HdfcGatewayErrorCode::RP00004,
         ],
-        'type' => 'CC'
     ],
 
     'creditCardSuccess' => [
@@ -45,7 +43,6 @@ return [
                 'status' => 'auth',
             ],
         ],
-        'type' => 'CC',
     ],
 
     'creditCardAuthNotAvailable1' => [
@@ -69,8 +66,8 @@ return [
             'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
         ],
-        'type' => 'CC'
     ],
+
     'creditCardAuthNotAvailable2' => [
         'request' => [
             'content' => [
@@ -92,7 +89,6 @@ return [
             'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
         ],
-        'type' => 'CC'
     ],
 
     'signatureFailure1' => [
@@ -116,8 +112,8 @@ return [
             'code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
             'gateway_error_code'  => HdfcGatewayErrorCode::GV00007,
         ],
-        'type' => 'DC'
     ],
+
     'signatureFailure2' => [
         'request' => [
             'content' => [
@@ -139,8 +135,9 @@ return [
             'code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
             'gateway_error_code'  => HdfcGatewayErrorCode::GV00008,
         ],
-        'type' => 'DC'
+
     ],
+
     'debitCardSuccess1' => [
         'request' => [
             'content' => [
@@ -154,7 +151,6 @@ return [
                 'status' => 'auth',
             ],
         ],
-        'type' => 'DC'
     ],
 
     'debitCardSuccess2' => [
@@ -170,7 +166,7 @@ return [
                 'status' => 'auth',
             ],
         ],
-        'type' => 'DC'
+
     ],
 
     'debitCardSuccess3' => [
@@ -186,7 +182,6 @@ return [
                 'status' => 'auth',
             ],
         ],
-        'type' => 'DC'
     ],
     'debitCardSuccess4' => [
         'request' => [
@@ -201,7 +196,6 @@ return [
                 'status' => 'auth',
             ],
         ],
-        'type' => 'DC'
     ],
     'debitCardSuccess5' => [
         'request' => [
@@ -216,7 +210,6 @@ return [
                 'status' => 'auth',
             ],
         ],
-        'type' => 'DC'
     ],
     'paresNotSuccess' => [
         'request' => [
@@ -239,7 +232,6 @@ return [
             'code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
             'gateway_error_code'  => HdfcGatewayErrorCode::GV00004,
         ],
-        'type' => 'DC'
     ],
     'debitCardAuthNotAvailable1' => [
         'request' => [
@@ -262,7 +254,6 @@ return [
             'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
         ],
-        'type' => 'DC'
     ],
     'debitCardAuthNotAvailable2' => [
         'request' => [
@@ -285,6 +276,5 @@ return [
             'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => HdfcGatewayErrorCode::FSS0001,
         ],
-        'type' => 'DC'
     ],
 ];

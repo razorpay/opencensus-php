@@ -7,6 +7,8 @@ use EE\Exception\BaseException;
  * ALl test cases follow, GIVEN, WHEN, THEN structure
  */
 
+use Symfony\Component\DomCrawler\Crawler;
+
 class Transaction extends TestCase
 {
     protected $card = null;
@@ -17,54 +19,38 @@ class Transaction extends TestCase
     protected function runTestFlow($testData)
     {
         //GIVEN
+        $content = $statusCode = null;
 
-        $cardtype = $testData['type'];
-
-        $response = null;
-        $content = null;
-
-        $e = null;
         $txn = $testData['request']['content'];
 
         try
         {
-            switch($cardtype){
+            $response = $this->call('POST', '/transactions', $txn);
 
+            $uri = $this->client->getRequest()->getUri();
+
+            $content = $response->getContent();
+
+            if (json_decode($content) === null)
+            {
                 //
-                // in case card is a CC (no secure code)
+                // Card is a debit card
                 //
-                case "CC":
-                    $response = $this->call('POST', '/transactions', $txn);
-                    $content = $response->getContent();
-                    $statusCode = $response->getStatusCode();
-                    break;
 
-                //
-                // in case card is a DC (secure code)
-                //
-                case "DC":
+                $crawler = new Crawler($content, $uri);
 
-                    $response = $this->hitDCTransactionEndpoints($txn);
-                    $content = $response->getContent();
-                    $statusCode = $response->getStatusCode();
-                    $arr = explode("\n", $content);
+                $form = $this->dcTransactionSubmitToAcsUrl($crawler);
 
-                    //
-                    // Actual output is JS, but line 63 of the
-                    // output contains the data in JSON
-                    //
-                    // @todo: explain this part better.
-                    $line = $arr[67];
+                $response = $this->dcTransactionSubmitCallbackForm($form);
 
-                    // 11 = strlen("var data = ")
-                    //-1 = to split the ; from end of js
-                    $content = substr($line, 11,-1);
-                    break;
+                $content = $response->getContent();
 
-                default:
-                    $this->fail("Invalid Cards type");
+                $content = $this->dcTransactionGetJsonFromCallback($content);
 
             }
+
+            $statusCode = $response->getStatusCode();
+
         }
         catch (BaseException $e)
         {
@@ -164,13 +150,13 @@ class Transaction extends TestCase
         }
     }
 
-    protected function hitDCTransactionEndpoints(array $transaction)
+    protected function hitDCTransactionEndpoints(array $transaction, $response)
     {
         //
         // first request to /transactions route,
         // returns form for submission to acs url
         //
-        $crawler = $this->client->request('POST', '/transactions', $transaction);
+        $crawler = new Crawler($content);
 
         $form = $this->dcTransactionSubmitToAcsUrl($crawler);
 
@@ -198,7 +184,8 @@ class Transaction extends TestCase
             {
                 $this->fail('Transaction Timed out');
             }
-            else throw $e;
+            else
+                throw $e;
         }
 
         //
@@ -212,11 +199,18 @@ class Transaction extends TestCase
 
         $response = Requests::post($uri, array(), $values);
 
+        $form = $this->dcTransactionGetCallbackForm($response, $uri);
+
+        return $form;
+    }
+
+    protected function dcTransactionGetCallbackForm($response, $uri)
+    {
         //
         // crawl the repsonse to get callback form
         //
 
-        $crawler = new \Symfony\Component\DomCrawler\Crawler('', $uri);
+        $crawler = new Crawler('', $uri);
 
         $crawler->addContent($response->body);
 
@@ -244,6 +238,24 @@ class Transaction extends TestCase
         $response = $this->call('POST', $url, $values);
 
         return $response;
+    }
+
+    protected function dcTransactionGetJsonFromCallback($content)
+    {
+        $arr = explode("\n", $content);
+
+        //
+        // Actual output is JS, but line 63 of the
+        // output contains the data in JSON
+        //
+        // @todo: explain this part better.
+        $line = $arr[67];
+
+        // 11 = strlen("var data = ")
+        //-1 = to split the ; from end of js
+        $content = substr($line, 11,-1);
+
+        return $content;
     }
 
     protected function getIdFromUri($uri)
@@ -280,7 +292,6 @@ class Transaction extends TestCase
                 'email'     =>  'lol@lko.com',
                 'contact'   =>  '991889902'
             ),
-            // 'hold'      => (int)$hold
         ];
 
         return $transaction;

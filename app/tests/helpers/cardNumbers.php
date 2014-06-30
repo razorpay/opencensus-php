@@ -28,7 +28,6 @@ return [
             'class' => 'EE\Exception\CardErrorException',
             'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
-        'type' => 'CC',
     ],
     'nonNumericCardNumber' => [
         'request' => [
@@ -51,7 +50,6 @@ return [
             'class' => 'EE\Exception\CardErrorException',
             'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
-        'type' => 'CC',
     ],
     'cardNumberWithSpaces' => [
         'request' => [
@@ -67,7 +65,6 @@ return [
             ],
             'status_code' => 200,
         ],
-        'type' => 'CC',
     ],
     'longCardNumber' => [
         'request' => [
@@ -90,7 +87,6 @@ return [
             'class' => 'EE\Exception\CardErrorException',
             'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
-        'type' => 'CC',
     ],
     'nonLuhnCardNumber' => [
         'request' => [
@@ -113,7 +109,6 @@ return [
             'class' => 'EE\Exception\CardErrorException',
             'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
-        'type' => 'CC',
     ],
     'invalidCardExpiryMonth' => [
         'request' => [
@@ -136,7 +131,6 @@ return [
             'class' => 'EE\Exception\CardErrorException',
             'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_MONTH,
         ],
-        'type' => 'CC',
     ],
     'invalidCardExpiryYear' => [
         'request' => [
@@ -159,7 +153,6 @@ return [
             'class' => 'EE\Exception\CardErrorException',
             'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_YEAR,
         ],
-        'type' => 'CC',
     ],
     'invalidCardExpiryDate' => [
         'request' => [
@@ -183,7 +176,6 @@ return [
             'class' => 'EE\Exception\CardErrorException',
             'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE,
         ],
-        'type' => 'CC',
     ],
     'invalidEmailInTransaction' => [
         'request' => [
@@ -206,7 +198,6 @@ return [
             'class' => 'EE\Exception\UdfErrorException',
             'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
-        'type' => 'CC',
     ],
     'invalidContactInTransaction' => [
         'request' => [
@@ -229,6 +220,5 @@ return [
             'class' => 'EE\Exception\UdfErrorException',
             'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
-        'type' => 'CC',
     ],
 ];
