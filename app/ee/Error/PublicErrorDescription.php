@@ -31,6 +31,9 @@ class PublicErrorDescription
     const CARD_INVALID_EXPIRY_YEAR =
         'The card expiry year provided is not valid.';
 
+    const CARD_ERROR_INVALID_EXPIRY_DATE =
+        'The expiry date is not valid';
+
     const GATEWAY_REQUEST_TIMEOUT =
         'The gateway request to submit payment information timed out. Please submit your details again';
 
@@ -48,9 +51,6 @@ class PublicErrorDescription
 
     const CARD_ERROR_INVALID_NAME =
         'The cardholder name given is invalid';
-
-    const CARD_ERROR_INVALID_EXPIRY_DATE =
-        'The card expiry date is not valid';
 
     const CARD_ERROR_CARD_DECLINED =
         'The card was declined';
