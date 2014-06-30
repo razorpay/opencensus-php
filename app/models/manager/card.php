@@ -15,7 +15,7 @@ class Card extends EntityManager
     protected static $createRules = array(
         'number'            => 'required|numeric|luhn|digits_between:12,19',
         'expiry_month'      => 'required|numeric|digits_between:1,2|max:12',
-        'expiry_year'       => 'required|numeric|digits:4|year_length',
+        'expiry_year'       => 'required|numeric|digits:4|expiry_year',
         'cvv'               => 'required|numeric|digits_between:3,4',
         'name'              => 'required|alpha_space|max:100',
         'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
@@ -60,14 +60,14 @@ class Card extends EntityManager
         $month = $input['expiry_month'];
         $year = $input['expiry_year'];
 
-        $currentMonth = date('M');
-        $currentYear = date('Y');
+        $currentMonth = date('n');
+        $currentYear = (int) date('Y');
 
         if (($month < $currentMonth) &&
-            ($year < $currentYear))
+            ($year <= $currentYear))
         {
             throw new CardErrorException(
-                'Expiry date should not be in the past',
+                null,
                 ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE);
         }
     }

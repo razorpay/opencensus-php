@@ -1,0 +1,234 @@
+<?php
+
+use EE\Error\ErrorCode;
+use EE\Error\PublicErrorCode;
+use EE\Error\PublicErrorDescription;
+use Gateway\HdfcGateway\HdfcGatewayErrorCode;
+
+//contain array of test cards
+return [
+    'shortCardNumber' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'field' => 'number',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\CardErrorException',
+            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+        ],
+        'type' => 'CC',
+    ],
+    'nonNumericCardNumber' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '2123567890121s34',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'field' => 'number',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\CardErrorException',
+            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+        ],
+        'type' => 'CC',
+    ],
+    'cardNumberWithSpaces' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '40 1 2001 0384 43 33 5',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'auth',
+            ],
+            'status_code' => 200,
+        ],
+        'type' => 'CC',
+    ],
+    'longCardNumber' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001036275556243234234',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'field' => 'number',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\CardErrorException',
+            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+        ],
+        'type' => 'CC',
+    ],
+    'nonLuhnCardNumber' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '12334567890123456',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'field' => 'number',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\CardErrorException',
+            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+        ],
+        'type' => 'CC',
+    ],
+    'invalidCardExpiryMonth' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'expiry_month' => 13,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::CARD_ERROR_INVALID_EXPIRY_MONTH,
+                    'field' => 'expiry_month',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\CardErrorException',
+            'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_MONTH,
+        ],
+        'type' => 'CC',
+    ],
+    'invalidCardExpiryYear' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'expiry_year' => 2012,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::CARD_ERROR_INVALID_EXPIRY_YEAR,
+                    'field' => 'expiry_year',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\CardErrorException',
+            'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_YEAR,
+        ],
+        'type' => 'CC',
+    ],
+    'invalidCardExpiryDate' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'expiry_month' => 4,
+                    'expiry_year' => 2014,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE,
+                    'description' => PublicErrorDescription::CARD_ERROR_INVALID_EXPIRY_DATE,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\CardErrorException',
+            'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE,
+        ],
+        'type' => 'CC',
+    ],
+    'invalidEmailInTransaction' => [
+        'request' => [
+            'content' => [
+                'udf' => [
+                    'email' => 'a@c',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::UDF_ERROR_INVALID_EMAIL,
+                    'field' => 'email',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\UdfErrorException',
+            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+        ],
+        'type' => 'CC',
+    ],
+    'invalidContactInTransaction' => [
+        'request' => [
+            'content' => [
+                'udf' => [
+                    'contact' => '4012',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'field' => 'contact',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\UdfErrorException',
+            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+        ],
+        'type' => 'CC',
+    ],
+];

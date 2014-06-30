@@ -70,7 +70,7 @@ Validator::extend('card_type', function($attribute, $value, $parameters)
 	return false;
 });
 
-Validator::extend('year_length', function($attribute, $value, $parameters)
+Validator::extend('expiry_year', function($attribute, $value, $parameters)
 {
     $year = $value;
 
@@ -79,13 +79,12 @@ Validator::extend('year_length', function($attribute, $value, $parameters)
         throw new \InvalidArgumentException('year should be numeric');
     }
 
-    $len = strlen((string)$year);
+    $currentYear = (int)date('Y');
 
-    if (($len === 2) or
-        ($len === 4))
+    if ($year < $currentYear)
     {
-        return true;
+        return false;
     }
 
-    return false;
+    return true;
 });

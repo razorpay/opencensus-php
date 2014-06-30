@@ -78,7 +78,7 @@ return array(
     "luhn"             => "The :attribute is invalid",
     "month"            => "The :attribute is not a valid month",
     "card_type"        => "The :attribute is not a valid card type",
-
+    "expiry_year"      => "The :attribute cannot be before current year",
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines
