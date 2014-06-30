@@ -271,7 +271,7 @@ class Transaction
         catch (BaseException $e)
         {
             $txn->setStatus(TransactionStatus::CAPTURE_FAILED);
-            $txn->setError($error);
+            $txn->setError($e->getError());
             $txn->save();
 
             //Logging
