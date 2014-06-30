@@ -37,6 +37,11 @@ class BaseException extends Exception
         return $this->error;
     }
 
+    public function getErrorArray()
+    {
+        return $this->error->toArray();
+    }
+
     public function getPublicError()
     {
         return $this->error->getPublicError();
