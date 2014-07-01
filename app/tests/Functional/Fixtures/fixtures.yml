@@ -11,11 +11,11 @@ Models\DAL\Card:
     last4: 789$integer
 
 Models\DAL\Token:
+    id: 174bdd3e456c8f6f
     card_id:
         type: Models\DAL\Card
     merchant_id:
         type: Models\DAL\Merchant
-    token: 174bdd3e456c8f6f
 
 Models\DAL\Key:
     id: d9c6bf091a1a64cb5678d8c1d5e7360f

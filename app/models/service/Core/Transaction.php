@@ -63,9 +63,9 @@ class Transaction
                     $cardData['id']);
 
         //
-        //  Links txn to token
+        //  Links txn input to token id
         //
-        $txnInput['token'] = $token->token;
+        $txnInput['token'] = $token->getKey();
 
         //
         // Remove card key from input. Isn't needed

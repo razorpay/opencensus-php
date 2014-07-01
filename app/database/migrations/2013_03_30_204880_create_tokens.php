@@ -19,9 +19,10 @@ class CreateTokens extends Migration {
         Schema::create(Table::TOKEN, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->increments(Token::ID);
+            $table->char(Token::ID, Constants\Fields::ID_LENGTH)
+                  ->primary();
 
-            $table->integer('card_id')
+            $table->integer(Token::CARD_ID)
                   ->unsigned()
                   ->nullable();
 
@@ -29,17 +30,14 @@ class CreateTokens extends Migration {
                   ->unsigned()
                   ->nullable();
 
-            $table->char('token', 16)
-                  ->unique();
-
             $table->boolean(TOKEN::EXPIRED);
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Common::CREATED_AT);
             $table->integer(Common::UPDATED_AT);
 
-            $table->foreign('card_id')
-                  ->references('id')
+            $table->foreign(Token::CARD_ID)
+                  ->references(Common::ID)
                   ->on(Table::CARD)
                   ->on_delete('SET NULL');
 

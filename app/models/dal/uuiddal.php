@@ -17,20 +17,30 @@ class UuidDAL extends DAL
 
     public $incrementing = false;
 
-    //Not required anymore, since it is moved to global.php as recommended in laravel issue #1181
-    /*    
-    protected static function boot()
+    /**
+     * Save the model to the database.
+     *
+     * @param  array  $options
+     * @return bool
+     */
+    public function save(array $options = array())
     {
-        parent::boot();
+        $this->generateUuidIfNotSet();
 
-        static::creating(function($model)
+        parent::save($options);
+    }
+
+    public function generateUuidIfNotSet()
+    {
+        $key = $this->getKeyName();
+
+        $value = $this->getAttribute($key);
+
+        if ($value === null)
         {
-            $model->{$model->getKeyName()} = (string)Uuid::uuid1();
-        });
-    }*/
+            $value = str_replace("-", "", Uuid::uuid1());
 
-    public function generateUuid($model)
-    {
-       $model->{$model->getKeyName()} = str_replace("-", "", Uuid::uuid1());
+            $this->setAttribute($key, $value);
+        }
     }
 }

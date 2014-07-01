@@ -11,13 +11,13 @@ class Token extends EntityManager
 
     protected static $generators = array('token', 'expired');
 
-    private static $TOKEN_LEN = 16;
+    private static $TOKEN_LEN = \Constants\Fields::ID_LENGTH;
 
     protected function generateToken()
     {
         $token = Utility::generate_token(static::$TOKEN_LEN);
 
-        $this->setField('token', $token);
+        $this->setField('id', $token);
     }
 
     protected function generateExpired()

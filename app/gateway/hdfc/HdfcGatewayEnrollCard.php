@@ -2,6 +2,7 @@
 
 namespace Gateway\HdfcGateway;
 
+use EE\Exception\InvalidArgumentException;
 use Trace\Trace;
 use Trace\TraceCode;
 

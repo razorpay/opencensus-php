@@ -2,7 +2,7 @@
 
 namespace Models\DAL;
 
-use \Constants\Field;
+use Constants\Field;
 
 class Token extends DAL {
 
@@ -10,14 +10,13 @@ class Token extends DAL {
 
     protected $appends = array('object');
 
-    protected $fillable = array(
-        'token',
-        'card_id',
-        Field\Common::MERCHANT_ID,
-        Field\Token::EXPIRED
-        );
+    public $incrementing = false;
 
-    protected $guarded = array('id');
+    protected $fillable = array(
+        Field\Token::ID,
+        Field\Token::CARD_ID,
+        Field\Common::MERCHANT_ID,
+        Field\Token::EXPIRED);
 
     public function getId()
     {
@@ -26,7 +25,7 @@ class Token extends DAL {
 
     public function getToken()
     {
-        return $this->getAttribute('token');
+        return $this->getAttribute('id');
     }
 
     public function getCardId()

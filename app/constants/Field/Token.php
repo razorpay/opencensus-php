@@ -9,4 +9,6 @@ class Token
     const MERCHANT_ID = Common::MERCHANT_ID;
 
     const EXPIRED = 'expired';
+
+    const CARD_ID = 'card_id';
 }

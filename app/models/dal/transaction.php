@@ -119,7 +119,7 @@ class Transaction extends UuidDAL
             $query->skip($param['skip']);
         }
 
-        return $query->with('card_token.card')->get();
+        return $query->with('token.card')->get();
     }
 
     public static function validateFetchParams(array $param)
@@ -199,7 +199,8 @@ class Transaction extends UuidDAL
 
         if ($flag and self::WITH_CARD)
         {
-            $token = $this->card_token()->first();
+            $token = $this->token()->first();
+
             $card_do = NULL;
 
             if ($this->token === null)
@@ -236,10 +237,10 @@ class Transaction extends UuidDAL
                     ->update(array(Field\Transaction::STATUS => 'auth'));
     }
 
-    public function card_token()
+    public function token()
     {
         return $this->hasOne(
-            __NAMESPACE__.'\Token', 'token', 'token');
+            __NAMESPACE__.'\Token', 'id', 'token');
     }
 
     public function merchant()

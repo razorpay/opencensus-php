@@ -58,9 +58,9 @@ class DatabaseSeeder extends Seeder {
 
 		DB::table('tokens')->insert(
 			array(
+                'id'            =>  '174bdd3e456c8f6f'
 				'card_id'		=>	2,
 				'merchant_id'	=>	1,
-				'token'			=>	'174bdd3e456c8f6f'
 				)
 			);
 
