@@ -3,6 +3,7 @@
 namespace Models\Service\Core;
 
 use EE\Exception\BaseException;
+use EE\Exception\BadRequestException;
 
 use Gateway\GatewayManager;
 

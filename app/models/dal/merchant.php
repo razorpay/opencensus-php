@@ -8,6 +8,8 @@ class Merchant extends DAL
 {
     protected $table = \Constants\Table::MERCHANT;
 
+    public $incrementing = false;
+
     protected $hidden = array(
         Field\Merchant::ID,
         Field\Merchant::BALANCE);
@@ -33,5 +35,3 @@ class Merchant extends DAL
         return $this->getAttribute(Field\Merchant::ID);
     }
 }
-
-?>
