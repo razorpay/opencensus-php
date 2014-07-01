@@ -13,9 +13,9 @@ class Token
 
         $input['card_id'] = $cardId;
 
-        $data = Manager\CardToken::createValidate($input)->getData();
+        $data = Manager\Token::createValidate($input)->getData();
 
-        $token = DAL\CardToken::createOrFail($data);
+        $token = DAL\Token::createOrFail($data);
 
         return $token;
     }

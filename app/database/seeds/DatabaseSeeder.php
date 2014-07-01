@@ -56,7 +56,7 @@ class DatabaseSeeder extends Seeder {
 				)
 			);
 
-		DB::table('cardtokens')->insert(
+		DB::table('tokens')->insert(
 			array(
 				'card_id'		=>	2,
 				'merchant_id'	=>	1,

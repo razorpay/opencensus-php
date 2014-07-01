@@ -10,7 +10,7 @@ class Table
 
     const MERCHANT = 'merchants';
 
-    const TOKEN = 'cardtokens';
+    const TOKEN = 'tokens';
 
     const LEDGER = 'ledger';
 

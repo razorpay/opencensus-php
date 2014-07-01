@@ -94,4 +94,13 @@ class Transaction extends EntityManager
     {
         $this->setField('status', $status);
     }
+
+    public static function checkCardKeyExists($input)
+    {
+        if (array_key_exists('card', $input) === false)
+        {
+            throw new BadRequestException(
+                'Transaction Exception: Card not provided');
+        }
+    }
 }

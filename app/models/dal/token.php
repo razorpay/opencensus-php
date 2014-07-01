@@ -4,7 +4,7 @@ namespace Models\DAL;
 
 use \Constants\Field;
 
-class CardToken extends DAL {
+class Token extends DAL {
 
     protected $table = \Constants\Table::TOKEN;
 

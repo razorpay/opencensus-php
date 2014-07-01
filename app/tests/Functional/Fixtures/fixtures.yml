@@ -10,7 +10,7 @@ Models\DAL\Card:
     country: IN
     last4: 789$integer
 
-Models\DAL\CardToken:
+Models\DAL\Token:
     card_id:
         type: Models\DAL\Card
     merchant_id:

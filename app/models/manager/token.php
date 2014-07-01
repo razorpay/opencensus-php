@@ -3,7 +3,7 @@ namespace Models\Manager;
 
 use Utility;
 
-class CardToken extends EntityManager
+class Token extends EntityManager
 {
     protected static $createRules = array(
         'merchant_id' => 'required|numeric',

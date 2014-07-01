@@ -238,7 +238,8 @@ class Transaction extends UuidDAL
 
     public function card_token()
     {
-        return $this->hasOne('Models\DAL\CardToken', 'token', 'token');
+        return $this->hasOne(
+            __NAMESPACE__.'\Token', 'token', 'token');
     }
 
     public function merchant()

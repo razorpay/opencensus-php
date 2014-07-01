@@ -7,7 +7,7 @@ use Constants\Field\Common;
 use Constants\Field\Token;
 use Constants\Table;
 
-class CreateCardtokens extends Migration {
+class CreateTokens extends Migration {
 
     /**
      * Make changes to the database.
@@ -35,7 +35,7 @@ class CreateCardtokens extends Migration {
             $table->boolean(TOKEN::EXPIRED);
 
             // Adds created_at and updated_at columns to the table
-            $table->integer(Common::CREATED_AT);  
+            $table->integer(Common::CREATED_AT);
             $table->integer(Common::UPDATED_AT);
 
             $table->foreign('card_id')
@@ -59,7 +59,7 @@ class CreateCardtokens extends Migration {
         Schema::table(Table::TOKEN, function($table){
 
             $table->dropForeign(Table::TOKEN.'_card_id_foreign');
-        
+
             $table->dropForeign(Table::TOKEN.'_merchant_id_foreign');
         });
 

@@ -40,16 +40,12 @@ class Transaction
      */
     public function createEntitites(array $input)
     {
-        $cardToken = null;
-
         $txnInput = $input;
 
+        //
         // Check that card key exists
-        if (! array_key_exists('card', $input))
-        {
-            throw new BadRequestException(
-                'Transaction Exception: Card not provided');
-        }
+        //
+        Manager\Transaction::checkCardKeyExists($input);
 
         //
         // Creates card entity. But since we don't store
@@ -87,8 +83,8 @@ class Transaction
     /**
      * Creates an entry for a new transaction
      *
-     * @param  array $input Input relevant to creating
-     *                      a txn row in db
+     * @param  array    $input  Input relevant to creating
+     *                          a txn row in db
      *
      * @return DAL\Transaction  A DAL\Transaction object
      */
@@ -123,14 +119,11 @@ class Transaction
                     'txn' => $txn->toArray(),
                     'card' => $cardData);
 
-        $status = null;
-        $data = null;
-
         try
         {
             $callbackData = $this->callGatewayFunction(
-                                TransactionAction::AUTH,
-                                $txnInfo);
+                                        TransactionAction::AUTH,
+                                        $txnInfo);
         }
         catch(BaseException $e)
         {
