@@ -1,5 +1,5 @@
 Models\DAL\Merchant:
-  id: $string$string$string
+  id: $integer
 
 Models\DAL\Card:
     name: $string

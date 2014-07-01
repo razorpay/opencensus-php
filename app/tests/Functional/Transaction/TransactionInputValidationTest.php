@@ -1,34 +1,17 @@
 <?php
 
-use EE\Error\ErrorCode;
-use EE\Error\PublicErrorCode;
-use EE\Error\PublicErrorDescription;
-use Gateway\HdfcGateway\HdfcGatewayErrorCode;
+use Tests\Functional\TestCase;
+use Tests\Functional\Transaction\TransactionAuthFlow;
 
-/**
- * Tests all cards in cards.php to ensure they return expected response,
- * Purchase transactions are used, also tests if transactions are automatically
- * captured on successful transactions. Hold Transactions are tested in support test
- * All test cases follow, GIVEN, WHEN, THEN structure
- */
-
-use Laracasts\TestDummy\Factory;
-
-require_once('helpers/Transaction.php');
-
-class CardNumberTest extends Transaction
+class TransactionValidationTest extends TestCase
 {
+    use TransactionAuthFlow;
+
     public function setUp()
     {
         parent::setUp();
 
-        //Start DB transaction so as to rollback once done
-        DB::beginTransaction();
-
-        //Seed the db with required data
-        Eloquent::unguard();
-        $key = Factory::create('Models\DAL\Key');
-        Eloquent::reguard();
+        $key = $this->createModel('key');
 
         //
         // load test data
@@ -36,63 +19,52 @@ class CardNumberTest extends Transaction
         $this->testData = include(__DIR__.'/helpers/cardNumbers.php');
     }
 
-    public function tearDown()
-    {
-        //Undo DB Changes after test
-        DB::rollback();
-    }
-
-
-    /**
-     * @group testSuccess
-     * @group testNumber2
-     */
     public function testShortCardNumber()
     {
-        $this->runNumberTest();
+        $this->startTest();
     }
 
     public function testNonNumericCardNumber()
     {
-        $this->runNumberTest();
+        $this->startTest();
     }
 
     public function testLongCardNumber()
     {
-        $this->runNumberTest();
+        $this->startTest();
     }
 
     public function testNonLuhnCardNumber()
     {
-        $this->runNumberTest();
+        $this->startTest();
     }
 
     public function testInvalidCardExpiryMonth()
     {
-        $this->runNumberTest();
+        $this->startTest();
     }
 
     public function testInvalidCardExpiryYear()
     {
-        $this->runNumberTest();
+        $this->startTest();
     }
 
     public function testInvalidCardExpiryDate()
     {
-        $this->runNumberTest();
+        $this->startTest();
     }
 
     public function invalidEmailInTransaction()
     {
-        $this->runNumberTest();
+        $this->startTest();
     }
 
     public function testCardNumberWithSpaces()
     {
-        $this->runNumberTest();
+        $this->startTest();
     }
 
-    public function runNumberTest()
+    public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];
@@ -103,7 +75,7 @@ class CardNumberTest extends Transaction
 
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $this->runTestFlow($testData);
+        $this->runTransactionAuthFlow($testData);
     }
 
     protected function getTransactionArray($number)

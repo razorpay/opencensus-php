@@ -1,5 +1,10 @@
 <?php
 
+namespace Tests\Unit\Models\Manager;
+
+use Models\Manager\Card;
+use Tests\TestCase;
+
 /**
  * Tests all cards in cards.php to ensure they return expected response,
  * Purchase transactions are used, also tests if transactions are automatically
@@ -7,16 +12,13 @@
  * All test cases follow, GIVEN, WHEN, THEN structure
  */
 
-use Models\Manager\Card;
-
-class ValidationTest extends TestCase {
+class ValidationTest extends TestCase
+{
 
     public function setUp()
     {
         parent::setUp();
 
-        //Start DB transaction so as to rollback once done
-        DB::beginTransaction();
         $this->input = [
             'number' => 42, //Intentionally invalid for first test case
             'expiry_month' => '1',
@@ -35,12 +37,12 @@ class ValidationTest extends TestCase {
 
     public function tearDown()
     {
-        //Undo DB Changes after test
-        DB::rollback();
+        // Undo DB Changes after test
+        // DB::rollback();
     }
+
     public function testShortCardNumber()
     {
-
         $this->setExpectedException('EE\Exception\CardErrorException');
         $this->card->build($this->input);
     }

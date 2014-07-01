@@ -1,25 +1,20 @@
 <?php
 
+namespace Tests\Functional\Transaction;
+
 use EE\Exception\BaseException;
-
-/**
- * Transaction class, inherited by all classes that need to create transactions.
- * ALl test cases follow, GIVEN, WHEN, THEN structure
- */
-
+use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 
-class Transaction extends TestCase
+trait TransactionAuthFlow
 {
-    protected $card = null;
-
     /**
-     * Creates a transaction & tests it is corrrectly created
+     * Auths a transaction & tests it is corrrectly done
      */
-    protected function runTestFlow($testData)
+    protected function runTransactionAuthFlow($testData)
     {
         //GIVEN
-        $content = $statusCode = null;
+        $response = $content = null;
 
         $txn = $testData['request']['content'];
 
@@ -37,40 +32,15 @@ class Transaction extends TestCase
                 // Card is a debit card
                 //
 
-                $crawler = new Crawler($content, $uri);
-
-                $form = $this->dcTransactionSubmitToAcsUrl($crawler);
-
-                $response = $this->dcTransactionSubmitCallbackForm($form);
-
-                $content = $response->getContent();
-
-                $content = $this->dcTransactionGetJsonFromCallback($content);
-
+                list($response, $content) = $this->runDebitCardAuthFlow($content, $uri);
             }
-
-            $statusCode = $response->getStatusCode();
-
         }
         catch (BaseException $e)
         {
             if (isset($testData['exception']) === false)
                 throw $e;
 
-            $expected = $testData['exception']['class'];
-
-            $actual = get_class($e);
-
-            if ($expected !== $actual)
-            {
-                throw $e;
-            }
-
-            $this->assertEquals(
-                $expected,
-                $actual);
-
-            unset($testData['exception']['class']);
+            $this->assertExceptionClass($e, $testData['exception']['class']);
 
             $response = $e->generatePublicJsonResponse();
 
@@ -78,9 +48,7 @@ class Transaction extends TestCase
 
             $internalError = $e->getErrorArray();
 
-            $statusCode = $e->getPublicError()->getHttpStatusCode();
-
-            $this->unsuccessfulCardAsserts($testData['exception'], $internalError['error']);
+            $this->assertErrorDataEquals($testData['exception'], $internalError['error']);
         }
 
         // THEN
@@ -91,80 +59,35 @@ class Transaction extends TestCase
         if (isset($testData['response']['status_code']))
             $this->assertEquals(
                 $testData['response']['status_code'],
-                $statusCode);
+                $response->getStatusCode());
 
         //
         // Ensure output is json
         //
         $this->assertJson($content);
 
-        $content = json_decode($content, true);
+        $actualContent = json_decode($content, true);
 
         $expectedContent = $testData['response']['content'];
-        $actualContent = $content;
 
-        $this->match($expectedContent, $actualContent);
+        $this->assertArraySelectiveEquals($expectedContent, $actualContent);
 
-        return $content;
+        return $actualContent;
     }
 
-    public function unsuccessfulCardAsserts($expected, $actual)
+    protected function runDebitCardAuthFlow($content, $uri)
     {
-        $this->assertEquals($expected['code'], $actual['code']);
-
-        if (isset($expected['gateway_error_code']))
-        {
-            $this->assertEquals($expected['gateway_error_code'], $actual['gateway_error_code']);
-
-            $gatewayErrorDesc = \Gateway\HdfcGateway\HdfcGatewayErrorCode::$errorMessages[$actual['gateway_error_code']];
-
-            $this->assertEquals($gatewayErrorDesc, $actual['gateway_error_desc']);
-        }
-
-        if (isset($expected['field']))
-        {
-            $this->assertEquals($expected['field'], $actual['field']);
-        }
-
-    }
-
-    public function match($expected, $actual)
-    {
-        foreach ($expected as $key => $value)
-        {
-            if (is_array($value))
-            {
-                if (isset($actual[$key]))
-                {
-                    $this->match($expected[$key], $actual[$key]);
-                }
-                else
-                {
-                    $this->assertArrayHasKey($key, $actual);
-                }
-            }
-            else
-            {
-                $this->assertEquals($value, $actual[$key]);
-            }
-        }
-    }
-
-    protected function hitDCTransactionEndpoints(array $transaction, $response)
-    {
-        //
-        // first request to /transactions route,
-        // returns form for submission to acs url
-        //
-        $crawler = new Crawler($content);
+        $crawler = new Crawler($content, $uri);
 
         $form = $this->dcTransactionSubmitToAcsUrl($crawler);
 
-        // $form = $this->dcTransactionGetCallbackForm($response);
-
         $response = $this->dcTransactionSubmitCallbackForm($form);
 
-        return $response;
+        $content = $response->getContent();
+
+        $content = $this->dcTransactionGetJsonFromCallback($content);
+
+        return array($response, $content);
     }
 
     protected function dcTransactionSubmitToAcsUrl($crawler)

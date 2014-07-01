@@ -1,5 +1,9 @@
 <?php
 
+namespace Tests\Functional\Transaction;
+
+use Tests\Functional\TestCase;
+
 /**
  * Tests that support transactions (capture/refund) are working fine.
  * creates a hold transaction using card 13 and then attempts to capture it followed by refund it
@@ -7,29 +11,20 @@
  * All test cases follow, GIVEN, WHEN, THEN structure
  */
 
-require_once('helpers/Transaction.php');
-use Laracasts\TestDummy\Factory;
-class SupportTest extends Transaction {
+class SupportTest extends TestCase
+{
+    use TransactionAuthFlow;
 
     public function setUp()
     {
         parent::setUp();
 
-        //Start DB transaction so as to rollback once done
-        DB::beginTransaction();
-
-        //Seed the db with required data
-        Eloquent::unguard();
-        $key = Factory::create('Models\DAL\Key');
-        Eloquent::reguard();
+        //
+        // Seed the db with required data
+        //
+        $key = $this->createModel('key');
 
         $this->testData = include(__DIR__.'/helpers/cards.php');
-    }
-
-    public function tearDown()
-    {
-        //Undo DB Changes after test
-        DB::rollback();
     }
 
     /**
@@ -47,7 +42,7 @@ class SupportTest extends Transaction {
         $testData = $this->testData['creditCardSuccess'];
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $content = $this->runTestFlow($testData);
+        $content = $this->runTransactionAuthFlow($testData);
 
         //get its transaction id
         $id = $content['id'];
