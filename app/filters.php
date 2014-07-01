@@ -15,19 +15,33 @@ use Models\Service\BasicAuth;
 
 App::before(function($request)
 {
-	if(isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] == 'api.razorpay.com' && !Request::secure()){
-							$response['error']['message'] = "Razorpay API is only available over HTTPS";
-							$response['error']['code'] = "NONHTTPS";
-							return Response::json($response);
-	}
+    if ((isset($_SERVER['HTTP_HOST'])) and
+        ($_SERVER['HTTP_HOST'] == 'api.razorpay.com') and
+        (Request::secure() === false))
+    {
+        $response['error']['message'] = "Razorpay API is only available over HTTPS";
+
+        $response['error']['code'] = "BAD_REQUEST_ERROR";
+
+        return Response::json($response);
+    }
 });
 
+//
+//  Prevent browser caching
+//
 App::after(function($request, $response)
-
 {
-	// prevent browser caching
+    //
+    // Ask browser not to cache
+    //
     $response->headers->set('Cache-Control','nocache, no-store, max-age=0, must-revalidate');
+
     $response->headers->set('Pragma','no-cache');
+
+    //
+    // Put old time so that any browser cache gets expired
+    //
     $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
 });
 
@@ -42,59 +56,101 @@ App::after(function($request, $response)
 |
 */
 
+Response::macro('httpAuthExpected', function()
+{
+    return Response::view('error.401', array(), 401)
+                   ->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
+});
+
+function isBasicAuthUserAndPwdNotSet()
+{
+    return ((isset($_SERVER['PHP_AUTH_PW']) === false) or
+            (isset($_SERVER['PHP_AUTH_USER']) === false));
+
+}
+
+function basicAuthVerifySecret()
+{
+    return BasicAuth::getInstance()
+                    ->verifySecret(
+                        $_SERVER['PHP_AUTH_USER'],
+                        $_SERVER['PHP_AUTH_PW']);
+}
+
+function basicAuthVerifyApp()
+{
+    return BasicAuth::getInstance()
+                    ->verifyApp(
+                        $_SERVER['PHP_AUTH_USER'],
+                        $_SERVER['PHP_AUTH_PW']);
+}
+
 /**
  * Only allows requests with secret keys to get through.
  */
 Route::filter('auth.private', function($route, $request)
 {
-	if (!isset($_SERVER['PHP_AUTH_PW']) || !isset($_SERVER['PHP_AUTH_USER']))
-	{
-		//Used by first request from browser that checks if HTTP AUTH is expected
-		return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
-	}
+    if (isBasicAuthUserAndPwdNotSet())
+    {
+        //
+        // Used by first request from browser that
+        // checks if HTTP AUTH is expected
+        //
+        return Response::httpAuthExpected();
+    }
 
-	if (! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
-		//@todo: add check for internal IP here
-		if (! BasicAuth::getInstance()->verifyApp($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
-			return Response::view('error.401', array(), 401);
+    if (basicAuthVerifySecret() === false)
+    {
+        //
+        // @todo: add check for internal IP here
+        //
+        if (basicAuthVerifyApp() === false)
+        {
+            return Response::view('error.401', array(), 401);
+        }
+    }
 });
 
 
 /**
- * Allows requests with public keys (time based hash) to get through. (Also allows private key based requests too
+ * Allows requests with public keys to get through. Also allows private key based requests too
  */
 Route::filter('auth.public', function($route, $request)
 {
-		if (!isset($_SERVER['PHP_AUTH_PW']) || !isset($_SERVER['PHP_AUTH_USER']))
-		{
-			//Used by first request from browser that checks if HTTP AUTH is expected
-			return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
-		}
+    if (isBasicAuthUserAndPwdNotSet())
+    {
+        //
+        // Used by first request from browser that checks if BasicAuth is expected
+        //
+        return Response::httpAuthExpected();
+    }
 
-		if(! BasicAuth::getInstance()->verifyPublic($_SERVER['PHP_AUTH_USER']))
-		{
-			if(! BasicAuth::getInstance()->verifySecret($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
-				return Response::view('error.401', array(), 401);
-		}
-		// else
-		// {
-		// 	if(isset($_POST['hold']))
-		// 	{
-		// 		$request->merge(array('hold'=>1));
-		// 	}
-		// }
+    $ba = BasicAuth::getInstance();
+
+    if($ba->verifyPublic($_SERVER['PHP_AUTH_USER']) === false)
+    {
+        if (basicAuthVerifySecret() === false)
+        {
+            return Response::view('error.401', array(), 401);
+        }
+    }
 });
 
 Route::filter('auth.app', function($route, $request)
 {
-	if (!isset($_SERVER['PHP_AUTH_PW']) || !isset($_SERVER['PHP_AUTH_USER']))
-	{
-		//Used by first request from browser that checks if HTTP AUTH is expected
-		return Response::view('error.401', array(), 401)->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
-	}
+    if (isBasicAuthUserAndPwdNotSet())
+    {
+        //
+        // Used by first request from browser
+        // that checks if HTTP AUTH is expected
+        //
+        return Response::httpAuthExpected();
+    }
 
-	if (! BasicAuth::getInstance()->verifyApp($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']))
-		return Response::view('error.401', array(), 401);
+    if (basicAuthVerifyApp() === false)
+    {
+        return Response::view('error.401', array(), 401);
+    }
 });
 
 /*
@@ -110,7 +166,7 @@ Route::filter('auth.app', function($route, $request)
 
 Route::filter('guest', function()
 {
-	if (Auth::check()) return Redirect::to('/');
+    if (Auth::check()) return Redirect::to('/');
 });
 
 /*
@@ -126,10 +182,10 @@ Route::filter('guest', function()
 
 Route::filter('csrf', function()
 {
-	if (Session::token() != Input::get('_token'))
-	{
-		throw new Illuminate\Session\TokenMismatchException;
-	}
+    if (Session::token() != Input::get('_token'))
+    {
+        throw new Illuminate\Session\TokenMismatchException;
+    }
 });
 
 /*
@@ -146,5 +202,5 @@ Route::filter('csrf', function()
 
 Route::filter('sameorigin', function($route, $request, $response)
 {
-	$response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+    $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
 });
