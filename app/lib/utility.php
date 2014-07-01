@@ -89,16 +89,22 @@ if (! function_exists('array_assoc_flatten'))
     }
 }
 
-function print_last_query()
+if (! function_exists('print_last_query'))
 {
-    $queries = DB::getQueryLog();
+    function print_last_query()
+    {
+        $queries = DB::getQueryLog();
 
-    $last_query = end($queries);
+        $last_query = end($queries);
 
-    echo $last_query;
+        echo $last_query;
+    }
 }
 
-function dd_bt_wo_args($limit = 0)
+if (! function_exists('dd_bt_wo_args'))
 {
-     sd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
+    function dd_bt_wo_args($limit = 0)
+    {
+         sd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
+    }
 }

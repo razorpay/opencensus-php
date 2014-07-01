@@ -59,30 +59,38 @@ App::after(function($request, $response)
 Response::macro('httpAuthExpected', function()
 {
     return Response::view('error.401', array(), 401)
-                   ->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");;
+                   ->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");
 });
 
-function isBasicAuthUserAndPwdNotSet()
+if (! function_exists('isBasicAuthUserAndPwdNotSet'))
 {
-    return ((isset($_SERVER['PHP_AUTH_PW']) === false) or
-            (isset($_SERVER['PHP_AUTH_USER']) === false));
-
+    function isBasicAuthUserAndPwdNotSet()
+    {
+        return ((isset($_SERVER['PHP_AUTH_PW']) === false) or
+                (isset($_SERVER['PHP_AUTH_USER']) === false));
+    }
 }
 
-function basicAuthVerifySecret()
+if (! function_exists('basicAuthVerifySecret'))
 {
-    return BasicAuth::getInstance()
-                    ->verifySecret(
-                        $_SERVER['PHP_AUTH_USER'],
-                        $_SERVER['PHP_AUTH_PW']);
+    function basicAuthVerifySecret()
+    {
+        return BasicAuth::getInstance()
+                        ->verifySecret(
+                            $_SERVER['PHP_AUTH_USER'],
+                            $_SERVER['PHP_AUTH_PW']);
+    }
 }
 
-function basicAuthVerifyApp()
+if (! function_exists('basicAuthVerifySecret'))
 {
-    return BasicAuth::getInstance()
-                    ->verifyApp(
-                        $_SERVER['PHP_AUTH_USER'],
-                        $_SERVER['PHP_AUTH_PW']);
+    function basicAuthVerifyApp()
+    {
+        return BasicAuth::getInstance()
+                        ->verifyApp(
+                            $_SERVER['PHP_AUTH_USER'],
+                            $_SERVER['PHP_AUTH_PW']);
+    }
 }
 
 /**
