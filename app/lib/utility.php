@@ -70,8 +70,8 @@ if (! function_exists('array_assoc_flatten'))
     function array_assoc_flatten(array $array, $parent_key = null)
     {
         $return = array();
-    
-        foreach ($array as $key => $value) 
+
+        foreach ($array as $key => $value)
         {
             $key = ($parent_key === null) ? $key : $parent_key . '.' . $key;
             if (is_array($value))
@@ -89,4 +89,16 @@ if (! function_exists('array_assoc_flatten'))
     }
 }
 
+function print_last_query()
+{
+    $queries = DB::getQueryLog();
 
+    $last_query = end($queries);
+
+    echo $last_query;
+}
+
+function dd_bt_wo_args($limit = 0)
+{
+     sd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
+}
