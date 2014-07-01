@@ -30,6 +30,7 @@
 			"app/tests/TestCase.php",
 			"app/lib",
 			"app/ee",
+			"app/tests",
             "app/constants"
 		]
 	},
