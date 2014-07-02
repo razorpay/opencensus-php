@@ -14,28 +14,23 @@ class Token extends DAL {
 
     protected $fillable = array(
         Field\Token::ID,
-        Field\Token::CARD_ID,
+        Field\Token::CARD,
         Field\Common::MERCHANT_ID,
         Field\Token::EXPIRED);
 
-    public function getId()
-    {
-        return $this->getAttribute('id');
-    }
-
     public function getToken()
     {
-        return $this->getAttribute('id');
+        return $this->getAttribute(Field\Token::ID);
     }
 
     public function getCardId()
     {
-        return $this->getAttribute('card_id');
+        return $this->getAttribute(Field\Token::CARD);
     }
 
-    public function setCardId($card_id)
+    public function setCard($card_id)
     {
-        $this->setAttribute('card_id', $card_id);
+        $this->setAttribute('card', $card_id);
     }
 
     public function setMerchantId($merchant_id)
@@ -99,12 +94,16 @@ class Token extends DAL {
 
     public function transactions()
     {
-        return $this->hasMany('Transaction');
+        return $this->hasOne(
+            __NAMESPACE__.'\Transaction');
     }
 
     public function card()
     {
-        return $this->belongsTo(__NAMESPACE__.'\Card', 'card_id', 'id');
+        return $this->belongsTo(
+            __NAMESPACE__.'\Card',
+            Field\Token::CARD,
+            Field\Card::ID);
     }
 
 }

@@ -4,7 +4,7 @@ namespace Models\DAL;
 
 use Constants\Field;
 
-class Card extends DAL
+class Card extends UuidDAL
 {
     protected $table = \Constants\Table::CARD;
 
@@ -34,11 +34,6 @@ class Card extends DAL
     protected $guarded = array(Field\Card::ID);
 
 //    protected $appends = array('object');
-
-    public function getId()
-    {
-        return $this->getAttribute(Field\Card::ID);
-    }
 
     const FLAG_DEFAULT          = 0x0;
     const NO_CHECK_FIELDS       = 0x1;

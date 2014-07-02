@@ -18,99 +18,104 @@ class DatabaseSeeder extends Seeder {
 
 	private function seed()
 	{
-		DB::table('merchants')->insert(
-			array(
-				'id'			=>	1,
-				'created_at'	=>	time(),
-				'updated_at'	=>	time()
-				)
-			);
+        DB::transaction(function()
+        {
+    		DB::table('merchants')->insert(
+    			array(
+    				'id'			=>	1,
+    				'created_at'	=>	time(),
+    				'updated_at'	=>	time()
+    				)
+    			);
 
-		DB::table('merchants')->insert(
-			array(
-				'id'	=>	2,
-				'created_at'	=>	time(),
-				'updated_at'	=>	time()
-				)
-			);
+    		DB::table('merchants')->insert(
+    			array(
+    				'id'	        =>	2,
+    				'created_at'	=>	time(),
+    				'updated_at'	=>	time()
+    				)
+    			);
 
-		DB::table('cards')->insert(
-			array(
-				'name'	        =>	'shk',
-				'expiry_month'	=>	'01',
-				'expiry_year'	=>	'99',
-				'network'		=>	'visa',
-				'country'		=>	'IN',
-				'last4'			=>	'7890',
-				)
-			);
+    		DB::table('cards')->insert(
+    			array(
+                    'id'            =>  '174bdd3e456c8f6f174bdd3e456d8f6f',
+    				'name'	        =>	'shk',
+    				'expiry_month'	=>	'01',
+    				'expiry_year'	=>	'99',
+    				'network'		=>	'visa',
+    				'country'		=>	'IN',
+    				'last4'			=>	'7890',
+    				)
+    			);
 
-		DB::table('cards')->insert(
-			array(
-				'name'	        =>	'shk',
-				'expiry_month'	=>	'01',
-				'expiry_year'	=>	'12',
-				'network'		=>	'visa',
-				'country'		=>	'IN',
-				'last4'			=>	'7891',
-				)
-			);
+    		DB::table('cards')->insert(
+    			array(
+                    'id'            =>  '274bdd3e456c8f6f174bdd3e456c8f6f',
+    				'name'	        =>	'shk',
+    				'expiry_month'	=>	'01',
+    				'expiry_year'	=>	'12',
+    				'network'		=>	'visa',
+    				'country'		=>	'IN',
+    				'last4'			=>	'7891',
+    				)
+    			);
 
-		DB::table('tokens')->insert(
-			array(
-                'id'            =>  '174bdd3e456c8f6f'
-				'card_id'		=>	2,
-				'merchant_id'	=>	1,
-				)
-			);
+    		DB::table('tokens')->insert(
+    			array(
+                    'id'            =>  '174bdd3e456c8f6f174bdd3e456c8f6f',
+    				'card'		    =>	'274bdd3e456c8f6f174bdd3e456c8f6f',
+    				'merchant_id'	=>	1,
+    				)
+    			);
 
-		DB::table('keys')->insert(
-			array(
-				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360e',
-				'merchant_id'	=>	1,
-				'live'			=>	1,
-				'active'		=>	1,
-				'secret'		=>	Hash::make('thisissupersecret'),
-				'created_at'	=>	time(),
-				'updated_at'	=>	time()
-				)
-			);
+    		DB::table('keys')->insert(
+    			array(
+    				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360e',
+    				'merchant_id'	=>	1,
+    				'live'			=>	1,
+    				'active'		=>	1,
+    				'secret'		=>	Hash::make('thisissupersecret'),
+    				'created_at'	=>	time(),
+    				'updated_at'	=>	time()
+    				)
+    			);
 
-		DB::table('keys')->insert(
-			array(
-				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360f',
-				'merchant_id'	=>	1,
-				'live'			=>	0,
-				'active'		=>	1,
-				'secret'		=>	Hash::make('thisissupersecret'),
-				'created_at'	=>	time(),
-				'updated_at'	=>	time()
-				)
-			);
+    		DB::table('keys')->insert(
+    			array(
+    				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360f',
+    				'merchant_id'	=>	1,
+    				'live'			=>	0,
+    				'active'		=>	1,
+    				'secret'		=>	Hash::make('thisissupersecret'),
+    				'created_at'	=>	time(),
+    				'updated_at'	=>	time()
+    				)
+    			);
 
-		DB::table('keys')->insert(
-			array(
-				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360g',
-				'merchant_id'	=>	2,
-				'live'			=>	1,
-				'active'		=>	1,
-				'secret'		=>	Hash::make('thisissupersecret'),
-				'created_at'	=>	time(),
-				'updated_at'	=>	time()
-				)
-			);
+    		DB::table('keys')->insert(
+    			array(
+    				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360g',
+    				'merchant_id'	=>	2,
+    				'live'			=>	1,
+    				'active'		=>	1,
+    				'secret'		=>	Hash::make('thisissupersecret'),
+    				'created_at'	=>	time(),
+    				'updated_at'	=>	time()
+    				)
+    			);
 
-		DB::table('keys')->insert(
-			array(
-				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360h',
-				'merchant_id'	=>	2,
-				'live'			=>	0,
-				'active'		=>	1,
-				'secret'		=>	Hash::make('thisissupersecret'),
-				'created_at'	=>	time(),
-				'updated_at'	=>	time()
-				)
-			);
+    		DB::table('keys')->insert(
+    			array(
+    				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360h',
+    				'merchant_id'	=>	2,
+    				'live'			=>	0,
+    				'active'		=>	1,
+    				'secret'		=>	Hash::make('thisissupersecret'),
+    				'created_at'	=>	time(),
+    				'updated_at'	=>	time()
+    				)
+    			);
+        });
 	}
 
 }

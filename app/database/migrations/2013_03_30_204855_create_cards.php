@@ -17,10 +17,11 @@ class CreateCards extends Migration {
     public function up()
     {
         Schema::create(Table::CARD, function(Blueprint $table){
-                
+
             $table->engine = 'InnoDB';
-    
-            $table->increments(Card::ID);
+
+            $table->char(Card::ID, Constants\Fields::ID_LENGTH)
+                  ->primary();
 
             $table->string(Card::NAME);
 
@@ -49,7 +50,7 @@ class CreateCards extends Migration {
 
             $table->string(Card::ADDRESS_CITY)
                   ->nullable();
-            
+
             $table->string(Card::ADDRESS_STATE)
                   ->nullable();
 
@@ -70,7 +71,7 @@ class CreateCards extends Migration {
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
-            $table->integer(Common::CREATED_AT);  
+            $table->integer(Common::CREATED_AT);
             $table->integer(Common::UPDATED_AT);
 
         });

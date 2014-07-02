@@ -7,7 +7,7 @@ class Token extends EntityManager
 {
     protected static $createRules = array(
         'merchant_id' => 'required|numeric',
-        'card_id'     => 'required|numeric');
+        'card'        => 'required');
 
     protected static $generators = array('token', 'expired');
 

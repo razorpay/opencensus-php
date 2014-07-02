@@ -22,8 +22,8 @@ class CreateTokens extends Migration {
             $table->char(Token::ID, Constants\Fields::ID_LENGTH)
                   ->primary();
 
-            $table->integer(Token::CARD_ID)
-                  ->unsigned()
+            $table->char(Token::CARD, Constants\Fields::ID_LENGTH)
+                  ->unique()
                   ->nullable();
 
             $table->integer(Common::MERCHANT_ID)
@@ -36,7 +36,7 @@ class CreateTokens extends Migration {
             $table->integer(Common::CREATED_AT);
             $table->integer(Common::UPDATED_AT);
 
-            $table->foreign(Token::CARD_ID)
+            $table->foreign(Token::CARD)
                   ->references(Common::ID)
                   ->on(Table::CARD)
                   ->on_delete('SET NULL');
@@ -56,7 +56,7 @@ class CreateTokens extends Migration {
     {
         Schema::table(Table::TOKEN, function($table){
 
-            $table->dropForeign(Table::TOKEN.'_card_id_foreign');
+            $table->dropForeign(Table::TOKEN.'_card_foreign');
 
             $table->dropForeign(Table::TOKEN.'_merchant_id_foreign');
         });

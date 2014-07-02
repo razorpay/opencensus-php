@@ -35,7 +35,8 @@ class BasicAuth extends \Singleton {
 
     public function MerchantId()
     {
-        $id = $this->merchant->getId();
+        $id = $this->merchant->getKey();
+
         return (int) $id;
     }
 
