@@ -115,11 +115,11 @@ class HdfcGatewayDal extends \Models\DAL\DAL
         {
             case 'refund':
                 $action = HdfcGatewayAction::REFUND;
-                $status = HdfcGatewayResult::NOT_REFUNDED;
+                $status = HdfcGatewayStatus::REFUND_FAILED;
                 break;
             case 'capture':
                 $action = HdfcGatewayAction::CAPTURE;
-                $status = HdfcGatewayResult::NOT_CAPTURED;
+                $status = HdfcGatewayStatus::CAPTURE_FAILED;
                 break;
         }
 
