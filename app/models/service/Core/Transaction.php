@@ -186,32 +186,6 @@ class Transaction
         return $txn;
     }
 
-    protected function updateTransactionSuccess($txn, $status)
-    {
-        switch ($status)
-        {
-            case TransactionStatus::AUTH:
-                $this->updateTransactionAuth($txn);
-                break;
-
-            case TransactionStatus::CAPTURED:
-                $this->updateTransactionCaptured($txn);
-                break;
-
-            case TransactionStatus::REFUNDED:
-                $this->updateTransactionRefunded($txn);
-                break;
-
-            default:
-                throw new \LogicException(
-                    'Transaction Exception: ' . $status . ' is an invalid status');
-        }
-
-        $txn->save();
-
-        return $txn;
-    }
-
     /**
      * Refunds a transaction
      * Pass \DAL\Transaction object as argument
@@ -234,14 +208,10 @@ class Transaction
         }
         catch(BaseException $e)
         {
-            $error = $e->getError();
-
-            $txn->setError($error);
-
-            //Logging
-            $this->trace->error(
-                TraceCode::TRANSACTION_REFUND_FAILURE,
-                $txnData->toArray());
+            $this->traceTransactionFailed(
+                    $txn,
+                    $e->getError(),
+                    TraceCode::TRANSACTION_REFUND_FAILURE);
 
             throw $e;
         }
@@ -269,14 +239,18 @@ class Transaction
         }
         catch (BaseException $e)
         {
-            $txn->setStatus(TransactionStatus::CAPTURE_FAILED);
-            $txn->setError($e->getError());
-            $txn->save();
 
-            //Logging
-            $this->trace->error(
-                TraceCode::TRANSACTION_CAPTURE_FAILURE,
-                $txn->toArray());
+        $error = $e->getError();
+        $code = $error->getPublicErrorCode();
+        $desc = $error->getPublicErrorDescription();
+        $txn->setStatus(TransactionStatus::FAILED);
+        $txn->setError($code, $desc);
+        $txn->save();
+
+        $this->traceTransactionFailed(
+                $txn,
+                $e->getError(),
+                TraceCode::TRANSACTION_CAPTURE_FAILURE);
 
             throw $e;
         }
@@ -291,7 +265,33 @@ class Transaction
         //Logging
         $this->trace->info(
             TraceCode::TRANSACTION_AUTH_SUCCESS,
-            $txn->toArray());
+            $txn->toArrayTraceRelevant());
+    }
+
+    protected function updateTransactionSuccess($txn, $status)
+    {
+        switch ($status)
+        {
+            case TransactionStatus::AUTH:
+                $this->updateTransactionAuth($txn);
+                break;
+
+            case TransactionStatus::CAPTURED:
+                $this->updateTransactionCaptured($txn);
+                break;
+
+            case TransactionStatus::REFUNDED:
+                $this->updateTransactionRefunded($txn);
+                break;
+
+            default:
+                throw new \LogicException(
+                    'Transaction Exception: ' . $status . ' is an invalid status');
+        }
+
+        $txn->save();
+
+        return $txn;
     }
 
     protected function updateTransactionCaptured($txn)
@@ -301,7 +301,7 @@ class Transaction
         //Logging
         $this->trace->info(
             TraceCode::TRANSACTION_CAPTURE_SUCCESS,
-            $txn->toArray());
+            $txn->toArrayTraceRelevant());
     }
 
     protected function updateTransactionRefunded($txn)
@@ -311,7 +311,7 @@ class Transaction
         //Logging
         $this->trace->info(
             TraceCode::TRANSACTION_REFUND_SUCCESS,
-            $txn->toArray());
+            $txn->toArrayTraceRelevant());
     }
 
     protected function updateTransactionFailed($txn, $error, $traceCode)
@@ -326,10 +326,19 @@ class Transaction
 
         $txn->save();
 
+        $this->traceTransactionFailed($txn, $error, $traceCode);
+    }
+
+    protected function traceTransactionFailed($txn, $error, $traceCode)
+    {
+        $traceData = array_merge(
+                        $txn->toArrayTraceRelevant(),
+                        $error->toArray());
+
         //Logging
         $this->trace->error(
-            TraceCode::TRANSACTION_FAILED,
-            $txn->toArray());
+            $traceCode,
+            $traceData);
     }
 
     public function callGatewayFunction($action, $input)

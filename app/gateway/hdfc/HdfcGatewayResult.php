@@ -32,9 +32,41 @@ final class HdfcGatewayResult
     const UNKNOWN_ERROR_ENROLLED = -2;
 
 
+    /*
+     |------------------------------------------------------------------------------------------
+     | Result
+     |------------------------------------------------------------------------------------------
+     | Source: FSSNeTPG-Tranportal Integration Non3D Version 3.1.pdf Page 20
+     | Note: Take it as a guideline, not rule.
+     |
+     | The result parameter in the Hdfc Payment Gateway transaction response enables the merchant
+     | to determine the transaction status. The Merchant is advised to firstly check for any errors
+     | received in the response message and if not check for the result parameter. On the baasis
+     | of the result parameter, the merchant’s system determines whether transaction is
+     | Approved or Declined.
+     | Mentioned below are the Response Result parameter values that could be
+     | received from the Payment Gateway in the result parameter to the merchant in the
+     | transaction response message.
+     | • CAPTURED - Transaction was successful (For Action Code “1”, “2” , “5”)
+     | • APPROVED - Transaction was successful (For Action Code “4”)
+     | • NOT CAPTURED - Transaction was failed (For Action Code “1”, “2” , “5”)
+     | • NOT APPROVED - Transaction was failed (For Action Code “4”)
+     | • DENIED BY RISK - Risk denied the transaction processing
+     | • HOST TIMEOUT - The authorization system did not respond within the Time out
+     | limit
+     | • SUCCESS – The transaction is successful (For Action Code “8” if original requested
+     | transaction is successful at Payment Gateway)
+     | Payment Gateway Services
+     | • FAILURE(NOT CAPTURED) – The transaction is failed (For Action Code “8”, if
+     | the original transaction is failed at Payment Gateway)
+     | • FAILURE(SUSPECT) – The transaction data is not matching, and hence failed. (For
+     | action code “8, if the input requested in request is not matching with data available in
+     | Payment Gateway, then this result is thrown by Payment Gateway for inquiry
+     | transaction)
+     */
+
     /**
-     * Result codes received in response for transaction
-     * authorization
+     * Result codes received in response for txn
      */
     const CAPTURED = 'CAPTURED';
     const APPROVED = 'APPROVED';

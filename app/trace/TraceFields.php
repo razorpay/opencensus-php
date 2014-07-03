@@ -3,97 +3,90 @@
 namespace Trace;
 
 use Trace\TraceCode;
+use Constants\Field;
+use Constnats\Common;
 
 class TraceFields
 {
     protected static $fields = array(
         TraceCode::TRANSACTION_NEW_REQUEST => array(
-            'amount',
-            'currency',
-            'hold'
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::AMOUNT,
         ),
 
         TraceCode::TRANSACTION_CREATED => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status',
-            'hold'
-        ),
-
-        TraceCode::TRANSACTION_AUTH_SUCCESS => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status',
-            'hold'
+            Field\Transaction::ID,
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::TOKEN_ID,
+            Field\Transaction::STATUS,
+            Field\Transaction::AMOUNT,
         ),
 
         TraceCode::TRANSACTION_CREATE_FAILED => array(),
 
         TraceCode::TRANSACTION_FAILED => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status',
+            Field\Transaction::ID,
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::TOKEN_ID,
+            Field\Transaction::STATUS,
+            Field\Transaction::AMOUNT,
+            Field\Transaction::ERROR_CODE,
             'error'
         ),
 
         TraceCode::TRANSACTION_AUTH_FAILURE => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status',
+            Field\Transaction::ID,
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::TOKEN_ID,
+            Field\Transaction::STATUS,
+            Field\Transaction::AMOUNT,
+            Field\Transaction::ERROR_CODE,
             'error'
         ),
 
         TraceCode::TRANSACTION_REFUND_FAILURE => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status',
+            Field\Transaction::ID,
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::TOKEN_ID,
+            Field\Transaction::STATUS,
+            Field\Transaction::AMOUNT,
+            Field\Transaction::ERROR_CODE,
             'error'
         ),
 
         TraceCode::TRANSACTION_CAPTURE_FAILURE => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status',
+            Field\Transaction::ID,
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::TOKEN_ID,
+            Field\Transaction::STATUS,
+            Field\Transaction::AMOUNT,
+            Field\Transaction::ERROR_CODE,
             'error'
+        ),
+
+        TraceCode::TRANSACTION_AUTH_SUCCESS => array(
+            Field\Transaction::ID,
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::TOKEN_ID,
+            Field\Transaction::STATUS,
+            Field\Transaction::AMOUNT,
         ),
 
         TraceCode::TRANSACTION_REFUND_SUCCESS => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status'
+            Field\Transaction::ID,
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::TOKEN_ID,
+            Field\Transaction::STATUS,
+            Field\Transaction::AMOUNT,
         ),
 
         TraceCode::TRANSACTION_CAPTURE_SUCCESS => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status'
+            Field\Transaction::ID,
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::TOKEN_ID,
+            Field\Transaction::STATUS,
+            Field\Transaction::AMOUNT,
         ),
-
-        TraceCode::TRANSACTION_EXCEPTION => array(
-            'id',
-            'amount',
-            'currency',
-            'livemode',
-            'status',
-            'error'
-        ),
-
 
         TraceCode::GATEWAY_ENROLL_REQUEST => array(
             'url',
@@ -161,10 +154,6 @@ class TraceFields
             'type',
             'data',
             'error'
-        ),
-
-        TraceCode::GATEWAY_EXCEPTION => array(
-            'file'
         ),
     );
 

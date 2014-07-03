@@ -63,12 +63,16 @@ class HdfcGatewayUtility
      */
     protected static function checkTimeout(\Requests_Exception $e)
     {
-        //check if timeout has occured
-        if ((strpos($e->getMessage(), 'Operation timed out')  !== false) or
-            (strpos($e->getMessage(), 'Network is unreachable') !==false) or
-            (strpos($e->getMessage(), 'Name or service not known') !== false) or
-            (strpos($e->getMessage(), 'Failed to connect') !== false) or
-            (strpos($e->getMessage(), 'Could not resolve host') !== false))
+        $msg = $e->getMessage();
+
+        //
+        // check if timeout has occured
+        //
+        if ((strpos($msg, 'Operation timed out')  !== false) or
+            (strpos($msg, 'Network is unreachable') !==false) or
+            (strpos($msg, 'Name or service not known') !== false) or
+            (strpos($msg, 'Failed to connect') !== false) or
+            (strpos($msg, 'Could not resolve host') !== false))
         {
             return true;
         }
@@ -84,7 +88,7 @@ class HdfcGatewayUtility
 
         foreach ($array as $key => $value)
         {
-            $xml .= "<$key>$value</$key>";
+            $xml .= "<$key>$value</$key>\n";
         }
 
         return $xml;

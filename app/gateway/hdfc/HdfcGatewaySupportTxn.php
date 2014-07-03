@@ -84,19 +84,16 @@ trait HdfcGatewaySupportTxn
 
         $data['action'] = $action;
 
+        //
         // Convert amount from integer to decimal
+        //
         $data['amt'] = $txn['amount']/100;
-
-        $data['currencycode'] = self::INR_CODE;
 
         $data['member'] = $card['name'];
 
         $data['transid'] = $this->model->transactionid;
 
         $data['trackid'] = $this->id;
-
-        // Set udf fields
-        $data['udf1'] = $data['udf2'] = $data['udf3'] = $data['udf4'] = $data['udf5'] = '';
     }
 
     /**

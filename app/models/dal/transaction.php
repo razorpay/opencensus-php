@@ -271,4 +271,23 @@ class Transaction extends UniqueIdDal
     {
         return $query->where(Field\Common::MERCHANT_ID,'=',$merchantId);
     }
+
+    public function toArrayTraceRelevant()
+    {
+        $data = $this->attributes;
+
+        $relevantData = array();
+
+        $fields = array(
+            Field\Transaction::ID,
+            Field\Common::MERCHANT_ID,
+            Field\Transaction::TOKEN_ID,
+            Field\Transaction::STATUS,
+            Field\Transaction::AMOUNT,
+            Field\Transaction::ERROR_CODE);
+
+        $relevantData = array_intersect_key($data, array_flip($fields));
+
+        return $relevantData;
+    }
 }

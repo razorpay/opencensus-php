@@ -24,7 +24,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
             'transactionid' => $response['paymentid'],
             'action' => $request['action'],
             'enroll_result' => $response['enroll_result'],
-            'status' => 'VERES Received',
+            'status' => HdfcGatewayStatus::ENROLLED,
             'eci' => $response['eci']);
 
         return static::createOrFail($attributes);
@@ -37,7 +37,8 @@ class HdfcGatewayDal extends \Models\DAL\DAL
             'error_code' => $error['code'],
             'error_service' => $error['service'],
             'error_text' => $error['text'],
-            'enroll_result' => HdfcGatewayResult::FAIL_ENROLLED);
+            'enroll_result' => HdfcGatewayResult::FAIL_ENROLLED,
+            'status' => HdfcGatewayStatus::ENROLL_FAILED);
 
         return static::createOrFail($attributes);
     }
@@ -45,7 +46,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
     public function persistAfterAuthNotEnrolled($data)
     {
         $this->attributes = array(
-            'status' => 'CC Authed',
+            'status' => HdfcGatewayStatus::AUTH,
             'auth_result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
@@ -59,7 +60,7 @@ class HdfcGatewayDal extends \Models\DAL\DAL
     public function persistAfterAuthEnrolled($data)
     {
         $this->attributes = array(
-            'status' => 'PaRes Received',
+            'status' => HdfcGatewayStatus::AUTH,
             'auth_result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
@@ -69,10 +70,21 @@ class HdfcGatewayDal extends \Models\DAL\DAL
         $this->save();
     }
 
+    public function persistAfterAuthNotEnrolledError($error)
+    {
+        $this->attributes = array(
+            'status' => HdfcGatewayStatus::AUTH_NOT_ENROLL_FAILED,
+            'error_code' => $error['code'],
+            'error_service' => $error['service'],
+            'error_text' => $error['text']);
+
+        $this->save();
+    }
+
     public function persistAfterAuthEnrolledError($error)
     {
         $this->attributes = array(
-            'status' => 'PaRes Error',
+            'status' => HdfcGatewayStatus::AUTH_ENROLL_FAILED,
             'error_code' => $error['code'],
             'error_service' => $error['service'],
             'error_text' => $error['text']);

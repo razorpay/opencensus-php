@@ -19,7 +19,6 @@ class TraceCode
     const TRANSACTION_REFUND_FAILURE        = 'TRANSACTION_REFUND_FAILURE';
     const TRANSACTION_CAPTURE_SUCCESS       = 'TRANSACTION_CAPTURE_SUCCESS';
     const TRANSACTION_CAPTURE_FAILURE       = 'TRANSACTION_CAPTURE_FAILURE';
-    const TRANSACTION_EXCEPTION             = 'TRANSACTION_EXCEPTION';
 
     const TRANSACTION_FAILED                = 'TRANSACTION_FAILED';
     /*
@@ -38,7 +37,6 @@ class TraceCode
     const GATEWAY_SUPPORT_REQUEST           = 'GATEWAY_SUPPORT_REQUEST';
     const GATEWAY_SUPPORT_RESPONSE          = 'GATEWAY_SUPPORT_RESPONSE';
     const GATEWAY_SUPPORT_ERROR             = 'GATEWAY_SUPPORT_ERROR';
-    const GATEWAY_EXCEPTION                 = 'GATEWAY_EXCEPTION';
 
 
     protected static $messages = array(
@@ -52,7 +50,6 @@ class TraceCode
         self::TRANSACTION_REFUND_FAILURE            => 'Transaction refund failed',
         self::TRANSACTION_CAPTURE_SUCCESS           => 'Transaction captured successfully',
         self::TRANSACTION_CAPTURE_FAILURE           => 'Transaction capture failed',
-        self::TRANSACTION_EXCEPTION                 => 'Transaction exception occured',
         self::TRANSACTION_FAILED                    => 'Transaction failed',
 
         self::GATEWAY_ENROLL_REQUEST                => 'Request for enrollment sent',
@@ -66,8 +63,7 @@ class TraceCode
         self::GATEWAY_ENROLLED_AUTH_ERROR           => 'Authentication error occured for enrolled card',
         self::GATEWAY_SUPPORT_REQUEST               => 'Support request sent',
         self::GATEWAY_SUPPORT_RESPONSE              => 'Support response received',
-        self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
-        self::GATEWAY_EXCEPTION                     => 'Gateway exception occured');
+        self::GATEWAY_SUPPORT_ERROR                 => 'Error in support');
 
     /**
      * Translate event code to message

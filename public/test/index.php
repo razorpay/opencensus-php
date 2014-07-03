@@ -4,7 +4,7 @@ $baseurl = "api.razorpay.com";
 $key_id = 'd9c6bf091a1a64cb5678d8c1';
 $secret = 'thisissupersecret';
 
-$public_url=$key_id.'@'.$baseurl;
+$public_url = $key_id.'@'.$baseurl;
 $private_url = $key_id.':'.$secret.'@'.$baseurl;
 ?>
 
@@ -36,9 +36,8 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 		<TD><input size="3" type="text" name="card[cvv]" value="880" maxlength=4></TD>
 	</TR>
 	<TR>
-		<TD colspan ='40'>ExpMonth:</TD>
+		<TD colspan ='40'>Exp Date:</TD>
         <td><input type="text" name="card[expiry_month]" value="11"></td>
-		ExpYear:
         <td><input type="text" name="card[expiry_year]" value="2015"></td>
 		<tr>
 		<TD colspan='40'>Amount:</TD>
@@ -95,9 +94,3 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 
 </BODY>
 </HTML>
-<!-- Disclaimer:- Important Note in Sample Pages
-- This is a sample demonstration page only ment for demonstration, this page should not be used in production
-- Transaction data should only be accepted once from a browser at the point of input, and then kept in a way that does not allow others to modify it (example server session, database  etc.)
-- Any transaction information displayed to a customer, such as amount,card no  should be passed only as display information and the actual transactional data should be retrieved from the secure source last thing at the point of processing the transaction.
-- Any information passed through the customer's browser can potentially be modified/edited/changed/deleted by the customer, or even by third parties to fraudulently alter the transaction data/information. Therefore, all transaction information should not be passed through the browser to Payment Gateway in a way that could potentially be modified (example hidden form fields).
- -->

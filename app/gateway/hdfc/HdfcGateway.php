@@ -288,7 +288,8 @@ class HdfcGateway extends BaseGateway
 
         if ($this->id !== $trackid)
         {
-            throw new \LogicException('app txn '. $this->id . ' should be equal to track id . '. $trackid);
+            throw new Exception\LogicException(
+                'app txn '. $this->id . ' should be equal to track id . '. $trackid);
         }
 
         $this->postAuthEnrolledRequest($input);

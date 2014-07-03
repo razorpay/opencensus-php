@@ -73,7 +73,7 @@ trait HdfcGatewayAuth
 
         Assert((int) $this->model->enroll_result === HdfcGatewayResult::ENROLLED);
 
-        if ($this->model->status !== 'VERES Received')
+        if ($this->model->status !== HdfcGatewayStatus::ENROLLED)
         {
             throw new InvalidArgumentException('Gateway Exception: Status not valid');
         }
@@ -90,6 +90,8 @@ trait HdfcGatewayAuth
         $this->runRequestResponseFlow(
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
+
+        $this->traceAuthEnrolledResponse();
 
         //
         // Store the response data
@@ -110,10 +112,9 @@ trait HdfcGatewayAuth
             $this->authNotEnrolledRequest,
             $this->authNotEnrolledResponse);
 
-        $this->model->persistAfterAuthNotEnrolled(
-                        $this->authNotEnrolledResponse['data']);
-
         $this->traceAuthNotEnrolledResponse();
+
+        $this->persistAfterAuthNotEnrolled();
 
         if ($this->error)
         {
@@ -179,6 +180,18 @@ trait HdfcGatewayAuth
                 Trace::INFO,
                 TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,
                 $this->authEnrolledResponse);
+        }
+    }
+
+    protected function persistAfterAuthNotEnrolled()
+    {
+        if ($this->error)
+        {
+            $this->model->persistAfterAuthNotEnrolledError($this->authNotEnrolledResponse['error']);
+        }
+        else
+        {
+            $this->model->persistAfterAuthNotEnrolled($this->authNotEnrolledResponse['data']);
         }
     }
 
