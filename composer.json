@@ -4,8 +4,7 @@
 	"keywords": ["app", "razorpay"],
 	"require": {
 		"rmccue/requests": ">=1.0",
-		"rhumsaa/uuid": "~2.7",
-		"laravel/framework": "4.1.*",
+		"laravel/framework": "4.2.*",
 		"doctrine/dbal": "~2.3",
 		"razorpay/razorpay-php":"dev-master"
 	},
