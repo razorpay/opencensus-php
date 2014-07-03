@@ -20,6 +20,10 @@ final class URL
 
     const TXN_JSONP_METHOD = 'get';
 
+    const TXN_RETRIEVE_BY_ID_URL = 'transactions/{id}';
+
+    const TXN_RETRIEVE_MULTIPLE_URL = 'transactions';
+
     const TXN_RETRIEVE_URL = 'transactions/{param?}';
 
     const TXN_RETRIEVE_METHOD = 'get';

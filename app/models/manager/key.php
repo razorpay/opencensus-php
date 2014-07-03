@@ -1,11 +1,11 @@
-<?php 
+<?php
 
 namespace Models\Manager;
 
 class Key extends EntityManager
 {
     protected static $createRules = array(
-        'key_id'        => 'required|alpha_num|size:32',
+        'key_id'        => 'required|alpha_num',
         'merchant_id'   => 'required|numeric',
         'secret'        => 'required|max:100',
         'live'          => 'size:1|in:0,1',

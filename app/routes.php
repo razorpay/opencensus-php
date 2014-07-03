@@ -57,8 +57,12 @@ Route::group(array('after' => 'sameorigin'), function()
 
         $method = URL::TXN_RETRIEVE_METHOD;
         Route::$method(
-            URL::TXN_RETRIEVE_URL,
-            'TransactionController@getIndex');
+            URL::TXN_RETRIEVE_BY_ID_URL,
+            'TransactionController@getTxnById');
+
+        Route::$method(
+            URL::TXN_RETRIEVE_MULTIPLE_URL,
+            'TransactionController@getMultipleTxn');
 
         $method = URL::TXN_REFUND_METHOD;
         Route::$method(
@@ -69,10 +73,6 @@ Route::group(array('after' => 'sameorigin'), function()
         Route::$method(
             URL::TXN_CAPTURE_URL,
             'TransactionController@postCapture');
-        // 
-        // //@todo: temporary
-        // //create an artisan command and get rid of this
-        // Route::get('capture', 'TransactionController@capture');
     });
 });
 

@@ -1,7 +1,7 @@
 <?php
 $baseurl = "api.razorpay.com";
 
-$key_id = 'd9c6bf091a1a64cb5678d8c1d5e7360f';
+$key_id = 'd9c6bf091a1a64cb5678d8c1';
 $secret = 'thisissupersecret';
 
 $public_url=$key_id.'@'.$baseurl;

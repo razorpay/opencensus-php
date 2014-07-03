@@ -2,14 +2,11 @@
 
 namespace Models\Service;
 
+use EE\Exception\BadRequestException;
 use Models\Manager;
 use Models\DAL;
-use Gateway\GatewayManager;
 use Trace\Trace;
 use Trace\TraceCode;
-use EE\Exception\BadRequestException;
-use Models\Manager\TransactionAction;
-use Models\Manager\TransactionStatus;
 
 class Transaction extends Service
 {
@@ -40,8 +37,14 @@ class Transaction extends Service
 
         $data = $this->core->process($txn, $cardData);
 
+        //
+        // The returned value could be either Transaction
+        // model or an array containing callback data.
+        // We convert txn model to array
+        // if it's a txn model
+        //
         if($data instanceof DAL\Transaction)
-            $data = $data->toArray();
+            $data = $data->toArrayPublic();
 
         return $data;
     }
@@ -54,17 +57,22 @@ class Transaction extends Service
 
         $count = count($txns);
 
-        return array('count' => $count, 'data' => $txns->toArray());
+        $collection = $txns->transform(function($txn)
+        {
+            return $txn->toArrayPublic();
+        });
+        $txns = $collection->all();
+
+        return array('count' => $count, 'data' => $txns);
     }
 
-    public function retrieve($id, $merchantId)
+    public function retrieveById($id, $merchantId)
     {
-        Manager\UniqueId::verifyUid($id, true);
+        Manager\Transaction::verifyIdAndStripSign($id);
 
         $txn = DAL\Transaction::findByIdAndMerchantId($id, $merchantId);
 
-        if ($txn !== null)
-            $txn = $txn->toArray();
+        $txn = $txn->toArrayPublic();
 
         return $txn;
     }
@@ -78,10 +86,9 @@ class Transaction extends Service
      */
     public function refund($id, $merchantId)
     {
-        $txn = DAL\Transaction::findByIdAndMerchantId($id, $merchantId);
+        Manager\Transaction::verifyIdAndStripSign($id);
 
-        if ($txn === null)
-            return null;
+        $txn = DAL\Transaction::findByIdAndMerchantIdOrFailPublic($id, $merchantId);
 
         //
         // Don't continue if already refunded
@@ -100,7 +107,7 @@ class Transaction extends Service
 
         $txn = $this->core->refund($txn);
 
-        return $txn->toArray();
+        return $txn->toArrayPublic();
     }
 
     /**
@@ -112,10 +119,9 @@ class Transaction extends Service
      */
     public function capture($id, $merchantId)
     {
-        $txn = DAL\Transaction::findByIdAndMerchantId($id, $merchantId);
+        Manager\Transaction::verifyIdAndStripSign($id);
 
-        if ($txn === null)
-            return;
+        $txn = DAL\Transaction::findByIdAndMerchantId($id, $merchantId);
 
         //
         // Don't continue if already captured
@@ -128,13 +134,15 @@ class Transaction extends Service
 
         $txn = $this->core->capture($txn);
 
-        return $txn->toArray();
+        return $txn->toArrayPublic();
     }
 
     /**
      * After card enroll, bank redirects to us
      * and we send it to gateway for further
-     * processing. Next step is auth.
+     * processing (auth).
+     * Returning from this function implies
+     * 'auth' is successful.
      *
      * @param  array  $input Contains fields provided
      *                       by bank
@@ -143,6 +151,8 @@ class Transaction extends Service
      */
     public function bankAcsCallback($id, array $input)
     {
+        Manager\Transaction::verifyIdAndStripSign($id);
+
         unset($input['csrf']);
 
         $txn = DAL\Transaction::findOrFail($id);
@@ -151,6 +161,6 @@ class Transaction extends Service
 
         $txn = $this->core->callback($txn, $input);
 
-        return $txn;
+        return $txn->toArrayPublic();
     }
 }

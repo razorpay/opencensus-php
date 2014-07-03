@@ -77,11 +77,9 @@ class ErrorCode
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
     const BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED                  = 'BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED';
     const BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED                  = 'BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED';
+    const BAD_REQUEST_INVALID_ID                                    = 'BAD_REQUEST_INVALID_ID';
 
     const BAD_REQUEST_ERROR                                         = 'BAD_REQUEST_ERROR';
-
-    const API_TRANSACTION_INVALID_CURRENCY                          = 'API_TRANSACTION_INVALID_CURRENCY';
-    const API_TRANSACTION_INVALID_AMOUNT                            = 'API_TRANSACTION_INVALID_AMOUNT';
 
     const SERVER_ERROR_INVALID_ARGUMENT                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                              = 'SERVER_ERROR_DB_QUERY_FAILED';

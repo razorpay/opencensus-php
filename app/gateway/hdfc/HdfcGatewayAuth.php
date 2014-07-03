@@ -54,7 +54,7 @@ trait HdfcGatewayAuth
 
         $callbackUrl = substr($callbackUrl, 0, $pos);
 
-        $callbackUrl .= '/'.$this->id;
+        $callbackUrl .= '/' . 'txn-' . $this->id;
 
         return array(
                 'data' => $enrollResponse['data'],

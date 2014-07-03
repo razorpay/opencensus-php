@@ -48,7 +48,7 @@ class CreateTransactions  extends Migration
 
             $table->boolean('livemode');
 
-            $table->char(Transaction::TOKEN, Constants\Fields::ID_LENGTH)
+            $table->char(Transaction::TOKEN_ID, Constants\Fields::ID_LENGTH)
                   ->unique()
                   ->nullable();
 
@@ -76,7 +76,7 @@ class CreateTransactions  extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Transaction::TOKEN)
+            $table->foreign(Transaction::TOKEN_ID)
                   ->references(Common::ID)
                   ->on(Table::TOKEN);
         });
@@ -91,9 +91,9 @@ class CreateTransactions  extends Migration
     {
         Schema::table(Table::TRANSACTION, function($table){
 
-            $table->dropForeign(Table::TRANSACTION.'_merchant_id_foreign');
+            $table->dropForeign(Table::TRANSACTION.'_'.Common::MERCHANT_ID.'_foreign');
 
-            $table->dropForeign(Table::TRANSACTION.'_token_foreign');
+            $table->dropForeign(Table::TRANSACTION.'_'.Common::TOKEN_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);

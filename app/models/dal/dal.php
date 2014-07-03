@@ -2,11 +2,11 @@
 
 namespace Models\DAL;
 
+use EE\Error\ErrorCode;
 use EE\Exception\DbQueryException;
 
 class DAL extends \Eloquent
 {
-
     /**
      * Indicates if the primary key is uuid.
      *
@@ -14,81 +14,19 @@ class DAL extends \Eloquent
      */
     public $uuid = false;
 
+    protected $sign = '';
 
-    /**
-     * should be default but that's
-     * php keyword. It returns those attributes
-     * which are defined in 'visible' and not
-     * defined in 'hidden'. At a time only one of
-     * 'visible' or 'hidden' is defined.
-     */
-    const THEDEFAULT = 0x0;
+    protected $entity = '';
 
-    /**
-     * Same as THEDEFAULT, except that it also
-     * includes 'appends' attributes.
-     */
-    const FIELDS = 0x1;
-
-    /**
-     * All fields, irrespective of 'hidden' or
-     * 'visible'. Does not include 'appends'
-     * attributes.
-     */
-    const ALL_FIELDS = 0x2;
-
-    /**
-     * Returns 'appends' attributes
-     */
-    const APPENDS = 0x4;
-
-    /**
-     * Return object properties as array
-     *
-     * @return array
-     */
-    public function toArrayEx($flag = 0x0)
+    public function toArrayPublic()
     {
-        $array = array();
+        $array = $this->toArray();
 
-        if (($flag & static::FIELDS) or
-            ($flag & static::THEDEFAULT))
-        {
-            $array = $this->getArrayableAttributes();
-        }
-        else if ($flag & static::ALL_FIELDS)
-        {
-            $array = $this->data;
-        }
+        $array['id' ] = $this->sign . '-' . $array['id'];
 
-        if (($flag & static::APPENDS) or
-            ($flag & static::THEDEFAULT))
-        {
-            $array = array_merge($array, $this->getAppends());
-        }
+        $array['entity'] = $this->entity;
 
         return $array;
-    }
-
-    /**
-     *
-     */
-    public function getAppends()
-    {
-        $appends = array();
-
-        //
-        // Here we will grab all of the appended, calculated fields to this object
-        // as these fields are not really in the fields array, but are run
-        // when we need to array or JSON the object for convenience to the coder.
-        //
-
-        foreach ($this->appends as $key)
-        {
-            $appends[$key] = $this->mutateAttribute($key, null);
-        }
-
-        return $appends;
     }
 
     public function getVisible()
@@ -128,6 +66,18 @@ class DAL extends \Eloquent
                 'operation' => 'find');
 
         throw new DbQueryException($e);
+    }
+
+    public static function findOrFailPublic($id, $columns = array('*'))
+    {
+        if ( ! (NULL === $model = static::find($id, $columns))) return $model;
+
+        $e = array(
+                'model' => get_called_class(),
+                'attributes' => $id,
+                'operation' => 'find');
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
     }
 
     protected function getDateFormat()

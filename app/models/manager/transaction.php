@@ -10,7 +10,7 @@ class Transaction extends EntityManager
         'merchant_id'   =>  'required|numeric',
         'amount'        =>  'required|numeric|max:500000',
         'currency'      =>  'required|max:3',
-        'token'         =>  'required|alpha_num',
+        'token_id'      =>  'required|alpha_num',
         'desc'          =>  'max:1000',
         // 'hold'          =>  'numeric|max:1|digits:1',
         'udf'           =>  'required'
@@ -23,6 +23,8 @@ class Transaction extends EntityManager
     protected static $generators = array('status');
 
     protected static $createValidators = array('currency', 'udf');
+
+    protected static $sign = 'txn';
 
     /**
      * Validates Udf fields. email and contact is

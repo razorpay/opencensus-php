@@ -2,10 +2,9 @@
 
 namespace Models\DAL;
 
-use Rhumsaa\Uuid\Uuid;
-use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
+use Models\Manager\UniqueId;
 
-class UuidDAL extends DAL
+class UniqueIdDal extends DAL
 {
 
     /**
@@ -13,9 +12,11 @@ class UuidDAL extends DAL
      *
      * @var bool
      */
-    public $uuid = true;
+    protected $uniqueId = true;
 
     public $incrementing = false;
+
+    protected $secureUid = false;
 
     /**
      * Save the model to the database.
@@ -25,12 +26,12 @@ class UuidDAL extends DAL
      */
     public function save(array $options = array())
     {
-        $this->generateUuidIfNotSet();
+        $this->generateUniqueIdIfNotSet();
 
         parent::save($options);
     }
 
-    public function generateUuidIfNotSet()
+    public function generateUniqueIdIfNotSet()
     {
         $key = $this->getKeyName();
 
@@ -38,7 +39,7 @@ class UuidDAL extends DAL
 
         if ($value === null)
         {
-            $value = str_replace("-", "", Uuid::uuid1());
+            $value = UniqueId::generateId($this->secureUid);
 
             $this->setAttribute($key, $value);
         }

@@ -8,10 +8,6 @@ class ErrorClass
 
     const CARD = 'CARD';
 
-    const DB = 'DB';
-
-    const TRACE = 'TRACE';
-
     const BAD_REQUEST = 'BAD_REQUEST';
 
     const UDF = 'UDF';

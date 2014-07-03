@@ -2,8 +2,8 @@
 
 namespace Models\Manager;
 
-use EE\Exception\ExtraFieldsException;
-use EE\Exception\ValidationFailureException;
+use EE\Error\ErrorCode;
+use EE\Exception;
 
 class EntityManager
 {
@@ -55,14 +55,7 @@ class EntityManager
      */
     protected static $createRules = array();
 
-    /**
-     * Denotes whether the current object
-     * has been built from input (true) or
-     * loaded from storage (false)
-     *
-     * @var boolean
-     */
-    protected $built = false;
+    protected static $sign = '';
 
     public function __construct()
     {
@@ -90,8 +83,6 @@ class EntityManager
         $this->generate($input);
 
         $this->unsetInput($input, 'create');
-
-        $this->setBuilt(true);
 
         $this->fill($input);
     }
@@ -139,7 +130,7 @@ class EntityManager
 
         if (count($invalid_keys) > 0)
         {
-            throw new ExtraFieldsException($invalid_keys);
+            throw new Exception\ExtraFieldsException($invalid_keys);
         }
     }
 
@@ -161,7 +152,7 @@ class EntityManager
 
         if ($validation->fails())
         {
-            throw new ValidationFailureException($validation->messages());
+            throw new Exception\ValidationFailureException($validation->messages());
         }
     }
 
@@ -227,67 +218,18 @@ class EntityManager
      */
     public function getField($key)
     {
-        if ((isset($this->field)) and
-            (! in_array($key, $this->field)))
-        {
-            throw new ExtraFieldsException;
-        }
-
         if (array_key_exists($key, $this->data))
         {
             return $this->data[$key];
         }
+        else
+            throw new Exception\InvalidArgumentException($key . ' is not a valid attribute');
     }
 
     public function setField($key, $value)
     {
-        if ((count($this->field) > 0) and
-            (! in_array($key, $this->field)))
-        {
-            throw new ExtraFieldsException;
-        }
-
         $this->data[$key] = $value;
     }
-
-    /**
-     * Dynamically set fields on the object.
-     *
-     * @param  string  $key
-     * @param  mixed   $value
-     * @return void
-     */
-    public function __set($key, $value)
-    {
-        $this->setField($key, $value);
-    }
-
-    /**
-     * Dynamically retrieve fields on the object.
-     *
-     * @param  string  $key
-     * @return mixed
-     */
-    public function __get($key)
-    {
-        return $this->getField($key);
-    }
-
-    public function setBuilt($value)
-    {
-        if (! is_bool($value))
-        {
-            throw new InvalidArgumentException('Argument should be boolean');
-        }
-
-        $this->built = $value;
-    }
-
-    public function isBuilt()
-    {
-        return $this->built;
-    }
-
 
     public static function getCreateInputKeys()
     {
@@ -297,5 +239,27 @@ class EntityManager
     public function getData()
     {
         return $this->data;
+    }
+
+    public static function verifyIdAndStripSign(& $id)
+    {
+        self::stripSignOrFail($id);
+
+        UniqueId::verifyUid($id, true);
+    }
+
+    protected static function stripSignOrFail(& $id)
+    {
+        if (strpos($id, static::$sign) === false)
+        {
+            throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        $len = strlen(static::$sign);
+
+        //
+        // add 1 to $len to account for dash
+        //
+        $id = substr($id, $len + 1);
     }
 }

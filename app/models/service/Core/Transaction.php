@@ -65,7 +65,7 @@ class Transaction
         //
         //  Links txn input to token id
         //
-        $txnInput['token'] = $token->getKey();
+        $txnInput['token_id'] = $token->getKey();
 
         //
         // Remove card key from input. Isn't needed
@@ -156,6 +156,13 @@ class Transaction
         return $this->updateTransactionSuccess($txn, TransactionStatus::AUTH);
     }
 
+    /**
+     * [callback description]
+     * @param  DAL\Transaction $txn   Txn dal
+     * @param  array           $input contains fields provided
+     *                                by bank
+     * @return DAL\Transaction        Updated txn dal
+     */
     public function callback(
         DAL\Transaction $txn,
         array $input)
@@ -211,9 +218,7 @@ class Transaction
      */
     public function refund(DAL\Transaction $txn)
     {
-        $data = array(
-            'txn' => $txn->toArrayEx(
-                        DAL\Transaction::WITH_CARD));
+        $data = array('txn' => $txn->toArrayWithCard());
 
         try
         {
@@ -253,7 +258,7 @@ class Transaction
      */
     public function capture(DAL\Transaction $txn)
     {
-        $data = array('txn' => $txn->toArrayEx(DAL\Transaction::WITH_CARD));
+        $data = array('txn' => $txn->toArrayWithCard());
 
         try
         {

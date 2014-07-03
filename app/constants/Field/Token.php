@@ -10,5 +10,5 @@ class Token
 
     const EXPIRED = 'expired';
 
-    const CARD = 'card';
+    const CARD_ID = 'card_id';
 }

@@ -1,24 +1,23 @@
 Models\DAL\Merchant:
-  id: $integer
+    id: $integer
 
 Models\DAL\Card:
     name: $string
     expiry_month: 01
     expiry_year: 1999
-    cvv: 000
     type: visa
     country: IN
     last4: 789$integer
 
 Models\DAL\Token:
-    id: 174bdd3e456c8f6f
+    id: 174bdd3e456c8f6fabcdef12
     card_id:
         type: Models\DAL\Card
     merchant_id:
         type: Models\DAL\Merchant
 
 Models\DAL\Key:
-    id: d9c6bf091a1a64cb5678d8c1d5e7360f
+    id: d9c6bf091a1a64cb5678d8c1
     merchant_id:
         type: Models\DAL\Merchant
     live: 1
@@ -28,6 +27,8 @@ Models\DAL\Key:
 Models\DAL\Transaction:
     merchant_id:
         type: Models\DAL\Merchant
+    token_id:
+        type: Models\DAL\Token
     amount: 100
     currency: INR
     status: open

@@ -65,7 +65,7 @@ var XD = function(){
     };
 }();
 
-var data = {{$data}};
+var data = {{json_encode($data);}};
 XD.postMessage(data,'*',window.parent);
 </script>
 Your transaction is currently in progress. Please wait.

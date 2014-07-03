@@ -11,7 +11,7 @@ class Token
     {
         $input['merchant_id'] = $merchantId;
 
-        $input['card'] = $cardId;
+        $input['card_id'] = $cardId;
 
         $data = Manager\Token::createValidate($input)->getData();
 

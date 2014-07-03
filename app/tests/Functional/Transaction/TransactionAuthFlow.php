@@ -99,15 +99,13 @@ trait TransactionAuthFlow
         {
             $form = $crawler->selectButton('Submit')->form();
         }
-        catch(Exception $e)
+        catch(\Exception $e)
         {
-            s(get_class($e));
-
-            if(strpos($e->getMessage(), 'node list is empty') !== False)
-            {
-                $this->fail('Transaction Timed out');
-            }
-            else
+            // if(strpos($e->getMessage(), 'node list is empty') !== False)
+            // {
+            //     $this->fail('Transaction Timed out');
+            // }
+            // else
                 throw $e;
         }
 

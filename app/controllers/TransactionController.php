@@ -7,60 +7,27 @@ use Models\Manager\TransactionStatus;
 
 class TransactionController extends BaseController
 {
-    /**
-    * Retrieves transaction details by `id`
-    * Lists previous transactions if `id` not provided
-    *
-    * @param token (optional)
-    *
-    */
-    public function getIndex($param = null)
+    public function getTxnById($id)
     {
         $merchantId = BasicAuth::getInstance()->MerchantId();
 
+        $txn = (new Transaction)->retrieveById($id, $merchantId);
+
+        return Response::json($txn);
+    }
+
+    /**
+     * Retrieves transaction details
+     */
+    public function getMultipleTxn()
+    {
         $input = Input::all();
 
-        switch($param)
-        {
-            case TransactionStatus::OPEN:
-            case TransactionStatus::AUTH:
-            case TransactionStatus::CAPTURED:
-            case TransactionStatus::SETTLED:
-            case TransactionStatus::FAILED:
-                //
-                // For all above set the status parameter
-                //
-                $input[Field\Transaction::STATUS] = $param;
+        BasicAuth::getInstance()->getMerchantIdInArray($input);
 
-            case null:
-                //Common for all above
-                BasicAuth::getInstance()->getMerchantIdInArray($input);
+        $txns = (new Transaction)->retrieveMultiple($input);
 
-                $txnList = (new Transaction)->retrieveMultiple($input);
-                return Response::json($txnList);
-
-                break;
-
-            //Case for checking if a valid UUID is given for transaction id
-            case (preg_match("/^[0-9a-f]{8}[0-9a-f]{4}[1-5][0-9a-f]{3}[89ab][0-9a-f]{3}[0-9a-f]{12}$/i", $param) ? true : false ) :
-
-                $txn = (new Transaction)->retrieve($param, $merchantId);
-
-                if ($txn === null)
-                {
-                    return Response::view('error.404', array(), 404);
-                }
-                else
-                {
-                    return Response::json($txn);
-                }
-                break;
-
-            default:
-               return Response::view('error.401', array(), 401);
-               break;
-
-        }
+        return Response::json($txns);
     }
 
     /**
@@ -72,19 +39,19 @@ class TransactionController extends BaseController
 
         $input[Field\Common::MERCHANT_ID] = BasicAuth::getInstance()->MerchantId();
 
-        $txn_data = Transaction::getNewInstance()->process($input);
+        $txnData = Transaction::getNewInstance()->process($input);
 
         //
         // Check for call from API
         //
-        if(Request::header('Razorpay-API') != 1 && isset($txn_data['callbackUrl']))
+        if(Request::header('Razorpay-API') != 1 && isset($txnData['callbackUrl']))
         {
         	return View::make('hdfc.enrollResponse')
-                ->with('data', $txn_data['data'])
-                ->with('callbackUrl',$txn_data['callbackUrl']);
+                ->with('data', $txnData['data'])
+                ->with('callbackUrl',$txnData['callbackUrl']);
         }
 
-        return Response::json($txn_data);
+        return Response::json($txnData);
     }
 
     /**

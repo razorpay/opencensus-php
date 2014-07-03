@@ -14,7 +14,7 @@ class Transaction
 
     const DESCRIPTION = 'description';
 
-    const TOKEN = 'token';
+    const TOKEN_ID = 'token_id';
 
     const HOLD = 'hold';
 

@@ -4,17 +4,19 @@ namespace Models\DAL;
 
 use Constants\Field;
 
-class Token extends DAL {
+class Token extends UniqueIdDal
+{
 
     protected $table = \Constants\Table::TOKEN;
 
+    protected $sign = 'tok';
+
+    protected $entity = 'token';
+
     protected $appends = array('object');
 
-    public $incrementing = false;
-
     protected $fillable = array(
-        Field\Token::ID,
-        Field\Token::CARD,
+        Field\Token::CARD_ID,
         Field\Common::MERCHANT_ID,
         Field\Token::EXPIRED);
 
@@ -101,9 +103,7 @@ class Token extends DAL {
     public function card()
     {
         return $this->belongsTo(
-            __NAMESPACE__.'\Card',
-            Field\Token::CARD,
-            Field\Card::ID);
+            __NAMESPACE__.'\Card');
     }
 
 }

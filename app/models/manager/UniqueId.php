@@ -40,15 +40,26 @@ class UniqueId
         return self::verifyUid($id[$key]);
     }
 
-    public static function verifyUid($id, $throw = false)
+    public static function verifyUid($id, $throw = true)
     {
         $uniqueIdCheckRegex = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
 
-        return preg_match($uniqueIdCheckRegex, $id);
+        $res = preg_match($uniqueIdCheckRegex, $id);
 
-        if ($throw)
+        if (($res === false) and ($throw))
         {
-            throw new InvalidArgumentException($id . ' is not a valid id');
+            throw new BadRequestException($id . ' is not a valid id');
         }
+
+        return $res;
+    }
+
+    public static function generateId()
+    {
+        $len = \Constants\Fields::ID_LENGTH;
+
+        $id = bin2hex(openssl_random_pseudo_bytes($len/2));
+
+        return $id;
     }
 }

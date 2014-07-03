@@ -4,9 +4,13 @@ namespace Models\DAL;
 
 use Constants\Field;
 
-class Card extends UuidDAL
+class Card extends UniqueIdDal
 {
     protected $table = \Constants\Table::CARD;
+
+    protected $sign = 'card';
+
+    protected $entity = 'card';
 
     protected $fillable = array(
         Field\Card::NAME,
@@ -33,38 +37,11 @@ class Card extends UuidDAL
 
     protected $guarded = array(Field\Card::ID);
 
-//    protected $appends = array('object');
-
-    const FLAG_DEFAULT          = 0x0;
-    const NO_CHECK_FIELDS       = 0x1;
-    const WITH_OBJECT_FIELD     = 0x2;
-    const ONLY_PUBLIC_FIELDS    = 0x4;
-
-    public function getCardData($flag = 0x0)
-    {
-        $data = $this->attributes;
-
-        unset($data['created_at']);
-        unset($data['updated_at']);
-
-        if ($flag & self::WITH_OBJECT_FIELD)
-            $data['object'] = 'card';
-
-        if ($flag & self::ONLY_PUBLIC_FIELDS)
-        {
-            unset($data['id']);
-            unset($data['number']);
-        }
-
-
-        if ($flag & self::NO_CHECK_FIELDS)
-        {
-            unset(
-                $data['cvv_check'],
-                $data['address_line1_check'],
-                $data['address_zip_check']);
-        }
-
-        return $data;
-    }
+    protected $visible = array(
+        Field\Card::ID,
+        Field\Card::NAME,
+        Field\Card::EXPIRY_MONTH,
+        Field\Card::EXPIRY_YEAR,
+        Field\Card::LAST4,
+        Field\Card::NETWORK);
 }

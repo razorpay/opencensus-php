@@ -5,10 +5,14 @@ namespace Models\DAL;
 use \Constants\Field;
 use \Models\Manager\TransactionStatus;
 
-class Transaction extends UuidDAL
+class Transaction extends UniqueIdDal
 {
 
     protected $table = \Constants\Table::TRANSACTION;
+
+    protected $sign = 'txn';
+
+    protected $entity = 'transaction';
 
     private static $fetch_param_rules = array(
         'created'       => 'numeric',
@@ -22,11 +26,10 @@ class Transaction extends UuidDAL
 
     protected $fillable = array(
         Field\Common::MERCHANT_ID,
-        Field\Transaction::TOKEN,
+        Field\Transaction::TOKEN_ID,
         Field\Transaction::STATUS,
         Field\Transaction::AMOUNT,
         Field\Transaction::CURRENCY,
-        // 'hold',
         Field\Transaction::DESCRIPTION,
         Field\Transaction::UDF);
 
@@ -34,9 +37,8 @@ class Transaction extends UuidDAL
         Field\Transaction::ID,
         Field\Transaction::AMOUNT,
         Field\Transaction::CURRENCY,
-        'livemode',
+        // 'livemode',
         Field\Transaction::STATUS,
-        // 'hold',
         Field\Transaction::UDF,
         Field\Transaction::ERROR_CODE,
         Field\Transaction::ERROR_DESCRIPTION,
@@ -45,7 +47,7 @@ class Transaction extends UuidDAL
 
     protected $guarded = array(Field\Transaction::ID);
 
-    public function getUdfAttribute($udf)
+    protected function getUdfAttribute($udf)
     {
         return unserialize($udf);
     }
@@ -60,9 +62,8 @@ class Transaction extends UuidDAL
 
     /**
      * Retrieves the transactions from database for a particular merchant.
-     * @param  array $data
-     * @param  int $flag
-     * @return array $txn_list
+     * @param  array        $param
+     * @return Collection   A collection of transactions
      */
     public static function fetch($param)
     {
@@ -80,27 +81,17 @@ class Transaction extends UuidDAL
         $query = self::where(Field\Common::MERCHANT_ID, '=', $param['merchant_id'])
                      ->orderBy(Field\Common::UPDATED_AT, 'desc');
 
-        if (isset($param['created']))
+        if (isset($param['from']))
         {
-            $query->where(
-                      Field\Common::CREATED_AT,
-                      '=',
-                      $param['created']);
-        }
-        else
-        {
-            if (isset($param['from']))
-            {
-                $query = $query->where(Field\Common::UPDATED_AT, '>', $param['from']);
-            }
-
-            if (isset($param['to']))
-            {
-                $query = $query->where(Field\Common::UPDATED_AT, '<', $param['to']);
-            }
+            $query = $query->where(Field\Common::UPDATED_AT, '>=', $param['from']);
         }
 
-        if(isset($param['status']))
+        if (isset($param['to']))
+        {
+            $query = $query->where(Field\Common::UPDATED_AT, '<=', $param['to']);
+        }
+
+        if (isset($param['status']))
         {
             $query = $query->where(Field\Transaction::STATUS, '=', $param['status']);
         }
@@ -183,45 +174,27 @@ class Transaction extends UuidDAL
         return (int)$this->getAttribute(Field\Common::MERCHANT_ID);
     }
 
-    const WITH_CARD             = 0x256;
-
-    public function toArrayEx($flag = 0x0)
+    public function toArrayWithCard()
     {
-        $data = parent::toArray($flag);
+        $data = parent::toArray();
 
-        // TODO
-        // const ONLY_PUBLIC_FIELDS is undefined
-        // if ($flag and self::ONLY_PUBLIC_FIELDS)
-        // {
-        //     $array['id'] = $array['uid'];
-        //     unset($array['uid']);
-        // }
+        $token = $this->token()->first();
 
-        if ($flag and self::WITH_CARD)
+        if ($token === null)
         {
-            $token = $this->token()->first();
-
-            $card_do = NULL;
-
-            if ($this->token === null)
-            {
-                throw new \InvalidArgumentException('Transaction Exception: No card present');
-            }
-
-            if ($token !== null)
-            {
-                $card_do = $token->card()->first();
-            }
-
-            if ($card_do === null)
-            {
-                throw new \UnexpectedValueException('Transaction Exception: No card do present to fetch card data');
-            }
-
-            $card_data = $card_do->getCardData();
-
-            $data['card'] = $card_data;
+            throw new LogicException(ErrorCode::SERVER_ERROR_ASSOCIATED_TOKEN_NOT_FOUND);
         }
+
+        $card = $token->card()->first();
+
+        if ($card === null)
+        {
+            throw new LogicException(ErrorCode::SERVER_ERROR_ASSOCIATED_CARD_NOT_FOUND);
+        }
+
+        $cardData = $card->toArray();
+
+        $data['card'] = $cardData;
 
         return $data;
     }
@@ -239,8 +212,8 @@ class Transaction extends UuidDAL
 
     public function token()
     {
-        return $this->hasOne(
-            __NAMESPACE__.'\Token', 'id', 'token');
+        return $this->belongsTo(
+            __NAMESPACE__.'\Token');
     }
 
     public function merchant()
@@ -260,9 +233,42 @@ class Transaction extends UuidDAL
                      ->find($id);
     }
 
-    public static function findByIdAndMerchantIdOrFail($id, $merchantId)
+    public static function findByIdAndMerchantIdOrFailPublic($id, $merchantId)
     {
-        return static::where(Field\Common::MERCHANT_ID, $merchantId)
-                     ->findOrFail($id);
+        $txn = static::where(Field\Common::MERCHANT_ID, $merchantId)
+                     ->find($id);
+
+        if ($txn === null)
+        {
+            $e = array(
+                'model' => get_called_class(),
+                'attributes' => $id,
+                'operation' => 'find');
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        return $txn;
+    }
+
+    public static function loadWithTokenAndCard($id, $merchantId)
+    {
+        $txn = self::with('token')
+                   ->merchantId($merchantId)
+                   ->where(Field\Transaction::ID, '=', $id)
+                   ->first();
+
+        if (($txn !== null) and
+            ($txn->token !== null))
+        {
+            $card = $txn->token->card()->first();
+        }
+
+        return $txn;
+    }
+
+    public function scopeMerchantId($query, $merchantId)
+    {
+        return $query->where(Field\Common::MERCHANT_ID,'=',$merchantId);
     }
 }

@@ -145,11 +145,7 @@ class Error
                 $this->handleBadRequestErrors();
                 break;
             case ErrorClass::SERVER:
-                // @todo fill this case
                 $this->handleServerErrors();
-                break;
-            case ErrorClass::TRACE:
-                // @todo
                 break;
             default:
                 throw new \InvalidArgumentException('Not a valid class');
@@ -222,30 +218,6 @@ class Error
         $field = $this->getAttribute('field');
 
         $this->publicError->setCardError($code, $desc, $field);
-    }
-
-    protected function handleAPIErrors()
-    {
-        $code = $this->getAttribute('code');
-        $desc = $this->getAttribute('desc');
-
-        switch ($code)
-        {
-            case Error::API_CARD_INVALID_NAME:
-            case Error::API_CARD_INVALID_EXPIRY_MONTH:
-            case Error::API_CARD_INVALID_EXPIRY_YEAR:
-            case Error::API_CARD_INVALID_CVC:
-            case Error::API_CARD_INVALID_BRAND:
-            case Error::API_CARD_INVALID_AMOUNT:
-            case Error::API_CARD_INVALID_UDF:
-            case Error::API_CARD_INVALID_NUMBER:
-            case Error::API_CARD_EXPIRED:
-            case Error::API_TRANSACTION_INVALID_CURRENCY:
-            case Error::API_TRANSACTION_INVALID_AMOUNT:
-            default:
-                throw new \InvalidArgumentException('This part is to be done.');
-                break;
-        }
     }
 
     protected function handleServerErrors()

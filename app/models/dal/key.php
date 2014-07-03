@@ -4,7 +4,7 @@ namespace Models\DAL;
 
 use Constants\Field;
 
-class Key extends DAL
+class Key extends UniqueIdDal
 {
     protected $table  = \Constants\Table::KEY;
 
@@ -15,6 +15,13 @@ class Key extends DAL
         'live',
         Field\Key::ACTIVE
     );
+
+    /**
+     * 86400 sec or more accurately 24 hours.
+     * When a key is rolled over, by default
+     * the old key remains valid for 24 hours.
+     */
+    const DEFAULT_KEY_EXPIRY_TIME_ON_ROLL = 86400;
 
     protected $hidden = array(
         Field\Key::SECRET,
@@ -34,7 +41,7 @@ class Key extends DAL
         return $query->where(Field\Common::MERCHANT_ID,'=',$merchantId);
     }
 
-    public function setExpired($time = 86400)
+    public function setExpired($time = self::DEFAULT_KEY_EXPIRY_TIME_ON_ROLL)
     {
         $this->setAttribute(Field\Key::EXPIRED_AT, time() + $time);
     }

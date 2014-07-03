@@ -4,7 +4,7 @@ namespace Constants;
 
 final class Fields
 {
-    const ID_LENGTH = 32;
+    const ID_LENGTH = 24;
 
     const EMAIL_MAX_LENGTH = 255;
 

@@ -1,12 +1,14 @@
-<?php 
+<?php
 
 namespace Models\DAL;
 
 use \Constants\Field;
 
-class Ledger extends UuidDAL
+class Ledger extends UniqueIdDal
 {
     protected $table = \Constants\Table::LEDGER;
+
+    protected $sign = 'lgr';
 
     protected $fillable = array(
         'ref',
@@ -16,7 +18,7 @@ class Ledger extends UuidDAL
         Field\Ledger::PENDING,
         Field\Ledger::FEE,
         Field\Ledger::BALANCE);
-    
+
     public static function updateRecords($txn)
     {
         $merchantId = $txn->merchant_id;
