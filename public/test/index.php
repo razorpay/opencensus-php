@@ -17,8 +17,8 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 <BODY>
 <table border="1" align="center"  width="100%" >
 	<tr>
-	<td align="left" width="90%"><font  size = 5 color = darkblue face = verdana ><b>Testing Page</td>
-	<td align="right"width="10%"><IMG SRC="images/fss1.JPG" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
+	<td align = "left" width = "90%"><font  size = 5 color = darkblue face = verdana ><b>Testing Page</td>
+	<td align = "right"width = "10%"><img SRC="images/fss1.JPG" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
 	</tr>
 </table>
 <br><br>
@@ -75,7 +75,8 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 <input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
 <form name ="capture" method="post" action="http://<?=$private_url?>/transactions/">
-<input type="text" id="capture_id" placeholder="Enter transaction id to capture"/>
+<input type="text" id="capture_id" placeholder = "Enter transaction id to capture"/>
+<input type = "text" id = "amount" name = "amount" placeholder = "Enter amount to capture" value="499" />
 <input type="submit" value="Capture" onClick="javascript:document.capture.action = document.capture.action + document.getElementById('capture_id').value +'/capture'; document.capture.submit(); return false;"/>
 </form>
 </div>
