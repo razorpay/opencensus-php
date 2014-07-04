@@ -37,24 +37,30 @@ class SupportTest extends TestCase
         echo "\nTesting: Support Transactions \n";
         echo "Creating New Transaction... \n";
 
-        //GIVEN
-        //create an auth transaction using card 1
+        //
+        // GIVEN
+        // create an auth transaction using card 1
+        //
         $testData = $this->testData['creditCardSuccess'];
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $content = $this->runTransactionAuthFlow($testData);
+        $txn = $this->runTransactionAuthFlow($testData);
 
-        //get its transaction id
-        $id = $content['id'];
+        // get its transaction id
+        $id = $txn['id'];
 
-        $this->capture($id);
+        // get amount
+        $amount = $txn['amount'];
+
+        $this->capture($id, $amount);
+
         $this->refund($id);
     }
 
     /**
      * Tests capture transactions, attempts to capture all past transactions & ensures that the transaction specified by id is captured.
      */
-    private function capture($id)
+    private function capture($id, $amount)
     {
         echo "Testing: Capture Transaction \n";
         echo "Expected Reponse: Status = Captured \n";
@@ -62,7 +68,7 @@ class SupportTest extends TestCase
 
         // WHEN
         // call for capture of transactions
-        $response = $this->action('POST', 'TransactionController@postCapture', array('id'=>$id));
+        $response = $this->call('POST', '/transactions/'.$id.'/capture', array('amount'=>$amount));
         $content = $response->getContent();
 
         // THEN

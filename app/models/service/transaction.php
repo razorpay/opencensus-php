@@ -68,13 +68,9 @@ class Transaction extends Service
 
     public function retrieveById($id, $merchantId)
     {
-        Manager\Transaction::verifyIdAndStripSign($id);
+        $txn = $this->core->retrieveTransaction($id, $merchantId);
 
-        $txn = DAL\Transaction::findByIdAndMerchantId($id, $merchantId);
-
-        $txn = $txn->toArrayPublic();
-
-        return $txn;
+        return $txn->toArrayPublic();
     }
 
     /**
@@ -117,22 +113,11 @@ class Transaction extends Service
      * @param  integer  $merchantId
      * @return DAL\Transaction
      */
-    public function capture($id, $merchantId)
+    public function capture($id, $merchantId, $input)
     {
-        Manager\Transaction::verifyIdAndStripSign($id);
+        $txn = $this->core->retrieveTransaction($id, $merchantId);
 
-        $txn = DAL\Transaction::findByIdAndMerchantId($id, $merchantId);
-
-        //
-        // Don't continue if already captured
-        //
-        if ($txn->isCaptured())
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
-        }
-
-        $txn = $this->core->capture($txn);
+        $txn = $this->core->capture($txn, $input);
 
         return $txn->toArrayPublic();
     }

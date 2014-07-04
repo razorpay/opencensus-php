@@ -79,6 +79,8 @@ class ErrorCode
     const BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED                  = 'BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED';
     const BAD_REQUEST_INVALID_ID                                    = 'BAD_REQUEST_INVALID_ID';
 
+    const BAD_REQUEST_CAPTURE_GT_AUTH                               = 'BAD_REQUEST_CAPTURE_GT_AUTH';
+
     const BAD_REQUEST_ERROR                                         = 'BAD_REQUEST_ERROR';
 
     const SERVER_ERROR_INVALID_ARGUMENT                             = 'SERVER_ERROR_INVALID_ARGUMENT';

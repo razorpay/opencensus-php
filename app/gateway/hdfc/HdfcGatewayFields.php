@@ -46,15 +46,36 @@ class HdfcGatewayFields
      */
     const BANK_ACS_URL = 'url';
 
-    /**
-     * The result parameters contain transaction request
-     * result. On basis of the result received merchant takes
-     * the action on the transaction. The result parameter is
-     * received in both Card Enrollment Verification
-     * Response and Final Response, from the value
-     * merchant can identify the further course of action
-     * required. Check Section 3.i for information on
-     * different result codes from Payment Gateway
+    /*
+     |------------------------------------------------------------------------------------------
+     | Result
+     |------------------------------------------------------------------------------------------
+     | Source: FSSNeTPG-Tranportal Integration Non3D Version 3.1.pdf Page 20
+     | Note: Take it as a guideline, not rule.
+     |
+     | The result parameter in the Hdfc Payment Gateway transaction response enables the merchant
+     | to determine the transaction status. The Merchant is advised to first check for any errors
+     | received in the response message and if not check for the result parameter. On the baasis
+     | of the result parameter, the merchant’s system determines whether transaction is
+     | Approved or Declined.
+     | Mentioned below are the Response Result parameter values that could be
+     | received from the Payment Gateway in the result parameter to the merchant in the
+     | transaction response message.
+     | • CAPTURED - Transaction was successful (For Action Code “1”, “2” , “5”)
+     | • APPROVED - Transaction was successful (For Action Code “4”)
+     | • NOT CAPTURED - Transaction was failed (For Action Code “1”, “2” , “5”)
+     | • NOT APPROVED - Transaction was failed (For Action Code “4”)
+     | • DENIED BY RISK - Risk denied the transaction processing
+     | • HOST TIMEOUT - The authorization system did not respond within the Time out
+     |   limit
+     | • SUCCESS – The transaction is successful (For Action Code “8” if original requested
+     |   transaction is successful at Payment Gateway)
+     | • FAILURE(NOT CAPTURED) – The transaction is failed (For Action Code “8”, if
+     |   the original transaction is failed at Payment Gateway)
+     | • FAILURE(SUSPECT) – The transaction data is not matching, and hence failed. (For
+     |   action code “8, if the input requested in request is not matching with data available in
+     |   Payment Gateway, then this result is thrown by Payment Gateway for inquiry
+     |   transaction)
      */
     const RESULT = 'result';
 
@@ -69,7 +90,7 @@ class HdfcGatewayFields
 
     /**
      * The amount is passed to hdfc gateway via this variable.
-     * It's passed in Rupees. The api format is in lowest
+     * It's passed in Rupees. The api format is in lowest (paise)
      * denomination possible. Make sure to convert.
      */
     const AMOUNT = 'amt';
@@ -216,39 +237,4 @@ class HdfcGatewayFields
      * Sample - 369258147123456
      */
     const MD = 'MD';
-
-        /*
-     |------------------------------------------------------------------------------------------
-     | Result
-     |------------------------------------------------------------------------------------------
-     | Source: FSSNeTPG-Tranportal Integration Non3D Version 3.1.pdf Page 20
-     | Note: Take it as a guideline, not rule.
-     |
-     | The result parameter in the Hdfc Payment Gateway transaction response enables the merchant
-     | to determine the transaction status. The Merchant is advised to firstly check for any errors
-     | received in the response message and if not check for the result parameter. On the baasis
-     | of the result parameter, the merchant’s system determines whether transaction is
-     | Approved or Declined.
-     | Mentioned below are the Response Result parameter values that could be
-     | received from the Payment Gateway in the result parameter to the merchant in the
-     | transaction response message.
-     | • CAPTURED - Transaction was successful (For Action Code “1”, “2” , “5”)
-     | • APPROVED - Transaction was successful (For Action Code “4”)
-     | • NOT CAPTURED - Transaction was failed (For Action Code “1”, “2” , “5”)
-     | • NOT APPROVED - Transaction was failed (For Action Code “4”)
-     | • DENIED BY RISK - Risk denied the transaction processing
-     | • HOST TIMEOUT - The authorization system did not respond within the Time out
-     | limit
-     | • SUCCESS – The transaction is successful (For Action Code “8” if original requested
-     | transaction is successful at Payment Gateway)
-     | Payment Gateway Services
-     | • FAILURE(NOT CAPTURED) – The transaction is failed (For Action Code “8”, if
-     | the original transaction is failed at Payment Gateway)
-     | • FAILURE(SUSPECT) – The transaction data is not matching, and hence failed. (For
-     | action code “8, if the input requested in request is not matching with data available in
-     | Payment Gateway, then this result is thrown by Payment Gateway for inquiry
-     | transaction)
-     */
-    const RESULT = 'result';
-
 }

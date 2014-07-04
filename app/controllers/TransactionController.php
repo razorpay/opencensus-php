@@ -7,11 +7,18 @@ use Models\Manager\TransactionStatus;
 
 class TransactionController extends BaseController
 {
+    protected $basicAuth = null;
+    protected $merchantId = null;
+
+    public function __construct()
+    {
+        $this->basicAuth = BasicAuth::getInstance();
+        $this->merchantId = $this->basicAuth->getMerchantId();
+    }
+
     public function getTxnById($id)
     {
-        $merchantId = BasicAuth::getInstance()->MerchantId();
-
-        $txn = (new Transaction)->retrieveById($id, $merchantId);
+        $txn = (new Transaction)->retrieveById($id, $this->merchantId);
 
         return Response::json($txn);
     }
@@ -23,7 +30,7 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
 
-        BasicAuth::getInstance()->getMerchantIdInArray($input);
+        $input['merchant_id'] = $this->merchantId;
 
         $txns = (new Transaction)->retrieveMultiple($input);
 
@@ -37,7 +44,7 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
 
-        $input[Field\Common::MERCHANT_ID] = BasicAuth::getInstance()->MerchantId();
+        $input[Field\Common::MERCHANT_ID] = $this->merchantId;
 
         $txnData = Transaction::getNewInstance()->process($input);
 
@@ -64,7 +71,7 @@ class TransactionController extends BaseController
         unset($input['callback']);
         unset($input['_']);
 
-        $input['merchant_id'] = BasicAuth::getInstance()->MerchantId();
+        $input['merchant_id'] = $this->merchantId;
 
         $txn = (new Transaction)->process($input);
 
@@ -76,30 +83,10 @@ class TransactionController extends BaseController
     */
     public function postRefund($id)
     {
-        $merchantId = BasicAuth::getInstance()->MerchantId();
-
-        $txn = (new Transaction)->refund($id, $merchantId);
+        $txn = (new Transaction)->refund($id, $this->merchantId);
 
         return Response::json($txn);
     }
-
-    /**
-     * Captures transactions from the past 1 day
-     *
-     */
-    // public function capture()
-    // {
-    //     $txn_service = new Transaction();
-    //
-    //     $txn_array = $txn_service->retrieveUncaptured();
-    //
-    //     foreach ($txn_array as $txn)
-    //     {
-    //         $txn_service->capture($txn);
-    //     }
-    //
-    //     return Response::json($txn_array);
-    // }
 
     /**
      * Captures a specific transaction which was
@@ -107,9 +94,9 @@ class TransactionController extends BaseController
      */
     public function postCapture($id)
     {
-        $merchantId = BasicAuth::getInstance()->MerchantId();
+        $input = Input::get();
 
-        $txn = (new Transaction)->capture($id, $merchantId);
+        $txn = (new Transaction)->capture($id, $this->merchantId, $input);
 
         return Response::json($txn);
     }

@@ -12,13 +12,14 @@ class Transaction extends EntityManager
         'currency'      =>  'required|max:3',
         'token_id'      =>  'required|alpha_num',
         'desc'          =>  'max:1000',
-        // 'hold'          =>  'numeric|max:1|digits:1',
-        'udf'           =>  'required'
-        );
+        'udf'           =>  'required');
 
     protected static $udfRules = array(
         'email'         =>  'required|email|max:250',
         'contact'       =>  'required|numeric|digits_between:8,12');
+
+    protected static $captureRules = array(
+        'amount'        => 'required|numeric|max:500000');
 
     protected static $generators = array('status');
 
@@ -103,6 +104,25 @@ class Transaction extends EntityManager
         {
             throw new BadRequestException(
                 'Transaction Exception: Card not provided');
+        }
+    }
+
+    public function captureValidate($txn, $input)
+    {
+        //
+        // Don't continue if already captured
+        //
+        if ($txn->isCaptured())
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
+        }
+
+        $this->validateInput($input, 'capture');
+
+        if ($input['amount'] > $txn->getAttribute('amount'))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTURE_GT_AUTH);
         }
     }
 }

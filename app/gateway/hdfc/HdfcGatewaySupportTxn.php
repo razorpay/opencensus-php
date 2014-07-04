@@ -87,7 +87,7 @@ trait HdfcGatewaySupportTxn
         //
         // Convert amount from integer to decimal
         //
-        $data['amt'] = $txn['amount']/100;
+        $data['amt'] = $input['amount']/100;
 
         $data['member'] = $card['name'];
 

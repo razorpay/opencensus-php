@@ -16,24 +16,27 @@ class BasicAuth extends \Singleton {
 
     public function check()
     {
-        if (($this->key == null) or
-            ($this->merchant == null))
-            return false;
-        else
-            return true;
+        //
+        // If either of key or merchant is null,
+        // return false
+        // If both are present, return true
+        //
+        return (($this->key !== null) and
+                ($this->merchant !== null));
+
     }
 
-    public function Key()
+    public function getKey()
     {
         return $this->key;
     }
 
-    public function Merchant()
+    public function getMerchant()
     {
         return $this->merchant;
     }
 
-    public function MerchantId()
+    public function getMerchantId()
     {
         $id = $this->merchant->getKey();
 

@@ -36,4 +36,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_INVALID_ID =
         'The id provided does not exist';
+
+    const BAD_REQUEST_CAPTURE_GT_AUTH =
+        'Capture amount cannot be greater than auth amount';
 }

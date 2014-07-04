@@ -27,6 +27,10 @@ class CreateTransactions  extends Migration
             $table->integer(Common::MERCHANT_ID)
                   ->unsigned();
 
+            $table->integer(Transaction::AUTH_AMOUNT)
+                  ->unsigned()
+                  ->default(0);
+
             $table->integer(Transaction::AMOUNT)
                   ->unsigned();
 
@@ -93,7 +97,7 @@ class CreateTransactions  extends Migration
 
             $table->dropForeign(Table::TRANSACTION.'_'.Common::MERCHANT_ID.'_foreign');
 
-            $table->dropForeign(Table::TRANSACTION.'_'.Common::TOKEN_ID.'_foreign');
+            $table->dropForeign(Table::TRANSACTION.'_'.Transaction::TOKEN_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);

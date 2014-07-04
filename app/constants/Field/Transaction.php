@@ -6,6 +6,8 @@ class Transaction
 {
     const ID = Common::ID;
 
+    const AUTH_AMOUNT = 'auth_amount';
+
     const AMOUNT = 'amount';
 
     const STATUS = 'status';

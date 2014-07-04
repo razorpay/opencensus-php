@@ -28,6 +28,7 @@ class Transaction extends UniqueIdDal
         Field\Common::MERCHANT_ID,
         Field\Transaction::TOKEN_ID,
         Field\Transaction::STATUS,
+        Field\Transaction::AUTH_AMOUNT,
         Field\Transaction::AMOUNT,
         Field\Transaction::CURRENCY,
         Field\Transaction::DESCRIPTION,
@@ -55,6 +56,18 @@ class Transaction extends UniqueIdDal
     public function setUdfAttribute($value)
     {
         $this->attributes[Field\Transaction::UDF] = serialize($value);
+    }
+
+    public function setCaptureAmount($amount)
+    {
+        $this->setAttribute(Field\Transaction::AMOUNT, $amount);
+    }
+
+    public function setAuthAmount()
+    {
+        $authAmount = $this->getAttribute(Field\Transaction::AMOUNT);
+
+        $this->setAttribute(Field\Transaction::AUTH_AMOUNT, $authAmount);
     }
 
     const FETCH_WITH_CARD       = 0x1024;

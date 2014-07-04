@@ -127,8 +127,6 @@ class Transaction
         }
         catch(BaseException $e)
         {
-            $status = TransactionStatus::FAILED;
-
             $this->updateTransactionFailed(
                     $txn,
                     $e->getError(),
@@ -153,11 +151,18 @@ class Transaction
             return $callbackData;
         }
 
+        $txn->setAuthAmount();
+
         return $this->updateTransactionSuccess($txn, TransactionStatus::AUTH);
     }
 
     /**
-     * [callback description]
+     * After card enroll, bank redirects to us
+     * and we send it to gateway for further
+     * processing (auth).
+     * Returning from this function implies
+     * 'auth' is successful.
+     *
      * @param  DAL\Transaction $txn   Txn dal
      * @param  array           $input contains fields provided
      *                                by bank
@@ -187,12 +192,51 @@ class Transaction
     }
 
     /**
+     * Capture a preivous auth transaction
+     *
+     * @param  DAL\Transaction $txn DAL\Transaction object
+     *
+     * @return array                Transaction array
+     */
+    public function capture(DAL\Transaction $txn, array $input = array())
+    {
+        (new Manager\Transaction)->captureValidate($txn, $input);
+
+        $data = array(
+                    'txn' => $txn->toArrayWithCard(),
+                    'amount' => $input['amount']);
+
+        $txn->setCaptureAmount($input['amount']);
+
+        try
+        {
+            $this->callGatewayFunction(
+                    TransactionAction::CAPTURE, $data);
+
+            $this->updateTransactionSuccess($txn, TransactionStatus::CAPTURED);
+        }
+        catch (BaseException $e)
+        {
+            $this->updateTransactionFailed(
+                    $txn,
+                    $e->getError(),
+                    TraceCode::TRANSACTION_CAPTURE_FAILURE);
+
+            throw $e;
+        }
+
+        return $txn;
+    }
+
+    /**
      * Refunds a transaction
      * Pass \DAL\Transaction object as argument
      */
     public function refund(DAL\Transaction $txn)
     {
-        $data = array('txn' => $txn->toArrayWithCard());
+        $data = array(
+                    'txn' => $txn->toArrayWithCard(),
+                    'amount' => $txn['amount']);
 
         try
         {
@@ -212,45 +256,6 @@ class Transaction
                     $txn,
                     $e->getError(),
                     TraceCode::TRANSACTION_REFUND_FAILURE);
-
-            throw $e;
-        }
-
-        return $txn;
-    }
-
-    /**
-     * Capture a preivous auth transaction
-     *
-     * @param  DAL\Transaction $txn DAL\Transaction object
-     *
-     * @return array                Transaction array
-     */
-    public function capture(DAL\Transaction $txn)
-    {
-        $data = array('txn' => $txn->toArrayWithCard());
-
-        try
-        {
-            $this->callGatewayFunction(
-                    TransactionAction::CAPTURE, $data);
-
-            $this->updateTransactionSuccess($txn, TransactionStatus::CAPTURED);
-        }
-        catch (BaseException $e)
-        {
-
-        $error = $e->getError();
-        $code = $error->getPublicErrorCode();
-        $desc = $error->getPublicErrorDescription();
-        $txn->setStatus(TransactionStatus::FAILED);
-        $txn->setError($code, $desc);
-        $txn->save();
-
-        $this->traceTransactionFailed(
-                $txn,
-                $e->getError(),
-                TraceCode::TRANSACTION_CAPTURE_FAILURE);
 
             throw $e;
         }
@@ -348,5 +353,14 @@ class Transaction
         // $ledger = (new DAL\Ledger)->updateRecords($txn);
 
         return $data;
+    }
+
+    public function retrieveTransaction($id, $merchantId)
+    {
+        Manager\Transaction::verifyIdAndStripSign($id);
+
+        $txn = DAL\Transaction::findByIdAndMerchantId($id, $merchantId);
+
+        return $txn;
     }
 }
