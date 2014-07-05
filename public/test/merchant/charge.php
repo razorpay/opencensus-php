@@ -1,6 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
 require('../../../vendor/autoload.php');//Load API
 
 use Razorpay\Api\Api;
@@ -17,6 +15,7 @@ $transaction = $api->transaction->get($id);
 
 if($amount === $transaction->amount && $transaction->error_code === null && $transaction->status === 'auth')
 {
+	$transaction = $api->transaction->capture($id);
 	//Transaction was successful
 	//Do your server side handling
 	echo json_encode($transaction);
