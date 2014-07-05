@@ -82,7 +82,7 @@ if (! function_exists('basicAuthVerifySecret'))
     }
 }
 
-if (! function_exists('basicAuthVerifySecret'))
+if (! function_exists('basicAuthVerifyApp'))
 {
     function basicAuthVerifyApp()
     {
