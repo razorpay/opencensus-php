@@ -21,8 +21,7 @@ class Transaction extends UniqueIdDal
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
         'merchant_id'   => 'required',
-        'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled'
-        );
+        'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled');
 
     protected $fillable = array(
         Field\Common::MERCHANT_ID,
@@ -32,12 +31,16 @@ class Transaction extends UniqueIdDal
         Field\Transaction::AMOUNT,
         Field\Transaction::CURRENCY,
         Field\Transaction::DESCRIPTION,
+        Field\Transaction::EMAIL,
+        Field\Transaction::CONTACT,
         Field\Transaction::UDF);
 
     protected $visible = array(
         Field\Transaction::ID,
         Field\Transaction::AMOUNT,
         Field\Transaction::CURRENCY,
+        Field\Transaction::EMAIL,
+        Field\Transaction::CONTACT,
         // 'livemode',
         Field\Transaction::STATUS,
         Field\Transaction::UDF,

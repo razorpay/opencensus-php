@@ -366,13 +366,13 @@ class HdfcGateway extends BaseGateway
             case ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE:
             case ErrorCode::CARD_ERROR_CARD_DECLINED:
                 $exception = new Exception\CardErrorException($appErrorCode);
-
                 break;
 
             case ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF:
             case ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN:
             case ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT:
-            break;
+                break;
+
             default:
                 $exception = new Exception\GatewayErrorException($appErrorCode);
                 break;

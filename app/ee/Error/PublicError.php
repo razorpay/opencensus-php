@@ -84,6 +84,24 @@ class PublicError
         $this->setHttpStatusCode(400);
     }
 
+    public function setFieldError($code, $desc, $field = null)
+    {
+        if (defined(__NAMESPACE__.'\PublicErrorCode::'.$code) === false)
+        {
+            throw new \EE\Exception\InvalidArgumentException(
+                $code . ' not a valid public errorcode');
+        }
+
+        $this->setErrorCode($code);
+
+        $this->setErrorDescription($desc);
+
+        if ($field !== null)
+            $this->setField($field);
+
+        $this->setHttpStatusCode(400);
+    }
+
     public function setErrorCode($code)
     {
         $this->error['code'] = $code;

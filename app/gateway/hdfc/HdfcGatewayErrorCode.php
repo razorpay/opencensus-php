@@ -123,7 +123,7 @@ class HdfcGatewayErrorCode
 
         HdfcGatewayErrorCode::GW00170   => 'Terminal ID Mismatch',
 
-        HdfcGatewayErrorCode::GW00177   => 'Failed Support Greater Than Auth check',
+        HdfcGatewayErrorCode::GW00177   => 'Failed Capture Greater Than Auth check',
 
         HdfcGatewayErrorCode::GW00181   => 'Failed Credit Greater Than Debit check',
 
@@ -189,7 +189,7 @@ class HdfcGatewayErrorCode
         HdfcGatewayErrorCode::GW00166   => ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
         HdfcGatewayErrorCode::GW00167   => ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_CURRENCY,
         HdfcGatewayErrorCode::GW00170   => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
-        HdfcGatewayErrorCode::GW00177   => ErrorCode::GATEWAY_ERROR_SUPPORT_LESS_THAN_AUTH,
+        HdfcGatewayErrorCode::GW00177   => ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
         HdfcGatewayErrorCode::GW00181   => ErrorCode::CARD_ERROR_INSUFFICIENT_BALANCE,
         HdfcGatewayErrorCode::GW00183   => ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
 

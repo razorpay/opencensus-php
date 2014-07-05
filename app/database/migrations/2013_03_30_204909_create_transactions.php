@@ -59,17 +59,18 @@ class CreateTransactions  extends Migration
             $table->boolean('hold')
                   ->default('1');
 
-            // @todo: remove from here during migration overhaul
-            $table->string('error', 10);
+            $table->string(Transaction::ERROR_CODE, 20)
+                  ->nullable();
 
-            // @todo: uncomment these during migration combination.
-            // $table->string(Transaction::ERROR_CODE, 20)
-            //       ->nullable();
+            $table->string(Transaction::ERROR_DESCRIPTION, 100)
+                  ->nullable();
 
-            // $table->string(Transaction::ERROR_DESCRIPTION, 100)
-            //       ->nullable();
+            $table->string(Transaction::EMAIL, 255)
+                  ->nullable();
 
-            $table->binary('udf');
+            $table->string(Transaction::CONTACT, 20);
+
+            $table->binary(Transaction::UDF);
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Common::CREATED_AT);

@@ -209,10 +209,8 @@ trait TransactionAuthFlow
                 'address_country'   => 'India',
                 'address_zip'       => '123345',
             ),
-            'udf' => array(
-                'email'     =>  'lol@lko.com',
-                'contact'   =>  '991889902'
-            ),
+            'email'             => 'a@b.com',
+            'contact'           => '9918899029'
         ];
 
         return $transaction;

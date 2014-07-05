@@ -18,11 +18,13 @@ class PublicErrorCode
     const CARD_ERROR_INVALID_EXPIRY_YEAR                            = 'CARD_ERROR_INVALID_EXPIRY_YEAR';
     const CARD_ERROR_INVALID_CVV                                    = 'CARD_ERROR_INVALID_CVV';
     const CARD_ERROR_INVALID_BRAND                                  = 'CARD_ERROR_INVALID_BRAND';
-    const CARD_ERROR_INVALID_AMOUNT                                 = 'CARD_ERROR_INVALID_AMOUNT';
     const CARD_ERROR_INVALID_NUMBER                                 = 'CARD_ERROR_INVALID_NUMBER';
     const CARD_ERROR_INVALID_EXPIRY_DATE                            = 'CARD_ERROR_INVALID_EXPIRY_DATE';
     const CARD_ERROR_CARD_DECLINED                                  = 'CARD_ERROR_CARD_DECLINED';
     const CARD_ERROR_INSUFFICIENT_BALANCE                           = 'CARD_ERROR_INSUFFICIENT_BALANCE';
+
+    const FIELD_ERROR_INVALID_EMAIL                                 = 'FIELD_ERROR_INVALID_EMAIL';
+    const FIELD_ERROR_INVALID_CONTACT                               = 'FIELD_ERROR_INVALID_CONTACT';
 
     public static function verify($errorClass)
     {

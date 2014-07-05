@@ -2,70 +2,127 @@
 
 namespace Models\Manager;
 
-use \Utility;
+use Utility;
+use EE\Exception;
+use EE\Error\ErrorCode;
 
 class Transaction extends EntityManager
 {
     protected static $createRules = array(
         'merchant_id'   =>  'required|numeric',
-        'amount'        =>  'required|numeric|max:500000',
+        'amount'        =>  'required|numeric|max:500000|min:0',
         'currency'      =>  'required|max:3',
         'token_id'      =>  'required|alpha_num',
-        'desc'          =>  'max:1000',
-        'udf'           =>  'required');
-
-    protected static $udfRules = array(
-        'email'         =>  'required|email|max:250',
-        'contact'       =>  'required|numeric|digits_between:8,12');
+        'description'   =>  'max:1000',
+        'email'         =>  'required|email',
+        'contact'       =>  'required',
+        'udf'           =>  'array');
 
     protected static $captureRules = array(
-        'amount'        => 'required|numeric|max:500000');
+        'amount'        => 'required|numeric|max:500000|min:0');
+
+    protected static $modifiers = array('contact');
 
     protected static $generators = array('status');
 
-    protected static $createValidators = array('currency', 'udf');
+    protected static $createValidators = array('currency', 'contact', 'udf');
 
     protected static $sign = 'txn';
 
+    protected function modifyContact($contact)
+    {
+        if (is_string($contact) === false)
+        {
+            return;
+        }
+
+        $contact = str_replace(' ', '', $contact);
+        $contact = str_replace('-', '', $contact);
+        $contact = str_replace('(', '', $contact);
+        $contact = str_replace(')', '', $contact);
+
+        return $contact;
+    }
+
+    protected function validateContact($input)
+    {
+        $contact = $input['contact'];
+        if (is_string($contact) === false)
+        {
+            throw new Exception\FieldErrorException(
+                'Contact number can only contain numbers and + symbol',
+                ErrorCode::FIELD_ERROR_INVALID_CONTACT);
+        }
+
+        $origContact = $contact;
+
+        if ($contact[0] === '+')
+            $contact = substr($contact, 1);
+
+        if (is_numeric($contact) === false)
+        {
+            throw new Exception\FieldErrorException(
+                'Contact number can only contain digits and + symbol',
+                ErrorCode::FIELD_ERROR_INVALID_CONTACT);
+        }
+
+        if (strlen($contact) < 10)
+        {
+            throw new Exception\FieldErrorException(
+                'Contact number should have minimum 10 digits',
+                ErrorCode::FIELD_ERROR_INVALID_CONTACT);
+        }
+
+        if (strlen($contact) > 12)
+        {
+            throw new Exception\FieldErrorException(
+                'Contact number should not be greater than 12 digits, including country code',
+                ErrorCode::FIELD_ERROR_INVALID_CONTACT);
+        }
+    }
+
     /**
-     * Validates Udf fields. email and contact is
-     * currently compulsory
+     * Validates Udf
      *
      * @param  array $input  input array
      * @return void
      */
     protected function validateUdf($input)
     {
+        if (isset($input['udf']) === false)
+        {
+            $this->setField('udf', array());
+
+            return;
+        }
+
         $udf = $input['udf'];
 
         if (!is_array($udf))
         {
-            throw new BadRequestException(
+            throw new Exception\BadRequestException(
                 'Udf should be provided as an array');
         }
 
         if (count($udf) > 15)
         {
-            throw new BadRequestException('Number of fields in udf should be less than or equal to 15');
-        }
-
-        $validation = \Validator::make($udf, static::$udfRules);
-
-        if ($validation->fails())
-        {
-            throw new UdfErrorException($validation->messages());
+            throw new Exception\BadRequestException(
+                'Number of fields in udf should be less than or equal to 15');
         }
 
         foreach ($udf as $key => $value)
         {
             if (is_array($value))
-                throw new BadRequestException('Udf values themselves should not be an array');
+                throw new Exception\BadRequestException(
+                    'Udf values themselves should not be an array');
 
-            if (strlen($value) > 1024)
-                throw new BadRequestException('Udf value [' . $value .'] too large!');
+            if (strlen($value) > 256)
+                throw new Exception\BadRequestException(
+                    'Udf value [' . $value .'] too large!');
 
-            if (strlen($key) > 1024)
-                throw new BadRequestException('Udf value [' . $key .'] too large!');
+            if (strlen($key) > 256)
+                throw new Exception\BadRequestException(
+                    'Udf value [' . $key .'] too large!');
         }
     }
 
@@ -79,7 +136,8 @@ class Transaction extends EntityManager
 
         if ($currency !== "INR")
         {
-            throw new BadRequestException('Invalid currency: '.$currency.'. Only INR supported.');
+            throw new Exception\BadRequestException(
+                'Invalid currency: '.$currency.'. Only INR supported.');
         }
     }
 
@@ -102,8 +160,20 @@ class Transaction extends EntityManager
     {
         if (array_key_exists('card', $input) === false)
         {
-            throw new BadRequestException(
+            throw new Exception\BadRequestException(
                 'Transaction Exception: Card not provided');
+        }
+    }
+
+    public function build(array $input)
+    {
+        try
+        {
+            parent::build($input);
+        }
+        catch (Exception\ValidationFailureException $e)
+        {
+            throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
         }
     }
 
@@ -118,11 +188,18 @@ class Transaction extends EntityManager
                 ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
         }
 
-        $this->validateInput($input, 'capture');
+        try
+        {
+            $this->validateInput($input, 'capture');
+        }
+        catch (Exception\ValidationFailureException $e)
+        {
+            throw new BadRequestException($e->getMessageBag(), 0, $e);
+        }
 
         if ($input['amount'] > $txn->getAttribute('amount'))
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTURE_GT_AUTH);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH);
         }
     }
 }

@@ -180,45 +180,41 @@ return [
     'invalidEmailInTransaction' => [
         'request' => [
             'content' => [
-                'udf' => [
-                    'email' => 'a@c',
-                ],
+                'email' => 'abc',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => ErrorCode::UDF_ERROR_INVALID_EMAIL,
+                    'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
                     'field' => 'email',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\UdfErrorException',
-            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'class' => 'EE\Exception\FieldErrorException',
+            'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
         ],
     ],
     'invalidContactInTransaction' => [
         'request' => [
             'content' => [
-                'udf' => [
-                    'contact' => '4012',
-                ],
+                'contact' => '4012',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_CONTACT,
                     'field' => 'contact',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\UdfErrorException',
-            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'class' => 'EE\Exception\FieldErrorException',
+            'code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
         ],
     ],
 ];

@@ -2,22 +2,19 @@
 
 namespace EE\Exception;
 
-class UdfErrorException extends BaseException
+class FieldErrorException extends BaseException
 {
     use MessageFormats;
-
-    /**
-     * Card field for which the public error will be shown
-     * @var string
-     */
-    protected $cardField = null;
 
     public function __construct(
         $message = '',
         $code = '',
         \Exception $previous = null)
     {
-        $message = $this->constructStringMessage($messsage);
+        if ($this->onlyCode($message, $code, $previous))
+            return;
+
+        $message = $this->constructStringMessage($message);
 
         parent::__construct($message, $code, $previous);
 

@@ -10,7 +10,7 @@ class ErrorClass
 
     const BAD_REQUEST = 'BAD_REQUEST';
 
-    const UDF = 'UDF';
+    const FIELD = 'FIELD';
 
     const SERVER = 'SERVER';
 }

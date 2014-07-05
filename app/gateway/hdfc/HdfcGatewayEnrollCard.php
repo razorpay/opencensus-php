@@ -98,9 +98,9 @@ trait HdfcGatewayEnrollCard
         // Collect udf fields
         $data['udf1'] = 'junk';
 
-        $data['udf2'] = $txn['udf']['email'];
+        $data['udf2'] = $txn['email'];
 
-        $data['udf3'] = $txn['udf']['contact'];
+        $data['udf3'] = $txn['contact'];
 
         $data['udf4'] = 'junk';
 

@@ -1,5 +1,6 @@
 <?php
 $baseurl = "api.razorpay.com";
+//$baseurl = 'rzp';
 
 $key_id = 'd9c6bf091a1a64cb5678d8c1';
 $secret = 'thisissupersecret';
@@ -55,8 +56,8 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 		<TR>
 		<TD colspan='40'>CardHolder/Member Name:</TD>
 		<td><input type="text" name="card[name]" size="25" value="shashank"></td>
-		<td><input type="text" name="udf[email]" size="25" value="shk@gmail.com"></td>
-		<td><input type="text" name="udf[contact]" size="25" value="1234567890"></td>
+		<td><input type="text" name="email" size="25" value="shk@gmail.com"></td>
+		<td><input type="text" name="contact" size="25" value="1234567890"></td>
 		<input type="hidden" value="INR" name="currency">
 		</TR>
 		<tr>

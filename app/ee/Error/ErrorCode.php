@@ -27,7 +27,7 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_SUBSEQUENT_TRANSACTION              = 'GATEWAY_ERROR_INVALID_SUBSEQUENT_TRANSACTION';
     const GATEWAY_ERROR_SUPPORT_FAILED                              = 'GATEWAY_ERROR_SUPPORT_FAILED';
     const GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND                      = 'GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND';
-    const GATEWAY_ERROR_SUPPORT_LESS_THAN_AUTH                      = 'GATEWAY_ERROR_SUPPORT_LESS_THAN_AUTH';
+    const GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH                   = 'GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH';
     const GATEWAY_ERROR_PARES_NOT_SUCCESFUL                         = 'GATEWAY_ERROR_PARES_NOT_SUCCESFUL';
     const GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR                        = 'GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR';
     const GATEWAY_ERROR_UNKNOWN_ERROR                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
@@ -63,23 +63,22 @@ class ErrorCode
     const CARD_ERROR_INVALID_NAME                                   = 'CARD_ERROR_INVALID_NAME';
     const CARD_ERROR_INVALID_EXPIRY_MONTH                           = 'CARD_ERROR_INVALID_EXPIRY_MONTH';
     const CARD_ERROR_INVALID_EXPIRY_YEAR                            = 'CARD_ERROR_INVALID_EXPIRY_YEAR';
+    const CARD_ERROR_INVALID_EXPIRY_DATE                            = 'CARD_ERROR_INVALID_EXPIRY_DATE';
     const CARD_ERROR_INVALID_CVV                                    = 'CARD_ERROR_INVALID_CVV';
     const CARD_ERROR_INVALID_BRAND                                  = 'CARD_ERROR_INVALID_BRAND';
-    const CARD_ERROR_INVALID_AMOUNT                                 = 'CARD_ERROR_INVALID_AMOUNT';
     const CARD_ERROR_INVALID_NUMBER                                 = 'CARD_ERROR_INVALID_NUMBER';
-    const CARD_ERROR_INVALID_EXPIRY_DATE                            = 'CARD_ERROR_INVALID_EXPIRY_DATE';
     const CARD_ERROR_CARD_DECLINED                                  = 'CARD_ERROR_CARD_DECLINED';
     const CARD_ERROR_INSUFFICIENT_BALANCE                           = 'CARD_ERROR_INSUFFICIENT_BALANCE';
 
-    const UDF_ERROR_INVALID_EMAIL                                   = 'UDF_ERROR_INVALID_EMAIL';
-    const UDF_ERROR_INVALID_CONTACT                                 = 'UDF_ERROR_INVALID_CONTACT';
+    const FIELD_ERROR_INVALID_EMAIL                                 = 'FIELD_ERROR_INVALID_EMAIL';
+    const FIELD_ERROR_INVALID_CONTACT                               = 'FIELD_ERROR_INVALID_CONTACT';
 
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
     const BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED                  = 'BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED';
     const BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED                  = 'BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED';
     const BAD_REQUEST_INVALID_ID                                    = 'BAD_REQUEST_INVALID_ID';
 
-    const BAD_REQUEST_CAPTURE_GT_AUTH                               = 'BAD_REQUEST_CAPTURE_GT_AUTH';
+    const BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH                     = 'BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH';
 
     const BAD_REQUEST_ERROR                                         = 'BAD_REQUEST_ERROR';
 

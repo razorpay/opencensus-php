@@ -145,6 +145,11 @@ class Card extends EntityManager
 
     public static function modifyNumber($number)
     {
+        if (is_string($number) === false)
+        {
+            return $number;
+        }
+
         $number = str_replace(' ', '', $number);
         $number = str_replace('-', '', $number);
 

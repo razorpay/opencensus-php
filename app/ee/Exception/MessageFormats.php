@@ -12,14 +12,27 @@ trait MessageFormats
 
     protected $first = null;
 
+    protected $messageFormat = 'string';
+
+    /**
+     * If $message is either messageBag or array,
+     * then it returns a string message.
+     *
+     * @param  mixed $message
+     * @return string
+     */
     protected function constructStringMessage($message)
     {
         if ($message instanceof messageBag)
         {
+            $this->messageFormat = 'message_bag';
+
             $message = $this->handleMessageBagInstance($message);
         }
         else if (is_array($message))
         {
+            $this->messageFormat = 'array';
+
             $message = $this->handleMessageArray();
         }
 
@@ -31,6 +44,8 @@ trait MessageFormats
         if (($message === null) and
             ($code !== 0))
         {
+            $this->messageFormat = 'null';
+
             if (defined('\EE\Error\ErrorCode::'.$code) === false)
             {
                 throw new \InvalidArgumentException($code . ' is not a valid code');
@@ -136,7 +151,8 @@ trait MessageFormats
 
     protected function constructError($message, $code)
     {
-        if ($message !== null)
+        if (($message !== null) and
+            ($this->messageFormat !== 'string'))
         {
             list($field, $desc) = $this->getFirstPair();
 
@@ -171,8 +187,8 @@ trait MessageFormats
             case 'BadRequest':
                 $code = '\EE\Error\ErrorCode::BAD_REQUEST_ERROR';
                 break;
-            case 'UdfError':
-                $code = '\EE\Error\ErrorCode::UDF_ERROR_INVALID_'.strtoupper($field);
+            case 'FieldError':
+                $code = '\EE\Error\ErrorCode::FIELD_ERROR_INVALID_'.strtoupper($field);
                 break;
             case 'CardError':
                 $code = '\EE\Error\ErrorCode::CARD_ERROR_INVALID_'.strtoupper($field);

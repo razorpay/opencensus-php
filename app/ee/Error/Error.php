@@ -138,8 +138,8 @@ class Error
             case ErrorClass::CARD:
                 $this->handleCardErrors();
                 break;
-            case ErrorClass::UDF:
-                $this->handleUdfErrors();
+            case ErrorClass::FIELD:
+                $this->handleFieldErrors();
                 break;
             case ErrorClass::BAD_REQUEST:
                 $this->handleBadRequestErrors();
@@ -203,11 +203,16 @@ class Error
         {
             case ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT:
                 $this->publicError->setGatewayTimeout();
-                return;
+                break;
+
+            case ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH:
+                $this->publicError->setBadRequestError(
+                    PublicErrorDescription::BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH);
+                break;
 
             default:
                 $this->publicError->setGatewayError();
-                return;
+                break;
         }
     }
 
@@ -218,6 +223,15 @@ class Error
         $field = $this->getAttribute('field');
 
         $this->publicError->setCardError($code, $desc, $field);
+    }
+
+    protected function handleFieldErrors()
+    {
+        $code = $this->getAttribute('code');
+        $desc = $this->getAttribute('desc');
+        $field = $this->getAttribute('field');
+
+        $this->publicError->setFieldError($code, $desc, $field);
     }
 
     protected function handleServerErrors()

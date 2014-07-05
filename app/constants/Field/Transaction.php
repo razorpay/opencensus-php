@@ -24,5 +24,9 @@ class Transaction
 
     const ERROR_DESCRIPTION = 'error_description';
 
+    const EMAIL = 'email';
+
+    const CONTACT = 'contact';
+
     const UDF = 'udf';
 }
