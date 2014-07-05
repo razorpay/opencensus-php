@@ -237,6 +237,8 @@ class HdfcGateway extends BaseGateway
      */
     public function auth(array $input)
     {
+        parent::auth($input);
+
         //
         // Enroll card
         //
@@ -250,11 +252,15 @@ class HdfcGateway extends BaseGateway
 
     public function refund(array $input)
     {
+        parent::refund($input);
+
         $this->supportTxn($input, 'refund');
     }
 
     public function capture(array $input)
     {
+        parent::capture($input);
+
         $this->supportTxn($input, 'capture');
     }
 

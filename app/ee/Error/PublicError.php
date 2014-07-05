@@ -30,80 +30,76 @@ class PublicError
 
     public function setGatewayTimeout()
     {
-        $this->setErrorCode(PublicErrorCode::GATEWAY_ERROR);
-
-        $this->setDescription(PublicErrorDescription::GATEWAY_REQUEST_TIMEOUT);
-
-        $this->setHttpStatusCode(504);
+        $this->setAttributes(
+            PublicErrorCode::GATEWAY_ERROR,
+            PublicErrorDescription::GATEWAY_REQUEST_TIMEOUT,
+            504);
     }
 
     public function setGatewayError($httpStatusCode = 502)
     {
-        $this->error['code'] = PublicErrorCode::GATEWAY_ERROR;
-
-        $this->setDescription(PublicErrorDescription::GATEWAY_ERROR);
-
-        $this->setHttpStatusCode($httpStatusCode);
+        $this->setAttributes(
+            PublicErrorCode::GATEWAY_ERROR,
+            PublicErrorDescription::GATEWAY_ERROR,
+            $httpStatusCode);
     }
 
     public function setServerError()
     {
-        $this->setErrorCode(PublicErrorCode::SERVER_ERROR);
-
-        $this->setDescription(PublicErrorDescription::SERVER_ERROR);
-
-        $this->httpStatusCode = 500;
+        $this->setAttributes(
+            PublicErrorCode::SERVER_ERROR,
+            PublicErrorDescription::SERVER_ERROR,
+            500);
     }
 
     public function setBadRequestError($description, $field = null)
     {
-        $this->setErrorCode(PublicErrorCode::BAD_REQUEST_ERROR);
-
-        $this->setErrorDescription($description);
+        $this->setAttributes(
+            PublicErrorCode::BAD_REQUEST_ERROR,
+            $description,
+            400);
 
         $this->setField($field);
-
-        $this->setHttpStatusCode(400);
     }
 
     public function setCardError($code, $desc, $field = null)
     {
-        if (defined(__NAMESPACE__.'\PublicErrorCode::'.$code) === false)
-        {
-            throw new \EE\Exception\InvalidArgumentException(
-                $code . ' not a valid public errorcode');
-        }
-
-        $this->setErrorCode($code);
-
-        $this->setErrorDescription($desc);
-
-        if ($field !== null)
-            $this->setField($field);
-
-        $this->setHttpStatusCode(400);
+        $this->setAttributes(
+            $code,
+            $desc,
+            400,
+            $field);
     }
 
     public function setFieldError($code, $desc, $field = null)
     {
-        if (defined(__NAMESPACE__.'\PublicErrorCode::'.$code) === false)
+        $this->setAttributes(
+            $code,
+            $desc,
+            400,
+            $field);
+    }
+
+    protected function setAttributes($code, $description, $httpStatusCode, $field = null)
+    {
+        $this->setErrorCode($code);
+
+        $this->setDescription($description);
+
+        $this->setHttpStatusCode($httpStatusCode);
+
+        if ($field !== null)
+            $this->setField($field);
+    }
+
+    public function setErrorCode($code)
+    {
+        if (defined(__NAMESPACE__.'\PublicErrorCode::'.strtoupper($code)) === false)
         {
             throw new \EE\Exception\InvalidArgumentException(
                 $code . ' not a valid public errorcode');
         }
 
-        $this->setErrorCode($code);
-
-        $this->setErrorDescription($desc);
-
-        if ($field !== null)
-            $this->setField($field);
-
-        $this->setHttpStatusCode(400);
-    }
-
-    public function setErrorCode($code)
-    {
         $this->error['code'] = $code;
     }
 

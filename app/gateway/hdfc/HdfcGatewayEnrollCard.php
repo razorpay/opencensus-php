@@ -2,7 +2,8 @@
 
 namespace Gateway\HdfcGateway;
 
-use EE\Exception\InvalidArgumentException;
+use EE\Exception;
+use Models\Manager\CardNetwork;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -47,9 +48,6 @@ trait HdfcGatewayEnrollCard
             $this->throwException($this->enrollResponse['error']['code']);
         }
 
-        // Checks and sets eci if needed
-        $this->checkAndSetEci();
-
         //
         // Checks for enroll result.
         //
@@ -64,6 +62,11 @@ trait HdfcGatewayEnrollCard
 
             $this->throwException($this->enrollResponse['error']['code']);
         }
+
+        //
+        // Checks and sets eci if needed
+        //
+        $this->checkAndSetEci();
 
         $this->validateEnrollResponse();
 
@@ -106,7 +109,9 @@ trait HdfcGatewayEnrollCard
 
         $data['udf5'] = 'junk';
 
+        //
         // Collect fields related to the card
+        //
         $this->mapKeys($card, $this->cardKeyMappings, $data);
 
         //
@@ -125,7 +130,8 @@ trait HdfcGatewayEnrollCard
 
         if ($trackid !== $this->id)
         {
-            throw new InvalidArgumentException('Gateway Exception: Track id do not match');
+            throw new Exception\LogicException(
+                'Gateway Exception: Track id do not match');
         }
     }
 
@@ -167,7 +173,7 @@ trait HdfcGatewayEnrollCard
 
     /**
      * Get the fields from xml response
-     * of the enrolling crad
+     * of the enrolling card
      */
     protected function parseEnrollResponseEci()
     {
@@ -186,7 +192,56 @@ trait HdfcGatewayEnrollCard
     {
         $eci = &$this->enrollResponse['data']['eci'];
 
+        //
+        // Set to 7 if it's null, that is we didn't receive a value.
+        //
         $eci = (($eci === null) or ($eci === '')) ? '7' : $eci;
+
+        //
+        // If Visa/Diners Card Type is NOT Enrolled – Value
+        // “06”
+        // If MasterCard/Maestro Card Type is NOT Enrolled –
+        // value “1”
+        //
+
+        $network = $this->input['card']['network'];
+        $enroll = $this->enrollResponse['data']['enroll_result'];
+
+        $notEnrolled = ($enroll === HdfcGatewayResult::NOT_ENROLLED);
+
+        //
+        // ECI checks only valid for NOT_ENROLLED cases
+        //
+        if ($notEnrolled === false)
+            return;
+
+        $visaOrDiners = (($network === CardNetwork::VISA) or
+                         ($network === CardNetwork::DINERS_CLUB));
+
+        if ($visaOrDiners)
+        {
+            //
+            // For visa and diners, eci should be 6.
+            //
+            if ($eci === '6')
+                return;
+
+            throw new Exception\LogicException('eci value should be 6');
+        }
+
+        $masterCardOrMaestro = (($network === CardNetwork::MASTERCARD) or
+                                ($network === CardNetwork::MAESTRO));
+
+        if ($masterCardOrMaestro)
+        {
+            //
+            // For mastercard and maestro, eci should be 1.
+            //
+            if ($eci === '1')
+                return;
+
+            throw new Exception\LogicException('eci value should be 1');
+        }
     }
 
     /**
@@ -255,7 +310,7 @@ trait HdfcGatewayEnrollCard
                 break;
 
             default:
-                throw new \LogicException('Should not reach here');
+                throw new Exception\LogicException('Should not reach here');
         }
 
         $this->trace(
