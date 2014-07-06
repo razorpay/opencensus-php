@@ -9,24 +9,33 @@ class Card
 {
     protected $manager = null;
 
+    protected $card = null;
+
     public function create($input)
     {
-        $input['number'] = Manager\Card::modifyNumber($input['number']);
-
         $this->validateAndFillNetworkDetails($input);
 
         $data = $this->manager->getData();
 
-        $card = DAL\Card::createOrFail($data);
+        $card = new DAL\Card($data);
+
+        $this->card = $card;
+
+        $this->checkNetwork($card, $input['number']);
 
         return $card;
+    }
+
+    public function getCard()
+    {
+        return $this->card;
     }
 
     public function createAndReturnWithSensitiveData($input)
     {
         $card = $this->create($input);
 
-        $input['number'] = Manager\Card::modifyNumber($input['number']);
+        Manager\Card::modifyNumber($input);
 
         return array_merge(
             $card->toArray(),
@@ -41,5 +50,17 @@ class Card
         $details = DAL\CardDetail::retrieveDetails($this->manager->getField('number'));
 
         $this->manager->fillNetworkDetails($details);
+    }
+
+    public function checkNetwork($card, $number)
+    {
+        $network = $card->getNetwork();
+
+        if ($network === null)
+        {
+            $iin = substr($number, 0, 6);
+
+            DAL\UnrecognizedCard::create(['iin' => $iin]);
+        }
     }
 }

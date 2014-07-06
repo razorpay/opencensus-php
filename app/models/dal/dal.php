@@ -3,7 +3,7 @@
 namespace Models\DAL;
 
 use EE\Error\ErrorCode;
-use EE\Exception\DbQueryException;
+use EE\Exception;
 
 class DAL extends \Eloquent
 {
@@ -53,7 +53,7 @@ class DAL extends \Eloquent
                 'attributes' => $attributes,
                 'operation' => 'create');
 
-        throw new DbQueryException($e);
+        throw new Exception\DbQueryException($e);
     }
 
     public static function findOrFail($id, $columns = array('*'))
@@ -65,7 +65,7 @@ class DAL extends \Eloquent
                 'attributes' => $id,
                 'operation' => 'find');
 
-        throw new DbQueryException($e);
+        throw new Exception\DbQueryException($e);
     }
 
     public static function findOrFailPublic($id, $columns = array('*'))
@@ -77,7 +77,7 @@ class DAL extends \Eloquent
                 'attributes' => $id,
                 'operation' => 'find');
 
-        throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
     }
 
     protected function getDateFormat()
@@ -97,5 +97,40 @@ class DAL extends \Eloquent
         {
             return parent::asDateTime($value);
         }
+    }
+
+    /**
+     * Save the model to the database.
+     *
+     * @param  array  $options
+     */
+    public function saveOrFail(array $options = array())
+    {
+        $saved = parent::save($options);
+
+        if ($saved === true)
+            return;
+
+        $e = array(
+                'model' => get_called_class(),
+                'attributes' => $this->attributes,
+                'operation' => 'save');
+
+        throw new Exception\DbQueryException($e);
+    }
+
+    public function pushOrFail()
+    {
+        $pushed = parent::push();
+
+        if ($pushed === true)
+            return;
+
+        $e = array(
+                'model' => get_called_class(),
+                'attributes' => $this->attributes,
+                'operation' => 'push');
+
+        throw new Exception\DbQueryException($e);
     }
 }

@@ -12,11 +12,16 @@ $amount = $_POST['amount'];
 
 $transaction = $api->transaction->get($id);
 
-if($amount === $transaction->amount && $transaction->error === '' && $transaction->status === 'auth')
+if (($amount === $transaction->amount) and
+    ($transaction->error_code === '') and
+    ($transaction->status === 'auth'))
 {
-	//Transaction was successful
-	//Do your server side handling
-	echo json_encode($transaction);
+	//
+    // Transaction was successful
+	// Do your server side handling
+    //
+
+    echo json_encode($transaction);
 }
 else
 {

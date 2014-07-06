@@ -16,6 +16,7 @@ class Token extends UniqueIdDal
     protected $appends = array('object');
 
     protected $fillable = array(
+        Field\Token::ID,
         Field\Token::CARD_ID,
         Field\Common::MERCHANT_ID,
         Field\Token::EXPIRED);

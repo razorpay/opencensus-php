@@ -13,11 +13,10 @@ class Card extends UniqueIdDal
     protected $entity = 'card';
 
     protected $fillable = array(
+        Field\Card::ID,
         Field\Card::NAME,
-
         Field\Card::EXPIRY_MONTH,
         Field\Card::EXPIRY_YEAR,
-
         Field\Card::LAST4,
         Field\Card::NETWORK,
         Field\Card::COUNTRY,
@@ -44,4 +43,9 @@ class Card extends UniqueIdDal
         Field\Card::EXPIRY_YEAR,
         Field\Card::LAST4,
         Field\Card::NETWORK);
+
+    public function getNetwork()
+    {
+        return $this->getAttribute(Field\Card::NETWORK);
+    }
 }

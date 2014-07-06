@@ -6,10 +6,9 @@ use Utility;
 class Token extends EntityManager
 {
     protected static $createRules = array(
-        'merchant_id' => 'required|numeric',
-        'card_id'     => 'required');
+        'merchant_id' => 'required|numeric');
 
-    protected static $generators = array('token', 'expired');
+    protected static $generators = array('token', 'expired', 'id');
 
     private static $TOKEN_LEN = \Constants\Fields::ID_LENGTH;
 

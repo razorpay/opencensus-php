@@ -13,7 +13,6 @@ use Models\Manager;
 use Models\Manager\TransactionStatus;
 use Models\Manager\TransactionAction;
 
-
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -50,22 +49,20 @@ class Transaction
         //
         // Creates card entity. But since we don't store
         // number and cvv for now, we get back a card data
-        // array instead of DAL\Card with number and cvv inserted
-        // after storing card details (DAL\Card)
+        // array contianing DAL\Card with number and cvv
         //
-        $cardData = (new Card)->createAndReturnWithSensitiveData($input['card']);
+        $cardCore = new Card();
+
+        $cardData = $cardCore->createAndReturnWithSensitiveData($input['card']);
+
+        $card = $cardCore->getCard();
 
         //
-        // Create token. Links to card id and merchant id
+        // Create token. Links merchant id and card
         //
         $token = (new Token)->create(
                     $input['merchant_id'],
-                    $cardData['id']);
-
-        //
-        //  Links txn input to token id
-        //
-        $txnInput['token_id'] = $token->getKey();
+                    $card);
 
         //
         // Remove card key from input. Isn't needed
@@ -73,26 +70,45 @@ class Transaction
         unset($txnInput['card']);
 
         //
-        // Create txn entity and saves
+        // Create txn entity
         //
-        $txn = $this->create($txnInput);
+        $txn = $this->create($txnInput, $token);
+
+        $this->saveEntities($txn);
 
         return array($txn, $cardData);
+    }
+
+    protected function saveEntities(DAL\Transaction $txn)
+    {
+        $txn->token->card->saveOrFail();
+
+        $txn->token->saveOrFail();
+
+        $txn->saveOrFail();
     }
 
     /**
      * Creates an entry for a new transaction
      *
-     * @param  array    $input  Input relevant to creating
-     *                          a txn row in db
+     * @param  array     $input  Input relevant to creating
+     *                           a txn row in db
+     * @param  DAL\Token $token  Token
      *
-     * @return DAL\Transaction  A DAL\Transaction object
+     * @return DAL\Transaction   A DAL\Transaction object
      */
-    public function create($input)
+    public function create($input, DAL\Token $token)
     {
         $data = Manager\Transaction::createValidate($input)->getData();
 
-        return DAL\Transaction::createOrFail($data);
+        $txn = new DAL\Transaction($data);
+
+        //
+        // Assoicate transaction to token
+        //
+        $txn->token()->associate($token);
+
+        return $txn;
     }
 
     /**

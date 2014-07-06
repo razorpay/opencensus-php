@@ -24,6 +24,7 @@ class Transaction extends UniqueIdDal
         'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled');
 
     protected $fillable = array(
+        Field\Transaction::ID,
         Field\Common::MERCHANT_ID,
         Field\Transaction::TOKEN_ID,
         Field\Transaction::STATUS,

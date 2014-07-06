@@ -7,15 +7,15 @@ use Models\DAL;
 
 class Token
 {
-    public function create($merchantId, $cardId)
+    public function create($merchantId, DAL\Card $card)
     {
         $input['merchant_id'] = $merchantId;
 
-        $input['card_id'] = $cardId;
-
         $data = Manager\Token::createValidate($input)->getData();
 
-        $token = DAL\Token::createOrFail($data);
+        $token = new DAL\Token($data);
+
+        $token->card()->associate($card);
 
         return $token;
     }

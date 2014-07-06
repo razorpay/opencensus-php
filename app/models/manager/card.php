@@ -35,9 +35,9 @@ class Card extends EntityManager
 
     protected static $createValidators = array('expiry_date');
 
-    protected static $modifiers = array('expiry_year');
+    protected static $modifiers = array('expiry_year', 'number');
 
-    protected static $generators = array('last4');
+    protected static $generators = array('last4', 'id');
 
     public function build(array $input)
     {
@@ -128,6 +128,21 @@ class Card extends EntityManager
 
         if ($details)
         {
+            if ($network === null)
+            {
+                if ($details['brand'] !== null)
+                {
+                    $brand = strtolower($details['brand']);
+
+                    $this->setField('brand', $brand);
+
+                    // trace here
+                }
+                else
+                {
+                    // trace here
+                }
+            }
             $arr = array(
                 'type' => $details['card_type'],
                 'bank' => $details['bank'],
@@ -143,8 +158,10 @@ class Card extends EntityManager
         }
     }
 
-    public static function modifyNumber($number)
+    public static function modifyNumber(& $input)
     {
+        $number = $input['number'];
+
         if (is_string($number) === false)
         {
             return $number;
@@ -153,6 +170,6 @@ class Card extends EntityManager
         $number = str_replace(' ', '', $number);
         $number = str_replace('-', '', $number);
 
-        return $number;
+        $input['number'] = $number;
     }
 }

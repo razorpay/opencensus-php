@@ -12,7 +12,6 @@ class Transaction extends EntityManager
         'merchant_id'   =>  'required|numeric',
         'amount'        =>  'required|numeric|max:500000|min:0',
         'currency'      =>  'required|max:3',
-        'token_id'      =>  'required|alpha_num',
         'description'   =>  'max:1000',
         'email'         =>  'required|email',
         'contact'       =>  'required',
@@ -23,7 +22,7 @@ class Transaction extends EntityManager
 
     protected static $modifiers = array('contact');
 
-    protected static $generators = array('status');
+    protected static $generators = array('status', 'id');
 
     protected static $createValidators = array('currency', 'contact', 'udf');
 

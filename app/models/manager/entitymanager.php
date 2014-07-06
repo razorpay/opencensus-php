@@ -262,4 +262,9 @@ class EntityManager
         //
         $id = substr($id, $len + 1);
     }
+
+    public function generateId($input)
+    {
+        $this->setField('id', UniqueId::generateId());
+    }
 }
