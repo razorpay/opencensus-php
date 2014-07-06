@@ -17,4 +17,6 @@ class Table
     const KEY = 'keys';
 
     const IIN = 'iins';
+
+    const UNRECOGNIZED_CARD = 'unrecognized_cards';
 }

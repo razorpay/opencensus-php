@@ -22,6 +22,7 @@ class PublicErrorCode
     const CARD_ERROR_INVALID_EXPIRY_DATE                            = 'CARD_ERROR_INVALID_EXPIRY_DATE';
     const CARD_ERROR_CARD_DECLINED                                  = 'CARD_ERROR_CARD_DECLINED';
     const CARD_ERROR_INSUFFICIENT_BALANCE                           = 'CARD_ERROR_INSUFFICIENT_BALANCE';
+    const CARD_ERROR_NOT_SUPPORTED                                  = 'CARD_ERROR_NOT_SUPPORTED';
 
     const FIELD_ERROR_INVALID_EMAIL                                 = 'FIELD_ERROR_INVALID_EMAIL';
     const FIELD_ERROR_INVALID_CONTACT                               = 'FIELD_ERROR_INVALID_CONTACT';

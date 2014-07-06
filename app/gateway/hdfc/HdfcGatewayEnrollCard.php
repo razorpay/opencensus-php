@@ -198,10 +198,8 @@ trait HdfcGatewayEnrollCard
         $eci = (($eci === null) or ($eci === '')) ? '7' : $eci;
 
         //
-        // If Visa/Diners Card Type is NOT Enrolled – Value
-        // “06”
-        // If MasterCard/Maestro Card Type is NOT Enrolled –
-        // value “1”
+        // If Visa/Diners Card Type is NOT Enrolled – Value “6”
+        // If MasterCard/Maestro Card Type is NOT Enrolled – value “1”
         //
 
         $network = $this->input['card']['network'];
@@ -210,7 +208,7 @@ trait HdfcGatewayEnrollCard
         $notEnrolled = ($enroll === HdfcGatewayResult::NOT_ENROLLED);
 
         //
-        // ECI checks only valid for NOT_ENROLLED cases
+        // ECI checks only need to be done for NOT_ENROLLED cases
         //
         if ($notEnrolled === false)
             return;
@@ -252,7 +250,6 @@ trait HdfcGatewayEnrollCard
      * 'ENROLLED' and 'NOT ENROLLED' then we
      * consider enroll as failed and set an error
      * message to that effect
-     *
      *
      * @return void
      */

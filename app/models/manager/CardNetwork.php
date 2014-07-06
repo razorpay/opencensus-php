@@ -2,23 +2,26 @@
 
 namespace Models\Manager;
 
+use EE\Error\ErrorCode;
+use EE\Exception;
+
 class CardNetwork
 {
-    const MASTERCARD = 'mastercard';
+    const MASTERCARD = 'MasterCard';
 
-    const VISA = 'visa';
+    const VISA = 'Visa';
 
-    const RUPAY = 'rupay';
+    const RUPAY = 'RuPay';
 
-    const MAESTRO = 'maestro';
+    const MAESTRO = 'Maestro';
 
     const AMEX = 'amex';
 
-    const JCB = 'jcb';
+    const JCB = 'JCB';
 
-    const DINERS_CLUB = 'diners club';
+    const DINERS_CLUB = 'Diners Club';
 
-    const DISCOVER = 'discover';
+    const DISCOVER = 'Discover';
 
     public static $maestroFirstFour = array(
         '5018',
@@ -44,8 +47,14 @@ class CardNetwork
         self::MAESTRO => null,
         self::RUPAY => null);
 
+    public static $unsupportedNetworks = array(
+        self::AMEX,
+        self::JCB);
+
     public static function detectNetwork($number)
     {
+        $cardNetwork = null;
+
         foreach (self::$networks as $network => $regex)
         {
             if ($regex === null)
@@ -53,7 +62,8 @@ class CardNetwork
                 $func = 'is'.studly_case($network);
                 if (self::{$func}($number) === true)
                 {
-                    return $network;
+                    $cardNetwork = $network;
+                    break;
                 }
             }
             else
@@ -61,7 +71,18 @@ class CardNetwork
                 $ret =  preg_match($regex, $number);
 
                 if ($ret === 1)
-                    return $network;
+                {
+                    $cardNetwork = $network;
+                    break;
+                }
+            }
+        }
+
+        if ($cardNetwork !== null)
+        {
+            if (in_array($cardNetwork, self::$unsupportedNetworks))
+            {
+                throw new Exception\CardErrorException(ErrorCode::CARD_ERROR_NOT_SUPPORTED);
             }
         }
     }

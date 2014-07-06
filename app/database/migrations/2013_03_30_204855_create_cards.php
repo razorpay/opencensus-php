@@ -31,7 +31,8 @@ class CreateCards extends Migration {
 
             $table->char(Card::LAST4, 4);
 
-            $table->string(Card::NETWORK);
+            $table->string(Card::NETWORK)
+                  ->nullable();
 
             $table->string(Card::TYPE, 6);
 
@@ -73,7 +74,6 @@ class CreateCards extends Migration {
             // Adds created_at and updated_at columns to the table
             $table->integer(Common::CREATED_AT);
             $table->integer(Common::UPDATED_AT);
-
         });
     }
 

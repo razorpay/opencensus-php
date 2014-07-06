@@ -97,7 +97,7 @@ if (! function_exists('print_last_query'))
 
         $last_query = end($queries);
 
-        echo $last_query;
+        var_dump($last_query);
     }
 }
 

@@ -25,8 +25,8 @@ class PublicErrorDescription
     const CARD_ERROR_INSUFFICIENT_BALANCE =
         'The card has insufficient balance';
 
-    const GATEWAY_ERROR_INVALID_AMOUNT =
-        'The amount provided is invalid';
+    const CARD_ERROR_NOT_SUPPORTED =
+        'Card network not currently supported';
 
     const BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED =
         'This transaction has already been captured';
