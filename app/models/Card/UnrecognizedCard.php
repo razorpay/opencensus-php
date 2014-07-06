@@ -1,10 +1,8 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\Card;
 
-use Constants\Field;
-
-class UnrecognizedCard extends DAL
+class Unrecognized extends Eloquent
 {
     protected $table = \Constants\Table::UNRECOGNIZED_CARD;
 

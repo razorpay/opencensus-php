@@ -1,12 +1,37 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\Transaction;
 
-use \Constants\Field;
-use \Models\Manager\TransactionStatus;
+use EE\Exception;
 
 class Transaction extends UniqueIdDal
 {
+
+    const ID = Common::ID;
+
+    const AUTH_AMOUNT = 'auth_amount';
+
+    const AMOUNT = 'amount';
+
+    const STATUS = 'status';
+
+    const CURRENCY = 'currency';
+
+    const DESCRIPTION = 'description';
+
+    const TOKEN_ID = 'token_id';
+
+    const HOLD = 'hold';
+
+    const ERROR_CODE = 'error_code';
+
+    const ERROR_DESCRIPTION = 'error_description';
+
+    const EMAIL = 'email';
+
+    const CONTACT = 'contact';
+
+    const UDF = 'udf';
 
     protected $table = \Constants\Table::TRANSACTION;
 
@@ -24,33 +49,33 @@ class Transaction extends UniqueIdDal
         'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled');
 
     protected $fillable = array(
-        Field\Transaction::ID,
-        Field\Common::MERCHANT_ID,
-        Field\Transaction::TOKEN_ID,
-        Field\Transaction::STATUS,
-        Field\Transaction::AUTH_AMOUNT,
-        Field\Transaction::AMOUNT,
-        Field\Transaction::CURRENCY,
-        Field\Transaction::DESCRIPTION,
-        Field\Transaction::EMAIL,
-        Field\Transaction::CONTACT,
-        Field\Transaction::UDF);
+        self::ID,
+        self::MERCHANT_ID,
+        self::TOKEN_ID,
+        self::STATUS,
+        self::AUTH_AMOUNT,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::DESCRIPTION,
+        self::EMAIL,
+        self::CONTACT,
+        self::UDF);
 
     protected $visible = array(
-        Field\Transaction::ID,
-        Field\Transaction::AMOUNT,
-        Field\Transaction::CURRENCY,
-        Field\Transaction::EMAIL,
-        Field\Transaction::CONTACT,
+        self::ID,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::EMAIL,
+        self::CONTACT,
         // 'livemode',
-        Field\Transaction::STATUS,
-        Field\Transaction::UDF,
-        Field\Transaction::ERROR_CODE,
-        Field\Transaction::ERROR_DESCRIPTION,
-        Field\Common::CREATED_AT,
-        Field\Common::UPDATED_AT);
+        self::STATUS,
+        self::UDF,
+        self::ERROR_CODE,
+        self::ERROR_DESCRIPTION,
+        self::CREATED_AT,
+        self::UPDATED_AT);
 
-    protected $guarded = array(Field\Transaction::ID);
+    protected $guarded = array(self::ID);
 
     protected function getUdfAttribute($udf)
     {
@@ -59,19 +84,19 @@ class Transaction extends UniqueIdDal
 
     public function setUdfAttribute($value)
     {
-        $this->attributes[Field\Transaction::UDF] = serialize($value);
+        $this->attributes[self::UDF] = serialize($value);
     }
 
     public function setCaptureAmount($amount)
     {
-        $this->setAttribute(Field\Transaction::AMOUNT, $amount);
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 
     public function setAuthAmount()
     {
-        $authAmount = $this->getAttribute(Field\Transaction::AMOUNT);
+        $authAmount = $this->getAttribute(self::AMOUNT);
 
-        $this->setAttribute(Field\Transaction::AUTH_AMOUNT, $authAmount);
+        $this->setAttribute(self::AUTH_AMOUNT, $authAmount);
     }
 
     const FETCH_WITH_CARD       = 0x1024;
@@ -86,7 +111,7 @@ class Transaction extends UniqueIdDal
     {
         if ($param === null)
         {
-            throw new \InvalidArgumentException('$param not provided');
+            throw new Exception\InvalidArgumentException('$param not provided');
         }
         self::validateFetchParams($param);
 
@@ -95,22 +120,22 @@ class Transaction extends UniqueIdDal
         /*
          * Create the query.
          */
-        $query = self::where(Field\Common::MERCHANT_ID, '=', $param['merchant_id'])
-                     ->orderBy(Field\Common::UPDATED_AT, 'desc');
+        $query = self::where(self::MERCHANT_ID, '=', $param['merchant_id'])
+                     ->orderBy(self::UPDATED_AT, 'desc');
 
         if (isset($param['from']))
         {
-            $query = $query->where(Field\Common::UPDATED_AT, '>=', $param['from']);
+            $query = $query->where(self::UPDATED_AT, '>=', $param['from']);
         }
 
         if (isset($param['to']))
         {
-            $query = $query->where(Field\Common::UPDATED_AT, '<=', $param['to']);
+            $query = $query->where(self::UPDATED_AT, '<=', $param['to']);
         }
 
         if (isset($param['status']))
         {
-            $query = $query->where(Field\Transaction::STATUS, '=', $param['status']);
+            $query = $query->where(self::STATUS, '=', $param['status']);
         }
 
         if (isset($param['count']))
@@ -147,37 +172,37 @@ class Transaction extends UniqueIdDal
 
     public function isProcessed()
     {
-        return ($this->getAttribute(Field\Transaction::STATUS) == TransactionStatus::AUTH);
+        return ($this->getAttribute(self::STATUS) == Status::AUTH);
     }
 
     public function isCaptured()
     {
-        return ($this->getAttribute(Field\Transaction::STATUS) == TransactionStatus::CAPTURED);
+        return ($this->getAttribute(self::STATUS) == Status::CAPTURED);
     }
 
     public function isRefunded()
     {
-        return ($this->getAttribute(Field\Transaction::STATUS) == TransactionStatus::REFUNDED);
+        return ($this->getAttribute(self::STATUS) == Status::REFUNDED);
     }
 
     public function isFailed()
     {
-        return ($this->getAttribute(Field\Transaction::STATUS) == TransactionStatus::FAILED);
+        return ($this->getAttribute(self::STATUS) == Status::FAILED);
     }
 
     protected function isStatus($status)
     {
-        return ($this->getAttribute(Field\Transaction::STATUS) == $status);
+        return ($this->getAttribute(self::STATUS) == $status);
     }
 
     public function setStatus($status)
     {
-        $this->setAttribute(Field\Transaction::STATUS, $status);
+        $this->setAttribute(self::STATUS, $status);
     }
 
     public function setStatusAndSave($status)
     {
-        $this->setAttribute(Field\Transaction::STATUS, $status);
+        $this->setAttribute(self::STATUS, $status);
         $this->save();
     }
 
@@ -188,7 +213,7 @@ class Transaction extends UniqueIdDal
 
     public function getMerchantId()
     {
-        return (int)$this->getAttribute(Field\Common::MERCHANT_ID);
+        return (int)$this->getAttribute(self::MERCHANT_ID);
     }
 
     public function toArrayWithCard()
@@ -199,14 +224,14 @@ class Transaction extends UniqueIdDal
 
         if ($token === null)
         {
-            throw new LogicException(ErrorCode::SERVER_ERROR_ASSOCIATED_TOKEN_NOT_FOUND);
+            throw new Exception\LogicException(ErrorCode::SERVER_ERROR_ASSOCIATED_TOKEN_NOT_FOUND);
         }
 
         $card = $token->card()->first();
 
         if ($card === null)
         {
-            throw new LogicException(ErrorCode::SERVER_ERROR_ASSOCIATED_CARD_NOT_FOUND);
+            throw new Exception\LogicException(ErrorCode::SERVER_ERROR_ASSOCIATED_CARD_NOT_FOUND);
         }
 
         $cardData = $card->toArray();
@@ -224,7 +249,7 @@ class Transaction extends UniqueIdDal
     public static function updateProcessed($id)
     {
         $txn = static::where('id', $id)
-                    ->update(array(Field\Transaction::STATUS => 'auth'));
+                    ->update(array(self::STATUS => 'auth'));
     }
 
     public function token()
@@ -240,19 +265,19 @@ class Transaction extends UniqueIdDal
 
     public function setError($code, $desc)
     {
-        $this->setAttribute(Field\Transaction::ERROR_CODE, $code);
-        $this->setAttribute(Field\Transaction::ERROR_DESCRIPTION, $desc);
+        $this->setAttribute(self::ERROR_CODE, $code);
+        $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
     }
 
     public static function findByIdAndMerchantId($id, $merchantId)
     {
-        return static::where(Field\Common::MERCHANT_ID, $merchantId)
+        return static::where(self::MERCHANT_ID, $merchantId)
                      ->find($id);
     }
 
     public static function findByIdAndMerchantIdOrFailPublic($id, $merchantId)
     {
-        $txn = static::where(Field\Common::MERCHANT_ID, $merchantId)
+        $txn = static::where(self::MERCHANT_ID, $merchantId)
                      ->find($id);
 
         if ($txn === null)
@@ -262,7 +287,7 @@ class Transaction extends UniqueIdDal
                 'attributes' => $id,
                 'operation' => 'find');
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
         return $txn;
@@ -272,7 +297,7 @@ class Transaction extends UniqueIdDal
     {
         $txn = self::with('token')
                    ->merchantId($merchantId)
-                   ->where(Field\Transaction::ID, '=', $id)
+                   ->where(self::ID, '=', $id)
                    ->first();
 
         if (($txn !== null) and
@@ -286,7 +311,7 @@ class Transaction extends UniqueIdDal
 
     public function scopeMerchantId($query, $merchantId)
     {
-        return $query->where(Field\Common::MERCHANT_ID,'=',$merchantId);
+        return $query->where(self::MERCHANT_ID,'=',$merchantId);
     }
 
     public function toArrayTraceRelevant()
@@ -296,12 +321,12 @@ class Transaction extends UniqueIdDal
         $relevantData = array();
 
         $fields = array(
-            Field\Transaction::ID,
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::TOKEN_ID,
-            Field\Transaction::STATUS,
-            Field\Transaction::AMOUNT,
-            Field\Transaction::ERROR_CODE);
+            self::ID,
+            self::MERCHANT_ID,
+            self::TOKEN_ID,
+            self::STATUS,
+            self::AMOUNT,
+            self::ERROR_CODE);
 
         $relevantData = array_intersect_key($data, array_flip($fields));
 

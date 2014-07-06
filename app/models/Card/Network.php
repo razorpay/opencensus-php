@@ -1,11 +1,11 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Card;
 
 use EE\Error\ErrorCode;
 use EE\Exception;
 
-class CardNetwork
+class Network
 {
     const MASTERCARD = 'MasterCard';
 

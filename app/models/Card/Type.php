@@ -1,11 +1,8 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Card;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
-
-class CardType
+class Type
 {
    const CREDIT = 'credit';
 

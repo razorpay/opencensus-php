@@ -1,11 +1,11 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\Card;
 
 use \Constants\Table;
 use \Constants\Field\IIN;
 
-class CardDetail extends DAL
+class Detail extends Eloquent
 {
     protected $table = Table::IIN;
 
@@ -21,10 +21,12 @@ class CardDetail extends DAL
     {
         if (strlen($iin) > 6)
         {
-            $iin = intval(substr($iin, 0, 6)); 
+            $iin = intval(substr($iin, 0, 6));
         }
 
+        //
         // retrieve card details
+        //
         $cardDetails = self::find($iin);
 
         return $cardDetails;

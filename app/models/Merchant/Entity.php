@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\Merchant;
 
 use \Constants\Field;
 

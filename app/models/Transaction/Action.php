@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Transaction;
 
-class TransactionAction
+class Action
 {
     const AUTH = 'auth';
     const CALLBACK = 'callback';

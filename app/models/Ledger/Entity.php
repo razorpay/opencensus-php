@@ -1,23 +1,33 @@
 <?php
 
-namespace Models\DAL;
-
-use \Constants\Field;
+namespace Models\Ledger;
 
 class Ledger extends UniqueIdDal
 {
+    const ID = Common::ID;
+
+    const AMOUNT = 'amount';
+
+    const ACTION = 'action';
+
+    const FEE = 'fee';
+
+    const BALANCE = 'balance';
+
+    const PENDING = 'pending';
+
     protected $table = \Constants\Table::LEDGER;
 
     protected $sign = 'lgr';
 
     protected $fillable = array(
         'ref',
-        Field\Ledger::ACTION,
-        Field\Common::MERCHANT_ID,
-        Field\Ledger::AMOUNT,
-        Field\Ledger::PENDING,
-        Field\Ledger::FEE,
-        Field\Ledger::BALANCE);
+        self::ACTION,
+        self::MERCHANT_ID,
+        self::AMOUNT,
+        self::PENDING,
+        self::FEE,
+        self::BALANCE);
 
     public static function updateRecords($txn)
     {
@@ -38,9 +48,9 @@ class Ledger extends UniqueIdDal
             $data = array(
                 'ref'           => $txn->id,
                 Field\Common::MERCHANT_ID   => $merchant->id,
-                Field\Ledger::ACTION        => 'capture',
-                Field\Ledger::FEE           => $fee,
-                Field\Ledger::BALANCE       => $merchant->amount);
+                self::ACTION        => 'capture',
+                self::FEE           => $fee,
+                self::BALANCE       => $merchant->amount);
 
             $ledger = static::createOrFail($data);
         });

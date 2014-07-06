@@ -1,8 +1,8 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Transaction;
 
-class TransactionStatus
+class Status
 {
 	const OPEN = 'open';
 	const AUTH = 'auth';

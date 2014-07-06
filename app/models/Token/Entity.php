@@ -1,11 +1,16 @@
 <?php
 
-namespace Models\DAL;
-
-use Constants\Field;
+namespace Models\Token;
 
 class Token extends UniqueIdDal
 {
+    const ID = Common::ID;
+
+    const MERCHANT_ID = Common::MERCHANT_ID;
+
+    const EXPIRED = 'expired';
+
+    const CARD_ID = 'card_id';
 
     protected $table = \Constants\Table::TOKEN;
 
@@ -16,19 +21,19 @@ class Token extends UniqueIdDal
     protected $appends = array('object');
 
     protected $fillable = array(
-        Field\Token::ID,
-        Field\Token::CARD_ID,
-        Field\Common::MERCHANT_ID,
-        Field\Token::EXPIRED);
+        self::ID,
+        self::CARD_ID,
+        self::MERCHANT_ID,
+        self::EXPIRED);
 
     public function getToken()
     {
-        return $this->getAttribute(Field\Token::ID);
+        return $this->getAttribute(self::ID);
     }
 
     public function getCardId()
     {
-        return $this->getAttribute(Field\Token::CARD);
+        return $this->getAttribute(self::CARD);
     }
 
     public function setCard($card_id)
@@ -38,12 +43,12 @@ class Token extends UniqueIdDal
 
     public function setMerchantId($merchant_id)
     {
-        $this->setAttribute(Field\Common::MERCHANT_ID, $merchant_id);
+        $this->setAttribute(self::MERCHANT_ID, $merchant_id);
     }
 
     public function getMerchantId()
     {
-        $this->getAttribute(Field\Common::MERCHANT_ID);
+        $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getObjectAttribute()
@@ -78,7 +83,7 @@ class Token extends UniqueIdDal
         try
         {
            $token = self::where('token', $token)
-                        ->where(Field\Common::MERCHANT_ID, $merchant_id)
+                        ->where(self::MERCHANT_ID, $merchant_id)
                         ->first();
 
         }
@@ -92,7 +97,7 @@ class Token extends UniqueIdDal
 
     public function expired()
     {
-        return (bool)$this->getAttribute(Field\Token::EXPIRED);
+        return (bool)$this->getAttribute(self::EXPIRED);
     }
 
     public function transactions()
