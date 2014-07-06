@@ -1,5 +1,5 @@
 <?php
 
-return 'dev';
+return 'production';
 
 ?>
