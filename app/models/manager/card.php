@@ -128,13 +128,15 @@ class Card extends EntityManager
 
         if ($details)
         {
-            if ($network === null)
+            if ($network === CardNetwork::UNIDENTIFIED)
             {
                 if ($details['brand'] !== null)
                 {
-                    $brand = strtolower($details['brand']);
+                    $network = strtolower($details['brand']);
 
-                    $this->setField('brand', $brand);
+                    if (CardNetwork::checkNetworkValidity($network))
+
+                    $this->setField('network', $network);
 
                     // trace here
                 }
@@ -143,6 +145,7 @@ class Card extends EntityManager
                     // trace here
                 }
             }
+
             $arr = array(
                 'type' => $details['card_type'],
                 'bank' => $details['bank'],

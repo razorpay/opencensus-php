@@ -135,18 +135,24 @@ class Error
             case ErrorClass::GATEWAY:
                 $this->handleGatewayErrors();
                 break;
+
             case ErrorClass::CARD:
                 $this->handleCardErrors();
                 break;
+
             case ErrorClass::FIELD:
                 $this->handleFieldErrors();
                 break;
+
             case ErrorClass::BAD_REQUEST:
                 $this->handleBadRequestErrors();
                 break;
+
+            case ErrorClass::LOGICAL:
             case ErrorClass::SERVER:
                 $this->handleServerErrors();
                 break;
+
             default:
                 throw new \InvalidArgumentException('Not a valid class');
         }

@@ -15,13 +15,25 @@ class CardNetwork
 
     const MAESTRO = 'Maestro';
 
-    const AMEX = 'amex';
+    const AMEX = 'American Express';
 
     const JCB = 'JCB';
 
     const DINERS_CLUB = 'Diners Club';
 
     const DISCOVER = 'Discover';
+
+    const UNIDENTIFIED = 'Unidentified';
+
+    public static $networks = array(
+        self::MASTERCARD,
+        self::VISA,
+        self::RUPAY,
+        self::MAESTRO,
+        self::AMEX,
+        self::JCB,
+        self::DINERS_CLUB,
+        self::DISCOVER);
 
     public static $maestroFirstFour = array(
         '5018',
@@ -37,7 +49,7 @@ class CardNetwork
         '0604',
         '6390');
 
-    public static $networks = array(
+    public static $networkRegexes = array(
         self::MASTERCARD => '/^5[1-5][0-9]{5,}$/',
         self::VISA => '/^4[0-9]{6,}$/',
         self::AMEX => '/^3[47][0-9]{5,}$/',
@@ -55,7 +67,7 @@ class CardNetwork
     {
         $cardNetwork = null;
 
-        foreach (self::$networks as $network => $regex)
+        foreach (self::$networkRegexes as $network => $regex)
         {
             if ($regex === null)
             {
@@ -85,6 +97,8 @@ class CardNetwork
                 throw new Exception\CardErrorException(ErrorCode::CARD_ERROR_NOT_SUPPORTED);
             }
         }
+
+        return self::UNIDENTIFIED;
     }
 
     public static function isMaestro($number)
@@ -96,5 +110,13 @@ class CardNetwork
     {
         // @todo: determine regex for this one.
         return false;
+    }
+
+    public static function checkNetworkValidity($network)
+    {
+        if (in_array($network, self::$networks) === false)
+        {
+            throw new Exception\LogicException(ErrorCode::LOGICAL_ERROR_UNIDENTIFIED_CARD_NETWORK);
+        }
     }
 }

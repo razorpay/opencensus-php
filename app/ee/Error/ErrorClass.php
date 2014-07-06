@@ -13,4 +13,6 @@ class ErrorClass
     const FIELD = 'FIELD';
 
     const SERVER = 'SERVER';
+
+    const LOGICAL = 'LOGICAL';
 }
