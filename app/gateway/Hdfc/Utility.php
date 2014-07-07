@@ -16,7 +16,7 @@ class Utility
 
         if (! \App::environment('production'))
         {
-            $timeout = 5;
+            $timeout = 30;
         }
 
         $options['timeout'] = $timeout;
