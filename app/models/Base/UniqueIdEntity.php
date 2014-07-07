@@ -2,8 +2,15 @@
 
 namespace Models\Base;
 
+use EE\Exception;
+
 class UniqueIdEntity extends Entity
 {
+    const ID = 'id';
+
+    const ID_LENGTH = '24';
+
+    //const UNIQUE_ID_CHECK_REGEX = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
 
     /**
      * Indicates if the IDs are Unique Id
@@ -18,11 +25,11 @@ class UniqueIdEntity extends Entity
 
     public function generateId($input)
     {
-        $this->setAttribute(static::ID, UniqueId::generateId());
+        $this->setAttribute(self::ID, self::generateUniqueId());
     }
 
     /**
-     * Save the model to the database.
+     * Generate id, before saving if it's not present
      *
      * @param  array  $options
      * @return bool
@@ -44,9 +51,60 @@ class UniqueIdEntity extends Entity
 
         if ($value === null)
         {
-            $value = UniqueId::generateId($this->secureUid);
+            $value = self::generateUniqueId($this->secureUid);
 
             $this->setAttribute($key, $value);
         }
+    }
+
+    public static function verify($id)
+    {
+        if (is_array($id))
+        {
+            self::verifyArrayUid($id);
+        }
+        else if (is_string($id))
+        {
+            self::verifyStringUid($id);
+        }
+        else
+        {
+            throw new Exception\InvalidArgumentException('invalid uid: ' . $id);
+        }
+    }
+
+    public static function verifyArrayUid($id, $key = self::ID)
+    {
+        Assert(is_array($id) === true);
+
+        if (! isset($id[$key]))
+        {
+            throw new Exception\InvalidArgumentException('id key not set');
+        }
+
+        return self::verifyUid($id[$key]);
+    }
+
+    public static function verifyUniqueId($id, $throw = true)
+    {
+        $uniqueIdCheckRegex = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
+
+        $res = preg_match($uniqueIdCheckRegex, $id);
+
+        if (($res === false) and ($throw))
+        {
+            throw new Exception\BadRequestException($id . ' is not a valid id');
+        }
+
+        return $res;
+    }
+
+    public static function generateUniqueId()
+    {
+        $len = self::ID_LENGTH;
+
+        $id = bin2hex(openssl_random_pseudo_bytes($len/2));
+
+        return $id;
     }
 }
