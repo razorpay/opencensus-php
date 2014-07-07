@@ -1,7 +1,6 @@
 <?php
 
-use Models\DAL\CardDetail;
-use Constants\Field\IIN;
+use Models\Card;
 use Constants\Table;
 
 class IinsTableSeeder extends Seeder
@@ -15,16 +14,16 @@ class IinsTableSeeder extends Seeder
         $records = self::getIinRecordsFromFile(storage_path().'/iins/iins.csv');
 
         $columns = array(
-            IIN::IIN, 
-            IIN::CATEGORY, 
-            IIN::BRAND,
-            IIN::TYPE,
-            IIN::COUNTRY,
-            IIN::BANK);
+            Card\Detail::IIN,
+            Card\Detail::CATEGORY,
+            Card\Detail::BRAND,
+            Card\Detail::TYPE,
+            Card\Detail::COUNTRY,
+            Card\Detail::BANK);
 
         $assocRecords = array();
 
-        foreach ($records as $index => $record) 
+        foreach ($records as $index => $record)
         {
             $record = array_combine($columns, $record);
 
@@ -48,7 +47,7 @@ class IinsTableSeeder extends Seeder
         {
             $file_handle = fopen($path, 'r');
 
-            while(($iin_record = fgetcsv($file_handle)) !== FALSE) 
+            while(($iin_record = fgetcsv($file_handle)) !== FALSE)
             {
                 array_push($records, $iin_record);
             }

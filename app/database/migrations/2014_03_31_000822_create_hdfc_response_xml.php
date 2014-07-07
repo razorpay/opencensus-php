@@ -36,7 +36,7 @@ class CreateHdfcResponseXml extends Migration {
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
-            $table->integer('created_at');  
+            $table->integer('created_at');
             $table->integer('updated_at');
         });
     }
@@ -48,7 +48,8 @@ class CreateHdfcResponseXml extends Migration {
      */
     public function down()
     {
-        Schema::table('hdfc_response_xml', function($table){
+        Schema::table('hdfc_response_xml', function($table)
+        {
 
             ;
         });

@@ -3,89 +3,89 @@
 namespace Trace;
 
 use Trace\TraceCode;
+use Models\Transaction\Entity as Transaction;
 use Constants\Field;
-use Constnats\Common;
 
 class TraceFields
 {
     protected static $fields = array(
         TraceCode::TRANSACTION_NEW_REQUEST => array(
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::AMOUNT,
+            Transaction::MERCHANT_ID,
+            Transaction::AMOUNT,
         ),
 
         TraceCode::TRANSACTION_CREATED => array(
-            Field\Transaction::ID,
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::TOKEN_ID,
-            Field\Transaction::STATUS,
-            Field\Transaction::AMOUNT,
+            Transaction::ID,
+            Transaction::MERCHANT_ID,
+            Transaction::TOKEN_ID,
+            Transaction::STATUS,
+            Transaction::AMOUNT,
         ),
 
         TraceCode::TRANSACTION_CREATE_FAILED => array(),
 
         TraceCode::TRANSACTION_FAILED => array(
-            Field\Transaction::ID,
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::TOKEN_ID,
-            Field\Transaction::STATUS,
-            Field\Transaction::AMOUNT,
-            Field\Transaction::ERROR_CODE,
+            Transaction::ID,
+            Transaction::MERCHANT_ID,
+            Transaction::TOKEN_ID,
+            Transaction::STATUS,
+            Transaction::AMOUNT,
+            Transaction::ERROR_CODE,
             'error'
         ),
 
         TraceCode::TRANSACTION_AUTH_FAILURE => array(
-            Field\Transaction::ID,
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::TOKEN_ID,
-            Field\Transaction::STATUS,
-            Field\Transaction::AMOUNT,
-            Field\Transaction::ERROR_CODE,
+            Transaction::ID,
+            Transaction::MERCHANT_ID,
+            Transaction::TOKEN_ID,
+            Transaction::STATUS,
+            Transaction::AMOUNT,
+            Transaction::ERROR_CODE,
             'error'
         ),
 
         TraceCode::TRANSACTION_REFUND_FAILURE => array(
-            Field\Transaction::ID,
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::TOKEN_ID,
-            Field\Transaction::STATUS,
-            Field\Transaction::AMOUNT,
-            Field\Transaction::ERROR_CODE,
+            Transaction::ID,
+            Transaction::MERCHANT_ID,
+            Transaction::TOKEN_ID,
+            Transaction::STATUS,
+            Transaction::AMOUNT,
+            Transaction::ERROR_CODE,
             'error'
         ),
 
         TraceCode::TRANSACTION_CAPTURE_FAILURE => array(
-            Field\Transaction::ID,
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::TOKEN_ID,
-            Field\Transaction::STATUS,
-            Field\Transaction::AMOUNT,
-            Field\Transaction::ERROR_CODE,
+            Transaction::ID,
+            Transaction::MERCHANT_ID,
+            Transaction::TOKEN_ID,
+            Transaction::STATUS,
+            Transaction::AMOUNT,
+            Transaction::ERROR_CODE,
             'error'
         ),
 
         TraceCode::TRANSACTION_AUTH_SUCCESS => array(
-            Field\Transaction::ID,
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::TOKEN_ID,
-            Field\Transaction::STATUS,
-            Field\Transaction::AMOUNT,
+            Transaction::ID,
+            Transaction::MERCHANT_ID,
+            Transaction::TOKEN_ID,
+            Transaction::STATUS,
+            Transaction::AMOUNT,
         ),
 
         TraceCode::TRANSACTION_REFUND_SUCCESS => array(
-            Field\Transaction::ID,
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::TOKEN_ID,
-            Field\Transaction::STATUS,
-            Field\Transaction::AMOUNT,
+            Transaction::ID,
+            Transaction::MERCHANT_ID,
+            Transaction::TOKEN_ID,
+            Transaction::STATUS,
+            Transaction::AMOUNT,
         ),
 
         TraceCode::TRANSACTION_CAPTURE_SUCCESS => array(
-            Field\Transaction::ID,
-            Field\Common::MERCHANT_ID,
-            Field\Transaction::TOKEN_ID,
-            Field\Transaction::STATUS,
-            Field\Transaction::AMOUNT,
+            Transaction::ID,
+            Transaction::MERCHANT_ID,
+            Transaction::TOKEN_ID,
+            Transaction::STATUS,
+            Transaction::AMOUNT,
         ),
 
         TraceCode::GATEWAY_ENROLL_REQUEST => array(

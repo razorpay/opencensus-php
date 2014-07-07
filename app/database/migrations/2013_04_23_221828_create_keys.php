@@ -16,7 +16,8 @@ class CreateKeys extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::KEY, function(Blueprint $table){
+        Schema::create(Table::KEY, function(Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->char(Key::ID, Key::ID_LENGTH)

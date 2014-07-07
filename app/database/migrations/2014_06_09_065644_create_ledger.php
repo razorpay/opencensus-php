@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use Models\Ledger\Entity as Ledger;
 use Models\Merchant;
+use Constants\Table;
 
 class CreateLedger  extends Migration {
 
@@ -15,7 +16,8 @@ class CreateLedger  extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::LEDGER, function(Blueprint $table){
+        Schema::create(Table::LEDGER, function(Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->char(Ledger::ID, Ledger::ID_LENGTH)
@@ -60,8 +62,10 @@ class CreateLedger  extends Migration {
      */
     public function down()
     {
-        Schema::table(Table::LEDGER, function($table){
-            $table->dropForeign('ledger_merchant_id_foreign');
+        Schema::table(Table::LEDGER, function($table)
+        {
+            $table->dropForeign(
+                TABLE::LEDGER.'_'.Ledger::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::LEDGER);

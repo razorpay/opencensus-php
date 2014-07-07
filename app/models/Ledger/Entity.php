@@ -2,7 +2,9 @@
 
 namespace Models\Ledger;
 
-class Ledger extends UniqueIdDal
+use Models\Base;
+
+class Entity extends Base\UniqueIdEntity
 {
     const ID = 'id';
 
@@ -20,7 +22,7 @@ class Ledger extends UniqueIdDal
 
     protected $table = \Constants\Table::LEDGER;
 
-    protected $sign = 'lgr';
+    protected static $sign = 'lgr';
 
     protected $fillable = array(
         'ref',

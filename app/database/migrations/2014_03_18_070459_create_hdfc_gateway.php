@@ -14,7 +14,8 @@ class CreateHdfcGateway extends Migration {
      */
     public function up()
     {
-        Schema::create('hdfc', function(Blueprint $table){
+        Schema::create('hdfc', function(Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->increments('id');
@@ -76,7 +77,8 @@ class CreateHdfcGateway extends Migration {
      */
     public function down()
     {
-        Schema::table('hdfc', function($table){
+        Schema::table('hdfc', function($table)
+        {
 
             $table->dropForeign('hdfc_trackid_foreign');
         });

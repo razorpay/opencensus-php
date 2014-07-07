@@ -16,6 +16,8 @@ class Entity extends Base\UniqueIdEntity
 
     const EXPIRED_AT = 'expired_at';
 
+    const KEY_SECRET_HASH_LENTH = 100;
+
     protected $table  = \Constants\Table::KEY;
 
     protected $fillable = array(

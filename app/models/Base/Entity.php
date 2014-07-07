@@ -163,4 +163,11 @@ class Entity extends \Eloquent
         //
         $id = substr($id, $len + 1);
     }
+
+    public static function getTableName()
+    {
+        $instance = new static;
+
+        return $instance->getTable();
+    }
 }

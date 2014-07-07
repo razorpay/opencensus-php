@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 use Models\Transaction\Entity as Transaction;
 use Models\Merchant;
+use Models\Token;
 
 class CreateTransactions  extends Migration
 {
@@ -81,7 +82,7 @@ class CreateTransactions  extends Migration
                   ->on_delete('restrict');
 
             $table->foreign(Transaction::TOKEN_ID)
-                  ->references(Transaction::ID)
+                  ->references(Token\Entity::ID)
                   ->on(Table::TOKEN);
         });
     }
