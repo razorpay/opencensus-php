@@ -85,6 +85,13 @@ class HdfcGatewayErrorCode
     const GV00103   = 'GV00103';
     const GV00104   = 'GV00104';
 
+    const CM90000   = 'CM90000';
+    const CM90001   = 'CM90001';
+    const CM90002   = 'CM90002';
+    const CM90003   = 'CM90003';
+    const CM90004   = 'CM90004';
+    const CM90005   = 'CM90005';
+
     const PY20001   = 'PY20001';
     const PY20002   = 'PY20002';
     const PY20006   = 'PY20006';
@@ -158,6 +165,13 @@ class HdfcGatewayErrorCode
         HdfcGatewayErrorCode::PY20006   => 'Invalid Brand',
         HdfcGatewayErrorCode::PY20001   => 'Invalid Action Type',
         HdfcGatewayErrorCode::PY20002   => 'Invalid amount',
+
+        HdfcGatewayErrorCode::CM90000   => 'Database error',
+        HdfcGatewayErrorCode::CM90001   => 'Database configuration error',
+        HdfcGatewayErrorCode::CM90002   => 'Data format error',
+        HdfcGatewayErrorCode::CM90003   => 'No records found',
+        HdfcGatewayErrorCode::CM90004   => 'Duplicate records found',
+        HdfcGatewayErrorCode::CM90005   => 'Timestamp mismatch error',
 
         HdfcGatewayErrorCode::RP00001   => 'Invalid Error Code',
         HdfcGatewayErrorCode::RP00002   => 'Uncaptured Transaction',
