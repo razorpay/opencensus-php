@@ -17,7 +17,7 @@ class Repository extends Base\Repository
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
         'merchant_id'   => 'required',
-        'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled');
+        'status'        => 'in:failed,captured,auth,open,refunded,settlement_sent,settled');
 
     /**
      * Retrieves the transactions from database for a particular merchant.

@@ -7,43 +7,6 @@ use EE\Exception;
 
 class DAL extends \Eloquent
 {
-    /**
-     * Indicates if the primary key is uuid.
-     *
-     * @var bool
-     */
-    public $uuid = false;
-
-    protected $sign = '';
-
-    protected $entity = '';
-
-    public function toArrayPublic()
-    {
-        $array = $this->toArray();
-
-        $array['id' ] = static::$sign . '-' . $array['id'];
-
-        $array['entity'] = $this->entity;
-
-        return $array;
-    }
-
-    public function getVisible()
-    {
-        return $this->visible;
-    }
-
-    public function getHidden()
-    {
-        return $this->hidden;
-    }
-
-    public function getGuarded()
-    {
-        return $this->guarded;
-    }
-
     public static function createOrFail(array $attributes)
     {
         if ( ! (NULL === $model = static::create($attributes))) return $model;
