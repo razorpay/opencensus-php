@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use Gateway\HdfcGateway\HdfcGatewayConstants;
+use Models\Base\UniqueIdEntity;
 
 class CreateHdfcGateway extends Migration {
 
@@ -20,7 +21,7 @@ class CreateHdfcGateway extends Migration {
 
             $table->increments('id');
 
-            $table->char('trackid', Constants\Fields::ID_LENGTH);
+            $table->char('trackid', UniqueIdEntity::ID_LENGTH);
 
             $table->bigInteger('transactionid')
                   ->unsigned()

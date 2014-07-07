@@ -69,8 +69,11 @@ class Dashboard
             $data['message']
         );
 
-        /* For debugging purposes, persist requests */
-        DashboardDal::persistAfterFail($data['message']);
+        //
+        // For debugging purposes,
+        // persist requests
+        //
+        (new Repository)->persistAfterFail($data['message']);
 
         $job->delete();
     }

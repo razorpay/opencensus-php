@@ -3,6 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use Models\Base\UniqueIdEntity;
+
 class CreateHdfcResponseXml extends Migration {
 
     /**
@@ -18,7 +20,7 @@ class CreateHdfcResponseXml extends Migration {
 
             $table->increments('id');
 
-            $table->string('trackid', Constants\Fields::ID_LENGTH);
+            $table->string('trackid', UniqueIdEntity::ID_LENGTH);
 
             $table->text('enroll')
                   ->nullable();

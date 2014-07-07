@@ -23,7 +23,7 @@ class CreateLedger  extends Migration {
             $table->char(Ledger::ID, Ledger::ID_LENGTH)
                   ->primary();
 
-            $table->char('ref', Constants\Fields::ID_LENGTH);
+            $table->char('ref', Ledger::ID_LENGTH);
 
             $table->integer(Ledger::MERCHANT_ID)
                   ->unsigned();
