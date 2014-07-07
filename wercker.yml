@@ -11,7 +11,7 @@ build:
           code:  cp app/config/testing/database.php.wercker app/config/testing/database.php
       - script:
           name: copy HDFC config
-          code: cp app/gateway/hdfc/HdfcGatewayConfig.php.wercker app/gateway/hdfc/HdfcGatewayConfig.php
+          code: cp app/gateway/Hdfc/Config.php.wercker app/gateway/Hdfc/Config.php
       - script:
           name: copy internal app auth config
           code:  cp app/config/applications.sample.php app/config/applications.php

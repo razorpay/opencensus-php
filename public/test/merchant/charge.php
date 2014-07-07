@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors','1');
+
 require('../../../vendor/autoload.php');//Load API
 use Razorpay\Api\Api;
 require('config.php');//Load API Credentials
@@ -13,7 +16,7 @@ $amount = $_POST['amount'];
 $transaction = $api->transaction->get($id);
 
 if (($amount === $transaction->amount) and
-    ($transaction->error_code === '') and
+    ($transaction->error_code === null) and
     ($transaction->status === 'auth'))
 {
 	//

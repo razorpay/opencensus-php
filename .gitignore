@@ -6,6 +6,6 @@
 Thumbs.db
 /app/config/database.php
 /app/config/testing/database.php
-/app/gateway/hdfc/HdfcGatewayConfig.php
+/app/gateway/Hdfc/Config.php
 /app/config/applications.php
 /bootstrap/environment.php

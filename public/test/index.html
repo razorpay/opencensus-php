@@ -2,17 +2,19 @@
 <html>
 <head lang="en">
     <meta charset="utf-8">
-    <link href="https://checkout.razorpay.com/v1/css/style.css" type="text/css" rel="stylesheet">
+    <link href="http://localhost/co/dist/v1/css/style.css" type="text/css" rel="stylesheet">
 </head>
 <body>
     <form action="merchant/charge.php" method="POST">
       <script
-        src="https://checkout.razorpay.com/v1/checkout.js"
+        src="http://localhost/co/dist/v1/checkout.js"
         data-key="d9c6bf091a1a64cb5678d8c1"
         data-amount="20"
         data-name="Merchant Name"
         data-description="Purchase Description"
-        data-image="merchant/vk.jpg">
+        data-image="merchant/vk.jpg"
+        data-hostname="rzp"
+        data-protocol="http">
       </script>
     </form>
     <link href='https://fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'>
