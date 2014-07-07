@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Gateway\HdfcGateway\HdfcGatewayConstants;
+use Gateway\Hdfc;
 use Models\Base\UniqueIdEntity;
 
 class CreateHdfcGateway extends Migration {
@@ -29,31 +29,31 @@ class CreateHdfcGateway extends Migration {
 
             $table->string('action', 1);
 
-            $table->string('enroll_result', HdfcGatewayConstants::ENROLL_RESULT_LENGTH);
+            $table->string('enroll_result', Hdfc\Constants::ENROLL_RESULT_LENGTH);
 
-            $table->string('status', HdfcGatewayConstants::STATUS_LENGTH);
+            $table->string('status', Hdfc\Constants::STATUS_LENGTH);
 
-            $table->string('auth_result', HdfcGatewayConstants::AUTH_RESULT_LENGTH)
+            $table->string('auth_result', Hdfc\Constants::AUTH_RESULT_LENGTH)
                   ->nullable();
 
-            $table->string('eci', HdfcGatewayConstants::ECI_LENGTH);
+            $table->string('eci', Hdfc\Constants::ECI_LENGTH);
 
-            $table->string('auth', HdfcGatewayConstants::AUTH_LENGTH)
+            $table->string('auth', Hdfc\Constants::AUTH_LENGTH)
                   ->nullable();
 
-            $table->string('ref', HdfcGatewayConstants::REF_LENGTH)
+            $table->string('ref', Hdfc\Constants::REF_LENGTH)
                   ->nullable();
 
-            $table->string('avr', HdfcGatewayConstants::AVR_LENGTH)
+            $table->string('avr', Hdfc\Constants::AVR_LENGTH)
                   ->nullable();
 
-            $table->string('postdate', HdfcGatewayConstants::POSTDATE_LENGTH)
+            $table->string('postdate', Hdfc\Constants::POSTDATE_LENGTH)
                   ->nullable();
 
-            $table->string('error_code', HdfcGatewayConstants::ERROR_CODE_LENGTH)
+            $table->string('error_code', Hdfc\Constants::ERROR_CODE_LENGTH)
                   ->nullable();
 
-            $table->string('error_text', HdfcGatewayConstants::ERROR_TEXT_LENGTH)
+            $table->string('error_text', Hdfc\Constants::ERROR_TEXT_LENGTH)
                   ->nullable();
 
             // @todo: remove this field
