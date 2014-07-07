@@ -7,8 +7,6 @@ use EE\Exception;
 
 class Entity extends \Eloquent
 {
-    const ID_LENGTH = '24';
-
     /**
      * Indicates if the primary key is uuid.
      *
@@ -146,7 +144,7 @@ class Entity extends \Eloquent
     {
         self::stripSignOrFail($id);
 
-        UniqueId::verifyUid($id, true);
+        UniqueIdEntity::verifyUniqueId($id, true);
     }
 
     protected static function stripSignOrFail(& $id)
@@ -162,12 +160,5 @@ class Entity extends \Eloquent
         // add 1 to $len to account for dash
         //
         $id = substr($id, $len + 1);
-    }
-
-    public static function getTableName()
-    {
-        $instance = new static;
-
-        return $instance->getTable();
     }
 }

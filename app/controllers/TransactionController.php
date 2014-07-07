@@ -43,7 +43,7 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
 
-        $input[Field\Common::MERCHANT_ID] = $this->merchantId;
+        $input['merchant_id'] = $this->merchantId;
 
         $txnData = Transaction::getNewInstance()->process($input);
 

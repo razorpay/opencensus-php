@@ -3,6 +3,7 @@
 namespace Models\Ledger;
 
 use Models\Base;
+use Models\Transaction;
 
 class Entity extends Base\UniqueIdEntity
 {
@@ -51,8 +52,8 @@ class Entity extends Base\UniqueIdEntity
 
             $data = array(
                 'ref'           => $txn->id,
-                Field\Common::MERCHANT_ID   => $merchant->id,
-                self::ACTION        => 'capture',
+                self::MERCHANT_ID   => $merchant->id,
+                self::ACTION        => Transaction\Action::CAPTURE,
                 self::FEE           => $fee,
                 self::BALANCE       => $merchant->amount);
 

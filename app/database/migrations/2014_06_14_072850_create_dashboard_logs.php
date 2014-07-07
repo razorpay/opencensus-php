@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Field\Common;
+use Dasboard\DasboardDal;
 
 class CreateDashboardLogs extends Migration {
 
@@ -21,8 +21,8 @@ class CreateDashboardLogs extends Migration {
 
             $table->string('json', 1000);
 
-            $table->integer(Common::CREATED_AT);  
-            $table->integer(Common::UPDATED_AT);
+            $table->integer(DasboardDal::CREATED_AT);
+            $table->integer(DasboardDal::UPDATED_AT);
         });
     }
 
