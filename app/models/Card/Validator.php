@@ -1,16 +1,12 @@
 <?php
 
-namespace Models\Manager;
-
-use \Validator;
-use Models\DAL;
-use Models\Service;
+namespace Models\Card;
 
 use EE\Exception;
-use EE\Exception\CardErrorException;
 use EE\Error\ErrorCode;
+use Models\Base;
 
-class Card extends EntityManager
+class Validator extends Base\Validator
 {
     protected static $createRules = array(
         'number'            => 'required|numeric|luhn|digits_between:12,19',
@@ -25,7 +21,7 @@ class Card extends EntityManager
         'address_country'   => 'regex:/[a-zA-Z]*/|max:50',
         'address_zip'       => 'numeric|digits_between:0,10');
 
-    protected static $address_attributes = array(
+    protected static $addressAttributes = array(
         'address_line1',
         'address_line2',
         'address_city',
@@ -34,26 +30,6 @@ class Card extends EntityManager
         'address_zip');
 
     protected static $createValidators = array('expiry_date');
-
-    protected static $modifiers = array('expiry_year', 'number');
-
-    protected static $generators = array('last4', 'id');
-
-    public function build(array $input)
-    {
-        try
-        {
-            parent::build($input);
-        }
-        catch (Exception\CardErrorException $e)
-        {
-            throw $e;
-        }
-        catch (Exception\ValidationFailureException $e)
-        {
-            throw new CardErrorException($e->getMessageBag(), 0, $e);
-        }
-    }
 
     protected function validateExpiryDate($input)
     {
@@ -66,7 +42,7 @@ class Card extends EntityManager
         if (($month < $currentMonth) &&
             ($year <= $currentYear))
         {
-            throw new CardErrorException(
+            throw new Exception\CardErrorException(
                 null,
                 ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE);
         }
@@ -77,7 +53,7 @@ class Card extends EntityManager
         $addr_unset = array();
         $addr_set = array();
 
-        foreach(self::$address_attributes as $key)
+        foreach(self::$addressAttributes as $key)
         {
             if ((!isset($input[$key])) or
                 (empty($input[$key])))
@@ -100,79 +76,5 @@ class Card extends EntityManager
                 $msg = implode(',', $addr_unset) . ' address values are not set.';
             }
         }
-    }
-
-    public function generateLast4($input)
-    {
-        $last4 = substr($input['number'], -4);
-
-        $this->setField('last4', $last4);
-    }
-
-    public function modifyExpiryYear(& $input)
-    {
-        if ((isset($input['expiry_year'])) and
-            (strlen($input['expiry_year']) == 2))
-        {
-            $input['expiry_year'] = '20'.$input['expiry_year'];
-        }
-    }
-
-    public function fillNetworkDetails($details)
-    {
-        $number = $this->getField('number');
-
-        $network = CardNetwork::detectNetwork($number);
-
-        $this->setField('network', $network);
-
-        if ($details)
-        {
-            if ($network === CardNetwork::UNIDENTIFIED)
-            {
-                if ($details['brand'] !== null)
-                {
-                    $network = strtolower($details['brand']);
-
-                    if (CardNetwork::checkNetworkValidity($network))
-
-                    $this->setField('network', $network);
-
-                    // trace here
-                }
-                else
-                {
-                    // trace here
-                }
-            }
-
-            $arr = array(
-                'type' => $details['card_type'],
-                'bank' => $details['bank'],
-                'country' => $details['country_code']);
-
-            $this->fill($arr);
-
-            if ($network === null)
-            {
-                // @todo: trace
-                return;
-            }
-        }
-    }
-
-    public static function modifyNumber(& $input)
-    {
-        $number = $input['number'];
-
-        if (is_string($number) === false)
-        {
-            return $number;
-        }
-
-        $number = str_replace(' ', '', $number);
-        $number = str_replace('-', '', $number);
-
-        $input['number'] = $number;
     }
 }

@@ -1,8 +1,10 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Key;
 
-class Key extends EntityManager
+use Models\Base;
+
+class Validator extends Base\Validator
 {
     protected static $createRules = array(
         'key_id'        => 'required|alpha_num',
@@ -12,12 +14,5 @@ class Key extends EntityManager
         'active'        => 'size:1|in:0,1'
     );
 
-    protected static $generators = array('id');
-
     protected static $unsetCreateInput = array('key_id');
-
-    protected function generateId($input)
-    {
-        $this->setField('id', $input['key_id']);
-    }
 }

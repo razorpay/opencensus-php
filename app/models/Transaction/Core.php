@@ -1,22 +1,20 @@
 <?php
 
-namespace Models\Service\Core;
+namespace Models\Transaction;
 
 use EE\Exception\BaseException;
 use EE\Exception\BadRequestException;
 
 use Gateway\GatewayManager;
 
-use Models\DAL;
-
-use Models\Manager;
-use Models\Manager\TransactionStatus;
-use Models\Manager\TransactionAction;
+use Models\Card;
+use Models\Token;
+use Models\Transaction;
 
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Transaction
+class Core
 {
     protected $txn;
 
@@ -34,7 +32,7 @@ class Transaction
      *                      card, token and txn entities
      *
      * @return array        Returns an array containing
-     *                      DAL\Transaction object and
+     *                      Transaction\Entity object and
      *                      card data array
      */
     public function createEntitites(array $input)
@@ -51,7 +49,7 @@ class Transaction
         // number and cvv for now, we get back a card data
         // array contianing DAL\Card with number and cvv
         //
-        $cardCore = new Card();
+        $cardCore = new Card\Core();
 
         $cardData = $cardCore->createAndReturnWithSensitiveData($input['card']);
 
@@ -60,7 +58,7 @@ class Transaction
         //
         // Create token. Links merchant id and card
         //
-        $token = (new Token)->create(
+        $token = (new Token\Core)->create(
                     $input['merchant_id'],
                     $card);
 
@@ -79,7 +77,7 @@ class Transaction
         return array($txn, $cardData);
     }
 
-    protected function saveEntities(DAL\Transaction $txn)
+    protected function saveEntities( $txn)
     {
         $txn->token->card->saveOrFail();
 
@@ -95,13 +93,13 @@ class Transaction
      *                           a txn row in db
      * @param  DAL\Token $token  Token
      *
-     * @return DAL\Transaction   A DAL\Transaction object
+     * @return Transaction\Entity   A Transaction\Entity object
      */
-    public function create($input, DAL\Token $token)
+    public function create($input, Token\Entity $token)
     {
         $data = Manager\Transaction::createValidate($input)->getData();
 
-        $txn = new DAL\Transaction($data);
+        $txn = new Transaction\Entity($data);
 
         //
         // Assoicate transaction to token
@@ -117,13 +115,13 @@ class Transaction
      * which does the actual processing.
      * After return, updates transaction status.
      *
-     * @param  DAL\Transaction $txn      Transaction object
+     * @param  Transaction\Entity $txn      Transaction object
      * @param  array           $cardData card data array
      *
-     * @return DAL\Transaction           Transaction object
+     * @return Transaction\Entity           Transaction object
      */
     public function process(
-        DAL\Transaction $txn,
+        Transaction\Entity $txn,
         array $cardData)
     {
         $this->txn = $txn;
@@ -138,7 +136,7 @@ class Transaction
         try
         {
             $callbackData = $this->callGatewayFunction(
-                                        TransactionAction::AUTH,
+                                        Transaction\Action::AUTH,
                                         $txnInfo);
         }
         catch(BaseException $e)
@@ -169,7 +167,7 @@ class Transaction
 
         $txn->setAuthAmount();
 
-        return $this->updateTransactionSuccess($txn, TransactionStatus::AUTH);
+        return $this->updateTransactionSuccess($txn, Transaction\Status::AUTH);
     }
 
     /**
@@ -179,20 +177,20 @@ class Transaction
      * Returning from this function implies
      * 'auth' is successful.
      *
-     * @param  DAL\Transaction $txn   Txn dal
+     * @param  Transaction\Entity $txn   Txn dal
      * @param  array           $input contains fields provided
      *                                by bank
-     * @return DAL\Transaction        Updated txn dal
+     * @return Transaction\Entity        Updated txn dal
      */
     public function callback(
-        DAL\Transaction $txn,
+        Transaction\Entity $txn,
         array $input)
     {
         try
         {
-            $this->callGatewayFunction(TransactionAction::CALLBACK, $input);
+            $this->callGatewayFunction(Transaction\Action::CALLBACK, $input);
 
-            $this->updateTransactionSuccess($txn, TransactionStatus::AUTH);
+            $this->updateTransactionSuccess($txn, Transaction\Status::AUTH);
         }
         catch (BaseException $e)
         {
@@ -210,11 +208,11 @@ class Transaction
     /**
      * Capture a preivous auth transaction
      *
-     * @param  DAL\Transaction $txn DAL\Transaction object
+     * @param  Transaction\Entity $txn Transaction\Entity object
      *
      * @return array                Transaction array
      */
-    public function capture(DAL\Transaction $txn, array $input = array())
+    public function capture(Transaction\Entity $txn, array $input = array())
     {
         (new Manager\Transaction)->captureValidate($txn, $input);
 
@@ -227,9 +225,9 @@ class Transaction
         try
         {
             $this->callGatewayFunction(
-                    TransactionAction::CAPTURE, $data);
+                    Transaction\Action::CAPTURE, $data);
 
-            $this->updateTransactionSuccess($txn, TransactionStatus::CAPTURED);
+            $this->updateTransactionSuccess($txn, Transaction\Status::CAPTURED);
         }
         catch (BaseException $e)
         {
@@ -246,9 +244,9 @@ class Transaction
 
     /**
      * Refunds a transaction
-     * Pass \DAL\Transaction object as argument
+     * Pass \Transaction\Entity object as argument
      */
-    public function refund(DAL\Transaction $txn)
+    public function refund(Transaction\Entity $txn)
     {
         $data = array(
                     'txn' => $txn->toArrayWithCard(),
@@ -256,9 +254,9 @@ class Transaction
 
         try
         {
-            $this->callGatewayFunction(TransactionAction::REFUND, $data);
+            $this->callGatewayFunction(Transaction\Action::REFUND, $data);
 
-            $this->updateTransactionSuccess($txn, TransactionStatus::REFUNDED);
+            $this->updateTransactionSuccess($txn, Transaction\Status::REFUNDED);
 
             //
             // Analytics
@@ -281,7 +279,7 @@ class Transaction
 
     protected function updateTransactionAuth($txn)
     {
-        $txn->setStatus(TransactionStatus::AUTH);
+        $txn->setStatus(Transaction\Status::AUTH);
 
         //Logging
         $this->trace->info(
@@ -293,15 +291,15 @@ class Transaction
     {
         switch ($status)
         {
-            case TransactionStatus::AUTH:
+            case Transaction\Status::AUTH:
                 $this->updateTransactionAuth($txn);
                 break;
 
-            case TransactionStatus::CAPTURED:
+            case Transaction\Status::CAPTURED:
                 $this->updateTransactionCaptured($txn);
                 break;
 
-            case TransactionStatus::REFUNDED:
+            case Transaction\Status::REFUNDED:
                 $this->updateTransactionRefunded($txn);
                 break;
 
@@ -317,7 +315,7 @@ class Transaction
 
     protected function updateTransactionCaptured($txn)
     {
-        $txn->setStatus(TransactionStatus::CAPTURED);
+        $txn->setStatus(Transaction\Status::CAPTURED);
 
         //Logging
         $this->trace->info(
@@ -327,7 +325,7 @@ class Transaction
 
     protected function updateTransactionRefunded($txn)
     {
-        $txn->setStatus(TransactionStatus::REFUNDED);
+        $txn->setStatus(Transaction\Status::REFUNDED);
 
         //Logging
         $this->trace->info(
@@ -341,7 +339,7 @@ class Transaction
 
         $desc = $error->getPublicErrorDescription();
 
-        $txn->setStatus(TransactionStatus::FAILED);
+        $txn->setStatus(Transaction\Status::FAILED);
 
         $txn->setError($code, $desc);
 
@@ -375,7 +373,7 @@ class Transaction
     {
         Manager\Transaction::verifyIdAndStripSign($id);
 
-        $txn = DAL\Transaction::findByIdAndMerchantId($id, $merchantId);
+        $txn = Transaction\Entity::findByIdAndMerchantId($id, $merchantId);
 
         return $txn;
     }

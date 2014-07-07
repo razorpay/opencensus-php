@@ -21,12 +21,12 @@ class Merchant extends DAL
     public function keys()
     {
         return $this->hasMany(
-            __NAMESPACE__.'\Key');
+            '\Models\Key\Entity');
     }
 
     public function transactions()
     {
         return $this->hasMany(
-            __NAMESPACE__.'\Transaction');
+            '\Models\Transaction\Entity');
     }
 }

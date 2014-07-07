@@ -3,9 +3,9 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Field\Card;
-use Constants\Field\Common;
 use Constants\Table;
+
+use Models\Card\Entity as Card;
 
 class CreateCards extends Migration {
 
@@ -20,7 +20,7 @@ class CreateCards extends Migration {
 
             $table->engine = 'InnoDB';
 
-            $table->char(Card::ID, Constants\Fields::ID_LENGTH)
+            $table->char(Card::ID, Card::ID_LENGTH)
                   ->primary();
 
             $table->string(Card::NAME);
@@ -37,10 +37,7 @@ class CreateCards extends Migration {
 
             $table->string(Card::BANK, 100);
 
-            /**
-             * Two letter ISO codes representing the country of the card.
-             */
-            $table->char(Card::COUNTRY, Constants\Fields::COUNTRY_LENGTH);
+            $table->char(Card::COUNTRY, Card::COUNTRY_LENGTH);
 
             $table->string(Card::ADDRESS_LINE1)
                   ->nullable();
@@ -71,8 +68,8 @@ class CreateCards extends Migration {
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
-            $table->integer(Common::CREATED_AT);
-            $table->integer(Common::UPDATED_AT);
+            $table->integer(Card::CREATED_AT);
+            $table->integer(Card::UPDATED_AT);
         });
     }
 

@@ -2,7 +2,9 @@
 
 namespace Models\Token;
 
-class Token extends UniqueIdDal
+use Models\Base;
+
+class Entity extends Base\UniqueIdEntity
 {
     const ID = Common::ID;
 
@@ -18,13 +20,25 @@ class Token extends UniqueIdDal
 
     protected $entity = 'token';
 
-    protected $appends = array('object');
-
     protected $fillable = array(
         self::ID,
         self::CARD_ID,
         self::MERCHANT_ID,
         self::EXPIRED);
+
+    protected static $generators = array('token', 'expired', 'id');
+
+    protected function generateToken()
+    {
+        $token = Utility::generate_token(static::$TOKEN_LEN);
+
+        $this->setAttribute(self::ID, $token);
+    }
+
+    protected function generateExpired()
+    {
+        $this->setAttribute(self::EXPIRED, 0);
+    }
 
     public function getToken()
     {
@@ -38,7 +52,7 @@ class Token extends UniqueIdDal
 
     public function setCard($card_id)
     {
-        $this->setAttribute('card', $card_id);
+        $this->setAttribute(self::CARD, $card_id);
     }
 
     public function setMerchantId($merchant_id)
@@ -51,49 +65,7 @@ class Token extends UniqueIdDal
         $this->getAttribute(self::MERCHANT_ID);
     }
 
-    public function getObjectAttribute()
-    {
-        return 'token';
-    }
-
     const WITH_CARD             = 0x1024;
-
-    public function toArrayEx($flag = 0x0)
-    {
-        $array = parent::toArray($flag);
-
-        if ($flag & self::WITH_CARD)
-        {
-            $card_do_flag = 0x0;
-
-            $card_do_flag |= Card::NO_CHECK_FIELDS;
-
-            $card = $this->card_do->toArray($card_do_flag);
-
-            $array['card'] = $card;
-        }
-
-        return $array;
-    }
-
-    public static function findByTokenAndMerchantId($token, $merchant_id)
-    {
-        $token;
-
-        try
-        {
-           $token = self::where('token', $token)
-                        ->where(self::MERCHANT_ID, $merchant_id)
-                        ->first();
-
-        }
-        catch(Exception $e)
-        {
-            $token = false;
-        }
-
-        return $token;
-    }
 
     public function expired()
     {
@@ -103,13 +75,13 @@ class Token extends UniqueIdDal
     public function transactions()
     {
         return $this->hasOne(
-            __NAMESPACE__.'\Transaction');
+            '\Models\Transaction\Entity');
     }
 
     public function card()
     {
         return $this->belongsTo(
-            __NAMESPACE__.'\Card');
+            '\Models\Card\Entity');
     }
 
 }

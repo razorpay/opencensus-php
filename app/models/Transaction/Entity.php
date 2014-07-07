@@ -2,9 +2,7 @@
 
 namespace Models\Transaction;
 
-use EE\Exception;
-
-class Transaction extends UniqueIdDal
+class Entity extends UniqueIdDal
 {
 
     const ID = Common::ID;
@@ -33,20 +31,13 @@ class Transaction extends UniqueIdDal
 
     const UDF = 'udf';
 
+    const CURRENCY_LENGTH = 3;
+
     protected $table = \Constants\Table::TRANSACTION;
 
     protected $sign = 'txn';
 
     protected $entity = 'transaction';
-
-    private static $fetch_param_rules = array(
-        'created'       => 'numeric',
-        'from'          => 'numeric',
-        'to'            => 'numeric',
-        'count'         => 'numeric|max:100',
-        'skip'          => 'numeric',
-        'merchant_id'   => 'required',
-        'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled');
 
     protected $fillable = array(
         self::ID,
@@ -77,14 +68,48 @@ class Transaction extends UniqueIdDal
 
     protected $guarded = array(self::ID);
 
-    protected function getUdfAttribute($udf)
+    protected static $modifiers = array('contact');
+
+    protected static $generators = array('status', 'id', 'udf');
+
+    public function build(array $input)
     {
-        return unserialize($udf);
+        try
+        {
+            parent::build($input);
+        }
+        catch (Exception\ValidationFailureException $e)
+        {
+            throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
+        }
     }
 
-    public function setUdfAttribute($value)
+    public function generateStatus($input)
     {
-        $this->attributes[self::UDF] = serialize($value);
+        $this->setAttribute(self::STATUS, Status::OPEN);
+    }
+
+    public function generateUdf($input)
+    {
+        if (isset($input['udf']) === false)
+        {
+            $this->setAttribute(self::UDF, array());
+        }
+    }
+
+    protected function modifyContact($contact)
+    {
+        if (is_string($contact) === false)
+        {
+            return;
+        }
+
+        $contact = str_replace(' ', '', $contact);
+        $contact = str_replace('-', '', $contact);
+        $contact = str_replace('(', '', $contact);
+        $contact = str_replace(')', '', $contact);
+
+        return $contact;
     }
 
     public function setCaptureAmount($amount)
@@ -97,77 +122,6 @@ class Transaction extends UniqueIdDal
         $authAmount = $this->getAttribute(self::AMOUNT);
 
         $this->setAttribute(self::AUTH_AMOUNT, $authAmount);
-    }
-
-    const FETCH_WITH_CARD       = 0x1024;
-    const FETCH_WITH_TOKEN      = 0x2048;
-
-    /**
-     * Retrieves the transactions from database for a particular merchant.
-     * @param  array        $param
-     * @return Collection   A collection of transactions
-     */
-    public static function fetch($param)
-    {
-        if ($param === null)
-        {
-            throw new Exception\InvalidArgumentException('$param not provided');
-        }
-        self::validateFetchParams($param);
-
-        $cols = array();
-
-        /*
-         * Create the query.
-         */
-        $query = self::where(self::MERCHANT_ID, '=', $param['merchant_id'])
-                     ->orderBy(self::UPDATED_AT, 'desc');
-
-        if (isset($param['from']))
-        {
-            $query = $query->where(self::UPDATED_AT, '>=', $param['from']);
-        }
-
-        if (isset($param['to']))
-        {
-            $query = $query->where(self::UPDATED_AT, '<=', $param['to']);
-        }
-
-        if (isset($param['status']))
-        {
-            $query = $query->where(self::STATUS, '=', $param['status']);
-        }
-
-        if (isset($param['count']))
-        {
-            $query->take($param['count']);
-        }
-        else
-        {
-            $query->take(10);
-        }
-
-        if (isset($param['skip']))
-        {
-            $query->skip($param['skip']);
-        }
-
-        return $query->with('token.card')->get();
-    }
-
-    public static function validateFetchParams(array $param)
-    {
-        validate(self::$fetch_param_rules, $param);
-    }
-
-    private static function checkTimestamp(&$timestamp)
-    {
-        $timestamp = (int) $timestamp;
-        if ($timestamp < 0)
-            $timestamp = 0; // @todo: provide a better default.
-        else if ($timestamp > time())
-            $timestamp = time(); //@todo: consider what to put as max?
-        return true;
     }
 
     public function isProcessed()
@@ -204,11 +158,6 @@ class Transaction extends UniqueIdDal
     {
         $this->setAttribute(self::STATUS, $status);
         $this->save();
-    }
-
-    public function getObjectAttribute()
-    {
-        return 'transaction';
     }
 
     public function getMerchantId()
@@ -255,12 +204,12 @@ class Transaction extends UniqueIdDal
     public function token()
     {
         return $this->belongsTo(
-            __NAMESPACE__.'\Token');
+            'Models\Token\Entity');
     }
 
     public function merchant()
     {
-        return $this->belongsTo('Models\DAL\Merchant');
+        return $this->belongsTo('Models\Merchant\Entity');
     }
 
     public function setError($code, $desc)
@@ -287,23 +236,7 @@ class Transaction extends UniqueIdDal
                 'attributes' => $id,
                 'operation' => 'find');
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
-        return $txn;
-    }
-
-    public static function loadWithTokenAndCard($id, $merchantId)
-    {
-        $txn = self::with('token')
-                   ->merchantId($merchantId)
-                   ->where(self::ID, '=', $id)
-                   ->first();
-
-        if (($txn !== null) and
-            ($txn->token !== null))
-        {
-            $card = $txn->token->card()->first();
+            throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
         return $txn;

@@ -3,9 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Field\Ledger;
-use Constants\Field\Common;
-use Constants\Table;
+use Models\Ledger\Entity as Ledger;
+use Models\Merchant;
 
 class CreateLedger  extends Migration {
 
@@ -19,12 +18,12 @@ class CreateLedger  extends Migration {
         Schema::create(Table::LEDGER, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->char(Ledger::ID, Constants\Fields::ID_LENGTH)
+            $table->char(Ledger::ID, Ledger::ID_LENGTH)
                   ->primary();
 
             $table->char('ref', Constants\Fields::ID_LENGTH);
 
-            $table->integer(Common::MERCHANT_ID)
+            $table->integer(Ledger::MERCHANT_ID)
                   ->unsigned();
 
             $table->integer(Ledger::AMOUNT)
@@ -42,13 +41,13 @@ class CreateLedger  extends Migration {
                   ->default(0);
 
             // Adds created_at and updated_at columns to the table
-            $table->integer(Common::CREATED_AT);
-            $table->integer(Common::UPDATED_AT);
+            $table->integer(Ledger::CREATED_AT);
+            $table->integer(Ledger::UPDATED_AT);
 
             $table->index('ref');
 
-            $table->foreign(Common::MERCHANT_ID)
-                  ->references(Constants\Field\Merchant::ID)
+            $table->foreign(Ledger::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });

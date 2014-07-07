@@ -1,11 +1,10 @@
 <?php
 
-namespace Models\Service\Core;
+namespace Models\Card;
 
-use Models\Manager;
-use Models\DAL;
+use Models\Card;
 
-class Card
+class Core
 {
     protected $manager = null;
 
@@ -17,7 +16,7 @@ class Card
 
         $data = $this->manager->getData();
 
-        $card = new DAL\Card($data);
+        $card = new Card\Entity($data);
 
         $this->card = $card;
 
@@ -35,7 +34,7 @@ class Card
     {
         $card = $this->create($input);
 
-        Manager\Card::modifyNumber($input);
+        Card\Validator::modifyNumber($input);
 
         return array_merge(
             $card->toArray(),
@@ -47,7 +46,7 @@ class Card
     {
         $this->manager = Manager\Card::createValidate($input);
 
-        $details = DAL\CardDetail::retrieveDetails($this->manager->getField('number'));
+        $details = Card\Detail::retrieveDetails($this->manager->getField('number'));
 
         $this->manager->fillNetworkDetails($details);
     }
@@ -60,7 +59,7 @@ class Card
         {
             $iin = substr($number, 0, 6);
 
-            DAL\UnrecognizedCard::create(['iin' => $iin]);
+            Card\Unrecognized::create(['iin' => $iin]);
         }
     }
 }

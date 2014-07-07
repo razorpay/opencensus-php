@@ -1,12 +1,13 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Transaction;
 
-use Utility;
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Models\Base;
+use Utility;
 
-class Transaction extends EntityManager
+class Validate extends Base\Validator
 {
     protected static $createRules = array(
         'merchant_id'   =>  'required|numeric',
@@ -20,28 +21,7 @@ class Transaction extends EntityManager
     protected static $captureRules = array(
         'amount'        => 'required|numeric|max:500000|min:0');
 
-    protected static $modifiers = array('contact');
-
-    protected static $generators = array('status', 'id');
-
     protected static $createValidators = array('currency', 'contact', 'udf');
-
-    protected static $sign = 'txn';
-
-    protected function modifyContact($contact)
-    {
-        if (is_string($contact) === false)
-        {
-            return;
-        }
-
-        $contact = str_replace(' ', '', $contact);
-        $contact = str_replace('-', '', $contact);
-        $contact = str_replace('(', '', $contact);
-        $contact = str_replace(')', '', $contact);
-
-        return $contact;
-    }
 
     protected function validateContact($input)
     {
@@ -88,13 +68,6 @@ class Transaction extends EntityManager
      */
     protected function validateUdf($input)
     {
-        if (isset($input['udf']) === false)
-        {
-            $this->setField('udf', array());
-
-            return;
-        }
-
         $udf = $input['udf'];
 
         if (!is_array($udf))
@@ -140,39 +113,12 @@ class Transaction extends EntityManager
         }
     }
 
-    public function generateStatus($input)
-    {
-    	$this->setField('status', 'open');
-    }
-
-    public function getStatus()
-    {
-        return $this->getField('status');
-    }
-
-    public function setStatus($status)
-    {
-        $this->setField('status', $status);
-    }
-
     public static function checkCardKeyExists($input)
     {
         if (array_key_exists('card', $input) === false)
         {
             throw new Exception\BadRequestException(
                 'Transaction Exception: Card not provided');
-        }
-    }
-
-    public function build(array $input)
-    {
-        try
-        {
-            parent::build($input);
-        }
-        catch (Exception\ValidationFailureException $e)
-        {
-            throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
         }
     }
 

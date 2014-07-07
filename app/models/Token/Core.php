@@ -1,19 +1,17 @@
 <?php
 
-namespace Models\Service\Core;
+namespace Models\Token;
 
-use Models\Manager;
-use Models\DAL;
+use Models\Card;
+use Models\Token;
 
-class Token
+class Core
 {
-    public function create($merchantId, DAL\Card $card)
+    public function create($merchantId, Card\Entity $card)
     {
         $input['merchant_id'] = $merchantId;
 
-        $data = Manager\Token::createValidate($input)->getData();
-
-        $token = new DAL\Token($data);
+        $token = (new Token\Entity)->build($input);
 
         $token->card()->associate($card);
 

@@ -3,9 +3,9 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Field\Common;
-use Constants\Field\Token;
 use Constants\Table;
+use Models\Token\Entity as Token;
+use Models\Merchant;
 
 class CreateTokens extends Migration {
 
@@ -19,30 +19,30 @@ class CreateTokens extends Migration {
         Schema::create(Table::TOKEN, function(Blueprint $table){
             $table->engine = 'InnoDB';
 
-            $table->char(Token::ID, Constants\Fields::ID_LENGTH)
+            $table->char(Token::ID, Token::ID_LENGTH)
                   ->primary();
 
-            $table->char(Token::CARD_ID, Constants\Fields::ID_LENGTH)
+            $table->char(Token::CARD_ID, Token::ID_LENGTH)
                   ->unique()
                   ->nullable();
 
-            $table->integer(Common::MERCHANT_ID)
+            $table->integer(Token::MERCHANT_ID)
                   ->unsigned()
                   ->nullable();
 
             $table->boolean(TOKEN::EXPIRED);
 
             // Adds created_at and updated_at columns to the table
-            $table->integer(Common::CREATED_AT);
-            $table->integer(Common::UPDATED_AT);
+            $table->integer(Token::CREATED_AT);
+            $table->integer(Token::UPDATED_AT);
 
             $table->foreign(Token::CARD_ID)
-                  ->references(Common::ID)
+                  ->references(Token::ID)
                   ->on(Table::CARD)
                   ->on_delete('SET NULL');
 
-            $table->foreign(Common::MERCHANT_ID)
-                  ->references(\Constants\Field\Merchant::ID)
+            $table->foreign(Token::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT);
         });
     }
@@ -58,7 +58,7 @@ class CreateTokens extends Migration {
 
             $table->dropForeign(Table::TOKEN.'_'.Token::CARD_ID.'_foreign');
 
-            $table->dropForeign(Table::TOKEN.'_'.Common::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::TOKEN.'_'.Token::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::TOKEN);

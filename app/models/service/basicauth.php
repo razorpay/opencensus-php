@@ -2,8 +2,8 @@
 
 namespace Models\Service;
 
-use Models\DAL;
-use Models\Manager;
+use Models\Key;
+use Models\Merchant;
 use EE\Exception\InvalidArgumentException;
 
 class BasicAuth extends \Singleton {
@@ -50,7 +50,7 @@ class BasicAuth extends \Singleton {
 
     public function verifySecret($keyId, $keySecret)
     {
-        $key = DAL\Key::findNotExpired($keyId);
+        $key = Key\Repository::findNotExpired($keyId);
 
         if ($key === null)
         {
@@ -71,7 +71,7 @@ class BasicAuth extends \Singleton {
 
         $merchantId = $key->getMerchantId();
 
-        $merchant = DAL\Merchant::findOrFail($merchantId);
+        $merchant = Merchant\Repository::findOrFail($merchantId);
 
         $this->key = $key;
 
@@ -82,7 +82,7 @@ class BasicAuth extends \Singleton {
 
     public function verifyPublic($keyId)
     {
-        $key = DAL\Key::find($keyId);
+        $key = Key\Repository::find($keyId);
 
         if ($key === null)
         {
@@ -95,7 +95,7 @@ class BasicAuth extends \Singleton {
 
         $merchantId = $key->getMerchantId();
 
-        $merchant = DAL\Merchant::findOrFail($merchantId);
+        $merchant = Merchant\Repository::findOrFail($merchantId);
 
         $this->key = $key;
 
@@ -119,7 +119,7 @@ class BasicAuth extends \Singleton {
         if ($verify === false)
             return false;
 
-        $this->merchant = DAL\Merchant::find($merchantId);
+        $this->merchant = Merchant\Repository::find($merchantId);
 
         return true;
     }
@@ -128,5 +128,4 @@ class BasicAuth extends \Singleton {
     {
         $array[\Constants\Field\Common::MERCHANT_ID] = $this->MerchantId();
     }
-
 }

@@ -1,53 +1,17 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Base;
 
 use EE\Error\ErrorCode;
 use EE\Exception;
 
-class EntityManager
+class Validator
 {
-
-    /**
-     * The input provided
-     *
-     * @var array
-     */
-    protected $input = array();
-
-    /**
-     * Data formed after verifying and validating input
-     *
-     * @var array
-     */
-    protected $data = array();
-
-    /**
-     * Fields which will be generated
-     * during build
-     * @var array
-     */
-    protected static $generators = array();
-
-    /**
-     * Fields which will be modified before
-     * input validation
-     *
-     * @var array
-     */
-    protected static $modifiers = array();
-
     /**
      * Validator functions that will be
-     * rung during build on input data
+     * run during build on input data
      */
     protected static $validators = array();
-
-    /**
-     * Input keys which will be unset
-     * before calling 'fill'
-     */
-    protected static $unsetCreateInput = array();
 
     /**
      * Rules to validate input values for building
@@ -55,45 +19,16 @@ class EntityManager
      */
     protected static $createRules = array();
 
-    protected static $sign = '';
-
     public function __construct()
     {
         ;
     }
 
-    /**
-     * The "booting" method of the model.
-     *
-     * @return void
-     */
-    protected static function boot()
-    {
-        ;
-    }
-
-    public function build(array $input)
-    {
-        $this->input = $input;
-
-        $this->modify($input);
-
-        $this->validateInput($input, 'create');
-
-        $this->generate($input);
-
-        $this->unsetInput($input, 'create');
-
-        $this->fill($input);
-    }
-
     public static function createValidate(array $input)
     {
-        $manager = new static();
+        $validator = new static();
 
-        $manager->build($input);
-
-        return $manager;
+        $validator->validateInput($input, 'create');
     }
 
     /**
@@ -179,92 +114,8 @@ class EntityManager
         }
     }
 
-    public function generate($input)
-    {
-        foreach (static::$generators as $field)
-        {
-            $this->generateField($field, $input);
-        }
-    }
-
-    public function modify(& $input)
-    {
-        foreach (static::$modifiers as $field)
-        {
-            $this->modifyField($field, $input);
-        }
-    }
-
-    public function generateField($field, $input)
-    {
-        $this->{'generate'.studly_case($field)}($input);
-    }
-
-    public function modifyField($field, & $input)
-    {
-        $this->{'modify'.studly_case($field)}($input);
-    }
-
-    public function fill(array $values)
-    {
-        $this->data = array_merge($values, $this->data);
-    }
-
-    /**
-     * Returns value of the field
-     *
-     * @param  string  $key
-     * @return mixed
-     */
-    public function getField($key)
-    {
-        if (array_key_exists($key, $this->data))
-        {
-            return $this->data[$key];
-        }
-        else
-            throw new Exception\InvalidArgumentException($key . ' is not a valid attribute');
-    }
-
-    public function setField($key, $value)
-    {
-        $this->data[$key] = $value;
-    }
-
     public static function getCreateInputKeys()
     {
         return array_keys(static::$createRules);
-    }
-
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    public static function verifyIdAndStripSign(& $id)
-    {
-        self::stripSignOrFail($id);
-
-        UniqueId::verifyUid($id, true);
-    }
-
-    protected static function stripSignOrFail(& $id)
-    {
-        if (strpos($id, static::$sign) === false)
-        {
-            throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
-        $len = strlen(static::$sign);
-
-        //
-        // add 1 to $len to account for dash
-        //
-        $id = substr($id, $len + 1);
-    }
-
-    public function generateId($input)
-    {
-        $this->setField('id', UniqueId::generateId());
     }
 }

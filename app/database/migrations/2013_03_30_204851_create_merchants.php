@@ -3,9 +3,9 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Constants\Field\Merchant;
-use Constants\Field\Common;
 use Constants\Table;
+
+use Models\Merchant\Entity as Merchant;
 
 class CreateMerchants extends Migration {
 
@@ -26,8 +26,8 @@ class CreateMerchants extends Migration {
             $table->integer(Merchant::BALANCE)
                   ->default(0);
 
-            $table->integer(Common::CREATED_AT);  
-            $table->integer(Common::UPDATED_AT);
+            $table->integer(Merchant::CREATED_AT);
+            $table->integer(Merchant::UPDATED_AT);
         });
     }
 

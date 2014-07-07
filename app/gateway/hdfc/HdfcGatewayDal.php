@@ -2,7 +2,7 @@
 
 namespace Gateway\HdfcGateway;
 
-class HdfcGatewayDal extends \Models\DAL\DAL
+class HdfcGatewayDal extends \Models\Base\Entity
 {
     protected $table = 'hdfc';
 

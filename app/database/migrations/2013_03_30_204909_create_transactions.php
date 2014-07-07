@@ -4,8 +4,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
-use Constants\Field\Transaction;
-use Constants\Field\Common;
+use Models\Transaction\Entity as Transaction;
+use Models\Merchant;
 
 class CreateTransactions  extends Migration
 {
@@ -21,10 +21,10 @@ class CreateTransactions  extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Transaction::ID, Constants\Fields::ID_LENGTH)
+            $table->char(Transaction::ID, Transaction::ID_LENGTH)
                   ->primary();
 
-            $table->integer(Common::MERCHANT_ID)
+            $table->integer(Transaction::MERCHANT_ID)
                   ->unsigned();
 
             $table->integer(Transaction::AUTH_AMOUNT)
@@ -45,14 +45,13 @@ class CreateTransactions  extends Migration
                                         'failed'
                                         ));
 
-            $table->char(Transaction::CURRENCY, Constants\Fields::CURRENCY_LENGTH)
-                  ->default('INR');
+            $table->char(Transaction::CURRENCY, Transaction::CURRENCY_LENGTH);
 
             $table->string(Transaction::DESCRIPTION);
 
             $table->boolean('livemode');
 
-            $table->char(Transaction::TOKEN_ID, Constants\Fields::ID_LENGTH)
+            $table->char(Transaction::TOKEN_ID, Transaction::ID_LENGTH)
                   ->unique()
                   ->nullable();
 
@@ -73,16 +72,16 @@ class CreateTransactions  extends Migration
             $table->binary(Transaction::UDF);
 
             // Adds created_at and updated_at columns to the table
-            $table->integer(Common::CREATED_AT);
-            $table->integer(Common::UPDATED_AT);
+            $table->integer(Transaction::CREATED_AT);
+            $table->integer(Transaction::UPDATED_AT);
 
-            $table->foreign(Common::MERCHANT_ID)
-                  ->references(Constants\Field\Merchant::ID)
+            $table->foreign(Transaction::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
             $table->foreign(Transaction::TOKEN_ID)
-                  ->references(Common::ID)
+                  ->references(Transaction::ID)
                   ->on(Table::TOKEN);
         });
     }
@@ -96,12 +95,11 @@ class CreateTransactions  extends Migration
     {
         Schema::table(Table::TRANSACTION, function($table){
 
-            $table->dropForeign(Table::TRANSACTION.'_'.Common::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
 
             $table->dropForeign(Table::TRANSACTION.'_'.Transaction::TOKEN_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);
     }
-
 }

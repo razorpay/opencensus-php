@@ -7,6 +7,8 @@ use EE\Exception;
 
 class Entity extends \Eloquent
 {
+    const ID_LENGTH = '24';
+
     /**
      * Indicates if the primary key is uuid.
      *
@@ -18,6 +20,49 @@ class Entity extends \Eloquent
 
     protected $entity = '';
 
+    /**
+     * The input provided
+     *
+     * @var array
+     */
+    protected $input = array();
+
+    /**
+     * Fields which will be generated
+     * during build
+     * @var array
+     */
+    protected static $generators = array();
+
+    /**
+     * Fields which will be modified before
+     * input validation
+     *
+     * @var array
+     */
+    protected static $modifiers = array();
+
+    /**
+     * Input keys which will be unset
+     * before calling 'fill'
+     */
+    protected static $unsetCreateInput = array();
+
+    public function build(array $input)
+    {
+        $this->input = $input;
+
+        $this->modify($input);
+
+        $this->validateInput($input, 'create');
+
+        $this->generate($input);
+
+        $this->unsetInput($input, 'create');
+
+        $this->fill($input);
+    }
+
     public function toArrayPublic()
     {
         $array = $this->toArray();
@@ -27,21 +72,6 @@ class Entity extends \Eloquent
         $array['entity'] = $this->entity;
 
         return $array;
-    }
-
-    public function getVisible()
-    {
-        return $this->visible;
-    }
-
-    public function getHidden()
-    {
-        return $this->hidden;
-    }
-
-    public function getGuarded()
-    {
-        return $this->guarded;
     }
 
     protected function getDateFormat()
@@ -61,5 +91,53 @@ class Entity extends \Eloquent
         {
             return parent::asDateTime($value);
         }
+    }
+
+    public function generate($input)
+    {
+        foreach (static::$generators as $field)
+        {
+            $this->generateAttribute($field, $input);
+        }
+    }
+
+    public function modify(& $input)
+    {
+        foreach (static::$modifiers as $field)
+        {
+            $this->modifyField($field, $input);
+        }
+    }
+
+    public function modifyAttribute($attr, & $input)
+    {
+        $this->{'modify'.studly_case($attr)}($input);
+    }
+
+    public function generateAttribute($attr, $input)
+    {
+        $this->{'generate'.studly_case($attr)}($input);
+    }
+
+    public static function verifyIdAndStripSign(& $id)
+    {
+        self::stripSignOrFail($id);
+
+        UniqueId::verifyUid($id, true);
+    }
+
+    protected static function stripSignOrFail(& $id)
+    {
+        if (strpos($id, static::$sign) === false)
+        {
+            throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        $len = strlen(static::$sign);
+
+        //
+        // add 1 to $len to account for dash
+        //
+        $id = substr($id, $len + 1);
     }
 }

@@ -6,6 +6,8 @@ class Ledger extends UniqueIdDal
 {
     const ID = Common::ID;
 
+    const MERCHANT_ID = 'merchant_id';
+
     const AMOUNT = 'amount';
 
     const ACTION = 'action';

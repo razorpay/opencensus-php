@@ -2,6 +2,9 @@
 
 namespace Models\Card;
 
+use EE\Exception;
+use Models\Card;
+
 class Entity extends UniqueIdDal
 {
     const ID = Common::ID;
@@ -34,6 +37,7 @@ class Entity extends UniqueIdDal
 
     const ADDRESS_COUNTRY = 'address_country';
 
+    const COUNTRY_LENGTH = 2;
 
     protected $table = \Constants\Table::CARD;
 
@@ -64,6 +68,10 @@ class Entity extends UniqueIdDal
 
     protected $guarded = array(self::ID);
 
+    protected static $modifiers = array('expiry_year', 'number');
+
+    protected static $generators = array('last4', 'id');
+
     protected $visible = array(
         self::ID,
         self::NAME,
@@ -72,8 +80,98 @@ class Entity extends UniqueIdDal
         self::LAST4,
         self::NETWORK);
 
+    public function build(array $input)
+    {
+        try
+        {
+            parent::build($input);
+        }
+        catch (Exception\CardErrorException $e)
+        {
+            throw $e;
+        }
+        catch (Exception\ValidationFailureException $e)
+        {
+            throw new CardErrorException($e->getMessageBag(), 0, $e);
+        }
+    }
+
+    public function generateLast4($input)
+    {
+        $last4 = substr($input['number'], -4);
+
+        $this->setAttribute(self::LAST4, $last4);
+    }
+
+    public function modifyExpiryYear(& $input)
+    {
+        if ((isset($input['expiry_year'])) and
+            (strlen($input['expiry_year']) == 2))
+        {
+            $input['expiry_year'] = '20'.$input['expiry_year'];
+        }
+    }
+
+    public static function modifyNumber(& $input)
+    {
+        $number = $input['number'];
+
+        if (is_string($number) === false)
+        {
+            return $number;
+        }
+
+        $number = str_replace(' ', '', $number);
+        $number = str_replace('-', '', $number);
+
+        $input['number'] = $number;
+    }
+
     public function getNetwork()
     {
         return $this->getAttribute(self::NETWORK);
+    }
+
+    public function fillNetworkDetails($details)
+    {
+        $number = $this->getField('number');
+
+        $network = Card\Network::detectNetwork($number);
+
+        $this->setAttribute(self::NETWORK, $network);
+
+        if ($details)
+        {
+            if ($network === Card\Network::UNIDENTIFIED)
+            {
+                if ($details['brand'] !== null)
+                {
+                    $network = strtolower($details['brand']);
+
+                    if (Card\Network::checkNetworkValidity($network))
+
+                    $this->setAttribute(self::NETWORK, $network);
+
+                    // trace here
+                }
+                else
+                {
+                    // trace here
+                }
+            }
+
+            $arr = array(
+                'type' => $details['card_type'],
+                'bank' => $details['bank'],
+                'country' => $details['country_code']);
+
+            $this->fill($arr);
+
+            if ($network === null)
+            {
+                // @todo: trace
+                return;
+            }
+        }
     }
 }

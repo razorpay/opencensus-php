@@ -1,26 +1,12 @@
 <?php
 namespace Models\Manager;
 
-use Utility;
+use Models\Base;
 
-class Token extends EntityManager
+class Validator extends Base\Validator
 {
     protected static $createRules = array(
         'merchant_id' => 'required|numeric');
 
-    protected static $generators = array('token', 'expired', 'id');
-
-    private static $TOKEN_LEN = \Constants\Fields::ID_LENGTH;
-
-    protected function generateToken()
-    {
-        $token = Utility::generate_token(static::$TOKEN_LEN);
-
-        $this->setField('id', $token);
-    }
-
-    protected function generateExpired()
-    {
-        $this->setField('expired', 0);
-    }
+    private static $TOKEN_LEN = Entity::ID_LENGTH;
 }

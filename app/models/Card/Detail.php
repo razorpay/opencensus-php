@@ -3,13 +3,24 @@
 namespace Models\Card;
 
 use \Constants\Table;
-use \Constants\Field\IIN;
 
 class Detail extends Eloquent
 {
+    const IIN = 'iin';
+
+    const CATEGORY = 'category';
+
+    const BRAND = 'brand';
+
+    const TYPE = 'card_type';
+
+    const COUNTRY = 'country_code';
+
+    const BANK = 'bank';
+
     protected $table = Table::IIN;
 
-    protected $primaryKey = IIN::IIN;
+    protected $primaryKey = self::IIN;
 
     public $incrementing = false;
 

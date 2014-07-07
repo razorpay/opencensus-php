@@ -26,6 +26,8 @@ class Key extends UniqueIdDal
         self::ACTIVE
     );
 
+    protected static $generators = array('id');
+
     /**
      * 86400 sec or more accurately 24 hours.
      * When a key is rolled over, by default
@@ -59,21 +61,7 @@ class Key extends UniqueIdDal
     public function merchant()
     {
         return $this->belongsTo(
-            __NAMESPACE__.'\Merchant');
-    }
-
-    public static function getKeysForMerchant($merchantId, $expired = false)
-    {
-        $query = self::MerchantId($merchantId);
-
-        $query = ($expired === true) ?: $query->notExpired();
-
-        return $query->get();
-    }
-
-    public static function findNotExpired($keyId)
-    {
-        return self::notExpired()->find($keyId);
+            '\Models\Merchant\Entity');
     }
 
     public function getSecret()
@@ -84,5 +72,10 @@ class Key extends UniqueIdDal
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    protected function generateId($input)
+    {
+        $this->setAttribute('id', $input['key_id']);
     }
 }

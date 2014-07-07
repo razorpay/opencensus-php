@@ -1,14 +1,12 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\Base;
 
-use Models\Manager\UniqueId;
-
-class UniqueIdDal extends DAL
+class UniqueIdEntity extends Entity
 {
 
     /**
-     * Indicates if the IDs are uuid.
+     * Indicates if the IDs are Unique Id
      *
      * @var bool
      */
@@ -17,6 +15,11 @@ class UniqueIdDal extends DAL
     public $incrementing = false;
 
     protected $secureUid = false;
+
+    public function generateId($input)
+    {
+        $this->setAttribute(self::ID, UniqueId::generateId());
+    }
 
     /**
      * Save the model to the database.

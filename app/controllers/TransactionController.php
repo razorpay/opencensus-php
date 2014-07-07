@@ -3,7 +3,6 @@
 use Models\Service\Transaction;
 use Models\Service\BasicAuth;
 use Constants\Field;
-use Models\Manager\TransactionStatus;
 
 class TransactionController extends BaseController
 {
