@@ -16,7 +16,7 @@ class Entity extends \Eloquent
      */
     public $uuid = false;
 
-    protected $sign = '';
+    protected static $sign = '';
 
     protected $entity = '';
 
@@ -61,13 +61,36 @@ class Entity extends \Eloquent
         $this->unsetInput($input, 'create');
 
         $this->fill($input);
+
+        return $this;
+    }
+
+    public function validateInput($input, $op)
+    {
+        $class = get_called_class();
+
+        $pos1 = strpos($class, '\\');
+        $pos2 = strrpos($class, '\\');
+
+        $entity = substr($class, $pos1 + 1, $pos2 - $pos1 - 1);
+
+        $validator = '\\Models\\'.$entity.'\\Validator';
+        (new $validator)->validateInput($input, $op);
+    }
+
+    public function unsetInput(& $input, $operation)
+    {
+        foreach (static::${'unset'.ucfirst($operation).'Input'} as $key)
+        {
+            unset($input[$key]);
+        }
     }
 
     public function toArrayPublic()
     {
         $array = $this->toArray();
 
-        $array['id' ] = $this->sign . '-' . $array['id'];
+        $array['id' ] = static::$sign . '-' . $array['id'];
 
         $array['entity'] = $this->entity;
 
@@ -105,7 +128,7 @@ class Entity extends \Eloquent
     {
         foreach (static::$modifiers as $field)
         {
-            $this->modifyField($field, $input);
+            $this->modifyAttribute($field, $input);
         }
     }
 

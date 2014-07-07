@@ -39,7 +39,7 @@ class Validator
      *
      * @return void     throws exception for error
      */
-    protected function validateInput($input, $operation)
+    public function validateInput($input, $operation)
     {
         $this->validateInputKeys($input, $operation);
 
@@ -103,14 +103,6 @@ class Validator
 
                 $this->$validate_func($input);
             }
-        }
-    }
-
-    public function unsetInput(& $input, $operation)
-    {
-        foreach (static::${'unset'.ucfirst($operation).'Input'} as $key)
-        {
-            unset($input[$key]);
         }
     }
 

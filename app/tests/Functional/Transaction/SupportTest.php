@@ -22,7 +22,7 @@ class SupportTest extends TestCase
         //
         // Seed the db with required data
         //
-        $key = $this->createModel('key');
+        $key = $this->createEntity('key');
 
         $this->testData = include(__DIR__.'/helpers/cards.php');
     }

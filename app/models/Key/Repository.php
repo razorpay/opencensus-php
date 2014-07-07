@@ -6,7 +6,9 @@ use Models\Base;
 
 class Repository extends Base\Repository
 {
-    public static function getKeysForMerchant($merchantId, $expired = false)
+    protected $entity = 'Key';
+
+    public function getKeysForMerchant($merchantId, $expired = false)
     {
         $repo = $this->repo;
 
@@ -17,7 +19,7 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public static function findNotExpired($keyId)
+    public function findNotExpired($keyId)
     {
         $repo = $this->repo;
 

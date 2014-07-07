@@ -19,9 +19,9 @@ class TestCase extends ParentTestCase
     use CustomAssertions;
 
     protected static $fixtures = array(
-        'merchant' => 'Models\DAL\Merchant',
-        'key' => 'Models\DAL\Key',
-        'transaction' => 'Models\DAL\Transaction');
+        'merchant' => 'Models\Merchant\Entity',
+        'key' => 'Models\Key\Entity',
+        'transaction' => 'Models\Transaction\Entity');
 
     public function setUp()
     {
@@ -61,17 +61,17 @@ class TestCase extends ParentTestCase
         DB::rollback();
     }
 
-    protected function createModel($dal, $attributes = array())
+    protected function createEntity($entity, $attributes = array())
     {
         $this->eloquentUnguard();
 
-        $dal = self::$fixtures[$dal];
+        $entity = self::$fixtures[$entity];
 
-        $model = Factory::create($dal, $attributes);
+        $entity = Factory::create($entity, $attributes);
 
         $this->eloquentReguard();
 
-        return $model;
+        return $entity;
     }
 
     protected function eloquentUnguard()

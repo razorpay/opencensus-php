@@ -2,7 +2,7 @@
 
 namespace Dashboard;
 
-class DashboardDal extends \Models\Base\Entity
+class DashboardDal extends \Models\Base\DAL
 {
     protected $table = 'dashboard_logs';
 

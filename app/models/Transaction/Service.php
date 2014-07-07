@@ -1,14 +1,16 @@
 <?php
 
-namespace Models\Service;
+namespace Models\Transaction;
 
 use EE\Exception\BadRequestException;
-use Models\Manager;
-use Models\DAL;
+
+use Models\Base;
+use Models\Transaction;
+
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Transaction extends Service
+class Service extends Base\Service
 {
     protected $txn;
     protected $trace;
@@ -16,7 +18,8 @@ class Transaction extends Service
     public function __construct()
     {
         parent::__construct();
-        $this->core = new Core\Transaction();
+
+        $this->core = new Transaction\Core();
         $this->trace = Trace::getInstance();
     }
 
@@ -43,7 +46,7 @@ class Transaction extends Service
         // We convert txn model to array
         // if it's a txn model
         //
-        if($data instanceof DAL\Transaction)
+        if($data instanceof Transaction\Entity)
             $data = $data->toArrayPublic();
 
         return $data;
@@ -51,9 +54,9 @@ class Transaction extends Service
 
     public function retrieveMultiple(array $input)
     {
-        $txn = new DAL\Transaction;
+        $txn = new Transaction\Entity;
 
-        $txns = $txn->fetch($input);
+        $txns = (new Transaction\Repository)->fetch($input);
 
         $count = count($txns);
 
@@ -82,9 +85,9 @@ class Transaction extends Service
      */
     public function refund($id, $merchantId)
     {
-        Manager\Transaction::verifyIdAndStripSign($id);
+        Transaction\Entity::verifyIdAndStripSign($id);
 
-        $txn = DAL\Transaction::findByIdAndMerchantIdOrFailPublic($id, $merchantId);
+        $txn = (new Transaction\Repository)->findByIdAndMerchantIdOrFailPublic($id, $merchantId);
 
         //
         // Don't continue if already refunded
@@ -136,11 +139,11 @@ class Transaction extends Service
      */
     public function bankAcsCallback($id, array $input)
     {
-        Manager\Transaction::verifyIdAndStripSign($id);
+        Transaction\Entity::verifyIdAndStripSign($id);
 
         unset($input['csrf']);
 
-        $txn = DAL\Transaction::findOrFail($id);
+        $txn = (new Transaction\Repository)->findOrFail($id);
 
         $input['txn'] = $txn->toArray();
 

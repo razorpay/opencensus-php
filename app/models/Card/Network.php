@@ -63,7 +63,7 @@ class Network
         self::AMEX,
         self::JCB);
 
-    public static function detectNetwork($number)
+    public static function detectNetwork($iin)
     {
         $cardNetwork = null;
 
@@ -72,7 +72,7 @@ class Network
             if ($regex === null)
             {
                 $func = 'is'.studly_case($network);
-                if (self::{$func}($number) === true)
+                if (self::{$func}($iin) === true)
                 {
                     $cardNetwork = $network;
                     break;
@@ -80,7 +80,7 @@ class Network
             }
             else
             {
-                $ret =  preg_match($regex, $number);
+                $ret =  preg_match($regex, $iin);
 
                 if ($ret === 1)
                 {
@@ -101,12 +101,12 @@ class Network
         return self::UNIDENTIFIED;
     }
 
-    public static function isMaestro($number)
+    public static function isMaestro($iin)
     {
-        return in_array(substr($number, 0, 4), self::$maestroFirstFour);
+        return in_array(substr($iin, 0, 4), self::$maestroFirstFour);
     }
 
-    public static function isRupay($number)
+    public static function isRupay($iin)
     {
         // @todo: determine regex for this one.
         return false;

@@ -1,7 +1,7 @@
-Models\DAL\Merchant:
+Models\Merchant\Entity:
     id: $integer
 
-Models\DAL\Card:
+Models\Card\Entity:
     name: $string
     expiry_month: 01
     expiry_year: 1999
@@ -9,26 +9,26 @@ Models\DAL\Card:
     country: IN
     last4: 789$integer
 
-Models\DAL\Token:
+Models\Token\Entity:
     id: 174bdd3e456c8f6fabcdef12
     card_id:
-        type: Models\DAL\Card
+        type: Models\Card\Entity
     merchant_id:
-        type: Models\DAL\Merchant
+        type: Models\Merchant\Entity
 
-Models\DAL\Key:
+Models\Key\Entity:
     id: d9c6bf091a1a64cb5678d8c1
     merchant_id:
-        type: Models\DAL\Merchant
+        type: Models\Merchant\Entity
     live: 1
     active: 1
     secret: $2y$10$UVD2ZERxHs0QyL7gaElrWOfvwAx11m.G374AGKpPnyn8VK4FN5Yry
 
-Models\DAL\Transaction:
+Models\Transaction\Entity:
     merchant_id:
-        type: Models\DAL\Merchant
+        type: Models\Merchant\Entity
     token_id:
-        type: Models\DAL\Token
+        type: Models\Token\Entity
     amount: 100
     currency: INR
     status: open

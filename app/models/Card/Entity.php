@@ -4,10 +4,11 @@ namespace Models\Card;
 
 use EE\Exception;
 use Models\Card;
+use Models\Base;
 
-class Entity extends UniqueIdDal
+class Entity extends Base\UniqueIdEntity
 {
-    const ID = Common::ID;
+    const ID = 'id';
 
     const NAME = 'name';
 
@@ -41,7 +42,7 @@ class Entity extends UniqueIdDal
 
     protected $table = \Constants\Table::CARD;
 
-    protected $sign = 'card';
+    protected static $sign = 'card';
 
     protected $entity = 'card';
 
@@ -92,8 +93,10 @@ class Entity extends UniqueIdDal
         }
         catch (Exception\ValidationFailureException $e)
         {
-            throw new CardErrorException($e->getMessageBag(), 0, $e);
+            throw new Exception\CardErrorException($e->getMessageBag(), 0, $e);
         }
+
+        return $this;
     }
 
     public function generateLast4($input)
@@ -132,11 +135,9 @@ class Entity extends UniqueIdDal
         return $this->getAttribute(self::NETWORK);
     }
 
-    public function fillNetworkDetails($details)
+    public function fillNetworkDetails($details, $iin)
     {
-        $number = $this->getField('number');
-
-        $network = Card\Network::detectNetwork($number);
+        $network = Card\Network::detectNetwork($iin);
 
         $this->setAttribute(self::NETWORK, $network);
 

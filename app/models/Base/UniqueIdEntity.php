@@ -18,7 +18,7 @@ class UniqueIdEntity extends Entity
 
     public function generateId($input)
     {
-        $this->setAttribute(self::ID, UniqueId::generateId());
+        $this->setAttribute(static::ID, UniqueId::generateId());
     }
 
     /**
@@ -31,7 +31,9 @@ class UniqueIdEntity extends Entity
     {
         $this->generateUniqueIdIfNotSet();
 
-        parent::save($options);
+        $saved = parent::save($options);
+
+        return $saved;
     }
 
     public function generateUniqueIdIfNotSet()

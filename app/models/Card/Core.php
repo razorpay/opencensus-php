@@ -6,19 +6,15 @@ use Models\Card;
 
 class Core
 {
-    protected $manager = null;
-
     protected $card = null;
 
     public function create($input)
     {
-        $this->validateAndFillNetworkDetails($input);
-
-        $data = $this->manager->getData();
-
-        $card = new Card\Entity($data);
+        $card = (new Card\Entity)->build($input);
 
         $this->card = $card;
+
+        $this->fillNetworkDetails($input, $card);
 
         $this->checkNetwork($card, $input['number']);
 
@@ -34,7 +30,7 @@ class Core
     {
         $card = $this->create($input);
 
-        Card\Validator::modifyNumber($input);
+        Card\Entity::modifyNumber($input);
 
         return array_merge(
             $card->toArray(),
@@ -42,13 +38,13 @@ class Core
              'cvv' => $input['cvv']]);
     }
 
-    public function validateAndFillNetworkDetails($input)
+    public function fillNetworkDetails($input, $card)
     {
-        $this->manager = Manager\Card::createValidate($input);
+        $iin = substr($input['number'], 0, 6);
 
-        $details = Card\Detail::retrieveDetails($this->manager->getField('number'));
+        $details = (new Card\Repository)->retrieveDetails($iin);
 
-        $this->manager->fillNetworkDetails($details);
+        $card->fillNetworkDetails($details, $iin);
     }
 
     public function checkNetwork($card, $number)

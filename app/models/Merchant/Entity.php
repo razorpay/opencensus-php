@@ -2,20 +2,24 @@
 
 namespace Models\Merchant;
 
-use \Constants\Field;
+use Models\Base;
 
-class Merchant extends DAL
+class Entity extends Base\Entity
 {
+    const ID = 'id';
+
+    const BALANCE = 'balance';
+
     protected $table = \Constants\Table::MERCHANT;
 
     public $incrementing = false;
 
     protected $hidden = array(
-        Field\Merchant::ID,
-        Field\Merchant::BALANCE);
+        self::ID,
+        self::BALANCE);
 
     protected $fillable = array(
-        Field\Merchant::ID
+        self::ID
     );
 
     public function keys()

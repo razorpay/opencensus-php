@@ -6,17 +6,19 @@ use Models\Base;
 
 class Entity extends Base\UniqueIdEntity
 {
-    const ID = Common::ID;
+    const ID = 'id';
 
-    const MERCHANT_ID = Common::MERCHANT_ID;
+    const MERCHANT_ID = 'merchant_id';
 
     const EXPIRED = 'expired';
 
     const CARD_ID = 'card_id';
 
+    const TOKEN_LEN = self::ID_LENGTH;
+
     protected $table = \Constants\Table::TOKEN;
 
-    protected $sign = 'tok';
+    protected static $sign = 'tok';
 
     protected $entity = 'token';
 
@@ -30,7 +32,7 @@ class Entity extends Base\UniqueIdEntity
 
     protected function generateToken()
     {
-        $token = Utility::generate_token(static::$TOKEN_LEN);
+        $token = \Utility::generate_token(self::TOKEN_LEN);
 
         $this->setAttribute(self::ID, $token);
     }

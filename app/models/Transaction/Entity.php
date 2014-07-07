@@ -2,10 +2,13 @@
 
 namespace Models\Transaction;
 
-class Entity extends UniqueIdDal
-{
+use Models\Base;
 
-    const ID = Common::ID;
+class Entity extends Base\UniqueIdEntity
+{
+    const ID = 'id';
+
+    const MERCHANT_ID = 'merchant_id';
 
     const AUTH_AMOUNT = 'auth_amount';
 
@@ -35,7 +38,7 @@ class Entity extends UniqueIdDal
 
     protected $table = \Constants\Table::TRANSACTION;
 
-    protected $sign = 'txn';
+    protected static $sign = 'txn';
 
     protected $entity = 'transaction';
 
@@ -82,6 +85,8 @@ class Entity extends UniqueIdDal
         {
             throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
         }
+
+        return $this;
     }
 
     public function generateStatus($input)
@@ -93,7 +98,7 @@ class Entity extends UniqueIdDal
     {
         if (isset($input['udf']) === false)
         {
-            $this->setAttribute(self::UDF, array());
+            ;//$this->setAttribute(self::UDF, array());
         }
     }
 
@@ -216,30 +221,6 @@ class Entity extends UniqueIdDal
     {
         $this->setAttribute(self::ERROR_CODE, $code);
         $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
-    }
-
-    public static function findByIdAndMerchantId($id, $merchantId)
-    {
-        return static::where(self::MERCHANT_ID, $merchantId)
-                     ->find($id);
-    }
-
-    public static function findByIdAndMerchantIdOrFailPublic($id, $merchantId)
-    {
-        $txn = static::where(self::MERCHANT_ID, $merchantId)
-                     ->find($id);
-
-        if ($txn === null)
-        {
-            $e = array(
-                'model' => get_called_class(),
-                'attributes' => $id,
-                'operation' => 'find');
-
-            throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
-        return $txn;
     }
 
     public function scopeMerchantId($query, $merchantId)

@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Models\Manager;
 
-use Models\Manager\Card;
+use Models\Card;
 use Tests\TestCase;
 
 /**
@@ -14,7 +14,6 @@ use Tests\TestCase;
 
 class ValidationTest extends TestCase
 {
-
     public function setUp()
     {
         parent::setUp();
@@ -32,7 +31,7 @@ class ValidationTest extends TestCase
             'address_country' => 'IN',
             'address_zip' => '244713',
         ];
-        $this->card = new Card();
+        $this->card = new Card\Entity();
     }
 
     public function tearDown()

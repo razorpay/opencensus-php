@@ -1,6 +1,6 @@
 <?php
 
-use Models\Service\Transaction;
+use Models\Transaction\Service as Transaction;
 use Models\Service\BasicAuth;
 use Constants\Field;
 

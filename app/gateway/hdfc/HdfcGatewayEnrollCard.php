@@ -3,7 +3,7 @@
 namespace Gateway\HdfcGateway;
 
 use EE\Exception;
-use Models\Manager\CardNetwork;
+use Models\Card;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -213,8 +213,8 @@ trait HdfcGatewayEnrollCard
         if ($notEnrolled === false)
             return;
 
-        $visaOrDiners = (($network === CardNetwork::VISA) or
-                         ($network === CardNetwork::DINERS_CLUB));
+        $visaOrDiners = (($network === Card\Network::VISA) or
+                         ($network === Card\Network::DINERS_CLUB));
 
         if ($visaOrDiners)
         {
@@ -227,8 +227,8 @@ trait HdfcGatewayEnrollCard
             throw new Exception\LogicException('eci value should be 6');
         }
 
-        $masterCardOrMaestro = (($network === CardNetwork::MASTERCARD) or
-                                ($network === CardNetwork::MAESTRO));
+        $masterCardOrMaestro = (($network === Card\Network::MASTERCARD) or
+                                ($network === Card\Network::MAESTRO));
 
         if ($masterCardOrMaestro)
         {

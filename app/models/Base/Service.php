@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Service;
+namespace Models\Base;
 
 class Service
 {

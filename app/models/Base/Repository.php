@@ -7,13 +7,14 @@ use EE\Exception;
 
 class Repository
 {
-    protected $model;
+    protected $entity = 'Entity';
 
-    protected $repo = 'Entity';
+    protected $repo = null;
 
     public function __construct()
     {
-        ;
+        if ($this->repo === null)
+            $this->repo = '\\Models\\'.$this->entity.'\\Entity';
     }
 
     public function createOrFail(array $attributes)
@@ -30,9 +31,9 @@ class Repository
         throw new Exception\DbQueryException($e);
     }
 
-    public static function findOrFail($id, $columns = array('*'))
+    public function findOrFail($id, $columns = array('*'))
     {
-        $repo = $get_called_class();
+        $repo = $this->repo;
 
         if ( ! (NULL === $model = $repo::find($id, $columns))) return $model;
 
@@ -44,9 +45,9 @@ class Repository
         throw new Exception\DbQueryException($e);
     }
 
-    public static function findOrFailPublic($id, $columns = array('*'))
+    public function findOrFailPublic($id, $columns = array('*'))
     {
-        $repo = $get_called_class();
+        $repo = $this->repo;
 
         if ( ! (NULL === $model = $repo::find($id, $columns))) return $model;
 
@@ -58,24 +59,38 @@ class Repository
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
     }
 
+    public function find($id, $columns = array('*'))
+    {
+        $repo = $this->repo;
+        return $repo::find($id, $columns);
+    }
+
     /**
      * Save the model to the database.
      *
      * @param  array  $options
      */
-    public function saveOrFail($entity)
+    public function saveOrFail($entity, array $options = array())
     {
-        $saved = $entity->save($options);
+        $saved = $this->save($entity, $options);
 
         if ($saved === true)
             return;
 
         $e = array(
                 'model' => get_called_class(),
-                'attributes' => $this->attributes,
+                'attributes' => $entity->toArray(),
                 'operation' => 'save');
 
+
         throw new Exception\DbQueryException($e);
+    }
+
+    public function save($entity, array $options = array())
+    {
+        $saved = $entity->save($options);
+
+        return $saved;
     }
 
     public function pushOrFail($entity)

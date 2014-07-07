@@ -5,9 +5,8 @@ namespace Models\Transaction;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
-use Utility;
 
-class Validate extends Base\Validator
+class Validator extends Base\Validator
 {
     protected static $createRules = array(
         'merchant_id'   =>  'required|numeric',
@@ -68,6 +67,9 @@ class Validate extends Base\Validator
      */
     protected function validateUdf($input)
     {
+        if (isset($input['udf']) === false)
+            return;
+
         $udf = $input['udf'];
 
         if (!is_array($udf))
@@ -122,20 +124,22 @@ class Validate extends Base\Validator
         }
     }
 
-    public function captureValidate($txn, $input)
+    public static function captureValidate($txn, $input)
     {
+        $instance = new static;
+
         //
         // Don't continue if already captured
         //
         if ($txn->isCaptured())
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
+            throw new Exception\BadRequestException(
+                null, ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
         }
 
         try
         {
-            $this->validateInput($input, 'capture');
+            $instance->validateInput($input, 'capture');
         }
         catch (Exception\ValidationFailureException $e)
         {
@@ -144,7 +148,8 @@ class Validate extends Base\Validator
 
         if ($input['amount'] > $txn->getAttribute('amount'))
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH);
+            throw new Exception\BadRequestException(
+                null, ErrorCode::BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH);
         }
     }
 }

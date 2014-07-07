@@ -3,7 +3,7 @@
 namespace Gateway\HdfcGateway;
 
 use EE\Exception\InvalidArgumentException;
-use Models\DAL\DAL;
+use Models\Base\DAL;
 
 class HdfcGatewayResponseXmlDal extends DAL
 {

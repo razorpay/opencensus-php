@@ -4,9 +4,12 @@ namespace Models\Transaction;
 
 use EE\Exception;
 use Models\Base;
+use Models\Transaction;
 
 class Repository extends Base\Repository
 {
+    protected $entity = 'Transaction';
+
     private static $fetch_param_rules = array(
         'created'       => 'numeric',
         'from'          => 'numeric',
@@ -16,12 +19,12 @@ class Repository extends Base\Repository
         'merchant_id'   => 'required',
         'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled');
 
-        /**
+    /**
      * Retrieves the transactions from database for a particular merchant.
      * @param  array        $param
      * @return Collection   A collection of transactions
      */
-    public static function fetch($param)
+    public function fetch($param)
     {
         if ($param === null)
         {
@@ -35,22 +38,22 @@ class Repository extends Base\Repository
          * Create the query.
          */
         $repo = $this->repo;
-        $query = $repo::where(self::MERCHANT_ID, '=', $param['merchant_id'])
-                     ->orderBy(self::UPDATED_AT, 'desc');
+        $query = $repo::where(Transaction\Entity::MERCHANT_ID, '=', $param['merchant_id'])
+                     ->orderBy(Transaction\Entity::UPDATED_AT, 'desc');
 
         if (isset($param['from']))
         {
-            $query = $query->where(self::UPDATED_AT, '>=', $param['from']);
+            $query = $query->where(Transaction\Entity::UPDATED_AT, '>=', $param['from']);
         }
 
         if (isset($param['to']))
         {
-            $query = $query->where(self::UPDATED_AT, '<=', $param['to']);
+            $query = $query->where(Transaction\Entity::UPDATED_AT, '<=', $param['to']);
         }
 
         if (isset($param['status']))
         {
-            $query = $query->where(self::STATUS, '=', $param['status']);
+            $query = $query->where(Transaction\Entity::STATUS, '=', $param['status']);
         }
 
         if (isset($param['count']))
@@ -75,19 +78,47 @@ class Repository extends Base\Repository
         validate(self::$fetch_param_rules, $param);
     }
 
-    public static function loadWithTokenAndCard($id, $merchantId)
+    public function loadWithTokenAndCard($id, $merchantId)
     {
         $repo = $this->repo;
 
         $txn = $repo::with('token')
                    ->merchantId($merchantId)
-                   ->where(self::ID, '=', $id)
+                   ->where(Transaction\Entity::ID, '=', $id)
                    ->first();
 
         if (($txn !== null) and
             ($txn->token !== null))
         {
             $card = $txn->token->card()->first();
+        }
+
+        return $txn;
+    }
+
+    public function findByIdAndMerchantId($id, $merchantId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Transaction\Entity::MERCHANT_ID, $merchantId)
+                     ->find($id);
+    }
+
+    public function findByIdAndMerchantIdOrFailPublic($id, $merchantId)
+    {
+        $repo = $this->repo;
+
+        $txn = $repo::where(Transaction\Entity::MERCHANT_ID, $merchantId)
+                     ->find($id);
+
+        if ($txn === null)
+        {
+            $e = array(
+                'model' => get_called_class(),
+                'attributes' => $id,
+                'operation' => 'find');
+
+            throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
         return $txn;

@@ -2,13 +2,13 @@
 
 namespace Models\Key;
 
-use Constants\Field;
+use Models\Base;
 
-class Key extends UniqueIdDal
+class Entity extends Base\UniqueIdEntity
 {
-    const ID = Common::ID;
+    const ID = 'id';
 
-    const NAME = 'name';
+    const MERCHANT_ID = 'merchant_id';
 
     const SECRET = 'secret';
 
@@ -74,7 +74,7 @@ class Key extends UniqueIdDal
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
-    protected function generateId($input)
+    public function generateId($input)
     {
         $this->setAttribute('id', $input['key_id']);
     }

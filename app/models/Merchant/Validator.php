@@ -1,10 +1,10 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Merchant;
 
-use Utility;
+use Models\Base;
 
-class Merchant extends EntityManager
+class Merchant extends Base\Validator
 {
     protected static $createRules = array(
         'id'    =>  'required|numeric'

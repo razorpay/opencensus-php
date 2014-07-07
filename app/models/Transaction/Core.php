@@ -20,9 +20,13 @@ class Core
 
     protected $trace;
 
+    protected $txnRepo;
+
     public function __construct()
     {
         $this->trace = Trace::getInstance();
+
+        $this->txnRepo = (new Transaction\Repository);
     }
 
     /**
@@ -42,7 +46,7 @@ class Core
         //
         // Check that card key exists
         //
-        Manager\Transaction::checkCardKeyExists($input);
+        Transaction\Validator::checkCardKeyExists($input);
 
         //
         // Creates card entity. But since we don't store
@@ -79,11 +83,11 @@ class Core
 
     protected function saveEntities( $txn)
     {
-        $txn->token->card->saveOrFail();
+        (new Card\Repository)->saveOrFail($txn->token->card);
 
-        $txn->token->saveOrFail();
+        (new Token\Repository)->saveOrFail($txn->token);
 
-        $txn->saveOrFail();
+        $this->txnRepo->saveOrFail($txn);
     }
 
     /**
@@ -97,9 +101,7 @@ class Core
      */
     public function create($input, Token\Entity $token)
     {
-        $data = Manager\Transaction::createValidate($input)->getData();
-
-        $txn = new Transaction\Entity($data);
+        $txn = (new Transaction\Entity)->build($input);
 
         //
         // Assoicate transaction to token
@@ -214,7 +216,7 @@ class Core
      */
     public function capture(Transaction\Entity $txn, array $input = array())
     {
-        (new Manager\Transaction)->captureValidate($txn, $input);
+        (new Transaction\Validator)->captureValidate($txn, $input);
 
         $data = array(
                     'txn' => $txn->toArrayWithCard(),
@@ -371,9 +373,9 @@ class Core
 
     public function retrieveTransaction($id, $merchantId)
     {
-        Manager\Transaction::verifyIdAndStripSign($id);
+        Transaction\Entity::verifyIdAndStripSign($id);
 
-        $txn = Transaction\Entity::findByIdAndMerchantId($id, $merchantId);
+        $txn = (new Transaction\Repository)->findByIdAndMerchantId($id, $merchantId);
 
         return $txn;
     }

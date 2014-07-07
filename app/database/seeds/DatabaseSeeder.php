@@ -1,7 +1,5 @@
 <?php
 
-use Models\Manager\UniqueId;
-
 class DatabaseSeeder extends Seeder {
 
     /**

@@ -4,7 +4,7 @@ namespace Models\Ledger;
 
 class Ledger extends UniqueIdDal
 {
-    const ID = Common::ID;
+    const ID = 'id';
 
     const MERCHANT_ID = 'merchant_id';
 

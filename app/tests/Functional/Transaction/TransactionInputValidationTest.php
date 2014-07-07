@@ -11,7 +11,7 @@ class TransactionValidationTest extends TestCase
     {
         parent::setUp();
 
-        $key = $this->createModel('key');
+        $key = $this->createEntity('key');
 
         //
         // load test data

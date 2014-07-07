@@ -20,11 +20,11 @@ class TransactionRetrieveTest extends TestCase
         //
         // Seed the db with required data
         //
-        $merchant = $this->createModel('merchant', ['id' => 1]);
+        $merchant = $this->createEntity('merchant', ['id' => 1]);
 
-        $key = $this->createModel('key', ['merchant_id' => 1]);
+        $key = $this->createEntity('key', ['merchant_id' => 1]);
 
-        $transaction = $this->createModel('transaction', ['merchant_id' => 1]);
+        $transaction = $this->createEntity('transaction', ['merchant_id' => 1]);
     }
 
     protected function retrieveTransactionsDefault()

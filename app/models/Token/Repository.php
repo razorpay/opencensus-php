@@ -6,6 +6,8 @@ use Models\Base;
 
 class Repository extends Base\Repository
 {
+    protected $entity = 'Token';
+
     public static function findByTokenAndMerchantId($token, $merchant_id)
     {
         $repo = $this->repo;
@@ -14,14 +16,14 @@ class Repository extends Base\Repository
 
         try
         {
-           $token = $repo::where('token', $token)
+            $token = $repo::where('token', $token)
                         ->where(self::MERCHANT_ID, $merchant_id)
                         ->first();
 
         }
         catch(Exception $e)
         {
-            $token = false;
+            throw $e;
         }
 
         return $token;

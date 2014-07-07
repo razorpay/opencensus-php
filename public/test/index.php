@@ -1,6 +1,6 @@
 <?php
-$baseurl = "api.razorpay.com";
-//$baseurl = 'rzp';
+//$baseurl = "api.razorpay.com";
+$baseurl = 'rzp';
 
 $key_id = 'd9c6bf091a1a64cb5678d8c1';
 $secret = 'thisissupersecret';

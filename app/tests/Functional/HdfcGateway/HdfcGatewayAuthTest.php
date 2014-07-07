@@ -25,7 +25,7 @@ class HdfcGatewayAuthTest extends TestCase
         //
         // Seed the db with required data
         //
-        $key = $this->createModel('key');
+        $key = $this->createEntity('key');
 
         //
         // load test data

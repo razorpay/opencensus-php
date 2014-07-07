@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Base;
 
 use EE\Exception\InvalidArgumentException;
 

@@ -4,7 +4,7 @@ namespace Models\Card;
 
 use \Constants\Table;
 
-class Detail extends Eloquent
+class Detail extends \Eloquent
 {
     const IIN = 'iin';
 
@@ -27,19 +27,4 @@ class Detail extends Eloquent
     public $timestamps = false;
 
     protected $guarded = array('*');
-
-    public static function retrieveDetails($iin)
-    {
-        if (strlen($iin) > 6)
-        {
-            $iin = intval(substr($iin, 0, 6));
-        }
-
-        //
-        // retrieve card details
-        //
-        $cardDetails = self::find($iin);
-
-        return $cardDetails;
-    }
 }

@@ -50,7 +50,7 @@ class BasicAuth extends \Singleton {
 
     public function verifySecret($keyId, $keySecret)
     {
-        $key = Key\Repository::findNotExpired($keyId);
+        $key = (new Key\Repository)->findNotExpired($keyId);
 
         if ($key === null)
         {
@@ -71,7 +71,7 @@ class BasicAuth extends \Singleton {
 
         $merchantId = $key->getMerchantId();
 
-        $merchant = Merchant\Repository::findOrFail($merchantId);
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
         $this->key = $key;
 
@@ -82,7 +82,7 @@ class BasicAuth extends \Singleton {
 
     public function verifyPublic($keyId)
     {
-        $key = Key\Repository::find($keyId);
+        $key = (new Key\Repository)->find($keyId);
 
         if ($key === null)
         {
@@ -95,7 +95,7 @@ class BasicAuth extends \Singleton {
 
         $merchantId = $key->getMerchantId();
 
-        $merchant = Merchant\Repository::findOrFail($merchantId);
+        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
         $this->key = $key;
 
@@ -119,7 +119,7 @@ class BasicAuth extends \Singleton {
         if ($verify === false)
             return false;
 
-        $this->merchant = Merchant\Repository::find($merchantId);
+        $this->merchant = (new Merchant\Repository)->find($merchantId);
 
         return true;
     }
