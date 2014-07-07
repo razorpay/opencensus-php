@@ -1,13 +1,14 @@
 <?php
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
 use EE\Exception;
+use Gateway\Hdfc;
 use Models\Card;
 use Trace\Trace;
 use Trace\TraceCode;
 
-trait HdfcGatewayEnrollCard
+trait EnrollCardTrait
 {
     /**
      * Sends request for enrolling the card
@@ -121,7 +122,7 @@ trait HdfcGatewayEnrollCard
         //
         $data['currencycode'] = self::INR_CODE;
 
-        $data['action'] = HdfcGatewayAction::AUTH;
+        $data['action'] = Hdfc\Action::AUTH;
     }
 
     protected function validateEnrollResponse()
@@ -147,7 +148,7 @@ trait HdfcGatewayEnrollCard
     {
         if ($this->error)
         {
-            $this->model = HdfcGatewayDal::persistAfterEnrollError(
+            $this->model = $this->repo->persistAfterEnrollError(
                             $this->id,
                             $this->enrollResponse['error']);
 
@@ -160,7 +161,7 @@ trait HdfcGatewayEnrollCard
         }
         else
         {
-            $this->model = HdfcGatewayDal::persistAfterEnroll(
+            $this->model = $this->repo->persistAfterEnroll(
                     $this->enrollRequest['data'],
                     $this->enrollResponse['data']);
 
@@ -179,7 +180,7 @@ trait HdfcGatewayEnrollCard
     {
         $result = &$this->enrollResponse['data']['result'];
 
-        $this->enrollResponse['data']['enroll_result'] = HdfcGatewayResult::resultCode($result);
+        $this->enrollResponse['data']['enroll_result'] = Hdfc\Result::resultCode($result);
     }
 
     /**
@@ -205,7 +206,7 @@ trait HdfcGatewayEnrollCard
         $network = $this->input['card']['network'];
         $enroll = $this->enrollResponse['data']['enroll_result'];
 
-        $notEnrolled = ($enroll === HdfcGatewayResult::NOT_ENROLLED);
+        $notEnrolled = ($enroll === Hdfc\Result::NOT_ENROLLED);
 
         //
         // ECI checks only need to be done for NOT_ENROLLED cases
@@ -262,7 +263,7 @@ trait HdfcGatewayEnrollCard
         // 'enrollSuccess' variable tells us whether
         // its a success code or failure.
         //
-        list($result, $success) = HdfcGatewayResult::getResultCode($result);
+        list($result, $success) = Hdfc\Result::getResultCode($result);
 
         // Set the enroll result code irrespective of success/failure.
         $this->enrollResponse['data']['enroll_result'] = $result;
@@ -288,22 +289,22 @@ trait HdfcGatewayEnrollCard
 
         switch ($enrollResult)
         {
-            case HdfcGatewayResult::FSS0001_ENROLLED:
-                $code = HdfcGatewayErrorCode::FSS0001;
+            case Hdfc\Result::FSS0001_ENROLLED:
+                $code = Hdfc\ErrorCode::FSS0001;
 
                 $this->enrollResponse['error']['code'] = $code;
 
-                $this->enrollResponse['error']['text'] = HdfcGatewayErrorHandler::getErrorMessage($code);
+                $this->enrollResponse['error']['text'] = Hdfc\ErrorHandler::getErrorMessage($code);
                 break;
 
-            case HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED:
+            case Hdfc\Result::UNKNOWN_ERROR_ENROLLED:
                 //
                 // If enroll failed with an invalid code, set error
                 // for that and mark the operation as failure.
                 //
 
                 $this->enrollResponse['error'] =
-                    HdfcGatewayErrorHandler::getInvalidEnrollCodeError();
+                    Hdfc\ErrorHandler::getInvalidEnrollCodeError();
                 break;
 
             default:

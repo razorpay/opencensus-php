@@ -19,16 +19,23 @@ class Repository
 
     public function createOrFail(array $attributes)
     {
-        $repo = $get_called_class();
+        $repo = $this->repo;
 
         if ( ! (NULL === $model = $repo::create($attributes))) return $model;
 
         $e = array(
-                'model' => get_called_class(),
+                'model' => $repo,
                 'attributes' => $attributes,
                 'operation' => 'create');
 
         throw new Exception\DbQueryException($e);
+    }
+
+    public function create(array $attributes)
+    {
+        $repo = $this->repo;
+
+        return $repo::create($attributes);
     }
 
     public function findOrFail($id, $columns = array('*'))
@@ -38,7 +45,7 @@ class Repository
         if ( ! (NULL === $model = $repo::find($id, $columns))) return $model;
 
         $e = array(
-                'model' => get_called_class(),
+                'model' => $repo,
                 'attributes' => $id,
                 'operation' => 'find');
 
@@ -52,7 +59,7 @@ class Repository
         if ( ! (NULL === $model = $repo::find($id, $columns))) return $model;
 
         $e = array(
-                'model' => get_called_class(),
+                'model' => $repo,
                 'attributes' => $id,
                 'operation' => 'find');
 
@@ -62,6 +69,7 @@ class Repository
     public function find($id, $columns = array('*'))
     {
         $repo = $this->repo;
+
         return $repo::find($id, $columns);
     }
 
@@ -78,8 +86,8 @@ class Repository
             return;
 
         $e = array(
-                'model' => get_called_class(),
-                'attributes' => $entity->toArray(),
+                'model' => get_class($entity),
+                'attributes' => $entity->getAttributes(),
                 'operation' => 'save');
 
 
@@ -101,8 +109,8 @@ class Repository
             return;
 
         $e = array(
-                'model' => get_called_class(),
-                'attributes' => $this->attributes,
+                'model' => get_class($entity),
+                'attributes' => $entity->getAttributes(),
                 'operation' => 'push');
 
         throw new Exception\DbQueryException($e);

@@ -22,21 +22,22 @@
  *
  */
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
 use Gateway\BaseGateway;
+use Gateway\Hdfc;
 use EE\Exception;
 use Trace\TraceCode;
 use Trace\Trace;
-use EE\Error\ErrorCode;
+use EE\Error;
 
-class HdfcGateway extends BaseGateway
+class Gateway extends BaseGateway
 {
-    use HdfcGatewayEnrollCard;
+    use EnrollCardTrait;
 
-    use HdfcGatewayAuth;
+    use AuthTransactionTrait;
 
-    use HdfcGatewaySupportTxn;
+    use SupportTransactionTrait;
 
     /**
      * App transaction id
@@ -45,8 +46,8 @@ class HdfcGateway extends BaseGateway
     protected $id;
 
     /**
-     * Curent Hdfc Transaction DAL
-     * @var DAL\HdfcGatewayDal
+     * Curent Hdfc Transaction Model
+     * @var Hdfc\Entity
      */
     protected $model = null;
 
@@ -100,7 +101,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $enrollRequest = array(
-        'url' => HdfcGatewayUrls::TEST_ENROLL_URL,
+        'url' => Hdfc\Urls::TEST_ENROLL_URL,
         'type' => 'enroll',
         'xml' => '',
         'header' => array('Content-Type'=>'text/xml'),
@@ -124,7 +125,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $authNotEnrolledRequest = array(
-        'url' => HdfcGatewayUrls::TEST_AUTH_NOT_ENROLLED_URL,
+        'url' => Hdfc\Urls::TEST_AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_not_enrolled',
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
@@ -149,7 +150,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $authEnrolledRequest = array(
-        'url' => HdfcGatewayUrls::TEST_AUTH_ENROLLED_URL,
+        'url' => Hdfc\Urls::TEST_AUTH_ENROLLED_URL,
         'type' => 'auth_enrolled',
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
@@ -169,7 +170,7 @@ class HdfcGateway extends BaseGateway
      * @var array
      */
     protected $supportTxnRequest = array(
-        'url' => HdfcGatewayUrls::TEST_SUPPORT_TXN_URL,
+        'url' => Hdfc\Urls::TEST_SUPPORT_TXN_URL,
         'header' => array('Content-Type:text/xml'),
         'type' => '',
         'xml' => '',
@@ -215,16 +216,20 @@ class HdfcGateway extends BaseGateway
      */
     protected $enrollStatus = null;
 
+    protected $repo = null;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->callbackUrl = \URL::to(\Constants\URL::TXN_CALLBACK_URL);
+
+        $this->repo = new Hdfc\Repository();
     }
 
     public static function getCredentials()
     {
-        $creds = HdfcGatewayConfig::getCreds();
+        $creds = Hdfc\Config::getCreds();
 
         return $creds;
     }
@@ -288,7 +293,7 @@ class HdfcGateway extends BaseGateway
 
         $this->id = $input['txn']['id'];
 
-        $this->model = HdfcGatewayDal::findOrFail($input['MD']);
+        $this->model = $this->repo->findOrFail($input['MD']);
 
         $trackid = $this->model->getTrackid();
 
@@ -303,9 +308,9 @@ class HdfcGateway extends BaseGateway
 
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
-        HdfcGatewayUtility::runRequestResponseFlow($request, $response);
+        Hdfc\Utility::runRequestResponseFlow($request, $response);
 
-        HdfcGatewayResponseXmlDal::saveXml($this->id, $response['xml'], $response['type']);
+        $this->repo->saveXml($this->id, $response['xml'], $response['type']);
 
         //
         // This step is very crucial for deciding future steps in
@@ -324,7 +329,7 @@ class HdfcGateway extends BaseGateway
 
     protected function getModel($id)
     {
-        $this->model = HdfcGatewayDal::retrieve($id);
+        $this->model = $this->repo->retrieve($id);
 
         $this->id = $id;
     }
@@ -348,7 +353,7 @@ class HdfcGateway extends BaseGateway
             // in data. If so, then unset them. This is to
             // ensure extraneous or sensitive fields aren't traced.
             //
-            $context['data'] = HdfcGatewayUtility::unsetFields(
+            $context['data'] = Hdfc\Utility::unsetFields(
                                 $context['data'],
                                 $this->stripFieldsList);
         }
@@ -358,25 +363,25 @@ class HdfcGateway extends BaseGateway
 
     protected function throwException($gatewayErrorCode)
     {
-        $gatewayErrorMessage = HdfcGatewayErrorHandler::getErrorMessage($gatewayErrorCode);
+        $gatewayErrorMessage = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
 
-        $appErrorCode = HdfcGatewayErrorHandler::getMappedError($gatewayErrorCode);
+        $appErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
 
         $exception = null;
 
         switch ($appErrorCode)
         {
-            case ErrorCode::CARD_ERROR_INVALID_BRAND:
-            case ErrorCode::CARD_ERROR_INVALID_NAME:
-            case ErrorCode::CARD_ERROR_INVALID_NUMBER:
-            case ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE:
-            case ErrorCode::CARD_ERROR_CARD_DECLINED:
+            case Error\ErrorCode::CARD_ERROR_INVALID_BRAND:
+            case Error\ErrorCode::CARD_ERROR_INVALID_NAME:
+            case Error\ErrorCode::CARD_ERROR_INVALID_NUMBER:
+            case Error\ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE:
+            case Error\ErrorCode::CARD_ERROR_CARD_DECLINED:
                 $exception = new Exception\CardErrorException($appErrorCode);
                 break;
 
-            case ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF:
-            case ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN:
-            case ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT:
+            case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF:
+            case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN:
+            case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT:
                 break;
 
             default:

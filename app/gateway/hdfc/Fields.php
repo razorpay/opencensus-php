@@ -1,6 +1,8 @@
 <?php
 
-class HdfcGatewayFields
+namespace Gateway\Hdfc;
+
+class Fields
 {
     /**
      * This is encoded details of the transaction, merchant

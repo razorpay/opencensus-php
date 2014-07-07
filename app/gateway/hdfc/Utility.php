@@ -1,21 +1,22 @@
 <?php
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
+use Gateway\Hdfc;
 use Requests;
 use EE\Exception\GatewayTimeoutException;
 
-class HdfcGatewayUtility
+class Utility
 {
     public static function postRequest($request)
     {
         $options['verify'] = false;
 
-        $timeout = HdfcGatewayConfig::TIMEOUT;
+        $timeout = Hdfc\Config::TIMEOUT;
 
         if (! \App::environment('production'))
         {
-            $timeout = 30;
+            $timeout = 5;
         }
 
         $options['timeout'] = $timeout;
@@ -36,10 +37,12 @@ class HdfcGatewayUtility
             {
                 $exception = new GatewayTimeoutException($e->getMessage(), $e);
 
-                $desc = HdfcGatewayErrorCode::$errorMessages[HdfcGatewayErrorCode::RP00004];
+                $rp = Hdfc\ErrorCode::RP00004;
+
+                $desc = Hdfc\ErrorCode::$errorMessages[$rp];
 
                 $exception->setGatewayErrorCodeAndDesc(
-                    HdfcGatewayErrorCode::RP00004,
+                    Hdfc\ErrorCode::RP00004,
                     $desc);
 
                 throw $exception;

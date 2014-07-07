@@ -4,7 +4,7 @@ namespace Dashboard;
 
 class Repository extends \Models\Base\Repository
 {
-    protected $repo = 'Logs';
+    protected $repo = '\Dashboard\Logs';
 
     public function persistAfterFail($data)
     {
@@ -12,8 +12,6 @@ class Repository extends \Models\Base\Repository
             'json'  =>  json_encode($data)
         );
 
-        $repo = $this->repo;
-
-        return $repo::createOrFail($attributes);
+        return $this->createOrFail($attributes);
     }
 }

@@ -366,7 +366,7 @@ class Core
     {
         $data = (new GatewayManager)->$action($input);
 
-        // $ledger = (new DAL\Ledger)->updateRecords($txn);
+        // $ledger = (new Ledger\Repository)->updateRecords($txn);
 
         return $data;
     }
@@ -375,7 +375,7 @@ class Core
     {
         Transaction\Entity::verifyIdAndStripSign($id);
 
-        $txn = (new Transaction\Repository)->findByIdAndMerchantId($id, $merchantId);
+        $txn = $this->txnRepo->findByIdAndMerchantId($id, $merchantId);
 
         return $txn;
     }

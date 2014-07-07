@@ -2,13 +2,15 @@
 
 namespace Gateway;
 
+use Gateway\Hdfc;
+
 class GatewayManager
 {
     protected $gateways = array();
 
     protected function createGatewayProvider()
     {
-        $this->provider = new HDFC();
+        $this->provider = new Hdfc\Gateway();
     }
 
     protected function gateway($gateway = null)
@@ -47,7 +49,7 @@ class GatewayManager
 
     public function createHdfcGateway()
     {
-        return new HdfcGateway\HdfcGateway();
+        return new Hdfc\Gateway();
     }
 
     public function __call($method, $parameters)

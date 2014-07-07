@@ -41,7 +41,7 @@ trait CustomAssertions
         {
             $this->assertEquals($expected['gateway_error_code'], $actual['gateway_error_code']);
 
-            $gatewayErrorDesc = \Gateway\HdfcGateway\HdfcGatewayErrorCode::$errorMessages[$actual['gateway_error_code']];
+            $gatewayErrorDesc = \Gateway\Hdfc\ErrorCode::$errorMessages[$actual['gateway_error_code']];
 
             $this->assertEquals($gatewayErrorDesc, $actual['gateway_error_desc']);
         }

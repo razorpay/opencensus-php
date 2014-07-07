@@ -1,12 +1,13 @@
 <?php
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
-use EE\Exception\InvalidArgumentException;
+use Gateway\Hdfc;
+use EE\Exception;
 use Trace\Trace;
 use Trace\TraceCode;
 
-trait HdfcGatewayAuth
+trait AuthTransactionTrait
 {
     /**
      * 1.   We reach here after card enroll request has been successful.
@@ -22,10 +23,10 @@ trait HdfcGatewayAuth
     {
         switch ($this->enrollStatus)
         {
-            case HdfcGatewayResult::ENROLLED:
+            case Hdfc\Result::ENROLLED:
                 return $this->getFieldsForFormSubmitToBankACS();
 
-            case HdfcGatewayResult::NOT_ENROLLED:
+            case Hdfc\Result::NOT_ENROLLED:
                 return $this->postAuthNotEnrolledRequestToBank();
 
             default:
@@ -71,11 +72,11 @@ trait HdfcGatewayAuth
         // Throw exception otherwise.
         //
 
-        Assert((int) $this->model->enroll_result === HdfcGatewayResult::ENROLLED);
+        Assert((int) $this->model->enroll_result === Hdfc\Result::ENROLLED);
 
-        if ($this->model->status !== HdfcGatewayStatus::ENROLLED)
+        if ($this->model->status !== Hdfc\Status::ENROLLED)
         {
-            throw new InvalidArgumentException('Gateway Exception: Status not valid');
+            throw new Exception\InvalidArgumentException('Gateway Exception: Status not valid');
         }
 
         $this->trace(
@@ -187,11 +188,15 @@ trait HdfcGatewayAuth
     {
         if ($this->error)
         {
-            $this->model->persistAfterAuthNotEnrolledError($this->authNotEnrolledResponse['error']);
+            $this->repo->persistAfterAuthNotEnrolledError(
+                $this->model,
+                $this->authNotEnrolledResponse['error']);
         }
         else
         {
-            $this->model->persistAfterAuthNotEnrolled($this->authNotEnrolledResponse['data']);
+            $this->repo->persistAfterAuthNotEnrolled(
+                $this->model,
+                $this->authNotEnrolledResponse['data']);
         }
     }
 
@@ -199,11 +204,15 @@ trait HdfcGatewayAuth
     {
         if ($this->error)
         {
-            $this->model->persistAfterAuthEnrolledError($this->authEnrolledResponse['error']);
+            $this->repo->persistAfterAuthEnrolledError(
+                $this->model,
+                $this->authEnrolledResponse['error']);
         }
         else
         {
-            $this->model->persistAfterAuthEnrolled($this->authEnrolledResponse['data']);
+            $this->repo->persistAfterAuthEnrolled(
+                $this->model,
+                $this->authEnrolledResponse['data']);
         }
     }
 

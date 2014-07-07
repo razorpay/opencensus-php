@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
-final class HdfcGatewayConfig
+final class Config
 {
     const TIMEOUT = 30;
 
@@ -11,5 +11,5 @@ final class HdfcGatewayConfig
         $id = 'HDFC_ID';
         $password = 'HDFC_PASSWORD';
         return array($id, $password);
-    } 
+    }
 }

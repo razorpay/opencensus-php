@@ -1,12 +1,13 @@
 <?php
 
+namespace Gateway\Hdfc;
 
-namespace Gateway\HdfcGateway;
-
+use Gateway\Hdfc;
 use Trace\Trace;
 use Trace\TraceCode;
+use EE\Exception;
 
-trait HdfcGatewaySupportTxn
+trait SupportTransactionTrait
 {
     /**
      * Forms the crux of doing support
@@ -80,7 +81,7 @@ trait HdfcGatewaySupportTxn
 
         $type = $this->supportTxnRequest['type'];
 
-        $action = constant(__NAMESPACE__.'\HdfcGatewayAction::'.strtoupper($type));
+        $action = constant(__NAMESPACE__.'\Action::'.strtoupper($type));
 
         $data['action'] = $action;
 
@@ -108,7 +109,8 @@ trait HdfcGatewaySupportTxn
 
         if ($trackid !== $this->supportTxnRequest['data']['trackid'])
         {
-            throw new InvalidArgumentException('Gateway Exception: Track id do not match');
+            throw new Exception\InvalidArgumentException(
+                'Gateway Exception: Track id do not match');
         }
     }
 
@@ -116,11 +118,11 @@ trait HdfcGatewaySupportTxn
     {
         if ($this->error)
         {
-            $this->model = HdfcGatewayDal::persistAfterSupportTxnError(
-                            $this->id,
-                            $this->supportTxnRequest['data']['transid'],
-                            $this->supportTxnResponse['error'],
-                            $type);
+            $this->model = $this->repo->persistAfterSupportTxnError(
+                                $this->id,
+                                $this->supportTxnRequest['data']['transid'],
+                                $this->supportTxnResponse['error'],
+                                $type);
 
             $this->trace(
                 Trace::ERROR,
@@ -129,7 +131,7 @@ trait HdfcGatewaySupportTxn
         }
         else
         {
-            $this->model = HdfcGatewayDal::persistAfterSupportTxn(
+            $this->model = $this->repo->persistAfterSupportTxn(
                     $this->supportTxnRequest['data'],
                     $this->supportTxnResponse['data']);
 

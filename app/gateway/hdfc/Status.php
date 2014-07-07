@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
-class HdfcGatewayStatus
+class Status
 {
     const ENROLLED = 'enrolled';
 

@@ -1,0 +1,231 @@
+<?php
+
+namespace Gateway\Hdfc;
+
+use EE\Error;
+use Gateway\Hdfc;
+
+class ErrorCode
+{
+    /**
+     * No Response From Visa Directory Server
+     * Unable to Verify Enrollment
+     * Invalid Response from Directory Server
+     * Authentication Not Available
+     * Invalid Payer Authentication Response
+     *
+     * This code can come for any of the above
+     * scenarios.
+     */
+    const FSS0001   = 'FSS0001';
+
+    const FSS00002  = 'FSS00002';
+
+    const GW00150   = 'GW00150';
+    const GW00151   = 'GW00151';
+    const GW00152   = 'GW00152';
+    const GW00153   = 'GW00153';
+    const GW00154   = 'GW00154';
+
+    const GW00157   = 'GW00157';
+
+    const GW00159   = 'GW00159';
+    const GW00160   = 'GW00160';
+    const GW00161   = 'GW00161';
+    const GW00162   = 'GW00162';
+    const GW00163   = 'GW00163';
+    const GW00164   = 'GW00164';
+    const GW00165   = 'GW00165';
+    const GW00166   = 'GW00166';
+    const GW00167   = 'GW00167';
+
+    const GW00170   = 'GW00170';
+    const GW00171   = 'GW00171';
+
+    const GW00177   = 'GW00177';
+
+    const GW00181   = 'GW00181';
+
+    const GW00183   = 'GW00183';
+
+    const GW00201   = 'GW00201';
+    const GW00205   = 'GW00205';
+    const GW00258   = 'GW00258';
+    const GW00259   = 'GW00259';
+    const GW00261   = 'GW00261';
+
+    /**
+     * All codes in GV000** series
+     * relate to errors in 3-d secure
+     */
+
+    /**
+     * Unknown VPAS version
+     * See bottom of below link to learn about VPAS.
+     * We should not encounter it.
+     * http://www.businessknowhow.com/money/ecombest.htm
+     */
+    const GV00001   = 'GV00001';
+
+    const GV00002   = 'GV00002';
+    const GV00003   = 'GV00003';
+    const GV00004   = 'GV00004';
+    const GV00005   = 'GV00005';
+    const GV00006   = 'GV00006';
+    const GV00007   = 'GV00007';
+    const GV00008   = 'GV00008';
+    const GV00009   = 'GV00009';
+    const GV00010   = 'GV00010';
+    const GV00011   = 'GV00011';
+    const GV00012   = 'GV00012';
+    const GV00013   = 'GV00013';
+
+    const GV00100   = 'GV00100';
+    const GV00101   = 'GV00101';
+    const GV00102   = 'GV00102';
+    const GV00103   = 'GV00103';
+    const GV00104   = 'GV00104';
+
+    const CM90000   = 'CM90000';
+    const CM90001   = 'CM90001';
+    const CM90002   = 'CM90002';
+    const CM90003   = 'CM90003';
+    const CM90004   = 'CM90004';
+    const CM90005   = 'CM90005';
+
+    const PY20001   = 'PY20001';
+    const PY20002   = 'PY20002';
+    const PY20006   = 'PY20006';
+
+    const RP00001   = 'RP00001';
+    const RP00002   = 'RP00002';
+    const RP00003   = 'RP00003';
+    const RP00004   = 'RP00004';
+
+    //
+    // The error codes starting with 'RP' are our custom ones
+    // to handle unknow error cases returned from bank.
+    //
+
+    public static $errorMessages = array(
+        Hdfc\ErrorCode::FSS0001   => 'Authentication Not Available',
+        Hdfc\ErrorCode::FSS00002  => 'Duplicate Transaction Request',
+
+        Hdfc\ErrorCode::GW00150   => 'Missing required data',
+        Hdfc\ErrorCode::GW00151   => 'Invalid action type',
+        Hdfc\ErrorCode::GW00152   => 'Invalid Transaction Amount',
+        Hdfc\ErrorCode::GW00153   => 'Invalid Transaction ID',
+        Hdfc\ErrorCode::GW00154   => 'Invalid Terminal ID',
+
+        Hdfc\ErrorCode::GW00157   => 'Invalid Payment Instrument',
+
+        Hdfc\ErrorCode::GW00159   => 'Card number missing',
+        Hdfc\ErrorCode::GW00160   => 'Invalid Brand.',
+        Hdfc\ErrorCode::GW00161   => 'Invalid Card/Member Name data',
+        Hdfc\ErrorCode::GW00162   => 'Invalid User Defined data',
+        Hdfc\ErrorCode::GW00163   => 'Invalid Address data',
+        Hdfc\ErrorCode::GW00164   => 'Invalid Zip Code data',
+        Hdfc\ErrorCode::GW00165   => 'Invalid Track ID data',
+        Hdfc\ErrorCode::GW00166   => 'Invalid Card Number data',
+        Hdfc\ErrorCode::GW00167   => 'Invalid Currency Code data',
+
+        Hdfc\ErrorCode::GW00170   => 'Terminal ID Mismatch',
+
+        Hdfc\ErrorCode::GW00177   => 'Failed Capture Greater Than Auth check',
+
+        Hdfc\ErrorCode::GW00181   => 'Failed Credit Greater Than Debit check',
+
+        Hdfc\ErrorCode::GW00183   => 'Card Verification Digit Required',
+
+        Hdfc\ErrorCode::GW00201   => 'Support Error Auth not found',
+        Hdfc\ErrorCode::GW00205   => 'Invalid Subsequent Transaction',
+        Hdfc\ErrorCode::GW00258   => 'Transaction Denied: Negative BIN',
+        Hdfc\ErrorCode::GW00259   => 'Transaction Denied: Declined Card',
+        Hdfc\ErrorCode::GW00261   => 'Transaction Denied: Captures exceed Authorizations',
+
+        Hdfc\ErrorCode::GV00001   => 'Unknown VPAS version',
+        Hdfc\ErrorCode::GV00002   => 'Cardholder not enrolled',
+        Hdfc\ErrorCode::GV00003   => 'Not a VPAS Card',
+        Hdfc\ErrorCode::GV00004   => 'PARes status not sucessful',
+        Hdfc\ErrorCode::GV00005   => 'Certificate chain validation failed',
+        Hdfc\ErrorCode::GV00006   => 'Certificate chain validation error',
+        Hdfc\ErrorCode::GV00007   => 'Signature Validation failed',
+        Hdfc\ErrorCode::GV00008   => 'Signature Validation error',
+        Hdfc\ErrorCode::GV00009   => 'Invalid root certificate',
+        Hdfc\ErrorCode::GV00010   => 'Missing data type',
+        Hdfc\ErrorCode::GV00011   => 'Invalid expiration date',
+        Hdfc\ErrorCode::GV00012   => 'Invalid action type',
+        Hdfc\ErrorCode::GV00013   => 'Invalid Payment ID',
+
+        Hdfc\ErrorCode::GV00100   => 'Invalid action type',
+        Hdfc\ErrorCode::GV00101   => 'Missing data type',
+        Hdfc\ErrorCode::GV00102   => 'Invalid Amount',
+        Hdfc\ErrorCode::GV00103   => 'Invalid Brand',
+        Hdfc\ErrorCode::GV00104   => 'Payment ID not numeric',
+
+        Hdfc\ErrorCode::PY20006   => 'Invalid Brand',
+        Hdfc\ErrorCode::PY20001   => 'Invalid Action Type',
+        Hdfc\ErrorCode::PY20002   => 'Invalid amount',
+
+        Hdfc\ErrorCode::CM90000   => 'Database error',
+        Hdfc\ErrorCode::CM90001   => 'Database configuration error',
+        Hdfc\ErrorCode::CM90002   => 'Data format error',
+        Hdfc\ErrorCode::CM90003   => 'No records found',
+        Hdfc\ErrorCode::CM90004   => 'Duplicate records found',
+        Hdfc\ErrorCode::CM90005   => 'Timestamp mismatch error',
+
+        Hdfc\ErrorCode::RP00001   => 'Invalid Error Code',
+        Hdfc\ErrorCode::RP00002   => 'Uncaptured Transaction',
+        Hdfc\ErrorCode::RP00003   => 'Invalid enroll code',
+        Hdfc\ErrorCode::RP00004   => 'Gateway request timeout');
+
+    /**
+     * Maps error codes from HDFC Gateway to the
+     * app's gateway agnostic codes
+     * @var array
+     */
+    public static $errorMap = array(
+        Hdfc\ErrorCode::FSS0001   => Error\ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+        Hdfc\ErrorCode::FSS00002  => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_DUPLICATE_REQUEST,
+
+        Hdfc\ErrorCode::GW00150   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_MISSING_DATA,
+        Hdfc\ErrorCode::GW00151   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_ACTION,
+        Hdfc\ErrorCode::GW00152   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT,
+        Hdfc\ErrorCode::GW00153   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_ID,
+        Hdfc\ErrorCode::GW00154   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+
+        Hdfc\ErrorCode::GW00157   => Error\ErrorCode::GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR,
+        Hdfc\ErrorCode::GW00160   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
+        Hdfc\ErrorCode::GW00161   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NAME,
+        Hdfc\ErrorCode::GW00162   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF,
+        Hdfc\ErrorCode::GW00163   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_ADDRESS,
+        Hdfc\ErrorCode::GW00164   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_ZIP,
+        Hdfc\ErrorCode::GW00165   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_ID,
+        Hdfc\ErrorCode::GW00166   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
+        Hdfc\ErrorCode::GW00167   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_CURRENCY,
+        Hdfc\ErrorCode::GW00170   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+        Hdfc\ErrorCode::GW00177   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
+        Hdfc\ErrorCode::GW00181   => Error\ErrorCode::CARD_ERROR_INSUFFICIENT_BALANCE,
+        Hdfc\ErrorCode::GW00183   => Error\ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
+
+        Hdfc\ErrorCode::GW00201   => Error\ErrorCode::GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND,
+        Hdfc\ErrorCode::GW00205   => Error\ErrorCode::GATEWAY_ERROR_INVALID_SUBSEQUENT_TRANSACTION,
+
+        Hdfc\ErrorCode::GW00258   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN,
+        Hdfc\ErrorCode::GW00259   => Error\ErrorCode::CARD_ERROR_CARD_DECLINED,
+
+        Hdfc\ErrorCode::GV00004   => Error\ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
+        Hdfc\ErrorCode::GV00005   => Error\ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
+        Hdfc\ErrorCode::GV00006   => Error\ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
+        Hdfc\ErrorCode::GV00007   => Error\ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
+        Hdfc\ErrorCode::GV00008   => Error\ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
+        Hdfc\ErrorCode::GV00011   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE,
+
+        Hdfc\ErrorCode::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
+        Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_ACTION,
+        Hdfc\ErrorCode::PY20002   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_AMOUNT,
+
+        Hdfc\ErrorCode::RP00001   => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+
+    public static $invalidErrorCode = Hdfc\ErrorCode::RP00001;
+}

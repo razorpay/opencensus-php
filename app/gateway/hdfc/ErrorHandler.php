@@ -1,11 +1,12 @@
 <?php
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
 use EE\Error\Error;
-use EE\Exception\InvalidArgumentException;
+use EE\Exception;
+use Gateway\Hdfc;
 
-class HdfcGatewayErrorHandler
+class ErrorHandler
 {
     public static function parseErrorStr($error)
     {
@@ -49,7 +50,8 @@ class HdfcGatewayErrorHandler
 
         if (isset(ErrorMap::$errorMap[$errorCode]) === false)
         {
-            throw new InvalidArgumentException('Error mapping for this code not defined. code: '.$errorCode);
+            throw new Exception\InvalidArgumentException(
+                'Error mapping for this code not defined. code: '.$errorCode);
         }
 
         return ErrorCode::$errorMap[$errorCode];
@@ -62,30 +64,31 @@ class HdfcGatewayErrorHandler
 
     public static function getInvalidEnrollCodeError()
     {
-        $error['code'] = HdfcGatewayErrorCode::RP00003;
-        $error['text'] = HdfcGatewayErrorCode::$errorMessages[HdfcGatewayErrorCode::RP00003];
+        $error['code'] = Hdfc\ErrorCode::RP00003;
+        $error['text'] = Hdfc\ErrorCode::$errorMessages[Hdfc\ErrorCode::RP00003];
 
         return $error;
     }
 
     public static function getErrorMessage($code)
     {
-        return HdfcGatewayErrorCode::$errorMessages[$code];
+        return Hdfc\ErrorCode::$errorMessages[$code];
     }
 
     public static function getMappedError($code)
     {
         $appErrorCode = null;
 
-        if (defined(__NAMESPACE__.'\HdfcGatewayErrorCode::'.$code) === false)
+        if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
         {
-            throw new InvalidArgumentException('should not reach here for now');
+            throw new Exception\InvalidArgumentException(
+                'should not reach here for now' . $code);
             $appErrorCode = self::getInvalidEnrollCodeError();
-            // $appErrorMessage = HdfcGateway
+            // $appErrorMessage = Hdfc\
         }
         else
         {
-            $appErrorCode = HdfcGatewayErrorCode::$errorMap[$code];
+            $appErrorCode = Hdfc\ErrorCode::$errorMap[$code];
         }
 
         return $appErrorCode;

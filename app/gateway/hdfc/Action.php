@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
-class HdfcGatewayAction
+class Action
 {
     const PURCHASE = 1;
 

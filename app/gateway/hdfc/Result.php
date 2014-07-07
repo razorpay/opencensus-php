@@ -1,8 +1,10 @@
 <?php
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
-final class HdfcGatewayResult
+use Gateway\Hdfc;
+
+final class Result
 {
     /**
      * Result codes received in response for card enrollment
@@ -83,17 +85,17 @@ final class HdfcGatewayResult
         switch ($result)
         {
             case 'ENROLLED':
-                $result = HdfcGatewayResult::ENROLLED;
+                $result = Hdfc\Result::ENROLLED;
                 break;
             case 'NOT ENROLLED':
-                $result = HdfcGatewayResult::NOT_ENROLLED;
+                $result = Hdfc\Result::NOT_ENROLLED;
                 break;
             case 'FSS0001-Authentication Not Available':
-                $result = HdfcGatewayResult::FSS0001_ENROLLED;
+                $result = Hdfc\Result::FSS0001_ENROLLED;
                 $success = false;
                 break;
             default:
-                $result = HdfcGatewayResult::UNKNOWN_ERROR_ENROLLED;
+                $result = Hdfc\Result::UNKNOWN_ERROR_ENROLLED;
                 $success = false;
         }
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\HdfcGateway;
+namespace Gateway\Hdfc;
 
-final class HdfcGatewayConstants
+final class Constants
 {
     const ENROLL_RESULT_LENGTH = 2;
 
