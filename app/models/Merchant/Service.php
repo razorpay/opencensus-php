@@ -14,9 +14,9 @@ class Service extends Base\Service
 
     public function __construct()
     {
-        $merchantRepository = new Merchant\Repository();
+        $this->merchantRepository = new Merchant\Repository();
 
-        $keyRepository = new Key\Repository();
+        $this->keyRepository = new Key\Repository();
     }
 
     public function create(array $input)

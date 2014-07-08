@@ -121,6 +121,9 @@ class BasicAuth extends \Singleton {
 
         $this->merchant = (new Merchant\Repository)->find($merchantId);
 
+        if ($this->merchant === null)
+            return false;
+
         return true;
     }
 }
