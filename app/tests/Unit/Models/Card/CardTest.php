@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Models\Manager;
+namespace Tests\Unit\Models\Card;
 
 use Models\Card;
 use Tests\TestCase;
