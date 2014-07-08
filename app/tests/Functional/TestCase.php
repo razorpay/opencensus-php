@@ -48,7 +48,7 @@ class TestCase extends ParentTestCase
 
     protected function setupBasicAuthParams()
     {
-        //Auth
+        // Auth
         $_SERVER['PHP_AUTH_USER'] = 'd9c6bf091a1a64cb5678d8c1';
         $_SERVER['PHP_AUTH_PW'] = 'thisissupersecret';
     }

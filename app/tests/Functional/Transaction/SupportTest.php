@@ -13,7 +13,7 @@ use Tests\Functional\TestCase;
 
 class SupportTest extends TestCase
 {
-    use TransactionAuthFlow;
+    use TransactionAuthFlowTrait;
 
     public function setUp()
     {

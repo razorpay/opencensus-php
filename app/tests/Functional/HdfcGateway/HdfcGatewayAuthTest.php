@@ -10,11 +10,11 @@ namespace Tests\Functional\HdfcGateway;
  */
 
 use Tests\Functional\TestCase;
-use Tests\Functional\Transaction\TransactionAuthFlow;
+use Tests\Functional\Transaction\TransactionAuthFlowTrait;
 
 class HdfcGatewayAuthTest extends TestCase
 {
-    use TransactionAuthFlow;
+    use TransactionAuthFlowTrait;
 
     protected $testData = array();
 

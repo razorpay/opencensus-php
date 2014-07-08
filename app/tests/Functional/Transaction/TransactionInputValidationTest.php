@@ -1,11 +1,11 @@
 <?php
 
 use Tests\Functional\TestCase;
-use Tests\Functional\Transaction\TransactionAuthFlow;
+use Tests\Functional\Transaction\TransactionAuthFlowTrait;
 
 class TransactionValidationTest extends TestCase
 {
-    use TransactionAuthFlow;
+    use TransactionAuthFlowTrait;
 
     public function setUp()
     {
