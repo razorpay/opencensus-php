@@ -6,7 +6,7 @@ use EE\Exception\BaseException;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 
-trait TransactionAuthFlow
+trait TransactionAuthFlowTrait
 {
     /**
      * Auths a transaction & tests it is corrrectly done
