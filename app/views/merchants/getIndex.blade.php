@@ -115,6 +115,9 @@
 				<div id="keys" class="hidden panel">
 					
 				</div>
+				<div id="activation" class="hidden panel">
+					
+				</div>
 			</div>
 		</div>
 	</div>

@@ -27,6 +27,9 @@ $(document).ready(function()
         },
         keys: {
             childDivs: ['key-generate']
+        },
+        activation: {
+            childDivs: ['activation-form']
         }
     };
 
@@ -646,6 +649,7 @@ $(document).ready(function()
 
         renderActivation: function() {
             rzpd.hooks.setTab('activation');
+            rzpd.hooks.updateSubpanel('activation');
         }
     };
 
