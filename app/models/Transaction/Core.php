@@ -230,6 +230,14 @@ class Core
                     Transaction\Action::CAPTURE, $data);
 
             $this->updateTransactionSuccess($txn, Transaction\Status::CAPTURED);
+
+            //
+            // Analytics
+            //
+            \Dashboard\Transaction::getInstance()
+                                  ->queueRecord(array_merge(
+                                        $txn->toArray(),
+                                        ['merchant_id' => $txn->getMerchantId()]));
         }
         catch (BaseException $e)
         {
@@ -264,7 +272,9 @@ class Core
             // Analytics
             //
             \Dashboard\Transaction::getInstance()
-                                  ->queueRecord($txn->toArray());
+                                  ->queueRecord(array_merge(
+                                        $txn->toArray(),
+                                        ['merchant_id' => $txn->getMerchantId()]));
         }
         catch(BaseException $e)
         {
