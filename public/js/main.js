@@ -446,7 +446,7 @@ $(document).ready(function()
             if (group == 'month') {
                 intv = 24 * 3600 * 30 * 1000;
             }
-            
+
             rzpd.config.intv = intv;
 
             var div = $('#' + parentDiv + ' div[data-type="txn-count-line"]').attr('id');
