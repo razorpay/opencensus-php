@@ -18,7 +18,7 @@ class Transaction extends Manager
     );
 
     protected static $fetchRules = array(
-        'id'            => 'alpha_num|max:32',
+        'id'            => 'alpha_dash|max:32',
         'from'          => 'numeric',
         'to'            => 'numeric',
         'count'         => 'numeric|max:100',
