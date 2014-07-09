@@ -16,6 +16,8 @@ class Entity extends \Eloquent
 
     protected static $sign = '';
 
+    private static $delimiter = '-';
+
     protected $entity = '';
 
     /**
@@ -88,7 +90,7 @@ class Entity extends \Eloquent
     {
         $array = $this->toArray();
 
-        $array['id' ] = static::$sign . '-' . $array['id'];
+        $array['id' ] = static::$sign . self::$delimiter . $array['id'];
 
         $array['entity'] = $this->entity;
 
@@ -149,16 +151,13 @@ class Entity extends \Eloquent
 
     protected static function stripSignOrFail(& $id)
     {
-        if (strpos($id, static::$sign) === false)
+        if (strpos($id, static::$sign . self::$delimiter) === false)
         {
             throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
-        $len = strlen(static::$sign);
+        $len = strlen(static::$sign . self::$delimiter);
 
-        //
-        // add 1 to $len to account for dash
-        //
-        $id = substr($id, $len + 1);
+        $id = substr($id, $len);
     }
 }
