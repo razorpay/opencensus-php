@@ -5,74 +5,34 @@ namespace Tests\Functional\Transaction;
 use EE\Exception\BaseException;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
+use Tests\Functional\RequestResponseFlowTrait;
 
 trait TransactionAuthFlowTrait
 {
-    /**
-     * Auths a transaction & tests it is corrrectly done
-     */
-    protected function runTransactionAuthFlow($testData)
+    use RequestResponseFlowTrait;
+
+    protected function makeRequest($request)
     {
-        //GIVEN
-        $response = $content = null;
+        $content = $request['content'];
 
-        $txn = $testData['request']['content'];
+        $response = $this->call('POST', '/transactions', $content);
 
-        try
+        $uri = $this->client->getRequest()->getUri();
+
+        $content = $response->getContent();
+
+        if (json_decode($content) === null)
         {
-            $response = $this->call('POST', '/transactions', $txn);
+            //
+            // Card is a debit card
+            //
 
-            $uri = $this->client->getRequest()->getUri();
+            // list($response, $content) = $this->runDebitCardAuthFlow($content, $uri);
 
-            $content = $response->getContent();
-
-            if (json_decode($content) === null)
-            {
-                //
-                // Card is a debit card
-                //
-
-                list($response, $content) = $this->runDebitCardAuthFlow($content, $uri);
-            }
-        }
-        catch (BaseException $e)
-        {
-            if (isset($testData['exception']) === false)
-                throw $e;
-
-            $this->assertExceptionClass($e, $testData['exception']['class']);
-
-            $response = $e->generatePublicJsonResponse();
-
-            $content = $response->getContent();
-
-            $internalError = $e->getErrorArray();
-
-            $this->assertErrorDataEquals($testData['exception'], $internalError['error']);
+            $response = $this->runDebitCardAuthFlow($content, $uri);
         }
 
-        // THEN
-
-        //
-        // Match the status codes if it's defined
-        //
-        if (isset($testData['response']['status_code']))
-            $this->assertEquals(
-                $testData['response']['status_code'],
-                $response->getStatusCode());
-
-        //
-        // Ensure output is json
-        //
-        $this->assertJson($content);
-
-        $actualContent = json_decode($content, true);
-
-        $expectedContent = $testData['response']['content'];
-
-        $this->assertArraySelectiveEquals($expectedContent, $actualContent);
-
-        return $actualContent;
+        return $response;
     }
 
     protected function runDebitCardAuthFlow($content, $uri)
@@ -87,7 +47,11 @@ trait TransactionAuthFlowTrait
 
         $content = $this->dcTransactionGetJsonFromCallback($content);
 
-        return array($response, $content);
+        // return array($response, $content);
+
+        $response->setContent($content);
+
+        return $response;
     }
 
     protected function dcTransactionSubmitToAcsUrl($crawler)

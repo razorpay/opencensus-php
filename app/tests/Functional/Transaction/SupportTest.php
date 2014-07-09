@@ -44,7 +44,7 @@ class SupportTest extends TestCase
         $testData = $this->testData['creditCardSuccess'];
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $txn = $this->runTransactionAuthFlow($testData);
+        $txn = $this->runRequestResponseFlow($testData);
 
         // get its transaction id
         $id = $txn['id'];

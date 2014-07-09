@@ -205,6 +205,6 @@ class HdfcGatewayAuthTest extends TestCase
 
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $this->runTransactionAuthFlow($testData);
+        $this->runRequestResponseFlow($testData);
     }
 }

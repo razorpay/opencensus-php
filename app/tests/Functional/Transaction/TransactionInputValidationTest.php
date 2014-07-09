@@ -75,7 +75,7 @@ class TransactionValidationTest extends TestCase
 
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $this->runTransactionAuthFlow($testData);
+        $this->runRequestResponseFlow($testData);
     }
 
     protected function getTransactionArray($number)
