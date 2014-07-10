@@ -34,12 +34,6 @@ class ValidationTest extends TestCase
         $this->card = new Card\Entity();
     }
 
-    public function tearDown()
-    {
-        // Undo DB Changes after test
-        // DB::rollback();
-    }
-
     public function testShortCardNumber()
     {
         $this->setExpectedException('EE\Exception\CardErrorException');

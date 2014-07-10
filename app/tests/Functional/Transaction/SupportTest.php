@@ -19,11 +19,6 @@ class SupportTest extends TestCase
     {
         parent::setUp();
 
-        //
-        // Seed the db with required data
-        //
-        $key = $this->createEntity('key');
-
         $this->testData = include(__DIR__.'/helpers/cards.php');
     }
 

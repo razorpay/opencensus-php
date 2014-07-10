@@ -11,11 +11,6 @@ class TransactionValidationTest extends TestCase
     {
         parent::setUp();
 
-        $key = $this->createEntity('key');
-
-        //
-        // load test data
-        //
         $this->testData = include(__DIR__.'/helpers/cardNumbers.php');
     }
 

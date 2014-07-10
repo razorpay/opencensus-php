@@ -23,11 +23,6 @@ class HdfcGatewayAuthTest extends TestCase
         parent::setUp();
 
         //
-        // Seed the db with required data
-        //
-        $key = $this->createEntity('key');
-
-        //
         // load test data
         //
         $this->testData = include(__DIR__.'/../Transaction/helpers/cards.php');

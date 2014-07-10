@@ -37,15 +37,34 @@ class TestCase extends ParentTestCase
         //
         Route::enableFilters();
 
-        $this->setupBasicAuthParams();
-
         //
         // Start DB transaction so as
         // to rollback once done
         //
         DB::beginTransaction();
+
+        //
+        // Seed the db with required data
+        // This creates key entity and by reference
+        // from fixtures.yml, the merchant entity as well
+        // This key can be used by default for most use-cases
+        // but you are not required to use it.
+        //
+        $key = $this->createEntity('key');
+
+        //
+        // The key created in last command is setup as
+        // default basic auth param.
+        //
+        $this->setupBasicAuthParams();
     }
 
+    /**
+     * Sets the key and secret created setUp call as the
+     * default to provide basicauth.
+     * You can use your key and secret by overriding this
+     * function in child classes.
+     */
     protected function setupBasicAuthParams()
     {
         // Auth
