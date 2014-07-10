@@ -10,7 +10,7 @@ trait RequestResponseFlowTrait
     /**
      * Auths a transaction & tests it is corrrectly done
      */
-    protected function runRequestResponseFlow($data)
+    public function runRequestResponseFlow($data)
     {
         $response = null;
 
@@ -68,22 +68,19 @@ trait RequestResponseFlowTrait
 
         $actualStatusCode = $response->getStatusCode();
 
-        $this->assertEquals($actualStatusCode, $expectedHttpStatusCode);
+        $this->assertEquals($expectedHttpStatusCode, $actualStatusCode);
     }
 
     protected function getExpectedHttpStatusCode($data)
     {
         return (isset($data['response']['status_code'])) ?: 200;
-        //     return $data['response']['status_code'];
-        // else
-        //     return 200;
     }
 
     protected function makeRequest($request)
     {
         $response = $this->call(
             $request['method'],
-            $request['uri'],
+            $request['url'],
             $request['content']);
 
         return $response;

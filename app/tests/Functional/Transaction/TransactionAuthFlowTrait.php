@@ -179,28 +179,4 @@ trait TransactionAuthFlowTrait
 
         return $transaction;
     }
-
-    protected function replaceDefualtValues(array & $content)
-    {
-        $data = $this->getDefaultTransactionArray();
-
-        $this->replaceValuesRecursively($data, $content);
-
-        $content = $data;
-    }
-
-    protected function replaceValuesRecursively(array & $data, array $toReplace)
-    {
-        foreach ($toReplace as $key => $value)
-        {
-            if (is_array($value))
-            {
-                $this->replaceValuesRecursively($data[$key], $value);
-            }
-            else
-            {
-                $data[$key] = $value;
-            }
-        }
-    }
 }
