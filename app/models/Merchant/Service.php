@@ -57,8 +57,13 @@ class Service extends Base\Service
 
         $keyCore = new Key\Core;
 
-        $delay = isset($input['delay_roll']) ?: false;
-        $delay = ($input['delay_roll'] === '1') ? true : false;
+        $delay = false;
+
+        if (isset($input['delay_roll']))
+        {
+            $delay = ($input['delay_roll'] === '1') ? true : false;
+        }
+
         unset($input['delay_roll']);
 
         $keyCore->setExpired($old, $delay);
