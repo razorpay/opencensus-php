@@ -71,9 +71,11 @@ class Dashboard
 
         //
         // For debugging purposes,
-        // persist requests
+        // persist failed requests
         //
-        (new Repository)->persistAfterFail($data['message']);
+        if (!is_object(json_decode($response->body)) ||
+            json_decode($response->body)->status === FALSE)
+                (new Repository)->persistAfterFail($data['message']);
 
         $job->delete();
     }
