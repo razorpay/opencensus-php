@@ -3,10 +3,13 @@
 	"description": "Razorpay Merchant Dashbaord",
 	"keywords": ["dashboard", "razorpay"],
 	"require": {
-		"laravel/framework": "4.1.*",
+		"laravel/framework": "4.2.*",
 		"razorpay/razorpay-php": "dev-master",
 		"rmccue/requests": ">=1.0"
 	},
+    "require-dev": {
+        "raveren/kint": ">=0.9"
+    },
 	"repositories": [{
 		"type": "vcs",
 		"url": "git@bitbucket.org:razorpay/rzp-php.git"
