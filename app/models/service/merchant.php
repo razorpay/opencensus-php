@@ -14,7 +14,7 @@ class Merchant extends Service
         if (empty($error))
         {
             $merchant_data = DAL\Merchant::createOrFail($data)->toArray();
-            
+
             $key_data = Manager\Key::generateKeyData();
 
             $merchant_key_data = Manager\Merchant::mergeMerchantAndKey($merchant_data, $key_data);
@@ -36,7 +36,7 @@ class Merchant extends Service
 
         if (empty($error))
             $verify = \Auth::attempt(array(
-                'email'     => $data['email'], 
+                'email'     => $data['email'],
                 'password'  => $input['password']
             ), $data['remember']);
 
@@ -56,7 +56,7 @@ class Merchant extends Service
     public function fetchKeysFromApi($merchant_id)
     {
         Request::setCredentials($merchant_id);
-        $response = Request::GET('merchants/keys');
+        $response = Request::GET('keys');
 
         return $response;
     }
@@ -67,18 +67,28 @@ class Merchant extends Service
 
         if (empty($error))
         {
-            $key_data = Manager\Key::generateKeyData();
-            $key_data['status'] = true;
-
-            $arr = Manager\Key::buildKeyUpdateData($data, $key_data);
+            $arr = Manager\Key::buildKeyUpdateData($data);
 
             Request::setCredentials($data['merchant_id']);
-            $response = Request::PUT('merchants/keys', $arr);
 
-            if ($response->status === false)
+            $url = 'keys/'.$data['id'];
+
+            $response = Request::PUT($url, $arr);
+
+            if ((isset($response->old) === false) or
+                (isset($response->new) === false))
+            {
                 return ['status' => false];
-            else
-                return $key_data;
+            }
+
+            $key_data = array(
+                'old_id' => $data['id'],
+                'merchant_id' => $input['merchant_id'],
+                'key_id' => $response->new->id,
+                'secret' => $response->new->secret,
+                'status' => true);
+
+            return $key_data;
         }
         else
             return ['status' => false];

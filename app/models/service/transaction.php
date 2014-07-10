@@ -24,6 +24,7 @@ class Transaction extends Service
             static::setApiCredentials($merchant_id);
 
             $response = static::$api->transaction->fetch($options);
+
             $data = Manager\Transaction::mapKeys($response);
         }
         else

@@ -89,7 +89,7 @@ class MerchantController extends BaseController
     public function getKeys()
     {
         $keys = Service\Merchant::getInstance()->fetchKeysFromApi(\Auth::id());
-        
+
         return $keys;
     }
 

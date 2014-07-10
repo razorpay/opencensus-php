@@ -303,10 +303,50 @@ $(document).ready(function()
             for (var i in data) {
                 var mode = (data[i].live == '0') ? 'Test' : 'Live';
                 var expires = (data[i].expired_at === null) ? false : true;
-                html += '<ul class="key-wrapper"><li><div class="field key">Key ID</div><div class="value key">' + data[i].id + '</div><a class="roll-href" title="Roll Key"><img class="roll-icon" src="/img/refresh.png"></a></li><li><div class="field">Created At</div><div class="value">' + moment(data[i].created_at, 'X').format('MMMM Do YYYY, HH:mm') + '</div></li>';
+
+                html += '<ul class="key-wrapper">' +
+                            '<li> ' +
+                                '<div class="field key">Key ID</div> ' +
+                                '<div class="value key">' + data[i].id + '</div> ' +
+                                '<a class="roll-href" title="Roll Key"> ' +
+                                    '<img class="roll-icon" src="/img/refresh.png"> ' +
+                                '</a> ' +
+                            '</li> ' +
+                            '<li> ' +
+                                '<div class="field">Created At</div> ' +
+                                '<div class="value">' + moment(data[i].created_at, 'X').format('MMMM Do YYYY, HH:mm') +
+                                '</div> ' +
+                            '</li>';
+
                 if (expires === true)
                     html += '<li><div class="field">Expires At</div><div class="value">' + moment(data[i].expired_at, 'X').format('MMMM Do YYYY, HH:mm') + '</div></li>';
-                html += '<li><div class="field">Mode</div><div class="value">' + mode + '</div></li></ul><div class="roll-key-form-wrapper hidden"><span class="close-button"><img src="/img/close.png"></span><form class="roll-key-form" id="' + data[i].id + '"><div>Generate new key and</div><label><input type="radio" name="delay_roll" value="true" checked="checked"><span>Allow old key to work for 24 hours.</span></label><label><input type="radio" name="delay_roll" value="false"><span>Block old key immediately.</span></label><div><button class="roll-key-button">Roll Key</button><img class="hidden roll-key-form-loader" src="/img/loader.gif"></div><div class="result"></div></form></div>';
+
+                html += '<li>' +
+                            '<div class="field">Mode</div> ' +
+                            '<div class="value">' + mode + '</div>' +
+                        '</li>' +
+                    '</ul>' +
+                    '<div class="roll-key-form-wrapper hidden">' +
+                        '<span class="close-button">' +
+                            '<img src="/img/close.png">' +
+                        '</span>' +
+                        '<form class="roll-key-form" id="' + data[i].id + '">' +
+                        '<div>Generate new key and</div>' +
+                        '<label>' +
+                            '<input type="radio" name="delay_roll" value="1" checked="checked">' +
+                            '<span>Allow old key to work for 24 hours.</span>' +
+                        '</label>' +
+                        '<label>' +
+                            '<input type="radio" name="delay_roll" value="0">' +
+                            '<span>Block old key immediately.</span>' +
+                        '</label>' +
+                        '<div>' +
+                            '<button class="roll-key-button">Roll Key</button>' +
+                            '<img class="hidden roll-key-form-loader" src="/img/loader.gif">' +
+                        '</div>' +
+                        '<div class="result"></div>' +
+                    '</form>' +
+                '</div>';
             }
             $('#keys').html(html);
             $('.roll-href').click(rzpd.views.showRollForm);
