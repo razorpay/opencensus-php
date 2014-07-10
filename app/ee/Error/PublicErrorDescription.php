@@ -39,4 +39,10 @@ class PublicErrorDescription
 
     const BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH =
         'Capture amount cannot be greater than auth amount';
+
+    const BAD_REQUEST_KEY_EXPIRED =
+        'Key is expired';
+
+    const BAD_REQUEST_KEY_EXPIRING_SOON =
+        'Key is already set to expire soon';
 }

@@ -19,49 +19,57 @@ class Service extends Base\Service
         $this->keyRepository = new Key\Repository();
     }
 
+    public function register(array $input)
+    {
+        $merchant = $this->create($input);
+
+        $merchantId = $merchant->getKey();
+
+        $keyData = (new Key\Core)->createAndReturnWithSecret($merchantId);
+
+        $data = $merchant->toArray();
+
+        $data['key'] = $keyData;
+
+        return $data;
+    }
+
+    /**
+     * Creates a merchant and saves in database
+     *
+     * @param  array            $input
+     * @return Merchant\Enitty
+     */
     public function create(array $input)
     {
-        $merchantId['id'] = $input['merchant_id'];
+        $merchantId['id'] = $input['id'];
 
-        $merchant = (new Merchant\Entity)->build($input);
-
-        $key = (new Key\Entity)->build($key);
+        $merchant = (new Merchant\Entity)->build($merchantId);
 
         $this->merchantRepository->saveOrFail($merchant);
 
-        $this->keyRepository->createOrFail($keyData);
+        return $merchant;
     }
 
-    public function updateKey(array $input)
+    public function updateKey($id, array $input)
     {
-        $old = $this->keyRepository->find($input['old_id']);
+        $old = $this->keyRepository->findOrFail($id);
 
-        if ($old === null)
-        {
-            return ['status' => false];
-        }
+        $keyCore = new Key\Core;
 
-        //
-        // @todo: remove the magic number
-        //
-        $time = ($input['delay_roll'] == 'true') ? 86400 : 0;
-
-        $old->setExpired($time);
-        $old->save();
-
+        $delay = isset($input['delay_roll']) ?: false;
+        $delay = ($input['delay_roll'] === '1') ? true : false;
         unset($input['delay_roll']);
-        unset($input['old_id']);
 
-        try
-        {
-            $this->keyRepository->createOrFail($input);
-        }
-        catch (Exception $e)
-        {
-            return ['status' => false];
-        }
+        $keyCore->setExpired($old, $delay);
 
-        return ['status' => true];
+        $keyData = $keyCore->createAndReturnWithSecret($input['merchant_id']);
+
+        $keysData['old'] = $old->toArray();
+
+        $keysData['new'] = $keyData;
+
+        return $keysData;
     }
 
     public function fetchKeys($merchantId)

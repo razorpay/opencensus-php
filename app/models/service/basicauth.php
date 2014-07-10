@@ -109,20 +109,19 @@ class BasicAuth extends \Singleton {
         $verify = false;
 
         foreach (\Config::get('applications') as $name => $app)
+        {
             if ($app['auth_pass'] === $secret)
             {
                 $verify = true;
                 $this->App = $name;
                 break;
             }
+        }
 
         if ($verify === false)
             return false;
 
         $this->merchant = (new Merchant\Repository)->find($merchantId);
-
-        if ($this->merchant === null)
-            return false;
 
         return true;
     }

@@ -75,7 +75,7 @@ class Entity extends Base\UniqueIdEntity
 
     protected static $generators = array('status', 'id', 'udf');
 
-    public function build(array $input)
+    public function build(array $input = array())
     {
         try
         {

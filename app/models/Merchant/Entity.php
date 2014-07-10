@@ -12,15 +12,12 @@ class Entity extends Base\Entity
 
     protected $table = \Constants\Table::MERCHANT;
 
+    protected $fillable = array(
+        self::ID);
+
     public $incrementing = false;
 
-    protected $hidden = array(
-        self::ID,
-        self::BALANCE);
-
-    protected $fillable = array(
-        self::ID
-    );
+//    protected static $generators = array('id');
 
     public function keys()
     {

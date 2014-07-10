@@ -81,7 +81,7 @@ class Entity extends Base\UniqueIdEntity
         self::LAST4,
         self::NETWORK);
 
-    public function build(array $input)
+    public function build(array $input = array())
     {
         try
         {

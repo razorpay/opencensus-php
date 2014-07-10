@@ -7,13 +7,6 @@ use EE\Exception;
 
 class Entity extends \Eloquent
 {
-    /**
-     * Indicates if the primary key is uuid.
-     *
-     * @var bool
-     */
-    public $uuid = false;
-
     protected static $sign = '';
 
     protected $entity = '';
@@ -46,7 +39,7 @@ class Entity extends \Eloquent
      */
     protected static $unsetCreateInput = array();
 
-    public function build(array $input)
+    public function build(array $input = array())
     {
         $this->input = $input;
 

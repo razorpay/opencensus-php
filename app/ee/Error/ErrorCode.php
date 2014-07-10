@@ -83,6 +83,9 @@ class ErrorCode
 
     const BAD_REQUEST_ERROR                                         = 'BAD_REQUEST_ERROR';
 
+    const BAD_REQUEST_KEY_EXPIRED                                   = 'BAD_REQUEST_KEY_EXPIRED';
+    const BAD_REQUEST_KEY_EXPIRING_SOON                             = 'BAD_REQUEST_KEY_EXPIRING_SOON';
+
     const SERVER_ERROR_INVALID_ARGUMENT                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                              = 'SERVER_ERROR_DB_QUERY_FAILED';
 

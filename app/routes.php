@@ -85,9 +85,9 @@ Route::group(array('before' => 'auth.app'), function()
 {
     Route::post('merchants', 'MerchantController@postIndex');
 
-    Route::get('merchants/keys', 'MerchantController@getKeys');
+    Route::get('keys', 'MerchantController@getKeys');
 
-    Route::put('merchants/keys', 'MerchantController@updateKeys');
+    Route::put('keys/{id}', 'MerchantController@putKeys');
 });
 
 Route::get('/', function()

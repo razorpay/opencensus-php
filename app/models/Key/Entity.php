@@ -2,6 +2,8 @@
 
 namespace Models\Key;
 
+use EE\Error\ErrorCode;
+use EE\Exception;
 use Models\Base;
 
 class Entity extends Base\UniqueIdEntity
@@ -10,6 +12,11 @@ class Entity extends Base\UniqueIdEntity
 
     const MERCHANT_ID = 'merchant_id';
 
+    /**
+     * This is the secret used for authenticating
+     * merchant's server side requests.
+     * It's actually a hash of the actual secret
+     */
     const SECRET = 'secret';
 
     const ACTIVE = 'active';
@@ -21,9 +28,7 @@ class Entity extends Base\UniqueIdEntity
     protected $table  = \Constants\Table::KEY;
 
     protected $fillable = array(
-        self::ID,
         self::MERCHANT_ID,
-        self::SECRET,
         'live',
         self::ACTIVE
     );
@@ -38,27 +43,7 @@ class Entity extends Base\UniqueIdEntity
     const DEFAULT_KEY_EXPIRY_TIME_ON_ROLL = 86400;
 
     protected $hidden = array(
-        self::SECRET,
-    );
-
-    public function scopeNotExpired($query)
-    {
-        return $query->where(function ($query)
-        {
-            $query->where(self::EXPIRED_AT, '=', NULL)
-                  ->orWhere(self::EXPIRED_AT, '>', time());
-        });
-    }
-
-    public function scopeMerchantId($query, $merchantId)
-    {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
-    }
-
-    public function setExpired($time = self::DEFAULT_KEY_EXPIRY_TIME_ON_ROLL)
-    {
-        $this->setAttribute(self::EXPIRED_AT, time() + $time);
-    }
+        self::SECRET);
 
     public function merchant()
     {
@@ -76,8 +61,81 @@ class Entity extends Base\UniqueIdEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
-    public function generateId($input)
+    public function scopeNotExpired($query)
     {
-        $this->setAttribute('id', $input['key_id']);
+        return $query->where(function ($query)
+        {
+            $query->where(self::EXPIRED_AT, '=', NULL)
+                  ->orWhere(self::EXPIRED_AT, '>', time());
+        });
+    }
+
+    public function scopeMerchantId($query, $merchantId)
+    {
+        return $query->where(self::MERCHANT_ID,'=',$merchantId);
+    }
+
+    public function isExpiredOrExpiring()
+    {
+        return ($this->attributes[self::EXPIRED_AT] !== null);
+    }
+
+    public function isExpired()
+    {
+        $expiredAt = $this->getAttribute(self::EXPIRED_AT);
+
+        return ($expiredAt <= time());
+    }
+
+    public function checkAndSetExpired($roll = false)
+    {
+        if ($this->isExpiredOrExpiring())
+        {
+            $errorCode = null;
+
+            if ($this->isExpired())
+                $errorCode = ErrorCode::BAD_REQUEST_KEY_EXPIRED;
+            else
+                $errorCode = ErrorCode::BAD_REQUEST_KEY_EXPIRING_SOON;
+
+            throw new Exception\BadRequestException(null, $errorCode);
+        }
+
+        $this->setExpired($roll);
+    }
+
+    public function setExpired($roll = false)
+    {
+        $time = 0;
+
+        if ($roll === true)
+            $time = self::DEFAULT_KEY_EXPIRY_TIME_ON_ROLL;
+
+        $this->setAttribute(self::EXPIRED_AT, time() + $time);
+    }
+
+    /**
+     * generates the key secret uses a
+     * cryptographically strong algorithm.
+     * Sets it's hash in object and returns the secret.
+     */
+    public function generateSecret()
+    {
+        $len = self::ID_LENGTH;
+
+        $secret = bin2hex(openssl_random_pseudo_bytes($len/2));
+
+        $this->setAttribute(self::SECRET, \Hash::make($secret));
+
+        return $secret;
+    }
+
+    public static function generateUniqueId()
+    {
+        $len = self::ID_LENGTH;
+
+        $id = bin2hex(openssl_random_pseudo_bytes($len/2));
+
+        return $id;
     }
 }

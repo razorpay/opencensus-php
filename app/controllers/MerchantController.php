@@ -1,6 +1,6 @@
 <?php
 
-use Models\Merchant\Service as Merchant;
+use Models\Merchant;
 use Models\Service\BasicAuth;
 
 class MerchantController extends BaseController
@@ -9,26 +9,26 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $data = Merchant::getNewInstance()->create($input);
+        $data = (new Merchant\Service)->register($input);
 
-        return $data;
+        return Response::json($data);
     }
 
     public function getKeys()
     {
         $merchant_id = BasicAuth::getInstance()->getMerchantId();
 
-        return Merchant::getNewInstance()->fetchKeys($merchant_id);
+        return (new Merchant\Service)->fetchKeys($merchant_id);
     }
 
-    public function updateKeys()
+    public function putKeys($id)
     {
         $input = Input::all();
 
         $input['merchant_id'] = BasicAuth::getInstance()->getMerchantId();
 
-        $status = Merchant::getNewInstance()->updateKey($input);
+        $keys = (new Merchant\Service)->updateKey($id, $input);
 
-        return $status;
+        return json_encode($keys);
     }
 }
