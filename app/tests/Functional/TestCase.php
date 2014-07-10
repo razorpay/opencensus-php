@@ -45,12 +45,12 @@ class TestCase extends ParentTestCase
 
         //
         // Seed the db with required data
-        // This creates key entity and by reference
-        // from fixtures.yml, the merchant entity as well
+        // This creates key entity and merchant entity
         // This key can be used by default for most use-cases
         // but you are not required to use it.
         //
-        $key = $this->createEntity('key');
+        $merchant = $this->createEntity('merchant', ['id' => 1]);
+        $key = $this->createEntity('key', ['merchant_id' => 1]);
 
         //
         // The key created in last command is setup as
