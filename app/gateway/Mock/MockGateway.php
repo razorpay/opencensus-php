@@ -1,10 +1,10 @@
 <?php
 
-namespace Gateway\MockGateway;
+namespace Gateway\Mock;
 
 use Gateway\BaseGateway;
 
-class MockGateway extends BaseGateway
+class Gateway extends BaseGateway
 {
     public function process(array $input)
     {

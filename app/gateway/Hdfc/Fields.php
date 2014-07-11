@@ -239,4 +239,10 @@ class Fields
      * Sample - 369258147123456
      */
     const MD = 'MD';
+
+    const POSTDATE = 'postdate';
+    const AUTH = 'auth';
+
+    const EXPIRY_YEAR = 'expyear';
+    const EXPIRY_MONTH = 'expmonth';
 }

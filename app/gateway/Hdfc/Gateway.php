@@ -34,9 +34,7 @@ use EE\Error;
 class Gateway extends BaseGateway
 {
     use EnrollCardTrait;
-
     use AuthTransactionTrait;
-
     use SupportTransactionTrait;
 
     /**
