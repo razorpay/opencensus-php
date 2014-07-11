@@ -37,12 +37,12 @@ class Utility
             {
                 $exception = new GatewayTimeoutException($e->getMessage(), $e);
 
-                $rp = Hdfc\ErrorCode::RP00004;
+                $rp = Hdfc\ErrorCode::RP00002;
 
                 $desc = Hdfc\ErrorCode::$errorMessages[$rp];
 
                 $exception->setGatewayErrorCodeAndDesc(
-                    Hdfc\ErrorCode::RP00004,
+                    Hdfc\ErrorCode::RP00002,
                     $desc);
 
                 throw $exception;

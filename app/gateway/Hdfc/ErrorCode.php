@@ -53,6 +53,8 @@ class ErrorCode
     const GW00258   = 'GW00258';
     const GW00259   = 'GW00259';
     const GW00261   = 'GW00261';
+    const GW00458   = 'GW00458';
+
 
     /**
      * All codes in GV000** series
@@ -100,7 +102,6 @@ class ErrorCode
     const RP00001   = 'RP00001';
     const RP00002   = 'RP00002';
     const RP00003   = 'RP00003';
-    const RP00004   = 'RP00004';
 
     //
     // The error codes starting with 'RP' are our custom ones
@@ -120,7 +121,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00157   => 'Invalid Payment Instrument',
 
         Hdfc\ErrorCode::GW00159   => 'Card number missing',
-        Hdfc\ErrorCode::GW00160   => 'Invalid Brand.',
+        Hdfc\ErrorCode::GW00160   => 'Invalid Brand',
         Hdfc\ErrorCode::GW00161   => 'Invalid Card/Member Name data',
         Hdfc\ErrorCode::GW00162   => 'Invalid User Defined data',
         Hdfc\ErrorCode::GW00163   => 'Invalid Address data',
@@ -142,6 +143,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00258   => 'Transaction Denied: Negative BIN',
         Hdfc\ErrorCode::GW00259   => 'Transaction Denied: Declined Card',
         Hdfc\ErrorCode::GW00261   => 'Transaction Denied: Captures exceed Authorizations',
+        Hdfc\ErrorCode::GW00458   => 'Invalid Transaction Attempt',
 
         Hdfc\ErrorCode::GV00001   => 'Unknown VPAS version',
         Hdfc\ErrorCode::GV00002   => 'Cardholder not enrolled',
@@ -175,9 +177,8 @@ class ErrorCode
         Hdfc\ErrorCode::CM90005   => 'Timestamp mismatch error',
 
         Hdfc\ErrorCode::RP00001   => 'Invalid Error Code',
-        Hdfc\ErrorCode::RP00002   => 'Uncaptured Transaction',
-        Hdfc\ErrorCode::RP00003   => 'Invalid enroll code',
-        Hdfc\ErrorCode::RP00004   => 'Gateway request timeout');
+        Hdfc\ErrorCode::RP00002   => 'Gateway request timeout',
+        Hdfc\ErrorCode::RP00003   => 'Invalid enroll code');
 
     /**
      * Maps error codes from HDFC Gateway to the
@@ -207,6 +208,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00177   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
         Hdfc\ErrorCode::GW00181   => Error\ErrorCode::CARD_ERROR_INSUFFICIENT_BALANCE,
         Hdfc\ErrorCode::GW00183   => Error\ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
+        Hdfc\ErrorCode::GW00458   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
 
         Hdfc\ErrorCode::GW00201   => Error\ErrorCode::GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND,
         Hdfc\ErrorCode::GW00205   => Error\ErrorCode::GATEWAY_ERROR_INVALID_SUBSEQUENT_TRANSACTION,
@@ -224,6 +226,13 @@ class ErrorCode
         Hdfc\ErrorCode::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_ACTION,
         Hdfc\ErrorCode::PY20002   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_AMOUNT,
+
+        Hdfc\ErrorCode::CM90000   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        Hdfc\ErrorCode::CM90001   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        Hdfc\ErrorCode::CM90002   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        Hdfc\ErrorCode::CM90003   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        Hdfc\ErrorCode::CM90004   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        Hdfc\ErrorCode::CM90005   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
 
         Hdfc\ErrorCode::RP00001   => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
 

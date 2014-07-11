@@ -19,6 +19,8 @@ class ErrorCode
      * should be generally valid for gateways that
      * are added in future
      */
+    const GATEWAY_ERROR_FATAL_ERROR                                 = 'GATEWAY_ERROR_FATAL_ERROR';
+
     const GATEWAY_ERROR_REQUEST_TIMEOUT                             = 'GATEWAY_ERROR_REQUEST_TIMEOUT';
     const GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE                = 'GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE';
     const GATEWAY_ERROR_INVALID_TERMINAL_ID                         = 'GATEWAY_ERROR_INVALID_TERMINAL_ID';

@@ -26,7 +26,7 @@ return [
         'exception' => [
             'class' => 'EE\Exception\GatewayTimeoutException',
             'code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-            'gateway_error_code'  => Hdfc\ErrorCode::RP00004,
+            'gateway_error_code'  => Hdfc\ErrorCode::RP00002,
         ],
     ],
 
