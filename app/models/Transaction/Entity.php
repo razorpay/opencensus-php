@@ -90,6 +90,8 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+// --------------------- Generators --------------------------------------
+
     public function generateStatus($input)
     {
         $this->setAttribute(self::STATUS, Status::OPEN);
@@ -102,6 +104,8 @@ class Entity extends Base\PublicEntity
             ;//$this->setAttribute(self::UDF, array());
         }
     }
+
+// --------------------- Generators Ends ------------------------------------
 
     protected function modifyContact($contact)
     {
@@ -118,6 +122,8 @@ class Entity extends Base\PublicEntity
         return $contact;
     }
 
+// ----------------------- Setters -----------------------------------------
+
     public function setCaptureAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
@@ -129,6 +135,34 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::AUTH_AMOUNT, $authAmount);
     }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setStatusAndSave($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+        $this->save();
+    }
+
+    public function setError($code, $desc)
+    {
+        $this->setAttribute(self::ERROR_CODE, $code);
+        $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
+    }
+
+// ----------------------- Setters Ends-------------------------------------
+
+// ----------------------- Mutator -----------------------------------------
+
+    public function setAmountAttribute($amount)
+    {
+        $this->attributes[self::AMOUNT] = (int) $amount;
+    }
+
+// ----------------------- Mutator Ends ------------------------------------
 
     public function isProcessed()
     {
@@ -155,21 +189,19 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) == $status);
     }
 
-    public function setStatus($status)
-    {
-        $this->setAttribute(self::STATUS, $status);
-    }
-
-    public function setStatusAndSave($status)
-    {
-        $this->setAttribute(self::STATUS, $status);
-        $this->save();
-    }
+// ----------------------- Getters -----------------------------------------
 
     public function getMerchantId()
     {
-        return (int)$this->getAttribute(self::MERCHANT_ID);
+        return $this->getAttribute(self::MERCHANT_ID);
     }
+
+    public function getAmount()
+    {
+        return (int) $this->getAmount(self::AMOUNT);
+    }
+
+// ----------------------- Getters Ends-------------------------------------
 
     public function toArrayWithCard()
     {
@@ -196,16 +228,7 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    public function hdfc()
-    {
-        return $this->hasOne('hdfc', 'trackid', 'id');
-    }
-
-    public static function updateProcessed($id)
-    {
-        $txn = static::where('id', $id)
-                    ->update(array(self::STATUS => 'auth'));
-    }
+// --------------- Relatoion to other entities ----------------------
 
     public function token()
     {
@@ -218,11 +241,17 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
-    public function setError($code, $desc)
+    public function ledger()
     {
-        $this->setAttribute(self::ERROR_CODE, $code);
-        $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
+        return $this->morphOne('Models\Ledger\Entity', 'entity');
     }
+
+    public function hdfc()
+    {
+        return $this->hasOne('hdfc', 'trackid', 'id');
+    }
+
+// --------------- Relation to other entity section ends ------------
 
     public function scopeMerchantId($query, $merchantId)
     {
@@ -247,4 +276,5 @@ class Entity extends Base\PublicEntity
 
         return $relevantData;
     }
+
 }
