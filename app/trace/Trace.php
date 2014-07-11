@@ -94,7 +94,7 @@ class Trace extends TraceWriter
     {
         foreach(static::$defaults as $index => $default)
         {
-            if(!array_key_exists($default, $record))
+            if (!array_key_exists($default, $record))
             {
                 $defaults_var = 'default'.ucfirst($default);
 
@@ -120,11 +120,11 @@ class Trace extends TraceWriter
 
         foreach($record as $key => $value)
         {
-            if(in_array($key, static::$commonFields))
+            if (in_array($key, static::$commonFields))
             {
                 $this->commonValues[$key] = $record[$key];
             }
-            else if(in_array($key, $fields))
+            else if (in_array($key, $fields))
             {
                 $this->values[$key] = $record[$key];
             }

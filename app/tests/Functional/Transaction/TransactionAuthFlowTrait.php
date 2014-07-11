@@ -65,7 +65,7 @@ trait TransactionAuthFlowTrait
         }
         catch(Exception $e)
         {
-            if(strpos($e->getMessage(), 'node list is empty') !== False)
+            if (strpos($e->getMessage(), 'node list is empty') !== False)
             {
                 $this->fail('Transaction Timed out');
             }

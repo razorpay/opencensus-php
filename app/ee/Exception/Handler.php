@@ -47,7 +47,7 @@ class Handler
         // is available (which will be the case, by default, in the dev
         // environment)
 
-        if((App::bound('whoops')) and
+        if ((App::bound('whoops')) and
            (Config::get('app.debug')))
         {
             // Retrieve the whoops handler in charge of displaying exceptions:
@@ -55,7 +55,7 @@ class Handler
 
             // Laravel will use the PrettyPageHandler by default, unless this
             // is an AJAX request, in which case it'll use the JsonResponseHandler:
-            if($whoopsDisplayHandler instanceof PrettyPageHandler)
+            if ($whoopsDisplayHandler instanceof PrettyPageHandler)
             {
                 // Set a custom page title for our error page:
                 $whoopsDisplayHandler->setPageTitle("Mayday! Mayday! Don't push the code!");

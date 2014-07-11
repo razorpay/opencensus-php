@@ -49,7 +49,7 @@ if (! function_exists('break_assoc_array'))
 				$array1[$key] = $value;
 			}
 
-			if(in_array($key, $keys2))
+			if (in_array($key, $keys2))
 			{
 				$array2[$key] = $value;
 			}

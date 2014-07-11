@@ -149,7 +149,7 @@ trait AuthTransactionTrait
 
         $response['data']['processed'] = ($response['data']['result'] == 'APPROVED') ? 1 : 0;
 
-        if($response['data']['processed'])
+        if ($response['data']['processed'])
         {
             $this->trace(
                 Trace::INFO,

@@ -46,7 +46,7 @@ class Service extends Base\Service
         // We convert txn model to array
         // if it's a txn model
         //
-        if($data instanceof Transaction\Entity)
+        if ($data instanceof Transaction\Entity)
             $data = $data->toArrayPublic();
 
         return $data;
@@ -92,13 +92,13 @@ class Service extends Base\Service
         //
         // Don't continue if already refunded
         //
-        if($txn->isRefunded())
+        if ($txn->isRefunded())
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED);
         }
 
-        if($txn->isCaptured() === false)
+        if ($txn->isCaptured() === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);

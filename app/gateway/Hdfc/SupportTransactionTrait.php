@@ -45,7 +45,7 @@ trait SupportTransactionTrait
 
         $this->persistAfterSupportTxn('refund');
 
-        if($this->error)
+        if ($this->error)
         {
             $this->throwException($this->supportTxnResponse['error']['code']);
         }

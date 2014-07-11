@@ -46,12 +46,12 @@ class CaptureAll extends Command {
 		$captures = json_decode($captures);
 
 		//Check if output is not NULL
-		if(! $captures) return;
+		if (! $captures) return;
 
 		//Display the captured transaction's ids
 		foreach($captures as $capture)
 		{
-			if($capture->captured)
+			if ($capture->captured)
 			{
 				$this->info($capture->id." Captured successfully. \n");
 			}

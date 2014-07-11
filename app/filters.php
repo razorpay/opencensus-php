@@ -135,7 +135,7 @@ Route::filter('auth.public', function($route, $request)
 
     $ba = BasicAuth::getInstance();
 
-    if($ba->verifyPublic($_SERVER['PHP_AUTH_USER']) === false)
+    if ($ba->verifyPublic($_SERVER['PHP_AUTH_USER']) === false)
     {
         if (basicAuthVerifySecret() === false)
         {

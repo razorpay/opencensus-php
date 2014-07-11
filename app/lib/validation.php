@@ -62,7 +62,7 @@ Validator::extend('card_type', function($attribute, $value, $parameters)
 
 	$supportedTypes = array('CREDIT', 'DEBIT');
 
-	if(in_array($type, $supportedTypes))
+	if (in_array($type, $supportedTypes))
 	{
 		return true;
 	}

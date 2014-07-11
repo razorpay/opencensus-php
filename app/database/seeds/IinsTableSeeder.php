@@ -43,7 +43,7 @@ class IinsTableSeeder extends Seeder
         $records = array();
         $iin_record = array();
 
-        if(file_exists($path) and is_readable($path))
+        if (file_exists($path) and is_readable($path))
         {
             $file_handle = fopen($path, 'r');
 
