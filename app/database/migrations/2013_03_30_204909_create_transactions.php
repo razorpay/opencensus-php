@@ -49,14 +49,9 @@ class CreateTransactions  extends Migration
 
             $table->string(Transaction::DESCRIPTION);
 
-            $table->boolean('livemode');
-
             $table->char(Transaction::TOKEN_ID, Transaction::ID_LENGTH)
                   ->unique()
                   ->nullable();
-
-            $table->boolean('hold')
-                  ->default('1');
 
             $table->string(Transaction::ERROR_CODE, 20)
                   ->nullable();
