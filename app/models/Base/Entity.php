@@ -7,10 +7,6 @@ use EE\Exception;
 
 class Entity extends \Eloquent
 {
-    protected static $sign = '';
-
-    private static $delimiter = '-';
-
     protected $entity = '';
 
     /**

@@ -12,6 +12,10 @@ class UniqueIdEntity extends Entity
 
     //const UNIQUE_ID_CHECK_REGEX = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
 
+    protected static $sign = '';
+
+    private static $delimiter = '-';
+
     /**
      * Indicates if the IDs are Unique Id
      *
