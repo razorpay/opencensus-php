@@ -361,7 +361,7 @@ class Gateway extends BaseGateway
 
     protected function throwException($gatewayErrorCode)
     {
-        $gatewayErrorMessage = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
+        $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
 
         $appErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
 
@@ -375,6 +375,11 @@ class Gateway extends BaseGateway
             case Error\ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE:
             case Error\ErrorCode::CARD_ERROR_CARD_DECLINED:
                 $exception = new Exception\CardErrorException($appErrorCode);
+
+                $exception->setGatewayErrorCodeAndDesc(
+                    $gatewayErrorCode,
+                    $gatewayErrorDesc);
+
                 break;
 
             case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF:
@@ -383,13 +388,13 @@ class Gateway extends BaseGateway
                 break;
 
             default:
-                $exception = new Exception\GatewayErrorException($appErrorCode);
+                $exception = new Exception\GatewayErrorException(
+                                $appErrorCode,
+                                $gatewayErrorCode,
+                                $gatewayErrorDesc);
+
                 break;
         }
-
-        $exception->setGatewayErrorCodeAndDesc(
-            $gatewayErrorCode,
-            $gatewayErrorMessage);
 
         throw $exception;
     }

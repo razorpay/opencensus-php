@@ -94,22 +94,7 @@ class Handler
         return;
     }
 
-    public function gatewayTimeoutExceptionHandler(GatewayTimeoutException $exception, $code)
-    {
-        return $exception->generateJsonResponse();
-    }
-
-    public function invalidCardExceptionHandler(InvalidCardException $exception, $code)
-    {
-        return $exception->generateJsonResponse();
-    }
-
     public function generateJsonResponse(\Exception $exception)
-    {
-        return $exception->generateJsonResponse();
-    }
-
-    protected function badRequestExceptionHandler(BadRequestException $exception, $code)
     {
         return $exception->generateJsonResponse();
     }
