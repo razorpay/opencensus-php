@@ -75,17 +75,6 @@ class Entity extends \Eloquent
         }
     }
 
-    public function toArrayPublic()
-    {
-        $array = $this->toArray();
-
-        $array['id' ] = static::$sign . self::$delimiter . $array['id'];
-
-        $array['entity'] = $this->entity;
-
-        return $array;
-    }
-
     protected function getDateFormat()
     {
         return 'U';
@@ -129,24 +118,5 @@ class Entity extends \Eloquent
     public function generateAttribute($attr, $input)
     {
         $this->{'generate'.studly_case($attr)}($input);
-    }
-
-    public static function verifyIdAndStripSign(& $id)
-    {
-        self::stripSignOrFail($id);
-
-        UniqueIdEntity::verifyUniqueId($id, true);
-    }
-
-    protected static function stripSignOrFail(& $id)
-    {
-        if (strpos($id, static::$sign . self::$delimiter) === false)
-        {
-            throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
-        $len = strlen(static::$sign . self::$delimiter);
-
-        $id = substr($id, $len);
     }
 }

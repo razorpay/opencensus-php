@@ -4,37 +4,23 @@ namespace Models\Transaction;
 
 use Models\Base;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
-    const ID = 'id';
-
-    const MERCHANT_ID = 'merchant_id';
-
-    const AUTH_AMOUNT = 'auth_amount';
-
-    const AMOUNT = 'amount';
-
-    const STATUS = 'status';
-
-    const CURRENCY = 'currency';
-
-    const DESCRIPTION = 'description';
-
-    const TOKEN_ID = 'token_id';
-
-    const HOLD = 'hold';
-
-    const ERROR_CODE = 'error_code';
-
+    const ID                = 'id';
+    const MERCHANT_ID       = 'merchant_id';
+    const AUTH_AMOUNT       = 'auth_amount';
+    const AMOUNT            = 'amount';
+    const STATUS            = 'status';
+    const CURRENCY          = 'currency';
+    const DESCRIPTION       = 'description';
+    const TOKEN_ID          = 'token_id';
+    const ERROR_CODE        = 'error_code';
     const ERROR_DESCRIPTION = 'error_description';
+    const EMAIL             = 'email';
+    const CONTACT           = 'contact';
+    const UDF               = 'udf';
 
-    const EMAIL = 'email';
-
-    const CONTACT = 'contact';
-
-    const UDF = 'udf';
-
-    const CURRENCY_LENGTH = 3;
+    const CURRENCY_LENGTH   = 3;
 
     protected $table = \Constants\Table::TRANSACTION;
 
@@ -59,10 +45,25 @@ class Entity extends Base\UniqueIdEntity
         self::ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::STATUS,
+        self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
-        // 'livemode',
+        self::UDF,
+        self::ERROR_CODE,
+        self::ERROR_DESCRIPTION,
+        self::CREATED_AT,
+        self::UPDATED_AT);
+
+    protected $public = array(
+        self::ID,
+        self::ENTITY,
+        self::AMOUNT,
+        self::CURRENCY,
         self::STATUS,
+        self::DESCRIPTION,
+        self::EMAIL,
+        self::CONTACT,
         self::UDF,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
@@ -172,7 +173,7 @@ class Entity extends Base\UniqueIdEntity
 
     public function toArrayWithCard()
     {
-        $data = parent::toArray();
+        $data = $this->getAttributes();
 
         $token = $this->token()->first();
 
@@ -188,7 +189,7 @@ class Entity extends Base\UniqueIdEntity
             throw new Exception\LogicException(ErrorCode::SERVER_ERROR_ASSOCIATED_CARD_NOT_FOUND);
         }
 
-        $cardData = $card->toArray();
+        $cardData = $card->getAttributes();
 
         $data['card'] = $cardData;
 

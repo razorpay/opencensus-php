@@ -8,6 +8,7 @@ use EE\Exception\BadRequestException;
 use Gateway\GatewayManager;
 
 use Models\Card;
+use Models\Ledger;
 use Models\Token;
 use Models\Transaction;
 
@@ -328,6 +329,8 @@ class Core
     protected function updateTransactionCaptured($txn)
     {
         $txn->setStatus(Transaction\Status::CAPTURED);
+
+        (new Ledger\Core)->recordCapture($txn);
 
         //Logging
         $this->trace->info(
