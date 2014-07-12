@@ -21,7 +21,7 @@ class Gateway extends BaseGateway
         ;
     }
 
-    public function auth()
+    public function auth(array $input)
     {
         ;
     }
