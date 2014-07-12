@@ -22,6 +22,8 @@ class HdfcGatewayAuthTest extends TestCase
     {
         parent::setUp();
 
+        $this->markTestSkipped('Hdfc gateway is not working properly right now');
+
         //
         // load test data
         //
