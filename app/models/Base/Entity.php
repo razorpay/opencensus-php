@@ -5,7 +5,7 @@ namespace Models\Base;
 use EE\Error\ErrorCode;
 use EE\Exception;
 
-class Entity extends \Eloquent
+class Entity extends EloquentEx
 {
     protected $entity = '';
 

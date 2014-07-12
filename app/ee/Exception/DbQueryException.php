@@ -23,6 +23,21 @@ class DbQueryException extends ServerErrorException
 
         $message = 'DB query failed to execute successfully';
 
+        if (isset($data['operation']))
+        {
+            $message .= PHP_EOL . 'Operation: ' . $data['operation'];
+        }
+
+        if (isset($data['model']))
+        {
+            $message .= PHP_EOL . 'Model: ' . $data['model'];
+        }
+
+        if (isset($data['attributes']))
+        {
+            $message .= PHP_EOL . 'Attributes: ' . (json_encode($data['attributes']));
+        }
+
         parent::__construct($message, $code, $data, $previous);
     }
 }

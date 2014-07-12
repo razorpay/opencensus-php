@@ -2,6 +2,7 @@
 
 namespace Models\Base;
 
+use DB;
 use EE\Error\ErrorCode;
 use EE\Exception;
 
@@ -14,7 +15,7 @@ class Repository
     public function __construct()
     {
         if ($this->repo === null)
-            $this->repo = '\\Models\\'.$this->entity.'\\Entity';
+            $this->repo = '\Models\\' . $this->entity . '\Entity';
     }
 
     public function createOrFail(array $attributes)
@@ -44,12 +45,10 @@ class Repository
 
         if ( ! (NULL === $model = $repo::find($id, $columns))) return $model;
 
-        $e = array(
-                'model' => $repo,
-                'attributes' => $id,
-                'operation' => 'find');
-
-        throw new Exception\DbQueryException($e);
+        $this->throwException(
+            get_class($entity),
+            $entity->getAttributes(),
+            'find');
     }
 
     public function findOrFailPublic($id, $columns = array('*'))
@@ -85,13 +84,10 @@ class Repository
         if ($saved === true)
             return;
 
-        $e = array(
-                'model' => get_class($entity),
-                'attributes' => $entity->getAttributes(),
-                'operation' => 'save');
-
-
-        throw new Exception\DbQueryException($e);
+        $this->throwException(
+            get_class($entity),
+            $entity->getAttributes(),
+            'save');
     }
 
     public function save($entity, array $options = array())
@@ -108,10 +104,36 @@ class Repository
         if ($pushed === true)
             return;
 
+        $this->throwException(
+            get_class($entity),
+            $entity->getAttributes(),
+            'push');
+    }
+
+    public function reload(& $entity)
+    {
+        $repo = $this->repo;
+
+        $reloadedEntity = $repo::findOrFail($entity->getKey());
+
+        $attributes = $reloadedEntity->getAttributes();
+
+        $entity->setRawAttributes($attributes, true);
+    }
+
+    public function beginTransaction()
+    {
+        DB::beginTransaction();
+
+        return $this;
+    }
+
+    protected function throwException($model, $attr, $op)
+    {
         $e = array(
-                'model' => get_class($entity),
-                'attributes' => $entity->getAttributes(),
-                'operation' => 'push');
+            'model' => $model,
+            'attributes' => $attr,
+            'operation' => $op);
 
         throw new Exception\DbQueryException($e);
     }
