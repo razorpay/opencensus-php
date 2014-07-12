@@ -92,6 +92,7 @@ class ErrorCode
     const SERVER_ERROR_DB_QUERY_FAILED                              = 'SERVER_ERROR_DB_QUERY_FAILED';
 
     const LOGICAL_ERROR_UNIDENTIFIED_CARD_NETWORK                   = 'LOGICAL_ERROR_UNIDENTIFIED_CARD_NETWORK';
+    const LOGICAL_ERROR_TRANSACTION_NOT_CAPTURED                    = 'LOGICAL_ERROR_TRANSACTION_NOT_CAPTURED';
 
     public static function errorCodeExists($code)
     {
