@@ -19,4 +19,6 @@ class Table
     const IIN = 'iins';
 
     const UNRECOGNIZED_CARD = 'unrecognized_cards';
+
+    const BALANCE = 'balance';
 }

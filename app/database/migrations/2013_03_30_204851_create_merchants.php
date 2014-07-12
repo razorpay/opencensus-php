@@ -24,9 +24,6 @@ class CreateMerchants extends Migration {
                   ->unsigned()
                   ->primary();
 
-            $table->integer(Merchant::BALANCE)
-                  ->default(0);
-
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
         });

@@ -54,8 +54,8 @@ class CreateTokens extends Migration {
      */
     public function down()
     {
-        Schema::table(Table::TOKEN, function($table){
-
+        Schema::table(Table::TOKEN, function($table)
+        {
             $table->dropForeign(Table::TOKEN.'_'.Token::CARD_ID.'_foreign');
 
             $table->dropForeign(Table::TOKEN.'_'.Token::MERCHANT_ID.'_foreign');
