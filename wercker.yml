@@ -15,7 +15,7 @@ build:
           name: Create grunt config and set environment
           code: cp app/config/grunt.sample.json app/config/grunt.json && sed -i "2s/development/production/" app/config/grunt.json
       - grunt:
-          tasks: default 
+          tasks: default
       - script:
           name: run unit tests
           code: phpunit
@@ -51,7 +51,7 @@ deploy:
       - script:
           name: copy with rsync over ssh
           code: >
-                rsync -avz --force --delete --progress --size-only
+                rsync -avz --force --delete --progress
                 --exclude-from=.rsyncignore
                 -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
                 ./ ubuntu@dashboard.razorpay.com:/home/ubuntu/dashboard/
