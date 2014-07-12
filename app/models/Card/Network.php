@@ -108,7 +108,12 @@ class Network
 
     public static function isRupay($iin)
     {
+        //
         // @todo: determine regex for this one.
+        //
+        // Looking at lots of images of Rupay card suggests that it
+        // may start with 607*
+        //
         return false;
     }
 
