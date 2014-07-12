@@ -23,7 +23,9 @@ class CreateLedger  extends Migration {
             $table->char(Ledger::ID, Ledger::ID_LENGTH)
                   ->primary();
 
-            $table->char('ref', Ledger::ID_LENGTH);
+            $table->char(Ledger::ENTITY_ID, Ledger::ID_LENGTH);
+
+            $table->string(Ledger::ENTITY_TYPE, 20);
 
             $table->integer(Ledger::MERCHANT_ID)
                   ->unsigned();
@@ -31,22 +33,23 @@ class CreateLedger  extends Migration {
             $table->integer(Ledger::AMOUNT)
                   ->unsigned();
 
-            $table->string(Ledger::ACTION, 10);
-
             $table->integer(Ledger::FEE)
+                  ->unsigned();
+
+            $table->integer(Ledger::DEBIT)
+                  ->unsigned();
+
+            $table->integer(Ledger::CREDIT)
                   ->unsigned();
 
             $table->integer(Ledger::BALANCE)
                   ->unsigned();
 
-            $table->boolean(Ledger::PENDING)
-                  ->default(0);
-
             // Adds created_at and updated_at columns to the table
             $table->integer(Ledger::CREATED_AT);
             $table->integer(Ledger::UPDATED_AT);
 
-            $table->index('ref');
+            $table->index(Ledger::ENTITY_ID);
 
             $table->foreign(Ledger::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
@@ -70,5 +73,4 @@ class CreateLedger  extends Migration {
 
         Schema::drop(Table::LEDGER);
     }
-
 }

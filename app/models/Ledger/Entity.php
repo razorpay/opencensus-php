@@ -7,61 +7,33 @@ use Models\Transaction;
 
 class Entity extends Base\UniqueIdEntity
 {
-    const ID = 'id';
-
-    const MERCHANT_ID = 'merchant_id';
-
-    const AMOUNT = 'amount';
-
-    const ACTION = 'action';
-
-    const FEE = 'fee';
-
-    const BALANCE = 'balance';
-
-    const PENDING = 'pending';
+    const ID            = 'id';
+    const ENTITY_ID     = 'entity_id';
+    const ENTITY_TYPE   = 'entity_type';
+    const MERCHANT_ID   = 'merchant_id';
+    const AMOUNT        = 'amount';
+    const DEBIT         = 'debit';
+    const CREDIT        = 'credit';
+    const FEE           = 'fee';
+    const BALANCE       = 'balance';
 
     protected $table = \Constants\Table::LEDGER;
 
     protected static $sign = 'lgr';
 
     protected $fillable = array(
-        'ref',
-        self::ACTION,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::MERCHANT_ID,
+        self::DEBIT,
+        self::CREDIT,
         self::AMOUNT,
-        self::PENDING,
         self::FEE,
         self::BALANCE);
 
-    public static function updateRecords($txn)
+    public function merchant()
     {
-        $merchantId = $txn->merchant_id;
-
-        $ledger = null;
-
-        \DB::transaction( function() use ($txn, &$ledger)
-        {
-            $merchantId = $txn->merchant_id;
-
-            $merchant = Merchant::find($merchantId);
-
-            $fee = $txn->amount * 3 / 100;
-
-            $merchant->amount += ($txn->amount - $fee);
-
-            $data = array(
-                'ref'           => $txn->id,
-                self::MERCHANT_ID   => $merchant->id,
-                self::ACTION        => Transaction\Action::CAPTURE,
-                self::FEE           => $fee,
-                self::BALANCE       => $merchant->amount);
-
-            $ledger = static::createOrFail($data);
-        });
-
-        return $ledger;
+        return $this->belongsTo('Models\Merchant\Entity');
     }
-
 
 }
