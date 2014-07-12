@@ -17,13 +17,6 @@ class TransactionRetrieveTest extends TestCase
     {
         parent::setUp();
 
-        //
-        // Seed the db with required data
-        //
-        $merchant = $this->createEntity('merchant', ['id' => 1]);
-
-        $key = $this->createEntity('key', ['merchant_id' => 1]);
-
         $transaction = $this->createEntity('transaction', ['merchant_id' => 1]);
     }
 
