@@ -119,9 +119,13 @@ class Transaction extends Service
     {
         $merchant_details = DAL\Merchant::getAggregations($data);
         if (NULL === $merchant_details)
+        {
             DAL\Merchant::createAggregations($data);
+        }
         else
+        {
             DAL\Merchant::updateAggregations($data, $merchant_details);
+        }
     }
 
     protected function update($data, $obj)
