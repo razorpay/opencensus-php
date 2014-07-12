@@ -131,6 +131,13 @@ class Validator extends Base\Validator
 
         self::failIfCaptured($txn);
 
+        self::captureInputValidate($input);
+
+        self::captureAmountValidate($txn, $input);
+    }
+
+    public static function captureInputValidate($input)
+    {
         try
         {
             $instance->validateInput($input, 'capture');
@@ -139,7 +146,10 @@ class Validator extends Base\Validator
         {
             throw new BadRequestException($e->getMessageBag(), 0, $e);
         }
+    }
 
+    public static function captureAmountValidate($txn, $input)
+    {
         if ($input['amount'] > $txn->getAttribute(Transaction\Entity::AMOUNT))
         {
             throw new Exception\BadRequestException(
