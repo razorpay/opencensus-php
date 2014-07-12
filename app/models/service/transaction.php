@@ -8,10 +8,10 @@ use Models\Manager;
 class Transaction extends Service
 {
     protected static $timeIntervals = array(
-        'day'   =>  86400, //24 * 60 * 60
-        'week'  =>  604800, //7 * 24 * 60 * 60
-        'month' =>  2678400, //31 * 24 * 60 * 60
-        'year'  =>  31536000 //365 * 24 * 60 * 60
+        'day'   =>  86400, // 24 * 60 * 60
+        'week'  =>  604800, // 7 * 24 * 60 * 60
+        'month' =>  2678400, // 31 * 24 * 60 * 60
+        'year'  =>  31536000 // 365 * 24 * 60 * 60
     );
 
     public function fetchListFromApi(array $input)
