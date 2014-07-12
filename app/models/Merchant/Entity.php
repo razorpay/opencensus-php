@@ -8,8 +8,6 @@ class Entity extends Base\Entity
 {
     const ID = 'id';
 
-    const BALANCE = 'balance';
-
     protected $table = \Constants\Table::MERCHANT;
 
     protected $fillable = array(
@@ -29,5 +27,11 @@ class Entity extends Base\Entity
     {
         return $this->hasMany(
             '\Models\Transaction\Entity');
+    }
+
+    public function balance()
+    {
+        return $this->hasOne(
+            '\Models\Merchant\Balance');
     }
 }
