@@ -35,7 +35,7 @@ class PublicEntity extends UniqueIdEntity
 
         foreach ($this->public as $attr)
         {
-            $publicArray[$attr] = $array[$attr];
+            $publicArray[$attr] = isset($array[$attr]) ? $array[$attr] : null;
         }
 
         return $publicArray;
