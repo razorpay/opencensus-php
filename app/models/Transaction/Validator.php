@@ -127,8 +127,6 @@ class Validator extends Base\Validator
 
     public static function captureValidate($txn, $input)
     {
-        $instance = new static;
-
         self::failIfCaptured($txn);
 
         self::captureInputValidate($input);
@@ -140,6 +138,8 @@ class Validator extends Base\Validator
     {
         try
         {
+            $instance = new static;
+
             $instance->validateInput($input, 'capture');
         }
         catch (Exception\ValidationFailureException $e)
