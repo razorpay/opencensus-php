@@ -8,11 +8,6 @@ class GatewayManager
 {
     protected $gateways = array();
 
-    protected function createGatewayProvider()
-    {
-        $this->provider = new Hdfc\Gateway();
-    }
-
     protected function gateway($gateway = null)
     {
         $gateway = $gateway ?: $this->getDefaultGateway();
@@ -34,12 +29,12 @@ class GatewayManager
             return $this->$method();
         }
 
-        throw new \InvalidArgumentException("Gateway $gateway not supported");
+        throw new \InvalidArgumentException('Gateway ' . $gateway . ' not supported');
     }
 
     public function getDefaultGateway()
     {
-        return 'Hdfc';
+        return \Config::get('gateway.default');
     }
 
     public function getGateways()
@@ -50,6 +45,11 @@ class GatewayManager
     public function createHdfcGateway()
     {
         return new Hdfc\Gateway();
+    }
+
+    public function createMockGateway()
+    {
+        return new Mock\Gateway();
     }
 
     public function __call($method, $parameters)
