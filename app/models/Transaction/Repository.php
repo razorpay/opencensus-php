@@ -123,4 +123,15 @@ class Repository extends Base\Repository
 
         return $txn;
     }
+
+    public function reloadAndLockForUpdate($txn)
+    {
+        $repo = $this->repo;
+
+        $reloadedEntity = $repo::lockForUpdate()->findOrFail($txn->getKey());
+
+        $attributes = $reloadedEntity->getAttributes();
+
+        $txn->setRawAttributes($attributes, true);
+    }
 }

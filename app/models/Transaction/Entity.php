@@ -198,7 +198,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return (int) $this->getAmount(self::AMOUNT);
+        return (int) $this->getAttribute(self::AMOUNT);
     }
 
 // ----------------------- Getters Ends-------------------------------------
@@ -228,7 +228,7 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-// --------------- Relatoion to other entities ----------------------
+// --------------- Relation to other entities ----------------------
 
     public function token()
     {

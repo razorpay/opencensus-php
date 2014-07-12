@@ -5,6 +5,7 @@ namespace Models\Transaction;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
+use Models\Transaction;
 
 class Validator extends Base\Validator
 {
@@ -128,14 +129,7 @@ class Validator extends Base\Validator
     {
         $instance = new static;
 
-        //
-        // Don't continue if already captured
-        //
-        if ($txn->isCaptured())
-        {
-            throw new Exception\BadRequestException(
-                null, ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
-        }
+        self::failIfCaptured($txn);
 
         try
         {
@@ -146,10 +140,22 @@ class Validator extends Base\Validator
             throw new BadRequestException($e->getMessageBag(), 0, $e);
         }
 
-        if ($input['amount'] > $txn->getAttribute('amount'))
+        if ($input['amount'] > $txn->getAttribute(Transaction\Entity::AMOUNT))
         {
             throw new Exception\BadRequestException(
                 null, ErrorCode::BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH);
+        }
+    }
+
+    public static function failIfCaptured($txn)
+    {
+        //
+        // Don't continue if already captured
+        //
+        if ($txn->isCaptured())
+        {
+            throw new Exception\BadRequestException(
+                null, ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
         }
     }
 }

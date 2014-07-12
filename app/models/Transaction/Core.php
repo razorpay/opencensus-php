@@ -211,9 +211,9 @@ class Core
     /**
      * Capture a preivous auth transaction
      *
-     * @param  Transaction\Entity $txn Transaction\Entity object
+     * @param  Transaction\Entity $txn  Transaction\Entity object
      *
-     * @return array                Transaction array
+     * @return Transaction\Entity       Transaction\Entity object
      */
     public function capture(Transaction\Entity $txn, array $input = array())
     {
@@ -309,7 +309,8 @@ class Core
                 break;
 
             case Transaction\Status::CAPTURED:
-                $this->updateTransactionCaptured($txn);
+                $this->recordCapture($txn);
+                // $this->updateTransactionCaptured($txn);
                 break;
 
             case Transaction\Status::REFUNDED:
@@ -326,11 +327,23 @@ class Core
         return $txn;
     }
 
-    protected function updateTransactionCaptured($txn)
+    protected function recordCapture($txn)
+    {
+        \DB::transaction(function() use ($txn)
+        {
+            $this->txnRepo->reloadAndLockForUpdate($txn);
+
+            Transaction\Validator::failIfCaptured($txn);
+
+            (new Ledger\Core)->recordCapture($txn);
+
+            $this->updateTransactionCaptured($txn);
+        });
+    }
+
+    protected function updateTransactionCaptured(Transaction\Entity $txn)
     {
         $txn->setStatus(Transaction\Status::CAPTURED);
-
-        (new Ledger\Core)->recordCapture($txn);
 
         //Logging
         $this->trace->info(
@@ -338,7 +351,7 @@ class Core
             $txn->toArrayTraceRelevant());
     }
 
-    protected function updateTransactionRefunded($txn)
+    protected function updateTransactionRefunded(Transaction\Entity $txn)
     {
         $txn->setStatus(Transaction\Status::REFUNDED);
 
@@ -375,11 +388,18 @@ class Core
             $traceData);
     }
 
-    public function callGatewayFunction($action, $input)
+    /**
+     * Responsible for actually calling the gateway function
+     *
+     * @param  string $action refund/capture etc.
+     * @param  array  $input  Relevant input for the corresponding
+     *                        action
+     *
+     * @return array or null
+     */
+    public function callGatewayFunction($action, array $input)
     {
         $data = (new GatewayManager)->$action($input);
-
-        // $ledger = (new Ledger\Repository)->updateRecords($txn);
 
         return $data;
     }
