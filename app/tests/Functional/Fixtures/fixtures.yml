@@ -1,6 +1,9 @@
 Models\Merchant\Entity:
     id: $integer
 
+Models\Merchant\Balance:
+    id: $integer
+
 Models\Card\Entity:
     name: $string
     expiry_month: 01

@@ -21,7 +21,8 @@ class TestCase extends ParentTestCase
     protected static $fixtures = array(
         'merchant' => 'Models\Merchant\Entity',
         'key' => 'Models\Key\Entity',
-        'transaction' => 'Models\Transaction\Entity');
+        'transaction' => 'Models\Transaction\Entity',
+        'balance' => 'Models\Merchant\Balance');
 
     public function setUp()
     {
@@ -51,6 +52,7 @@ class TestCase extends ParentTestCase
         //
         $merchant = $this->createEntity('merchant', ['id' => 1]);
         $key = $this->createEntity('key', ['merchant_id' => 1]);
+        $balance = $this->createEntity('balance', ['id' => 1]);
 
         //
         // The key created in last command is setup as
