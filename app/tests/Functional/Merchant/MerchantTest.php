@@ -100,9 +100,9 @@ class MerchantTest extends TestCase
         $response = $this->makeRequest($data['request']);
         $content = json_decode($response->getContent(), true);
 
-        $expired = time();
+        $expired = time() + 1;
 
-        $this->assertGreaterThanOrEqual($expired, $content['old']['expired_at']);
+        $this->assertLessThan($expired, $content['old']['expired_at']);
 
         //
         // Update the same key second time
