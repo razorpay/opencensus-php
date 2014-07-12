@@ -28,6 +28,11 @@ class Dashboard
     public function __construct()
     {
         $this->config = Config::get('applications.dashboard');
+
+        if ($this->config === null)
+        {
+            throw new \LogicException('dashboard url not defined');
+        }
     }
 
     protected function getUrl()

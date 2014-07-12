@@ -2,7 +2,7 @@
 
 namespace Dashboard;
 
-use Models\Transaction;
+use Models\Transaction\Entity as TransactionEntity;
 
 class Transaction extends Dashboard
 {
@@ -16,10 +16,9 @@ class Transaction extends Dashboard
      * @var array
      */
     protected static $fields = array(
-        Transaction\Entity::MERCHANT_ID,
-        Transaction\Entity::AMOUNT,
-        Transaction\Entity::STATUS,
-        Transaction\Entity::CREATED_AT,
-        Transaction\Entity::UPDATED_AT'
-    );
+        TransactionEntity::MERCHANT_ID,
+        TransactionEntity::AMOUNT,
+        TransactionEntity::STATUS,
+        TransactionEntity::CREATED_AT,
+        TransactionEntity::UPDATED_AT);
 }
