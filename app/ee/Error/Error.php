@@ -96,7 +96,16 @@ class Error
     protected function setDesc(/* string */ $desc = null)
     {
         if ($desc === null)
-            return;
+        {
+            $code = $this->getCode();
+
+            if (defined('\EE\Error\PublicErrorDescription::'.$code))
+            {
+                $desc = constant('\EE\Error\PublicErrorDescription::'.$code);
+            }
+            else
+                return;
+        }
 
         if (! is_string($desc))
         {

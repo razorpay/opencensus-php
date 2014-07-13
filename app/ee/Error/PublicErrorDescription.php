@@ -45,4 +45,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_KEY_EXPIRING_SOON =
         'Key is already set to expire soon';
+
+    const BAD_REQUEST_URL_NOT_FOUND =
+        'The requested URL was not found on the server.';
 }

@@ -62,6 +62,17 @@ Response::macro('httpAuthExpected', function()
                    ->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");
 });
 
+Response::macro('routeNotFound', function()
+{
+    $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+
+    $error = $error->getPublicError();
+
+    $httpStatusCode = $error->getHttpStatusCode();
+
+    return Response::json($error->toArray(), $httpStatusCode);
+});
+
 if (! function_exists('isBasicAuthUserAndPwdNotSet'))
 {
     function isBasicAuthUserAndPwdNotSet()

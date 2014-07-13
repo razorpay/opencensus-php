@@ -96,6 +96,11 @@ Route::get('/', function()
     return Response::json($response);
 });
 
+Route::any('{all}', function($uri)
+{
+    return Response::routeNotFound();
+})->where('all', '.*');
+
 /*
 |--------------------------------------------------------------------------
 | Application 404 & 500 Error Handlers

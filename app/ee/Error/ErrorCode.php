@@ -82,6 +82,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_ID                                    = 'BAD_REQUEST_INVALID_ID';
 
     const BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH                     = 'BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH';
+    const BAD_REQUEST_URL_NOT_FOUND                                 = 'BAD_REQUEST_URL_NOT_FOUND';
 
     const BAD_REQUEST_ERROR                                         = 'BAD_REQUEST_ERROR';
 
