@@ -331,9 +331,7 @@ class Core
     {
         \DB::transaction(function() use ($txn)
         {
-            $this->txnRepo->reloadAndLockForUpdate($txn);
-
-            Transaction\Validator::failIfCaptured($txn);
+            $this->txnRepo->lockForUpdate($txn->getKey());
 
             (new Ledger\Core)->recordCapture($txn);
 

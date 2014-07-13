@@ -134,4 +134,11 @@ class Repository extends Base\Repository
 
         $txn->setRawAttributes($attributes, true);
     }
+
+    public function lockForUpdate($id)
+    {
+        $repo = $this->repo;
+
+        $repo::lockForUpdate()->findOrFail($id);
+    }
 }
