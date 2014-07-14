@@ -137,4 +137,19 @@ class Repository
 
         throw new Exception\DbQueryException($e);
     }
+
+    /**
+     * Execute a Closure within a transaction.
+     *
+     * @param  Closure  $callback
+     * @return mixed
+     *
+     * @throws \Exception
+     */
+    public function transaction(\Closure $callback)
+    {
+        $result = DB::transaction($callback);
+
+        return $result;
+    }
 }
