@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const EMAIL             = 'email';
     const CONTACT           = 'contact';
     const UDF               = 'udf';
+    const LEDGER_ID         = 'ledger_id';
 
     const CURRENCY_LENGTH   = 3;
 
@@ -245,7 +246,7 @@ class Entity extends Base\PublicEntity
 
     public function ledger()
     {
-        return $this->morphOne('Models\Ledger\Entity', 'entity');
+        return $this->belongsTo('Models\Ledger\Entity');
     }
 
     public function hdfc()
@@ -278,5 +279,4 @@ class Entity extends Base\PublicEntity
 
         return $relevantData;
     }
-
 }

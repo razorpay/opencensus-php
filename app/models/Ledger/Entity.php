@@ -36,4 +36,22 @@ class Entity extends Base\UniqueIdEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
+    public function entity()
+    {
+        $type = $this->getAttribute(self::ENTITY_TYPE);
+
+        switch($type)
+        {
+            case 'transaction':
+                return $this->hasOne('Models\Transaction\Entity');
+                break;
+            case 'refund':
+                return $this->hasOne('Models\Transaction\Entity');
+                break;
+            default:
+                throw new Exception\InvalidArgumentException(
+                    'only transaction and refund supported currently');
+        }
+    }
+
 }

@@ -40,8 +40,6 @@ class CreateTransactions  extends Migration
                                         'auth',
                                         'captured',
                                         'refunded',
-                                        'settlement_sent',
-                                        'settled',
                                         'failed'
                                         ));
 

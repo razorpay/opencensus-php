@@ -45,9 +45,8 @@ class Core extends Base\UniqueIdEntity
 
         $balance->saveOrFail();
 
-        // $txn->setLedgerId($ledger->getKey());
+        $txn->ledger()->associate($ledger);
     }
-
 
     public function recordRefund(Transaction\Entity $txn)
     {
