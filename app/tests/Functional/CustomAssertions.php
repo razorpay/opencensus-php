@@ -28,6 +28,8 @@ trait CustomAssertions
             }
             else
             {
+                $this->assertArrayHasKey($key, $actual);
+
                 $this->assertEquals($value, $actual[$key]);
             }
         }
@@ -35,6 +37,8 @@ trait CustomAssertions
 
     public function assertErrorDataEquals(array $expected, array $actual)
     {
+        $this->assertArrayHasKey('code', $actual);
+
         $this->assertEquals($expected['code'], $actual['code']);
 
         if (isset($expected['gateway_error_code']))

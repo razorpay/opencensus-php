@@ -163,7 +163,7 @@ class Error
                 break;
 
             default:
-                throw new \InvalidArgumentException('Not a valid class');
+                throw new InvalidArgumentException('Not a valid class');
         }
 
         $publicError = new PublicError($code, $description);
@@ -222,7 +222,7 @@ class Error
 
             case ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH:
                 $this->publicError->setBadRequestError(
-                    PublicErrorDescription::BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH);
+                    PublicErrorDescription::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH);
                 break;
 
             default:

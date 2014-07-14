@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         'merchant_id'   =>  'required|numeric',
-        'amount'        =>  'required|numeric|max:500000|min:0',
+        'amount'        =>  'required|numeric|max:500000|min:100',
         'currency'      =>  'required|max:3',
         'description'   =>  'max:1000',
         'email'         =>  'required|email',
@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         'udf'           =>  'array');
 
     protected static $captureRules = array(
-        'amount'        => 'required|numeric|max:500000|min:0');
+        'amount'        => 'required|numeric|max:500000|min:100');
 
     protected static $createValidators = array('currency', 'contact', 'udf');
 
@@ -129,6 +129,8 @@ class Validator extends Base\Validator
     {
         self::failIfCaptured($txn);
 
+        self::failIfNotAuth($txn);
+
         self::captureInputValidate($input);
 
         self::captureAmountValidate($txn, $input);
@@ -144,7 +146,7 @@ class Validator extends Base\Validator
         }
         catch (Exception\ValidationFailureException $e)
         {
-            throw new BadRequestException($e->getMessageBag(), 0, $e);
+            throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
         }
     }
 
@@ -153,7 +155,7 @@ class Validator extends Base\Validator
         if ($input['amount'] > $txn->getAttribute(Transaction\Entity::AMOUNT))
         {
             throw new Exception\BadRequestException(
-                null, ErrorCode::BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH);
+                null, ErrorCode::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH);
         }
     }
 
@@ -166,6 +168,15 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 null, ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
+        }
+    }
+
+    public static function failIfNotAuth($txn)
+    {
+        if ($txn->isAuthorised() === false)
+        {
+            throw new Exception\BadRequestException(
+                null, ErrorCode::BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED);
         }
     }
 }

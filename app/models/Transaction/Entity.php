@@ -22,6 +22,8 @@ class Entity extends Base\PublicEntity
 
     const CURRENCY_LENGTH   = 3;
 
+    const MIN_TXN_AMOUNT = 100;
+
     protected $table = \Constants\Table::TRANSACTION;
 
     protected static $sign = 'txn';
@@ -164,7 +166,7 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Mutator Ends ------------------------------------
 
-    public function isProcessed()
+    public function isAuthorised()
     {
         return ($this->getAttribute(self::STATUS) == Status::AUTH);
     }

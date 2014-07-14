@@ -9,15 +9,90 @@ use Tests\Functional\RequestResponseFlowTrait;
 
 trait TransactionAuthFlowTrait
 {
-    use RequestResponseFlowTrait;
+    use RequestResponseFlowTrait
+    {
+        makeRequest as makeRequestParent;
+    }
+
+    protected function defaultAuthTransaction()
+    {
+        $txn = $this->getDefaultTransactionArray();
+
+        return $this->doAuthTransaction($txn);
+    }
+
+    protected function doAuthTransaction($txn)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/transactions',
+            'content' => $txn);
+
+        $response = $this->makeRequest($request);
+
+        $content = $response->getContent();
+
+        $content = json_decode($content, true);
+
+        $this->assertEquals($txn['amount'], $content['amount']);
+        $this->assertEquals('auth', $content['status']);
+
+        return $content;
+    }
+
+    protected function captureTransaction($id, $amount)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => "/transactions/".$id.'/capture',
+            'content' => array('amount' => $amount));
+
+        $response = $this->makeRequest($request);
+
+        $content = $response->getContent();
+
+        $content = json_decode($content, true);
+
+        $this->assertArrayHasKey('amount', $content);
+        $this->assertArrayHasKey('status', $content);
+
+        $this->assertEquals($content['amount'], $amount);
+        $this->assertEquals($content['status'], 'captured');
+
+        return $content;
+    }
+
+    protected function refundTransaction($id)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/transactions/'.$id.'/refund',
+            'content' => array());
+
+        $response = $this->makeRequest($request);
+
+        $content = $response->getContent();
+
+        $this->assertJson($content);
+
+        $refund = json_decode($content, true);
+
+        //
+        // Check if transaction id matches, and refunded sucessfully
+        //
+        $this->assertEquals($id, $refund['id']);
+        $this->assertEquals('refunded', $refund['status']);
+
+        return $refund;
+    }
 
     protected function makeRequest($request)
     {
-        $content = $request['content'];
+        $this->checkAndSetUrl($request);
 
-        $response = $this->call('POST', '/transactions', $content);
+        $this->checkAndSetMethod($request);
 
-        $uri = $this->client->getRequest()->getUri();
+        $response = $this->makeRequestParent($request);
 
         $content = $response->getContent();
 
@@ -27,7 +102,7 @@ trait TransactionAuthFlowTrait
             // Card is a debit card
             //
 
-            // list($response, $content) = $this->runDebitCardAuthFlow($content, $uri);
+            $uri = $this->client->getRequest()->getUri();
 
             $response = $this->runDebitCardAuthFlow($content, $uri);
         }
@@ -152,13 +227,38 @@ trait TransactionAuthFlowTrait
         return $id;
     }
 
+    protected function checkAndSetUrl(& $request)
+    {
+        if (isset($request['url']) === false)
+        {
+            $request['url'] = '/transactions';
+        }
+    }
+
+    protected function checkAndSetMethod(& $request)
+    {
+        if (isset($request['method']) === false)
+        {
+            $request['method'] = 'POST';
+        }
+    }
+
+    protected function replaceDefualtValues(array & $content)
+    {
+        $data = $this->getDefaultTransactionArray();
+
+        $this->replaceValuesRecursively($data, $content);
+
+        $content = $data;
+    }
+
     protected function getDefaultTransactionArray()
     {
         //
         // default transaction object
         //
         $transaction = [
-            'amount'          =>  '100',
+            'amount'          =>  '50000',
             'currency'        =>  'INR',
             'card' => array(
                 'number'            => '4012001038443335',

@@ -2,6 +2,9 @@
 
 namespace Models\Base;
 
+use EE\Exception;
+use EE\Error\ErrorCode;
+
 class PublicEntity extends UniqueIdEntity
 {
     const ENTITY = 'entity';

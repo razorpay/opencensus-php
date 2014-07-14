@@ -28,7 +28,8 @@ class SupportTest extends TestCase
      * @group testCapture
      * @group testRefund
      */
-    public function testSupport(){
+    public function testSupport()
+    {
         echo "\nTesting: Support Transactions \n";
         echo "Creating New Transaction... \n";
 
@@ -99,5 +100,4 @@ class SupportTest extends TestCase
         $this->assertEquals($id, $refund->id);
         $this->assertEquals('refunded', $refund->status);
     }
-
 }

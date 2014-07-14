@@ -86,15 +86,6 @@ trait RequestResponseFlowTrait
         return $response;
     }
 
-    protected function replaceDefualtValues(array & $content)
-    {
-        $data = $this->getDefaultTransactionArray();
-
-        $this->replaceValuesRecursively($data, $content);
-
-        $content = $data;
-    }
-
     protected function replaceValuesRecursively(array & $data, array $toReplace)
     {
         foreach ($toReplace as $key => $value)
@@ -108,5 +99,12 @@ trait RequestResponseFlowTrait
                 $data[$key] = $value;
             }
         }
+    }
+
+    protected function setRequestUrlAndMethod(& $request, $url, $method)
+    {
+        $request['url'] = $url;
+
+        $request['method'] = $method;
     }
 }

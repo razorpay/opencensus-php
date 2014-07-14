@@ -37,8 +37,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_ID =
         'The id provided does not exist';
 
-    const BAD_REQUEST_CAPTURE_GREATER_THAN_AUTH =
-        'Capture amount cannot be greater than auth amount';
+    const BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH =
+        'Capture amount cannot be greater than authorised amount';
 
     const BAD_REQUEST_KEY_EXPIRED =
         'Key is expired';
@@ -48,4 +48,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_URL_NOT_FOUND =
         'The requested URL was not found on the server.';
+
+    const BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED =
+        'Only transactions which have been authorised and not yet captured can be captured';
 }
