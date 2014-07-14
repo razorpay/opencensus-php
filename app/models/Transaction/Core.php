@@ -290,31 +290,21 @@ class Core
         return $txn;
     }
 
-    protected function updateTransactionAuth($txn)
-    {
-        $txn->setStatus(Transaction\Status::AUTH);
-
-        //Logging
-        $this->trace->info(
-            TraceCode::TRANSACTION_AUTH_SUCCESS,
-            $txn->toArrayTraceRelevant());
-    }
-
     protected function updateTransactionSuccess($txn, $status)
     {
         switch ($status)
         {
             case Transaction\Status::AUTH:
                 $this->updateTransactionAuth($txn);
+                $txn->save();
                 break;
 
             case Transaction\Status::CAPTURED:
                 $this->recordCapture($txn);
-                // $this->updateTransactionCaptured($txn);
                 break;
 
             case Transaction\Status::REFUNDED:
-                $this->updateTransactionRefunded($txn);
+                $this->recordRefund($txn);
                 break;
 
             default:
@@ -322,20 +312,34 @@ class Core
                     'Transaction Exception: ' . $status . ' is an invalid status');
         }
 
-        $txn->save();
-
         return $txn;
     }
 
     protected function recordCapture($txn)
     {
-        \DB::transaction(function() use ($txn)
+        $this->txnRepo->transaction(function() use ($txn)
         {
             $this->txnRepo->lockForUpdate($txn->getKey());
 
             (new Ledger\Core)->recordCapture($txn);
 
             $this->updateTransactionCaptured($txn);
+
+            $txn->save();
+        });
+    }
+
+    protected function recordRefund($txn)
+    {
+        $this->txnRepo->transaction(function() use ($txn)
+        {
+            $this->txnRepo->lockForUpdate($txn->getKey());
+
+            (new Ledger\Core)->recordRefund($txn);
+
+            $this->updateTransactionRefunded($txn);
+
+            $txn->save();
         });
     }
 
@@ -356,6 +360,16 @@ class Core
         //Logging
         $this->trace->info(
             TraceCode::TRANSACTION_REFUND_SUCCESS,
+            $txn->toArrayTraceRelevant());
+    }
+
+    protected function updateTransactionAuth($txn)
+    {
+        $txn->setStatus(Transaction\Status::AUTH);
+
+        //Logging
+        $this->trace->info(
+            TraceCode::TRANSACTION_AUTH_SUCCESS,
             $txn->toArrayTraceRelevant());
     }
 

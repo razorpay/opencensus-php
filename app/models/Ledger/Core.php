@@ -48,32 +48,36 @@ class Core extends Base\UniqueIdEntity
         // $txn->setLedgerId($ledger->getKey());
     }
 
-    public static function updateRecords($txn)
+
+    public function recordRefund(Transaction\Entity $txn)
     {
-        $merchantId = $txn->merchant_id;
+        $merchantId = $txn->getMerchantId();
 
-        $ledger = null;
+        $balance = (new Merchant\Repository)->findBalanceLockForUpdate($merchantId);
 
-        \DB::transaction( function() use ($txn, &$ledger)
-        {
-            $merchantId = $txn->merchant_id;
+        $amount = $txn->getAmount();
 
-            $merchant = Merchant::find($merchantId);
+        $fee = 0;
 
-            $fee = $txn->amount * 3 / 100;
+        $debit = $amount;
 
-            $merchant->amount += ($txn->amount - $fee);
+        $balance->subtractAmount($debit);
 
-            $data = array(
-                'ref'           => $txn->id,
-                self::MERCHANT_ID   => $merchant->id,
-//                self::ACTION        => Transaction\Action::CAPTURE,
-                self::FEE           => $fee,
-                self::BALANCE       => $merchant->amount);
+        $balanceAmount = $balance->getBalance();
 
-            $ledger = static::createOrFail($data);
-        });
+        $attr = array(
+            Ledger\Entity::ENTITY_ID => $txn->getKey(),
+            Ledger\Entity::ENTITY_TYPE => 'refund',
+            Ledger\Entity::MERCHANT_ID => $merchantId,
+            Ledger\Entity::AMOUNT => $amount,
+            Ledger\Entity::DEBIT => $debit,
+            Ledger\Entity::FEE => $fee,
+            Ledger\Entity::BALANCE => $balanceAmount);
 
-        return $ledger;
+        $ledger = (new Ledger\Repository)->createOrFail($attr);
+
+        $balance->saveOrFail();
+
+        // $txn->setLedgerId($ledger->getKey());
     }
 }
