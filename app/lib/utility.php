@@ -89,15 +89,23 @@ if (! function_exists('array_assoc_flatten'))
     }
 }
 
-if (! function_exists('print_last_query'))
+if (! function_exists('get_last_query'))
 {
-    function print_last_query()
+    function get_last_query()
     {
         $queries = DB::getQueryLog();
 
         $last_query = end($queries);
 
-        var_dump($last_query);
+        return $last_query;
+    }
+}
+
+if (! function_exists('print_last_query'))
+{
+    function print_last_query()
+    {
+        var_dump(get_last_query());
     }
 }
 
