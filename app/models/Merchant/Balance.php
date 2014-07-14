@@ -20,10 +20,20 @@ class Balance extends Base\Entity
     {
         if (is_numeric($amount) === false)
         {
-            throw new Exception\InvalidArgumentException('integer required. Supplied: '.$amount);
+            throw new Exception\InvalidArgumentException('Unsigned integer required. Supplied: '.$amount);
         }
 
         $this->attributes[self::BALANCE] += (int) $amount;
+    }
+
+    public function subtractAmount($amount)
+    {
+        if (is_numeric($amount) === false)
+        {
+            throw new Exception\InvalidArgumentException('Unsigned integer required. Supplied: '.$amount);
+        }
+
+        $this->attributes[self::BALANCE] -= (int) $amount;
     }
 
     public function getBalance()
