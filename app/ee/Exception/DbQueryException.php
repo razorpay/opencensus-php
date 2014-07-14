@@ -21,23 +21,30 @@ class DbQueryException extends ServerErrorException
     {
         $code = ErrorCode::SERVER_ERROR_DB_QUERY_FAILED;
 
+        parent::__construct($message, $code, $data, $previous);
+    }
+
+    protected function constructMessage(array $data, & $message)
+    {
         $message = 'DB query failed to execute successfully';
 
-        if (isset($data['operation']))
+        foreach ($this->fields as $field)
         {
-            $message .= PHP_EOL . 'Operation: ' . $data['operation'];
+            if (isset($data[$field]))
+            {
+                $message .= PHP_EOL . ucfirst($field) . ': ' . $data['field'];
+            }
         }
 
-        if (isset($data['model']))
-        {
-            $message .= PHP_EOL . 'Model: ' . $data['model'];
-        }
+        $message .= PHP_EOL . 'Last query: ' . $lastQuery;
+    }
 
-        if (isset($data['attributes']))
-        {
-            $message .= PHP_EOL . 'Attributes: ' . (json_encode($data['attributes']));
-        }
+    protected function getLastQuery()
+    {
+        $queries = DB::getQueryLog();
 
-        parent::__construct($message, $code, $data, $previous);
+        $lastQuery = end($queries);
+
+        return $lastQuery;
     }
 }
