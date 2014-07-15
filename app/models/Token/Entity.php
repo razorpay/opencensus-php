@@ -28,7 +28,7 @@ class Entity extends Base\UniqueIdEntity
         self::MERCHANT_ID,
         self::EXPIRED);
 
-    protected static $generators = array('token', 'expired', 'id');
+    protected static $generators = array('expired', 'id');
 
     protected function generateToken()
     {
@@ -42,39 +42,17 @@ class Entity extends Base\UniqueIdEntity
         $this->setAttribute(self::EXPIRED, 0);
     }
 
-    public function getToken()
-    {
-        return $this->getAttribute(self::ID);
-    }
-
     public function getCardId()
     {
         return $this->getAttribute(self::CARD);
     }
-
-    public function setCard($card_id)
-    {
-        $this->setAttribute(self::CARD, $card_id);
-    }
-
-    public function setMerchantId($merchant_id)
-    {
-        $this->setAttribute(self::MERCHANT_ID, $merchant_id);
-    }
-
-    public function getMerchantId()
-    {
-        $this->getAttribute(self::MERCHANT_ID);
-    }
-
-    const WITH_CARD             = 0x1024;
 
     public function expired()
     {
         return (bool)$this->getAttribute(self::EXPIRED);
     }
 
-    public function transactions()
+    public function transaction()
     {
         return $this->hasOne(
             '\Models\Transaction\Entity');
