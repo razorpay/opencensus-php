@@ -26,22 +26,4 @@ class PublicErrorCode
 
     const FIELD_ERROR_INVALID_EMAIL                                 = 'FIELD_ERROR_INVALID_EMAIL';
     const FIELD_ERROR_INVALID_CONTACT                               = 'FIELD_ERROR_INVALID_CONTACT';
-
-    public static function verify($errorClass)
-    {
-        if (! is_string($class))
-        {
-            throw new \InvalidArgumentException('Invalid error class provided');
-        }
-
-        switch ($class)
-        {
-            case self::BAD_REQUEST:
-            case self::PAYMENT_ERROR:
-            case self::SERVER_ERROR:
-                return;
-            default:
-                throw new \InvalidArgumentException('Invalid error class provided');
-        }
-    }
 }
