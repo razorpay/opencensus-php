@@ -5,7 +5,7 @@ Thumbs.db
 /app/config/database.php
 /app/config/applications.php
 /app/config/testing/database.php
-/app/gateway/hdfc/HdfcGatewayConfig.php
+/app/gateway/Hdfc/Config.php
 /bootstrap/environment.php
 /app/storage/*
 /.git/*
