@@ -34,6 +34,11 @@ use Constants\URL;
 |
 */
 
+$method = URL::TXN_CALLBACK_METHOD;
+Route::$method(
+    URL::TXN_CALLBACK_URL,
+    'TransactionController@postCallback');
+
 Route::group(array('after' => 'sameorigin'), function()
 {
     Route::group(array('before' => 'auth.public'), function()
@@ -75,11 +80,6 @@ Route::group(array('after' => 'sameorigin'), function()
             'TransactionController@postCapture');
     });
 });
-
-$method = URL::TXN_CALLBACK_METHOD;
-Route::$method(
-    URL::TXN_CALLBACK_URL,
-    'TransactionController@postCallback');
 
 Route::group(array('before' => 'auth.app'), function()
 {
