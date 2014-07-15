@@ -56,10 +56,14 @@ App::after(function($request, $response)
 |
 */
 
+/**
+ * Tells the browser that HTTP AUTH is expected
+ * and hence to provide basic auth user and pwd
+ */
 Response::macro('httpAuthExpected', function()
 {
     return Response::view('error.401', array(), 401)
-                   ->header('WWW-Authenticate', "Basic realm=\"Protected Area\"");
+                   ->header('WWW-Authenticate', 'Basic realm="Protected Area"');
 });
 
 Response::macro('routeNotFound', function()
@@ -75,6 +79,13 @@ Response::macro('routeNotFound', function()
 
 if (! function_exists('isBasicAuthUserAndPwdNotSet'))
 {
+
+    /**
+     * Checks whether basic auth user and pwd are set
+     * or not
+     *
+     * @return boolean
+     */
     function isBasicAuthUserAndPwdNotSet()
     {
         return ((isset($_SERVER['PHP_AUTH_PW']) === false) or
@@ -111,10 +122,6 @@ Route::filter('auth.private', function($route, $request)
 {
     if (isBasicAuthUserAndPwdNotSet())
     {
-        //
-        // Used by first request from browser that
-        // checks if HTTP AUTH is expected
-        //
         return Response::httpAuthExpected();
     }
 
@@ -132,15 +139,13 @@ Route::filter('auth.private', function($route, $request)
 
 
 /**
- * Allows requests with public keys to get through. Also allows private key based requests too
+ * Allows requests with public keys to get through.
+ * Also allows private key based requests too
  */
 Route::filter('auth.public', function($route, $request)
 {
     if (isBasicAuthUserAndPwdNotSet())
     {
-        //
-        // Used by first request from browser that checks if BasicAuth is expected
-        //
         return Response::httpAuthExpected();
     }
 
@@ -159,10 +164,6 @@ Route::filter('auth.app', function($route, $request)
 {
     if (isBasicAuthUserAndPwdNotSet())
     {
-        //
-        // Used by first request from browser
-        // that checks if HTTP AUTH is expected
-        //
         return Response::httpAuthExpected();
     }
 

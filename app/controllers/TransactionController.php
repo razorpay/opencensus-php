@@ -37,8 +37,8 @@ class TransactionController extends BaseController
     }
 
     /**
-    * Create a new transaction.
-    */
+     * Create a new transaction.
+     */
     public function postIndex()
     {
         $input = Input::all();

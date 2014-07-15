@@ -4,26 +4,113 @@ namespace Models\Service;
 
 use Models\Key;
 use Models\Merchant;
-use EE\Exception\InvalidArgumentException;
 
-class BasicAuth extends \Singleton {
-
+class BasicAuth extends \Singleton
+{
+    /**
+     * Key used for authentication
+     * @var Key\Entity
+     */
     private $key = null;
 
+    /**
+     * Merchant who is being authenticated
+     * either by himself or by an internal
+     * application
+     *
+     * @var Merchant\Entity
+     */
     private $merchant = null;
 
-    private $App = null;
+    private $app = null;
 
-    public function check()
+    /**
+     * Checks if given key id is present
+     * in database or not. Only non-expired keys
+     * are checked. If there, then it's secret
+     * is matched against the one provided.
+     *
+     * Used for private/secret authentication.
+     * These requests are expected to originate
+     * from merchant's server
+     *
+     * @param  string   $keyId
+     * @param  string   $keySecret
+     * @return boolean
+     */
+    public function verifySecret($keyId, $keySecret)
     {
-        //
-        // If either of key or merchant is null,
-        // return false
-        // If both are present, return true
-        //
-        return (($this->key !== null) and
-                ($this->merchant !== null));
+        $key = $this->fetchKey($keyId);
 
+        if ($key === null)
+        {
+            return false;
+        }
+
+        $check = $this->matchSecret($keySecret, $key);
+
+        if ($check === false)
+        {
+            return false;
+        }
+
+        $this->fetchMerchantOfKey($key);
+
+        return true;
+    }
+
+    /**
+     * Checks if given key id is present in
+     * database or not. Only non-expired keys
+     * are checked.
+     *
+     * Used for public authentication
+     *
+     * @param  string  $keyId
+     * @return boolean
+     */
+    public function verifyPublic($keyId)
+    {
+        $key = $this->fetchKey($keyId);
+
+        if ($key === null)
+        {
+            return false;
+        }
+
+        $this->fetchMerchantOfKey($key);
+
+        return true;
+    }
+
+    /**
+     * Matches the secret provided against the list of
+     * applications secrets with us. If any matches, then
+     * that  particular app is allowed to continue
+     * it's operation.
+     *
+     * If a merchant id is provided, then the app is
+     * authenticating as that merchant and trying to
+     * perform operations related to that merchant.
+     *
+     * Used for public authentication
+     *
+     * @param  string  $merchantId
+     * @param  string  $secret
+     * @return boolean
+     */
+    public function verifyApp($merchantId, $secret)
+    {
+        $verify = $this->verifyAppSecret($secret);
+
+        if ($verify === false)
+        {
+            return false;
+        }
+
+        $this->merchant = (new Merchant\Repository)->find($merchantId);
+
+        return true;
     }
 
     public function getKey()
@@ -46,86 +133,50 @@ class BasicAuth extends \Singleton {
         return (int) $id;
     }
 
-    public function live()
+    protected function fetchKey($keyId)
     {
-        return $this->key->live;
+        $this->key = (new Key\Repository)->findNotExpired($keyId);
+
+        return $this->key;
     }
 
-    public function verifySecret($keyId, $keySecret)
+    protected function fetchMerchantOfKey($key)
     {
-        $key = (new Key\Repository)->findNotExpired($keyId);
-
-        if ($key === null)
-        {
-            return false;
-        }
-
-        if ($key->active == 0)
-        {
-            return false;
-        }
-
-        $check = \Hash::check($keySecret, $key->getSecret());
-
-        if ($check === false)
-        {
-            return false;
-        }
-
         $merchantId = $key->getMerchantId();
 
-        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $this->key = $key;
-
-        $this->merchant = $merchant;
-
-        return true;
+        return $merchant;
     }
 
-    public function verifyPublic($keyId)
+    protected function matchSecret($keySecret, $key)
     {
-        $key = (new Key\Repository)->find($keyId);
-
-        if ($key === null)
-        {
-            return false;
-        }
-        else if ($key->active == 0)
-        {
-            return false;
-        }
-
-        $merchantId = $key->getMerchantId();
-
-        $merchant = (new Merchant\Repository)->findOrFail($merchantId);
-
-        $this->key = $key;
-
-        $this->merchant = $merchant;
-
-        return true;
+        return \Hash::check($keySecret, $key->getSecret());
     }
 
-    public function verifyApp($merchantId, $secret)
+    protected function verifyAppSecret($secret)
     {
-        $verify = false;
+        $apps = \Config::get('applications');
 
-        foreach (\Config::get('applications') as $name => $app)
+        foreach ($apps as $name => $app)
         {
-            if ($app['auth_pass'] === $secret)
+            $match = $this->matchAppSecret($app, $secret);
+
+            if ($match)
             {
                 $verify = true;
-                $this->App = $name;
+
+                $this->app = $name;
+
                 break;
             }
         }
 
-        if ($verify === false)
-            return false;
+        return $verify;
+    }
 
-        $this->merchant = (new Merchant\Repository)->find($merchantId);
-
-        return true;
+    protected function matchAppSecret($app, $secret)
+    {
+        return ($app['auth_pass'] === $secret);
     }
 }
