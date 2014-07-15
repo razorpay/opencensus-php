@@ -240,7 +240,7 @@ class Gateway extends BaseGateway
      */
     public function authorize(array $input)
     {
-        parent::auth($input);
+        parent::authorize($input);
 
         //
         // Enroll card
