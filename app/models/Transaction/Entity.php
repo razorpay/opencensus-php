@@ -3,6 +3,7 @@
 namespace Models\Transaction;
 
 use Models\Base;
+use EE\Exception;
 
 class Entity extends Base\PublicEntity
 {
