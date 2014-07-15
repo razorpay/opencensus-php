@@ -83,6 +83,8 @@ class Service extends Base\Service
 
     public function fetchKeys($merchantId)
     {
-        return $this->keyRepository->getKeysForMerchant($merchantId);
+        $keys = $this->keyRepository->getKeysForMerchant($merchantId);
+
+        return array('count' => count($keys), 'data' => $keys);
     }
 }
