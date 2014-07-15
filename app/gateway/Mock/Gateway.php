@@ -6,7 +6,7 @@ use Gateway\BaseGateway;
 
 class Gateway extends BaseGateway
 {
-    public function process(array $input)
+    public function authorize(array $input)
     {
         ;
     }

@@ -238,7 +238,7 @@ class Gateway extends BaseGateway
      * @param  array  $input
      * @return void
      */
-    public function auth(array $input)
+    public function authorize(array $input)
     {
         parent::auth($input);
 

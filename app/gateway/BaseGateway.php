@@ -15,7 +15,7 @@ class BaseGateway
         $this->trace = Trace::getInstance();
     }
 
-    public function auth(array $input)
+    public function authorize(array $input)
     {
         $this->input = $input;
     }

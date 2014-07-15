@@ -139,7 +139,7 @@ class Core
         try
         {
             $callbackData = $this->callGatewayFunction(
-                                        Transaction\Action::AUTH,
+                                        Transaction\Action::AUTHORIZE,
                                         $txnInfo);
         }
         catch(BaseException $e)
