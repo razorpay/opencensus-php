@@ -22,6 +22,27 @@ return [
         ],
     ],
 
+    'merchantFetchKeys' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => 'keys',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'data' => [
+                    '0' => [
+                        'id' => "d9c6bf091a1a64cb5678d8c1",
+                        'merchant_id' => "1",
+                        'expired_at' => null
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'updateKeyExpireNow' => [
         'request' => [
             'content' => [

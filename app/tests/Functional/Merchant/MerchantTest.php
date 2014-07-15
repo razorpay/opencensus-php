@@ -59,15 +59,18 @@ class MerchantTest extends TestCase
         $this->keyId = $content['key']['id'];
 
         $this->keySecret = $content['key']['secret'];
-   }
+    }
+
+    public function testMerchantFetchKeys()
+    {
+        $this->startTest();
+    }
 
     /**
      * Updates a key
      */
     public function testUpdateKeyExpireNow()
     {
-        $data = $this->testData['updateKeyExpireNow'];
-
         $content = $this->startTest();
 
         $expired = time() + 1;
