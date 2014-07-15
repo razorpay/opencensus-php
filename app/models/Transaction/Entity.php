@@ -168,9 +168,9 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Mutator Ends ------------------------------------
 
-    public function isAuthorised()
+    public function isAuthorized()
     {
-        return ($this->getAttribute(self::STATUS) == Status::AUTH);
+        return ($this->getAttribute(self::STATUS) == Status::AUTHORIZED);
     }
 
     public function isCaptured()

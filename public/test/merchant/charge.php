@@ -18,7 +18,7 @@ $transaction = $api->transaction->get($id);
 
 if (($amount === $transaction->amount) and
     ($transaction->error_code === null) and
-    ($transaction->status === 'auth'))
+    ($transaction->status === 'authorized'))
 {
 	//
     // Transaction was successful

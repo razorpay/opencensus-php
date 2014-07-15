@@ -35,7 +35,7 @@ trait TransactionAuthFlowTrait
         $content = json_decode($content, true);
 
         $this->assertEquals($txn['amount'], $content['amount']);
-        $this->assertEquals('auth', $content['status']);
+        $this->assertEquals('authorized', $content['status']);
 
         return $content;
     }

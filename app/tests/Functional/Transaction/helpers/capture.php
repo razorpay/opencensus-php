@@ -187,7 +187,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'status' => 'auth',
+                'status' => 'authorized',
             ],
         ],
     ],
@@ -201,7 +201,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'status' => 'auth',
+                'status' => 'authorized',
             ],
         ],
     ],

@@ -173,7 +173,7 @@ class Validator extends Base\Validator
 
     public static function failIfNotAuth($txn)
     {
-        if ($txn->isAuthorised() === false)
+        if ($txn->isAuthorized() === false)
         {
             throw new Exception\BadRequestException(
                 null, ErrorCode::BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED);

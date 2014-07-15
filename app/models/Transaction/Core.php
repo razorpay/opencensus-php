@@ -170,7 +170,7 @@ class Core
 
         $txn->setAuthAmount();
 
-        return $this->updateTransactionSuccess($txn, Transaction\Status::AUTH);
+        return $this->updateTransactionSuccess($txn, Transaction\Status::AUTHORIZED);
     }
 
     /**
@@ -193,7 +193,7 @@ class Core
         {
             $this->callGatewayFunction(Transaction\Action::CALLBACK, $input);
 
-            $this->updateTransactionSuccess($txn, Transaction\Status::AUTH);
+            $this->updateTransactionSuccess($txn, Transaction\Status::AUTHORIZED);
         }
         catch (BaseException $e)
         {
@@ -294,8 +294,8 @@ class Core
     {
         switch ($status)
         {
-            case Transaction\Status::AUTH:
-                $this->updateTransactionAuth($txn);
+            case Transaction\Status::AUTHORIZED:
+                $this->updateTransactionAuthorized($txn);
                 $txn->save();
                 break;
 
@@ -363,9 +363,9 @@ class Core
             $txn->toArrayTraceRelevant());
     }
 
-    protected function updateTransactionAuth($txn)
+    protected function updateTransactionAuthorized($txn)
     {
-        $txn->setStatus(Transaction\Status::AUTH);
+        $txn->setStatus(Transaction\Status::AUTHORIZED);
 
         //Logging
         $this->trace->info(

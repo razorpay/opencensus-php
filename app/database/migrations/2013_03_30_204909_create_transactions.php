@@ -37,7 +37,7 @@ class CreateTransactions  extends Migration
 
             $table->enum(Transaction::STATUS, array(
                                         'open',
-                                        'auth',
+                                        'authorized',
                                         'captured',
                                         'refunded',
                                         'failed'

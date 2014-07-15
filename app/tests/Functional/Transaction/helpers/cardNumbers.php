@@ -61,7 +61,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'status' => 'auth',
+                'status' => 'authorized',
             ],
             'status_code' => 200,
         ],
