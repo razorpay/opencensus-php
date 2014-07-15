@@ -146,7 +146,7 @@ class BasicAuth extends \Singleton
 
         $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        return $merchant;
+        return $this->merchant;
     }
 
     protected function matchSecret($keySecret, $key)
