@@ -100,22 +100,6 @@ class TransactionController extends BaseController
         return Response::json($txn);
     }
 
-    /**
-    * List previous refunds.
-    */
-    public function getRefund()
-    {
-        ;
-    }
-
-    /**
-    * To list only successful transactions.
-    */
-    public function getProcess()
-    {
-        ;
-    }
-
     public function postCallback($id)
     {
         $input = Input::all();
