@@ -82,6 +82,9 @@ class Error
             $code = $this->getCode();
 
             $desc = $this->getDescriptionFromErrorCode($code);
+
+            if ($desc === null)
+                return;
         }
 
         if (! is_string($desc))
