@@ -6,9 +6,13 @@ class BadRequestException extends BaseException
 {
     use MessageFormats;
 
-    public function __construct($message, $code = 0, \Exception $previous = null)
+    public function __construct(
+        $message = null,
+        $code = 0,
+        $field = null,
+        \Exception $previous = null)
     {
-        if ($this->onlyCode($message, $code, $previous))
+        if ($this->decideFormat($message, $code, $field, $previous))
             return;
 
         $message = $this->constructStringMessage($message);

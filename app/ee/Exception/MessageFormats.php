@@ -3,6 +3,7 @@
 namespace EE\Exception;
 
 use Illuminate\Support\MessageBag;
+use EE\Error\Error;
 
 trait MessageFormats
 {
@@ -13,6 +14,31 @@ trait MessageFormats
     protected $first = null;
 
     protected $messageFormat = 'string';
+
+    protected function decideFormat(
+        $message = null,
+        $code = 0,
+        $field = null,
+        \Exception $previous = null)
+    {
+        if ($code === 0)
+            return false;
+
+        Error::checkErrorCode($code);
+
+        if ((is_string($message) === true) or
+            ($message === null))
+        {
+            $error = new Error($code, $message, $field);
+
+            $this->setError($error);
+
+            parent::__construct($message, $code, $previous);
+
+            return true;
+
+        }
+    }
 
     /**
      * If $message is either messageBag or array,
@@ -38,33 +64,6 @@ trait MessageFormats
 
         return $message;
     }
-
-    public function onlyCode($message, $code, $previous)
-    {
-        if (($message === null) and
-            ($code !== 0))
-        {
-            $this->messageFormat = 'null';
-
-            if (defined('\EE\Error\ErrorCode::'.$code) === false)
-            {
-                throw new \InvalidArgumentException($code . ' is not a valid code');
-            }
-
-            $message = constant('\EE\Error\PublicErrorDescription::'.$code);
-
-            $error = new \EE\Error\Error($code, $message);
-
-            $this->setError($error);
-
-            parent::__construct($message, $code, $previous);
-
-            return true;
-        }
-
-        return false;
-    }
-
 
     protected function handleMessageBagInstance(MessageBag $bag)
     {
@@ -92,16 +91,9 @@ trait MessageFormats
 
     protected function generateError($code, $message)
     {
-        if (defined('\EE\Error\ErrorCode::'.$code))
-        {
-            $error = new \EE\Error\Error($code, $message);
+        $error = new Error($code, $message);
 
-            $this->setError($error);
-        }
-        else
-        {
-            throw new \InvalidArgumentException($code . ' is not defined');
-        }
+        $this->setError($error);
     }
 
     public function getMessageBag()
@@ -158,7 +150,7 @@ trait MessageFormats
 
             $code = $this->getErrorCode($field);
 
-            $this->error = new \EE\Error\Error($code, $desc, $field);
+            $this->error = new Error($code, $desc, $field);
 
             parent::__construct($desc, $code, null);
         }
@@ -185,22 +177,17 @@ trait MessageFormats
         switch($category)
         {
             case 'BadRequest':
-                $code = '\EE\Error\ErrorCode::BAD_REQUEST_ERROR';
+                $code = 'BAD_REQUEST_ERROR';
                 break;
             case 'FieldError':
-                $code = '\EE\Error\ErrorCode::FIELD_ERROR_INVALID_'.strtoupper($field);
+                $code = 'FIELD_ERROR_INVALID_'.strtoupper($field);
                 break;
             case 'CardError':
-                $code = '\EE\Error\ErrorCode::CARD_ERROR_INVALID_'.strtoupper($field);
+                $code = 'CARD_ERROR_INVALID_'.strtoupper($field);
                 break;
         }
 
-        if (defined($code) === false)
-        {
-            throw new \InvalidArgumentException($field . ' error not defined');
-        }
-
-        $code = constant($code);
+        Error::checkErrorCode($code);
 
         return $code;
     }
