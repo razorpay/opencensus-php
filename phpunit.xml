@@ -16,13 +16,15 @@
         </testsuite>
     </testsuites>
     <filter>
-    <whitelist>
-      <directory suffix=".php">./app/</directory>
-      <exclude>
-      <file>./app/config/database.php</file>
-      <file>./app/config/testing/database.php</file>
-      <file>./app/gateway/hdfc/HdfcGatewayConfig.php</file>
-      </exclude>
-    </whitelist>
+      <whitelist>
+        <directory suffix=".php">./app/</directory>
+        <exclude>
+          <file>./app/config/database.php</file>
+          <file>./app/config/testing/database.php</file>
+          <file>./app/gateway/hdfc/HdfcGatewayConfig.php</file>
+          <directory suffix=".php">./app/tests</directory>
+          <directory suffix=".php">./app/database</directory>
+        </exclude>
+      </whitelist>
   </filter>
 </phpunit>
