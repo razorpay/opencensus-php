@@ -26,7 +26,7 @@ class Core
         return $this->card;
     }
 
-    public function createAndReturnWithSensitiveData($input)
+    public function createAndReturnWithSensitiveData(array $input)
     {
         $card = $this->create($input);
 

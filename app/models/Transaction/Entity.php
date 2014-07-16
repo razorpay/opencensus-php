@@ -189,7 +189,21 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::AMOUNT] = (int) $amount;
     }
 
+    public function setUdfAttribute($udf)
+    {
+        $this->attributes[self::UDF] = serialize($udf);
+    }
+
 // ----------------------- Mutator Ends ------------------------------------
+
+// ----------------------- Accessor ----------------------------------------
+
+    public function getUdfAttribute($udf)
+    {
+        return unserialize($udf);
+    }
+
+// ----------------------- Accessor Ends -----------------------------------
 
     public function isAuthorized()
     {

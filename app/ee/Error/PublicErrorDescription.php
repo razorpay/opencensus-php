@@ -34,6 +34,12 @@ class PublicErrorDescription
     const BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED =
         'This transaction has already been refunded';
 
+    const BAD_REQUEST_TRANSACTION_CARD_IS_NOT_ARRAY =
+        'Card provided is not a dictionary';
+
+    const BAD_REQUEST_TRANSACTION_CARD_NOT_PROVIDED =
+        'Transaction Exception: Card not provided';
+
     const BAD_REQUEST_INVALID_ID =
         'The id provided does not exist';
 
@@ -51,4 +57,22 @@ class PublicErrorDescription
 
     const BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED =
         'Only transactions which have been authorized and not yet captured can be captured';
+
+    const BAD_REQUEST_UDF_TOO_MANY_KEYS =
+        'Number of fields in udf should be less than or equal to 15';
+
+    const BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY =
+        'Udf values themselves should not be an array';
+
+    const BAD_REQUEST_UDF_KEY_TOO_LARGE =
+        'Udf key cannot be greater 255 characters';
+
+    const BAD_REQUEST_UDF_VALUE_TOO_LARGE =
+        'Udf value cannot be greater 255 characters';
+
+    const BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING =
+        'Description provides should be string';
+
+    const BAD_REQUEST_DESCRIPTION_TOO_LARGE =
+        'Description provides should be max 1000 characters';
 }

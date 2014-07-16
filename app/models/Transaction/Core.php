@@ -47,7 +47,7 @@ class Core
         //
         // Check that card key exists
         //
-        Transaction\Validator::checkCardKeyExists($input);
+        Transaction\Validator::checkCardKey($input);
 
         //
         // Creates card entity. But since we don't store

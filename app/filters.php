@@ -62,7 +62,13 @@ App::after(function($request, $response)
  */
 Response::macro('httpAuthExpected', function()
 {
-    return Response::view('error.401', array(), 401)
+    $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+
+    $error = $error->getPublicError();
+
+    $httpStatusCode = $error->getHttpStatusCode();
+
+    return Response::json($error->toArray(), 401)
                    ->header('WWW-Authenticate', 'Basic realm="Protected Area"');
 });
 
@@ -132,7 +138,13 @@ Route::filter('auth.private', function($route, $request)
         //
         if (basicAuthVerifyApp() === false)
         {
-            return Response::view('error.401', array(), 401);
+            $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+
+            $error = $error->getPublicError();
+
+            $httpStatusCode = $error->getHttpStatusCode();
+
+            return Response::json($error->toArray(), $httpStatusCode);
         }
     }
 });
@@ -155,7 +167,13 @@ Route::filter('auth.public', function($route, $request)
     {
         if (basicAuthVerifySecret() === false)
         {
-            return Response::view('error.401', array(), 401);
+            $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+
+            $error = $error->getPublicError();
+
+            $httpStatusCode = $error->getHttpStatusCode();
+
+            return Response::json($error->toArray(), $httpStatusCode);
         }
     }
 });
@@ -169,7 +187,13 @@ Route::filter('auth.app', function($route, $request)
 
     if (basicAuthVerifyApp() === false)
     {
-        return Response::view('error.401', array(), 401);
+            $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+
+            $error = $error->getPublicError();
+
+            $httpStatusCode = $error->getHttpStatusCode();
+
+            return Response::json($error->toArray(), $httpStatusCode);
     }
 });
 

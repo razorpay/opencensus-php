@@ -268,9 +268,13 @@ class Error
 
     public static function checkErrorCode($code)
     {
+        if ($code === null)
+        {
+            throw new \InvalidArgumentException('null provided for errorcode');
+        }
         if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
         {
-            throw new \InvalidArgumentException($code . ' is not defined');
+            throw new \InvalidArgumentException('ErrorCode: ' . $code . ' is not defined');
         }
     }
 
