@@ -78,24 +78,6 @@ class Repository extends Base\Repository
         validate(self::$fetch_param_rules, $param);
     }
 
-    public function loadWithTokenAndCard($id, $merchantId)
-    {
-        $repo = $this->repo;
-
-        $txn = $repo::with('token')
-                   ->merchantId($merchantId)
-                   ->where(Transaction\Entity::ID, '=', $id)
-                   ->first();
-
-        if (($txn !== null) and
-            ($txn->token !== null))
-        {
-            $card = $txn->token->card()->first();
-        }
-
-        return $txn;
-    }
-
     public function findByIdAndMerchantId($id, $merchantId)
     {
         $repo = $this->repo;
