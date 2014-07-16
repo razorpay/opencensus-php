@@ -17,7 +17,7 @@ class CaptureTest extends TestCase
 
     protected $testData = null;
 
-    protected $authTxn = null;
+    protected $txn = null;
 
     public function setUp()
     {
@@ -25,15 +25,9 @@ class CaptureTest extends TestCase
 
         $this->testData = include(__DIR__.'/helpers/capture.php');
 
-        $this->authTxn = $this->defaultAuthTransaction();
+        $this->txn = $this->defaultAuthTransaction();
     }
 
-    /**
-     * Tests the support transactions, calls capture & refund
-     * @group testSupport
-     * @group testCapture
-     * @group testRefund
-     */
     public function testCapture()
     {
         $this->startTest();
@@ -41,11 +35,11 @@ class CaptureTest extends TestCase
 
     public function testCaptureTwice()
     {
-        $authTxn = $this->authTxn;
+        $txn = $this->txn;
 
-        $txn = $this->captureTransaction($authTxn['id'], $authTxn['amount']);
+        $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
-        $this->authTxn = $txn;
+        $this->txn = $txn;
 
         $this->startTest();
     }
@@ -59,21 +53,21 @@ class CaptureTest extends TestCase
 
     public function testCaptureWithMoreAmountThanAuth()
     {
-        $amount = $this->authTxn['amount'] + 1000;
+        $amount = $this->txn['amount'] + 1000;
 
         $this->startTest(null, $amount);
     }
 
     public function testCaptureWithNoAmount()
     {
-        unset($this->authTxn['amount']);
+        unset($this->txn['amount']);
 
         $this->startTest();
     }
 
     public function testCaptureWithZeroAmount()
     {
-        $this->authTxn['amount'] = 0;
+        $this->txn['amount'] = 0;
 
         $this->startTest();
     }
@@ -83,48 +77,48 @@ class CaptureTest extends TestCase
         //
         // Minium amount allowed for capture
         //
-        $this->authTxn['amount'] = 99;
+        $this->txn['amount'] = 99;
 
         $this->startTest();
     }
 
     public function testCaptureWithMinAmountAllowed()
     {
-        $this->authTxn['amount'] = 100;
+        $this->txn['amount'] = 100;
 
         $this->startTest();
     }
 
     public function testCaptureWithOverflowingAmount()
     {
-        $this->authTxn['amount'] = 100000000000000000000000000000000000;
+        $this->txn['amount'] = 100000000000000000000000000000000000;
 
         $this->startTest();
     }
 
     public function testCaptureWithNegativeAmount()
     {
-        $this->authTxn['amount'] = -10000;
+        $this->txn['amount'] = -10000;
 
         $this->startTest();
     }
 
     public function testCaptureWithRandomId()
     {
-        $this->authTxn['id'] = '2fe34ae575104c0a95c3';
+        $this->txn['id'] = '2fe34ae575104c0a95c3';
 
         $this->startTest();
     }
 
     public function testCaptureWithRefunded()
     {
-        $authTxn = $this->authTxn;
+        $txn = $this->txn;
 
-        $txn = $this->captureTransaction($authTxn['id'], $authTxn['amount']);
+        $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
         $txn = $this->refundTransaction($txn['id']);
 
-        $this->authTxn = $txn;
+        $this->txn = $txn;
 
         $this->startTest();
     }
@@ -157,12 +151,12 @@ class CaptureTest extends TestCase
     protected function checkAndSetIdAndAmount(& $id = null, & $amount = null)
     {
         if ($id === null)
-            $id = $this->authTxn['id'];
+            $id = $this->txn['id'];
 
         if ($amount === null)
         {
-            if (isset($this->authTxn['amount']))
-                $amount = $this->authTxn['amount'];
+            if (isset($this->txn['amount']))
+                $amount = $this->txn['amount'];
         }
     }
 }

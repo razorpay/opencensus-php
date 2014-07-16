@@ -274,7 +274,9 @@ trait TransactionAuthFlowTrait
                 'address_zip'       => '123345',
             ),
             'email'             => 'a@b.com',
-            'contact'           => '9918899029'
+            'contact'           => '9918899029',
+            'udf'               => array(),
+            'description'       => 'random description'
         ];
 
         return $transaction;

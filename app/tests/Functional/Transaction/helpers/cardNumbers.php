@@ -177,44 +177,4 @@ return [
             'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE,
         ],
     ],
-    'invalidEmailInTransaction' => [
-        'request' => [
-            'content' => [
-                'email' => 'abc',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
-                    'field' => 'email',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
-        ],
-    ],
-    'invalidContactInTransaction' => [
-        'request' => [
-            'content' => [
-                'contact' => '4012',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                    'field' => 'contact',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
-        ],
-    ],
 ];

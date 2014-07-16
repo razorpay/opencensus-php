@@ -49,11 +49,6 @@ class TransactionValidationTest extends TestCase
         $this->startTest();
     }
 
-    public function testInvalidEmailInTransaction()
-    {
-        $this->startTest();
-    }
-
     public function testCardNumberWithSpaces()
     {
         $this->startTest();

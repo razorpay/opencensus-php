@@ -90,9 +90,17 @@ trait RequestResponseFlowTrait
     {
         foreach ($toReplace as $key => $value)
         {
-            if (is_array($value))
+            if (array_key_exists($key, $data))
             {
-                $this->replaceValuesRecursively($data[$key], $value);
+                if ((is_array($value)) and
+                    (is_array($data[$key])))
+                {
+                    $this->replaceValuesRecursively($data[$key], $value);
+                }
+                else
+                {
+                    $data[$key] = $value;
+                }
             }
             else
             {
