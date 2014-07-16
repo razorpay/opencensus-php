@@ -22,8 +22,7 @@
           <file>./app/config/database.php</file>
           <file>./app/config/testing/database.php</file>
           <file>./app/gateway/hdfc/HdfcGatewayConfig.php</file>
-          <directory suffix=".php">./app/tests</directory>
-          <directory suffix=".php">./app/database</directory>
+          <directory suffix=".php">./app/database/seeds</directory>
         </exclude>
       </whitelist>
   </filter>
