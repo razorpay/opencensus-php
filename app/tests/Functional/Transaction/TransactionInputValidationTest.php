@@ -72,34 +72,4 @@ class TransactionValidationTest extends TestCase
 
         $this->runRequestResponseFlow($testData);
     }
-
-    protected function getTransactionArray($number)
-    {
-        //
-        // default transaction object
-        //
-        $transaction = [
-            'amount'          =>  '100',
-            'currency'        =>  'INR',
-            'card' => array(
-                'number'            => $number,
-                'name'              => 'Harshil',
-                'expiry_month'      =>'12',
-                'expiry_year'       => '2014',
-                'cvv'               => '566',
-                'address_line1'     => '21, Rameshwar',
-                'address_line2'     => 'jaipurwa',
-                'address_city'      => 'jaipur',
-                'address_state'     =>  'Rajasathan',
-                'address_country'   =>  'India',
-                'address_zip'       =>  '123345',
-            ),
-            'udf' => array(
-                'email'     =>  'lol@lko.com',
-                'contact'   =>  '991889902'
-            ),
-        ];
-
-        return $transaction;
-    }
 }

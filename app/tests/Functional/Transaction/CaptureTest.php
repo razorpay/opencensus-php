@@ -15,18 +15,15 @@ class CaptureTest extends TestCase
 {
     use TransactionAuthFlowTrait;
 
-    protected static $testData = null;
+    protected $testData = null;
 
     protected $authTxn = null;
-
-    public static function setUpBeforeClass()
-    {
-        self::$testData = include(__DIR__.'/helpers/capture.php');
-    }
 
     public function setUp()
     {
         parent::setUp();
+
+        $this->testData = include(__DIR__.'/helpers/capture.php');
 
         $this->authTxn = $this->defaultAuthTransaction();
     }
@@ -139,7 +136,7 @@ class CaptureTest extends TestCase
 
         $name = lcfirst(substr($func, 4));
 
-        $testData = self::$testData[$name];
+        $testData = $this->testData[$name];
 
         $this->setRequestData($testData['request'], $id, $amount);
 
@@ -167,29 +164,5 @@ class CaptureTest extends TestCase
             if (isset($this->authTxn['amount']))
                 $amount = $this->authTxn['amount'];
         }
-    }
-
-    /**
-     * Tests refund transactions, attempts to refund transaction specified by the id & ensures that it is refunded.
-     */
-    private function refund($id)
-    {
-        echo "Testing: Refund Transaction \n";
-        echo "Expected Reponse: Status = Refunded \n";
-        ob_flush();
-
-        //WHEN
-        //call for refund of transactions
-        $response = $this->action('POST', 'TransactionController@postRefund',  array('id' => $id));
-        $content=$response->getContent();
-
-        //THEN
-        //ensure output is json
-        $this->assertJson($content);
-        $refund=json_decode($content);
-
-        //Check if transaction id matches, and refunded sucessfully
-        $this->assertEquals($id, $refund->id);
-        $this->assertEquals('refunded', $refund->status);
     }
 }
