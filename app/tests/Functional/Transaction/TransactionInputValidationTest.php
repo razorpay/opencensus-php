@@ -49,7 +49,7 @@ class TransactionValidationTest extends TestCase
         $this->startTest();
     }
 
-    public function invalidEmailInTransaction()
+    public function testInvalidEmailInTransaction()
     {
         $this->startTest();
     }

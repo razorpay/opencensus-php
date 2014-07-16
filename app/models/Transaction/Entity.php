@@ -4,6 +4,7 @@ namespace Models\Transaction;
 
 use Models\Base;
 use EE\Exception;
+use EE\Error\ErrorCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -88,6 +89,28 @@ class Entity extends Base\PublicEntity
         }
         catch (Exception\ValidationFailureException $e)
         {
+            $bag = $e->getMessageBag();
+
+            if ($bag->has(self::EMAIL))
+            {
+                $msg = $bag->first(self::EMAIL);
+
+                throw new Exception\FieldErrorException(
+                    $msg,
+                    ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+                    self::EMAIL);
+            }
+
+            if ($bag->has(self::CONTACT))
+            {
+                $msg = $bag->first(self::CONTACT);
+
+                throw new Exception\FieldErrorException(
+                    $msg,
+                    ErrorCode::FIELD_ERROR_INVALID_CONTACT,
+                    self::CONTACT);
+            }
+
             throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
         }
 
