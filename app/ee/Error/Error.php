@@ -8,12 +8,11 @@ class Error
 {
     protected $attributes = array(
         'class' => null,
-        'code' => null,
-        'gateway_error_code' => null,
-        'gateway_error_desc' => null,
         'data' => null,
         'desc' => null,
-        'field' => null);
+        'field' => null,
+        'gateway_error_code' => null,
+        'gateway_error_desc' => null);
 
     protected $publicError = null;
 
@@ -57,13 +56,7 @@ class Error
 
     protected function setCode($code)
     {
-        if ($code === 0)
-            return;
-
-        if (ErrorCode::errorCodeExists($code) === false)
-        {
-            throw new InvalidArgumentException('Error code is not valid. Code: ' . $code);
-        }
+        self::checkErrorCode($code);
 
         $this->attributes['code'] = $code;
     }
@@ -262,5 +255,13 @@ class Error
     {
         return array(
             'error' => $this->getErrorArray());
+    }
+
+    public static function checkErrorCode($code)
+    {
+        if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
+        {
+            throw new \InvalidArgumentException($code . ' is not defined');
+        }
     }
 }
