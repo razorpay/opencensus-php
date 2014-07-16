@@ -63,20 +63,9 @@ class Error
 
     protected function setClass($code)
     {
-        if ($code === 0)
-            return;
+        $class = $this->getErrorClassFromErrorCode($code);
 
-        $pos = strpos($code, '_');
-
-        $class = substr($code, 0, $pos);
-
-        if ($class == 'BAD')
-            $class = ErrorClass::BAD_REQUEST;
-
-        if (defined(__NAMESPACE__.'\ErrorClass::'.$class) === false)
-        {
-            throw new InvalidArgumentException($class . ' is not a valid class');
-        }
+        self::checkErrorClass($class);
 
         $this->attributes['class'] = $class;
     }
@@ -92,12 +81,7 @@ class Error
         {
             $code = $this->getCode();
 
-            if (defined('\EE\Error\PublicErrorDescription::'.$code))
-            {
-                $desc = constant('\EE\Error\PublicErrorDescription::'.$code);
-            }
-            else
-                return;
+            $desc = $this->getDescriptionFromErrorCode($code);
         }
 
         if (! is_string($desc))
@@ -257,11 +241,41 @@ class Error
             'error' => $this->getErrorArray());
     }
 
+    protected function getDescriptionFromErrorCode($code)
+    {
+        if (defined(__NAMESPACE__.'\PublicErrorDescription::'.$code))
+        {
+            return constant(__NAMESPACE__.'\PublicErrorDescription::'.$code);
+        }
+    }
+
+    protected function getErrorClassFromErrorCode($code)
+    {
+        $pos = strpos($code, '_');
+
+        $class = substr($code, 0, $pos);
+
+        if ($class == 'BAD')
+        {
+            $class = ErrorClass::BAD_REQUEST;
+        }
+
+        return $class;
+    }
+
     public static function checkErrorCode($code)
     {
         if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
         {
             throw new \InvalidArgumentException($code . ' is not defined');
+        }
+    }
+
+    protected static function checkErrorClass($class)
+    {
+        if (defined(__NAMESPACE__.'\ErrorClass::'.$class) === false)
+        {
+            throw new \InvalidArgumentException($class . ' is not a valid class');
         }
     }
 }
