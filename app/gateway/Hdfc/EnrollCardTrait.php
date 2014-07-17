@@ -110,6 +110,8 @@ trait EnrollCardTrait
 
         $data['udf5'] = 'junk';
 
+        $this->udfCheckAndMeetHdfcRequirements($data);
+
         $this->udfRemoveHackCharacters($data);
 
         //
@@ -127,7 +129,35 @@ trait EnrollCardTrait
         $data['action'] = Hdfc\Action::AUTH;
     }
 
-    protected function udfRemoveHackCharacters(& $data)
+    /**
+     * In the UDF field population, you cannot use <>(){}[]?&* ~`!#$%^=+|\\/:'\",;
+     * characters in UDF as they are declared as Hack characters.
+     * Each UDF can have a length of 250 charcters and only below special
+     * characters can be use.
+     *
+     * 1. - (Minus)
+     * 2. _(Underscore)
+     * 3. @ At the Rate
+     * 4. (Space)
+     * 5. .(dot)
+     *
+     * @param  array      $data [description]
+     * @return [type]       [description]
+     */
+    protected function udfCheckAndMeetHdfcRequirements(array & $data)
+    {
+        //
+        // First remove the 'so-called bs' hack characters
+        //
+        $this->udfRemoveHackCharacters($data);
+
+        //
+        // Now, check the lengths and strip it up if above 250.
+        //
+        $this->udfStripExtraLength($data);
+    }
+
+    protected function udfRemoveHackCharacters(array & $data)
     {
         $hdfcHackChars = array(
             '<','>','(',')','{','}','[',']','?','&','*','~',
@@ -137,6 +167,23 @@ trait EnrollCardTrait
         foreach (range(1,5,1) as $i)
         {
             $data['udf'.$i] = str_replace($hdfcHackChars, ' ', $data['udf'.$i]);
+        }
+    }
+
+    protected function udfStripExtraLength(array & $data)
+    {
+        foreach (range(1,5,1) as $i)
+        {
+            $udf = & $data['udf'.$i];
+
+            $len = strlen($udf);
+
+            if ($len > 250)
+            {
+                $start = $len - 250;
+
+                $udf = substr($udf, $start);
+            }
         }
     }
 
