@@ -31,6 +31,12 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testEmailMissing()
+    {
+        unset($this->txn['email']);
+        $this->startTest();
+    }
+
     public function testContactTooShort()
     {
         $this->startTest();
@@ -93,6 +99,13 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDescriptionMissing()
+    {
+        unset($this->txn['description']);
+
+        $this->startTest();
+    }
+
     public function testDescriptionAsArray()
     {
         $testData = & $this->testData[__FUNCTION__];
@@ -109,6 +122,20 @@ class AuthorizeTest extends TestCase
         $largeText = implode(',', range(1,1000,1));
 
         $testData['request']['content']['description'] = $largeText;
+
+        $this->startTest();
+    }
+
+    public function testUdfMissing()
+    {
+        unset($this->txn['udf']);
+
+        $this->startTest();
+    }
+
+    public function testUdfNull()
+    {
+        $this->txn['udf'] = null;
 
         $this->startTest();
     }
@@ -172,28 +199,5 @@ class AuthorizeTest extends TestCase
         $testData['request']['content'] = $this->txn;
 
         $this->runRequestResponseFlow($testData);
-    }
-
-    protected function setRequestData(& $request, $id = null, $amount = null)
-    {
-        $this->checkAndSetIdAndAmount($id, $amount);
-
-        $request['content']['amount'] = $amount;
-
-        $url = '/transactions/'.$id.'/capture';
-
-        $this->setRequestUrlAndMethod($request, $url, 'POST');
-    }
-
-    protected function checkAndSetIdAndAmount(& $id = null, & $amount = null)
-    {
-        if ($id === null)
-            $id = $this->txn['id'];
-
-        if ($amount === null)
-        {
-            if (isset($this->txn['amount']))
-                $amount = $this->txn['amount'];
-        }
     }
 }

@@ -23,7 +23,7 @@ return [
                     'description' => PublicErrorDescription::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
@@ -48,7 +48,7 @@ return [
                     'description' => PublicErrorDescription::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
@@ -64,7 +64,7 @@ return [
                     'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
@@ -80,7 +80,7 @@ return [
                     'description' => PublicErrorDescription::BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
@@ -96,7 +96,7 @@ return [
                     'field' => 'amount',
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
@@ -112,7 +112,7 @@ return [
                     'field' => 'amount',
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
@@ -128,7 +128,7 @@ return [
                     'field' => 'amount',
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
@@ -144,7 +144,7 @@ return [
                     'field' => 'amount',
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
@@ -169,7 +169,7 @@ return [
                     'field' => 'amount',
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
@@ -220,7 +220,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
@@ -243,7 +243,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
@@ -266,7 +266,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',

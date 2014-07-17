@@ -26,6 +26,14 @@ trait RequestResponseFlowTrait
 
             $response = $e->generatePublicJsonResponse();
         }
+        finally
+        {
+            if ((isset($e) === false) and
+                (isset($data['exception'])))
+            {
+                $this->fail('Exception ' . $data['exception']['class'] . ' expected. None caught');
+            }
+        }
 
         $this->processAndAssertStatusCode($data, $response);
 
@@ -73,7 +81,12 @@ trait RequestResponseFlowTrait
 
     protected function getExpectedHttpStatusCode($data)
     {
-        return (isset($data['response']['status_code'])) ?: 200;
+        if (isset($data['response']['status_code']))
+        {
+            return $data['response']['status_code'];
+        }
+        else
+            return 200;
     }
 
     protected function makeRequest($request)

@@ -26,6 +26,7 @@ class Validator extends Base\Validator
     protected function validateContact($input)
     {
         $contact = $input['contact'];
+
         if (is_string($contact) === false)
         {
             throw new Exception\FieldErrorException(
@@ -66,6 +67,9 @@ class Validator extends Base\Validator
 
     protected function validateDescription($input)
     {
+        if (isset($input['description']) === false)
+            return;
+
         $desc = $input['description'];
 
         if (is_string($desc) === false)

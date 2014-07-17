@@ -38,12 +38,6 @@ class TransactionRetrieveTest extends TestCase
     */
     public function testRetrieveTransaction()
     {
-
-        //Testing retrieval of all transactions with /transactions
-        echo "\nTesting: Retrieval of transactions \n";
-        echo "Test: Retrieval of all by calling /transactions \n";
-        ob_flush();
-
         //GIVEN - Nothing
         //WHEN
         $response = $this->call('GET', '/transactions');
@@ -61,10 +55,6 @@ class TransactionRetrieveTest extends TestCase
      */
     public function testRetrieveTransactionWithId()
     {
-        //Testing retrieval of specific transactions with /transactions/$id
-        echo "Test: Retrieval by ID at /transactions/id \n";
-        ob_flush();
-
         $transactions = $this->retrieveTransactionsDefault();
 
         //GIVEN
@@ -87,9 +77,6 @@ class TransactionRetrieveTest extends TestCase
      */
     public function testRetrieveTransactionWithStatusAndCount()
     {
-        //Testing retrieval of transactions with a specific status & count
-        echo "Test: Retrieval of transactions using status & count at /transactions/?count={count}&status={status} \n";
-        ob_flush();
         $transactions = $this->retrieveTransactionsDefault();
 
         //GIVEN
@@ -113,8 +100,6 @@ class TransactionRetrieveTest extends TestCase
      */
     public function testRetrieveTransactionsWithCreatedAt()
     {
-        echo "Test: Retrieval of transactions using created_at timestamp at /transactions/?created_at={timestamp} \n";
-        ob_flush();
         $transactions = $this->retrieveTransactionsDefault();
         $id = $transactions->data[0]->id;
 

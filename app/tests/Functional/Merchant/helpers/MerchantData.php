@@ -92,7 +92,7 @@ return [
                     'description' => PublicErrorDescription::BAD_REQUEST_KEY_EXPIRED,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',

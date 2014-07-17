@@ -27,6 +27,26 @@ return [
         ],
     ],
 
+    'testEmailMissing' => [
+        'request' => [
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+                    'field' => 'email',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\FieldErrorException',
+            'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+        ],
+    ],
+
     'testContactTooShort' => [
         'request' => [
             'content' => [
@@ -77,16 +97,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                    'field' => 'contact',
-                ],
+                'status' => 'authorized'
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
         ],
     ],
 
@@ -98,16 +110,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                    'field' => 'contact',
-                ],
+                'status' => 'authorized'
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
         ],
     ],
 
@@ -278,6 +282,20 @@ return [
         ],
     ],
 
+    'testDescriptionMissing' => [
+        'request' => [
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'authorized',
+                'description' => null
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDescriptionAsArray' => [
         'request' => [
             'content' => [
@@ -315,6 +333,20 @@ return [
         ],
     ],
 
+    'testUdfMissing' => [
+        'request' => [
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            'status' => 'authorized',
+            'udf' => array(),
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testUdfStringNotArray' => [
         'request' => [
             'content' => [
@@ -333,6 +365,20 @@ return [
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
             'code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testUdfNull' => [
+        'request' => [
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            'status' => 'authorized',
+            'udf' => array(),
+            ],
+            'status_code' => 200,
         ],
     ],
 
@@ -381,21 +427,23 @@ return [
     'testArrayInUdfKey' => [
         'request' => [
             'content' => [
-                'contact' => '+1234-(456)-(789)',
+                'udf' => [
+                    [0,1],
+                ]
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                    'field' => 'contact',
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'udf',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
+            'class' => 'EE\Exception\BadRequestException',
+            'code' => ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY
         ],
     ],
 

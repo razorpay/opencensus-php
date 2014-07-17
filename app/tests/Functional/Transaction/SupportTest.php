@@ -30,9 +30,6 @@ class SupportTest extends TestCase
      */
     public function testSupport()
     {
-        echo "\nTesting: Support Transactions \n";
-        echo "Creating New Transaction... \n";
-
         //
         // GIVEN
         // create an auth transaction using card 1
@@ -58,10 +55,6 @@ class SupportTest extends TestCase
      */
     private function capture($id, $amount)
     {
-        echo "Testing: Capture Transaction \n";
-        echo "Expected Reponse: Status = Captured \n";
-        ob_flush();
-
         // WHEN
         // call for capture of transactions
         $response = $this->call('POST', '/transactions/'.$id.'/capture', array('amount'=>$amount));
@@ -82,10 +75,6 @@ class SupportTest extends TestCase
      */
     private function refund($id)
     {
-        echo "Testing: Refund Transaction \n";
-        echo "Expected Reponse: Status = Refunded \n";
-        ob_flush();
-
         //WHEN
         //call for refund of transactions
         $response = $this->action('POST', 'TransactionController@postRefund',  array('id' => $id));

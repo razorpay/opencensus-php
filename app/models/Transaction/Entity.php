@@ -77,7 +77,7 @@ class Entity extends Base\PublicEntity
 
     protected $guarded = array(self::ID);
 
-    protected static $modifiers = array('contact');
+    protected static $modifiers = array('contact', 'udf');
 
     protected static $generators = array('status', 'id', 'udf');
 
@@ -134,8 +134,15 @@ class Entity extends Base\PublicEntity
 
 // --------------------- Generators Ends ------------------------------------
 
-    protected function modifyContact($contact)
+// --------------------- Modifiers ------------------------------------------
+
+    protected function modifyContact(& $input)
     {
+        if (isset($input['contact']) === false)
+            return;
+
+        $contact = & $input['contact'];
+
         if (is_string($contact) === false)
         {
             return;
@@ -148,6 +155,16 @@ class Entity extends Base\PublicEntity
 
         return $contact;
     }
+
+    protected function modifyUdf(& $input)
+    {
+        if (isset($input['udf']) === false)
+        {
+            $input['udf'] = array();
+        }
+    }
+
+// --------------------- Modifiers Ends ------------------------------------
 
 // ----------------------- Setters -----------------------------------------
 
