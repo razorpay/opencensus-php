@@ -27,12 +27,13 @@ class Validator extends Base\Validator
     {
         $contact = $input['contact'];
 
+        $code = null;
+        $message = null;
+
         if (is_string($contact) === false)
         {
-            throw new Exception\FieldErrorException(
-                'Contact number can only contain numbers and + symbol',
-                ErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                'contact');
+            $message = 'Contact number can only contain digits and + symbol';
+            $code = ErrorCode::FIELD_ERROR_INVALID_CONTACT;
         }
 
         $origContact = $contact;
@@ -42,26 +43,25 @@ class Validator extends Base\Validator
 
         if (is_numeric($contact) === false)
         {
-            throw new Exception\FieldErrorException(
-                'Contact number can only contain digits and + symbol',
-                ErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                'contact');
+            $message = 'Contact number can only contain digits and + symbol';
+            $code = ErrorCode::FIELD_ERROR_INVALID_CONTACT;
         }
 
         if (strlen($contact) < 10)
         {
-            throw new Exception\FieldErrorException(
-                'Contact number should have minimum 10 digits',
-                ErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                'contact');
+            $message = 'Contact number should be at least 10 digits';
+            $code = ErrorCode::FIELD_ERROR_INVALID_CONTACT;
         }
 
         if (strlen($contact) > 12)
         {
-            throw new Exception\FieldErrorException(
-                'Contact number should not be greater than 12 digits, including country code',
-                ErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                'contact');
+            $message = 'Contact number should not be greater than 12 digits, including country code';
+            $code = ErrorCode::FIELD_ERROR_INVALID_CONTACT;
+        }
+
+        if ($code !== null)
+        {
+            throw new Exception\FieldErrorException($message, $code, 'contact');
         }
     }
 
@@ -102,42 +102,51 @@ class Validator extends Base\Validator
 
         $udf = $input['udf'];
 
+        $code = null;
+
         if (is_array($udf) === false)
         {
-            throw new Exception\BadRequestException(
-                'Udf should be provided as an array',
-                null,
-                'udf');
+            $code = ErrorCode::BAD_REQUEST_UDF_SHOULD_BE_ARRAY;
         }
-
-        if (count($udf) > 15)
+        else if (count($udf) > 15)
         {
-            throw new Exception\BadRequestException(
-                null,
-                ErrorCode::BAD_REQUEST_UDF_TOO_MANY_KEYS,
-                'udf');
+            $code = ErrorCode::BAD_REQUEST_UDF_TOO_MANY_KEYS;
         }
-
-        foreach ($udf as $key => $value)
+        else
         {
-            if (is_array($value))
-                throw new Exception\BadRequestException(
-                    null,
-                    ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY,
-                    'udf');
+            foreach ($udf as $key => $value)
+            {
+                $code = $this->validateUdfKeyValue($key, $value);
 
-            if (strlen($value) > 256)
-                throw new Exception\BadRequestException(
-                    null,
-                    ErrorCode::BAD_REQUEST_UDF_VALUE_TOO_LARGE,
-                    'udf');
-
-            if (strlen($key) > 256)
-                throw new Exception\BadRequestException(
-                    null,
-                    ErrorCode::BAD_REQUEST_UDF_KEY_TOO_LARGE,
-                    'udf');
+                if ($code !== null)
+                    break;
+            }
         }
+
+        if ($code !== null)
+        {
+            throw new Exception\BadRequestException(null, $code, 'udf');
+        }
+    }
+
+    protected function validateUdfKeyValue($key, $value)
+    {
+        $code = null;
+
+        if (is_array($value))
+        {
+            $code = ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY;
+        }
+        else if (strlen($value) > 256)
+        {
+            $code = ErrorCode::BAD_REQUEST_UDF_VALUE_TOO_LARGE;
+        }
+        else if (strlen($key) > 256)
+        {
+            $code = ErrorCode::BAD_REQUEST_UDF_KEY_TOO_LARGE;
+        }
+
+        return $code;
     }
 
     protected function validateCurrency($input)
@@ -151,7 +160,7 @@ class Validator extends Base\Validator
         if ($currency !== "INR")
         {
             throw new Exception\BadRequestException(
-                'Invalid currency: '.$currency.'. Only INR supported.',
+                null,
                 ErrorCode::BAD_REQUEST_CURRENCY_NOT_SUPPORTED,
                 'currency');
         }
@@ -207,7 +216,7 @@ class Validator extends Base\Validator
         if ($input['amount'] > $txn->getAttribute(Transaction\Entity::AMOUNT))
         {
             throw new Exception\BadRequestException(
-                null, ErrorCode::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH);
+                null, ErrorCode::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH, 'amount');
         }
     }
 

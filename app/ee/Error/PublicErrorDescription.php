@@ -75,4 +75,10 @@ class PublicErrorDescription
 
     const BAD_REQUEST_DESCRIPTION_TOO_LARGE =
         'Description provides should be max 1000 characters';
+
+    const BAD_REQUEST_UDF_SHOULD_BE_ARRAY =
+        'udf should be provided as a dictionary';
+
+    const BAD_REQUEST_CURRENCY_NOT_SUPPORTED =
+        'Invalid currency. Currently only INR is supported.';
 }
