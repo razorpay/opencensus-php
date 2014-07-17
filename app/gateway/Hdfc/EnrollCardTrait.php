@@ -110,6 +110,8 @@ trait EnrollCardTrait
 
         $data['udf5'] = 'junk';
 
+        $this->udfRemoveHackCharacters($data);
+
         //
         // Collect fields related to the card
         //
@@ -123,6 +125,19 @@ trait EnrollCardTrait
         $data['currencycode'] = self::INR_CODE;
 
         $data['action'] = Hdfc\Action::AUTH;
+    }
+
+    protected function udfRemoveHackCharacters(& $data)
+    {
+        $hdfcHackChars = array(
+            '<','>','(',')','{','}','[',']','?','&','*','~',
+            '`','!','#','$','%','^','=','+','|','\\','/',':',
+            '\'','"',',',';');
+
+        foreach (range(1,5,1) as $i)
+        {
+            $data['udf'.$i] = str_replace($hdfcHackChars, ' ', $data['udf'.$i]);
+        }
     }
 
     protected function validateEnrollResponse()

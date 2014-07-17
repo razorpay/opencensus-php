@@ -385,6 +385,11 @@ class Gateway extends BaseGateway
             case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF:
             case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN:
             case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT:
+                $exception = new Exception\GatewayErrorException(
+                                $appErrorCode,
+                                $gatewayErrorCode,
+                                $gatewayErrorDesc);
+
                 break;
 
             default:
