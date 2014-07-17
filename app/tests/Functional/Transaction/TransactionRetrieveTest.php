@@ -115,5 +115,4 @@ class TransactionRetrieveTest extends TestCase
         $transaction = json_decode($content);
         $this->assertEquals($id, $transaction->data[0]->id);
     }
-
 }

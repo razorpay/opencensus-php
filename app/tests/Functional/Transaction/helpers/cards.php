@@ -60,7 +60,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
@@ -84,7 +84,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
@@ -108,7 +108,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
@@ -132,7 +132,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
@@ -230,7 +230,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
@@ -253,7 +253,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
@@ -276,7 +276,7 @@ return [
                     'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 504,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
