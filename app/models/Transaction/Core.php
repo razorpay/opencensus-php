@@ -9,7 +9,6 @@ use Gateway\GatewayManager;
 
 use Models\Card;
 use Models\Ledger;
-use Models\Token;
 use Models\Transaction;
 
 use Trace\Trace;
@@ -31,10 +30,10 @@ class Core
     }
 
     /**
-     * Creates card, token and txn entities
+     * Creates card and txn entities
      *
      * @param  array $input Input required for creating
-     *                      card, token and txn entities
+     *                      card and txn entities
      *
      * @return array        Returns an array containing
      *                      Transaction\Entity object and
@@ -61,13 +60,6 @@ class Core
         $card = $cardCore->getCard();
 
         //
-        // Create token. Links merchant id and card
-        //
-        $token = (new Token\Core)->create(
-                    $input['merchant_id'],
-                    $card);
-
-        //
         // Remove card key from input. Isn't needed
         //
         unset($txnInput['card']);
@@ -75,7 +67,7 @@ class Core
         //
         // Create txn entity
         //
-        $txn = $this->create($txnInput, $token);
+        $txn = $this->create($txnInput, $card);
 
         $this->saveEntities($txn);
 
@@ -84,9 +76,7 @@ class Core
 
     protected function saveEntities( $txn)
     {
-        (new Card\Repository)->saveOrFail($txn->token->card);
-
-        (new Token\Repository)->saveOrFail($txn->token);
+        (new Card\Repository)->saveOrFail($txn->card);
 
         $this->txnRepo->saveOrFail($txn);
     }
@@ -94,20 +84,20 @@ class Core
     /**
      * Creates an entry for a new transaction
      *
-     * @param  array     $input  Input relevant to creating
-     *                           a txn row in db
-     * @param  DAL\Token $token  Token
+     * @param  array                $input  Input relevant to creating
+     *                                      a txn row in db
+     * @param  Card\Entity          $card   Card
      *
      * @return Transaction\Entity   A Transaction\Entity object
      */
-    public function create($input, Token\Entity $token)
+    public function create($input, Card\Entity $card)
     {
         $txn = (new Transaction\Entity)->build($input);
 
         //
-        // Assoicate transaction to token
+        // Assoicate transaction to card
         //
-        $txn->token()->associate($token);
+        $txn->card()->associate($card);
 
         return $txn;
     }

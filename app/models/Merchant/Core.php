@@ -3,7 +3,6 @@
 namespace Models\Merchant;
 
 use Models\Card;
-use Models\Token;
 
 class Core
 {

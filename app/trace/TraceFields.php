@@ -17,7 +17,7 @@ class TraceFields
         TraceCode::TRANSACTION_CREATED => array(
             Transaction::ID,
             Transaction::MERCHANT_ID,
-            Transaction::TOKEN_ID,
+            Transaction::CARD_ID,
             Transaction::STATUS,
             Transaction::AMOUNT,
         ),
@@ -27,7 +27,7 @@ class TraceFields
         TraceCode::TRANSACTION_FAILED => array(
             Transaction::ID,
             Transaction::MERCHANT_ID,
-            Transaction::TOKEN_ID,
+            Transaction::CARD_ID,
             Transaction::STATUS,
             Transaction::AMOUNT,
             Transaction::ERROR_CODE,
@@ -37,7 +37,7 @@ class TraceFields
         TraceCode::TRANSACTION_AUTH_FAILURE => array(
             Transaction::ID,
             Transaction::MERCHANT_ID,
-            Transaction::TOKEN_ID,
+            Transaction::CARD_ID,
             Transaction::STATUS,
             Transaction::AMOUNT,
             Transaction::ERROR_CODE,
@@ -47,7 +47,7 @@ class TraceFields
         TraceCode::TRANSACTION_REFUND_FAILURE => array(
             Transaction::ID,
             Transaction::MERCHANT_ID,
-            Transaction::TOKEN_ID,
+            Transaction::CARD_ID,
             Transaction::STATUS,
             Transaction::AMOUNT,
             Transaction::ERROR_CODE,
@@ -57,7 +57,7 @@ class TraceFields
         TraceCode::TRANSACTION_CAPTURE_FAILURE => array(
             Transaction::ID,
             Transaction::MERCHANT_ID,
-            Transaction::TOKEN_ID,
+            Transaction::CARD_ID,
             Transaction::STATUS,
             Transaction::AMOUNT,
             Transaction::ERROR_CODE,
@@ -67,7 +67,7 @@ class TraceFields
         TraceCode::TRANSACTION_AUTH_SUCCESS => array(
             Transaction::ID,
             Transaction::MERCHANT_ID,
-            Transaction::TOKEN_ID,
+            Transaction::CARD_ID,
             Transaction::STATUS,
             Transaction::AMOUNT,
         ),
@@ -75,7 +75,7 @@ class TraceFields
         TraceCode::TRANSACTION_REFUND_SUCCESS => array(
             Transaction::ID,
             Transaction::MERCHANT_ID,
-            Transaction::TOKEN_ID,
+            Transaction::CARD_ID,
             Transaction::STATUS,
             Transaction::AMOUNT,
         ),
@@ -83,7 +83,7 @@ class TraceFields
         TraceCode::TRANSACTION_CAPTURE_SUCCESS => array(
             Transaction::ID,
             Transaction::MERCHANT_ID,
-            Transaction::TOKEN_ID,
+            Transaction::CARD_ID,
             Transaction::STATUS,
             Transaction::AMOUNT,
         ),

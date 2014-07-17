@@ -12,13 +12,6 @@ Models\Card\Entity:
     country: IN
     last4: 789$integer
 
-Models\Token\Entity:
-    id: 174bdd3e456c8f6fabcdef12
-    card_id:
-        type: Models\Card\Entity
-    merchant_id:
-        type: Models\Merchant\Entity
-
 Models\Key\Entity:
     id: d9c6bf091a1a64cb5678d8c1
     merchant_id:
@@ -30,8 +23,8 @@ Models\Key\Entity:
 Models\Transaction\Entity:
     merchant_id:
         type: Models\Merchant\Entity
-    token_id:
-        type: Models\Token\Entity
+    card_id:
+        type: Models\Card\Entity
     amount: 100
     currency: INR
     status: open

@@ -82,16 +82,6 @@ class DatabaseSeeder extends Seeder {
                     )
                 );
 
-            DB::table(Table::TOKEN)->insert(
-                array(
-                    'id'            =>  '174bdd3e456c8f6f174bdd3e',
-                    'card_id'       =>  '274bdd3e456c8f6f174bdd3f',
-                    'merchant_id'   =>  1,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
-                    )
-                );
-
             DB::table(Table::KEY)->insert(
                 array(
                     'id'            =>  'd9c6bf091a1a64cb5678d8c1',

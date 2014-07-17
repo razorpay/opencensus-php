@@ -25,6 +25,8 @@ class ModifyTxnStatus extends Migration
                                         'captured',
                                         'refunded',
                                         'failed');
+
+
         });
     }
 

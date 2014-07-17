@@ -15,12 +15,12 @@ class Entity extends Base\PublicEntity
     const STATUS            = 'status';
     const CURRENCY          = 'currency';
     const DESCRIPTION       = 'description';
-    const TOKEN_ID          = 'token_id';
     const ERROR_CODE        = 'error_code';
     const ERROR_DESCRIPTION = 'error_description';
     const EMAIL             = 'email';
     const CONTACT           = 'contact';
     const UDF               = 'udf';
+    const CARD_ID           = 'card_id';
     const LEDGER_ID         = 'ledger_id';
 
     const CURRENCY_LENGTH   = 3;
@@ -36,7 +36,6 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::MERCHANT_ID,
-        self::TOKEN_ID,
         self::STATUS,
         self::AUTH_AMOUNT,
         self::AMOUNT,
@@ -265,14 +264,7 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->getAttributes();
 
-        $token = $this->token()->first();
-
-        if ($token === null)
-        {
-            throw new Exception\LogicException(ErrorCode::SERVER_ERROR_ASSOCIATED_TOKEN_NOT_FOUND);
-        }
-
-        $card = $token->card()->first();
+        $card = $this->card()->first();
 
         if ($card === null)
         {
@@ -288,10 +280,10 @@ class Entity extends Base\PublicEntity
 
 // --------------- Relation to other entities ----------------------
 
-    public function token()
+    public function card()
     {
         return $this->belongsTo(
-            'Models\Token\Entity');
+            'Models\Card\Entity');
     }
 
     public function merchant()
@@ -325,7 +317,7 @@ class Entity extends Base\PublicEntity
         $fields = array(
             self::ID,
             self::MERCHANT_ID,
-            self::TOKEN_ID,
+            self::CARD_ID,
             self::STATUS,
             self::AMOUNT,
             self::ERROR_CODE);

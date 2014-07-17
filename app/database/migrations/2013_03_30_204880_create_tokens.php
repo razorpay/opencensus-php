@@ -16,7 +16,7 @@ class CreateTokens extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::TOKEN, function(Blueprint $table){
+        Schema::create(Table::TOKEN, function($table){
             $table->engine = 'InnoDB';
 
             $table->char(Token::ID, Token::ID_LENGTH)
@@ -43,7 +43,8 @@ class CreateTokens extends Migration {
 
             $table->foreign(Token::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
-                  ->on(Table::MERCHANT);
+                  ->on(Table::MERCHANT)
+                  ->on_delete('SET NULL');
         });
     }
 

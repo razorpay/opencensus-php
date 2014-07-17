@@ -70,7 +70,7 @@ class Repository extends Base\Repository
             $query->skip($param['skip']);
         }
 
-        return $query->with('token.card')->get();
+        return $query->with('card')->get();
     }
 
     public static function validateFetchParams(array $param)
