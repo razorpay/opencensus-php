@@ -364,7 +364,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_ERROR,
+            'code' => ErrorCode::BAD_REQUEST_UDF_SHOULD_BE_ARRAY,
         ],
     ],
 
