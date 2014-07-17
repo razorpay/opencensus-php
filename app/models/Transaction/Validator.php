@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
-        'udf'           =>  'array');
+        'udf'           =>  'sometimes');
 
     protected static $captureRules = array(
         'amount'        => 'required|numeric|max:500000|min:100');
