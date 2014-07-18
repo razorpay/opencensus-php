@@ -8,13 +8,13 @@ build:
       # and the code value contains the command that get executed
       - script:
           name: copy db config
-          code:  cp app/config/testing/database.php.wercker app/config/testing/database.php
+          code: cp app/config/testing/database.php.wercker app/config/testing/database.php
       - script:
           name: copy HDFC config
           code: cp app/gateway/Hdfc/Config.php.wercker app/gateway/Hdfc/Config.php
       - script:
           name: copy internal app auth config
-          code:  cp app/config/applications.sample.php app/config/applications.php
+          code: cp app/config/applications.sample.php app/config/applications.php
       - script:
           name: set composer to use github oauth token
           code: composer config -g github-oauth.github.com $github_token
@@ -29,6 +29,12 @@ build:
       - script:
           name: run unit tests
           code: phpunit --coverage-html ./report
+      - s3sync:
+          key_id: $WERCKER_CODE_COVERAGE_AWS_ACCESS_KEY_ID
+          key_secret: $WERCKER_CODE_COVERAGE_AWS_SECRET_ACCESS_KEY
+          bucket_url: $WERCKER_CODE_COVERAGE_AWS_BUCKET_URL/$WERCKER_GIT_REPOSITORY/$WERCKER_GIT_BRANCH/
+          opts: --acl-private
+          source_dir: ./report
       - script:
           name: Code Coverage
           code: cp -R ./report/ $WERCKER_REPORT_ARTIFACTS_DIR/
