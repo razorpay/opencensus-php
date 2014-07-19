@@ -14,17 +14,7 @@ use Whoops\Handler\PrettyPageHandler;
 */
 
 ClassLoader::addDirectories(array(
-
-	app_path().'/commands',
-	app_path().'/dashboard',
-	app_path().'/trace',
-	app_path().'/controllers',
-	app_path().'/gateway',
-	app_path().'/models',
-	app_path().'/database/seeds',
-	app_path().'/lib',
-	app_path().'/exceptions',
-    app_path().'/constants',
+// For rzp, we are using composer for loading all dirs
 
 ));
 
@@ -70,7 +60,7 @@ new EE\Exception\Handler();
 
 App::down(function()
 {
-	return Response::make("Be right back!", 503);
+    return Response::make("Be right back!", 503);
 });
 
 /*

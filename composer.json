@@ -1,53 +1,52 @@
 {
-	"name": "shashankkumar/rzp-sms",
-	"description": "The Razorpay school management system",
-	"keywords": ["app", "razorpay"],
-	"require": {
-		"rmccue/requests": ">=1.0",
-		"laravel/framework": "4.2.*",
-		"doctrine/dbal": "~2.3",
-		"razorpay/razorpay-php":"dev-master"
-	},
-	"repositories": [{
-		"type": "vcs",
-		"url": "git@bitbucket.org:razorpay/rzp-php.git"
-	}],
-	"require-dev": {
-		"raveren/kint": ">=0.9",
-		"laracasts/testdummy": "1.*"
-	},
-	"autoload": {
-		"classmap": [
-			"app/commands",
-			"app/controllers",
-			"app/dashboard",
-			"app/trace",
-			"app/gateway",
-			"app/models",
-			"app/database/migrations",
-			"app/database/seeds",
-			"app/tests/TestCase.php",
-			"app/lib",
-			"app/ee",
-			"app/tests",
-            "app/constants"
-		]
-	},
-	"scripts": {
-		"post-install-cmd": [
-			"php artisan clear-compiled",
-			"php artisan optimize"
-		],
-		"post-update-cmd": [
-			"php artisan clear-compiled",
-			"php artisan optimize"
-		],
-		"post-create-project-cmd": [
-			"php artisan key:generate"
-		]
-	},
-	"config": {
-		"preferred-install": "dist"
-	},
-	"minimum-stability": "stable"
+    "name": "shashankkumar/rzp-sms",
+    "description": "The Razorpay school management system",
+    "keywords": ["app", "razorpay"],
+    "require": {
+        "rmccue/requests": ">=1.0",
+        "laravel/framework": "4.2.*",
+        "doctrine/dbal": "~2.3",
+        "razorpay/razorpay-php":"dev-master"
+    },
+    "repositories": [{
+        "type": "vcs",
+        "url": "git@bitbucket.org:razorpay/rzp-php.git"
+    }],
+    "require-dev": {
+        "raveren/kint": ">=0.9",
+        "laracasts/testdummy": "1.*"
+    },
+    "autoload": {
+        "classmap": [
+            "app/commands",
+            "app/constants",
+            "app/controllers",
+            "app/dashboard",
+            "app/database",
+            "app/ee",
+            "app/gateway",
+            "app/http",
+            "app/lib",
+            "app/models",
+            "app/tests",
+            "app/trace"
+        ]
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "php artisan clear-compiled",
+            "php artisan optimize"
+        ],
+        "post-update-cmd": [
+            "php artisan clear-compiled",
+            "php artisan optimize"
+        ],
+        "post-create-project-cmd": [
+            "php artisan key:generate"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist"
+    },
+    "minimum-stability": "stable"
 }
