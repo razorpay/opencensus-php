@@ -36,11 +36,11 @@ build:
           opts: --acl-private
           source_dir: ./report
       - script:
-          name: Code Coverage
-          code: cp -R ./report/ $WERCKER_REPORT_ARTIFACTS_DIR/
+          name: Generate coverage zip for upload
+          code: (cd ./report && tar zcvf /tmp/$WERCKER_GIT_BRANCH.tar.gz .)
       - script:
-          name: remove coverage files
-          code: rm -rf report
+          name: Upload Coverage to cc.razorpay.com
+          code: curl -F "coverage=@/tmp/$WERCKER_GIT_BRANCH.tar.gz" https://cc.razorpay.com/$WERCKER_GIT_REPOSITORY/upload/?token=$COVERAGE_TOKEN
     after-steps:
       - sherzberg/slack-notify:
           subdomain: razorpay
