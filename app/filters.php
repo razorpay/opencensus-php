@@ -30,17 +30,7 @@ App::before(function($request)
 //
 App::after(function($request, $response)
 {
-    //
-    // Ask browser not to cache
-    //
-    $response->headers->set('Cache-Control','nocache, no-store, max-age=0, must-revalidate');
-
-    $response->headers->set('Pragma','no-cache');
-
-    //
-    // Put old time so that any browser cache gets expired
-    //
-    $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
+    Http\ApiResponse::setHeaders($request, $response);
 });
 
 /*
@@ -53,33 +43,6 @@ App::after(function($request, $response)
 | integrates HTTP Basic authentication for quick, simple checking.
 |
 */
-
-/**
- * Tells the browser that HTTP AUTH is expected
- * and hence to provide basic auth user and pwd
- */
-Response::macro('httpAuthExpected', function()
-{
-    $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-    $error = $error->getPublicError();
-
-    $httpStatusCode = $error->getHttpStatusCode();
-
-    return Response::json($error->toArray(), 401)
-                   ->header('WWW-Authenticate', 'Basic realm="Protected Area"');
-});
-
-Response::macro('routeNotFound', function()
-{
-    $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-    $error = $error->getPublicError();
-
-    $httpStatusCode = $error->getHttpStatusCode();
-
-    return Response::json($error->toArray(), $httpStatusCode);
-});
 
 /**
  * Only allows requests with secret keys to get through.

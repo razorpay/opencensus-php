@@ -82,5 +82,5 @@ Route::get('/', function()
 
 Route::any('{all}', function($uri)
 {
-    return Response::routeNotFound();
+    return Http\ApiResponse::routeNotFound();
 })->where('all', '.*');

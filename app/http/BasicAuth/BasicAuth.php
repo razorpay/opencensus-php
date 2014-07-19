@@ -2,9 +2,9 @@
 
 namespace Http\BasicAuth;
 
+use Http\ApiResponse;
 use Models\Key;
 use Models\Merchant;
-use Request;
 use Response;
 use EE;
 
@@ -51,7 +51,7 @@ class BasicAuth
     {
         if ($this->areCredentialsSet($request) === false)
         {
-            return Response::httpAuthExpected();
+            return ApiResponse::httpAuthExpected();
         }
 
         list($id, $pwd) = $this->getCredentials($request);
@@ -83,7 +83,7 @@ class BasicAuth
     {
         if ($this->areCredentialsSet($request) === false)
         {
-            return Response::httpAuthExpected();
+            return ApiResponse::httpAuthExpected();
         }
 
         list($id, $pwd) = $this->getCredentials($request);
@@ -109,7 +109,7 @@ class BasicAuth
     {
         if ($this->areCredentialsSet($request) === false)
         {
-            return Response::httpAuthExpected();
+            return ApiResponse::httpAuthExpected();
         }
 
         list($id, $pwd) = $this->getCredentials($request);
