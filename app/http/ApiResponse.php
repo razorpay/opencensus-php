@@ -14,28 +14,22 @@ class ApiResponse
      */
     public static function httpAuthExpected()
     {
-        $error = new Error(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        $response = self::generateResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
 
-        $error = $error->getPublicError();
+        return $response->header('WWW-Authenticate', 'Basic realm="Protected Area"');
+    }
 
-        $httpStatusCode = $error->getHttpStatusCode();
-
-        return Response::json($error->toArray(), 401)
-                       ->header('WWW-Authenticate', 'Basic realm="Protected Area"');
+    public static function unauthorized($code = ErrorCode::BAD_REQUEST_UNAUTHORIZED)
+    {
+        return self::generateResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
     }
 
     public static function routeNotFound()
     {
-        $error = new Error(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-        $error = $error->getPublicError();
-
-        $httpStatusCode = $error->getHttpStatusCode();
-
-        return Response::json($error->toArray(), $httpStatusCode);
+        return self::generateResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
-    public static function setHeaders($request, $response)
+    public static function stopBrowserCaching($request, $response)
     {
         //
         // Ask browser not to cache
@@ -48,5 +42,16 @@ class ApiResponse
         // Put old time so that any browser cache gets expired
         //
         $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
+    }
+
+    public static function generateResponse($code)
+    {
+        $error = new Error($code);
+
+        $publicError = $error->getPublicError();
+
+        $httpStatusCode = $publicError->getHttpStatusCode();
+
+        return Response::json($publicError->toArray(), $httpStatusCode);
     }
 }

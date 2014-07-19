@@ -2,11 +2,11 @@
 
 namespace Http\BasicAuth;
 
+use Hash;
 use Http\ApiResponse;
 use Models\Key;
 use Models\Merchant;
-use Response;
-use EE;
+use EE\Error\ErrorCode;
 
 class BasicAuth
 {
@@ -26,6 +26,15 @@ class BasicAuth
     private $merchant = null;
 
     private $app = null;
+
+    public function checkHttps($request)
+    {
+        if (($request->getHttpHost() === 'api.razorpay.com') and
+            ($request->secure() === false))
+        {
+            return ApiResponse::generateResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
+        }
+    }
 
     protected function areCredentialsSet($request)
     {
@@ -56,23 +65,18 @@ class BasicAuth
 
         list($id, $pwd) = $this->getCredentials($request);
 
-        if ($this->verifySecret($id, $pwd) === true)
-            return;
+        $response = $this->verifySecret($id, $pwd);
+
+        if ($response === true)
+            return true;
 
         //
         // @todo: add check for internal IP here
         //
         if ($this->verifyApp($id, $pwd) === true)
-            return;
+            return true;
 
-        $error = new EE\Error\Error(
-            EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-        $error = $error->getPublicError();
-
-        $httpStatusCode = $error->getHttpStatusCode();
-
-        return Response::json($error->toArray(), $httpStatusCode);
+        return $response;
     }
 
     /**
@@ -88,21 +92,7 @@ class BasicAuth
 
         list($id, $pwd) = $this->getCredentials($request);
 
-        if ($this->verifyPublic($id) === false)
-        {
-            if ($this->verifySecret($id, $pwd) === false)
-            {
-                $error = new EE\Error\Error(
-                    EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-                $error = $error->getPublicError();
-
-                $httpStatusCode = $error->getHttpStatusCode();
-
-                return Response::json($error->toArray(), $httpStatusCode);
-            }
-        }
-
+        return $this->verifyPublic($id);
     }
 
     public function appAuth($route, $request)
@@ -116,15 +106,10 @@ class BasicAuth
 
         if ($this->verifyApp($id, $pwd) === false)
         {
-            $error = new EE\Error\Error(
-                EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-            $error = $error->getPublicError();
-
-            $httpStatusCode = $error->getHttpStatusCode();
-
-            return Response::json($error->toArray(), $httpStatusCode);
+            ApiResponse::routeNotFound();
         }
+
+        return true;
     }
 
     /**
@@ -141,20 +126,28 @@ class BasicAuth
      * @param  string   $keySecret
      * @return boolean
      */
-    public function verifySecret($keyId, $keySecret)
+    protected function verifySecret($keyId, $keySecret)
     {
         $key = $this->fetchKey($keyId);
 
         if ($key === null)
         {
-            return false;
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
+        }
+
+        if ($keySecret === '')
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
         $check = $this->matchSecret($keySecret, $key);
 
         if ($check === false)
         {
-            return false;
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
 
         $this->fetchMerchantOfKey($key);
@@ -172,7 +165,7 @@ class BasicAuth
      * @param  string  $keyId
      * @return boolean
      */
-    public function verifyPublic($keyId)
+    protected function verifyPublic($keyId)
     {
         //
         // If the key is fetched successfully, then
@@ -182,7 +175,8 @@ class BasicAuth
 
         if ($key === null)
         {
-            return false;
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
         }
 
         $this->fetchMerchantOfKey($key);
@@ -206,7 +200,7 @@ class BasicAuth
      * @param  string  $secret
      * @return boolean
      */
-    public function verifyApp($merchantId, $secret)
+    protected function verifyApp($merchantId, $secret)
     {
         $verify = $this->verifyAppSecret($secret);
 
@@ -258,7 +252,7 @@ class BasicAuth
 
     protected function matchSecret($keySecret, $key)
     {
-        return \Hash::check($keySecret, $key->getSecret());
+        return Hash::check($keySecret, $key->getSecret());
     }
 
     protected function verifyAppSecret($secret)
@@ -287,14 +281,5 @@ class BasicAuth
     protected function matchAppSecret($app, $secret)
     {
         return ($app['auth_pass'] === $secret);
-    }
-
-    public static function unauthorized()
-    {
-        $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-        $error = $error->getPublicError();
-
-        $httpStatusCode = $error->getHttpStatusCode();
     }
 }

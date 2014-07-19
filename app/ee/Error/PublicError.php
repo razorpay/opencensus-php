@@ -52,12 +52,12 @@ class PublicError
             500);
     }
 
-    public function setBadRequestError($description, $field = null)
+    public function setBadRequestError($description, $field = null, $httpStatusCode = 400)
     {
         $this->setAttributes(
             PublicErrorCode::BAD_REQUEST_ERROR,
             $description,
-            400);
+            $httpStatusCode);
 
         $this->setField($field);
     }

@@ -13,16 +13,8 @@
 
 App::before(function($request)
 {
-    if ((isset($_SERVER['HTTP_HOST'])) and
-        ($_SERVER['HTTP_HOST'] == 'api.razorpay.com') and
-        (Request::secure() === false))
-    {
-        $response['error']['message'] = "Razorpay API is only available over HTTPS";
-
-        $response['error']['code'] = "BAD_REQUEST_ERROR";
-
-        return Response::json($response);
-    }
+    if ($request->secure() === false)
+        return BasicAuth::checkHttps($request);
 });
 
 //
@@ -30,7 +22,7 @@ App::before(function($request)
 //
 App::after(function($request, $response)
 {
-    Http\ApiResponse::setHeaders($request, $response);
+    Http\ApiResponse::stopBrowserCaching($request, $response);
 });
 
 /*

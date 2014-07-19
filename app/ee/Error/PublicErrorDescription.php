@@ -81,4 +81,19 @@ class PublicErrorDescription
 
     const BAD_REQUEST_CURRENCY_NOT_SUPPORTED =
         'Invalid currency. Currently only INR is supported.';
+
+    const BAD_REQUEST_ONLY_HTTPS_ALLOWED =
+        'Razorpay API is only available over HTTPS.';
+
+    const BAD_REQUEST_UNAUTHORIZED =
+        'Please provide your api key for authentication purposes.';
+
+    const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY =
+        'The api key provided is invalid';
+
+    const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET =
+        'The api secret provided is invalid';
+
+    const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED =
+        'Please provide api secret';
 }

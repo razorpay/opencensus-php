@@ -185,9 +185,25 @@ class Error
         $desc = $this->getDesc();
         $field = $this->getField();
 
+        $httpStatusCode = 400;
+
+        switch($code)
+        {
+            case ErrorCode::BAD_REQUEST_UNAUTHORIZED:
+            case ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY:
+            case ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET:
+            case ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED:
+                $httpStatusCode = 401;
+                break;
+            case ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED:
+                $httpStatusCode = 403;
+                break;
+        }
+
         $this->publicError->setBadRequestError(
             $desc,
-            $field);
+            $field,
+            $httpStatusCode);
     }
 
     protected function handleGatewayErrors()
