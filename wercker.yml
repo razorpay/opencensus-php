@@ -28,7 +28,7 @@ build:
           code: mkdir ./report
       - script:
           name: run unit tests
-          code: phpunit --coverage-html ./report
+          code: phpunit --debug --verbose --coverage-html ./report
       - s3sync:
           key_id: $WERCKER_CODE_COVERAGE_AWS_ACCESS_KEY_ID
           key_secret: $WERCKER_CODE_COVERAGE_AWS_SECRET_ACCESS_KEY
