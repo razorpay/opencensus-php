@@ -24,10 +24,12 @@ Validator::extend('luhn', function($attribute, $value, $parameters)
 
 	for ($i = $len - 1; $i >= 0; $i--)
 	{
-		try{
+		try
+        {
 			$sum += $sumTable[$flip++ & 0x1][$number[$i]];
 		}
-		catch(ErrorException $e){
+		catch(ErrorException $e)
+        {
 			return false;
 		}
 	}
