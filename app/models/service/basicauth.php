@@ -158,6 +158,8 @@ class BasicAuth extends \Singleton
     {
         $apps = \Config::get('applications');
 
+        $verify = false;
+
         foreach ($apps as $name => $app)
         {
             $match = $this->matchAppSecret($app, $secret);
@@ -178,5 +180,14 @@ class BasicAuth extends \Singleton
     protected function matchAppSecret($app, $secret)
     {
         return ($app['auth_pass'] === $secret);
+    }
+
+    public static function unauthorized()
+    {
+        $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+
+        $error = $error->getPublicError();
+
+        $httpStatusCode = $error->getHttpStatusCode();
     }
 }
