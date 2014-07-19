@@ -1,11 +1,14 @@
 <?php
 
-namespace Models\Service;
+namespace Http\BasicAuth;
 
 use Models\Key;
 use Models\Merchant;
+use Request;
+use Response;
+use EE;
 
-class BasicAuth extends \Singleton
+class BasicAuth
 {
     /**
      * Key used for authentication
@@ -23,6 +26,106 @@ class BasicAuth extends \Singleton
     private $merchant = null;
 
     private $app = null;
+
+    protected function areCredentialsSet($request)
+    {
+        list($id, $pwd) = $this->getCredentials($request);
+
+        if (($id === null) or
+            ($pwd === null))
+            return false;
+
+        return true;
+    }
+
+    protected function getCredentials($request)
+    {
+        $id = $request->getUser();
+
+        $pwd = $request->getPassword();
+
+        return array($id, $pwd);
+    }
+
+    public function privateAuth($route, $request)
+    {
+        if ($this->areCredentialsSet($request) === false)
+        {
+            return Response::httpAuthExpected();
+        }
+
+        list($id, $pwd) = $this->getCredentials($request);
+
+        if ($this->verifySecret($id, $pwd) === true)
+            return;
+
+        //
+        // @todo: add check for internal IP here
+        //
+        if ($this->verifyApp($id, $pwd) === true)
+            return;
+
+        $error = new EE\Error\Error(
+            EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+
+        $error = $error->getPublicError();
+
+        $httpStatusCode = $error->getHttpStatusCode();
+
+        return Response::json($error->toArray(), $httpStatusCode);
+    }
+
+    /**
+     * Allows requests with public keys to get through.
+     * Also allows private key based requests too
+     */
+    public function publicAuth($route, $request)
+    {
+        if ($this->areCredentialsSet($request) === false)
+        {
+            return Response::httpAuthExpected();
+        }
+
+        list($id, $pwd) = $this->getCredentials($request);
+
+        if ($this->verifyPublic($id) === false)
+        {
+            if ($this->verifySecret($id, $pwd) === false)
+            {
+                $error = new EE\Error\Error(
+                    EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+
+                $error = $error->getPublicError();
+
+                $httpStatusCode = $error->getHttpStatusCode();
+
+                return Response::json($error->toArray(), $httpStatusCode);
+            }
+        }
+
+    }
+
+    public function appAuth($route, $request)
+    {
+        if ($this->areCredentialsSet($request) === false)
+        {
+            return Response::httpAuthExpected();
+        }
+
+        list($id, $pwd) = $this->getCredentials($request);
+
+        if ($this->verifyApp($id, $pwd) === false)
+        {
+            $error = new EE\Error\Error(
+                EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+
+            $error = $error->getPublicError();
+
+            $httpStatusCode = $error->getHttpStatusCode();
+
+            return Response::json($error->toArray(), $httpStatusCode);
+        }
+    }
 
     /**
      * Checks if given key id is present
@@ -71,6 +174,10 @@ class BasicAuth extends \Singleton
      */
     public function verifyPublic($keyId)
     {
+        //
+        // If the key is fetched successfully, then
+        // public authentication is essentially successfully.
+        //
         $key = $this->fetchKey($keyId);
 
         if ($key === null)

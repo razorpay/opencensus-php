@@ -1,7 +1,5 @@
 <?php
 
-use Models\Service\BasicAuth;
-
 /*
 |--------------------------------------------------------------------------
 | Application & Route Filters
@@ -83,72 +81,13 @@ Response::macro('routeNotFound', function()
     return Response::json($error->toArray(), $httpStatusCode);
 });
 
-if (! function_exists('isBasicAuthUserAndPwdNotSet'))
-{
-
-    /**
-     * Checks whether basic auth user and pwd are set
-     * or not
-     *
-     * @return boolean
-     */
-    function isBasicAuthUserAndPwdNotSet()
-    {
-        return ((isset($_SERVER['PHP_AUTH_PW']) === false) or
-                (isset($_SERVER['PHP_AUTH_USER']) === false));
-    }
-}
-
-if (! function_exists('basicAuthVerifySecret'))
-{
-    function basicAuthVerifySecret()
-    {
-        return BasicAuth::getInstance()
-                        ->verifySecret(
-                            $_SERVER['PHP_AUTH_USER'],
-                            $_SERVER['PHP_AUTH_PW']);
-    }
-}
-
-if (! function_exists('basicAuthVerifyApp'))
-{
-    function basicAuthVerifyApp()
-    {
-        return BasicAuth::getInstance()
-                        ->verifyApp(
-                            $_SERVER['PHP_AUTH_USER'],
-                            $_SERVER['PHP_AUTH_PW']);
-    }
-}
-
 /**
  * Only allows requests with secret keys to get through.
  */
-Route::filter('auth.private', function($route, $request)
+Route::filter('auth.private',  function($route, $request)
 {
-    if (isBasicAuthUserAndPwdNotSet())
-    {
-        return Response::httpAuthExpected();
-    }
-
-    if (basicAuthVerifySecret() === false)
-    {
-        //
-        // @todo: add check for internal IP here
-        //
-        if (basicAuthVerifyApp() === false)
-        {
-            $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-            $error = $error->getPublicError();
-
-            $httpStatusCode = $error->getHttpStatusCode();
-
-            return Response::json($error->toArray(), $httpStatusCode);
-        }
-    }
+    BasicAuth::privateAuth($route, $request);
 });
-
 
 /**
  * Allows requests with public keys to get through.
@@ -156,45 +95,12 @@ Route::filter('auth.private', function($route, $request)
  */
 Route::filter('auth.public', function($route, $request)
 {
-    if (isBasicAuthUserAndPwdNotSet())
-    {
-        return Response::httpAuthExpected();
-    }
-
-    $ba = BasicAuth::getInstance();
-
-    if ($ba->verifyPublic($_SERVER['PHP_AUTH_USER']) === false)
-    {
-        if (basicAuthVerifySecret() === false)
-        {
-            $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-            $error = $error->getPublicError();
-
-            $httpStatusCode = $error->getHttpStatusCode();
-
-            return Response::json($error->toArray(), $httpStatusCode);
-        }
-    }
+    BasicAuth::publicAuth($route, $request);
 });
 
 Route::filter('auth.app', function($route, $request)
 {
-    if (isBasicAuthUserAndPwdNotSet())
-    {
-        return Response::httpAuthExpected();
-    }
-
-    if (basicAuthVerifyApp() === false)
-    {
-            $error = new EE\Error\Error(EE\Error\ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-
-            $error = $error->getPublicError();
-
-            $httpStatusCode = $error->getHttpStatusCode();
-
-            return Response::json($error->toArray(), $httpStatusCode);
-    }
+    BasicAuth::appAuth($route, $request);
 });
 
 /*

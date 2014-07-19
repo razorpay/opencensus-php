@@ -1,18 +1,15 @@
 <?php
 
 use Models\Transaction\Service as Transaction;
-use Models\Service\BasicAuth;
 use Constants\Field;
 
 class TransactionController extends BaseController
 {
-    protected $basicAuth = null;
     protected $merchantId = null;
 
     public function __construct()
     {
-        $this->basicAuth = BasicAuth::getInstance();
-        $this->merchantId = $this->basicAuth->getMerchantId();
+        $this->merchantId = BasicAuth::getMerchantId();
     }
 
     public function getTxnById($id)

@@ -13,7 +13,7 @@ class Core extends Base\UniqueIdEntity
 
     public function __construct()
     {
-        $this->merchant = \Models\Service\BasicAuth::getInstance()->getMerchant();
+        $this->merchant = \BasicAuth::getMerchant();
     }
 
     public function recordCapture(Transaction\Entity $txn)
