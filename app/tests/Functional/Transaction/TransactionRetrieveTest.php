@@ -4,6 +4,7 @@ namespace Tests\Functional\Transaction;
 
 use Laracasts\TestDummy\Factory;
 use Tests\Functional\TestCase;
+use Tests\Functional\RequestResponseFlowTrait;
 
 /**
  * Tests that retreieving of transactions is working fine.
@@ -13,16 +14,22 @@ use Tests\Functional\TestCase;
 
 class TransactionRetrieveTest extends TestCase
 {
+    use RequestResponseFlowTrait;
+
     public function setUp()
     {
         parent::setUp();
 
         $transaction = $this->createEntity('transaction', ['merchant_id' => 1]);
+
+        $this->request = array(
+            'method' => 'GET',
+            'url' => '/transactions');
     }
 
     protected function retrieveTransactionsDefault()
     {
-        $response = $this->call('GET', '/transactions');
+        $response = $this->makeRequest($this->request);
 
         $content = $response->getContent();
 
@@ -40,7 +47,7 @@ class TransactionRetrieveTest extends TestCase
     {
         //GIVEN - Nothing
         //WHEN
-        $response = $this->call('GET', '/transactions');
+        $response = $this->makeRequest($this->request);
 
         $content = $response->getContent();
 
@@ -61,7 +68,11 @@ class TransactionRetrieveTest extends TestCase
         $id = $transactions->data[0]->id;
 
         //WHEN
-        $response = $this->call('GET', "/transactions/$id");
+        $request = $this->request;
+        $request['url'] .= '/'.$id;
+
+        $response = $this->makeRequest($request);
+
         $content = $response->getContent();
 
         //THEN
@@ -83,8 +94,11 @@ class TransactionRetrieveTest extends TestCase
         $status = $transactions->data[0]->status;
         $id = $transactions->data[0]->id;
 
+        $request = $this->request;
+        $request['content'] = array('count' => 1, 'status' => $status);
         //WHEN
-        $response = $this->call('GET', "/transactions/?count=1&status=".$status);
+        $response = $this->makeRequest($request);
+//        $response = $this->call('GET', "/transactions/?count=1&status=".$status);
         $content = $response->getContent();
 
         //THEN

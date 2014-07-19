@@ -24,6 +24,8 @@ class TestCase extends ParentTestCase
         'transaction' => 'Models\Transaction\Entity',
         'balance' => 'Models\Merchant\Balance');
 
+    protected $auth = array();
+
     public function setUp()
     {
         parent::setUp();
@@ -69,9 +71,9 @@ class TestCase extends ParentTestCase
      */
     protected function setupBasicAuthParams()
     {
-        // Auth
-        $_SERVER['PHP_AUTH_USER'] = 'd9c6bf091a1a64cb5678d8c1';
-        $_SERVER['PHP_AUTH_PW'] = 'thisissupersecret';
+        $this->auth = array(
+               'PHP_AUTH_USER' => 'd9c6bf091a1a64cb5678d8c1',
+               'PHP_AUTH_PW' => 'thisissupersecret');
     }
 
     public function tearDown()

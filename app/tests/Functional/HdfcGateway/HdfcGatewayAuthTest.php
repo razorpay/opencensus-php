@@ -41,8 +41,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testCardTimeout()
     {
-        echo "\nTesting: CC Transaction \n";
-        echo "Expected Response: Timeout Transaction \n";
         $this->startTest();
     }
 
@@ -52,8 +50,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testCreditCardSuccess()
     {
-        echo "\nTesting: CC Transaction \n";
-        echo "Expected Response: Successful Auth \n";
         $this->startTest();
     }
 
@@ -64,8 +60,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testCreditCardAuthNotAvailable1()
     {
-        echo "\nTesting: CC transaction \n";
-        echo "Expected Response: Fails with Auth Not Available error. \n";
         $this->startTest();
     }
 
@@ -76,8 +70,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testCreditCardAuthNotAvailable2()
     {
-        echo "\nTesting: CC transaction \n";
-        echo "Expected Response: Fails with Auth Not Available error. \n";
         $this->startTest([3]);
     }
 
@@ -88,8 +80,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testSignatureFailure1()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Fails with Signature Failure error. \n";
         $this->startTest();
     }
 
@@ -100,8 +90,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testSignatureFailure2()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Fails with Signature Failure error. \n";
         $this->startTest();
     }
 
@@ -111,8 +99,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testDebitCardSuccess1()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Successful Auth \n";
         $this->startTest([6]);
     }
 
@@ -122,8 +108,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testDebitCardSuccess2()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Successful Auth \n";
         $this->startTest();
     }
 
@@ -133,8 +117,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testDebitCardSuccess3()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Successful Auth \n";
         $this->startTest();
     }
 
@@ -145,8 +127,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testParesNotSuccess()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Fails with Pares Not Success error. \n";
         $this->startTest();
     }
 
@@ -157,8 +137,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testDebitCardAuthNotAvailable1()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Fails with Auth Not Available error. \n";
         $this->startTest();
     }
 
@@ -169,8 +147,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testDebitCardAuthNotAvailable2()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Fails with Auth Not Available error. \n";
         $this->startTest();
     }
 
@@ -180,8 +156,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testDebitCardSuccess4()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Sucessfull Auth \n";
         $this->startTest();
     }
 
@@ -191,8 +165,6 @@ class HdfcGatewayAuthTest extends TestCase
      */
     public function testDebitCardSuccess5()
     {
-        echo "\nTesting: DC transaction \n";
-        echo "Expected Response: Successful Auth \n";
         $this->startTest();
     }
 

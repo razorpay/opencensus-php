@@ -91,10 +91,17 @@ trait RequestResponseFlowTrait
 
     protected function makeRequest($request)
     {
+        $server = $this->auth;
+
+        if (isset($request['content']) === false)
+            $request['content'] = array();
+
         $response = $this->call(
             $request['method'],
             $request['url'],
-            $request['content']);
+            $request['content'],
+            array(),
+            $server);
 
         return $response;
     }

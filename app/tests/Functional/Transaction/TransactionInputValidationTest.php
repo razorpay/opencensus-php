@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Functional\Transaction;
+
 use Tests\Functional\TestCase;
 use Tests\Functional\Transaction\TransactionAuthFlowTrait;
 

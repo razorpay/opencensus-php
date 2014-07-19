@@ -1,17 +1,13 @@
 <?php
 
+namespace Tests\Functional\Merchant;
+
 use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
 
 class MerchantTest extends TestCase
 {
     use RequestResponseFlowTrait;
-
-    protected $merchantId = null;
-
-    protected $keyId = null;
-
-    protected $keySecret = null;
 
     public function setUp()
     {
@@ -25,23 +21,11 @@ class MerchantTest extends TestCase
         $this->testData = include(__DIR__.'/helpers/MerchantData.php');
     }
 
-    /**
-     */
     protected function setupAppBasicAuthParams($user, $pwd = 'DASHBOARD_AUTH_PASS')
     {
-        // Auth
-        $_SERVER['PHP_AUTH_USER'] = $user;
-        $_SERVER['PHP_AUTH_PW'] = $pwd;
-    }
-
-    protected function setupMerchantAsBaiscAuthUser($merchantId)
-    {
-        $_SERVER['PHP_AUTH_USER'] = $merchantId;
-    }
-
-    protected function setupMerchantSecretAsBasicAuthSecret($secret)
-    {
-        $_SERVER['PHP_AUTH_PW'] = $secret;
+        $this->auth = array(
+               'PHP_AUTH_USER' => $user,
+               'PHP_AUTH_PW' => $pwd);
     }
 
     /**
