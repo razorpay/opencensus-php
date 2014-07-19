@@ -23,14 +23,14 @@ if (! function_exists('validate'))
 
         if (count($invalid_keys) !== 0)
         {
-            throw new \Exceptions\ExtraFieldsException($invalid_keys);
+            throw new \EE\Exception\ExtraFieldsException($invalid_keys);
         }
 
         $validation = Validator::make($data, $rules);
 
         if ($validation->fails())
         {
-            throw new \Exceptions\InvalidArgumentException($validation->messages()->all());
+            throw new \EE\Exception\InvalidArgumentException($validation->messages()->all());
         }
 	}
 }
