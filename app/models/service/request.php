@@ -18,7 +18,7 @@ class Request extends Service
     {
         $options = ['auth' => [self::$ID,self::$PASSWORD]];
         $response = \Requests::post(\Config::get('api.url') . $url, array(), $data, $options);
-        return json_decode($response->body);
+        return json_decode($response->body, true);
     }
 
     public static function PUT($url, $data = [])

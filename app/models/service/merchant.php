@@ -15,14 +15,13 @@ class Merchant extends Service
         {
             $merchant_data = DAL\Merchant::createOrFail($data)->toArray();
 
-            $key_data = Manager\Key::generateKeyData();
+            $merchant_api_data = array('id' => $merchant_data['id']);
 
-            $merchant_key_data = Manager\Merchant::mergeMerchantAndKey($merchant_data, $key_data);
+            Request::setCredentials($merchant_api_data['id']);
+            
+            $response = Request::POST('merchants', $merchant_api_data);
 
-            Request::setCredentials($merchant_key_data['merchant_id']);
-            $response = Request::POST('merchants', $merchant_key_data);
-
-            $data = array_merge($merchant_data, $key_data);
+            $data = array_merge($merchant_data, $response);
         }
 
         return [$error, $data];

@@ -49,7 +49,7 @@ class MerchantController extends BaseController
         }
         else
         {
-            return View::make('merchants.getRegister')
+            return Redirect::action('MerchantController@getRegister')
                 ->with('data', $data)
                 ->with('error', $error);
         }
