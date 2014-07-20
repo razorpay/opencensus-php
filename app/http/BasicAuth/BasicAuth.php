@@ -68,13 +68,13 @@ class BasicAuth
         $response = $this->verifySecret($id, $pwd);
 
         if ($response === true)
-            return true;
+            return;
 
         //
         // @todo: add check for internal IP here
         //
         if ($this->verifyApp($id, $pwd) === true)
-            return true;
+            return;
 
         return $response;
     }
@@ -108,8 +108,6 @@ class BasicAuth
         {
             ApiResponse::routeNotFound();
         }
-
-        return true;
     }
 
     /**
@@ -180,8 +178,6 @@ class BasicAuth
         }
 
         $this->fetchMerchantOfKey($key);
-
-        return true;
     }
 
     /**
@@ -226,12 +222,14 @@ class BasicAuth
 
     public function getMerchantId()
     {
-        if ($this->merchant === null)
-            return;
-
         $id = $this->merchant->getKey();
 
         return (int) $id;
+    }
+
+    public function getPublicKey()
+    {
+        return $this->key->getKey();
     }
 
     protected function fetchKey($keyId)

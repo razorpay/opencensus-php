@@ -18,15 +18,15 @@ use Constants\URL;
  | make sure to run the full test suite
  */
 
-$method = URL::TXN_CALLBACK_METHOD;
-Route::$method(
-    URL::TXN_CALLBACK_URL,
-    'TransactionController@postCallback');
-
 Route::group(array('after' => 'sameorigin'), function()
 {
     Route::group(array('before' => 'auth.public'), function()
     {
+        $method = URL::TXN_CALLBACK_METHOD;
+        Route::$method(
+            URL::TXN_CALLBACK_URL,
+            'TransactionController@postCallback');
+
         $method = URL::TXN_CREATE_METHOD;
         Route::$method(
             URL::TXN_CREATE_URL,

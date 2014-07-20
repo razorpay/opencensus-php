@@ -155,6 +155,8 @@ class Core
             // will be used to display form.
             //
 
+            $this->attachCallbackUrl($callbackData, $txn);
+
             return $callbackData;
         }
 
@@ -278,6 +280,21 @@ class Core
         }
 
         return $txn;
+    }
+
+    protected function attachCallbackUrl(& $callbackData, $txn)
+    {
+        $callbackUrl = \Constants\URL::TXN_CALLBACK_URL;
+
+        $pos = strrpos($callbackUrl, '/');
+
+        $callbackUrl = substr($callbackUrl, 0, $pos);
+
+        $callbackUrl .= '/' . $txn->getPublicId();
+
+        $callbackUrl = \Request::getScheme() . '://' . \BasicAuth::getPublicKey() . '@' . \Request::getHost() . '/' . $callbackUrl;
+
+        $callbackData['callbackUrl'] = $callbackUrl;
     }
 
     protected function updateTransactionSuccess($txn, $status)
@@ -409,6 +426,7 @@ class Core
     public function retrieveTransaction($id, $merchantId)
     {
         Transaction\Entity::verifyIdAndStripSign($id);
+//sd($id, $merchantId);
 
         $txn = $this->txnRepo->findByIdAndMerchantId($id, $merchantId);
 

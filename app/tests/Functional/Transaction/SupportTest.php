@@ -57,17 +57,17 @@ class SupportTest extends TestCase
     {
         // WHEN
         // call for capture of transactions
-        $response = $this->call('POST', '/transactions/'.$id.'/capture', array('amount'=>$amount));
+        $response = $this->call('POST', '/transactions/'.$id.'/capture', array('amount'=>$amount), array(), $this->auth);
         $content = $response->getContent();
 
         // THEN
         // ensure output is json
         $this->assertJson($content);
-        $capture = json_decode($content);
+        $capture = json_decode($content, true);
 
         // Check if transaction id matches, and captured sucessfully
-        $this->assertEquals($id, $capture->id);
-        $this->assertEquals('captured', $capture->status);
+        $this->assertEquals($id, $capture['id']);
+        $this->assertEquals('captured', $capture['status']);
     }
 
     /**
@@ -77,16 +77,16 @@ class SupportTest extends TestCase
     {
         //WHEN
         //call for refund of transactions
-        $response = $this->action('POST', 'TransactionController@postRefund',  array('id' => $id));
+        $response = $this->call('POST', '/transactions/'.$id.'/refund',  array('id' => $id), array(), $this->auth);
         $content=$response->getContent();
 
         //THEN
         //ensure output is json
         $this->assertJson($content);
-        $refund=json_decode($content);
+        $refund = json_decode($content, true);
 
         //Check if transaction id matches, and refunded sucessfully
-        $this->assertEquals($id, $refund->id);
-        $this->assertEquals('refunded', $refund->status);
+        $this->assertEquals($id, $refund['id']);
+        $this->assertEquals('refunded', $refund['status']);
     }
 }

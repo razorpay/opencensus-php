@@ -121,12 +121,13 @@ class TransactionRetrieveTest extends TestCase
         $created_at = $transactions->data[0]->created_at;
 
         //WHEN
-        $response = $this->call('GET', "/transactions/?created=".$created_at);
+        $response = $this->call('GET', "/transactions/?created=".$created_at, array(), array(), $this->auth);
         $content = $response->getContent();
 
         //THEN
         $this->assertJson($content);
         $transaction = json_decode($content);
+
         $this->assertEquals($id, $transaction->data[0]->id);
     }
 }

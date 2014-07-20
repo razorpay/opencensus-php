@@ -41,21 +41,20 @@ App::after(function($request, $response)
  */
 Route::filter('auth.private',  function($route, $request)
 {
-    BasicAuth::privateAuth($route, $request);
+    return BasicAuth::privateAuth($route, $request);
 });
 
 /**
  * Allows requests with public keys to get through.
- * Also allows private key based requests too
  */
 Route::filter('auth.public', function($route, $request)
 {
-    BasicAuth::publicAuth($route, $request);
+    return BasicAuth::publicAuth($route, $request);
 });
 
 Route::filter('auth.app', function($route, $request)
 {
-    BasicAuth::appAuth($route, $request);
+    return BasicAuth::appAuth($route, $request);
 });
 
 /*
