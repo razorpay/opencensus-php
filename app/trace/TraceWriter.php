@@ -134,7 +134,7 @@ class TraceWriter extends Logger
 
     protected function unsetUrlForSensitiveUrls(& $server)
     {
-        $sensitiveUrls = \Constants\URL::getDoNotLogURLs();
+        $sensitiveUrls = \Http\URL::getDoNotLogURLs();
 
         if (in_array($server['request_url'], $sensitiveUrls))
         {

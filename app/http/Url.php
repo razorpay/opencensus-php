@@ -1,6 +1,6 @@
 <?php
 
-namespace Constants;
+namespace Http;
 
 final class URL
 {

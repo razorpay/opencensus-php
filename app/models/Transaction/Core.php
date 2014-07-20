@@ -285,7 +285,7 @@ class Core
 
     protected function attachCallbackUrl(& $callbackData, $txn)
     {
-        $urlSegment = \Constants\URL::TXN_CALLBACK_URL;
+        $urlSegment = \Http\URL::TXN_CALLBACK_URL;
 
         $pos = strrpos($urlSegment, '/');
 
