@@ -18,7 +18,7 @@ class Merchant extends Service
             $merchant_api_data = array('id' => $merchant_data['id']);
 
             Request::setCredentials($merchant_api_data['id']);
-            
+
             $response = Request::POST('merchants', $merchant_api_data);
 
             $data = array_merge($merchant_data, $response);
@@ -74,8 +74,8 @@ class Merchant extends Service
 
             $response = Request::PUT($url, $arr);
 
-            if ((isset($response->old) === false) or
-                (isset($response->new) === false))
+            if ((isset($response['old']) === false) or
+                (isset($response['new']) === false))
             {
                 return ['status' => false];
             }
@@ -83,8 +83,8 @@ class Merchant extends Service
             $key_data = array(
                 'old_id' => $data['id'],
                 'merchant_id' => $input['merchant_id'],
-                'key_id' => $response->new->id,
-                'secret' => $response->new->secret,
+                'key_id' => $response['new']['id'],
+                'secret' => $response['new']['secret'],
                 'status' => true);
 
             return $key_data;
