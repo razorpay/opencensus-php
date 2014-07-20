@@ -192,15 +192,6 @@ class Gateway extends BaseGateway
         'card', 'expmonth', 'expyear', 'cvv2', 'PAReq', 'zip', 'addr', 'PaRes', 'number', 'cvv'
     );
 
-    /**
-     * For ENROLLED card cases, we submit a form to bank ACS
-     * which redirects back to this url (on our server) after
-     * the customer enter's the requisite details
-     *
-     * @var string
-     */
-    protected $callbackUrl;
-
     protected $bankAcsResponseRules = array(
         'PaRes' => 'required',
         'MD'    => 'required|numeric|digits_between:1,19',
@@ -219,8 +210,6 @@ class Gateway extends BaseGateway
     public function __construct()
     {
         parent::__construct();
-
-        $this->callbackUrl = \URL::to(\Constants\URL::TXN_CALLBACK_URL);
 
         $this->repo = new Hdfc\Repository();
     }

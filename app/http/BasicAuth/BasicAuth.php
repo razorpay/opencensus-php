@@ -25,6 +25,12 @@ class BasicAuth
      */
     private $merchant = null;
 
+    /**
+     * During app authentication, the app
+     * which has been authenticated.
+     *
+     * @var string
+     */
     private $app = null;
 
     public function checkHttps($request)

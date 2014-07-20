@@ -139,7 +139,7 @@ class Service extends Base\Service
      */
     public function bankAcsCallback($id, $merchantId, array $input)
     {
-//        Transaction\Entity::verifyIdAndStripSign($id);
+        Transaction\Entity::verifyIdAndStripSign($id);
 
         //
         // This field is received back from bank acs.
@@ -147,8 +147,7 @@ class Service extends Base\Service
         //
         unset($input['csrf']);
 
-//        $txn = (new Transaction\Repository)->findOrFail($id);
-        $txn = $this->core->retrieveTransaction($id, $merchantId);
+        $txn = (new Transaction\Repository)->findOrFail($id);
 
         $input['txn'] = $txn->toArray();
 

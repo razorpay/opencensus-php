@@ -145,7 +145,7 @@ class Core
         if ($callbackData !== null)
         {
             //
-            // This case means that card (DC) is enrolled.
+            // This case means that card is enrolled.
             // Now a form will be displayed and submitted
             // to bank ACS for for customer to enter 3d-secure
             // or OTP.
@@ -247,7 +247,8 @@ class Core
 
     /**
      * Refunds a transaction
-     * Pass \Transaction\Entity object as argument
+     * @param  Transaction\Entity $txn
+     * @return Transaction\Entity
      */
     public function refund(Transaction\Entity $txn)
     {
@@ -284,15 +285,19 @@ class Core
 
     protected function attachCallbackUrl(& $callbackData, $txn)
     {
-        $callbackUrl = \Constants\URL::TXN_CALLBACK_URL;
+        $urlSegment = \Constants\URL::TXN_CALLBACK_URL;
 
-        $pos = strrpos($callbackUrl, '/');
+        $pos = strrpos($urlSegment, '/');
 
-        $callbackUrl = substr($callbackUrl, 0, $pos);
+        $urlSegment = substr($urlSegment, 0, $pos);
 
-        $callbackUrl .= '/' . $txn->getPublicId();
+        $urlSegment .= '/' . $txn->getPublicId();
 
-        $callbackUrl = \Request::getScheme() . '://' . \BasicAuth::getPublicKey() . '@' . \Request::getHost() . '/' . $callbackUrl;
+        $scheme = \Request::getScheme().'://';
+        $key = \BasicAuth::getPublicKey();
+        $host = \Request::getHost();
+
+        $callbackUrl = $scheme . $key . '@' . $host . '/' . $urlSegment;
 
         $callbackData['callbackUrl'] = $callbackUrl;
     }

@@ -49,17 +49,8 @@ trait AuthTransactionTrait
     {
         $enrollResponse = $this->enrollResponse;
 
-        $callbackUrl = $this->callbackUrl;
-
-        $pos = strrpos($callbackUrl, '/');
-
-        $callbackUrl = substr($callbackUrl, 0, $pos);
-
-        $callbackUrl .= '/' . 'txn-' . $this->id;
-
         return array(
-                'data' => $enrollResponse['data'],
-                'callbackUrl' => $callbackUrl);
+                'data' => $enrollResponse['data']);
     }
 
 

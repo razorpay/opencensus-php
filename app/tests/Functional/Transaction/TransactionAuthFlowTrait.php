@@ -209,6 +209,12 @@ trait TransactionAuthFlowTrait
     {
         $arr = explode("\n", $content);
 
+        if (isset($arr[67]) === false)
+        {
+            var_dump($arr);
+            throw new \Exception('some error occured');
+        }
+
         //
         // Actual output is JS, but line 63 of the
         // output contains the data in JSON
