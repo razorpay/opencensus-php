@@ -249,7 +249,7 @@ $(document).ready(function()
         renderTransactionsList: function(data, div) {
             var html = '';
             if (data.length === 0)
-                html = "<div class='error'>Abe Koi Txn Karega Tab Dikhega Na.</div>";
+                html = "<div class='error'>No Transactions Found.</div>";
             else
                 for (var i in data)
                     html += '<li class="transaction-list-item"><a href="#!/transactions/'+data[i].transaction_id+'" class="grid"><div class="col-1-2"><span class="amount col-1-4">₹' + data[i].amount + '</span><span class="id col-9-12">' + data[i].transaction_id + '</span></div><span class="status col-1-4">' + data[i].status + '</span><span class="date col-1-4">' + moment(data[i].updated_at, 'X').format('DD-MM-YYYY HH:mm') + '</span></a></li>';
@@ -300,6 +300,7 @@ $(document).ready(function()
 
         renderKeys: function(data) {
             var html = '';
+            data = data.data;
             for (var i in data) {
                 var mode = (data[i].live == '0') ? 'Test' : 'Live';
                 var expires = (data[i].expired_at === null) ? false : true;

@@ -33,6 +33,6 @@ class Request extends Service
         $qs = http_build_query($data);
         $options = ['auth' => [self::$ID,self::$PASSWORD]];
         $response = \Requests::get(\Config::get('api.url') . $url . '?' . $qs, array(), $options);
-        return json_decode($response->body);
+        return json_decode($response->body, true);
     }
 }
