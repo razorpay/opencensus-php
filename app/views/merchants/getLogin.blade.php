@@ -25,9 +25,9 @@
                         Don't have a Razorpay account? <a href="/register">Sign Up</a> today.
                     </div>
                 </div>
-                @if (isset($error) && !empty($error))
+                @if (Session::has('error'))
                     <ul class="error-message">
-                    @foreach($error as $message)
+                    @foreach(Session::get('error') as $message)
                         <li>{{ $message }}</li>
                     @endforeach
                     </ul>

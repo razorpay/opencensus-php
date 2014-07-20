@@ -68,7 +68,8 @@ class PasswordController extends BaseController {
 				return Redirect::back()->with('error', Lang::get($response));
 
 			case Password::PASSWORD_RESET:
-				return Redirect::to('/');
+				return Redirect::action('MerchantController@getLogin')
+									->with('error', array(Lang::get($response)));
 		}
 	}
 

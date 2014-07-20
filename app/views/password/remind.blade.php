@@ -22,7 +22,7 @@
                         {{ Session::get('error') }}
                     </li>
                 </ul>
-                @elseif
+                @else
                 <ul class="success-message">
                     <li>
                         {{ Session::get('status') }}

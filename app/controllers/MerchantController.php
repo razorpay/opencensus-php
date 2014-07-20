@@ -23,7 +23,7 @@ class MerchantController extends BaseController
         if (empty($error))
             return Redirect::action('MerchantController@getIndex');
         else
-            return View::make('merchants.getLogin')
+            return Redirect::action('MerchantController@getLogin')
                 ->with('data', $data)
                 ->with('error', $error);
     }
