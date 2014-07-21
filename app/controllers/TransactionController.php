@@ -1,7 +1,7 @@
 <?php
 
+use Http\ApiResponse;
 use Models\Transaction\Service as Transaction;
-use Constants\Field;
 
 class TransactionController extends BaseController
 {
@@ -16,7 +16,7 @@ class TransactionController extends BaseController
     {
         $txn = (new Transaction)->retrieveById($id, $this->merchantId);
 
-        return Response::json($txn);
+        return ApiResponse::json($txn);
     }
 
     /**
@@ -30,7 +30,7 @@ class TransactionController extends BaseController
 
         $txns = (new Transaction)->retrieveMultiple($input);
 
-        return Response::json($txns);
+        return ApiResponse::json($txns);
     }
 
     /**
@@ -42,7 +42,7 @@ class TransactionController extends BaseController
 
         $input['merchant_id'] = $this->merchantId;
 
-        $txnData = Transaction::getNewInstance()->process($input);
+        $txnData = (new Transaction)->process($input);
 
         //
         // Check for call from API
@@ -54,7 +54,7 @@ class TransactionController extends BaseController
                 ->with('callbackUrl',$txnData['callbackUrl']);
         }
 
-        return Response::json($txnData);
+        return ApiResponse::json($txnData);
     }
 
     /**
@@ -71,7 +71,7 @@ class TransactionController extends BaseController
 
         $txn = (new Transaction)->process($input);
 
-        return Response::json($txn)->setCallback(Input::get('callback'));
+        return ApiResponse::json($txn);
     }
 
     /**
@@ -81,7 +81,7 @@ class TransactionController extends BaseController
     {
         $txn = (new Transaction)->refund($id, $this->merchantId);
 
-        return Response::json($txn);
+        return ApiResponse::json($txn);
     }
 
     /**
@@ -94,7 +94,7 @@ class TransactionController extends BaseController
 
         $txn = (new Transaction)->capture($id, $this->merchantId, $input);
 
-        return Response::json($txn);
+        return ApiResponse::json($txn);
     }
 
     public function postCallback($id)

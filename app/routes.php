@@ -77,7 +77,7 @@ Route::group(array('before' => 'auth.app'), function()
 Route::get('/', function()
 {
     $response['message'] = "Welcome to Razorpay API.";
-    return Response::json($response);
+    return Http\ApiResponse::json($response);
 });
 
 Route::any('{all}', function($uri)

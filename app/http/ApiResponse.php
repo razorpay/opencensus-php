@@ -21,7 +21,7 @@ class ApiResponse
 
     public static function unauthorized($code = ErrorCode::BAD_REQUEST_UNAUTHORIZED)
     {
-        return self::generateResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        return self::generateResponse($code);
     }
 
     public static function routeNotFound()
@@ -29,7 +29,7 @@ class ApiResponse
         return self::generateResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
-    public static function stopBrowserCaching($request, $response)
+    public static function stopBrowserCaching($response)
     {
         //
         // Ask browser not to cache
@@ -44,6 +44,20 @@ class ApiResponse
         $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
     }
 
+    protected static function isJsonpUrl($request)
+    {
+        $urlSegment = $request->path();
+
+        return Url::isJsonpUrl($urlSegment);
+    }
+
+    protected static function attachJsonpCallback($request, $response)
+    {
+        $callback = $request->input('callback');
+        $callback = 'dfsdfsdf';
+        $response->setCallback($callback);
+    }
+
     public static function generateResponse($code)
     {
         $error = new Error($code);
@@ -52,11 +66,34 @@ class ApiResponse
 
         $httpStatusCode = $publicError->getHttpStatusCode();
 
-        return Response::json($publicError->toArray(), $httpStatusCode);
+        return self::json($publicError->toArray(), $httpStatusCode);
     }
 
     public static function serverError()
     {
         return self::generateResponse(ErrorCode::SERVER_ERROR);
+    }
+
+    public static function json($data = array(), $status = 200)
+    {
+        $request = \Request::getFacadeRoot();
+
+        if (self::isJsonpUrl($request))
+        {
+            $data['http_status_code'] = $status;
+
+            $status = 200;
+        }
+
+        $response = Response::json($data, $status);
+
+        if (self::isJsonpUrl($request))
+        {
+            self::attachJsonpCallback($request, $response);
+        }
+
+        self::stopBrowserCaching($response);
+
+        return $response;
     }
 }

@@ -34,12 +34,20 @@ final class URL
             'url' => 'transactions',
             'action' => 'TransactionController@postIndex'));
 
-    protected static $doNotLogURLs = array(
+    protected static $doNotLogUrls = array(
+        self::TXN_JSONP_URL);
+
+    protected static $jsonpUrls = array(
         self::TXN_JSONP_URL);
 
     public static function getDoNotLogURLs()
     {
-        return self::$doNotLogURLs;
+        return self::$doNotLogUrls;
+    }
+
+    public static function isJsonpUrl($url)
+    {
+        return in_array($url, self::$jsonpUrls);
     }
 
     public static function callback($id)

@@ -17,14 +17,6 @@ App::before(function($request)
         return BasicAuth::checkHttps($request);
 });
 
-//
-//  Prevent browser caching
-//
-App::after(function($request, $response)
-{
-    Http\ApiResponse::stopBrowserCaching($request, $response);
-});
-
 /*
 |--------------------------------------------------------------------------
 | Authentication Filters

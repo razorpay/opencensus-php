@@ -3,7 +3,7 @@
 namespace EE\Exception;
 
 use Exception;
-use Response;
+use Http\ApiResponse;
 
 class BaseException extends Exception
 {
@@ -32,6 +32,11 @@ class BaseException extends Exception
         $this->error = $error;
     }
 
+    public function setGatewayErrorCodeAndDesc($code, $desc)
+    {
+        $this->error->setGatewayErrorCodeAndDesc($code, $desc);
+    }
+
     public function getError()
     {
         return $this->error;
@@ -53,7 +58,7 @@ class BaseException extends Exception
 
         $httpStatusCode = $error->getHttpStatusCode();
 
-        return Response::json($error->toArray(), $httpStatusCode);
+        return ApiResponse::json($error->toArray(), $httpStatusCode);
     }
 
     public function generateDebugJsonResponse()
@@ -62,11 +67,6 @@ class BaseException extends Exception
 
         $httpStatusCode = $error->getPublicError()->getHttpStatusCode();
 
-        return Response::json($error->toArray(), $httpStatusCode);
-    }
-
-    public function setGatewayErrorCodeAndDesc($code, $desc)
-    {
-        $this->error->setGatewayErrorCodeAndDesc($code, $desc);
+        return ApiResponse::json($error->toArray(), $httpStatusCode);
     }
 }

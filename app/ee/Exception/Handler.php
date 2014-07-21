@@ -103,9 +103,4 @@ class Handler
     {
         return;
     }
-
-    public function generateJsonResponse(\Exception $exception)
-    {
-        return $exception->generateJsonResponse();
-    }
 }

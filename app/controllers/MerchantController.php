@@ -1,5 +1,6 @@
 <?php
 
+use Http\ApiResponse;
 use Models\Merchant;
 
 class MerchantController extends BaseController
@@ -10,14 +11,16 @@ class MerchantController extends BaseController
 
         $data = (new Merchant\Service)->register($input);
 
-        return Response::json($data);
+        return ApiResponse::json($data);
     }
 
     public function getKeys()
     {
         $merchant_id = BasicAuth::getMerchantId();
 
-        return (new Merchant\Service)->fetchKeys($merchant_id);
+        $data = (new Merchant\Service)->fetchKeys($merchant_id);
+
+        return ApiResponse::json($data);
     }
 
     public function putKeys($id)
@@ -28,6 +31,6 @@ class MerchantController extends BaseController
 
         $keys = (new Merchant\Service)->updateKey($id, $input);
 
-        return json_encode($keys);
+        return ApiResponse::json($keys);
     }
 }
