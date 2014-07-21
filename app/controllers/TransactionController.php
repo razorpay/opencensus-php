@@ -103,7 +103,7 @@ class TransactionController extends BaseController
 
         $data = null;
 
-        \App::foregetMiddleware('Illuminate\Http\FrameGuard');
+        \App::forgetMiddleware('Illuminate\Http\FrameGuard');
 
         try
         {
