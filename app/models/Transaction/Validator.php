@@ -186,6 +186,15 @@ class Validator extends Base\Validator
         }
     }
 
+    public static function bankAcsCallbackValidate($txn, $input)
+    {
+        if ($txn->isOpen() === false)
+        {
+            throw new Exception\BadRequestException(
+                null, ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_PROCCESSED);
+        }
+    }
+
     public static function captureValidate($txn, $input)
     {
         self::failIfCaptured($txn);

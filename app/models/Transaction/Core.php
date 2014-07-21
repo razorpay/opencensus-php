@@ -183,6 +183,8 @@ class Core
     {
         try
         {
+            Transaction\Validator::bankAcsCallbackValidate($txn);
+
             $this->callGatewayFunction(Transaction\Action::CALLBACK, $input);
 
             $this->updateTransactionSuccess($txn, Transaction\Status::AUTHORIZED);
@@ -201,7 +203,7 @@ class Core
     }
 
     /**
-     * Capture a preivous auth transaction
+     * Capture a previous auth transaction
      *
      * @param  Transaction\Entity $txn  Transaction\Entity object
      *
@@ -209,7 +211,7 @@ class Core
      */
     public function capture(Transaction\Entity $txn, array $input = array())
     {
-        (new Transaction\Validator)->captureValidate($txn, $input);
+        Transaction\Validator::captureValidate($txn, $input);
 
         $data = array(
                     'txn' => $txn->toArrayWithCard(),
@@ -431,9 +433,8 @@ class Core
     public function retrieveTransaction($id, $merchantId)
     {
         Transaction\Entity::verifyIdAndStripSign($id);
-//sd($id, $merchantId);
 
-        $txn = $this->txnRepo->findByIdAndMerchantId($id, $merchantId);
+        $txn = $this->txnRepo->findByIdAndMerchantIdOrFailPublic($id, $merchantId);
 
         return $txn;
     }

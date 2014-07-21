@@ -28,6 +28,9 @@ class PublicErrorDescription
     const CARD_ERROR_NOT_SUPPORTED =
         'Card network not currently supported';
 
+    const BAD_REQUEST_TRANSACTION_ALREADY_PROCCESSED =
+        'The transaction has already been processed. Did you press the back button in browser?';
+
     const BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED =
         'This transaction has already been captured';
 
