@@ -99,10 +99,21 @@ class TransactionController extends BaseController
 
     public function postCallback($id)
     {
-        $input = Input::all();
+        $input = Input::get();
 
-        $data = (new Transaction)->bankAcsCallback($id, $this->merchantId, $input);
+        $data = null;
 
-        return View::make('gateway.callback')->with('data', $data);
+        try
+        {
+            $data = (new Transaction)->bankAcsCallback($id, $this->merchantId, $input);
+        }
+        catch (\EE\Exception\RecoverableException $e)
+        {
+            $data = $exception->generatePublicJsonResponse();
+        }
+        finally
+        {
+            return View::make('gateway.callback')->with('data', $data);
+        }
     }
 }
