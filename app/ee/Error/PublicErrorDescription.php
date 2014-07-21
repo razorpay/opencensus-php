@@ -85,7 +85,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED =
         'Razorpay API is only available over HTTPS.';
 
-    const BAD_REQUEST_UNAUTHORIZED =
+    const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED =
         'Please provide your api key for authentication purposes.';
 
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY =

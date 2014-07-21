@@ -8,18 +8,24 @@ use Response;
 
 class ApiResponse
 {
+    protected static $jsonp = null;
+
     /**
      * Tells the browser that HTTP AUTH is expected
      * and hence to provide basic auth user and pwd
      */
     public static function httpAuthExpected()
     {
-        $response = self::generateResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        self::$jsonp = false;
 
-        return $response->header('WWW-Authenticate', 'Basic realm="Protected Area"');
+        $response = self::generateResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
+
+        $response->header('WWW-Authenticate', 'Basic realm="Protected Area"');
+
+        return $response;
     }
 
-    public static function unauthorized($code = ErrorCode::BAD_REQUEST_UNAUTHORIZED)
+    public static function unauthorized()
     {
         return self::generateResponse($code);
     }
@@ -54,7 +60,7 @@ class ApiResponse
     protected static function attachJsonpCallback($request, $response)
     {
         $callback = $request->input('callback');
-        $callback = 'dfsdfsdf';
+
         $response->setCallback($callback);
     }
 
@@ -78,7 +84,9 @@ class ApiResponse
     {
         $request = \Request::getFacadeRoot();
 
-        if (self::isJsonpUrl($request))
+        $jsonp = false;
+
+        if (self::isJsonpRequired($data, $request))
         {
             $data['http_status_code'] = $status;
 
@@ -87,7 +95,7 @@ class ApiResponse
 
         $response = Response::json($data, $status);
 
-        if (self::isJsonpUrl($request))
+        if (self::$jsonp)
         {
             self::attachJsonpCallback($request, $response);
         }
@@ -95,5 +103,13 @@ class ApiResponse
         self::stopBrowserCaching($response);
 
         return $response;
+    }
+
+    protected static function isJsonpRequired($data, $request)
+    {
+        self::$jsonp = ((self::$jsonp !== false) and
+                        (self::isJsonpUrl($request)));
+
+        return self::$jsonp;
     }
 }

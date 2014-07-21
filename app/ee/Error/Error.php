@@ -189,7 +189,7 @@ class Error
 
         switch($code)
         {
-            case ErrorCode::BAD_REQUEST_UNAUTHORIZED:
+            case ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED:
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY:
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET:
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED:

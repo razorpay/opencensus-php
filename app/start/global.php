@@ -14,8 +14,7 @@ use Whoops\Handler\PrettyPageHandler;
 */
 
 ClassLoader::addDirectories(array(
-// For rzp, we are using composer for loading all dirs
-
+    // For rzp, we are using composer for loading all dirs
 ));
 
 /*
