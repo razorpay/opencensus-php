@@ -38,8 +38,7 @@ final class URL
         self::TXN_JSONP_URL);
 
     protected static $jsonpUrls = array(
-        self::TXN_JSONP_URL,
-        self::TXN_CREATE_URL);
+        self::TXN_JSONP_URL);
 
     public static function getDoNotLogURLs()
     {
