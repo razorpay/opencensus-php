@@ -9,7 +9,7 @@ class Error
     protected $attributes = array(
         'class' => null,
         'data' => null,
-        'desc' => null,
+        'description' => null,
         'field' => null,
         'gateway_error_code' => null,
         'gateway_error_desc' => null);
@@ -92,7 +92,7 @@ class Error
             throw new InvalidArgumentException('desc should be string');
         }
 
-        $this->attributes['desc'] = $desc;
+        $this->attributes['description'] = $desc;
     }
 
     protected function setField($field)
@@ -161,7 +161,7 @@ class Error
 
     public function getDesc()
     {
-        return $this->getAttribute('desc');
+        return $this->getAttribute('description');
     }
 
     public function getField()
@@ -230,7 +230,7 @@ class Error
     protected function handleCardErrors()
     {
         $code = $this->getAttribute('code');
-        $desc = $this->getAttribute('desc');
+        $desc = $this->getAttribute('description');
         $field = $this->getAttribute('field');
 
         $this->publicError->setCardError($code, $desc, $field);
@@ -239,7 +239,7 @@ class Error
     protected function handleFieldErrors()
     {
         $code = $this->getAttribute('code');
-        $desc = $this->getAttribute('desc');
+        $desc = $this->getAttribute('description');
         $field = $this->getAttribute('field');
 
         $this->publicError->setFieldError($code, $desc, $field);
