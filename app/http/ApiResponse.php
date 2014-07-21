@@ -25,7 +25,7 @@ class ApiResponse
         return $response;
     }
 
-    public static function unauthorized()
+    public static function unauthorized($code)
     {
         return self::generateResponse($code);
     }
