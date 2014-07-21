@@ -4,11 +4,8 @@ namespace EE\Exception;
 
 use App;
 use Config;
-use Response;
+use Http\ApiResponse;
 use PrettyPageHandler;
-
-use EE\Error\Error;
-use EE\Error\ErrorCode;
 
 class Handler
 {
@@ -25,6 +22,11 @@ class Handler
         App::error(function(\Exception $e, $code)
         {
             return $this->whoopsExceptionDisplayHandler();
+        });
+
+        App::error(function(\Exception $e, $code)
+        {
+            return $this->genericExceptionHandler($e, $code);
         });
 
         //
@@ -70,9 +72,17 @@ class Handler
         }
     }
 
+    public function genericExceptionHandler(\Exception $exception)
+    {
+        if (Config::get('app.debug') === false)
+        {
+            return ApiResponse::serverError();
+        }
+    }
+
     public function baseExceptionHandler(BaseException $exception, $code)
     {
-        if (App::environment('dev'))
+        if (Config::get('app.debug'))
         {
             //
             // Throw ServerErrorException (internal server errors)
