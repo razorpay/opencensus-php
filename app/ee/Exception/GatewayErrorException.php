@@ -5,7 +5,7 @@ namespace EE\Exception;
 use EE\Error\Error;
 use EE\Error\ErrorCode;
 
-class GatewayErrorException extends BaseException
+class GatewayErrorException extends RecoverableException
 {
     public function __construct(
         $code,

@@ -5,7 +5,7 @@ namespace EE\Exception;
 use EE\Error\Error;
 use EE\Error\ErrorCode;
 
-class GatewayTimeoutException extends BaseException
+class GatewayTimeoutException extends RecoverableException
 {
     public function __construct($curlErrorMessage, \Exception $previous = null)
     {

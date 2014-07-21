@@ -2,7 +2,7 @@
 
 namespace EE\Exception;
 
-class FieldErrorException extends BaseException
+class FieldErrorException extends RecoverableException
 {
     use MessageFormats;
 

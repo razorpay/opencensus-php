@@ -5,7 +5,7 @@ namespace EE\Exception;
 use EE\Error\Error;
 use EE\Error\ErrorCode;
 
-class ExtraFieldsException extends BaseException
+class ExtraFieldsException extends RecoverableException
 {
     protected $fields;
 

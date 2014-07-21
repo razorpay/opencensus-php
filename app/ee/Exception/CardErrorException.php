@@ -2,7 +2,7 @@
 
 namespace EE\Exception;
 
-class CardErrorException extends BaseException
+class CardErrorException extends RecoverableException
 {
     use MessageFormats;
 

@@ -2,7 +2,7 @@
 
 namespace EE\Exception;
 
-class BadRequestException extends BaseException
+class BadRequestException extends RecoverableException
 {
     use MessageFormats;
 
