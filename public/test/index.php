@@ -34,7 +34,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 <table border="1" align="center"  width="100%" >
 	<tr>
 	<td align = "left" width = "90%"><font  size = 5 color = darkblue face = verdana ><b>Testing Page</td>
-	<td align = "right"width = "10%"><img SRC="images/fss1.JPG" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
+	<td align = "right"width = "10%"><img SRC="" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
 	</tr>
 </table>
 <br><br>
@@ -105,7 +105,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 <table border="1" align="center"  width="100%" >
 	<tr>
 	<td align="left" width="90%"><font  size = 5 color = darkblue face = verdana ><b>Sample Page</td>
-	<td align="right"width="10%"><IMG SRC="images/fss1.JPG" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
+	<td align="right"width="10%"><IMG SRC="" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
 	</tr>
 </table>
 
