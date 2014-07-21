@@ -54,4 +54,9 @@ class ApiResponse
 
         return Response::json($publicError->toArray(), $httpStatusCode);
     }
+
+    public static function serverError()
+    {
+        return self::generateResponse(ErrorCode::SERVER_ERROR);
+    }
 }
