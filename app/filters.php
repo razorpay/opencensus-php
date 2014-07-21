@@ -13,8 +13,7 @@
 
 App::before(function($request)
 {
-    if ($request->secure() === false)
-        return BasicAuth::checkHttps($request);
+    return BasicAuth::checkHttps($request);
 });
 
 /*
