@@ -5,13 +5,15 @@ namespace EE\Error;
 class ErrorCode
 {
     /**
-     * The error codes are named such that the first word
-     * tells where the error is supposed to originate.
-     * Right now it can be GATEWAY, API, EE, Trace.
-     *
-     * The second word tells us what the error is related to.
-     * Which can be either CARD, TRANSACTION, etc.
+     * The error codes are named such that the first and the second word
+     * tells the error category.
      */
+
+    /**
+     * All internal un-explained and sudden errors are encapsulated
+     * by the following error code.
+     */
+    const SERVER_ERROR                                              = 'SERVER_ERROR';
 
     /**
      * General gateway specific error codes
