@@ -60,7 +60,11 @@ $app->bindInstallPaths(require __DIR__.'/paths.php');
 $framework = $app['path.base'].'/vendor/laravel/framework/src';
 
 require $framework.'/Illuminate/Foundation/start.php';
-App::forgetMiddleware('Illuminate\Http\FrameGuard');
+
+/**
+ * Adds sameorigin to all response headers
+ */
+App::middleware('Illuminate\Http\FrameGuard');
 
 /*
 |--------------------------------------------------------------------------

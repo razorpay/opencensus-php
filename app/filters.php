@@ -77,8 +77,3 @@ Route::filter('csrf', function()
 | iframe support
 |
 */
-
-Route::filter('sameorigin', function($route, $request, $response)
-{
-    $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
-});

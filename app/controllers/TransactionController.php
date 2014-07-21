@@ -103,6 +103,8 @@ class TransactionController extends BaseController
 
         $data = null;
 
+        \App::foregetMiddleware('Illuminate\Http\FrameGuard');
+
         try
         {
             $data = (new Transaction)->bankAcsCallback($id, $this->merchantId, $input);

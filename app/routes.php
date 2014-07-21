@@ -26,46 +26,43 @@ Route::group(array('before' => 'auth.public'), function()
         'TransactionController@postCallback');
 });
 
-Route::group(array('after' => 'sameorigin'), function()
+Route::group(array('before' => 'auth.public'), function()
 {
-    Route::group(array('before' => 'auth.public'), function()
-    {
-        $method = URL::TXN_CREATE_METHOD;
-        Route::$method(
-            URL::TXN_CREATE_URL,
-            'TransactionController@postIndex');
+    $method = URL::TXN_CREATE_METHOD;
+    Route::$method(
+        URL::TXN_CREATE_URL,
+        'TransactionController@postIndex');
 
-        $method = URL::TXN_JSONP_METHOD;
-        Route::$method(
-            URL::TXN_JSONP_URL,
-            'TransactionController@getJSONP');
-    });
+    $method = URL::TXN_JSONP_METHOD;
+    Route::$method(
+        URL::TXN_JSONP_URL,
+        'TransactionController@getJSONP');
+});
 
-    Route::group(array('before' => 'auth.private'), function()
-    {
-        Route::post('tokens', 'CardController@postIndex');
+Route::group(array('before' => 'auth.private'), function()
+{
+    Route::post('tokens', 'CardController@postIndex');
 
-        Route::get('tokens/{token}', 'CardController@getRetrieve');
+    Route::get('tokens/{token}', 'CardController@getRetrieve');
 
-        $method = URL::TXN_RETRIEVE_METHOD;
-        Route::$method(
-            URL::TXN_RETRIEVE_BY_ID_URL,
-            'TransactionController@getTxnById');
+    $method = URL::TXN_RETRIEVE_METHOD;
+    Route::$method(
+        URL::TXN_RETRIEVE_BY_ID_URL,
+        'TransactionController@getTxnById');
 
-        Route::$method(
-            URL::TXN_RETRIEVE_MULTIPLE_URL,
-            'TransactionController@getMultipleTxn');
+    Route::$method(
+        URL::TXN_RETRIEVE_MULTIPLE_URL,
+        'TransactionController@getMultipleTxn');
 
-        $method = URL::TXN_REFUND_METHOD;
-        Route::$method(
-            URL::TXN_REFUND_URL,
-            'TransactionController@postRefund');
+    $method = URL::TXN_REFUND_METHOD;
+    Route::$method(
+        URL::TXN_REFUND_URL,
+        'TransactionController@postRefund');
 
-        $method = URL::TXN_CAPTURE_METHOD;
-        Route::$method(
-            URL::TXN_CAPTURE_URL,
-            'TransactionController@postCapture');
-    });
+    $method = URL::TXN_CAPTURE_METHOD;
+    Route::$method(
+        URL::TXN_CAPTURE_URL,
+        'TransactionController@postCapture');
 });
 
 Route::group(array('before' => 'auth.app'), function()
