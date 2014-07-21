@@ -107,9 +107,12 @@ class TransactionController extends BaseController
         {
             $data = (new Transaction)->bankAcsCallback($id, $this->merchantId, $input);
         }
-        catch (\EE\Exception\RecoverableException $e)
+        catch (\EE\Exception\RecoverableException $exception)
         {
-            $data = $exception->generatePublicJsonResponse();
+            $error = $exception->getPublicError();
+
+            $data = $error->toArray();
+            $data['http_status_code'] = $error->getHttpStatusCode();
         }
         finally
         {

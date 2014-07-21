@@ -224,6 +224,11 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor Ends -----------------------------------
 
+    public function isOpen()
+    {
+        return ($this->getAttribute(self::STATUS) == Status::OPEN);
+    }
+
     public function isAuthorized()
     {
         return ($this->getAttribute(self::STATUS) == Status::AUTHORIZED);

@@ -183,7 +183,7 @@ class Core
     {
         try
         {
-            Transaction\Validator::bankAcsCallbackValidate($txn);
+            Transaction\Validator::bankAcsCallbackValidate($txn, $input);
 
             $this->callGatewayFunction(Transaction\Action::CALLBACK, $input);
 
