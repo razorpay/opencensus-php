@@ -21,9 +21,8 @@ App::before(function($request)
 | Authentication Filters
 |--------------------------------------------------------------------------
 |
-| The following filters are used to verify that the user of the current
-| session is logged into this application. The "basic" filter easily
-| integrates HTTP Basic authentication for quick, simple checking.
+| The following filters are used to verify public, private and application
+| basic auth depending on the route.
 |
 */
 
