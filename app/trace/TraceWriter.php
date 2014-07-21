@@ -52,11 +52,7 @@ class TraceWriter extends Logger
 
         if ($this->debugOption('chrome'))
         {
-            $chromePHPFormatter = new Formatter\ChromePHPFormatter();
-
             $chromePHPHandle = new Handler\ChromePHPHandler();
-
-            $chromePHPHandle->setFormatter($chromePHPFormatter);
 
             $this->pushHandler($chromePHPHandle);
         }
@@ -64,25 +60,25 @@ class TraceWriter extends Logger
 
     protected function defineProcessors()
     {
-        $callback = array($this, 'timestampProcessor');
+        $this->pushProcessor(new SplunkTimestampProcessor);
 
-        $this->pushProcessor($callback);
-
-        $callback = array($this, 'traceCodeProcessor');
-
-        $this->pushProcessor($callback);
+        $this->pushProcessor(new TraceCodeProcessor);
 
         if ($this->config['introspection'])
         {
-            $skipClassesPartials = array('Trace\\', 'Monolog\\');
-
-            $processor = new Processor\IntrospectionProcessor(Logger::DEBUG, $skipClassesPartials);
-
-            $this->pushProcessor($processor);
+            $this->pushIntrospectionProcessor();
         }
 
-        if (\App::environment('dev') === false)
-            $this->pushWebProcessor();
+        $this->pushProcessor(new WebProcessor);
+    }
+
+    protected function pushIntrospectionProcessor()
+    {
+        $skipClassesPartials = array('Trace\\', 'Monolog\\');
+
+        $processor = new Processor\IntrospectionProcessor(Logger::DEBUG, $skipClassesPartials);
+
+        $this->pushProcessor($processor);
     }
 
     protected function pushTestHandler()
@@ -114,84 +110,6 @@ class TraceWriter extends Logger
         $this->pushHandler($filter);
     }
 
-    protected function pushWebProcessor()
-    {
-        $server = array(
-            'request_uri' => Request::path(),
-            'request_url' => Request::fullUrl(),
-            'request_method' => Request::method(),
-            'request_header' => Request::header(),
-            'request_ajax' => Request::ajax(),
-            'request_client_ip' => Request::getClientIp(),
-            'request_server_ip' => Request::server('SERVER_ADDR'));
-
-        $this->unsetUrlForSensitiveUrls($server);
-
-        $processor = new Processor\WebProcessor();
-
-        $this->pushProcessor($processor);
-    }
-
-    protected function unsetUrlForSensitiveUrls(& $server)
-    {
-        $sensitiveUrls = \Http\URL::getDoNotLogURLs();
-
-        if (in_array($server['request_url'], $sensitiveUrls))
-        {
-            unset(
-                $server['request_uri'],
-                $server['request_url']);
-        }
-    }
-
-    /**
-     * Adds timestamp in the format specified and needed
-     * by splunk server
-     *
-     * @param  array $record Array of content to be logged
-     * @return array         Array of content to be logged
-     *                       after modifications
-     */
-    public function timestampProcessor($record)
-    {
-        //unset($record['datetime']);
-
-        $timezone = new \DateTimeZone(date_default_timezone_get() ?: 'UTC');
-
-        $microtime = microtime(true);
-
-        $milliseconds = sprintf("%03d", round(($microtime - floor($microtime)) * 1000));
-
-        $date = \DateTime::createFromFormat('U.u', sprintf('%.6F', $microtime), $timezone);
-
-        $date->setTimezone($timezone);
-
-        $timestamp = $date->format('Y-m-d\TH:i:s') . '.' . $milliseconds;
-
-        //
-        // reordering records to bring timestamp to first position
-        //
-
-        $record = ['timestamp' => $timestamp] + $record;
-
-        unset($record['datetime']);
-
-        return $record;
-    }
-
-    public function traceCodeProcessor($record)
-    {
-        $code = $record['message'];
-
-        $message = TraceCode::getMessage($code);
-
-        $record['message'] = $message;
-
-        $record = ['code' => $code] + $record;
-
-        return $record;
-    }
-
     public function fire($job, $trace)
     {
         $recorder = new self();
@@ -201,13 +119,9 @@ class TraceWriter extends Logger
         $job->delete();
     }
 
-    protected function debugOption($option = null)
+    protected function debugOption($option)
     {
-        if ($option === null)
-        {
-            return $this->debug;
-        }
-        else if ($this->debug)
+        if ($this->debug)
         {
             if (isset($this->config['debug_options'][$option]))
             {
@@ -216,7 +130,8 @@ class TraceWriter extends Logger
             else
                 throw new \InvalidArgumentException($option . ' in debug not defined');
         }
-        else return false;
+        else
+            return false;
     }
 
     public function addRecord($level, $message, array $context = array())

@@ -46,8 +46,6 @@ class Trace extends TraceWriter
     public function __construct()
     {
         parent::__construct();
-
-        //$this->traceWriter = new TraceWriter();
     }
 
     /**
