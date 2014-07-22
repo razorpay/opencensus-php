@@ -129,7 +129,60 @@ class DatabaseSeeder extends Seeder {
                     'updated_at'    =>  time()
                     )
                 );
+
+            DB::table(Table::PRICING)->insert(
+                array(
+                    'id'            => 'c5484d12aafacc2023608c79',
+                    'gateway'       => 'hdfc',
+                    'payment_method'=> 'credit card',
+                    'payment_method_subtype' => 'Diners Club',
+                    'plan'          => 'Education',
+                    'percent_rate'  => '289',
+                    'fixed_rate'    => '0',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    ),
+
+                array(
+                    'id'            => 'e5484d12aafacc2023608c79',
+                    'gateway'       => 'hdfc',
+                    'payment_method'=> 'credit card',
+                    'payment_method_subtype' => 'generic',
+                    'plan'          => 'Education',
+                    'percent_rate'  => '300',
+                    'fixed_rate'    => '0',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    ),
+
+                array(
+                    'id'            => 'c5484d12aafacc2023608c79',
+                    'gateway'       => 'hdfc',
+                    'payment_method'=> 'debit card',
+                    'payment_method_subtype' => 'generic',
+                    'plan'          => 'Education',
+                    'percent_rate'  => '250',
+                    'fixed_rate'    => '0',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    ),
+
+                array(
+                    'id'            => 'b5484d12aafacc2023608c79',
+                    'gateway'       => 'icici',
+                    'payment_method'=> 'net banking',
+                    'payment_method_subtype' => 'generic',
+                    'plan'          => 'Education',
+                    'percent_rate'  => '0',
+                    'fixed_rate'    => '3000',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    )
+                );
         });
     }
-
 }
