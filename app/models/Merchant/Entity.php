@@ -7,11 +7,17 @@ use Models\Base;
 class Entity extends Base\UniqueIdEntity
 {
     const ID = 'id';
+    const NAME = 'name';
+    const EMAIL = 'email';
+    const LIVE = 'live';
 
     protected $table = \Constants\Table::MERCHANT;
 
     protected $fillable = array(
-        self::ID);
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::LIVE);
 
     public $incrementing = false;
 

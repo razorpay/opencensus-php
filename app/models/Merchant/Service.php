@@ -44,7 +44,7 @@ class Service extends Base\Service
     {
         $merchantIdArr['id'] = $input['id'];
 
-        $merchant = (new Merchant\Entity)->build($merchantIdArr);
+        $merchant = (new Merchant\Entity)->build($input);
 
         $this->merchantRepository->saveOrFail($merchant);
 
