@@ -37,7 +37,7 @@ class Merchant extends Service
 
         $merchant->confirm();
 
-        $merchant_api_data = array('id' => $merchant->id);
+        $merchant_api_data = $merchant->generateApiData($merchant);
 
         Request::setCredentials($merchant_api_data['id']);
 

@@ -63,10 +63,25 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         return $this->where('confirm_token', '=', $token)->firstorfail();
     }
 
+    /**
+     * Confirms a merchant
+     */
     public function confirm()
     {
         $this->confirm_token = NULL;
         $this->save();
+    }
+
+    /**
+     * Generates data required for merchant registration with the API
+     */
+    public function generateApiData()
+    {
+        return array(
+            'id'    => $this->id,
+            'name'  => $this->name,
+            'email' => $this->email
+        );
     }
 
     /**

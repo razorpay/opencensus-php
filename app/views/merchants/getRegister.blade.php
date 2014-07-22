@@ -7,14 +7,14 @@
                 <h2>Register</h2>
                 {{ Form::open(array('action' => array('MerchantController@postRegister'))) }}
                     <div class="text">
-                        <input type="text" name="name" placeholder="Name" 
+                        <input type="text" name="name" placeholder="Bussiness/Individual Name" 
                             @if (Session::has('data') and isset(Session::get('data')['name'])) 
                                 value="{{{Session::get('data')['name']}}}"
                             @else 
                                 autofocus 
                             @endif
                         >
-                        <input type="text" name="email" placeholder="Email" 
+                        <input type="text" name="email" placeholder="Contact Email" 
                             @if (Session::has('data') and isset(Session::get('data')['email']))  
                                 value="{{{Session::get('data')['email']}}}" 
                             @else 
