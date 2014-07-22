@@ -209,21 +209,35 @@ trait TransactionAuthFlowTrait
     {
         $arr = explode("\n", $content);
 
-        if (isset($arr[91]) === false)
+        $n = 91;
+
+        //
+        // @see callback.blade.php
+        //
+        // n = 91.
+        //
+        // Actual output is JS, but line $n of callback.blade.php
+        // starts with 'var data = ' and then the json data is printed
+        //
+        // So first, ensure that $n line is present.
+        //
+        if (isset($arr[$n]) === false)
         {
             var_dump($arr);
             throw new \Exception('some error occured');
         }
 
         //
-        // Actual output is JS, but line 63 of the
-        // output contains the data in JSON
+        // If line is present, get it in array.
         //
-        // @todo: explain this part better.
-        $line = $arr[91];
 
+        $line = $arr[$n];
+
+        //
         // 11 = strlen("var data = ")
-        //-1 = to split the ; from end of js
+        // -1 = to split the ; from end of js
+        // This gives us the desired json data returned.
+        //
         $content = substr($line, 11,-1);
 
         return $content;

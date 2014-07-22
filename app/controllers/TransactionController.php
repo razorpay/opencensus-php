@@ -111,6 +111,9 @@ class TransactionController extends BaseController
         }
         catch (\EE\Exception\RecoverableException $exception)
         {
+            if (\App::runningUnitTests())
+                throw $exception;
+
             $error = $exception->getPublicError();
 
             $data = $error->toArray();
@@ -118,7 +121,8 @@ class TransactionController extends BaseController
         }
         finally
         {
-            return View::make('gateway.callback')->with('data', $data);
+            if ($data !== null)
+                return View::make('gateway.callback')->with('data', $data);
         }
     }
 }
