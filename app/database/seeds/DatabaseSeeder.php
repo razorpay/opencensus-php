@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder {
         {
             DB::table(Table::MERCHANT)->insert(
                 array(
-                    'id'            =>  1,
+                    'id'            =>  '363e4efa820b0c06208ccd99',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder {
 
             DB::table(Table::MERCHANT)->insert(
                 array(
-                    'id'            =>  2,
+                    'id'            =>  'f725411687297c5fce0af5c4',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder {
 
             DB::table(Table::BALANCE)->insert(
                 array(
-                    'id'          =>  1,
+                    'id'            =>  '363e4efa820b0c06208ccd99',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
                     )
@@ -48,7 +48,7 @@ class DatabaseSeeder extends Seeder {
 
             DB::table(Table::BALANCE)->insert(
                 array(
-                    'id'          =>  2,
+                    'id'            =>  'f725411687297c5fce0af5c4',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
                     )
@@ -85,7 +85,7 @@ class DatabaseSeeder extends Seeder {
             DB::table(Table::KEY)->insert(
                 array(
                     'id'            =>  'd9c6bf091a1a64cb5678d8c1',
-                    'merchant_id'   =>  1,
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
                     'live'          =>  1,
                     'active'        =>  1,
                     'secret'        =>  Hash::make('thisissupersecret'),
@@ -97,7 +97,7 @@ class DatabaseSeeder extends Seeder {
             DB::table(Table::KEY)->insert(
                 array(
                     'id'            =>  'd9c6bf091a1a64cb5678d8c2',
-                    'merchant_id'   =>  1,
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
                     'live'          =>  0,
                     'active'        =>  1,
                     'secret'        =>  Hash::make('thisissupersecret'),
@@ -109,7 +109,7 @@ class DatabaseSeeder extends Seeder {
             DB::table(Table::KEY)->insert(
                 array(
                     'id'            =>  'd9c6bf091a1a64cb5678d8c3',
-                    'merchant_id'   =>  2,
+                    'merchant_id'   =>  'f725411687297c5fce0af5c4',
                     'live'          =>  1,
                     'active'        =>  1,
                     'secret'        =>  Hash::make('thisissupersecret'),
@@ -121,7 +121,7 @@ class DatabaseSeeder extends Seeder {
             DB::table(Table::KEY)->insert(
                 array(
                     'id'            =>  'd9c6bf091a1a64cb5678d8c4',
-                    'merchant_id'   =>  2,
+                    'merchant_id'   =>  'f725411687297c5fce0af5c4',
                     'live'          =>  0,
                     'active'        =>  1,
                     'secret'        =>  Hash::make('thisissupersecret'),

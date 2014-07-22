@@ -20,8 +20,7 @@ class CreateMerchants extends Migration {
         {
             $table->engine = 'InnoDB';
 
-            $table->integer(Merchant::ID)
-                  ->unsigned()
+            $table->string(Merchant::ID, Merchant::ID_LENGTH)
                   ->primary();
 
             $table->integer(Merchant::CREATED_AT);
