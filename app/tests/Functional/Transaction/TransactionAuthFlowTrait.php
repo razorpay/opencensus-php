@@ -209,7 +209,7 @@ trait TransactionAuthFlowTrait
     {
         $arr = explode("\n", $content);
 
-        if (isset($arr[67]) === false)
+        if (isset($arr[91]) === false)
         {
             var_dump($arr);
             throw new \Exception('some error occured');
@@ -220,7 +220,7 @@ trait TransactionAuthFlowTrait
         // output contains the data in JSON
         //
         // @todo: explain this part better.
-        $line = $arr[67];
+        $line = $arr[91];
 
         // 11 = strlen("var data = ")
         //-1 = to split the ; from end of js
