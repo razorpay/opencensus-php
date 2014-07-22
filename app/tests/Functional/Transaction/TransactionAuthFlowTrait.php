@@ -213,7 +213,7 @@ trait TransactionAuthFlowTrait
 
         //
         // @see callback.blade.php
-        //
+        // @todo: a better way might be to extract position of 'var data = '
         // n = 91.
         //
         // Actual output is JS, but line $n of callback.blade.php
