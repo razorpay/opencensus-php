@@ -42,19 +42,19 @@ class TransactionController extends BaseController
 
         $input['merchant_id'] = $this->merchantId;
 
-        $txnData = (new Transaction)->process($input);
+        $data = (new Transaction)->process($input);
 
         //
         // Check for call from API
         //
-        if (Request::header('Razorpay-API') != 1 && isset($txnData['callbackUrl']))
+        if (isset($data['callbackUrl']))
         {
         	return View::make('hdfc.enrollResponse')
-                ->with('data', $txnData['data'])
-                ->with('callbackUrl',$txnData['callbackUrl']);
+                ->with('data', $data['data'])
+                ->with('callbackUrl',$data['callbackUrl']);
         }
 
-        return ApiResponse::json($txnData);
+        return ApiResponse::json($data);
     }
 
     /**
