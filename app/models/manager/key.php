@@ -9,7 +9,7 @@ class Key extends Manager
 {
     protected static $createRules = array(
         'id'                    => 'required|alpha_num|size:24',
-        'merchant_id'           => 'required|numeric',
+        'merchant_id'           => 'required',
         'delay_roll'            => 'required|in:0,1'
     );
 

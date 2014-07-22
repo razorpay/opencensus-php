@@ -27,7 +27,7 @@ class Transaction extends Manager
     );
 
     protected static $processRules = array(
-        'merchant_id'   =>  'required|numeric',
+        'merchant_id'   =>  'required',
         'amount'        =>  'required|numeric|max:10000',
         'status'        =>  'required|in:captured,refunded,prefunded',
         'created_at'    =>  'required|numeric',
@@ -35,7 +35,7 @@ class Transaction extends Manager
     );
 
     protected static $analyticsRules = array(
-        'merchant_id'   =>  'required|numeric',
+        'merchant_id'   =>  'required',
         'from'          =>  'numeric',
         'to'            =>  'numeric',
         'type'          =>  'in:day,week,month,year'
