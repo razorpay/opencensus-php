@@ -20,7 +20,7 @@ class ApiResponse
 
         $response = self::generateResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
-        $response->header('WWW-Authenticate', 'Basic realm="Protected Area"');
+        $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
 
         return $response;
     }
