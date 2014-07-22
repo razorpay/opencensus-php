@@ -13,17 +13,10 @@ class Merchant extends Service
 
         if (empty($error))
         {   
-            $merchant_data = DAL\Merchant::createOrFail($data)->toArray();
+            $data = DAL\Merchant::createOrFail($data)->toArray();
 
-            $merchant_api_data = array('id' => $merchant_data['id']);
+            $this->sendConfirmationMail($data);
 
-            Request::setCredentials($merchant_api_data['id']);
-
-            $response = Request::POST('merchants', $merchant_api_data);
-
-            $this->sendConfirmationMail($merchant_data);
-
-            $data = array_merge($merchant_data, $response);
         }
 
         return [$error, $data];
@@ -44,7 +37,13 @@ class Merchant extends Service
 
         $merchant->confirm();
 
-        return $merchant->toArray();
+        $merchant_api_data = array('id' => $merchant->id);
+
+        Request::setCredentials($merchant_api_data['id']);
+
+        $response = Request::POST('merchants', $merchant_api_data);
+
+        return array_merge($response, $merchant->toArray());
     }
 
     public function login(array $input)

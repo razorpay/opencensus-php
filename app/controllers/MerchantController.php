@@ -106,9 +106,11 @@ class MerchantController extends BaseController
         $response = Service\Merchant::getInstance()->confirm($token);
 
         if($response)
-        {
-            return Redirect::action('MerchantController@getLogin')
-                ->with('error', array('Email id Verified. Please login now.'));
+        {   
+            \Auth::loginUsingId($response['id']);
+
+            return View::make('merchants.getKeys')
+                        ->with('data', $response);
         }
         else
         {
