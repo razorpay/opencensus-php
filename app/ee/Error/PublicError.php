@@ -32,7 +32,7 @@ class PublicError
     {
         $this->setAttributes(
             PublicErrorCode::GATEWAY_ERROR,
-            PublicErrorDescription::GATEWAY_REQUEST_TIMEOUT,
+            PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
             504);
     }
 

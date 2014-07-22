@@ -18,7 +18,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_REQUEST_TIMEOUT,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
                 ],
             ],
             'status_code' => 504,

@@ -13,7 +13,7 @@ class PublicErrorDescription
     const CARD_ERROR_INVALID_EXPIRY_DATE =
         'The expiry date is not valid';
 
-    const GATEWAY_REQUEST_TIMEOUT =
+    const GATEWAY_ERROR_REQUEST_TIMEOUT =
         'The gateway request to submit payment information timed out. Please submit your details again';
 
     const CARD_ERROR_INVALID_BRAND =
