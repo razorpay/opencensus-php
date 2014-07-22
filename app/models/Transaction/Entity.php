@@ -23,9 +23,6 @@ class Entity extends Base\PublicEntity
     const CARD_ID           = 'card_id';
     const LEDGER_ID         = 'ledger_id';
 
-    //@todo: remove after deploy
-    const TOKEN_ID          = 'token_id';
-
     const CURRENCY_LENGTH   = 3;
 
     const MIN_TXN_AMOUNT = 100;

@@ -41,10 +41,6 @@ Route::group(array('before' => 'auth.public'), function()
 
 Route::group(array('before' => 'auth.private'), function()
 {
-    Route::post('tokens', 'CardController@postIndex');
-
-    Route::get('tokens/{token}', 'CardController@getRetrieve');
-
     $method = URL::TXN_RETRIEVE_METHOD;
     Route::$method(
         URL::TXN_RETRIEVE_BY_ID_URL,
