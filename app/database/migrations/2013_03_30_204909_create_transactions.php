@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 use Models\Transaction\Entity as Transaction;
 use Models\Merchant;
-use Models\Token;
+use Models\Card;
+use Models\Ledger;
 
 class CreateTransactions  extends Migration
 {
@@ -47,8 +48,7 @@ class CreateTransactions  extends Migration
 
             $table->string(Transaction::DESCRIPTION);
 
-            $table->char(Transaction::TOKEN_ID, Transaction::ID_LENGTH)
-                  ->unique()
+            $table->char(Transaction::CARD_ID, Transaction::ID_LENGTH)
                   ->nullable();
 
             $table->string(Transaction::ERROR_CODE, 20)
@@ -64,6 +64,10 @@ class CreateTransactions  extends Migration
 
             $table->binary(Transaction::UDF);
 
+            $table->string(Transaction::LEDGER_ID, Transaction::ID_LENGTH)
+                  ->unique()
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Transaction::CREATED_AT);
             $table->integer(Transaction::UPDATED_AT);
@@ -73,9 +77,10 @@ class CreateTransactions  extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Transaction::TOKEN_ID)
-                  ->references(Token\Entity::ID)
-                  ->on(Table::TOKEN);
+            $table->foreign(Transaction::CARD_ID)
+                  ->references(Card\Entity::ID)
+                  ->on(Table::CARD)
+                  ->on_delete('restrict');
         });
     }
 
@@ -86,11 +91,11 @@ class CreateTransactions  extends Migration
      */
     public function down()
     {
-        Schema::table(Table::TRANSACTION, function($table){
+        Schema::table(Table::TRANSACTION, function($table)
+        {
+            $table->dropForeign(Table::TRANSACTION.'_'.Transaction::CARD_ID.'_foreign');
 
             $table->dropForeign(Table::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
-
-            $table->dropForeign(Table::TRANSACTION.'_'.Transaction::TOKEN_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);

@@ -10,8 +10,6 @@ class Table
 
     const MERCHANT = 'merchants';
 
-    const TOKEN = 'tokens';
-
     const LEDGER = 'ledger';
 
     const KEY = 'keys';
@@ -21,4 +19,6 @@ class Table
     const UNRECOGNIZED_CARD = 'unrecognized_cards';
 
     const BALANCE = 'balance';
+
+    const PRICING = 'pricing';
 }

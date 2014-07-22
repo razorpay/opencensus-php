@@ -3,9 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use Constants\Table;
 use Models\Ledger\Entity as Ledger;
 use Models\Merchant;
-use Constants\Table;
+use Models\Transaction;
 
 class CreateLedger  extends Migration {
 
@@ -56,6 +57,15 @@ class CreateLedger  extends Migration {
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::TRANSACTION, function(Blueprint $table)
+        {
+            $table->foreign(Transaction\Entity::LEDGER_ID)
+                  ->references(Ledger::ID)
+                  ->on(Table::LEDGER)
+                  ->on_delete('restrict');
+        });
+
     }
 
     /**
@@ -69,6 +79,11 @@ class CreateLedger  extends Migration {
         {
             $table->dropForeign(
                 TABLE::LEDGER.'_'.Ledger::MERCHANT_ID.'_foreign');
+        });
+
+        Schema::table(Table::TRANSACTION, function($table)
+        {
+            $table->dropForeign(Table::TRANSACTION.'_'.Transaction::LEDGER_ID.'_foreign');
         });
 
         Schema::drop(Table::LEDGER);
