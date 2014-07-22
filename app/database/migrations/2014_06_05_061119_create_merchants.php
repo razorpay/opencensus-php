@@ -22,6 +22,8 @@ class CreateMerchants extends Migration {
 
             $table->string('email', 255)->unique();
 
+            $table->boolean('live')->default(0);
+
             $table->string('password', 100);
 
             $table->string('remember_token', 100)->nullable();
