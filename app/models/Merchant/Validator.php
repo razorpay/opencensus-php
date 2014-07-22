@@ -7,6 +7,6 @@ use Models\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'id'    =>  'required|alpha_num|max:24'
+        'id'    =>  'required|alpha_num|size:24'
     );
 }
