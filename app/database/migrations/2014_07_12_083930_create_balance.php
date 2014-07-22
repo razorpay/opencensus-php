@@ -20,8 +20,7 @@ class CreateBalance extends Migration {
         {
             $table->engine = 'InnoDB';
 
-            $table->integer(Balance::ID)
-                  ->unsigned()
+            $table->char(Balance::ID, Balance::ID_LENGTH)
                   ->primary();
 
             $table->integer(Balance::BALANCE)

@@ -28,8 +28,7 @@ class CreateLedger  extends Migration {
 
             $table->string(Ledger::ENTITY_TYPE, 20);
 
-            $table->integer(Ledger::MERCHANT_ID)
-                  ->unsigned();
+            $table->char(Ledger::MERCHANT_ID, Ledger::ID_LENGTH);
 
             $table->integer(Ledger::AMOUNT)
                   ->unsigned();
@@ -83,7 +82,7 @@ class CreateLedger  extends Migration {
 
         Schema::table(Table::TRANSACTION, function($table)
         {
-            $table->dropForeign(Table::TRANSACTION.'_'.Transaction::LEDGER_ID.'_foreign');
+            $table->dropForeign(Table::TRANSACTION.'_'.Transaction\Entity::LEDGER_ID.'_foreign');
         });
 
         Schema::drop(Table::LEDGER);

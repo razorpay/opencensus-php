@@ -228,9 +228,7 @@ class BasicAuth
 
     public function getMerchantId()
     {
-        $id = $this->merchant->getKey();
-
-        return (int) $id;
+        return $this->merchant->getKey();
     }
 
     public function getPublicKey()

@@ -13,7 +13,7 @@ class MerchantTest extends TestCase
     {
         parent::setUp();
 
-        $this->setupAppBasicAuthParams(1);
+        $this->setupAppBasicAuthParams('363e4efa820b0c06208ccd99');
 
         //
         // load test data
@@ -34,7 +34,7 @@ class MerchantTest extends TestCase
      */
     public function testCreateMerchant()
     {
-        $this->setupAppBasicAuthParams(1000);
+        $this->setupAppBasicAuthParams('41ce4abda390575910cba897');
 
         $content = $this->startTest();
 

@@ -4,7 +4,7 @@ namespace Models\Merchant;
 
 use Models\Base;
 
-class Entity extends Base\Entity
+class Entity extends Base\UniqueIdEntity
 {
     const ID = 'id';
 

@@ -26,8 +26,7 @@ class CreateTransactions  extends Migration
             $table->char(Transaction::ID, Transaction::ID_LENGTH)
                   ->primary();
 
-            $table->integer(Transaction::MERCHANT_ID)
-                  ->unsigned();
+            $table->char(Transaction::MERCHANT_ID, Transaction::ID_LENGTH);
 
             $table->integer(Transaction::AUTH_AMOUNT)
                   ->unsigned()

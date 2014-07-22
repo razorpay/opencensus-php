@@ -9,14 +9,14 @@ return [
     'createMerchant' => [
         'request' => [
             'content' => [
-                'id' => 1000,
+                'id' => '41ce4abda390575910cba897',
             ],
             'url' => '/merchants',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'id' => 1000,
+                'id' => '41ce4abda390575910cba897',
                 'key' => [],
             ],
         ],
@@ -34,8 +34,8 @@ return [
                 'count' => 1,
                 'data' => [
                     '0' => [
-                        'id' => "d9c6bf091a1a64cb5678d8c1",
-                        'merchant_id' => "1",
+                        'id' => 'd9c6bf091a1a64cb5678d8c1',
+                        'merchant_id' => '363e4efa820b0c06208ccd99',
                         'expired_at' => null
                     ],
                 ],

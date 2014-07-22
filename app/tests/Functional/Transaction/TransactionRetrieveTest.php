@@ -20,7 +20,7 @@ class TransactionRetrieveTest extends TestCase
     {
         parent::setUp();
 
-        $transaction = $this->createEntity('transaction', ['merchant_id' => 1]);
+        $transaction = $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']);
 
         $this->request = array(
             'method' => 'GET',

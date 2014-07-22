@@ -1,8 +1,8 @@
 Models\Merchant\Entity:
-    id: $integer
+    id: $string
 
 Models\Merchant\Balance:
-    id: $integer
+    id: $string
 
 Models\Card\Entity:
     name: $string

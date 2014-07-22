@@ -23,8 +23,7 @@ class CreateKeys extends Migration {
             $table->char(Key::ID, Key::ID_LENGTH)
                   ->primary();
 
-            $table->integer(Key::MERCHANT_ID)
-                  ->unsigned();
+            $table->char(Key::MERCHANT_ID, Key::ID_LENGTH);
 
             $table->string(Key::SECRET, Key::KEY_SECRET_HASH_LENTH);
 
