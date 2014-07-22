@@ -12,7 +12,9 @@ class Merchant extends Service
         list($error, $data) = Manager\Merchant::createValidate($input, 'register')->getData();
 
         if (empty($error))
-        {
+        {   
+            $data['id'] = DAL\Merchant::generateId();
+            
             $merchant_data = DAL\Merchant::createOrFail($data)->toArray();
 
             $merchant_api_data = array('id' => $merchant_data['id']);

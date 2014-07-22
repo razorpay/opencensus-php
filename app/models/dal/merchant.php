@@ -12,6 +12,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
     protected $hidden = array('password', 'remember_token');
 
     protected $fillable = array(
+        'id',
         'name',
         'email',
         'password'
@@ -119,4 +120,11 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         return $this->email;
     }
 
+    /**
+     * Generates UUid ID
+     */
+    public static function generateId()
+    {
+        return bin2hex(openssl_random_pseudo_bytes(24/2));
+    }
 }

@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder {
 	private function seed()
 	{
 		DB::table('merchants')->insert(array(
-			'id'			=>	1,
+			'id'			=>	'085a4473c74570bc057f89e6',
 			'name'			=>	'Abhishek Das',
 			'email'			=>	'das@razorpay.com',
 			'password'		=>	Hash::make('123456'),
@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder {
 		);
 
 		DB::table('aggregations')->insert(array(
-			'merchant_id'	=>	1,
+			'merchant_id'	=>	'085a4473c74570bc057f89e7',
 			'txn_count'		=>	0,
 			'created_at'	=>	time(),
 			'updated_at'	=>	time()
