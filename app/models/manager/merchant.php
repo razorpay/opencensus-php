@@ -32,7 +32,7 @@ class Merchant extends Manager
         '_token'
     );
 
-    protected static $registerGenerators = array('password');
+    protected static $registerGenerators = array('id', 'confirm_token', 'password');
 
     protected static $loginGenerators = array('remember');
 
@@ -48,5 +48,23 @@ class Merchant extends Manager
         $this->setField(
             'remember', isset($input['remember']) && $input['remember'] === 'on'
         );
+    }
+
+    /**
+     * Generates UUid ID
+     */
+    public function generateId()
+    {
+        $this->setField(
+            'id', bin2hex(openssl_random_pseudo_bytes(24/2)));
+    }
+
+    /**
+     * Generates Confirmation token
+     */
+    public function generateConfirmToken()
+    {
+        $this->setField(
+            'confirm_token', bin2hex(openssl_random_pseudo_bytes(32/2)));
     }
 }

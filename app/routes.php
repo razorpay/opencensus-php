@@ -41,6 +41,8 @@ Route::group(array('before' => 'guest'), function()
 
     Route::get('/register', 'MerchantController@getRegister');
 
+    Route::get('/register/confirm/{token}', 'MerchantController@getConfirm');
+
     Route::get('/password/reset', 'PasswordController@getRemind');
 
     Route::get('/password/reset/{token}', 'PasswordController@getReset');

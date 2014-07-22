@@ -26,6 +26,8 @@ class CreateMerchants extends Migration {
 
             $table->string('remember_token', 100)->nullable();
 
+            $table->string('confirm_token')->nullable();
+
             $table->integer('created_at');
             $table->integer('updated_at');
         });

@@ -13,8 +13,6 @@ class Merchant extends Service
 
         if (empty($error))
         {   
-            $data['id'] = DAL\Merchant::generateId();
-            
             $merchant_data = DAL\Merchant::createOrFail($data)->toArray();
 
             $merchant_api_data = array('id' => $merchant_data['id']);
@@ -23,10 +21,30 @@ class Merchant extends Service
 
             $response = Request::POST('merchants', $merchant_api_data);
 
+            $this->sendConfirmationMail($merchant_data);
+
             $data = array_merge($merchant_data, $response);
         }
 
         return [$error, $data];
+    }
+
+    public function confirm($token)
+    {
+        $merchant = new DAL\Merchant;
+
+        try
+        {
+            $merchant = $merchant->getMerchantForConfirmation($token);
+        }
+        catch(\Exception $e)
+        {
+            return false;
+        }
+
+        $merchant->confirm();
+
+        return $merchant->toArray();
     }
 
     public function login(array $input)
@@ -38,7 +56,8 @@ class Merchant extends Service
         if (empty($error))
             $verify = \Auth::attempt(array(
                 'email'     => $data['email'],
-                'password'  => $input['password']
+                'password'  => $input['password'],
+                'confirm_token' => Null
             ), $data['remember']);
 
         if ($verify === true)
@@ -93,5 +112,13 @@ class Merchant extends Service
         }
         else
             return ['status' => false];
+    }
+
+    private function sendConfirmationMail($merchant)
+    {
+        return \Mail::queue('emails.confirmation', compact('merchant'), function($m) use ($merchant)
+        {
+            $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
+        });
     }
 }

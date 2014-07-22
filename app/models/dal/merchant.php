@@ -7,6 +7,8 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 
 class Merchant extends DAL implements UserInterface, RemindableInterface
 {
+    public $incrementing = false;
+
     protected $table = 'merchants';
 
     protected $hidden = array('password', 'remember_token');
@@ -15,11 +17,8 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         'id',
         'name',
         'email',
-        'password'
-    );
-
-    protected $guarded = array(
-        'id'
+        'password',
+        'confirm_token'
     );
 
     public function transactions()
@@ -57,6 +56,17 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             'updated_at'            =>  $data['created_at']
         );
         \DB::table('aggregations')->where('merchant_id','=',$data['merchant_id'])->update($obj);
+    }
+
+    public function getMerchantForConfirmation($token)
+    {
+        return $this->where('confirm_token', '=', $token)->firstorfail();
+    }
+
+    public function confirm()
+    {
+        $this->confirm_token = NULL;
+        $this->save();
     }
 
     /**
@@ -118,13 +128,5 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
     public function getReminderEmail()
     {
         return $this->email;
-    }
-
-    /**
-     * Generates UUid ID
-     */
-    public static function generateId()
-    {
-        return bin2hex(openssl_random_pseudo_bytes(24/2));
     }
 }

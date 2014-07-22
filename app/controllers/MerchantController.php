@@ -41,10 +41,7 @@ class MerchantController extends BaseController
 
         if (empty($error))
         {
-            // @todo: render this to a view; send activation mail
-            \Auth::loginUsingId($data['id']);
-
-            return View::make('merchants.getKeys')
+            return View::make('merchants.postRegister')
                         ->with('data', $data);
         }
         else
@@ -102,5 +99,21 @@ class MerchantController extends BaseController
         $data = Service\Merchant::getInstance()->rollKeys($input);
 
         return $data;
+    }
+
+    public function getConfirm($token)
+    {
+        $response = Service\Merchant::getInstance()->confirm($token);
+
+        if($response)
+        {
+            return Redirect::action('MerchantController@getLogin')
+                ->with('error', array('Email id Verified. Please login now.'));
+        }
+        else
+        {
+            return Redirect::action('MerchantController@getRegister')
+                ->with('error', array('An error occured in email verification. Please check the link and try again'));
+        }
     }
 }
