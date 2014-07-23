@@ -11,3 +11,4 @@ layout.blade.php
 dev/
 prod/
 app/config/api.php
+app/config/queue.php
