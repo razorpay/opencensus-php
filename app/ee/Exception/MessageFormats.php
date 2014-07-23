@@ -33,7 +33,7 @@ trait MessageFormats
 
             $this->setError($error);
 
-            $message = $error->getDesc();
+            $message = $error->getDescription();
 
             parent::__construct($message, $code, $previous);
 

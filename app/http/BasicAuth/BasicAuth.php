@@ -98,6 +98,8 @@ class BasicAuth
 
         list($id, $pwd) = $this->getCredentials($request);
 
+        // @todo: throw error on public auth if
+        //        secret is also provided.
         return $this->verifyPublic($id);
     }
 

@@ -52,16 +52,6 @@ class PublicError
             500);
     }
 
-    public function setBadRequestError($description, $field = null, $httpStatusCode = 400)
-    {
-        $this->setAttributes(
-            PublicErrorCode::BAD_REQUEST_ERROR,
-            $description,
-            $httpStatusCode);
-
-        $this->setField($field);
-    }
-
     public function setCardError($code, $desc, $field = null)
     {
         $this->setAttributes(

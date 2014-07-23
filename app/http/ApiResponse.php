@@ -68,11 +68,11 @@ class ApiResponse
     {
         $error = new Error($code);
 
-        $publicError = $error->getPublicError();
+        $publicError = $error->toPublicArray();
 
-        $httpStatusCode = $publicError->getHttpStatusCode();
+        $httpStatusCode = $error->getHttpStatusCode();
 
-        return self::json($publicError->toArray(), $httpStatusCode);
+        return self::json($publicError, $httpStatusCode);
     }
 
     public static function serverError()

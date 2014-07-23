@@ -114,9 +114,9 @@ class TransactionController extends BaseController
             if (\App::runningUnitTests())
                 throw $exception;
 
-            $error = $exception->getPublicError();
+            $error = $exception->getError();
 
-            $data = $error->toArray();
+            $data = $error->toPublicArray();
             $data['http_status_code'] = $error->getHttpStatusCode();
         }
         finally

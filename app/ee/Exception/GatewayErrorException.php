@@ -22,8 +22,6 @@ class GatewayErrorException extends RecoverableException
 
         $this->setError($error);
 
-        $desc = $error->getPublicErrorDescription();
-
         $this->setGatewayErrorCodeAndDesc(
             $gatewayErrorCode,
             $gatewayErrorDesc);

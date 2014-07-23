@@ -15,7 +15,7 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_EMAIL,
                     'field' => 'email',
                 ],
             ],
@@ -23,7 +23,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
         ],
     ],
 
@@ -35,7 +35,7 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_EMAIL,
                     'field' => 'email',
                 ],
             ],
@@ -43,7 +43,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
         ],
     ],
 
@@ -64,7 +64,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
+            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
         ],
     ],
 
@@ -85,7 +85,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
+            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
         ],
     ],
 
@@ -132,7 +132,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_CURRENCY_NOT_SUPPORTED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CURRENCY_NOT_SUPPORTED,
         ],
     ],
 
@@ -153,7 +153,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_TRANSACTION_CARD_IS_NOT_ARRAY,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_CARD_IS_NOT_ARRAY,
         ],
     ],
 
@@ -173,7 +173,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_TRANSACTION_CARD_NOT_PROVIDED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_CARD_NOT_PROVIDED,
         ],
     ],
 
@@ -194,7 +194,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_TRANSACTION_CARD_NOT_PROVIDED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_CARD_NOT_PROVIDED,
         ],
     ],
 
@@ -215,7 +215,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 
@@ -236,7 +236,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\FieldErrorException',
-            'code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
+            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
         ],
     ],
 
@@ -257,7 +257,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 
@@ -278,7 +278,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 
@@ -313,7 +313,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING,
         ],
     ],
 
@@ -329,7 +329,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
         ],
     ],
 
@@ -364,7 +364,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_UDF_SHOULD_BE_ARRAY,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_SHOULD_BE_ARRAY,
         ],
     ],
 
@@ -394,7 +394,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_UDF_TOO_MANY_KEYS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_TOO_MANY_KEYS,
         ],
     ],
 
@@ -420,7 +420,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY,
         ],
     ],
 
@@ -443,7 +443,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY
         ],
     ],
 
@@ -459,7 +459,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_UDF_KEY_TOO_LARGE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_KEY_TOO_LARGE,
         ],
     ],
 
@@ -475,7 +475,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_UDF_VALUE_TOO_LARGE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_VALUE_TOO_LARGE,
         ],
     ],
 ];

@@ -50,9 +50,9 @@ trait RequestResponseFlowTrait
     {
         $this->assertExceptionClass($actual, $expected['class']);
 
-        $internalError = $actual->getErrorArray();
+        $internalError = $actual->getError()->getAttributes();
 
-        $this->assertErrorDataEquals($expected, $internalError['error']);
+        $this->assertErrorDataEquals($expected, $internalError);
     }
 
     protected function processAndAssertResponseData($data, $response)

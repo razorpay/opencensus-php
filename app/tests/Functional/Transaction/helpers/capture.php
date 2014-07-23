@@ -27,7 +27,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED
         ],
     ],
 
@@ -52,7 +52,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH
         ],
 
     ],
@@ -68,7 +68,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_INVALID_ID
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
         ],
     ],
 
@@ -84,7 +84,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED
         ],
     ],
 
@@ -100,7 +100,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_ERROR
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR
         ],
     ],
 
@@ -116,7 +116,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_ERROR
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR
         ],
     ],
 
@@ -132,7 +132,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_ERROR
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR
         ],
     ],
 
@@ -148,7 +148,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_ERROR
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR
         ],
     ],
 
@@ -173,7 +173,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'code' => ErrorCode::BAD_REQUEST_ERROR
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR
         ],
     ],
 
@@ -224,7 +224,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00004,
         ],
     ],
@@ -247,7 +247,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
@@ -270,7 +270,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],

@@ -26,7 +26,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\CardErrorException',
-            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
     ],
     'nonNumericCardNumber' => [
@@ -48,7 +48,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\CardErrorException',
-            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
     ],
     'cardNumberWithSpaces' => [
@@ -85,7 +85,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\CardErrorException',
-            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
     ],
     'nonLuhnCardNumber' => [
@@ -107,7 +107,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\CardErrorException',
-            'code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
         ],
     ],
     'invalidCardExpiryMonth' => [
@@ -129,7 +129,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\CardErrorException',
-            'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_MONTH,
+            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_MONTH,
         ],
     ],
     'invalidCardExpiryYear' => [
@@ -151,7 +151,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\CardErrorException',
-            'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_YEAR,
+            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_YEAR,
         ],
     ],
     'invalidCardExpiryDate' => [
@@ -174,7 +174,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\CardErrorException',
-            'code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE,
+            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE,
         ],
     ],
 ];

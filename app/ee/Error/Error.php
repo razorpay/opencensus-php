@@ -6,15 +6,17 @@ use EE\Exception\InvalidArgumentException;
 
 class Error
 {
-    protected $attributes = array(
-        'class' => null,
-        'data' => null,
-        'description' => null,
-        'field' => null,
-        'gateway_error_code' => null,
-        'gateway_error_desc' => null);
+    const INTERNAL_ERROR_CODE = 'internal_error_code';
+    const PUBLIC_ERROR_CODE = 'code';
+    const HTTP_STATUS_CODE = 'http_status_code';
+    const DESCRIPTION = 'description';
+    const FIELD = 'field';
+    const ERROR_CLASS = 'class';
+    const DATA = 'data';
+    const GATEWAY_ERROR_CODE = 'gateway_error_code';
+    const GATEWAY_ERROR_DESC = 'gateway_error_desc';
 
-    protected $publicError = null;
+    protected $attributes = array();
 
     public function __construct(
         $code,
@@ -27,38 +29,40 @@ class Error
 
     public function fill($code, $desc = null, $field = null, $data = null)
     {
-        $this->setCode($code);
+        $this->setAttribute(self::DATA, $data);
 
-        $this->setClass($code);
+        $this->setAttribute(self::FIELD, $field);
 
-        $this->setData($data);
+        $this->setInternalErrorCode($code);
 
         $this->setDesc($desc);
 
-        $this->setField($field);
+        $this->setClass($code);
 
-        $this->constructPublicError();
+        $this->setPublicErrorDetails($code);
     }
 
     public function setGatewayErrorCodeAndDesc($code, $desc)
     {
-        $this->attributes['gateway_error_code'] = $code;
-
-        $this->attributes['gateway_error_desc'] = $desc;
+        $this->attributes[self::GATEWAY_ERROR_CODE] = $code;
+        $this->attributes[self::GATEWAY_ERROR_DESC] = $desc;
     }
 
-    protected function setCodeAndClass($code)
+    protected function setAttribute($key, $value)
     {
-        $this->setCode($code);
+        // if (defined(__CLASS__.'::'.$key) === false)
+        // {
+        //     throw new \InvalidArgumentException($key . ' not defined');
+        // }
 
-        $this->setClass($code);
+        $this->attributes[$key] = $value;
     }
 
-    protected function setCode($code)
+    protected function setInternalErrorCode($code)
     {
         self::checkErrorCode($code);
 
-        $this->attributes['code'] = $code;
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $code);
     }
 
     protected function setClass($code)
@@ -67,24 +71,19 @@ class Error
 
         self::checkErrorClass($class);
 
-        $this->attributes['class'] = $class;
-    }
-
-    protected function setData($data)
-    {
-        $this->attributes['data'] = $data;
+        $this->setAttribute(self::ERROR_CLASS, $class);
     }
 
     protected function setDesc(/* string */ $desc = null)
     {
         if ($desc === null)
         {
-            $code = $this->getCode();
+            $code = $this->getInternalErrorCode();
 
             $desc = $this->getDescriptionFromErrorCode($code);
 
             if ($desc === null)
-                return;
+                throw new \InvalidArgumentException('Description not provided');
         }
 
         if (! is_string($desc))
@@ -92,12 +91,17 @@ class Error
             throw new InvalidArgumentException('desc should be string');
         }
 
-        $this->attributes['description'] = $desc;
+        $this->setAttribute(self::DESCRIPTION, $desc);
     }
 
-    protected function setField($field)
+    protected function setPublicErrorCode($code)
     {
-        $this->attributes['field'] = $field;
+        $this->setAttribute(self::PUBLIC_ERROR_CODE, $code);
+    }
+
+    protected function setHttpStatusCode($code)
+    {
+        $this->setAttribute(self::HTTP_STATUS_CODE, $code);
     }
 
     protected function getAttribute($attr)
@@ -105,32 +109,21 @@ class Error
         return $this->attributes[$attr];
     }
 
-    public function getGatewayErrorCode()
+    protected function setPublicErrorDetails()
     {
-        return $this->attributes['gateway_error_code'];
-    }
+        $class = $this->getAttribute(self::ERROR_CLASS);
+        $internalCode = $this->getInternalErrorCode();
 
-    public function getGatewayErrorDesc()
-    {
-        return $this->attributes['gateway_error_desc'];
-    }
-
-    protected function constructPublicError()
-    {
-        $this->publicError = new PublicError();
-
-        switch ($this->getAttribute('class'))
+        switch ($class)
         {
             case ErrorClass::GATEWAY:
                 $this->handleGatewayErrors();
                 break;
 
             case ErrorClass::CARD:
-                $this->handleCardErrors();
-                break;
-
             case ErrorClass::FIELD:
-                $this->handleFieldErrors();
+                $this->setPublicErrorCode($internalCode);
+                $this->setHttpStatusCode(400);
                 break;
 
             case ErrorClass::BAD_REQUEST:
@@ -139,14 +132,13 @@ class Error
 
             case ErrorClass::LOGICAL:
             case ErrorClass::SERVER:
-                $this->handleServerErrors();
+                $this->setPublicErrorCode(PublicErrorCode::SERVER_ERROR);
+                $this->setHttpStatusCode(500);
                 break;
 
             default:
                 throw new InvalidArgumentException('Not a valid class');
         }
-
-        $publicError = new PublicError($code, $description);
     }
 
     public function getPublicError()
@@ -154,36 +146,29 @@ class Error
         return $this->publicError;
     }
 
-    public function getCode()
+    protected function getInternalErrorCode()
     {
-        return $this->getAttribute('code');
+        return $this->getAttribute(self::INTERNAL_ERROR_CODE);
     }
 
-    public function getDesc()
+    public function getDescription()
     {
-        return $this->getAttribute('description');
-    }
-
-    public function getField()
-    {
-        return $this->getAttribute('field');
+        return $this->getAttribute(self::DESCRIPTION);
     }
 
     public function getPublicErrorCode()
     {
-        return $this->publicError->getErrorCode();
+        return $this->getAttribute(self::PUBLIC_ERROR_CODE);
     }
 
-    public function getPublicErrorDescription()
+    public function getHttpStatusCode()
     {
-        return $this->publicError->getErrorDescription();
+        return $this->getAttribute(self::HTTP_STATUS_CODE);
     }
 
     protected function handleBadRequestErrors()
     {
-        $code = $this->getCode();
-        $desc = $this->getDesc();
-        $field = $this->getField();
+        $code = $this->getInternalErrorCode();
 
         $httpStatusCode = 400;
 
@@ -200,64 +185,43 @@ class Error
                 break;
         }
 
-        $this->publicError->setBadRequestError(
-            $desc,
-            $field,
-            $httpStatusCode);
+        $this->setPublicErrorCode(PublicErrorCode::BAD_REQUEST_ERROR);
+        $this->setHttpStatusCode($httpStatusCode);
     }
 
     protected function handleGatewayErrors()
     {
-        $code = $this->getAttribute('code');
+        $code = $this->getInternalErrorCode();
+
+        $httpStatusCode = 502;
 
         switch ($code)
         {
             case ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT:
-                $this->publicError->setGatewayTimeout();
-                break;
-
-            case ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH:
-                $this->publicError->setBadRequestError(
-                    PublicErrorDescription::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH);
-                break;
-
-            default:
-                $this->publicError->setGatewayError();
+                $httpStatusCode = 504;
                 break;
         }
+
+        $this->setPublicErrorCode(PublicErrorCode::GATEWAY_ERROR);
+        $this->setHttpStatusCode($httpStatusCode);
     }
 
-    protected function handleCardErrors()
-    {
-        $code = $this->getAttribute('code');
-        $desc = $this->getAttribute('description');
-        $field = $this->getAttribute('field');
-
-        $this->publicError->setCardError($code, $desc, $field);
-    }
-
-    protected function handleFieldErrors()
-    {
-        $code = $this->getAttribute('code');
-        $desc = $this->getAttribute('description');
-        $field = $this->getAttribute('field');
-
-        $this->publicError->setFieldError($code, $desc, $field);
-    }
-
-    protected function handleServerErrors()
-    {
-        $this->publicError->setServerError();
-    }
-
-    protected function getErrorArray()
+    public function getAttributes()
     {
         return $this->attributes;
     }
-    public function toArray()
+    public function toPublicArray()
     {
-        return array(
-            'error' => $this->getErrorArray());
+        $array = array(
+            self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
+            self::DESCRIPTION       => $this->getDescription());
+
+        $field = $this->getAttribute(self::FIELD);
+
+        if ($field !== null)
+            $array[self::FIELD] = $field;
+
+        return array('error' => $array);
     }
 
     protected function getDescriptionFromErrorCode($code)

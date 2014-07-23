@@ -42,11 +42,6 @@ class BaseException extends Exception
         return $this->error;
     }
 
-    public function getErrorArray()
-    {
-        return $this->error->toArray();
-    }
-
     public function getPublicError()
     {
         return $this->error->getPublicError();
@@ -54,19 +49,19 @@ class BaseException extends Exception
 
     public function generatePublicJsonResponse()
     {
-        $error = $this->getPublicError();
+        $error = $this->error;
 
         $httpStatusCode = $error->getHttpStatusCode();
 
-        return ApiResponse::json($error->toArray(), $httpStatusCode);
+        return ApiResponse::json($this->error->toPublicArray(), $httpStatusCode);
     }
 
     public function generateDebugJsonResponse()
     {
-        $error = $this->getError();
+        $error = $this->error;
 
-        $httpStatusCode = $error->getPublicError()->getHttpStatusCode();
+        $httpStatusCode = $error->getHttpStatusCode();
 
-        return ApiResponse::json($error->toArray(), $httpStatusCode);
+        return ApiResponse::json($error->getAttributes(), $httpStatusCode);
     }
 }

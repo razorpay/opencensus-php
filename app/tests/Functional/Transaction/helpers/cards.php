@@ -25,7 +25,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayTimeoutException',
-            'code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
             'gateway_error_code'  => Hdfc\ErrorCode::RP00002,
         ],
     ],
@@ -64,7 +64,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
@@ -88,7 +88,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
@@ -112,7 +112,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00007,
         ],
     ],
@@ -136,7 +136,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00008,
         ],
 
@@ -234,7 +234,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00004,
         ],
     ],
@@ -257,7 +257,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
@@ -280,7 +280,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
