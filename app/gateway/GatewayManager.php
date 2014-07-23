@@ -3,6 +3,7 @@
 namespace Gateway;
 
 use Gateway\Hdfc;
+use EE\Exception;
 
 class GatewayManager
 {
@@ -29,7 +30,8 @@ class GatewayManager
             return $this->$method();
         }
 
-        throw new \InvalidArgumentException('Gateway ' . $gateway . ' not supported');
+        throw new Exception\InvalidArgumentException(
+                                'Gateway ' . $gateway . ' not supported');
     }
 
     public function getDefaultGateway()

@@ -26,15 +26,13 @@ class ServerErrorException extends BaseException
         $data = null,
         Exception $previous = null)
     {
-        $data['message'] = $message;
-
         $this->data = $data;
 
         $this->code = $code;
 
         $this->previous = $previous;
 
-        $error = new \EE\Error\Error($code, null, null, $data);
+        $error = new \EE\Error\Error($code, null, null, $data, $message);
 
         $this->error = $error;
 

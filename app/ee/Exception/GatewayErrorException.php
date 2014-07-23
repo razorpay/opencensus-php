@@ -15,7 +15,7 @@ class GatewayErrorException extends RecoverableException
     {
         if (defined('\EE\Error\ErrorCode::'.$code) === false)
         {
-            throw new \InvalidArgumentException($code . ' is not a valid code');
+            throw new InvalidArgumentException($code . ' is not a valid code');
         }
 
         $error = new \EE\Error\Error($code);

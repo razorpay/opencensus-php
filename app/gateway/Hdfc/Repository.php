@@ -2,7 +2,7 @@
 
 namespace Gateway\Hdfc;
 
-use EE\Exception\InvalidArgumentException;
+use EE\Exception;
 use Gateway\Hdfc;
 use Models\Base;
 
@@ -49,7 +49,8 @@ class Repository extends Base\Repository
                 break;
 
             default:
-                throw new InvalidArgumentException('Wrong responseType => '.$responseType);
+                throw new Exception\InvalidArgumentException(
+                                'Wrong responseType => '.$responseType);
         }
 
         $this->repo = $oldRepo;

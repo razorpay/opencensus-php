@@ -41,7 +41,7 @@ class Utility
 
         if (count($input1) !== count($input2))
         {
-            throw new \InvalidArgumentException("Number of elements in both arrays is not equal");
+            throw new \EE\Exception\InvalidArgumentException("Number of elements in both arrays is not equal");
         }
 
         for ($i = 0; $i < $count; $i++)

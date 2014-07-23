@@ -67,7 +67,7 @@ if (! function_exists('validate_keys'))
 
 		if (count($invalid_keys) > 0)
 		{
-			throw new \ExtraFieldsException($invalid_keys);
+			throw new EE\Exception\ExtraFieldsException($invalid_keys);
 		}
 	}
 }

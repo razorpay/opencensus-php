@@ -128,7 +128,7 @@ class TraceWriter extends Logger
                 return $this->config['debug_options'][$option];
             }
             else
-                throw new \InvalidArgumentException($option . ' in debug not defined');
+                throw new InvalidArgumentException($option . ' in debug not defined');
         }
         else
             return false;

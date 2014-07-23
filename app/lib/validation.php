@@ -78,7 +78,7 @@ Validator::extend('expiry_year', function($attribute, $value, $parameters)
 
     if (is_numeric($year) === false)
     {
-        throw new \InvalidArgumentException('year should be numeric');
+        throw new EE\Exception\InvalidArgumentException('year should be numeric');
     }
 
     $currentYear = (int)date('Y');

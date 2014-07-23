@@ -112,6 +112,7 @@ class ErrorCode
     const SERVER_ERROR_INVALID_ARGUMENT                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                              = 'SERVER_ERROR_DB_QUERY_FAILED';
 
+    const LOGICAL_ERROR                                             = 'LOGICAL_ERROR';
     const LOGICAL_ERROR_UNIDENTIFIED_CARD_NETWORK                   = 'LOGICAL_ERROR_UNIDENTIFIED_CARD_NETWORK';
     const LOGICAL_ERROR_TRANSACTION_NOT_CAPTURED                    = 'LOGICAL_ERROR_TRANSACTION_NOT_CAPTURED';
 }

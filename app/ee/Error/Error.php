@@ -7,6 +7,7 @@ use EE\Exception\InvalidArgumentException;
 class Error
 {
     const INTERNAL_ERROR_CODE = 'internal_error_code';
+    const INTERNAL_ERROR_DESC = 'internal_error_desc';
     const PUBLIC_ERROR_CODE = 'code';
     const HTTP_STATUS_CODE = 'http_status_code';
     const DESCRIPTION = 'description';
@@ -27,7 +28,7 @@ class Error
         $this->fill($code, $desc, $field, $data);
     }
 
-    public function fill($code, $desc = null, $field = null, $data = null)
+    public function fill($code, $desc = null, $field = null, $data = null, $internalDesc = null)
     {
         $this->setAttribute(self::DATA, $data);
 
@@ -35,11 +36,13 @@ class Error
 
         $this->setInternalErrorCode($code);
 
-        $this->setDesc($desc);
-
         $this->setClass($code);
 
         $this->setPublicErrorDetails($code);
+
+        $this->setDesc($desc);
+
+        $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
     }
 
     public function setGatewayErrorCodeAndDesc($code, $desc)
@@ -52,7 +55,7 @@ class Error
     {
         // if (defined(__CLASS__.'::'.$key) === false)
         // {
-        //     throw new \InvalidArgumentException($key . ' not defined');
+        //     throw new InvalidArgumentException($key . ' not defined');
         // }
 
         $this->attributes[$key] = $value;
@@ -83,7 +86,15 @@ class Error
             $desc = $this->getDescriptionFromErrorCode($code);
 
             if ($desc === null)
-                throw new \InvalidArgumentException('Description not provided');
+            {
+                $code = $this->getPublicErrorCode();
+
+                $desc = $this->getDescriptionFromErrorCode($code);
+
+                if ($desc === null)
+                    throw new InvalidArgumentException(
+                        'Description not provided for code: '. $code);
+            }
         }
 
         if (! is_string($desc))
@@ -250,11 +261,11 @@ class Error
     {
         if ($code === null)
         {
-            throw new \InvalidArgumentException('null provided for errorcode');
+            throw new InvalidArgumentException('null provided for errorcode');
         }
         if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
         {
-            throw new \InvalidArgumentException('ErrorCode: ' . $code . ' is not defined');
+            throw new InvalidArgumentException('ErrorCode: ' . $code . ' is not defined');
         }
     }
 
@@ -262,7 +273,7 @@ class Error
     {
         if (defined(__NAMESPACE__.'\ErrorClass::'.$class) === false)
         {
-            throw new \InvalidArgumentException($class . ' is not a valid class');
+            throw new InvalidArgumentException($class . ' is not a valid class');
         }
     }
 }
