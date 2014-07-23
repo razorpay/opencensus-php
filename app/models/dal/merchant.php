@@ -85,6 +85,18 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
     }
 
     /**
+     * Generates data required for merchant confirmation email
+     */
+    public function generateEmailData()
+    {
+        return array(
+            'name'  => $this->name,
+            'email' => $this->email,
+            'confirm_token' => $this->confirm_token
+        );
+    }
+
+    /**
      * Get the unique identifier for the user.
      *
      * @return mixed

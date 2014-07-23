@@ -118,4 +118,16 @@ class MerchantController extends BaseController
                 ->with('error', array('An error occured in email verification. Please check the link and try again'));
         }
     }
+
+    public function sendConfirmationMail($job, $data)
+    {
+        $merchant = $data['merchant'];
+
+        \Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
+        {
+            $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
+        });
+
+        $job->delete();
+    }
 }

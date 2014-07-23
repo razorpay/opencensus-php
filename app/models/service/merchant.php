@@ -13,10 +13,11 @@ class Merchant extends Service
 
         if (empty($error))
         {   
-            $data = DAL\Merchant::createOrFail($data)->toArray();
+            $merchant = DAL\Merchant::createOrFail($data);
 
-            $this->sendConfirmationMail($data);
+            \Queue::push('MerchantController@sendConfirmationMail',array('merchant' => $merchant->generateEmailData()));
 
+            $data = $merchant->toArray();
         }
 
         return [$error, $data];
@@ -111,13 +112,5 @@ class Merchant extends Service
         }
         else
             return ['status' => false];
-    }
-
-    private function sendConfirmationMail($merchant)
-    {
-        return \Mail::queue('emails.confirmation', compact('merchant'), function($m) use ($merchant)
-        {
-            $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
-        });
     }
 }
