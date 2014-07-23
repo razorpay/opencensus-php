@@ -24,10 +24,7 @@ Route::group(array('before' => 'auth.public'), function()
     Route::$method(
         URL::TXN_CALLBACK_URL,
         'TransactionController@postCallback');
-});
 
-Route::group(array('before' => 'auth.public'), function()
-{
     $method = URL::TXN_CREATE_METHOD;
     Route::$method(
         URL::TXN_CREATE_URL,
