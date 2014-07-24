@@ -284,6 +284,6 @@ class BasicAuth
 
     protected function matchAppSecret($app, $secret)
     {
-        return ($app['auth_pass'] === $secret);
+        return ($app['secret'] === $secret);
     }
 }
