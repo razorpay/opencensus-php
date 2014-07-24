@@ -7,6 +7,7 @@ return array(
     'DB_MYSQL_USERNAME'         => $_ENV['WERCKER_MYSQL_USERNAME'],
     'DB_MYSQL_PASSWORD'         => $_ENV['WERCKER_MYSQL_PASSWORD'],
 
+    'APP_DASHBOARD_URL'     	=> 'http://dashboard.razorpay.com/',
     'APP_DASHBOARD_SECRET'      => 'secret',
 
     'HDFC_ID'                   => 'hdfc_id',

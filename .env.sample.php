@@ -7,6 +7,7 @@ return array(
     'DB_MYSQL_USERNAME'         => 'user',
     'DB_MYSQL_PASSWORD'         => 'password',
 
+    'APP_DASHBOARD_URL'     	=> 'http://dashboard.razorpay.com/',
     'APP_DASHBOARD_SECRET'      => 'secret',
 
     'HDFC_ID'                   => 'hdfc_id',
