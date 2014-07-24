@@ -6,6 +6,9 @@ build:
       - add-ssh-key:
           keyname: RZP_API
       - script:
+          name: copy wercker config
+          code:  cp .env.wercker.php .env.testing.php
+      - script:
           name: install dependencies
           code: composer install --no-interaction
       - script:

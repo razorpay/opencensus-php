@@ -1,14 +1,13 @@
 /bootstrap/compiled.php
 /vendor
-.env.*.php
+.env.testing.php
+.env.dev.php
 .env.php
 .DS_Store
 Thumbs.db
-database.php
 grunt.json
 node_modules/
 layout.blade.php
 dev/
 prod/
-app/config/api.php
-app/config/queue.php
+bootstrap/environment.php

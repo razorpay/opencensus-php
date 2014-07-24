@@ -15,7 +15,7 @@ return array(
 	|
 	*/
 
-	'default' => 'sync',
+	'default' => 'sqs',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -31,7 +31,7 @@ return array(
 	'connections' => array(
 
 		'sync' => array(
-			'driver' => 'sync',
+			'driver' => $_ENV['QUEUE_DRIVER'],
 		),
 
 		'beanstalkd' => array(
@@ -43,10 +43,10 @@ return array(
 
 		'sqs' => array(
 			'driver' => 'sqs',
-			'key'    => 'your-public-key',
-			'secret' => 'your-secret-key',
-			'queue'  => 'your-queue-url',
-			'region' => 'us-east-1',
+			'key'    => $_ENV['AWS_KEY_ID'],
+			'secret' => $_ENV['AWS_KEY_SECRET'],
+			'queue'  => $_ENV['AWS_QUEUE_URL'],
+			'region' => $_ENV['AWS_REGION'],
 		),
 
 		'iron' => array(

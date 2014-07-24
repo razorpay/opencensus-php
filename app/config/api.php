@@ -7,8 +7,8 @@ return array(
      * without using rzp-php api.
      * Mostly used for endpoints not exposed by rzp-php
      */
-    'url'       =>  'https://api.razorpay.com/',
+    'url'       =>  $_ENV['API_URL'],
     'ip'        =>  '10.0.0.140',
-    'auth_pass' =>  'DASHBOARD_AUTH_PASS',
+    'auth_pass' =>  $_ENV['API_AUTH_PASS'],
 
 );
