@@ -1,9 +1,7 @@
 /bootstrap/compiled.php
 /vendor
-.env.dev.php
-.env.testing.php
-.env.local.php
-.env.php
+.env.*
+!.env.wercker.php
 .DS_Store
 Thumbs.db
 /bootstrap/environment.php

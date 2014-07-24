@@ -81,6 +81,7 @@ class TestCase extends ParentTestCase
         //
         // Undo DB Changes after test
         //
+        //sd(\Config::get('database.connections'));
         DB::rollback();
     }
 
