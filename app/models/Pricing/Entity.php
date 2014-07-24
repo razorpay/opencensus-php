@@ -7,6 +7,7 @@ use Models\Base;
 class Entity extends Base\UniqueIdEntity
 {
     const ID = 'id';
+    const PLAN_ID = 'plan_id';
     const GATEWAY = 'gateway';
     const PLAN = 'plan';
     const PAYMENT_METHOD = 'payment_method';

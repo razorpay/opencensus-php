@@ -25,9 +25,14 @@ class CreateMerchants extends Migration {
 
             $table->string(Merchant::NAME);
 
-            $table->string(Merchant::EMAIL)->unique();
+            $table->string(Merchant::EMAIL)
+                  ->unique();
 
-            $table->boolean(Merchant::LIVE)->default(0);
+            $table->boolean(Merchant::LIVE)
+                  ->default(0);
+
+            $table->string(Merchant::PRICING_PLAN)
+                  ->nullable();
 
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);

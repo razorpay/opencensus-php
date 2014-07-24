@@ -54,4 +54,14 @@ class Entity extends Base\UniqueIdEntity
         }
     }
 
+    public function fillPartiallyFromTxn($txn)
+    {
+        $lgrData = array(
+            self::MERCHANT_ID   => $txn->getMerchantId(),
+            self::AMOUNT        => $txn->getAmount(),
+            self::ENTITY_ID     => $txn->getKey(),
+            self::ENTITY_TYPE   => 'transaction');
+
+        $this->fill($lgrData);
+    }
 }

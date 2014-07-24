@@ -7,7 +7,7 @@ use Models\Ledger;
 use Models\Merchant;
 use Models\Transaction;
 
-class Core extends Base\UniqueIdEntity
+class Core
 {
     protected $merchant = null;
 
@@ -18,15 +18,14 @@ class Core extends Base\UniqueIdEntity
 
     public function recordCapture(Transaction\Entity $txn)
     {
-        $merchantId = $txn->getMerchantId();
+        return;
+        $lgr = $this->create($txn);
 
-        $balance = (new Merchant\Repository)->findBalanceLockForUpdate($merchantId);
-
-        $amount = $txn->getAmount();
-
-        $fee = 0;
+        $fee = (new Pricing\Fee)->calculateMerchantFees($txn);
 
         $credit = $amount - $fee;
+
+        $balance = (new Merchant\Repository)->findBalanceLockForUpdate($merchantId);
 
         $balance->addAmount($credit);
 
@@ -78,5 +77,14 @@ class Core extends Base\UniqueIdEntity
         $balance->saveOrFail();
 
         // $txn->setLedgerId($ledger->getKey());
+    }
+
+    protected function create($txn)
+    {
+        $lgr = new Ledger\Entity;
+
+        $lgr->fillPartiallyFromTxn($txn);
+
+        return $lgr;
     }
 }

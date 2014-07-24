@@ -11,6 +11,8 @@ class Entity extends Base\UniqueIdEntity
     const EMAIL = 'email';
     const LIVE = 'live';
 
+    const PRICING_PLAN = 'pricing_plan';
+
     protected $table = \Constants\Table::MERCHANT;
 
     protected $fillable = array(

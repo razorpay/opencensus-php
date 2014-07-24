@@ -27,6 +27,12 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     public function setUp()
     {
+        sd(
+            $_ENV['WERCKER_MYSQL_HOST'],
+            $_ENV['WERCKER_MYSQL_PORT'],
+            $_ENV['DB_MYSQL_HOST'],
+            $_ENV['DB_MYSQL_PORT']);
+
         parent::setUp();
     }
 }

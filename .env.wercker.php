@@ -10,6 +10,6 @@ return array(
     'APP_DASHBOARD_URL'     	=> 'http://dashboard.razorpay.com/',
     'APP_DASHBOARD_SECRET'      => 'secret',
 
-    'HDFC_ID'                   => 'hdfc_id',
-    'HDFC_PASSWORD'             => 'hdfc_password',
+    'HDFC_ID'                   => $_ENV['HDFC_ID'],
+    'HDFC_PASSWORD'             => $_ENV['HDFC_PASSWORD'],
 );
