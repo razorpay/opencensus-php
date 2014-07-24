@@ -1,11 +1,9 @@
 /bootstrap/compiled.php
 /vendor
+.env.dev.php
+.env.testing.php
 .env.local.php
 .env.php
 .DS_Store
 Thumbs.db
-/app/config/database.php
-/app/config/testing/database.php
-/app/gateway/Hdfc/Config.php
-/app/config/applications.php
 /bootstrap/environment.php
