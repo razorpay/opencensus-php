@@ -9,7 +9,9 @@ return [
     'createMerchant' => [
         'request' => [
             'content' => [
-                'id' => '41ce4abda390575910cba897',
+                'id'    => '41ce4abda390575910cba897',
+                'name'  => 'Tester',
+                'email' => 'test@localhost.com'
             ],
             'url' => '/merchants',
             'method' => 'POST'

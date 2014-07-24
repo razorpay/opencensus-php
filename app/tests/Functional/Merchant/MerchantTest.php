@@ -38,8 +38,10 @@ class MerchantTest extends TestCase
 
         $content = $this->startTest();
 
-        $this->merchantId = $content['id'];
-
+        $this->id = $content['id'];
+        $this->name = $content['name'];
+        $this->email = $content['email'];
+        
         $this->keyId = $content['key']['id'];
 
         $this->keySecret = $content['key']['secret'];
