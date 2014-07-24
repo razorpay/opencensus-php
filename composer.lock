@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "021f4eb1667cdccb7515ba4059d06329",
+    "hash": "28ddc48102a96bb35fa8631cbbed3be5",
     "packages": [
         {
             "name": "classpreloader/classpreloader",
@@ -709,16 +709,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v4.2.6",
+            "version": "v4.2.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "2e73cd58ee42919166a51897b965e1135b85048c"
+                "reference": "11c1b47b365be02beab3e5aca2306aaa08203d8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/2e73cd58ee42919166a51897b965e1135b85048c",
-                "reference": "2e73cd58ee42919166a51897b965e1135b85048c",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/11c1b47b365be02beab3e5aca2306aaa08203d8e",
+                "reference": "11c1b47b365be02beab3e5aca2306aaa08203d8e",
                 "shasum": ""
             },
             "require": {
@@ -812,9 +812,7 @@
             "authors": [
                 {
                     "name": "Taylor Otwell",
-                    "email": "taylorotwell@gmail.com",
-                    "homepage": "https://github.com/taylorotwell",
-                    "role": "Creator of Laravel"
+                    "email": "taylorotwell@gmail.com"
                 }
             ],
             "description": "The Laravel Framework.",
@@ -822,7 +820,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2014-06-29 00:16:51"
+            "time": "2014-07-22 20:25:45"
         },
         {
             "name": "monolog/monolog",
@@ -940,19 +938,20 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v0.9.4",
+            "version": "v0.9.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "1e5e280ae88a27effa2ae4aa2bd088494ed8594f"
+                "reference": "ef70767475434bdb3615b43c327e2cae17ef12eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/1e5e280ae88a27effa2ae4aa2bd088494ed8594f",
-                "reference": "1e5e280ae88a27effa2ae4aa2bd088494ed8594f",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/ef70767475434bdb3615b43c327e2cae17ef12eb",
+                "reference": "ef70767475434bdb3615b43c327e2cae17ef12eb",
                 "shasum": ""
             },
             "require": {
+                "ext-tokenizer": "*",
                 "php": ">=5.2"
             },
             "type": "library",
@@ -980,7 +979,7 @@
                 "parser",
                 "php"
             ],
-            "time": "2013-08-25 17:11:40"
+            "time": "2014-07-23 18:24:17"
         },
         {
             "name": "patchwork/utf8",
@@ -2409,6 +2408,7 @@
     "stability-flags": {
         "razorpay/razorpay-php": 20
     },
+    "prefer-stable": false,
     "platform": [
 
     ],
