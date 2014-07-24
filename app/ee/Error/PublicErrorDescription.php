@@ -8,7 +8,7 @@ class PublicErrorDescription
         'There is a problem with the gateway causing the transaction to fail';
 
     const SERVER_ERROR =
-        'Looks like nemo is again playing with our server. Please try your request again!';
+        'The server encountered an error. The incident has been reported to admins';
 
     const CARD_ERROR_INVALID_EXPIRY_DATE =
         'The expiry date is not valid';
