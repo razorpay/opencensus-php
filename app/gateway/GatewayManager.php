@@ -9,6 +9,11 @@ class GatewayManager
 {
     protected $gateways = array();
 
+    public function __construct($gateway = null)
+    {
+
+    }
+
     protected function gateway($gateway = null)
     {
         $gateway = $gateway ?: $this->getDefaultGateway();
