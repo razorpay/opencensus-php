@@ -24,6 +24,8 @@ class CreatePricing extends Migration
 
             $table->string(Pricing::PLAN);
 
+            $table->string(Pricing::PLAN_ID);
+
             $table->string(Pricing::GATEWAY);
 
             $table->string(Pricing::PAYMENT_METHOD);
