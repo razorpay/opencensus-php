@@ -20,14 +20,14 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function setUp()
     {
+        parent::setUp();
+
         $gateway = \Config::get('gateway.default');
 
         if ($gateway !== 'hdfc')
         {
             $this->markTestSkipped('Hdfc gateway auth tests are disabled');
         }
-
-        parent::setUp();
 
         //
         // load test data

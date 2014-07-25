@@ -18,6 +18,8 @@ class TestCase extends ParentTestCase
 {
     use CustomAssertions;
 
+    protected $dbTxnInProgress = false;
+
     protected static $fixtures = array(
         'merchant' => 'Models\Merchant\Entity',
         'key' => 'Models\Key\Entity',
@@ -25,7 +27,6 @@ class TestCase extends ParentTestCase
         'balance' => 'Models\Merchant\Balance');
 
     protected $auth = array();
-
     public function setUp()
     {
         parent::setUp();
@@ -45,6 +46,7 @@ class TestCase extends ParentTestCase
         // to rollback once done
         //
         DB::beginTransaction();
+        $this->dbTxnInProgress = true;
 
         //
         // Seed the db with required data
@@ -81,8 +83,12 @@ class TestCase extends ParentTestCase
         //
         // Undo DB Changes after test
         //
+        if ($this->dbTxnInProgress === true)
+        {
+            DB::rollback();
 
-        DB::rollback();
+            $this->dbTxnInProgress = false;
+        }
     }
 
     protected function createEntity($entity, $attributes = array())
