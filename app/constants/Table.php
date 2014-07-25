@@ -21,4 +21,6 @@ class Table
     const BALANCE = 'balance';
 
     const PRICING = 'pricing';
+
+    const SETTLEMENT = 'settlements';
 }

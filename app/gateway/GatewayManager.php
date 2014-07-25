@@ -11,7 +11,7 @@ class GatewayManager
 
     public function __construct($gateway = null)
     {
-
+        ;
     }
 
     protected function gateway($gateway = null)
