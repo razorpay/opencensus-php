@@ -1,7 +1,7 @@
 <div class="content boxed" id="sidebar">
-    <h2 class="lined">
+    <h3 class="lined">
         <div class="title">Features</div>
-    </h2>
+    </h3>
     <ul>
         <li class="active" data-tab="dashboard">
             <a href="/#!/">Dashboard</a>
@@ -16,9 +16,9 @@
             <a href="/#!/settlements">Settlements</a>
         </li>
     </ul>
-    <h2 class="lined">
+    <h3 class="lined">
         <div class="title">Settings</div>
-    </h2>
+    </h3>
     <ul>
         <li data-tab="keys">
             <a href="/#!/keys">API Keys</a>

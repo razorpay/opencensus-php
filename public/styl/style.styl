@@ -4,7 +4,7 @@ rzp-blue = #29B7D5
 rzp-red = #E74C3C
 rzp-green = #27AE60
 rzp-light-gray = #EFEFEF
-rzp-gray = #727272
+rzp-gray = #444444
 
 /* Mixins */
 
@@ -50,9 +50,9 @@ html
 
 body
 	font-family 'Lato',sans-serif
-	font-size 10px
+	font-size 14px
 	font-weight 400
-	color #000000
+	color rzp-gray
 
 /* Header */
 
@@ -64,7 +64,7 @@ header
 	color rzp-gray
 	height 48px
 	width 100%
-	font-size 1.5em
+	font-size 1.2em
 	z-index 1000
 	top 0
 	include-box-shadow 0px 1px 2px 0px rgba(0, 0, 0, 0.1)
@@ -132,7 +132,7 @@ header
 	.active
 		color rzp-blue
 	.button-desc
-		font-size 1.5em
+		font-size 1.3em
 		height 26px
 		display inline-block
 		margin 0 20px
@@ -168,7 +168,7 @@ header
 #sidebar
 	padding 10px 0 30px 0
 	min-height 300px
-	h2
+	h3
 		border-bottom 1px solid rzp-gray
 		font-weight 300
 		.title
@@ -182,7 +182,7 @@ header
 		margin 10px 0
 		li
 			margin 5px 0
-			font-size 1.5em
+			font-size 1.2em
 			color rzp-blue
 			border-bottom 2px solid transparent
 			a
@@ -227,7 +227,7 @@ header
 	h2,div
 		display inline-block
 	h2
-		font-size 2em
+		font-size 1.7em
 	#datepicker-group
 		text-align right
 	.datepicker
@@ -237,12 +237,10 @@ header
 		text-align center
 		color rzp-gray
 		font-family 'Lato',sans-serif
-		font-size 1.1em
 	.datepicker:focus
 		border 1px solid rzp-blue
 		outline 0
 	.btn-group
-		font-size 1.1em
 		margin 5px 0 0 0
 		.btn
 			border 1px solid rzp-gray
@@ -271,10 +269,10 @@ header
 		text-align center
 		margin 30px 0
 		.data-item-value
-			font-size 2.5em
+			font-size 2em
 			line-height 1.5
 		.data-item-desc
-			font-size 1.5em
+			font-size 1.3em
 
 /* Transactions */
 
@@ -290,7 +288,7 @@ header
 	margin-top 20px
 	li
 		padding 0 10px
-		font-size 1.4em
+		font-size 1.3em
 		a
 			span
 				margin 7px 0
@@ -310,21 +308,21 @@ header
 #transaction-one
 	margin 30px;
 	h2
-		font-size 2.5em
+		font-size 2.2em
 		font-weight 300
 	.details
 		margin-top 30px
 		.key
 			font-weight 400
 		div
-			font-size 1.5em
+			font-size 1.3em
 			padding 3px 0
 
 /* Account */
 
 .account-details
 	padding 30px
-	font-size 1.5em
+	font-size 1.3em
 	div
 		padding 5px 0
 
@@ -332,11 +330,9 @@ header
 
 .key-wrapper
 	padding 30px
-	font-size 1.5em
+	font-size 1.3em
 	li
 		margin 5px
-	.key
-		font-size 1.6em
 	.field
 		text-align left
 		width 150px
@@ -355,7 +351,6 @@ header
 	background-color rzp-blue
 	padding 20px 30px
 	font-weight 400
-	font-size 1.3em
 	color rzp-light-gray
 	.close-button
 		float right
@@ -374,7 +369,6 @@ header
 		border 0
 		color rzp-blue
 		font-family 'Lato',sans-serif
-		font-size 1.2em
 		padding 5px 0
 		cursor pointer
 	.roll-key-form-loader
@@ -442,11 +436,11 @@ header
 	.success-message
 		color rzp-green
 	.error-message, .success-message
-		font-size 1.5em
+		font-size 1.3em
 		text-align center
 	p.message
 		margin 20px 0
-		font-size 1.5em
+		font-size 1.3em
 		text-align center
 		a
 			text-decoration none
@@ -465,7 +459,7 @@ header
 	h2
 		color black
 		text-align center
-		font-size 2.5em
+		font-size 2.2em
 		font-weight 300
 		padding 12px 0
 	form
@@ -479,10 +473,10 @@ header
 				border-bottom 1px solid rzp-gray
 				color rzp-blue
 				padding 5px 0
-				line-height 1.3em
+				line-height 1.1em
 				margin 10px auto
 		a, .text>input
-			font-size 1.6em
+			font-size 1.3em
 			font-family 'Lato',sans-serif
 		a
 			margin 5px auto
@@ -500,7 +494,7 @@ header
 			margin 30px auto
 		.remember
 			label
-				font-size 1.6em
+				font-size 1.3em
 				font-family 'Lato', sans-serif
 				color rzp-blue
 			input[type="checkbox"]
@@ -520,7 +514,7 @@ header
 			border 0
 			color white
 			font-family 'Lato',sans-serif
-			font-size 1.6em
+			font-size 1.3em
 			height 35px
 			padding 5px 0
 			cursor pointer
@@ -529,7 +523,7 @@ header
 		text-align center
 		.footer-text
 			margin 0 auto
-			font-size 1.6em
+			font-size 1.3em
 			a
 				text-decoration none
 				color rzp-blue
@@ -541,63 +535,10 @@ header
 	width 700px
 	min-height 340px
 	border-radius(5px)
-	.error-message
-		color rzp-red
-	.success-message
-		color rzp-green
-	.error-message, .success-message
-		font-size 1.5em
-		text-align center
-	p.message
-		margin 20px 0
-		font-size 1.5em
-		text-align center
-		a
-			text-decoration none
-			color rzp-blue
-	.credentials
-		padding 10px
-		font-family 'Courier'
-		font-size 1em
-		div
-			display inline-block
-			margin 5px 0
-		.key
-			width 30px
-			text-align right
-			margin-right 20px
-	h2
-		color black
-		text-align center
-		font-size 2.5em
-		font-weight 300
-		padding 12px 0
 	form
 		padding 7px 0 20px
-		.text
-			input
-				width 70%
-				display block
-				outline none
-				border 0
-				border-bottom 1px solid rzp-gray
-				color rzp-blue
-				padding 5px 0
-				line-height 1.3em
-				margin 10px auto
-			select
-				width 70%
-				display block
-				outline none
-				border 0
-				border-bottom 1px solid rzp-gray
-				color rzp-blue
-				padding 5px 0
-				line-height 1.3em
-				margin 10px auto
-				background-color #FFFFFF
 		a, .text>input
-			font-size 1.6em
+			font-size 1.3em
 			font-family 'Lato',sans-serif
 		a
 			margin 5px auto
@@ -609,36 +550,6 @@ header
 				outline none
 			&:focus, &:hover
 				color black
-		.row
-			width 70%
-			height 20px
-			margin 30px auto
-		.remember
-			label
-				font-size 1.6em
-				font-family 'Lato', sans-serif
-				color rzp-blue
-			input[type="checkbox"]
-				background-color rzp-blue
-				outline none
-				border 0
-				margin-right 5px
-		.forgot-wrap
-			text-align right
-		#form-button
-			display block
-			margin 30px auto 5px
-			width 70%
-			background-color rzp-blue
-			border-radius(3px)
-			outline none
-			border 0
-			color white
-			font-family 'Lato',sans-serif
-			font-size 1.6em
-			height 35px
-			padding 5px 0
-			cursor pointer
 		.prev-next
 			display block
 			outline none
