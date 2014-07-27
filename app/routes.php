@@ -60,11 +60,23 @@ Route::group(array('before' => 'auth.private'), function()
 
 Route::group(array('before' => 'auth.app'), function()
 {
-    Route::post('merchants', 'MerchantController@postIndex');
+    Route::post('merchants', 'MerchantController@postCreateMerchant');
 
-    Route::get('keys', 'MerchantController@getKeys');
+    Route::get('merchants/{id}/keys', 'MerchantController@getKeys');
 
-    Route::put('keys/{id}', 'MerchantController@putKeys');
+    Route::put('merchants/{merchantId}/keys/{keyId}', 'MerchantController@putKeys');
+
+    Route::post('merchants/{id}/assignPricingPlan', 'MerchantController@postAssignPricingPlan');
+
+    Route::post('pricing', 'PricingController@newPricingPlan');
+
+    Route::get('pricing', 'PricingController@getPricingPlans');
+
+    Route::post('pricing/{id}/rule', 'PricingController@postAddPricingPlanRule');
+
+    Route::get('pricing/{id}', 'PricingController@getPlan');
+
+    Route::get('pricing/{planId}/rule/{ruleId}', 'PricingController@getPricingPlanRule');
 });
 
 Route::get('/', function()
