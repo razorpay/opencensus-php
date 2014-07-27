@@ -135,10 +135,12 @@ class DatabaseSeeder extends Seeder {
             DB::table(Table::PRICING)->insert(
                 array(
                     'id'            => 'c5484d12aafacc2023608c79',
-                    'gateway'       => 'hdfc',
-                    'payment_method'=> 'credit card',
-                    'payment_method_subtype' => 'Diners Club',
                     'plan'          => 'Education',
+                    'gateway'       => 'hdfc',
+                    'payment_mode'  => 'card',
+                    'payment_mode_type' => 'credit',
+                    'payment_network'=> 'DICL',
+                    'payment_issuer' => 'HDFC',
                     'percent_rate'  => '289',
                     'fixed_rate'    => '0',
                     'expired_at'    => null,
@@ -148,10 +150,10 @@ class DatabaseSeeder extends Seeder {
 
                 array(
                     'id'            => 'e5484d12aafacc2023608c79',
-                    'gateway'       => 'hdfc',
-                    'payment_method'=> 'credit card',
-                    'payment_method_subtype' => 'generic',
                     'plan'          => 'Education',
+                    'gateway'       => 'hdfc',
+                    'payment_mode'  => 'card',
+                    'payment_mode_type' => 'credit',
                     'percent_rate'  => '300',
                     'fixed_rate'    => '0',
                     'expired_at'    => null,
@@ -161,10 +163,10 @@ class DatabaseSeeder extends Seeder {
 
                 array(
                     'id'            => 'c5484d12aafacc2023608c79',
-                    'gateway'       => 'hdfc',
-                    'payment_method'=> 'debit card',
-                    'payment_method_subtype' => 'generic',
                     'plan'          => 'Education',
+                    'gateway'       => 'hdfc',
+                    'payment_mode'  => 'card',
+                    'payment_mode_type' => 'debit',
                     'percent_rate'  => '250',
                     'fixed_rate'    => '0',
                     'expired_at'    => null,
@@ -174,10 +176,9 @@ class DatabaseSeeder extends Seeder {
 
                 array(
                     'id'            => 'b5484d12aafacc2023608c79',
-                    'gateway'       => 'icici',
-                    'payment_method'=> 'net banking',
-                    'payment_method_subtype' => 'generic',
                     'plan'          => 'Education',
+                    'gateway'       => 'icici',
+                    'payment_mode'  => 'nb',
                     'percent_rate'  => '0',
                     'fixed_rate'    => '3000',
                     'expired_at'    => null,
