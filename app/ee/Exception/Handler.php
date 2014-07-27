@@ -74,6 +74,10 @@ class Handler
 
     public function genericExceptionHandler(\Exception $exception)
     {
+        \Trace\Trace::getInstance()->critical(
+           \Trace\TraceCode::ERROR_EXCEPTION,
+           ['exception' => $exception->getTraceAsString()]);
+
         if (Config::get('app.debug') === false)
         {
             return ApiResponse::serverError();
