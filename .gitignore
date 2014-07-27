@@ -10,4 +10,5 @@ node_modules/
 layout.blade.php
 dev/
 prod/
+public/css/style.css
 bootstrap/environment.php

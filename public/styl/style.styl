@@ -52,7 +52,7 @@ body
 	font-family 'Lato',sans-serif
 	font-size 10px
 	font-weight 400
-	color rzp-gray
+	color #000000
 
 /* Header */
 
@@ -533,3 +533,216 @@ header
 			a
 				text-decoration none
 				color rzp-blue
+
+/* Activation */
+
+.activation-form-wrapper
+	margin-top 30px
+	width 700px
+	min-height 340px
+	border-radius(5px)
+	.error-message
+		color rzp-red
+	.success-message
+		color rzp-green
+	.error-message, .success-message
+		font-size 1.5em
+		text-align center
+	p.message
+		margin 20px 0
+		font-size 1.5em
+		text-align center
+		a
+			text-decoration none
+			color rzp-blue
+	.credentials
+		padding 10px
+		font-family 'Courier'
+		font-size 1em
+		div
+			display inline-block
+			margin 5px 0
+		.key
+			width 30px
+			text-align right
+			margin-right 20px
+	h2
+		color black
+		text-align center
+		font-size 2.5em
+		font-weight 300
+		padding 12px 0
+	form
+		padding 7px 0 20px
+		.text
+			input
+				width 70%
+				display block
+				outline none
+				border 0
+				border-bottom 1px solid rzp-gray
+				color rzp-blue
+				padding 5px 0
+				line-height 1.3em
+				margin 10px auto
+			select
+				width 70%
+				display block
+				outline none
+				border 0
+				border-bottom 1px solid rzp-gray
+				color rzp-blue
+				padding 5px 0
+				line-height 1.3em
+				margin 10px auto
+				background-color #FFFFFF
+		a, .text>input
+			font-size 1.6em
+			font-family 'Lato',sans-serif
+		a
+			margin 5px auto
+			text-decoration none
+			color rzp-gray
+			&:hover
+				text-decoration none
+			&:focus
+				outline none
+			&:focus, &:hover
+				color black
+		.row
+			width 70%
+			height 20px
+			margin 30px auto
+		.remember
+			label
+				font-size 1.6em
+				font-family 'Lato', sans-serif
+				color rzp-blue
+			input[type="checkbox"]
+				background-color rzp-blue
+				outline none
+				border 0
+				margin-right 5px
+		.forgot-wrap
+			text-align right
+		#form-button
+			display block
+			margin 30px auto 5px
+			width 70%
+			background-color rzp-blue
+			border-radius(3px)
+			outline none
+			border 0
+			color white
+			font-family 'Lato',sans-serif
+			font-size 1.6em
+			height 35px
+			padding 5px 0
+			cursor pointer
+		.prev-next
+			display block
+			outline none
+			border 0
+			color rzp-blue
+			padding 5px 0
+			line-height 1.3em
+			text-align center
+			margin 40px auto 50px auto
+			.prev
+				float left
+			.next
+				float right
+	.form-footer
+		padding 15px
+		text-align center
+		.footer-text
+			margin 0 auto
+			font-size 1.6em
+			a
+				text-decoration none
+				color rzp-blue
+
+/*progressbar*/
+
+ol.steplist
+	margin 0
+	padding 0
+	list-style-type none
+	font-size 12px
+	li
+		display inline-block
+		text-align center
+		line-height 3em
+		width 16.6% 
+	li:before
+		content "\00a0\00a0"
+	li:after
+		position relative
+		bottom -2.5em
+		float left
+		left 50%
+		line-height 1em
+
+ol.progtrckr
+	margin 0
+	padding 0
+	list-style-type none
+	font-size 12px
+	li
+		display inline-block
+		text-align center
+		line-height 3em
+		width 16.66% 
+	li:before
+		content "\00a0\00a0"
+	li:after
+		position relative
+		bottom -2.5em
+		float left
+		left 50%
+		line-height 1em
+	li.progtrckr-done
+		color black
+		border-bottom 4px solid yellowgreen
+	li.progtrckr-done:after
+		content "\2713"
+		color white
+		background-color yellowgreen
+		height 1.2em
+		width 1.2em
+		line-height 1.2em
+		border none
+		border-radius 1.2em
+	li.progtrckr-todo
+		color silver 
+		border-bottom 4px solid silver
+	li.progtrckr-todo:after
+		content "\039F"
+		color silver
+		background-color white
+		font-size 1.5em
+		bottom -1.6em
+	li.progtrckr-current
+		color black 
+		border-bottom 4px solid rzp-blue
+	li.progtrckr-current:after
+		content "\2600"
+		color white
+		background-color rzp-blue
+		height 1.2em
+		width 1.2em
+		line-height 1.2em
+		border none
+		border-radius 1.2em
+	li.progtrckr-error
+		color black 
+		border-bottom 4px solid red
+	li.progtrckr-error:after
+		content "\274C"
+		color white
+		background-color red
+		height 1.2em
+		width 1.2em
+		line-height 1.2em
+		border none
+		border-radius 1.2em	
