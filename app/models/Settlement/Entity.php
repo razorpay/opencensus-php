@@ -7,11 +7,11 @@ use Models\Transaction;
 
 class Entity extends Base\UniqueIdEntity
 {
-    const ID            = 'id';
-    const MERCHANT_ID   = 'merchant_id';
-    const AMOUNT        = 'amount';
-    const STATUS        = 'status';
-    const LEDGER_ID     = 'ledger_id';
+    const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
+    const AMOUNT                = 'amount';
+    const STATUS                = 'status';
+    const LEDGER_ID             = 'ledger_id';
     const TRANSACTION_AMOUNT    = 'transaction_amount';
     const TRANSACTION_FEES      = 'transaction_fees';
     const REFUND_AMOUNT         = 'refund_amount';
