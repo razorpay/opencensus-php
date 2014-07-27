@@ -129,7 +129,7 @@ class Entity extends Base\UniqueIdEntity
 
         if ($details)
         {
-            if ($network === Card\Network::UNIDENTIFIED)
+            if ($network === Card\Network::OTHER)
             {
                 if ($details['brand'] !== null)
                 {
