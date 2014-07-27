@@ -145,6 +145,8 @@ $(document).ready(function(){
 				data[$item.attr('name')] = $item.val();
 			});
 
+			data._token = rzpd.activation.csrfToken();
+
 			$.ajax({
 	            url: '/activation/save/step/'+step,
 	            type: 'POST',
@@ -203,7 +205,9 @@ $(document).ready(function(){
 			var $fieldsets = $fieldset.parent().find('fieldset');
 
 			$fieldsets.prop('disabled', true);
-			data = {};
+			var data = {};
+
+			data._token = rzpd.activation.csrfToken();
 
 			$.ajax({
 			    url: '/activation',
@@ -242,6 +246,7 @@ $(document).ready(function(){
 			var files = this.files;
 			var data = new FormData();
 			data.append(name, files[0]);
+			data.append('_token', rzpd.activation.csrfToken());
 
 			rzpd.activation.displayMessage($parent, 'Uploading file....', 'info');
 
@@ -317,6 +322,9 @@ $(document).ready(function(){
 	        	$('input[name="bussiness_operation_pin"]').prop('disabled', false);
     		}
 		},
+		csrfToken: function(){
+			return $('input[name="_token"]').val();
+		}
     };
 
     //Initialize

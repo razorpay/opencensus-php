@@ -148,6 +148,8 @@ class MerchantController extends BaseController
     public function postSaveActivationStep($id)
     {
         $input = Input::all();
+        unset($input['_token']);
+
         $error = array();
         $data  = array();
 
@@ -173,6 +175,7 @@ class MerchantController extends BaseController
     public function postSaveActivationFile()
     {
         $input = Input::all();
+        unset($input['_token']);
 
         $error = Service\MerchantDetails::getInstance()->saveUploadedFile($input);
 

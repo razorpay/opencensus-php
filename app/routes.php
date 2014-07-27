@@ -36,13 +36,16 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/activation', 'MerchantController@getActivation');
 
-    Route::post('/activation', 'MerchantController@postActivation');
-
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
-    Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
+    Route::group(array('before' => 'csrf'), function()
+    {
+        Route::post('/activation', 'MerchantController@postActivation');
 
-    Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile');
+        Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
+
+        Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile');
+    });
 });
 
 Route::group(array('before' => 'guest'), function()

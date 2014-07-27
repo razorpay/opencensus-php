@@ -1,4 +1,3 @@
-				
 <div class="centered activation-form-wrapper">
  		<ol class="progtrckr">
 			<li class="progtrckr-current">Contact Details</li><!-- This comment is hack to avoid progress bar from becoming discontinuos
@@ -16,7 +15,8 @@
 	 	 --><li>Step 5</li><!--
 	 	 --><li>Step 6</li>
  		</ol>
- 	<form class="form-horizontal" role="form" id="activation-form">
+ 	<div class="form-horizontal" role="form" id="activation-form">
+ 		<input type="hidden" name="_token" value="{{{csrf_token()}}}">
 	 	<fieldset>
 			<legend>Contact Details</legend>
 			<div class="form-group">
@@ -301,7 +301,7 @@
 	</form>
 	<div>
 		<h4>Note:</h4>
-		<li>The form details will be saved whenever you press next.</li>
+		<li>The form details will be auto-saved when you press next.</li>
 	</div>
 </div>
-<script type="text/javascript" src="{{asset('js/<!-- @echo DEST -->/activation.js')}}"></script>-->
+<script type="text/javascript" src="{{asset('js/<!-- @echo DEST -->/activation.js')}}"></script>
