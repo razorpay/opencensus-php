@@ -26,6 +26,11 @@ class DatabaseSeeder extends Seeder {
 			)
 		);
 
+		DB::table('merchant_details')->insert(array(
+			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
+			)
+		);
+
 		DB::table('aggregations')->insert(array(
 			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
 			'txn_count'		=>	0,

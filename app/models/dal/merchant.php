@@ -28,6 +28,13 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         );
     }
 
+    public function merchantDetails()
+    {
+        return $this->hasOne(
+            __NAMESPACE__.'\MerchantDetails'
+        );
+    }
+
     public static function getAggregations($data)
     {
         $data = \DB::table('aggregations')->where('merchant_id','=',$data['merchant_id'])->first();

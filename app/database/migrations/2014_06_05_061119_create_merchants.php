@@ -16,7 +16,7 @@ class CreateMerchants extends Migration {
         {
             $table->engine = 'InnoDB';
 
-            $table->char('id', 24);
+            $table->char('id', 24)->primary();
 
             $table->string('name', 200);
 
