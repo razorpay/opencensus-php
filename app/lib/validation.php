@@ -10,6 +10,19 @@ Validator::extend('address', function($attribute, $value, $parameters)
 	return preg_match('/^[\pLa-zA-Z0-9 ,-]+$/u', $value);
 });
 
+/**
+ * Validate that an attribute contains only alphabetic characters.
+ *
+ * @param  string  $attribute
+ * @param  mixed   $value
+ * @param  array   $parameters
+ * @return bool
+ */
+Validator::extend('hexadecimal', function($attribute, $value, $parameters)
+{
+    return preg_match('/^[0-9A-Fa-f]+$.*/', $value);
+});
+
 Validator::extend('luhn', function($attribute, $value, $parameters)
 {
 	$number = $value;
@@ -90,3 +103,4 @@ Validator::extend('expiry_year', function($attribute, $value, $parameters)
 
     return true;
 });
+
