@@ -119,6 +119,73 @@ class MerchantController extends BaseController
         }
     }
 
+    public function getActivation()
+    {
+        return View::make('merchants.getActivation');
+    }
+
+    public function getActivationDetails()
+    {
+        $response = Service\MerchantDetails::getInstance()->fetchDetails();
+        
+        return Response::json($response);
+    }
+
+    public function postActivation()
+    {
+        $error = Service\MerchantDetails::getInstance()->submitDetails();
+
+        if (empty($error))
+        {
+            return Response::json(array('success' => true));
+        }
+        else
+        {
+            return Response::json(array('success' => false, 'status' => $error));
+        }
+    }
+
+    public function postSaveActivationStep($id)
+    {
+        $input = Input::all();
+        $error = array();
+        $data  = array();
+
+        if($id != 4)
+        {
+            $error = Service\MerchantDetails::getInstance()->saveDetails($id, $input);  
+        }
+        else
+        {
+            $error = Service\MerchantDetails::getInstance()->checkUploads();
+        }
+        
+        if (empty($error))
+        {
+            return Response::json(array('success' => true));
+        }
+        else
+        {
+            return Response::json(array('success' => false, 'status' => $error));
+        }
+    }
+
+    public function postSaveActivationFile()
+    {
+        $input = Input::all();
+
+        $error = Service\MerchantDetails::getInstance()->saveUploadedFile($input);
+
+        if (empty($error))
+        {
+            return Response::json(array('success' => true));
+        }
+        else
+        {
+            return Response::json(array('success' => false, 'status' => $error[0]));
+        }
+    }
+
     public function sendConfirmationMail($job, $data)
     {
         $merchant = $data['merchant'];

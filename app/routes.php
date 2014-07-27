@@ -33,6 +33,16 @@ Route::group(array('before' => 'auth'), function()
     Route::get('/keys', 'MerchantController@getKeys');
 
     Route::post('/keys', 'MerchantController@postKeys');
+
+    Route::get('/activation', 'MerchantController@getActivation');
+
+    Route::post('/activation', 'MerchantController@postActivation');
+
+    Route::get('/activation/details', 'MerchantController@getActivationDetails');
+
+    Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
+
+    Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile');
 });
 
 Route::group(array('before' => 'guest'), function()
