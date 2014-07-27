@@ -12,6 +12,8 @@ class Service extends Base\Service
 
     protected $merchantRepository;
 
+    protected $merchant;
+
     public function __construct()
     {
         $this->merchantRepository = new Merchant\Repository();
@@ -55,9 +57,11 @@ class Service extends Base\Service
         return $merchant;
     }
 
-    public function updateKey($id, array $input)
+    public function updateKey($merchantId, $keyId, array $input)
     {
-        $old = $this->keyRepository->findOrFail($id);
+        $merchant = $this->merchantRepository->findOrFailPublic($merchantId);
+
+        $old = $this->keyRepository->findOrFailPublic($keyId);
 
         $keyCore = new Key\Core;
 
@@ -72,7 +76,7 @@ class Service extends Base\Service
 
         $keyCore->setExpired($old, $delay);
 
-        $keyData = $keyCore->createAndReturnWithSecret($input['merchant_id']);
+        $keyData = $keyCore->createAndReturnWithSecret($merchantId);
 
         $keysData['old'] = $old->toArray();
 
@@ -83,8 +87,30 @@ class Service extends Base\Service
 
     public function fetchKeys($merchantId)
     {
+        $merchant = $this->merchantRepository->findOrFailPublic($merchantId);
+
         $keys = $this->keyRepository->getKeysForMerchant($merchantId);
 
         return array('count' => count($keys), 'data' => $keys);
+    }
+
+    public function retrieveById($id)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        return $merchant->toArray();
+    }
+
+    public function assignPricingPlan($id, $input)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        $plan = (new Pricing\Repository)->getPlan($input['id']);
+
+        $merchant->setPricingPlan($id);
+
+        $this->merchantRepository->save($merchant);
+
+        return $merchant->toArray();
     }
 }
