@@ -52,7 +52,7 @@ final class URL
 
     public static function callback($id)
     {
-        $urlSegment = \Http\URL::TXN_CALLBACK_URL;
+        $urlSegment = self::TXN_CALLBACK_URL;
 
         $pos = strrpos($urlSegment, '/');
 

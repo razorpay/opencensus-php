@@ -54,7 +54,7 @@ class ApiResponse
     {
         $urlSegment = $request->path();
 
-        return Url::isJsonpUrl($urlSegment);
+        return URL::isJsonpUrl($urlSegment);
     }
 
     protected static function attachJsonpCallback($request, $response)
