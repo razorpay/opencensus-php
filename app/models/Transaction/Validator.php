@@ -10,7 +10,7 @@ use Models\Transaction;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'merchant_id'   =>  'required|alpha_num|size:24',
+        'merchant_id'   =>  'required|hexadecimal|size:24',
         'amount'        =>  'required|numeric|max:500000|min:100',
         'currency'      =>  'required|max:3',
         'description'   =>  'sometimes',
