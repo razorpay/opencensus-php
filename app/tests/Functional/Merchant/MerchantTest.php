@@ -13,7 +13,7 @@ class MerchantTest extends TestCase
     {
         parent::setUp();
 
-        $this->setupAppBasicAuthParams('363e4efa820b0c06208ccd99');
+        $this->setupAppBasicAuthParams();
 
         //
         // load test data
@@ -21,7 +21,7 @@ class MerchantTest extends TestCase
         $this->testData = include(__DIR__.'/helpers/MerchantData.php');
     }
 
-    protected function setupAppBasicAuthParams($user, $pwd = 'DASHBOARD_AUTH_PASS')
+    protected function setupAppBasicAuthParams($pwd = 'DASHBOARD_AUTH_PASS', $user = '')
     {
         $this->auth = array(
                'PHP_AUTH_USER' => $user,
@@ -34,7 +34,7 @@ class MerchantTest extends TestCase
      */
     public function testCreateMerchant()
     {
-        $this->setupAppBasicAuthParams('41ce4abda390575910cba897');
+        $this->setupAppBasicAuthParams();
 
         $content = $this->startTest();
 

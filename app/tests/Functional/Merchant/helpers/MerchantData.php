@@ -28,7 +28,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => 'keys',
+            'url' => 'merchants/363e4efa820b0c06208ccd99/keys',
             'method' => 'get'
         ],
         'response' => [
@@ -49,7 +49,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/keys/d9c6bf091a1a64cb5678d8c1',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/d9c6bf091a1a64cb5678d8c1',
             'method' => 'PUT',
         ],
         'response' => [
@@ -67,7 +67,7 @@ return [
             'content' => [
                 'delay_roll' => '1'
             ],
-            'url' => '/keys/d9c6bf091a1a64cb5678d8c1',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/d9c6bf091a1a64cb5678d8c1',
             'method' => 'PUT',
         ],
         'response' => [
@@ -84,7 +84,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/keys/d9c6bf091a1a64cb5678d8c1',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/d9c6bf091a1a64cb5678d8c1',
             'method' => 'PUT',
         ],
         'response' => [
