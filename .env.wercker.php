@@ -29,25 +29,26 @@
     'QUEUE_DRIVER'  => 'sync',
     'AWS_QUEUE_URL' => '',
 
+    /**
+     * AWS Bucket for storing activation documents uploaded
+     */
+    'AWS_ACTIVATION_BUCKET' =>'activation_test',
+
     /*
     |--------------------------------------------------------------------------
     | Your AWS Credentials
     |--------------------------------------------------------------------------
     |
     | In order to communicate with an AWS service, you must provide your AWS
-    | credentials including your AWS Access Key ID and your AWS Secret Key.
-    |
-    | To use credentials from your credentials file or environment or to use
-    | IAM Instance Profile credentials, please remove these config settings from
-    | your config or make sure they are null. For more information see:
-    | http://docs.aws.amazon.com/aws-sdk-php-2/guide/latest/configuration.html
+    | credentials including your AWS Access Key ID and your AWS Secret Key
+    | Used for SQS and S3 file uploads
     | 
-    | Not required when running on AWS using roles
-    |
+    | Make them null when running on AWS using roles
+    | 
     */
-    'AWS_KEY_ID'    => '', // Your AWS Access Key ID
-    'AWS_KEY_SECRET' => '', // Your AWS Secret Access Key
-    'AWS_REGION' => 'us-east-1',
+    'AWS_KEY_ID'        => '', // Your AWS Access Key ID
+    'AWS_KEY_SECRET'    => '', // Your AWS Secret Access Key
+    'AWS_REGION'        => 'us-east-1',
 
     );
 ?>
