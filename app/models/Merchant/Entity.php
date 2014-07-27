@@ -10,8 +10,7 @@ class Entity extends Base\UniqueIdEntity
     const NAME = 'name';
     const EMAIL = 'email';
     const LIVE = 'live';
-
-    const PRICING_PLAN = 'pricing_plan';
+    const PLAN_ID = 'plan_id';
 
     protected $table = \Constants\Table::MERCHANT;
 
@@ -28,18 +27,29 @@ class Entity extends Base\UniqueIdEntity
     public function keys()
     {
         return $this->hasMany(
-            '\Models\Key\Entity');
+            'Models\Key\Entity');
     }
 
     public function transactions()
     {
         return $this->hasMany(
-            '\Models\Transaction\Entity');
+            'Models\Transaction\Entity');
     }
 
     public function balance()
     {
         return $this->hasOne(
-            '\Models\Merchant\Balance');
+            'Models\Merchant\Balance');
+    }
+
+    public function pricingPlan()
+    {
+        return $this->hasMany(
+            'Models\Pricing\Entity');
+    }
+
+    public function setPricingPlan($planId)
+    {
+        $this->setAttribute(self::PLAN_ID, $planId);
     }
 }
