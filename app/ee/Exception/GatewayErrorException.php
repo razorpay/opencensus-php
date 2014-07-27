@@ -28,9 +28,12 @@ class GatewayErrorException extends RecoverableException
 
         $desc = $error->getDescription();
 
-        $desc .= PHP_EOL . 'Gateway Error Code: ' . $gatewayErrorCode .
-                 PHP_EOL . 'Gateway Error Desc: ' . $gatewayErrorDesc;
+        if (\App::environment('dev'))
+        {
+            $desc .= PHP_EOL . 'Gateway Error Code: ' . $gatewayErrorCode .
+                     PHP_EOL . 'Gateway Error Desc: ' . $gatewayErrorDesc;
+        }
 
-        parent::__construct($desc, $code, $previous);
+        $this->message = $desc;
     }
 }

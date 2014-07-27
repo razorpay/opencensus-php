@@ -11,8 +11,9 @@ class GatewayTimeoutException extends RecoverableException
     {
         $code = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
 
-        $this->error = new Error($code, $curlErrorMessage);
+        $this->error = new Error($code);
 
-        parent::__construct($curlErrorMessage, $code, $previous);
+        $this->message = $curlErrorMessage;
+        // parent::__construct($curlErrorMessage, $code, $previous);
     }
 }
