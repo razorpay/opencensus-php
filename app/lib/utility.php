@@ -119,7 +119,7 @@ if (! function_exists('sdd'))
 
 if (! function_exists('ddd'))
 {
-    function sdd($limit = 0)
+    function ddd($limit = 0)
     {
         dd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
     }
