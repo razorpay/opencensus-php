@@ -53,14 +53,7 @@ class BasicAuth
         return true;
     }
 
-    protected function getCredentials($request)
-    {
-        $id = $request->getUser();
-
-        $pwd = $request->getPassword();
-
-        return array($id, $pwd);
-    }
+// --------------------- Basic Auths -------------------------------------------
 
     public function privateAuth($route, $request)
     {
@@ -79,7 +72,7 @@ class BasicAuth
         //
         // @todo: add check for internal IP here
         //
-        if ($this->verifyApp($id, $pwd) === true)
+        if ($this->verifyAppAsProxy($id, $pwd) === true)
             return;
 
         return $response;
@@ -112,11 +105,20 @@ class BasicAuth
 
         list($id, $pwd) = $this->getCredentials($request);
 
-        if ($this->verifyApp($id, $pwd) === false)
+        if ($id !== '')
+        {
+            return false;
+        }
+
+        if ($this->verifyApp($pwd) === false)
         {
             ApiResponse::routeNotFound();
         }
     }
+
+// --------------------- Basic Auths Ends --------------------------------------
+
+// --------------------- Verifiers ---------------------------------------------
 
     /**
      * Checks if given key id is present
@@ -204,7 +206,7 @@ class BasicAuth
      * @param  string  $secret
      * @return boolean
      */
-    protected function verifyApp($merchantId, $secret)
+    protected function verifyAppAsProxy($merchantId, $secret)
     {
         $verify = $this->verifyAppSecret($secret);
 
@@ -215,48 +217,22 @@ class BasicAuth
 
         $this->merchant = (new Merchant\Repository)->find($merchantId);
 
+        if ($this->merchant === null)
+        {
+            return false;
+        }
+
         return true;
     }
 
-    public function getKey()
+    protected function verifyApp($secret)
     {
-        return $this->key;
-    }
+        $verify = $this->verifyAppSecret($secret);
 
-    public function getMerchant()
-    {
-        return $this->merchant;
-    }
-
-    public function getMerchantId()
-    {
-        return $this->merchant->getKey();
-    }
-
-    public function getPublicKey()
-    {
-        return $this->key->getKey();
-    }
-
-    protected function fetchKey($keyId)
-    {
-        $this->key = (new Key\Repository)->findNotExpired($keyId);
-
-        return $this->key;
-    }
-
-    protected function fetchMerchantOfKey($key)
-    {
-        $merchantId = $key->getMerchantId();
-
-        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
-
-        return $this->merchant;
-    }
-
-    protected function matchSecret($keySecret, $key)
-    {
-        return Hash::check($keySecret, $key->getSecret());
+        if ($verify === false)
+        {
+            return false;
+        }
     }
 
     protected function verifyAppSecret($secret)
@@ -280,6 +256,62 @@ class BasicAuth
         }
 
         return $verify;
+    }
+
+// --------------------- Verifiers Ends ----------------------------------------
+
+// --------------------- Getters -----------------------------------------------
+
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    public function getMerchant()
+    {
+        return $this->merchant;
+    }
+
+    public function getMerchantId()
+    {
+        return $this->merchant->getKey();
+    }
+
+    public function getPublicKey()
+    {
+        return $this->key->getKey();
+    }
+
+    protected function getCredentials($request)
+    {
+        $id = $request->getUser();
+
+        $pwd = $request->getPassword();
+
+        return array($id, $pwd);
+    }
+
+// --------------------- Getters Ends ------------------------------------------
+
+    protected function fetchKey($keyId)
+    {
+        $this->key = (new Key\Repository)->findNotExpired($keyId);
+
+        return $this->key;
+    }
+
+    protected function fetchMerchantOfKey($key)
+    {
+        $merchantId = $key->getMerchantId();
+
+        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        return $this->merchant;
+    }
+
+    protected function matchSecret($keySecret, $key)
+    {
+        return Hash::check($keySecret, $key->getSecret());
     }
 
     protected function matchAppSecret($app, $secret)
