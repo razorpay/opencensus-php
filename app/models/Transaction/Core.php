@@ -391,7 +391,7 @@ class Core
     {
         $code = $error->getPublicErrorCode();
 
-        $desc = $error->getPublicErrorDescription();
+        $desc = $error->getDescription();
 
         $txn->setStatus(Transaction\Status::FAILED);
 
