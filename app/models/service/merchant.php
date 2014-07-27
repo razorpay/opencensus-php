@@ -15,6 +15,8 @@ class Merchant extends Service
         {   
             $merchant = DAL\Merchant::createOrFail($data);
 
+            $merchant_details = DAL\MerchantDetails::createOrFail(array('merchant_id'=>$merchant->id));
+
             \Queue::push('MerchantController@sendConfirmationMail',array('merchant' => $merchant->generateEmailData()));
 
             $data = $merchant->toArray();
