@@ -29,7 +29,7 @@ $(document).ready(function()
             childDivs: ['key-generate']
         },
         activation: {
-            childDivs: ['activation-form']
+            childDivs: ['activation-form-wrapper']
         }
     };
 
@@ -309,7 +309,7 @@ $(document).ready(function()
                             '<li> ' +
                                 '<div class="field key">Key ID</div> ' +
                                 '<div class="value key">' + data[i].id + '</div> ';
-                if(expires != true)
+                if(expires !== true)
                 html += '<a class="roll-href" title="Roll Key"> ' +
                             '<img class="roll-icon" src="/img/refresh.png"> ' +
                         '</a> ';
@@ -332,7 +332,7 @@ $(document).ready(function()
                         '</li>' +
                     '</ul>';
 
-                if(expires != true)
+                if(expires !== true)
                 html += '<div class="roll-key-form-wrapper hidden">' +
                             '<span class="close-button">' +
                                 '<img src="/img/close.png">' +
@@ -375,6 +375,10 @@ $(document).ready(function()
 
         showKeyError: function(form) {
             form.find('.result').html('Something went wrong. Try again later.');
+        },
+
+        renderActivation: function(data) {
+            $('#activation').html(data);
         }
     };
 
@@ -638,6 +642,16 @@ $(document).ready(function()
             e.preventDefault();
         },
 
+        fetchActivation: function(parentDiv) {
+            $.ajax({
+                url: '/activation',
+                success: function(result) {
+                    rzpd.views.renderActivation(result);
+                    rzpd.hooks.updateSubpanel(parentDiv);
+                }
+            });
+        },
+
         updateSubpanel: function(subpanel) {
             if (rzpd.config.currentTab == subpanel)
                 rzpd.config.childDivLoadCount += 1;
@@ -696,7 +710,7 @@ $(document).ready(function()
 
         renderActivation: function() {
             rzpd.hooks.setTab('activation');
-            rzpd.hooks.updateSubpanel('activation');
+            rzpd.hooks.fetchActivation('activation');
         }
     };
 
