@@ -93,6 +93,7 @@ class MerchantController extends BaseController
     public function postKeys()
     {
         $input = Input::all();
+        unset($input['_token']);
 
         $input['merchant_id'] = \Auth::id();
 

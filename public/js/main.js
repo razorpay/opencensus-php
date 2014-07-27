@@ -623,7 +623,8 @@ $(document).ready(function()
                 type: 'POST',
                 data: {
                     id: that.attr('id'),
-                    delay_roll: that.find('input[name="delay_roll"]:checked').val()
+                    delay_roll: that.find('input[name="delay_roll"]:checked').val(),
+                    _token: $('input[name="_token"]').val()
                 },
                 success: function(result) {
                     if (result.status === true)

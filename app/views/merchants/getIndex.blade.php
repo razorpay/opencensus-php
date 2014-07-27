@@ -120,4 +120,6 @@
 			</div>
 		</div>
 	</div>
+	<!-- Used for getting csrf token for post requests -->
+	<input type="hidden" name="_token" value="{{{csrf_token()}}}">
 @stop

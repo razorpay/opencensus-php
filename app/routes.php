@@ -32,14 +32,14 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/keys', 'MerchantController@getKeys');
 
-    Route::post('/keys', 'MerchantController@postKeys');
-
     Route::get('/activation', 'MerchantController@getActivation');
 
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
     Route::group(array('before' => 'csrf'), function()
     {
+        Route::post('/keys', 'MerchantController@postKeys');
+
         Route::post('/activation', 'MerchantController@postActivation');
 
         Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
