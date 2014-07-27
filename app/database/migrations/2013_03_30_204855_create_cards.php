@@ -31,7 +31,7 @@ class CreateCards extends Migration {
 
             $table->char(Card::LAST4, 4);
 
-            $table->string(Card::NETWORK);
+            $table->string(Card::NETWORK, 10);
 
             $table->string(Card::TYPE, 6);
 
