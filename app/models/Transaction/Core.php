@@ -406,7 +406,7 @@ class Core
     {
         $traceData = array_merge(
                         $txn->toArrayTraceRelevant(),
-                        $error->toArray());
+                        ['error' => $error->getAttributes()]);
 
         //Logging
         $this->trace->error(

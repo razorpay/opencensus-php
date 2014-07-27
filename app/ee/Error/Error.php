@@ -237,9 +237,11 @@ class Error
 
     protected function getDescriptionFromErrorCode($code)
     {
-        if (defined(__NAMESPACE__.'\PublicErrorDescription::'.$code))
+        $code = strtoupper($code);
+
+        if (defined(__NAMESPACE__.'\PublicErrorDescription::' . $code))
         {
-            return constant(__NAMESPACE__.'\PublicErrorDescription::'.$code);
+            return constant(__NAMESPACE__.'\PublicErrorDescription::' . $code);
         }
     }
 

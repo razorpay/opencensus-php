@@ -380,8 +380,8 @@ class Gateway extends BaseGateway
                                 $gatewayErrorDesc);
 
                 break;
-
             default:
+
                 $exception = new Exception\GatewayErrorException(
                                 $appErrorCode,
                                 $gatewayErrorCode,
