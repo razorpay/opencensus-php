@@ -5,32 +5,50 @@ use Models\Merchant;
 
 class PricingController extends BaseController
 {
-    public function postIndex()
+    public function postCreatePricingPlan()
     {
         $input = Input::all();
 
-        $data = (new Pricing\Service)->create($input);
+        $data = (new Pricing\Service)->newPricingPlan($input);
 
         return ApiResponse::json($data);
     }
 
-    public function get()
+    public function getPricingPlan($id)
     {
-        $merchant_id = BasicAuth::getMerchantId();
-
-        $data = (new Merchant\Service)->fetchKeys($merchant_id);
+        $data = (new Pricing\Service)->getPricingPlan($id);
 
         return ApiResponse::json($data);
     }
 
-    public function putKeys($id)
+    public function getPricingPlans()
+    {
+        $data = (new Pricing\Service)->getPricingPlans($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAddPricingPlanRule($id)
     {
         $input = Input::all();
 
-        $input['merchant_id'] = BasicAuth::getMerchantId();
+        $data = (new Pricing\Service)->addPricingPlanRule($id, $input);
 
-        $keys = (new Merchant\Service)->updateKey($id, $input);
+        return ApiResponse::json($data);
+    }
 
-        return ApiResponse::json($keys);
+    public function postReplacePricingPlanRule($id)
+    {
+        ;
+    }
+
+    public function deletePricingPlanRule($id)
+    {
+        ;
+    }
+
+    public function deletePricingPlan($id)
+    {
+        ;
     }
 }
