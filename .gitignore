@@ -7,7 +7,7 @@
 Thumbs.db
 grunt.json
 node_modules/
-layout.blade.php
+*Generated.blade.php
 dev/
 prod/
 public/css/style.css

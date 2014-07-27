@@ -121,7 +121,7 @@ class MerchantController extends BaseController
 
     public function getActivation()
     {
-        return View::make('merchants.getActivation');
+        return View::make('merchants.getActivationGenerated');
     }
 
     public function getActivationDetails()
