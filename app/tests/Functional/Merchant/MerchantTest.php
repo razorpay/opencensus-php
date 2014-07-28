@@ -21,30 +21,13 @@ class MerchantTest extends TestCase
         $this->testData = include(__DIR__.'/helpers/MerchantData.php');
     }
 
-    protected function setupAppBasicAuthParams($pwd = 'DASHBOARD_AUTH_PASS', $user = '')
-    {
-        $this->auth = array(
-               'PHP_AUTH_USER' => $user,
-               'PHP_AUTH_PW' => $pwd);
-    }
-
     /**
      * @group merchant
      * @return array Data return from merchant creation
      */
     public function testCreateMerchant()
     {
-        $this->setupAppBasicAuthParams();
-
         $content = $this->startTest();
-
-        $this->id = $content['id'];
-        $this->name = $content['name'];
-        $this->email = $content['email'];
-
-        $this->keyId = $content['key']['id'];
-
-        $this->keySecret = $content['key']['secret'];
     }
 
     public function testMerchantFetchKeys()
