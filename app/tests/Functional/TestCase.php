@@ -24,7 +24,8 @@ class TestCase extends ParentTestCase
         'merchant' => 'Models\Merchant\Entity',
         'key' => 'Models\Key\Entity',
         'transaction' => 'Models\Transaction\Entity',
-        'balance' => 'Models\Merchant\Balance');
+        'balance' => 'Models\Merchant\Balance',
+        'pricing' => 'Models\Pricing\Entity');
 
     protected $auth = array();
     public function setUp()
@@ -76,6 +77,13 @@ class TestCase extends ParentTestCase
         $this->auth = array(
                'PHP_AUTH_USER' => 'd9c6bf091a1a64cb5678d8c1',
                'PHP_AUTH_PW' => 'thisissupersecret');
+    }
+
+    protected function setupAppBasicAuthParams($pwd = 'DASHBOARD_AUTH_PASS', $user = '')
+    {
+        $this->auth = array(
+               'PHP_AUTH_USER' => $user,
+               'PHP_AUTH_PW' => $pwd);
     }
 
     public function tearDown()
