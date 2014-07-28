@@ -2,7 +2,8 @@
 
 namespace Models\Pricing;
 
-use Pricing;
+use Models\Base;
+use Models\Pricing;
 
 class Service extends Base\Service
 {
@@ -13,11 +14,11 @@ class Service extends Base\Service
         $this->repo = new Pricing\Repository();
     }
 
-    public function createPlan($input)
+    public function createPricingPlan($input)
     {
         Pricing\Validator::createPlanValidate($input);
 
-        $pricing = new Pricing($input);
+        $pricing = new Pricing\Entity($input);
 
         $pricing->newPlan();
 
@@ -26,32 +27,36 @@ class Service extends Base\Service
         return $pricing->toArray();
     }
 
-    public function addPlanRule($id, $input)
+    public function addPricingPlanRule($id, $input)
     {
-        $plan = $this->repo->getPlan($id);
+        $plan = $this->repo->getPricingPlan($id);
 
         Pricing\Validator::addPlanRuleValidate($plan, $input);
 
-        $pricing->fill($input);
+        $rule = new Pricing\Entity();
 
-        $pricing->save();
+        $rule->fillRule($input, $plan);
+
+        (new Pricing\Repository)->save($rule);
+
+        return $rule->toArray();
     }
 
-    public function deletePlanRule($planId, $ruleId)
+    public function deletePricingPlanRule($planId, $ruleId)
     {
         $this->core->checkPlanId($id);
 
         $this->core->deletePlanRule($ruleId);
     }
 
-    public function replacePlanRule($input)
+    public function replacePricingPlanRule($input)
     {
         $this->core->checkPlanId($id);
 
         $this->replacePlanRule($ruleId);
     }
 
-    public function deletePlan($input)
+    public function deletePricingPlan($input)
     {
         ;
     }

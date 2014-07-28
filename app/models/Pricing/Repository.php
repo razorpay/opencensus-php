@@ -9,14 +9,14 @@ class Repository extends Base\Repository
 {
     protected $entity = 'Pricing';
 
-    public function getPlan($id)
+    public function getPricingPlan($id)
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::PLAN_ID, '=', $id)->findOrFailPublic();
+        return $repo::where(Entity::PLAN_ID, '=', $id)->get();
     }
 
-    public function getPlanRule($id)
+    public function getPricingPlanRule($id)
     {
         $repo = $this->repo;
 

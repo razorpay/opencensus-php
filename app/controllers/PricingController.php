@@ -1,7 +1,7 @@
 <?php
 
 use Http\ApiResponse;
-use Models\Merchant;
+use Models\Pricing;
 
 class PricingController extends BaseController
 {
@@ -9,7 +9,7 @@ class PricingController extends BaseController
     {
         $input = Input::all();
 
-        $data = (new Pricing\Service)->newPricingPlan($input);
+        $data = (new Pricing\Service)->createPricingPlan($input);
 
         return ApiResponse::json($data);
     }

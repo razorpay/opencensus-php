@@ -2,11 +2,12 @@
 
 namespace Models\Pricing;
 
-class Plan extends Illuminate\Database\Eloquent\Collection
+class Plan extends \Illuminate\Database\Eloquent\Collection
 {
     const ID = 'id';
     const COUNT = 'count';
     const RULES = 'rules';
+    const NAME = 'name';
 
     /**
      * Get the collection of items as a plain array.
@@ -67,7 +68,8 @@ class Plan extends Illuminate\Database\Eloquent\Collection
     protected function setPlanAttributes(& $plan, $item, $rules = array(), $count = 0)
     {
         $plan[self::ID] = $item->getPlanId();
-        $plan[self::ENTITY] = 'plan';
+        $plan[self::NAME] = $item->getPlanName();
+        $plan[self::ENTITY] = 'pricing_plan';
         $plan[self::RULES] = $rules;
         $plan[self::COUNT] = $count;
     }

@@ -135,7 +135,7 @@ class DatabaseSeeder extends Seeder {
             DB::table(Table::PRICING)->insert(
                 array(
                     'id'            => 'c5484d12aafacc2023608c79',
-                    'plan'          => 'Education',
+                    'plan_name'     => 'Education',
                     'gateway'       => 'hdfc',
                     'payment_mode'  => 'card',
                     'payment_mode_type' => 'credit',
@@ -150,7 +150,7 @@ class DatabaseSeeder extends Seeder {
 
                 array(
                     'id'            => 'e5484d12aafacc2023608c79',
-                    'plan'          => 'Education',
+                    'plan_name'     => 'Education',
                     'gateway'       => 'hdfc',
                     'payment_mode'  => 'card',
                     'payment_mode_type' => 'credit',
@@ -163,7 +163,7 @@ class DatabaseSeeder extends Seeder {
 
                 array(
                     'id'            => 'c5484d12aafacc2023608c79',
-                    'plan'          => 'Education',
+                    'plan_name'     => 'Education',
                     'gateway'       => 'hdfc',
                     'payment_mode'  => 'card',
                     'payment_mode_type' => 'debit',
@@ -176,7 +176,7 @@ class DatabaseSeeder extends Seeder {
 
                 array(
                     'id'            => 'b5484d12aafacc2023608c79',
-                    'plan'          => 'Education',
+                    'plan_name'     => 'Education',
                     'gateway'       => 'icici',
                     'payment_mode'  => 'nb',
                     'percent_rate'  => '0',

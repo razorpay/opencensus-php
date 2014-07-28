@@ -8,7 +8,7 @@ class Entity extends Base\UniqueIdEntity
 {
     const ID                    = 'id';
     const PLAN_ID               = 'plan_id';
-    const PLAN                  = 'plan';
+    const PLAN_NAME             = 'plan_name';
     const GATEWAY               = 'gateway';
     const PAYMENT_MODE          = 'payment_mode';
     const PAYMENT_MODE_TYPE     = 'payment_mode_type';
@@ -17,6 +17,19 @@ class Entity extends Base\UniqueIdEntity
     const PERCENT_RATE          = 'percent_rate';
     const FIXED_RATE            = 'fixed_rate';
     const EXPIRED_AT            = 'expired_at';
+
+    protected $fillable = array(
+        self::PLAN_ID,
+        self::PLAN_NAME,
+        self::GATEWAY,
+        self::PAYMENT_MODE,
+        self::PAYMENT_MODE_TYPE,
+        self::PAYMENT_NETWORK,
+        self::PAYMENT_ISSUER,
+        self::PERCENT_RATE,
+        self::FIXED_RATE);
+
+    protected $table = \Constants\Table::PRICING;
 
     public function newPlan()
     {
@@ -36,4 +49,29 @@ class Entity extends Base\UniqueIdEntity
         return new Plan($models);
     }
 
+    public function getPlanId()
+    {
+        return $this->getAttribute(self::PLAN_ID);
+    }
+
+    public function getPlanName()
+    {
+        return $this->getAttribute(self::PLAN_NAME);
+    }
+
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function fillRule($input, $plan)
+    {
+        $rule = $plan->first();
+
+        $input[self::PLAN_ID] = $rule->getAttribute(self::PLAN_ID);
+        $input[self::PLAN_NAME] = $rule->getAttribute(self::PLAN_NAME);
+        $input[self::GATEWAY] = $rule->getAttribute(self::GATEWAY);
+
+        return $this->fill($input);
+    }
 }

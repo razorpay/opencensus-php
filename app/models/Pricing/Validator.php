@@ -2,6 +2,9 @@
 
 namespace Models\Pricing;
 
+use EE\Exception;
+use Models\Base;
+
 class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = array(
@@ -10,13 +13,13 @@ class Validator extends Base\Validator
         Entity::PAYMENT_MODE_TYPE   => 'required_if:payment_mode,card|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'required_if:payment_mode,card|alpha|in:VISA,MC,DICL,RP,MAES',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
-        Entity::PERCENT_RATE        => 'sometimes|numeric',
-        Entity::FIXED_RATE          => 'sometimes|numeric');
+        Entity::PERCENT_RATE        => 'sometimes|numeric|max:10000',
+        Entity::FIXED_RATE          => 'sometimes|numeric|max:100000');
 
     protected static $addPlanRuleValidators = array('addPlanRuleExtras');
 
     protected static $addPlanRules = array(
-        Entity::Plan => 'required|alpha|max:20');
+        Entity::PLAN_NAME => 'required|alpha|max:20');
 
     protected function validateAddPlanRuleExtras($input)
     {
@@ -34,11 +37,14 @@ class Validator extends Base\Validator
         {
             $instance = new static;
 
-            $instance->validateInput($input, 'addPlan');
+            $planInput[Entity::PLAN_NAME] =
+                (isset($input[Entity::PLAN_NAME])) ? $input[Entity::PLAN_NAME] : null;
 
-            unset($input[Entity::PLAN]);
+            $instance->validateInput($planInput, 'addPlan');
 
-            $instance->validateInput($input, 'addPlan');
+            unset($input[Entity::PLAN_NAME]);
+
+            $instance->validateInput($input, 'addPlanRule');
         }
         catch (Exception\ValidationFailureException $e)
         {
@@ -59,17 +65,16 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
         }
 
-        $items = $plan->getItems();
-        $rule = $item[0];
+        $rule = $plan->first();
 
         $instance->matchGateway($rule, $input);
 
-        $plan->matchPaymentRules($input);
+        $instance->matchPaymentRules($plan, $input);
     }
 
-    protected function matchGateway($plan, $input)
+    protected function matchGateway($planRule, $input)
     {
-        $gateway = $rule->getGateway();
+        $gateway = $planRule->getGateway();
 
         if ($gateway !== null)
         {
