@@ -28,6 +28,7 @@ class TestCase extends ParentTestCase
         'pricing' => 'Models\Pricing\Entity');
 
     protected $auth = array();
+
     public function setUp()
     {
         parent::setUp();

@@ -35,6 +35,11 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testGetPricingPlan()
+    {
+        $this->createPricingPlan2();
+    }
+
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -70,6 +75,69 @@ class PricingTest extends TestCase
         $content = json_decode($content, true);
 
         $this->assertArraySelectiveEquals($pricingPlan, $content);
+
+        return $content;
+    }
+
+    protected function createPricingPlan2()
+    {
+        $planData = array(
+            'plan_name' => 'testPlan',
+            'payment_mode' => 'card',
+            'payment_mode_type' => 'credit',
+            'payment_network' => 'DICL',
+            'payment_issuer' => 'SBIN',
+            'percent_rate' => '275');
+
+        $pricingData =
+            array(
+                array(
+                    'payment_mode' => 'card',
+                    'payment_mode_type' => 'credit',
+                    'payment_network' => 'DICL',
+                    'payment_issuer' => 'ICIC',
+                    'percent_rate' => 250),
+                array(
+                    'payment_mode' => 'card',
+                    'payment_mode_type' => 'debit',
+                    'payment_network' => 'MAES',
+                    'payment_issuer' => 'PUNB',
+                    'percent_rate' => 250),
+                array(
+                    'payment_mode' => 'card',
+                    'payment_mode_type' => 'credit',
+                    'payment_network' => 'MC',
+                    'payment_issuer' => 'AXIS',
+                    'fixed_rate' => 3000)
+                );
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/pricing',
+            'content' => $planData);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('plan_id', $content);
+        $pricingPlanId = $content['plan_id'];
+
+        foreach ($pricingData as $data)
+        {
+            $request = array(
+                'method' => 'POST',
+                'url' => '/pricing/'.$pricingPlanId.'/rule',
+                'content' => $data);
+
+            $content = $this->makeRequestAndGetContent($request);
+
+            $this->assertArraySelectiveEquals($data, $content);
+        }
+
+        $request = array(
+            'method' => 'GET',
+            'url' => '/pricing/'.$pricingPlanId);
+
+        $content = $this->makeRequestAndGetContent($request);
 
         return $content;
     }

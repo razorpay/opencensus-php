@@ -8,6 +8,7 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
     const COUNT = 'count';
     const RULES = 'rules';
     const NAME = 'name';
+    const ENTITY = 'entity';
 
     /**
      * Get the collection of items as a plain array.
@@ -70,7 +71,7 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
         $plan[self::ID] = $item->getPlanId();
         $plan[self::NAME] = $item->getPlanName();
         $plan[self::ENTITY] = 'pricing_plan';
-        $plan[self::RULES] = $rules;
         $plan[self::COUNT] = $count;
+        $plan[self::RULES] = $rules;
     }
 }

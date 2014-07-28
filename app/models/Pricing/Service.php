@@ -42,6 +42,13 @@ class Service extends Base\Service
         return $rule->toArray();
     }
 
+    public function getPricingPlanById($id)
+    {
+        $pricingPlan = $this->repo->getPricingPlan($id);
+
+        return $pricingPlan->toArrayPublic();
+    }
+
     public function deletePricingPlanRule($planId, $ruleId)
     {
         $this->core->checkPlanId($id);

@@ -16,7 +16,7 @@ class PricingController extends BaseController
 
     public function getPricingPlan($id)
     {
-        $data = (new Pricing\Service)->getPricingPlan($id);
+        $data = (new Pricing\Service)->getPricingPlanById($id);
 
         return ApiResponse::json($data);
     }

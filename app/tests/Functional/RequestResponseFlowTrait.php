@@ -62,7 +62,7 @@ trait RequestResponseFlowTrait
         $this->assertJson($content);
 
         $actualContent = json_decode($content, true);
-//sd($actualContent);
+
         $expectedContent = $data['response']['content'];
 
         $this->assertArraySelectiveEquals($expectedContent, $actualContent);
@@ -104,6 +104,22 @@ trait RequestResponseFlowTrait
             $server);
 
         return $response;
+    }
+
+    protected function makeRequestAndGetContent($request)
+    {
+        $response = $this->makeRequest($request);
+
+        return $this->getJsonContent($response);
+    }
+
+    public function getJsonContent($response)
+    {
+        $content = $response->getContent();
+
+        $this->assertJson($content);
+
+        return json_decode($content, true);
     }
 
     protected function replaceValuesRecursively(array & $data, array $toReplace)
