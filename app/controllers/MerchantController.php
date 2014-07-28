@@ -36,6 +36,11 @@ class MerchantController extends BaseController
 
         $data = (new Merchant\Service)->assignPricingPlan($id, $input);
 
-        return ApiResponse::json($input);
+        return ApiResponse::json($data);
+    }
+
+    public function getPricingPlan($id)
+    {
+        $data = (new Merchant\Service)->getPricingPlan($id);
     }
 }

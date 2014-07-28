@@ -54,6 +54,15 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testAssignPricingPlanToMerchant()
+    {
+        $id = $this->createPricingPlan()['plan_id'];
+
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
+        $this->startTest($testData);
+    }
+
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -154,10 +163,5 @@ class PricingTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
-    }
-
-    protected function getPricingPlanData()
-    {
-
     }
 }

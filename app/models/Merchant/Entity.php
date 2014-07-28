@@ -10,7 +10,7 @@ class Entity extends Base\UniqueIdEntity
     const NAME = 'name';
     const EMAIL = 'email';
     const LIVE = 'live';
-    const PLAN_ID = 'plan_id';
+    const PRICING_PLAN_ID = 'plan_id';
 
     protected $table = \Constants\Table::MERCHANT;
 
@@ -50,6 +50,11 @@ class Entity extends Base\UniqueIdEntity
 
     public function setPricingPlan($planId)
     {
-        $this->setAttribute(self::PLAN_ID, $planId);
+        $this->setAttribute(self::PRICING_PLAN_ID, $planId);
+    }
+
+    public function getPricingPlanId()
+    {
+        return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 }

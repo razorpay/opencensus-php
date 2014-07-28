@@ -178,5 +178,28 @@ return [
                 )
             ]
         ]
+    ],
+
+    'testAssignPricingPlanToMerchant' => [
+        'request' => [
+            'url' => 'merchants/363e4efa820b0c06208ccd99/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'haha',
+                'entity' => 'pricing_plan',
+                'count' => 1,
+                'rules' => array(
+                    array(
+                        'payment_mode' => 'card',
+                        'payment_mode_type' => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'HDFC',
+                        'percent_rate' => 1000
+                    ),
+                ),
+            ],
+        ]
     ]
 ];

@@ -37,11 +37,6 @@ class PricingController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function postReplacePricingPlanRule($id)
-    {
-        ;
-    }
-
     public function deletePricingPlanRule($id)
     {
         ;

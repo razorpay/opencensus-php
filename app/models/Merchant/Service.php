@@ -5,6 +5,8 @@ namespace Models\Merchant;
 use Models\Base;
 use Models\Merchant;
 use Models\Key;
+use Models\Pricing;
+use EE\Exception;
 
 class Service extends Base\Service
 {
@@ -105,12 +107,27 @@ class Service extends Base\Service
     {
         $merchant = $this->merchantRepository->findOrFailPublic($id);
 
-        $plan = (new Pricing\Repository)->getPlan($input['id']);
+        $plan = (new Pricing\Repository)->getPricingPlanById($input['pricing_plan_id']);
 
         $merchant->setPricingPlan($id);
 
         $this->merchantRepository->save($merchant);
 
-        return $merchant->toArray();
+        return $plan->toArrayPublic();
+    }
+
+    public function getPricingPlan($id)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        $pricingPlanId = $merchant->getPricingPlanId();
+
+        if ($pricingPlanId === null)
+        {
+            throw new Exception\BadRequestException(
+                'The merchant does not have any pricing plan assigned');
+        }
+
+        $plan = (new Pricing\Repository)->getPricingPlanById();
     }
 }
