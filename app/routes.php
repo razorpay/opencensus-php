@@ -68,7 +68,7 @@ Route::group(array('before' => 'auth.app'), function()
 
     Route::post('merchants/{id}/assignPricingPlan', 'MerchantController@postAssignPricingPlan');
 
-    Route::post('pricing', 'PricingController@newPricingPlan');
+    Route::post('pricing', 'PricingController@postCreatePricingPlan');
 
     Route::get('pricing', 'PricingController@getPricingPlans');
 
