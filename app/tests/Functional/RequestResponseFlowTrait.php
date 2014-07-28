@@ -62,7 +62,7 @@ trait RequestResponseFlowTrait
         $this->assertJson($content);
 
         $actualContent = json_decode($content, true);
-
+//s($actualContent);
         $expectedContent = $data['response']['content'];
 
         $this->assertArraySelectiveEquals($expectedContent, $actualContent);

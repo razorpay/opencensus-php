@@ -55,32 +55,128 @@ return [
     ],
 
     'testGetPricingPlan' => [
-        'request' => [
+        'response' => [
             'content' => [
                 'name' => 'testPlan',
-                'entity' => 'pricing_paln',
+                'entity' => 'pricing_plan',
                 'count' => 4,
                 'rules' => array(
                     array(
-                        'payment_mode' => 'card',
-                        'payment_mode_type' => 'credit',
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => 'ICIC',
-                        'percent_rate' => 250),
-                    array(
-                        'payment_mode' => 'card',
-                        'payment_mode_type' => 'debit',
-                        'payment_network' => 'MAES',
-                        'payment_issuer' => 'PUNB',
-                        'percent_rate' => 250),
-                    array(
+                        'plan_name' => 'testPlan',
                         'payment_mode' => 'card',
                         'payment_mode_type' => 'credit',
                         'payment_network' => 'MC',
                         'payment_issuer' => 'AXIS',
-                        'fixed_rate' => 3000),
-                    )
+                        'percent_rate' => 0,
+                        'fixed_rate' => 3000,
+                    ),
+                    array(
+                        'plan_name' => 'testPlan',
+                        'payment_mode' => 'card',
+                        'payment_mode_type' => 'debit',
+                        'payment_network' => 'MAES',
+                        'payment_issuer' => 'PUNB',
+                        'percent_rate' => 250,
+                        'fixed_rate' => 0,
+                    ),
+                    array(
+                        'plan_name' => 'testPlan',
+                        'payment_mode' => 'card',
+                        'payment_mode_type' => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'ICIC',
+                        'percent_rate' => 250,
+                        'fixed_rate' => 0,
+                    ),
+                    array(
+                        'plan_name' => "testPlan",
+                        'gateway' => NULL,
+                        'payment_mode' => "card",
+                        'payment_mode_type' => "credit",
+                        'payment_network' => "DICL",
+                        'payment_issuer' => "SBIN",
+                        'percent_rate' => "275",
+                        'fixed_rate' => "0",
+                    ),
+                )
             ]
         ]
     ],
+
+    'testGetPricingPlans' => [
+        'request' => [
+            'url' => '/pricing',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+                'entity' => 'collection',
+                'data' => array(
+                    array(
+                        'name' => "haha",
+                        'entity' => "pricing_plan",
+                        'count' => 1,
+                        'rules' => array(
+                            array(
+                                'plan_name' =>  "haha",
+                                'gateway' => NULL,
+                                'payment_mode' =>  "card",
+                                'payment_mode_type' => "credit",
+                                'payment_network' =>  "DICL",
+                                'payment_issuer' =>  "HDFC",
+                                'percent_rate' =>  "1000",
+                                'fixed_rate' =>  "0",
+                                'expired_at' => NULL
+                            )
+                        )
+                    ),
+                    array(
+                        'name' => 'testPlan',
+                        'entity' => 'pricing_plan',
+                        'count' => 4,
+                        'rules' => array(
+                            array(
+                                'plan_name' => 'testPlan',
+                                'payment_mode' => 'card',
+                                'payment_mode_type' => 'credit',
+                                'payment_network' => 'MC',
+                                'payment_issuer' => 'AXIS',
+                                'percent_rate' => 0,
+                                'fixed_rate' => 3000,
+                            ),
+                            array(
+                                'plan_name' => 'testPlan',
+                                'payment_mode' => 'card',
+                                'payment_mode_type' => 'debit',
+                                'payment_network' => 'MAES',
+                                'payment_issuer' => 'PUNB',
+                                'percent_rate' => 250,
+                                'fixed_rate' => 0,
+                            ),
+                            array(
+                                'plan_name' => 'testPlan',
+                                'payment_mode' => 'card',
+                                'payment_mode_type' => 'credit',
+                                'payment_network' => 'DICL',
+                                'payment_issuer' => 'ICIC',
+                                'percent_rate' => 250,
+                                'fixed_rate' => 0,
+                            ),
+                            array(
+                                'plan_name' => "testPlan",
+                                'gateway' => NULL,
+                                'payment_mode' => "card",
+                                'payment_mode_type' => "credit",
+                                'payment_network' => "DICL",
+                                'payment_issuer' => "SBIN",
+                                'percent_rate' => "275",
+                                'fixed_rate' => "0",
+                            ),
+                        )
+                    )
+                )
+            ]
+        ]
+    ]
 ];

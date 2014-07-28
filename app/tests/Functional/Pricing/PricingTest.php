@@ -37,7 +37,21 @@ class PricingTest extends TestCase
 
     public function testGetPricingPlan()
     {
+        $id = $this->createPricingPlan2()['id'];
+
+        $testData['request']['url'] = '/pricing/'.$id;
+        $testData['request']['method'] = 'GET';
+
+        $this->startTest($testData);
+    }
+
+    public function testGetPricingPlans()
+    {
+        $this->createPricingPlan();
+
         $this->createPricingPlan2();
+
+        $this->startTest();
     }
 
     public function startTest($testDataToReplace = array())
@@ -140,5 +154,10 @@ class PricingTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function getPricingPlanData()
+    {
+
     }
 }

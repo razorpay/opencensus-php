@@ -34,14 +34,19 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
         return $plan;
     }
 
-    public function toArrayMultiplePlans()
+    public function toArrayMultiplePlansPublic()
     {
+        $this->sortBy('plan_id');
+
         $plans = array();
         $plans[self::COUNT] = 0;
+        $plans['entity'] = 'collection';
+        $plans['data'] = array();
+        $data = & $plans['data'];
 
-        $plan = array();
-        $this->setPlanAttributes($plan, $this->items[0]);
-        $rules = & $plan[self::RULES];
+        $first = true;
+        $plan = array(self::ID => null);
+        $rules = null;
 
         foreach ($this->items as $item)
         {
@@ -52,16 +57,30 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
             }
             else
             {
-                array_push($plans, $plan);
+                if ($first === true)
+                {
+                    $first = false;
+                    $this->setPlanAttributes($plan, $item);
+                    $plan[self::COUNT] = 1;
+                    $rules = & $plan[self::RULES];
+                    array_push($rules, $item->toArray());
+                    continue;
+                }
+
+                array_push($data, $plan);
                 $plans[self::COUNT]++;
 
                 $plan = array();
                 $this->setPlanAttributes($plan, $item);
+                $plan[self::COUNT] = 1;
                 $rules = & $plan[self::RULES];
 
                 array_push($rules, $item->toArray());
             }
         }
+
+        array_push($data, $plan);
+        $plans[self::COUNT]++;
 
         return $plans;
     }

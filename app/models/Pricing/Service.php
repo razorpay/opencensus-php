@@ -18,18 +18,24 @@ class Service extends Base\Service
     {
         Pricing\Validator::createPlanValidate($input);
 
+        $plans = $this->repo->getPricingPlanByName($input[Entity::PLAN_NAME]);
+
+        if ($plans->count() > 0)
+            throw new Exception\BadRequestException(
+                'Pricing plan name already exists. Are you trying a pricing plan rule instead?');
+
         $pricing = new Pricing\Entity($input);
 
         $pricing->newPlan();
 
-        $this->repo->save($pricing);
+        $this->repo->saveOrFail($pricing);
 
         return $pricing->toArray();
     }
 
     public function addPricingPlanRule($id, $input)
     {
-        $plan = $this->repo->getPricingPlan($id);
+        $plan = $this->repo->getPricingPlanById($id);
 
         Pricing\Validator::addPlanRuleValidate($plan, $input);
 
@@ -37,16 +43,23 @@ class Service extends Base\Service
 
         $rule->fillRule($input, $plan);
 
-        (new Pricing\Repository)->save($rule);
+        (new Pricing\Repository)->saveOrFail($rule);
 
         return $rule->toArray();
     }
 
     public function getPricingPlanById($id)
     {
-        $pricingPlan = $this->repo->getPricingPlan($id);
+        $pricingPlan = $this->repo->getPricingPlanById($id);
 
         return $pricingPlan->toArrayPublic();
+    }
+
+    public function getPricingPlans()
+    {
+        $pricingPlans = $this->repo->getPricingPlans();
+
+        return $pricingPlans->toArrayMultiplePlansPublic();
     }
 
     public function deletePricingPlanRule($planId, $ruleId)

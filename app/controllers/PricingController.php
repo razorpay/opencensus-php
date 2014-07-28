@@ -23,7 +23,7 @@ class PricingController extends BaseController
 
     public function getPricingPlans()
     {
-        $data = (new Pricing\Service)->getPricingPlans($id);
+        $data = (new Pricing\Service)->getPricingPlans();
 
         return ApiResponse::json($data);
     }
