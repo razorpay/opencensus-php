@@ -107,13 +107,22 @@ class Service extends Base\Service
     {
         $merchant = $this->merchantRepository->findOrFailPublic($id);
 
+        if (isset($input['pricing_plan_id']) === false)
+        {
+            throw new Exception\BadRequestException(
+                'pricing_plan_id required');
+        }
+
         $plan = (new Pricing\Repository)->getPricingPlanById($input['pricing_plan_id']);
 
         $merchant->setPricingPlan($id);
 
-        $this->merchantRepository->save($merchant);
+        $this->merchantRepository->saveOrFail($merchant);
 
-        return $plan->toArrayPublic();
+        $p = $plan->toArrayPublic();
+        $id = $merchant->getPricingPlanId();
+
+        return $p;
     }
 
     public function getPricingPlan($id)

@@ -30,7 +30,7 @@ class PricingTest extends TestCase
     {
         $content = $this->createPricingPlan();
 
-        $testData['request']['url'] = '/pricing/'. $content['plan_id'] . '/rule';
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
     }
@@ -56,7 +56,18 @@ class PricingTest extends TestCase
 
     public function testAssignPricingPlanToMerchant()
     {
-        $id = $this->createPricingPlan()['plan_id'];
+        $id = $this->createPricingPlan()['id'];
+
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
+        $this->startTest($testData);
+    }
+
+    public function testReplacePricingPlanForMerchant()
+    {
+        $this->testAssignPricingPlanToMerchant();
+
+        $id = $this->createPricingPlan2()['id'];
 
         $testData['request']['content']['pricing_plan_id'] = $id;
 
@@ -97,7 +108,7 @@ class PricingTest extends TestCase
         $this->assertJson($content);
         $content = json_decode($content, true);
 
-        $this->assertArraySelectiveEquals($pricingPlan, $content);
+        $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
 
         return $content;
     }
@@ -141,8 +152,8 @@ class PricingTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('plan_id', $content);
-        $pricingPlanId = $content['plan_id'];
+        $this->assertArrayHasKey('id', $content);
+        $pricingPlanId = $content['id'];
 
         foreach ($pricingData as $data)
         {

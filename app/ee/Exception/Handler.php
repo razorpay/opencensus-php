@@ -82,6 +82,7 @@ class Handler
         {
             return ApiResponse::serverError();
         }
+        sd($exception->getTrace());
     }
 
     public function baseExceptionHandler(BaseException $exception, $code)

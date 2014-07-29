@@ -42,5 +42,7 @@ class MerchantController extends BaseController
     public function getPricingPlan($id)
     {
         $data = (new Merchant\Service)->getPricingPlan($id);
+
+        return ApiResponse::json($data);
     }
 }

@@ -30,7 +30,9 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($pricing);
 
-        return $pricing->toArray();
+        $plan = new Plan(array($pricing));
+
+        return $plan->toArrayPublic();
     }
 
     public function addPricingPlanRule($id, $input)

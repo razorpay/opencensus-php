@@ -10,7 +10,7 @@ class Entity extends Base\UniqueIdEntity
     const NAME = 'name';
     const EMAIL = 'email';
     const LIVE = 'live';
-    const PRICING_PLAN_ID = 'plan_id';
+    const PRICING_PLAN_ID = 'pricing_plan_id';
 
     protected $table = \Constants\Table::MERCHANT;
 

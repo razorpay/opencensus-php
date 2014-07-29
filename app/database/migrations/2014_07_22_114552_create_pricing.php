@@ -22,7 +22,7 @@ class CreatePricing extends Migration
             $table->char(Pricing::ID, Pricing::ID_LENGTH)
                   ->primary();
 
-            $table->string(Pricing::PLAN_ID, Pricing::ID_LENGTH);
+            $table->char(Pricing::PLAN_ID, Pricing::ID_LENGTH);
 
             $table->string(Pricing::PLAN_NAME);
 

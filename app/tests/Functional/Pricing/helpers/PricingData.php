@@ -21,12 +21,19 @@ return [
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'haha',
-                'payment_mode' => 'card',
-                'payment_mode_type' => 'credit',
-                'payment_network' => 'DICL',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000
+                'name' => 'haha',
+                'entity' => 'pricing_plan',
+                'count' => 1,
+                'rules' => array(
+                    array(
+                        'plan_name' => 'haha',
+                        'payment_mode' => 'card',
+                        'payment_mode_type'  => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'HDFC',
+                        'percent_rate' => 1000
+                    ),
+                ),
             ],
         ],
     ],
@@ -182,7 +189,7 @@ return [
 
     'testAssignPricingPlanToMerchant' => [
         'request' => [
-            'url' => 'merchants/363e4efa820b0c06208ccd99/pricing',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/pricing',
             'method' => 'POST'
         ],
         'response' => [
@@ -198,6 +205,26 @@ return [
                         'payment_issuer' => 'HDFC',
                         'percent_rate' => 1000
                     ),
+                ),
+            ],
+        ]
+    ],
+
+    'testReplacePricingPlanForMerchant' => [
+        'request' => [
+            'url' => '/merchants/363e4efa820b0c06208ccd99/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'testPlan',
+                'entity' => 'pricing_plan',
+                'count' => 4,
+                'rules' => array(
+                    array(),
+                    array(),
+                    array(),
+                    array()
                 ),
             ],
         ]
