@@ -2,6 +2,8 @@
 
 namespace Models\Pricing;
 
+use EE\Error\ErrorCode;
+use EE\Exception;
 use Models\Base;
 use Models\Pricing;
 
@@ -22,7 +24,7 @@ class Service extends Base\Service
 
         if ($plans->count() > 0)
             throw new Exception\BadRequestException(
-                'Pricing plan name already exists. Are you trying a pricing plan rule instead?');
+                ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
 
         $pricing = new Pricing\Entity($input);
 

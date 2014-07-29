@@ -59,6 +59,7 @@ class TestCase extends ParentTestCase
         $merchant = $this->createEntity('merchant', ['id' => '363e4efa820b0c06208ccd99']);
         $key = $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']);
         $balance = $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']);
+        $pricing = $this->createEntity('pricing', ['id' => '5053edf267a4a6d1d26b43df']);
 
         //
         // The key created in last command is setup as

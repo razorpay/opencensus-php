@@ -54,7 +54,7 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
-    public function testAssignPricingPlanToMerchant()
+    public function testMerchantAssignPricingPlan()
     {
         $id = $this->createPricingPlan()['id'];
 
@@ -63,15 +63,29 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testReplacePricingPlanForMerchant()
+    public function testMerchantReplacePricingPlan()
     {
-        $this->testAssignPricingPlanToMerchant();
+        $this->testMerchantAssignPricingPlan();
 
         $id = $this->createPricingPlan2()['id'];
 
         $testData['request']['content']['pricing_plan_id'] = $id;
 
         $this->startTest($testData);
+    }
+
+    public function testMerchantGetPricingPlanNoPlanAssigned()
+    {
+        $this->startTest();
+    }
+
+    public function testMerchantGetPricingPlan()
+    {
+        $merchant2 = $this->createEntity('merchant',
+            ['id' => '543cdc2e93ae13f61f52b3eb',
+             'pricing_plan_id' => '5053edf267a4a6d1d26b43df']);
+
+        $this->startTest();
     }
 
     public function startTest($testDataToReplace = array())

@@ -1,5 +1,6 @@
 Models\Merchant\Entity:
     id: $string
+    email: harshil$integer@gmail.com
 
 Models\Merchant\Balance:
     id: $string
@@ -31,8 +32,8 @@ Models\Transaction\Entity:
 
 Models\Pricing\Entity:
     id: $string
-    plan_id: $string
-    plan_name: $string
+    plan_id: 5053edf267a4a6d1d26b43df
+    plan_name: testFixturePlan
     payment_mode: card
     payment_mode_type: credit
     payment_network: VISA

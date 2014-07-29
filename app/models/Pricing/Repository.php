@@ -5,6 +5,7 @@ namespace Models\Pricing;
 use Models\Base;
 use Models\Pricing;
 use EE\Exception;
+use EE\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
@@ -20,7 +21,9 @@ class Repository extends Base\Repository
 
         if ($plan->count() === 0)
         {
-            throw new Exception\BadRequestException($id . ' not found');
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
         return $plan;
@@ -30,7 +33,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::take(10)->get();
+        return $repo::orderBy(Entity::ID, 'desc')->take(10)->get();
     }
 
     public function getPricingPlanByName($name)

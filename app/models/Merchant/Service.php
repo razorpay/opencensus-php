@@ -7,6 +7,7 @@ use Models\Merchant;
 use Models\Key;
 use Models\Pricing;
 use EE\Exception;
+use EE\Error\ErrorCode;
 
 class Service extends Base\Service
 {
@@ -110,7 +111,9 @@ class Service extends Base\Service
         if (isset($input['pricing_plan_id']) === false)
         {
             throw new Exception\BadRequestException(
-                'pricing_plan_id required');
+                null,
+                ErrorCode::BAD_REQUEST_PRICING_ID_REQURED,
+                'pricing_plan_id');
         }
 
         $plan = (new Pricing\Repository)->getPricingPlanById($input['pricing_plan_id']);
@@ -134,9 +137,12 @@ class Service extends Base\Service
         if ($pricingPlanId === null)
         {
             throw new Exception\BadRequestException(
-                'The merchant does not have any pricing plan assigned');
+                null,
+                ErrorCode::BAD_REQUEST_PRICING_NO_PLAN_ASSIGNED);
         }
 
-        $plan = (new Pricing\Repository)->getPricingPlanById();
+        $plan = (new Pricing\Repository)->getPricingPlanById($pricingPlanId);
+
+        return $plan->toArrayPublic();
     }
 }

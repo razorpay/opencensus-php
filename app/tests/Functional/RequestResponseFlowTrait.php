@@ -49,7 +49,7 @@ trait RequestResponseFlowTrait
     public function processAndAssertException($actual, $expected)
     {
         $this->assertExceptionClass($actual, $expected['class']);
-
+//sd($actual->getError());
         $internalError = $actual->getError()->getAttributes();
 
         $this->assertErrorDataEquals($expected, $internalError);
