@@ -74,9 +74,7 @@ class Handler
 
     public function genericExceptionHandler(\Exception $exception)
     {
-        \Trace\Trace::getInstance()->critical(
-           \Trace\TraceCode::ERROR_EXCEPTION,
-           ['exception' => $exception->getTraceAsString()]);
+        $this->traceException($exception);
 
         if (Config::get('app.debug') === false)
         {
@@ -106,5 +104,18 @@ class Handler
     public function serverErrorExceptionHandler(ServerErrorException $exception, $code)
     {
         return;
+    }
+
+    protected function traceException(\Exception $exception)
+    {
+        $traceData = array(
+            'class' => get_class($exception),
+            'code' => $exception->getCode(),
+            'message' => $exception->getMessage(),
+            'stack' => $exception->getTraceAsString());
+
+        \Trace\Trace::getInstance()->critical(
+           \Trace\TraceCode::ERROR_EXCEPTION,
+           $traceData);
     }
 }

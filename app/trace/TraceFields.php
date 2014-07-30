@@ -10,7 +10,10 @@ class TraceFields
 {
     protected static $fields = array(
         TraceCode::ERROR_EXCEPTION => array(
-            'exception',
+            'class',
+            'message',
+            'stack',
+            'code'
         ),
 
         TraceCode::TRANSACTION_NEW_REQUEST => array(
