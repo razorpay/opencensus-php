@@ -31,8 +31,6 @@ class ExtraFieldsException extends RecoverableException
 
         $message = $extrafields . ' is/are not required and should not be sent';
 
-        $intcode = 0;
-
         $this->error = new Error($code, $message);
 
         parent::__construct($message, $code, $previous);
