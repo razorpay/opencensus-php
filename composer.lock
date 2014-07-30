@@ -1256,7 +1256,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/spine.git",
-                "reference": "00db165e90d6e17a2a3cf2e3c1a3999ba8abc1f0"
+                "reference": "ad34bd29058226e454d1a060eb5f04d7e51cde39"
             },
             "require": {
                 "laravel/framework": "4.2.*",
@@ -1278,7 +1278,7 @@
                 "razorpay",
                 "spine"
             ],
-            "time": "2014-07-30 11:21:14"
+            "time": "2014-07-30 13:29:20"
         },
         {
             "name": "rmccue/requests",

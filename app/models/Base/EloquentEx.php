@@ -17,10 +17,22 @@ class EloquentEx extends \Razorpay\Spine\Entity
         return new BuilderEx($query);
     }
 
-    protected function throwException($operation, $attributes = null)
+    protected function throwException(array $e)
     {
-        $e = $this->getExceptionDataArray($operation, $attributes);
-
         throw new Exception\DbQueryException($e);
+    }
+
+    public static function findOrFailPublic($id, $columns = array('*'))
+    {
+        if ( ! is_null($model = static::find($id, $columns))) return $model;
+
+        $e = array(
+                'model' => get_called_class(),
+                'attributes' => $id,
+                'operation' => 'find');
+
+        throw new Exception\BadRequestException(
+            null,
+            ErrorCode::BAD_REQUEST_INVALID_ID);
     }
 }

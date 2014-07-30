@@ -91,7 +91,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         $txn = $repo::where(Transaction\Entity::MERCHANT_ID, $merchantId)
-                     ->findOrFailPublic($id);
+                    ->findOrFailPublic($id);
 
         return $txn;
     }
