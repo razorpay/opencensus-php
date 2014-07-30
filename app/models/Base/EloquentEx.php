@@ -10,12 +10,7 @@ class EloquentEx extends \Eloquent
     {
         if ( ! (NULL === $model = static::create($attributes))) return $model;
 
-        $e = array(
-                'model' => get_called_class(),
-                'attributes' => $attributes,
-                'operation' => 'create');
-
-        throw new Exception\DbQueryException($e);
+        (new static)->throwException('create', $attributes);
     }
 
     /**
@@ -30,12 +25,7 @@ class EloquentEx extends \Eloquent
         if ($saved === true)
             return;
 
-        $e = array(
-                'model' => get_called_class(),
-                'attributes' => $this->attributes,
-                'operation' => 'save');
-
-        throw new Exception\DbQueryException($e);
+        $this->throwException('save');
     }
 
     public function pushOrFail()
@@ -45,12 +35,7 @@ class EloquentEx extends \Eloquent
         if ($pushed === true)
             return;
 
-        $e = array(
-                'model' => get_called_class(),
-                'attributes' => $this->attributes,
-                'operation' => 'push');
-
-        throw new Exception\DbQueryException($e);
+        $this->throwException('push');
     }
 
     /**
@@ -62,5 +47,25 @@ class EloquentEx extends \Eloquent
     public function newEloquentBuilder($query)
     {
         return new BuilderEx($query);
+    }
+
+    protected function throwException($operation, $attributes = null)
+    {
+        $e = $this->getExceptionDataArray($operation, $attributes);
+
+        throw new Exception\DbQueryException($e);
+    }
+
+    protected function getExceptionDataArray($operation, $attributes = null)
+    {
+        if ($attributes === null)
+            $attributes = $this->attributes;
+
+        $e = array(
+                'model' => get_called_class(),
+                'attributes' => $attributes,
+                'operation' => $operation);
+
+        return $e;
     }
 }
