@@ -17,7 +17,7 @@ class BuilderEx extends Builder
                 'attributes' => $attributes,
                 'operation' => 'create');
 
-        throw new Exception\DbQueryException($e);
+        $this->throwException($e);
     }
 
     public function findOrFail($id, $columns = array('*'))
@@ -29,7 +29,7 @@ class BuilderEx extends Builder
                 'attributes' => $id,
                 'operation' => 'find');
 
-        throw new Exception\DbQueryException($e);
+        $this->throwException($e);
     }
 
     public function findOrFailPublic($id, $columns = array('*'))
@@ -41,7 +41,9 @@ class BuilderEx extends Builder
                 'attributes' => $id,
                 'operation' => 'find');
 
-        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        throw new Exception\BadRequestException(
+            null,
+            ErrorCode::BAD_REQUEST_INVALID_ID);
     }
 
     /**
@@ -61,7 +63,7 @@ class BuilderEx extends Builder
                 'attributes' => $this->attributes,
                 'operation' => 'save');
 
-        throw new Exception\DbQueryException($e);
+        $this->throwException($e);
     }
 
     public function pushOrFail()
@@ -76,6 +78,11 @@ class BuilderEx extends Builder
                 'attributes' => $this->attributes,
                 'operation' => 'push');
 
+        $this->throwException($e);
+    }
+
+    protected function throwException($e)
+    {
         throw new Exception\DbQueryException($e);
     }
 }

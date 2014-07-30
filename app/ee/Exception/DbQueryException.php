@@ -2,6 +2,7 @@
 
 namespace EE\Exception;
 
+use DB;
 use EE\Error\Error;
 use EE\Error\ErrorCode;
 
@@ -21,10 +22,12 @@ class DbQueryException extends ServerErrorException
     {
         $code = ErrorCode::SERVER_ERROR_DB_QUERY_FAILED;
 
+        $message = $this->constructMessage($data);
+
         parent::__construct($message, $code, $data, $previous);
     }
 
-    protected function constructMessage(array $data, & $message)
+    protected function constructMessage(array $data)
     {
         $message = 'DB query failed to execute successfully';
 
@@ -32,11 +35,15 @@ class DbQueryException extends ServerErrorException
         {
             if (isset($data[$field]))
             {
-                $message .= PHP_EOL . ucfirst($field) . ': ' . $data['field'];
+                $message .= PHP_EOL . ucfirst($field) . ': ' . $data[$field];
             }
         }
 
+        $lastQuery = $this->getLastQuery();
+
         $message .= PHP_EOL . 'Last query: ' . $lastQuery;
+
+        return $message;
     }
 
     protected function getLastQuery()
@@ -45,6 +52,10 @@ class DbQueryException extends ServerErrorException
 
         $lastQuery = end($queries);
 
-        return $lastQuery;
+        ob_start();
+        print_r($lastQuery);
+        $query = ob_get_clean();
+
+        return $query;
     }
 }

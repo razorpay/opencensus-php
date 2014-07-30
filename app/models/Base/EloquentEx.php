@@ -2,7 +2,6 @@
 
 namespace Models\Base;
 
-use EE\Error\ErrorCode;
 use EE\Exception;
 
 class EloquentEx extends \Eloquent

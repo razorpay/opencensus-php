@@ -91,17 +91,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         $txn = $repo::where(Transaction\Entity::MERCHANT_ID, $merchantId)
-                     ->find($id);
-
-        if ($txn === null)
-        {
-            $e = array(
-                'model' => get_called_class(),
-                'attributes' => $id,
-                'operation' => 'find');
-
-            throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
+                     ->findOrFailPublic($id);
 
         return $txn;
     }

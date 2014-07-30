@@ -62,7 +62,9 @@ class Repository
                 'attributes' => $id,
                 'operation' => 'find');
 
-        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        throw new Exception\BadRequestException(
+            null,
+            ErrorCode::BAD_REQUEST_INVALID_ID);
     }
 
     public function find($id, $columns = array('*'))
