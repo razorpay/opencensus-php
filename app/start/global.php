@@ -77,3 +77,8 @@ require app_path().'/filters.php';
 require_once app_path().'/lib//utility.php';
 require_once app_path().'/lib//utility2.php';
 require app_path().'/lib/validation.php';
+
+Validator::resolver(function($translator, $data, $rules, $messages)
+{
+    return new Razorpay\Spine\Validation\Validator($translator, $data, $rules, $messages);
+});
