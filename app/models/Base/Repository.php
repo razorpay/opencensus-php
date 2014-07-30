@@ -22,14 +22,7 @@ class Repository
     {
         $repo = $this->repo;
 
-        if ( ! (NULL === $model = $repo::create($attributes))) return $model;
-
-        $e = array(
-                'model' => $repo,
-                'attributes' => $attributes,
-                'operation' => 'create');
-
-        throw new Exception\DbQueryException($e);
+        return $repo::createOrFail($attributes);
     }
 
     public function create(array $attributes)
@@ -43,28 +36,14 @@ class Repository
     {
         $repo = $this->repo;
 
-        if ( ! (NULL === $model = $repo::find($id, $columns))) return $model;
-
-        $this->throwException(
-            get_class($entity),
-            $entity->getAttributes(),
-            'find');
+        return $repo::findOrFail($id, $columns);
     }
 
     public function findOrFailPublic($id, $columns = array('*'))
     {
         $repo = $this->repo;
 
-        if ( ! (NULL === $model = $repo::find($id, $columns))) return $model;
-
-        $e = array(
-                'model' => $repo,
-                'attributes' => $id,
-                'operation' => 'find');
-
-        throw new Exception\BadRequestException(
-            null,
-            ErrorCode::BAD_REQUEST_INVALID_ID);
+        return $repo::findOrFailPublic($id, $columns);
     }
 
     public function find($id, $columns = array('*'))
@@ -81,15 +60,7 @@ class Repository
      */
     public function saveOrFail($entity, array $options = array())
     {
-        $saved = $this->save($entity, $options);
-
-        if ($saved === true)
-            return;
-
-        $this->throwException(
-            get_class($entity),
-            $entity->getAttributes(),
-            'save');
+        $entity->saveOrFail($options);
     }
 
     public function save($entity, array $options = array())
@@ -101,15 +72,7 @@ class Repository
 
     public function pushOrFail($entity)
     {
-        $pushed = $entity->push();
-
-        if ($pushed === true)
-            return;
-
-        $this->throwException(
-            get_class($entity),
-            $entity->getAttributes(),
-            'push');
+        $entity->pushOrFail();
     }
 
     public function reload(& $entity)
@@ -128,16 +91,6 @@ class Repository
         DB::beginTransaction();
 
         return $this;
-    }
-
-    protected function throwException($model, $attr, $op)
-    {
-        $e = array(
-            'model' => $model,
-            'attributes' => $attr,
-            'operation' => $op);
-
-        throw new Exception\DbQueryException($e);
     }
 
     /**
