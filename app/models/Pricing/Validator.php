@@ -34,37 +34,23 @@ class Validator extends Base\Validator
 
     public static function createPlanValidate($input)
     {
-        try
-        {
-            $instance = new static;
+        $instance = new static;
 
-            $planInput[Entity::PLAN_NAME] =
-                (isset($input[Entity::PLAN_NAME])) ? $input[Entity::PLAN_NAME] : null;
+        $planInput[Entity::PLAN_NAME] =
+            (isset($input[Entity::PLAN_NAME])) ? $input[Entity::PLAN_NAME] : null;
 
-            $instance->validateInput($planInput, 'addPlan');
+        $instance->validateInput($planInput, 'addPlan');
 
-            unset($input[Entity::PLAN_NAME]);
+        unset($input[Entity::PLAN_NAME]);
 
-            $instance->validateInput($input, 'addPlanRule');
-        }
-        catch (Exception\ValidationFailureException $e)
-        {
-            throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
-        }
+        $instance->validateInput($input, 'addPlanRule');
     }
 
     public static function addPlanRuleValidate(Plan $plan, $input)
     {
         $instance = new static;
 
-        try
-        {
-            $instance->validateInput($input, 'addPlanRule');
-        }
-        catch (Exception\ValidationFailureException $e)
-        {
-            throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
-        }
+        $instance->validateInput($input, 'addPlanRule');
 
         $rule = $plan->first();
 
@@ -104,5 +90,10 @@ class Validator extends Base\Validator
                     BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
         }
+    }
+
+    protected function processValidationFailure($messages, $operation, $input)
+    {
+        throw new Exception\BadRequestException($messages, 0, $e);
     }
 }

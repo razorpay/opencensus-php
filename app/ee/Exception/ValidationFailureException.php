@@ -11,8 +11,6 @@ class ValidationFailureException extends BaseException
     public function __construct($messageBag)
     {
         $this->messageBag = $messageBag;
-
-        // parent::__construct($message, 0, null);
     }
 
     public function getMessageBag()

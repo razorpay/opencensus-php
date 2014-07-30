@@ -77,4 +77,9 @@ class Validator extends Base\Validator
             }
         }
     }
+
+    protected function processValidationFailure($messages, $operation, $input)
+    {
+        throw new Exception\CardErrorException($messages);
+    }
 }

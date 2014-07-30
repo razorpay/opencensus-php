@@ -61,7 +61,7 @@ class Validator extends Base\Validator
 
         if ($code !== null)
         {
-            throw new Exception\FieldErrorException($message, $code, 'contact');
+            throw new Exception\FieldErrorException($message, $code, Entity::CONTACT);
         }
     }
 
@@ -77,7 +77,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 null,
                 ErrorCode::BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING,
-                'description');
+                Entity::DESCRIPTION);
         }
 
         if (strlen($desc) > 1000)
@@ -85,7 +85,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 null,
                 ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
-                'description');
+                Entity::DESCRIPTION);
         }
     }
 
@@ -208,16 +208,7 @@ class Validator extends Base\Validator
 
     public static function captureInputValidate($input)
     {
-        try
-        {
-            $instance = new static;
-
-            $instance->validateInput($input, 'capture');
-        }
-        catch (Exception\ValidationFailureException $e)
-        {
-            throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
-        }
+        (new static)->validateInput($input, 'capture');
     }
 
     public static function captureAmountValidate($txn, $input)
@@ -248,5 +239,32 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 null, ErrorCode::BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED);
         }
+    }
+
+    protected function processValidationFailure($messages, $operation, $input)
+    {
+        $bag = $messages;
+
+        if ($bag->has(Entity::EMAIL))
+        {
+            $msg = $bag->first(Entity::EMAIL);
+
+            throw new Exception\FieldErrorException(
+                $msg,
+                ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+                Entity::EMAIL);
+        }
+
+        if ($bag->has(Entity::CONTACT))
+        {
+            $msg = $bag->first(Entity::CONTACT);
+
+            throw new Exception\FieldErrorException(
+                $msg,
+                ErrorCode::FIELD_ERROR_INVALID_CONTACT,
+                Entity::CONTACT);
+        }
+
+        throw new Exception\BadRequestException($messages);
     }
 }

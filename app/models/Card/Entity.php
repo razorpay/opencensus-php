@@ -67,24 +67,6 @@ class Entity extends Base\UniqueIdEntity
         self::LAST4,
         self::NETWORK);
 
-    public function build(array $input = array())
-    {
-        try
-        {
-            parent::build($input);
-        }
-        catch (Exception\CardErrorException $e)
-        {
-            throw $e;
-        }
-        catch (Exception\ValidationFailureException $e)
-        {
-            throw new Exception\CardErrorException($e->getMessageBag(), 0, $e);
-        }
-
-        return $this;
-    }
-
     public function generateLast4($input)
     {
         $last4 = substr($input['number'], -4);
