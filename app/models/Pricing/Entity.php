@@ -19,6 +19,7 @@ class Entity extends Base\UniqueIdEntity
     const EXPIRED_AT            = 'expired_at';
 
     protected $fillable = array(
+        self::ID,
         self::PLAN_ID,
         self::PLAN_NAME,
         self::GATEWAY,
@@ -33,8 +34,6 @@ class Entity extends Base\UniqueIdEntity
 
     public function newPlan()
     {
-        $this->generateUniqueIdIfNotSet();
-
         $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
     }
 

@@ -36,14 +36,30 @@ class UniqueIdEntity extends Entity
      */
     public function save(array $options = array())
     {
-        $this->generateUniqueIdIfNotSet();
+        $this->validateOrGenerateUniqueId();
 
         $saved = parent::save($options);
 
         return $saved;
     }
 
-    public function generateUniqueIdIfNotSet()
+    public function validateOrGenerateUniqueId()
+    {
+        $key = $this->getKeyName();
+
+        $value = $this->getAttribute($key);
+
+        if ($value === null)
+        {
+            $this->generateAndSetUniqueId();
+        }
+        else
+        {
+            static::verifyUniqueId($value);
+        }
+    }
+
+    public function generateAndSetUniqueId()
     {
         $key = $this->getKeyName();
 
