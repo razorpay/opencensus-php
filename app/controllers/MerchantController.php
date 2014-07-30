@@ -201,4 +201,16 @@ class MerchantController extends BaseController
 
         $job->delete();
     }
+
+    public function postContact()
+    {   
+        $input = Input::all();
+
+        Mail::send('emails.contact',compact('input'), function($m)
+        {
+            $m->to('contact@razorpay.com', 'Razorpay Contact')->subject('New Contact form submission');
+        });
+
+        return Redirect::to("https://razorpay.com");
+    }
 }

@@ -76,3 +76,5 @@ Route::group(array('before' => 'auth.internal'), function()
 {
     Route::post('/transactions', 'TransactionController@postIndex');
 });
+
+Route::post('/contact', 'MerchantController@postContact');
