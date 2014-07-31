@@ -208,7 +208,7 @@ class Validator extends Base\Validator
 
     public static function captureInputValidate($input)
     {
-        (new static)->validateInput($input, 'capture');
+        (new static)->validateInput('capture', $input);
     }
 
     public static function captureAmountValidate($txn, $input)

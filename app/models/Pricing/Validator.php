@@ -39,18 +39,18 @@ class Validator extends Base\Validator
         $planInput[Entity::PLAN_NAME] =
             (isset($input[Entity::PLAN_NAME])) ? $input[Entity::PLAN_NAME] : null;
 
-        $instance->validateInput($planInput, 'addPlan');
+        $instance->validateInput('addPlan', $planInput);
 
         unset($input[Entity::PLAN_NAME]);
 
-        $instance->validateInput($input, 'addPlanRule');
+        $instance->validateInput('addPlanRule', $input);
     }
 
     public static function addPlanRuleValidate(Plan $plan, $input)
     {
         $instance = new static;
 
-        $instance->validateInput($input, 'addPlanRule');
+        $instance->validateInput('addPlanRule', $input);
 
         $rule = $plan->first();
 
