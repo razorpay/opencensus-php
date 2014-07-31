@@ -211,6 +211,6 @@ class MerchantController extends BaseController
             $m->to('contact@razorpay.com', 'Razorpay Contact')->subject('New Contact form submission');
         });
 
-        return Redirect::to("https://razorpay.com");
+        return Redirect::to("https://razorpay.com/postcontact/");
     }
 }
