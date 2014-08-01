@@ -20,7 +20,7 @@ class Transaction extends Service
 
         if (empty($error))
         {
-            $merchant_id = \Auth::id();
+            $merchant_id = \Auth::merchant()->id();
             static::setApiCredentials($merchant_id);
 
             $response = static::$api->transaction->fetch($options);
@@ -41,7 +41,7 @@ class Transaction extends Service
 
         if (empty($error))
         {
-            $merchant_id = \Auth::id();
+            $merchant_id = \Auth::merchant()->id();
             static::setApiCredentials($merchant_id);
 
             $id = $options['id'];

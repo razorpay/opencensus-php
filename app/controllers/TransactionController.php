@@ -17,7 +17,7 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::id();
+        $input['merchant_id'] = Auth::merchant()->id();
 
         $data = Service\Transaction::getInstance()->getAnalytics($input);
 
@@ -29,7 +29,7 @@ class TransactionController extends BaseController
 
     public function getAggregations()
     {
-        $merchant_id = Auth::id();
+        $merchant_id = Auth::merchant()->id();
 
         $data = Service\Transaction::getInstance()->getAggregations($merchant_id);
 

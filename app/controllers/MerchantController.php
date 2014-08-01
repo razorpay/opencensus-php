@@ -54,7 +54,7 @@ class MerchantController extends BaseController
 
     public function getLogout()
     {
-        \Auth::logout();
+        \Auth::merchant()->logout();
         return Redirect::action('MerchantController@getLogin');
     }
 
@@ -78,14 +78,14 @@ class MerchantController extends BaseController
 
     public function getAccount()
     {
-        $merchant = Service\Merchant::getInstance()->fetch(\Auth::id());
+        $merchant = Service\Merchant::getInstance()->fetch(\Auth::merchant()->id());
 
         return $merchant;
     }
 
     public function getKeys()
     {
-        $keys = Service\Merchant::getInstance()->fetchKeysFromApi(\Auth::id());
+        $keys = Service\Merchant::getInstance()->fetchKeysFromApi(\Auth::merchant()->id());
 
         return $keys;
     }
@@ -95,7 +95,7 @@ class MerchantController extends BaseController
         $input = Input::all();
         unset($input['_token']);
 
-        $input['merchant_id'] = \Auth::id();
+        $input['merchant_id'] = \Auth::merchant()->id();
 
         $data = Service\Merchant::getInstance()->rollKeys($input);
 
@@ -108,7 +108,7 @@ class MerchantController extends BaseController
 
         if($response)
         {   
-            \Auth::loginUsingId($response['id']);
+            \Auth::merchant()->loginUsingId($response['id']);
 
             return View::make('merchants.getKeys')
                         ->with('data', $response);

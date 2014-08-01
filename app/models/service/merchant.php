@@ -56,7 +56,7 @@ class Merchant extends Service
         $verify = false;
 
         if (empty($error))
-            $verify = \Auth::attempt(array(
+            $verify = \Auth::merchant()->attempt(array(
                 'email'     => $data['email'],
                 'password'  => $input['password'],
                 'confirm_token' => Null

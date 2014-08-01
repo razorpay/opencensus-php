@@ -9,7 +9,7 @@ class MerchantDetails extends Service
 {
     public function fetchDetails()
     {       
-        $merchant_details = \Auth::user()->MerchantDetails;
+        $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
         $merchant_details = DAL\MerchantDetails::filterForAjax($merchant_details);
 
@@ -20,7 +20,7 @@ class MerchantDetails extends Service
         $error = array();
         $data = array();
 
-        $merchant_details = \Auth::user()->MerchantDetails;
+        $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
         //Check if already finished
         $steps_finished = json_decode($merchant_details->steps_finished, true);
@@ -66,7 +66,7 @@ class MerchantDetails extends Service
     public function saveDetails($id, array $input)
     {       
         //Check if already finished
-        $merchant_details = \Auth::user()->MerchantDetails;
+        $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
         $steps_finished = json_decode($merchant_details->steps_finished, true);
 
@@ -96,7 +96,7 @@ class MerchantDetails extends Service
     {   
         $error = array();
 
-        $merchant_details = \Auth::user()->MerchantDetails;
+        $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
         //Check if already finished
         $steps_finished = json_decode($merchant_details->steps_finished, true);
@@ -129,7 +129,7 @@ class MerchantDetails extends Service
 
     public function saveUploadedFile($input)
     {   
-        $merchant_details = \Auth::user()->MerchantDetails;
+        $merchant_details = \Auth::merchant()->user()->MerchantDetails;
         
         $steps_finished = json_decode($merchant_details->steps_finished, true);
 
@@ -145,7 +145,7 @@ class MerchantDetails extends Service
         {   
             $data = DAL\MerchantDetails::getDataForUpload($input);
 
-            $merchant_details = \Auth::user()->MerchantDetails;
+            $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
             $id = $merchant_details->merchant_id;
 
