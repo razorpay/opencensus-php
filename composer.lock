@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f628244ec3b2b565562c94652553a66d",
+    "hash": "8531c875a9e3d7083fcb0dc786a34a59",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -794,6 +794,52 @@
             "time": "2014-07-23 18:24:17"
         },
         {
+            "name": "ollieread/multiauth",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ollieread/multiauth.git",
+                "reference": "ce04fe0749a25e9196f3ee4f8a1d6e85ea9c9aa6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ollieread/multiauth/zipball/ce04fe0749a25e9196f3ee4f8a1d6e85ea9c9aa6",
+                "reference": "ce04fe0749a25e9196f3ee4f8a1d6e85ea9c9aa6",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/auth": "~4.1",
+                "illuminate/console": "~4.1",
+                "illuminate/database": "~4.1",
+                "illuminate/filesystem": "~4.1",
+                "illuminate/support": "~4.1",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Ollieread\\Multiauth": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ollie Read",
+                    "email": "labs@ollieread.com"
+                }
+            ],
+            "description": "Multiple auth driver for Laravel",
+            "keywords": [
+                "auth",
+                "laravel",
+                "multi"
+            ],
+            "time": "2014-07-14 10:31:05"
+        },
+        {
             "name": "patchwork/utf8",
             "version": "v1.1.24",
             "source": {
@@ -943,16 +989,16 @@
         },
         {
             "name": "predis/predis",
-            "version": "v0.8.6",
+            "version": "v0.8.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nrk/predis.git",
-                "reference": "239864d9a0929f29bf8c5a8370ef743537c4953d"
+                "reference": "4123fcd85d61354c6c9900db76c9597dbd129bf6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nrk/predis/zipball/239864d9a0929f29bf8c5a8370ef743537c4953d",
-                "reference": "239864d9a0929f29bf8c5a8370ef743537c4953d",
+                "url": "https://api.github.com/repos/nrk/predis/zipball/4123fcd85d61354c6c9900db76c9597dbd129bf6",
+                "reference": "4123fcd85d61354c6c9900db76c9597dbd129bf6",
                 "shasum": ""
             },
             "require": {
@@ -989,7 +1035,7 @@
                 "predis",
                 "redis"
             ],
-            "time": "2014-07-15 09:54:33"
+            "time": "2014-08-01 09:43:10"
         },
         {
             "name": "psr/log",
@@ -2071,7 +2117,8 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "razorpay/razorpay-php": 20
+        "razorpay/razorpay-php": 20,
+        "ollieread/multiauth": 20
     },
     "platform": [
 
