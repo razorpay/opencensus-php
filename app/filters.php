@@ -35,7 +35,7 @@ App::after(function($request, $response)
 
 Route::filter('auth', function()
 {
-	if (Auth::guest()) return Redirect::guest('login');
+	if (Auth::merchant()->guest()) return Redirect::guest('login');
 });
 
 
@@ -63,7 +63,7 @@ Route::filter('auth.internal', function()
 
 Route::filter('guest', function()
 {
-	if (Auth::check()) return Redirect::to('/');
+	if (Auth::merchant()->check()) return Redirect::to('/');
 });
 
 /*
