@@ -26,7 +26,7 @@
             @elseif(in_array(5, $details['steps_finished']) === false)
                 Form hasn't been submitted yet by merchant for activation
             @else
-                Merchant already Active <a href="{{{$details['merchant']['id']}}}/deactivate?_token={{{csrf_token()}}}">Deactivate Merchant</a>
+                Merchant already Active <a href="{{{$details['merchant']['id']}}}/deactivate?_token={{{csrf_token()}}}" onclick="if (confirm('Are you sure you want to deactivate this merchant?')){return true;} return false;">Deactivate Merchant</a>
             @endif
             <br/><br/>
 

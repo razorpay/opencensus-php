@@ -9,6 +9,9 @@
         <li>
             <a href="/admin/merchant/list">Merchants</a>
         </li>
+        <li>
+            <a href="/admin/pricing/list">Pricing Plans</a>
+        </li>
         @if(Auth::admin()->user()->isSuperAdmin())
         <li>
             <a href="/admin/users">Manage Admins</a>

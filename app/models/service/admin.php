@@ -166,23 +166,6 @@ class Admin extends Service
         return $error;
     }
 
-    public function fetchPricingPlan($id = NULL)
-    {
-        Request::setCredentials();
-        if($id===NULL)
-        {
-            $response = Request::GET('pricing');
-        }
-        else
-        {
-            $response = Request::GET('pricing/'.$id);
-        }
-
-        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($error));
-
-        return $response;
-    }
-
     public function activateMerchant($id, $input)
     {
         $merchant = DAL\Merchant::findorfail($id);
@@ -250,6 +233,40 @@ class Admin extends Service
         return $error;
     }
 
+    public function fetchPricingPlan($id = NULL)
+    {
+        Request::setCredentials();
+        if($id===NULL)
+        {
+            $response = Request::GET('pricing');
+        }
+        else
+        {
+            $response = Request::GET('pricing/'.$id);
+        }
+
+        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($error));
+
+        return $response;
+    }
+
+    public function addPricingPlanRule($id, $input)
+    {   
+        unset($input['_token']);
+
+        $error = array();
+        
+        Request::setCredentials();
+        
+        $response = Request::POST('pricing/'.$id.'/rule', $input);
+
+        if(isset($response['error']))
+        {
+            $error[]=$response['error']['description'];
+        }
+
+        return $error;
+    }
     protected function createPricingPlan($data)
     {
         Request::setCredentials();

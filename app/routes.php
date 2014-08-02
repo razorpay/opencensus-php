@@ -100,6 +100,14 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/merchant/{id}/deactivate', array('before'=>'csrf', 'uses' => 'AdminController@getMerchantDeactivation'));
 
+    Route::get('/admin/pricing/list', 'AdminController@getPricingList');
+
+    Route::get('/admin/pricing/new', 'AdminController@getNewPricingPlan');
+
+    Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
+
+    Route::post('/admin/pricing/{id}', array('before'=>'csrf', 'uses'=>'AdminController@postPricingRules'));
+
     Route::group(array('before' => 'superadmin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');

@@ -276,6 +276,38 @@ class AdminController extends BaseController
         }
     }
 
+    public function getPricingList()
+    {
+        $data = Service\Admin::getInstance()->fetchPricingPlan();
+
+        return View::make('admin.getPricingList')->with('plans', $data['data']);
+    }
+
+    public function getPricingRules($id)
+    {
+        $data = Service\Admin::getInstance()->fetchPricingPlan($id);
+
+        return View::make('admin.getPricingRules')->with('plan', $data);
+    }
+
+    public function postPricingRules($id)
+    {   
+        $input = Input::all();
+
+        $data = Service\Admin::getInstance()->fetchPricingPlan($id);
+
+        $error = Service\Admin::getInstance()->addPricingPlanRule($data['id'], $input);
+
+        if(empty($error))
+        {
+            return Redirect::to('/admin/pricing/'.$id)->with('status', array('Rule Added successfully'));
+        }
+        else
+        {
+            return Redirect::to('/admin/pricing/'.$id)->with('status', $error);
+        }
+    }
+
     public function getAdmins()
     {
         $admins = Service\Admin::getInstance()->getAdmins();
