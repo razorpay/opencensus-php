@@ -130,10 +130,39 @@ class Admin extends Service
         return $response;
     }
 
-    public function changeStepsFinished($input, $details)
+    public function lockMerchant($id)
     {   
+        $error = array();
+
         $merchant_details = DAL\MerchantDetails::findorfail($id);
-        
-        if(count(array_intersect($merchant_details['steps_finished'], $all)) == count($search_this));
+
+        if($merchant_details->locked === 1)
+        {
+            $error[] = 'Merchant already locked.';
+            return $error;
+        }
+
+        $merchant_details->locked = 1;
+        $merchant_details->save();
+
+        return $error;
+    }
+
+    public function unlockMerchant($id)
+    {   
+        $error = array();
+
+        $merchant_details = DAL\MerchantDetails::findorfail($id);
+
+        if($merchant_details->locked === 0)
+        {
+            $error[] = 'Merchant already unlocked.';
+            return $error;
+        }
+
+        $merchant_details->locked = 0;
+        $merchant_details->save();
+
+        return $error;
     }
 }

@@ -1,6 +1,13 @@
 @extends('admin.layoutGenerated')
 
 @section('panelcontent')
+@if(Session::has('status'))
+    @foreach(Session::get('status') as $message)
+        <div class="alert alert-info alert-dismissable">
+        {{{$message}}}
+        </div>
+    @endforeach
+@endif
     <div class="centered form-wrapper">
         <div class="content">
             <h2>Merchant Activation Details</h2>
@@ -22,21 +29,21 @@
 
             <h4>Form Locked Status:</h4>
             @if($details['locked']) 
-            Locked <a href="unlock?token={{{csrf_token()}}}">Unlock Form for user</a>
+            Locked <a href="{{{$details['merchant']['id']}}}/unlock?_token={{{csrf_token()}}}">Unlock Form for user</a>
             @else
-            Unlocked <a href="lock?token={{{csrf_token()}}}">Lock Form for user</a>
+            Unlocked <a href="{{{$details['merchant']['id']}}}/lock?_token={{{csrf_token()}}}">Lock Form for user</a>
             @endif
             <br/><br/>
 
             @if($details['merchant']['live'])
-                <h4><a href="deactivate?token={{{csrf_token()}}}">Deactivate Merchant</a></h4>
+                <h4><a href="{{{$details['merchant']['id']}}}/deactivate?_token={{{csrf_token()}}}">Deactivate Merchant</a></h4>
             @else
                 If everything is good, click below to activate him and fill pricing and TID details
-                <h4><a href="activate">Activate Merchant</a></h4>
+                <h4><a href="{{{$details['merchant']['id']}}}/activate">Activate Merchant</a></h4>
             @endif
 
             <br/><br/>
-            <h4><a href = "/admin/merchant/{{{$details['merchant']['id']}}}/details">Check Activation Form Details</a></h4>
+            <h4><a href = "{{{$details['merchant']['id']}}}/details">Check Activation Form Details</a></h4>
 
             <p>
             Note:

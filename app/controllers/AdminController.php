@@ -195,23 +195,38 @@ class AdminController extends BaseController
                    ->with('details', $details);
     }
 
-    public function postStepsFinished($id)
+    public function getLockMerchantDetails($id)
     {
-        $input = Input::all();
+        $error = Service\Admin::getInstance()->lockMerchant($id);
 
-        $error = Service\Admin::getInstance()->changeStepsFinished($id, $input);
-
-        $response= Redirect::to('/admin/merchant/'.$id);
+        $view = Redirect::to('/admin/merchant/'.$id);
 
         if(empty($error))
         {
-            return $response->with('success', true);
+            return $view->with('status', array('Merchant activation form locked Successfully!'));
         }
         else
         {
-            return $response->with('error', $error);
+            return $view->with('status', $error);
         }
     }
+
+    public function getUnlockMerchantDetails($id)
+    {
+        $error = Service\Admin::getInstance()->unlockMerchant($id);
+
+        $view = Redirect::to('/admin/merchant/'.$id);
+
+        if(empty($error))
+        {
+            return $view->with('status', array('Merchant activation form unlocked Successfully!'));
+        }
+        else
+        {
+            return $view->with('status', $error);
+        }
+    }
+
     public function getMerchantDetails($id)
     {
         $details = Service\Admin::getInstance()->fetchMerchantDetails($id);
