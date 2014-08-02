@@ -72,6 +72,52 @@ Route::group(array('before' => 'guest'), function()
     });
 });
 
+Route::group(array('before' => 'auth_admin'), function()
+{
+    Route::get('/admin', 'AdminController@getIndex');
+
+    Route::get('/admin/logout', 'AdminController@getLogout');
+
+    Route::get('/admin/password', 'AdminController@getPassword');
+
+    Route::post('/admin/password', array('before'=>'csrf', 'uses'=>'AdminController@postPassword'));
+
+    Route::get('/admin/merchant/list', 'AdminController@getMerchants');
+
+    Route::get('/admin/merchant/{id}', 'AdminController@getMerchantStatus');
+
+    Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
+
+    Route::get('/admin/merchant/{id}/login', array('before'=>'csrf', 'uses'=>'AdminController@getMerchantLogin'));
+
+    Route::get('/admin/merchant/{id}/lock', array('before'=>'csrf', 'uses' => 'AdminController@getLockMerchantDetails'));
+
+    Route::get('/admin/merchant/{id}/unlock', array('before'=>'csrf', 'uses' => 'AdminController@getUnlockMerchantDetails'));
+
+    Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
+
+    Route::group(array('before' => 'superadmin'), function()
+    {
+        Route::get('/admin/users', 'AdminController@getAdmins');
+
+        Route::get('/admin/users/{id}/delete', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
+
+        Route::get('/admin/users/add', 'AdminController@getAddAdmin');
+
+        Route::post('/admin/users/add', array('before'=>'csrf', 'uses'=> 'AdminController@postAddAdmin'));
+
+    });
+});
+
+Route::group(array('before' => 'guest_admin'), function()
+{
+    Route::get('/admin/login', 'AdminController@getLogin');
+
+    Route::post('/admin/login', array('before' => 'csrf','uses'=> 'AdminController@postLogin'));
+
+    Route::post('/admin/duologin', 'AdminController@postDuologin');
+});
+
 Route::group(array('before' => 'auth.internal'), function()
 {
     Route::post('/transactions', 'TransactionController@postIndex');
