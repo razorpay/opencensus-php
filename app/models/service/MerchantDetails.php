@@ -22,25 +22,29 @@ class MerchantDetails extends Service
 
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
-        //Check if already finished
-        $steps_finished = json_decode($merchant_details->steps_finished, true);
-
-        if(in_array(5, $steps_finished)){
-            //return success if already finished
-            $error[] = 'Form has already been submitted for activation and is pending admin response.';
+        if($merchant_details->locked)
+        {
+            $error[]= 'Form has been locked for editing by admin.';
             return $error;
         }
 
+        //Check if already finished
+        $steps_finished = json_decode($merchant_details->steps_finished, true);
+        
         $missing_steps = Manager\MerchantDetails::validateActivation($steps_finished);
 
         if (empty($missing_steps))
         {   
-            $steps_finished[] = 5;
+            if(in_array(5, $steps_finished) === false)
+            {
             
-            $data['steps_finished'] = json_encode($steps_finished);
+                $steps_finished[] = 5;
+                
+                $data['steps_finished'] = json_encode($steps_finished);
 
-            //Updating the model
-            $merchant_details->update($data);
+                //Updating the model
+                $merchant_details->update($data);
+            }
         }
         else
         {
@@ -68,11 +72,9 @@ class MerchantDetails extends Service
         //Check if already finished
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
-        $steps_finished = json_decode($merchant_details->steps_finished, true);
-
-        if(in_array(5, $steps_finished)){
-            //return error if already finished
-            $error[] = 'Form has already been submitted for activation and is pending admin response.';
+        if($merchant_details->locked)
+        {
+            $error[]= 'Form has been locked for editing by admin.';
             return $error;
         }
 
@@ -80,6 +82,8 @@ class MerchantDetails extends Service
 
         if (empty($error))
         {   
+            $steps_finished = json_decode($merchant_details->steps_finished, true);
+        
             if(in_array($id, $steps_finished) == false){
                 $steps_finished[] = (int)$id;
             }
@@ -98,14 +102,14 @@ class MerchantDetails extends Service
 
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
-        //Check if already finished
-        $steps_finished = json_decode($merchant_details->steps_finished, true);
-
-        if(in_array(5, $steps_finished)){
-            //return error if already finished
-            $error[] = 'Form has already been submitted for activation and is pending admin response.';
+        if($merchant_details->locked)
+        {
+            $error[]= 'Form has been locked for editing by admin.';
             return $error;
         }
+
+        //Check if already finished
+        $steps_finished = json_decode($merchant_details->steps_finished, true);
 
         if(in_array(4, $steps_finished)){
             //return success if already finished
@@ -131,11 +135,9 @@ class MerchantDetails extends Service
     {   
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
         
-        $steps_finished = json_decode($merchant_details->steps_finished, true);
-
-        if(in_array(5, $steps_finished)){
-            //return error if already finished
-            $error[] = 'Form has already been submitted for activation and is pending admin response.';
+        if($merchant_details->locked)
+        {
+            $error[]= 'Form has been locked for editing by admin.';
             return $error;
         }
 
@@ -150,6 +152,7 @@ class MerchantDetails extends Service
             $id = $merchant_details->merchant_id;
 
             $extension = $data['file']->getClientOriginalExtension();
+            $mime = $data['file']->getMimeType();
 
             $s3 =  \AWS::get('s3');
 
@@ -159,6 +162,8 @@ class MerchantDetails extends Service
                 'Bucket' =>$_ENV['AWS_ACTIVATION_BUCKET'],
 
                 'Key'    => $id.'/'.$data['key'].'.'.$extension,
+
+                'ContentType' => $mime,
 
                 'SourceFile' => $data['file']->getRealPath(),
                 ));
