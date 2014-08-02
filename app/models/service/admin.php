@@ -165,4 +165,82 @@ class Admin extends Service
 
         return $error;
     }
+
+    public function fetchPricingPlan($id = NULL)
+    {
+        Request::setCredentials();
+        if($id===NULL)
+        {
+            $response = Request::GET('pricing');
+        }
+        else
+        {
+            $response = Request::GET('pricing/'.$id);
+        }
+
+        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($error));
+
+        return $response;
+    }
+
+    public function activateMerchant($id, $input)
+    {
+        $error = [];
+
+        $merchant = DAL\Merchant::findorfail($id);
+
+        $details = $this->fetchMerchantStatus($id);
+
+        if(in_array(5, $details['steps_finished'])===false)
+        {
+            $error[] = 'Activation form has not been submitted by merchant yet.';
+            return $error;
+        }
+
+        if((int)$merchant->live === 1)
+        {
+            $error[] = 'Merchant is already active.';
+            return $error;
+        }
+        
+        $error = $this->assignPricingPlan($id, $input['pricing_plan']);
+        
+        if(empty($error))
+        {
+            //@todo mark merchant live in api first and submit tid, tid password
+            
+            $merchant->live = 1;
+            $merchant->save();  
+        }
+        
+        return $error;
+    }
+
+    protected function assignPricingPlan($id, $plan_id)
+    {
+        $error = array();
+
+        
+        $data = array('pricing_plan_id' => $plan_id);
+
+        Request::setCredentials();
+
+        $response = Request::POST('merchants/'.$id.'/pricing', $data);
+        
+        if(isset($response['error']))
+        {
+            $error[]=$response['error']['description'];
+        }
+
+        return $error;
+    }
+
+    protected function createPricingPlan($data)
+    {
+        Request::setCredentials();
+
+        $response = Request::POST('pricing', $data);
+
+        return $response;
+    }
 }

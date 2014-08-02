@@ -235,17 +235,30 @@ class AdminController extends BaseController
                    ->with('data', json_encode($details));
     }
 
-    public function postValidate($id, $step)
-    {
-        $error = Service\MerchantDetails::getInstance()->validateStep($id, $step);  
-        
-        if (empty($error))
+    public function getMerchantActivation($id)
+    {   
+        $details = Service\Admin::getInstance()->fetchMerchantStatus($id);
+
+        $pricing_plans = Service\Admin::getInstance()->fetchPricingPlan();
+
+        return View::make('admin.getMerchantActivation')
+                   ->with('pricing_plans', $pricing_plans)
+                   ->with('details', $details);
+    }
+
+    public function postMerchantActivation($id)
+    {   
+        $input = Input::all();
+
+        $error = Service\Admin::getInstance()->activateMerchant($id, $input);
+
+        if(empty($error))
         {
-            return Response::json(array('success' => true));
+            return Redirect::to('/admin/merchant/'.$id)->with('status', array('Merchant activated successfully'));
         }
         else
         {
-            return Response::json(array('success' => false, 'status' => $error));
+            return Redirect::to('/admin/merchant/'.$id.'/activate')->with('status', $error);
         }
     }
 
