@@ -7,6 +7,11 @@ return array(
             'driver' => 'eloquent',
             'model' => 'Models\DAL\Merchant',
             'table' => 'merchants'
+        ),
+        'admin' => array(
+            'driver' => 'eloquent',
+            'model' => 'Models\DAL\Admin',
+            'table' => 'admins'
         )
     ),
 
