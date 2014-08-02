@@ -80,9 +80,13 @@ module.exports = function(grunt){
 				src: 'app/views/templates/layout.blade.php.tmpl',
 				dest: 'app/views/layoutGenerated.blade.php'
 			},
+			adminlayout: {
+				src: 'app/views/templates/admin/layout.blade.php.tmpl',
+				dest: 'app/views/admin/layoutGenerated.blade.php'
+			},
 			activation: {
-				src: 'app/views/templates/merchants/getActivation.blade.php.tmpl',
-				dest: 'app/views/merchants/getActivationGenerated.blade.php'
+				src: 'app/views/templates/merchant/getActivation.blade.php.tmpl',
+				dest: 'app/views/merchant/getActivationGenerated.blade.php'
 			}
 		},
 
@@ -94,11 +98,11 @@ module.exports = function(grunt){
 			},
 			development: {
 				src: ['public/css/dev/style.css','public/js/dev/pre.js','public/js/dev/post.js','public/js/dev/activation.js'],
-				dest: ['app/views/layoutGenerated.blade.php', 'app/views/merchants/getActivationGenerated.blade.php']
+				dest: ['app/views/layoutGenerated.blade.php', 'app/views/merchant/getActivationGenerated.blade.php', 'app/views/admin/layoutGenerated.blade.php']
 			},
 			production: {
 				src: ['public/css/prod/style.css','public/js/prod/pre.js','public/js/prod/post.js','public/js/prod/activation.js'],
-				dest: ['app/views/layoutGenerated.blade.php', 'app/views/merchants/getActivationGenerated.blade.php']
+				dest: ['app/views/layoutGenerated.blade.php', 'app/views/merchant/getActivationGenerated.blade.php', 'app/views/admin/layoutGenerated.blade.php']
 			}
 		},
 
