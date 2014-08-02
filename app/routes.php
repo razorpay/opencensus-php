@@ -98,6 +98,8 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::post('/admin/merchant/{id}/activate', array('before'=>'csrf', 'uses' => 'AdminController@postMerchantActivation'));
 
+    Route::get('/admin/merchant/{id}/deactivate', array('before'=>'csrf', 'uses' => 'AdminController@getMerchantDeactivation'));
+
     Route::group(array('before' => 'superadmin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');

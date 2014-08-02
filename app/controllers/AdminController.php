@@ -262,6 +262,20 @@ class AdminController extends BaseController
         }
     }
 
+    public function getMerchantDeactivation($id)
+    {   
+        $error = Service\Admin::getInstance()->deactivateMerchant($id);
+
+        if(empty($error))
+        {
+            return Redirect::to('/admin/merchant/'.$id)->with('status', array('Merchant deactivated successfully'));
+        }
+        else
+        {
+            return Redirect::to('/admin/merchant/'.$id)->with('status', $error);
+        }
+    }
+
     public function getAdmins()
     {
         $admins = Service\Admin::getInstance()->getAdmins();

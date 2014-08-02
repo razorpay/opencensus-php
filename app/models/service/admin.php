@@ -185,22 +185,18 @@ class Admin extends Service
 
     public function activateMerchant($id, $input)
     {
-        $error = [];
-
         $merchant = DAL\Merchant::findorfail($id);
 
         $details = $this->fetchMerchantStatus($id);
 
         if(in_array(5, $details['steps_finished'])===false)
         {
-            $error[] = 'Activation form has not been submitted by merchant yet.';
-            return $error;
+            return array('Activation form has not been submitted by merchant yet.');
         }
 
         if((int)$merchant->live === 1)
         {
-            $error[] = 'Merchant is already active.';
-            return $error;
+            return array('Merchant is already active.');
         }
         
         $error = $this->assignPricingPlan($id, $input['pricing_plan']);
@@ -214,6 +210,25 @@ class Admin extends Service
         }
         
         return $error;
+    }
+
+    public function deactivateMerchant($id)
+    {
+        $merchant = DAL\Merchant::findorfail($id);
+
+        $details = $this->fetchMerchantStatus($id);
+
+        if((int)$merchant->live === 0)
+        {
+            return array('Merchant is already inactive.');
+        }
+
+        //@todo mark merchant inactive in api first
+            
+        $merchant->live = 0;
+        $merchant->save();  
+        
+        return array();
     }
 
     protected function assignPricingPlan($id, $plan_id)
