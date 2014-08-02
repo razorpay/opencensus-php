@@ -6,12 +6,12 @@ class MerchantController extends BaseController
 {
     public function getIndex()
     {
-        return View::make('merchants.getIndex');
+        return View::make('merchant.getIndex');
     }
 
     public function getLogin()
     {
-        return View::make('merchants.getLogin');
+        return View::make('merchant.getLogin');
     }
 
     public function postLogin()
@@ -30,7 +30,7 @@ class MerchantController extends BaseController
 
     public function getRegister()
     {
-        return View::make('merchants.getRegister');
+        return View::make('merchant.getRegister');
     }
 
     public function postRegister()
@@ -41,7 +41,7 @@ class MerchantController extends BaseController
 
         if (empty($error))
         {
-            return View::make('merchants.postRegister')
+            return View::make('merchant.postRegister')
                         ->with('data', $data);
         }
         else
@@ -110,7 +110,7 @@ class MerchantController extends BaseController
         {   
             \Auth::merchant()->loginUsingId($response['id']);
 
-            return View::make('merchants.getKeys')
+            return View::make('merchant.getKeys')
                         ->with('data', $response);
         }
         else
@@ -122,7 +122,7 @@ class MerchantController extends BaseController
 
     public function getActivation()
     {
-        return View::make('merchants.getActivationGenerated');
+        return View::make('merchant.getActivationGenerated');
     }
 
     public function getActivationDetails()
