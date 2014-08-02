@@ -44,7 +44,8 @@ class MerchantDetails extends DAL
         'bussiness_pan_url',
         'promoter_pan_url',
         'address_proof_url',
-        'steps_finished'
+        'steps_finished',
+        'locked'
     );
 
     protected static $ajaxFields = array(
@@ -82,7 +83,8 @@ class MerchantDetails extends DAL
         'bussiness_pan_url',
         'promoter_pan_url',
         'address_proof_url',
-        'steps_finished'
+        'steps_finished',
+        'locked'
     );
     
     protected static $uploadKeys = array(
@@ -108,6 +110,19 @@ class MerchantDetails extends DAL
 
     public static function filterForAjax($merchant_details)
     {
+        $details = static::filterDetails($merchant_details);
+
+        //remove the urls for ajax
+        foreach($details['files'] as &$file)
+        {
+           $file = '';
+        }
+
+        return $details;
+    }
+
+    protected static function filterDetails($merchant_details)
+    {
         $data = array_intersect_key($merchant_details->toArray(), array_flip(static::$ajaxFields));
 
         $map = array_flip(static::$uploadKeys);
@@ -123,7 +138,7 @@ class MerchantDetails extends DAL
                 {
                     $newKey = $map[$origKey];
 
-                    $files[$newKey] = '';
+                    $files[$newKey] = $data[$origKey];
                 }
                 unset($data[$origKey]);
             }
@@ -131,9 +146,17 @@ class MerchantDetails extends DAL
 
         $steps_finished = $data['steps_finished'];
 
-        unset($data['steps_finished']);
+        $locked = $data['locked'];
 
-        return array('data' =>  $data, 'files' => $files, 'steps_finished' => $steps_finished);
+        unset($data['steps_finished']);
+        unset($data['locked']);
+
+        return array(
+            'data' =>  $data,
+            'files' => $files,
+            'steps_finished' => $steps_finished,
+            'locked' => $locked
+        );
     }
 
     public static function getDataForUpload($input)

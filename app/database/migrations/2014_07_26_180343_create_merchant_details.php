@@ -86,7 +86,9 @@ class CreateMerchantDetails extends Migration {
 
             $table->string('address_proof_url');
 
-            $table->string('steps_finished')->default('{}');
+            $table->string('steps_finished')->default('[]');
+
+            $table->boolean('locked')->default(0);
 
             $table->integer('created_at');
             $table->integer('updated_at');
