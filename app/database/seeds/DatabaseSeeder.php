@@ -38,6 +38,32 @@ class DatabaseSeeder extends Seeder {
 			'updated_at'	=>	time()
 			)
 		);
+
+		DB::table('admins')->insert(
+        	array(
+	        	array(
+	        	'name' => 'Harshil Mathur',
+	        	'username' => 'harshil',
+				'password'=> Hash::make('123456'),
+				'email' => 'harshil@razorpay.com',
+				'superadmin' => 1
+				),
+				array(
+	        	'name' => 'Shashank Kumar',
+	        	'username' => 'shk',
+				'password'=> Hash::make('123456'),
+				'email' => 'shashank@razorpay.com',
+				'superadmin' => 1
+				),
+				array(
+	        	'name' => 'Abhishek Das',
+	        	'username' => 'das',
+				'password'=> Hash::make('123456'),
+				'email' => 'das@razorpay.com',
+				'superadmin' => 0
+				)
+			)
+		);
 	}
 
 }
