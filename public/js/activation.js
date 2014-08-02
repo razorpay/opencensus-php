@@ -72,13 +72,12 @@ $(document).ready(function(){
 			    	});
 
 			    	//Check if form is submitted for activation already
-			    	if($.inArray(5, steps) == -1){
-			    		//not submitted, show first fieldset
+			    	if(data.locked == 1){
+			    		rzpd.activation.displayMessage($('#activation-form'), "Form has been locked by admin, please await admin response.", 'info');
+			    	} else {
 			    		$('#activation-form > fieldset:first').show();
 	    				$('.progtrckr li:first').removeClass().addClass('progtrckr-current');
-			    	} else {
-			    		rzpd.activation.displayMessage($('#activation-form'), "Form has been submitted for activation and is pending admin response.", 'info'); 	
-			    	}	
+			    	}
 			    },
 			    error: function() {
 				    rzpd.activation.displayMessage($('#activation-form > fieldset:first'), 'Oops! There was an error in loading the form, please refresh the page.', 'danger');
@@ -152,25 +151,22 @@ $(document).ready(function(){
 	            type: 'POST',
 	            data: data,
 	            success: function(data) {
+	            	$fieldset.find('.alert').remove();
+
 	                if(data.success)
 	                {	
-	                	$fieldset.find('.alert').remove();
-
 	                    rzpd.activation.displayErrorMessage($fieldset, 'Step saved successfully!', 'success');
 				        //Change current to done
 						$('.progtrckr li:eq('+step+')').removeClass().addClass('progtrckr-done');
 	                }
 	                else
 	                {	
-	                	$fieldset.find('.alert').remove();
-
 	                	$.each(data.status, function(i, e){
 	                		rzpd.activation.displayErrorMessage($fieldset, e, 'danger');
 	                	});
 
 	                	 //Change current to error
-						$('.progtrckr li:eq('+step+')').removeClass().addClass('progtrckr-error');
-	                    
+						$('.progtrckr li:eq('+step+')').removeClass().addClass('progtrckr-error');    
 	                }
 	            },
 	            error: function() {
