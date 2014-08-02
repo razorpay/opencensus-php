@@ -38,10 +38,15 @@ Route::filter('auth', function()
 	if (Auth::merchant()->guest()) return Redirect::guest('login');
 });
 
-
-Route::filter('auth.basic', function()
+Route::filter('auth_admin', function()
 {
-	return Auth::basic();
+	if (Auth::admin()->guest()) return Redirect::guest('/admin/login');
+});
+
+Route::filter('superadmin', function()
+{
+    if (Auth::admin()->user()->isSuperAdmin() === false)
+        return App::abort(403, 'Unauthorized action.');
 });
 
 Route::filter('auth.internal', function()
@@ -64,6 +69,11 @@ Route::filter('auth.internal', function()
 Route::filter('guest', function()
 {
 	if (Auth::merchant()->check()) return Redirect::to('/');
+});
+
+Route::filter('guest_admin', function()
+{
+	if (Auth::admin()->check()) return Redirect::to('/admin');
 });
 
 /*
