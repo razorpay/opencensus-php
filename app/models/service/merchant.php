@@ -38,13 +38,15 @@ class Merchant extends Service
             return false;
         }
 
-        $merchant->confirm();
-
         $merchant_api_data = $merchant->generateApiData($merchant);
 
-        Request::setCredentials($merchant_api_data['id']);
+        Request::setCredentials();
 
         $response = Request::POST('merchants', $merchant_api_data);
+
+        if(isset($response['error'])) return false;
+
+        $merchant->confirm();
 
         return array_merge($response, $merchant->toArray());
     }
