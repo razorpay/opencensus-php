@@ -118,12 +118,35 @@ class MerchantTest extends IntegrationTestCase
         $this->assertBodyHasText("Recent Settlements");
     }
 
+    public function testKeysPanel()
+    {
+         $this->browser
+            ->open(URL::action('MerchantController@getIndex'))
+            ->click(l::linkContaining('API Keys'))   
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#keys > div').length > 0", 2000);  
+
+        $this->assertEquals(URL::action('MerchantController@getIndex').'/#!/keys',$this->browser->getLocation());
+
+        $this->assertBodyHasText("Key ID");
+
+
+        $this->browser
+            ->click(l::css('.roll-href'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.roll-key-form-wrapper').hasClass('hidden') == false", 2000)
+            ->click(l::css('.roll-key-button'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.roll-key-form-wrapper .result').html().length > 0", 2000);
+
+
+
+        $this->assertBodyHasText("Click here to download credentials. You will not be able to view the credentials again.");
+    }
+
     public function testAccountPanel()
     {
          $this->browser
             ->open(URL::action('MerchantController@getIndex'))
             ->click(l::linkContaining('Account'))   
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#account-name').html().length > 0", 2000);;  
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#account-name').html().length > 0", 2000);
 
         $this->assertEquals(URL::action('MerchantController@getIndex').'/#!/account',$this->browser->getLocation());
 
