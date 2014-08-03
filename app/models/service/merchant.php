@@ -79,8 +79,8 @@ class Merchant extends Service
 
     public function fetchKeysFromApi($merchant_id)
     {
-        Request::setCredentials($merchant_id);
-        $response = Request::GET('keys');
+        Request::setCredentials();
+        $response = Request::GET('merchants/'.$merchant_id.'/keys');
 
         return $response;
     }
@@ -93,9 +93,9 @@ class Merchant extends Service
         {
             $arr = Manager\Key::buildKeyUpdateData($data);
 
-            Request::setCredentials($data['merchant_id']);
+            Request::setCredentials();
 
-            $url = 'keys/'.$data['id'];
+            $url = 'merchants/'.$data['merchant_id'].'/keys/'.$data['id'];
 
             $response = Request::PUT($url, $arr);
 
