@@ -15,7 +15,7 @@ return array(
 	|
 	*/
 
-	'default' => 'sqs',
+	'default' => $_ENV['QUEUE_DRIVER'],
 
 	/*
 	|--------------------------------------------------------------------------
@@ -31,7 +31,7 @@ return array(
 	'connections' => array(
 
 		'sync' => array(
-			'driver' => $_ENV['QUEUE_DRIVER'],
+			'driver' => 'sync',
 		),
 
 		'beanstalkd' => array(
