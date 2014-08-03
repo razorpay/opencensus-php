@@ -18,14 +18,22 @@ class Request extends Service
     {
         $options = ['auth' => [self::$ID,self::$PASSWORD]];
         $response = \Requests::post(\Config::get('api.url') . $url, array(), $data, $options);
-        return json_decode($response->body, true);
+        
+        $array = json_decode($response->body, true);
+        if($array === NULL) $array['error']['description'] = 'API reported an error';
+
+        return $array;
     }
 
     public static function PUT($url, $data = [])
     {
         $options = ['auth' => [self::$ID,self::$PASSWORD]];
         $response = \Requests::put(\Config::get('api.url') . $url, array(), $data, $options);
-        return json_decode($response->body, true);
+        
+        $array = json_decode($response->body, true);
+        if($array === NULL) $array['error']['description'] = 'API reported an error';
+
+        return $array;
     }
 
     public static function GET($url, $data = [])
@@ -33,6 +41,10 @@ class Request extends Service
         $qs = http_build_query($data);
         $options = ['auth' => [self::$ID,self::$PASSWORD]];
         $response = \Requests::get(\Config::get('api.url') . $url . '?' . $qs, array(), $options);
-        return json_decode($response->body, true);
+        
+        $array = json_decode($response->body, true);
+        if($array === NULL) $array['error']['description'] = 'API reported an error';
+
+        return $array;
     }
 }

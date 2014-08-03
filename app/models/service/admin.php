@@ -189,7 +189,9 @@ class Admin extends Service
             //@todo mark merchant live in api first and submit tid, tid password
             
             $merchant->live = 1;
-            $merchant->save();  
+            $merchant->save();
+
+            $this->lockMerchant($id);
         }
         
         return $error;
@@ -267,11 +269,16 @@ class Admin extends Service
 
         return $error;
     }
-    protected function createPricingPlan($data)
-    {
-        Request::setCredentials();
 
-        $response = Request::POST('pricing', $data);
+    public function createPricingPlan($input)
+    {
+        unset($input['_token']);
+
+        $error = array();
+        
+        Request::setCredentials();
+        
+        $response = Request::POST('pricing', $input);
 
         return $response;
     }

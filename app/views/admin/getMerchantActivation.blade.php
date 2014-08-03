@@ -33,7 +33,7 @@
             </form>
             <p>
             Note:
-            <li>To create new pricing plan, click here</li>
+            <li>To create/view pricing plans, click on pricing in sidebar</li>
             </p>
         </div>
     </div>

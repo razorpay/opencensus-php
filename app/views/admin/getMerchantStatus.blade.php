@@ -43,7 +43,7 @@
             Note:
             <li>Check all activation form details, before activating the merchant.</li>
             <li>Lock the form once you have validated all steps to prevent changes by merchant.</li>
-            <li>Unlock the form before your request changes from the merchant.</li>
+            <li>Unlock the form before you request changes from the merchant.</li>
             </p>
         </div>
     </div>

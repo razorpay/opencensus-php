@@ -308,6 +308,27 @@ class AdminController extends BaseController
         }
     }
 
+    public function getNewPricingPlan()
+    {
+        return View::make('admin.getNewPricingPlan');
+    }
+
+    public function postNewPricingPlan()
+    {
+        $input = Input::all();
+
+        $response = Service\Admin::getInstance()->createPricingPlan($input);
+
+        if(isset($response['error']) === false)
+        {
+            return Redirect::to('/admin/pricing/'.$response['id'])->with('status', array('Plan Added successfully'));
+        }
+        else
+        {
+            return Redirect::to('/admin/pricing/new')->with('status', array($response['error']['description']));
+        }
+    }
+
     public function getAdmins()
     {
         $admins = Service\Admin::getInstance()->getAdmins();

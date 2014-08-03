@@ -23,4 +23,5 @@
     @endforeach
     </tbody>
     </table>
+    <a href="/admin/pricing/new">Create new plan</a>
 @stop

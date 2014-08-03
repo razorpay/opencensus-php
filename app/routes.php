@@ -104,6 +104,8 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/pricing/new', 'AdminController@getNewPricingPlan');
 
+    Route::post('/admin/pricing/new', array('before'=>'csrf', 'uses'=>'AdminController@postNewPricingPlan'));
+
     Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
 
     Route::post('/admin/pricing/{id}', array('before'=>'csrf', 'uses'=>'AdminController@postPricingRules'));
