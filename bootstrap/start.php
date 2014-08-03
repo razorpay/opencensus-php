@@ -24,15 +24,15 @@ $app = new Illuminate\Foundation\Application;
 |
 */
 
-$env = $app->detectEnvironment( function () {
-
+$env = $app->detectEnvironment( function () 
+{
     // Look for ./environment.php
     if (file_exists(__DIR__ . '/environment.php' ))
     {
         return require __DIR__ . '/environment.php';
     }
-    
 });
+
 /*
 |--------------------------------------------------------------------------
 | Bind Paths

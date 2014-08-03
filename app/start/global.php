@@ -81,3 +81,9 @@ App::down(function()
 require app_path().'/filters.php';
 
 require app_path().'/lib/validation.php';
+
+//Enabling filterss during selenium testing, flag set in server.php
+if(getenv('selenium'))
+{
+	Route::enableFilters();
+}
