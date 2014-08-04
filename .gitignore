@@ -12,3 +12,4 @@ dev/
 prod/
 public/css/style.css
 bootstrap/environment.php
+app/storage/selenium.png

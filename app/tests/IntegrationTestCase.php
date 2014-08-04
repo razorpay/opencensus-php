@@ -16,6 +16,16 @@ class IntegrationTestCase extends Zizaco\TestCases\IntegrationTestCase
         Artisan::call('migrate');
     }
 
+    public function tearDown()
+    {
+        $status = $this->getStatus();
+        
+        if ($status == PHPUnit_Runner_BaseTestRunner::STATUS_ERROR || $status == PHPUnit_Runner_BaseTestRunner::STATUS_FAILURE) {
+            $this->browser->captureEntirePageScreenshot(storage_path().'/selenium.png', "");
+        }
+
+        parent::tearDown();
+    }
     public static function tearDownAfterClass()
     {
         //Close Mockery
