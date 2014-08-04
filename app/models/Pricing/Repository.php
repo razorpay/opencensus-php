@@ -40,7 +40,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where('gateway', 'is', 'null')
+        return $repo::whereNull('gateway')
                     ->orderBy(Entity::ID, 'desc')->take(10)->get();
     }
 
@@ -48,7 +48,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where('gateway', 'is', 'not null')
+        return $repo::whereNotNull('gateway')
                     ->orderBy(Entity::ID, 'desc')->take(10)->get();
     }
 

@@ -30,14 +30,14 @@ class PricingController extends BaseController
 
     public function getMerchantPricingPlans()
     {
-        $data = (new Pricing\Status)->getMerchantPricingPlans();
+        $data = (new Pricing\Service)->getMerchantPricingPlans();
 
         return ApiResponse::json($data);
     }
 
     public function getGatewayPricingPlans()
     {
-        $data = (new Pricing\Status)->getGatewayPricingPlans();
+        $data = (new Pricing\Service)->getGatewayPricingPlans();
 
         return ApiResponse::json($data);
     }
