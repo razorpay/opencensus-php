@@ -11,7 +11,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY             => 'sometimes|in:hdfc',
         Entity::PAYMENT_MODE        => 'required|alpha|in:card',
         Entity::PAYMENT_MODE_TYPE   => 'required_if:payment_mode,card|in:debit,credit',
-        Entity::PAYMENT_NETWORK     => 'required_if:payment_mode,card|alpha|in:VISA,MC,DICL,RP,MAES',
+        Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
         Entity::PERCENT_RATE        => 'sometimes|numeric|max:10000',
         Entity::FIXED_RATE          => 'sometimes|numeric|max:100000');
@@ -94,6 +94,6 @@ class Validator extends Base\Validator
 
     protected function processValidationFailure($messages, $operation, $input)
     {
-        throw new Exception\BadRequestException($messages, 0, $e);
+        throw new Exception\BadRequestException($messages);
     }
 }
