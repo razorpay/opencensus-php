@@ -28,6 +28,20 @@ class PricingController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function getMerchantPricingPlans()
+    {
+        $data = (new Pricing\Status)->getMerchantPricingPlans();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getGatewayPricingPlans()
+    {
+        $data = (new Pricing\Status)->getGatewayPricingPlans();
+
+        return ApiResponse::json($data);
+    }
+
     public function postAddPricingPlanRule($id)
     {
         $input = Input::all();

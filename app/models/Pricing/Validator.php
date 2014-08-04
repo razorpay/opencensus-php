@@ -89,7 +89,7 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestException(
                     null,
-                    BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
+                    ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
         }
     }

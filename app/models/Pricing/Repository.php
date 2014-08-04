@@ -36,6 +36,22 @@ class Repository extends Base\Repository
         return $repo::orderBy(Entity::ID, 'desc')->take(10)->get();
     }
 
+    public function getMerchantPricingPlans()
+    {
+        $repo = $this->repo;
+
+        return $repo::where('gateway', 'is', 'null')
+                    ->orderBy(Entity::ID, 'desc')->take(10)->get();
+    }
+
+    public function getGatewayPricingPlans()
+    {
+        $repo = $this->repo;
+
+        return $repo::where('gateway', 'is', 'not null')
+                    ->orderBy(Entity::ID, 'desc')->take(10)->get();
+    }
+
     public function getPricingPlanByName($name)
     {
         $repo = $this->repo;

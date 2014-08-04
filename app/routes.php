@@ -74,6 +74,10 @@ Route::group(array('before' => 'auth.app'), function()
 
     Route::get('pricing', 'PricingController@getPricingPlans');
 
+    Route::get('pricing/merchants', 'PricingController@getMerchantPricingPlans');
+
+    Route::get('pricing/gateways', 'PricingsController@getGatewayPricingPlans');
+
     Route::post('pricing/{id}/rule', 'PricingController@postAddPricingPlanRule');
 
     Route::get('pricing/{id}', 'PricingController@getPricingPlan');

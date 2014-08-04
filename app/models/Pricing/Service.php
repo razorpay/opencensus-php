@@ -24,6 +24,7 @@ class Service extends Base\Service
 
         if ($plans->count() > 0)
             throw new Exception\BadRequestException(
+                null,
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
 
         $pricing = new Pricing\Entity($input);
@@ -62,6 +63,20 @@ class Service extends Base\Service
     public function getPricingPlans()
     {
         $pricingPlans = $this->repo->getPricingPlans();
+
+        return $pricingPlans->toArrayMultiplePlansPublic();
+    }
+
+    public function getMerchantPricingPlans()
+    {
+        $pricingPlans = $this->repo->getMerchantPricingPlans();
+
+        return $pricingPlans->toArrayMultiplePlansPublic();
+    }
+
+    public function getGatewayPricingPlans()
+    {
+        $pricingPlans = $this->repo->getGatewayPricingPlans();
 
         return $pricingPlans->toArrayMultiplePlansPublic();
     }
