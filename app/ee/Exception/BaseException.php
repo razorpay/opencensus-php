@@ -62,6 +62,6 @@ class BaseException extends Exception
 
         $httpStatusCode = $error->getHttpStatusCode();
 
-        return ApiResponse::json($error->getAttributes(), $httpStatusCode);
+        return ApiResponse::json($error->toDebugArray(), $httpStatusCode);
     }
 }

@@ -235,6 +235,11 @@ class Error
         return array('error' => $array);
     }
 
+    public function toDebugArray()
+    {
+        return array('error' => $this->getAttributes());
+    }
+
     protected function getDescriptionFromErrorCode($code)
     {
         $code = strtoupper($code);
