@@ -40,9 +40,9 @@ class Merchant extends Service
 
         $merchant_api_data = $merchant->generateApiData($merchant);
 
-        Request::setCredentials();
+        $request = Request::getInstance()->setCredentials();
 
-        $response = Request::POST('merchants', $merchant_api_data);
+        $response = $request->POST('merchants', $merchant_api_data);
 
         if(isset($response['error'])) return false;
 
@@ -79,8 +79,8 @@ class Merchant extends Service
 
     public function fetchKeysFromApi($merchant_id)
     {
-        Request::setCredentials();
-        $response = Request::GET('merchants/'.$merchant_id.'/keys');
+        $request = Request::getInstance()->setCredentials();
+        $response = $request->GET('merchants/'.$merchant_id.'/keys');
 
         return $response;
     }
@@ -93,11 +93,11 @@ class Merchant extends Service
         {
             $arr = Manager\Key::buildKeyUpdateData($data);
 
-            Request::setCredentials();
+            $request = Request::getInstance()->setCredentials();
 
             $url = 'merchants/'.$data['merchant_id'].'/keys/'.$data['id'];
 
-            $response = Request::PUT($url, $arr);
+            $response = $request->PUT($url, $arr);
 
             if ((isset($response['old']) === false) or
                 (isset($response['new']) === false))

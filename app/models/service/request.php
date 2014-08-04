@@ -6,17 +6,19 @@ use Requests;
 
 class Request extends Service
 {
-    private static $ID, $PASSWORD;
+    private $ID, $PASSWORD;
 
-    public static function setCredentials($merchant_id = NULL)
+    public function setCredentials($merchant_id = NULL)
     {
-        self::$ID = $merchant_id;
-        self::$PASSWORD = \Config::get('api.auth_pass');
+        $this->ID = $merchant_id;
+        $this->PASSWORD = \Config::get('api.auth_pass');
+
+        return $this;
     }
 
-    public static function POST($url, $data = [])
+    public function POST($url, $data = [])
     {
-        $options = ['auth' => [self::$ID,self::$PASSWORD]];
+        $options = ['auth' => [$this->ID,$this->PASSWORD]];
         $response = \Requests::post(\Config::get('api.url') . $url, array(), $data, $options);
         
         $array = json_decode($response->body, true);
@@ -25,9 +27,9 @@ class Request extends Service
         return $array;
     }
 
-    public static function PUT($url, $data = [])
+    public function PUT($url, $data = [])
     {
-        $options = ['auth' => [self::$ID,self::$PASSWORD]];
+        $options = ['auth' => [$this->ID,$this->PASSWORD]];
         $response = \Requests::put(\Config::get('api.url') . $url, array(), $data, $options);
         
         $array = json_decode($response->body, true);
@@ -36,10 +38,10 @@ class Request extends Service
         return $array;
     }
 
-    public static function GET($url, $data = [])
+    public function GET($url, $data = [])
     {
         $qs = http_build_query($data);
-        $options = ['auth' => [self::$ID,self::$PASSWORD]];
+        $options = ['auth' => [$this->ID,$this->PASSWORD]];
         $response = \Requests::get(\Config::get('api.url') . $url . '?' . $qs, array(), $options);
         
         $array = json_decode($response->body, true);

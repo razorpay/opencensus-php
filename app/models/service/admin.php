@@ -223,9 +223,9 @@ class Admin extends Service
         
         $data = array('pricing_plan_id' => $plan_id);
 
-        Request::setCredentials();
+        $request = Request::getinstance()->setCredentials();
 
-        $response = Request::POST('merchants/'.$id.'/pricing', $data);
+        $response = $request->POST('merchants/'.$id.'/pricing', $data);
         
         if(isset($response['error']))
         {
@@ -237,17 +237,17 @@ class Admin extends Service
 
     public function fetchPricingPlan($id = NULL)
     {
-        Request::setCredentials();
+        $request = Request::getinstance()->setCredentials();
         if($id===NULL)
         {
-            $response = Request::GET('pricing');
+            $response = $request->GET('pricing/merchants');
         }
         else
         {
-            $response = Request::GET('pricing/'.$id);
+            $response = $request->GET('pricing/'.$id);
         }
 
-        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($error));
+        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($response['error']));
 
         return $response;
     }
@@ -258,9 +258,9 @@ class Admin extends Service
 
         $error = array();
         
-        Request::setCredentials();
+        $request = Request::getinstance()->setCredentials();
         
-        $response = Request::POST('pricing/'.$id.'/rule', $input);
+        $response = $request->POST('pricing/'.$id.'/rule', $input);
 
         if(isset($response['error']))
         {
@@ -276,9 +276,9 @@ class Admin extends Service
 
         $error = array();
         
-        Request::setCredentials();
+        $request = Request::getinstance()->setCredentials();
         
-        $response = Request::POST('pricing', $input);
+        $response = $request->POST('pricing', $input);
 
         return $response;
     }
