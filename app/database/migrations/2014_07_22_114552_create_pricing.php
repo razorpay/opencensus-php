@@ -36,7 +36,8 @@ class CreatePricing extends Migration
 
             $table->string(Pricing::PAYMENT_NETWORK);
 
-            $table->string(Pricing::PAYMENT_ISSUER);
+            $table->string(Pricing::PAYMENT_ISSUER)
+                  ->nullable();
 
             $table->integer(Pricing::PERCENT_RATE)
                   ->unsigned()
