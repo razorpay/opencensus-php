@@ -1,5 +1,12 @@
 Models\DAL\Merchant:
-  id: $string$string
-  name: $string $string
-  email: $string@$string.com
-  password: $2y$10$IP5kVEJI62lWf3CeQjAcQeZ27cYQckg5iu5/AzeXULx1xY6vcgc2q
+    id: $string$string
+    name: $string $string
+    email: $string@$string.com
+    password: $2y$10$IP5kVEJI62lWf3CeQjAcQeZ27cYQckg5iu5/AzeXULx1xY6vcgc2q
+
+Models\DAL\Admin:
+    name: $string
+    username: $string$string
+    password: $2y$10$IP5kVEJI62lWf3CeQjAcQeZ27cYQckg5iu5/AzeXULx1xY6vcgc2q
+    email: $string@$string.com
+    superadmin: 1

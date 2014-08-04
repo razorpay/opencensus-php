@@ -5,7 +5,8 @@ class IntegrationTestCase extends Zizaco\TestCases\IntegrationTestCase
 {   
     protected static $fixtures = array(
         'merchant' => 'Models\DAL\Merchant',
-        'merchant_details' => 'Models\DAL\MerchantDetails');
+        'merchant_details' => 'Models\DAL\MerchantDetails',
+        'admin' => 'Models\DAL\Admin');
 
 
 	public function setUp()
