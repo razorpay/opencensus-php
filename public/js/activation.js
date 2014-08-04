@@ -69,6 +69,10 @@ $(document).ready(function(){
 			    	$.each(steps, function(i, e){
 			    		$('.progtrckr li:eq('+e+')').removeClass().addClass('progtrckr-done');
 			    		rzpd.activation.displayErrorMessage($('#activation-form > fieldset:eq('+e+')'), 'Step saved successfully!', 'success');
+
+			    		if(e==5){
+			    			rzpd.activation.displayMessage($('#activation-form'), 'Form has been submitted for activation and is pending admin response.', 'info');
+			    		}
 			    	});
 
 			    	//Check if form is submitted for activation already
