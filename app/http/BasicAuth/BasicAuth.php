@@ -107,12 +107,12 @@ class BasicAuth
 
         if ($id !== '')
         {
-            return false;
+            return ApiResponse::routeNotFound();
         }
 
         if ($this->verifyApp($pwd) === false)
         {
-            ApiResponse::routeNotFound();
+            return ApiResponse::routeNotFound();
         }
     }
 
