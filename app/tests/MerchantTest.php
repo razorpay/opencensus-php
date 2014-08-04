@@ -141,6 +141,101 @@ class MerchantTest extends IntegrationTestCase
         $this->assertBodyHasText("Click here to download credentials. You will not be able to view the credentials again.");
     }
 
+    public function testActivationPanel()
+    {
+         $this->browser
+            ->open(URL::action('MerchantController@getIndex'))
+            ->click(l::linkContaining('Activation'))   
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(0)').is(':visible')", 2000);  
+
+        $this->assertEquals(URL::action('MerchantController@getIndex').'/#!/activation',$this->browser->getLocation());
+
+        $this->assertBodyHasText("Contact Details");
+
+        $this->browser
+            ->click(l::css('#activation-form > fieldset:eq(0) > .prev-next > .save'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(0) > .alert-danger').length > 0", 2000)
+            ->type(l::IdOrName('contact_name'), 'Yo Name')   // Fill name
+            ->type(l::IdOrName('contact_email'), 'email@umail.com')   // Fill slug
+            ->type(l::IdOrName('contact_mobile'), '9199192999') 
+            ->type(l::IdOrName('contact_landline'), '9191929393') 
+            ->click(l::css('#activation-form > fieldset:eq(0) > .prev-next > .save'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(0) > .alert-success').length > 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(0) > .alert-danger')));
+
+        $this->browser
+            ->click(l::css('#activation-form > fieldset:eq(0) > .prev-next > .next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(1)').is(':visible')", 2000)
+            ->select(l::IdOrName('bussiness_type'), 'Partnership')
+            ->type(l::IdOrName('bussiness_category'), 'Category')   // Fill name
+            ->type(l::IdOrName('bussiness_subcategory'), 'SubCategory')   // Fill slug
+            ->type(l::IdOrName('bussiness_registered_address'), 'address 1, 2') 
+            ->type(l::IdOrName('bussiness_registered_state'), 'state') 
+            ->type(l::IdOrName('bussiness_registered_city'), 'city') 
+            ->type(l::IdOrName('bussiness_registered_pin'), '333333') 
+            ->click(l::css('#bussiness-operation-checkbox'))
+            ->type(l::IdOrName('bussiness_doe'), '02/02/1992')
+            ->type(l::IdOrName('company_cin'), 'cin123455')
+            ->type(l::IdOrName('company_pan'), 'pan12345')
+            ->type(l::IdOrName('company_pan_name'), 'pan name')
+            ->type(l::IdOrName('bussiness_model'), 'my model')
+            ->select(l::IdOrName('transaction_volume'), '1 to 10 lakh')
+            ->type(l::IdOrName('transaction_value'), '120')
+            ->click(l::css('#activation-form > fieldset:eq(1) > .prev-next > .save'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(1) > .alert-success').length > 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(1) > .alert-danger')));
+
+        $this->browser
+            ->click(l::css('#activation-form > fieldset:eq(1) > .prev-next > .next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(2)').is(':visible')", 2000)
+            ->type(l::IdOrName('promoter_pan'), 'PAE123')   // Fill name
+            ->type(l::IdOrName('promoter_pan_name'), 'Promoter')   // Fill slug
+            ->click(l::css('#activation-form > fieldset:eq(2) > .prev-next > .save'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(2) > .alert-success').length > 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(2) > .alert-danger')));
+
+        $this->browser
+            ->click(l::css('#activation-form > fieldset:eq(2) > .prev-next > .next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(3)').is(':visible')", 2000)
+            ->type(l::IdOrName('bank_name'), 'BankName')   // Fill name
+            ->type(l::IdOrName('bank_account_number'), '123443')   // Fill slug
+            ->type(l::IdOrName('bank_account_name'), 'Tester')   // Fill slug
+            ->type(l::IdOrName('bank_account_type'), 'savings')   // Fill slug
+            ->type(l::IdOrName('bank_branch'), 'Abcd')   // Fill slug
+            ->type(l::IdOrName('bank_branch_ifsc'), 'abc123443')   // Fill slug
+            ->click(l::css('#activation-form > fieldset:eq(3) > .prev-next > .save'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(3) > .alert-success').length > 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(3) > .alert-danger')));
+
+
+        $this->browser
+            ->click(l::css('#activation-form > fieldset:eq(3) > .prev-next > .next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(4)').is(':visible')", 2000)
+            ->attachFile(l::IdOrName('bussiness_proof'), URL::to('/img/logo.png'))
+            ->attachFile(l::IdOrName('bussiness_pan_proof'), URL::to('/img/logo.png'))
+            ->attachFile(l::IdOrName('promoter_pan_proof'), URL::to('/img/logo.png'))
+            ->attachFile(l::IdOrName('address_proof'), URL::to('/img/logo.png'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(4) > div > div > .alert-success').length == 4", 2000)
+            ->click(l::css('#activation-form > fieldset:eq(4) > .prev-next > .save'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(4) > .alert-success').length > 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(4) > .alert-danger')));
+
+        $this->browser
+            ->click(l::css('#activation-form > fieldset:eq(4) > .prev-next > .next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(5)').is(':visible')", 2000)
+            ->check(l::IdOrName('agree-terms'))
+            ->click(l::css('#activateButton'))
+            ->waitForPageToLoad(2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > .alert-info').length > 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset > .alert-danger')));
+    }
+
     public function testAccountPanel()
     {
          $this->browser
