@@ -82,8 +82,8 @@ require app_path().'/filters.php';
 
 require app_path().'/lib/validation.php';
 
-//Enabling filterss during selenium testing, flag set in server.php
+//Additional functionality during selenium testing, flag set in server.php
 if(getenv('selenium'))
 {
-	Route::enableFilters();
+	require app_path().'/selenium/init.php';
 }
