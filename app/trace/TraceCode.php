@@ -2,7 +2,7 @@
 
 namespace Trace;
 
-use EE\EcxeptionInvalidArgumentException;
+use EE\Exception\InvalidArgumentException;
 
 class TraceCode
 {

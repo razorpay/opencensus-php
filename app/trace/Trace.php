@@ -2,16 +2,11 @@
 
 namespace Trace;
 
-use Queue;
-use Config;
-use Monolog\Logger;
-use Trace\TraceHandler;
 use Trace\TraceCode;
 use Trace\TraceFields;
 
 class Trace extends TraceWriter
 {
-
     /**
      * Name of the application component
      * eg: transaction
@@ -57,9 +52,7 @@ class Trace extends TraceWriter
      */
     public static function getInstance()
     {
-        //$cls = get_called_class(); // late-static-bound class name
-
-        if (!isset(self::$instance))
+        if (isset(self::$instance) === false)
         {
             self::$instance = new static;
         }
@@ -72,8 +65,6 @@ class Trace extends TraceWriter
         $traceCode = $message;
 
         TraceCode::checkCode($traceCode);
-
-        $message = TraceCode::getMessage($traceCode);
 
         $context = $this->getContext($traceCode, $context);
 

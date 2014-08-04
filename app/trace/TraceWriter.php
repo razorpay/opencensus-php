@@ -3,12 +3,12 @@
 namespace Trace;
 
 use Config;
-use App;
-use Request;
+use EE\Exception;
 use Monolog\Logger;
 use Monolog\Processor;
 use Monolog\Handler;
 use Monolog\Formatter;
+use Request;
 
 class TraceWriter extends Logger
 {
@@ -128,7 +128,7 @@ class TraceWriter extends Logger
                 return $this->config['debug_options'][$option];
             }
             else
-                throw new InvalidArgumentException($option . ' in debug not defined');
+                throw new Exception\InvalidArgumentException($option . ' in debug not defined');
         }
         else
             return false;

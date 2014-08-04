@@ -4,7 +4,6 @@ namespace Trace;
 
 use Trace\TraceCode;
 use Models\Transaction\Entity as Transaction;
-use Constants\Field;
 
 class TraceFields
 {
