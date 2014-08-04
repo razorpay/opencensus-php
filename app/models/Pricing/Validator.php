@@ -3,6 +3,7 @@
 namespace Models\Pricing;
 
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Base;
 
 class Validator extends Base\Validator
@@ -10,7 +11,7 @@ class Validator extends Base\Validator
     protected static $addPlanRuleRules = array(
         Entity::GATEWAY             => 'sometimes|in:hdfc',
         Entity::PAYMENT_MODE        => 'required|alpha|in:card',
-        Entity::PAYMENT_MODE_TYPE   => 'required_if:payment_mode,card|in:debit,credit',
+        Entity::PAYMENT_MODE_TYPE   => 'sometimes|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
         Entity::PERCENT_RATE        => 'sometimes|numeric|max:10000',
@@ -19,7 +20,7 @@ class Validator extends Base\Validator
     protected static $addPlanRuleValidators = array('addPlanRuleExtras');
 
     protected static $addPlanRules = array(
-        Entity::PLAN_NAME => 'required|alpha|max:20');
+        Entity::PLAN_NAME => 'required|alpha_num|max:20');
 
     protected function validateAddPlanRuleExtras($input)
     {
@@ -69,6 +70,7 @@ class Validator extends Base\Validator
                 ($input[Entity::GATEWAY] !== $gateway))
             {
                 throw new Exception\BadRequestException(
+                    null,
                     ErrorCode::BAD_REQUEST_PRICING_GATEWAY_REQUIRED);
             }
         }

@@ -32,6 +32,25 @@ class Entity extends Base\UniqueIdEntity
 
     protected $table = \Constants\Table::PRICING;
 
+    /**
+     * Fields which will be modified before
+     * input validation
+     *
+     * @var array
+     */
+    protected static $modifiers = array('cleanInput');
+
+    protected function modifyInputRemoveBlank(& $input)
+    {
+        foreach ($input as $key => $value)
+        {
+            if ($input[$key] === '')
+            {
+                $input[$key] = null;
+            }
+        }
+    }
+
     public function newPlan()
     {
         $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
