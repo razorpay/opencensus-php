@@ -4,6 +4,7 @@
     <table class = "table table-hover">
     <thead>
         <th>Merchant ID</th>
+        <th>Merchant Name</th>
         <th>Merchant Email</th>
         <th>Created At</th>
         <th>Confirmed?</th>
@@ -14,6 +15,7 @@
     @foreach($data as $merchant)
         <tr>
             <td>{{{$merchant['id']}}}</td>
+            <td>{{{$merchant['name']}}}</td>
             <td>{{{$merchant['email']}}}</td>
             <td>{{{$merchant['created_at']}}}</td>
             <td>
@@ -31,16 +33,9 @@
             @endif
             </td>
             <td>
-                <form target="_blank" action="/admin/merchant/{{{$merchant['id']}}}/login">
-                <input type="hidden" name="_token" value="{{{csrf_token()}}}">
-                <button type="submit">Login as Merchant</button>
-                </form>
-                <button type="submit">
-                <a href = "/admin/merchant/{{{$merchant['id']}}}/details">Merchant Details</a>
-                </button>
-                <button type="submit">
-                <a href = "/admin/merchant/{{{$merchant['id']}}}">Manage Merchant Status</a>
-                </button>
+                <a target="_blank" href="/admin/merchant/{{{$merchant['id']}}}/login?_token={{{csrf_token()}}}"><button>Login as Merchant</button></a>
+                <a href = "/admin/merchant/{{{$merchant['id']}}}/details"><button>Merchant Details</button></a>
+                <a href = "/admin/merchant/{{{$merchant['id']}}}"><button>Manage Status</button></a>
             </td>
         </tr>
     @endforeach

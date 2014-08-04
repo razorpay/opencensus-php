@@ -15,9 +15,7 @@
             <td>{{{$plan['name']}}}</td>
             <td>{{{$plan['count']}}}</td>
             <td>
-                <button type="submit">
-                <a href = "/admin/pricing/{{{$plan['id']}}}">View/Edit Plan Rules</a>
-                </button>
+                <a href="/admin/pricing/{{{$plan['id']}}}"><button>View/Edit Plan Rules</button></a>
             </td>
         </tr>
     @endforeach

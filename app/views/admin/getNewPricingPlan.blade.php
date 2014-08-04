@@ -31,7 +31,7 @@
             <label for="payment_network">Payment Network</label>
             <select name="payment_network">
                   <option value="">All</option>
-                  <option value="VISA,MC,DICL,RP,MAES">VISA</option>
+                  <option value="VISA">VISA</option>
                   <option value="MC">MasterCard</option>
                   <option value="MAES">Maestro</option>
                   <option value="DICL">Diner's Club</option>
