@@ -36,6 +36,8 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
+    Route::get('/password', 'MerchantController@getPassword');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/keys', 'MerchantController@postKeys');
@@ -45,6 +47,8 @@ Route::group(array('before' => 'auth'), function()
         Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
 
         Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile');
+
+        Route::post('/password', 'MerchantController@postPassword');
     });
 });
 

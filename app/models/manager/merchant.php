@@ -22,6 +22,13 @@ class Merchant extends Manager
         '_token'    =>      'required'
     );
 
+    protected static $passwordRules = array(
+        'old_password'  =>      'required',
+        'password'      =>      'required|between:6,50|confirmed',
+        'password_confirmation' => 'required|between:6,50',
+        '_token'        =>      'required'
+    );
+
     protected static $unsetRegisterInput = array(
         'password_confirmation',
         '_token'
@@ -32,9 +39,16 @@ class Merchant extends Manager
         '_token'
     );
 
+    protected static $unsetPasswordInput = array(
+        'password_confirmation',
+        '_token'
+    );
+
     protected static $registerGenerators = array('id', 'confirm_token', 'password');
 
     protected static $loginGenerators = array('remember');
+
+    protected static $passwordGenerators = array('password');
 
     protected function generatePassword($input)
     {

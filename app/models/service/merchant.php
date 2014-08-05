@@ -25,6 +25,31 @@ class Merchant extends Service
         return [$error, $data];
     }
 
+    public function changePassword(array $input)
+    {
+        list($error, $data) = Manager\Merchant::createValidate($input, 'password')->getData();
+
+        if (empty($error))
+        {   
+            $merchant = \Auth::merchant()->user();
+
+            $old_password = $data['old_password'];
+
+            unset($data['old_password']);
+
+            if (\Hash::check($old_password, $merchant->password) == false)
+            {
+                $error[] = 'Incorrect password';
+
+                return [$error, $data];
+            }
+
+            $merchant->update($data);
+        }
+
+        return [$error, $data];
+    }
+
     public function confirm($token)
     {
         $merchant = new DAL\Merchant;

@@ -52,6 +52,29 @@ class MerchantController extends BaseController
         }
     }
 
+    public function getPassword()
+    {
+        return View::make('merchant.getPassword');
+    }
+
+    public function postPassword()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Service\Merchant)->changePassword($input);
+
+        if (empty($error))
+        {
+            return Redirect::action('MerchantController@getPassword')
+                        ->with('error', array('Password Changed Successfully'));
+        }
+        else
+        {
+            return Redirect::action('MerchantController@getPassword')
+                ->with('error', $error);
+        }
+    }
+
     public function getLogout()
     {
         \Auth::merchant()->logout();
