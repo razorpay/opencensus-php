@@ -10,7 +10,7 @@
                     <input type="password" placeholder="New Password" name="password">
                     <input type="password" placeholder="Confirm New Password" name="password_confirmation">
                 </div>
-                <button id="form-button">Sign In</button>
+                <button id="form-button">Update</button>
             {{ Form::close() }}
 
             @if (Session::has('error'))

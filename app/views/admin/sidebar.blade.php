@@ -17,5 +17,8 @@
             <a href="/admin/users">Manage Admins</a>
         </li>
         @endif
+        <li>
+            <a href="/admin/password">Change Password</a>
+        </li>
     </ul>
 </div>
