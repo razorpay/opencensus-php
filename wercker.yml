@@ -5,6 +5,7 @@ build:
     steps:
       - add-ssh-key:
           keyname: RZP_API
+      - desmondmorris/selenium-install@0.0.2
       - script:
           name: copy wercker config
           code:  cp .env.wercker.php .env.testing.php
