@@ -66,7 +66,7 @@ class MerchantController extends BaseController
         if (empty($error))
         {
             return Redirect::action('MerchantController@getPassword')
-                        ->with('error', array('Password Changed Successfully'));
+                        ->with('error', array('Password changed successfully'));
         }
         else
         {

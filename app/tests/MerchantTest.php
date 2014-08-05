@@ -282,5 +282,17 @@ class MerchantTest extends IntegrationTestCase
         $this->assertEquals(URL::action('MerchantController@getIndex').'/#!/account',$this->browser->getLocation());
 
         $this->assertBodyHasText($this->merchant->name);
+
+        //Test Change Password
+        $this->browser
+            ->click(l::linkContaining('Change Password'))
+            ->waitForPageToLoad(2000)
+            ->type(l::IdOrName('old_password'), '123456')
+            ->type(l::IdOrName('password'), '1234567')
+            ->type(l::IdOrName('password_confirmation'), '1234567')
+            ->click(l::css('#form-button'))                 // Click in the button
+            ->waitForPageToLoad(2000);
+
+        $this->assertBodyHasText("Password changed successfully");
     }
 }

@@ -214,6 +214,24 @@ class AdminTest extends IntegrationTestCase
     }
 
     /**
+     * Tests Change Password
+     */
+    public function testChangePassword()
+    {
+         $this->browser
+            ->open(URL::action('AdminController@getIndex'))
+            ->click(l::linkContaining('Change Password'))
+            ->waitForPageToLoad(2000)
+            ->type(l::IdOrName('old_password'), '123456')
+            ->type(l::IdOrName('password'), '1234567')
+            ->type(l::IdOrName('password_confirmation'), '1234567')
+            ->click(l::css('#form-button'))                 // Click in the button
+            ->waitForPageToLoad(2000);
+
+        $this->assertBodyHasText("Password changed successfully");
+    }
+
+    /**
      * Tests admin logout
      */
     public function testLogout()

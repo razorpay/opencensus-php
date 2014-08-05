@@ -155,7 +155,7 @@ class AdminController extends BaseController
 
         if (empty($error))
         {
-            $view->with('error', array('Passsword changed successfully!'));
+            $view->with('error', array('Password changed successfully'));
         }
         else
         {
