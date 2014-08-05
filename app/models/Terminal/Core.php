@@ -1,0 +1,42 @@
+<?php
+
+namespace Models\Terminal;
+
+use EE\Exception;
+use Models\Terminal;
+
+class Core
+{
+    protected $repo = null;
+
+    public function create($input, $merchant)
+    {
+        $terminal = (new Terminal\Entity)->build($input);
+
+        $terminal->merchant()->associate($terminal);
+
+        $this->validateNoExistingTerminal($terminal);
+
+        $this->repo->saveOrFail($terminal);
+
+        return $terminal->toArray();
+    }
+
+    protected function validateNoExistingTerminal($terminal)
+    {
+        // Check no other terminal id exists for the merchant right now
+        $params = array(
+            Terminal\Entity::MERCHANT_ID => $terminal->getMerchantId());
+
+        $this->repo = new Terminal\Repository();
+
+        $existingTerminals = $this->repo->getTerminalsByParams($params);
+
+        if ($existingTerminals->count() !== 0)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_EXISTS);
+        }
+    }
+}
