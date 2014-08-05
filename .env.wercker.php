@@ -19,7 +19,7 @@
     /**
      * API Details
      */
-    'API_URL'           => '',
+    'API_URL'           => 'https://api.razorpay.com',
     'API_AUTH_PASS'     => '',
 
     /**

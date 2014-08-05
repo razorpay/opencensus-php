@@ -14,6 +14,7 @@ class AdminTest extends IntegrationTestCase
     {   
         parent::setUp();
 
+        /** Creates a new admin & merchant if none exist in db, else uses first admin. This is necesssary to persist sessions between tests **/
         try
         {
             $this->admin = Models\DAL\Admin::firstorfail();
@@ -30,23 +31,30 @@ class AdminTest extends IntegrationTestCase
         $this->merchant = $this->merchant_details->merchant;
     }
 
+    /**
+     * Tests admin login
+     */
     public function testLogin()
     {
         $this->browser
-            ->open(URL::action('AdminController@getLogin'))    // Visits the 'stuff' index
-            ->type(l::IdOrName('username'), $this->admin->username)   // Fill name
-            ->type(l::IdOrName('password'), '123456')   // Fill slug
+            ->open(URL::action('AdminController@getLogin'))    // Visits login page
+            ->type(l::IdOrName('username'), $this->admin->username)   // Fill username
+            ->type(l::IdOrName('password'), '123456')   // Fill password
             ->click(l::css('#form-button'))                 // Click in the button
             ->waitForPageToLoad(2000);                      // Wait for page to load
 
-        // Asserts if at the end the user is at the stuff index again
+        // Asserts if at the end the user is at the index
         $this->assertEquals(URL::action('AdminController@getIndex'),$this->browser->getLocation());
 
         $this->assertBodyHasText("#YOLO");
     }
 
+    /**
+     * Tests Pricing Module of admin
+     */
     public function testPricing()
     {   
+        // Check opening of pricing page from dashboard
         $this->browser
             ->open(URL::action('AdminController@getIndex'))
             ->click(l::linkContaining('Pricing Plans'))   
@@ -54,12 +62,14 @@ class AdminTest extends IntegrationTestCase
 
         $this->assertEquals(URL::action('AdminController@getPricingList'),$this->browser->getLocation());
 
+        //Check Opening of pricing rules from price list
         $this->browser
             ->click(l::linkContaining('View/Edit Plan Rules'))   
             ->waitForPageToLoad(2000);
 
         $this->assertBodyHasText("Plan Name:");
 
+        //Tests creation of new plan
         $this->browser
             ->open(URL::action('AdminController@getPricingList'))
             ->waitForPageToLoad(2000)
@@ -75,6 +85,7 @@ class AdminTest extends IntegrationTestCase
 
         $this->assertBodyHasText("Plan Added successfully");
 
+        //Tests Creation of new rule
         $this->browser
             ->select(l::IdOrName('payment_mode'), 'Card')
             ->select(l::IdOrName('payment_mode_type'), 'Credit')
@@ -87,6 +98,9 @@ class AdminTest extends IntegrationTestCase
         $this->assertBodyHasText("Rule Added successfully");
     }
 
+    /**
+     * Tests merchant listing for admin
+     */
     public function testMerchants()
     {
         $this->browser
@@ -94,13 +108,15 @@ class AdminTest extends IntegrationTestCase
             ->click(l::linkContaining('Merchants'))   
             ->waitForPageToLoad(2000);                      // Wait for page to load
 
-        // Asserts if at the end the user is at the stuff index again
         $this->assertEquals(URL::action('AdminController@getMerchants'),$this->browser->getLocation());
 
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText($this->merchant->email);
     }
     
+    /**
+     * Tests login as merchant for admin
+     */
     public function testLoginAsMerchant()
     {   
         $this->browser
@@ -116,6 +132,9 @@ class AdminTest extends IntegrationTestCase
         $this->assertEquals(URL::action('MerchantController@getIndex').'/#!/',$this->browser->getLocation());
     }
 
+    /**
+     * Tests chekcing of merchant details by admin
+     */
     public function testMerchantDetails()
     {   
         $this->browser
@@ -126,6 +145,7 @@ class AdminTest extends IntegrationTestCase
 
         $this->assertEquals(URL::to('/admin/merchant/'.$this->merchant->id.'/details'),$this->browser->getLocation());
 
+        //Browsing the whole form
         $this->browser
             ->open(URL::to('/admin/merchant/'.$this->merchant->id.'/details'))
             ->waitForPageToLoad(2000)
@@ -142,6 +162,9 @@ class AdminTest extends IntegrationTestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(5)').is(':visible')", 2000);
     }
 
+    /**
+     * Tests checking merchnat status and locking/unlocking merchant form
+     */
     public function testMerchantStatus()
     {   
         $this->browser
@@ -165,8 +188,13 @@ class AdminTest extends IntegrationTestCase
         $this->assertBodyHasText('Merchant activation form unlocked Successfully!');
     }
 
+    /**
+     * tests activating a new merchant
+     */
+
     public function testMerchantActivation()
     {   
+        //Registers merchant in API so that he can be activated
         if((new Models\Service\Merchant)->confirm($this->merchant->confirm_token) === false)
             $this->fail('Failure in merchant activation, check merchant test to ensure it is working');
 
@@ -174,9 +202,7 @@ class AdminTest extends IntegrationTestCase
             ->open(URL::to('admin/merchant/'.$this->merchant->id))
             ->waitForPageToLoad(2000)
             ->click(l::linkContaining('Activate Merchant'))
-            ->waitForPageToLoad(2000);
-
-        $this->browser   
+            ->waitForPageToLoad(2000)
             ->type(l::IdOrName('tid'), '12111')
             ->type(l::IdOrName('tid_password'), '123456')
             ->type(l::IdOrName('tid_password_confirmation'), '123456')
@@ -187,6 +213,9 @@ class AdminTest extends IntegrationTestCase
         $this->assertBodyHasText('Merchant activated successfully');
     }
 
+    /**
+     * Tests admin logout
+     */
     public function testLogout()
     {
         $this->browser

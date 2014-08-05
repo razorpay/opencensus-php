@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * Overrides private functions of Zizaco\TestCases\IntegrationTestCase to make them protected and allowing overriding later
+ */
+
 use Zizaco\TestCases\IntegrationTestCase;
 
 class ModifiedZizacoIntegrationTestCase extends IntegrationTestCase
@@ -7,7 +12,7 @@ class ModifiedZizacoIntegrationTestCase extends IntegrationTestCase
     {
         if(IntegrationTestCase::$serverLaunched)
             return;
-
+        /** Calling artisan serve with env=testing **/
         $command = "php artisan serve --env=testing --port 4443";
         static::execAsyncAndWaitFor($command, 'development server started');
 

@@ -10,6 +10,7 @@ class MerchantTest extends IntegrationTestCase
     {   
         parent::setUp();
 
+        //Creates a new merchant if none exists in db otherwise uses that. This is necessary for persisting sessions between tests
         try
         {
             $this->merchant = Models\DAL\Merchant::firstorfail();
@@ -20,6 +21,9 @@ class MerchantTest extends IntegrationTestCase
         }
     }
 
+    /**
+     * Tests merchant registration
+     */
     public function testRegister()
     {
         $this->browser
@@ -31,13 +35,14 @@ class MerchantTest extends IntegrationTestCase
             ->click(l::css('#form-button'))                 // Click in the button
             ->waitForPageToLoad(2000);                      // Wait for page to load
 
-        // Asserts if at the end the user is at the stuff index again
         $this->assertEquals(URL::action('MerchantController@postRegister'),$this->browser->getLocation());
 
         $this->assertBodyHasText("Please check your inbox for activation email from Razorpay.");
     }
 
-
+    /**
+     * Tests merchant confirmation
+     */
     public function testUserConfirmation()
     {   
         $confirm_token = $this->merchant->confirm_token;
@@ -49,6 +54,9 @@ class MerchantTest extends IntegrationTestCase
         $this->assertBodyHasText("Please save your Razorpay API credentials carefully.");
     }
 
+    /**
+     * Tests merchant logout since he is logged in after confirmation
+     */
     public function testLogout()
     {
         $this->browser
@@ -60,6 +68,9 @@ class MerchantTest extends IntegrationTestCase
         $this->assertEquals(URL::action('MerchantController@getLogin'),$this->browser->getLocation());
     }
 
+    /**
+     * Tests merchnat login
+     */
     public function testLogin()
     {
         $this->browser
@@ -79,6 +90,9 @@ class MerchantTest extends IntegrationTestCase
         $this->assertBodyHasText("Successful Transactions");
     }
 
+    /**
+     * Tests transactions panel display
+     */
     public function testTransactionsPanel()
     {
          $this->browser
@@ -94,6 +108,9 @@ class MerchantTest extends IntegrationTestCase
 
     }
 
+    /**
+     * Tests refunds panel display
+     */
     public function testRefundsPanel()
     {
          $this->browser
@@ -106,6 +123,9 @@ class MerchantTest extends IntegrationTestCase
         $this->assertBodyHasText("Recent Refunds");
     }
 
+    /**
+     * Tests settlements panel display
+     */
     public function testSettlementsPanel()
     {
          $this->browser
@@ -118,6 +138,9 @@ class MerchantTest extends IntegrationTestCase
         $this->assertBodyHasText("Recent Settlements");
     }
 
+    /**
+     * Tests keys panel display and rolling of keys
+     */
     public function testKeysPanel()
     {
          $this->browser
@@ -129,7 +152,7 @@ class MerchantTest extends IntegrationTestCase
 
         $this->assertBodyHasText("Key ID");
 
-
+        //Testing rolling of key
         $this->browser
             ->click(l::css('.roll-href'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.roll-key-form-wrapper').hasClass('hidden') == false", 2000)
@@ -141,8 +164,12 @@ class MerchantTest extends IntegrationTestCase
         $this->assertBodyHasText("Click here to download credentials. You will not be able to view the credentials again.");
     }
 
+    /**
+     * Tests activation panel display and form filling
+     */
     public function testActivationPanel()
     {
+        //DIsplay activation form
          $this->browser
             ->open(URL::action('MerchantController@getIndex'))
             ->click(l::linkContaining('Activation'))   
@@ -152,6 +179,7 @@ class MerchantTest extends IntegrationTestCase
 
         $this->assertBodyHasText("Contact Details");
 
+        //Fill in Contact details and save
         $this->browser
             ->click(l::css('#activation-form > fieldset:eq(0) > .prev-next > .save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(0) > .alert-danger').length > 0", 2000)
@@ -164,6 +192,7 @@ class MerchantTest extends IntegrationTestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(0) > .alert-danger')));
 
+        //Fill in Bussiness Details and save
         $this->browser
             ->click(l::css('#activation-form > fieldset:eq(0) > .prev-next > .next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(1)').is(':visible')", 2000)
@@ -187,6 +216,7 @@ class MerchantTest extends IntegrationTestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(1) > .alert-danger')));
 
+        //Fill in Promoters Details and save
         $this->browser
             ->click(l::css('#activation-form > fieldset:eq(1) > .prev-next > .next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(2)').is(':visible')", 2000)
@@ -197,6 +227,7 @@ class MerchantTest extends IntegrationTestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(2) > .alert-danger')));
 
+        //Fill in Bank Account Details and save
         $this->browser
             ->click(l::css('#activation-form > fieldset:eq(2) > .prev-next > .next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(3)').is(':visible')", 2000)
@@ -211,7 +242,8 @@ class MerchantTest extends IntegrationTestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(3) > .alert-danger')));
 
-
+        //Upload documents and save
+        //S3 API is mocked in selenium/init.php to avoid requests to AWS
         $this->browser
             ->click(l::css('#activation-form > fieldset:eq(3) > .prev-next > .next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(4)').is(':visible')", 2000)
@@ -225,6 +257,7 @@ class MerchantTest extends IntegrationTestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset:eq(4) > .alert-danger')));
 
+        //Submit for activation
         $this->browser
             ->click(l::css('#activation-form > fieldset:eq(4) > .prev-next > .next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(5)').is(':visible')", 2000)
@@ -236,6 +269,9 @@ class MerchantTest extends IntegrationTestCase
         $this->assertFalse($this->browser->isElementPresent(l::css('#activation-form > fieldset > .alert-danger')));
     }
 
+    /**
+     * Tests Account Panel Display
+     */
     public function testAccountPanel()
     {
          $this->browser

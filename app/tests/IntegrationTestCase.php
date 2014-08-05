@@ -1,4 +1,8 @@
 <?php
+/**
+ * Base class for creating integration tests using selenium for dashboard
+ */
+
 use Laracasts\TestDummy\Factory;
 
 class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
@@ -21,6 +25,7 @@ class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
     {
         $status = $this->getStatus();
         
+        /** Take a screenshot in case of failure **/
         if ($status == PHPUnit_Runner_BaseTestRunner::STATUS_ERROR || $status == PHPUnit_Runner_BaseTestRunner::STATUS_FAILURE) {
             $this->browser->captureEntirePageScreenshot(storage_path().'/selenium.png', "");
         }
@@ -28,7 +33,8 @@ class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
         parent::tearDown();
     }
     public static function tearDownAfterClass()
-    {
+    {   
+        /** Empties content of all tables defined in fixtures above on teardown **/
         static::truncateTables();
 
         parent::tearDownAfterClass();
@@ -52,20 +58,6 @@ class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
         $entity = self::$fixtures[$entity];
 
         return Factory::build($entity, $attributes);
-    }
-
-    /**
-     * Mocks a specific class and registers the mock in App
-     *
-     * @return mock object
-     */
-    protected function mock($class)
-    {
-      $mock = Mockery::mock($class)->shouldDeferMissing();
-
-      App::instance($class, $mock);
-
-      return $mock;
     }
 
     protected static function truncateTables()
