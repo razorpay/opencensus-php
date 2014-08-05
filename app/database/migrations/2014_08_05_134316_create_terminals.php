@@ -3,6 +3,10 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use Constants\Table;
+use Models\Merchant;
+use Models\Terminal\Entity as Terminal;
+
 class CreateTerminals extends Migration {
 
     /**
@@ -12,22 +16,26 @@ class CreateTerminals extends Migration {
      */
     public function up()
     {
-        Schema::create('terminals', function(Blueprint $table)
+        Schema::create(Table::TERMINAL, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
-            $table->char('id', 24)
+            $table->char(Terminal::ID, 24)
                   ->primary();
 
-            $table->string('terminal_id', 24);
+            $table->char(Terminal::MERCHANT_ID, 24);
 
-            $table->char('merchant_id', 24);
+            $table->string(Terminal::GATEWAY);
 
-            $table->string('password');
+            $table->string(Terminal::GATEWAY_TERMINAL_ID);
 
-            $table->string('gateway');
+            $table->string(Terminal::GATEWAY_TERMINAL_PASSWORD);
 
-            $table->string('gateway_terminal_id');
+            $table->foreign(Terminal::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -37,7 +45,12 @@ class CreateTerminals extends Migration {
      */
     public function down()
     {
-        //
-    }
+        Schema::table(Table::TERMINAL, function($table)
+        {
+            $table->dropForeign(
+                TABLE::TERMINAL.'_'.Terminal::MERCHANT_ID.'_foreign');
+        });
 
+        Schema::drop(Table::TERMINAL);
+    }
 }
