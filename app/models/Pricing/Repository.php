@@ -15,8 +15,8 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $plan = $repo::where(Entity::PLAN_ID, '=', $id)
-                     ->orderBy(Entity::ID, 'desc')
+        $plan = $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+                     ->orderBy(Pricing\Entity::ID, 'desc')
                      ->get();
 
         if ($plan->count() === 0)
@@ -33,31 +33,31 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::orderBy(Entity::ID, 'desc')->take(10)->get();
+        return $repo::orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
     }
 
     public function getMerchantPricingPlans()
     {
         $repo = $this->repo;
 
-        return $repo::whereNull('gateway')
-                    ->orderBy(Entity::ID, 'desc')->take(10)->get();
+        return $repo::whereNull(Pricing\Entity::GATEWAY)
+                    ->orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
     }
 
     public function getGatewayPricingPlans()
     {
         $repo = $this->repo;
 
-        return $repo::whereNotNull('gateway')
-                    ->orderBy(Entity::ID, 'desc')->take(10)->get();
+        return $repo::whereNotNull(Pricing\Entity::GATEWAY)
+                    ->orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
     }
 
     public function getPricingPlanByName($name)
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::PLAN_NAME, '=', $name)
-                    ->orderBy(Entity::ID, 'desc')
+        return $repo::where(Pricing\Entity::PLAN_NAME, '=', $name)
+                    ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
     }
 
