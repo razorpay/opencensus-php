@@ -6,6 +6,8 @@
 
     $s3->shouldReceive('putObject')->withAnyArgs()->andReturn(array('ObjectURL'=>'https://aws.com/yo.png'));
 
+    $s3->shouldReceive('getObjectUrl')->withAnyArgs()->andReturn("https://testing.com/test.png");
+
     $s3->shouldReceive('factory')->withAnyArgs()->andReturn($s3);
 
     App::instance('Aws\S3\S3Client', $s3);
