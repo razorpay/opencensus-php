@@ -247,13 +247,4 @@ class MerchantTest extends IntegrationTestCase
 
         $this->assertBodyHasText($this->merchant->name);
     }
-
-
-
-    
-
-    protected static function generateMerchantEmail()
-    {
-        return static::generateRandomString()."@".static::generateRandomString().".com";
-    }
 }

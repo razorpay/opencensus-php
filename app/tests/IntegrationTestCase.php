@@ -88,4 +88,9 @@ class IntegrationTestCase extends Zizaco\TestCases\IntegrationTestCase
     {
         return bin2hex(openssl_random_pseudo_bytes($length/2));
     }
+
+    protected static function generateMerchantEmail()
+    {
+        return static::generateRandomString()."@".static::generateRandomString().".com";
+    }
 }

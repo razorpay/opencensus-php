@@ -23,7 +23,8 @@ class AdminTest extends IntegrationTestCase
         catch(Exception $e)
         {
             $this->admin = $this->createEntity('admin');
-            $this->merchant_details = $this->createEntity('merchant_details');
+            $this->merchant = $this->createEntity('merchant', array('id'=>static::generateRandomString(24), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
+            $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
         }
 
         $this->merchant = $this->merchant_details->merchant;
@@ -166,6 +167,9 @@ class AdminTest extends IntegrationTestCase
 
     public function testMerchantActivation()
     {   
+        if((new Models\Service\Merchant)->confirm($this->merchant->confirm_token) === false)
+            $this->fail('Failure in merchant activation, check merchant test to ensure it is working');
+
         $this->browser
             ->open(URL::to('admin/merchant/'.$this->merchant->id))
             ->waitForPageToLoad(2000)
@@ -176,10 +180,9 @@ class AdminTest extends IntegrationTestCase
             ->type(l::IdOrName('tid'), '12111')
             ->type(l::IdOrName('tid_password'), '123456')
             ->type(l::IdOrName('tid_password_confirmation'), '123456')
-            ->select(l::IdOrName('pricing_plan'), 'index=1');
-
-            // ->click(l::css('.btn-primary'))
-            // ->waitForPageToLoad(2000);
+            ->select(l::IdOrName('pricing_plan'), 'index=1')
+            ->click(l::css('.btn-primary'))
+            ->waitForPageToLoad(2000);
 
         $this->assertBodyHasText('Merchant activated successfully');
     }
