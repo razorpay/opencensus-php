@@ -21,9 +21,9 @@ class Transaction extends Service
         if (empty($error))
         {
             $merchant_id = \Auth::merchant()->id();
-            static::setApiCredentials($merchant_id);
+            $this->setApiCredentials($merchant_id);
 
-            $response = static::$api->transaction->fetch($options);
+            $response = $this->api->transaction->fetch($options);
 
             $data = Manager\Transaction::mapKeys($response);
         }
@@ -42,10 +42,10 @@ class Transaction extends Service
         if (empty($error))
         {
             $merchant_id = \Auth::merchant()->id();
-            static::setApiCredentials($merchant_id);
+            $this->setApiCredentials($merchant_id);
 
             $id = $options['id'];
-            $data = (array)static::$api->transaction->get($id);
+            $data = (array)$this->api->transaction->get($id);
         }
         else
         {

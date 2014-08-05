@@ -40,7 +40,7 @@ class Merchant extends Service
 
         $merchant_api_data = $merchant->generateApiData($merchant);
 
-        $request = Request::getInstance()->setCredentials();
+        $request = (new Request)->setCredentials();
 
         $response = $request->POST('merchants', $merchant_api_data);
 
@@ -79,7 +79,7 @@ class Merchant extends Service
 
     public function fetchKeysFromApi($merchant_id)
     {
-        $request = Request::getInstance()->setCredentials();
+        $request = (new Request)->setCredentials();
         $response = $request->GET('merchants/'.$merchant_id.'/keys');
 
         return $response;
@@ -93,7 +93,7 @@ class Merchant extends Service
         {
             $arr = Manager\Key::buildKeyUpdateData($data);
 
-            $request = Request::getInstance()->setCredentials();
+            $request = (new Request)->setCredentials();
 
             $url = 'merchants/'.$data['merchant_id'].'/keys/'.$data['id'];
 

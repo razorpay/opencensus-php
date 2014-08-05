@@ -8,7 +8,7 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
 
-        $status = Service\Transaction::getInstance()->process($input);
+        $status = (new Service\Transaction)->process($input);
 
         return ['status' => $status];
     }
@@ -19,7 +19,7 @@ class TransactionController extends BaseController
 
         $input['merchant_id'] = Auth::merchant()->id();
 
-        $data = Service\Transaction::getInstance()->getAnalytics($input);
+        $data = (new Service\Transaction)->getAnalytics($input);
 
         return array(
             'data' => $data, 
@@ -31,7 +31,7 @@ class TransactionController extends BaseController
     {
         $merchant_id = Auth::merchant()->id();
 
-        $data = Service\Transaction::getInstance()->getAggregations($merchant_id);
+        $data = (new Service\Transaction)->getAggregations($merchant_id);
 
         return array(
             'data' => $data,
@@ -43,14 +43,14 @@ class TransactionController extends BaseController
     {
         $input = Input::all();
 
-        $data = Service\Transaction::getInstance()->fetchListFromApi($input);
+        $data = (new Service\Transaction)->fetchListFromApi($input);
 
         return $data;
     }
 
     public function getTransaction($id = NULL)
     {
-        $data = Service\Transaction::getInstance()->fetchTxnFromApi($id);
+        $data = (new Service\Transaction)->fetchTxnFromApi($id);
 
         return $data;
     }

@@ -223,7 +223,7 @@ class Admin extends Service
         
         $data = array('pricing_plan_id' => $plan_id);
 
-        $request = Request::getinstance()->setCredentials();
+        $request = (new Request)->setCredentials();
 
         $response = $request->POST('merchants/'.$id.'/pricing', $data);
         
@@ -236,8 +236,9 @@ class Admin extends Service
     }
 
     public function fetchPricingPlan($id = NULL)
-    {
-        $request = Request::getinstance()->setCredentials();
+    {   
+        $request = (new Request)->setCredentials();
+
         if($id===NULL)
         {
             $response = $request->GET('pricing/merchants');
@@ -258,7 +259,7 @@ class Admin extends Service
 
         $error = array();
         
-        $request = Request::getinstance()->setCredentials();
+        $request = (new Request)->setCredentials();
         
         $response = $request->POST('pricing/'.$id.'/rule', $input);
 
@@ -276,7 +277,7 @@ class Admin extends Service
 
         $error = array();
         
-        $request = Request::getinstance()->setCredentials();
+        $request = (new Request)->setCredentials();
         
         $response = $request->POST('pricing', $input);
 

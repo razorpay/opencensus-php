@@ -18,7 +18,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = Service\Merchant::getInstance()->login($input);
+        list($error, $data) = (new Service\Merchant)->login($input);
 
         if (empty($error))
             return Redirect::action('MerchantController@getIndex');
@@ -37,7 +37,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = Service\Merchant::getInstance()->register($input);
+        list($error, $data) = (new Service\Merchant)->register($input);
 
         if (empty($error))
         {
@@ -78,14 +78,14 @@ class MerchantController extends BaseController
 
     public function getAccount()
     {
-        $merchant = Service\Merchant::getInstance()->fetch(\Auth::merchant()->id());
+        $merchant = (new Service\Merchant)->fetch(\Auth::merchant()->id());
 
         return $merchant;
     }
 
     public function getKeys()
     {
-        $keys = Service\Merchant::getInstance()->fetchKeysFromApi(\Auth::merchant()->id());
+        $keys = (new Service\Merchant)->fetchKeysFromApi(\Auth::merchant()->id());
 
         return $keys;
     }
@@ -97,14 +97,14 @@ class MerchantController extends BaseController
 
         $input['merchant_id'] = \Auth::merchant()->id();
 
-        $data = Service\Merchant::getInstance()->rollKeys($input);
+        $data = (new Service\Merchant)->rollKeys($input);
 
         return $data;
     }
 
     public function getConfirm($token)
     {
-        $response = Service\Merchant::getInstance()->confirm($token);
+        $response = (new Service\Merchant)->confirm($token);
 
         if($response)
         {   
@@ -127,14 +127,14 @@ class MerchantController extends BaseController
 
     public function getActivationDetails()
     {
-        $response = Service\MerchantDetails::getInstance()->fetchDetails();
+        $response = (new Service\MerchantDetails)->fetchDetails();
         
         return Response::json($response);
     }
 
     public function postActivation()
     {
-        $error = Service\MerchantDetails::getInstance()->submitDetails();
+        $error = (new Service\MerchantDetails)->submitDetails();
 
         if (empty($error))
         {
@@ -156,11 +156,11 @@ class MerchantController extends BaseController
 
         if($id != 4)
         {
-            $error = Service\MerchantDetails::getInstance()->saveDetails($id, $input);  
+            $error = (new Service\MerchantDetails)->saveDetails($id, $input);  
         }
         else
         {
-            $error = Service\MerchantDetails::getInstance()->checkUploads();
+            $error = (new Service\MerchantDetails)->checkUploads();
         }
         
         if (empty($error))
@@ -178,7 +178,7 @@ class MerchantController extends BaseController
         $input = Input::all();
         unset($input['_token']);
 
-        $error = Service\MerchantDetails::getInstance()->saveUploadedFile($input);
+        $error = (new Service\MerchantDetails)->saveUploadedFile($input);
 
         if (empty($error))
         {

@@ -149,7 +149,7 @@ class AdminController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = Service\Admin::getInstance()->changePassword($input, Auth::admin()->get());
+        list($error, $data) = (new Service\Admin)->changePassword($input, Auth::admin()->get());
 
         $view = Redirect::action('AdminController@getPassword');
 
@@ -172,7 +172,7 @@ class AdminController extends BaseController
 
     public function getMerchants()
     {
-        $merchants = Service\Admin::getInstance()->listMerchants();
+        $merchants = (new Service\Admin)->listMerchants();
         
         return View::make('admin.getMerchants')
                    ->with('data', $merchants);
@@ -180,7 +180,7 @@ class AdminController extends BaseController
 
     public function getMerchantLogin($id)
     {
-        $merchant = Service\Merchant::getInstance()->fetch($id);
+        $merchant = (new Service\Merchant)->fetch($id);
 
         Auth::merchant()->loginUsingId($merchant['id']);
 
@@ -189,7 +189,7 @@ class AdminController extends BaseController
 
     public function getMerchantStatus($id)
     {
-        $details = Service\Admin::getInstance()->fetchMerchantStatus($id);
+        $details = (new Service\Admin)->fetchMerchantStatus($id);
 
         return View::make('admin.getMerchantStatus')
                    ->with('details', $details);
@@ -197,7 +197,7 @@ class AdminController extends BaseController
 
     public function getLockMerchantDetails($id)
     {
-        $error = Service\Admin::getInstance()->lockMerchant($id);
+        $error = (new Service\Admin)->lockMerchant($id);
 
         $view = Redirect::to('/admin/merchant/'.$id);
 
@@ -213,7 +213,7 @@ class AdminController extends BaseController
 
     public function getUnlockMerchantDetails($id)
     {
-        $error = Service\Admin::getInstance()->unlockMerchant($id);
+        $error = (new Service\Admin)->unlockMerchant($id);
 
         $view = Redirect::to('/admin/merchant/'.$id);
 
@@ -229,7 +229,7 @@ class AdminController extends BaseController
 
     public function getMerchantDetails($id)
     {
-        $details = Service\Admin::getInstance()->fetchMerchantDetails($id);
+        $details = (new Service\Admin)->fetchMerchantDetails($id);
 
         return View::make('admin.getMerchantDetails')
                    ->with('data', json_encode($details));
@@ -237,9 +237,9 @@ class AdminController extends BaseController
 
     public function getMerchantActivation($id)
     {   
-        $details = Service\Admin::getInstance()->fetchMerchantStatus($id);
+        $details = (new Service\Admin)->fetchMerchantStatus($id);
 
-        $pricing_plans = Service\Admin::getInstance()->fetchPricingPlan();
+        $pricing_plans = (new Service\Admin)->fetchPricingPlan();
 
         return View::make('admin.getMerchantActivation')
                    ->with('pricing_plans', $pricing_plans)
@@ -250,7 +250,7 @@ class AdminController extends BaseController
     {   
         $input = Input::all();
 
-        $error = Service\Admin::getInstance()->activateMerchant($id, $input);
+        $error = (new Service\Admin)->activateMerchant($id, $input);
 
         if(empty($error))
         {
@@ -264,7 +264,7 @@ class AdminController extends BaseController
 
     public function getMerchantDeactivation($id)
     {   
-        $error = Service\Admin::getInstance()->deactivateMerchant($id);
+        $error = (new Service\Admin)->deactivateMerchant($id);
 
         if(empty($error))
         {
@@ -278,14 +278,14 @@ class AdminController extends BaseController
 
     public function getPricingList()
     {
-        $data = Service\Admin::getInstance()->fetchPricingPlan();
+        $data = (new Service\Admin)->fetchPricingPlan();
 
         return View::make('admin.getPricingList')->with('plans', $data['data']);
     }
 
     public function getPricingRules($id)
     {
-        $data = Service\Admin::getInstance()->fetchPricingPlan($id);
+        $data = (new Service\Admin)->fetchPricingPlan($id);
 
         return View::make('admin.getPricingRules')->with('plan', $data);
     }
@@ -294,9 +294,9 @@ class AdminController extends BaseController
     {   
         $input = Input::all();
 
-        $data = Service\Admin::getInstance()->fetchPricingPlan($id);
+        $data = (new Service\Admin)->fetchPricingPlan($id);
 
-        $error = Service\Admin::getInstance()->addPricingPlanRule($data['id'], $input);
+        $error = (new Service\Admin)->addPricingPlanRule($data['id'], $input);
 
         if(empty($error))
         {
@@ -317,7 +317,7 @@ class AdminController extends BaseController
     {
         $input = Input::all();
 
-        $response = Service\Admin::getInstance()->createPricingPlan($input);
+        $response = (new Service\Admin)->createPricingPlan($input);
 
         if(isset($response['error']) === false)
         {
@@ -331,7 +331,7 @@ class AdminController extends BaseController
 
     public function getAdmins()
     {
-        $admins = Service\Admin::getInstance()->getAdmins();
+        $admins = (new Service\Admin)->getAdmins();
 
         return View::make('admin.getAdmins')
                    ->with('admins', $admins);
@@ -339,7 +339,7 @@ class AdminController extends BaseController
 
     public function getDeleteAdmin($id)
     {
-        $response = Service\Admin::getInstance()->deleteAdmin($id);
+        $response = (new Service\Admin)->deleteAdmin($id);
 
         return Redirect::action('AdminController@getAdmins')
                         ->with('success', $response);
@@ -354,7 +354,7 @@ class AdminController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = Service\Admin::getInstance()->add($input, Auth::admin()->get());
+        list($error, $data) = (new Service\Admin)->add($input, Auth::admin()->get());
 
         $view = Redirect::action('AdminController@getAddAdmin');
 
