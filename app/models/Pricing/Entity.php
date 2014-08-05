@@ -38,7 +38,7 @@ class Entity extends Base\UniqueIdEntity
      *
      * @var array
      */
-    protected static $modifiers = array('cleanInput');
+    protected static $modifiers = array('inputRemoveBlanks');
 
     protected function modifyInputRemoveBlank(& $input)
     {
