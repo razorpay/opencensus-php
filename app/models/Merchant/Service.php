@@ -145,4 +145,25 @@ class Service extends Base\Service
 
         return $plan->toArrayPublic();
     }
+
+    public function createTerminal($id, $input)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        $terminal = (new Terminal\Core)->create($input, $merchant);
+    }
+
+    public function getTerminal($id)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        $terminal = (new Terminal\Repository)->find($id);
+
+        if ($terminal === null)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_NO_TERMINAL_ASSIGNED_TO_MERCHANT);
+        }
+    }
 }

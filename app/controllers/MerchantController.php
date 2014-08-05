@@ -45,4 +45,20 @@ class MerchantController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function postCreateTerminal($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->createTerminal($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getTerminals($id)
+    {
+        $data = (new Merchant\Service)->getTerminals($id);
+
+        return ApiResponse::json($data);
+    }
 }
