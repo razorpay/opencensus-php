@@ -1,8 +1,7 @@
 /bootstrap/compiled.php
 /vendor
-.env.testing.php
-.env.dev.php
-.env.php
+.env.*
+!.env.wercker.php
 .DS_Store
 Thumbs.db
 grunt.json

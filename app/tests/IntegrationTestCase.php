@@ -1,7 +1,7 @@
 <?php
 use Laracasts\TestDummy\Factory;
 
-class IntegrationTestCase extends Zizaco\TestCases\IntegrationTestCase
+class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
 {   
     protected static $fixtures = array(
         'merchant' => 'Models\DAL\Merchant',
@@ -29,9 +29,6 @@ class IntegrationTestCase extends Zizaco\TestCases\IntegrationTestCase
     }
     public static function tearDownAfterClass()
     {
-        //Close Mockery
-        Mockery::close();
-
         static::truncateTables();
 
         parent::tearDownAfterClass();

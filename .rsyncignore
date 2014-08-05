@@ -1,5 +1,4 @@
-.env.*.php
-.env.php
+.env.*
 .DS_Store
 Thumbs.db
 /bootstrap/environment.php
