@@ -70,6 +70,10 @@ Route::group(array('before' => 'auth.app'), function()
 
     Route::get('merchants/{id}/pricing', 'MerchantController@getPricingPlan');
 
+    Route::post('merchants/{id}/terminal', 'MerchantController@postCreateTerminal');
+
+    Route::get('merchants/{id}/terminal', 'MerchantController@getTerminals');
+
     Route::post('pricing', 'PricingController@postCreatePricingPlan');
 
     Route::get('pricing', 'PricingController@getPricingPlans');
