@@ -10,6 +10,8 @@ class Table
 
     const MERCHANT = 'merchants';
 
+    const TERMINAL = 'terminals';
+
     const LEDGER = 'ledger';
 
     const KEY = 'keys';
