@@ -3,6 +3,7 @@
 namespace Models\Terminal;
 
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Terminal;
 
 class Core
@@ -11,9 +12,8 @@ class Core
 
     public function create($input, $merchant)
     {
+        $input['merchant_id'] = $merchant->getKey();
         $terminal = (new Terminal\Entity)->build($input);
-
-        $terminal->merchant()->associate($merchant);
 
         $this->validateNoExistingTerminal($terminal);
 
@@ -28,7 +28,6 @@ class Core
         $params = array(
             Terminal\Entity::MERCHANT_ID => $terminal->getMerchantId());
 
-        sd($params);
         $this->repo = new Terminal\Repository();
 
         $existingTerminals = $this->repo->getTerminalsByParams($params);
@@ -42,7 +41,7 @@ class Core
 
         // Check no record with same 'gateway_merchant_id' exists
         $params = array(
-            Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getMerchantId());
+            Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId());
 
         $existingTerminals = $this->repo->getTerminalsByParams($params);
 

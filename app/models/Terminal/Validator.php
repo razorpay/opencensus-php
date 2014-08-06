@@ -9,6 +9,7 @@ use Models\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
+        Entity::MERCHANT_ID               => 'required|hexadecimal',
         Entity::GATEWAY                   => 'required|in:HDFC',
         Entity::GATEWAY_MERCHANT_ID       => 'required',
         Entity::GATEWAY_TERMINAL_ID       => 'required',
