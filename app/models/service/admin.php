@@ -83,7 +83,7 @@ class Admin extends Service
         return [$error, $data];
     }
 
-    public function fetchMerchantDetails($id)
+    public function fetchMerchantActivationDetails($id)
     {
         $merchant_details =  DAL\MerchantDetails::findorfail($id);
 
@@ -115,7 +115,7 @@ class Admin extends Service
         return $response;
     }
 
-    public function fetchMerchantStatus($id)
+    public function fetchMerchantDetails($id)
     {   
         $merchant = DAL\Merchant::with('MerchantDetails')->findorfail($id);
         
@@ -166,7 +166,68 @@ class Admin extends Service
         return $error;
     }
 
-    public function activateMerchant($id, $input)
+    public function fetchMerchantTerminal($id)
+    {   
+        $request = (new Request)->setCredentials();
+
+        $response = $request->GET('merchants/'.$id.'/terminal');
+
+        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($response['error']));
+
+        return $response;
+    }
+
+    public function postMerchantTerminal($id, $input)
+    {   
+        if($input['gateway_terminal_password'] !== $input['gateway_terminal_password_confirmation'])
+        {
+            return array('Password do not match');
+        }
+
+        unset($input['_token']);
+        unset($input['gateway_terminal_password_confirmation']);
+
+        $request = (new Request)->setCredentials();
+
+        $response = $request->POST('merchants/'.$id.'/terminal', $input);
+
+        if(isset($response['error']))
+        {
+            return array($response['error']['description']);
+        }
+
+        return array();
+    }
+
+    public function fetchMerchantPricing($id)
+    {   
+        $request = (new Request)->setCredentials();
+
+        $response = $request->GET('merchants/'.$id.'/pricing');
+
+        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($response['error']));
+
+        return $response;
+
+    }
+
+    public function postMerchantPricing($id, $input)
+    {   
+        unset($input['_token']);
+
+        $request = (new Request)->setCredentials();
+
+        $response = $request->POST('merchants/'.$id.'/pricing', $input);
+
+        if(isset($response['error']))
+        {
+            return array($response['error']['description']);
+        }
+
+        return array();
+    }
+
+    public function activateMerchant($id)
     {
         $merchant = DAL\Merchant::findorfail($id);
 
@@ -182,19 +243,24 @@ class Admin extends Service
             return array('Merchant is already active.');
         }
         
-        $error = $this->assignPricingPlan($id, $input['pricing_plan']);
-        
-        if(empty($error))
+        if(empty($this->fetchMerchantPricing($id)))
         {
-            //@todo mark merchant live in api first and submit tid, tid password
-            
-            $merchant->live = 1;
-            $merchant->save();
-
-            $this->lockMerchant($id);
+            return array('Merchant must be assigned a pricing plan before he goes live');
         }
+
+        if(empty($this->fetchMerchantTerminal($id)))
+        {
+            return array('Merchant must be assigned a gateway terminal before he goes live');
+        }
+
+        //@todo mark merchant live in api first
         
-        return $error;
+        $merchant->live = 1;
+        $merchant->save();
+
+        $this->lockMerchant($id);
+    
+        return array();
     }
 
     public function deactivateMerchant($id)
@@ -214,25 +280,6 @@ class Admin extends Service
         $merchant->save();  
         
         return array();
-    }
-
-    protected function assignPricingPlan($id, $plan_id)
-    {
-        $error = array();
-
-        
-        $data = array('pricing_plan_id' => $plan_id);
-
-        $request = (new Request)->setCredentials();
-
-        $response = $request->POST('merchants/'.$id.'/pricing', $data);
-        
-        if(isset($response['error']))
-        {
-            $error[]=$response['error']['description'];
-        }
-
-        return $error;
     }
 
     public function fetchPricingPlan($id = NULL)

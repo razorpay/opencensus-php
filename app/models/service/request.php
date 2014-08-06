@@ -22,7 +22,7 @@ class Request extends Service
         $response = \Requests::post(\Config::get('api.url') . $url, array(), $data, $options);
         
         $array = json_decode($response->body, true);
-        if($array === NULL) $array['error']['description'] = 'API reported an error';
+        if($array === NULL) $array['error']['description'] = 'API Exception';
 
         return $array;
     }
@@ -33,7 +33,7 @@ class Request extends Service
         $response = \Requests::put(\Config::get('api.url') . $url, array(), $data, $options);
         
         $array = json_decode($response->body, true);
-        if($array === NULL) $array['error']['description'] = 'API reported an error';
+        if($array === NULL) $array['error']['description'] = 'API Exception';
 
         return $array;
     }
@@ -45,7 +45,7 @@ class Request extends Service
         $response = \Requests::get(\Config::get('api.url') . $url . '?' . $qs, array(), $options);
         
         $array = json_decode($response->body, true);
-        if($array === NULL) $array['error']['description'] = 'API reported an error';
+        if($array === NULL) $array['error']['description'] = 'API Exception';
 
         return $array;
     }

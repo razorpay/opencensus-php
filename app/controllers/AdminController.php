@@ -170,11 +170,11 @@ class AdminController extends BaseController
         return View::make('admin.getIndex');
     }
 
-    public function getMerchants()
+    public function getMerchantList()
     {
         $merchants = (new Service\Admin)->listMerchants();
         
-        return View::make('admin.getMerchants')
+        return View::make('admin.getMerchantList')
                    ->with('data', $merchants);
     }
 
@@ -187,12 +187,106 @@ class AdminController extends BaseController
         return Redirect::to('/');
     }
 
-    public function getMerchantStatus($id)
+    public function getMerchant($id)
     {
-        $details = (new Service\Admin)->fetchMerchantStatus($id);
+        $details = (new Service\Admin)->fetchMerchantDetails($id);
 
-        return View::make('admin.getMerchantStatus')
+        $terminal = (new Service\Admin)->fetchMerchantTerminal($id);
+
+        $pricing_plan = (new Service\Admin)->fetchMerchantPricing($id);
+
+        return View::make('admin.getMerchant')
+                   ->with('details', $details)
+                   ->with('terminal', $terminal)
+                   ->with('pricing_plan', $pricing_plan);
+    }
+
+    public function getMerchantTerminal($id)
+    {   
+        $details = (new Service\Admin)->fetchMerchantDetails($id);
+
+        $terminal = (new Service\Admin)->fetchMerchantTerminal($id);
+
+        return View::make('admin.getMerchantTerminal')
+                   ->with('terminal', $terminal)
                    ->with('details', $details);
+    }
+
+    public function postMerchantTerminal($id)
+    {   
+        $input = Input::all();
+
+        $error = (new Service\Admin)->postMerchantTerminal($id, $input);
+
+        if(empty($error))
+        {
+            return Redirect::to('/admin/merchant/'.$id.'/terminal')->with('status', array('Terminal added successfully'));
+        }
+        else
+        {
+            return Redirect::to('/admin/merchant/'.$id.'/terminal')->with('status', $error);
+        }
+    }
+
+    public function getMerchantPricing($id)
+    {   
+        $details = (new Service\Admin)->fetchMerchantDetails($id);
+
+        $pricing = (new Service\Admin)->fetchMerchantPricing($id);
+
+        //sd($pricing);
+
+        $pricing_plans = (new Service\Admin)->fetchPricingPlan();
+
+        return View::make('admin.getMerchantPricing')
+                   ->with('details', $details)
+                   ->with('pricing', $pricing)
+                   ->with('pricing_plans', $pricing_plans);
+    }
+
+    public function postMerchantPricing($id)
+    {   
+        $input = Input::all();
+
+        $error = (new Service\Admin)->postMerchantPricing($id, $input);
+
+        if(empty($error))
+        {
+            return Redirect::to('/admin/merchant/'.$id.'/pricing')->with('status', array('Pricing added successfully'));
+        }
+        else
+        {
+            return Redirect::to('/admin/merchant/'.$id.'/pricing')->with('status', $error);
+        }
+    }
+
+    public function getMerchantActivation($id)
+    {   
+
+        $error = (new Service\Admin)->activateMerchant($id);
+
+        if(empty($error))
+        {
+            return Redirect::to('/admin/merchant/'.$id)->with('status', array('Merchant activated successfully'));
+        }
+        else
+        {
+            return Redirect::to('/admin/merchant/'.$id)->with('status', $error);
+        }
+    }
+
+    public function getMerchantDeactivation($id)
+    {   
+        $error = (new Service\Admin)->deactivateMerchant($id);
+
+        if(empty($error))
+        {
+            return Redirect::to('/admin/merchant/'.$id)->with('status', array('Merchant deactivated successfully'));
+        }
+        else
+        {
+            return Redirect::to('/admin/merchant/'.$id)->with('status', $error);
+        }
     }
 
     public function getLockMerchantDetails($id)
@@ -228,52 +322,14 @@ class AdminController extends BaseController
     }
 
     public function getMerchantDetails($id)
-    {
+    {   
         $details = (new Service\Admin)->fetchMerchantDetails($id);
 
+        $activation_details = (new Service\Admin)->fetchMerchantActivationDetails($id);
+
         return View::make('admin.getMerchantDetails')
-                   ->with('data', json_encode($details));
-    }
-
-    public function getMerchantActivation($id)
-    {   
-        $details = (new Service\Admin)->fetchMerchantStatus($id);
-
-        $pricing_plans = (new Service\Admin)->fetchPricingPlan();
-
-        return View::make('admin.getMerchantActivation')
-                   ->with('pricing_plans', $pricing_plans)
+                   ->with('data', json_encode($activation_details))
                    ->with('details', $details);
-    }
-
-    public function postMerchantActivation($id)
-    {   
-        $input = Input::all();
-
-        $error = (new Service\Admin)->activateMerchant($id, $input);
-
-        if(empty($error))
-        {
-            return Redirect::to('/admin/merchant/'.$id)->with('status', array('Merchant activated successfully'));
-        }
-        else
-        {
-            return Redirect::to('/admin/merchant/'.$id.'/activate')->with('status', $error);
-        }
-    }
-
-    public function getMerchantDeactivation($id)
-    {   
-        $error = (new Service\Admin)->deactivateMerchant($id);
-
-        if(empty($error))
-        {
-            return Redirect::to('/admin/merchant/'.$id)->with('status', array('Merchant deactivated successfully'));
-        }
-        else
-        {
-            return Redirect::to('/admin/merchant/'.$id)->with('status', $error);
-        }
     }
 
     public function getPricingList()

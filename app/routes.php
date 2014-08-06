@@ -86,9 +86,9 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::post('/admin/password', array('before'=>'csrf', 'uses'=>'AdminController@postPassword'));
 
-    Route::get('/admin/merchant/list', 'AdminController@getMerchants');
+    Route::get('/admin/merchant/list', 'AdminController@getMerchantList');
 
-    Route::get('/admin/merchant/{id}', 'AdminController@getMerchantStatus');
+    Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
 
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
 
@@ -98,9 +98,15 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/merchant/{id}/unlock', array('before'=>'csrf', 'uses' => 'AdminController@getUnlockMerchantDetails'));
 
-    Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
+    Route::get('/admin/merchant/{id}/terminal', 'AdminController@getMerchantTerminal');
 
-    Route::post('/admin/merchant/{id}/activate', array('before'=>'csrf', 'uses' => 'AdminController@postMerchantActivation'));
+    Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
+
+    Route::get('/admin/merchant/{id}/pricing', 'AdminController@getMerchantPricing');
+
+    Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
+
+    Route::get('/admin/merchant/{id}/activate', array('before'=>'csrf', 'uses' => 'AdminController@getMerchantActivation'));
 
     Route::get('/admin/merchant/{id}/deactivate', array('before'=>'csrf', 'uses' => 'AdminController@getMerchantDeactivation'));
 
