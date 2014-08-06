@@ -63,6 +63,15 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testMerchantAssignAndGetPricingPlan()
+    {
+        $content = $this->assignPricingPlanToMerchant();
+
+        $testData['response']['content']['id'] = $content['id'];
+
+        $this->startTest($testData);
+    }
+
     public function testMerchantReplacePricingPlan()
     {
         $this->testMerchantAssignPricingPlan();
@@ -101,6 +110,19 @@ class PricingTest extends TestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function assignPricingPlanToMerchant()
+    {
+        $id = $this->createPricingPlan()['id'];
+
+        $testData['request']['content']['pricing_plan_id'] = $id;
+        $data = array(
+            'url' => '/merchants/363e4efa820b0c06208ccd99/pricing',
+            'method' => 'POST',
+            'content' => ['pricing_plan_id' => $id]);
+
+        return $this->makeRequestAndGetContent($data);
     }
 
     protected function createPricingPlan()
