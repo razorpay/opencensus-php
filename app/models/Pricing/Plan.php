@@ -38,19 +38,26 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
         return $plan;
     }
 
+    protected function getDefaultPlanCollectionValues()
+    {
+        return array(
+            self::COUNT => 0,
+            'entity' => 'collection',
+            'data' => array());
+    }
+
     public function toArrayMultiplePlansPublic()
     {
-        $this->sortBy('plan_id');
-
-        $plans = array();
-        $plans[self::COUNT] = 0;
-        $plans['entity'] = 'collection';
-        $plans['data'] = array();
+        $plans = $this->getDefaultPlanCollectionValues();
 
         if ($this->count() === 0)
+        {
             return $plans;
+        }
 
         $data = & $plans['data'];
+
+        $this->sortBy('plan_id');
 
         $first = true;
         $plan = array(self::ID => null);
@@ -95,10 +102,13 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
 
     protected function setPlanAttributes(& $plan, $item, $rules = array(), $count = 0)
     {
-        $plan[self::ID] = $item->getPlanId();
-        $plan[self::NAME] = $item->getPlanName();
-        $plan['entity'] = self::ENTITY;
-        $plan[self::COUNT] = $count;
-        $plan[self::RULES] = $rules;
+        $plan = array(
+            self::ID => $item->getPlanId(),
+            self::NAME => $item->getPlanName(),
+            'entity' => self::ENTITY,
+            self::COUNT => $count,
+            self::RULES => $rules);
+
+        return $plan;
     }
 }
