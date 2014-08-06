@@ -19,7 +19,7 @@ class Core
 
         $this->repo->saveOrFail($terminal);
 
-        return $terminal->toArray();
+        return $terminal;
     }
 
     protected function validateNoExistingTerminal($terminal)
