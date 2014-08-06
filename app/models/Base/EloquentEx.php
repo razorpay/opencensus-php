@@ -3,6 +3,7 @@
 namespace Models\Base;
 
 use EE\Exception;
+use EE\Error\ErrorCode;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
