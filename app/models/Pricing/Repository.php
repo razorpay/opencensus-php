@@ -15,9 +15,14 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $plan = $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
                      ->orderBy(Pricing\Entity::ID, 'desc')
                      ->get();
+    }
+
+    public function getPricingPlanByIdOrFailPublic($id)
+    {
+        $plan = $this->getPricingPlanById($id);
 
         if ($plan->count() === 0)
         {
@@ -28,6 +33,7 @@ class Repository extends Base\Repository
 
         return $plan;
     }
+
 
     public function getPricingPlans()
     {

@@ -117,7 +117,8 @@ class Service extends Base\Service
                 'pricing_plan_id');
         }
 
-        $plan = (new Pricing\Repository)->getPricingPlanById($input['pricing_plan_id']);
+        $plan = (new Pricing\Repository)->getPricingPlanByIdOrFailPublic(
+                                            $input['pricing_plan_id']);
 
         $merchant->setPricingPlan($id);
 

@@ -40,7 +40,7 @@ class Service extends Base\Service
 
     public function addPricingPlanRule($id, $input)
     {
-        $plan = $this->repo->getPricingPlanById($id);
+        $plan = $this->repo->getPricingPlanByIdOrFailPublic($id);
 
         Pricing\Validator::addPlanRuleValidate($plan, $input);
 
