@@ -28,7 +28,6 @@ class Core
         $params = array(
             Terminal\Entity::MERCHANT_ID => $terminal->getMerchantId());
 
-        sd($params);
         $this->repo = new Terminal\Repository();
 
         $existingTerminals = $this->repo->getTerminalsByParams($params);
