@@ -33,6 +33,11 @@ class Utility
         }
         catch(\Requests_Exception $e)
         {
+            //
+            // Some error occurred.
+            // Check that whether the gateway response timed out.
+            // Mostly it should be gateway timeout only
+            //
             if (self::checkTimeout($e))
             {
                 $exception = new GatewayTimeoutException($e->getMessage(), $e);
