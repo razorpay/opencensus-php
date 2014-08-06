@@ -34,8 +34,7 @@
             </td>
             <td>
                 <a target="_blank" href="/admin/merchant/{{{$merchant['id']}}}/login?_token={{{csrf_token()}}}"><button>Login as Merchant</button></a>
-                <a href = "/admin/merchant/{{{$merchant['id']}}}/details"><button>Merchant Details</button></a>
-                <a href = "/admin/merchant/{{{$merchant['id']}}}"><button>Manage Status</button></a>
+                <a href = "/admin/merchant/{{{$merchant['id']}}}"><button>Manage Merchant</button></a>
             </td>
         </tr>
     @endforeach
