@@ -136,13 +136,6 @@ class Service extends Base\Service
 
         $pricingPlanId = $merchant->getPricingPlanId();
 
-        if ($pricingPlanId === null)
-        {
-            throw new Exception\BadRequestException(
-                null,
-                ErrorCode::BAD_REQUEST_PRICING_NO_PLAN_ASSIGNED);
-        }
-
         $plan = (new Pricing\Repository)->getPricingPlanById($pricingPlanId);
 
         return $plan->toArrayPublic();
