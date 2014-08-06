@@ -6,6 +6,7 @@ use Models\Base;
 use Models\Merchant;
 use Models\Key;
 use Models\Pricing;
+use Models\Terminal;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -161,9 +162,9 @@ class Service extends Base\Service
 
         if ($terminal === null)
         {
-            throw new Exception\BadRequestException(
-                null,
-                ErrorCode::BAD_REQUEST_NO_TERMINAL_ASSIGNED_TO_MERCHANT);
+            return array();
         }
+
+        return $terminal->toArray();
     }
 }

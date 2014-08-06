@@ -57,7 +57,7 @@ class MerchantController extends BaseController
 
     public function getTerminals($id)
     {
-        $data = (new Merchant\Service)->getTerminals($id);
+        $data = (new Merchant\Service)->getTerminal($id);
 
         return ApiResponse::json($data);
     }
