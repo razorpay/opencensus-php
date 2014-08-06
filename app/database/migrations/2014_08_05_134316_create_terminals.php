@@ -27,6 +27,8 @@ class CreateTerminals extends Migration {
 
             $table->string(Terminal::GATEWAY);
 
+            $table->string(Terminal::GATEWAY_MERCHANT_ID);
+
             $table->string(Terminal::GATEWAY_TERMINAL_ID);
 
             $table->string(Terminal::GATEWAY_TERMINAL_PASSWORD);

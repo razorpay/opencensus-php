@@ -36,7 +36,21 @@ class Core
         {
             throw new Exception\BadRequestException(
                 null,
-                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_EXISTS);
+                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_EXISTS_FOR_MERCHANT);
+        }
+
+        // Check no other terminal id exists for the merchant right now
+        $params = array(
+            Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getMerchantId());
+
+        $existingTerminals = $this->repo->getTerminalsByParams($params);
+
+        if ($existingTerminals->count() !== 0)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS,
+                Terminal\Entity::GATEWAY_MERCHANT_ID);
         }
     }
 }

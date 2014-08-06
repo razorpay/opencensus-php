@@ -10,12 +10,14 @@ class Entity extends Base\UniqueIdEntity
     const ID                        = 'id';
     const MERCHANT_ID               = 'merchant_id';
     const GATEWAY                   = 'gateway';
+    const GATEWAY_MERCHANT_ID       = 'gateway_merchant_id';
     const GATEWAY_TERMINAL_ID       = 'gateway_terminal_id';
     const GATEWAY_TERMINAL_PASSWORD = 'gateway_terminal_password';
 
     protected $fillable = array(
         self::MERCHANT_ID,
         self::GATEWAY,
+        self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_TERMINAL_PASSWORD);
 
@@ -39,6 +41,11 @@ class Entity extends Base\UniqueIdEntity
     protected function getMerchantId()
     {
         return $this->attribute[self::MERCHANT_ID];
+    }
+
+    protected function getGatewayMerchantId()
+    {
+        return $this->attribute[self::GATEWAY_MERCHANT_ID];
     }
 
     protected function getGatewayTerminalPassword()
