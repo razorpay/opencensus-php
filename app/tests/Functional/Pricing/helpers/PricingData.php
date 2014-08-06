@@ -238,16 +238,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PRICING_NO_PLAN_ASSIGNED
-                ],
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_NO_PLAN_ASSIGNED
         ],
     ],
 

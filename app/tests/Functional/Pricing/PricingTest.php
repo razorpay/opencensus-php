@@ -76,7 +76,10 @@ class PricingTest extends TestCase
 
     public function testMerchantGetPricingPlanNoPlanAssigned()
     {
-        $this->startTest();
+        $content = $this->startTest();
+
+        // No plan assigned, so it should be empty array
+        $this->assertEquals(count($content), 0);
     }
 
     public function testMerchantGetPricingPlan()

@@ -21,6 +21,9 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
         $plan = array();
         $rules = array();
 
+        if ($this->count() === 0)
+            return array();
+
         foreach ($this->items as $item)
         {
             array_push($rules, $item->toArray());
