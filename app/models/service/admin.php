@@ -170,7 +170,7 @@ class Admin extends Service
     {   
         $request = (new Request)->setCredentials();
 
-        $response = $request->GET('merchants/'.$id.'/terminal');
+        $response = $request->process('GET', 'merchants/'.$id.'/terminal');
 
         if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($response['error']));
 
@@ -189,7 +189,7 @@ class Admin extends Service
 
         $request = (new Request)->setCredentials();
 
-        $response = $request->POST('merchants/'.$id.'/terminal', $input);
+        $response = $request->process('POST', 'merchants/'.$id.'/terminal', $input);
 
         if(isset($response['error']))
         {
@@ -203,7 +203,7 @@ class Admin extends Service
     {   
         $request = (new Request)->setCredentials();
 
-        $response = $request->GET('merchants/'.$id.'/pricing');
+        $response = $request->process('GET', 'merchants/'.$id.'/pricing');
 
         if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($response['error']));
 
@@ -217,7 +217,7 @@ class Admin extends Service
 
         $request = (new Request)->setCredentials();
 
-        $response = $request->POST('merchants/'.$id.'/pricing', $input);
+        $response = $request->process('POST', 'merchants/'.$id.'/pricing', $input);
 
         if(isset($response['error']))
         {
@@ -231,7 +231,7 @@ class Admin extends Service
     {
         $merchant = DAL\Merchant::findorfail($id);
 
-        $details = $this->fetchMerchantStatus($id);
+        $details = $this->fetchMerchantDetails($id);
 
         if(in_array(5, $details['steps_finished'])===false)
         {
@@ -267,7 +267,7 @@ class Admin extends Service
     {
         $merchant = DAL\Merchant::findorfail($id);
 
-        $details = $this->fetchMerchantStatus($id);
+        $details = $this->fetchMerchantDetails($id);
 
         if((int)$merchant->live === 0)
         {
@@ -288,11 +288,11 @@ class Admin extends Service
 
         if($id===NULL)
         {
-            $response = $request->GET('pricing/merchants');
+            $response = $request->process('GET', 'pricing/merchants');
         }
         else
         {
-            $response = $request->GET('pricing/'.$id);
+            $response = $request->process('GET', 'pricing/'.$id);
         }
 
         if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($response['error']));
@@ -308,7 +308,7 @@ class Admin extends Service
         
         $request = (new Request)->setCredentials();
         
-        $response = $request->POST('pricing/'.$id.'/rule', $input);
+        $response = $request->process('POST', 'pricing/'.$id.'/rule', $input);
 
         if(isset($response['error']))
         {
@@ -326,7 +326,7 @@ class Admin extends Service
         
         $request = (new Request)->setCredentials();
         
-        $response = $request->POST('pricing', $input);
+        $response = $request->process('POST', 'pricing', $input);
 
         return $response;
     }

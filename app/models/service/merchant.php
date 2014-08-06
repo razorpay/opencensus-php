@@ -63,14 +63,14 @@ class Merchant extends Service
             return false;
         }
 
-        $merchant_api_data = $merchant->generateApiData($merchant);
+        $merchant_api_data = $merchant->generateApiData();
 
         $request = (new Request)->setCredentials();
 
-        $response = $request->POST('merchants', $merchant_api_data);
+        $response = $request->process('POST', 'merchants', $merchant_api_data);
 
         if(isset($response['error'])) return false;
-
+        
         $merchant->confirm();
 
         return array_merge($response, $merchant->toArray());
@@ -105,7 +105,7 @@ class Merchant extends Service
     public function fetchKeysFromApi($merchant_id)
     {
         $request = (new Request)->setCredentials();
-        $response = $request->GET('merchants/'.$merchant_id.'/keys');
+        $response = $request->process('GET', 'merchants/'.$merchant_id.'/keys');
 
         return $response;
     }
@@ -122,7 +122,7 @@ class Merchant extends Service
 
             $url = 'merchants/'.$data['merchant_id'].'/keys/'.$data['id'];
 
-            $response = $request->PUT($url, $arr);
+            $response = $request->process('PUT', $url, $arr);
 
             if ((isset($response['old']) === false) or
                 (isset($response['new']) === false))

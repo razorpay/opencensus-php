@@ -16,42 +16,12 @@ class Request extends Service
         return $this;
     }
 
-    public function POST($url, $data = [])
+    public function process($verb = 'GET', $url, $data = [])
     {
         $options = ['auth' => [$this->ID,$this->PASSWORD]];
-        $response = \Requests::post(\Config::get('api.url') . $url, array(), $data, $options);
+
+        $response = \Requests::request(\Config::get('api.url').$url, array(), $data, $verb, $options);
         
-        $array = json_decode($response->body, true);
-        
-        if(isset($array['error']['message'])) 
-        {
-            echo $response->body; die();
-        }
-
-        return $array;
-    }
-
-    public function PUT($url, $data = [])
-    {
-        $options = ['auth' => [$this->ID,$this->PASSWORD]];
-        $response = \Requests::put(\Config::get('api.url') . $url, array(), $data, $options);
-        
-        $array = json_decode($response->body, true);
-        
-        if(isset($array['error']['message'])) 
-        {
-            echo $response->body; die();
-        }
-
-        return $array;
-    }
-
-    public function GET($url, $data = [])
-    {
-        $qs = http_build_query($data);
-        $options = ['auth' => [$this->ID,$this->PASSWORD]];
-        $response = \Requests::get(\Config::get('api.url') . $url . '?' . $qs, array(), $options);
-
         $array = json_decode($response->body, true);
         
         if(isset($array['error']['message'])) 
