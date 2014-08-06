@@ -13,12 +13,12 @@ class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
         'admin' => 'Models\DAL\Admin');
 
 
-	public function setUp()
+	public static function setUpBeforeClass()
     {
-        parent::setUp();
-        
-        //setting up db
-        Artisan::call('migrate');
+        parent::setUpBeforeClass();
+
+        //Refresh the db before a test
+        passthru('cd ' . __DIR__ . '/../.. & php artisan migrate:refresh --env=testing');
     }
 
     public function tearDown()
@@ -32,14 +32,7 @@ class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
 
         parent::tearDown();
     }
-    public static function tearDownAfterClass()
-    {   
-        /** Empties content of all tables defined in fixtures above on teardown **/
-        static::truncateTables();
-
-        parent::tearDownAfterClass();
-    }
-
+    
     protected function createEntity($entity, $attributes = array(), $times = 1)
     {
         Eloquent::unguard();
@@ -58,19 +51,6 @@ class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
         $entity = self::$fixtures[$entity];
 
         return Factory::build($entity, $attributes);
-    }
-
-    protected static function truncateTables()
-    {
-        foreach(static::$fixtures as $model)
-        {
-            DB::statement("SET foreign_key_checks=0");
-        
-            $model::truncate();
-
-            DB::statement("SET foreign_key_checks=1");
-        }
-
     }
 
     protected static function generateRandomString($length = 6)
