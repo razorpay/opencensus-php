@@ -47,11 +47,7 @@ class Entity extends Base\UniqueIdEntity
         self::ADDRESS_STATE,
         self::ADDRESS_CITY,
         self::ADDRESS_ZIP,
-        self::ADDRESS_COUNTRY,
-
-        'cvv_check',
-        'address_line1_check',
-        'address_zip_check');
+        self::ADDRESS_COUNTRY);
 
     protected $guarded = array(self::ID);
 
@@ -121,11 +117,11 @@ class Entity extends Base\UniqueIdEntity
 
                     $this->setAttribute(self::NETWORK, $network);
 
-                    // trace here
+                    // @todo: trace here
                 }
                 else
                 {
-                    // trace here
+                    // @todo: trace here
                 }
             }
 
@@ -141,6 +137,10 @@ class Entity extends Base\UniqueIdEntity
                 // @todo: trace
                 return;
             }
+        }
+        else
+        {
+            $this->setAttribute(self::TYPE, Type::UNKNOWN);
         }
     }
 }
