@@ -33,6 +33,10 @@ class CreateTerminals extends Migration {
 
             $table->string(Terminal::GATEWAY_TERMINAL_PASSWORD);
 
+            $table->integer(Terminal::CREATED_AT);
+
+            $table->integer(Terminal::UPDATED_AT);
+
             $table->foreign(Terminal::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
