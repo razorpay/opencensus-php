@@ -80,7 +80,7 @@ Route::group(array('before' => 'auth.app'), function()
 
     Route::get('pricing/merchants', 'PricingController@getMerchantPricingPlans');
 
-    Route::get('pricing/gateways', 'PricingsController@getGatewayPricingPlans');
+    Route::get('pricing/gateways', 'PricingController@getGatewayPricingPlans');
 
     Route::post('pricing/{id}/rule', 'PricingController@postAddPricingPlanRule');
 
