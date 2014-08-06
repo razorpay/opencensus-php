@@ -1,6 +1,12 @@
 @extends('admin.layoutGenerated')
 
 @section('panelcontent')
+<div class="centered">
+    <h4>Merchant Id: {{{$details['merchant']['id']}}}</h4>
+    <h4>Merchant Name: {{{$details['merchant']['name']}}}</h4>
+    <h4>Email: {{{$details['merchant']['email']}}}</h4>
+</div>
+
 <div class="centered activation-form-wrapper">
 <ol class="progtrckr">
     <li class="progtrckr-todo">Contact Details</li><!-- This comment is hack to avoid progress bar from becoming discontinuos
