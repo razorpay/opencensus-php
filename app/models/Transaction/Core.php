@@ -2,6 +2,8 @@
 
 namespace Models\Transaction;
 
+use Dashboard;
+
 use EE\Exception\BaseException;
 use EE\Exception\BadRequestException;
 
@@ -74,7 +76,7 @@ class Core
         return array($txn, $cardData);
     }
 
-    protected function saveEntities( $txn)
+    protected function saveEntities($txn)
     {
         (new Card\Repository)->saveOrFail($txn->card);
 
@@ -95,7 +97,7 @@ class Core
         $txn = (new Transaction\Entity)->build($input);
 
         //
-        // Assoicate transaction to card
+        // Associate transaction to card
         //
         $txn->card()->associate($card);
 
@@ -221,18 +223,14 @@ class Core
 
         try
         {
-            $this->callGatewayFunction(
-                    Transaction\Action::CAPTURE, $data);
+            $this->callGatewayFunction(Transaction\Action::CAPTURE, $data);
 
             $this->updateTransactionSuccess($txn, Transaction\Status::CAPTURED);
 
             //
             // Analytics
             //
-            \Dashboard\Transaction::getInstance()
-                                  ->queueRecord(array_merge(
-                                        $txn->toArray(),
-                                        ['merchant_id' => $txn->getMerchantId()]));
+            $this->dashboardQueueRecord($txn);
         }
         catch (BaseException $e)
         {
@@ -267,10 +265,7 @@ class Core
             //
             // Analytics
             //
-            \Dashboard\Transaction::getInstance()
-                                  ->queueRecord(array_merge(
-                                        $txn->toArray(),
-                                        ['merchant_id' => $txn->getMerchantId()]));
+            $this->dashboardQueueRecord($txn);
         }
         catch(BaseException $e)
         {
@@ -437,5 +432,14 @@ class Core
         $txn = $this->txnRepo->findByIdAndMerchantIdOrFailPublic($id, $merchantId);
 
         return $txn;
+    }
+
+    protected function dashboardQueueRecord($txn)
+    {
+        $data = array_merge(
+                    $txn->toArray(),
+                    ['merchant_id' => $txn->getMerchantId()]);
+
+        Dashboard\Transaction::getInstance()->queueRecord($data);
     }
 }

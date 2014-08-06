@@ -64,6 +64,7 @@ class Service extends Base\Service
         {
             return $txn->toArrayPublic();
         });
+
         $txns = $collection->all();
 
         return array('count' => $count, 'data' => $txns);
@@ -140,7 +141,7 @@ class Service extends Base\Service
     public function bankAcsCallback($id, $merchantId, array $input)
     {
         $txn = $this->core->retrieveTransaction($id, $merchantId);
-
+s($input);s('<br />');
         //
         // This field is received back from bank acs.
         // Kinda weird! And it's always null.
@@ -152,5 +153,20 @@ class Service extends Base\Service
         $txn = $this->core->callback($txn, $input);
 
         return $txn->toArrayPublic();
+    }
+
+    public function reconcile($gateway, $input)
+    {
+        foreach ($input as $row)
+        {
+            $entry = (new Gateway\Manager)->mprTranslate($row, $ledger_id);
+
+            $this->reconcileEntry($entry);
+        }
+    }
+
+    public function reconcileEntry($input)
+    {
+
     }
 }
