@@ -120,7 +120,7 @@ class Service extends Base\Service
         $plan = (new Pricing\Repository)->getPricingPlanByIdOrFailPublic(
                                             $input['pricing_plan_id']);
 
-        $merchant->setPricingPlan($id);
+        $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->merchantRepository->saveOrFail($merchant);
 
@@ -147,14 +147,14 @@ class Service extends Base\Service
 
         $terminal = (new Terminal\Core)->create($input, $merchant);
 
-        return $terminal;
+        return $terminal->toArray();
     }
 
     public function getTerminal($id)
     {
         $merchant = $this->merchantRepository->findOrFailPublic($id);
 
-        $terminal = (new Terminal\Repository)->find($id);
+        $terminal = (new Terminal\Repository)->getTerminalByMerchantId($id);
 
         if ($terminal === null)
         {
