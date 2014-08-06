@@ -46,6 +46,10 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
         $plans[self::COUNT] = 0;
         $plans['entity'] = 'collection';
         $plans['data'] = array();
+
+        if ($this->count() === 0)
+            return $plans;
+
         $data = & $plans['data'];
 
         $first = true;
