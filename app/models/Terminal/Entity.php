@@ -38,17 +38,17 @@ class Entity extends Base\UniqueIdEntity
         $this->attribute[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password);
     }
 
-    protected function getMerchantId()
+    public function getMerchantId()
     {
         return $this->attribute[self::MERCHANT_ID];
     }
 
-    protected function getGatewayMerchantId()
+    public function getGatewayMerchantId()
     {
         return $this->attribute[self::GATEWAY_MERCHANT_ID];
     }
 
-    protected function getGatewayTerminalPassword()
+    public function getGatewayTerminalPassword()
     {
         return Crypt::decrypt($this->attribute[self::GATEWAY_TERMINAL_PASSWORD]);
     }

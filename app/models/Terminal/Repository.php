@@ -21,7 +21,7 @@ class Repository extends Base\Repository
 
         // When a merchant can have multiple terminals,
         // change this to get
-        return $query->find();
+        return $query->first();
     }
 
     public function getTerminalByMerchantId($id)
