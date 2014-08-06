@@ -106,9 +106,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS =
         'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
 
-    const BAD_REQUEST_PRICING_NO_PLAN_ASSIGNED =
-        'The merchant does not have any pricing plan assigned';
-
     const BAD_REQUEST_PRICING_RATE_NOT_DEFINED =
         'One of percent_rate and fixed_rate must be present';
 
@@ -123,9 +120,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_GATEWAY_TERMINAL_ID_EXISTS_FOR_MERCHANT =
         'A terminal id has already been assigned to this merchant';
-
-    const BAD_REQUEST_NO_TERMINAL_ASSIGNED_TO_MERCHANT =
-        'The merchant has no terminal id assigned to him';
 
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS =
         'A record with same gateway merchant id (mid) exists';
