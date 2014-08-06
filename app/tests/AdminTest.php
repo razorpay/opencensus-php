@@ -19,6 +19,7 @@ class AdminTest extends IntegrationTestCase
         {
             $this->admin = Models\DAL\Admin::firstorfail();
             $this->merchant_details = Models\DAL\MerchantDetails::firstorfail();
+            $this->merchant = $this->merchant_details->merchant;
 
         }
         catch(Exception $e)
@@ -26,9 +27,10 @@ class AdminTest extends IntegrationTestCase
             $this->admin = $this->createEntity('admin');
             $this->merchant = $this->createEntity('merchant', array('id'=>static::generateRandomString(24), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
             $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
+            
+            if((new Models\Service\Merchant)->confirm($this->merchant->confirm_token) === false)
+            $this->fail('Failure in merchant activation, check merchant tests to ensure it is working');
         }
-
-        $this->merchant = $this->merchant_details->merchant;
     }
 
     /**
@@ -62,12 +64,6 @@ class AdminTest extends IntegrationTestCase
 
         $this->assertEquals(URL::action('AdminController@getPricingList'),$this->browser->getLocation());
 
-        //Check Opening of pricing rules from price list
-        $this->browser
-            ->click(l::linkContaining('View/Edit Plan Rules'))   
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText("Plan Name:");
 
         //Tests creation of new plan
         $this->browser
@@ -96,6 +92,15 @@ class AdminTest extends IntegrationTestCase
             ->waitForPageToLoad(2000);
 
         $this->assertBodyHasText("Rule Added successfully");
+
+        //Check Opening of pricing rules from price list
+        $this->browser
+            ->open(URL::action('AdminController@getPricingList'))
+            ->waitForPageToLoad(2000)
+            ->click(l::linkContaining('View/Edit Plan Rules'))   
+            ->waitForPageToLoad(2000);
+
+        $this->assertBodyHasText("Plan Name:");
     }
 
     /**
@@ -108,7 +113,7 @@ class AdminTest extends IntegrationTestCase
             ->click(l::linkContaining('Merchants'))   
             ->waitForPageToLoad(2000);                      // Wait for page to load
 
-        $this->assertEquals(URL::action('AdminController@getMerchants'),$this->browser->getLocation());
+        $this->assertEquals(URL::action('AdminController@getMerchantList'),$this->browser->getLocation());
 
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText($this->merchant->email);
@@ -120,7 +125,7 @@ class AdminTest extends IntegrationTestCase
     public function testLoginAsMerchant()
     {   
         $this->browser
-            ->open(URL::action('AdminController@getMerchants'))
+            ->open(URL::action('AdminController@getMerchantList'))
             ->waitForPageToLoad(2000);
 
         $loginAsMerchantLink = $this->browser->getAttribute('link=Login as Merchant@href');
@@ -133,18 +138,85 @@ class AdminTest extends IntegrationTestCase
     }
 
     /**
-     * Tests chekcing of merchant details by admin
+     * Tests checking merchnat status and locking/unlocking merchant form
      */
-    public function testMerchantDetails()
+    public function testMerchantStatus()
     {   
         $this->browser
-            ->open(URL::action('AdminController@getMerchants'))
+            ->open(URL::action('AdminController@getMerchantList'))
             ->waitForPageToLoad(2000)
-            ->click(l::linkContaining('Merchant Details'))
+            ->click(l::linkContaining('Manage Merchant'))
+            ->waitForPageToLoad(2000);
+
+        $this->assertBodyHasText($this->merchant->id);
+
+        $this->assertEquals(URL::action('AdminController@getMerchant', $this->merchant->id),$this->browser->getLocation());
+
+        $this->browser
+            ->click(l::linkContaining('Lock Form for user'))
+            ->waitForPageToLoad(2000);
+
+        $this->assertBodyHasText('Merchant activation form locked Successfully!');
+
+        $this->browser
+            ->click(l::linkContaining('Unlock Form for user'))
+            ->waitForPageToLoad(2000);
+
+        $this->assertBodyHasText('Merchant activation form unlocked Successfully!');
+
+        $this->browser
+            ->click(l::linkContaining('Check Activation Form Details'))
             ->waitForPageToLoad(2000);
 
         $this->assertEquals(URL::to('/admin/merchant/'.$this->merchant->id.'/details'),$this->browser->getLocation());
+    }
 
+    public function testAddMerchantPricing()
+    {   
+        // Check opening of pricing page from dashboard
+        $this->browser
+            ->open(URL::action('AdminController@getMerchant', $this->merchant->id))
+            ->click(l::linkContaining('Modify Pricing Plan'))   
+            ->waitForPageToLoad(2000);                      // Wait for page to load
+
+        $this->assertEquals(URL::action('AdminController@getMerchantPricing', $this->merchant->id),$this->browser->getLocation());
+
+        $this->browser
+            ->select(l::IdOrName('pricing_plan_id'), 'index=1')
+            ->click(l::css('.btn-primary'))
+            ->waitForPageToLoad(2000);
+
+        $this->assertBodyHasText('Pricing added successfully');
+    }
+
+    public function testAddMerchantTerminal()
+    {   
+        // Check opening of pricing page from dashboard
+        $this->browser
+            ->open(URL::action('AdminController@getMerchant', $this->merchant->id))
+            ->click(l::linkContaining('Add Terminal'))   
+            ->waitForPageToLoad(2000);                      // Wait for page to load
+
+        $this->assertEquals(URL::action('AdminController@getMerchantTerminal', $this->merchant->id),$this->browser->getLocation());
+
+        $this->browser
+            ->type(l::IdOrName('gateway_merchant_id'), static::generateRandomString(10))
+            ->type(l::IdOrName('gateway_terminal_id'), static::generateRandomString(10))
+            ->type(l::IdOrName('gateway_terminal_password'), 'testing')
+            ->type(l::IdOrName('gateway_terminal_password_confirmation'), 'testing')
+            ->click(l::css('.btn-primary'))
+            ->waitForPageToLoad(2000);
+
+        $this->assertBodyHasText('Terminal added successfully');
+    }
+
+
+    /**
+     * Tests checking of merchant activation details by admin
+     */
+    public function testMerchantActivationDetails()
+    {   
+        
         //Browsing the whole form
         $this->browser
             ->open(URL::to('/admin/merchant/'.$this->merchant->id.'/details'))
@@ -163,56 +235,38 @@ class AdminTest extends IntegrationTestCase
     }
 
     /**
-     * Tests checking merchnat status and locking/unlocking merchant form
-     */
-    public function testMerchantStatus()
-    {   
-        $this->browser
-            ->open(URL::action('AdminController@getMerchants'))
-            ->waitForPageToLoad(2000)
-            ->click(l::linkContaining('Manage Status'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText($this->merchant->id);
-
-        $this->browser
-            ->click(l::linkContaining('Lock Form for user'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText('Merchant activation form locked Successfully!');
-
-        $this->browser
-            ->click(l::linkContaining('Unlock Form for user'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText('Merchant activation form unlocked Successfully!');
-    }
-
-    /**
      * tests activating a new merchant
      */
 
     public function testMerchantActivation()
     {   
         //Registers merchant in API so that he can be activated
-        if((new Models\Service\Merchant)->confirm($this->merchant->confirm_token) === false)
-            $this->fail('Failure in merchant activation, check merchant test to ensure it is working');
-
+        
         $this->browser
             ->open(URL::to('admin/merchant/'.$this->merchant->id))
             ->waitForPageToLoad(2000)
             ->click(l::linkContaining('Activate Merchant'))
-            ->waitForPageToLoad(2000)
-            ->type(l::IdOrName('tid'), '12111')
-            ->type(l::IdOrName('tid_password'), '123456')
-            ->type(l::IdOrName('tid_password_confirmation'), '123456')
-            ->select(l::IdOrName('pricing_plan'), 'index=1')
-            ->click(l::css('.btn-primary'))
             ->waitForPageToLoad(2000);
+
+        $this->browser->getConfirmation();
 
         $this->assertBodyHasText('Merchant activated successfully');
     }
 
+    public function testMerchantDeactivation()
+    {   
+        //Registers merchant in API so that he can be activated
+        
+        $this->browser
+            ->open(URL::to('admin/merchant/'.$this->merchant->id))
+            ->waitForPageToLoad(2000)
+            ->click(l::linkContaining('Deactivate Merchant'))
+            ->waitForPageToLoad(2000);
+
+        $this->browser->getConfirmation();
+
+        $this->assertBodyHasText('Merchant deactivated successfully');
+    }
     /**
      * Tests Change Password
      */

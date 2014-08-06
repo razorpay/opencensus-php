@@ -33,9 +33,9 @@
                 <label for="gateway_terminal_id">TID:</label>
                 <input type="text" class="form-control" name="gateway_terminal_id" placeholder="TID"/>
                 <label for="gateway_terminal_password">TID Password:</label>
-                <input type="text" class="form-control" name="gateway_terminal_password" placeholder="TID Password"/>
+                <input type="password" class="form-control" name="gateway_terminal_password" placeholder="TID Password"/>
                 <label for="gateway_terminal_password_confirmation">Confirm TID Password:</label>
-                <input type="text" class="form-control" name="gateway_terminal_password_confirmation" placeholder="TID Password Confirm"/>
+                <input type="password" class="form-control" name="gateway_terminal_password_confirmation" placeholder="TID Password Confirm"/>
                 <button class="btn btn-primary" type="submit">Submit</button>
                 <input type="hidden" name="_token" value="{{{csrf_token()}}}">
                 </form>
