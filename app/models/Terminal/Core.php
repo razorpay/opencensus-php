@@ -13,7 +13,7 @@ class Core
     {
         $terminal = (new Terminal\Entity)->build($input);
 
-        $terminal->merchant()->associate($terminal);
+        $terminal->merchant()->associate($merchant);
 
         $this->validateNoExistingTerminal($terminal);
 
@@ -28,6 +28,7 @@ class Core
         $params = array(
             Terminal\Entity::MERCHANT_ID => $terminal->getMerchantId());
 
+        sd($params);
         $this->repo = new Terminal\Repository();
 
         $existingTerminals = $this->repo->getTerminalsByParams($params);

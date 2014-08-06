@@ -152,6 +152,8 @@ class Service extends Base\Service
         $merchant = $this->merchantRepository->findOrFailPublic($id);
 
         $terminal = (new Terminal\Core)->create($input, $merchant);
+
+        return $terminal;
     }
 
     public function getTerminal($id)

@@ -8,9 +8,9 @@ use Models\Base;
 
 class Validator extends Base\Validator
 {
-    protected static $addPlanRuleRules = array(
-        Entity::GATEWAY                   => 'required|in:hdfc',
-        Entity::GATEWAY_MERCHANT_ID       => 'required'
+    protected static $createRules = array(
+        Entity::GATEWAY                   => 'required|in:HDFC',
+        Entity::GATEWAY_MERCHANT_ID       => 'required',
         Entity::GATEWAY_TERMINAL_ID       => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD => 'required');
 
