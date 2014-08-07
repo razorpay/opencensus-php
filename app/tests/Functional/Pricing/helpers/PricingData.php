@@ -120,7 +120,6 @@ return [
                 'count' => 3,
                 'entity' => 'collection',
                 'data' => array(
-                    array(),
                     array(
                         'name' => "haha",
                         'entity' => "pricing_plan",
