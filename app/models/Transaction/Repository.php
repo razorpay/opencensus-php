@@ -17,7 +17,7 @@ class Repository extends Base\Repository
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
         'merchant_id'   => 'required',
-        'status'        => 'in:failed,captured,auth,open,refunded,settlement_sent,settled');
+        'status'        => 'in:open,authorized,captured,refunded,failed');
 
     /**
      * Retrieves the transactions from database for a particular merchant.
@@ -38,8 +38,7 @@ class Repository extends Base\Repository
          * Create the query.
          */
         $repo = $this->repo;
-        $query = $repo::where(Transaction\Entity::MERCHANT_ID, '=', $param['merchant_id'])
-                     ->orderBy(Transaction\Entity::UPDATED_AT, 'desc');
+        $query = $repo::where(Transaction\Entity::MERCHANT_ID, '=', $param['merchant_id']);
 
         if (isset($param['from']))
         {

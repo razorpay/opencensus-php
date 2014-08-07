@@ -30,17 +30,8 @@ class Service extends Base\Service
      */
     public function process(array $input)
     {
-        $this->trace->debug(
-            TraceCode::TRANSACTION_NEW_REQUEST,
-            $input);
-
-        list($txn, $cardData) = $this->core->createEntitites($input);
-
-        $this->trace->debug(
-            TraceCode::TRANSACTION_CREATED,
-            $txn->toArray());
-
-        $data = $this->core->process($txn, $cardData);
+        $data = $this->getActionInstance(Transaction\Action::AUTHORIZE)
+                     ->process($input);
 
         //
         // The returned value could be either Transaction
@@ -52,6 +43,56 @@ class Service extends Base\Service
             $data = $data->toArrayPublic();
 
         return $data;
+    }
+
+    /**
+     * Refunds a transaction
+     *
+     * @param  string   $id
+     *
+     * @return Transaction\Entity
+     */
+    public function refund($id)
+    {
+        $txn = $this->getActionInstance(Transaction\Action::REFUND)
+                     ->process($id);
+
+        return $txn->toArrayPublic();
+    }
+
+    /**
+     * Captures a transaction
+     *
+     * @param  string   $id
+     *
+     * @return Transaction\Entity
+     */
+    public function capture($id, $input)
+    {
+        $txn = $this->getActionInstance(Transaction\Action::CAPTURE)
+                    ->process($id, $input);
+
+        return $txn->toArrayPublic();
+    }
+
+    /**
+     * After card enroll, bank redirects to us
+     * and we send it to gateway for further
+     * processing (auth).
+     * Returning from this function implies
+     * 'auth' is successful.
+     *
+     * @param  array  $input Contains fields provided
+     *                       by bank
+     *
+     * @return Transaciton\Entity
+     */
+    public function bankAcsCallback($id, array $input)
+    {
+        $data = $this->getActionInstance(Transaction\Action::AUTHORIZE)
+                     ->callback($id, $input);
+
+        return $txn->toArrayPublic();
     }
 
     public function retrieveMultiple(array $input)
@@ -77,84 +118,6 @@ class Service extends Base\Service
         return $txn->toArrayPublic();
     }
 
-    /**
-     * Refunds a transaction
-     *
-     * @param  string   $id
-     * @param  integer  $merchantId
-     * @return Transaction\Entity
-     */
-    public function refund($id)
-    {
-        Transaction\Entity::verifyIdAndStripSign($id);
-
-        $txn = (new Transaction\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
-
-        //
-        // Don't continue if already refunded
-        //
-        if ($txn->isRefunded())
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED);
-        }
-
-        if ($txn->isCaptured() === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
-        }
-
-        $txn = $this->core->refund($txn);
-
-        return $txn->toArrayPublic();
-    }
-
-    /**
-     * Captures a transaction
-     *
-     * @param  string   $id
-     * @param  integer  $merchantId
-     * @return Transaction\Entity
-     */
-    public function capture($id, $input)
-    {
-        $txn = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
-
-        $txn = $this->core->capture($txn, $input);
-
-        return $txn->toArrayPublic();
-    }
-
-    /**
-     * After card enroll, bank redirects to us
-     * and we send it to gateway for further
-     * processing (auth).
-     * Returning from this function implies
-     * 'auth' is successful.
-     *
-     * @param  array  $input Contains fields provided
-     *                       by bank
-     *
-     * @return Transaciton\Entity
-     */
-    public function bankAcsCallback($id, array $input)
-    {
-        $txn = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
-
-        //
-        // This field is received back from bank acs.
-        // Kinda weird! And it's always null.
-        //
-        unset($input['csrf']);
-
-        $input['txn'] = $txn->toArray();
-
-        $txn = $this->core->callback($txn, $input);
-
-        return $txn->toArrayPublic();
-    }
-
     public function reconcile($gateway, $input)
     {
         foreach ($input as $row)
@@ -168,5 +131,17 @@ class Service extends Base\Service
     public function reconcileEntry($input)
     {
 
+    }
+
+    protected function getActionInstance($action)
+    {
+        $bindings = array(
+            'merchant'  => $this->merchant,
+            'core'      => $this->core,
+            'trace'     => $this->trace);
+
+        $class = 'Models\Transaction\\'.ucfirst($action);
+
+        return new $class($this->merchant, $this->core, $this->trace);
     }
 }

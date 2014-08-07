@@ -195,6 +195,24 @@ class Validator extends Base\Validator
         }
     }
 
+    public static function refundValidate($txn)
+    {
+        //
+        // Don't continue if already refunded
+        //
+        if ($txn->isRefunded())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED);
+        }
+
+        if ($txn->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
+        }
+    }
+
     public static function captureValidate($txn, $input)
     {
         self::failIfCaptured($txn);
