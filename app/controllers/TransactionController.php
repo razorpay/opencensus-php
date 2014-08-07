@@ -21,7 +21,7 @@ class TransactionController extends BaseController
         $this->transaction = new Transaction\Service($this->merchant);
     }
 
-    public function getTxnById($id)
+    public function getTransaction($id)
     {
         $txn = $this->transaction->retrieveByIdAndMerchantId(
                                         $id, $this->merchant->getKey());
@@ -32,7 +32,7 @@ class TransactionController extends BaseController
     /**
      * Retrieves transaction details
      */
-    public function getMultipleTxn()
+    public function getTransactions()
     {
         $input = Input::all();
 
@@ -46,7 +46,7 @@ class TransactionController extends BaseController
     /**
      * Create a new transaction
      */
-    public function postIndex()
+    public function postCreateTransaction()
     {
         $input = Input::all();
 

@@ -28,7 +28,7 @@ Route::group(array('before' => 'auth.public'), function()
     $method = URL::TXN_CREATE_METHOD;
     Route::$method(
         URL::TXN_CREATE_URL,
-        'TransactionController@postIndex');
+        'TransactionController@postCreateTransaction');
 
     $method = URL::TXN_JSONP_METHOD;
     Route::$method(
@@ -41,11 +41,11 @@ Route::group(array('before' => 'auth.private'), function()
     $method = URL::TXN_RETRIEVE_METHOD;
     Route::$method(
         URL::TXN_RETRIEVE_BY_ID_URL,
-        'TransactionController@getTxnById');
+        'TransactionController@getTransaction');
 
     Route::$method(
         URL::TXN_RETRIEVE_MULTIPLE_URL,
-        'TransactionController@getMultipleTxn');
+        'TransactionController@getTransactions');
 
     $method = URL::TXN_REFUND_METHOD;
     Route::$method(
