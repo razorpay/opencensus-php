@@ -14,11 +14,13 @@ class Service extends Base\Service
 {
     protected $txn;
     protected $trace;
+    protected $merchant;
 
-    public function __construct()
+    public function __construct($merchant = null)
     {
         parent::__construct();
 
+        $this->merchant = $merchant;
         $this->core = new Transaction\Core();
         $this->trace = Trace::getInstance();
     }
@@ -54,8 +56,6 @@ class Service extends Base\Service
 
     public function retrieveMultiple(array $input)
     {
-        $txn = new Transaction\Entity;
-
         $txns = (new Transaction\Repository)->fetch($input);
 
         $count = count($txns);
@@ -70,9 +70,9 @@ class Service extends Base\Service
         return array('count' => $count, 'data' => $txns);
     }
 
-    public function retrieveById($id, $merchantId)
+    public function retrieveByIdAndMerchantId($id, $merchantId)
     {
-        $txn = $this->core->retrieveTransaction($id, $merchantId);
+        $txn = $this->core->retrieveByIdAndMerchantId($id, $merchantId);
 
         return $txn->toArrayPublic();
     }
@@ -82,13 +82,13 @@ class Service extends Base\Service
      *
      * @param  string   $id
      * @param  integer  $merchantId
-     * @return DAL\Transaction
+     * @return Transaction\Entity
      */
-    public function refund($id, $merchantId)
+    public function refund($id)
     {
         Transaction\Entity::verifyIdAndStripSign($id);
 
-        $txn = (new Transaction\Repository)->findByIdAndMerchantIdOrFailPublic($id, $merchantId);
+        $txn = (new Transaction\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
 
         //
         // Don't continue if already refunded
@@ -115,11 +115,11 @@ class Service extends Base\Service
      *
      * @param  string   $id
      * @param  integer  $merchantId
-     * @return DAL\Transaction
+     * @return Transaction\Entity
      */
-    public function capture($id, $merchantId, $input)
+    public function capture($id, $input)
     {
-        $txn = $this->core->retrieveTransaction($id, $merchantId);
+        $txn = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
 
         $txn = $this->core->capture($txn, $input);
 
@@ -136,12 +136,12 @@ class Service extends Base\Service
      * @param  array  $input Contains fields provided
      *                       by bank
      *
-     * @return DAL\Transaciton
+     * @return Transaciton\Entity
      */
-    public function bankAcsCallback($id, $merchantId, array $input)
+    public function bankAcsCallback($id, array $input)
     {
-        $txn = $this->core->retrieveTransaction($id, $merchantId);
-s($input);s('<br />');
+        $txn = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+
         //
         // This field is received back from bank acs.
         // Kinda weird! And it's always null.

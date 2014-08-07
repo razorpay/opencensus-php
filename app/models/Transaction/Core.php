@@ -7,7 +7,7 @@ use Dashboard;
 use EE\Exception\BaseException;
 use EE\Exception\BadRequestException;
 
-use Gateway\GatewayManager;
+use Models\Gateway;
 
 use Models\Card;
 use Models\Ledger;
@@ -53,7 +53,7 @@ class Core
         //
         // Creates card entity. But since we don't store
         // number and cvv for now, we get back a card data
-        // array contianing DAL\Card with number and cvv
+        // array contianing Card\Entity with number and cvv
         //
         $cardCore = new Card\Core();
 
@@ -174,10 +174,10 @@ class Core
      * Returning from this function implies
      * 'auth' is successful.
      *
-     * @param  Transaction\Entity $txn   Txn dal
-     * @param  array           $input contains fields provided
-     *                                by bank
-     * @return Transaction\Entity        Updated txn dal
+     * @param  Transaction\Entity   $txn   Txn entity
+     * @param  array                $input contains fields provided
+     *                                     by bank
+     * @return Transaction\Entity          Updated txn entity
      */
     public function callback(
         Transaction\Entity $txn,
@@ -410,7 +410,7 @@ class Core
     }
 
     /**
-     * Responsible for actually calling the gateway function
+     * Responsible for calling the gateway function
      *
      * @param  string $action refund/capture etc.
      * @param  array  $input  Relevant input for the corresponding
@@ -420,16 +420,24 @@ class Core
      */
     public function callGatewayFunction($action, array $input)
     {
-        $data = (new GatewayManager)->$action($input);
-
-        return $data;
+        //$terminal = (Terminal\Repository)->findByMerchantId($input[])
+        return Gateway::call($action, $input);
     }
 
-    public function retrieveTransaction($id, $merchantId)
+    public function retrieveByIdAndMerchantId($id, $merchantId)
     {
         Transaction\Entity::verifyIdAndStripSign($id);
 
-        $txn = $this->txnRepo->findByIdAndMerchantIdOrFailPublic($id, $merchantId);
+        $txn = $this->txnRepo->findByIdAndMerchantId($id, $merchantId);
+
+        return $txn;
+    }
+
+    public function retrieveById($id)
+    {
+        Transaction\Entity::verifyIdAndStripSign($id);
+
+        $txn = $this->txnRepo->findOrFail($id);
 
         return $txn;
     }
