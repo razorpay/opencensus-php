@@ -45,6 +45,18 @@ class Admin extends Service
         return DAL\Merchant::get()->toArray();
     }
 
+    public function listPendingActivations()
+    {
+        $merchants_submitted = DAL\MerchantDetails::with('merchant')->where('submitted', '=', '1')->get();
+
+        $merchants_submitted_inactive = $merchants_submitted->filter(function($merchant_detail)
+        {
+            return ($merchant_detail->merchant->isActive() === false);
+        });
+
+        return $merchants_submitted_inactive->toArray();
+    }
+
     public function getAdmins()
     {
         return DAL\Admin::get()->toArray();
@@ -124,6 +136,7 @@ class Admin extends Service
         $response = array(
             'steps_finished'    => json_decode($merchant_details['steps_finished'], true),
             'locked'            => $merchant_details['locked'],
+            'submitted'         => $merchant_details['submitted'],
             'merchant'          => $merchant->toArray()
         );
         
@@ -233,7 +246,7 @@ class Admin extends Service
 
         $details = $this->fetchMerchantDetails($id);
 
-        if(in_array(5, $details['steps_finished'])===false)
+        if((int)$details['submitted'] === 0)
         {
             return array('Activation form has not been submitted by merchant yet.');
         }

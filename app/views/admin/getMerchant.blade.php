@@ -44,14 +44,14 @@
             <br/>
 
             <h4>Activation Status:
-            @if(in_array(5, $details['steps_finished']) and (int)$details['merchant']['live'] === 0)
+            @if((int)$details['submitted'] === 1 and (int)$details['merchant']['live'] === 0)
                 Inactive <br/>
                     <a
                     href="{{{$details['merchant']['id']}}}/activate?_token={{{csrf_token()}}}"
                     onclick="if (confirm('Are you sure you want to activate this merchant? (Ensure you have checked all his details)')){return true;} return false;">
                     Activate Merchant
                     </a>
-            @elseif(in_array(5, $details['steps_finished']) === false)
+            @elseif((int)$details['submitted'] === 0)
                 Form hasn't been submitted yet by merchant for activation
             @else
                     Active <br/>
