@@ -49,3 +49,4 @@ Models\DAL\MerchantDetails:
     promoter_pan_url: $string
     address_proof_url: $string
     steps_finished: "[1,3,5]"
+    submitted: 1

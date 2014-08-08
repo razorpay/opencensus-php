@@ -48,7 +48,11 @@ class AdminTest extends IntegrationTestCase
         // Asserts if at the end the user is at the index
         $this->assertEquals(URL::action('AdminController@getIndex'),$this->browser->getLocation());
 
-        $this->assertBodyHasText("#YOLO");
+        $this->browser
+            ->click(l::linkContaining('Manage Merchant'))
+            ->waitForPageToLoad(2000);
+
+        $this->assertBodyHasText($this->merchant->id);
     }
 
     /**
