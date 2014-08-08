@@ -167,7 +167,10 @@ class AdminController extends BaseController
 
     public function getIndex()
     {
-        return View::make('admin.getIndex');
+        $activations = (new Service\Admin)->listPendingActivations();
+
+        return View::make('admin.getIndex')
+                    ->with('activations', $activations);
     }
 
     public function getMerchantList()

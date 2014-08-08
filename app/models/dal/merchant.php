@@ -163,4 +163,9 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
     {
         return $this->email;
     }
+
+    public function isActive()
+    {
+        return ((int)$this->live === 1);
+    }
 }
