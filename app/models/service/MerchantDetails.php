@@ -28,42 +28,47 @@ class MerchantDetails extends Service
             return $error;
         }
 
-        //Check if already finished
-        $steps_finished = json_decode($merchant_details->steps_finished, true);
-        
-        $missing_steps = Manager\MerchantDetails::validateActivation($steps_finished);
-
-        if (empty($missing_steps))
-        {   
-            if(in_array(5, $steps_finished) === false)
-            {
+        if((int)$merchant_details->submitted === 0)
+        {
+            //Check if already finished
+            $steps_finished = json_decode($merchant_details->steps_finished, true);
             
-                $steps_finished[] = 5;
-                
-                $data['steps_finished'] = json_encode($steps_finished);
+            $missing_steps = Manager\MerchantDetails::validateActivation($steps_finished);
+
+            if (empty($missing_steps))
+            {
+                if(in_array(5, $steps_finished) === false)
+                {    
+                    $steps_finished[] = 5;
+                    
+                    $data['steps_finished'] = json_encode($steps_finished);
+                }
+
+                $data['submitted'] = 1;
 
                 //Updating the model
                 $merchant_details->update($data);
             }
-        }
-        else
-        {
-            foreach($missing_steps as $step)
+            else
             {
-                if($step != 4)
+                foreach($missing_steps as $step)
                 {
-                    $show = $step+1;
-                    $error[] = 'Step '.$show.' has not been saved or contains errors. Please save all steps before submission.';
-                }
-                else
-                {
-                    if(empty($this->checkUploads()) == false)
+                    if($step != 4)
                     {
-                       $error[] = 'Please upload all documents in Step 5 before submitting.';
+                        $show = $step+1;
+                        $error[] = 'Step '.$show.' has not been saved or contains errors. Please save all steps before submission.';
+                    }
+                    else
+                    {
+                        if(empty($this->checkUploads()) == false)
+                        {
+                           $error[] = 'Please upload all documents in Step 5 before submitting.';
+                        }
                     }
                 }
             }
         }
+        
         return $error;
     }
 

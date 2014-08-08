@@ -45,6 +45,7 @@ class MerchantDetails extends DAL
         'promoter_pan_url',
         'address_proof_url',
         'steps_finished',
+        'submitted',
         'locked'
     );
 
@@ -84,6 +85,7 @@ class MerchantDetails extends DAL
         'promoter_pan_url',
         'address_proof_url',
         'steps_finished',
+        'submitted',
         'locked'
     );
     
@@ -145,16 +147,18 @@ class MerchantDetails extends DAL
         }
 
         $steps_finished = $data['steps_finished'];
-
+        $submitted = $data['submitted'];
         $locked = $data['locked'];
 
         unset($data['steps_finished']);
+        unset($data['submitted']);
         unset($data['locked']);
 
         return array(
             'data' =>  $data,
             'files' => $files,
             'steps_finished' => $steps_finished,
+            'submitted' => $submitted,
             'locked' => $locked
         );
     }

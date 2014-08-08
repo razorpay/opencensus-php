@@ -88,6 +88,8 @@ class CreateMerchantDetails extends Migration {
 
             $table->string('steps_finished')->default('[]');
 
+            $table->boolean('submitted')->default(0);
+
             $table->boolean('locked')->default(0);
 
             $table->integer('created_at');
