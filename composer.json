@@ -9,7 +9,8 @@
 		"aws/aws-sdk-php": "~2.6.2",
 		"aws/aws-sdk-php-laravel": "1.*",
 		"doctrine/cache": "1.*",
-		"ollieread/multiauth": "dev-master"
+		"ollieread/multiauth": "dev-master",
+		"barryvdh/laravel-debugbar": "1.*"
 	},
     "require-dev": {
         "raveren/kint": ">=0.9",
