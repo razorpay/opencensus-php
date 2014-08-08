@@ -70,6 +70,8 @@ class TraceWriter extends Logger
         }
 
         $this->pushProcessor(new WebProcessor);
+
+        $this->pushProcessor(new CloudInstanceDataProcessor);
     }
 
     protected function pushIntrospectionProcessor()
