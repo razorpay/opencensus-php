@@ -9,7 +9,7 @@ use Requests;
  */
 class CloudInstanceDataProcessor
 {
-    $attributes = array(
+    protected $attributes = array(
         'ami-id',
         'availability-zone',
         'instance-id',
@@ -41,7 +41,7 @@ class CloudInstanceDataProcessor
     {
         $data = array();
 
-        exec('ec2metadata', $output, $status);
+        exec('ec2metadata 2> /dev/null', $output, $status);
 
         if ($status === 0)
             return $data;
@@ -62,7 +62,7 @@ class CloudInstanceDataProcessor
 
             if (in_array($pair[0], $this->attributes))
             {
-                $relevantData[$pair[0]] => $relevantData[$pair[1]];
+                $relevantData[$pair[0]] = $pair[1];
             }
         }
 

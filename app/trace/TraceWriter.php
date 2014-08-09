@@ -78,7 +78,7 @@ class TraceWriter extends Logger
     {
         $skipClassesPartials = array('Trace\\', 'Monolog\\');
 
-        $processor = new Processor\IntrospectionProcessor(Logger::DEBUG, $skipClassesPartials);
+        $processor = new Processor\IntrospectionProcessor(static::DEBUG, $skipClassesPartials);
 
         $this->pushProcessor($processor);
     }
@@ -105,7 +105,7 @@ class TraceWriter extends Logger
 
         $stream->setFormatter($jsonFormatter);
 
-        $minLevel = $this->debug ? Logger::DEBUG : Logger::INFO;
+        $minLevel = $this->debug ? static::DEBUG : static::INFO;
 
         $filter = new Handler\FilterHandler($stream, $minLevel);
 
