@@ -154,7 +154,7 @@ class Service extends Base\Service
     {
         $merchant = $this->merchantRepository->findOrFailPublic($id);
 
-        $terminal = (new Terminal\Repository)->getTerminalByMerchantId($id);
+        $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
         if ($terminal === null)
         {

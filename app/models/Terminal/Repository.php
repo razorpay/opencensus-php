@@ -3,12 +3,13 @@
 namespace Models\Terminal;
 
 use Models\Base;
+use Models\Terminal;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'Terminal';
 
-    public function getTerminalsByParams($params)
+    public function getByParams($params)
     {
         $repo = $this->repo;
 
@@ -24,10 +25,18 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
-    public function getTerminalByMerchantId($id)
+    public function getByMerchantId($id)
     {
         $repo = $this->repo;
 
-        return $repo::where(Entity::MERCHANT_ID, '=', $id)->first();
+        return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $id)->first();
+    }
+
+    public function getByGatewayTerminalId($gatewayTerminalId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
+                    ->findOrFail();
     }
 }

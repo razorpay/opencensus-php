@@ -67,4 +67,11 @@ class Entity extends Base\UniqueIdEntity
     {
         return $this->belongsTo('Models\Merchant\Entity');
     }
+
+    public function toArrayWithPassword()
+    {
+        $terminal = $this->toArray();
+
+        $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $this->getGatewayTerminalPassword();
+    }
 }

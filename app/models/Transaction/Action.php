@@ -5,6 +5,7 @@ namespace Models\Transaction;
 use Dashboard;
 use Models\Gateway;
 use Models\Merchant;
+use Models\Terminal;
 use Models\Transaction;
 use Trace\Trace;
 
@@ -37,6 +38,8 @@ class Action
         $this->trace = $trace;
 
         $this->repo = new Transaction\Repository;
+
+        $this->terminal = $this->getTerminal();
     }
 
     protected function trace($traceCode, $level = Trace::INFO)
@@ -74,8 +77,24 @@ class Action
      */
     protected function callGatewayFunction($action, array $input)
     {
-        //$terminal = (Terminal\Repository)->findByMerchantId($input[])
+        $input['terminal'] = $this->terminal->toArrayWithPassword();
+
         return Gateway::call($action, $input);
+    }
+
+    protected function getTerminal()
+    {
+        $repo = new Terminal\Repository;
+
+        $terminal = $repo->getByMerchantId($this->merchant->getKey());
+
+        if ($terminal === null)
+        {
+            throw new \LogicException(
+                'No terminal found for merchant: ' . $this->merchant->getKey());
+        }
+
+        return $terminal;
     }
 
     protected function traceTransactionFailed($error, $traceCode)

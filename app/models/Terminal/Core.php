@@ -30,7 +30,7 @@ class Core
 
         $this->repo = new Terminal\Repository();
 
-        $existingTerminals = $this->repo->getTerminalsByParams($params);
+        $existingTerminals = $this->repo->getByParams($params);
 
         if ($existingTerminals !== null)
         {
@@ -43,7 +43,7 @@ class Core
         $params = array(
             Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId());
 
-        $existingTerminals = $this->repo->getTerminalsByParams($params);
+        $existingTerminals = $this->repo->getByParams($params);
 
         if ($existingTerminals !== null)
         {
