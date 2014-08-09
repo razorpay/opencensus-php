@@ -8,9 +8,13 @@ class Gateway
 {
     protected static $gateway = null;
 
-    public static function call($action, $input)
+    public static function call($action, $input, $mode, $terminal = null)
     {
         $gateway = self::getGatewayInstance();
+
+        $gateway->setTerminal($terminal);
+
+        $gateway->setMode($mode);
 
         return  self::getGatewayInstance()->$action($input);
     }

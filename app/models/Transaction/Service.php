@@ -13,16 +13,18 @@ use Trace\TraceCode;
 class Service extends Base\Service
 {
     protected $txn;
+    protected $mode;
     protected $trace;
     protected $merchant;
 
-    public function __construct($merchant = null)
+    public function __construct($merchant = null, $mode)
     {
         parent::__construct();
 
-        $this->merchant = $merchant;
         $this->core = new Transaction\Core();
+        $this->mode = $mode;
         $this->trace = Trace::getInstance();
+        $this->merchant = $merchant;
     }
 
     /**
@@ -138,10 +140,11 @@ class Service extends Base\Service
         $bindings = array(
             'merchant'  => $this->merchant,
             'core'      => $this->core,
-            'trace'     => $this->trace);
+            'trace'     => $this->trace,
+            'mode'      => $this->mode);
 
         $class = 'Models\Transaction\\'.ucfirst($action);
 
-        return new $class($this->merchant, $this->core, $this->trace);
+        return new $class($this->merchant, $this->core, $this->trace, $this->mode);
     }
 }

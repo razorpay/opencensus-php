@@ -24,18 +24,23 @@ class Action
 
     protected $txn;
 
+    protected $mode;
+
     protected $repo;
 
     public function __construct(
         Merchant\Entity $merchant,
         Transaction\Core $core,
-        Trace $trace)
+        Trace $trace,
+        $mode)
     {
         $this->merchant = $merchant;
 
         $this->core = $core;
 
         $this->trace = $trace;
+
+        $this->mode = $mode;
 
         $this->repo = new Transaction\Repository;
 
@@ -77,9 +82,9 @@ class Action
      */
     protected function callGatewayFunction($action, array $input)
     {
-        $input['terminal'] = $this->terminal->toArrayWithPassword();
+        $terminal = $this->terminal->toArrayWithPassword();
 
-        return Gateway::call($action, $input);
+        return Gateway::call($action, $input, $this->mode, $terminal);
     }
 
     protected function getTerminal()
