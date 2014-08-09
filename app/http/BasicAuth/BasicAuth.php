@@ -34,6 +34,26 @@ class BasicAuth
     private $app = null;
 
     /**
+     * Authentication mode - test, live
+     * @var string
+     */
+    private $mode;
+
+    /**
+     * Authentication type - private, public, app
+     * @var string
+     */
+    private $type;
+
+    /**
+     * Whether an app is doing an authentication
+     * proxy to perform some action on merchant's
+     * behalf
+     * @var boolean
+     */
+    private $proxy;
+
+    /**
      * Laravel request class instance
      * @var [type]
      */
@@ -53,37 +73,81 @@ class BasicAuth
         }
     }
 
-    protected function areCredentialsSet()
+    public function setCredentials()
     {
-        list($id, $pwd) = $this->getCredentials($this->request);
+        $key = $this->request->getUser();
 
-        if (($id === null) or
-            ($pwd === null))
-            return false;
+        $secret = $this->request->getPassword();
 
-        return true;
+        if (($key === null) or
+            ($secret === null))
+            return ApiResponse::httpAuthExpected();
+
+        $this->creds['key'] = $key;
+        $this->creds['secret'] = $secret;
+
+        return $this->checkAndSetMode();
+    }
+
+    public function checkAndSetMode()
+    {
+        $key = $this->getKey();
+
+        // @todo: remove this after infra moves to key labels
+        $this->setMode(Mode::TEST);
+
+        if (($key !== '') and
+            (strlen($key) < 24))
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
+
+        if (substr($key, 0, 4) !== 'rzp_')
+            return;
+
+        $mode = substr($key, 4, 5);
+
+        $modeSupplied = true;
+
+        if ($mode === 'live_')
+        {
+            $this->setMode(Mode::LIVE);
+        }
+        else if ($mode === 'test_')
+        {
+            $this->setMode(Mode::TEST);
+        }
+        else if ($mode === 'appn_')
+        {
+            $this->setMode(Mode::APPN);
+        }
+        else
+        {
+            $modeSupplied = false;
+        }
+
+        if ($modeSupplied)
+        {
+            $this->creds['key'] = substr($key, 9);
+        }
     }
 
 // --------------------- Basic Auths -------------------------------------------
 
     public function privateAuth()
     {
-        if ($this->areCredentialsSet() === false)
-        {
-            return ApiResponse::httpAuthExpected();
-        }
-
-        list($id, $pwd) = $this->getCredentials();
-
-        $response = $this->verifySecret($id, $pwd);
+        $response = $this->verifySecret();
 
         if ($response === true)
+        {
+            $this->setType(Type::PRIVATE_AUTH);
+
             return;
+        }
 
         //
         // @todo: add check for internal IP here
         //
-        if ($this->verifyAppAsProxy($id, $pwd) === true)
+        if ($this->verifyAppAsProxy() === true)
             return;
 
         return $response;
@@ -95,33 +159,19 @@ class BasicAuth
      */
     public function publicAuth()
     {
-        if ($this->areCredentialsSet() === false)
-        {
-            return ApiResponse::httpAuthExpected();
-        }
-
-        list($id, $pwd) = $this->getCredentials();
-
         // @todo: throw error on public auth if
         //        secret is also provided.
-        return $this->verifyPublic($id);
+        return $this->verifyPublic();
     }
 
     public function appAuth()
     {
-        if ($this->areCredentialsSet() === false)
-        {
-            return ApiResponse::httpAuthExpected();
-        }
-
-        list($id, $pwd) = $this->getCredentials();
-
-        if ($id !== '')
+        if ($this->getKey() !== '')
         {
             return ApiResponse::routeNotFound();
         }
 
-        if ($this->verifyApp($pwd) === false)
+        if ($this->verifyApp() === false)
         {
             return ApiResponse::routeNotFound();
         }
@@ -145,23 +195,25 @@ class BasicAuth
      * @param  string   $keySecret
      * @return boolean
      */
-    protected function verifySecret($keyId, $keySecret)
+    protected function verifySecret()
     {
-        $key = $this->fetchKey($keyId);
+        $keyEntity = $this->fetchKey($this->getKey());
 
-        if ($key === null)
+        $secret = $this->getSecret();
+
+        if ($keyEntity === null)
         {
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
         }
 
-        if ($keySecret === '')
+        if ($secret === '')
         {
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
-        $check = $this->matchSecret($keySecret, $key);
+        $check = $this->matchSecret($keyEntity);
 
         if ($check === false)
         {
@@ -169,7 +221,7 @@ class BasicAuth
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
 
-        $this->fetchMerchantOfKey($key);
+        $this->fetchMerchantOfKey($keyEntity);
 
         return true;
     }
@@ -184,13 +236,13 @@ class BasicAuth
      * @param  string  $keyId
      * @return boolean
      */
-    protected function verifyPublic($keyId)
+    protected function verifyPublic()
     {
         //
         // If the key is fetched successfully, then
         // public authentication is essentially successfully.
         //
-        $key = $this->fetchKey($keyId);
+        $key = $this->fetchKey($this->getKey());
 
         if ($key === null)
         {
@@ -199,6 +251,8 @@ class BasicAuth
         }
 
         $this->fetchMerchantOfKey($key);
+
+        $this->setType(Type::PUBLIC_AUTH);
     }
 
     /**
@@ -211,20 +265,20 @@ class BasicAuth
      * authenticating as that merchant and trying to
      * perform operations related to that merchant.
      *
-     * Used for public authentication
+     * Used for private authentication fails
      *
-     * @param  string  $merchantId
-     * @param  string  $secret
      * @return boolean
      */
-    protected function verifyAppAsProxy($merchantId, $secret)
+    protected function verifyAppAsProxy()
     {
-        $verify = $this->verifyAppSecret($secret);
+        $verify = $this->verifyAppSecret();
 
         if ($verify === false)
         {
             return false;
         }
+
+        $merchantId = $this->getKey();
 
         $this->merchant = (new Merchant\Repository)->find($merchantId);
 
@@ -233,21 +287,30 @@ class BasicAuth
             return false;
         }
 
+        $this->setMode(Type::APP_AUTH);
+
         return true;
     }
 
-    protected function verifyApp($secret)
+    protected function verifyApp()
     {
+        $secret = $this->getSecret();
         $verify = $this->verifyAppSecret($secret);
 
         if ($verify === false)
         {
             return false;
         }
+
+        $this->setMode(Type::APP_AUTH);
+
+        return true;
     }
 
-    protected function verifyAppSecret($secret)
+    protected function verifyAppSecret()
     {
+        $secret = $this->getSecret();
+
         $apps = \Config::get('applications');
 
         $verify = false;
@@ -273,9 +336,19 @@ class BasicAuth
 
 // --------------------- Getters -----------------------------------------------
 
-    public function getKey()
+    protected function getKey()
     {
-        return $this->key;
+        return $this->creds['key'];
+    }
+
+    private function getSecret()
+    {
+        return $this->creds['secret'];
+    }
+
+    public function getMode()
+    {
+        return $this->mode;
     }
 
     public function getMerchant()
@@ -293,16 +366,21 @@ class BasicAuth
         return $this->key->getKey();
     }
 
-    protected function getCredentials()
+// --------------------- Getters Ends ------------------------------------------
+
+// --------------------- Setters -----------------------------------------------
+
+    protected function setMode($mode)
     {
-        $id = $this->request->getUser();
-
-        $pwd = $this->request->getPassword();
-
-        return array($id, $pwd);
+        $this->mode = $mode;
     }
 
-// --------------------- Getters Ends ------------------------------------------
+    protected function setType($type)
+    {
+        $this->type = $type;
+    }
+
+// --------------------- Setters Ends ------------------------------------------
 
     protected function fetchKey($keyId)
     {
@@ -320,9 +398,11 @@ class BasicAuth
         return $this->merchant;
     }
 
-    protected function matchSecret($keySecret, $key)
+    protected function matchSecret($key)
     {
-        return Hash::check($keySecret, $key->getSecret());
+        $secret = $this->getSecret();
+
+        return Hash::check($secret, $key->getSecret());
     }
 
     protected function matchAppSecret($app, $secret)

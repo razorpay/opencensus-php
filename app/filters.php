@@ -11,9 +11,14 @@
 |
 */
 
-App::before(function($request)
+App::before(function()
 {
     return BasicAuth::checkHttps();
+});
+
+App::before(function()
+{
+    return BasicAuth::setCredentials();
 });
 
 /*
