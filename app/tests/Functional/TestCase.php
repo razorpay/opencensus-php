@@ -79,7 +79,7 @@ class TestCase extends ParentTestCase
     protected function setupBasicAuthParams()
     {
         $this->auth = array(
-               'PHP_AUTH_USER' => 'd9c6bf091a1a64cb5678d8c1',
+               'PHP_AUTH_USER' => 'rzp_test_d9c6bf091a1a64cb5678d8c1',
                'PHP_AUTH_PW' => 'thisissupersecret');
     }
 
