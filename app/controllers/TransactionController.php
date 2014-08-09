@@ -18,7 +18,7 @@ class TransactionController extends BaseController
 
         $this->merchantId = $this->merchant->getKey();
 
-        $this->transaction = new Transaction\Service($this->merchant);
+        $this->transaction = new Transaction\Service($this->merchant, BasicAuth::getMode());
     }
 
     public function getTransaction($id)
