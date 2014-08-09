@@ -210,8 +210,7 @@ class Gateway extends BaseGateway
     protected $bankAcsResponseRules = array(
         'PaRes'     => 'required',
         'MD'        => 'required|numeric|digits_between:1,19',
-        'txn'       => 'required|array',
-        'terminal'  => 'required|array');
+        'txn'       => 'required|array');
 
     /**
      * Either ENROLLED or NOT_ENROLLED
@@ -399,7 +398,7 @@ class Gateway extends BaseGateway
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (self::checkTimeout($e))
+            if (Utility::checkTimeout($e))
             {
                 $this->throwGatewayTimeoutException($e);
             }

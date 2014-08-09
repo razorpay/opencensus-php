@@ -12,7 +12,7 @@ class GatewayManager extends \Illuminate\Support\Manager
     {
         $config = Config::get('gateway');
 
-        $this->drivers = $config['available'];
+        $this->available = $config['available'];
 
         $this->defaultDriver = $config['default'];
     }

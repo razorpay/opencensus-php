@@ -14,7 +14,7 @@ class Utility
      *
      * @return boolean               true/false
      */
-    protected static function checkTimeout(\Requests_Exception $e)
+    public static function checkTimeout(\Requests_Exception $e)
     {
         $msg = $e->getMessage();
 
