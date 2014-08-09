@@ -193,9 +193,10 @@ class Gateway extends BaseGateway
     );
 
     protected $bankAcsResponseRules = array(
-        'PaRes' => 'required',
-        'MD'    => 'required|numeric|digits_between:1,19',
-        'txn'   => 'required');
+        'PaRes'     => 'required',
+        'MD'        => 'required|numeric|digits_between:1,19',
+        'txn'       => 'required|array',
+        'terminal'  => 'required|array');
 
     /**
      * Either ENROLLED or NOT_ENROLLED
@@ -205,7 +206,7 @@ class Gateway extends BaseGateway
      */
     protected $enrollStatus = null;
 
-    protected $repo = null;
+    protected $repo;
 
     public function __construct()
     {
@@ -256,13 +257,9 @@ class Gateway extends BaseGateway
         $this->supportTxn($input, 'capture');
     }
 
-    /**
-     * HDFC gateway does not provide void
-     * @return void
-     */
-    public function void()
+    public function reconcile(array $input, $ledgerId)
     {
-        ;
+        (new Settlement)->reconcile($input, $ledgerId);
     }
 
     /**
@@ -291,6 +288,14 @@ class Gateway extends BaseGateway
         }
 
         $this->postAuthEnrolledRequest($input);
+    }
+
+    /**
+     * HDFC gateway does not provide void
+     */
+    public function void()
+    {
+        throw new LogicException('Hdfc gateway does not support voids');
     }
 
     protected function runRequestResponseFlow(array &$request, array &$response)
