@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder {
                 array(
                     'id'            =>  '363e4efa820b0c06208ccd99',
                     'name'          =>  'Harshil',
-                    'email'         => 'das@razorpay.com',
+                    'email'         =>  'das@razorpay.com',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -35,8 +35,23 @@ class DatabaseSeeder extends Seeder {
             DB::table(Table::MERCHANT)->insert(
                 array(
                     'id'            =>  'f725411687297c5fce0af5c4',
+                    'name'          =>  'testname',
+                    'email'         =>  'shk@razorpay.com',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::TERMINAL)->insert(
+                array(
+                    'id'                    => '14aa47c4a93d6e9b9c7ef51a',
+                    'merchant_id'           => '363e4efa820b0c06208ccd99',
+                    'gateway'               => 'hdfc',
+                    'gateway_merchant_id'   => 'merch123',
+                    'gateway_terminal_id'   => '123456',
+                    'gateway_terminal_password' => Crypt::encrypt('encryptpass'),
+                    'created_at'            =>  time(),
+                    'updated_at'            =>  time(),
                     )
                 );
 

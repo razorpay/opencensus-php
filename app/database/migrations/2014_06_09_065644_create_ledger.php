@@ -71,7 +71,6 @@ class CreateLedger  extends Migration {
                   ->on(Table::LEDGER)
                   ->on_delete('restrict');
         });
-
     }
 
     /**
