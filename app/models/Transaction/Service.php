@@ -89,8 +89,8 @@ class Service extends Base\Service
      */
     public function bankAcsCallback($id, array $input)
     {
-        $data = $this->getActionInstance(Transaction\Action::AUTHORIZE)
-                     ->callback($id, $input);
+        $txn = $this->getActionInstance(Transaction\Action::AUTHORIZE)
+                    ->callback($id, $input);
 
         return $txn->toArrayPublic();
     }

@@ -103,7 +103,7 @@ class Action
                         $txn->toArrayTraceRelevant(),
                         ['error' => $error->getAttributes()]);
 
-        //Logging
+        // Tracing
         $this->trace->error(
             $traceCode,
             $traceData);
@@ -121,7 +121,7 @@ class Action
     protected function retrieve($id)
     {
         $this->txn = $this->core->retrieveByIdAndMerchantId(
-                                $id, $this->merchant->getKey());
+                                    $id, $this->merchant->getKey());
 
         return $this->txn;
     }

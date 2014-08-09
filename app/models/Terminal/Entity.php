@@ -73,5 +73,7 @@ class Entity extends Base\UniqueIdEntity
         $terminal = $this->toArray();
 
         $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $this->getGatewayTerminalPassword();
+
+        return $terminal;
     }
 }
