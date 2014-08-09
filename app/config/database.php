@@ -26,7 +26,7 @@ return array(
     |
     */
 
-    'default' => 'mysql',
+    'default' => $_ENV['DB_DRIVER'],
 
     /*
     |--------------------------------------------------------------------------
@@ -48,7 +48,7 @@ return array(
 
         'sqlite' => array(
             'driver'   => 'sqlite',
-            'database' => __DIR__.'/../database/production.sqlite',
+            'database' => ':memory:',
             'prefix'   => '',
         ),
 
@@ -62,6 +62,7 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',
             'prefix'    => '',
+            'strict'    => true
         ),
 
         'pgsql' => array(
