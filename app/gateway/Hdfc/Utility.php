@@ -3,64 +3,9 @@
 namespace Gateway\Hdfc;
 
 use Gateway\Hdfc;
-use Requests;
-use EE\Exception\GatewayTimeoutException;
 
 class Utility
 {
-    public static function postRequest($request)
-    {
-        $options['verify'] = false;
-
-        $timeout = Hdfc\Config::TIMEOUT;
-
-        if (! \App::environment('production'))
-        {
-            $timeout = 30;
-        }
-
-        $options['timeout'] = $timeout;
-
-        $response = null;
-
-        try
-        {
-            $response = Requests::post(
-                            $request['url'],
-                            $request['header'],
-                            $request['xml'],
-                            $options);
-        }
-        catch(\Requests_Exception $e)
-        {
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (self::checkTimeout($e))
-            {
-                $exception = new GatewayTimeoutException($e->getMessage(), $e);
-
-                $rp = Hdfc\ErrorCode::RP00002;
-
-                $desc = Hdfc\ErrorCode::$errorMessages[$rp];
-
-                $exception->setGatewayErrorCodeAndDesc(
-                    Hdfc\ErrorCode::RP00002,
-                    $desc);
-
-                throw $exception;
-            }
-            else
-            {
-                throw $e;
-            }
-        }
-
-        return $response;
-    }
-
     /**
      * Checks whether the requests exception that we caught
      * is actually because of timeout in the network call.
@@ -143,19 +88,6 @@ class Utility
     public static function getFieldFromXML($xml, $field)
     {
         return GetTextBetweenTags($xml, "<$field>", "</$field>");
-    }
-
-    public static function runRequestResponseFlow(array &$request, array &$response)
-    {
-        // Create xml from the fields
-        $request['xml'] = self::createXml($request['data']);
-
-        // send the request and get response
-        $response['response'] = self::postRequest($request);
-
-        $response['xml'] = $response['response']->body;
-
-        self::parseResponseXml($response);
     }
 
     /**
