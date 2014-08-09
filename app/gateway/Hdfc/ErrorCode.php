@@ -53,8 +53,9 @@ class ErrorCode
     const GW00258   = 'GW00258';
     const GW00259   = 'GW00259';
     const GW00261   = 'GW00261';
-    const GW00458   = 'GW00458';
 
+    const GW00456   = 'GW00456';
+    const GW00458   = 'GW00458';
 
     /**
      * All codes in GV000** series
@@ -143,6 +144,8 @@ class ErrorCode
         Hdfc\ErrorCode::GW00258   => 'Transaction Denied: Negative BIN',
         Hdfc\ErrorCode::GW00259   => 'Transaction Denied: Declined Card',
         Hdfc\ErrorCode::GW00261   => 'Transaction Denied: Captures exceed Authorizations',
+
+        Hdfc\ErrorCode::GW00456   => 'Invalid TranPortal Id',
         Hdfc\ErrorCode::GW00458   => 'Invalid Transaction Attempt',
 
         Hdfc\ErrorCode::GV00001   => 'Unknown VPAS version',
@@ -215,6 +218,8 @@ class ErrorCode
 
         Hdfc\ErrorCode::GW00258   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN,
         Hdfc\ErrorCode::GW00259   => Error\ErrorCode::CARD_ERROR_CARD_DECLINED,
+
+        Hdfc\ErrorCode::GW00456   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
 
         Hdfc\ErrorCode::GV00004   => Error\ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
         Hdfc\ErrorCode::GV00005   => Error\ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
