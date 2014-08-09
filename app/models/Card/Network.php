@@ -10,7 +10,7 @@ class Network
     const MC    = 'MC';
     const VISA  = 'VISA';
     const DICL  = 'DICL';
-    const RP    = 'RP';
+    const RUPAY = 'RUPAY';
     const AMEX  = 'AMEX';
     const JCB   = 'JCB';
     const MAES  = 'MAES';
@@ -18,22 +18,24 @@ class Network
 
     // Unidentified
     const OTHER = 'OTHER';
+    const UNKNOWN = 'UNKNOWN';
 
     protected $fullName = array(
-        self::MC    => 'MasterCard',
-        self::VISA  => 'Visa',
-        self::RP    => 'RuPay',
-        self::MAES  => 'Maestro',
-        self::AMEX  => 'American Express',
-        self::JCB   => 'JCB',
-        self::DICL  => 'Diners Club',
-        self::DISC  => 'Discover',
-        self::OTHER => 'Other');
+        self::MC      => 'MasterCard',
+        self::VISA    => 'Visa',
+        self::RUPAY   => 'RuPay',
+        self::MAES    => 'Maestro',
+        self::AMEX    => 'American Express',
+        self::JCB     => 'JCB',
+        self::DICL    => 'Diners Club',
+        self::DISC    => 'Discover',
+        self::OTHER   => 'Other',
+        self::UNKNOWN => 'Unknown');
 
    public static $networks = array(
         self::MC,
         self::VISA,
-        self::RP,
+        self::RUPAY,
         self::MAES,
         self::AMEX,
         self::JCB,
@@ -62,7 +64,7 @@ class Network
         self::DICL  => '/^3(?:0[0-5]|[68][0-9])[0-9]{4,}$/',
         self::DISC  => '/^6(?:011|5[0-9]{2})[0-9]{3,}$/',
         self::MAES  => null,
-        self::RP    => null);
+        self::RUPAY => null);
 
     public static $unsupportedNetworks = array(
         self::AMEX,
@@ -111,7 +113,7 @@ class Network
         return in_array(substr($iin, 0, 4), self::$maestroFirstFour);
     }
 
-    public static function isRP($iin)
+    public static function isRUPAY($iin)
     {
         //
         // @todo: determine regex for this one.
@@ -126,7 +128,7 @@ class Network
     {
         if (in_array($network, self::$networks) === false)
         {
-            throw new Exception\LogicException(ErrorCode::LOGICAL_ERROR_UNIDENTIFIED_CARD_NETWORK);
+            throw new Exception\InvalidArgumentException('Invalid card network given');
         }
     }
 }
