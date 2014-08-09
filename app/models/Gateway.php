@@ -13,7 +13,7 @@ class Gateway
         $gateway = self::getGatewayInstance();
 
         return  self::getGatewayInstance()->$action($input);
-   }
+    }
 
     protected static function getGatewayInstance()
     {
