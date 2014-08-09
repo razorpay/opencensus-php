@@ -13,7 +13,7 @@
 
 App::before(function($request)
 {
-    return BasicAuth::checkHttps($request);
+    return BasicAuth::checkHttps();
 });
 
 /*
@@ -29,22 +29,22 @@ App::before(function($request)
 /**
  * Only allows requests with secret keys to get through.
  */
-Route::filter('auth.private',  function($route, $request)
+Route::filter('auth.private',  function()
 {
-    return BasicAuth::privateAuth($route, $request);
+    return BasicAuth::privateAuth();
 });
 
 /**
  * Allows requests with public keys to get through.
  */
-Route::filter('auth.public', function($route, $request)
+Route::filter('auth.public', function()
 {
-    return BasicAuth::publicAuth($route, $request);
+    return BasicAuth::publicAuth();
 });
 
-Route::filter('auth.app', function($route, $request)
+Route::filter('auth.app', function()
 {
-    return BasicAuth::appAuth($route, $request);
+    return BasicAuth::appAuth();
 });
 
 /*

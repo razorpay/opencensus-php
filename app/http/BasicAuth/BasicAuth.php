@@ -33,18 +33,29 @@ class BasicAuth
      */
     private $app = null;
 
-    public function checkHttps($request)
+    /**
+     * Laravel request class instance
+     * @var [type]
+     */
+    protected $request;
+
+    public function __construct($request)
     {
-        if (($request->getHttpHost() === 'api.razorpay.com') and
-            ($request->secure() === false))
+        $this->request = $request;
+    }
+
+    public function checkHttps()
+    {
+        if (($this->request->getHttpHost() === 'api.razorpay.com') and
+            ($this->request->secure() === false))
         {
             return ApiResponse::generateResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
         }
     }
 
-    protected function areCredentialsSet($request)
+    protected function areCredentialsSet()
     {
-        list($id, $pwd) = $this->getCredentials($request);
+        list($id, $pwd) = $this->getCredentials($this->request);
 
         if (($id === null) or
             ($pwd === null))
@@ -55,14 +66,14 @@ class BasicAuth
 
 // --------------------- Basic Auths -------------------------------------------
 
-    public function privateAuth($route, $request)
+    public function privateAuth()
     {
-        if ($this->areCredentialsSet($request) === false)
+        if ($this->areCredentialsSet() === false)
         {
             return ApiResponse::httpAuthExpected();
         }
 
-        list($id, $pwd) = $this->getCredentials($request);
+        list($id, $pwd) = $this->getCredentials();
 
         $response = $this->verifySecret($id, $pwd);
 
@@ -82,28 +93,28 @@ class BasicAuth
      * Allows requests with public keys to get through.
      * Also allows private key based requests too
      */
-    public function publicAuth($route, $request)
+    public function publicAuth()
     {
-        if ($this->areCredentialsSet($request) === false)
+        if ($this->areCredentialsSet() === false)
         {
             return ApiResponse::httpAuthExpected();
         }
 
-        list($id, $pwd) = $this->getCredentials($request);
+        list($id, $pwd) = $this->getCredentials();
 
         // @todo: throw error on public auth if
         //        secret is also provided.
         return $this->verifyPublic($id);
     }
 
-    public function appAuth($route, $request)
+    public function appAuth()
     {
-        if ($this->areCredentialsSet($request) === false)
+        if ($this->areCredentialsSet() === false)
         {
             return ApiResponse::httpAuthExpected();
         }
 
-        list($id, $pwd) = $this->getCredentials($request);
+        list($id, $pwd) = $this->getCredentials();
 
         if ($id !== '')
         {
@@ -282,11 +293,11 @@ class BasicAuth
         return $this->key->getKey();
     }
 
-    protected function getCredentials($request)
+    protected function getCredentials()
     {
-        $id = $request->getUser();
+        $id = $this->request->getUser();
 
-        $pwd = $request->getPassword();
+        $pwd = $this->request->getPassword();
 
         return array($id, $pwd);
     }
