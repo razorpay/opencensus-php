@@ -28,7 +28,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => 'merchants/363e4efa820b0c06208ccd99/keys',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/keys',
             'method' => 'get'
         ],
         'response' => [

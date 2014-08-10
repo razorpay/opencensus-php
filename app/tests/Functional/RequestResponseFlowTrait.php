@@ -98,7 +98,7 @@ trait RequestResponseFlowTrait
 
         $response = $this->call(
             $request['method'],
-            $request['url'],
+            '/v1'.$request['url'],
             $request['content'],
             array(),
             $server);

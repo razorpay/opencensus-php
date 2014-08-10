@@ -57,7 +57,7 @@ class SupportTest extends TestCase
     {
         // WHEN
         // call for capture of transactions
-        $response = $this->call('POST', '/transactions/'.$id.'/capture', array('amount'=>$amount), array(), $this->auth);
+        $response = $this->call('POST', '/v1/transactions/'.$id.'/capture', array('amount'=>$amount), array(), $this->auth);
         $content = $response->getContent();
 
         // THEN
@@ -66,7 +66,9 @@ class SupportTest extends TestCase
         $capture = json_decode($content, true);
 
         // Check if transaction id matches, and captured sucessfully
+        $this->assertArrayHasKey('id', $capture);
         $this->assertEquals($id, $capture['id']);
+        $this->assertArrayHasKey('status', $capture);
         $this->assertEquals('captured', $capture['status']);
     }
 
@@ -77,7 +79,7 @@ class SupportTest extends TestCase
     {
         //WHEN
         //call for refund of transactions
-        $response = $this->call('POST', '/transactions/'.$id.'/refund',  array('id' => $id), array(), $this->auth);
+        $response = $this->call('POST', '/v1/transactions/'.$id.'/refund',  array('id' => $id), array(), $this->auth);
         $content=$response->getContent();
 
         //THEN
