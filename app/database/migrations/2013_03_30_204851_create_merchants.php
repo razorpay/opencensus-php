@@ -28,7 +28,7 @@ class CreateMerchants extends Migration {
             $table->string(Merchant::EMAIL, 255)
                   ->unique();
 
-            $table->boolean(Merchant::LIVE)
+            $table->boolean(Merchant::ACTIVATED)
                   ->default(0);
 
             $table->char(Merchant::PRICING_PLAN_ID, Merchant::ID_LENGTH)

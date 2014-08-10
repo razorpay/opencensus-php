@@ -9,7 +9,7 @@ class Entity extends Base\UniqueIdEntity
     const ID = 'id';
     const NAME = 'name';
     const EMAIL = 'email';
-    const LIVE = 'live';
+    const ACTIVATED = 'activated';
     const PRICING_PLAN_ID = 'pricing_plan_id';
 
     protected $table = \Constants\Table::MERCHANT;
@@ -18,11 +18,21 @@ class Entity extends Base\UniqueIdEntity
         self::ID,
         self::NAME,
         self::EMAIL,
-        self::LIVE);
+        self::ACTIVATED);
 
     public $incrementing = false;
 
 //    protected static $generators = array('id');
+
+    public function isActivated()
+    {
+        return $this->getAttribute(self::ACTIVATED);
+    }
+
+    public function activate()
+    {
+        $this->setAttribute(self::ACTIVATED, true);
+    }
 
     public function keys()
     {

@@ -76,6 +76,8 @@ Route::group(array('prefix' => 'v1'), function()
 
         Route::get('merchants/{id}/terminal', 'MerchantController@getTerminals');
 
+        Route::post('merchants/{id}/activate', 'MerchantController@postActivate');
+
         Route::post('pricing', 'PricingController@postCreatePricingPlan');
 
         Route::get('pricing', 'PricingController@getPricingPlans');

@@ -118,6 +118,15 @@ class PublicErrorDescription
     const BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS =
         'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
 
+    const BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT =
+        'The merchant does not have pricing assigned to him';
+
+    const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED =
+        'The merchant has already been activated';
+
+    const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED =
+        'The merchant has no pricing assigned';
+
     const BAD_REQUEST_GATEWAY_TERMINAL_ID_EXISTS_FOR_MERCHANT =
         'A terminal id has already been assigned to this merchant';
 

@@ -163,4 +163,33 @@ class Service extends Base\Service
 
         return $terminal->toArray();
     }
+
+    public function activate($id)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        if ($merchant->isActivated())
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
+        }
+
+        $pricing = (new Merchant\Repository)->getPricingPlan($merchant);
+
+        $terminal = (new Terminal\Repository)->getByMerchantId($id);
+
+        if ($terminal === null)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
+        }
+
+        $merchant->activate();
+
+        $this->merchantRepository->saveOrFail($merchant);
+
+        return $merchant->toArray();
+    }
 }

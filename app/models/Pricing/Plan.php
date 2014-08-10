@@ -46,6 +46,12 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
             'data' => array());
     }
 
+    /**
+     * Returns an array containing multiple plans
+     * Has the normal attributes 'entity', 'collection',
+     * 'count' etc. with pricing plans and thie rrules
+     * @return array collection of multiple plans
+     */
     public function toArrayMultiplePlansPublic()
     {
         $plans = $this->getDefaultPlanCollectionValues();

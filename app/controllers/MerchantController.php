@@ -61,4 +61,11 @@ class MerchantController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function postActivate($id)
+    {
+        $data = (new Merchant\Service)->activate($id);
+
+        return ApiResponse::json($data);
+    }
 }
