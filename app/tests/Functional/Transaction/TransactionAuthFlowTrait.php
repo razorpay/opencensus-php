@@ -188,19 +188,17 @@ trait TransactionAuthFlowTrait
 
         $uri = $form->getUri();
 
-        $method = $form->getMethod();
-        $values = $form->getValues();
-
         $id = $this->getIdFromUri($uri);
 
         $auth = $this->auth;
         unset($auth['PHP_AUTH_PW']);
 
-        $server = $auth;
+        $request['method'] = 'POST';
+        $request['url'] = '/transactions/callback/'.$id;
+        $request['content'] = $form->getValues();
+        $request['server'] = $auth;
 
-        $url = '/transactions/callback/'.$id;
-
-        $response = $this->call('POST', $url, $values, array(), $server);
+        $response = $this->makeRequestParent($request);
 
         return $response;
     }

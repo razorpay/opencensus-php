@@ -113,7 +113,7 @@ class Authorize extends Action
         $host = Request::getHost();
         $key = BasicAuth::getPublicKey();
 
-        $callbackUrl = $scheme . $key . '@' . $host . '/' . $urlSegment;
+        $callbackUrl = $scheme . $key . '@' . $host . '/v1/' . $urlSegment;
 
         $callbackData['callbackUrl'] = $callbackUrl;
     }
