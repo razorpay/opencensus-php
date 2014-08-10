@@ -13,14 +13,18 @@ use Trace\TraceCode;
 class Service extends Base\Service
 {
     protected $txn;
+    protected $mode;
     protected $trace;
+    protected $merchant;
 
-    public function __construct()
+    public function __construct($merchant = null, $mode)
     {
         parent::__construct();
 
         $this->core = new Transaction\Core();
+        $this->mode = $mode;
         $this->trace = Trace::getInstance();
+        $this->merchant = $merchant;
     }
 
     /**
@@ -28,17 +32,8 @@ class Service extends Base\Service
      */
     public function process(array $input)
     {
-        $this->trace->debug(
-            TraceCode::TRANSACTION_NEW_REQUEST,
-            $input);
-
-        list($txn, $cardData) = $this->core->createEntitites($input);
-
-        $this->trace->debug(
-            TraceCode::TRANSACTION_CREATED,
-            $txn->toArray());
-
-        $data = $this->core->process($txn, $cardData);
+        $data = $this->getActionInstance(Transaction\Action::AUTHORIZE)
+                     ->process($input);
 
         //
         // The returned value could be either Transaction
@@ -52,59 +47,17 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function retrieveMultiple(array $input)
-    {
-        $txn = new Transaction\Entity;
-
-        $txns = (new Transaction\Repository)->fetch($input);
-
-        $count = count($txns);
-
-        $collection = $txns->transform(function($txn)
-        {
-            return $txn->toArrayPublic();
-        });
-        $txns = $collection->all();
-
-        return array('count' => $count, 'data' => $txns);
-    }
-
-    public function retrieveById($id, $merchantId)
-    {
-        $txn = $this->core->retrieveTransaction($id, $merchantId);
-
-        return $txn->toArrayPublic();
-    }
-
     /**
      * Refunds a transaction
      *
      * @param  string   $id
-     * @param  integer  $merchantId
-     * @return DAL\Transaction
+     *
+     * @return Transaction\Entity
      */
-    public function refund($id, $merchantId)
+    public function refund($id)
     {
-        Transaction\Entity::verifyIdAndStripSign($id);
-
-        $txn = (new Transaction\Repository)->findByIdAndMerchantIdOrFailPublic($id, $merchantId);
-
-        //
-        // Don't continue if already refunded
-        //
-        if ($txn->isRefunded())
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED);
-        }
-
-        if ($txn->isCaptured() === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
-        }
-
-        $txn = $this->core->refund($txn);
+        $txn = $this->getActionInstance(Transaction\Action::REFUND)
+                     ->process($id);
 
         return $txn->toArrayPublic();
     }
@@ -113,14 +66,13 @@ class Service extends Base\Service
      * Captures a transaction
      *
      * @param  string   $id
-     * @param  integer  $merchantId
-     * @return DAL\Transaction
+     *
+     * @return Transaction\Entity
      */
-    public function capture($id, $merchantId, $input)
+    public function capture($id, $input)
     {
-        $txn = $this->core->retrieveTransaction($id, $merchantId);
-
-        $txn = $this->core->capture($txn, $input);
+        $txn = $this->getActionInstance(Transaction\Action::CAPTURE)
+                    ->process($id, $input);
 
         return $txn->toArrayPublic();
     }
@@ -135,22 +87,64 @@ class Service extends Base\Service
      * @param  array  $input Contains fields provided
      *                       by bank
      *
-     * @return DAL\Transaciton
+     * @return Transaciton\Entity
      */
-    public function bankAcsCallback($id, $merchantId, array $input)
+    public function bankAcsCallback($id, array $input)
     {
-        $txn = $this->core->retrieveTransaction($id, $merchantId);
-
-        //
-        // This field is received back from bank acs.
-        // Kinda weird! And it's always null.
-        //
-        unset($input['csrf']);
-
-        $input['txn'] = $txn->toArray();
-
-        $txn = $this->core->callback($txn, $input);
+        $txn = $this->getActionInstance(Transaction\Action::AUTHORIZE)
+                    ->callback($id, $input);
 
         return $txn->toArrayPublic();
+    }
+
+    public function retrieveMultiple(array $input)
+    {
+        $txns = (new Transaction\Repository)->fetch($input);
+
+        $count = count($txns);
+
+        $collection = $txns->transform(function($txn)
+        {
+            return $txn->toArrayPublic();
+        });
+
+        $txns = $collection->all();
+
+        return array('count' => $count, 'data' => $txns);
+    }
+
+    public function retrieveByIdAndMerchantId($id, $merchantId)
+    {
+        $txn = $this->core->retrieveByIdAndMerchantId($id, $merchantId);
+
+        return $txn->toArrayPublic();
+    }
+
+    public function reconcile($gateway, $input)
+    {
+        foreach ($input as $row)
+        {
+            $entry = (new Gateway\Manager)->mprTranslate($row, $ledger_id);
+
+            $this->reconcileEntry($entry);
+        }
+    }
+
+    public function reconcileEntry($input)
+    {
+
+    }
+
+    protected function getActionInstance($action)
+    {
+        $bindings = array(
+            'merchant'  => $this->merchant,
+            'core'      => $this->core,
+            'trace'     => $this->trace,
+            'mode'      => $this->mode);
+
+        $class = 'Models\Transaction\\'.ucfirst($action);
+
+        return new $class($this->merchant, $this->core, $this->trace, $this->mode);
     }
 }

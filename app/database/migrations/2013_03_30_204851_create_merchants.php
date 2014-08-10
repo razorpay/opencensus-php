@@ -20,18 +20,18 @@ class CreateMerchants extends Migration {
         {
             $table->engine = 'InnoDB';
 
-            $table->string(Merchant::ID, Merchant::ID_LENGTH)
+            $table->char(Merchant::ID, Merchant::ID_LENGTH)
                   ->primary();
 
             $table->string(Merchant::NAME);
 
-            $table->string(Merchant::EMAIL)
+            $table->string(Merchant::EMAIL, 255)
                   ->unique();
 
             $table->boolean(Merchant::LIVE)
                   ->default(0);
 
-            $table->string(Merchant::PRICING_PLAN)
+            $table->char(Merchant::PRICING_PLAN_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
             $table->integer(Merchant::CREATED_AT);
@@ -48,5 +48,4 @@ class CreateMerchants extends Migration {
     {
         Schema::drop(Table::MERCHANT);
     }
-
 }

@@ -161,6 +161,10 @@ trait MessageFormats
 
             parent::__construct($message, $code, null);
         }
+        else
+        {
+            throw new InvalidArgumentException('only message given, code needed!');
+        }
     }
 
     protected function getErrorCode($field)

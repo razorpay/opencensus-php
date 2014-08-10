@@ -45,6 +45,13 @@ class CreateLedger  extends Migration {
             $table->integer(Ledger::BALANCE)
                   ->unsigned();
 
+            $table->integer(Ledger::GATEWAY_FEE)
+                  ->unsigned();
+
+            $table->integer(Ledger::API_FEE);
+
+            $table->integer(Ledger::API_BALANCE);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Ledger::CREATED_AT);
             $table->integer(Ledger::UPDATED_AT);
@@ -64,7 +71,6 @@ class CreateLedger  extends Migration {
                   ->on(Table::LEDGER)
                   ->on_delete('restrict');
         });
-
     }
 
     /**

@@ -11,7 +11,7 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         'number'            => 'required|numeric|luhn|digits_between:12,19',
         'expiry_month'      => 'required|numeric|digits_between:1,2|max:12',
-        'expiry_year'       => 'required|numeric|digits:4|expiry_year',
+        'expiry_year'       => 'required|numeric|digits:4|non_past_year',
         'cvv'               => 'required|numeric|digits_between:3,4',
         'name'              => 'required|alpha_space|max:100',
         'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
@@ -76,5 +76,10 @@ class Validator extends Base\Validator
                 $msg = implode(',', $addr_unset) . ' address values are not set.';
             }
         }
+    }
+
+    protected function processValidationFailure($messages, $operation, $input)
+    {
+        throw new Exception\CardErrorException($messages);
     }
 }

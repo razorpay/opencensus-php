@@ -50,12 +50,6 @@ class CreateHdfcResponseXml extends Migration {
      */
     public function down()
     {
-        Schema::table('hdfc_response_xml', function($table)
-        {
-
-            ;
-        });
-
         Schema::drop('hdfc_response_xml');
     }
 

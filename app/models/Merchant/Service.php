@@ -5,12 +5,18 @@ namespace Models\Merchant;
 use Models\Base;
 use Models\Merchant;
 use Models\Key;
+use Models\Pricing;
+use Models\Terminal;
+use EE\Exception;
+use EE\Error\ErrorCode;
 
 class Service extends Base\Service
 {
     protected $keyRepository;
 
     protected $merchantRepository;
+
+    protected $merchant;
 
     public function __construct()
     {
@@ -55,9 +61,11 @@ class Service extends Base\Service
         return $merchant;
     }
 
-    public function updateKey($id, array $input)
+    public function updateKey($merchantId, $keyId, array $input)
     {
-        $old = $this->keyRepository->findOrFail($id);
+        $merchant = $this->merchantRepository->findOrFailPublic($merchantId);
+
+        $old = $this->keyRepository->findOrFailPublic($keyId);
 
         $keyCore = new Key\Core;
 
@@ -72,7 +80,7 @@ class Service extends Base\Service
 
         $keyCore->setExpired($old, $delay);
 
-        $keyData = $keyCore->createAndReturnWithSecret($input['merchant_id']);
+        $keyData = $keyCore->createAndReturnWithSecret($merchantId);
 
         $keysData['old'] = $old->toArray();
 
@@ -83,8 +91,76 @@ class Service extends Base\Service
 
     public function fetchKeys($merchantId)
     {
+        $merchant = $this->merchantRepository->findOrFailPublic($merchantId);
+
         $keys = $this->keyRepository->getKeysForMerchant($merchantId);
 
         return array('count' => count($keys), 'data' => $keys);
+    }
+
+    public function retrieveById($id)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        return $merchant->toArray();
+    }
+
+    public function assignPricingPlan($id, $input)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        if (isset($input['pricing_plan_id']) === false)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_PRICING_ID_REQURED,
+                'pricing_plan_id');
+        }
+
+        $plan = (new Pricing\Repository)->getPricingPlanByIdOrFailPublic(
+                                            $input['pricing_plan_id']);
+
+        $merchant->setPricingPlan($input['pricing_plan_id']);
+
+        $this->merchantRepository->saveOrFail($merchant);
+
+        $p = $plan->toArrayPublic();
+        $id = $merchant->getPricingPlanId();
+
+        return $p;
+    }
+
+    public function getPricingPlan($id)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        $pricingPlanId = $merchant->getPricingPlanId();
+
+        $plan = (new Pricing\Repository)->getPricingPlanById($pricingPlanId);
+
+        return $plan->toArrayPublic();
+    }
+
+    public function createTerminal($id, $input)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        $terminal = (new Terminal\Core)->create($input, $merchant);
+
+        return $terminal->toArray();
+    }
+
+    public function getTerminal($id)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        $terminal = (new Terminal\Repository)->getByMerchantId($id);
+
+        if ($terminal === null)
+        {
+            return array();
+        }
+
+        return $terminal->toArray();
     }
 }

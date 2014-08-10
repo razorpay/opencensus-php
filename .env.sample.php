@@ -1,6 +1,8 @@
 <?php
 
 return array(
+    'DB_DRIVER'                 => 'mysql',
+
     'DB_MYSQL_HOST'             => 'localhost',
     'DB_MYSQL_PORT'             => '3306',
     'DB_MYSQL_DATABASE'         => 'db',

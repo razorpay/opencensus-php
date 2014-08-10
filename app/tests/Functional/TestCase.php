@@ -18,11 +18,15 @@ class TestCase extends ParentTestCase
 {
     use CustomAssertions;
 
+    protected $dbTxnInProgress = false;
+
     protected static $fixtures = array(
         'merchant' => 'Models\Merchant\Entity',
         'key' => 'Models\Key\Entity',
+        'terminal' => 'Models\Terminal\Entity',
         'transaction' => 'Models\Transaction\Entity',
-        'balance' => 'Models\Merchant\Balance');
+        'balance' => 'Models\Merchant\Balance',
+        'pricing' => 'Models\Pricing\Entity');
 
     protected $auth = array();
 
@@ -45,6 +49,7 @@ class TestCase extends ParentTestCase
         // to rollback once done
         //
         DB::beginTransaction();
+        $this->dbTxnInProgress = true;
 
         //
         // Seed the db with required data
@@ -53,8 +58,10 @@ class TestCase extends ParentTestCase
         // but you are not required to use it.
         //
         $merchant = $this->createEntity('merchant', ['id' => '363e4efa820b0c06208ccd99']);
+        $terminal = $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']);
         $key = $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']);
         $balance = $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']);
+        $pricing = $this->createEntity('pricing', ['id' => '5053edf267a4a6d1d26b43df']);
 
         //
         // The key created in last command is setup as
@@ -72,8 +79,15 @@ class TestCase extends ParentTestCase
     protected function setupBasicAuthParams()
     {
         $this->auth = array(
-               'PHP_AUTH_USER' => 'd9c6bf091a1a64cb5678d8c1',
+               'PHP_AUTH_USER' => 'rzp_test_d9c6bf091a1a64cb5678d8c1',
                'PHP_AUTH_PW' => 'thisissupersecret');
+    }
+
+    protected function setupAppBasicAuthParams($pwd = 'DASHBOARD_AUTH_PASS', $user = '')
+    {
+        $this->auth = array(
+               'PHP_AUTH_USER' => $user,
+               'PHP_AUTH_PW' => $pwd);
     }
 
     public function tearDown()
@@ -81,8 +95,12 @@ class TestCase extends ParentTestCase
         //
         // Undo DB Changes after test
         //
+        if ($this->dbTxnInProgress === true)
+        {
+            DB::rollback();
 
-        DB::rollback();
+            $this->dbTxnInProgress = false;
+        }
     }
 
     protected function createEntity($entity, $attributes = array())

@@ -5,7 +5,7 @@ namespace EE\Exception;
 use App;
 use Config;
 use Http\ApiResponse;
-use PrettyPageHandler;
+use Whoops\Handler\PrettyPageHandler;
 
 class Handler
 {
@@ -16,6 +16,8 @@ class Handler
 
     public function registerExceptionHandlers()
     {
+        $this->registerWhoopsJsonResponseHandler();
+
         //
         // Register whoops display handler
         //
@@ -43,6 +45,14 @@ class Handler
         });
     }
 
+    protected function registerWhoopsJsonResponseHandler()
+    {
+        $whoops = App::make('whoops');
+        $whoopsJsonResponseHandler = new \Whoops\Handler\JsonResponseHandler();
+        $whoopsJsonResponseHandler->addTraceToOutput(true);
+        $whoops->pushHandler($whoopsJsonResponseHandler);
+    }
+
     public function whoopsExceptionDisplayHandler()
     {
         // Use the Laravel IoC container to get the Whoops\Run instance, if whoops
@@ -52,6 +62,10 @@ class Handler
         if ((App::bound('whoops')) and
            (Config::get('app.debug')))
         {
+            $whoops = App::bound('whoops');
+
+            // $whoops->pushHandler(new \Whoops\Handler\JsonResponseHandler);
+
             // Retrieve the whoops handler in charge of displaying exceptions:
             $whoopsDisplayHandler = App::make("whoops.handler");
 
@@ -65,7 +79,7 @@ class Handler
                 // Set the "open:" link for files to our editor of choice:
                 $whoopsDisplayHandler->setEditor("sublime");
 
-                $records = Trace\Trace::getInstance()->getFlattenedRecordsForScreen();
+                $records = \Trace\Trace::getInstance()->getFlattenedRecordsForScreen();
 
                 $whoopsDisplayHandler->addDataTable('Trace', $records);
             }
@@ -74,6 +88,8 @@ class Handler
 
     public function genericExceptionHandler(\Exception $exception)
     {
+        $this->traceException($exception);
+
         if (Config::get('app.debug') === false)
         {
             return ApiResponse::serverError();
@@ -102,5 +118,18 @@ class Handler
     public function serverErrorExceptionHandler(ServerErrorException $exception, $code)
     {
         return;
+    }
+
+    protected function traceException(\Exception $exception)
+    {
+        $traceData = array(
+            'class' => get_class($exception),
+            'code' => $exception->getCode(),
+            'message' => $exception->getMessage(),
+            'stack' => $exception->getTraceAsString());
+
+        \Trace\Trace::getInstance()->critical(
+           \Trace\TraceCode::ERROR_EXCEPTION,
+           $traceData);
     }
 }

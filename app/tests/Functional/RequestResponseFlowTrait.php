@@ -49,7 +49,7 @@ trait RequestResponseFlowTrait
     public function processAndAssertException($actual, $expected)
     {
         $this->assertExceptionClass($actual, $expected['class']);
-
+//sd($actual->getError());
         $internalError = $actual->getError()->getAttributes();
 
         $this->assertErrorDataEquals($expected, $internalError);
@@ -62,7 +62,7 @@ trait RequestResponseFlowTrait
         $this->assertJson($content);
 
         $actualContent = json_decode($content, true);
-
+//s($actualContent);
         $expectedContent = $data['response']['content'];
 
         $this->assertArraySelectiveEquals($expectedContent, $actualContent);
@@ -92,18 +92,38 @@ trait RequestResponseFlowTrait
     protected function makeRequest($request)
     {
         $server = $this->auth;
+        $request['url'] = '/v1' . $request['url'];
 
         if (isset($request['content']) === false)
             $request['content'] = array();
+
+        if (isset($request['server']) === false)
+            $request['server'] = $server;
 
         $response = $this->call(
             $request['method'],
             $request['url'],
             $request['content'],
             array(),
-            $server);
+            $request['server']);
 
         return $response;
+    }
+
+    protected function makeRequestAndGetContent($request)
+    {
+        $response = $this->makeRequest($request);
+
+        return $this->getJsonContent($response);
+    }
+
+    public function getJsonContent($response)
+    {
+        $content = $response->getContent();
+
+        $this->assertJson($content);
+
+        return json_decode($content, true);
     }
 
     protected function replaceValuesRecursively(array & $data, array $toReplace)

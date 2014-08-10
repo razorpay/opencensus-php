@@ -109,10 +109,18 @@ if (! function_exists('print_last_query'))
     }
 }
 
-if (! function_exists('dd_bt_wo_args'))
+if (! function_exists('sdd'))
 {
-    function dd_bt_wo_args($limit = 0)
+    function sdd($limit = 0)
     {
-         sd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
+        sd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
+    }
+}
+
+if (! function_exists('ddd'))
+{
+    function ddd($limit = 0)
+    {
+        dd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
     }
 }

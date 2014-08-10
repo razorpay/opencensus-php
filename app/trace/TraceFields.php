@@ -4,11 +4,17 @@ namespace Trace;
 
 use Trace\TraceCode;
 use Models\Transaction\Entity as Transaction;
-use Constants\Field;
 
 class TraceFields
 {
     protected static $fields = array(
+        TraceCode::ERROR_EXCEPTION => array(
+            'class',
+            'message',
+            'stack',
+            'code'
+        ),
+
         TraceCode::TRANSACTION_NEW_REQUEST => array(
             Transaction::MERCHANT_ID,
             Transaction::AMOUNT,

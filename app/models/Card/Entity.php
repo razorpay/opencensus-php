@@ -47,11 +47,7 @@ class Entity extends Base\UniqueIdEntity
         self::ADDRESS_STATE,
         self::ADDRESS_CITY,
         self::ADDRESS_ZIP,
-        self::ADDRESS_COUNTRY,
-
-        'cvv_check',
-        'address_line1_check',
-        'address_zip_check');
+        self::ADDRESS_COUNTRY);
 
     protected $guarded = array(self::ID);
 
@@ -66,24 +62,6 @@ class Entity extends Base\UniqueIdEntity
         self::EXPIRY_YEAR,
         self::LAST4,
         self::NETWORK);
-
-    public function build(array $input = array())
-    {
-        try
-        {
-            parent::build($input);
-        }
-        catch (Exception\CardErrorException $e)
-        {
-            throw $e;
-        }
-        catch (Exception\ValidationFailureException $e)
-        {
-            throw new Exception\CardErrorException($e->getMessageBag(), 0, $e);
-        }
-
-        return $this;
-    }
 
     public function generateLast4($input)
     {
@@ -129,7 +107,7 @@ class Entity extends Base\UniqueIdEntity
 
         if ($details)
         {
-            if ($network === Card\Network::UNIDENTIFIED)
+            if ($network === Card\Network::OTHER)
             {
                 if ($details['brand'] !== null)
                 {
@@ -139,11 +117,11 @@ class Entity extends Base\UniqueIdEntity
 
                     $this->setAttribute(self::NETWORK, $network);
 
-                    // trace here
+                    // @todo: trace here
                 }
                 else
                 {
-                    // trace here
+                    // @todo: trace here
                 }
             }
 
@@ -159,6 +137,10 @@ class Entity extends Base\UniqueIdEntity
                 // @todo: trace
                 return;
             }
+        }
+        else
+        {
+            $this->setAttribute(self::TYPE, Type::UNKNOWN);
         }
     }
 }

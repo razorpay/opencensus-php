@@ -16,6 +16,10 @@ class Entity extends Base\UniqueIdEntity
     const CREDIT        = 'credit';
     const FEE           = 'fee';
     const BALANCE       = 'balance';
+    const GATEWAY_FEE   = 'gateway_fee';
+    const API_FEE       = 'api_fee';
+    const API_BALANCE   = 'api_balance';
+
 
     protected $table = \Constants\Table::LEDGER;
 

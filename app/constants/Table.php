@@ -10,6 +10,8 @@ class Table
 
     const MERCHANT = 'merchants';
 
+    const TERMINAL = 'terminals';
+
     const LEDGER = 'ledger';
 
     const KEY = 'keys';
@@ -21,4 +23,6 @@ class Table
     const BALANCE = 'balance';
 
     const PRICING = 'pricing';
+
+    const SETTLEMENT = 'settlements';
 }

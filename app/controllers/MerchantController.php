@@ -5,7 +5,7 @@ use Models\Merchant;
 
 class MerchantController extends BaseController
 {
-    public function postIndex()
+    public function postCreateMerchant()
     {
         $input = Input::all();
 
@@ -14,23 +14,51 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function getKeys()
+    public function getKeys($merchantId)
     {
-        $merchant_id = BasicAuth::getMerchantId();
-
-        $data = (new Merchant\Service)->fetchKeys($merchant_id);
+        $data = (new Merchant\Service)->fetchKeys($merchantId);
 
         return ApiResponse::json($data);
     }
 
-    public function putKeys($id)
+    public function putKeys($merchantId, $keyId)
     {
         $input = Input::all();
 
-        $input['merchant_id'] = BasicAuth::getMerchantId();
-
-        $keys = (new Merchant\Service)->updateKey($id, $input);
+        $keys = (new Merchant\Service)->updateKey($merchantId, $keyId, $input);
 
         return ApiResponse::json($keys);
+    }
+
+    public function postAssignPricingPlan($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->assignPricingPlan($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPricingPlan($id)
+    {
+        $data = (new Merchant\Service)->getPricingPlan($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postCreateTerminal($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->createTerminal($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getTerminals($id)
+    {
+        $data = (new Merchant\Service)->getTerminal($id);
+
+        return ApiResponse::json($data);
     }
 }

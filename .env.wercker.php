@@ -1,6 +1,8 @@
 <?php
 
 return array(
+    'DB_DRIVER'                 => 'mysql',
+
     'DB_MYSQL_HOST'             => getenv('WERCKER_MYSQL_HOST'),
     'DB_MYSQL_PORT'             => getenv('WERCKER_MYSQL_PORT'),
     'DB_MYSQL_DATABASE'         => getenv('WERCKER_MYSQL_DATABASE'),

@@ -2,7 +2,8 @@
 
 namespace Models\Merchant;
 
-use Models\Card;
+use Models\Merchant;
+use Models\Pricing;
 
 class Core
 {

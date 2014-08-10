@@ -277,7 +277,7 @@ trait EnrollCardTrait
             return;
 
         $visaOrDiners = (($network === Card\Network::VISA) or
-                         ($network === Card\Network::DINERS_CLUB));
+                         ($network === Card\Network::DICL));
 
         if ($visaOrDiners)
         {
@@ -290,8 +290,8 @@ trait EnrollCardTrait
             throw new Exception\LogicException('eci value should be 6');
         }
 
-        $masterCardOrMaestro = (($network === Card\Network::MASTERCARD) or
-                                ($network === Card\Network::MAESTRO));
+        $masterCardOrMaestro = (($network === Card\Network::MC) or
+                                ($network === Card\Network::MAES));
 
         if ($masterCardOrMaestro)
         {

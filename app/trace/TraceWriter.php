@@ -3,12 +3,12 @@
 namespace Trace;
 
 use Config;
-use App;
-use Request;
+use EE\Exception;
 use Monolog\Logger;
 use Monolog\Processor;
 use Monolog\Handler;
 use Monolog\Formatter;
+use Request;
 
 class TraceWriter extends Logger
 {
@@ -70,13 +70,15 @@ class TraceWriter extends Logger
         }
 
         $this->pushProcessor(new WebProcessor);
+
+        $this->pushProcessor(new CloudInstanceDataProcessor);
     }
 
     protected function pushIntrospectionProcessor()
     {
         $skipClassesPartials = array('Trace\\', 'Monolog\\');
 
-        $processor = new Processor\IntrospectionProcessor(Logger::DEBUG, $skipClassesPartials);
+        $processor = new Processor\IntrospectionProcessor(static::DEBUG, $skipClassesPartials);
 
         $this->pushProcessor($processor);
     }
@@ -103,7 +105,7 @@ class TraceWriter extends Logger
 
         $stream->setFormatter($jsonFormatter);
 
-        $minLevel = $this->debug ? Logger::DEBUG : Logger::INFO;
+        $minLevel = $this->debug ? static::DEBUG : static::INFO;
 
         $filter = new Handler\FilterHandler($stream, $minLevel);
 
@@ -128,7 +130,7 @@ class TraceWriter extends Logger
                 return $this->config['debug_options'][$option];
             }
             else
-                throw new InvalidArgumentException($option . ' in debug not defined');
+                throw new Exception\InvalidArgumentException($option . ' in debug not defined');
         }
         else
             return false;

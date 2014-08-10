@@ -9,4 +9,6 @@ class Type
    const DEBIT = 'debit';
 
    const PREPAID = 'prepaid';
+
+   const UNKNOWN = 'unknown';
 }

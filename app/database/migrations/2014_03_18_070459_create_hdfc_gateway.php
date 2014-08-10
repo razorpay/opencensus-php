@@ -29,14 +29,16 @@ class CreateHdfcGateway extends Migration {
 
             $table->string('action', 1);
 
-            $table->string('enroll_result', Hdfc\Constants::ENROLL_RESULT_LENGTH);
+            $table->string('enroll_result', Hdfc\Constants::ENROLL_RESULT_LENGTH)
+                  ->nullable();
 
             $table->string('status', Hdfc\Constants::STATUS_LENGTH);
 
             $table->string('auth_result', Hdfc\Constants::AUTH_RESULT_LENGTH)
                   ->nullable();
 
-            $table->string('eci', Hdfc\Constants::ECI_LENGTH);
+            $table->string('eci', Hdfc\Constants::ECI_LENGTH)
+                  ->nullable();
 
             $table->string('auth', Hdfc\Constants::AUTH_LENGTH)
                   ->nullable();

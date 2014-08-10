@@ -1,16 +1,28 @@
 Models\Merchant\Entity:
     id: $string
+    name: $string
+    email: harshil$integer@gmail.com
+
+Models\Terminal\Entity:
+    id: $string
+    merchant_id: Models\Merchant\Entity
+    gateway: hdfc
+    gateway_merchant_id: $string
+    gateway_terminal_id: $string
+    gateway_terminal_password: eyJpdiI6ImQwTWJVdElNdUtpeFpOR2VpMWxuT0E9PSIsInZhbHVlIjoiaWk1SDVOZGxBQkM2OTRHNzFIOG0yRzYzUlZDT05wSjdodjB2aWxjSHhJaz0iLCJtYWMiOiIxOTBiMGE0ZmU2NmUwOTQ0M2EwY2Y1MjJmZWU1ZWE4MTliOWMxNzlhMzBhZTMzNzg4ZTBmY2JjMWE5NjA1M2QwIn0=
 
 Models\Merchant\Balance:
     id: $string
 
 Models\Card\Entity:
+    id: $string
     name: $string
+    network: MC
     expiry_month: 01
     expiry_year: 1999
-    type: visa
+    type: VISA
     country: IN
-    last4: 789$integer
+    last4: 7890
 
 Models\Key\Entity:
     id: d9c6bf091a1a64cb5678d8c1
@@ -28,3 +40,16 @@ Models\Transaction\Entity:
     amount: 100
     currency: INR
     status: open
+    contact: $integer
+    udf: array
+
+Models\Pricing\Entity:
+    id: $string
+    plan_id: 5053edf267a4a6d1d26b43df
+    plan_name: testFixturePlan
+    payment_mode: card
+    payment_mode_type: credit
+    payment_network: VISA
+    payment_issuer: ICIC
+    percent_rate: 1000
+    fixed_rate: 10000

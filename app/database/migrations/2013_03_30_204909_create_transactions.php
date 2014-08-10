@@ -45,7 +45,8 @@ class CreateTransactions  extends Migration
 
             $table->char(Transaction::CURRENCY, Transaction::CURRENCY_LENGTH);
 
-            $table->string(Transaction::DESCRIPTION);
+            $table->string(Transaction::DESCRIPTION)
+                  ->nullable();
 
             $table->char(Transaction::CARD_ID, Transaction::ID_LENGTH)
                   ->nullable();

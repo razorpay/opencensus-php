@@ -235,11 +235,18 @@ class Error
         return array('error' => $array);
     }
 
+    public function toDebugArray()
+    {
+        return array('error' => $this->getAttributes());
+    }
+
     protected function getDescriptionFromErrorCode($code)
     {
-        if (defined(__NAMESPACE__.'\PublicErrorDescription::'.$code))
+        $code = strtoupper($code);
+
+        if (defined(__NAMESPACE__.'\PublicErrorDescription::' . $code))
         {
-            return constant(__NAMESPACE__.'\PublicErrorDescription::'.$code);
+            return constant(__NAMESPACE__.'\PublicErrorDescription::' . $code);
         }
     }
 

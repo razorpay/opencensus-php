@@ -20,7 +20,7 @@ final class Constants
 
     const POSTDATE_LENGTH = 6;
 
-    const ERROR_CODE_LENGTH = 7;
+    const ERROR_CODE_LENGTH = 8;
 
     const ERROR_TEXT_LENGTH = 100;
 }

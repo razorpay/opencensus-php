@@ -99,4 +99,28 @@ class PublicErrorDescription
 
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED =
         'Please provide api secret';
+
+    const BAD_REQUEST_PRICING_ID_REQURED =
+        'Pricing plan id is required';
+
+    const BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS =
+        'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
+
+    const BAD_REQUEST_PRICING_RATE_NOT_DEFINED =
+        'One of percent_rate and fixed_rate must be present';
+
+    const BAD_REQUEST_PRICING_GATEWAY_REQUIRED =
+        'This plan has a gateway set. Please provide it in input';
+
+    const BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED =
+        'The new rule matches with an active existing rule';
+
+    const BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS =
+        'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
+
+    const BAD_REQUEST_GATEWAY_TERMINAL_ID_EXISTS_FOR_MERCHANT =
+        'A terminal id has already been assigned to this merchant';
+
+    const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS =
+        'A record with same gateway merchant id (mid) exists';
 }

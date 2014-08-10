@@ -26,10 +26,11 @@ namespace Gateway\Hdfc;
 
 use Gateway\BaseGateway;
 use Gateway\Hdfc;
-use EE\Exception;
-use Trace\TraceCode;
-use Trace\Trace;
 use EE\Error;
+use EE\Exception;
+use Requests;
+use Trace\Trace;
+use Trace\TraceCode;
 
 class Gateway extends BaseGateway
 {
@@ -58,6 +59,20 @@ class Gateway extends BaseGateway
      * @var boolean
      */
     protected $error = false;
+
+    /**
+     * The gateway terminal on which to make
+     * the request
+     * @var array
+     */
+    protected $terminal;
+
+    /**
+     * The state in which the api is operating
+     * that is live/test
+     * @var string
+     */
+    protected $mode;
 
     /**
      * Fields sent in xml format to enroll
@@ -193,9 +208,9 @@ class Gateway extends BaseGateway
     );
 
     protected $bankAcsResponseRules = array(
-        'PaRes' => 'required',
-        'MD'    => 'required|numeric|digits_between:1,19',
-        'txn'   => 'required');
+        'PaRes'     => 'required',
+        'MD'        => 'required|numeric|digits_between:1,19',
+        'txn'       => 'required|array');
 
     /**
      * Either ENROLLED or NOT_ENROLLED
@@ -205,7 +220,11 @@ class Gateway extends BaseGateway
      */
     protected $enrollStatus = null;
 
-    protected $repo = null;
+    /**
+     * Hdfc data storage repository instance
+     * @var Gateway\Hdfc\Repository
+     */
+    protected $repo;
 
     public function __construct()
     {
@@ -220,6 +239,8 @@ class Gateway extends BaseGateway
 
         return $creds;
     }
+
+// ---------------------------Gateway operations -------------------------------
 
     /**
      * Does card auth
@@ -256,14 +277,10 @@ class Gateway extends BaseGateway
         $this->supportTxn($input, 'capture');
     }
 
-    /**
-     * HDFC gateway does not provide void
-     * @return void
-     */
-    public function void()
-    {
-        ;
-    }
+    // public function reconcile(array $input, $ledgerId)
+    // {
+    //     (new Settlement)->reconcile($input, $ledgerId);
+    // }
 
     /**
      * After card enroll and bank ACS form submission,
@@ -293,12 +310,56 @@ class Gateway extends BaseGateway
         $this->postAuthEnrolledRequest($input);
     }
 
+    /**
+     * HDFC gateway does not provide void
+     */
+    public function void()
+    {
+        throw new Exception\LogicException(
+            'Hdfc gateway does not support voids');
+    }
+
+// ----------------------Gateway operations end --------------------------------
+
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
-        Hdfc\Utility::runRequestResponseFlow($request, $response);
+        $this->setTerminalInRequest($request);
+
+        // Create xml from the fields
+        $request['xml'] = Utility::createXml($request['data']);
+
+        // send the request and get response
+        $response['response'] = $this->postRequest($request);
+
+        $response['xml'] = $response['response']->body;
+
+        Utility::parseResponseXml($response);
 
         $this->repo->saveXml($this->id, $response['xml'], $response['type']);
 
+        $this->checkError($response);
+    }
+
+    protected function setTerminalInRequest(array & $request)
+    {
+        $terminal = $this->terminal;
+
+        if ($terminal['gateway'] !== 'hdfc')
+            throw new \InvalidArgumentException(
+                'hdfc gateway: wrong terminal supplied, ');
+
+        $id = $terminal['gateway_terminal_id'];
+        $pwd = $terminal['gateway_terminal_password'];
+
+        if ($this->mode === 'test')
+            list($id, $pwd) = $this->getCredentials();
+
+        $request['data']['id'] = $id;
+        $request['data']['password'] = $pwd;
+    }
+
+    protected function checkError($response)
+    {
         //
         // This step is very crucial for deciding future steps in
         // transaction flow.
@@ -314,6 +375,47 @@ class Gateway extends BaseGateway
         }
     }
 
+    public function postRequest($request)
+    {
+        $options['verify'] = false;
+
+        $options['timeout'] = $this->getTimeout();
+
+        $response = null;
+
+        try
+        {
+            $response = Requests::post(
+                            $request['url'],
+                            $request['header'],
+                            $request['xml'],
+                            $options);
+        }
+        catch(\Requests_Exception $e)
+        {
+            //
+            // Some error occurred.
+            // Check that whether the gateway response timed out.
+            // Mostly it should be gateway timeout only
+            //
+            if (Utility::checkTimeout($e))
+            {
+                $this->throwGatewayTimeoutException($e);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
+
+        return $response;
+    }
+
+    protected function getTimeout()
+    {
+        return Hdfc\Config::TIMEOUT;
+    }
+
     protected function getModel($id)
     {
         $this->model = $this->repo->retrieve($id);
@@ -324,6 +426,16 @@ class Gateway extends BaseGateway
     protected function setId($id)
     {
         $this->id = $id;
+    }
+
+    public function setTerminal($terminal)
+    {
+        $this->terminal = $terminal;
+    }
+
+    public function setMode($mode)
+    {
+        $this->mode = $mode;
     }
 
     /**
@@ -348,22 +460,39 @@ class Gateway extends BaseGateway
         $this->trace->addRecord($level, $message, $context);
     }
 
+// -------------------------Exceptions -----------------------------------------
+
+    protected function throwGatewayTimeoutException($e)
+    {
+        $exception = new Exception\GatewayTimeoutException($e->getMessage(), $e);
+
+        $rp = Hdfc\ErrorCode::RP00002;
+
+        $desc = Hdfc\ErrorCode::$errorMessages[$rp];
+
+        $exception->setGatewayErrorCodeAndDesc(
+            Hdfc\ErrorCode::RP00002,
+            $desc);
+
+        throw $exception;
+    }
+
     protected function throwException($gatewayErrorCode)
     {
         $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
 
-        $appErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
+        $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
 
         $exception = null;
 
-        switch ($appErrorCode)
+        switch ($apiErrorCode)
         {
             case Error\ErrorCode::CARD_ERROR_INVALID_BRAND:
             case Error\ErrorCode::CARD_ERROR_INVALID_NAME:
             case Error\ErrorCode::CARD_ERROR_INVALID_NUMBER:
             case Error\ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE:
             case Error\ErrorCode::CARD_ERROR_CARD_DECLINED:
-                $exception = new Exception\CardErrorException($appErrorCode);
+                $exception = new Exception\CardErrorException($apiErrorCode);
 
                 $exception->setGatewayErrorCodeAndDesc(
                     $gatewayErrorCode,
@@ -375,15 +504,15 @@ class Gateway extends BaseGateway
             case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN:
             case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT:
                 $exception = new Exception\GatewayErrorException(
-                                $appErrorCode,
+                                $apiErrorCode,
                                 $gatewayErrorCode,
                                 $gatewayErrorDesc);
 
                 break;
-
             default:
+
                 $exception = new Exception\GatewayErrorException(
-                                $appErrorCode,
+                                $apiErrorCode,
                                 $gatewayErrorCode,
                                 $gatewayErrorDesc);
 
@@ -392,4 +521,7 @@ class Gateway extends BaseGateway
 
         throw $exception;
     }
+
+// -------------------------Exceptions Ends ------------------------------------
+
 }

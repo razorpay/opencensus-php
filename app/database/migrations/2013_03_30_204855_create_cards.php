@@ -7,8 +7,8 @@ use Constants\Table;
 
 use Models\Card\Entity as Card;
 
-class CreateCards extends Migration {
-
+class CreateCards extends Migration
+{
     /**
      * Make changes to the database.
      *
@@ -16,7 +16,8 @@ class CreateCards extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::CARD, function(Blueprint $table){
+        Schema::create(Table::CARD, function(Blueprint $table)
+        {
 
             $table->engine = 'InnoDB';
 
@@ -31,13 +32,16 @@ class CreateCards extends Migration {
 
             $table->char(Card::LAST4, 4);
 
-            $table->string(Card::NETWORK);
+            $table->string(Card::NETWORK, 10);
 
-            $table->string(Card::TYPE, 6);
+            $table->string(Card::TYPE, 7)
+                  ->nullable();
 
-            $table->string(Card::BANK, 100);
+            $table->string(Card::BANK, 100)
+                  ->nullable();
 
-            $table->char(Card::COUNTRY, Card::COUNTRY_LENGTH);
+            $table->char(Card::COUNTRY, Card::COUNTRY_LENGTH)
+                  ->nullable();
 
             $table->string(Card::ADDRESS_LINE1)
                   ->nullable();
@@ -56,15 +60,6 @@ class CreateCards extends Migration {
                   ->nullable();
 
             $table->string(Card::ADDRESS_COUNTRY)
-                  ->nullable();
-
-            $table->boolean('cvv_check')
-                  ->nullable();
-
-            $table->boolean('address_line1_check')
-                  ->nullable();
-
-            $table->boolean('address_zip_check')
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table

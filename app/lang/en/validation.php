@@ -73,12 +73,6 @@ return array(
      | Defined by user application
      */
 
-    "alpha_space"      => "The :attribute may only contain alphabets and spaces",
-    "address"          => "The :attribute is not a valid address",
-    "luhn"             => "The :attribute is invalid",
-    "month"            => "The :attribute is not a valid month",
-    "card_type"        => "The :attribute is not a valid card type",
-    "expiry_year"      => "The :attribute cannot be before current year",
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines

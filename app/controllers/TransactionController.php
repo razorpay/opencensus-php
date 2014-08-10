@@ -1,20 +1,30 @@
 <?php
 
 use Http\ApiResponse;
-use Models\Transaction\Service as Transaction;
+use EE\Exception\RecoverableException;
+use Models\Transaction;
 
 class TransactionController extends BaseController
 {
     protected $merchantId = null;
 
+    protected $merchant = null;
+
+    protected $transaction;
+
     public function __construct()
     {
-        $this->merchantId = BasicAuth::getMerchantId();
+        $this->merchant = BasicAuth::getMerchant();
+
+        $this->merchantId = $this->merchant->getKey();
+
+        $this->transaction = new Transaction\Service($this->merchant, BasicAuth::getMode());
     }
 
-    public function getTxnById($id)
+    public function getTransaction($id)
     {
-        $txn = (new Transaction)->retrieveById($id, $this->merchantId);
+        $txn = $this->transaction->retrieveByIdAndMerchantId(
+                                        $id, $this->merchant->getKey());
 
         return ApiResponse::json($txn);
     }
@@ -22,27 +32,27 @@ class TransactionController extends BaseController
     /**
      * Retrieves transaction details
      */
-    public function getMultipleTxn()
+    public function getTransactions()
     {
         $input = Input::all();
 
         $input['merchant_id'] = $this->merchantId;
 
-        $txns = (new Transaction)->retrieveMultiple($input);
+        $txns = $this->transaction->retrieveMultiple($input);
 
         return ApiResponse::json($txns);
     }
 
     /**
-     * Create a new transaction.
+     * Create a new transaction
      */
-    public function postIndex()
+    public function postCreateTransaction()
     {
         $input = Input::all();
 
         $input['merchant_id'] = $this->merchantId;
 
-        $data = (new Transaction)->process($input);
+        $data = $this->transaction->process($input);
 
         //
         // Check for call from API
@@ -69,7 +79,7 @@ class TransactionController extends BaseController
 
         $input['merchant_id'] = $this->merchantId;
 
-        $txn = (new Transaction)->process($input);
+        $txn = $this->transaction->process($input);
 
         return ApiResponse::json($txn);
     }
@@ -79,7 +89,7 @@ class TransactionController extends BaseController
     */
     public function postRefund($id)
     {
-        $txn = (new Transaction)->refund($id, $this->merchantId);
+        $txn = $this->transaction->refund($id);
 
         return ApiResponse::json($txn);
     }
@@ -92,7 +102,7 @@ class TransactionController extends BaseController
     {
         $input = Input::get();
 
-        $txn = (new Transaction)->capture($id, $this->merchantId, $input);
+        $txn = $this->transaction->capture($id, $input);
 
         return ApiResponse::json($txn);
     }
@@ -103,15 +113,15 @@ class TransactionController extends BaseController
 
         $data = null;
 
-        \App::forgetMiddleware('Illuminate\Http\FrameGuard');
+        App::forgetMiddleware('Illuminate\Http\FrameGuard');
 
         try
         {
-            $data = (new Transaction)->bankAcsCallback($id, $this->merchantId, $input);
+            $data = $this->transaction->bankAcsCallback($id, $input);
         }
-        catch (\EE\Exception\RecoverableException $exception)
+        catch (RecoverableException $exception)
         {
-            if (\App::runningUnitTests())
+            if (App::runningUnitTests())
                 throw $exception;
 
             $error = $exception->getError();

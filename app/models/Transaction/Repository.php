@@ -10,14 +10,14 @@ class Repository extends Base\Repository
 {
     protected $entity = 'Transaction';
 
-    private static $fetch_param_rules = array(
+    private static $fetchParamRules = array(
         'created'       => 'numeric',
         'from'          => 'numeric',
         'to'            => 'numeric',
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
         'merchant_id'   => 'required',
-        'status'        => 'in:failed,captured,auth,open,refunded,settlement_sent,settled');
+        'status'        => 'in:open,authorized,captured,refunded,failed');
 
     /**
      * Retrieves the transactions from database for a particular merchant.
@@ -38,8 +38,7 @@ class Repository extends Base\Repository
          * Create the query.
          */
         $repo = $this->repo;
-        $query = $repo::where(Transaction\Entity::MERCHANT_ID, '=', $param['merchant_id'])
-                     ->orderBy(Transaction\Entity::UPDATED_AT, 'desc');
+        $query = $repo::where(Transaction\Entity::MERCHANT_ID, '=', $param['merchant_id']);
 
         if (isset($param['from']))
         {
@@ -75,35 +74,19 @@ class Repository extends Base\Repository
 
     public static function validateFetchParams(array $param)
     {
-        validate(self::$fetch_param_rules, $param);
+        validate(self::$fetchParamRules, $param);
     }
 
-    public function findByIdAndMerchantId($id, $merchantId)
+    public function findByIdAndMerchantId($id, $merchantId, $failPublic = true)
     {
         $repo = $this->repo;
 
-        return $repo::where(Transaction\Entity::MERCHANT_ID, $merchantId)
-                     ->find($id);
-    }
+        $query = $repo::where(Transaction\Entity::MERCHANT_ID, $merchantId);
 
-    public function findByIdAndMerchantIdOrFailPublic($id, $merchantId)
-    {
-        $repo = $this->repo;
-
-        $txn = $repo::where(Transaction\Entity::MERCHANT_ID, $merchantId)
-                     ->find($id);
-
-        if ($txn === null)
-        {
-            $e = array(
-                'model' => get_called_class(),
-                'attributes' => $id,
-                'operation' => 'find');
-
-            throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
-        return $txn;
+        if ($failPublic)
+            return $query->findOrFailPublic($id);
+        else
+            return $query->findOrFail($id);
     }
 
     public function reloadAndLockForUpdate($txn)

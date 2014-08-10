@@ -121,7 +121,7 @@ class TransactionRetrieveTest extends TestCase
         $created_at = $transactions->data[0]->created_at;
 
         //WHEN
-        $response = $this->call('GET', "/transactions/?created=".$created_at, array(), array(), $this->auth);
+        $response = $this->call('GET', "/v1/transactions/?created=".$created_at, array(), array(), $this->auth);
         $content = $response->getContent();
 
         //THEN

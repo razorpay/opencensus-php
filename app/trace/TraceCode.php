@@ -2,7 +2,7 @@
 
 namespace Trace;
 
-use EE\EcxeptionInvalidArgumentException;
+use EE\Exception\InvalidArgumentException;
 
 class TraceCode
 {
@@ -38,6 +38,7 @@ class TraceCode
     const GATEWAY_SUPPORT_RESPONSE          = 'GATEWAY_SUPPORT_RESPONSE';
     const GATEWAY_SUPPORT_ERROR             = 'GATEWAY_SUPPORT_ERROR';
 
+    const ERROR_EXCEPTION                   = 'ERROR_EXCEPTION';
 
     protected static $messages = array(
         self::TRANSACTION_NEW_REQUEST               => 'Request for new transaction received',
@@ -63,7 +64,9 @@ class TraceCode
         self::GATEWAY_ENROLLED_AUTH_ERROR           => 'Authentication error occured for enrolled card',
         self::GATEWAY_SUPPORT_REQUEST               => 'Support request sent',
         self::GATEWAY_SUPPORT_RESPONSE              => 'Support response received',
-        self::GATEWAY_SUPPORT_ERROR                 => 'Error in support');
+        self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
+
+        self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured');
 
     /**
      * Translate event code to message

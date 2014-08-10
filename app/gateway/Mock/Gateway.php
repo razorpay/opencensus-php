@@ -25,4 +25,14 @@ class Gateway extends BaseGateway
     {
         ;
     }
+
+    public function setTerminal($terminal)
+    {
+        ;
+    }
+
+    public function setMode($mode)
+    {
+        ;
+    }
 }

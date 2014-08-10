@@ -76,47 +76,11 @@ class Entity extends Base\PublicEntity
 
     protected $guarded = array(self::ID);
 
-    protected static $modifiers = array('contact', 'udf');
+    protected static $modifiers = array(self::CONTACT, self::UDF);
 
-    protected static $generators = array('status', 'id', 'udf');
+    protected static $generators = array(self::STATUS, self::ID, self::UDF);
 
-    public function build(array $input = array())
-    {
-        try
-        {
-            parent::build($input);
-        }
-        catch (Exception\ValidationFailureException $e)
-        {
-            $bag = $e->getMessageBag();
-
-            if ($bag->has(self::EMAIL))
-            {
-                $msg = $bag->first(self::EMAIL);
-
-                throw new Exception\FieldErrorException(
-                    $msg,
-                    ErrorCode::FIELD_ERROR_INVALID_EMAIL,
-                    self::EMAIL);
-            }
-
-            if ($bag->has(self::CONTACT))
-            {
-                $msg = $bag->first(self::CONTACT);
-
-                throw new Exception\FieldErrorException(
-                    $msg,
-                    ErrorCode::FIELD_ERROR_INVALID_CONTACT,
-                    self::CONTACT);
-            }
-
-            throw new Exception\BadRequestException($e->getMessageBag(), 0, $e);
-        }
-
-        return $this;
-    }
-
-// --------------------- Generators --------------------------------------
+// --------------------- Generators --------------------------------------------
 
     public function generateStatus($input)
     {
@@ -131,9 +95,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-// --------------------- Generators Ends ------------------------------------
+// --------------------- Generators Ends ---------------------------------------
 
-// --------------------- Modifiers ------------------------------------------
+// --------------------- Modifiers ---------------------------------------------
 
     protected function modifyContact(& $input)
     {
@@ -163,9 +127,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-// --------------------- Modifiers Ends ------------------------------------
+// --------------------- Modifiers Ends ----------------------------------------
 
-// ----------------------- Setters -----------------------------------------
+// ----------------------- Setters ---------------------------------------------
 
     public function setCaptureAmount($amount)
     {
@@ -196,9 +160,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
     }
 
-// ----------------------- Setters Ends-------------------------------------
+// ----------------------- Setters Ends-----------------------------------------
 
-// ----------------------- Mutator -----------------------------------------
+// ----------------------- Mutator ---------------------------------------------
 
     public function setAmountAttribute($amount)
     {
@@ -210,16 +174,16 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::UDF] = serialize($udf);
     }
 
-// ----------------------- Mutator Ends ------------------------------------
+// ----------------------- Mutator Ends ----------------------------------------
 
-// ----------------------- Accessor ----------------------------------------
+// ----------------------- Accessor --------------------------------------------
 
     public function getUdfAttribute($udf)
     {
         return unserialize($udf);
     }
 
-// ----------------------- Accessor Ends -----------------------------------
+// ----------------------- Accessor Ends ---------------------------------------
 
     public function isOpen()
     {
@@ -251,7 +215,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) == $status);
     }
 
-// ----------------------- Getters -----------------------------------------
+// ----------------------- Getters ---------------------------------------------
 
     public function getMerchantId()
     {
@@ -263,7 +227,7 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttribute(self::AMOUNT);
     }
 
-// ----------------------- Getters Ends-------------------------------------
+// ----------------------- Getters Ends-----------------------------------------
 
     public function toArrayWithCard()
     {
@@ -273,7 +237,8 @@ class Entity extends Base\PublicEntity
 
         if ($card === null)
         {
-            throw new Exception\LogicException(ErrorCode::SERVER_ERROR_ASSOCIATED_CARD_NOT_FOUND);
+            throw new Exception\LogicException(
+                ErrorCode::SERVER_ERROR_ASSOCIATED_CARD_NOT_FOUND);
         }
 
         $cardData = $card->getAttributes();
@@ -283,7 +248,7 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-// --------------- Relation to other entities ----------------------
+// --------------- Relation to other entities ----------------------------------
 
     public function card()
     {
@@ -306,7 +271,7 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('hdfc', 'trackid', 'id');
     }
 
-// --------------- Relation to other entity section ends ------------
+// --------------- Relation to other entity section ends -----------------------
 
     public function scopeMerchantId($query, $merchantId)
     {

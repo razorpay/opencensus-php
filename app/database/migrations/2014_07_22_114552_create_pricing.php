@@ -22,13 +22,22 @@ class CreatePricing extends Migration
             $table->char(Pricing::ID, Pricing::ID_LENGTH)
                   ->primary();
 
-            $table->string(Pricing::PLAN);
+            $table->char(Pricing::PLAN_ID, Pricing::ID_LENGTH);
 
-            $table->string(Pricing::GATEWAY);
+            $table->string(Pricing::PLAN_NAME);
 
-            $table->string(Pricing::PAYMENT_METHOD);
+            $table->string(Pricing::GATEWAY)
+                  ->nullable();
 
-            $table->string(Pricing::PAYMENT_METHOD_SUBTYPE);
+            $table->string(Pricing::PAYMENT_MODE);
+
+            $table->string(Pricing::PAYMENT_MODE_TYPE)
+                  ->nullable();
+
+            $table->string(Pricing::PAYMENT_NETWORK);
+
+            $table->string(Pricing::PAYMENT_ISSUER)
+                  ->nullable();
 
             $table->integer(Pricing::PERCENT_RATE)
                   ->unsigned()
