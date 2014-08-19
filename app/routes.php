@@ -18,79 +18,22 @@ use Http\URL;
  | make sure to run the full test suite
  */
 
+//s(Route::getCurrentRequest());
 Route::group(array('prefix' => 'v1'), function()
 {
     Route::group(array('before' => 'auth.public'), function()
     {
-        $method = URL::TXN_CALLBACK_METHOD;
-        Route::$method(
-            URL::TXN_CALLBACK_URL,
-            'TransactionController@postCallback');
-
-        $method = URL::TXN_CREATE_METHOD;
-        Route::$method(
-            URL::TXN_CREATE_URL,
-            'TransactionController@postCreateTransaction');
-
-        $method = URL::TXN_JSONP_METHOD;
-        Route::$method(
-            URL::TXN_JSONP_URL,
-            'TransactionController@getJSONP');
+        URL::addRoutes('public');
     });
 
     Route::group(array('before' => 'auth.private'), function()
     {
-        $method = URL::TXN_RETRIEVE_METHOD;
-        Route::$method(
-            URL::TXN_RETRIEVE_BY_ID_URL,
-            'TransactionController@getTransaction');
-
-        Route::$method(
-            URL::TXN_RETRIEVE_MULTIPLE_URL,
-            'TransactionController@getTransactions');
-
-        $method = URL::TXN_REFUND_METHOD;
-        Route::$method(
-            URL::TXN_REFUND_URL,
-            'TransactionController@postRefund');
-
-        $method = URL::TXN_CAPTURE_METHOD;
-        Route::$method(
-            URL::TXN_CAPTURE_URL,
-            'TransactionController@postCapture');
+        URL::addRoutes('private');
     });
 
     Route::group(array('before' => 'auth.app'), function()
     {
-        Route::post('merchants', 'MerchantController@postCreateMerchant');
-
-        Route::get('merchants/{id}/keys', 'MerchantController@getKeys');
-
-        Route::put('merchants/{merchantId}/keys/{keyId}', 'MerchantController@putKeys');
-
-        Route::post('merchants/{id}/pricing', 'MerchantController@postAssignPricingPlan');
-
-        Route::get('merchants/{id}/pricing', 'MerchantController@getPricingPlan');
-
-        Route::post('merchants/{id}/terminal', 'MerchantController@postCreateTerminal');
-
-        Route::get('merchants/{id}/terminal', 'MerchantController@getTerminals');
-
-        Route::post('merchants/{id}/activate', 'MerchantController@postActivate');
-
-        Route::post('pricing', 'PricingController@postCreatePricingPlan');
-
-        Route::get('pricing', 'PricingController@getPricingPlans');
-
-        Route::get('pricing/merchants', 'PricingController@getMerchantPricingPlans');
-
-        Route::get('pricing/gateways', 'PricingController@getGatewayPricingPlans');
-
-        Route::post('pricing/{id}/rule', 'PricingController@postAddPricingPlanRule');
-
-        Route::get('pricing/{id}', 'PricingController@getPricingPlan');
-
-        Route::get('pricing/{planId}/rule/{ruleId}', 'PricingController@getPricingPlanRule');
+        URL::addRoutes('internal');
     });
 });
 
