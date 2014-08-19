@@ -19,6 +19,7 @@ final class Route
         'transaction_fetch_by_id'   => ['get',  'transactions/{id}',            'TransactionController@getTransaction'],
         'transaction_fetch_multiple'=> ['get',  'transactions/{param?}',        'TransactionController@getTransactions'],
         'merchant_create'           => ['post', 'merchants',                    'MerchantController@postCreateMerchant'],
+        'merchant_create_key'       => ['post', 'merchants/{id}/keys',          'MerchantController@postCreateKeys'],
         'merchant_fetch_keys'       => ['get',  'merchants/{id}/keys',          'MerchantController@getKeys'],
         'merchant_replace_key'      => ['put',  'merchants/{merchantId}/keys/{keyId}', 'MerchantController@putKeys'],
         'merchant_assign_pricing'   => ['post', 'merchants/{id}/pricing',       'MerchantController@postAssignPricingPlan'],
@@ -136,12 +137,12 @@ final class Route
         $router->get('/', function()
         {
             $response['message'] = "Welcome to Razorpay API.";
-            return Http\ApiResponse::json($response);
+            return ApiResponse::json($response);
         });
 
         $router->any('{all}', function($uri)
         {
-            return Http\ApiResponse::routeNotFound();
+            return ApiResponse::routeNotFound();
         })->where('all', '.*');
     }
 
