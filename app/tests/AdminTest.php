@@ -10,9 +10,18 @@ class AdminTest extends IntegrationTestCase
 
     protected $merchant_details;
 
+    protected static $migrated = false;
+
     public function setUp()
     {   
         parent::setUp();
+
+        if(static::$migrated === false)
+        {   
+            //Truncates all tables befor first test
+            $this->truncateAll();
+            static::$migrated = true;
+        }
 
         /** Creates a new admin & merchant if none exist in db, else uses first admin. This is necesssary to persist sessions between tests **/
         try

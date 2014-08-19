@@ -12,13 +12,12 @@ class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
         'merchant_details' => 'Models\DAL\MerchantDetails',
         'admin' => 'Models\DAL\Admin');
 
-
 	public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
 
         //Refresh the db before a test
-        passthru('cd ' . __DIR__ . '/../.. & php artisan migrate:refresh --env=testing');
+        exec('cd ' . __DIR__ . '/../.. & php artisan migrate --env=testing');
     }
 
     public function tearDown()
@@ -61,5 +60,17 @@ class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
     protected static function generateMerchantEmail()
     {
         return static::generateRandomString()."@".static::generateRandomString().".com";
+    }
+
+    protected function truncateAll()
+    {   
+        DB::statement("SET foreign_key_checks=0");
+
+        foreach(static::$fixtures as $model)
+        {
+            $model::truncate();
+        }
+
+        DB::statement("SET foreign_key_checks=1");
     }
 }

@@ -6,9 +6,18 @@ class MerchantTest extends IntegrationTestCase
 {   
     protected $merchant;
 
+    protected static $migrated = false;
+    
     public function setUp()
     {   
         parent::setUp();
+
+        if(static::$migrated === false)
+        {   
+            //Truncates all tables befor first test
+            $this->truncateAll();
+            static::$migrated = true;
+        }
 
         //Creates a new merchant if none exists in db otherwise uses that. This is necessary for persisting sessions between tests
         try
