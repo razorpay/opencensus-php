@@ -16,6 +16,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                      ->orderBy(Pricing\Entity::ID, 'desc')
                      ->get();
     }

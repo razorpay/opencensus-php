@@ -50,6 +50,11 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
      * Returns an array containing multiple plans
      * Has the normal attributes 'entity', 'collection',
      * 'count' etc. with pricing plans and thie rrules
+     * The function assumes that the plan rules in the
+     * collection are already sorted descending by
+     * plan_id and id. Actually, this should be ensured
+     * when fetching data from repository
+     *
      * @return array collection of multiple plans
      */
     public function toArrayMultiplePlansPublic()
@@ -62,8 +67,6 @@ class Plan extends \Illuminate\Database\Eloquent\Collection
         }
 
         $data = & $plans['data'];
-
-        $this->sortBy('plan_id');
 
         $first = true;
         $plan = array(self::ID => null);
