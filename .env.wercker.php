@@ -19,8 +19,8 @@
     /**
      * API Details
      */
-    'API_URL'           => 'https://api.razorpay.com',
-    'API_AUTH_PASS'     => '',
+    'API_URL'           => 'https://beta.razorpay.com/v1/',
+    'API_AUTH_PASS'     => getenv('API_AUTH_PASS'),
 
     /**
      *  QUEUE System Configuration
