@@ -11,4 +11,9 @@ class Validator extends \Razorpay\Spine\Validation\Validator
     {
         throw new Exception\ExtraFieldsException($extraFields);
     }
+
+    protected function processValidationFailure($messages, $operation, $input)
+    {
+        throw new Exception\BadRequestException($messages);
+    }
 }
