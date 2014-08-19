@@ -48,9 +48,9 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
-        $merchantIdArr['id'] = $input['id'];
-
         $merchant = (new Merchant\Entity)->build($input);
+
+        $merchantIdArr['id'] = $input['id'];
 
         $this->merchantRepository->saveOrFail($merchant);
 
