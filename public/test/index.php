@@ -10,7 +10,7 @@ if (file_exists($envFile))
     $env = require $envFile;
 }
 
-$baseurl = "api.razorpay.com";
+$baseurl = "api.razorpay.com/v1";
 
 if ($env === 'dev')
 {
