@@ -35,24 +35,24 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testGetPricingPlan()
-    {
-        $id = $this->createPricingPlan2()['id'];
+    // public function testGetPricingPlan()
+    // {
+    //     $id = $this->createPricingPlan2()['id'];
 
-        $testData['request']['url'] = '/pricing/'.$id;
-        $testData['request']['method'] = 'GET';
+    //     $testData['request']['url'] = '/pricing/'.$id;
+    //     $testData['request']['method'] = 'GET';
 
-        $this->startTest($testData);
-    }
+    //     $this->startTest($testData);
+    // }
 
-    public function testGetPricingPlans()
-    {
-        $this->createPricingPlan();
+    // public function testGetPricingPlans()
+    // {
+    //     $this->createPricingPlan();
 
-        $this->createPricingPlan2();
+    //     $this->createPricingPlan2();
 
-        $this->startTest();
-    }
+    //     $this->startTest();
+    // }
 
     public function testMerchantAssignPricingPlan()
     {

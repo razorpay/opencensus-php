@@ -121,13 +121,49 @@ return [
                 'entity' => 'collection',
                 'data' => array(
                     array(
-                        'name' => 'testFixturePlan',
+                        'name' => 'TestPlan2',
                         'entity' => 'pricing_plan',
-                        'count' => 1,
+                        'count' => 4,
                         'rules' => array(
-                            array()
+                            array(
+                                'plan_name' => 'TestPlan2',
+                                'gateway' => NULL,
+                                'payment_mode' => 'card',
+                                'payment_mode_type' => 'credit',
+                                'payment_network' => 'MC',
+                                'payment_issuer' => 'AXIS',
+                                'percent_rate' => '0',
+                                'fixed_rate' => '3000',
                             ),
-                        ),
+                            array(
+                                'plan_name' => 'TestPlan2',
+                                'payment_mode' => 'card',
+                                'payment_mode_type' => 'debit',
+                                'payment_network' => 'MAES',
+                                'payment_issuer' => 'PUNB',
+                                'percent_rate' => 250,
+                                'fixed_rate' => 0,
+                            ),
+                            array(
+                                'plan_name' => 'TestPlan2',
+                                'payment_mode' => 'card',
+                                'payment_mode_type' => 'credit',
+                                'payment_network' => 'DICL',
+                                'payment_issuer' => 'ICIC',
+                                'percent_rate' => 250,
+                                'fixed_rate' => 0,
+                            ),
+                            array(
+                                'plan_name' => 'TestPlan2',
+                                'payment_mode' => 'card',
+                                'payment_mode_type' => 'credit',
+                                'payment_network' => 'DICL',
+                                'payment_issuer' => 'SBIN',
+                                'percent_rate' => 275,
+                                'fixed_rate' => 0,
+                            ),
+                        )
+                    ),
                     array(
                         'name' => 'TestPlan1',
                         'entity' => 'pricing_plan',
@@ -147,49 +183,13 @@ return [
                         )
                     ),
                     array(
-                        'name' => 'TestPlan2',
+                        'name' => 'testFixturePlan',
                         'entity' => 'pricing_plan',
-                        'count' => 4,
+                        'count' => 1,
                         'rules' => array(
-                            array(
-                                'plan_name' => 'TestPlan2',
-                                'payment_mode' => 'card',
-                                'payment_mode_type' => 'credit',
-                                'payment_network' => 'DICL',
-                                'payment_issuer' => 'SBIN',
-                                'percent_rate' => 275,
-                                'fixed_rate' => 0,
+                            array()
                             ),
-                            array(
-                                'plan_name' => 'TestPlan2',
-                                'payment_mode' => 'card',
-                                'payment_mode_type' => 'credit',
-                                'payment_network' => 'DICL',
-                                'payment_issuer' => 'ICIC',
-                                'percent_rate' => 250,
-                                'fixed_rate' => 0,
-                            ),
-                            array(
-                                'plan_name' => 'TestPlan2',
-                                'payment_mode' => 'card',
-                                'payment_mode_type' => 'debit',
-                                'payment_network' => 'MAES',
-                                'payment_issuer' => 'PUNB',
-                                'percent_rate' => 250,
-                                'fixed_rate' => 0,
-                            ),
-                            array(
-                                'plan_name' => 'TestPlan2',
-                                'gateway' => NULL,
-                                'payment_mode' => 'card',
-                                'payment_mode_type' => 'credit',
-                                'payment_network' => 'MC',
-                                'payment_issuer' => 'AXIS',
-                                'percent_rate' => '0',
-                                'fixed_rate' => '3000',
-                            ),
-                        )
-                    )
+                        ),
                 )
             ]
         ]
