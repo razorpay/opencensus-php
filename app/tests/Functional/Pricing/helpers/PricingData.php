@@ -9,7 +9,7 @@ return [
     'testCreatePricingPlan' => [
         'request' => [
             'content' => [
-                'plan_name' => 'haha',
+                'plan_name' => 'TestPlan1',
                 'payment_mode' => 'card',
                 'payment_mode_type'  => 'credit',
                 'payment_network' => 'DICL',
@@ -21,12 +21,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'name' => 'haha',
+                'name' => 'TestPlan1',
                 'entity' => 'pricing_plan',
                 'count' => 1,
                 'rules' => array(
                     array(
-                        'plan_name' => 'haha',
+                        'plan_name' => 'TestPlan1',
                         'payment_mode' => 'card',
                         'payment_mode_type'  => 'credit',
                         'payment_network' => 'DICL',
@@ -51,7 +51,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'haha',
+                'plan_name' => 'TestPlan1',
                 'payment_mode' => 'card',
                 'payment_mode_type' => 'credit',
                 'payment_network' => 'MAES',
@@ -64,12 +64,12 @@ return [
     'testGetPricingPlan' => [
         'response' => [
             'content' => [
-                'name' => 'testPlan',
+                'name' => 'TestPlan2',
                 'entity' => 'pricing_plan',
                 'count' => 4,
                 'rules' => array(
                     array(
-                        'plan_name' => 'testPlan',
+                        'plan_name' => 'TestPlan2',
                         'payment_mode' => 'card',
                         'payment_mode_type' => 'credit',
                         'payment_network' => 'MC',
@@ -78,7 +78,7 @@ return [
                         'fixed_rate' => 3000,
                     ),
                     array(
-                        'plan_name' => 'testPlan',
+                        'plan_name' => 'TestPlan2',
                         'payment_mode' => 'card',
                         'payment_mode_type' => 'debit',
                         'payment_network' => 'MAES',
@@ -87,7 +87,7 @@ return [
                         'fixed_rate' => 0,
                     ),
                     array(
-                        'plan_name' => 'testPlan',
+                        'plan_name' => 'TestPlan2',
                         'payment_mode' => 'card',
                         'payment_mode_type' => 'credit',
                         'payment_network' => 'DICL',
@@ -96,14 +96,14 @@ return [
                         'fixed_rate' => 0,
                     ),
                     array(
-                        'plan_name' => "testPlan",
+                        'plan_name' => 'TestPlan2',
                         'gateway' => NULL,
-                        'payment_mode' => "card",
-                        'payment_mode_type' => "credit",
-                        'payment_network' => "DICL",
-                        'payment_issuer' => "SBIN",
-                        'percent_rate' => "275",
-                        'fixed_rate' => "0",
+                        'payment_mode' => 'card',
+                        'payment_mode_type' => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'SBIN',
+                        'percent_rate' => '275',
+                        'fixed_rate' => '0',
                     ),
                 )
             ]
@@ -121,30 +121,38 @@ return [
                 'entity' => 'collection',
                 'data' => array(
                     array(
-                        'name' => "haha",
-                        'entity' => "pricing_plan",
+                        'name' => 'testFixturePlan',
+                        'entity' => 'pricing_plan',
+                        'count' => 1,
+                        'rules' => array(
+                            array()
+                            ),
+                        ),
+                    array(
+                        'name' => 'TestPlan1',
+                        'entity' => 'pricing_plan',
                         'count' => 1,
                         'rules' => array(
                             array(
-                                'plan_name' =>  "haha",
+                                'plan_name' =>  'TestPlan1',
                                 'gateway' => NULL,
-                                'payment_mode' =>  "card",
-                                'payment_mode_type' => "credit",
-                                'payment_network' =>  "DICL",
-                                'payment_issuer' =>  "HDFC",
-                                'percent_rate' =>  "1000",
-                                'fixed_rate' =>  "0",
+                                'payment_mode' =>  'card',
+                                'payment_mode_type' => 'credit',
+                                'payment_network' =>  'DICL',
+                                'payment_issuer' =>  'HDFC',
+                                'percent_rate' =>  '1000',
+                                'fixed_rate' =>  '0',
                                 'expired_at' => NULL
                             )
                         )
                     ),
                     array(
-                        'name' => 'testPlan',
+                        'name' => 'TestPlan2',
                         'entity' => 'pricing_plan',
                         'count' => 4,
                         'rules' => array(
                             array(
-                                'plan_name' => 'testPlan',
+                                'plan_name' => 'TestPlan2',
                                 'payment_mode' => 'card',
                                 'payment_mode_type' => 'credit',
                                 'payment_network' => 'DICL',
@@ -153,7 +161,7 @@ return [
                                 'fixed_rate' => 0,
                             ),
                             array(
-                                'plan_name' => 'testPlan',
+                                'plan_name' => 'TestPlan2',
                                 'payment_mode' => 'card',
                                 'payment_mode_type' => 'credit',
                                 'payment_network' => 'DICL',
@@ -162,7 +170,7 @@ return [
                                 'fixed_rate' => 0,
                             ),
                             array(
-                                'plan_name' => 'testPlan',
+                                'plan_name' => 'TestPlan2',
                                 'payment_mode' => 'card',
                                 'payment_mode_type' => 'debit',
                                 'payment_network' => 'MAES',
@@ -171,14 +179,14 @@ return [
                                 'fixed_rate' => 0,
                             ),
                             array(
-                                'plan_name' => "testPlan",
+                                'plan_name' => 'TestPlan2',
                                 'gateway' => NULL,
-                                'payment_mode' => "card",
-                                'payment_mode_type' => "credit",
-                                'payment_network' => "MC",
-                                'payment_issuer' => "AXIS",
-                                'percent_rate' => "0",
-                                'fixed_rate' => "3000",
+                                'payment_mode' => 'card',
+                                'payment_mode_type' => 'credit',
+                                'payment_network' => 'MC',
+                                'payment_issuer' => 'AXIS',
+                                'percent_rate' => '0',
+                                'fixed_rate' => '3000',
                             ),
                         )
                     )
@@ -194,7 +202,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name' => 'haha',
+                'name' => 'TestPlan1',
                 'entity' => 'pricing_plan',
                 'count' => 1,
                 'rules' => array(
@@ -217,7 +225,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name' => 'haha',
+                'name' => 'TestPlan1',
                 'entity' => 'pricing_plan',
                 'count' => 1,
                 'rules' => array(
@@ -240,7 +248,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'name' => 'testPlan',
+                'name' => 'TestPlan2',
                 'entity' => 'pricing_plan',
                 'count' => 4,
                 'rules' => array(

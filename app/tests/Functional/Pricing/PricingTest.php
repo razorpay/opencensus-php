@@ -128,7 +128,7 @@ class PricingTest extends TestCase
     protected function createPricingPlan()
     {
         $pricingPlan = array(
-            'plan_name' => 'haha',
+            'plan_name' => 'TestPlan1',
             'payment_mode' => 'card',
             'payment_mode_type'  => 'credit',
             'payment_network' => 'DICL',
@@ -155,7 +155,7 @@ class PricingTest extends TestCase
     protected function createPricingPlan2()
     {
         $planData = array(
-            'plan_name' => 'testPlan',
+            'plan_name' => 'TestPlan2',
             'payment_mode' => 'card',
             'payment_mode_type' => 'credit',
             'payment_network' => 'DICL',
