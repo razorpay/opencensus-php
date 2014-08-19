@@ -101,7 +101,7 @@ class Authorize extends Action
 
     protected function attachCallbackUrl(& $callbackData)
     {
-        $urlSegment = \Http\URL::TXN_CALLBACK_URL;
+        $urlSegment = \Http\Route::getApiRoute('transaction_callback')[1];
 
         $pos = strrpos($urlSegment, '/');
 

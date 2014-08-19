@@ -50,13 +50,6 @@ class ApiResponse
         $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
     }
 
-    protected static function isJsonpUrl($request)
-    {
-        $urlSegment = $request->path();
-
-        return URL::isJsonpUrl($urlSegment);
-    }
-
     protected static function attachJsonpCallback($request, $response)
     {
         $callback = $request->input('callback');
@@ -86,7 +79,9 @@ class ApiResponse
 
         $jsonp = false;
 
-        if (self::isJsonpRequired($data, $request))
+        $path = \Request::path();
+
+        if (self::isJsonpRequired($path))
         {
             $data['http_status_code'] = $status;
 
@@ -105,10 +100,10 @@ class ApiResponse
         return $response;
     }
 
-    protected static function isJsonpRequired($data, $request)
+    protected static function isJsonpRequired($path)
     {
         self::$jsonp = ((self::$jsonp !== false) and
-                        (self::isJsonpUrl($request)));
+                        (Route::isJsonpRoute($path)));
 
         return self::$jsonp;
     }
