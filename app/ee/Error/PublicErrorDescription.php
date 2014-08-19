@@ -127,6 +127,9 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED =
         'The merchant has no pricing assigned';
 
+    const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED =
+        'The merchant keys have already been created';
+
     const BAD_REQUEST_GATEWAY_TERMINAL_ID_EXISTS_FOR_MERCHANT =
         'A terminal id has already been assigned to this merchant';
 

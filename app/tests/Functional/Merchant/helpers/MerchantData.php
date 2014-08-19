@@ -19,7 +19,6 @@ return [
         'response' => [
             'content' => [
                 'id' => '41ce4abda390575910cba897',
-                'key' => [],
             ],
         ],
     ],

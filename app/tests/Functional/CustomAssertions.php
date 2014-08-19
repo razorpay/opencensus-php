@@ -6,8 +6,6 @@ trait CustomAssertions
 {
     public function assertExceptionClass($e, $class)
     {
-        $actual = get_class($e);
-
         $this->assertInstanceOf($class, $e);
     }
 

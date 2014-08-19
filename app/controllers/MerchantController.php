@@ -9,7 +9,14 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $data = (new Merchant\Service)->register($input);
+        $data = (new Merchant\Service)->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postCreateKeys($merchantId)
+    {
+        $data = (new Merchant\Service)->createKey($merchantId);
 
         return ApiResponse::json($data);
     }

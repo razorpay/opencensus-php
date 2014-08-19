@@ -25,21 +25,6 @@ class Service extends Base\Service
         $this->keyRepository = new Key\Repository();
     }
 
-    public function register(array $input)
-    {
-        $merchant = $this->create($input);
-
-        $merchantId = $merchant->getKey();
-
-        $keyData = (new Key\Core)->createAndReturnWithSecret($merchantId);
-
-        $data = $merchant->toArray();
-
-        $data['key'] = $keyData;
-
-        return $data;
-    }
-
     /**
      * Creates a merchant and saves in database
      *
@@ -58,7 +43,25 @@ class Service extends Base\Service
 
         $this->merchantRepository->saveOrFail($merchantBalance);
 
-        return $merchant;
+        return $merchant->toArray();
+    }
+
+    public function createKey($merchantId)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($merchantId);
+
+        $keys = $this->keyRepository->getKeysForMerchant($merchantId);
+
+        if (count($keys) > 0)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED);
+        }
+
+        $keyData = (new Key\Core)->createAndReturnWithSecret($merchantId);
+
+        return $keydata;
     }
 
     public function updateKey($merchantId, $keyId, array $input)
