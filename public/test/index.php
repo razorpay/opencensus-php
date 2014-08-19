@@ -1,21 +1,9 @@
 <?php
 
 // Look for app/bootstrap/environment.php
-$envFile = __DIR__ . '/../../bootstrap/environment.php';
+// $envFile = __DIR__ . '/../../bootstrap/environment.php';
 
-$env = null;
-
-if (file_exists($envFile))
-{
-    $env = require $envFile;
-}
-
-$baseurl = "api.razorpay.com/v1";
-
-if ($env === 'dev')
-{
-    $baseurl = 'rzp';
-}
+$baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 
 $key_id = 'd9c6bf091a1a64cb5678d8c1';
 $secret = 'thisissupersecret';
