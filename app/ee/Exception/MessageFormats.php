@@ -182,7 +182,7 @@ trait MessageFormats
         switch($category)
         {
             case 'BadRequest':
-                $code = 'BAD_REQUEST_ERROR';
+                $code = 'BAD_REQUEST_VALIDATION_FAILURE';
                 break;
             case 'FieldError':
                 $code = 'FIELD_ERROR_INVALID_'.strtoupper($field);

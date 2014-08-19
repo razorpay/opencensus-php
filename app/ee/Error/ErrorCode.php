@@ -83,6 +83,7 @@ class ErrorCode
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                            = 'BAD_REQUEST_ONLY_HTTPS_ALLOWED';
     const BAD_REQUEST_ERROR                                         = 'BAD_REQUEST_ERROR';
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
+    const BAD_REQUEST_VALIDATION_FAILURE                            = 'BAD_REQUEST_VALIDATION_FAILURE';
 
 // Unauthorized bad requests
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED               = 'BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED';
