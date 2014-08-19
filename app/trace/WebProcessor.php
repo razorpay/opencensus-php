@@ -2,6 +2,7 @@
 
 namespace Trace;
 
+use Http\URL;
 use Request;
 
 /**
@@ -52,7 +53,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
     protected function unsetUrlForSensitiveUrls(& $serverData)
     {
-        $sensitiveUrls = \Http\URL::getDoNotLogURLs();
+        $sensitiveUrls = URL::getDoNotLogURLs();
 
         if (in_array($serverData['url'], $sensitiveUrls))
         {
