@@ -251,24 +251,31 @@ class Admin extends Service
             return array('Activation form has not been submitted by merchant yet.');
         }
 
-        if((int)$merchant->live === 1)
+        if((int)$merchant->activated === 1)
         {
             return array('Merchant is already active.');
         }
         
         if(empty($this->fetchMerchantPricing($id)))
         {
-            return array('Merchant must be assigned a pricing plan before he goes live');
+            return array('Merchant must be assigned a pricing plan before he is activated');
         }
 
         if(empty($this->fetchMerchantTerminal($id)))
         {
-            return array('Merchant must be assigned a gateway terminal before he goes live');
+            return array('Merchant must be assigned a gateway terminal before he is activated');
         }
 
-        //@todo mark merchant live in api first
-        
-        $merchant->live = 1;
+        $request = (new Request)->setCredentials();
+
+        $response = $request->process('POST', 'merchants/'.$id.'/activate/');
+
+        if(isset($response['error']))
+        {
+            return array(json_encode($response['error']['description']));
+        } 
+     
+        $merchant->activated = 1;
         $merchant->save();
 
         $this->lockMerchant($id);
@@ -282,14 +289,14 @@ class Admin extends Service
 
         $details = $this->fetchMerchantDetails($id);
 
-        if((int)$merchant->live === 0)
+        if((int)$merchant->activated === 0)
         {
             return array('Merchant is already inactive.');
         }
 
         //@todo mark merchant inactive in api first
             
-        $merchant->live = 0;
+        $merchant->activated = 0;
         $merchant->save();  
         
         return array();
