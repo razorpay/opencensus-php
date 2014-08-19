@@ -26,7 +26,14 @@ class Request extends Service
         
         if(isset($array['error']['message'])) 
         {
-            echo $response->body; die();
+            if(Config::get('app.debug'))
+            {
+                echo $response->body; die();
+            }
+            else
+            {
+                \App::abort('500', "Gateway reported error");
+            }      
         }
 
         return $array;
