@@ -26,7 +26,7 @@ class Request extends Service
         
         if(isset($array['error']['message'])) 
         {
-            if(Config::get('app.debug'))
+            if(\Config::get('app.debug'))
             {
                 echo $response->body; die();
             }
