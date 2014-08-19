@@ -118,13 +118,17 @@ class UniqueIdEntity extends Entity
     public static function generateUniqueId()
     {
         $len = self::ID_LENGTH;
-        list($usec, $sec) = explode(" ", microtime());
 
-        $usec = $sec * 1000000 + (int) ($usec * 1000000);
+        // list($usec, $sec) = explode(" ", microtime());
+        // $usec = $sec * 1000000 + (int) ($usec * 1000000);
+        // $hexTimeFull = dechex($usec);
+        // $hexTime = substr($hexTimeFull, 3);
 
-        $hexTime = substr(dechex($usec), 3);
+        exec('date +%s%N', $nanotime, $status);
+        $hextime = dechex($nanotime[0]);
 
-        $id = $hexTime . bin2hex(openssl_random_pseudo_bytes(($len - 10)/2));
+        $id = $hextime . bin2hex(openssl_random_pseudo_bytes(($len - 16)/2));
+        //$id = bin2hex(openssl_random_pseudo_bytes(($len)/2));
 
         return $id;
     }
