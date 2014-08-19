@@ -4,8 +4,6 @@ namespace Http;
 
 final class Route
 {
-    protected static $router;
-
     /*
      | The order in which routes are defined is very important.
      | Whenever the order of routes is changed,
@@ -32,9 +30,9 @@ final class Route
         'pricing_get_plans'         => ['get',  'pricing',                      'PricingController@getPricingPlans'],
         'pricing_get_merchant_plans'=> ['get',  'pricing/merchants',            'PricingController@getMerchantPricingPlans'],
         'pricing_get_gateway_plans' => ['get',  'pricing/gateways',             'PricingController@getGatewayPricingPlans'],
-        'pricing_add_plan_rule'     => ['post', 'pricing/{id}/rule',            'PricingController@postAddPricingPlanRule'],
-        'pricing_get_by_id'         => ['get',  'pricing/{id}',                 'PricingController@getPricingPlan'],
+        'pricing_get_plan'          => ['get',  'pricing/{id}',                 'PricingController@getPricingPlan'],
         'pricing_get_plan_rule'     => ['get',  'pricing/{planId}/rule/{ruleId}', 'PricingController@getPricingPlanRule'],
+        'pricing_add_plan_rule'     => ['post', 'pricing/{id}/rule',            'PricingController@postAddPricingPlanRule'],
         );
 
     public static $public = array(
@@ -64,9 +62,11 @@ final class Route
         'pricing_get_merchant_plans',
         'pricing_get_gateway_plans',
         'pricing_add_plan_rule',
-        'pricing_get_by_id',
+        'pricing_get_plan',
         'pricing_get_plan_rule',
         );
+
+    protected static $router;
 
     public static function setRouter($router)
     {
