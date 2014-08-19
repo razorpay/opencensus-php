@@ -8,11 +8,6 @@ trait CustomAssertions
     {
         $actual = get_class($e);
 
-        if ($class !== $actual)
-        {
-            throw $e;
-        }
-
         $this->assertInstanceOf($class, $e);
     }
 
