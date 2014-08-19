@@ -76,18 +76,26 @@ class TestCase extends ParentTestCase
      * You can use your key and secret by overriding this
      * function in child classes.
      */
-    protected function setupBasicAuthParams()
+    protected function setupBasicAuthParams($user = null, $pwd = null)
     {
-        $this->auth = array(
-               'PHP_AUTH_USER' => 'rzp_test_d9c6bf091a1a64cb5678d8c1',
-               'PHP_AUTH_PW' => 'thisissupersecret');
-    }
+        if ($user === null)
+        {
+            $user = 'rzp_test_d9c6bf091a1a64cb5678d8c1';
+        }
 
-    protected function setupAppBasicAuthParams($pwd = 'DASHBOARD_AUTH_PASS', $user = '')
-    {
+        if ($pwd === null)
+        {
+            $pwd = 'thisissupersecret';
+        }
+
         $this->auth = array(
                'PHP_AUTH_USER' => $user,
                'PHP_AUTH_PW' => $pwd);
+    }
+
+    protected function setupAppBasicAuthParams($user = '', $pwd = 'DASHBOARD_AUTH_PASS')
+    {
+        $this->setupBasicAuthParams($user, $pwd);
     }
 
     public function tearDown()
