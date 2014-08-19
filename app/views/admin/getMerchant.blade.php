@@ -44,7 +44,7 @@
             <br/>
 
             <h4>Activation Status:
-            @if((int)$details['submitted'] === 1 and (int)$details['merchant']['live'] === 0)
+            @if((int)$details['submitted'] === 1 and (int)$details['merchant']['activated'] === 0)
                 Inactive <br/>
                     <a
                     href="{{{$details['merchant']['id']}}}/activate?_token={{{csrf_token()}}}"

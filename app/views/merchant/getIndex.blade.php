@@ -110,8 +110,8 @@
 						<div class="col-2-3" id="account-name"></div>
 						<div class="col-1-3">Email</div>
 						<div class="col-2-3" id="account-email"></div>
-						<div class="col-1-3">Live</div>
-						<div class="col-2-3" id="account-live"></div>
+						<div class="col-1-3">Activated</div>
+						<div class="col-2-3" id="account-activated"></div>
 						<div class="col-1-3">Password</div>
 						<div class="col-2-3" id="account-password"><a href="/password">Change Password</a></div>
 					</div>

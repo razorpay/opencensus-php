@@ -22,7 +22,8 @@ class CreateMerchants extends Migration {
 
             $table->string('email', 255)->unique();
 
-            $table->boolean('live')->default(0);
+            $table->boolean('activated')
+                  ->default(0);
 
             $table->string('password', 100);
 

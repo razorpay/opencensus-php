@@ -18,7 +18,8 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         'name',
         'email',
         'password',
-        'confirm_token'
+        'confirm_token',
+        'activated'
     );
 
     public function transactions()
@@ -166,6 +167,6 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
 
     public function isActive()
     {
-        return ((int)$this->live === 1);
+        return ((int)$this->activated === 1);
     }
 }

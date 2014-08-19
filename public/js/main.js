@@ -296,10 +296,10 @@ $(document).ready(function()
         renderAccountDetails: function(data) {
             $('#account-name').html(data.name);
             $('#account-email').html(data.email);
-            if(data.live === "0") {
-                $('#account-live').html('No');
+            if(data.activated === "0") {
+                $('#account-activated').html('No');
             } else {
-                $('#account-live').html('Yes');
+                $('#account-activated').html('Yes');
             }
         },
 

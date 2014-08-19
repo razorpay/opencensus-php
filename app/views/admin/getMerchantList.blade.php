@@ -26,7 +26,7 @@
             @endif
             </td>
             <td>
-            @if($merchant['live'])
+            @if($merchant['activated'])
             Yes
             @else
             No
