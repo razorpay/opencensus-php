@@ -32,27 +32,25 @@ class CloudInstanceDataProcessor
 
     public function getInstanceData()
     {
-        $str = $this->getInstanceDataString();
+        $data = $this->getFullInstanceData();
 
-        return $this->parseInstanceDataString($str);
+        return $this->getRelevantInstanceData($data);
     }
 
-    public function getInstanceDataString()
+    public function getFullInstanceData()
     {
-        $data = array();
-
         exec('ec2metadata 2> /dev/null', $output, $status);
 
         if ($status === 0)
-            return $data;
+            return null;
+
+        return $output;
     }
 
-    public function parseInstanceDataString($str)
+    public function getRelevantInstanceData($data)
     {
-        if ($str === null)
+        if ($data === null)
             return;
-
-        $data = explode('\n', $str);
 
         $relevantData = array();
 
