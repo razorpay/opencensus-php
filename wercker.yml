@@ -43,7 +43,7 @@ deploy:
           name: Create lease on AWS
           code: wget -O /dev/null https://ac.razorpay.com/invite/$concierge_token --quiet
       - add-to-known_hosts:
-          hostname: api.razorpay.com
+          hostname: $WERCKER_DEPLOYTARGET_NAME
       - mktemp:
           envvar: PRIVATEKEY_PATH
       - create-file:
@@ -56,7 +56,7 @@ deploy:
           name: Put application in maintenance mode
           code: >
                 ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
-                -o StrictHostKeyChecking=no api.razorpay.com
+                -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
                 "(cd ~/api/ && php artisan down)"
       - script:
           name: copy with rsync over ssh
@@ -64,18 +64,18 @@ deploy:
                 rsync -avz --force --delete --progress
                 --exclude-from=.rsyncignore
                 -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-                ./ ubuntu@api.razorpay.com:/home/ubuntu/api/
+                ./ ubuntu@$WERCKER_DEPLOYTARGET_NAME:/home/ubuntu/api/
       - script:
           name: Perform DB migrations
           code: >
                 ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
-                -o StrictHostKeyChecking=no api.razorpay.com
+                -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
                 "(cd ~/api/ && php artisan migrate)"
       - script:
           name: start application
           code: >
                 ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
-                -o StrictHostKeyChecking=no api.razorpay.com
+                -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
                 "(cd ~/api/ && php artisan up)"
     after-steps:
       - sherzberg/slack-notify:
