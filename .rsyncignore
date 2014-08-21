@@ -1,6 +1,6 @@
 .env.local.php
 .env.php
 /bootstrap/environment.php
-/app/storage/*
+/app/storage/logs/*
 /.git/*
 /report
