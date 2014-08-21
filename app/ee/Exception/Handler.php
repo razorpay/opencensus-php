@@ -5,92 +5,52 @@ namespace EE\Exception;
 use App;
 use Config;
 use Http\ApiResponse;
-use Whoops\Handler\PrettyPageHandler;
 
 class Handler
 {
+    protected $app;
+
+    protected $debug;
+
     public function __construct()
     {
+        $this->app = App::getFacadeRoot();
+
+        $this->debug = Config::get('app.debug');
+
         $this->registerExceptionHandlers();
     }
 
     public function registerExceptionHandlers()
     {
-        $this->registerWhoopsJsonResponseHandler();
-
-        //
-        // Register whoops display handler
-        //
-        App::error(function(\Exception $e, $code)
-        {
-            return $this->whoopsExceptionDisplayHandler();
-        });
-
-        App::error(function(\Exception $e, $code)
+        $this->app->error(function(\Exception $e, $code)
         {
             return $this->genericExceptionHandler($e, $code);
         });
 
-        //
-        // Register base gateway exception handler
-        //
-        App::error(function(BaseException $e, $code)
+        $this->app->error(function(BaseException $e, $code)
         {
             return $this->baseExceptionHandler($e, $code);
         });
-
-        App::error(function(ServerErrorException $e, $code)
-        {
-            return $this->serverErrorExceptionHandler($e, $code);
-        });
-    }
-
-    protected function registerWhoopsJsonResponseHandler()
-    {
-        $whoops = App::make('whoops');
-        $whoopsJsonResponseHandler = new \Whoops\Handler\JsonResponseHandler();
-        $whoopsJsonResponseHandler->addTraceToOutput(true);
-        $whoops->pushHandler($whoopsJsonResponseHandler);
-    }
-
-    public function whoopsExceptionDisplayHandler()
-    {
-        // Use the Laravel IoC container to get the Whoops\Run instance, if whoops
-        // is available (which will be the case, by default, in the dev
-        // environment)
-
-        if ((App::bound('whoops')) and
-           (Config::get('app.debug')))
-        {
-            $whoops = App::bound('whoops');
-
-            // $whoops->pushHandler(new \Whoops\Handler\JsonResponseHandler);
-
-            // Retrieve the whoops handler in charge of displaying exceptions:
-            $whoopsDisplayHandler = App::make("whoops.handler");
-
-            // Laravel will use the PrettyPageHandler by default, unless this
-            // is an AJAX request, in which case it'll use the JsonResponseHandler:
-            if ($whoopsDisplayHandler instanceof PrettyPageHandler)
-            {
-                // Set a custom page title for our error page:
-                $whoopsDisplayHandler->setPageTitle("Mayday! Mayday! Don't push the code!");
-
-                // Set the "open:" link for files to our editor of choice:
-                $whoopsDisplayHandler->setEditor("sublime");
-
-                $records = \Trace\Trace::getInstance()->getFlattenedRecordsForScreen();
-
-                $whoopsDisplayHandler->addDataTable('Trace', $records);
-            }
-        }
     }
 
     public function genericExceptionHandler(\Exception $exception)
     {
         $this->traceException($exception);
 
-        if (Config::get('app.debug') === false)
+        //
+        // When running in console, throw the exception, irrespective
+        // of debug config
+        //
+        if ($this->app->runningInConsole())
+        {
+            return;
+        }
+
+        //
+        // If debug is false, then return standard server error response
+        //
+        if ($this->debug === false)
         {
             return ApiResponse::serverError();
         }
@@ -98,14 +58,11 @@ class Handler
 
     public function baseExceptionHandler(BaseException $exception, $code)
     {
-        if (Config::get('app.debug'))
+        if ($this->debug)
         {
-            //
-            // Throw ServerErrorException (internal server errors)
-            // for 'dev' environment to help debugging.
-            // For non-dev, only public json is shown.
-            // @todo: log exception for non-dev environments;
-            //
+            // ServerError is fatal error and shoudn't be encountered
+            // Let the higher-ups handle it. This function handle
+            // known/expected exceptions
             if ($exception instanceof ServerErrorException)
                 return;
 
@@ -113,11 +70,6 @@ class Handler
         }
 
         return $exception->generatePublicJsonResponse();
-    }
-
-    public function serverErrorExceptionHandler(ServerErrorException $exception, $code)
-    {
-        return;
     }
 
     protected function traceException(\Exception $exception)
