@@ -30,6 +30,11 @@ App::before(function()
         Config::set('database.default', 'test');
     }
 
+    if ($mode === 'live')
+    {
+        Config::set('database.default', 'live');
+    }
+
     return BasicAuth::validateKeyExistence();
 });
 
