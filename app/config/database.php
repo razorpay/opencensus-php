@@ -26,7 +26,7 @@ return array(
     |
     */
 
-    'default' => $_ENV['DB_DRIVER'],
+    'default' => $_ENV['DB_DEFAULT_CONNECTION'],
 
     /*
     |--------------------------------------------------------------------------
@@ -46,19 +46,26 @@ return array(
 
     'connections' => array(
 
-        'sqlite' => array(
-            'driver'   => 'sqlite',
-            'database' => ':memory:',
-            'prefix'   => '',
+        'live' => array(
+            'driver'    => $_ENV['DB_LIVE_DRIVER'],
+            'host'      => $_ENV['DB_LIVE_HOST'],
+            'port'      => $_ENV['DB_LIVE_PORT'],
+            'database'  => $_ENV['DB_LIVE_DATABASE'],
+            'username'  => $_ENV['DB_LIVE_USERNAME'],
+            'password'  => $_ENV['DB_LIVE_PASSWORD'],
+            'charset'   => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix'    => '',
+            'strict'    => true
         ),
 
-        'mysql' => array(
-            'driver'    => 'mysql',
-            'host'      => $_ENV['DB_MYSQL_HOST'],
-            'port'      => $_ENV['DB_MYSQL_PORT'],
-            'database'  => $_ENV['DB_MYSQL_DATABASE'],
-            'username'  => $_ENV['DB_MYSQL_USERNAME'],
-            'password'  => $_ENV['DB_MYSQL_PASSWORD'],
+        'test' => array(
+            'driver'    => $_ENV['DB_TEST_DRIVER'],
+            'host'      => $_ENV['DB_TEST_HOST'],
+            'port'      => $_ENV['DB_TEST_PORT'],
+            'database'  => $_ENV['DB_TEST_DATABASE'],
+            'username'  => $_ENV['DB_TEST_USERNAME'],
+            'password'  => $_ENV['DB_TEST_PASSWORD'],
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',
             'prefix'    => '',

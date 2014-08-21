@@ -5,7 +5,7 @@
 
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 
-$key_id = 'd9c6bf091a1a64cb5678d8c1';
+$key_id = 'rzp_test_d9c6bf091a1a64cb5678d8c1';
 $secret = 'thisissupersecret';
 
 $public_url = $key_id.'@'.$baseurl;

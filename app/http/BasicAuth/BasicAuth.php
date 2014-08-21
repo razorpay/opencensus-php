@@ -11,6 +11,15 @@ use EE\Error\ErrorCode;
 class BasicAuth
 {
     /**
+     * Key id and secret sent by client for
+     * basic auth
+     * @var array
+     */
+    private $creds = array(
+        'key' => '',
+        'secret' => '');
+
+    /**
      * Key used for authentication
      * @var Key\Entity
      */
@@ -31,7 +40,7 @@ class BasicAuth
      *
      * @var string
      */
-    private $app = null;
+    private $internalApp = null;
 
     /**
      * Authentication mode - test, live
@@ -40,13 +49,13 @@ class BasicAuth
     private $mode;
 
     /**
-     * Authentication type - private, public, app
+     * Authentication type - private, public, internal
      * @var string
      */
     private $type;
 
     /**
-     * Whether an app is doing an authentication
+     * Whether an internal app is doing an authentication
      * proxy to perform some action on merchant's
      * behalf
      * @var boolean
@@ -79,56 +88,95 @@ class BasicAuth
 
         $secret = $this->request->getPassword();
 
-        if (($key === null) or
+        if (($key === null) and
             ($secret === null))
             return ApiResponse::httpAuthExpected();
 
-        $this->creds['key'] = $key;
         $this->creds['secret'] = $secret;
 
-        return $this->checkAndSetMode();
+        return $this->checkAndSetKeyId($key);
     }
 
-    public function checkAndSetMode()
+    public function checkAndSetKeyId($key)
     {
-        $key = $this->getKey();
+        if (($this->validateKeyLength($key) === false) or
+            ($this->validateKeyPrefix($key) === false) or
+            ($this->validateAndSetMode($key) === false))
+        {
+            return $this->invalidApiKey();
+        }
 
-        // @todo: remove this after infra moves to key labels
-        $this->setMode(Mode::TEST);
+        $keyId = substr($key, 9);
 
-        if (($key !== '') and
-            (strlen($key) < 24))
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
-
-        if (substr($key, 0, 4) !== 'rzp_')
+        if ($keyId === false)
+        {
             return;
+        }
 
-        $mode = substr($key, 4, 5);
+        $this->creds['key'] = $keyId;
+    }
 
-        $modeSupplied = true;
+    protected function validateKeyLength($key)
+    {
+        $keyLen = strlen($key);
 
-        if ($mode === 'live_')
+        return (($keyLen === 3 + 1 + 4 + 1 + 24) or
+                ($keyLen === 3 + 1 + 4));
+    }
+
+    protected function validateKeyPrefix($key)
+    {
+        return (substr($key, 0, 4) === 'rzp_');
+    }
+
+    protected function validateAndSetMode($key)
+    {
+        $mode = substr($key, 4, 4);
+
+        if ($mode === 'live')
         {
             $this->setMode(Mode::LIVE);
         }
-        else if ($mode === 'test_')
+        else if ($mode === 'test')
         {
             $this->setMode(Mode::TEST);
         }
-        else if ($mode === 'appn_')
-        {
-            $this->setMode(Mode::APPN);
-        }
         else
         {
-            $modeSupplied = false;
+            return false;
         }
 
-        if ($modeSupplied)
+        if ((strlen($key) > 8) and
+            (substr($key, 8, 1) !== '_'))
         {
-            $this->creds['key'] = substr($key, 9);
+            return false;
         }
+
+        return true;
+    }
+
+    public function validateKeyExistence()
+    {
+        $keyId = $this->getKey();
+
+        if ($keyId === '')
+            return;
+
+        //
+        // For keys sent by merchants, make sure they exist in db.
+        //
+        $key = $this->fetchKey($keyId);
+
+        if ($key === null)
+        {
+            return $this->invalidApiKey();
+        }
+    }
+
+    protected function invalidApiKey()
+    {
+       return ApiResponse::unauthorized(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 
 // --------------------- Basic Auths -------------------------------------------
@@ -147,7 +195,7 @@ class BasicAuth
         //
         // @todo: add check for internal IP here
         //
-        if ($this->verifyAppAsProxy() === true)
+        if ($this->verifyInternalAppAsProxy() === true)
             return;
 
         return $response;
@@ -166,12 +214,7 @@ class BasicAuth
 
     public function appAuth()
     {
-        if ($this->getKey() !== '')
-        {
-            return ApiResponse::routeNotFound();
-        }
-
-        if ($this->verifyApp() === false)
+        if ($this->verifyInternalApp() === false)
         {
             return ApiResponse::routeNotFound();
         }
@@ -197,15 +240,9 @@ class BasicAuth
      */
     protected function verifySecret()
     {
-        $keyEntity = $this->fetchKey($this->getKey());
+        $keyEntity = $this->key;
 
         $secret = $this->getSecret();
-
-        if ($keyEntity === null)
-        {
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
-        }
 
         if ($secret === '')
         {
@@ -213,9 +250,7 @@ class BasicAuth
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
-        $check = $this->matchSecret($keyEntity);
-
-        if ($check === false)
+        if ($this->matchSecret($keyEntity) === false)
         {
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
@@ -238,19 +273,7 @@ class BasicAuth
      */
     protected function verifyPublic()
     {
-        //
-        // If the key is fetched successfully, then
-        // public authentication is essentially successfully.
-        //
-        $key = $this->fetchKey($this->getKey());
-
-        if ($key === null)
-        {
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
-        }
-
-        $this->fetchMerchantOfKey($key);
+        $this->fetchMerchantOfKey($this->key);
 
         $this->setType(Type::PUBLIC_AUTH);
     }
@@ -269,9 +292,9 @@ class BasicAuth
      *
      * @return boolean
      */
-    protected function verifyAppAsProxy()
+    protected function verifyInternalAppAsProxy()
     {
-        $verify = $this->verifyAppSecret();
+        $verify = $this->verifyInternalAppSecret();
 
         if ($verify === false)
         {
@@ -292,10 +315,10 @@ class BasicAuth
         return true;
     }
 
-    protected function verifyApp()
+    protected function verifyInternalApp()
     {
         $secret = $this->getSecret();
-        $verify = $this->verifyAppSecret($secret);
+        $verify = $this->verifyInternalAppSecret($secret);
 
         if ($verify === false)
         {
@@ -307,23 +330,23 @@ class BasicAuth
         return true;
     }
 
-    protected function verifyAppSecret()
+    protected function verifyInternalAppSecret()
     {
         $secret = $this->getSecret();
 
-        $apps = \Config::get('applications');
+        $internalApps = \Config::get('applications');
 
         $verify = false;
 
-        foreach ($apps as $name => $app)
+        foreach ($internalApps as $name => $info)
         {
-            $match = $this->matchAppSecret($app, $secret);
+            $match = $this->matchInternalAppSecret($info, $secret);
 
             if ($match)
             {
                 $verify = true;
 
-                $this->app = $name;
+                $this->internalApp = $name;
 
                 break;
             }
@@ -405,8 +428,8 @@ class BasicAuth
         return Hash::check($secret, $key->getSecret());
     }
 
-    protected function matchAppSecret($app, $secret)
+    protected function matchInternalAppSecret($internalAppInfo, $secret)
     {
-        return ($app['secret'] === $secret);
+        return ($internalAppInfo['secret'] === $secret);
     }
 }

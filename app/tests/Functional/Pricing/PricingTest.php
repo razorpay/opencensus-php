@@ -147,6 +147,7 @@ class PricingTest extends TestCase
         $this->assertJson($content);
         $content = json_decode($content, true);
 
+        $this->assertArrayHasKey('rules', $content);
         $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
 
         return $content;

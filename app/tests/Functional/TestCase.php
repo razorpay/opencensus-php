@@ -21,12 +21,12 @@ class TestCase extends ParentTestCase
     protected $dbTxnInProgress = false;
 
     protected static $fixtures = array(
-        'merchant' => 'Models\Merchant\Entity',
-        'key' => 'Models\Key\Entity',
-        'terminal' => 'Models\Terminal\Entity',
-        'transaction' => 'Models\Transaction\Entity',
-        'balance' => 'Models\Merchant\Balance',
-        'pricing' => 'Models\Pricing\Entity');
+        'merchant'      => 'Models\Merchant\Entity',
+        'key'           => 'Models\Key\Entity',
+        'terminal'      => 'Models\Terminal\Entity',
+        'transaction'   => 'Models\Transaction\Entity',
+        'balance'       => 'Models\Merchant\Balance',
+        'pricing'       => 'Models\Pricing\Entity');
 
     protected $auth = array();
 
@@ -38,6 +38,7 @@ class TestCase extends ParentTestCase
         // Setting up db
         //
         Artisan::call('migrate');
+        Artisan::call('migrate', array('--database' => 'test'));
 
         //
         // Enable filters
@@ -93,7 +94,7 @@ class TestCase extends ParentTestCase
                'PHP_AUTH_PW' => $pwd);
     }
 
-    protected function setupAppBasicAuthParams($user = '', $pwd = 'DASHBOARD_AUTH_PASS')
+    protected function setupAppBasicAuthParams($user = 'rzp_test', $pwd = 'DASHBOARD_AUTH_PASS')
     {
         $this->setupBasicAuthParams($user, $pwd);
     }
@@ -109,6 +110,9 @@ class TestCase extends ParentTestCase
 
             $this->dbTxnInProgress = false;
         }
+
+        DB::disconnect('live');
+        DB::disconnect('test');
     }
 
     protected function createEntity($entity, $attributes = array())

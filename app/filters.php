@@ -21,6 +21,18 @@ App::before(function()
     return BasicAuth::setCredentials();
 });
 
+App::before(function()
+{
+    $mode = BasicAuth::getMode();
+
+    if ($mode === 'test')
+    {
+        Config::set('database.default', 'test');
+    }
+
+    return BasicAuth::validateKeyExistence();
+});
+
 /*
 |--------------------------------------------------------------------------
 | Authentication Filters

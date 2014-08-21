@@ -1,13 +1,21 @@
 <?php
 
 return array(
-    'DB_DRIVER'                 => 'mysql',
+    'DB_DEFAULT_CONNECTION'     => 'live',
 
-    'DB_MYSQL_HOST'             => 'localhost',
-    'DB_MYSQL_PORT'             => '3306',
-    'DB_MYSQL_DATABASE'         => 'db',
-    'DB_MYSQL_USERNAME'         => 'user',
-    'DB_MYSQL_PASSWORD'         => 'password',
+    'DB_LIVE_DRIVER'            => 'mysql',
+    'DB_LIVE_HOST'              => 'localhost',
+    'DB_LIVE_PORT'              => '3306',
+    'DB_LIVE_DATABASE'          => 'api_live',
+    'DB_LIVE_USERNAME'          => 'user',
+    'DB_LIVE_PASSWORD'          => 'password',
+
+    'DB_TEST_DRIVER'            => 'mysql',
+    'DB_TEST_HOST'              => 'localhost',
+    'DB_TEST_PORT'              => '3306',
+    'DB_TEST_DATABASE'          => 'api_test',
+    'DB_TEST_USERNAME'          => 'user',
+    'DB_TEST_PASSWORD'          => 'password',
 
     'APP_DASHBOARD_URL'     	=> 'http://dashboard.razorpay.com/',
     'APP_DASHBOARD_SECRET'      => 'secret',

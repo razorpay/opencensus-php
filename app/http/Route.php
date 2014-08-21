@@ -151,6 +151,11 @@ final class Route
         return self::$apiRoutes;
     }
 
+    public static function getApiRouteInCategory($category)
+    {
+        return array_intersect_key(self::$apiRoutes, array_flip(self::$$category));
+    }
+
     public static function getApiRoute($name)
     {
         return self::$apiRoutes[$name];
