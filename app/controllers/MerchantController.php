@@ -106,21 +106,30 @@ class MerchantController extends BaseController
         return $merchant;
     }
 
-    public function getKeys()
+    public function getKeys($mode)
     {
-        $keys = (new Service\Merchant)->fetchKeysFromApi(\Auth::merchant()->id());
+        $keys = (new Service\Merchant)->fetchKeysFromApi(\Auth::merchant()->id(), $mode);
 
         return $keys;
     }
 
-    public function postKeys()
+    public function getNewKey($mode)
+    {
+        $key = (new Service\Merchant)->createKey(\Auth::merchant()->id(), $mode);
+
+        return View::make('merchant.getKeys')
+                        ->with('key', $key)
+                        ->with('mode', $mode);
+    }
+
+    public function postKeys($mode)
     {
         $input = Input::all();
         unset($input['_token']);
 
         $input['merchant_id'] = \Auth::merchant()->id();
 
-        $data = (new Service\Merchant)->rollKeys($input);
+        $data = (new Service\Merchant)->rollKeys($input, $mode);
 
         return $data;
     }
@@ -131,10 +140,9 @@ class MerchantController extends BaseController
 
         if($response)
         {   
-            \Auth::merchant()->loginUsingId($response['id']);
-
-            return View::make('merchant.getKeys')
-                        ->with('data', $response);
+            return Redirect::action('MerchantController@getLogin')
+                ->with('error', array('Activation Successful. Login to start using Razorpay.'));
+        
         }
         else
         {
