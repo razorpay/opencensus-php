@@ -40,20 +40,22 @@ class IinsTableSeeder extends Seeder
      */
     static private function getIinRecordsFromFile($path)
     {
-        $records = array();
-        $iin_record = array();
-
-        if (file_exists($path) and is_readable($path))
+        if (is_readable($path) === false)
         {
-            $file_handle = fopen($path, 'r');
-
-            while(($iin_record = fgetcsv($file_handle)) !== FALSE)
-            {
-                array_push($records, $iin_record);
-            }
-
-            fclose($file_handle);
+            throw new RuntimeException($path . ' file is either not found or not readable');
         }
+
+        $fileHandle = fopen($path, 'r');
+
+        $records = array();
+        $iinRecord = array();
+
+        while(($iinRecord = fgetcsv($fileHandle)) !== FALSE)
+        {
+            array_push($records, $iinRecord);
+        }
+
+        fclose($fileHandle);
 
         return $records;
     }
