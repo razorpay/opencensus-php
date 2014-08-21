@@ -8,9 +8,9 @@ class Request extends Service
 {
     private $ID, $PASSWORD;
 
-    public function setCredentials($merchant_id = NULL)
+    public function setCredentials($mode = 'test')
     {
-        $this->ID = $merchant_id;
+        $this->ID = 'rzp_'.$mode;
         $this->PASSWORD = \Config::get('api.auth_pass');
 
         return $this;
