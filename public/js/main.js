@@ -6,6 +6,7 @@ $(document).ready(function()
         blue: '#29B7D6',
         grey: '#999999'
     };
+    rzpd.mode = 'test';
 
     rzpd.postAjaxCallStack = [];
 
@@ -51,8 +52,12 @@ $(document).ready(function()
 
     rzpd.views = {
         toggleLivemode: function() {
+            if(rzpd.mode === "test") rzpd.mode = "live";
+            else rzpd.mode = "test";
             $('#livemode .button-wrap').toggleClass("button-active");
             $('.button-desc').toggleClass('active');
+            rzpd.hooks.resetPanels();
+            rzpd.hooks.renderDashboard();
         },
 
         changeGraphScale: function(el) {
@@ -419,7 +424,7 @@ $(document).ready(function()
             var group = rzpd.config.timeScale;
 
             $.ajax({
-                url: '/analytics/transactions',
+                url: '/'+rzpd.mode+'/analytics/transactions',
                 type: 'GET',
                 data: {
                     type: group,
@@ -468,7 +473,7 @@ $(document).ready(function()
             var group = 'day';
 
             $.ajax({
-                url: '/analytics/transactions',
+                url: '/'+rzpd.mode+'/analytics/transactions',
                 type: 'GET',
                 data: {
                     type: group,
@@ -520,7 +525,7 @@ $(document).ready(function()
 
         renderStats: function(parentDiv) {
             $.ajax({
-                url: '/analytics/aggregations',
+                url: '/'+rzpd.mode+'/analytics/aggregations',
                 success: function(result) {
                     var data = {
                         success: '0%',
@@ -541,7 +546,7 @@ $(document).ready(function()
 
         renderTransactionsList: function(parentDiv) {
             $.ajax({
-                url: '/transactions',
+                url: '/'+rzpd.mode+'/transactions',
                 data: {
                     count: 10
                 },
@@ -556,7 +561,7 @@ $(document).ready(function()
 
         renderRefundsList: function(parentDiv) {
             $.ajax({
-                url: '/transactions',
+                url: '/'+rzpd.mode+'/transactions',
                 data: {
                     count: 10,
                     status: 'refunded'
@@ -572,7 +577,7 @@ $(document).ready(function()
 
         renderSettlementsList: function(parentDiv) {
             $.ajax({
-                url: '/transactions',
+                url: '/'+rzpd.mode+'/transactions',
                 data: {
                     count: 10,
                     status: 'settled'
@@ -588,7 +593,7 @@ $(document).ready(function()
 
         fetchTxnDetails: function(txn_id) {
             $.ajax({
-                url: '/transactions/' + txn_id,
+                url: '/'+rzpd.mode+'/transactions/' + txn_id,
                 success: function(result) {
                     rzpd.views.hideLoader();
                     rzpd.views.showDiv('#transaction-one');
