@@ -1,5 +1,4 @@
-.env.local.php
-.env.php
+.env.*
 /bootstrap/environment.php
 /app/storage/logs/*
 /.git/*
