@@ -8,7 +8,7 @@ class Request extends Service
 {
     private $ID, $PASSWORD;
 
-    public function setCredentials($mode = 'test')
+    public function setCredentials($mode = 'live')
     {
         $this->ID = 'rzp_'.$mode;
         $this->PASSWORD = \Config::get('api.auth_pass');
