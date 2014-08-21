@@ -14,16 +14,16 @@ class Transaction extends Service
         'year'  =>  31536000 // 365 * 24 * 60 * 60
     );
 
-    public function fetchListFromApi(array $input)
+    public function fetchListFromApi(array $input, $mode)
     {
         list($error,$options) = Manager\Transaction::createValidate($input, 'fetch')->getData();
 
         if (empty($error))
         {
             $merchant_id = \Auth::merchant()->id();
-            $this->setApiCredentials($merchant_id);
+            $this->setApiCredentials($merchant_id, $mode);
 
-            $response = $this->api->transaction->fetch($options);
+            $response = $this->api->transaction->all($options);
 
             $data = Manager\Transaction::mapKeys($response);
         }
@@ -35,17 +35,17 @@ class Transaction extends Service
         return $data;
     }
 
-    public function fetchTxnFromApi($id)
+    public function fetchTxnFromApi($id, $mode)
     {
         list($error, $options) = Manager\Transaction::createValidate(['id' => $id], 'fetch')->getData();
 
         if (empty($error))
         {
             $merchant_id = \Auth::merchant()->id();
-            $this->setApiCredentials($merchant_id);
+            $this->setApiCredentials($merchant_id, $mode);
 
             $id = $options['id'];
-            $data = (array)$this->api->transaction->get($id);
+            $data = (array)$this->api->transaction->fetch($id);
         }
         else
         {
@@ -60,7 +60,7 @@ class Transaction extends Service
      * @param  array  $input transaction array
      * @return bool          status
      */
-    public function process(array $input)
+    public function process(array $input, $mode)
     {
         list($error, $data) = Manager\Transaction::createValidate($input, 'process')->getData();
 
@@ -70,14 +70,14 @@ class Transaction extends Service
             {
                 case 'captured':
 
-                    $this->aggregate($data);
+                    $this->aggregate($data, $mode);
 
                     foreach (static::$timeIntervals as $type => $interval)
                     {
-                        $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type);
+                        $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type, $mode);
 
                         if (NULL === $obj || strtotime($obj->created_at) < ($data['updated_at'] - $interval))
-                            $this->create($data, $type);
+                            $this->create($data, $type, $mode);
                         else
                             $this->update($data, $obj);
                     }
@@ -94,7 +94,7 @@ class Transaction extends Service
             return false;
     }
 
-    protected function create($data, $type)
+    protected function create($data, $type, $mode)
     {
         switch($type)
         {
@@ -112,19 +112,20 @@ class Transaction extends Service
                 break;
         }
         $data['type'] = $type;
+        $data['mode'] = $mode;
         DAL\Transaction::createOrFail($data);
     }
 
-    protected function aggregate($data)
+    protected function aggregate($data, $mode)
     {
-        $merchant_details = DAL\Merchant::getAggregations($data);
+        $merchant_details = DAL\Merchant::getAggregations($data, $mode);
         if (NULL === $merchant_details)
         {
-            DAL\Merchant::createAggregations($data);
+            DAL\Merchant::createAggregations($data, $mode);
         }
         else
         {
-            DAL\Merchant::updateAggregations($data, $merchant_details);
+            DAL\Merchant::updateAggregations($data, $merchant_details, $mode);
         }
     }
 
@@ -136,13 +137,13 @@ class Transaction extends Service
         $obj->save();
     }
 
-    public function getAggregations($merchant_id)
+    public function getAggregations($merchant_id, $mode)
     {
-        $data = DAL\Merchant::getAggregations(array('merchant_id' => $merchant_id));
+        $data = DAL\Merchant::getAggregations(array('merchant_id' => $merchant_id), $mode);
         return $data;
     }
 
-    public function getAnalytics($input)
+    public function getAnalytics($input, $mode)
     {
         list($error, $input) = Manager\Transaction::createValidate($input, 'analytics')->getData();
 
@@ -151,7 +152,9 @@ class Transaction extends Service
             $data = DAL\Transaction::where('merchant_id','=',$input['merchant_id'])
                             ->where('type','=',$input['type'])
                             ->where('created_at','>=',$input['from'])
-                            ->where('created_at','<=',$input['to'])->get();
+                            ->where('created_at','<=',$input['to'])
+                            ->where('mode', '=', $mode)
+                            ->get();
 
             $data = $this->fillMissing($input, $data);
 

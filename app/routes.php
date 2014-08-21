@@ -18,13 +18,13 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/logout', 'MerchantController@getLogout');
 
-    Route::get('/transactions', 'TransactionController@getTransactions');
+    Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
 
-    Route::get('/transactions/{id}', 'TransactionController@getTransaction');
+    Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
 
-    Route::get('/analytics/transactions', 'TransactionController@getAnalytics');
+    Route::get('/{mode}/analytics/transactions', 'TransactionController@getAnalytics');
 
-    Route::get('/analytics/aggregations', 'TransactionController@getAggregations');
+    Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
 
     Route::get('/keys/csv', 'MerchantController@getCsv');
 
@@ -144,7 +144,7 @@ Route::group(array('before' => 'guest_admin'), function()
 
 Route::group(array('before' => 'auth.internal'), function()
 {
-    Route::post('/transactions', 'TransactionController@postIndex');
+    Route::post('/{mode}/transactions', 'TransactionController@postIndex');
 });
 
 Route::post('/contact', 'MerchantController@postContact');

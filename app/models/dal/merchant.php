@@ -36,13 +36,16 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         );
     }
 
-    public static function getAggregations($data)
+    public static function getAggregations($data, $mode)
     {
-        $data = \DB::table('aggregations')->where('merchant_id','=',$data['merchant_id'])->first();
+        $data = \DB::table('aggregations')
+                    ->where('merchant_id','=',$data['merchant_id'])
+                    ->where('mode','=',$mode)
+                    ->first();
         return $data;
     }
 
-    public static function createAggregations($data)
+    public static function createAggregations($data, $mode)
     {
         $obj = array(
             'merchant_id'           =>  $data['merchant_id'],
@@ -50,12 +53,13 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             'successful_txn_count'  =>  1,
             'txn_count'             =>  1,
             'created_at'            =>  $data['updated_at'],
-            'updated_at'            =>  $data['updated_at']
+            'updated_at'            =>  $data['updated_at'],
+            'mode'                  =>  $mode
         );
         \DB::table('aggregations')->insert($obj);
     }
 
-    public static function updateAggregations($data, $merchant_details)
+    public static function updateAggregations($data, $merchant_details, $mode)
     {
         $obj = array(
             'total_amount'          =>  (int)$data['amount'] + (int)$merchant_details->total_amount,
@@ -63,7 +67,10 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             'txn_count'             =>  (int)$merchant_details->txn_count + 1,
             'updated_at'            =>  $data['created_at']
         );
-        \DB::table('aggregations')->where('merchant_id','=',$data['merchant_id'])->update($obj);
+        \DB::table('aggregations')
+            ->where('merchant_id','=',$data['merchant_id'])
+            ->where('mode', '=', $mode)
+            ->update($obj);
     }
 
     public function getMerchantForConfirmation($token)
