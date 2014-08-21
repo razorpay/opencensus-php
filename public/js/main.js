@@ -309,10 +309,16 @@ $(document).ready(function()
         },
 
         renderKeys: function(data) {
-            var html = '';
+            var html = '<h2 class="keys-heading">'+ rzpd.mode + ' Keys </h2>';
             data = data.data;
+
+            if(data.length === 0) {
+                html += '<a target="_blank" href="'+ rzpd.mode + '/key/new"> ' +
+                            'Generate New Key ' +
+                        '</a> ';
+            }
+
             for (var i in data) {
-                var mode = (data[i].live == '0') ? 'Test' : 'Live';
                 var expires = (data[i].expired_at === null) ? false : true;
 
                 html += '<ul class="key-wrapper">' +
@@ -336,34 +342,30 @@ $(document).ready(function()
                                 moment(data[i].expired_at, 'X').format('MMMM Do YYYY, HH:mm') +
                             '</div></li>';
 
-                html += '<li>' +
-                            '<div class="field">Mode</div> ' +
-                            '<div class="value">' + mode + '</div>' +
-                        '</li>' +
-                    '</ul>';
+                html += '</ul>';
 
                 if(expires !== true)
-                html += '<div class="roll-key-form-wrapper hidden">' +
-                            '<span class="close-button">' +
-                                '<img src="/img/close.png">' +
-                            '</span>' +
-                            '<form class="roll-key-form" id="' + data[i].id + '">' +
-                                '<div>Generate new key and</div>' +
-                                '<label>' +
-                                    '<input type="radio" name="delay_roll" value="1" checked="checked">' +
-                                    '<span>Allow old key to work for 24 hours.</span>' +
-                                '</label>' +
-                                '<label>' +
-                                    '<input type="radio" name="delay_roll" value="0">' +
-                                    '<span>Block old key immediately.</span>' +
-                                '</label>' +
-                                '<div>' +
-                                    '<button class="roll-key-button">Roll Key</button>' +
-                                    '<img class="hidden roll-key-form-loader" src="/img/loader.gif">' +
-                                '</div>' +
-                                '<div class="result"></div>' +
-                            '</form>' +
-                        '</div>';
+                    html += '<div class="roll-key-form-wrapper hidden">' +
+                                '<span class="close-button">' +
+                                    '<img src="/img/close.png">' +
+                                '</span>' +
+                                '<form class="roll-key-form" id="' + data[i].id + '">' +
+                                    '<div>Generate new key and</div>' +
+                                    '<label>' +
+                                        '<input type="radio" name="delay_roll" value="1" checked="checked">' +
+                                        '<span>Allow old key to work for 24 hours.</span>' +
+                                    '</label>' +
+                                    '<label>' +
+                                        '<input type="radio" name="delay_roll" value="0">' +
+                                        '<span>Block old key immediately.</span>' +
+                                    '</label>' +
+                                    '<div>' +
+                                        '<button class="roll-key-button">Roll Key</button>' +
+                                        '<img class="hidden roll-key-form-loader" src="/img/loader.gif">' +
+                                    '</div>' +
+                                    '<div class="result"></div>' +
+                                '</form>' +
+                            '</div>';
             }
             $('#keys').html(html);
             $('.roll-href').click(rzpd.views.showRollForm);
@@ -614,7 +616,7 @@ $(document).ready(function()
 
         fetchKeys: function(parentDiv) {
             $.ajax({
-                url: '/keys',
+                url: '/'+rzpd.mode+'/keys',
                 success: function(result) {
                     rzpd.views.renderKeys(result);
                     rzpd.hooks.updateSubpanel(parentDiv);
@@ -629,7 +631,7 @@ $(document).ready(function()
             that.find('button').attr('disabled','disabled');
 
             $.ajax({
-                url: '/keys',
+                url: '/'+rzpd.mode+'/keys',
                 type: 'POST',
                 data: {
                     id: that.attr('id'),
