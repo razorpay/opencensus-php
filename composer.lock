@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.6.13",
+            "version": "2.6.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d1f345a65b490bd83fff735d8a9e49b224ce24b5"
+                "reference": "4eaf38f0297533d48f013be7e1ffa1cb2c912e2f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d1f345a65b490bd83fff735d8a9e49b224ce24b5",
-                "reference": "d1f345a65b490bd83fff735d8a9e49b224ce24b5",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/4eaf38f0297533d48f013be7e1ffa1cb2c912e2f",
+                "reference": "4eaf38f0297533d48f013be7e1ffa1cb2c912e2f",
                 "shasum": ""
             },
             "require": {
@@ -72,7 +72,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2014-07-31 20:34:29"
+            "time": "2014-08-14 20:49:47"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -129,21 +129,20 @@
         },
         {
             "name": "barryvdh/laravel-debugbar",
-            "version": "v1.6.6",
+            "version": "v1.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/barryvdh/laravel-debugbar.git",
-                "reference": "a3ec4b26c05beba60463c536dec5ab2a98656103"
+                "reference": "ccf9ababfb2b5ddbf8c3ece2ca3fc9989b11ec0d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/a3ec4b26c05beba60463c536dec5ab2a98656103",
-                "reference": "a3ec4b26c05beba60463c536dec5ab2a98656103",
+                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/ccf9ababfb2b5ddbf8c3ece2ca3fc9989b11ec0d",
+                "reference": "ccf9ababfb2b5ddbf8c3ece2ca3fc9989b11ec0d",
                 "shasum": ""
             },
             "require": {
-                "illuminate/filesystem": "~4.0",
-                "illuminate/support": "~4.0",
+                "laravel/framework": "~4.0",
                 "maximebf/debugbar": "~1.9",
                 "php": ">=5.3.0",
                 "symfony/finder": "~2.3"
@@ -151,7 +150,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.x-dev"
+                    "dev-master": "1.6-dev"
                 }
             },
             "autoload": {
@@ -177,7 +176,7 @@
                 "profiler",
                 "webprofiler"
             ],
-            "time": "2014-07-08 07:20:07"
+            "time": "2014-08-09 20:41:59"
         },
         {
             "name": "classpreloader/classpreloader",
@@ -394,16 +393,16 @@
         },
         {
             "name": "guzzle/guzzle",
-            "version": "v3.9.1",
+            "version": "v3.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle3.git",
-                "reference": "92d9934f2fca1da15178c91239576ae26e505e60"
+                "reference": "54991459675c1a2924122afbb0e5609ade581155"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle3/zipball/92d9934f2fca1da15178c91239576ae26e505e60",
-                "reference": "92d9934f2fca1da15178c91239576ae26e505e60",
+                "url": "https://api.github.com/repos/guzzle/guzzle3/zipball/54991459675c1a2924122afbb0e5609ade581155",
+                "reference": "54991459675c1a2924122afbb0e5609ade581155",
                 "shasum": ""
             },
             "require": {
@@ -447,7 +446,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.8-dev"
+                    "dev-master": "3.9-dev"
                 }
             },
             "autoload": {
@@ -482,7 +481,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2014-05-07 17:04:22"
+            "time": "2014-08-11 04:32:36"
         },
         {
             "name": "ircmaxell/password-compat",
@@ -573,16 +572,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v4.2.7",
+            "version": "v4.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "11c1b47b365be02beab3e5aca2306aaa08203d8e"
+                "reference": "e60ea917ab862254a6db37fa9cb8933138c1e73c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/11c1b47b365be02beab3e5aca2306aaa08203d8e",
-                "reference": "11c1b47b365be02beab3e5aca2306aaa08203d8e",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/e60ea917ab862254a6db37fa9cb8933138c1e73c",
+                "reference": "e60ea917ab862254a6db37fa9cb8933138c1e73c",
                 "shasum": ""
             },
             "require": {
@@ -684,20 +683,20 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2014-07-22 20:25:45"
+            "time": "2014-08-05 19:52:17"
         },
         {
             "name": "maximebf/debugbar",
-            "version": "1.9.14",
+            "version": "1.9.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/maximebf/php-debugbar.git",
-                "reference": "ab02c692d2bdad1009639f6ba319576af590620c"
+                "reference": "5d08b313576056234d464bedbba8ce1b26bcd918"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/maximebf/php-debugbar/zipball/ab02c692d2bdad1009639f6ba319576af590620c",
-                "reference": "ab02c692d2bdad1009639f6ba319576af590620c",
+                "url": "https://api.github.com/repos/maximebf/php-debugbar/zipball/5d08b313576056234d464bedbba8ce1b26bcd918",
+                "reference": "5d08b313576056234d464bedbba8ce1b26bcd918",
                 "shasum": ""
             },
             "require": {
@@ -705,7 +704,7 @@
                 "psr/log": "~1.0"
             },
             "require-dev": {
-                "php": ">=5.3.0"
+                "phpunit/phpunit": "~4.0"
             },
             "suggest": {
                 "kriswallsmith/assetic": "The best way to manage assets",
@@ -713,6 +712,11 @@
                 "predis/predis": "Redis storage"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.9-dev"
+                }
+            },
             "autoload": {
                 "psr-0": {
                     "DebugBar": "src/"
@@ -734,7 +738,7 @@
             "keywords": [
                 "debug"
             ],
-            "time": "2014-04-25 16:30:40"
+            "time": "2014-08-20 15:25:30"
         },
         {
             "name": "monolog/monolog",
@@ -1188,7 +1192,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/rzp-php.git",
-                "reference": "bf582bed88da38ca28601e8946a339a3c94b6b12"
+                "reference": "ae438cb139ebaddccb8301ba2e54234d7c9e4a6b"
             },
             "require": {
                 "ext-json": "*",
@@ -1213,7 +1217,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2014-07-15 11:23:34"
+            "time": "2014-08-20 17:30:38"
         },
         {
             "name": "rmccue/requests",
@@ -2288,12 +2292,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/padraic/mockery.git",
-                "reference": "5c8d5eee9ca58a618d3f7200012b4921fa887729"
+                "reference": "217e04f061861c88ce56677225f8b0cf1eac9e79"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/5c8d5eee9ca58a618d3f7200012b4921fa887729",
-                "reference": "5c8d5eee9ca58a618d3f7200012b4921fa887729",
+                "url": "https://api.github.com/repos/padraic/mockery/zipball/217e04f061861c88ce56677225f8b0cf1eac9e79",
+                "reference": "217e04f061861c88ce56677225f8b0cf1eac9e79",
                 "shasum": ""
             },
             "require": {
@@ -2346,26 +2350,31 @@
                 "test double",
                 "testing"
             ],
-            "time": "2014-07-28 12:51:16"
+            "time": "2014-08-11 12:38:44"
         },
         {
             "name": "raveren/kint",
-            "version": "v0.9",
+            "version": "v0.9.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/raveren/kint.git",
-                "reference": "ada810111ced4e3a926b4040da9b86442e43b613"
+                "reference": "d4780fc6e974f00c427c1fd2492dca4dcd636704"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/raveren/kint/zipball/ada810111ced4e3a926b4040da9b86442e43b613",
-                "reference": "ada810111ced4e3a926b4040da9b86442e43b613",
+                "url": "https://api.github.com/repos/raveren/kint/zipball/d4780fc6e974f00c427c1fd2492dca4dcd636704",
+                "reference": "d4780fc6e974f00c427c1fd2492dca4dcd636704",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.2.0"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.9-dev"
+                }
+            },
             "autoload": {
                 "files": [
                     "Kint.class.php"
@@ -2392,7 +2401,7 @@
                 "kint",
                 "php"
             ],
-            "time": "2013-08-12 22:46:16"
+            "time": "2014-08-11 11:44:51"
         },
         {
             "name": "symfony/yaml",
