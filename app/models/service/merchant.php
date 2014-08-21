@@ -70,7 +70,7 @@ class Merchant extends Service
         $response = $request->process('POST', 'merchants', $merchant_api_data);
 
         if(isset($response['error'])) return false;
-        
+
         $merchant->confirm();
 
         return array_merge($response, $merchant->toArray());
@@ -102,15 +102,29 @@ class Merchant extends Service
         return $merchant;
     }
 
-    public function fetchKeysFromApi($merchant_id)
+    public function fetchKeysFromApi($merchant_id, $mode)
     {
-        $request = (new Request)->setCredentials();
+        $request = (new Request)->setCredentials($mode);
         $response = $request->process('GET', 'merchants/'.$merchant_id.'/keys');
 
         return $response;
     }
 
-    public function rollKeys(array $input)
+    public function createKey($merchant_id, $mode)
+    {
+        $request = (new Request)->setCredentials($mode);
+
+        $response = $request->process('POST', 'merchants/'.$merchant_id.'/keys');
+
+        if(isset($response['error']))
+        {
+            throw new \Exception('API responded with error');
+        }
+
+        return $response;
+    }
+
+    public function rollKeys(array $input, $mode)
     {
         list($error, $data) = Manager\Key::createValidate($input, 'create')->getData();
 
@@ -118,7 +132,7 @@ class Merchant extends Service
         {
             $arr = Manager\Key::buildKeyUpdateData($data);
 
-            $request = (new Request)->setCredentials();
+            $request = (new Request)->setCredentials($mode);
 
             $url = 'merchants/'.$data['merchant_id'].'/keys/'.$data['id'];
 

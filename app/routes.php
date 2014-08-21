@@ -30,7 +30,9 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/account', 'MerchantController@getAccount');
 
-    Route::get('/keys', 'MerchantController@getKeys');
+    Route::get('/{mode}/keys', 'MerchantController@getKeys');
+
+    Route::get('/{mode}/key/new', 'MerchantController@getNewKey');
 
     Route::get('/activation', 'MerchantController@getActivation');
 
@@ -40,7 +42,7 @@ Route::group(array('before' => 'auth'), function()
 
     Route::group(array('before' => 'csrf'), function()
     {
-        Route::post('/keys', 'MerchantController@postKeys');
+        Route::post('/{mode}/keys', 'MerchantController@postKeys');
 
         Route::post('/activation', 'MerchantController@postActivation');
 
