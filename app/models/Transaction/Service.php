@@ -110,7 +110,7 @@ class Service extends Base\Service
 
         $txns = $collection->all();
 
-        return array('count' => $count, 'data' => $txns);
+        return array('count' => $count, 'data' => $txns, 'entity' => 'collection');
     }
 
     public function retrieveByIdAndMerchantId($id, $merchantId)

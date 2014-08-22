@@ -69,6 +69,8 @@ class Repository extends Base\Repository
             $query->skip($param['skip']);
         }
 
+        $query->orderBy(Transaction\Entity::ID, 'desc');
+
         return $query->with('card')->get();
     }
 
