@@ -54,7 +54,7 @@ class TransactionRetrieveTest extends TestCase
         //THEN
         $this->assertJson($content);
 
-        $transactions = json_decode($content);
+        $transactions = json_decode($content, true);
     }
 
     /**
@@ -78,9 +78,9 @@ class TransactionRetrieveTest extends TestCase
         //THEN
         $this->assertJson($content);
 
-        $transaction = json_decode($content);
+        $transaction = json_decode($content, true);
 
-        $this->assertEquals($id, $transaction->id);
+        $this->assertEquals($id, $transaction['id']);
     }
 
     /**
@@ -104,9 +104,9 @@ class TransactionRetrieveTest extends TestCase
         //THEN
         $this->assertJson($content);
 
-        $transaction = json_decode($content);
+        $transaction = json_decode($content, true);
 
-        $this->assertEquals($id, $transaction->data[0]->id);
+        $this->assertEquals($id, $transaction['data'][0]['id']);
     }
 
     /**
@@ -126,8 +126,8 @@ class TransactionRetrieveTest extends TestCase
 
         //THEN
         $this->assertJson($content);
-        $transaction = json_decode($content);
+        $transaction = json_decode($content, true);
 
-        $this->assertEquals($id, $transaction->data[0]->id);
+        $this->assertEquals($id, $transaction['data'][0]['id']);
     }
 }
