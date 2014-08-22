@@ -56,11 +56,31 @@ class TransactionController extends BaseController
         return $data;
     }
 
-    public function getTransaction($id = NULL, $mode)
+    public function getTransaction($mode, $id = NULL)
     {
         $this->checkMode($mode);
         
         $data = (new Service\Transaction)->fetchTxnFromApi($id, $mode);
+
+        return $data;
+    }
+
+    public function getCaptureTransaction($mode, $id = NULL)
+    {
+        $this->checkMode($mode);
+        
+        $amount = Input::get('amount');
+
+        $data = (new Service\Transaction)->captureTxn($id, $amount, $mode);
+
+        return $data;
+    }
+
+    public function getRefundTransaction($mode, $id = NULL)
+    {
+        $this->checkMode($mode);
+        
+        $data = (new Service\Transaction)->refundTxn($id, $mode);
 
         return $data;
     }

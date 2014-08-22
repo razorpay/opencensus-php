@@ -45,14 +45,59 @@ class Transaction extends Service
             $this->setApiCredentials($merchant_id, $mode);
 
             $id = $options['id'];
-            $data = (array)$this->api->transaction->fetch($id);
+            $data = $this->api->transaction->fetch($id)->toArray();
         }
         else
         {
             $data = $error;
         }
-
         return $data;
+    }
+
+    public function captureTxn($id, $amount, $mode)
+    {
+        $merchant_id = \Auth::merchant()->id();
+        $this->setApiCredentials($merchant_id, $mode);
+
+        try
+        {
+            $data = $this->api->transaction
+                                ->fetch($id)
+                                ->capture(array('amount' => $amount))
+                                ->toArray();
+        }
+        catch(\Exception $e)
+        {
+            return ['status' => false];
+        }
+
+        if(isset($data['error']) === false and isset($data['status']) === true and $data['status'] === "captured")
+            return ['status' => true];
+        else
+            return ['status' => false];
+    }
+
+    public function refundTxn($id, $mode)
+    {
+        $merchant_id = \Auth::merchant()->id();
+        $this->setApiCredentials($merchant_id, $mode);
+
+        try
+        {
+            $data = $this->api->transaction
+                            ->fetch($id)
+                            ->refund()
+                            ->toArray();  
+        }
+        catch(\Exception $e)
+        {
+            return ['status' => false];
+        }
+              
+        if(isset($data['error']) === false and isset($data['status']) === true and $data['status'] === "refunded")
+            return ['status' => true];
+        else
+            return ['status' => false];
     }
 
     /**
