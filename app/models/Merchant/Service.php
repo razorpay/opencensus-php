@@ -61,7 +61,7 @@ class Service extends Base\Service
 
         $keyData = (new Key\Core)->createAndReturnWithSecret($merchantId);
 
-        return $keydata;
+        return $keyData;
     }
 
     public function updateKey($merchantId, $keyId, array $input)
