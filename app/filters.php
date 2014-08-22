@@ -11,7 +11,12 @@
 |
 */
 
+//
 // Initialize BasicAuth with $app
+// This is put here instead of BasicAuthServiceProvider
+// because ServiceProvider calls the BasicAuth constructor only
+// once between unit tests while filters are called every-time
+//
 App::before(function() use ($app)
 {
     BasicAuth::init($app);
