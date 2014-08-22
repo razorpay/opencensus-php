@@ -262,9 +262,50 @@ $(document).ready(function()
         },
 
         renderTxnDetails: function(data) {
+            console.log(data);
             var html = '';
-            html += '<div class="col-1-4 key">ID</div><div class="col-9-12">' + data.id + '</div><div class="col-1-4 key">Amount</div><div class="col-9-12">₹' + data.amount + '</div><div class="col-1-4 key">Created At</div><div class="col-9-12">' + moment(data.created_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + '</div><div class="col-1-4 key">Updated At</div><div class="col-9-12">' + moment(data.updated_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + '</div><div class="col-1-4 key">Status</div><div class="col-9-12">' + data.status + '</div>';
+            html += '<div class="col-1-4 key">ID</div><div class="col-9-12">' + 
+                    data.id + 
+                    '</div><div class="col-1-4 key">Amount</div><div class="col-9-12">₹' + 
+                    data.amount + 
+                    '</div><div class="col-1-4 key">Created At</div><div class="col-9-12">' + 
+                    moment(data.created_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + 
+                    '</div><div class="col-1-4 key">Updated At</div><div class="col-9-12">' + 
+                    moment(data.updated_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + 
+                    '</div><div class="col-1-4 key">Status</div><div class="col-9-12">' + 
+                    data.status + 
+                    '</div>';
+            if(data.status == 'authorized') {
+                html += '<div class="col-1-4 key">' +
+                         '<input size="18" type="text" name="amount" placeholder="Amount to be captured" /></div>' +
+                         '<div class="col-9-12"><button class="capture-txn" id="' + data.id + '">Capture Transaction</button>'  + '<img class="hidden txn-loader" src="/img/black-loader.gif"></div>' +
+                         '<div class="result"></div>';
+            } 
+            if(data.status == 'captured') {
+                html += '<div class="col-1-4 key"><button class="refund-txn" id="' + data.id + '">Refund Transaction</button>' +
+                         '<img class="hidden txn-loader" src="/img/black-loader.gif"></div>' +
+                         '</div><div class="result"></div>';
+            }
             $('#transaction-details .details').html(html);
+
+            $('.capture-txn').click(rzpd.hooks.captureTxn);
+            $('.refund-txn').click(rzpd.hooks.refundTxn);
+        },
+
+        clearResult: function($this) {
+            $this.parent().parent().find('.result').html('');
+        },
+
+        showError: function($this) {
+            $this.parent().parent().find('.result').html('Something went wrong. Try again later.');
+        },
+
+        showCaptureSuccess: function($this) {
+            $this.parent().parent().find('.result').html('Transaction captured successfully');
+        },
+
+        showRefundSuccess: function($this) {
+            $this.parent().parent().find('.result').html('Transaction refunded successfully');
         },
 
         showLoader: function() {
@@ -603,6 +644,75 @@ $(document).ready(function()
                 }
             });
         },
+
+        refundTxn: function(e) {
+            var $this = $(this);
+
+            rzpd.views.clearResult($this);
+
+            rzpd.views.showDiv($this.parent().find('.txn-loader'));
+            $this.attr('disabled',true);
+
+            $.ajax({
+                url: '/'+rzpd.mode+'/transactions/'+$this.attr('id')+'/refund',
+                type: 'POST',
+                data: {
+                    _token: $('input[name="_token"]').val()
+                },
+                success: function(result) {
+                    if (result.status === true) {
+                        rzpd.views.showRefundSuccess($this);
+                    } else {
+                        rzpd.views.showError($this);
+                        $this.attr('disabled',false);
+                    }
+                },
+                error: function(x, e) {
+                    rzpd.views.showError($this);
+                    $this.attr('disabled',false);
+                },
+                complete: function() {
+                    rzpd.views.hideDiv($this.parent().find('.txn-loader'));
+                }
+            });
+            e.preventDefault();
+        },
+
+        captureTxn: function(e) {
+            var $this = $(this);
+
+            rzpd.views.clearResult($this);
+            rzpd.views.showDiv($this.parent().find('.txn-loader'));
+            $this.attr('disabled',true);
+
+            var captureAmount = $this.parent().parent().find('input[name="amount"]').val();
+
+            $.ajax({
+                url: '/'+rzpd.mode+'/transactions/'+$this.attr('id')+'/capture',
+                type: 'POST',
+                data: {
+                    _token: $('input[name="_token"]').val(),
+                    amount: captureAmount
+                },
+                success: function(result) {
+                    if (result.status === true) {
+                        rzpd.views.showCaptureSuccess($this);
+                    } else {
+                        rzpd.views.showError($this);
+                        $this.attr('disabled',false);
+                    }
+                },
+                error: function(x, e) {
+                    rzpd.views.showError($this);
+                    $this.attr('disabled',false);
+                },
+                complete: function() {
+                    rzpd.views.hideDiv($this.parent().find('.txn-loader'));
+                }
+            });
+            e.preventDefault();
+        },
+
 
         fetchAccountDetails: function(parentDiv) {
             $.ajax({
