@@ -29,7 +29,6 @@ class Entity extends Base\UniqueIdEntity
 
     protected $fillable = array(
         self::MERCHANT_ID,
-        'live',
         self::ACTIVE
     );
 

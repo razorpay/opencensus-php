@@ -27,9 +27,6 @@ class CreateKeys extends Migration {
 
             $table->string(Key::SECRET, Key::KEY_SECRET_HASH_LENTH);
 
-            $table->boolean('live')
-                  ->default(0);
-
             $table->boolean(Key::ACTIVE)
                   ->default(1);
 
