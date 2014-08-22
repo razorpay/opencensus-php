@@ -28,7 +28,6 @@ Models\Key\Entity:
     id: d9c6bf091a1a64cb5678d8c1
     merchant_id:
         type: Models\Merchant\Entity
-    live: 1
     active: 1
     secret: $2y$10$UVD2ZERxHs0QyL7gaElrWOfvwAx11m.G374AGKpPnyn8VK4FN5Yry
 
