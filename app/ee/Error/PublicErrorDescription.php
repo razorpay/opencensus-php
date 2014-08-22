@@ -100,6 +100,9 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED =
         'Please provide api secret';
 
+    const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE =
+        'Please do not provide your secret on public sided requests';
+
     const BAD_REQUEST_PRICING_ID_REQURED =
         'Pricing plan id is required';
 
