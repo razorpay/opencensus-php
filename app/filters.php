@@ -34,8 +34,6 @@ App::before(function()
     {
         Config::set('database.default', 'live');
     }
-
-    return BasicAuth::validateKeyExistence();
 });
 
 /*

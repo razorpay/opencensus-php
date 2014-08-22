@@ -10,6 +10,22 @@ use EE\Error\ErrorCode;
 
 class BasicAuth
 {
+    /*
+     * Basic Auth currently goes as follows:
+     * Public -
+     * rzp_mode_keyId:
+     *
+     * Private -
+     * rzp_mode_keyId:secret
+     *
+     * Application -
+     * rzp_mode:secret
+     *
+     * Applicatoin proxy -
+     * rzp_mode_merchantId:secret
+     *
+     */
+
     /**
      * Key id and secret sent by client for
      * basic auth
@@ -155,7 +171,7 @@ class BasicAuth
         return true;
     }
 
-    public function validateKeyExistence()
+    protected function validateKeyExistence()
     {
         $keyId = $this->getKey();
 
@@ -167,10 +183,7 @@ class BasicAuth
         //
         $key = $this->fetchKey($keyId);
 
-        if ($key === null)
-        {
-            return $this->invalidApiKey();
-        }
+        return ($key !== null);
     }
 
     protected function invalidApiKey()
@@ -183,22 +196,29 @@ class BasicAuth
 
     public function privateAuth()
     {
-        $response = $this->verifySecret();
-
-        if ($response === true)
+        if ($this->validateKeyExistence())
         {
-            $this->setType(Type::PRIVATE_AUTH);
+            $response = $this->verifySecret();
 
-            return;
+            if ($response === true)
+            {
+                $this->setType(Type::PRIVATE_AUTH);
+
+                return;
+            }
+
+            return $response;
+        }
+        else
+        {
+            //
+            // @todo: add check for internal IP here
+            //
+            if ($this->verifyInternalAppAsProxy() === true)
+                return;
         }
 
-        //
-        // @todo: add check for internal IP here
-        //
-        if ($this->verifyInternalAppAsProxy() === true)
-            return;
-
-        return $response;
+        return $this->invalidApiKey();
     }
 
     /**
@@ -207,6 +227,11 @@ class BasicAuth
      */
     public function publicAuth()
     {
+        if ($this->validateKeyExistence() === false)
+        {
+            return $this->invalidApiKey();
+        }
+
         // @todo: throw error on public auth if
         //        secret is also provided.
         return $this->verifyPublic();
@@ -214,7 +239,29 @@ class BasicAuth
 
     public function appAuth()
     {
-        if ($this->verifyInternalApp() === false)
+        //
+        // Check that key is blank
+        //
+        if ($this->verifyInternalApp() === true)
+        {
+            //
+            // Check whether any internal app is
+            // attempting authentication
+            //
+            if ($this->verifyInternalApp() === true)
+            {
+                return;
+            }
+        }
+
+        // If we have a valid key, then send route not found
+        // since we don't want to give away internal routes.
+        // Otherwise say key not valid
+        if ($this->validateKeyExistence() === false)
+        {
+            return $this->invalidApiKey();
+        }
+        else
         {
             return ApiResponse::routeNotFound();
         }
@@ -310,24 +357,41 @@ class BasicAuth
             return false;
         }
 
-        $this->setMode(Type::APP_AUTH);
-
         return true;
     }
 
     protected function verifyInternalApp()
     {
-        $secret = $this->getSecret();
-        $verify = $this->verifyInternalAppSecret($secret);
-
-        if ($verify === false)
+        // Check key is blank
+        if ($this->getKey() !== '')
         {
             return false;
         }
 
-        $this->setMode(Type::APP_AUTH);
+        if ($this->verifyClientIpInternal() === false)
+        {
+            return false;
+        }
+
+        if ($this->verifyInternalAppSecret() === false)
+        {
+            return false;
+        }
 
         return true;
+    }
+
+    protected function verifyClientIpInternal()
+    {
+        // Check request is from internal ip
+        $clientIp = $this->request->getClientIp();
+
+        $clientIpRegex = '/^10\.0\.[0-9]{1,3}\.[0-9]{1,3}$/';
+
+        if (preg_match($clientIpRegex, $clientIp) === false)
+        {
+            return false;
+        }
     }
 
     protected function verifyInternalAppSecret()
