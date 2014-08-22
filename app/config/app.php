@@ -67,6 +67,14 @@ return array(
 
 	'key' => '4dkTd5lWhN40CkSrnyrRBuRMsSX9exXD',
 
+    /*
+     |
+     | Tells whether the application is deployed in amazon's cloud or
+     | running locally
+     |
+     */
+    'cloud' => $_ENV['CLOUD'],
+
 	/*
 	|--------------------------------------------------------------------------
 	| Autoloaded Service Providers

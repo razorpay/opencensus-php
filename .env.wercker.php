@@ -22,4 +22,6 @@ return array(
 
     'HDFC_ID'                   => getenv('HDFC_ID'),
     'HDFC_PASSWORD'             => getenv('HDFC_PASSWORD'),
+
+    'CLOUD'                     => true,
 );

@@ -22,4 +22,6 @@ return array(
 
     'HDFC_ID'                   => 'hdfc_id',
     'HDFC_PASSWORD'             => 'hdfc_password',
+
+    'CLOUD'                     => true,
 );
