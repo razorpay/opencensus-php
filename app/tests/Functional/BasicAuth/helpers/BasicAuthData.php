@@ -75,4 +75,43 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
     ],
+
+    'testProxyAuthOnPrivateRouteInCloud' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/transactions',
+            'content' => [
+                'count' => 1
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'data' => [
+                    [
+                        'entity' => 'transaction',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testProxyAuthOnPrivateRouteNotInCloud' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => 'transactions',
+            'content' => [
+                'count' => 1
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ]
 ];
