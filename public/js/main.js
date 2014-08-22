@@ -266,14 +266,33 @@ $(document).ready(function()
             var html = '';
             html += '<div class="col-1-4 key">ID</div><div class="col-9-12">' + 
                     data.id + 
-                    '</div><div class="col-1-4 key">Amount</div><div class="col-9-12">₹' + 
+                    '</div><div class="col-1-4 key">Amount</div><div class="col-9-12">' + 
                     data.amount + 
-                    '</div><div class="col-1-4 key">Created At</div><div class="col-9-12">' + 
+                    '</div><div class="col-1-4 key">Currency</div><div class="col-9-12">' + 
+                    data.currency + 
+                    '</div><div class="col-1-4 key">Status</div><div class="col-9-12">' + 
+                    data.status + 
+                    '</div><div class="col-1-4 key">Description</div><div class="col-9-12">' + 
+                    data.description + 
+                    '</div><div class="col-1-4 key">Email</div><div class="col-9-12">' + 
+                    data.email + 
+                    '</div><div class="col-1-4 key">Contact</div><div class="col-9-12">' + 
+                    data.contact + 
+                    '</div><div class="col-1-4 key">UDF</div><div class="col-9-12">';
+            
+            if(data.udf.length === 0){
+                html += "None";
+            } else {
+                $.each(data.udf, function(i,e){
+                    html += i + ": " + e + "<br/>";
+                });
+            }
+
+            html+= '</div><div class="col-1-4 key">Created At</div><div class="col-9-12">' + 
                     moment(data.created_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + 
                     '</div><div class="col-1-4 key">Updated At</div><div class="col-9-12">' + 
                     moment(data.updated_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + 
-                    '</div><div class="col-1-4 key">Status</div><div class="col-9-12">' + 
-                    data.status + 
+                    
                     '</div>';
             if(data.status == 'authorized') {
                 html += '<div class="col-1-4 key">' +
