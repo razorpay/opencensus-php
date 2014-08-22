@@ -68,8 +68,10 @@ class Dashboard
 
     public function postRequest($job, $data)
     {
+        $mode = \BasicAuth::getMode();
+
         $response = Requests::post(
-            $this->getUrl() . $data['resource'],
+            $this->getUrl() . $mode . '/' . $data['resource'],
             array(),
             $data['message']
         );
