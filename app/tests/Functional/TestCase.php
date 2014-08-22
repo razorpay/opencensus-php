@@ -30,6 +30,14 @@ class TestCase extends ParentTestCase
 
     protected $auth = array();
 
+    /**
+     * To denote whether to simulate unit tests with
+     * environment being in cloud
+     *
+     * @var boolean
+     */
+    protected $cloud = false;
+
     public function setUp()
     {
         parent::setUp();
@@ -63,12 +71,29 @@ class TestCase extends ParentTestCase
         $key = $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']);
         $balance = $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']);
         $pricing = $this->createEntity('pricing', ['id' => '138bee1175c23b9b794cda8e']);
+        $transaction = $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']);
 
         //
         // The key created in last command is setup as
         // default basic auth param.
         //
         $this->setupBasicAuthParams();
+    }
+
+    public function tearDown()
+    {
+        //
+        // Undo DB Changes after test
+        //
+        if ($this->dbTxnInProgress === true)
+        {
+            DB::rollback();
+
+            $this->dbTxnInProgress = false;
+        }
+
+        DB::disconnect('live');
+        DB::disconnect('test');
     }
 
     /**
@@ -99,20 +124,10 @@ class TestCase extends ParentTestCase
         $this->setupBasicAuthParams($user, $pwd);
     }
 
-    public function tearDown()
+    protected function setupProxyBasicAuthParams($user = 'rzp_test_363e4efa820b0c06208ccd99')
     {
-        //
-        // Undo DB Changes after test
-        //
-        if ($this->dbTxnInProgress === true)
-        {
-            DB::rollback();
-
-            $this->dbTxnInProgress = false;
-        }
-
-        DB::disconnect('live');
-        DB::disconnect('test');
+        $this->setupAppBasicAuthParams($user);
+        $this->cloud = true;
     }
 
     protected function createEntity($entity, $attributes = array())

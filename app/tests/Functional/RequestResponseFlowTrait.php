@@ -94,13 +94,21 @@ trait RequestResponseFlowTrait
     protected function makeRequest($request)
     {
         $server = $this->auth;
+
+        if ($this->cloud)
+        {
+            $server['REMOTE_ADDR'] = '10.0.123.123';
+        }
+
         $request['url'] = '/v1' . $request['url'];
 
         if (isset($request['content']) === false)
             $request['content'] = array();
 
         if (isset($request['server']) === false)
+        {
             $request['server'] = $server;
+        }
 
         $response = $this->call(
             $request['method'],
@@ -108,7 +116,7 @@ trait RequestResponseFlowTrait
             $request['content'],
             array(),
             $request['server']);
-
+//sd($response->getContent());
         return $response;
     }
 
