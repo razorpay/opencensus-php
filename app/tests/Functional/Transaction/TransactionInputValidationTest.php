@@ -14,6 +14,8 @@ class TransactionValidationTest extends TestCase
         parent::setUp();
 
         $this->testData = include(__DIR__.'/helpers/cardNumbers.php');
+
+        $this->setupPublicBasicAuthParams();
     }
 
     public function testShortCardNumber()

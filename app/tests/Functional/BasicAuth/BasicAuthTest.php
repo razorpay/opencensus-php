@@ -19,6 +19,8 @@ class BasicAuthTest extends TestCase
         // load test data
         //
         $this->testData = include(__DIR__.'/helpers/BasicAuthData.php');
+
+        $this->setupPrivateBasicAuthParams();
     }
 
     public function testAuthWithoutKeyOrPwd()
@@ -96,7 +98,7 @@ class BasicAuthTest extends TestCase
 
     public function testAppRoutesWithPrivateAuth()
     {
-        $this->setupBasicAuthParams();
+        $this->setupPrivateBasicAuthParams();
 
         $internalRoutes = \Http\Route::getApiRouteInCategory('internal');
 

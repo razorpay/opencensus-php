@@ -23,6 +23,8 @@ class AuthorizeTest extends TestCase
 
         $this->testData = include(__DIR__.'/helpers/authorize.php');
 
+        $this->setupPublicBasicAuthParams();
+
         $this->txn = $this->getDefaultTransactionArray();
     }
 

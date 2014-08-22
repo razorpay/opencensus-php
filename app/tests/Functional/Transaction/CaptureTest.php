@@ -25,7 +25,9 @@ class CaptureTest extends TestCase
 
         $this->testData = include(__DIR__.'/helpers/capture.php');
 
-        $this->txn = $this->defaultAuthTransaction();
+        $this->txn = $this->createAuthorizedTransactionEntity();
+
+        $this->setupPrivateBasicAuthParams();
     }
 
     public function testCapture()

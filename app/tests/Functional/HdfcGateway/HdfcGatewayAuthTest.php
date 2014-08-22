@@ -29,6 +29,8 @@ class HdfcGatewayAuthTest extends TestCase
             $this->markTestSkipped('Hdfc gateway auth tests are disabled');
         }
 
+        $this->setupPublicBasicAuthParams();
+
         //
         // load test data
         //

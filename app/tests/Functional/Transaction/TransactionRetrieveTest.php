@@ -22,6 +22,8 @@ class TransactionRetrieveTest extends TestCase
 
         $transaction = $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']);
 
+        $this->setupPrivateBasicAuthParams();
+
         $this->request = array(
             'method' => 'GET',
             'url' => '/transactions');

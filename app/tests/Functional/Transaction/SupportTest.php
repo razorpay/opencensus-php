@@ -34,6 +34,7 @@ class SupportTest extends TestCase
         // GIVEN
         // create an auth transaction using card 1
         //
+        $this->setupPublicBasicAuthParams();
         $testData = $this->testData['creditCardSuccess'];
         $this->replaceDefualtValues($testData['request']['content']);
 
@@ -45,6 +46,7 @@ class SupportTest extends TestCase
         // get amount
         $amount = $txn['amount'];
 
+        $this->setupPrivateBasicAuthParams();
         $this->capture($id, $amount);
 
         $this->refund($id);

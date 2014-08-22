@@ -14,6 +14,17 @@ trait TransactionAuthFlowTrait
         makeRequest as makeRequestParent;
     }
 
+    protected function createAuthorizedTransactionEntity()
+    {
+        $txn = $this->getDefaultTransactionArray();
+        unset($txn['card']);
+        $txn['merchant_id'] = '363e4efa820b0c06208ccd99';
+        $txn['status'] = 'authorized';
+        $txn = $this->createEntity('transaction', $txn);
+        $txn = $txn->toArrayPublic();
+        return $txn;
+    }
+
     protected function defaultAuthTransaction()
     {
         $txn = $this->getDefaultTransactionArray();
@@ -27,6 +38,8 @@ trait TransactionAuthFlowTrait
             'method' => 'POST',
             'url' => '/transactions',
             'content' => $txn);
+
+        $this->setupPublicBasicAuthParams();
 
         $response = $this->makeRequest($request);
 
