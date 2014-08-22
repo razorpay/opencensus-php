@@ -91,11 +91,11 @@ class Transaction extends Manager
     {
         // @todo: this function can probably be improved.
         $data = array();
-        foreach ($response as $obj)
+        foreach ($response['data'] as $obj)
         {
             $dataObj = [];
             foreach(static::$api_dashboard_mappings as $key => $value)
-                $dataObj[$value] = $obj->{$key};
+                $dataObj[$value] = $obj[$key];
             $data[] = $dataObj;
         }
         return $data;
