@@ -36,7 +36,7 @@ class TestCase extends ParentTestCase
      *
      * @var boolean
      */
-    protected $cloud = false;
+    protected $cloud = true;
 
     public function setUp()
     {
@@ -72,12 +72,6 @@ class TestCase extends ParentTestCase
         $balance = $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']);
         $pricing = $this->createEntity('pricing', ['id' => '138bee1175c23b9b794cda8e']);
         $transaction = $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']);
-
-        //
-        // The key created in last command is setup as
-        // default basic auth param.
-        //
-        $this->setupBasicAuthParams();
     }
 
     public function tearDown()
@@ -104,16 +98,6 @@ class TestCase extends ParentTestCase
      */
     protected function setupBasicAuthParams($user = null, $pwd = null)
     {
-        if ($user === null)
-        {
-            $user = 'rzp_test_d9c6bf091a1a64cb5678d8c1';
-        }
-
-        if ($pwd === null)
-        {
-            $pwd = 'thisissupersecret';
-        }
-
         $this->auth = array(
                'PHP_AUTH_USER' => $user,
                'PHP_AUTH_PW' => $pwd);
@@ -127,9 +111,27 @@ class TestCase extends ParentTestCase
     protected function setupProxyBasicAuthParams($user = 'rzp_test_363e4efa820b0c06208ccd99')
     {
         $this->setupAppBasicAuthParams($user);
-        $this->cloud = true;
     }
 
+    protected function setupPublicBasicAuthParams($user = 'rzp_test_d9c6bf091a1a64cb5678d8c1')
+    {
+        $this->setupBasicAuthParams($user, '');
+    }
+
+    protected function setupPrivateBasicAuthParams($user = null, $pwd = null)
+    {
+        if ($user === null)
+        {
+            $user = 'rzp_test_d9c6bf091a1a64cb5678d8c1';
+        }
+
+        if ($pwd === null)
+        {
+            $pwd = 'thisissupersecret';
+        }
+
+        $this->setupBasicAuthParams($user, $pwd);
+    }
     protected function createEntity($entity, $attributes = array())
     {
         $this->eloquentUnguard();
