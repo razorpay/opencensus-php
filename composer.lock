@@ -1192,7 +1192,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/rzp-php.git",
-                "reference": "ae438cb139ebaddccb8301ba2e54234d7c9e4a6b"
+                "reference": "23725bc201930ae86e1aafc03ebe7ebce1b19b45"
             },
             "require": {
                 "ext-json": "*",
@@ -1217,7 +1217,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2014-08-20 17:30:38"
+            "time": "2014-08-22 09:43:08"
         },
         {
             "name": "rmccue/requests",
