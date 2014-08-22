@@ -11,9 +11,15 @@
 |
 */
 
+// Initialize BasicAuth with $app
+App::before(function() use ($app)
+{
+    BasicAuth::init($app);
+});
+
 App::before(function()
 {
-    return BasicAuth::checkHttps();
+    return BasicAuth::verifyHttps();
 });
 
 App::before(function()

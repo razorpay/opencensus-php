@@ -22,7 +22,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->bindShared('basicauth', function($app)
         {
-            return new BasicAuth($app['request']);
+            return new BasicAuth();
         });
     }
 
