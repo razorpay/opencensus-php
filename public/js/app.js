@@ -18,10 +18,16 @@ var app = angular.module('app', [
     'app.controllers'
   ])
 .run(
-  [          '$rootScope', '$state', '$stateParams',
-    function ($rootScope,   $state,   $stateParams) {
-        $rootScope.$state = $state;
-        $rootScope.$stateParams = $stateParams;        
+  [          '$rootScope', '$state', '$stateParams', 'user', 'authorization',
+    function ($rootScope,   $state,   $stateParams, user, authorization) {
+        $rootScope.$on('$stateChangeStart', function(event, toState, toStateParams) {
+        // track the state the user wants to go to; authorization service needs this
+        $rootScope.toState = toState;
+        $rootScope.toStateParams = toStateParams;
+        // if the user is resolved, do an authorization check immediately. otherwise,
+        // it'll be done when the state it resolved.
+        if (user.isIdentityResolved()) authorization.authorize();
+      });   
     }
   ]
 )
@@ -44,7 +50,17 @@ var app = angular.module('app', [
             .state('app', {
                 abstract: true,
                 url: '/app',
-                templateUrl: 'tpl/app.html'
+                templateUrl: 'tpl/app.html',
+                resolve: {
+                    authorize: ['authorization',
+                      function(authorization) {
+                        return authorization.authorize();
+                      }
+                    ]
+                },
+                data: {
+                  role: 'auth'
+                }
             })
             .state('app.dashboard', {
                 url: '/dashboard',
@@ -172,7 +188,17 @@ var app = angular.module('app', [
             })
             .state('access', {
                 url: '/access',
-                template: '<div ui-view class="fade-in-right-big smooth"></div>'
+                template: '<div ui-view class="fade-in-right-big smooth"></div>',
+                resolve: {
+                    authorize: ['authorization',
+                      function(authorization) {
+                        return authorization.authorize();
+                      }
+                    ]
+                },
+                data: {
+                  role: 'guest'
+                }
             })
             .state('access.signin', {
                 url: '/signin',
@@ -235,6 +261,7 @@ var app = angular.module('app', [
                 url: '/compose',
                 templateUrl: 'tpl/mail.new.html'
             })
+
     }
   ]
 )
