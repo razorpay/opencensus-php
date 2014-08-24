@@ -16,6 +16,8 @@ Route::get('/', 'MerchantController@getIndex');
 
 Route::group(array('before' => 'auth'), function()
 {
+    Route::get('/user', 'MerchantController@getUser');
+
     Route::get('/logout', 'MerchantController@getLogout');
 
     Route::get('/{mode}/transactions', 'TransactionController@getTransactions');

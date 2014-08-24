@@ -35,7 +35,7 @@ App::after(function($request, $response)
 
 Route::filter('auth', function()
 {
-	if (Auth::merchant()->guest()) return Redirect::guest('login');
+	if (Auth::merchant()->guest()) return Response::json(array('success' => false, 'data' => null));
 });
 
 Route::filter('auth_admin', function()
