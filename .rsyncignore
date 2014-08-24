@@ -1,10 +1,8 @@
-/bootstrap/compiled.php
-.env.local.php
-.env.php
+.env.*
 .DS_Store
 Thumbs.db
-/app/config/database.php
 /bootstrap/environment.php
 /app/storage/*
 /.git/*
 /node_modules/*
+app/storage/selenium.png

@@ -4,54 +4,92 @@ use Models\Service;
 
 class TransactionController extends BaseController
 {
-    public function postIndex()
+    public function postIndex($mode)
     {
+        $this->checkMode($mode);
+
         $input = Input::all();
 
-        $status = Service\Transaction::getInstance()->process($input);
+        $status = (new Service\Transaction)->process($input, $mode);
 
         return ['status' => $status];
     }
 
-    public function getAnalytics()
+    public function getAnalytics($mode)
     {
+        $this->checkMode($mode);
+
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::id();
+        $input['merchant_id'] = Auth::merchant()->id();
 
-        $data = Service\Transaction::getInstance()->getAnalytics($input);
+        $data = (new Service\Transaction)->getAnalytics($input, $mode);
 
         return array(
             'data' => $data, 
-            'mode' => 'test'
+            'mode' => $mode
         );
     }
 
-    public function getAggregations()
+    public function getAggregations($mode)
     {
-        $merchant_id = Auth::id();
+        $this->checkMode($mode);
 
-        $data = Service\Transaction::getInstance()->getAggregations($merchant_id);
+        $merchant_id = Auth::merchant()->id();
+
+        $data = (new Service\Transaction)->getAggregations($merchant_id, $mode);
 
         return array(
             'data' => $data,
-            'mode' => 'test'
+            'mode' => $mode
         );
     }
 
-    public function getTransactions()
+    public function getTransactions($mode)
     {
+        $this->checkMode($mode);
+
         $input = Input::all();
 
-        $data = Service\Transaction::getInstance()->fetchListFromApi($input);
+        $data = (new Service\Transaction)->fetchListFromApi($input, $mode);
 
         return $data;
     }
 
-    public function getTransaction($id = NULL)
+    public function getTransaction($mode, $id = NULL)
     {
-        $data = Service\Transaction::getInstance()->fetchTxnFromApi($id);
+        $this->checkMode($mode);
+        
+        $data = (new Service\Transaction)->fetchTxnFromApi($id, $mode);
 
         return $data;
+    }
+
+    public function getCaptureTransaction($mode, $id = NULL)
+    {
+        $this->checkMode($mode);
+        
+        $amount = Input::get('amount');
+
+        $data = (new Service\Transaction)->captureTxn($id, $amount, $mode);
+
+        return $data;
+    }
+
+    public function getRefundTransaction($mode, $id = NULL)
+    {
+        $this->checkMode($mode);
+        
+        $data = (new Service\Transaction)->refundTxn($id, $mode);
+
+        return $data;
+    }
+
+    protected function checkMode($mode)
+    {
+        if($mode !== 'live' and $mode !== 'test')
+        {
+            throw new \Exception('Invalid Mode');
+        }
     }
 }

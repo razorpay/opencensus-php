@@ -18,7 +18,7 @@ class Transaction extends Manager
     );
 
     protected static $fetchRules = array(
-        'id'            => 'alpha_num|max:32',
+        'id'            => 'alpha_dash|max:32',
         'from'          => 'numeric',
         'to'            => 'numeric',
         'count'         => 'numeric|max:100',
@@ -27,7 +27,7 @@ class Transaction extends Manager
     );
 
     protected static $processRules = array(
-        'merchant_id'   =>  'required|numeric',
+        'merchant_id'   =>  'required',
         'amount'        =>  'required|numeric|max:10000',
         'status'        =>  'required|in:captured,refunded,prefunded',
         'created_at'    =>  'required|numeric',
@@ -35,7 +35,7 @@ class Transaction extends Manager
     );
 
     protected static $analyticsRules = array(
-        'merchant_id'   =>  'required|numeric',
+        'merchant_id'   =>  'required',
         'from'          =>  'numeric',
         'to'            =>  'numeric',
         'type'          =>  'in:day,week,month,year'
@@ -91,11 +91,11 @@ class Transaction extends Manager
     {
         // @todo: this function can probably be improved.
         $data = array();
-        foreach ($response as $obj)
+        foreach ($response['data'] as $obj)
         {
             $dataObj = [];
             foreach(static::$api_dashboard_mappings as $key => $value)
-                $dataObj[$value] = $obj->{$key};
+                $dataObj[$value] = $obj[$key];
             $data[] = $dataObj;
         }
         return $data;

@@ -7,18 +7,19 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 
 class Merchant extends DAL implements UserInterface, RemindableInterface
 {
+    public $incrementing = false;
+
     protected $table = 'merchants';
 
-    protected $hidden = array('password');
+    protected $hidden = array('password', 'remember_token');
 
     protected $fillable = array(
+        'id',
         'name',
         'email',
-        'password'
-    );
-
-    protected $guarded = array(
-        'id'
+        'password',
+        'confirm_token',
+        'activated'
     );
 
     public function transactions()
@@ -28,13 +29,23 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         );
     }
 
-    public static function getAggregations($data)
+    public function merchantDetails()
     {
-        $data = \DB::table('aggregations')->where('merchant_id','=',$data['merchant_id'])->first();
+        return $this->hasOne(
+            __NAMESPACE__.'\MerchantDetails'
+        );
+    }
+
+    public static function getAggregations($data, $mode)
+    {
+        $data = \DB::table('aggregations')
+                    ->where('merchant_id','=',$data['merchant_id'])
+                    ->where('mode','=',$mode)
+                    ->first();
         return $data;
     }
 
-    public static function createAggregations($data)
+    public static function createAggregations($data, $mode)
     {
         $obj = array(
             'merchant_id'           =>  $data['merchant_id'],
@@ -42,12 +53,13 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             'successful_txn_count'  =>  1,
             'txn_count'             =>  1,
             'created_at'            =>  $data['updated_at'],
-            'updated_at'            =>  $data['updated_at']
+            'updated_at'            =>  $data['updated_at'],
+            'mode'                  =>  $mode
         );
         \DB::table('aggregations')->insert($obj);
     }
 
-    public static function updateAggregations($data, $merchant_details)
+    public static function updateAggregations($data, $merchant_details, $mode)
     {
         $obj = array(
             'total_amount'          =>  (int)$data['amount'] + (int)$merchant_details->total_amount,
@@ -55,7 +67,48 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             'txn_count'             =>  (int)$merchant_details->txn_count + 1,
             'updated_at'            =>  $data['created_at']
         );
-        \DB::table('aggregations')->where('merchant_id','=',$data['merchant_id'])->update($obj);
+        \DB::table('aggregations')
+            ->where('merchant_id','=',$data['merchant_id'])
+            ->where('mode', '=', $mode)
+            ->update($obj);
+    }
+
+    public function getMerchantForConfirmation($token)
+    {
+        return $this->where('confirm_token', '=', $token)->firstorfail();
+    }
+
+    /**
+     * Confirms a merchant
+     */
+    public function confirm()
+    {
+        $this->confirm_token = NULL;
+        $this->save();
+    }
+
+    /**
+     * Generates data required for merchant registration with the API
+     */
+    public function generateApiData()
+    {
+        return array(
+            'id'    => $this->id,
+            'name'  => $this->name,
+            'email' => $this->email
+        );
+    }
+
+    /**
+     * Generates data required for merchant confirmation email
+     */
+    public function generateEmailData()
+    {
+        return array(
+            'name'  => $this->name,
+            'email' => $this->email,
+            'confirm_token' => $this->confirm_token
+        );
     }
 
     /**
@@ -119,4 +172,8 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         return $this->email;
     }
 
+    public function isActive()
+    {
+        return ((int)$this->activated === 1);
+    }
 }

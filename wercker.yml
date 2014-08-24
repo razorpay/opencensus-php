@@ -6,16 +6,27 @@ build:
       - add-ssh-key:
           keyname: RZP_API
       - script:
+          name: Enable virtual display
+          code: |-
+                # Start xvfb which gives the context an virtual display
+                # which is required for tests that require an GUI
+                export DISPLAY=:99.0
+                start-stop-daemon --start --quiet --pidfile /tmp/xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1024x768x24 -ac +extension GLX +render -noreset
+                # Give xvfb time to start. 3 seconds is the default for all xvfb-run commands.
+                sleep 3
+      - script:
+          name: copy wercker config
+          code:  cp .env.wercker.php .env.testing.php
+      - script:
           name: install dependencies
           code: composer install --no-interaction
-      - script:
-          name: Install NPM packages
-          code: npm install
+      - wercker/npm-install@0.9.3
       - script:
           name: Create grunt config and set environment
           code: cp app/config/grunt.sample.json app/config/grunt.json && sed -i "2s/development/production/" app/config/grunt.json
       - grunt:
-          tasks: default 
+          tasks: default
+      - desmondmorris/selenium-install@0.0.2
       - script:
           name: run unit tests
           code: phpunit
@@ -51,7 +62,7 @@ deploy:
       - script:
           name: copy with rsync over ssh
           code: >
-                rsync -avz --force --delete --progress --size-only
+                rsync -avz --force --delete --progress
                 --exclude-from=.rsyncignore
                 -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
                 ./ ubuntu@dashboard.razorpay.com:/home/ubuntu/dashboard/

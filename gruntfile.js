@@ -21,15 +21,26 @@ module.exports = function(grunt){
 		},
 
 		stylus: {
-			compile: {
+			production: {
 				files: {
 					'public/css/style.css': 'public/styl/style.styl'
+				},
+				options: {
+					compress: true
+				}
+			},
+			development: {
+				files: {
+					'public/css/style.css': 'public/styl/style.styl'
+				},
+				options: {
+					compress: false
 				}
 			}
 		},
 
 		jshint: {
-			development: ['public/js/main.js'],
+			development: ['public/js/main.js', 'public/js/activation.js'],
 			production: []
 		},
 
@@ -38,7 +49,8 @@ module.exports = function(grunt){
 				files: {
 					'public/css/dev/style.css': ['public/css/lib/simplegrid.css','public/css/lib/pikaday.css','public/css/lib/reset.css','public/css/fonts.css','public/css/style.css'],
 					'public/js/dev/pre.js': ['public/js/lib/jquery.min.js','public/js/lib/moment.min.js','public/js/lib/pikaday.js','public/js/lib/highcharts.min.js','public/js/lib/path.min.js'],
-					'public/js/dev/post.js': ['public/js/main.js']
+					'public/js/dev/post.js': ['public/js/main.js'],
+					'public/js/dev/activation.js': ['public/js/lib/bootstrap.fileinput.js','public/js/activation.js']
 				}
 			},
 			production: {}
@@ -57,7 +69,8 @@ module.exports = function(grunt){
 			production: {
 				files: {
 					'public/js/prod/pre.js': ['public/js/lib/jquery.min.js','public/js/lib/moment.min.js','public/js/lib/pikaday.js','public/js/lib/highcharts.min.js','public/js/lib/path.min.js'],
-					'public/js/prod/post.js': ['public/js/main.js']
+					'public/js/prod/post.js': ['public/js/main.js'],
+					'public/js/prod/activation.js': ['public/js/lib/bootstrap.fileinput.js','public/js/activation.js']
 				}
 			}
 		},
@@ -65,7 +78,15 @@ module.exports = function(grunt){
 		preprocess: {
 			layout: {
 				src: 'app/views/templates/layout.blade.php.tmpl',
-				dest: 'app/views/layout.blade.php'
+				dest: 'app/views/layoutGenerated.blade.php'
+			},
+			adminlayout: {
+				src: 'app/views/templates/admin/layout.blade.php.tmpl',
+				dest: 'app/views/admin/layoutGenerated.blade.php'
+			},
+			activation: {
+				src: 'app/views/templates/merchant/getActivation.blade.php.tmpl',
+				dest: 'app/views/merchant/getActivationGenerated.blade.php'
 			}
 		},
 
@@ -76,12 +97,12 @@ module.exports = function(grunt){
 				renameFiles: true
 			},
 			development: {
-				src: ['public/css/dev/style.css','public/js/dev/pre.js','public/js/dev/post.js'],
-				dest: ['app/views/layout.blade.php']
+				src: ['public/css/dev/style.css','public/js/dev/pre.js','public/js/dev/post.js','public/js/dev/activation.js'],
+				dest: ['app/views/layoutGenerated.blade.php', 'app/views/merchant/getActivationGenerated.blade.php', 'app/views/admin/layoutGenerated.blade.php']
 			},
 			production: {
-				src: ['public/css/prod/style.css','public/js/prod/pre.js','public/js/prod/post.js'],
-				dest: ['app/views/layout.blade.php']
+				src: ['public/css/prod/style.css','public/js/prod/pre.js','public/js/prod/post.js','public/js/prod/activation.js'],
+				dest: ['app/views/layoutGenerated.blade.php', 'app/views/merchant/getActivationGenerated.blade.php', 'app/views/admin/layoutGenerated.blade.php']
 			}
 		},
 
@@ -92,6 +113,5 @@ module.exports = function(grunt){
 
 	});
 
-	grunt.registerTask('default',   ['env:'+config.environment,'clean:'+config.environment,'stylus','jshint:'+config.environment,'concat:'+config.environment,'cssmin:'+config.environment,'uglify:'+config.environment,'preprocess','hashres:'+config.environment]);
-
+	grunt.registerTask('default',   ['env:'+config.environment,'clean:'+config.environment,'stylus:'+config.environment,'jshint:'+config.environment,'concat:'+config.environment,'cssmin:'+config.environment,'uglify:'+config.environment,'preprocess','hashres:'+config.environment]);
 };

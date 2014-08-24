@@ -1,10 +1,10 @@
 /* Colours */
 
-rzp-blue = #29B7D6
+rzp-blue = #29B7D5
 rzp-red = #E74C3C
 rzp-green = #27AE60
 rzp-light-gray = #EFEFEF
-rzp-gray = #727272
+rzp-gray = #444444
 
 /* Mixins */
 
@@ -13,11 +13,6 @@ transition(n)
 	-o-transition all n ease-in 0s
 	-moz-transition all n ease-in 0s
 	-webkit-transition all n ease-in 0s
-
-border-radius(n)
-	-webkit-border-radius n
-	-moz-border-radius n
-	border-radius n
 
 border-radius-left(n)
 	-webkit-border-top-left-radius n
@@ -35,6 +30,19 @@ border-radius-right(n)
 	border-top-right-radius n
 	border-bottom-right-radius n
 
+include-box-shadow(horizontal, vertical, blur, spread, color)
+	vendor('box-shadow', horizontal vertical blur spread color)
+
+include-border-radius(radius)
+	vendor('border-radius', radius)
+
+vendor(prop, args)
+	-webkit-{prop} args
+	-moz-{prop} args
+	-o-{prop} args
+	-ms-{prop} args
+	{prop} args
+
 /* Styles */
 
 html
@@ -42,21 +50,24 @@ html
 
 body
 	font-family 'Lato',sans-serif
-	font-size 10px
-	font-weight 300
+	font-size 14px
+	font-weight 400
 	color rzp-gray
 
 /* Header */
 
 header
 	position fixed
-	background rzp-blue
-	color rgb(255,255,255)
+	// background rzp-blue
+	background white
+	border-bottom 1px solid rzp-gray
+	color rzp-gray
 	height 48px
 	width 100%
-	font-size 1.5em
+	font-size 1.2em
 	z-index 1000
 	top 0
+	include-box-shadow 0px 1px 2px 0px rgba(0, 0, 0, 0.1)
 	#nav
 		height 48px
 		width 100%
@@ -77,19 +88,19 @@ header
 		#rightnav
 			text-align right
 			li.button
-				border solid 1px rgba(255,255,255,0.8)
-				border-radius(4px)
+				border solid 1px rzp-blue
+				include-border-radius 4px
 				padding 2px 0px 5px 0px
 				a
 					padding 8px
 		ul a
 			display inline-block
 			text-decoration none
-			color rgba(255,255,255,0.8)
+			color rzp-gray
 			padding 8px 4px
 			transition(0.1s)
 			&:hover
-				color rgba(255,255,255,1)
+				color black
 				transition(0.1s)
 
 /* Main */
@@ -121,7 +132,7 @@ header
 	.active
 		color rzp-blue
 	.button-desc
-		font-size 1.5em
+		font-size 1.3em
 		height 26px
 		display inline-block
 		margin 0 20px
@@ -157,7 +168,7 @@ header
 #sidebar
 	padding 10px 0 30px 0
 	min-height 300px
-	h2
+	h3
 		border-bottom 1px solid rzp-gray
 		font-weight 300
 		.title
@@ -171,7 +182,7 @@ header
 		margin 10px 0
 		li
 			margin 5px 0
-			font-size 1.5em
+			font-size 1.2em
 			color rzp-blue
 			border-bottom 2px solid transparent
 			a
@@ -216,7 +227,7 @@ header
 	h2,div
 		display inline-block
 	h2
-		font-size 2em
+		font-size 1.7em
 	#datepicker-group
 		text-align right
 	.datepicker
@@ -226,12 +237,10 @@ header
 		text-align center
 		color rzp-gray
 		font-family 'Lato',sans-serif
-		font-size 1.1em
 	.datepicker:focus
 		border 1px solid rzp-blue
 		outline 0
 	.btn-group
-		font-size 1.1em
 		margin 5px 0 0 0
 		.btn
 			border 1px solid rzp-gray
@@ -253,16 +262,17 @@ header
 .horizontal-data-wrapper
 	min-height 120px
 	border-bottom 1px solid rzp-blue
+	background-color rzp-blue
+	color white
 	.data-item
 		display inline-block
 		text-align center
 		margin 30px 0
 		.data-item-value
-			font-size 2.5em
-			color rzp-blue
+			font-size 2em
 			line-height 1.5
 		.data-item-desc
-			font-size 1.5em
+			font-size 1.3em
 
 /* Transactions */
 
@@ -278,7 +288,7 @@ header
 	margin-top 20px
 	li
 		padding 0 10px
-		font-size 1.4em
+		font-size 1.3em
 		a
 			span
 				margin 7px 0
@@ -298,15 +308,78 @@ header
 #transaction-one
 	margin 30px;
 	h2
-		font-size 2.5em
+		font-size 2.2em
 		font-weight 300
 	.details
 		margin-top 30px
 		.key
 			font-weight 400
 		div
-			font-size 1.5em
+			font-size 1.3em
 			padding 3px 0
+
+/* Account */
+
+.account-details
+	padding 30px
+	font-size 1.3em
+	div
+		padding 5px 0
+
+/* Keys */
+
+.keys-heading
+	padding 30px
+	text-transform: capitalize
+
+.key-wrapper
+	padding 30px
+	font-size 1.3em
+	li
+		margin 5px
+	.field
+		text-align left
+		width 150px
+	.field, .value
+		display inline-block
+	a
+		cursor pointer
+	.roll-icon
+		height 20px
+		margin-left 20px
+		opacity 0.7
+		&:hover
+			opacity 1
+
+.roll-key-form-wrapper
+	background-color rzp-blue
+	padding 20px 30px
+	font-weight 400
+	color rzp-light-gray
+	.close-button
+		float right
+		img
+			cursor pointer
+			height 20px
+	div
+		margin-bottom 10px
+	span
+		margin 0 10px
+	.roll-key-button
+		margin-top 15px
+		width 10%
+		background-color white
+		outline none
+		border 0
+		color rzp-blue
+		font-family 'Lato',sans-serif
+		padding 5px 0
+		cursor pointer
+	.roll-key-form-loader
+		margin-left 10px
+	a
+		color white
+
 
 /* Loader */
 
@@ -367,12 +440,30 @@ header
 	.success-message
 		color rzp-green
 	.error-message, .success-message
-		font-size 1.5em
+		font-size 1.3em
 		text-align center
+	p.message
+		margin 20px 0
+		font-size 1.3em
+		text-align center
+		a
+			text-decoration none
+			color rzp-blue
+	.credentials
+		padding 10px
+		font-family 'Courier'
+		font-size 1em
+		div
+			display inline-block
+			margin 5px 0
+		.key
+			width 30px
+			text-align right
+			margin-right 20px
 	h2
 		color black
 		text-align center
-		font-size 2.5em
+		font-size 2.2em
 		font-weight 300
 		padding 12px 0
 	form
@@ -386,10 +477,10 @@ header
 				border-bottom 1px solid rzp-gray
 				color rzp-blue
 				padding 5px 0
-				line-height 1.3em
+				line-height 1.1em
 				margin 10px auto
 		a, .text>input
-			font-size 1.6em
+			font-size 1.3em
 			font-family 'Lato',sans-serif
 		a
 			margin 5px auto
@@ -407,7 +498,7 @@ header
 			margin 30px auto
 		.remember
 			label
-				font-size 1.6em
+				font-size 1.3em
 				font-family 'Lato', sans-serif
 				color rzp-blue
 			input[type="checkbox"]
@@ -427,10 +518,54 @@ header
 			border 0
 			color white
 			font-family 'Lato',sans-serif
-			font-size 1.6em
+			font-size 1.3em
 			height 35px
 			padding 5px 0
 			cursor pointer
+	.form-footer
+		padding 15px
+		text-align center
+		.footer-text
+			margin 0 auto
+			font-size 1.3em
+			a
+				text-decoration none
+				color rzp-blue
+
+/* Activation */
+
+.activation-form-wrapper
+	margin-top 30px
+	width 700px
+	min-height 340px
+	border-radius(5px)
+	#activation-form
+		padding 7px 0 20px
+		a, .text>input
+			font-family 'Lato',sans-serif
+		a
+			margin 5px auto
+			text-decoration none
+			color rzp-gray
+			&:hover
+				text-decoration none
+			&:focus
+				outline none
+			&:focus, &:hover
+				color black
+		.prev-next
+			display block
+			outline none
+			border 0
+			color rzp-blue
+			padding 5px 0
+			line-height 1.3em
+			text-align center
+			margin 40px auto 50px auto
+			.prev
+				float left
+			.next
+				float right
 	.form-footer
 		padding 15px
 		text-align center
@@ -440,3 +575,88 @@ header
 			a
 				text-decoration none
 				color rzp-blue
+
+/*progressbar*/
+
+ol.steplist
+	margin 0
+	padding 0
+	list-style-type none
+	font-size 12px
+	li
+		display inline-block
+		text-align center
+		line-height 3em
+		width 16.6% 
+	li:before
+		content "\00a0\00a0"
+	li:after
+		position relative
+		bottom -2.5em
+		float left
+		left 50%
+		line-height 1em
+
+ol.progtrckr
+	margin 0
+	padding 0
+	list-style-type none
+	font-size 12px
+	li
+		display inline-block
+		text-align center
+		line-height 3em
+		width 16.66% 
+	li:before
+		content "\00a0\00a0"
+	li:after
+		position relative
+		bottom -2.5em
+		float left
+		left 50%
+		line-height 1em
+	li.progtrckr-done
+		color black
+		border-bottom 4px solid yellowgreen
+	li.progtrckr-done:after
+		content "\2713"
+		color white
+		background-color yellowgreen
+		height 1.2em
+		width 1.2em
+		line-height 1.2em
+		border none
+		border-radius 1.2em
+	li.progtrckr-todo
+		color silver 
+		border-bottom 4px solid silver
+	li.progtrckr-todo:after
+		content "\039F"
+		color silver
+		background-color white
+		font-size 1.5em
+		bottom -1.6em
+	li.progtrckr-current
+		color black 
+		border-bottom 4px solid rzp-blue
+	li.progtrckr-current:after
+		content "\2600"
+		color white
+		background-color rzp-blue
+		height 1.2em
+		width 1.2em
+		line-height 1.2em
+		border none
+		border-radius 1.2em
+	li.progtrckr-error
+		color black 
+		border-bottom 4px solid red
+	li.progtrckr-error:after
+		content "\274C"
+		color white
+		background-color red
+		height 1.2em
+		width 1.2em
+		line-height 1.2em
+		border none
+		border-radius 1.2em	

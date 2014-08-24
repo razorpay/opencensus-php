@@ -35,13 +35,24 @@ App::after(function($request, $response)
 
 Route::filter('auth', function()
 {
-	if (Auth::guest()) return Redirect::guest('login');
+	if (Auth::merchant()->guest()) return Redirect::guest('login');
 });
 
-
-Route::filter('auth.basic', function()
+Route::filter('auth_admin', function()
 {
-	return Auth::basic();
+	if (Auth::admin()->guest()) return Redirect::guest('/admin/login');
+});
+
+Route::filter('superadmin', function()
+{
+    if (Auth::admin()->user()->isSuperAdmin() === false)
+        return App::abort(403, 'Unauthorized action.');
+});
+
+Route::filter('auth.internal', function()
+{
+	if ($_SERVER['REMOTE_ADDR'] !== $_SERVER['SERVER_ADDR'] || $_SERVER['REMOTE_ADDR'] !== \Config::get('api.ip'))
+		return Response::view('error.401', array(), 401);
 });
 
 /*
@@ -57,7 +68,12 @@ Route::filter('auth.basic', function()
 
 Route::filter('guest', function()
 {
-	if (Auth::check()) return Redirect::to('/');
+	if (Auth::merchant()->check()) return Redirect::to('/');
+});
+
+Route::filter('guest_admin', function()
+{
+	if (Auth::admin()->check()) return Redirect::to('/admin');
 });
 
 /*

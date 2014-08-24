@@ -1,9 +1,9 @@
-@extends('layout')
+@extends('layoutGenerated')
 
 @section('content')
 	<div class="grid grid-pad">
 		<div class="col-1-4 spaced-right-box">
-			<!-- <div class="content boxed spaced-bottom-box" id="livemode">
+			<div class="content boxed spaced-bottom-box" id="livemode">
 				<div class="button-desc active">Test</div>
 				<div class="button-wrap">
 					<div class="button-bg">
@@ -11,40 +11,8 @@
 					</div>
 				</div>
 				<div class="button-desc">Live</div>
-			</div> -->
-			<div class="content boxed" id="sidebar">
-				<h2 class="lined">
-					<div class="title">Features</div>
-				</h2>
-				<ul>
-					<li class="active" data-tab="dashboard">
-						<a href="/#!/">Dashboard</a>
-					</li>
-					<li data-tab="transactions">
-						<a href="/#!/transactions">Transactions</a>
-					</li>
-					<li data-tab="refunds">
-						<a href="/#!/refunds">Refunds</a>
-					</li>
-					<li data-tab="settlements">
-						<a href="/#!/settlements">Settlements</a>
-					</li>
-				</ul>
-				<h2 class="lined">
-					<div class="title">Settings</div>
-				</h2>
-				<ul>
-					<li data-tab="keys">
-						<a href="/#!/keys">API Keys</a>
-					</li>
-					<li data-tab="activation">
-						<a href="/#!/activation">Activation</a>
-					</li>
-					<li data-tab="account">
-						<a href="/#!/account">Account</a>
-					</li>
-				</ul>
 			</div>
+			@include('sidebar')
 		</div>
 		<div class="col-9-12 spaced-right-box">
 			<div class="content boxed" id="dashboard-wrapper">
@@ -136,7 +104,27 @@
 						</ul>
 					</div>
 				</div>
+				<div id="account" class="hidden panel">
+					<div class="account-details grid">
+						<div class="col-1-3">Name</div>
+						<div class="col-2-3" id="account-name"></div>
+						<div class="col-1-3">Email</div>
+						<div class="col-2-3" id="account-email"></div>
+						<div class="col-1-3">Activated</div>
+						<div class="col-2-3" id="account-activated"></div>
+						<div class="col-1-3">Password</div>
+						<div class="col-2-3" id="account-password"><a href="/password">Change Password</a></div>
+					</div>
+
+				</div>
+				<div id="keys" class="hidden panel">
+					
+				</div>
+				<div id="activation" class="hidden panel">
+				</div>
 			</div>
 		</div>
 	</div>
+	<!-- Used for getting csrf token for post requests -->
+	<input type="hidden" name="_token" value="{{{csrf_token()}}}">
 @stop

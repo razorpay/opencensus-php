@@ -12,20 +12,68 @@ class Merchant extends Service
         list($error, $data) = Manager\Merchant::createValidate($input, 'register')->getData();
 
         if (empty($error))
-        {
-            $merchant_data = DAL\Merchant::createOrFail($data)->toArray();
-            
-            $key_data = Manager\Merchant::generateKeyData();
+        {   
+            $merchant = DAL\Merchant::createOrFail($data);
 
-            $merchant_key_data = Manager\Merchant::mergeMerchantAndKey($merchant_data, $key_data);
+            $merchant_details = DAL\MerchantDetails::createOrFail(array('merchant_id'=>$merchant->id));
 
-            Request::setCredentials($merchant_key_data['merchant_id']);
-            $response = Request::POST('merchants', $merchant_key_data);
+            \Queue::push('MerchantController@sendConfirmationMail',array('merchant' => $merchant->generateEmailData()));
 
-            $data = $key_data;
+            $data = $merchant->toArray();
         }
 
         return [$error, $data];
+    }
+
+    public function changePassword(array $input)
+    {
+        list($error, $data) = Manager\Merchant::createValidate($input, 'password')->getData();
+
+        if (empty($error))
+        {   
+            $merchant = \Auth::merchant()->user();
+
+            $old_password = $data['old_password'];
+
+            unset($data['old_password']);
+
+            if (\Hash::check($old_password, $merchant->password) == false)
+            {
+                $error[] = 'Incorrect password';
+
+                return [$error, $data];
+            }
+
+            $merchant->update($data);
+        }
+
+        return [$error, $data];
+    }
+
+    public function confirm($token)
+    {
+        $merchant = new DAL\Merchant;
+
+        try
+        {
+            $merchant = $merchant->getMerchantForConfirmation($token);
+        }
+        catch(\Exception $e)
+        {
+            return false;
+        }
+
+        $merchant_api_data = $merchant->generateApiData();
+
+        $request = (new Request)->setCredentials();
+
+        $response = $request->process('POST', 'merchants', $merchant_api_data);
+
+        if(isset($response['error'])) return false;
+
+        $merchant->confirm();
+
+        return array_merge($response, $merchant->toArray());
     }
 
     public function login(array $input)
@@ -35,14 +83,77 @@ class Merchant extends Service
         $verify = false;
 
         if (empty($error))
-            $verify = \Auth::attempt(array(
-                'email'     => $data['email'], 
-                'password'  => $input['password']
+            $verify = \Auth::merchant()->attempt(array(
+                'email'     => $data['email'],
+                'password'  => $input['password'],
+                'confirm_token' => Null
             ), $data['remember']);
 
         if ($verify === true)
             return [array(), $data];
         else
             return [['Email or password is invalid.'], $data];
+    }
+
+    public function fetch($merchant_id)
+    {
+        $merchant = DAL\Merchant::findOrFail($merchant_id)->toArray();
+
+        return $merchant;
+    }
+
+    public function fetchKeysFromApi($merchant_id, $mode)
+    {
+        $request = (new Request)->setCredentials($mode);
+        $response = $request->process('GET', 'merchants/'.$merchant_id.'/keys');
+
+        return $response;
+    }
+
+    public function createKey($merchant_id, $mode)
+    {
+        $request = (new Request)->setCredentials($mode);
+
+        $response = $request->process('POST', 'merchants/'.$merchant_id.'/keys');
+
+        if(isset($response['error']))
+        {
+            throw new \Exception('API responded with error');
+        }
+
+        return $response;
+    }
+
+    public function rollKeys(array $input, $mode)
+    {
+        list($error, $data) = Manager\Key::createValidate($input, 'create')->getData();
+
+        if (empty($error))
+        {
+            $arr = Manager\Key::buildKeyUpdateData($data);
+
+            $request = (new Request)->setCredentials($mode);
+
+            $url = 'merchants/'.$data['merchant_id'].'/keys/'.$data['id'];
+
+            $response = $request->process('PUT', $url, $arr);
+
+            if ((isset($response['old']) === false) or
+                (isset($response['new']) === false))
+            {
+                return ['status' => false];
+            }
+
+            $key_data = array(
+                'old_id' => $data['id'],
+                'merchant_id' => $input['merchant_id'],
+                'key_id' => $response['new']['id'],
+                'secret' => $response['new']['secret'],
+                'status' => true);
+
+            return $key_data;
+        }
+        else
+            return ['status' => false];
     }
 }

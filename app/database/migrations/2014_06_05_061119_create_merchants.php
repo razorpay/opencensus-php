@@ -16,15 +16,20 @@ class CreateMerchants extends Migration {
         {
             $table->engine = 'InnoDB';
 
-            $table->increments('id');
+            $table->char('id', 24)->primary();
 
             $table->string('name', 200);
 
             $table->string('email', 255)->unique();
 
+            $table->boolean('activated')
+                  ->default(0);
+
             $table->string('password', 100);
 
             $table->string('remember_token', 100)->nullable();
+
+            $table->string('confirm_token')->nullable();
 
             $table->integer('created_at');
             $table->integer('updated_at');

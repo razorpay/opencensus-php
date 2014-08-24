@@ -1,4 +1,13 @@
 <?php
+//Flag set to sepcify selenium testing server
+putenv("selenium=true");
+
+//Setting test environment
+$unitTesting = true;
+
+$testEnvironment = 'testing';
+
+//Rest server.php
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 

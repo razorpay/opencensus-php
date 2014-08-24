@@ -34,6 +34,8 @@ class CreateTransactions extends Migration {
             $table->integer('count')
                   ->unsigned()
                   ->default(1);
+                  
+            $table->char('mode', 4);
 
             $table->integer('created_at');
             $table->integer('updated_at');

@@ -11,7 +11,59 @@ class DatabaseSeeder extends Seeder {
 	{
 		Eloquent::unguard();
 
-		// $this->call('UserTableSeeder');
+		$this->seed();
+	}
+
+	private function seed()
+	{
+		DB::table('merchants')->insert(array(
+			'id'			=>	'363e4efa820b0c06208ccd99',
+			'name'			=>	'Abhishek Das',
+			'email'			=>	'das@razorpay.com',
+			'password'		=>	Hash::make('123456'),
+			'created_at'	=>	time(),
+			'updated_at'	=>	time()
+			)
+		);
+
+		DB::table('merchant_details')->insert(array(
+			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
+			)
+		);
+
+		DB::table('aggregations')->insert(array(
+			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
+			'txn_count'		=>	0,
+			'created_at'	=>	time(),
+			'updated_at'	=>	time()
+			)
+		);
+
+		DB::table('admins')->insert(
+        	array(
+	        	array(
+	        	'name' => 'Harshil Mathur',
+	        	'username' => 'harshil',
+				'password'=> Hash::make('123456'),
+				'email' => 'harshil@razorpay.com',
+				'superadmin' => 1
+				),
+				array(
+	        	'name' => 'Shashank Kumar',
+	        	'username' => 'shk',
+				'password'=> Hash::make('123456'),
+				'email' => 'shashank@razorpay.com',
+				'superadmin' => 1
+				),
+				array(
+	        	'name' => 'Abhishek Das',
+	        	'username' => 'das',
+				'password'=> Hash::make('123456'),
+				'email' => 'das@razorpay.com',
+				'superadmin' => 0
+				)
+			)
+		);
 	}
 
 }

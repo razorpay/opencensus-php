@@ -22,6 +22,13 @@ class Merchant extends Manager
         '_token'    =>      'required'
     );
 
+    protected static $passwordRules = array(
+        'old_password'  =>      'required',
+        'password'      =>      'required|between:6,50|confirmed',
+        'password_confirmation' => 'required|between:6,50',
+        '_token'        =>      'required'
+    );
+
     protected static $unsetRegisterInput = array(
         'password_confirmation',
         '_token'
@@ -32,9 +39,16 @@ class Merchant extends Manager
         '_token'
     );
 
-    protected static $registerGenerators = array('password');
+    protected static $unsetPasswordInput = array(
+        'password_confirmation',
+        '_token'
+    );
+
+    protected static $registerGenerators = array('id', 'confirm_token', 'password');
 
     protected static $loginGenerators = array('remember');
+
+    protected static $passwordGenerators = array('password');
 
     protected function generatePassword($input)
     {
@@ -50,20 +64,21 @@ class Merchant extends Manager
         );
     }
 
-    public static function mergeMerchantAndKey($merchant_data, $key_data)
+    /**
+     * Generates UUid ID
+     */
+    public function generateId()
     {
-        return array(
-            'merchant_id'   =>  $merchant_data['id'],
-            'key_id'        =>  $key_data['key_id'],
-            'secret'        =>  \Hash::make($key_data['secret'])
-        );
+        $this->setField(
+            'id', bin2hex(openssl_random_pseudo_bytes(24/2)));
     }
 
-    public static function generateKeyData()
+    /**
+     * Generates Confirmation token
+     */
+    public function generateConfirmToken()
     {
-        return array(
-            'key_id'    =>  bin2hex(openssl_random_pseudo_bytes(16)),
-            'secret'    =>  bin2hex(openssl_random_pseudo_bytes(32))
-        );
+        $this->setField(
+            'confirm_token', bin2hex(openssl_random_pseudo_bytes(32/2)));
     }
 }

@@ -6,6 +6,7 @@ $(document).ready(function()
         blue: '#29B7D6',
         grey: '#999999'
     };
+    rzpd.mode = 'test';
 
     rzpd.postAjaxCallStack = [];
 
@@ -21,6 +22,15 @@ $(document).ready(function()
         },
         settlements: {
             childDivs: ['settle-list']
+        },
+        account: {
+            childDivs: ['password-reset']
+        },
+        keys: {
+            childDivs: ['key-generate']
+        },
+        activation: {
+            childDivs: ['activation-form-wrapper']
         }
     };
 
@@ -42,8 +52,12 @@ $(document).ready(function()
 
     rzpd.views = {
         toggleLivemode: function() {
+            if(rzpd.mode === "test") rzpd.mode = "live";
+            else rzpd.mode = "test";
             $('#livemode .button-wrap').toggleClass("button-active");
             $('.button-desc').toggleClass('active');
+            rzpd.hooks.resetPanels();
+            rzpd.hooks.renderDashboard();
         },
 
         changeGraphScale: function(el) {
@@ -240,17 +254,77 @@ $(document).ready(function()
         renderTransactionsList: function(data, div) {
             var html = '';
             if (data.length === 0)
-                html = "<div class='error'>Abe Koi Txn Karega Tab Dikhega Na.</div>";
+                html = "<div class='error'>No Transactions Found.</div>";
             else
                 for (var i in data)
-                    html += '<li class="transaction-list-item"><a href="#!/transactions/'+data[i].transaction_id+'" class="grid"><div class="col-1-2"><span class="amount col-1-4">₹' + data[i].amount + '</span><span class="id col-9-12">' + data[i].transaction_id + '</span></div><span class="status col-1-4">' + data[i].status + '</span><span class="date col-1-4">' + moment(data[i].updated_at, 'X').format('DD-MM-YYYY HH:MM') + '</span></a></li>';
+                    html += '<li class="transaction-list-item"><a href="#!/transactions/'+data[i].transaction_id+'" class="grid"><div class="col-1-2"><span class="amount col-1-4">₹' + data[i].amount + '</span><span class="id col-9-12">' + data[i].transaction_id + '</span></div><span class="status col-1-4">' + data[i].status + '</span><span class="date col-1-4">' + moment(data[i].updated_at, 'X').format('DD-MM-YYYY HH:mm') + '</span></a></li>';
             $('#' + div).html(html);
         },
 
         renderTxnDetails: function(data) {
+            console.log(data);
             var html = '';
-            html += '<div class="col-1-4 key">ID</div><div class="col-9-12">' + data.id + '</div><div class="col-1-4 key">Amount</div><div class="col-9-12">₹' + data.amount + '</div><div class="col-1-4 key">Created At</div><div class="col-9-12">' + moment(data.created_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + '</div><div class="col-1-4 key">Updated At</div><div class="col-9-12">' + moment(data.updated_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + '</div><div class="col-1-4 key">Status</div><div class="col-9-12">' + data.status + '</div>';
+            html += '<div class="col-1-4 key">ID</div><div class="col-9-12">' + 
+                    data.id + 
+                    '</div><div class="col-1-4 key">Amount</div><div class="col-9-12">' + 
+                    data.amount + 
+                    '</div><div class="col-1-4 key">Currency</div><div class="col-9-12">' + 
+                    data.currency + 
+                    '</div><div class="col-1-4 key">Status</div><div class="col-9-12">' + 
+                    data.status + 
+                    '</div><div class="col-1-4 key">Description</div><div class="col-9-12">' + 
+                    data.description + 
+                    '</div><div class="col-1-4 key">Email</div><div class="col-9-12">' + 
+                    data.email + 
+                    '</div><div class="col-1-4 key">Contact</div><div class="col-9-12">' + 
+                    data.contact + 
+                    '</div><div class="col-1-4 key">UDF</div><div class="col-9-12">';
+            
+            if(data.udf.length === 0){
+                html += "None";
+            } else {
+                $.each(data.udf, function(i,e){
+                    html += i + ": " + e + "<br/>";
+                });
+            }
+
+            html+= '</div><div class="col-1-4 key">Created At</div><div class="col-9-12">' + 
+                    moment(data.created_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + 
+                    '</div><div class="col-1-4 key">Updated At</div><div class="col-9-12">' + 
+                    moment(data.updated_at, 'X').format('MMMM Do YYYY, h:mm:ss a') + 
+                    
+                    '</div>';
+            if(data.status == 'authorized') {
+                html += '<div class="col-1-4 key">' +
+                         '<input size="18" type="text" name="amount" placeholder="Amount to be captured" /></div>' +
+                         '<div class="col-9-12"><button class="capture-txn" id="' + data.id + '">Capture Transaction</button>'  + '<img class="hidden txn-loader" src="/img/black-loader.gif"></div>' +
+                         '<div class="result"></div>';
+            } 
+            if(data.status == 'captured') {
+                html += '<div class="col-1-4 key"><button class="refund-txn" id="' + data.id + '">Refund Transaction</button>' +
+                         '<img class="hidden txn-loader" src="/img/black-loader.gif"></div>' +
+                         '</div><div class="result"></div>';
+            }
             $('#transaction-details .details').html(html);
+
+            $('.capture-txn').click(rzpd.hooks.captureTxn);
+            $('.refund-txn').click(rzpd.hooks.refundTxn);
+        },
+
+        clearResult: function($this) {
+            $this.parent().parent().find('.result').html('');
+        },
+
+        showError: function($this) {
+            $this.parent().parent().find('.result').html('Something went wrong. Try again later.');
+        },
+
+        showCaptureSuccess: function($this) {
+            $this.parent().parent().find('.result').html('Transaction captured successfully');
+        },
+
+        showRefundSuccess: function($this) {
+            $this.parent().parent().find('.result').html('Transaction refunded successfully');
         },
 
         showLoader: function() {
@@ -282,6 +356,101 @@ $(document).ready(function()
             $('#total-txn-stat').html(data.txns);
             $('#success-stat').html(data.success);
             $('#total-amount-stat').html(data.amount);
+        },
+
+        renderAccountDetails: function(data) {
+            $('#account-name').html(data.name);
+            $('#account-email').html(data.email);
+            if(data.activated === "0") {
+                $('#account-activated').html('No');
+            } else {
+                $('#account-activated').html('Yes');
+            }
+        },
+
+        renderKeys: function(data) {
+            var html = '<h2 class="keys-heading">'+ rzpd.mode + ' Keys </h2>';
+            data = data.data;
+
+            if(data.length === 0) {
+                html += '<a target="_blank" href="'+ rzpd.mode + '/key/new"> ' +
+                            'Generate New Key ' +
+                        '</a> ';
+            }
+
+            for (var i in data) {
+                var expires = (data[i].expired_at === null) ? false : true;
+
+                html += '<ul class="key-wrapper">' +
+                            '<li> ' +
+                                '<div class="field key">Key ID</div> ' +
+                                '<div class="value key">' + data[i].id + '</div> ';
+                if(expires !== true)
+                html += '<a class="roll-href" title="Roll Key"> ' +
+                            '<img class="roll-icon" src="/img/refresh.png"> ' +
+                        '</a> ';
+
+                html += '</li> ' +
+                        '<li> ' +
+                            '<div class="field">Created At</div> ' +
+                            '<div class="value">' + moment(data[i].created_at, 'X').format('MMMM Do YYYY, HH:mm') +
+                            '</div> ' +
+                        '</li>';
+
+                if (expires === true)
+                    html += '<li><div class="field">Expires At</div><div class="value">' +
+                                moment(data[i].expired_at, 'X').format('MMMM Do YYYY, HH:mm') +
+                            '</div></li>';
+
+                html += '</ul>';
+
+                if(expires !== true)
+                    html += '<div class="roll-key-form-wrapper hidden">' +
+                                '<span class="close-button">' +
+                                    '<img src="/img/close.png">' +
+                                '</span>' +
+                                '<form class="roll-key-form" id="' + data[i].id + '">' +
+                                    '<div>Generate new key and</div>' +
+                                    '<label>' +
+                                        '<input type="radio" name="delay_roll" value="1" checked="checked">' +
+                                        '<span>Allow old key to work for 24 hours.</span>' +
+                                    '</label>' +
+                                    '<label>' +
+                                        '<input type="radio" name="delay_roll" value="0">' +
+                                        '<span>Block old key immediately.</span>' +
+                                    '</label>' +
+                                    '<div>' +
+                                        '<button class="roll-key-button">Roll Key</button>' +
+                                        '<img class="hidden roll-key-form-loader" src="/img/loader.gif">' +
+                                    '</div>' +
+                                    '<div class="result"></div>' +
+                                '</form>' +
+                            '</div>';
+            }
+            $('#keys').html(html);
+            $('.roll-href').click(rzpd.views.showRollForm);
+        },
+
+        showRollForm: function() {
+            rzpd.views.showDiv($(this).closest('ul').next());
+            $('.close-button').click(rzpd.views.hideRollForm);
+            $('.roll-key-form').submit(rzpd.hooks.generateKeys);
+        },
+
+        hideRollForm: function() {
+            rzpd.views.hideDiv($(this).parents('.roll-key-form-wrapper'));
+        },
+
+        showNewKeys: function(form, data) {
+            form.find('.result').html('<div>ID: ' + data.key_id + '<br>Secret: ' + data.secret + '</div><div>Click <a href="/keys/csv?id=' + data.key_id + '&secret=' + data.secret + '">here</a> to download credentials. You will not be able to view the credentials again.</div>');
+        },
+
+        showKeyError: function(form) {
+            form.find('.result').html('Something went wrong. Try again later.');
+        },
+
+        renderActivation: function(data) {
+            $('#activation').html(data);
         }
     };
 
@@ -317,7 +486,7 @@ $(document).ready(function()
             var group = rzpd.config.timeScale;
 
             $.ajax({
-                url: '/analytics/transactions',
+                url: '/'+rzpd.mode+'/analytics/transactions',
                 type: 'GET',
                 data: {
                     type: group,
@@ -366,7 +535,7 @@ $(document).ready(function()
             var group = 'day';
 
             $.ajax({
-                url: '/analytics/transactions',
+                url: '/'+rzpd.mode+'/analytics/transactions',
                 type: 'GET',
                 data: {
                     type: group,
@@ -400,7 +569,7 @@ $(document).ready(function()
             if (group == 'month') {
                 intv = 24 * 3600 * 30 * 1000;
             }
-            
+
             rzpd.config.intv = intv;
 
             var div = $('#' + parentDiv + ' div[data-type="txn-count-line"]').attr('id');
@@ -418,7 +587,7 @@ $(document).ready(function()
 
         renderStats: function(parentDiv) {
             $.ajax({
-                url: '/analytics/aggregations',
+                url: '/'+rzpd.mode+'/analytics/aggregations',
                 success: function(result) {
                     var data = {
                         success: '0%',
@@ -426,7 +595,8 @@ $(document).ready(function()
                         txns: 0
                     };
                     if (result.data !== null) {
-                        data.success = parseInt(result.data.successful_txn_count * 100/result.data.txn_count) + '%';
+                        if (parseInt(result.data.txn_count) !== 0)
+                            data.success = parseInt(result.data.successful_txn_count * 100/result.data.txn_count) + '%';
                         data.amount = '₹' + result.data.total_amount;
                         data.txns = result.data.txn_count;
                     }
@@ -438,7 +608,7 @@ $(document).ready(function()
 
         renderTransactionsList: function(parentDiv) {
             $.ajax({
-                url: '/transactions',
+                url: '/'+rzpd.mode+'/transactions',
                 data: {
                     count: 10
                 },
@@ -453,7 +623,7 @@ $(document).ready(function()
 
         renderRefundsList: function(parentDiv) {
             $.ajax({
-                url: '/transactions',
+                url: '/'+rzpd.mode+'/transactions',
                 data: {
                     count: 10,
                     status: 'refunded'
@@ -469,7 +639,7 @@ $(document).ready(function()
 
         renderSettlementsList: function(parentDiv) {
             $.ajax({
-                url: '/transactions',
+                url: '/'+rzpd.mode+'/transactions',
                 data: {
                     count: 10,
                     status: 'settled'
@@ -485,11 +655,141 @@ $(document).ready(function()
 
         fetchTxnDetails: function(txn_id) {
             $.ajax({
-                url: '/transactions/' + txn_id,
+                url: '/'+rzpd.mode+'/transactions/' + txn_id,
                 success: function(result) {
                     rzpd.views.hideLoader();
                     rzpd.views.showDiv('#transaction-one');
                     rzpd.views.renderTxnDetails(result);
+                }
+            });
+        },
+
+        refundTxn: function(e) {
+            var $this = $(this);
+
+            rzpd.views.clearResult($this);
+
+            rzpd.views.showDiv($this.parent().find('.txn-loader'));
+            $this.attr('disabled',true);
+
+            $.ajax({
+                url: '/'+rzpd.mode+'/transactions/'+$this.attr('id')+'/refund',
+                type: 'POST',
+                data: {
+                    _token: $('input[name="_token"]').val()
+                },
+                success: function(result) {
+                    if (result.status === true) {
+                        rzpd.views.showRefundSuccess($this);
+                    } else {
+                        rzpd.views.showError($this);
+                        $this.attr('disabled',false);
+                    }
+                },
+                error: function(x, e) {
+                    rzpd.views.showError($this);
+                    $this.attr('disabled',false);
+                },
+                complete: function() {
+                    rzpd.views.hideDiv($this.parent().find('.txn-loader'));
+                }
+            });
+            e.preventDefault();
+        },
+
+        captureTxn: function(e) {
+            var $this = $(this);
+
+            rzpd.views.clearResult($this);
+            rzpd.views.showDiv($this.parent().find('.txn-loader'));
+            $this.attr('disabled',true);
+
+            var captureAmount = $this.parent().parent().find('input[name="amount"]').val();
+
+            $.ajax({
+                url: '/'+rzpd.mode+'/transactions/'+$this.attr('id')+'/capture',
+                type: 'POST',
+                data: {
+                    _token: $('input[name="_token"]').val(),
+                    amount: captureAmount
+                },
+                success: function(result) {
+                    if (result.status === true) {
+                        rzpd.views.showCaptureSuccess($this);
+                    } else {
+                        rzpd.views.showError($this);
+                        $this.attr('disabled',false);
+                    }
+                },
+                error: function(x, e) {
+                    rzpd.views.showError($this);
+                    $this.attr('disabled',false);
+                },
+                complete: function() {
+                    rzpd.views.hideDiv($this.parent().find('.txn-loader'));
+                }
+            });
+            e.preventDefault();
+        },
+
+
+        fetchAccountDetails: function(parentDiv) {
+            $.ajax({
+                url: '/account',
+                success: function(result) {
+                    rzpd.views.renderAccountDetails(result);
+                    rzpd.hooks.updateSubpanel(parentDiv);
+                }
+            });
+        },
+
+        fetchKeys: function(parentDiv) {
+            $.ajax({
+                url: '/'+rzpd.mode+'/keys',
+                success: function(result) {
+                    rzpd.views.renderKeys(result);
+                    rzpd.hooks.updateSubpanel(parentDiv);
+                }
+            });
+        },
+
+        generateKeys: function(e) {
+            var that = $(this);
+
+            rzpd.views.showDiv(that.find('.roll-key-form-loader'));
+            that.find('button').attr('disabled','disabled');
+
+            $.ajax({
+                url: '/'+rzpd.mode+'/keys',
+                type: 'POST',
+                data: {
+                    id: that.attr('id'),
+                    delay_roll: that.find('input[name="delay_roll"]:checked').val(),
+                    _token: $('input[name="_token"]').val()
+                },
+                success: function(result) {
+                    if (result.status === true)
+                        rzpd.views.showNewKeys(that, result);
+                    else
+                        rzpd.views.showKeyError(that);
+                },
+                error: function(x, e) {
+                    rzpd.views.showKeyError(that);
+                },
+                complete: function() {
+                    rzpd.views.hideDiv(that.find('.roll-key-form-loader'));
+                    that.find('button').removeAttr('disabled');
+                }
+            });
+            e.preventDefault();
+        },
+
+        fetchActivation: function(parentDiv) {
+            $.ajax({
+                url: '/activation',
+                success: function(result) {
+                    rzpd.views.renderActivation(result);
+                    rzpd.hooks.updateSubpanel(parentDiv);
                 }
             });
         },
@@ -542,14 +842,17 @@ $(document).ready(function()
 
         renderKeys: function() {
             rzpd.hooks.setTab('keys');
+            rzpd.hooks.fetchKeys('keys');
         },
 
         renderAccount: function() {
             rzpd.hooks.setTab('account');
+            rzpd.hooks.fetchAccountDetails('account');
         },
 
         renderActivation: function() {
             rzpd.hooks.setTab('activation');
+            rzpd.hooks.fetchActivation('activation');
         }
     };
 

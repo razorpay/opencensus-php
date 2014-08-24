@@ -13,7 +13,8 @@ class Transaction extends DAL
         'type',
         'amount',
         'count',
-        'created_at'
+        'created_at',
+        'mode'
     );
 
     public function merchant()
@@ -23,9 +24,13 @@ class Transaction extends DAL
         );
     }
 
-    public static function retrieveLastByType($merchant_id, $type)
+    public static function retrieveLastByType($merchant_id, $type, $mode)
     {
-        $data = self::where('merchant_id','=',$merchant_id)->where('type','=',$type)->orderBy('updated_at','desc')->first();
+        $data = self::where('merchant_id','=',$merchant_id)
+                        ->where('type','=',$type)
+                        ->where('mode', '=', $mode)
+                        ->orderBy('updated_at','desc')
+                        ->first();
         return $data;
     }
 

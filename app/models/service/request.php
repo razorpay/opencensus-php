@@ -6,20 +6,36 @@ use Requests;
 
 class Request extends Service
 {
-    private static $ID, $PASSWORD;
+    private $ID, $PASSWORD;
 
-    const API_BASE = 'http://api.razorpay.dev/';
-
-    public static function setCredentials($merchant_id = NULL, $password = 'a128a3994372ccd2a63a8a64202a92e04eb83e54')
+    public function setCredentials($mode = 'live')
     {
-        self::$ID = $merchant_id;
-        self::$PASSWORD = $password;
+        $this->ID = 'rzp_'.$mode;
+        $this->PASSWORD = \Config::get('api.auth_pass');
+
+        return $this;
     }
 
-    public static function POST($url, $data = [])
+    public function process($verb = 'GET', $url, $data = [])
     {
-        $options = ['auth' => [self::$ID,self::$PASSWORD]];
-        $response = \Requests::post(self::API_BASE . $url, array(), $data, $options);
-        return json_decode($response->body);
+        $options = ['auth' => [$this->ID,$this->PASSWORD]];
+
+        $response = \Requests::request(\Config::get('api.url').$url, array(), $data, $verb, $options);
+        
+        $array = json_decode($response->body, true);
+        
+        if(isset($array['error']['message'])) 
+        {
+            if(\Config::get('app.debug'))
+            {
+                echo $response->body; die();
+            }
+            else
+            {
+                \App::abort('500', "Gateway reported error");
+            }      
+        }
+
+        return $array;
     }
 }

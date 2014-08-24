@@ -1,4 +1,4 @@
-@extends('layout')
+@extends('layoutGenerated')
 
 @section('content')
     <div class="grid grid-pad">
@@ -22,7 +22,7 @@
                         {{ Session::get('error') }}
                     </li>
                 </ul>
-                @elseif
+                @else
                 <ul class="success-message">
                     <li>
                         {{ Session::get('status') }}

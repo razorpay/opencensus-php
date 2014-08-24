@@ -1,4 +1,4 @@
-@extends('layout')
+@extends('layoutGenerated')
 
 @section('content')
     <div class="grid grid-pad">
@@ -7,8 +7,19 @@
                 <h2>Register</h2>
                 {{ Form::open(array('action' => array('MerchantController@postRegister'))) }}
                     <div class="text">
-                        <input type="text" name="name" placeholder="Name" @if (isset($data['name'])) value="{{{$data['name']}}}" @else autofocus @endif>
-                        <input type="text" name="email" placeholder="Email" @if (isset($data['email'])) value="{{{$data['email']}}}" @else autofocus @endif>
+                        <input type="text" name="name" placeholder="Bussiness/Individual Name" 
+                            @if (Session::has('data') and isset(Session::get('data')['name'])) 
+                                value="{{{Session::get('data')['name']}}}"
+                            @else 
+                                autofocus 
+                            @endif
+                        >
+                        <input type="text" name="email" placeholder="Contact Email" 
+                            @if (Session::has('data') and isset(Session::get('data')['email']))  
+                                value="{{{Session::get('data')['email']}}}" 
+                            @else 
+                                autofocus 
+                            @endif>
                         <input type="password" placeholder="Password" name="password">
                         <input type="password" placeholder="Confirm Password" name="password_confirmation">
                     </div>
@@ -19,9 +30,9 @@
                         Already have a Razorpay account? <a href="/login">Sign In</a>.
                     </div>
                 </div>
-                @if (isset($error) && !empty($error))
+                @if (Session::has('error'))
                     <ul class="error-message">
-                    @foreach($error as $message)
+                    @foreach(Session::get('error') as $message)
                         <li>{{ $message }}</li>
                     @endforeach
                     </ul>

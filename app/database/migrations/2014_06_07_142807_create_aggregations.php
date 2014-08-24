@@ -32,6 +32,8 @@ class CreateAggregations extends Migration {
                   ->unsigned()
                   ->default(1);
 
+            $table->char('mode', 4);
+
             $table->integer('created_at');
             $table->integer('updated_at');
         });

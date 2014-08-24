@@ -1,4 +1,4 @@
-@extends('layout')
+@extends('layoutGenerated')
 
 @section('content')
     <div class="grid grid-pad">

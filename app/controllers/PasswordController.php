@@ -19,7 +19,7 @@ class PasswordController extends BaseController {
 	 */
 	public function postRemind()
 	{
-		switch ($response = Password::remind(Input::only('email')))
+		switch ($response = Password::merchant()->remind(Input::only('email')))
 		{
 			case Password::INVALID_USER:
 				return Redirect::back()->with('error', Lang::get($response));
@@ -53,7 +53,7 @@ class PasswordController extends BaseController {
 			'email', 'password', 'password_confirmation', 'token'
 		);
 
-		$response = Password::reset($credentials, function($user, $password)
+		$response = Password::merchant()->reset($credentials, function($user, $password)
 		{
 			$user->password = Hash::make($password);
 
@@ -68,7 +68,8 @@ class PasswordController extends BaseController {
 				return Redirect::back()->with('error', Lang::get($response));
 
 			case Password::PASSWORD_RESET:
-				return Redirect::to('/');
+				return Redirect::action('MerchantController@getLogin')
+									->with('error', array(Lang::get($response)));
 		}
 	}
 
