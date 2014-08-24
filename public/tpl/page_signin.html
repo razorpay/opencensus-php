@@ -1,0 +1,24 @@
+<div class="container w-xxl w-auto-xs">
+  <a href class="navbar-brand block m-t">{{app.name}}</a>
+  <div class="m-b-lg">
+    <div class="wrapper text-center">
+      <strong>Sign in to get in touch</strong>
+    </div>
+    <form name="signin" action="#/">
+      <div class="list-group list-group-sm">
+        <div class="list-group-item">
+          <input type="email" placeholder="Email" class="form-control no-border">
+        </div>
+        <div class="list-group-item">
+           <input type="password" placeholder="Password" class="form-control no-border">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-lg btn-primary btn-block">Log in</button>
+      <div class="text-center m-t m-b"><a ui-sref="access.forgotpwd">Forgot password?</a></div>
+      <div class="line line-dashed"></div>
+      <p class="text-center"><small>Do not have an account?</small></p>
+      <a ui-sref="access.signup" class="btn btn-lg btn-default btn-block">Create an account</a>
+    </form>
+  </div>
+  <div class="text-center" ng-include="'tpl/blocks/page_footer.html'"></div>
+</div>
