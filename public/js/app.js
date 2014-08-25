@@ -66,120 +66,29 @@ var app = angular.module('app', [
                 url: '/dashboard',
                 templateUrl: 'tpl/app_dashboard.html'
             })
-            .state('app.ui', {
-                url: '/ui',
-                template: '<div ui-view class="fade-in-up"></div>'
+            .state('app.transactions', {
+                url: '/transactions',
+                templateUrl: 'tpl/app_dashboard.html'
             })
-            .state('app.ui.buttons', {
-                url: '/buttons',
-                templateUrl: 'tpl/ui_buttons.html'
+            .state('app.refunds', {
+                url: '/refunds',
+                templateUrl: 'tpl/app_dashboard.html'
             })
-            .state('app.ui.icons', {
-                url: '/icons',
-                templateUrl: 'tpl/ui_icons.html'
+            .state('app.settlements', {
+                url: '/settlements',
+                templateUrl: 'tpl/app_dashboard.html'
             })
-            .state('app.ui.grid', {
-                url: '/grid',
-                templateUrl: 'tpl/ui_grid.html'
+            .state('app.keys', {
+                url: '/keys',
+                templateUrl: 'tpl/app_dashboard.html'
             })
-            .state('app.ui.widgets', {
-                url: '/widgets',
-                templateUrl: 'tpl/ui_widgets.html'
+            .state('app.activation', {
+                url: '/activation',
+                templateUrl: 'tpl/app_dashboard.html'
             })
-            .state('app.ui.bootstrap', {
-                url: '/bootstrap',
-                templateUrl: 'tpl/ui_bootstrap.html'
-            })
-            .state('app.ui.sortable', {
-                url: '/sortable',
-                templateUrl: 'tpl/ui_sortable.html'
-            })
-            .state('app.ui.portlet', {
-                url: '/portlet',
-                templateUrl: 'tpl/ui_portlet.html'
-            })
-            .state('app.ui.timeline', {
-                url: '/timeline',
-                templateUrl: 'tpl/ui_timeline.html'
-            })
-            .state('app.ui.jvectormap', {
-                url: '/jvectormap',
-                templateUrl: 'tpl/ui_jvectormap.html'
-            })
-            .state('app.ui.googlemap', {
-                url: '/googlemap',
-                templateUrl: 'tpl/ui_googlemap.html',
-                resolve: {
-                    deps: ['uiLoad',
-                      function( uiLoad ){
-                        return uiLoad.load( ['js/app/map/load-google-maps.js',
-                                                'js/modules/ui-map.js',
-                                                'js/app/map/map.js'] ).then(function(){ return loadGoogleMaps(); });
-                    }]
-                }
-            })
-            .state('app.ui.chart', {
-                url: '/chart',
-                templateUrl: 'tpl/ui_chart.html'
-            })
-            // table
-            .state('app.table', {
-                url: '/table',
-                template: '<div ui-view></div>'
-            })
-            .state('app.table.static', {
-                url: '/static',
-                templateUrl: 'tpl/table_static.html'
-            })
-            .state('app.table.datatable', {
-                url: '/datatable',
-                templateUrl: 'tpl/table_datatable.html'
-            })
-            .state('app.table.footable', {
-                url: '/footable',
-                templateUrl: 'tpl/table_footable.html'
-            })
-            // form
-            .state('app.form', {
-                url: '/form',
-                template: '<div ui-view class="fade-in"></div>'
-            })
-            .state('app.form.elements', {
-                url: '/elements',
-                templateUrl: 'tpl/form_elements.html'
-            })
-            .state('app.form.validation', {
-                url: '/validation',
-                templateUrl: 'tpl/form_validation.html'
-            })
-            .state('app.form.wizard', {
-                url: '/wizard',
-                templateUrl: 'tpl/form_wizard.html'
-            })
-            // pages
-            .state('app.page', {
-                url: '/page',
-                template: '<div ui-view class="fade-in-down"></div>'
-            })
-            .state('app.page.profile', {
+            .state('app.profile', {
                 url: '/profile',
                 templateUrl: 'tpl/page_profile.html'
-            })
-            .state('app.page.post', {
-                url: '/post',
-                templateUrl: 'tpl/page_post.html'
-            })
-            .state('app.page.search', {
-                url: '/search',
-                templateUrl: 'tpl/page_search.html'
-            })
-            .state('app.page.invoice', {
-                url: '/invoice',
-                templateUrl: 'tpl/page_invoice.html'
-            })
-            .state('app.docs', {
-                url: '/docs',
-                templateUrl: 'tpl/docs.html'
             })
             // others
             .state('lockme', {
@@ -224,52 +133,6 @@ var app = angular.module('app', [
                 url: '/resetpwd',
                 templateUrl: 'tpl/page_resetpwd.html'
             })
-
-            // fullCalendar
-            .state('app.calendar', {
-                url: '/calendar',
-                templateUrl: 'tpl/app_calendar.html',
-                // use resolve to load other dependences
-                resolve: {
-                    deps: ['uiLoad',
-                      function( uiLoad ){
-                        return uiLoad.load( ['js/jquery/fullcalendar/fullcalendar.css',
-                                             'js/jquery/jquery-ui-1.10.3.custom.min.js',
-                                             'js/jquery/fullcalendar/fullcalendar.min.js',
-                                             'js/modules/ui-calendar.js',
-                                             'js/app/calendar/calendar.js']);
-                    }]
-                }
-            })
-
-            // mail
-            .state('app.mail', {
-                abstract: true,
-                url: '/mail',
-                templateUrl: 'tpl/mail.html',
-                // use resolve to load other dependences
-                resolve: {
-                    deps: ['uiLoad',
-                      function( uiLoad ){
-                        return uiLoad.load( ['js/app/mail/mail.js',
-                                             'js/app/mail/mail-service.js',
-                                             'js/libs/moment.min.js']);
-                    }]
-                }
-            })
-            .state('app.mail.list', {
-                url: '/inbox/{fold}',
-                templateUrl: 'tpl/mail.list.html'
-            })
-            .state('app.mail.detail', {
-                url: '/{mailId:[0-9]{1,4}}',
-                templateUrl: 'tpl/mail.detail.html'
-            })
-            .state('app.mail.compose', {
-                url: '/compose',
-                templateUrl: 'tpl/mail.new.html'
-            })
-
     }
   ]
 )
