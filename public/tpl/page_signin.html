@@ -4,13 +4,13 @@
     <div class="wrapper text-center">
       <strong>Sign in</strong>
     </div>
-    <form name="signin" ng-submit="submit()" ng-controller="SigninCtrl">
+    <form name="signin" ng-submit="submit(signin.$valid)" class="form-validation" ng-controller="SigninCtrl" novalidate>
       <div class="list-group list-group-sm">
         <div class="list-group-item">
-          <input type="email" ng-model="data.email" placeholder="Email" class="form-control no-border">
+          <input type="email" ng-model="data.email" placeholder="Email" class="form-control no-border" required>
         </div>
         <div class="list-group-item">
-           <input type="password" ng-model="data.password" placeholder="Password" class="form-control no-border">
+           <input type="password" ng-model="data.password" placeholder="Password" class="form-control no-border" required>
         </div>
       </div>
       <button type="submit" class="btn btn-lg btn-primary btn-block">Log in</button>

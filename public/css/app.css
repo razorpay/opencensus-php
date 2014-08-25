@@ -1989,7 +1989,8 @@ fieldset[disabled] .i-checks input + i:before {
   display: block;
 }
 .form-validation .form-control.ng-dirty.ng-invalid {
-  border-color: #f05050;
+  color: #FF0000;
+  
 }
 .form-validation .form-control.ng-dirty.ng-valid,
 .form-validation .form-control.ng-dirty.ng-valid:focus {
