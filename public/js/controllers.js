@@ -490,8 +490,13 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       _token: CSRF_TOKEN
     }
 
-    $scope.submit = function() {
+    $scope.submit = function($valid) {
         $scope.resetAlerts();
+
+        if(!$valid)  {
+          $scope.addAlert('danger', 'Invalid input');     
+          return false;     
+        }
 
         $scope.addAlert('info', 'Processing...');
 
@@ -535,5 +540,72 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
     $scope.resetAlerts = function(index) {
       $scope.alerts = [];
     };
+  }])
+  .controller('RegisterCtrl', ['$scope', '$http', '$state', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
+    function($scope, $http, $state, transformRequestAsFormPost, CSRF_TOKEN) {
+      $scope.alerts = [];
+
+      $scope.data = {
+        _token: CSRF_TOKEN
+      }
+
+      $scope.agree = false;
+
+      $scope.submit = function($valid) {
+          $scope.resetAlerts();
+
+          console.log($valid);
+          
+          if(!$valid)  {
+            $scope.addAlert('danger', 'Invalid input');     
+            return true;     
+          }
+
+          if(!$scope.agree) {
+            $scope.addAlert('danger', 'You must agree to the terms & conditions for using our service');     
+            return true;
+          }
+
+          $scope.addAlert('info', 'Processing...');
+
+          var request = $http({
+                      method: "post",
+                      url: "/user/register",
+                      transformRequest: transformRequestAsFormPost,
+                      data: $scope.data
+                  });
+
+          request
+                .success(function(data) {
+                  $scope.resetAlerts();
+
+                  if(data.success) {
+                    $scope.addAlert('success', "Registration Successful. Please check your inbox for confirmation email from Razorpay.");
+                  }
+                  else {
+                    angular.forEach(data.errors, function(error, key) {
+                      $scope.addAlert('danger', error);
+                    });      
+                  }
+                })
+                .error(function() {
+                  $scope.resetAlerts();
+                  $scope.addAlert('danger');
+                })
+      };
+
+      $scope.addAlert = function($type, $message) {
+          $message = $message || "An error occured.";
+
+          $scope.alerts.push({type: $type, msg: $message});
+      }; 
+
+      $scope.closeAlert = function(index) {
+        $scope.alerts.splice(index, 1);
+      };
+
+      $scope.resetAlerts = function(index) {
+        $scope.alerts = [];
+      };
   }])
   ;

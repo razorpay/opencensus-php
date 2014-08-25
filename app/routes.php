@@ -75,10 +75,8 @@ Route::group(array('before' => 'guest'), function()
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/user/signin', 'MerchantController@postSignin');
-        
-        Route::post('/login', 'MerchantController@postLogin');
 
-        Route::post('/register', 'MerchantController@postRegister');
+        Route::post('/user/register', 'MerchantController@postRegister');
 
         Route::post('/password/reset', 'PasswordController@postRemind');
 

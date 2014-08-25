@@ -48,14 +48,11 @@ class MerchantController extends BaseController
 
         if (empty($error))
         {
-            return View::make('merchant.postRegister')
-                        ->with('data', $data);
+            return Response::json(array('success' => true));
         }
         else
         {
-            return Redirect::action('MerchantController@getRegister')
-                ->with('data', $data)
-                ->with('error', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 
