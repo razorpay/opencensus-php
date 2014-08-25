@@ -12,6 +12,7 @@ class Entity extends Base\UniqueIdEntity
     const NAME              = 'name';
     const EXPIRY_MONTH      = 'expiry_month';
     const EXPIRY_YEAR       = 'expiry_year';
+    const IIN               = 'iin';
     const LAST4             = 'last4';
     const NETWORK           = 'network';
     const TYPE              = 'type';
@@ -37,7 +38,6 @@ class Entity extends Base\UniqueIdEntity
         self::NAME,
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
-        self::LAST4,
         self::NETWORK,
         self::COUNTRY,
         self::TYPE,
@@ -53,7 +53,7 @@ class Entity extends Base\UniqueIdEntity
 
     protected static $modifiers = array('expiry_year', 'number');
 
-    protected static $generators = array('last4', 'id');
+    protected static $generators = array(self::LAST4, self::ID, self::IIN);
 
     protected $visible = array(
         self::ID,
@@ -68,6 +68,13 @@ class Entity extends Base\UniqueIdEntity
         $last4 = substr($input['number'], -4);
 
         $this->setAttribute(self::LAST4, $last4);
+    }
+
+    public function generateIin($input)
+    {
+        $iin = substr($input['number'], 0, 6);
+
+        $this->setAttribute(self::IIN, $iin);
     }
 
     public function modifyExpiryYear(& $input)
@@ -126,9 +133,9 @@ class Entity extends Base\UniqueIdEntity
             }
 
             $arr = array(
-                'type' => $details['card_type'],
-                'bank' => $details['bank'],
-                'country' => $details['country_code']);
+                self::TYPE    => $details['card_type'],
+                self::ISSUER  => $details['bank'],
+                self::COUNTRY => $details['country_code']);
 
             $this->fill($arr);
 

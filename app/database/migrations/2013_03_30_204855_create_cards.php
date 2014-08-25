@@ -30,6 +30,8 @@ class CreateCards extends Migration
 
             $table->string(Card::EXPIRY_YEAR, 4);
 
+            $table->string(Card::IIN, 6);
+
             $table->char(Card::LAST4, 4);
 
             $table->string(Card::NETWORK, 10);
@@ -37,7 +39,7 @@ class CreateCards extends Migration
             $table->string(Card::TYPE, 7)
                   ->nullable();
 
-            $table->string(Card::BANK, 100)
+            $table->string(Card::ISSUER, 100)
                   ->nullable();
 
             $table->char(Card::COUNTRY, Card::COUNTRY_LENGTH)
