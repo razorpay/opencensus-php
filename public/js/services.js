@@ -81,7 +81,6 @@ angular.module('app.services', [])
  
                 }
  
- 
                 // Return the factory value.
                 return( transformRequest );
  
@@ -89,7 +88,6 @@ angular.module('app.services', [])
                 // ---
                 // PRVIATE METHODS.
                 // ---
- 
  
                 // I serialize the given Object into a key-value pair string. This
                 // method expects an object and will default to the toString() method.
@@ -139,4 +137,5 @@ angular.module('app.services', [])
                 }
  
             }
-        );
+        )
+;

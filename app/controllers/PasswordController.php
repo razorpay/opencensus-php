@@ -22,25 +22,13 @@ class PasswordController extends BaseController {
 		switch ($response = Password::merchant()->remind(Input::only('email')))
 		{
 			case Password::INVALID_USER:
-				return Redirect::back()->with('error', Lang::get($response));
+				return Response::json(array('success' => false, 'errors' => array(Lang::get($response))));
 
 			case Password::REMINDER_SENT:
-				return Redirect::back()->with('status', Lang::get($response));
+				return Response::json(array('success' => true));
 		}
 	}
 
-	/**
-	 * Display the password reset view for the given token.
-	 *
-	 * @param  string  $token
-	 * @return Response
-	 */
-	public function getReset($token = null)
-	{
-		if (is_null($token)) App::abort(404);
-
-		return View::make('password.reset')->with('token', $token);
-	}
 
 	/**
 	 * Handle a POST request to reset a user's password.
@@ -65,11 +53,10 @@ class PasswordController extends BaseController {
 			case Password::INVALID_PASSWORD:
 			case Password::INVALID_TOKEN:
 			case Password::INVALID_USER:
-				return Redirect::back()->with('error', Lang::get($response));
+				return Response::json(array('success' => false, 'errors' => array(Lang::get($response))));
 
 			case Password::PASSWORD_RESET:
-				return Redirect::action('MerchantController@getLogin')
-									->with('error', array(Lang::get($response)));
+				return Response::json(array('success' => true));
 		}
 	}
 

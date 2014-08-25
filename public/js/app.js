@@ -216,6 +216,14 @@ var app = angular.module('app', [
                 url: '/404',
                 templateUrl: 'tpl/page_404.html'
             })
+            .state('access.confirm', {
+                url: '/confirm',
+                templateUrl: 'tpl/page_confirm.html'
+            })
+            .state('access.resetpwd', {
+                url: '/resetpwd',
+                templateUrl: 'tpl/page_resetpwd.html'
+            })
 
             // fullCalendar
             .state('app.calendar', {

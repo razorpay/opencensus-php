@@ -144,14 +144,12 @@ class MerchantController extends BaseController
 
         if($response)
         {   
-            return Redirect::action('MerchantController@getLogin')
-                ->with('error', array('Activation Successful. Login to start using Razorpay.'));
+            return Response::json(array('success' => true));
         
         }
         else
         {
-            return Redirect::action('MerchantController@getRegister')
-                ->with('error', array('An error occured in email verification. Please check the link and try again'));
+            return Response::json(array('success' => false, 'errors' => array('An error occured in email verification. Please check the link and try again')));
         }
     }
 

@@ -4,19 +4,18 @@
     <div class="wrapper text-center">
       <strong>Input your email to reset your password</strong>
     </div>
-    <form name="reset" ng-init="isCollapsed=true">
+    <form name="reset" ng-submit="submit()" ng-controller="ResetPasswordCtrl">
       <div class="list-group list-group-sm">
         <div class="list-group-item">
-          <input type="email" placeholder="Email" ng-model="email" class="form-control no-border" required>
+          <input type="email" placeholder="Email" ng-model="data.email" class="form-control no-border" required>
         </div>
       </div>
-      <button type="submit" ng-disabled="reset.$invalid" class="btn btn-lg btn-primary btn-block"  ng-click="isCollapsed = !isCollapsed" >Send</button>
-    </form>
-    <div collapse="isCollapsed" class="m-t">
-      <div class="alert alert-success">
-        <p>A reset link sent to your email address, please check it in 7 days. <a ui-sref="access.signin" class="btn btn-sm btn-success">Sign in</a></p>
+      <button type="submit" ng-disabled="reset.$invalid" class="btn btn-lg btn-primary btn-block">Send</button>
+    
+      <div class="text-center m-t m-b">
+        <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
       </div>
-    </div>
+    </form>
   </div>
   <div class="text-center" ng-include="'tpl/blocks/page_footer.html'"></div>
 </div>

@@ -541,8 +541,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       $scope.alerts = [];
     };
   }])
-  .controller('RegisterCtrl', ['$scope', '$http', '$state', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
-    function($scope, $http, $state, transformRequestAsFormPost, CSRF_TOKEN) {
+  .controller('RegisterCtrl', ['$scope', '$http', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
+    function($scope, $http, transformRequestAsFormPost, CSRF_TOKEN) {
       $scope.alerts = [];
 
       $scope.data = {
@@ -554,8 +554,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       $scope.submit = function($valid) {
           $scope.resetAlerts();
 
-          console.log($valid);
-          
           if(!$valid)  {
             $scope.addAlert('danger', 'Invalid input');     
             return true;     
@@ -581,6 +579,180 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
                   if(data.success) {
                     $scope.addAlert('success', "Registration Successful. Please check your inbox for confirmation email from Razorpay.");
+                  }
+                  else {
+                    angular.forEach(data.errors, function(error, key) {
+                      $scope.addAlert('danger', error);
+                    });      
+                  }
+                })
+                .error(function() {
+                  $scope.resetAlerts();
+                  $scope.addAlert('danger');
+                })
+      };
+
+      $scope.addAlert = function($type, $message) {
+          $message = $message || "An error occured.";
+
+          $scope.alerts.push({type: $type, msg: $message});
+      }; 
+
+      $scope.closeAlert = function(index) {
+        $scope.alerts.splice(index, 1);
+      };
+
+      $scope.resetAlerts = function(index) {
+        $scope.alerts = [];
+      };
+  }])
+  .controller('ConfirmCtrl', ['$scope', '$http', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
+    function($scope, $http, transformRequestAsFormPost, CSRF_TOKEN) {
+      $scope.alerts = [];
+
+      $scope.data = [];
+
+      $scope.submit = function() {
+          $scope.resetAlerts();
+
+          $scope.addAlert('info', 'Processing...');
+
+          //@todo
+          var token = "yolo";
+
+          var request = $http({
+                      method: "get",
+                      url: "/user/confirm/"+token,
+                      data: $scope.data
+                  });
+
+          request
+                .success(function(data) {
+                  $scope.resetAlerts();
+
+                  if(data.success) {
+                    $scope.addAlert('success', "Email Successfully confirmed. <a ui-sref=\"access.signin\" class=\"btn btn-sm btn-success\">Sign in</a>");
+                  }
+                  else {
+                    angular.forEach(data.errors, function(error, key) {
+                      $scope.addAlert('danger', error);
+                    });      
+                  }
+                })
+                .error(function() {
+                  $scope.resetAlerts();
+                  $scope.addAlert('danger');
+                })
+      };
+
+      $scope.addAlert = function($type, $message) {
+          $message = $message || "An error occured.";
+
+          $scope.alerts.push({type: $type, msg: $message});
+      }; 
+
+      $scope.closeAlert = function(index) {
+        $scope.alerts.splice(index, 1);
+      };
+
+      $scope.resetAlerts = function(index) {
+        $scope.alerts = [];
+      };
+  }])
+  .controller('ResetPasswordCtrl', ['$scope', '$http', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
+    function($scope, $http, transformRequestAsFormPost, CSRF_TOKEN) {
+      $scope.alerts = [];
+
+      $scope.data = {
+        _token: CSRF_TOKEN
+      }
+
+      $scope.submit = function() {
+          $scope.resetAlerts();
+
+          $scope.addAlert('info', 'Processing...');
+
+          var request = $http({
+                      method: "post",
+                      url: "/user/password/reset",
+                      transformRequest: transformRequestAsFormPost,
+                      data: $scope.data
+                  });
+
+          request
+                .success(function(data) {
+                  $scope.resetAlerts();
+
+                  if(data.success) {
+                    $scope.addAlert('success', "Reset request sent. Please check your inbox for verification email from Razorpay.");
+                  }
+                  else {
+                    angular.forEach(data.errors, function(error, key) {
+                      $scope.addAlert('danger', error);
+                    });      
+                  }
+                })
+                .error(function() {
+                  $scope.resetAlerts();
+                  $scope.addAlert('danger');
+                })
+      };
+
+      $scope.addAlert = function($type, $message) {
+          $message = $message || "An error occured.";
+
+          $scope.alerts.push({type: $type, msg: $message});
+      }; 
+
+      $scope.closeAlert = function(index) {
+        $scope.alerts.splice(index, 1);
+      };
+
+      $scope.resetAlerts = function(index) {
+        $scope.alerts = [];
+      };
+  }])
+  .controller('ResetFormCtrl', ['$scope', '$http', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
+    function($scope, $http, transformRequestAsFormPost, CSRF_TOKEN) {
+      $scope.alerts = [];
+
+      $scope.showForm = false;
+
+      $scope.data = {
+        _token: CSRF_TOKEN
+      }
+
+      //@todo
+      //Check the token exists before displaying form
+          
+      $scope.submit = function($valid) {
+          $scope.resetAlerts();
+
+          if(!$valid)  {
+            $scope.addAlert('danger', 'Invalid input');     
+            return true;     
+          }
+
+          $scope.addAlert('info', 'Processing...');
+
+          //@todo
+          var token = 'yolo';
+
+          $scope.data.token = token;
+
+          var request = $http({
+                      method: "post",
+                      url: "/user/password/reset/"+token,
+                      transformRequest: transformRequestAsFormPost,
+                      data: $scope.data
+                  });
+
+          request
+                .success(function(data) {
+                  $scope.resetAlerts();
+
+                  if(data.success) {
+                    $scope.addAlert('success', 'Password successfully changed. <a ui-sref=\"access.signin\" class=\"btn btn-sm btn-success\">Sign in</a>');
                   }
                   else {
                     angular.forEach(data.errors, function(error, key) {
