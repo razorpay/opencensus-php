@@ -780,4 +780,31 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         $scope.alerts = [];
       };
   }])
+  .controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN',
+    function($scope, $http, $state, user, CSRF_TOKEN) {
+      
+      user.identity().then(function(data){
+        $scope.user = data;
+
+        $scope.activation_progress = parseInt(($scope.user.steps_finished.length * 100)/ 6);
+      });
+
+      $scope.logout = function() {
+        $scope.data = {
+          _token: CSRF_TOKEN
+        }
+
+        var request = $http({
+            method: "get",
+            url: "/user/logout",
+            data: $scope.data
+        });
+
+        request
+              .finally(function() {
+                  user.identity(true);
+                  $state.go('access.signin');  
+              });
+      };
+  }])
   ;

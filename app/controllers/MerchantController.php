@@ -13,7 +13,11 @@ class MerchantController extends BaseController
     {
        $merchant = (new Service\Merchant)->fetch(\Auth::merchant()->id());
 
-       $response = array('success' => true, 'data' => $merchant);
+       $merchantDetails = (new Service\MerchantDetails)->fetchDetails();
+
+       $data = $merchant + $merchantDetails;
+
+       $response = array('success' => true, 'data' => $data);
 
        return Response::JSON($response);
     }
@@ -82,7 +86,7 @@ class MerchantController extends BaseController
     public function getLogout()
     {
         \Auth::merchant()->logout();
-        return Redirect::action('MerchantController@getLogin');
+        return Response::json(array('success' => true));
     }
 
     public function getCsv()
