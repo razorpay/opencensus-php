@@ -785,8 +785,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       
       user.identity().then(function(data){
         $scope.user = data;
-
-        $scope.activation_progress = parseInt(($scope.user.steps_finished.length * 100)/ 6);
       });
 
       $scope.logout = function() {

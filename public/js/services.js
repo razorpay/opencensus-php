@@ -36,6 +36,7 @@ angular.module('app.services', [])
 					$http.get('/user', { ignoreErrors: true })
 						.success(function(data) {
 							_identity = data.data;
+							_identity.activation_progress = parseInt((data.data.steps_finished.length * 100)/ 6);
 					   		_authenticated = data.success === true;
 							deferred.resolve(_identity);
 						})

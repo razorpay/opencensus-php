@@ -51,9 +51,9 @@
             <!-- dropdown -->
             <ul class="dropdown-menu animated fadeInRight w">
               <li>
-                <a href>
-                  <span class="badge bg-danger pull-right" ng-hide="user.activated">{{activation_progress}}%</span>
-                  <a ui-sref="app.page.activation"><span>Activation</span></a>
+                <a ui-sref="app.activation">
+                  <span class="badge bg-danger pull-right" ng-hide="user.activated">{{user.activation_progress}}%</span>
+                  <span>Activation</span>
                 </a>
               </li>
               <li>
@@ -61,8 +61,8 @@
               </li>
               <li class="divider"></li>
               <li>
-                <a href>
-                  <span ng-click="logout()">Logout</span>
+                <a href ng-click="logout()">
+                  <span>Logout</span>
                 </a>
               </li>
             </ul>
