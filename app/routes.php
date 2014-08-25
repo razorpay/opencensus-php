@@ -61,7 +61,7 @@ Route::group(array('before' => 'auth'), function()
 });
 
 Route::group(array('before' => 'guest'), function()
-{
+{       
     Route::get('/login', 'MerchantController@getLogin');
 
     Route::get('/register', 'MerchantController@getRegister');
@@ -74,6 +74,8 @@ Route::group(array('before' => 'guest'), function()
 
     Route::group(array('before' => 'csrf'), function()
     {
+        Route::post('/user/signin', 'MerchantController@postSignin');
+        
         Route::post('/login', 'MerchantController@postLogin');
 
         Route::post('/register', 'MerchantController@postRegister');

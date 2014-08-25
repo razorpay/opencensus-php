@@ -38,6 +38,11 @@
     <script src="js/controllers.js"></script>
     <script src="js/filters.js"></script>
     <script src="js/directives.js"></script>
+    <script>
+    angular.module("app").constant("CSRF_TOKEN", '<?php echo csrf_token(); ?>');
+    </script>
     <!-- Lazy loading -->
+
+    
 </body>
 </html>

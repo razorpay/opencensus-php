@@ -23,18 +23,16 @@ class MerchantController extends BaseController
         return View::make('merchant.getLogin');
     }
 
-    public function postLogin()
+    public function postSignin()
     {
         $input = Input::all();
 
         list($error, $data) = (new Service\Merchant)->login($input);
 
         if (empty($error))
-            return Redirect::action('MerchantController@getIndex');
+            return Response::json(array('success' => true));
         else
-            return Redirect::action('MerchantController@getLogin')
-                ->with('data', $data)
-                ->with('error', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
     }
 
     public function getRegister()
