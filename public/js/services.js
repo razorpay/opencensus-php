@@ -2,9 +2,9 @@
 
 /* Services */
 
-
-// Demonstrate how to register services
 angular.module('app.services', [])
+			// User Service
+			// Fetches & stores details of currently logged in user
 			.factory('user', ['$q', '$http', '$timeout',
 			  function($q, $http, $timeout) {
 			    var _identity = undefined,
@@ -53,6 +53,8 @@ angular.module('app.services', [])
 			    };
 			  }
 			])
+			//Authorisation service
+			//Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
 			.factory('authorization', ['$rootScope', '$state', 'user', '$location',
 			  function($rootScope, $state, user, $location) {
 			    return {
@@ -70,6 +72,7 @@ angular.module('app.services', [])
 			    };
 			  }
 			])
+			//Transforms json array to form post fields, also modifies content type of submission
 			.factory("transformRequestAsFormPost",
             function() {
  
@@ -140,6 +143,8 @@ angular.module('app.services', [])
                 }
  
             })
+			//Alerts factory.
+			//Used for creating/removing alerts for display in a page.
 			.factory('alertsFactory', function() {
 				var alerts = [];
 				return {
