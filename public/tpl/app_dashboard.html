@@ -37,36 +37,33 @@
           <div class="row row-sm text-center">
             <div class="col-xs-6">
               <div class="panel padder-v item">
-                <div class="h1 text-info font-thin h1">{{data.txns}}</div>
+                <div class="font-thin h1">{{111 | currency:"₹"}}</div>
+                <span class="text-muted text-xs">Last Settlement</span>
+              </div>
+            </div>
+            <div class="col-xs-6">
+              <div class="panel padder-v item">
+                <div class="font-thin h1">{{data.txns}}</div>
                 <span class="text-muted text-xs">Total Transactions</span>
               </div>
             </div>
             <div class="col-xs-6">
-              <a href class="block panel padder-v bg-primary item">
+              <a href class="block panel padder-v bg-success dker item">
                 <span class="text-white font-thin h1 block">{{data.success}}%</span>
                 <span class="text-muted text-xs">Success Rate</span>
               </a>
             </div>
             <div class="col-xs-6">
-              <a href class="block panel padder-v bg-danger item">
+              <a href class="block panel padder-v bg-danger dker item">
                 <span class="text-white font-thin h1 block">111</span>
                 <span class="text-muted text-xs">Total Refunds</span>
               </a>
             </div>
-            <div class="col-xs-6">
-              <div class="panel padder-v item">
-                <div class="font-thin h1">{{111 | currency:"₹"}}</div>
-                <span class="text-muted text-xs">Last Settlement</span>
-              </div>
-            </div>
             <div class="col-xs-12 m-b-md">
-              <div class="r bg-light dker item hbox no-border">
-                
-                <div class="col dk padder-v r-r">
-                  <div class="text-primary-dk font-thin h1"><span>{{data.amount | currency:"₹"}}</span></div>
-                  <span class="text-muted text-xs">Total Volume</span>
-                </div>
-              </div>
+              <a href class="block panel padder-v bg-info dker item">
+                <span class="text-white font-thin h1 block">{{data.amount | currency:"₹"}}</span>
+                <span class="text-muted text-xs">Total Volume</span>
+              </a>
             </div>
           </div>
         </div>
