@@ -1,23 +1,25 @@
 {
-
-"header" : {
-  "navbar" : {
-  }
-},
-"aside" : {
-  "nav" : {
-    "HEADER" : "Features",
-    "DASHBOARD" : "Dashboard",
-    "TRANSACTIONS" : "Transactions",
-    "REFUNDS" : "Refunds",
-    "SETTLEMENTS" : "Settlements",
-    "settings" : {
-      "SETTINGS": "Settings",
-      "API_KEYS": "Api Keys",
-      "ACTIVATION": "Activation",
-      "PROFILE" : "Profile"
+  "header" : {
+    "navbar" : {
+      "DOCUMENTATION": "Documentation"
     }
+  },
+  "aside" : {
+    "nav" : {
+      "HEADER" : "Features",
+      "DASHBOARD" : "Dashboard",
+      "TRANSACTIONS" : "Transactions",
+      "REFUNDS" : "Refunds",
+      "SETTLEMENTS" : "Settlements",
+      "settings" : {
+        "SETTINGS": "Settings",
+        "API_KEYS": "Api Keys",
+        "ACTIVATION": "Activation",
+        "PROFILE" : "Profile"
+      }
+    },
+    "AGREEMENT": "Merchant Agreement",
+    "TERMS": "Terms & Conditions",
+    "PRIVACY": "Privacy Policy"
   }
-}
-
 }

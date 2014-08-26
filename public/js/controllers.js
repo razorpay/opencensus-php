@@ -14,6 +14,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       $scope.app = {
         name: 'Razorpay',
         version: '0.9.1',
+        today: new Date(),
         // for chart colors
         color: {
           primary: '#7266ba',
