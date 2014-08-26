@@ -52,6 +52,12 @@ class Entity extends Base\UniqueIdEntity
             'Models\Merchant\Balance');
     }
 
+    public function terminal()
+    {
+        return $this->hasOne(
+            'Models\Terminal\Entity');
+    }
+
     public function pricingPlan()
     {
         return $this->hasMany(
