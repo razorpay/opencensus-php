@@ -489,11 +489,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         _token: CSRF_TOKEN
       }
 
-      //Intialise alerts
-      alertsFactory.resetAlerts();
-
-      $scope.alerts = alertsFactory.getAlerts;
-      $scope.closeAlert = alertsFactory.closeAlert;
+      //Intialise alerts and scope functions
+      $scope.alerts = alertsFactory.initialise();
 
       $scope.submit = function($valid) {
         alertsFactory.resetAlerts();
@@ -535,11 +532,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
   .controller('RegisterCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
     function($scope, $http, alertsFactory, transformRequestAsFormPost, CSRF_TOKEN) {
       
-      //Intialise alerts
-      alertsFactory.resetAlerts();
-
-      $scope.alerts = alertsFactory.getAlerts;
-      $scope.closeAlert = alertsFactory.closeAlert;
+      //Intialise alerts and scope functions
+      $scope.alerts = alertsFactory.initialise();
 
       $scope.data = {
         _token: CSRF_TOKEN
@@ -590,11 +584,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
   }])
   .controller('ConfirmCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
     function($scope, $http, $state, $stateParams, alertsFactory, transformRequestAsFormPost, CSRF_TOKEN) {
-      //Intialise alerts
-      alertsFactory.resetAlerts();
-
-      $scope.alerts = alertsFactory.getAlerts;
-      $scope.closeAlert = alertsFactory.closeAlert;
+      //Intialise alerts and scope functions
+      $scope.alerts = alertsFactory.initialise();
 
       $scope.success = false;
 
@@ -631,11 +622,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
   }])
   .controller('ForgotPasswordCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
     function($scope, $http, alertsFactory, transformRequestAsFormPost, CSRF_TOKEN) {
-      //Intialise alerts
-      alertsFactory.resetAlerts();
-
-      $scope.alerts = alertsFactory.getAlerts;
-      $scope.closeAlert = alertsFactory.closeAlert;
+      //Intialise alerts and scope functions
+      $scope.alerts = alertsFactory.initialise();
 
       $scope.data = {
         _token: CSRF_TOKEN
@@ -674,11 +662,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
   }])
   .controller('ResetPasswordCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
     function($scope, $http, $state, $stateParams, alertsFactory, transformRequestAsFormPost, CSRF_TOKEN) {
-      //Intialise alerts
-      alertsFactory.resetAlerts();
-
-      $scope.alerts = alertsFactory.getAlerts;
-      $scope.closeAlert = alertsFactory.closeAlert;
+      //Intialise alerts and scope functions
+      $scope.alerts = alertsFactory.initialise();
 
       $scope.success = false;
 

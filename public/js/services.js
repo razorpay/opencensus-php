@@ -143,16 +143,21 @@ angular.module('app.services', [])
 			.factory('alertsFactory', function() {
 				var alerts = [];
 				return {
-					getAlerts: function() {
-						return alerts;
-					},
+					initialise:  function(){
+						alerts = [];
+						return {
+							getAlerts: function() {
+								return alerts;
+							},
+							closeAlert: function(index) {
+								alerts.splice(index, 1);
+							}
+						}
+					},					
 					addAlert: function($type, $message) {
 						$message = $message || "An error occured.";
 
 						alerts.push({type: $type, msg: $message});
-					},
-					closeAlert: function(index) {
-						alerts.splice(index, 1);
 					},
 					resetAlerts: function() {
 						alerts = [];
