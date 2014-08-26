@@ -10,18 +10,18 @@ class Repository extends Base\Repository
 {
     protected $entity = 'Merchant';
 
-    public function findBalanceLockForUpdate($id)
+    public function getBalanceLockForUpdate($id)
     {
-        $oldRepo = $this->repo;
+        $repo = '\Models\Merchant\Balance';
 
-        $this->repo = '\Models\Merchant\Balance';
-        $repo = $this->repo;
+        return $repo::lockForUpdate()->findOrFail($id);
+    }
 
-        $balance = $repo::lockForUpdate()->findOrFail($id);
+    public function getEscrowBalanceLockForUpdate()
+    {
+        $apiId = 'dd';
 
-        $this->repo = $oldRepo;
-
-        return $balance;
+        return $this->getBalanceLockForUpdate($apiId);
     }
 
     public function getPricingPlan($merchant)
