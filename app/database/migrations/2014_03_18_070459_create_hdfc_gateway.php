@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Gateway\Hdfc;
 use Models\Base\UniqueIdEntity;
 
-class CreateHdfcGateway extends Migration {
+class CreateHdfcGateway extends Migration
+{
 
     /**
      * Run the migrations.
@@ -82,7 +83,6 @@ class CreateHdfcGateway extends Migration {
     {
         Schema::table('hdfc', function($table)
         {
-
             $table->dropForeign('hdfc_trackid_foreign');
         });
 

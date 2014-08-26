@@ -49,6 +49,7 @@ class CreatePricing extends Migration
 
             $table->integer(Pricing::CREATED_AT);
             $table->integer(Pricing::UPDATED_AT);
+
             $table->integer(Pricing::EXPIRED_AT)
                   ->nullable();
         });

@@ -23,6 +23,7 @@ Models\Card\Entity:
     type: VISA
     country: IN
     last4: 7890
+    iin: 401200
 
 Models\Key\Entity:
     id: d9c6bf091a1a64cb5678d8c1

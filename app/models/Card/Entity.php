@@ -16,7 +16,7 @@ class Entity extends Base\UniqueIdEntity
     const LAST4             = 'last4';
     const NETWORK           = 'network';
     const TYPE              = 'type';
-    const BANK              = 'bank';
+    const ISSUER            = 'issuer';
     const COUNTRY           = 'country';
     const ADDRESS_LINE1     = 'address_line1';
     const ADDRESS_LINE2     = 'address_line2';
@@ -41,7 +41,7 @@ class Entity extends Base\UniqueIdEntity
         self::NETWORK,
         self::COUNTRY,
         self::TYPE,
-        self::BANK,
+        self::ISSUER,
         self::ADDRESS_LINE1,
         self::ADDRESS_LINE2,
         self::ADDRESS_STATE,
@@ -149,5 +149,15 @@ class Entity extends Base\UniqueIdEntity
         {
             $this->setAttribute(self::TYPE, Type::UNKNOWN);
         }
+    }
+
+    protected function setCountry($country)
+    {
+        $this->setAttribute(self::COUNTRY, $country);
+    }
+
+    protected function setNetwork($network)
+    {
+        $this->setAttribute(self::NETWORK, $network);
     }
 }

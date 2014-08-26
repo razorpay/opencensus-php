@@ -8,7 +8,8 @@ use Models\Ledger\Entity as Ledger;
 use Models\Merchant;
 use Models\Transaction;
 
-class CreateLedger  extends Migration {
+class CreateLedger  extends Migration
+{
 
     /**
      * Runs the migration
@@ -36,6 +37,9 @@ class CreateLedger  extends Migration {
             $table->integer(Ledger::FEE)
                   ->unsigned();
 
+            $table->char(Ledger::PRICING_RULE_ID, Ledger::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Ledger::DEBIT)
                   ->unsigned();
 
@@ -50,7 +54,7 @@ class CreateLedger  extends Migration {
 
             $table->integer(Ledger::API_FEE);
 
-            $table->integer(Ledger::API_BALANCE);
+            $table->integer(Ledger::ESCROW_BALANCE);
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Ledger::CREATED_AT);

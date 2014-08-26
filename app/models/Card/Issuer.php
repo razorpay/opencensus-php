@@ -10,6 +10,8 @@ class Issuer
     const ICIC = 'ICIC';
     const CITI = 'CITI';
     const PUNB = 'PUNB';
+
+    // Allahabad Bank
     const ALLA = 'ALLA';
 
     // Kotak Mahindra
