@@ -35,6 +35,13 @@ class Repository extends Base\Repository
         return $plan;
     }
 
+    public function getPricingPlanByMerchantAndPaymentNetworks($merchantId, array $networks = array())
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Pricing\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereIn(Pricing\Entity::PAYMENT_NETWORK, $networks);
+    }
 
     public function getPricingPlans()
     {
@@ -47,7 +54,8 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::whereNull(Pricing\Entity::GATEWAY)
+         // For merchant pricing plans, gateway will not be specified
+         return $repo::whereNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
     }
 
