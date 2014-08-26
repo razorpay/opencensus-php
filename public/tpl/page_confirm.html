@@ -6,7 +6,12 @@
     </div>
     <div ng-controller="ConfirmCtrl" ng-load="submit()">
       <div class="text-center m-t m-b">
-        <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+        <alert ng-repeat="alert in alerts()" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div ng-show="success" class="m-t">
+        <div class="alert alert-success">
+          <p>Confirmation successfull. <a ui-sref="access.signin" class="btn btn-sm btn-success">Sign in</a></p>
+        </div>
       </div>
     </div>
   </div>

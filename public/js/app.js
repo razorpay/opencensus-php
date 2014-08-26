@@ -126,11 +126,11 @@ var app = angular.module('app', [
                 templateUrl: 'tpl/page_404.html'
             })
             .state('access.confirm', {
-                url: '/confirm',
+                url: '/confirm/:token',
                 templateUrl: 'tpl/page_confirm.html'
             })
             .state('access.resetpwd', {
-                url: '/resetpwd',
+                url: '/resetpwd/:token',
                 templateUrl: 'tpl/page_resetpwd.html'
             })
     }

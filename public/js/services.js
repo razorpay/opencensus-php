@@ -36,7 +36,9 @@ angular.module('app.services', [])
 					$http.get('/user', { ignoreErrors: true })
 						.success(function(data) {
 							_identity = data.data;
-							_identity.activation_progress = parseInt((data.data.steps_finished.length * 100)/ 6);
+							if(data.data.steps_finished) {
+								_identity.activation_progress = parseInt((data.data.steps_finished.length * 100)/ 6);
+							}
 					   		_authenticated = data.success === true;
 							deferred.resolve(_identity);
 						})
@@ -137,6 +139,24 @@ angular.module('app.services', [])
  
                 }
  
-            }
-        )
+            })
+			.factory('alertsFactory', function() {
+				var alerts = [];
+				return {
+					getAlerts: function() {
+						return alerts;
+					},
+					addAlert: function($type, $message) {
+						$message = $message || "An error occured.";
+
+						alerts.push({type: $type, msg: $message});
+					},
+					closeAlert: function(index) {
+						alerts.splice(index, 1);
+					},
+					resetAlerts: function() {
+						alerts = [];
+					}
+				}
+			})
 ;

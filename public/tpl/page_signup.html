@@ -27,7 +27,7 @@
           </div>
           <button type="submit" class="btn btn-lg btn-primary btn-block">Sign up</button>
           <div class="text-center m-t m-b">
-            <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+            <alert ng-repeat="alert in alerts()" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
           </div>
 
           <div class="line line-dashed"></div>
