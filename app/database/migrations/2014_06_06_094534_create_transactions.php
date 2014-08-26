@@ -18,8 +18,7 @@ class CreateTransactions extends Migration {
 
             $table->increments('id');
 
-            $table->integer('merchant_id')
-                  ->unsigned();
+            $table->char('merchant_id', 24);
 
             $table->enum('type', array(
                                       'day',
@@ -39,6 +38,10 @@ class CreateTransactions extends Migration {
 
             $table->integer('created_at');
             $table->integer('updated_at');
+
+            $table->foreign('merchant_id')
+                  ->references('id')
+                  ->on('merchants');
         });
     }
 
@@ -48,8 +51,13 @@ class CreateTransactions extends Migration {
      * @return void
      */
     public function down()
-    {
-        Schema::drop('transactions'); 
+    { 
+      Schema::table('transactions', function(Blueprint $table)
+      {
+          $table->dropForeign('transactions_merchant_id_foreign');
+      });
+      
+      Schema::drop('transactions'); 
     }
 
 }

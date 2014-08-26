@@ -16,9 +16,7 @@ class CreateAggregations extends Migration {
         {
             $table->engine = 'InnoDB';
 
-            $table->integer('merchant_id')
-                  ->unsigned()
-                  ->primary();
+            $table->char('merchant_id', 24);
 
             $table->integer('total_amount')
                   ->unsigned()
@@ -36,6 +34,10 @@ class CreateAggregations extends Migration {
 
             $table->integer('created_at');
             $table->integer('updated_at');
+
+            $table->foreign('merchant_id')
+                  ->references('id')
+                  ->on('merchants');
         });
     }
 
@@ -46,7 +48,12 @@ class CreateAggregations extends Migration {
      */
     public function down()
     {
-        Schema::drop('aggregations'); 
+      Schema::table('aggregations', function(Blueprint $table)
+      {
+          $table->dropForeign('aggregations_merchant_id_foreign');
+      });
+
+      Schema::drop('aggregations'); 
     }
 
 }

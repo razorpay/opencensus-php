@@ -33,9 +33,23 @@ class DatabaseSeeder extends Seeder {
 
 		DB::table('aggregations')->insert(array(
 			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
-			'txn_count'		=>	0,
+			'total_amount'	=>  12345,
+			'txn_count'		=>	20,
+			'successful_txn_count' => 12,
 			'created_at'	=>	time(),
-			'updated_at'	=>	time()
+			'updated_at'	=>	time(),
+			'mode'			=> 	'test'
+			)
+		);
+
+		DB::table('aggregations')->insert(array(
+			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
+			'total_amount'	=>  123456,
+			'txn_count'		=>	25,
+			'successful_txn_count' => 15,
+			'created_at'	=>	time(),
+			'updated_at'	=>	time(),
+			'mode'			=> 	'live'
 			)
 		);
 
