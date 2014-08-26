@@ -39,7 +39,17 @@
               </li>
             </ul>
 
-          </li> -->          
+          </li> -->
+          <li class="dropdown hidden-sm" ng-controller="modeCtrl">
+            <a href class="dropdown-toggle" data-toggle="dropdown">
+              {{mode() | titlecase}} <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu animated fadeInRight w">
+              <li ng-repeat="mode in modes()">
+                <a ng-click="selectMode(mode)" href="#">{{mode | titlecase}}</a>
+              </li>
+            </ul>
+          </li>         
           <li>
             <a href="https://docs.razorpay.com">
               <span>Documentation</span>

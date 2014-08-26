@@ -72,6 +72,25 @@ angular.module('app.services', [])
 			    };
 			  }
 			])
+			.factory("modeFactory",['$state', function($state){
+				var modes = {test: "test", live: "live"};
+
+				var currentMode = "test";
+
+				return {
+					getMode: function(){
+						return currentMode;
+					},
+					selectMode: function(mode){
+						currentMode = modes[mode];
+						$state.go($state.$current, null, { reload: true });
+						return currentMode;
+					},
+					getModes: function(){
+						return modes;
+					}
+				};
+			}])
 			//Transforms json array to form post fields, also modifies content type of submission
 			.factory("transformRequestAsFormPost",
             function() {

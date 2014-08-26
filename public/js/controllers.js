@@ -54,6 +54,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         $translate.use(langKey);
       };
 
+
       function isSmartDevice( $window )
       {
           // Adapted from http://www.detectmobilebrowsers.com
@@ -738,4 +739,32 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
               });
       };
   }])
+  .controller('AggregationsCtrl', ['$scope', '$http', 'modeFactory',
+    function($scope, $http, modeFactory) {
+        $scope.data = {
+                        success: 0,
+                        amount: 0,
+                        txns: 0
+                    };
+
+        var request = $http.get("/"+modeFactory.getMode()+"/analytics/aggregations");
+
+        request.success(function(result){
+          
+          if (result.data !== null) {
+              if (parseInt(result.data.txn_count) !== 0)
+                  $scope.data.success = parseInt(result.data.successful_txn_count * 100/result.data.txn_count);
+              $scope.data.amount = result.data.total_amount;
+              $scope.data.txns = result.data.txn_count;
+          }
+        });
+
+  }])
+  .controller('modeCtrl', ['$scope', 'modeFactory',
+    function($scope, modeFactory){
+      $scope.modes = modeFactory.getModes;
+      $scope.mode = modeFactory.getMode;
+      $scope.selectMode = modeFactory.selectMode;
+  }])
+
   ;
