@@ -14,13 +14,7 @@ trait RepositoryUpdateTestAndLive
      */
     public function saveOrFail($entity, array $options = array())
     {
-        if (get_class($entity) !== $this->repo)
-        {
-            throw new Exception\LogicException(
-                'Can only handle ' . $this->repo . ' entities here. Provided: ' . get_class($entity));
-        }
-
-        $id = $entity->getKey();
+        $this->dualUpdateVerifyEntityClass($entity);
 
         $exists = $entity->exists;
 
@@ -37,26 +31,7 @@ trait RepositoryUpdateTestAndLive
                 // and lock for update
                 //
 
-                $repo = $this->repo;
-                $testEntity = $repo::on('test')->lockForUpdate()->findOrFail($id);
-                $liveEntity = $repo::on('live')->lockForUpdate()->findOrFail($id);
-
-                $testAttributes = $testEntity->getAttributes();
-                $liveAttributes = $liveEntity->getAttributes();
-
-                $diff1 = array_diff_assoc($testAttributes, $liveAttributes);
-                $diff2 = array_diff_assoc($liveAttributes, $testAttributes);
-
-                if ((count($diff1) > 0) or
-                    (count($diff2) > 0))
-                {
-                    throw new Exception\LogicException('A row in test and live database do not match');
-                }
-
-                // Update the test and live entities
-                $attributes = $entity->getAttributes();
-                $testEntity->setRawAttributes($attributes);
-                $liveEntity->setRawAttributes($attributes);
+                list($testEntity, $liveEntity) = $this->dualUpdateFetchEntities($entity);
             }
             else
             {
@@ -68,25 +43,68 @@ trait RepositoryUpdateTestAndLive
                 $liveEntity = clone $entity;
             }
 
-            // Persist then entity in both live and test databases.
+            // Persist the entity in both live and test databases.
             $liveEntity->setConnection('live')->saveOrFail($options);
             $testEntity->setConnection('test')->saveOrFail($options);
         }
         catch (\Exception $e)
         {
+            //
+            // Some error occurred, rollback now.
+            //
             DB::connection('live')->rollBack();
             DB::connection('test')->rollBack();
 
             throw $e;
         }
 
+        // Update finished successfully, commit now.
         DB::connection('live')->commit();
         DB::connection('test')->commit();
 
-        // Now that the entity has been update in both live and test databases,
+        // Now that the entity has been updated in both live and test databases,
         // update the one passed as argument in this function
         $attributes = $liveEntity->getAttributes();
         $entity->setRawAttributes($attributes, true);
         $entity->exists = true;
+    }
+
+    protected function dualUpdateVerifyEntityClass($entity)
+    {
+        if (get_class($entity) !== $this->repo)
+        {
+            throw new Exception\LogicException(
+                'Can only handle ' . $this->repo . ' entities here. Provided: ' . get_class($entity));
+        }
+    }
+
+    protected function dualUpdateFetchEntities($entity)
+    {
+        $repo = $this->repo;
+
+        $id = $entity->getKey();
+
+        $testEntity = $repo::on('test')->lockForUpdate()->findOrFail($id);
+        $liveEntity = $repo::on('live')->lockForUpdate()->findOrFail($id);
+
+        $testAttributes = $testEntity->getAttributes();
+        $liveAttributes = $liveEntity->getAttributes();
+
+        $diff1 = array_diff_assoc($testAttributes, $liveAttributes);
+        $diff2 = array_diff_assoc($liveAttributes, $testAttributes);
+
+        if ((count($diff1) > 0) or
+            (count($diff2) > 0))
+        {
+            throw new Exception\LogicException('A row in test and live database do not match');
+        }
+
+        // Update the test and live entities
+        $attributes = $entity->getAttributes();
+
+        $testEntity->setRawAttributes($attributes);
+        $liveEntity->setRawAttributes($attributes);
+
+        return array($testEntity, $liveEntity);
     }
 }
