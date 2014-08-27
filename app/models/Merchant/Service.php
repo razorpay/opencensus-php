@@ -41,9 +41,16 @@ class Service extends Base\Service
 
         $merchantBalance = new Merchant\Balance($merchantIdArr);
 
-        $this->merchantRepository->saveOrFail($merchantBalance);
+        $this->merchantRepository->updateBalance($merchantBalance);
 
         return $merchant->toArray();
+    }
+
+    public function fetch($id)
+    {
+        $merchant = $this->merchantRepository->findOrFailPublic($id);
+
+        return array_merge($merchant->toArray(), ['entity' => 'merchant']);
     }
 
     public function createKey($merchantId)
@@ -127,10 +134,9 @@ class Service extends Base\Service
 
         $this->merchantRepository->saveOrFail($merchant);
 
-        $p = $plan->toArrayPublic();
-        $id = $merchant->getPricingPlanId();
+        $plan = $plan->toArrayPublic();
 
-        return $p;
+        return $plan;
     }
 
     public function getPricingPlan($id)

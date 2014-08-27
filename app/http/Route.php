@@ -19,6 +19,7 @@ final class Route
         'transaction_fetch_by_id'   => ['get',  'transactions/{id}',            'TransactionController@getTransaction'],
         'transaction_fetch_multiple'=> ['get',  'transactions/{param?}',        'TransactionController@getTransactions'],
         'merchant_create'           => ['post', 'merchants',                    'MerchantController@postCreateMerchant'],
+        'merchant_fetch'            => ['get',  'merchants/{id}',               'MerchantController@getMerchant'],
         'merchant_create_key'       => ['post', 'merchants/{id}/keys',          'MerchantController@postCreateKeys'],
         'merchant_fetch_keys'       => ['get',  'merchants/{id}/keys',          'MerchantController@getKeys'],
         'merchant_replace_key'      => ['put',  'merchants/{merchantId}/keys/{keyId}', 'MerchantController@putKeys'],
@@ -51,6 +52,7 @@ final class Route
 
     public static $internal = array(
         'merchant_create',
+        'merchant_fetch',
         'merchant_create_key',
         'merchant_fetch_keys',
         'merchant_replace_key',

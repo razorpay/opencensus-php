@@ -14,6 +14,13 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function getMerchant($id)
+    {
+        $data = (new Merchant\Service)->fetch($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCreateKeys($merchantId)
     {
         $data = (new Merchant\Service)->createKey($merchantId);
