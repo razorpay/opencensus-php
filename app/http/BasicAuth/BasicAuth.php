@@ -299,7 +299,7 @@ class BasicAuth
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
-        if (Hash::check($secret, $keyEntity->getSecret() === false))
+        if (Hash::check($secret, $keyEntity->getSecret()) === false)
         {
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
