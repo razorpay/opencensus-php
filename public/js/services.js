@@ -188,4 +188,31 @@ angular.module('app.services', [])
 					}
 				}
 			})
+			.factory('dateFactory', function(){
+				function handler($scope) {
+					this.endDate = new Date();
+					this.startDate = new Date(new Date().setMonth(new Date().getMonth()-1)),
+					this.opened = {};
+					this.dateOptions= {
+						formatYear: 'yy',
+						startingDay: 1,
+						class: 'datepicker'
+					};
+					this.clear= function () {
+						$scope.date.endDate = null;
+						$scope.date.startDate = null;
+					};
+					this.open = function($event, key) {
+						$event.preventDefault();
+						$event.stopPropagation();
+						$scope.date.opened[key] = true;
+					};			  
+				};
+
+				return {
+					getHandler: function($scopeVar){
+						return new handler($scopeVar);
+					}
+				};
+			})
 ;
