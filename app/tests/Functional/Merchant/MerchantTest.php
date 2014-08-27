@@ -91,8 +91,6 @@ class MerchantTest extends TestCase
 
         $testData = $this->testData[$name];
 
-        //$this->replaceDefualtValues($testData['request']['content']);
-
         return $this->runRequestResponseFlow($testData);
     }
 

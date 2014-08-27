@@ -57,7 +57,8 @@ class TestCase extends ParentTestCase
         // Start DB transaction so as
         // to rollback once done
         //
-        DB::beginTransaction();
+        DB::connection('test')->beginTransaction();
+        DB::connection('live')->beginTransaction();
         $this->dbTxnInProgress = true;
 
         //
@@ -66,11 +67,11 @@ class TestCase extends ParentTestCase
         // This key can be used by default for most use-cases
         // but you are not required to use it.
         //
-        $merchant = $this->createEntity('merchant', ['id' => '363e4efa820b0c06208ccd99']);
+        $merchant = $this->createEntityInTestAndLive('merchant', ['id' => '363e4efa820b0c06208ccd99']);
+        $pricing = $this->createEntityInTestAndLive('pricing', ['id' => '138bee1175c23b9b794cda8e']);
         $terminal = $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']);
         $key = $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']);
         $balance = $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']);
-        $pricing = $this->createEntity('pricing', ['id' => '138bee1175c23b9b794cda8e']);
         $transaction = $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']);
     }
 
@@ -81,7 +82,8 @@ class TestCase extends ParentTestCase
         //
         if ($this->dbTxnInProgress === true)
         {
-            DB::rollback();
+            DB::connection('live')->rollBack();
+            DB::connection('test')->rollBack();
 
             $this->dbTxnInProgress = false;
         }
@@ -132,6 +134,7 @@ class TestCase extends ParentTestCase
 
         $this->setupBasicAuthParams($user, $pwd);
     }
+
     protected function createEntity($entity, $attributes = array())
     {
         $this->eloquentUnguard();
@@ -143,6 +146,23 @@ class TestCase extends ParentTestCase
         $this->eloquentReguard();
 
         return $entity;
+    }
+
+    protected function createEntityInTestAndLive($entity, $attributes = array())
+    {
+        $this->eloquentUnguard();
+
+        $entity = self::$fixtures[$entity];
+
+        $entity = Factory::build($entity, $attributes);
+
+        $testEntity = clone $entity;
+        $liveEntity = clone $entity;
+
+        $testEntity->setConnection('test')->save();
+        $liveEntity->setConnection('live')->save();
+
+        $entity->exists = true;
     }
 
     protected function eloquentUnguard()
