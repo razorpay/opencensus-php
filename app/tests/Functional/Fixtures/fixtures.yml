@@ -53,3 +53,11 @@ Models\Pricing\Entity:
     payment_issuer: ICIC
     percent_rate: 1000
     fixed_rate: 10000
+
+Gateway\Hdfc\Entity:
+    id: $integer
+    trackid:
+    transactionid:
+    action: 4
+    enroll_result: NOT_ENROLLED
+    status: authorized
