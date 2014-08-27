@@ -126,7 +126,7 @@ trait EnrollCardTrait
         //
         $data['currencycode'] = self::INR_CODE;
 
-        $data['action'] = Hdfc\Action::AUTH;
+        $data['action'] = Hdfc\Action::AUTHORIZE;
     }
 
     /**

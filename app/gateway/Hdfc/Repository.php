@@ -91,7 +91,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolled($model, $data)
     {
         $attributes = array(
-            'status' => Hdfc\Status::AUTH,
+            'status' => Hdfc\Status::AUTHORIZED,
             'auth_result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
@@ -107,7 +107,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolled($model, $data)
     {
         $attributes = array(
-            'status' => Hdfc\Status::AUTH,
+            'status' => Hdfc\Status::AUTHORIZED,
             'auth_result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],

@@ -12,7 +12,7 @@ class Status
 
     const AUTH_NOT_ENROLL_FAILED = 'auth_not_enroll_failed';
 
-    const AUTH = 'auth';
+    const AUTHORIZED = 'authorized';
 
     const CAPTURED = 'captured';
 
