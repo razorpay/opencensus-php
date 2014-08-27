@@ -44,6 +44,13 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testPrivateAuthWithWrongSecret()
+    {
+        $this->setupPrivateBasicAuthParams(null, 'somerandomsecre');
+
+        $this->startTest();
+    }
+
     public function testPublicAuthOnAppRoute()
     {
         $this->setupPublicBasicAuthParams();

@@ -86,6 +86,22 @@ return [
         ],
     ],
 
+    'testPrivateAuthWithWrongSecret' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/transactions/abcdeefa820b0c06208ccd99',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
     'testPublicAuthOnAppRoute' => [
         'request' => [
             'method' => 'POST',
