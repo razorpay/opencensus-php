@@ -32,6 +32,8 @@ class CaptureTest extends TestCase
 
     public function testCapture()
     {
+        $this->txn = $this->defaultAuthTransaction();
+
         $this->startTest();
     }
 
@@ -86,6 +88,8 @@ class CaptureTest extends TestCase
 
     public function testCaptureWithMinAmountAllowed()
     {
+        $this->txn = $this->defaultAuthTransaction();
+
         $this->txn['amount'] = 100;
 
         $this->startTest();
@@ -128,9 +132,7 @@ class CaptureTest extends TestCase
     public function startTest($id = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $func = $trace[1]['function'];
-
-        $name = lcfirst(substr($func, 4));
+        $name = $trace[1]['function'];
 
         $testData = $this->testData[$name];
 

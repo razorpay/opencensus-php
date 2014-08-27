@@ -60,11 +60,7 @@ trait TransactionAuthFlowTrait
             'url' => "/transactions/".$id.'/capture',
             'content' => array('amount' => $amount));
 
-        $response = $this->makeRequest($request);
-
-        $content = $response->getContent();
-
-        $content = json_decode($content, true);
+        $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('amount', $content);
         $this->assertArrayHasKey('status', $content);
@@ -82,13 +78,7 @@ trait TransactionAuthFlowTrait
             'url' => '/transactions/'.$id.'/refund',
             'content' => array());
 
-        $response = $this->makeRequest($request);
-
-        $content = $response->getContent();
-
-        $this->assertJson($content);
-
-        $refund = json_decode($content, true);
+        $refund = $this->makeRequestAndGetContent($request);
 
         //
         // Check if transaction id matches, and refunded sucessfully
