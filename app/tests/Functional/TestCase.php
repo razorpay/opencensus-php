@@ -38,6 +38,8 @@ class TestCase extends ParentTestCase
      */
     protected $cloud = true;
 
+    protected $entities = array();
+
     public function setUp()
     {
         parent::setUp();
@@ -67,12 +69,15 @@ class TestCase extends ParentTestCase
         // This key can be used by default for most use-cases
         // but you are not required to use it.
         //
-        $merchant = $this->createEntityInTestAndLive('merchant', ['id' => '363e4efa820b0c06208ccd99']);
-        $pricing = $this->createEntityInTestAndLive('pricing', ['id' => '138bee1175c23b9b794cda8e']);
-        $terminal = $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']);
-        $key = $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']);
-        $balance = $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']);
-        $transaction = $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']);
+
+        $this->entities = array(
+            'merchant'    => $this->createEntityInTestAndLive('merchant', ['id' => '363e4efa820b0c06208ccd99']),
+            'pricing'     => $this->createEntityInTestAndLive('pricing', ['id' => '138bee1175c23b9b794cda8e']),
+            'terminal'    => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            'key'         => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            'balance'     => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
+            'transaction' => $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            );
     }
 
     public function tearDown()
