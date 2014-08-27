@@ -164,6 +164,7 @@ var app = angular.module('app', [
     easyPieChart:   ['js/jquery/charts/easypiechart/jquery.easy-pie-chart.js'],
     sparkline:      ['js/jquery/charts/sparkline/jquery.sparkline.min.js'],
     plot:           ['js/jquery/charts/flot/jquery.flot.min.js', 
+                        'js/jquery/charts/flot/jquery.flot.time.js',
                         'js/jquery/charts/flot/jquery.flot.resize.js',
                         'js/jquery/charts/flot/jquery.flot.tooltip.min.js',
                         'js/jquery/charts/flot/jquery.flot.spline.js',
