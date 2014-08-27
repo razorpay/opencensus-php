@@ -60,6 +60,7 @@ trait TransactionAuthFlowTrait
             'url' => "/transactions/".$id.'/capture',
             'content' => array('amount' => $amount));
 
+        $this->setupPrivateBasicAuthParams();
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('amount', $content);
@@ -73,6 +74,7 @@ trait TransactionAuthFlowTrait
 
     protected function refundTransaction($id)
     {
+        $this->setupPrivateBasicAuthParams();
         $request = array(
             'method' => 'POST',
             'url' => '/transactions/'.$id.'/refund',

@@ -73,7 +73,7 @@ return [
         ],
     ],
 
-    'testCaptureWithRefunded' => [
+    'testCaptureAfterRefund' => [
         'response' => [
             'content' => [
                 'error' => [

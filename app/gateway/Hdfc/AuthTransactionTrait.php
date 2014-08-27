@@ -30,7 +30,7 @@ trait AuthTransactionTrait
                 return $this->postAuthNotEnrolledRequestToBank();
 
             default:
-                throw new \LogicException('Should not have reached here');
+                throw new Exception\LogicException('Should not have reached here');
         }
     }
 

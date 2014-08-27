@@ -5,10 +5,16 @@ namespace Tests\Functional\Transaction;
 use Tests\Functional\TestCase;
 
 /**
- * Tests that support transactions (capture/refund) are working fine.
- * creates a hold transaction using card 13 and then attempts to capture it followed by refund it
- * Is successful if captured successfully folowed by successful refund.
- * All test cases follow, GIVEN, WHEN, THEN structure
+ * Tests for capture transactions
+ *
+ * For capture transactions, first we need to create an
+ * authorized transaction. By default, an authorized txn entity
+ * is provided. However, it doesn't have a corresponding record
+ * in hdfc gateway.
+ *
+ * So capture tests which supposedly hit hdfc gateway for capture,
+ * should first call for a normal hdfc authorized transaction instead
+ * of utilizing the default created transaction entity.
  */
 
 class CaptureTest extends TestCase
@@ -34,12 +40,16 @@ class CaptureTest extends TestCase
     {
         $this->txn = $this->defaultAuthTransaction();
 
+        $this->setupPrivateBasicAuthParams();
+
         $this->startTest();
     }
 
     public function testCaptureTwice()
     {
         $txn = $this->txn;
+
+        $this->txn = $this->defaultAuthTransaction();
 
         $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
@@ -51,6 +61,10 @@ class CaptureTest extends TestCase
     public function testCaptureWithLessAmountThanAuth()
     {
         $amount = 10000;
+
+        $this->txn = $this->defaultAuthTransaction();
+
+        $this->setupPrivateBasicAuthParams();
 
         $this->startTest(null, $amount);
     }
@@ -92,6 +106,7 @@ class CaptureTest extends TestCase
 
         $this->txn['amount'] = 100;
 
+        $this->setupPrivateBasicAuthParams();
         $this->startTest();
     }
 
@@ -116,9 +131,9 @@ class CaptureTest extends TestCase
         $this->startTest();
     }
 
-    public function testCaptureWithRefunded()
+    public function testCaptureAfterRefund()
     {
-        $txn = $this->txn;
+        $txn = $this->defaultAuthTransaction();
 
         $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
