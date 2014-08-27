@@ -9,6 +9,8 @@ use EE\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryUpdateTestAndLive;
+
     protected $entity = 'Pricing';
 
     public function getPricingPlanById($id)
