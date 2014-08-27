@@ -2,7 +2,6 @@
 
 namespace Models\Base;
 
-use DB;
 use EE\Exception;
 
 trait RepositoryUpdateTestAndLive
@@ -18,8 +17,8 @@ trait RepositoryUpdateTestAndLive
 
         $exists = $entity->exists;
 
-        DB::connection('test')->beginTransaction();
-        DB::connection('live')->beginTransaction();
+        $this->db->connection('test')->beginTransaction();
+        $this->db->connection('live')->beginTransaction();
 
         try
         {
@@ -52,15 +51,15 @@ trait RepositoryUpdateTestAndLive
             //
             // Some error occurred, rollback now.
             //
-            DB::connection('live')->rollBack();
-            DB::connection('test')->rollBack();
+            $this->db->connection('live')->rollBack();
+            $this->db->connection('test')->rollBack();
 
             throw $e;
         }
 
         // Update finished successfully, commit now.
-        DB::connection('live')->commit();
-        DB::connection('test')->commit();
+        $this->db->connection('live')->commit();
+        $this->db->connection('test')->commit();
 
         // Now that the entity has been updated in both live and test databases,
         // update the one passed as argument in this function

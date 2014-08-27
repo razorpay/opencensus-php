@@ -2,11 +2,17 @@
 
 namespace Models\Base;
 
+use DB;
+
 class Repository extends \Razorpay\Spine\Repository
 {
+    protected $db;
+
     public function __construct()
     {
         parent::__construct();
+
+        $this->db = DB::getFacadeRoot();
     }
 
     public function findOrFailPublic($id, $columns = array('*'))
