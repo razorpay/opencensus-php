@@ -27,28 +27,6 @@ return [
         ],
     ],
 
-    'updateKeyTwice' => [
-        'request' => [
-            'content' => [
-            ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/d9c6bf091a1a64cb5678d8c1',
-            'method' => 'PUT',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_KEY_EXPIRED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_EXPIRED,
-        ],
-    ],
-
     'testAppRoutesWithPrivateAuth' => [
         'response' => [
             'content' => [
@@ -74,6 +52,70 @@ return [
             'class' => 'Exception',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
+    ],
+
+    'testPrivateAuthOnPublicRoute' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/transactions/jsonp',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testPublicAuthOnPrivateRoute' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/transactions/abcdeefa820b0c06208ccd99',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testPublicAuthOnAppRoute' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testPrivateAuthOnAppRoute' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ],
+            ],
+            'status_code' => 400,
+        ],
     ],
 
     'testProxyAuthOnPrivateRouteInCloud' => [

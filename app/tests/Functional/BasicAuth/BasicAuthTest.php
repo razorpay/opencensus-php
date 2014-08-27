@@ -30,49 +30,32 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testAuthWithoutPwd()
+    public function testPrivateAuthOnPublicRoute()
     {
-        ;
-    }
+        $this->setupPrivateBasicAuthParams();
 
-    public function testAuthWithoutKey()
-    {
-        ;
-    }
-
-    public function testAuthWithKeyAndPwd()
-    {
-        ;
-    }
-
-    public function testPublicAuth()
-    {
-
-    }
-
-    public function testPrivateAuth()
-    {
-        ;
-    }
-
-    public function testAppAuth()
-    {
-        ;
+        $this->startTest();
     }
 
     public function testPublicAuthOnPrivateRoute()
     {
-        ;
+        $this->setupPublicBasicAuthParams();
+
+        $this->startTest();
     }
 
-    public function testPrivateAuthOnPublicRoute()
+    public function testPublicAuthOnAppRoute()
     {
-        ;
+        $this->setupPublicBasicAuthParams();
+
+        $this->startTest();
     }
 
     public function testPrivateAuthOnAppRoute()
     {
-        ;
+        $this->setupPrivateBasicAuthParams();
+
+        $this->startTest();
     }
 
     public function testProxyAuthOnPrivateRouteInCloud()
