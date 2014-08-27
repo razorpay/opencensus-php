@@ -30,6 +30,8 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    // This also checks the effect of providing secret on
+    // public route
     public function testPrivateAuthOnPublicRoute()
     {
         $this->setupPrivateBasicAuthParams();
@@ -40,6 +42,20 @@ class BasicAuthTest extends TestCase
     public function testPublicAuthOnPrivateRoute()
     {
         $this->setupPublicBasicAuthParams();
+
+        $this->startTest();
+    }
+
+    public function testPublicAuthWithWrongKeyId()
+    {
+        $this->setupPublicBasicAuthParams('abcdefgh820b0c06208ccd99');
+
+        $this->startTest();
+    }
+
+    public function testPrivateAuthWithWrongKeyId()
+    {
+        $this->setupPublicBasicAuthParams('abcdefgh820b0c06208ccd99');
 
         $this->startTest();
     }
