@@ -42,15 +42,22 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'.$id;
         $testData['request']['method'] = 'GET';
 
+        $this->setupAppBasicAuthParams('rzp_test');
+        $this->startTest($testData);
+
+        $this->setupAppBasicAuthParams('rzp_live');
         $this->startTest($testData);
     }
 
     public function testGetPricingPlans()
     {
         $this->createPricingPlan();
-
         $this->createPricingPlan2();
 
+        $this->setupAppBasicAuthParams('rzp_test');
+        $this->startTest();
+
+        $this->setupAppBasicAuthParams('rzp_live');
         $this->startTest();
     }
 
@@ -116,13 +123,12 @@ class PricingTest extends TestCase
     {
         $id = $this->createPricingPlan()['id'];
 
-        $testData['request']['content']['pricing_plan_id'] = $id;
-        $data = array(
+        $request = array(
             'url' => '/merchants/363e4efa820b0c06208ccd99/pricing',
             'method' => 'POST',
             'content' => ['pricing_plan_id' => $id]);
 
-        return $this->makeRequestAndGetContent($data);
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function createPricingPlan()
@@ -140,12 +146,7 @@ class PricingTest extends TestCase
             'url' => '/pricing',
             'content' => $pricingPlan);
 
-        $response = $this->makeRequest($request);
-
-        $content = $response->getContent();
-
-        $this->assertJson($content);
-        $content = json_decode($content, true);
+        $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('rules', $content);
         $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);

@@ -6,7 +6,7 @@ use EE\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
-    'createMerchant' => [
+    'testCreateMerchant' => [
         'request' => [
             'content' => [
                 'id'    => '41ce4abda390575910cba897',
@@ -23,7 +23,22 @@ return [
         ],
     ],
 
-    'merchantFetchKeys' => [
+    'testGetMerchant' => [
+        'request' => [
+            'url' => '/merchants/41ce4abda390575910cba897',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '41ce4abda390575910cba897',
+                'entity' => 'merchant',
+                'name'  => 'Tester',
+                'email' => 'liveAndTest@localhost.com',
+            ],
+        ],
+    ],
+
+    'testMerchantFetchKeys' => [
         'request' => [
             'content' => [
             ],
@@ -44,7 +59,7 @@ return [
         ]
     ],
 
-    'updateKeyExpireNow' => [
+    'testUpdateKeyExpireNow' => [
         'request' => [
             'content' => [
             ],
@@ -61,7 +76,7 @@ return [
         ],
     ],
 
-    'updateKeyExpireInFuture' => [
+    'testUpdateKeyExpireInFuture' => [
         'request' => [
             'content' => [
                 'delay_roll' => '1'
@@ -79,7 +94,7 @@ return [
         ],
     ],
 
-    'updateKeyTwice' => [
+    'testUpdateKeyTwice' => [
         'request' => [
             'content' => [
             ],

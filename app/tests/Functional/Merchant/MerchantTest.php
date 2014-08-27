@@ -30,6 +30,17 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testGetMerchant()
+    {
+        $this->createMerchant();
+
+        $this->setupAppBasicAuthParams('rzp_test');
+        $this->startTest();
+
+        $this->setupAppBasicAuthParams('rzp_live');
+        $this->startTest();
+    }
+
     public function testMerchantFetchKeys()
     {
         $this->startTest();
@@ -85,9 +96,7 @@ class MerchantTest extends TestCase
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $func = $trace[1]['function'];
-
-        $name = lcfirst(substr($func, 4));
+        $name = $trace[1]['function'];
 
         $testData = $this->testData[$name];
 
@@ -99,8 +108,27 @@ class MerchantTest extends TestCase
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];
 
-        $name = lcfirst(substr($func, 4));
+        return $func;
+    }
 
-        return $name;
+    protected function createMerchant()
+    {
+        $merchant = array(
+                'id'    => '41ce4abda390575910cba897',
+                'name'  => 'Tester',
+                'email' => 'liveAndTest@localhost.com'
+            );
+
+        $request = array(
+            'content' => $merchant,
+            'url' => '/merchants',
+            'method' => 'POST'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals($merchant, $content);
+
+        return $content;
     }
 }
