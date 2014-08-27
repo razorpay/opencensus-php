@@ -47,9 +47,7 @@ class CaptureTest extends TestCase
 
     public function testCaptureTwice()
     {
-        $txn = $this->txn;
-
-        $this->txn = $this->defaultAuthTransaction();
+        $txn = $this->defaultAuthTransaction();
 
         $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
