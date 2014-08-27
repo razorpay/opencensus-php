@@ -28,6 +28,7 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
 
         $pricing = new Pricing\Entity($input);
+        $pricing->generateId();
 
         $pricing->newPlan();
 
