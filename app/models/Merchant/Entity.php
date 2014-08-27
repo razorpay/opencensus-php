@@ -22,8 +22,6 @@ class Entity extends Base\UniqueIdEntity
 
     public $incrementing = false;
 
-//    protected static $generators = array('id');
-
     public function isActivated()
     {
         return $this->getAttribute(self::ACTIVATED);

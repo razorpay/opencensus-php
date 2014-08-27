@@ -33,6 +33,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'transaction';
 
+    protected $genereateIdOnCreate = true;
+
     protected $fillable = array(
         self::ID,
         self::MERCHANT_ID,

@@ -10,6 +10,8 @@ class UniqueIdEntity extends Entity
 
     const ID_LENGTH = '24';
 
+    protected $genereateIdOnCreate = false;
+
     //const UNIQUE_ID_CHECK_REGEX = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
 
     /**
@@ -23,7 +25,7 @@ class UniqueIdEntity extends Entity
 
     protected $secureUid = false;
 
-    public function generateId($input)
+    public function generateId()
     {
         $this->setAttribute(self::ID, self::generateUniqueId());
     }
@@ -51,7 +53,10 @@ class UniqueIdEntity extends Entity
 
         if ($value === null)
         {
-            $this->generateAndSetUniqueId();
+            if ($this->genereateIdOnCreate)
+            {
+                $this->generateAndSetUniqueId();
+            }
         }
         else
         {

@@ -32,6 +32,8 @@ class Entity extends Base\UniqueIdEntity
 
     protected $table = \Constants\Table::PRICING;
 
+    protected $genereateIdOnCreate = true;
+
     /**
      * Fields which will be modified before
      * input validation
