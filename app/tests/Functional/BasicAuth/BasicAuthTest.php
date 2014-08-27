@@ -111,22 +111,6 @@ class BasicAuthTest extends TestCase
         }
     }
 
-    public function testAppRoutesWithAppAuth()
-    {
-        $this->markTestIncomplete();
-        $this->setupAppBasicAuthParams();
-
-        $internalRoutes = \Http\Route::getApiRouteInCategory('internal');
-
-        foreach ($internalRoutes as $routeName => $routeInfo)
-        {
-            $testData['request']['method'] = $routeInfo[0];
-            $testData['request']['url'] = $routeInfo[1];
-
-            $this->startTest($testData);
-        }
-    }
-
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
