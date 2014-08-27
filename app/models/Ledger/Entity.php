@@ -7,19 +7,19 @@ use Models\Transaction;
 
 class Entity extends Base\UniqueIdEntity
 {
-    const ID            = 'id';
-    const ENTITY_ID     = 'entity_id';
-    const ENTITY_TYPE   = 'entity_type';
-    const MERCHANT_ID   = 'merchant_id';
-    const AMOUNT        = 'amount';
-    const DEBIT         = 'debit';
-    const CREDIT        = 'credit';
-    const FEE           = 'fee';
-    const BALANCE       = 'balance';
-    const GATEWAY_FEE   = 'gateway_fee';
-    const API_FEE       = 'api_fee';
-    const API_BALANCE   = 'api_balance';
-
+    const ID                = 'id';
+    const ENTITY_ID         = 'entity_id';
+    const ENTITY_TYPE       = 'entity_type';
+    const MERCHANT_ID       = 'merchant_id';
+    const AMOUNT            = 'amount';
+    const DEBIT             = 'debit';
+    const CREDIT            = 'credit';
+    const FEE               = 'fee';
+    const PRICING_RULE_ID   = 'pricing_rule_id';
+    const BALANCE           = 'balance';
+    const GATEWAY_FEE       = 'gateway_fee';
+    const API_FEE           = 'api_fee';
+    const ESCROW_BALANCE    = 'escrow_balance';
 
     protected $table = \Constants\Table::LEDGER;
 
