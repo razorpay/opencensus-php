@@ -319,6 +319,18 @@ class Gateway extends BaseGateway
             'Hdfc gateway does not support voids');
     }
 
+    public function getTransactionId($input)
+    {
+        Hdfc\MerchantPaymentReport::getTransactionid($input);
+    }
+
+    public function reconcile($input)
+    {
+        $mpr = new Hdfc\MerchantPaymentReport();
+
+        return $mpr->reconcile($input);
+    }
+
 // ----------------------Gateway operations end --------------------------------
 
     protected function runRequestResponseFlow(array &$request, array &$response)
