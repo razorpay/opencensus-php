@@ -46,9 +46,9 @@ Route::group(array('before' => 'auth'), function()
     {
         Route::post('/{mode}/keys', 'MerchantController@postKeys');
 
-        Route::post('/{mode}/transactions/{id}/capture', 'TransactionController@getCaptureTransaction');
+        Route::post('/{mode}/transactions/{id}/capture', 'TransactionController@postCaptureTransaction');
 
-        Route::post('/{mode}/transactions/{id}/refund', 'TransactionController@getRefundTransaction');
+        Route::post('/{mode}/transactions/{id}/refund', 'TransactionController@postRefundTransaction');
 
         Route::post('/activation', 'MerchantController@postActivation');
 

@@ -65,7 +65,7 @@ class TransactionController extends BaseController
         return $data;
     }
 
-    public function getCaptureTransaction($mode, $id = NULL)
+    public function postCaptureTransaction($mode, $id = NULL)
     {
         $this->checkMode($mode);
         
@@ -76,7 +76,7 @@ class TransactionController extends BaseController
         return $data;
     }
 
-    public function getRefundTransaction($mode, $id = NULL)
+    public function postRefundTransaction($mode, $id = NULL)
     {
         $this->checkMode($mode);
         

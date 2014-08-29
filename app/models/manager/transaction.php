@@ -11,6 +11,7 @@ class Transaction extends Manager
      */
     protected static $api_dashboard_mappings = array(
         'id'            => 'id',
+        'currency'      => 'currency',
         'amount'        => 'amount',
         'status'        => 'status',
         'created_at'    => 'created_at',

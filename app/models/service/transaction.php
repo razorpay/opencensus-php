@@ -47,11 +47,16 @@ class Transaction extends Service
             $this->setApiCredentials($merchant_id, $mode);
 
             $id = $options['id'];
-            $data = $this->api->transaction->fetch($id)->toArray();
+            try
+            {
+                $data = $this->api->transaction->fetch($id)->toArray();
 
-            $response = array('count' => 1, 'data' => array($data));
-
-            
+                $response = array('success' => true, 'count' => 1, 'data' => array($data));
+            }
+            catch(\Exception $e)
+            {
+                $response = array('success' => false, 'errors' => array('Transaction not found.'));
+            }
         }
         else
         {
@@ -74,13 +79,13 @@ class Transaction extends Service
         }
         catch(\Exception $e)
         {
-            return ['status' => false];
+            return ['success' => false];
         }
 
         if(isset($data['error']) === false and isset($data['status']) === true and $data['status'] === "captured")
-            return ['status' => true];
+            return ['success' => true];
         else
-            return ['status' => false];
+            return ['success' => false];
     }
 
     public function refundTxn($id, $mode)
@@ -97,13 +102,13 @@ class Transaction extends Service
         }
         catch(\Exception $e)
         {
-            return ['status' => false];
+            return ['success' => false];
         }
               
         if(isset($data['error']) === false and isset($data['status']) === true and $data['status'] === "refunded")
-            return ['status' => true];
+            return ['success' => true];
         else
-            return ['status' => false];
+            return ['success' => false];
     }
 
     /**
