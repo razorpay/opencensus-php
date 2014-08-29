@@ -9,82 +9,104 @@ use Models\Transaction;
 
 class Core
 {
-    protected $merchant = null;
+    protected $entities = array();
+
+    protected $record;
 
     public function __construct()
     {
         $this->merchant = \BasicAuth::getMerchant();
     }
 
-    public function recordCapture(Transaction\Entity $txn)
+    public function newRecord()
     {
-        return;
-        $lgr = $this->create($txn);
+        $record = new Ledger\Entity;
+        $record->generateId();
 
-        $fee = (new Pricing\Fee)->calculateMerchantFees($txn);
+        $this->record = $record;
+        $this->entities['ledger'] = $record;
 
-        $credit = $amount - $fee;
-
-        $balance = (new Merchant\Repository)->findBalanceLockForUpdate($merchantId);
-
-        $balance->addAmount($credit);
-
-        $balanceAmount = $balance->getBalance();
-
-        $attr = array(
-            Ledger\Entity::ENTITY_ID => $txn->getKey(),
-            Ledger\Entity::ENTITY_TYPE => 'transaction',
-            Ledger\Entity::MERCHANT_ID => $merchantId,
-            Ledger\Entity::AMOUNT => $amount,
-            Ledger\Entity::CREDIT => $credit,
-            Ledger\Entity::FEE => $fee,
-            Ledger\Entity::BALANCE => $balanceAmount);
-
-        $ledger = (new Ledger\Repository)->createOrFail($attr);
-
-        $balance->saveOrFail();
-
-        $txn->ledger()->associate($ledger);
+        return $record;
     }
 
-    public function recordRefund(Transaction\Entity $txn)
+    public function loadEntities($transactionId)
     {
-        $merchantId = $txn->getMerchantId();
+        $txn  = (new Transaction\Core)->retrieveById($transactionId);
 
-        $balance = (new Merchant\Repository)->findBalanceLockForUpdate($merchantId);
+        $this->entities['transaction'] = $txn;
+        $this->entities['merchant'] = $txn->merchant;
+        $this->entities['card'] = $txn->card;
+        $this->entities['terminal'] = $txn->merchant->terminal;
 
-        $amount = $txn->getAmount();
-
-        $fee = 0;
-
-        $debit = $amount;
-
-        $balance->subtractAmount($debit);
-
-        $balanceAmount = $balance->getBalance();
-
-        $attr = array(
-            Ledger\Entity::ENTITY_ID => $txn->getKey(),
-            Ledger\Entity::ENTITY_TYPE => 'refund',
-            Ledger\Entity::MERCHANT_ID => $merchantId,
-            Ledger\Entity::AMOUNT => $amount,
-            Ledger\Entity::DEBIT => $debit,
-            Ledger\Entity::FEE => $fee,
-            Ledger\Entity::BALANCE => $balanceAmount);
-
-        $ledger = (new Ledger\Repository)->createOrFail($attr);
-
-        $balance->saveOrFail();
-
-        // $txn->setLedgerId($ledger->getKey());
+        return $this->entities;
     }
 
-    protected function create($txn)
+    public function entitiesToArray()
     {
-        $lgr = new Ledger\Entity;
+        $entities = $this->entities;
 
-        $lgr->fillPartiallyFromTxn($txn);
+        $entitiesArray = array();
 
-        return $lgr;
+        foreach ($entities as $name => $entity)
+        {
+            $entitiesArray[$name] = $entity->toArray();
+        }
+
+        return $entitiesArray;
+    }
+
+    public function reconcileRecord($data)
+    {
+        $record = $this->record;
+
+        $entities = $this->entities;
+
+        $record['amount'] = $entities['transaction']->getAmount();
+        $record['gateway_fee'] = $data['ledger']['gateway_fee'];
+        $record['merchant_id'] = $entities['merchant']->getKey();
+        $record['entity_id'] = $entities['transaction']->getKey();
+        $record['entity_type'] = 'transaction';
+
+        $this->updateCardNetworkAndCountry($card, $data['card']);
+
+        list($fee, $pricingRuleId) = $this->calculateMerchantFees();
+
+        $ledger['fee'] = $fee;
+        $ledger['credit'] = $ledger['amount'] - $fee;
+        $ledger['pricing_rule_id'] = $pricingRuleId;
+
+        $apiFee = $fee - $record['gateway_fee'];
+
+        $this->updateBalances($ledger);
+
+        (new Ledger\Repository)->save($ledger);
+    }
+
+    protected function updateBalances($ledger)
+    {
+        $merchantRepo = new Merchant\Repository();
+
+        $nodalBalance = $merchantRepo->getEscrowBalanceLockForUpdate();
+        $merchantBalance = $merchantRepo->getBalanceLockForUpdate($merchant->getKey());
+
+        $merchantBalance->addAmount($ledger['credit']);
+        $merchantRepo->save($merchantBalance);
+
+        $apiFee = $ledger['fee'] - $ledger['gateway_fee'];
+        $nodalBalance->addAmount($apiFee);
+        $merchantRepo->save($nodalBalance);
+
+        $ledger['api_fee'] = $apiFee;
+        $ledger['balance'] = $merchantBalance->getBalance();
+        $ledger['escrow_balance'] = $nodalBalance->getBalance();
+    }
+
+    protected function updateCardNetworkAndCountry($card, $data)
+    {
+        $card->setCountry($data['country']);
+        $card->setNetwork($data['network']);
+
+        (new Card\Repository)->saveOrFail($card);
     }
 }
+
