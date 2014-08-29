@@ -145,8 +145,7 @@ class Gateway extends BaseGateway
         'data' => array());
 
     /**
-     * The assoc array is used to construct auth
-     * request for not enrolled card cases
+     * Response received after sending authNotEnrolledRequest
      * @var array
      */
     protected $authNotEnrolledResponse = array(
@@ -389,19 +388,12 @@ class Gateway extends BaseGateway
 
     public function postRequest($request)
     {
-        $options['verify'] = false;
-
-        $options['timeout'] = $this->getTimeout();
-
+        $request['options'] = $this->getRequestOptions();
         $response = null;
 
         try
         {
-            $response = Requests::post(
-                            $request['url'],
-                            $request['header'],
-                            $request['xml'],
-                            $options);
+            $response = $this->sendGatewayRequest($request);
         }
         catch(\Requests_Exception $e)
         {
@@ -421,6 +413,23 @@ class Gateway extends BaseGateway
         }
 
         return $response;
+    }
+
+    public function sendGatewayRequest($request)
+    {
+        return Requests::post(
+                    $request['url'],
+                    $request['header'],
+                    $request['xml'],
+                    $options);
+    }
+
+    protected function getRequestOptions()
+    {
+        $options['verify'] = false;
+        $options['timeout'] = $this->getTimeout();
+
+        return $options;
     }
 
     protected function getTimeout()
