@@ -35,6 +35,7 @@ final class Route
         'pricing_get_plan'          => ['get',  'pricing/{id}',                 'PricingController@getPricingPlan'],
         'pricing_get_plan_rule'     => ['get',  'pricing/{planId}/rule/{ruleId}', 'PricingController@getPricingPlanRule'],
         'pricing_add_plan_rule'     => ['post', 'pricing/{id}/rule',            'PricingController@postAddPricingPlanRule'],
+        'hdfc_mpr'                  => ['post', 'gateway/hdfc/mpr',             'SettlementController@postHdfcMpr'],
         );
 
     public static $public = array(
@@ -68,6 +69,7 @@ final class Route
         'pricing_add_plan_rule',
         'pricing_get_plan',
         'pricing_get_plan_rule',
+        'hdfc_mpr',
         );
 
     protected static $router;
