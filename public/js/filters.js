@@ -10,6 +10,7 @@ angular.module('app.filters', [])
 	})
 	.filter('titlecase', function () {
 		return function (input) {
+			if(!input) return input;
 			var words = input.split(' ');
 			for (var i = 0; i < words.length; i++) {
 			  words[i] = words[i].toLowerCase(); // lowercase everything

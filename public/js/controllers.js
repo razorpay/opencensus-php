@@ -149,42 +149,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       $scope.status.isopen = !$scope.status.isopen;
     };
   }])
-  .controller('ModalDemoCtrl', ['$scope', '$modal', '$log', function($scope, $modal, $log) {
-    $scope.items = ['item1', 'item2', 'item3'];
-    var ModalInstanceCtrl = function ($scope, $modalInstance, items) {
-      $scope.items = items;
-      $scope.selected = {
-        item: $scope.items[0]
-      };
-
-      $scope.ok = function () {
-        $modalInstance.close($scope.selected.item);
-      };
-
-      $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
-      };
-    };
-
-    $scope.open = function (size) {
-      var modalInstance = $modal.open({
-        templateUrl: 'myModalContent.html',
-        controller: ModalInstanceCtrl,
-        size: size,
-        resolve: {
-          items: function () {
-            return $scope.items;
-          }
-        }
-      });
-
-      modalInstance.result.then(function (selectedItem) {
-        $scope.selected = selectedItem;
-      }, function () {
-        $log.info('Modal dismissed at: ' + new Date());
-      });
-    };
-  }])
   .controller('PaginationDemoCtrl', ['$scope', '$log', function($scope, $log) {
     $scope.totalItems = 64;
     $scope.currentPage = 4;
@@ -607,7 +571,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
               }
             })
             .error(function() {
-              $scope.resetAlerts();
+              alertsFactory.resetAlerts();
               alertsFactory.addAlert('danger');
             });
   }])
@@ -943,7 +907,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         else
           var request = $http.get("/" + modeFactory.getMode() +  "/transactions/" + $scope.transactions.id);
         
-        request.success(function(data){
+        request
+        .success(function(data){
           alertsFactory.resetAlerts();
 
           if(data.success) {
@@ -972,5 +937,156 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           alertsFactory.addAlert('danger');
         });
       }
+  }])
+  .controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
+    function($scope, $http, $stateParams, modeFactory, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost) {
+      //Intialise alerts and scope functions
+      $scope.alerts = alertsFactory.initialise();
+
+      $scope.transaction = {
+        id: $stateParams.id
+      };
+
+      fetchTransaction();
+
+      $scope.getStatusClass = function(status) {
+        var mapper = {
+          open: "bg-light",
+          authorized: "bg-info",
+          captured: "bg-success",
+          refunded: "bg-warning",
+          failed: "bg-danger"
+        }
+        return mapper[status];
+      }
+
+      $scope.capture = function(amount) {
+        alertsFactory.resetAlerts();
+        
+        var captureAmount = parseInt(amount);
+
+        if(!captureAmount){
+          alertsFactory.addAlert('danger', 'Invalid capture amount');
+          return;
+        }
+
+        alertsFactory.addAlert('Processing... ');
+
+        var data = {
+          _token: CSRF_TOKEN,
+          amount: captureAmount
+        }
+
+        var request = $http({
+                      method: "post",
+                      url: "/" + modeFactory.getMode() + "/transactions/"  + $scope.transaction.id + "/capture",
+                      transformRequest: transformRequestAsFormPost,
+                      data: data
+                  });
+
+        request.success(function(data){
+          alertsFactory.resetAlerts();
+          if(data.success){
+            alertsFactory.addAlert('success', "Transaction Captured");
+            $scope.transaction.status = "captured";
+            $scope.transaction.amount = captureAmount;
+          }
+          else {
+            alertsFactory.addAlert('danger');
+          }
+        })
+        .error(function(){
+          alertsFactory.resetAlerts();
+          alertsFactory.addAlert('danger');
+        })
+      };
+
+      $scope.refund = function() {
+        alertsFactory.resetAlerts();
+        alertsFactory.addAlert('Processing... ');
+        var data = {
+          _token: CSRF_TOKEN
+        }
+
+        var request = $http({
+                      method: "post",
+                      url: "/" + modeFactory.getMode() + "/transactions/"  + $scope.transaction.id + "/refund",
+                      transformRequest: transformRequestAsFormPost,
+                      data: data
+                  });
+
+        request.success(function(data){
+          alertsFactory.resetAlerts();
+          if(data.success) {
+            alertsFactory.addAlert('success', "Transaction Refunded");
+            $scope.transaction.status = "refunded";
+          }
+          else {
+            alertsFactory.addAlert('danger');
+          }
+        })
+        .error(function(){
+          alertsFactory.resetAlerts();
+          alertsFactory.addAlert('danger');
+        })
+      };
+
+      function fetchTransaction() {
+        alertsFactory.addAlert('info', 'Processing...');
+    
+        var request = $http.get("/" + modeFactory.getMode() +  "/transactions/" + $scope.transaction.id);
+
+        request
+        .success(function(data) {
+          alertsFactory.resetAlerts();
+
+          if(data.success) {
+            $scope.transaction = data.data[0];
+          }
+          else {
+            angular.forEach(data.errors, function(error, key) {
+              alertsFactory.addAlert('danger', error);
+            });      
+          }
+        })
+        .error(function() {
+          alertsFactory.resetAlerts();
+          alertsFactory.addAlert('danger');
+        }); 
+      };
+  }])
+  .controller('CaptureModalCtrl', ['$scope', '$modal', '$log', function($scope, $modal, $log) {
+    $scope.items = ['item1', 'item2', 'item3'];
+    var ModalInstanceCtrl = function ($scope, $modalInstance, amount) {
+      $scope.amount = amount;
+      $scope.ok = function (amount) {
+        $modalInstance.close(amount);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+    };
+
+    $scope.open = function (size) {
+      var modalInstance = $modal.open({
+        templateUrl: 'captureModalContent.html',
+        controller: ModalInstanceCtrl,
+        size: size,
+        resolve: {
+          amount: function () {
+            return $scope.transaction.amount;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function (amount) {
+          $scope.capture(amount);
+        },
+        function () {
+          ;
+        });
+    };
   }])
   ;
