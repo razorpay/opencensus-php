@@ -10,7 +10,7 @@ class Transaction extends Manager
      * Mappings of fields from Transactions in API to Dashboard
      */
     protected static $api_dashboard_mappings = array(
-        'id'            => 'transaction_id',
+        'id'            => 'id',
         'amount'        => 'amount',
         'status'        => 'status',
         'created_at'    => 'created_at',
@@ -23,7 +23,7 @@ class Transaction extends Manager
         'to'            => 'numeric',
         'count'         => 'numeric|max:100',
         'skip'          => 'numeric',
-        'status'        => 'in:failed,captured,capture_failed,auth,open,refunded,settlement_sent,settled'
+        'status'        => 'in:open,authorized,captured,refunded,failed'
     );
 
     protected static $processRules = array(
@@ -98,6 +98,6 @@ class Transaction extends Manager
                 $dataObj[$value] = $obj[$key];
             $data[] = $dataObj;
         }
-        return $data;
+        return array('data' => $data, 'count' => $response['count']);
     }
 }

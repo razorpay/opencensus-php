@@ -26,13 +26,15 @@ class Transaction extends Service
             $response = $this->api->transaction->all($options);
 
             $data = Manager\Transaction::mapKeys($response);
+
+            $response = array('success' => true) + $data;
         }
         else
         {
-            $data = $error;
+            $response = array('success' => false, 'errors' => $error);
         }
 
-        return $data;
+        return $response;
     }
 
     public function fetchTxnFromApi($id, $mode)
@@ -46,12 +48,16 @@ class Transaction extends Service
 
             $id = $options['id'];
             $data = $this->api->transaction->fetch($id)->toArray();
+
+            $response = array('count' => 1, 'data' => array($data));
+
+            
         }
         else
         {
-            $data = $error;
+            $response = array('success' => false, 'errors' => $error);
         }
-        return $data;
+        return $response;
     }
 
     public function captureTxn($id, $amount, $mode)
