@@ -68,11 +68,28 @@ var app = angular.module('app', [
             })
             .state('app.transactions', {
                 url: '/transactions',
-                templateUrl: 'tpl/app_dashboard.html'
+                templateUrl: 'tpl/table_static.html',
+                // use resolve to load other dependences
+                resolve: {
+                    deps: ['uiLoad',
+                      function( uiLoad ){
+                        return uiLoad.load( ['js/libs/moment.min.js']);
+                    }]
+                }
             })
             .state('app.refunds', {
-                url: '/refunds',
-                templateUrl: 'tpl/app_dashboard.html'
+                url: '/transactions/refunded',
+                templateUrl: 'tpl/table_static.html',
+                // use resolve to load other dependences
+                resolve: {
+                    deps: ['uiLoad',
+                      function( uiLoad ){
+                        return uiLoad.load( ['js/libs/moment.min.js']);
+                    }]
+                },
+                data: {
+                  status: 'refunded'
+                }
             })
             .state('app.settlements', {
                 url: '/settlements',
