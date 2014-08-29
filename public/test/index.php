@@ -1,8 +1,5 @@
 <?php
 
-// Look for app/bootstrap/environment.php
-// $envFile = __DIR__ . '/../../bootstrap/environment.php';
-
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 
 $key_id = 'rzp_test_d9c6bf091a1a64cb5678d8c1';

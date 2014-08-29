@@ -128,7 +128,6 @@ class UniqueIdEntity extends Entity
         $hextime = dechex($nanotime[0]);
 
         $id = $hextime . bin2hex(openssl_random_pseudo_bytes(($len - 16)/2));
-        //$id = bin2hex(openssl_random_pseudo_bytes(($len)/2));
 
         return $id;
     }
