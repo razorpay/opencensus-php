@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const UDF               = 'udf';
     const CARD_ID           = 'card_id';
     const LEDGER_ID         = 'ledger_id';
+    const CAPTURED_AT       = 'captured_at';
 
     const CURRENCY_LENGTH   = 3;
 
@@ -58,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::UDF,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::CAPTURED_AT,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -73,8 +75,7 @@ class Entity extends Base\PublicEntity
         self::UDF,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
-        self::CREATED_AT,
-        self::UPDATED_AT);
+        self::CREATED_AT);
 
     protected $guarded = array(self::ID);
 
@@ -160,6 +161,11 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ERROR_CODE, $code);
         $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
+    }
+
+    public function setCaptureTimestamp()
+    {
+        $this->setAttribute(self::CAPTURED_AT, time('now'));
     }
 
 // ----------------------- Setters Ends-----------------------------------------

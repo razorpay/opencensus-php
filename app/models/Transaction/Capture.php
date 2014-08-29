@@ -69,6 +69,8 @@ class Capture extends Action
     {
         $this->txn->setStatus(Transaction\Status::CAPTURED);
 
+        $this->txn->setCaptureTimestamp();
+
         $this->trace(TraceCode::TRANSACTION_CAPTURE_SUCCESS);
     }
 }

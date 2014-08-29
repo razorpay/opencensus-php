@@ -68,6 +68,9 @@ class CreateTransactions  extends Migration
                   ->unique()
                   ->nullable();
 
+            $table->integer(Transaction::CAPTURED_AT)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Transaction::CREATED_AT);
             $table->integer(Transaction::UPDATED_AT);
