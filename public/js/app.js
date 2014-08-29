@@ -66,9 +66,9 @@ var app = angular.module('app', [
                 url: '/dashboard',
                 templateUrl: 'tpl/app_dashboard.html'
             })
-            .state('app.transactions', {
+             .state('app.transactions', {
                 url: '/transactions',
-                templateUrl: 'tpl/app_transactions.html',
+                template: '<div ui-view class="fade-in-down"></div>',
                 // use resolve to load other dependences
                 resolve: {
                     deps: ['uiLoad',
@@ -77,19 +77,21 @@ var app = angular.module('app', [
                     }]
                 }
             })
-            .state('app.refunds', {
-                url: '/transactions/refunded',
+            .state('app.transactions.list', {
+                url: '/list',
                 templateUrl: 'tpl/app_transactions.html',
                 // use resolve to load other dependences
-                resolve: {
-                    deps: ['uiLoad',
-                      function( uiLoad ){
-                        return uiLoad.load( ['js/libs/moment.min.js']);
-                    }]
-                },
+            })
+            .state('app.transactions.refunds', {
+                url: '/refunded',
+                templateUrl: 'tpl/app_transactions.html',
                 data: {
                   status: 'refunded'
                 }
+            })
+            .state('app.transactions.detail', {
+                url: '/:id',
+                templateUrl: 'tpl/app_transaction_detail.html'
             })
             .state('app.settlements', {
                 url: '/settlements',
