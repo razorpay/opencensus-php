@@ -68,7 +68,7 @@ var app = angular.module('app', [
             })
             .state('app.transactions', {
                 url: '/transactions',
-                templateUrl: 'tpl/table_static.html',
+                templateUrl: 'tpl/app_transactions.html',
                 // use resolve to load other dependences
                 resolve: {
                     deps: ['uiLoad',
@@ -79,7 +79,7 @@ var app = angular.module('app', [
             })
             .state('app.refunds', {
                 url: '/transactions/refunded',
-                templateUrl: 'tpl/table_static.html',
+                templateUrl: 'tpl/app_transactions.html',
                 // use resolve to load other dependences
                 resolve: {
                     deps: ['uiLoad',
