@@ -91,6 +91,6 @@ Route::filter('csrf', function()
 {
 	if (Session::token() != Input::get('_token'))
 	{
-		throw new Illuminate\Session\TokenMismatchException;
+		return array('success'=>false, 'errors'=>array('Server error occured. Please refresh the page and try again.'));
 	}
 });
