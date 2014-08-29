@@ -7,7 +7,8 @@
         "laravel/framework": "4.2.*",
         "doctrine/dbal": "~2.3",
         "razorpay/razorpay-php":"dev-master",
-        "razorpay/spine":"dev-master"
+        "razorpay/spine":"dev-master",
+        "maatwebsite/excel": "dev-master"
     },
     "repositories": [
         {
