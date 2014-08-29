@@ -3,9 +3,8 @@
 namespace Models\Settlement;
 
 use Models\Base;
-use Models\Merchant;
-use Models\Pricing;
-use Models\Terminal;
+use Models\Gateway;
+use Models\Ledger;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -36,7 +35,7 @@ class Service extends Base\Service
     {
         $lgrCore = new Ledger\Core;
 
-        $transactionId = Gateway::call('getTransactionId', $input);
+        $transactionId = Gateway::call('getTransactionId', $input, 'test');
 
         $lgrCore->loadEntities($transactionId);
 
@@ -44,7 +43,7 @@ class Service extends Base\Service
 
         $entitiesArray = $core->entittiesToArray();
 
-        $data = Gateway::call('reconcile', $input, $entitiesArray);
+        $data = Gateway::call('reconcile', $entitiesArray, 'test');
 
         $lgrCore->reconcileRecord($data);
     }
