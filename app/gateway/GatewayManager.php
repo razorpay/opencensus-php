@@ -27,6 +27,11 @@ class GatewayManager extends \Illuminate\Support\Manager
         return new Mock\Gateway();
     }
 
+    public function createMockHdfcDriver()
+    {
+        return new MockHdfc\Gateway();
+    }
+
     public function getDefaultDriver()
     {
         return $this->defaultDriver;
