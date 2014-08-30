@@ -46,7 +46,7 @@
           <tr ng-repeat="row in transactions.data">
             <td><a ui-sref="app.transactions.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.currency}}
-            <td>{{row.amount/100 | currency}}</td>
+            <td>{{row.amount/100 | currency:""}}</td>
             <td>{{row.created_at*1000 | fromNow}}</td>
             <td>{{row.updated_at*1000 | fromNow}}</td>
             <td><span class="label" title="{{row.status}}" ng-class="getStatusClass(row.status)">{{row.status | titlecase}}</span></td>          
