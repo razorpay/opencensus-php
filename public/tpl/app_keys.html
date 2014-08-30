@@ -1,0 +1,109 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">API Keys</h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="KeysCtrl">
+    <div class="panel-heading">
+      {{mode | titlecase}} keys
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped b-t b-light">
+        <thead>
+          <tr>
+            <th>Key Id</th>
+            <th>Created At</th>
+            <th>Expiry</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="key in keys.data">
+            <td>{{key.id}}</td>
+            <td>{{key.created_at*1000 | fromNow}} ({{key.created_at*1000 | date:'medium'}})</td>
+            <td>
+              <span ng-show="key.expired_at">{{key.expired_at*1000 | fromNow}} ({{key.expired_at*1000 | date:'medium'}})</span>
+              <span ng-hide="key.expired_at">Never</span>
+            </td>
+            <td>
+              <span ng-show="key.expired_at">None</span>
+              <span ng-hide="key.expired_at"><a href tooltip="Roll Key" ng-click="openRollKey(lg, key.id)"><i class="glyphicon glyphicon-refresh"></i></span>
+            </td>
+          </tr>
+          <tr ng-show="keys.count === 0">
+            <td colspan="4" class="text-center">
+              <a href ng-click="generateKey()">Generate new {{mode | titlecase}} key</a>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+    <footer class="panel-footer">
+      <div class="text-center m-t m-b">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 hidden-xs">
+        </div>
+        <div class="col-sm-4 text-center">
+          <small class="text-muted inline m-t-sm m-b-sm">Showing 1-{{keys.count}}</small>
+        </div>
+        <div class="col-sm-4 text-right text-center-xs">
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+<script type="text/ng-template" id="rollKeyModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Roll Key</h3>
+  </div>
+  <div class="modal-body">
+      <form>
+        <div class="radio">
+          <label class="i-checks">
+            <input type="radio" name="delay_roll" ng-model="delay_roll" value=0>
+            <i></i>
+            De-activate Old Key Immediately
+          </label>
+        </div>
+        <div class="radio">
+          <label class="i-checks">
+            <input type="radio" name="delay_roll" ng-model="delay_roll" value=1 checked>
+            <i></i>
+            De-activate old key in 24 hours
+          </label>
+        </div>
+      </form>
+  </div>
+  <div class="modal-footer">                  
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary" ng-click="ok(delay_roll)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="newKeyModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">New Key</h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Key Id</label>
+        <div class="col-lg-10">
+          <input type="text" onclick="this.focus();this.select()" class="form-control" readonly="readonly" value="{{key.id}}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Key Secret</label>
+        <div class="col-lg-10">
+          <input type="text" onclick="this.focus();this.select()" class="form-control" readonly="readonly" value="{{key.secret}}">
+          <a href="/keys/csv?id={{key.id}}&secret={{key.secret}}">Download Key Details</a>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+
+      <button class="btn btn-primary" ng-confirm-click="Are you sure you have saved the key details? This is the last time we will show you the key secret." ng-click="ok()">OK</button>
+  </div>
+</script>
