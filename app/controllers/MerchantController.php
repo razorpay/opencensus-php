@@ -118,16 +118,14 @@ class MerchantController extends BaseController
     {
         $keys = (new Service\Merchant)->fetchKeysFromApi(\Auth::merchant()->id(), $mode);
 
-        return $keys;
+        return array('success' => true) + $keys;
     }
 
-    public function getNewKey($mode)
+    public function postNewKey($mode)
     {
         $key = (new Service\Merchant)->createKey(\Auth::merchant()->id(), $mode);
 
-        return View::make('merchant.getKeys')
-                        ->with('key', $key)
-                        ->with('mode', $mode);
+        return array('success' => true, 'data' => $key);
     }
 
     public function postKeys($mode)

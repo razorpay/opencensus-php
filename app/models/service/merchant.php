@@ -115,7 +115,7 @@ class Merchant extends Service
         $request = (new Request)->setCredentials($mode);
 
         $response = $request->process('POST', 'merchants/'.$merchant_id.'/keys');
-
+        
         if(isset($response['error']))
         {
             throw new \Exception('API responded with error');
@@ -149,11 +149,11 @@ class Merchant extends Service
                 'merchant_id' => $input['merchant_id'],
                 'key_id' => $response['new']['id'],
                 'secret' => $response['new']['secret'],
-                'status' => true);
+                'success' => true);
 
             return $key_data;
         }
         else
-            return ['status' => false];
+            return ['success' => false];
     }
 }

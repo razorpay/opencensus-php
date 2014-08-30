@@ -34,8 +34,6 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
 
-    Route::get('/{mode}/key/new', 'MerchantController@getNewKey');
-
     Route::get('/activation', 'MerchantController@getActivation');
 
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
@@ -45,6 +43,8 @@ Route::group(array('before' => 'auth'), function()
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/{mode}/keys', 'MerchantController@postKeys');
+
+        Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
 
         Route::post('/{mode}/transactions/{id}/capture', 'TransactionController@postCaptureTransaction');
 
