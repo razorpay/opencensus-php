@@ -104,6 +104,8 @@ trait AuthTransactionTrait
             $this->authNotEnrolledRequest,
             $this->authNotEnrolledResponse);
 
+        $this->validateAuthNotEnrolledResponse();
+
         $this->traceAuthNotEnrolledResponse();
 
         $this->persistAfterAuthNotEnrolled();
@@ -122,9 +124,9 @@ trait AuthTransactionTrait
         //
         $data = $this->enrollRequest['data'];
 
-        $data['zip'] = "";
+        $data['zip'] = '';
 
-        $data['addr'] = "";
+        $data['addr'] = '';
 
         $this->authNotEnrolledRequest['data'] = $data;
 
@@ -212,6 +214,13 @@ trait AuthTransactionTrait
         $this->authEnrolledRequest['data']['paymentid'] = $input['MD'];
 
         $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
+    }
+
+    protected function validateAuthNotEnrolledResponse()
+    {
+        $data = $this->authNotEnrolledResponse['data'];
+
+        ;
     }
 
 }

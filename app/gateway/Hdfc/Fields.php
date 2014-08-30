@@ -222,6 +222,27 @@ class Fields
     const TRANID = 'tranid';
 
     /**
+     * Field Name -                     ref
+     *
+     * Field Description
+     * The resulting reference number of the transaction.
+     * This number or series of letters is used for referential
+     * purposes by some acquiring/issuing bank/institutions
+     * and should be stored properly
+     *
+     * Mandatory [M] /Optional [O] -    O
+     * Field Type -                     Alphanumeric
+     * Min / Max Length/ Fixed Value -  Max – 12
+     * Input / Output / Both -          Output
+     *
+     * Sample -                         852147963321
+     *
+     * Note: It can be less than 12 in size. The first 4 digits seem to be same.
+     */
+    const REF = 'ref';
+
+    /**
+     * Field Name -                     MD
      *
      * Field Description
      * MD field is Payment Id of Payment Gateway. For
@@ -241,6 +262,26 @@ class Fields
     const MD = 'MD';
 
     const POSTDATE = 'postdate';
+
+    /**
+     * Field Name -                     auth
+     *
+     * Field Description
+     * The resulting authorization number of the transaction
+     * from the issuing bank. This number or series of
+     * letters is used for referential purposes by some
+     * acquiring/issuing bank/institutions and should be
+     * stored properly
+     * Mandatory [M] /Optional [O] -    O
+     * Field Type -                     Alphanumeric
+     * Min / Max Length/ Fixed Value -  Max - 6
+     * Input / Output / Both -          Output
+     *
+     * Sample -                         A58967
+     *
+     * Note: In test hdfc gateway, the value mostly observed
+     *       is 999999
+     */
     const AUTH = 'auth';
 
     const EXPIRY_YEAR = 'expyear';
@@ -257,4 +298,6 @@ class Fields
      * Sample                           03
      */
     const EXPIRY_MONTH = 'expmonth';
+
+    const PAYID = 'payid';
 }

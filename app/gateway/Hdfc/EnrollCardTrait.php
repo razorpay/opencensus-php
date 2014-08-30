@@ -194,7 +194,7 @@ trait EnrollCardTrait
         if ($trackid !== $this->id)
         {
             throw new Exception\LogicException(
-                'Gateway Exception: Track id do not match');
+                'Gateway Exception: Track id do not match: ' . $trackid . ' ' . $this->id);
         }
     }
 
@@ -287,7 +287,7 @@ trait EnrollCardTrait
             if ($eci === '6')
                 return;
 
-            throw new Exception\LogicException('eci value should be 6');
+            throw new Exception\LogicException('eci value should be 6. Eci: ' . $eci);
         }
 
         $masterCardOrMaestro = (($network === Card\Network::MC) or
@@ -301,7 +301,7 @@ trait EnrollCardTrait
             if ($eci === '1')
                 return;
 
-            throw new Exception\LogicException('eci value should be 1');
+            throw new Exception\LogicException('eci value should be 1. Eci: ' . $eci);
         }
     }
 
