@@ -13,5 +13,6 @@ return array(
 
     'available' => array(
         'mock',
+        'mockhdfc',
         'hdfc'),
 );
