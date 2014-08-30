@@ -15,7 +15,7 @@ Models\Merchant\Balance:
     id: $string
 
 Models\Card\Entity:
-    id: $string
+    id: $string$string$string
     name: $string
     network: MC
     expiry_month: 01
