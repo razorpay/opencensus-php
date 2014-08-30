@@ -116,6 +116,8 @@ class Gateway extends BaseGateway
     protected $enrollRequest = array(
         'url' => Hdfc\Urls::TEST_ENROLL_URL,
         'type' => 'enroll',
+        'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
+                          'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'xml' => '',
         'header' => array('Content-Type'=>'text/xml'),
         'data' => array());
@@ -140,6 +142,8 @@ class Gateway extends BaseGateway
     protected $authNotEnrolledRequest = array(
         'url' => Hdfc\Urls::TEST_AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_not_enrolled',
+        'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2', 'action',
+                          'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
@@ -164,6 +168,7 @@ class Gateway extends BaseGateway
     protected $authEnrolledRequest = array(
         'url' => Hdfc\Urls::TEST_AUTH_ENROLLED_URL,
         'type' => 'auth_enrolled',
+        'fields' => array('paymentid', 'MD'),
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
@@ -183,8 +188,9 @@ class Gateway extends BaseGateway
      */
     protected $supportTxnRequest = array(
         'url' => Hdfc\Urls::TEST_SUPPORT_TXN_URL,
-        'header' => array('Content-Type:text/xml'),
         'type' => '',
+        'fields' => array('action', 'amt', 'member', 'transid', 'trackid'),
+        'header' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
 
@@ -411,17 +417,17 @@ class Gateway extends BaseGateway
                 throw $e;
             }
         }
-
+s($response->body);
         return $response;
     }
 
-    public function sendGatewayRequest($request)
+    protected function sendGatewayRequest($request)
     {
         return Requests::post(
                     $request['url'],
                     $request['header'],
                     $request['xml'],
-                    $options);
+                    $request['options']);
     }
 
     protected function getRequestOptions()
