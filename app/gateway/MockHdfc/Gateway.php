@@ -95,14 +95,12 @@ class Gateway extends Hdfc\Gateway
     {
         $this->processInput('authNotEnrolled');
 
-        $postdate = (new Carbon('now', 'Asia/Kolkata'))->format('md');
-
         $res = array(
             'result'    => 'APPROVED',
             'auth'      => '999999',
             'ref'       => random_integer(12),
             'avr'       => 'N',
-            'postdate'  => $postdate,
+            'postdate'  => $this->getPostDateForToday(),
             'tranid'    => random_integer(15),
             'trackid'   => $this->data['trackid'],
             'payid'     => -1,
@@ -119,14 +117,12 @@ class Gateway extends Hdfc\Gateway
     {
         $this->processInput('supportTxn');
 
-        $postdate = (new Carbon('now', 'Asia/Kolkata'))->format('md');
-
         $res = array(
             'result'    => 'CAPTURED',
             'auth'      => '999999',
             'ref'       => random_integer(12),
             'avr'       => 'N',
-            'postdate'  => $postdate,
+            'postdate'  => $this->getPostDateForToday(),
             'tranid'    => random_integer(15),
             'trackid'   => $this->data['trackid'],
             'payid'     => -1,
@@ -142,7 +138,25 @@ class Gateway extends Hdfc\Gateway
 
     protected function refundTransactionOnGateway()
     {
-        ;
+        $this->processInput('supportTxn');
+
+        $res = array(
+            'result'    => 'CAPTURED',
+            'auth'      => '999999',
+            'ref'       => random_integer(12),
+            'avr'       => 'N',
+            'postdate'  => $this->getPostDateForToday(),
+            'tranid'    => random_integer(15),
+            'trackid'   => $this->data['trackid'],
+            'payid'     => -1,
+            'amt'       => $this->data['amt']);
+
+        $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
+        $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $xml;
     }
 
     protected function sendGatewayRequest($request)
@@ -215,5 +229,10 @@ class Gateway extends Hdfc\Gateway
         {
             $res['udf'.$i] = $this->data['udf'.$i];
         }
+    }
+
+    protected function getPostDateForToday()
+    {
+        return (new Carbon('now', 'Asia/Kolkata'))->format('md');
     }
 }

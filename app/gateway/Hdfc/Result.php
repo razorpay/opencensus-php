@@ -14,8 +14,6 @@ final class Result
 
     const NOT_ENROLLED = 2;
 
-    const FAIL_ENROLLED = 0;
-
     /**
      * This is special case as in,
      * the authentication is not available
@@ -49,20 +47,20 @@ final class Result
      | Mentioned below are the Response Result parameter values that could be
      | received from the Payment Gateway in the result parameter to the merchant in the
      | transaction response message.
-     | • CAPTURED - Transaction was successful (For Action Code “1”, “2” , “5”)
-     | • APPROVED - Transaction was successful (For Action Code “4”)
-     | • NOT CAPTURED - Transaction was failed (For Action Code “1”, “2” , “5”)
-     | • NOT APPROVED - Transaction was failed (For Action Code “4”)
+     | • CAPTURED - Transaction was successful (For Action Code “1”, “2” , “5”) i.e. PURCHASE, REFUND and CAPTURE
+     | • APPROVED - Transaction was successful (For Action Code “4”) i.e. AUTHORIZE
+     | • NOT CAPTURED - Transaction was failed (For Action Code “1”, “2” , “5”) i.e. PURCHASE, REFUND and CAPTURE
+     | • NOT APPROVED - Transaction was failed (For Action Code “4”) i.e. AUTHORIZE
      | • DENIED BY RISK - Risk denied the transaction processing
      | • HOST TIMEOUT - The authorization system did not respond within the Time out
      | limit
-     | • SUCCESS – The transaction is successful (For Action Code “8” if original requested
+     | • SUCCESS – The transaction is successful (For Action Code “8” i.e. "INQUIRY" if original requested
      | transaction is successful at Payment Gateway)
      | Payment Gateway Services
-     | • FAILURE(NOT CAPTURED) – The transaction is failed (For Action Code “8”, if
+     | • FAILURE(NOT CAPTURED) – The transaction is failed (For Action Code “8” i.e. "INQUIRY", if
      | the original transaction is failed at Payment Gateway)
      | • FAILURE(SUSPECT) – The transaction data is not matching, and hence failed. (For
-     | action code “8, if the input requested in request is not matching with data available in
+     | action code “8" i.e. INQUIRY, if the input requested in request is not matching with data available in
      | Payment Gateway, then this result is thrown by Payment Gateway for inquiry
      | transaction)
      */

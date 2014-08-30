@@ -238,6 +238,7 @@ return [
             'gateway_error_code'  => Hdfc\ErrorCode::GV00004,
         ],
     ],
+
     'debitCardAuthNotAvailable1' => [
         'request' => [
             'content' => [

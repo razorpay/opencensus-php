@@ -424,6 +424,7 @@ class Gateway extends BaseGateway
 
     protected function sendGatewayRequest($request)
     {
+//        s($request['xml']);
         return Requests::post(
                     $request['url'],
                     $request['header'],

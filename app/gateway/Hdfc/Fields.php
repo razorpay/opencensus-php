@@ -261,6 +261,25 @@ class Fields
      */
     const MD = 'MD';
 
+    /*
+     * Field Name -                     postdate
+     *
+     * Field Description
+     * Transaction Date in the format of the authorization
+     * system, Post Date is business logic date of
+     * respective issuing bank and may not be same as the
+     * actual transaction date
+     *
+     * Mandatory [M] /Optional [O] -    O
+     * Field Type -                     Alphanumeric
+     * Min / Max Length/ Fixed Value -  Max – 6
+     * Input / Output / Both -          Output
+     *
+     * Sample -                         1102
+     *
+     * Note: Postdate that we get back from hdfc gateway as yet is not understood
+     *       It's giving next day date on 5 pm on current day.
+     */
     const POSTDATE = 'postdate';
 
     /**

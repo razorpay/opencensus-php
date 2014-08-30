@@ -60,12 +60,21 @@ class Repository extends Base\Repository
 
     public function persistAfterEnroll($request, $response)
     {
+        if ($response['enroll_result'] === Hdfc\Result::ENROLLED)
+        {
+            $status = Hdfc\Status::ENROLLED;
+        }
+        else if ($response['enroll_result'] === Hdfc\Result::NOT_ENROLLED)
+        {
+            $status = Hdfc\Status::NOT_ENROLLED;
+        }
+
         $attributes = array(
             'trackid' => $request['trackid'],
-            'transactionid' => $response['paymentid'],
+            'gateway_transaction_id' => $response['paymentid'],
             'action' => $request['action'],
             'enroll_result' => $response['enroll_result'],
-            'status' => Hdfc\Status::ENROLLED,
+            'status' => $status,
             'eci' => $response['eci']);
 
         $repo = $this->repo;
@@ -80,7 +89,7 @@ class Repository extends Base\Repository
             'error_code' => $error['code'],
             'error_service' => $error['service'],
             'error_text' => $error['text'],
-            'enroll_result' => Hdfc\Result::FAIL_ENROLLED,
+            'enroll_result' => $error['enroll_result'],
             'status' => Hdfc\Status::ENROLL_FAILED);
 
         $repo = $this->repo;
@@ -92,11 +101,11 @@ class Repository extends Base\Repository
     {
         $attributes = array(
             'status' => Hdfc\Status::AUTHORIZED,
-            'auth_result' => $data['result'],
+            'result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
             'avr' => $data['avr'],
-            'transactionid' => $data['tranid'],
+            'gateway_transaction_id' => $data['tranid'],
             'postdate' => $data['postdate']);
 
         $model->fill($attributes);
@@ -107,12 +116,12 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolled($model, $data)
     {
         $attributes = array(
-            'status' => Hdfc\Status::AUTHORIZED,
-            'auth_result' => $data['result'],
-            'ref' => $data['ref'],
-            'auth' => $data['auth'],
-            'avr' => $data['avr'],
-            'postdate' => $data['postdate']);
+            'status'    => Hdfc\Status::AUTHORIZED,
+            'result'    => $data['result'],
+            'ref'       => $data['ref'],
+            'auth'      => $data['auth'],
+            'avr'       => $data['avr'],
+            'postdate'  => $data['postdate']);
 
         $model->fill($attributes);
 
@@ -147,20 +156,38 @@ class Repository extends Base\Repository
 
     public function persistAfterSupportTxn($requestData, $responseData)
     {
+        $status = '';
+        $action = $requestData['action'];
+
+        switch($action)
+        {
+            case Hdfc\Action::REFUND:
+                $status = Hdfc\Status::REFUNDED;
+                break;
+
+            case Hdfc\Action::CAPTURE:
+                $status = Hdfc\Status::CAPTURED;
+                break;
+
+            default:
+                throw new Exception\LogicException('Should not rech here. action: ' . $action);
+        }
+
         $attributes = array(
-            'trackid' => $responseData['trackid'],
-            'transactionid' => $responseData['tranid'],
-            'action' => $requestData['action'],
-            'status' => $responseData['result'],
-            'ref' => $responseData['ref'],
-            'auth' => $responseData['auth'],
-            'avr' => $responseData['avr'],
-            'postdate' => $responseData['postdate']);
+            'trackid'                => $responseData['trackid'],
+            'gateway_transaction_id' => $responseData['tranid'],
+            'action'                 => $requestData['action'],
+            'status'                 => $status,
+            'result'                 => $responseData['result'],
+            'ref'                    => $responseData['ref'],
+            'auth'                   => $responseData['auth'],
+            'avr'                    => $responseData['avr'],
+            'postdate'               => $responseData['postdate']);
 
         return $this->createOrFail($attributes);
     }
 
-    public function persistAfterSupportTxnError($id, $transactionid, array $error, $type)
+    public function persistAfterSupportTxnError($id, $gateway_transaction_id, array $error, $type)
     {
         $action = '';
         $status = '';
@@ -177,12 +204,12 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'trackid' => $id,
-            'transactionid' => $transactionid,
-            'error_code' => $error['code'],
-            'error_text' => $error['result'],
-            'action' => $action,
-            'status' => $status);
+            'trackid'                   => $id,
+            'gateway_transaction_id'    => $gateway_transaction_id,
+            'error_code'                => $error['code'],
+            'error_text'                => $error['result'],
+            'action'                    => $action,
+            'status'                    => $status);
 
         return $this->createOrFail($attributes);
     }

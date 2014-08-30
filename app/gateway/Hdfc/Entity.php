@@ -6,8 +6,8 @@ class Entity extends \Models\Base\Entity
 {
     protected $fields = array(
         'id',
+        'gateway_transaction_id',
         'trackid',
-        'transactionid',
         'action',
         'enroll_result',
         'status',
@@ -25,7 +25,7 @@ class Entity extends \Models\Base\Entity
 
     protected $table = 'hdfc';
 
-    protected $primaryKey = 'transactionid';
+    protected $primaryKey = 'gateway_transaction_id';
 
     public $incrementing = false;
 

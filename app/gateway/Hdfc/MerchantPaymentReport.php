@@ -33,7 +33,7 @@ class MerchantPaymentReport
         // Add primary key ledger_id
         $attributes['ledger_id'] = $ledger_id;
 
-        if ($attributes['gateway_transaction_id'] !== $hdfcTxn['transactionid'])
+        if ($attributes['gateway_transaction_id'] !== $hdfcTxn['gateway_transaction_id'])
         {
             throw new Exception\LogicException('Hdfc mpr: Gateway transaction id does not match');
         }

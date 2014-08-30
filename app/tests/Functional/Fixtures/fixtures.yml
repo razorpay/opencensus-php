@@ -57,7 +57,7 @@ Models\Pricing\Entity:
 Gateway\Hdfc\Entity:
     id: $integer
     trackid:
-    transactionid:
+    gateway_transaction_id:
     action: 4
     enroll_result: NOT_ENROLLED
     status: authorized

@@ -57,7 +57,7 @@ trait EnrollCardTrait
         // consider enroll as failed and set an error
         // message to that effect
         //
-        if ($this->isEnrollSuccess() === false)
+        if ($this->isEnrollResultSuccess() === false)
         {
             $this->setErrorOnEnrollFailure();
 
@@ -235,17 +235,6 @@ trait EnrollCardTrait
     }
 
     /**
-     * Get the fields from xml response
-     * of the enrolling card
-     */
-    protected function parseEnrollResponseEci()
-    {
-        $result = &$this->enrollResponse['data']['result'];
-
-        $this->enrollResponse['data']['enroll_result'] = Hdfc\Result::resultCode($result);
-    }
-
-    /**
      * Check eci value and set it to 7 if not defined.
      * See eci field definition for more info.
      *
@@ -316,7 +305,7 @@ trait EnrollCardTrait
      *
      * @return void
      */
-    protected function isEnrollSuccess()
+    protected function isEnrollResultSuccess()
     {
         $result = &$this->enrollResponse['data']['result'];
 
@@ -357,6 +346,7 @@ trait EnrollCardTrait
                 $this->enrollResponse['error']['code'] = $code;
 
                 $this->enrollResponse['error']['text'] = Hdfc\ErrorHandler::getErrorMessage($code);
+
                 break;
 
             case Hdfc\Result::UNKNOWN_ERROR_ENROLLED:
@@ -372,6 +362,8 @@ trait EnrollCardTrait
             default:
                 throw new Exception\LogicException('Should not reach here');
         }
+
+        $this->enrollResponse['error']['enroll_result'] = $this->enrollResponse['data']['enroll_result'];
 
         $this->trace(
             Trace::ERROR,

@@ -227,7 +227,9 @@ trait AuthTransactionTrait
 
     protected function validatePostDate($postDate)
     {
-        ; // @todo: finish this
+        // Postdate that we get back from hdfc gateway as yet is weird
+        // It's giving next day date on 5 pm on current day.
+        ;
     }
 
 }

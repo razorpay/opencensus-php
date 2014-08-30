@@ -10,11 +10,11 @@ class PublicErrorDescription
     const SERVER_ERROR =
         'The server encountered an error. The incident has been reported to admins';
 
-    const CARD_ERROR_INVALID_EXPIRY_DATE =
-        'The expiry date is not valid';
-
     const GATEWAY_ERROR_REQUEST_TIMEOUT =
         'The gateway request to submit payment information timed out. Please submit your details again';
+
+    const CARD_ERROR_INVALID_EXPIRY_DATE =
+        'The expiry date is not valid';
 
     const CARD_ERROR_INVALID_BRAND =
         'Currently the given card\'s brand is not supported by us';

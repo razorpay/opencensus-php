@@ -94,7 +94,7 @@ trait SupportTransactionTrait
 
         $data['member'] = $card['name'];
 
-        $data['transid'] = $this->model->transactionid;
+        $data['transid'] = $this->model->gateway_transaction_id;
 
         $data['trackid'] = $this->id;
     }

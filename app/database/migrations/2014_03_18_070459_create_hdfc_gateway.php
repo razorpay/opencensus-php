@@ -24,7 +24,7 @@ class CreateHdfcGateway extends Migration
 
             $table->char('trackid', UniqueIdEntity::ID_LENGTH);
 
-            $table->bigInteger('transactionid')
+            $table->bigInteger('gateway_transaction_id')
                   ->unsigned()
                   ->nullable();
 
@@ -35,7 +35,7 @@ class CreateHdfcGateway extends Migration
 
             $table->string('status', Hdfc\Constants::STATUS_LENGTH);
 
-            $table->string('auth_result', Hdfc\Constants::AUTH_RESULT_LENGTH)
+            $table->string('result', Hdfc\Constants::AUTH_RESULT_LENGTH)
                   ->nullable();
 
             $table->string('eci', Hdfc\Constants::ECI_LENGTH)
