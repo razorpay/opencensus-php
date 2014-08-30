@@ -136,7 +136,7 @@ class Gateway extends Hdfc\Gateway
         $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
 
         $xml = Hdfc\Utility::createXml($res);
-//sd($xml);
+
         return $xml;
     }
 

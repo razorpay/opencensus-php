@@ -220,7 +220,14 @@ trait AuthTransactionTrait
     {
         $data = $this->authNotEnrolledResponse['data'];
 
-        ;
+        $this->validatePostDate($data['postdate']);
+
+
+    }
+
+    protected function validatePostDate($postDate)
+    {
+        ; // @todo: finish this
     }
 
 }

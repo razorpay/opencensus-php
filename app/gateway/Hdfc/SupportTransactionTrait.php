@@ -43,6 +43,8 @@ trait SupportTransactionTrait
             $this->supportTxnRequest,
             $this->supportTxnResponse);
 
+        $this->validateSupportTxnResponse();
+
         $this->persistAfterSupportTxn('refund');
 
         if ($this->error)
@@ -97,13 +99,22 @@ trait SupportTransactionTrait
         $data['trackid'] = $this->id;
     }
 
+    protected function validateSupportTxnResponse()
+    {
+        $data = $this->supportTxnResponse['data'];
+
+        $this->validateSupportTxnTrackId();
+
+        $this->validatePostDate($data['postdate']);
+    }
+
     /**
      * Checks that trackid is in response is same as the
      * one in request sent
      *
      * @return void
      */
-    protected function validateRefundResponse()
+    protected function validateSupportTxnTrackId()
     {
         $trackid = $this->supportTxnResponse['data']['trackid'];
 

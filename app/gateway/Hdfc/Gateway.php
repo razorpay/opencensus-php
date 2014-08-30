@@ -128,7 +128,7 @@ class Gateway extends BaseGateway
      */
     protected $enrollResponse = array(
         'fields' => array(
-                    'error_text', 'eci', 'result', 'url', 'PAReq', 'paymentid', 'trackid'),
+                    'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'),
         'type' => 'enroll',
         'xml' => '',
         'data' => array(),
@@ -154,7 +154,8 @@ class Gateway extends BaseGateway
      */
     protected $authNotEnrolledResponse = array(
         'fields' =>  array(
-                        'result', 'amt', 'trackid', 'ref', 'tranid', 'auth', 'avr', 'postdate'),
+            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text'),
         'type' => 'auth_not_enrolled',
         'xml' => '',
         'data' => array(),
@@ -196,7 +197,7 @@ class Gateway extends BaseGateway
 
     protected $supportTxnResponse = array(
         'fields' => array(
-            'error_text', 'trackid', 'tranid', 'result', 'auth', 'amt', 'ref', 'postdate', 'avr'),
+            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt', 'udf2', 'udf5', 'error_text'),
         'type' => '',
         'xml' => '',
         'data' => array(),
@@ -417,7 +418,7 @@ class Gateway extends BaseGateway
                 throw $e;
             }
         }
-s($response->body);
+//s($response->body);
         return $response;
     }
 
