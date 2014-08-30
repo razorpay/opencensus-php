@@ -124,3 +124,18 @@ if (! function_exists('ddd'))
         dd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
     }
 }
+
+if (! function_exists('random_integer'))
+{
+    function random_integer($length = 1)
+    {
+        $integer = '';
+
+        for($i = 0; $i < $length; $i++)
+        {
+            $integer .= mt_rand(0, 9);
+        }
+
+        return (int) $integer;
+    }
+}
