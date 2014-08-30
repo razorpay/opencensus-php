@@ -66,7 +66,7 @@ var app = angular.module('app', [
                 url: '/dashboard',
                 templateUrl: 'tpl/app_dashboard.html'
             })
-             .state('app.transactions', {
+            .state('app.transactions', {
                 url: '/transactions',
                 template: '<div ui-view class="fade-in-down"></div>',
                 // use resolve to load other dependences
@@ -99,7 +99,13 @@ var app = angular.module('app', [
             })
             .state('app.keys', {
                 url: '/keys',
-                templateUrl: 'tpl/app_dashboard.html'
+                templateUrl: 'tpl/app_keys.html',
+                resolve: {
+                    deps: ['uiLoad',
+                      function( uiLoad ){
+                        return uiLoad.load( ['js/libs/moment.min.js']);
+                    }]
+                }
             })
             .state('app.activation', {
                 url: '/activation',
