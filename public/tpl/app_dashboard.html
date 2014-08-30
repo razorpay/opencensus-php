@@ -138,71 +138,47 @@
       <!-- / service -->
 
       <!-- tasks -->
-      <div class="panel wrapper">
+      <div class="panel wrapper" >
         <div class="row">
-          <div class="col-md-4 b-r b-light no-border-xs">
-            <a href class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
+          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="TransactionsListCtrl">
+            <a ui-sref="app.transactions.list" tooltip="See All Transactions" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Transactions</h4>
             <div class=" m-b">
-              <div class="m-b">
-                <span class="label text-base bg-warning pos-rlt m-r"><i class="arrow right arrow-warning"></i> 19:30</span>
-                <a href>Feed cat</a>
-              </div>
-              <div class="m-b">
-                <span class="label text-base bg-info pos-rlt m-r"><i class="arrow right arrow-info"></i> 12:30</span>
-                <a href>Fishing Time</a>
-              </div>
-              <div class="m-b">
-                <span class="label text-base bg-primary pos-rlt m-r"><i class="arrow right arrow-primary"></i> 10:30</span>
-                <a href>Kick-off meeting</a>
-              </div>
-              <div class="m-b">
-                <span class="label text-base bg-light pos-rlt m-r"><i class="arrow right arrow-light"></i> 07:30</span>
-                <a href>Morning running</a>
+              <div class="m-b" ng-repeat="row in transactions.data | limitTo: 5">
+                <span class="label text-base" tooltip="{{row.status}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
+                  <a ui-sref="app.transactions.detail({id:row.id})">{{row.amount | currency:row.currency + " "}}</a>
+                </span>
+                <span class="pull-right">
+                  {{row.created_at*1000 | fromNow}}
+                </span>
               </div>
             </div>
           </div>
-          <div class="col-md-4 b-r b-light no-border-xs">
-            <a href class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
-            <h4 class="font-thin m-t-none m-b-md text-muted">Recent Refunds</h4>
+          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="TransactionsListCtrl">
+            <a ui-sref="app.transactions.refunds" tooltip="See All Refunds" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
+            <h4 class="font-thin m-t-none m-b-md text-muted" ng-init="transactions.status='refunded'">Recent Refunds</h4>
             <div class=" m-b">
-              <div class="m-b">
-                <span class="label text-base bg-warning pos-rlt m-r"><i class="arrow right arrow-warning"></i> 19:30</span>
-                <a href>Feed cat</a>
-              </div>
-              <div class="m-b">
-                <span class="label text-base bg-info pos-rlt m-r"><i class="arrow right arrow-info"></i> 12:30</span>
-                <a href>Fishing Time</a>
-              </div>
-              <div class="m-b">
-                <span class="label text-base bg-primary pos-rlt m-r"><i class="arrow right arrow-primary"></i> 10:30</span>
-                <a href>Kick-off meeting</a>
-              </div>
-              <div class="m-b">
-                <span class="label text-base bg-light pos-rlt m-r"><i class="arrow right arrow-light"></i> 07:30</span>
-                <a href>Morning running</a>
+              <div class="m-b" ng-repeat="row in transactions.data | limitTo: 5">
+                <span class="label text-base" tooltip="{{row.status}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
+                  <a ui-sref="app.transactions.detail({id:row.id})">{{row.amount | currency:row.currency + " "}}</a>
+                </span>
+                <span class="pull-right">
+                  {{row.created_at*1000 | fromNow}}
+                </span>
               </div>
             </div>
           </div>
-          <div class="col-md-4 b-r b-light no-border-xs">
-            <a href class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
+          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="TransactionsListCtrl">
+            <a ui-sref="app.settlements" tooltip="See All Settlements" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Settlements</h4>
             <div class=" m-b">
-              <div class="m-b">
-                <span class="label text-base bg-warning pos-rlt m-r"><i class="arrow right arrow-warning"></i> 19:30</span>
-                <a href>Feed cat</a>
-              </div>
-              <div class="m-b">
-                <span class="label text-base bg-info pos-rlt m-r"><i class="arrow right arrow-info"></i> 12:30</span>
-                <a href>Fishing Time</a>
-              </div>
-              <div class="m-b">
-                <span class="label text-base bg-primary pos-rlt m-r"><i class="arrow right arrow-primary"></i> 10:30</span>
-                <a href>Kick-off meeting</a>
-              </div>
-              <div class="m-b">
-                <span class="label text-base bg-light pos-rlt m-r"><i class="arrow right arrow-light"></i> 07:30</span>
-                <a href>Morning running</a>
+              <div class="m-b" ng-repeat="row in transactions.data | limitTo: 5">
+                <span class="label text-base" tooltip="{{row.status}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
+                  <a ui-sref="app.transactions.detail({id:row.id})">{{row.amount | currency:row.currency + " "}}</a>
+                </span>
+                <span class="pull-right">
+                  {{row.created_at*1000 | fromNow}}
+                </span>
               </div>
             </div>
           </div>

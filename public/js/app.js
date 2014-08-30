@@ -64,7 +64,13 @@ var app = angular.module('app', [
             })
             .state('app.dashboard', {
                 url: '/dashboard',
-                templateUrl: 'tpl/app_dashboard.html'
+                templateUrl: 'tpl/app_dashboard.html',
+                resolve: {
+                    deps: ['uiLoad',
+                      function( uiLoad ){
+                        return uiLoad.load( ['js/libs/moment.min.js']);
+                    }]
+                }
             })
             .state('app.transactions', {
                 url: '/transactions',

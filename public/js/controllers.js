@@ -841,7 +841,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           status: ''
       };
 
-      generateTable();
 
       $scope.$watch('transactions.status', regenerate);
 
@@ -849,6 +848,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       //Used for refunds list display route
       if($state.current.data.status) $scope.transactions.status = $state.current.data.status;
 
+      generateTable();
+      
       $scope.next= function() {
         clear('id');
         $scope.transactions.skip += 10;

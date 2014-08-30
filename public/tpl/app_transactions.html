@@ -8,7 +8,7 @@
     </div>
     <div class="row wrapper">
       <div class="col-sm-5 m-b-xs">
-        <label for="filter">Filter: </label>
+        <label for="filter">Status: </label>
         <select name="filter" class="input-sm form-control w-sm inline v-middle" ng-model="transactions.status">
           <option value="">None</option>
           <option value="open">Open</option>
@@ -49,7 +49,7 @@
             <td>{{row.amount/100 | currency:""}}</td>
             <td>{{row.created_at*1000 | fromNow}}</td>
             <td>{{row.updated_at*1000 | fromNow}}</td>
-            <td><span class="label" title="{{row.status}}" ng-class="getStatusClass(row.status)">{{row.status | titlecase}}</span></td>          
+            <td><span class="label text-base" title="{{row.status}}" ng-class="getStatusClass(row.status)">{{row.status | titlecase}}</span></td>          
           </tr>
           <tr ng-show="transactions.count === 0">
             <td colspan="5" class="text-center">
