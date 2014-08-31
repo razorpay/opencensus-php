@@ -13,6 +13,8 @@ class MerchantDetails extends Service
 
         $merchant_details = DAL\MerchantDetails::filterForAjax($merchant_details);
 
+        $merchant_details['data'] = Manager\MerchantDetails::sortDataInSteps($merchant_details['data']);
+
         return $merchant_details;
     }
     public function submitDetails()
@@ -34,12 +36,17 @@ class MerchantDetails extends Service
             $steps_finished = json_decode($merchant_details->steps_finished, true);
             
             $missing_steps = Manager\MerchantDetails::validateActivation($steps_finished);
+    
+            foreach($missing_steps as $step)
+            {
+                $error[] = 'Step '.$step.' has not been saved or contains errors. Please save all steps before submission.';
+            }
 
             if (empty($missing_steps))
             {
-                if(in_array(5, $steps_finished) === false)
+                if(in_array(6, $steps_finished) === false)
                 {    
-                    $steps_finished[] = 5;
+                    $steps_finished[] = 6;
                     
                     $data['steps_finished'] = json_encode($steps_finished);
                 }
@@ -48,24 +55,6 @@ class MerchantDetails extends Service
 
                 //Updating the model
                 $merchant_details->update($data);
-            }
-            else
-            {
-                foreach($missing_steps as $step)
-                {
-                    if($step != 4)
-                    {
-                        $show = $step+1;
-                        $error[] = 'Step '.$show.' has not been saved or contains errors. Please save all steps before submission.';
-                    }
-                    else
-                    {
-                        if(empty($this->checkUploads()) == false)
-                        {
-                           $error[] = 'Please upload all documents in Step 5 before submitting.';
-                        }
-                    }
-                }
             }
         }
         
@@ -116,7 +105,7 @@ class MerchantDetails extends Service
         //Check if already finished
         $steps_finished = json_decode($merchant_details->steps_finished, true);
 
-        if(in_array(4, $steps_finished)){
+        if(in_array(5, $steps_finished)){
             //return success if already finished
             return $error;
         }
@@ -125,7 +114,7 @@ class MerchantDetails extends Service
 
         if (empty($error))
         {   
-            $steps_finished[] = 4;
+            $steps_finished[] = 5;
 
             $steps_finished = json_encode($steps_finished);
 

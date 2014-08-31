@@ -177,7 +177,7 @@ class MerchantController extends BaseController
         }
         else
         {
-            return Response::json(array('success' => false, 'status' => $error));
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 
@@ -189,7 +189,7 @@ class MerchantController extends BaseController
         $error = array();
         $data  = array();
 
-        if($id != 4)
+        if($id != 5)
         {
             $error = (new Service\MerchantDetails)->saveDetails($id, $input);  
         }
@@ -204,7 +204,7 @@ class MerchantController extends BaseController
         }
         else
         {
-            return Response::json(array('success' => false, 'status' => $error));
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 
@@ -221,7 +221,7 @@ class MerchantController extends BaseController
         }
         else
         {
-            return Response::json(array('success' => false, 'status' => $error[0]));
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 

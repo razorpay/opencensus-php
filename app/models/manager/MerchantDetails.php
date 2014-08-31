@@ -6,14 +6,14 @@ use Models\Service;
 
 class MerchantDetails extends Manager
 {
-    protected static $step0Rules = array(
+    protected static $step1Rules = array(
         'contact_name'          => 'required|alpha_space|max:255',
         'contact_email'         => 'required|email|max:255',
         'contact_mobile'        => 'required|numeric|digits_between:8,11',
         'contact_landline'      => 'required|numeric|digits_between:8,11'
     );
 
-    protected static $step1Rules = array(
+    protected static $step2Rules = array(
         'bussiness_type'                => 'required|numeric|digits_between:1,10',
         'bussiness_category'             => 'required|alpha_space',
         'bussiness_subcategory'          => 'required|alpha_space',
@@ -34,12 +34,12 @@ class MerchantDetails extends Manager
         'transaction_value'             => 'required|numeric|max:10000000'
     );
 
-    protected static $step2Rules = array(
+    protected static $step3Rules = array(
         'promoter_pan'          => 'required|alpha_num|max:15',
         'promoter_pan_name'     => 'required|alpha_space|max:255'
     );
 
-    protected static $step3Rules = array(
+    protected static $step4Rules = array(
         'bank_name'             => 'required|alpha_space|max:255',
         'bank_account_number'   => 'required|numeric|digits_between:1,20',
         'bank_account_name'     => 'required|alpha_space|max:255',
@@ -91,11 +91,31 @@ class MerchantDetails extends Manager
 
     public static function validateActivation($steps_finished)
     {
-        $required_steps = array(0, 1, 2, 3, 4);
+        $required_steps = array(1, 2, 3, 4, 5);
 
         $missing_steps = array_diff($required_steps, $steps_finished);
 
         return $missing_steps;        
     }
 
+    public static function sortDataInSteps($data)
+    {   
+        $response = array();
+        foreach($data as $key => $value) {
+            if (array_key_exists($key, static::$step1Rules) === true) {
+                $response['1'][$key] = $value;
+            }
+            else if (array_key_exists($key, static::$step2Rules) === true) {
+                $response['2'][$key] = $value;
+            }
+            else if (array_key_exists($key, static::$step3Rules) === true) {
+                $response['3'][$key] = $value;
+            }
+            else if (array_key_exists($key, static::$step4Rules) === true) {
+                $response['4'][$key] = $value;
+            }
+        }
+
+        return $response;
+    }
 }
