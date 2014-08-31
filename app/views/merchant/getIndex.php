@@ -22,6 +22,7 @@
     <!-- jQuery -->
     <script src="js/jquery/jquery.min.js"></script>
     <!-- Angular -->
+    <script src="js/libs/angular-file-upload-shim.min.js"></script>
     <script src="js/angular/angular.min.js"></script>
     <script src="js/angular/angular-cookies.min.js"></script>
     <script src="js/angular/angular-animate.min.js"></script>
@@ -32,6 +33,7 @@
     <script src="js/angular/ui-jq.js"></script>
     <script src="js/angular/ui-validate.js"></script>
     <script src="js/angular/ui-bootstrap-tpls.min.js"></script>
+    <script src="js/libs/angular-file-upload.min.js"></script>
     <!-- App -->
     <script src="js/app.js"></script>
     <script src="js/services.js"></script>
