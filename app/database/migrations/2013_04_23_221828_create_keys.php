@@ -27,9 +27,6 @@ class CreateKeys extends Migration {
 
             $table->string(Key::SECRET, Key::KEY_SECRET_HASH_LENTH);
 
-            $table->boolean(Key::ACTIVE)
-                  ->default(1);
-
             $table->integer(Key::CREATED_AT);
             $table->integer(Key::UPDATED_AT);
             $table->integer(Key::EXPIRED_AT)
