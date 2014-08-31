@@ -142,4 +142,21 @@ class Entity extends Base\PublicEntity
 
         return $id;
     }
+
+    protected static function stripSign(& $id)
+    {
+        $mode = \BasicAuth::getMode();
+        $prefix = 'rzp_' . $mode . '_';
+
+        if (strpos($id, $prefix) === false)
+        {
+            return false;
+        }
+
+        $len = strlen($prefix);
+
+        $id = substr($id, $len);
+
+        return true;
+    }
 }

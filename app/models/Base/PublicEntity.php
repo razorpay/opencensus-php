@@ -75,20 +75,30 @@ class PublicEntity extends UniqueIdEntity
 
     public static function verifyIdAndStripSign(& $id)
     {
-        self::stripSignOrFail($id);
+        static::stripSignOrFail($id);
 
         UniqueIdEntity::verifyUniqueId($id, true);
     }
 
     protected static function stripSignOrFail(& $id)
     {
-        if (strpos($id, static::$sign . self::$delimiter) === false)
+        if (static::stripSign($id) === false)
         {
             throw new Exception\BadRequestException(null, ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+    }
+
+    protected static function stripSign(& $id)
+    {
+        if (strpos($id, static::$sign . self::$delimiter) === false)
+        {
+            return false;
         }
 
         $len = strlen(static::$sign . self::$delimiter);
 
         $id = substr($id, $len);
+
+        return true;
     }
 }

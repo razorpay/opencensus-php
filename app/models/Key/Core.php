@@ -39,6 +39,8 @@ class Core
 
     public function rollKey($keyId, array $input, $mode)
     {
+        Key\Entity::verifyIdAndStripSign($keyId);
+
         $old = (new Key\Repository)->findOrFailPublic($keyId);
 
         $delay = false;

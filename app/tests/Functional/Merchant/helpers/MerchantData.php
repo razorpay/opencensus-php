@@ -50,8 +50,7 @@ return [
                 'count' => 1,
                 'data' => [
                     '0' => [
-                        'id' => 'd9c6bf091a1a64cb5678d8c1',
-                        'merchant_id' => '363e4efa820b0c06208ccd99',
+                        'id' => 'rzp_test_d9c6bf091a1a64cb5678d8c1',
                         'expired_at' => null
                     ],
                 ],
@@ -63,7 +62,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/d9c6bf091a1a64cb5678d8c1',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/rzp_test_d9c6bf091a1a64cb5678d8c1',
             'method' => 'PUT',
         ],
         'response' => [
@@ -81,7 +80,7 @@ return [
             'content' => [
                 'delay_roll' => '1'
             ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/d9c6bf091a1a64cb5678d8c1',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/rzp_test_d9c6bf091a1a64cb5678d8c1',
             'method' => 'PUT',
         ],
         'response' => [
@@ -98,7 +97,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/d9c6bf091a1a64cb5678d8c1',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/rzp_test_d9c6bf091a1a64cb5678d8c1',
             'method' => 'PUT',
         ],
         'response' => [
