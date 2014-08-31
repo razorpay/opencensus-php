@@ -6,33 +6,26 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID = 'id';
-
     const MERCHANT_ID = 'merchant_id';
-
-    /**
-     * This is the secret used for authenticating
-     * merchant's server side requests.
-     * It's actually a hash of the actual secret
-     */
     const SECRET = 'secret';
-
-    const ACTIVE = 'active';
-
     const EXPIRED_AT = 'expired_at';
 
     const KEY_SECRET_HASH_LENTH = 100;
 
+    protected $entity = 'key';
+
     protected $table  = \Constants\Table::KEY;
 
-    protected $fillable = array(
-        self::MERCHANT_ID,
-        self::ACTIVE
-    );
+    protected $genereateIdOnCreate = true;
 
-    protected static $generators = array('id');
+    protected $public = array(
+        self::ID,
+        self::ENTITY,
+        self::CREATED_AT,
+        self::EXPIRED_AT);
 
     /**
      * 86400 sec or more accurately 24 hours.
@@ -55,9 +48,21 @@ class Entity extends Base\UniqueIdEntity
         return $this->getAttribute(self::SECRET);
     }
 
+    public function getPublicId()
+    {
+        $mode = \BasicAuth::getMode();
+
+        return 'rzp_' . $mode . '_' . $this->getKey();
+    }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function setMerchantId($merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
     public function scopeNotExpired($query)

@@ -26,14 +26,38 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $public = array();
 
+    protected $publicSetters = array('id', 'entity');
+
     public function toArrayPublic()
     {
         $array = $this->toArray();
 
-        $array[self::ID ] = $this->getPublicId();
+        $this->setPublicAttributes($array);
 
-        $array['entity'] = $this->entity;
+        return $this->arrangePublicAttributes($array);
+    }
 
+    public function setPublicAttributes(array & $array)
+    {
+        foreach ($this->publicSetters as $attr)
+        {
+            $func = 'setPublic'.ucfirst($attr);
+            $this->$func($array);
+        }
+    }
+
+    public function setPublicId(array & $array)
+    {
+        $array[self::ID] = $this->getPublicId();
+    }
+
+    public function setPublicEntity(array & $array)
+    {
+        $array[self::ENTITY] = $this->entity;
+    }
+
+    public function arrangePublicAttributes(array $array)
+    {
         $publicArray = array();
 
         foreach ($this->public as $attr)
@@ -48,7 +72,6 @@ class PublicEntity extends UniqueIdEntity
     {
         return static::$sign . self::$delimiter . $this->getKey();
     }
-
 
     public static function verifyIdAndStripSign(& $id)
     {

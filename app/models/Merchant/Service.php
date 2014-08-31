@@ -12,17 +12,11 @@ use EE\Error\ErrorCode;
 
 class Service extends Base\Service
 {
-    protected $keyRepository;
-
-    protected $merchantRepository;
-
-    protected $merchant;
+    protected $repo;
 
     public function __construct()
     {
-        $this->merchantRepository = new Merchant\Repository();
-
-        $this->keyRepository = new Key\Repository();
+        $this->repo = new Merchant\Repository();
     }
 
     /**
@@ -37,27 +31,27 @@ class Service extends Base\Service
 
         $merchantIdArr['id'] = $input['id'];
 
-        $this->merchantRepository->saveOrFail($merchant);
+        $this->repo->saveOrFail($merchant);
 
         $merchantBalance = new Merchant\Balance($merchantIdArr);
 
-        $this->merchantRepository->updateBalance($merchantBalance);
+        $this->repo->updateBalance($merchantBalance);
 
         return $merchant->toArray();
     }
 
     public function fetch($id)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($id);
+        $merchant = $this->repo->findOrFailPublic($id);
 
         return array_merge($merchant->toArray(), ['entity' => 'merchant']);
     }
 
     public function createKey($merchantId)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($merchantId);
+        $merchant = $this->repo->findOrFailPublic($merchantId);
 
-        $keys = $this->keyRepository->getKeysForMerchant($merchantId);
+        $keys = (new Key\Repository)->getKeysForMerchant($merchantId);
 
         if (count($keys) > 0)
         {
@@ -66,58 +60,37 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED);
         }
 
-        $keyData = (new Key\Core)->createAndReturnWithSecret($merchantId);
+        $keyData = (new Key\Core)->createAndReturnWithSecret($merchantId, $this->mode);
 
         return $keyData;
     }
 
     public function updateKey($merchantId, $keyId, array $input)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($merchantId);
+        $merchant = $this->repo->findOrFailPublic($merchantId);
 
-        $old = $this->keyRepository->findOrFailPublic($keyId);
-
-        $keyCore = new Key\Core;
-
-        $delay = false;
-
-        if (isset($input['delay_roll']))
-        {
-            $delay = ($input['delay_roll'] === '1') ? true : false;
-        }
-
-        unset($input['delay_roll']);
-
-        $keyCore->setExpired($old, $delay);
-
-        $keyData = $keyCore->createAndReturnWithSecret($merchantId);
-
-        $keysData['old'] = $old->toArray();
-
-        $keysData['new'] = $keyData;
-
-        return $keysData;
+        return (new Key\Core)->rollKey($keyId, $input, $this->mode);
     }
 
     public function fetchKeys($merchantId)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($merchantId);
+        $merchant = $this->repo->findOrFailPublic($merchantId);
 
-        $keys = $this->keyRepository->getKeysForMerchant($merchantId);
+        $keys = (new Key\Repository)->getKeysForMerchant($merchantId);
 
         return array('count' => count($keys), 'data' => $keys);
     }
 
     public function retrieveById($id)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($id);
+        $merchant = $this->repo->findOrFailPublic($id);
 
         return $merchant->toArray();
     }
 
     public function assignPricingPlan($id, $input)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($id);
+        $merchant = $this->repo->findOrFailPublic($id);
 
         if (isset($input['pricing_plan_id']) === false)
         {
@@ -132,16 +105,14 @@ class Service extends Base\Service
 
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
-        $this->merchantRepository->saveOrFail($merchant);
+        $this->repo->saveOrFail($merchant);
 
-        $plan = $plan->toArrayPublic();
-
-        return $plan;
+        return $plan->toArrayPublic();
     }
 
     public function getPricingPlan($id)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($id);
+        $merchant = $this->repo->findOrFailPublic($id);
 
         $pricingPlanId = $merchant->getPricingPlanId();
 
@@ -152,7 +123,7 @@ class Service extends Base\Service
 
     public function createTerminal($id, $input)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($id);
+        $merchant = $this->repo->findOrFailPublic($id);
 
         $terminal = (new Terminal\Core)->create($input, $merchant);
 
@@ -161,7 +132,7 @@ class Service extends Base\Service
 
     public function getTerminal($id)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($id);
+        $merchant = $this->repo->findOrFailPublic($id);
 
         $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
@@ -175,7 +146,7 @@ class Service extends Base\Service
 
     public function activate($id)
     {
-        $merchant = $this->merchantRepository->findOrFailPublic($id);
+        $merchant = $this->repo->findOrFailPublic($id);
 
         if ($merchant->isActivated())
         {
@@ -184,7 +155,7 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        $pricing = (new Merchant\Repository)->getPricingPlan($merchant);
+        $pricing = (new Merchant\Repository)->getPricingPlanOrFailPublic($merchant);
 
         $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
@@ -197,7 +168,7 @@ class Service extends Base\Service
 
         $merchant->activate();
 
-        $this->merchantRepository->saveOrFail($merchant);
+        $this->repo->saveOrFail($merchant);
 
         return $merchant->toArray();
     }

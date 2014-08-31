@@ -30,7 +30,7 @@ class Repository extends Base\Repository
         return $this->getBalanceLockForUpdate($apiId);
     }
 
-    public function getPricingPlan($merchant)
+    public function getPricingPlanOrFailPublic($merchant)
     {
         $pricing = $merchant->getPricingPlanId();
 

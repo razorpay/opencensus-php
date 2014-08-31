@@ -8,15 +8,6 @@ class Core
 {
     protected $key = null;
 
-    public function create($merchantId)
-    {
-        $input['merchant_id'] = $merchantId;
-
-        $key = (new Key\Entity)->build($input);
-
-        return $key;
-    }
-
     /**
      * Creates a key and saves to db.
      * Retruns an array with key data and secret
@@ -25,25 +16,48 @@ class Core
      * @param  int    $merchantId
      * @return array
      */
-    public function createAndReturnWithSecret($merchantId)
+    public function createAndReturnWithSecret($merchantId, $mode)
     {
-        $key = $this->create($merchantId);
+        $key = new Key\Entity();
+        $key->setMerchantId($merchantId);
 
         $secret = $key->generateSecret();
-
         (new Key\Repository)->saveOrFail($key);
 
-        $array = $key->toArray();
+        $keyData = $key->toArrayPublic();
+        $keyData[Key\Entity::SECRET] = $secret;
 
-        $array[Key\Entity::SECRET] = $secret;
-
-        return $array;
+        return $keyData;
     }
 
-    public function setExpired(Key\Entity $key, $delay)
+    public function expireKey(Key\Entity $key, $delay)
     {
         $key->checkAndSetExpired($delay);
 
         (new Key\Repository)->saveOrFail($key);
+    }
+
+    public function rollKey($keyId, array $input, $mode)
+    {
+        $old = (new Key\Repository)->findOrFailPublic($keyId);
+
+        $delay = false;
+
+        if (isset($input['delay_roll']))
+        {
+            $delay = ($input['delay_roll'] === '1') ? true : false;
+        }
+
+        unset($input['delay_roll']);
+
+        $this->expireKey($old, $delay);
+
+        $keyData = $this->createAndReturnWithSecret($old->getMerchantId(), $mode);
+
+        $keysData['old'] = $old->toArrayPublic();
+
+        $keysData['new'] = $keyData;
+
+        return $keysData;
     }
 }
