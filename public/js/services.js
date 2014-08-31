@@ -173,9 +173,9 @@ angular.module('app.services', [])
 					this.closeAlert = function(index) {
 						this.alerts.splice(index, 1);
 					},
-					this.addAlert = function($type, $message) {
+					this.addAlert = function($type, $message, reset) {
 						$message = $message || "An error occured.";
-
+						if(reset) this.alerts = [];
 						this.alerts.push({type: $type, msg: $message});
 					},
 					this.resetAlerts = function() {

@@ -448,14 +448,12 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       $scope.alerts = alertsFactory.getHandler();
 
       $scope.submit = function($valid) {
-        $scope.alerts.resetAlerts();
-
         if(!$valid)  {
-          $scope.alerts.addAlert('danger', 'Please fill all the fields');     
+          $scope.alerts.addAlert('danger', 'Please fill all the fields', true);     
           return false;     
         }
 
-        $scope.alerts.addAlert('info', 'Processing...');
+        $scope.alerts.addAlert('info', 'Processing...', true);
 
         var request = $http({
                     method: "post",
@@ -466,21 +464,19 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
         request
               .success(function(data) {
-                $scope.alerts.resetAlerts();
-
                 if(data.success) {
                   user.identity(true);
                   $state.go('app.dashboard');
                 }
                 else {
+                  $scope.alerts.resetAlerts();
                   angular.forEach(data.errors, function(error, key) {
                   $scope.alerts.addAlert('danger', error);
                   });      
                 }
               })
               .error(function() {
-                $scope.alerts.resetAlerts();
-                $scope.alerts.addAlert('danger');
+                $scope.alerts.addAlert('danger', null, true);
               })
       };
   }])
@@ -497,19 +493,17 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       $scope.agree = false;
 
       $scope.submit = function($valid) {
-          $scope.alerts.resetAlerts();
-
           if(!$valid)  {
-            $scope.alerts.addAlert('danger', 'Please fill all the fields');     
+            $scope.alerts.addAlert('danger', 'Please fill all the fields', true);     
             return true;     
           }
 
           if(!$scope.agree) {
-            $scope.alerts.addAlert('danger', 'You must agree to the terms & conditions for using our service');     
+            $scope.alerts.addAlert('danger', 'You must agree to the terms & conditions for using our service', true);     
             return true;
           }
 
-          $scope.alerts.addAlert('info', 'Processing...');
+          $scope.alerts.addAlert('info', 'Processing...', true);
 
           var request = $http({
                       method: "post",
@@ -520,20 +514,18 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
           request
                 .success(function(data) {
-                  $scope.alerts.resetAlerts();
-
                   if(data.success) {
-                    $scope.alerts.addAlert('success', "Registration Successful. Please check your inbox for confirmation email from Razorpay.");
+                    $scope.alerts.addAlert('success', "Registration Successful. Please check your inbox for confirmation email from Razorpay.", true);
                   }
                   else {
+                    $scope.alerts.resetAlerts();
                     angular.forEach(data.errors, function(error, key) {
                       $scope.alerts.addAlert('danger', error);
                     });      
                   }
                 })
                 .error(function() {
-                  $scope.alerts.resetAlerts();
-                  $scope.alerts.addAlert('danger');
+                  $scope.alerts.addAlert('danger', null, true);
                 })
       };
   }])
@@ -550,7 +542,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         $state.go('access.signin');
       }
 
-      $scope.alerts.addAlert('info', 'Processing...');
+      $scope.alerts.addAlert('info', 'Processing...', true);
   
       var request = $http({
                         method: "get",
@@ -560,7 +552,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       request
             .success(function(data) {
               $scope.alerts.resetAlerts();
-
               if(data.success) {
                 $scope.success = true;  
               }
@@ -571,8 +562,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
               }
             })
             .error(function() {
-              $scope.alerts.resetAlerts();
-              $scope.alerts.addAlert('danger');
+              $scope.alerts.addAlert('danger', null, true);
             });
   }])
   .controller('ForgotPasswordCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
@@ -585,9 +575,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       }
 
       $scope.submit = function() {
-          $scope.alerts.resetAlerts();
-
-          $scope.alerts.addAlert('info', 'Processing...');
+          $scope.alerts.addAlert('info', 'Processing...', true);
 
           var request = $http({
                       method: "post",
@@ -598,20 +586,18 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
           request
                 .success(function(data) {
-                  $scope.alerts.resetAlerts();
-
                   if(data.success) {
-                    $scope.alerts.addAlert('success', "Reset request sent. Please check your inbox for verification email from Razorpay.");
+                    $scope.alerts.addAlert('success', "Reset request sent. Please check your inbox for verification email from Razorpay.", true);
                   }
                   else {
+                    $scope.alerts.resetAlerts();
                     angular.forEach(data.errors, function(error, key) {
                       $scope.alerts.addAlert('danger', error);
                     });      
                   }
                 })
                 .error(function() {
-                  $scope.alerts.resetAlerts();
-                  $scope.alerts.addAlert('danger');
+                  $scope.alerts.addAlert('danger', null, true);
                 })
       };
   }])
@@ -633,14 +619,12 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       }
           
       $scope.submit = function($valid) {
-          $scope.alerts.resetAlerts();
-
           if(!$valid)  {
-            $scope.alerts.addAlert('danger', 'Please fill all the fields correctly');     
+            $scope.alerts.addAlert('danger', 'Please fill all the fields correctly', true);     
             return true;     
           }
 
-          $scope.alerts.addAlert('info', 'Processing...');
+          $scope.alerts.addAlert('info', 'Processing...', true);
 
           var request = $http({
                       method: "post",
@@ -652,7 +636,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           request
                 .success(function(data) {
                   $scope.alerts.resetAlerts();
-
                   if(data.success) {
                     $scope.success = true;
                   }
@@ -663,7 +646,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
                   }
                 })
                 .error(function() {
-                  $scope.alerts.resetAlerts();
                   $scope.alerts.addAlert('danger');
                 })
       };
@@ -894,8 +876,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       }
 
       function generateTable() {
-        $scope.alerts.resetAlerts();
-        $scope.alerts.addAlert('info', "Processing... ");
+        $scope.alerts.addAlert('info', "Processing... ", true);
         var query =
           "count=10" +
           "&skip="+ $scope.transactions.skip +
@@ -936,8 +917,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           }          
         })
         .error(function(){
-          $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger');
+          $scope.alerts.addAlert('danger', null, true);
         });
       }
   }])
@@ -964,16 +944,15 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       }
 
       $scope.capture = function(amount) {
-        $scope.alerts.resetAlerts();
-        
+
         var captureAmount = parseInt(amount);
 
         if(!captureAmount){
-          $scope.alerts.addAlert('danger', 'Invalid capture amount');
+          $scope.alerts.addAlert('danger', 'Invalid capture amount', true);
           return;
         }
 
-        $scope.alerts.addAlert('info', 'Processing... ');
+        $scope.alerts.addAlert('info', 'Processing... ', true);
 
         var data = {
           _token: CSRF_TOKEN,
@@ -988,25 +967,22 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
                   });
 
         request.success(function(data){
-          $scope.alerts.resetAlerts();
           if(data.success){
-            $scope.alerts.addAlert('success', "Transaction Captured");
+            $scope.alerts.addAlert('success', "Transaction Captured", true);
             $scope.transaction.status = "captured";
             $scope.transaction.amount = captureAmount;
           }
           else {
-            $scope.alerts.addAlert('danger');
+            $scope.alerts.addAlert('danger', null, true);
           }
         })
         .error(function(){
-          $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger');
+          $scope.alerts.addAlert('danger', null, true);
         })
       };
 
       $scope.refund = function() {
-        $scope.alerts.resetAlerts();
-        $scope.alerts.addAlert('info', 'Processing... ');
+        $scope.alerts.addAlert('info', 'Processing... ', true);
         var data = {
           _token: CSRF_TOKEN
         }
@@ -1019,23 +995,22 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
                   });
 
         request.success(function(data){
-          $scope.alerts.resetAlerts();
           if(data.success) {
-            $scope.alerts.addAlert('success', "Transaction Refunded");
+            $scope.alerts.addAlert('success', "Transaction Refunded", true);
             $scope.transaction.status = "refunded";
           }
           else {
-            $scope.alerts.addAlert('danger');
+            $scope.alerts.addAlert('danger', null, true);
           }
         })
         .error(function(){
           $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger');
+          $scope.alerts.addAlert('danger', null, true);
         })
       };
 
       function fetchTransaction() {
-        $scope.alerts.addAlert('info', 'Processing...');
+        $scope.alerts.addAlert('info', 'Processing...', true);
     
         var request = $http.get("/" + modeFactory.getMode() +  "/transactions/" + $scope.transaction.id);
 
@@ -1053,8 +1028,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           }
         })
         .error(function() {
-          $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger');
+          $scope.alerts.addAlert('danger', null, true);
         }); 
       };
   }])
@@ -1106,7 +1080,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       fetchKeys();
       
       $scope.generateKey = function(){
-        $scope.alerts.addAlert('info', "Processing..");
+        $scope.alerts.addAlert('info', "Processing..", true);
 
         var data = {
           _token: CSRF_TOKEN
@@ -1121,23 +1095,21 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
         request
         .success(function(data){
-          $scope.alerts.resetAlerts();
           if(data.success){
-            $scope.alerts.addAlert('success', "Key Generated");
+            $scope.alerts.addAlert('success', "Key Generated", true);
             $scope.openNewKey('lg', {id: data.data.id, secret:data.data.secret});
           }
           else {
-            $scope.alerts.addAlert('danger');
+            $scope.alerts.addAlert('danger', null, true);
           }
         })
         .error(function(){
-          $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger');
+          $scope.alerts.addAlert('danger', null, true);
         });
       };
 
       function fetchKeys(){
-        $scope.alerts.addAlert('info', "Processing..");
+        $scope.alerts.addAlert('info', "Processing..", true);
 
         var request = $http.get('/'+$scope.mode+'/keys');
 
@@ -1153,23 +1125,20 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           }
         })
         .error(function(){
-          $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger');
+          $scope.alerts.addAlert('danger', null, true);
         })
       }
 
       $scope.rollKey = function(data) {
-        $scope.alerts.resetAlerts();
-
         var key_id = data[0];
         var delay_roll = parseInt(data[1]);
 
         if(!key_id) {
-          $scope.alerts.addAlert('danger');
+          $scope.alerts.addAlert('danger', null, true);
           return;
         };
 
-        $scope.alerts.addAlert('info', 'Processing... ');
+        $scope.alerts.addAlert('info', 'Processing... ', true);
         var data = {
           _token: CSRF_TOKEN,
           id: key_id,
@@ -1184,18 +1153,17 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
                   });
 
         request.success(function(data){
-          $scope.alerts.resetAlerts();
           if(data.success) {
-            $scope.alerts.addAlert('success', "Key Rolled");
+            $scope.alerts.addAlert('success', "Key Rolled", true);
             $scope.openNewKey('lg', {id: data.key_id, secret:data.secret});
           }
           else {
-            $scope.alerts.addAlert('danger');
+            $scope.alerts.addAlert('danger', null, true);
           }
         })
         .error(function(){
           $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('danger');
+          $scope.alerts.addAlert('danger', null, true);
         })
       };
 
@@ -1361,8 +1329,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       };
 
       function saveStep(step){
-        $scope.alerts[step].resetAlerts();
-        $scope.alerts[step].addAlert('info', 'Processing...');
+        $scope.alerts[step].addAlert('info', 'Processing...', true);
 
         var data = {
           _token: CSRF_TOKEN,
@@ -1381,13 +1348,12 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
         request
         .success(function(data){
-          $scope.alerts[step].resetAlerts();
-          
           if(data.success) {
-            $scope.alerts[step].addAlert('success', 'Step Saved Successfully');
+            $scope.alerts[step].addAlert('success', 'Step Saved Successfully', true);
             $scope.check[step] = true;
           }
           else {
+            $scope.alerts[step].resetAlerts();
             angular.forEach(data.errors, function(value, key){
               $scope.alerts[step].addAlert('danger', value);
             });
@@ -1395,8 +1361,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           }
         })
         .error(function(){
-          $scope.alerts[step].resetAlerts();
-          $scope.alerts[step].addAlert('danger', 'An error occured. Please refresh and retry.');
+          $scope.alerts[step].addAlert('danger', 'An error occured. Please refresh and retry.', true);
           $scope.check[step] = false;
         })
       };
@@ -1406,9 +1371,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         
         $scope.locked = true;
 
-        $scope.fileAlerts[fieldname].resetAlerts();
-
-        $scope.fileAlerts[fieldname].addAlert('info', 'Uploading...');
+        $scope.fileAlerts[fieldname].addAlert('info', 'Uploading...', true);
 
         var request = $upload.upload({
           url: '/activation/save/file', //upload.php script, node.js route, or servlet url
@@ -1434,18 +1397,18 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           console.log('percent: ' + parseInt(100.0 * evt.loaded / evt.total));
         })
         .success(function(data, status, headers, config) {
-          $scope.fileAlerts[fieldname].resetAlerts();
           if(data.success){
-            $scope.fileAlerts[fieldname].addAlert('success', 'File Uploaded Successfully');
+            $scope.fileAlerts[fieldname].addAlert('success', 'File Uploaded Successfully', true);
           }
           else{
+            $scope.fileAlerts[fieldname].resetAlerts();
             angular.forEach(data.errors, function(value, key){
               $scope.fileAlerts[fieldname].addAlert('danger', value);
             });
           }
         })
         .error(function(){
-          $scope.fileAlerts[fieldname].addAlert('danger', 'File upload failed.');
+          $scope.fileAlerts[fieldname].addAlert('danger', 'File upload failed.', true);
         })
         .finally(function(){
           $scope.locked = false;
@@ -1454,12 +1417,10 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       };
 
       function submitForm(step){
-        $scope.alerts[step].resetAlerts();
-        $scope.alerts[step].addAlert('info', 'Processing...');
+        $scope.alerts[step].addAlert('info', 'Processing...', true);
 
         if($scope.data[6].agree_terms !== true) {
-          $scope.alerts[step].resetAlerts();
-          $scope.alerts[step].addAlert('danger', 'You must agree to the terms & conditions to use Razorpay services');
+          $scope.alerts[step].addAlert('danger', 'You must agree to the terms & conditions to use Razorpay services', true);
           return;
         }
 
@@ -1480,13 +1441,13 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
         request
         .success(function(data){
-          $scope.alerts[step].resetAlerts();
-          
           if(data.success) {
-            $scope.alerts[step].addAlert('success', 'Form submitted Successfully!');
+            $scope.alerts[step].addAlert('success', 'Form submitted Successfully!', true);
             $scope.check[step] = true;
+            getData();
           }
           else {
+            $scope.alerts[step].resetAlerts();
             angular.forEach(data.errors, function(value, key){
               $scope.alerts[step].addAlert('danger', value);
             });
@@ -1494,8 +1455,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           }
         })
         .error(function(){
-          $scope.alerts[step].resetAlerts();
-          $scope.alerts[step].addAlert('danger', 'An error occured. Please refresh and retry.');
+          $scope.alerts[step].addAlert('danger', 'An error occured. Please refresh and retry.', true);
           $scope.check[step] = false;
         })
       };
