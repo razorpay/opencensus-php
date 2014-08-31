@@ -15,7 +15,8 @@ var app = angular.module('app', [
     'app.filters',
     'app.services',
     'app.directives',
-    'app.controllers'
+    'app.controllers',
+    'angularFileUpload'
   ])
 .run(
   [          '$rootScope', '$state', '$stateParams', 'user', 'authorization',
@@ -115,7 +116,7 @@ var app = angular.module('app', [
             })
             .state('app.activation', {
                 url: '/activation',
-                templateUrl: 'tpl/app_dashboard.html'
+                templateUrl: 'tpl/app_activation.html'
             })
             .state('app.profile', {
                 url: '/profile',
