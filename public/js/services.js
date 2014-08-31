@@ -37,7 +37,7 @@ angular.module('app.services', [])
 						.success(function(data) {
 							_identity = data.data;
 							if(data.data.steps_finished) {
-								_identity.activation_progress = parseInt((data.data.steps_finished.length * 100)/ 6);
+								_identity.activation_progress = parseInt((JSON.parse(data.data.steps_finished).length * 100)/ 6);
 							}
 					   		_authenticated = data.success === true;
 							deferred.resolve(_identity);
@@ -165,28 +165,29 @@ angular.module('app.services', [])
 			//Alerts factory.
 			//Used for creating/removing alerts for display in a page.
 			.factory('alertsFactory', function() {
-				var alerts = [];
-				return {
-					initialise:  function(){
-						alerts = [];
-						return {
-							getAlerts: function() {
-								return alerts;
-							},
-							closeAlert: function(index) {
-								alerts.splice(index, 1);
-							}
-						}
-					},					
-					addAlert: function($type, $message) {
+				function handler(){
+					this.alerts = [];
+					this.getAlerts = function() {
+						return this.alerts;
+					},
+					this.closeAlert = function(index) {
+						this.alerts.splice(index, 1);
+					},
+					this.addAlert = function($type, $message) {
 						$message = $message || "An error occured.";
 
-						alerts.push({type: $type, msg: $message});
+						this.alerts.push({type: $type, msg: $message});
 					},
-					resetAlerts: function() {
-						alerts = [];
+					this.resetAlerts = function() {
+						this.alerts = [];
 					}
-				}
+				};
+
+				return {
+					getHandler: function(){
+						return new handler();
+					}
+				};
 			})
 			.factory('dateFactory', function(){
 				function handler($scope) {
