@@ -115,7 +115,8 @@ return array(
 		'Illuminate\View\ViewServiceProvider',
 		'Illuminate\Workbench\WorkbenchServiceProvider',
         'Maatwebsite\Excel\ExcelServiceProvider',
-        'Http\BasicAuth\ServiceProvider'
+        'Http\BasicAuth\ServiceProvider',
+        'Trace\TraceServiceProvider',
 	),
 
 	/*
