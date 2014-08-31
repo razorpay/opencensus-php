@@ -172,22 +172,9 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public static function callback($id)
+    public static function getApiRouteUrl($name)
     {
-        $route = 'transaction_callback';
-
-        $pos = strrpos($route, '/');
-
-        $urlSegment = substr($urlSegment, 0, $pos);
-
-        $urlSegment .= '/' . $txn->getPublicId();
-
-        $scheme = \Request::getScheme().'://';
-        $key = \BasicAuth::getPublicKey();
-        $host = \Request::getHost();
-
-        $callbackUrl = $scheme . $key . '@' . $host . '/' . $urlSegment;
-
-        $callbackData['callbackUrl'] = $callbackUrl;
+        return self::getApiRoute($name)[1];
     }
+
 }
