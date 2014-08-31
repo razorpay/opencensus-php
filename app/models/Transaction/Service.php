@@ -12,19 +12,15 @@ use Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    protected $txn;
-    protected $mode;
-    protected $trace;
     protected $merchant;
 
-    public function __construct($merchant = null, $mode)
+    public function __construct()
     {
         parent::__construct();
 
         $this->core = new Transaction\Core();
-        $this->mode = $mode;
-        $this->trace = Trace::getInstance();
-        $this->merchant = $merchant;
+
+        $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
     /**

@@ -19,7 +19,7 @@
 //
 App::before(function() use ($app)
 {
-    BasicAuth::init($app);
+    $app['basicauth']->init($app);
 });
 
 App::before(function()

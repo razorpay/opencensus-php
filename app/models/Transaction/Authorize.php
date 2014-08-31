@@ -2,6 +2,7 @@
 
 namespace Models\Transaction;
 
+use Http\Route;
 use Models\Card;
 use Models\Transaction;
 use Trace\Trace;
@@ -101,7 +102,7 @@ class Authorize extends Action
 
     protected function attachCallbackUrl(& $callbackData)
     {
-        $urlSegment = \Http\Route::getApiRoute('transaction_callback')[1];
+        $urlSegment = Route::getApiRouteUrl('transaction_callback');
 
         $pos = strrpos($urlSegment, '/');
 
