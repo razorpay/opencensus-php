@@ -1234,12 +1234,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
     function($scope, $http, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost, $upload, user){
       $scope.steps={
         percent:0,
-        step1:true,
-        step2:false,
-        step3:false,
-        step4:false,
-        step5:false,
-        step6:false
+        step1:true
       };
 
       $scope.check = {};
@@ -1271,7 +1266,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         address_proof: alertsFactory.getHandler()
       };
 
-      getData();
 
       $scope.submit = function(step) {
         if(step !== 6){
@@ -1293,6 +1287,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         }
       };
 
+      getData();
+      
       function getData() {
         var request = $http.get('/activation/details');
 
@@ -1374,21 +1370,19 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         $scope.fileAlerts[fieldname].addAlert('info', 'Uploading...', true);
 
         var request = $upload.upload({
-          url: '/activation/save/file', //upload.php script, node.js route, or servlet url
+          url: '/activation/save/file',
           method: 'POST',
           data: {_token: CSRF_TOKEN},
           file: file, 
-          // customize file formData name ('Content-Disposition'), server side file variable name. 
           fileFormDataName: fieldname,
-          // customize how data is added to formData. See #40#issuecomment-28612000 for sample code
           formDataAppender: function(fd, key, val) {
-              if (angular.isArray(val)) {
-                  angular.forEach(val, function(v) {
-                      fd.append(key, v);
-                  });
-              } else {
-                  fd.append(key, val);
-              }
+            if (angular.isArray(val)) {
+                angular.forEach(val, function(v) {
+                    fd.append(key, v);
+                });
+            } else {
+                fd.append(key, val);
+            }
           },
         });
 
