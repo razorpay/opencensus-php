@@ -123,19 +123,7 @@ angular.module('app.services', [])
  
                 // Return the factory value.
                 return( transformRequest );
- 
- 
-                // ---
-                // PRVIATE METHODS.
-                // ---
- 
-                // I serialize the given Object into a key-value pair string. This
-                // method expects an object and will default to the toString() method.
-                // --
-                // NOTE: This is an atered version of the jQuery.param() method which
-                // will serialize a data collection for Form posting.
-                // --
-                // https://github.com/jquery/jquery/blob/master/src/serialize.js#L45
+                
                 function serializeData( data ) {
  
                     // If this is not an object, defer to native stringification.
