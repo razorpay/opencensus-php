@@ -18,6 +18,8 @@ Route::group(array('before' => 'auth'), function()
 {
     Route::get('/user', 'MerchantController@getUser');
 
+    Route::get('/user/keepalive', 'MerchantController@getKeepAlive');
+
     Route::get('/user/logout', 'MerchantController@getLogout');
 
     Route::get('/{mode}/transactions', 'TransactionController@getTransactions');

@@ -22,6 +22,11 @@ class MerchantController extends BaseController
        return Response::JSON($response);
     }
 
+    public function getKeepAlive()
+    {
+        return ['success' => true];
+    }
+
     public function getLogin()
     {
         return View::make('merchant.getLogin');
