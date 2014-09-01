@@ -38,8 +38,6 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
-    Route::get('/password', 'MerchantController@getPassword');
-
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/{mode}/keys', 'MerchantController@postKeys');
