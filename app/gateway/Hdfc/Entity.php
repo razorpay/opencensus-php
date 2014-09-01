@@ -19,7 +19,6 @@ class Entity extends \Models\Base\Entity
         'postdate',
         'error_code',
         'error_text',
-        'error_service',
         'created_at',
         'updated_at');
 

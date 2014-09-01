@@ -87,7 +87,6 @@ class Repository extends Base\Repository
         $attributes = array(
             'trackid' => $id,
             'error_code' => $error['code'],
-            'error_service' => $error['service'],
             'error_text' => $error['text'],
             'enroll_result' => $error['enroll_result'],
             'status' => Hdfc\Status::ENROLL_FAILED);
@@ -133,7 +132,6 @@ class Repository extends Base\Repository
         $attributes = array(
             'status' => Hdfc\Status::AUTH_NOT_ENROLL_FAILED,
             'error_code' => $error['code'],
-            'error_service' => $error['service'],
             'error_text' => $error['text']);
 
         $model->fill($attributes);
@@ -146,7 +144,6 @@ class Repository extends Base\Repository
         $attributes = array(
             'status' => Hdfc\Status::AUTH_ENROLL_FAILED,
             'error_code' => $error['code'],
-            'error_service' => $error['service'],
             'error_text' => $error['text']);
 
         $model->fill($attributes);
