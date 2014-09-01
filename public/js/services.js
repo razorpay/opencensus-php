@@ -5,8 +5,8 @@
 angular.module('app.services', [])
 			// User Service
 			// Fetches & stores details of currently logged in user
-			.factory('user', ['$q', '$http', '$timeout',
-			  function($q, $http, $timeout) {
+			.factory('user', ['$q', '$http', '$timeout', '$idle',
+			  function($q, $http, $timeout, $idle) {
 			    var _identity = undefined,
 			      _authenticated = false;
 
@@ -40,6 +40,8 @@ angular.module('app.services', [])
 								_identity.activation_progress = parseInt((JSON.parse(data.data.steps_finished).length * 100)/ 6);
 							}
 					   		_authenticated = data.success === true;
+					   		if(_authenticated) $idle.watch();
+					   		else $idle.unwatch();
 							deferred.resolve(_identity);
 						})
 						.error(function () {
