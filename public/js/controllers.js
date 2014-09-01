@@ -650,12 +650,25 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
                 })
       };
   }])
-  .controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN',
-    function($scope, $http, $state, user, CSRF_TOKEN) {
+  .controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '$modal', 'alertsFactory',
+    function($scope, $http, $state, user, CSRF_TOKEN, $modal, alertsFactory) {
       
       user.identity().then(function(data){
         $scope.user = data;
       });
+
+      $scope.alerts = alertsFactory.getHandler();
+
+      console.log($scope.alerts);
+
+      $scope.activated = function(activated) {
+        if(activated == 1) {
+          return "Activated";
+        }
+        else {
+          return "Not Activated";
+        }
+      };
 
       $scope.logout = function() {
         $scope.data = {
@@ -673,6 +686,59 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
                   user.identity(true);
                   $state.go('access.signin');  
               });
+      };
+
+      var passwordModalCtrl = function ($scope, $modalInstance) {
+        $scope.ok = function (data) {
+          $modalInstance.close(data);
+        };
+        $scope.cancel = function () {
+          $modalInstance.dismiss('cancel');
+        };
+      };
+
+      $scope.changePassword = function (size) {
+        var modalInstance = $modal.open({
+          templateUrl: 'passwordModalContent.html',
+          controller: passwordModalCtrl,
+          size: size
+        });
+
+        modalInstance.result.then(
+          function (data) {
+            passwordChangeRequest(data);
+          },
+          function () {
+            ;
+          });
+      };
+
+      function passwordChangeRequest(data) {
+        $scope.alerts.addAlert('info', 'Processing...', true);
+
+        data._token = CSRF_TOKEN;
+
+        var request = $http({
+          method: "post",
+          url: "/password",
+          data: data
+        });
+
+        request
+        .success(function(data){
+          if(data.success){
+            $scope.alerts.addAlert('success', 'Password changed successfully.', true);
+          }
+          else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', null, true);
+        });
       };
   }])
   .controller('modeCtrl', ['$scope', 'modeFactory',
