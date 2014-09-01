@@ -6,6 +6,11 @@ trait CustomAssertions
 {
     public function assertExceptionClass($e, $class)
     {
+        if (($e instanceof $class) === false)
+        {
+            throw $e;
+        }
+
         $this->assertInstanceOf($class, $e);
     }
 

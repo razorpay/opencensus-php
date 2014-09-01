@@ -86,6 +86,7 @@ class Repository extends Base\Repository
     {
         $attributes = array(
             'trackid' => $id,
+            'action' => Hdfc\Action::AUTHORIZE,
             'error_code' => $error['code'],
             'error_text' => $error['text'],
             'enroll_result' => $error['enroll_result'],
@@ -100,6 +101,7 @@ class Repository extends Base\Repository
     {
         $attributes = array(
             'status' => Hdfc\Status::AUTHORIZED,
+            'action' => Hdfc\Action::AUTHORIZE,
             'result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
@@ -130,6 +132,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolledError($model, $error)
     {
         $attributes = array(
+            'action' => Hdfc\Action::AUTHORIZE,
             'status' => Hdfc\Status::AUTH_NOT_ENROLL_FAILED,
             'error_code' => $error['code'],
             'error_text' => $error['text']);
@@ -142,6 +145,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolledError($model, $error)
     {
         $attributes = array(
+            'action' => Hdfc\Action::AUTHORIZE,
             'status' => Hdfc\Status::AUTH_ENROLL_FAILED,
             'error_code' => $error['code'],
             'error_text' => $error['text']);
@@ -194,6 +198,7 @@ class Repository extends Base\Repository
                 $action = Hdfc\Action::REFUND;
                 $status = Hdfc\Status::REFUND_FAILED;
                 break;
+
             case 'capture':
                 $action = Hdfc\Action::CAPTURE;
                 $status = Hdfc\Status::CAPTURE_FAILED;
