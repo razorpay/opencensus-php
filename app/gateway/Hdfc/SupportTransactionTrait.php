@@ -53,6 +53,59 @@ trait SupportTransactionTrait
         }
     }
 
+    protected function isSupportTxnSuccess()
+    {
+        if ($this->error)
+        {
+            return false;
+        }
+
+        $response = & $this->supportTxnResponse;
+
+        $result = $response['data']['result'];
+
+        //
+        // Check enroll result code.
+        // 'enrollSuccess' variable tells us whether
+        // its a success code or failure.
+        //
+        switch ($result)
+        {
+            case Hdfc\Result::CAPTURED:
+                break;
+
+            case Hdfc\Result::NOT_CAPTURED:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $authResponse,
+                    Hdfc\ErrorCode::RP00006);
+                $this->error = true;
+                break;
+
+            case Hdfc\Result::HOST_TIMEOUT:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $authResponse,
+                    Hdfc\ErrorCode::RP00004);
+                $this->error = true;
+                break;
+
+            case Hdfc\Result::DENIED_BY_RISK:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $authResponse,
+                    Hdfc\ErrorCode::RP00005);
+                $this->error = true;
+                break;
+
+            default:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $authResponse,
+                    Hdfc\ErrorCode::RP00002);
+                $this->error = true;
+                break;
+        }
+
+        return ! ($this->error);
+    }
+
     protected function setSupportTxnType($type)
     {
         Assert(($type === 'capture') or

@@ -13,12 +13,9 @@ class ErrorHandler
         return static::$invalidErrorCode;
     }
 
-    public static function getInvalidEnrollCodeError()
+    public static function getInvalidError()
     {
-        $error['code'] = Hdfc\ErrorCode::RP00003;
-        $error['text'] = Hdfc\ErrorCode::$errorMessages[Hdfc\ErrorCode::RP00003];
-
-        return $error;
+        return self::getErrorDetailsHdfc(ErrorCode::$invalidErrorCode);
     }
 
     public static function getErrorMessage($code)
@@ -41,5 +38,42 @@ class ErrorHandler
         }
 
         return $appErrorCode;
+    }
+
+    public static function checkErrorCode($code)
+    {
+        if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
+        {
+            throw new Exception\LogicException(
+                'Invalid Hdfc Error Code provided. Code: ' . $code);
+        }
+    }
+
+    public static function getInvalidResultCodeError()
+    {
+        return self::getErrorDetails(Hdfc\ErrorCode::RP00002);
+    }
+
+    public static function getErrorDetails($code)
+    {
+        self::checkErrorCode($code);
+
+        $text = Hdfc\ErrorHandler::getErrorMessage($code);
+
+        return array('code' => $code, 'text' => $text);
+    }
+
+    public static function setErrorInResponse(array & $response, $code)
+    {
+        self::checkErrorCode($code);
+
+        $response['error'] = self::getErrorDetails($code);
+    }
+
+    public static function setTimeoutError(array & $response)
+    {
+        $code = Hdfc\ErrorCode::RP00003;
+
+        $response['error'] = self::getErrorDetails($code);
     }
 }

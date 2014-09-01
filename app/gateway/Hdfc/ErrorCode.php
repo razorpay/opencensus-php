@@ -100,9 +100,43 @@ class ErrorCode
     const PY20002   = 'PY20002';
     const PY20006   = 'PY20006';
 
+    /**
+     * Invalid error code.
+     * Set it whenever encountering and unknown error code
+     * or 'result'
+     */
     const RP00001   = 'RP00001';
+
+    /**
+     * When for the given request, the result code
+     * isn't recognized
+     */
     const RP00002   = 'RP00002';
+
+    /**
+     * Gateway request timeout
+     */
     const RP00003   = 'RP00003';
+
+    /**
+     * When response result is 'HOST TIMEOUT'
+     */
+    const RP00004   = 'RP00004';
+
+    /**
+     * When response result is 'DENIED BY RISK'
+     */
+    const RP00005   = 'RP00005';
+
+    /**
+     * When response result is 'NOT APPROVED'
+     */
+    const RP00006   = 'RP00006';
+
+    /**
+     * When response result is 'NOT CAPTURED'
+     */
+    const RP00007   = 'RP00007';
 
     //
     // The error codes starting with 'RP' are our custom ones
@@ -180,8 +214,13 @@ class ErrorCode
         Hdfc\ErrorCode::CM90005   => 'Timestamp mismatch error',
 
         Hdfc\ErrorCode::RP00001   => 'Invalid Error Code',
-        Hdfc\ErrorCode::RP00002   => 'Gateway request timeout',
-        Hdfc\ErrorCode::RP00003   => 'Invalid enroll code');
+        Hdfc\ErrorCode::RP00002   => 'Invalid Result Code',
+        Hdfc\ErrorCode::RP00003   => 'Gateway request timeout',
+        Hdfc\ErrorCode::RP00004   => 'Gateway request timeout',
+        Hdfc\ErrorCode::RP00005   => 'Denied by risk',
+        Hdfc\ErrorCode::RP00006   => 'Authorization not approved',
+        Hdfc\ErrorCode::RP00007   => 'Capture/Refund not done',
+    );
 
     /**
      * Maps error codes from HDFC Gateway to the
@@ -239,7 +278,14 @@ class ErrorCode
         Hdfc\ErrorCode::CM90004   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         Hdfc\ErrorCode::CM90005   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
 
-        Hdfc\ErrorCode::RP00001   => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+        Hdfc\ErrorCode::RP00001   => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        Hdfc\ErrorCode::RP00002   => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        Hdfc\ErrorCode::RP00003   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        Hdfc\ErrorCode::RP00004   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        Hdfc\ErrorCode::RP00005   => Error\ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK,
+        Hdfc\ErrorCode::RP00006   => Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+        Hdfc\ErrorCode::RP00007   => Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+    );
 
     public static $invalidErrorCode = Hdfc\ErrorCode::RP00001;
 }

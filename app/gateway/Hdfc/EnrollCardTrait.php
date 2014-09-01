@@ -57,9 +57,9 @@ trait EnrollCardTrait
         // consider enroll as failed and set an error
         // message to that effect
         //
-        if ($this->isEnrollResultSuccess() === false)
+        if ($this->isEnrollSuccess() === false)
         {
-            $this->setErrorOnEnrollFailure();
+            $this->persistAfterEnroll();
 
             $this->throwException($this->enrollResponse['error']['code']);
         }
@@ -305,8 +305,13 @@ trait EnrollCardTrait
      *
      * @return void
      */
-    protected function isEnrollResultSuccess()
+    protected function isEnrollSuccess()
     {
+        if ($this->error)
+        {
+            return false;
+        }
+
         $result = &$this->enrollResponse['data']['result'];
 
         //
@@ -318,6 +323,11 @@ trait EnrollCardTrait
 
         // Set the enroll result code irrespective of success/failure.
         $this->enrollResponse['data']['enroll_result'] = $result;
+
+        if ($success === false)
+        {
+            $this->setErrorOnEnrollFailure();
+        }
 
         return $success;
     }
@@ -341,12 +351,9 @@ trait EnrollCardTrait
         switch ($enrollResult)
         {
             case Hdfc\Result::FSS0001_ENROLLED:
-                $code = Hdfc\ErrorCode::FSS0001;
-
-                $this->enrollResponse['error']['code'] = $code;
-
-                $this->enrollResponse['error']['text'] = Hdfc\ErrorHandler::getErrorMessage($code);
-
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $this->enrollResponse,
+                    Hdfc\ErrorCode::FSS0001);
                 break;
 
             case Hdfc\Result::UNKNOWN_ERROR_ENROLLED:
@@ -356,7 +363,7 @@ trait EnrollCardTrait
                 //
 
                 $this->enrollResponse['error'] =
-                    Hdfc\ErrorHandler::getInvalidEnrollCodeError();
+                    Hdfc\ErrorHandler::getInvalidResultCodeError();
                 break;
 
             default:

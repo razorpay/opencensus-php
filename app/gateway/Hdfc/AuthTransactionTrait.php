@@ -83,11 +83,13 @@ trait AuthTransactionTrait
             $this->authEnrolledRequest,
             $this->authEnrolledResponse);
 
+        if ($this->isAuthSuccess($this->authEnrolledResponse) === true)
+        {
+            ; //$this->validateAuthEnrolledResponse($this->authEnrolledResponse);
+        }
+
         $this->traceAuthEnrolledResponse();
 
-        //
-        // Store the response data
-        //
         $this->persistAfterAuthEnrolled();
 
         if ($this->error)
@@ -98,13 +100,21 @@ trait AuthTransactionTrait
 
     protected function postAuthNotEnrolledRequestToBank()
     {
+        if ($this->model->status !== Hdfc\Status::NOT_ENROLLED)
+        {
+            throw new Exception\InvalidArgumentException('Gateway Exception: Status not valid');
+        }
+
         $this->createAuthNotEnrolledRequestFields();
 
         $this->runRequestResponseFlow(
             $this->authNotEnrolledRequest,
             $this->authNotEnrolledResponse);
 
-        $this->validateAuthNotEnrolledResponse();
+        if ($this->isAuthSuccess($this->authNotEnrolledResponse) === true)
+        {
+            $this->validateAuthNotEnrolledResponse();
+        }
 
         $this->traceAuthNotEnrolledResponse();
 
@@ -114,6 +124,57 @@ trait AuthTransactionTrait
         {
             $this->throwException($this->authNotEnrolledResponse['error']['code']);
         }
+    }
+
+    protected function isAuthSuccess(array & $authResponse)
+    {
+        if ($this->error)
+        {
+            return false;
+        }
+
+        $result = &$authResponse['data']['result'];
+
+        //
+        // Check enroll result code.
+        // 'enrollSuccess' variable tells us whether
+        // its a success code or failure.
+        //
+        switch ($result)
+        {
+            case Hdfc\Result::APPROVED:
+                break;
+
+            case Hdfc\Result::NOT_APPROVED:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $authResponse,
+                    Hdfc\ErrorCode::RP00006);
+                $this->error = true;
+                break;
+
+            case Hdfc\Result::HOST_TIMEOUT:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $authResponse,
+                    Hdfc\ErrorCode::RP00004);
+                $this->error = true;
+                break;
+
+            case Hdfc\Result::DENIED_BY_RISK:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $authResponse,
+                    Hdfc\ErrorCode::RP00005);
+                $this->error = true;
+                break;
+
+            default:
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $authResponse,
+                    Hdfc\ErrorCode::RP00002);
+                $this->error = true;
+                break;
+        }
+
+        return ! ($this->error);
     }
 
     protected function createAuthNotEnrolledRequestFields()
@@ -221,8 +282,6 @@ trait AuthTransactionTrait
         $data = $this->authNotEnrolledResponse['data'];
 
         $this->validatePostDate($data['postdate']);
-
-
     }
 
     protected function validatePostDate($postDate)

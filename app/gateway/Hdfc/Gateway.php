@@ -232,6 +232,12 @@ class Gateway extends BaseGateway
      */
     protected $repo;
 
+    /**
+     * Non-fatal exception that will be thrown after internal processing
+     * @var Exception
+     */
+    protected $exception;
+
     public function __construct()
     {
         parent::__construct();
@@ -282,11 +288,6 @@ class Gateway extends BaseGateway
 
         $this->supportTxn($input, 'capture');
     }
-
-    // public function reconcile(array $input, $ledgerId)
-    // {
-    //     (new Settlement)->reconcile($input, $ledgerId);
-    // }
 
     /**
      * After card enroll and bank ACS form submission,
@@ -346,8 +347,34 @@ class Gateway extends BaseGateway
         // Create xml from the fields
         $request['xml'] = Utility::createXml($request['data']);
 
-        // send the request and get response
-        $response['response'] = $this->postRequest($request);
+        try
+        {
+            // send the request and get response
+            $response['response'] = $this->postRequest($request);
+        }
+        catch(\Requests_Exception $e)
+        {
+            $this->exception = $e;
+
+            //
+            // Some error occurred.
+            // Check that whether the gateway response timed out.
+            // Mostly it should be gateway timeout only
+            //
+            if (Utility::checkTimeout($e))
+            {
+                $this->error = true;
+
+                $response['xml'] = '';
+                Hdfc\ErrorHandler::setTimeoutError($response);
+
+                return;
+            }
+            else
+            {
+                throw $e;
+            }
+        }
 
         $response['xml'] = $response['response']->body;
 
@@ -398,33 +425,15 @@ class Gateway extends BaseGateway
         $request['options'] = $this->getRequestOptions();
         $response = null;
 
-        try
-        {
-            $response = $this->sendGatewayRequest($request);
-        }
-        catch(\Requests_Exception $e)
-        {
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (Utility::checkTimeout($e))
-            {
-                $this->throwGatewayTimeoutException($e);
-            }
-            else
-            {
-                throw $e;
-            }
-        }
-//s($response->body);
+        $response = $this->sendGatewayRequest($request);
+
+// echo $response->body . PHP_EOL;
         return $response;
     }
 
     protected function sendGatewayRequest($request)
     {
-//        s($request['xml']);
+  //      echo $request['xml'] .  PHP_EOL;
         return Requests::post(
                     $request['url'],
                     $request['header'],
@@ -491,16 +500,23 @@ class Gateway extends BaseGateway
 
 // -------------------------Exceptions -----------------------------------------
 
-    protected function throwGatewayTimeoutException($e)
+    protected function throwGatewayTimeoutException($code)
     {
+        $msg = null;
+        $e = null;
+
+        if ($this->exception !== null)
+        {
+            $e = $this->exception;
+            $msg = $e->getMessage();
+        }
+
         $exception = new Exception\GatewayTimeoutException($e->getMessage(), $e);
 
-        $rp = Hdfc\ErrorCode::RP00002;
-
-        $desc = Hdfc\ErrorCode::$errorMessages[$rp];
+        $desc = Hdfc\ErrorCode::$errorMessages[$code];
 
         $exception->setGatewayErrorCodeAndDesc(
-            Hdfc\ErrorCode::RP00002,
+            $code,
             $desc);
 
         throw $exception;
@@ -508,6 +524,12 @@ class Gateway extends BaseGateway
 
     protected function throwException($gatewayErrorCode)
     {
+        if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
+            ($gatewayErrorCode === Hdfc\ErrorCode::RP00004))
+        {
+            $this->throwGatewayTimeoutException($gatewayErrorCode);
+        }
+
         $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
 
         $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
