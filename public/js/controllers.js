@@ -3,8 +3,8 @@
 /* Controllers */
 
 angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
-  .controller('AppCtrl', ['$scope', '$translate', '$localStorage', '$window', 
-    function(              $scope,   $translate,   $localStorage,   $window ) {
+  .controller('AppCtrl', ['$scope', '$translate', '$localStorage', '$window',
+    function(              $scope,   $translate,   $localStorage,   $window) {
       // add 'ie' classes to html
       var isIE = !!navigator.userAgent.match(/MSIE/i);
       isIE && angular.element($window.document.body).addClass('ie');
@@ -46,7 +46,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       $scope.$watch('app.settings', function(){ $localStorage.settings = $scope.app.settings; }, true);
 
       // angular translate
-      $scope.langs = {en:'English'};
+      $scope.langs = {en:'English', hi:'Hindi'};
       $scope.selectLang = $scope.langs[$translate.proposedLanguage()] || "English";
       $scope.setLang = function(langKey) {
         // set the current lang
@@ -67,14 +67,18 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
   }])
 
   //Signin Controller
-  .controller('SigninCtrl', ['$scope', '$http', '$state', 'alertsFactory', 'user', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
-    function($scope, $http, $state, alertsFactory, user, transformRequestAsFormPost, CSRF_TOKEN) {
+  .controller('SigninCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 'user', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
+    function($scope, $http, $state, $stateParams, alertsFactory, user, transformRequestAsFormPost, CSRF_TOKEN) {
       $scope.data = {
         _token: CSRF_TOKEN
       }
 
       //Intialise alerts and scope functions
       $scope.alerts = alertsFactory.getHandler();
+
+      if($stateParams.email){
+        $scope.data.email = $stateParams.email;
+      }
 
       $scope.submit = function($valid) {
         if(!$valid)  {
@@ -165,7 +169,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
   .controller('ConfirmCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
     function($scope, $http, $state, $stateParams, alertsFactory, transformRequestAsFormPost, CSRF_TOKEN) {
       //Intialise alerts and scope functions
-      $scope.alerts = alertsFactory.handler();
+      $scope.alerts = alertsFactory.getHandler();
 
       $scope.success = false;
 
@@ -289,8 +293,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
   }])
 
   //User profile Controller
-  .controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '$modal', 'alertsFactory',
-    function($scope, $http, $state, user, CSRF_TOKEN, $modal, alertsFactory) {
+  .controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '$modal', 'alertsFactory', '$idle', '$keepalive',
+    function($scope, $http, $state, user, CSRF_TOKEN, $modal, alertsFactory, $idle, $keepalive) {
       
       user.identity().then(function(data){
         $scope.user = data;
@@ -310,19 +314,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       };
 
       $scope.logout = function() {
-        $scope.data = {
-          _token: CSRF_TOKEN
-        }
-
-        var request = $http({
-            method: "get",
-            url: "/user/logout",
-            data: $scope.data
-        });
-
-        request
-              .finally(function() {
-                  user.identity(true);
+        logoutRequest()
+          .finally(function() {
                   $state.go('access.signin');  
               });
       };
@@ -352,6 +345,24 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           });
       };
 
+      function logoutRequest(){
+        $scope.data = {
+          _token: CSRF_TOKEN
+        }
+
+        var request = $http({
+            method: "get",
+            url: "/user/logout",
+            data: $scope.data
+        });
+
+        request
+          .finally(function() {
+                user.identity(true);
+          });
+
+        return request;
+      }
       function passwordChangeRequest(data) {
         $scope.alerts.addAlert('info', 'Processing...', true);
 
@@ -379,6 +390,40 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           $scope.alerts.addAlert('danger', null, true);
         });
       };
+
+      function closeModals() {
+        if ($scope.warning) {
+          $scope.warning.close();
+          $scope.warning = null;
+        }
+
+        if ($scope.timedout) {
+          $scope.timedout.close();
+          $scope.timedout = null;
+        }
+      }
+
+      $scope.$on('$idleStart', function() {
+        closeModals();
+
+        $scope.warning = $modal.open({
+          templateUrl: 'warning-dialog.html',
+          windowClass: 'modal-danger'
+        });
+      });
+
+      $scope.$on('$idleEnd', function() {
+        closeModals();
+      });
+
+      $scope.$on('$idleTimeout', function() {
+        logoutRequest().finally(function(){
+          $state.go('lockme', { "email": $scope.user.email}).finally(function(){
+            closeModals();
+          });
+        });
+
+      });
   }])
 
   //Application mode change controller
