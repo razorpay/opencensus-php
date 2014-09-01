@@ -120,7 +120,7 @@ var app = angular.module('app', [
             })
             .state('app.profile', {
                 url: '/profile',
-                templateUrl: 'tpl/page_profile.html'
+                templateUrl: 'tpl/app_profile.html'
             })
             // others
             .state('lockme', {

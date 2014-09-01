@@ -1,0 +1,62 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">User Profile</h1>
+</div>
+<div class="wrapper-md" ng-controller="UserCtrl">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Merchant Id: <strong>{{user.id}}</strong>
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="row wrapper">
+      <div class="list-group">
+        <a href class="list-group-item">
+          <span class="pull-right">{{user.name | titlecase}}</span>
+          Merchant Name
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{user.email}}</span>
+          Email Id
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{activated(user.activated)}}"><i class="fa" ng-class="{'fa-check': user.activated == 1, 'fa-times':user.activated == 0}"></i></span>
+          Activation Status
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{user.created_at | date:'medium'}}</span>
+          Registration Date
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{user.activation_progress}}%</span>
+          Activation Form Progress
+        </a>
+      </div>
+    </div>
+    <div class="text-center m-b">
+      <script type="text/ng-template" id="passwordModalContent.html">
+        <div class="modal-header">
+          <h3 class="modal-title">Change Password</h3>
+        </div>
+        <div class="modal-body">
+            <form ng-init="data={}">
+              <div class="form-group">
+                  <input type="password" placeholder="Current Password" class="form-control" ng-model="data.old_password">
+              </div>
+              <div class="form-group">
+                  <input type="password" placeholder="New Password" class="form-control" ng-model="data.password">
+              </div>
+              <div class="form-group">
+                  <input type="password" placeholder="Confirm New Password" class="form-control" ng-model="data.password_confirmation">
+              </div>
+            </form>
+        </div>
+        <div class="modal-footer">                  
+            <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+            <button class="btn btn-primary" ng-click="ok(data)">Change Password</button>
+        </div>
+      </script>
+      <button  class="btn btn-primary btn-rounded" ng-click="changePassword(lg)">Change Password</button>
+    </div>
+  </div>
+</div>
