@@ -72,11 +72,26 @@ angular.module('app.services', [])
 			    };
 			  }
 			])
-			.factory("modeFactory",['$state', function($state){
-				var modes = {test: "test", live: "live"};
+			.factory("modeFactory",['$state', '$localStorage', '$rootScope',
+			 function($state, $localStorage, $rootScope){
+				var modes = {test: "test", live: "live"};	
 
 				var currentMode = "test";
 
+
+				if(angular.isDefined($localStorage.rzp_mode) ) {
+			       currentMode = $localStorage.rzp_mode;
+			      } else {
+			        $localStorage.rzp_mode = currentMode;
+			      }
+			    
+				$rootScope.$watch(function() {
+				  return currentMode;
+				}, function watchCallback(newValue, oldValue) {
+				  $localStorage.rzp_mode = newValue;
+				},
+				true);
+			    
 				return {
 					getMode: function(){
 						return currentMode;
