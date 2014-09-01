@@ -7,6 +7,8 @@ use EE\Error\ErrorCode;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
+    public $incrementing = false;
+
     /**
      * Create a new Eloquent query builder for the model.
      *

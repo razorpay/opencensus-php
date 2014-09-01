@@ -20,8 +20,6 @@ class Entity extends Base\UniqueIdEntity
         self::EMAIL,
         self::ACTIVATED);
 
-    public $incrementing = false;
-
     public function isActivated()
     {
         return $this->getAttribute(self::ACTIVATED);

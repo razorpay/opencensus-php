@@ -2,9 +2,10 @@
 
 namespace Models\Card;
 
-use \Constants\Table;
+use Models\Base;
+use Constants\Table;
 
-class Detail extends \Eloquent
+class Detail extends Base\Entity
 {
     const IIN = 'iin';
 
@@ -21,8 +22,6 @@ class Detail extends \Eloquent
     protected $table = Table::IIN;
 
     protected $primaryKey = self::IIN;
-
-    public $incrementing = false;
 
     public $timestamps = false;
 

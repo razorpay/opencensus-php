@@ -26,8 +26,6 @@ class Entity extends \Models\Base\Entity
 
     protected $primaryKey = 'gateway_transaction_id';
 
-    public $incrementing = false;
-
     protected $guarded = array();
 
     public function transaction()

@@ -14,8 +14,6 @@ class Balance extends Base\UniqueIdEntity
     protected $fillable = array(
         self::ID);
 
-    public $incrementing = false;
-
     public function addAmount($amount)
     {
         if (is_numeric($amount) === false)
