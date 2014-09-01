@@ -16,7 +16,8 @@ var app = angular.module('app', [
     'app.services',
     'app.directives',
     'app.controllers',
-    'angularFileUpload'
+    'angularFileUpload',
+    'ngIdle'
   ])
 .run(
   [          '$rootScope', '$state', '$stateParams', 'user', 'authorization',
@@ -124,8 +125,11 @@ var app = angular.module('app', [
             })
             // others
             .state('lockme', {
-                url: '/lockme',
-                templateUrl: 'tpl/page_lockme.html'
+                url: '/lockme/:email',
+                templateUrl: 'tpl/page_lockme.html',
+                data: {
+                  role: 'guest'
+                }
             })
             .state('access', {
                 url: '/access',
@@ -185,6 +189,12 @@ var app = angular.module('app', [
   // Tell the module to store the language in the local storage
   $translateProvider.useLocalStorage();
 
+}])
+.config(['$keepaliveProvider', '$idleProvider', function($keepaliveProvider, $idleProvider) {
+  $idleProvider.idleDuration(5*60);
+  $idleProvider.warningDuration(15);
+  $keepaliveProvider.interval(2*60);
+  $keepaliveProvider.http('/user/keepalive');
 }])
 
 /**

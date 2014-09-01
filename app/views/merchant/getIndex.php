@@ -28,6 +28,7 @@
     <script src="js/angular/angular-animate.min.js"></script>
     <script src="js/angular/angular-ui-router.min.js"></script>
     <script src="js/angular/angular-translate.js"></script>
+    <script src="js/angular/angular-idle.min.js"></script>
     <script src="js/angular/ngStorage.min.js"></script>
     <script src="js/angular/ui-load.js"></script>
     <script src="js/angular/ui-jq.js"></script>
