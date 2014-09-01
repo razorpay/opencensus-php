@@ -27,6 +27,53 @@ class Gateway extends Hdfc\Gateway
         $this->request = \Request::getFacadeRoot();
     }
 
+    public function capture(array $input)
+    {
+        parent::capture($input);
+
+        $serviceTaxPercent = 12;
+        $educationCessPercent = 0.36;
+
+        $request = $this->supportTxnRequest;
+        $data = $request['data'];
+        $amount = $data['amt'];
+        $msf = $amount * 2 / 100;
+        $serviceTax = $amount * 12 / 100;
+        $educationCess = $amount * 0.36 / 100;
+        $netAmount = $amount - $msf;
+
+        $attributes = array(
+            'merchant_code' => $this->terminal['gateway_merchant_id'],
+            'terminal_number' => $this->terminal['gateway_terminal_id'],
+            'rfc_fmt' => 'BAT',
+            'bat_nbr' => 1,
+            'card_type' => $this->input['txn']['card']['network'] . 'LOCAL',
+            'card_number' => $this->input['txn']['card']['iin'] . 'xxxxxx' . $this->input['txn']['card']['last4'],
+            'trans_date' => (new Carbon('now'))->format('d-M-y'),
+            'settle_date' => (new Carbon('now'))->format('d-M-y'),
+            'approv_code' => '000000',
+            'intl_amt' => 0,
+            'domestic_amt' => $amount,
+            'tran_id' => $this->supportTxnResponse['data']['tranid'],
+            'upvalue' => '\`',
+            'merchant_trackid' => $this->input['txn']['id'],
+            'msf' => $msf,
+            'service_tax' => $serviceTax,
+            'edu_cess' => $educationCess,
+            'net_amount' => $netAmount,
+            'debitcredit_type' => 'CC',
+            'udf1' => '',
+            'udf2' => '',
+            'udf3' => '',
+            'udf4' => '',
+            'udf5' => '',
+        );
+
+        $mprGenerator = new MprGenerator($attributes);
+
+        (new Hdfc\Repository)->save($mprGenerator);
+    }
+
     public function gatewayTransaction()
     {
         $action = Hdfc\Utility::getFieldFromXML($this->input, 'action');
