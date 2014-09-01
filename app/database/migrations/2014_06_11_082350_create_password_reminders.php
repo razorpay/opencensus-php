@@ -19,7 +19,7 @@ class CreatePasswordReminders extends Migration {
 			$table->string('email')->index();
 			$table->string('token')->index();
 
-			$table->integer('created_at');
+			$table->timestamp('created_at');
 		});
 	}
 
