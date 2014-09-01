@@ -28,7 +28,7 @@
         <!-- nabar right -->
         
         <ul class="nav navbar-nav navbar-right">
-        <!-- Language selector DISABLED FOR NOW 
+        <!-- Language selector -->
           <li class="dropdown hidden-sm">
             <a href class="dropdown-toggle" data-toggle="dropdown">
               {{selectLang}} <b class="caret"></b>
@@ -38,8 +38,7 @@
                 <a ng-click="setLang(langKey)" href="#">{{label}}</a>
               </li>
             </ul>
-
-          </li> -->
+          </li> 
           <li class="dropdown hidden-sm" ng-controller="modeCtrl">
             <a href class="dropdown-toggle" data-toggle="dropdown">
               {{mode() | titlecase}} <b class="caret"></b>

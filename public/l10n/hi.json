@@ -1,0 +1,25 @@
+{
+  "header" : {
+    "navbar" : {
+      "DOCUMENTATION": "प्रलेखन"
+    }
+  },
+  "aside" : {
+    "nav" : {
+      "HEADER" : "सुविधाएँ",
+      "DASHBOARD" : "डैशबोर्ड",
+      "TRANSACTIONS" : "लेनदेन",
+      "REFUNDS" : "वापसी",
+      "SETTLEMENTS" : "भुगतान",
+      "settings" : {
+        "SETTINGS": "सेटिंग्स",
+        "API_KEYS": "एपीआई चाबी",
+        "ACTIVATION": "सक्रियण",
+        "PROFILE" : "प्रोफाईल"
+      }
+    },
+    "AGREEMENT": "Merchant Agreement",
+    "TERMS": "Terms & Conditions",
+    "PRIVACY": "Privacy Policy"
+  }
+}
