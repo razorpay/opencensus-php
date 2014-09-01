@@ -22,3 +22,14 @@
   </div>
   <!-- / footer -->
   </div>
+
+<script type="text/ng-template" id="warning-dialog.html">
+  <div ng-idle-countdown="countdown" ng-init="countdown=15">
+  <div class="modal-header">
+   <h3>You'll be logged out in <span class="label label-danger">{{countdown}}</span> <span ng-pluralize="" count="countdown" when="{'one': 'second', 'other': 'seconds' }"></span>.</h3>
+  </div>
+  <div class="modal-body">
+  <p>Your session has been idle for very long, perform some action to avoid auto logout.</p>
+  <progressbar max="15" value="countdown" animate="true" class="progress-striped active" type="danger"></progressbar>
+  </div>
+</script>

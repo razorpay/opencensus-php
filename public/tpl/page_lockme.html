@@ -1,14 +1,16 @@
-<div class="modal-over bg-black">
-  <div class="modal-center animated fadeInUp text-center" style="width:200px;margin:-100px 0 0 -100px;">
-    <div class="thumb-lg">
-      <img src="img/a0.jpg" class="img-circle">
-    </div>
-    <p class="h4 m-t m-b">John.Smith</p>
+<div class="modal-over bg-black" ng-controller="SigninCtrl">
+  <div class="modal-center animated fadeInUp text-center" style="width:300px;margin:-150px 0 0 -150px;">
+    <a href="#/" class="col-sm-12 text-center m-t m-b"><img class="img-responsive" src="img/logo_full.png" alt="."></a>
+    <p class="h4 m-t m-b">{{data.email}}</p>
     <div class="input-group">
-      <input type="password" class="form-control text-sm btn-rounded no-border" placeholder="Enter pwd to continue">
+      <input type="password" size="35" ng-model="data.password" class="form-control text-sm btn-rounded no-border" placeholder="Enter password to continue" ng-keyup="$event.keyCode == 13 ? submit(true) : null">
       <span class="input-group-btn">
-        <a href="#/" class="btn btn-success btn-rounded no-border"><i class="fa fa-arrow-right"></i></a>
+        <button class="btn btn-success btn-rounded no-border" ng-click="submit(true)"><i class="fa fa-arrow-right"></i></button>
       </span>
+    </div>
+    <p class="h4 m-t m-b">Locked<br/>(<a href="#/">Not you?</a>)</p>
+    <div class="text-center m-t m-b">
+      <p ng-repeat="alert in alerts.getAlerts()">{{alert.msg}}</p>
     </div>
   </div>
 </div>
