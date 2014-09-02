@@ -1,3 +1,4 @@
+
 <?php
 
 /*
@@ -91,6 +92,6 @@ Route::filter('csrf', function()
 {
 	if (Session::token() != Input::get('_token'))
 	{
-		return array('success'=>false, 'errors'=>array('Server error occured. Please refresh the page and try again.'));
+		return array('success'=>false, 'errors'=>array('Session timed out. Please refresh the page and try again.'));
 	}
 });

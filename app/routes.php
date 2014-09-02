@@ -32,11 +32,7 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/keys/csv', 'MerchantController@getCsv');
 
-    Route::get('/account', 'MerchantController@getAccount');
-
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
-
-    Route::get('/activation', 'MerchantController@getActivation');
 
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 

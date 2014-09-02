@@ -27,11 +27,6 @@ class MerchantController extends BaseController
         return ['success' => true];
     }
 
-    public function getLogin()
-    {
-        return View::make('merchant.getLogin');
-    }
-
     public function postSignin()
     {
         $input = Input::all();
@@ -42,11 +37,6 @@ class MerchantController extends BaseController
             return Response::json(array('success' => true));
         else
             return Response::json(array('success' => false, 'errors' => $error));
-    }
-
-    public function getRegister()
-    {
-        return View::make('merchant.getRegister');
     }
 
     public function postRegister()
@@ -63,11 +53,6 @@ class MerchantController extends BaseController
         {
             return Response::json(array('success' => false, 'errors' => $error));
         }
-    }
-
-    public function getPassword()
-    {
-        return View::make('merchant.getPassword');
     }
 
     public function postPassword()
@@ -108,13 +93,6 @@ class MerchantController extends BaseController
 
         fputcsv($output, array('rzp_id', 'rzp_secret'));
         fputcsv($output, array($input['id'], $input['secret']));
-    }
-
-    public function getAccount()
-    {
-        $merchant = (new Service\Merchant)->fetch(\Auth::merchant()->id());
-
-        return $merchant;
     }
 
     public function getKeys($mode)
@@ -158,10 +136,6 @@ class MerchantController extends BaseController
         }
     }
 
-    public function getActivation()
-    {
-        return View::make('merchant.getActivationGenerated');
-    }
 
     public function getActivationDetails()
     {
