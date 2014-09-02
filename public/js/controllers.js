@@ -302,8 +302,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
       $scope.alerts = alertsFactory.getHandler();
 
-      console.log($scope.alerts);
-
       $scope.activated = function(activated) {
         if(activated == 1) {
           return "Activated";
@@ -427,11 +425,35 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
   }])
 
   //Application mode change controller
-  .controller('modeCtrl', ['$scope', 'modeFactory',
-    function($scope, modeFactory){
+  .controller('modeCtrl', ['$scope', 'modeFactory', 'user', '$modal',
+    function($scope, modeFactory, user, $modal){
       $scope.modes = modeFactory.getModes;
       $scope.mode = modeFactory.getMode;
-      $scope.selectMode = modeFactory.selectMode;
+      
+      $scope.selectMode = function(mode) {
+        user.identity().then(function(data){
+          var userData = data;
+          if(mode == "live" && parseInt(userData.activated) !== 1) {
+            var modalInstance = $modal.open({
+              templateUrl: 'activationModalContent.html',
+              controller: activationModalCtrl,
+              size: 'sm'
+            });
+          }
+          else {
+            modeFactory.selectMode(mode);   
+          }
+        });
+      };
+
+      var activationModalCtrl = function ($scope, $modalInstance) {
+        $scope.ok = function () {
+          $modalInstance.close();
+        };
+        $scope.cancel = function () {
+          $modalInstance.dismiss('cancel');
+        };
+      };
   }])
 
   //Dashboard Aggregations controller
