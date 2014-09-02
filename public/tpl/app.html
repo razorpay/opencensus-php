@@ -32,4 +32,20 @@
   <p>Your session has been idle for very long, perform some action to avoid auto logout.</p>
   <progressbar max="15" value="countdown" animate="true" class="progress-striped active" type="danger"></progressbar>
   </div>
+  </div>
+</script>
+<script type="text/ng-template" id="activationModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Activation Required</h3>
+  </div>
+  <div class="modal-body">
+    <div>
+      You need to be activated for this action <br/>
+      Please fill and submit the 
+      <a ui-sref="app.activation" ng-click="ok()">activation form</a>. 
+    </div>
+  </div>
+  <div class="modal-footer">                  
+      <button class="btn btn-primary" ng-click="ok()">OK</button>
+  </div>
 </script>
