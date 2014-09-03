@@ -40,21 +40,20 @@ class Admin extends Service
         return [$error, $data];
     }
 
-    public function listMerchants()
-    {
-        return DAL\Merchant::get()->toArray();
-    }
+    public function listMerchants($pending = false)
+    {   
+        if($pending === false)
+            return DAL\Merchant::get()->toArray();
+        else {
+            $merchants_inactive = DAL\Merchant::with('MerchantDetails')->where('activated', '=', '0')->get();
 
-    public function listPendingActivations()
-    {
-        $merchants_submitted = DAL\MerchantDetails::with('merchant')->where('submitted', '=', '1')->get();
+            $merchants_submitted_inactive = $merchants_inactive->filter(function($merchant)
+            {
+                return ($merchant->merchant_details->submitted == 1);
+            });
 
-        $merchants_submitted_inactive = $merchants_submitted->filter(function($merchant_detail)
-        {
-            return ($merchant_detail->merchant->isActive() === false);
-        });
-
-        return $merchants_submitted_inactive->toArray();
+            return $merchants_submitted_inactive->toArray();      
+        }
     }
 
     public function getAdmins()
