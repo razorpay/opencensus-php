@@ -5,13 +5,13 @@
 <div class="text-center m-t m-b">
   <alert ng-repeat="alert in formAlerts.getAlerts()" type="{{alert.type}}" close="formAlerts.closeAlert($index)">{{alert.msg}}</alert>
 </div>
+  <progressbar value="steps.percent" class="progress-striped active progress-xs" type="success"></progressbar>
   <tabset class="tab-container">
     <tab active="steps.step1" select="steps.percent=0">
       <tab-heading ng-class="{'text-success': check.1 === true, 'text-danger':check.1 === false}">
         <i class="fa" ng-class="{'fa-check': check.1 === true, 'fa-times':check.1 === false}"></i>
         Contact Details
       </tab-heading>
-      <progressbar value="steps.percent" class="progress-striped active progress-xs" type="success"></progressbar>
       <h4>Contact Details</h4>
       <form name="step1" class="form-validation form-horizontal" ng-submit="submit(1)" novalidate>
       <fieldset ng-disabled="locked">
@@ -55,7 +55,6 @@
         <i class="fa" ng-class="{'fa-check': check.2 === true, 'fa-times':check.2 === false}"></i>
         Bussiness Details
       </tab-heading>
-      <progressbar value="steps.percent" class="progress-striped active progress-xs" type="success"></progressbar>
       <h4>Bussiness Details </h4>
       <form name="step2" class="form-validation form-horizontal" ng-submit="submit(2)" novalidate>
       <fieldset ng-disabled="locked">
@@ -213,7 +212,6 @@
         <i class="fa" ng-class="{'fa-check': check.3 === true, 'fa-times':check.3 === false}"></i>
         Promoters Details
       </tab-heading>
-      <progressbar value="steps.percent" class="progress-striped active progress-xs" type="success"></progressbar>
       <h4>Promoters Details</h4>
       <form name="step3" class="form-validation form-horizontal" ng-submit="submit(3)" novalidate>
       <fieldset ng-disabled="locked">
@@ -245,7 +243,6 @@
         <i class="fa" ng-class="{'fa-check': check.4 === true, 'fa-times':check.4 === false}"></i>
         Bank Account Details
       </tab-heading>
-      <progressbar value="steps.percent" class="progress-striped active progress-xs" type="success"></progressbar>
       <h4>Bank Account Details</h4>
       <form name="step4" class="form-validation form-horizontal" ng-submit="submit(4)" novalidate>
       <fieldset ng-disabled="locked">
@@ -302,7 +299,6 @@
         <i class="fa" ng-class="{'fa-check': check.5 === true, 'fa-times':check.5 === false}"></i>
         Documents Upload
       </tab-heading>
-      <progressbar value="steps.percent" class="progress-striped active progress-xs" type="success"></progressbar>
       <h4>Documents Uploads</h4>
       <form name="step5" class="form-validation form-horizontal" ng-submit="submit(5)" novalidate>
       <fieldset ng-disabled="locked">
@@ -375,7 +371,6 @@
         <i class="fa" ng-class="{'fa-check': check.6 === true, 'fa-times':check.6 === false}"></i>
         Submit Form
       </tab-heading>
-      <progressbar value="steps.percent" class="progress-striped active progress-xs" type="success"></progressbar>
       <h4>Submit For Activation</h4>
       <form name="step6" class="form-validation form-horizontal" ng-submit="submit(6)" novalidate>
       <fieldset ng-disabled="locked">
