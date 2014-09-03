@@ -101,6 +101,8 @@ class Admin extends Service
 
         $response = DAL\MerchantDetails::filterDetails($merchant_details);
 
+        $response['data'] = Manager\MerchantDetails::sortDataInSteps($response['data']);
+
         foreach($response['files'] as $key => &$file)
         {
             $extension_position = strrpos($file, '.', -1);

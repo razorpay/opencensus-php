@@ -239,9 +239,11 @@ class AdminController extends BaseController
 
         $activation_details = (new Service\Admin)->fetchMerchantActivationDetails($id);
 
-        return View::make('admin.getMerchantDetails')
-                   ->with('data', json_encode($activation_details))
-                   ->with('details', $details);
+        return Response::json(array(
+            'success' => true,
+            'data' => $activation_details,
+            'merchant'   => $details
+        ));
     }
 
     public function getPricingList()
