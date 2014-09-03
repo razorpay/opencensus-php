@@ -9,13 +9,13 @@
     </a>
   </li>
   <li>
-    <a ui-sref="app.transactions.list">
+    <a ui-sref="app.merchants.list">
       <i class="fa fa-users icon text-warning-lter"></i>
       <span class="font-bold" translate="aside.nav.MERCHANTS">Merchants</span>
     </a>
   </li>
   <li>
-    <a ui-sref="app.transactions.refunds">
+    <a ui-sref="app.pricing.list">
       <i class="fa fa-money icon text-warning-lter"></i>
       <span class="font-bold" translate="aside.nav.PRICING">Pricing Plans</span>
     </a>
@@ -28,7 +28,7 @@
     <span translate="aside.nav.settings.SETTINGS">Settings</span>
   </li>  
   <li>
-    <a ui-sref="app.keys" ng-controller="AdminCtrl" ng-show="admin.superadmin == 1">
+    <a ui-sref="app.admins" ng-controller="AdminCtrl" ng-show="admin.superadmin == 1">
       <i class="icon-settings icon text-success-lter"></i>
       <span translate="aside.nav.settings.ADMINS">Admins</span>
     </a>
