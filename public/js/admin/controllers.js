@@ -256,8 +256,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       });
     }
   }])
-  .controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFactory', 'CSRF_TOKEN',
-    function($scope, $http, $stateParams, alertsFactory, CSRF_TOKEN) {
+  .controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost', '$modal',
+    function($scope, $http, $stateParams, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost, $modal) {
       $scope.alerts = alertsFactory.getHandler();
 
       $scope.merchant = {
@@ -335,18 +335,106 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         });
       };
 
-      $scope.assignPricing = function(){
-        //@todo
-        ;
+      $scope.assignPricing = function(plan_id){
+        $scope.alerts.addAlert('info', 'Processing...', true);
+        
+        var data = {
+          _token: CSRF_TOKEN,
+          pricing_plan_id: plan_id
+        };
+
+
+        var request = $http({
+                      method: "post",
+                      url: "/admin/merchant/"+$scope.merchant.id+"/pricing",
+                      transformRequest: transformRequestAsFormPost,
+                      data: data
+        });
+
+        request
+        .success(function(data){
+          if(data.success) {
+            $scope.alerts.addAlert('success', 'Plan Assigned successfully', true);
+            generateMerchant();
+          }
+          else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', null, true);
+        });
       };
 
-      function generateMerchant() {
+      var assignPricingModalCtrl = function ($scope, $modalInstance, pricing_plans) {
+        $scope.pricing_plans = pricing_plans;
+        console.log($scope.pricing_plans);
+        $scope.ok = function (pricing_plan_id) {
+          $modalInstance.close(pricing_plan_id);
+        };
+
+        $scope.cancel = function () {
+          $modalInstance.dismiss('cancel');
+        };
+      };
+
+      $scope.openAssignPricing = function () {
+
+        var pricing_plans = getPricingPlans();
+
+        var modalInstance = $modal.open({
+          templateUrl: 'assignPricingModalContent.html',
+          controller: assignPricingModalCtrl,
+          size: 'lg',
+          resolve: {
+            pricing_plans: function () {
+              return pricing_plans;
+            }
+          }
+        });
+
+        modalInstance.result.then(
+          function (plan_id) {
+            $scope.assignPricing(plan_id);
+          },
+          function () {
+            ;
+          });
+      };
+
+      function getPricingPlans(){
+        var plans = [];
+
         $scope.alerts.addAlert('info', 'Processing...', true);
-        var request = $http.get("/admin/merchant/"+$scope.merchant.id);
+
+        var request = $http.get("/admin/pricing/list");
 
         request
         .success(function(data){
           $scope.alerts.resetAlerts();
+          if(data.success) {
+            angular.forEach(data.data, function(value, key){
+              plans.push({'id': value.id, 'name':value.name});
+            })
+          }
+          else {
+            $scope.alerts.addAlert('danger');
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', null, true);
+        })
+        return plans;
+      };
+
+      function generateMerchant() {
+        var request = $http.get("/admin/merchant/"+$scope.merchant.id);
+
+        request
+        .success(function(data){
           if(data.success) {
             $scope.merchant = data.details;
 
@@ -355,7 +443,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
             $scope.merchant.activation_progress = parseInt(($scope.merchant.steps_finished.length * 100)/ 6);
           }
           else {
-            $scope.alerts.addAlert('danger');
+            $scope.alerts.addAlert('danger', null, true);
           }
         })
         .error(function(){
