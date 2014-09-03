@@ -1,7 +1,7 @@
 <div class="modal-over bg-black" ng-controller="SigninCtrl">
   <div class="modal-center animated fadeInUp text-center" style="width:300px;margin:-150px 0 0 -150px;">
     <a href="#/" class="col-sm-12 text-center m-t m-b"><img class="img-responsive" src="img/logo_full.png" alt="."></a>
-    <p class="h4 m-t m-b">{{data.email}}</p>
+    <p class="h4 m-t m-b">{{data.username}}</p>
     <div class="input-group">
       <input type="password" size="35" ng-model="data.password" class="form-control text-sm btn-rounded no-border" placeholder="Enter password to continue" ng-keyup="$event.keyCode == 13 ? submit(true) : null">
       <span class="input-group-btn">

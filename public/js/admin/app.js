@@ -125,8 +125,8 @@ var app = angular.module('app', [
             })
             // others
             .state('lockme', {
-                url: '/lockme/:email',
-                templateUrl: 'tpl/page_lockme.html',
+                url: '/lockme/:username',
+                templateUrl: 'tpl/admin/page_lockme.html',
                 data: {
                   role: 'guest'
                 }

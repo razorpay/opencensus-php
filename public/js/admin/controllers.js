@@ -229,7 +229,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
       $scope.$on('$idleTimeout', function() {
         logoutRequest().finally(function(){
-          $state.go('lockme', { "username": $scope.user.username}).finally(function(){
+          $state.go('lockme', { "username": $scope.admin.username}).finally(function(){
             closeModals();
           });
         });
