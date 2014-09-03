@@ -1,0 +1,38 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">Pending Activations</h1>
+</div>
+<div class="wrapper-md" ng-init="pending=true">
+  <div class="panel panel-default" ng-controller="MerchantsCtrl">
+    <div class="panel-heading">
+      List of all Merchants Pending Activation
+    </div>
+    <div class="table-responsive">
+      <table ui-jq="dataTable" class="table table-striped b-t b-light">
+        <thead>
+          <tr>
+            <th>Merchant Id</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Confirmed</th>
+            <th>Activated</th>
+            <th>Registration Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="row in merchants">
+            <td><a ui-sref="app.merchants.detail({id:row.id})">{{row.id}}</a></td>
+            <td>{{row.name}}
+            <td>{{row.email}}</td>
+            <td>
+              <i class="fa" ng-class="{'fa-check text-success': row.confirm_token == null, 'fa-times text-danger':row.confirm_token != null}"></i>
+            </td>
+            <td>
+              <i class="fa" ng-class="{'fa-check text-success': row.activated == 1, 'fa-times text-danger':row.activated == 0}"></i>
+            </td>
+            <td>{{row.created_at*1000 | date:'medium'}}</td>         
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
