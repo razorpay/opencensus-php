@@ -1,0 +1,36 @@
+  <!-- navbar -->
+  <div data-ng-include=" 'tpl/admin/blocks/header.html' " class="app-header navbar">
+  </div>
+  <!-- / navbar -->
+
+  <!-- menu -->
+  <div data-ng-include=" 'tpl/admin/blocks/aside.html' " class="app-aside hidden-xs {{app.settings.asideColor}}">
+  </div>
+  <!-- / menu -->
+
+  <!-- content -->
+  <div class="app-content">
+    <div ui-butterbar></div>
+    <div class="app-content-body fade-in-up" ui-view></div>
+  </div>
+  <!-- /content -->
+
+  <!-- footer -->
+  <div class="app-footer wrapper b-t bg-light">
+    <span class="pull-right">{{app.version}} <a href ui-scroll="app" class="m-l-sm text-muted"><i class="fa fa-long-arrow-up"></i></a></span>
+    &copy; {{app.today | date:'yyyy'}} Copyright {{app.name}}
+  </div>
+  <!-- / footer -->
+  </div>
+
+<script type="text/ng-template" id="warning-dialog.html">
+  <div ng-idle-countdown="countdown" ng-init="countdown=15">
+  <div class="modal-header">
+   <h3>You'll be logged out in <span class="label label-danger">{{countdown}}</span> <span ng-pluralize="" count="countdown" when="{'one': 'second', 'other': 'seconds' }"></span>.</h3>
+  </div>
+  <div class="modal-body">
+  <p>Your session has been idle for very long, perform some action to avoid auto logout.</p>
+  <progressbar max="15" value="countdown" animate="true" class="progress-striped active" type="danger"></progressbar>
+  </div>
+  </div>
+</script>

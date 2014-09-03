@@ -1,0 +1,44 @@
+<ul class="nav">
+  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+    <span translate="aside.nav.HEADER">Management</span>
+  </li>
+  <li class="active">
+    <a ui-sref="app.dashboard">
+      <i class="glyphicon glyphicon-stats icon text-primary-lter"></i>
+      <span class="font-bold" translate="aside.nav.DASHBOARD">Dashboard</span>
+    </a>
+  </li>
+  <li>
+    <a ui-sref="app.transactions.list">
+      <i class="fa fa-users icon text-warning-lter"></i>
+      <span class="font-bold" translate="aside.nav.MERCHANTS">Merchants</span>
+    </a>
+  </li>
+  <li>
+    <a ui-sref="app.transactions.refunds">
+      <i class="fa fa-money icon text-warning-lter"></i>
+      <span class="font-bold" translate="aside.nav.PRICING">Pricing Plans</span>
+    </a>
+  </li>
+
+
+  <li class="line dk"></li>
+
+  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">          
+    <span translate="aside.nav.settings.SETTINGS">Settings</span>
+  </li>  
+  <li>
+    <a ui-sref="app.keys" ng-controller="AdminCtrl" ng-show="admin.superadmin == 1">
+      <i class="icon-settings icon text-success-lter"></i>
+      <span translate="aside.nav.settings.ADMINS">Admins</span>
+    </a>
+  </li>
+  <li>
+    <a ui-sref="app.profile">
+      <i class="icon-user icon"></i>
+      <span translate="aside.nav.settings.PROFILE">Profile</span>
+    </a>
+  </li>
+
+  <li class="line dk"></li>
+</ul>

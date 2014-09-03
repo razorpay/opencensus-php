@@ -1,0 +1,18 @@
+{
+  "header" : {
+    "navbar" : {}
+  },
+  "aside" : {
+    "nav" : {
+      "HEADER" : "Management",
+      "DASHBOARD" : "Dashboard",
+      "MERCHANTS" : "Merchants",
+      "PRICING" : "Pricing Plans",
+      "settings" : {
+        "SETTINGS": "Settings",
+        "ADMINS": "Admins",
+        "PROFILE" : "Profile"
+      }
+    }
+  }
+}
