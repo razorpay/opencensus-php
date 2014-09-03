@@ -98,23 +98,30 @@
         ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating? 
         "ng-click="activateMerchant()"
         >Activate Merchant</button>
-        <button class="btn btn-primary btn-rounded" ng-click="assignPricing()">Assign Pricing</button>
+        <button class="btn btn-primary btn-rounded" ng-click="openAssignPricing()">Assign Pricing</button>
       </div>
     </div>
   </div>
 </div>
-<script type="text/ng-template" id="captureModalContent.html">
+<script type="text/ng-template" id="assignPricingModalContent.html">
   <div class="modal-header">
-    <h3 class="modal-title">Capture Transaction</h3>
+    <h3 class="modal-title">Assign Pricing Plan</h3>
   </div>
   <div class="modal-body">
-      <form>
-      <label>Amount to capture (in Paisa):</label>
-        <input type="text" placeholder="Amount to Capture (in Paisa)" class="form-control" ng-model="amount">
-      </form>
+    <span class="text-danger"><strong>Warning: The assigned pricing plan will replace the current pricing plan and affect all future test/live transactions.</strong></span>
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Plan to be Assigned</label>
+        <div class="col-lg-10">
+          <select name="account" class="form-control m-b" ng-model="pricing_plan_id">
+              <option ng-repeat="plan in pricing_plans" value="{{plan.id}}">{{plan.name}}</option>
+          </select>
+        </div>
+      </div>
+    </form>
   </div>
-  <div class="modal-footer">                  
+  <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
+      <button class="btn btn-primary" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
   </div>
 </script>
