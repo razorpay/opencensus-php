@@ -1,0 +1,120 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">Merchant Detail</h1>
+</div>
+<div class="wrapper-md" ng-controller="MerchantDetailCtrl">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Merchant: <strong>{{merchant.id}}</strong>
+    </div>
+  <div class="text-center m-t">
+    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+  </div>
+    <div class="row wrapper">
+      <div class="list-group">
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.name}}</span>
+          Name
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.email}}</span>
+          Email
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.created_at*1000 | date:'medium'}}</span>
+          Registeration Date
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.confirm_token == null, 'fa-times text-danger':merchant.confirm_token != null}"></i></span>
+          Confirmed
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">
+            <b class="badge bg-success dk">{{merchant.activation_progress}}%</b>
+          </span>
+          Activation Form Progress
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.submitted == 1 ? 'Submitted' : 'Not Submitted'}}">
+            <i class="fa" ng-class="{'fa-check text-success': merchant.submitted == 1, ' fa-times text-danger':merchant.submitted == 0}"></i>
+          </span>
+          Activation Form Submitted
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.locked == 1 ? 'Locked' : 'Unlocked'}}">
+            <i class="fa" ng-class="{'fa-lock': merchant.locked == 1, ' fa-unlock':merchant.locked == 0}"></i>
+          </span>
+          Activation Form Status
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></span>
+          Activated
+        </a>
+        <a href class="list-group-item" ng-init="isTerminalCollapsed = true">
+          <span class="pull-right" ng-show="merchant.terminal">
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isTerminalCollapsed = !isTerminalCollapsed" ng-show="merchant.terminal.length != 0">Expand</button>
+            <span ng-hide="merchant.terminal != 0">No terminal Assigned</span>
+          </span>
+          Terminal
+        </a>
+          <div collapse="isTerminalCollapsed" class="panel-body">
+            <a href class="list-group-item">
+              <span class="pull-right">{{merchant.terminal.gateway}}</span>
+              Gateway
+            </a>
+            <a href class="list-group-item">
+              <span class="pull-right">{{merchant.terminal.gateway_merchant_id}}</span>
+              Gateway Merchant ID
+            </a>
+            <a href class="list-group-item">
+              <span class="pull-right">{{merchant.terminal.gateway_terminal_id}}</span>
+              Gateway Terminal ID
+            </a>
+            <a href class="list-group-item">
+              <span class="pull-right">{{merchant.terminal.created_at*1000 | date:'medium'}}</span>
+              Created At
+            </a>
+        </div>
+        <a href class="list-group-item">
+          <span class="pull-right">
+            <span ng-show="merchant.pricing_plan.length != 0">{{merchant.pricing_plan}}</span>
+            <span ng-hide="merchant.pricing_plan.length != 0">No Pricing Assigned</span>
+          </span>
+          Pricing Plan
+        </a>
+      </div>
+      <div class="text-center">
+        <h2 class="m-t m-b font-thin h3">Actions</h2>
+        <a href="{{'/admin/merchant/' + merchant.id + '/login'}}" target="_blank">
+          <button  class="btn btn-primary btn-rounded">Login as Merchant</button>
+        </a>
+        <a ui-sref="app.merchants.activation({id:merchant.id})"target="_blank">
+          <button class="btn btn-primary btn-rounded">See Activation Form Details</button>
+        </a>
+        <button class="btn btn-primary btn-rounded" ng-show="merchant.locked==0 "ng-click="lockForm()">Lock Activation Form</button>
+        <button class="btn btn-primary btn-rounded" ng-show="merchant.locked==1 "ng-click="unlockForm()">Unlock Activation Form</button>
+
+        <button class="btn btn-primary btn-rounded" 
+        ng-show="merchant.activated==0" 
+        ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating? 
+        "ng-click="activateMerchant()"
+        >Activate Merchant</button>
+        <button class="btn btn-primary btn-rounded" ng-click="assignPricing()">Assign Pricing</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/ng-template" id="captureModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Capture Transaction</h3>
+  </div>
+  <div class="modal-body">
+      <form>
+      <label>Amount to capture (in Paisa):</label>
+        <input type="text" placeholder="Amount to Capture (in Paisa)" class="form-control" ng-model="amount">
+      </form>
+  </div>
+  <div class="modal-footer">                  
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
+  </div>
+</script>
