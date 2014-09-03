@@ -1,0 +1,393 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">Activation Form</h1>
+</div>
+<div class="wrapper-md" ng-controller="MerchantActivationCtrl">
+<div class="text-center m-t m-b">
+  <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+</div>
+<div class="panel panel-default" >
+  <div class="panel-heading m-t m-b">
+    Merchant: <a ui-sref="app.merchants.detail({id:merchant.id})"><strong>{{merchant.id}}</strong></a>
+  </div>
+  <div class="row wrapper">
+    <div class="list-group">
+      <a href class="list-group-item">
+        <span class="pull-right">{{merchant.name}}</span>
+        Name
+      </a>
+      <a href class="list-group-item">
+        <span class="pull-right">{{merchant.email}}</span>
+        Email
+      </a>
+      <a href class="list-group-item">
+        <span class="pull-right" tooltip="{{merchant.submitted == 1 ? 'Submitted' : 'Not Submitted'}}">
+          <i class="fa" ng-class="{'fa-check text-success': merchant.submitted == 1, ' fa-times text-danger':merchant.submitted == 0}"></i>
+        </span>
+        Activation Form Submitted
+      </a>
+      <a href class="list-group-item">
+        <span class="pull-right" tooltip="{{merchant.locked == 1 ? 'Locked' : 'Unlocked'}}">
+          <i class="fa" ng-class="{'fa-lock': merchant.locked == 1, ' fa-unlock':merchant.locked == 0}"></i>
+        </span>
+        Activation Form Status
+      </a>
+      <a href class="list-group-item">
+        <span class="pull-right" tooltip="{{merchant.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></span>
+        Activated
+      </a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-default" >
+  <div class="panel-heading m-t m-b">
+    Merchant Activatin Form
+  </div>
+  <tabset class="tab-container">
+    <tab active="steps.step1" select="steps.percent=0">
+      <tab-heading ng-class="{'text-success': check.1 === true, 'text-danger':check.1 === false}">
+        <i class="fa" ng-class="{'fa-check': check.1 === true, 'fa-times':check.1 === false}"></i>
+        Contact Details
+      </tab-heading>
+      <h4>Contact Details</h4>
+      <form name="step1" class="form-validation form-horizontal" novalidate>
+      <div class="">
+        <button type="submit" class="btn btn-default btn-rounded disabled">Prev</button>
+        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step2=true">Next</button>
+      </div>
+      <fieldset ng-disabled="locked">
+        <div class="form-group">
+          <label for="contact_name" class="col-sm-3 control-label">Contact Name</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.1.contact_name" placeholder="Contact Name" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="contact_email" class="col-sm-3 control-label">Email</label>
+          <div class="col-sm-8">
+            <input type="email" class="form-control" ng-model="data.1.contact_email" placeholder="Email" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="contact_mobile" class="col-sm-3 control-label">Mobile</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.1.contact_mobile" placeholder="Mobile" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="contact_landline" class="col-sm-3 control-label">Landline</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.1.contact_landline" placeholder="Landline">
+          </div>
+        </div>
+      </fieldset>
+      </form>
+    </tab>
+    <tab active="steps.step2" select="steps.percent=20">
+      <tab-heading ng-class="{'text-success': check.2 === true, 'text-danger':check.2 === false}">
+        <i class="fa" ng-class="{'fa-check': check.2 === true, 'fa-times':check.2 === false}"></i>
+        Bussiness Details
+      </tab-heading>
+      <h4>Bussiness Details </h4>
+      <form name="step2" class="form-validation form-horizontal" novalidate>
+      <div class="">
+        <button type="button" class="btn btn-default btn-rounded" ng-click="steps.step1=true">Prev</button>
+        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step3=true">Next</button>
+      </div>
+      <fieldset ng-disabled="locked">
+        <div class="form-group">
+          <label for="bussiness_type" class="col-sm-3 control-label">Organisation Type</label>
+          <div class="col-sm-8">
+              <select ng-model="data.2.bussiness_type" class="form-control" required>
+                        <option value="1">Proprietership</option>
+                        <option value="2">Individual</option>
+                        <option value="3">Partnership</option>
+                        <option value="4">Private Limited</option>
+                        <option value="5">Public Limited</option>
+                        <option value="6">LLP</option>
+                        <option value="7">NGO</option>
+                        <option value="8">Educational Institutes</option>
+                        <option value="9">Trust</option>
+                        <option value="10">Society</option>
+                      </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bussines_category" class="col-sm-3 control-label">Bussiness Category</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.bussiness_category" placeholder="Bussiness Category" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bussines_subcategory" class="col-sm-3 control-label">Bussiness Subcategory</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.bussiness_subcategory" placeholder="Bussiness Subcategory" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_registered_address" class="col-sm-3 control-label">Registered Address</label>
+          <div class="col-sm-8">
+            <textarea class="form-control" ng-model="data.2.bussiness_registered_address" placeholder="Registered Address" required></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_registered_state" class="col-sm-3 control-label">Registration State</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.bussiness_registered_state" placeholder="Registered State" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_registered_city" class="col-sm-3 control-label">Registered City</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.bussiness_registered_city" placeholder="Registered City" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_registered_pin" class="col-sm-3 control-label">Registered PIN</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.bussiness_registered_pin" placeholder="Registered PIN" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_operation_address" class="col-sm-3 control-label">Operation Address</label>
+          <div class="col-sm-8">
+            <textarea class="form-control" ng-model="data.2.bussiness_operation_address" placeholder="Operation Address" ng-disabled="or_same" required></textarea>    
+            </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_operation_state" class="col-sm-3 control-label">Operation State</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.bussiness_operation_state" placeholder="Operation State" ng-disabled="or_same" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_operation_city" class="col-sm-3 control-label">Operation City</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.bussiness_operation_city" placeholder="Operation City" ng-disabled="or_same" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_operation_pin" class="col-sm-3 control-label">Operation PIN</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.bussiness_operation_pin" placeholder="Operation PIN" ng-disabled="or_same" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_doe" class="col-sm-3 control-label">Date of Establishment</label>
+          <div class="col-sm-8">
+            <input type="date" class="form-control" ng-model="data.2.bussiness_doe" placeholder="Date of Establishment (MM/DD/YYYY)" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="company_cin" class="col-sm-3 control-label">Company CIN</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.company_cin" placeholder="Company CIN">
+            <span class="help-block">Mandatory for Companies</span>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="company_pan" class="col-sm-3 control-label">Company PAN</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.company_pan" placeholder="Company PAN">
+            <span class="help-block">Mandatory for Companies</span>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="company_pan_name" class="col-sm-3 control-label">Name on PAN Card</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.company_pan_name" placeholder="Name on PAN (provided above)">
+            <span class="help-block">Mandatory for Companies</span>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="bussiness_model" class="col-sm-3 control-label">Bussiness Model</label>
+          <div class="col-sm-8">
+            <textarea class="form-control" ng-model="data.2.bussiness_model" placeholder="Bussiness Model"></textarea>
+            <span class="help-block">Explain little about your bussiness model and future plans. Essential for startups</span>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="transaction_volume" class="col-sm-3 control-label">Expected annual transaction volume (INR)</label>
+          <div class="col-sm-8">
+            <select ng-model="data.2.transaction_volume" class="form-control" required>
+                        <option value="1">< 1 Lakh</option>
+                        <option value="2">1 to 10 lakh</option>
+                        <option value="3">10 Lakh to 1 Crore</option>
+                        <option value="4">> 1 Crore</option>
+                      </select>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="transaction_value" class="col-sm-3 control-label">Expected average transaction value</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.2.transaction_value" placeholder="E.g. Average price of the commodities you sell">
+          </div>
+        </div>
+      </fieldset>
+      </form>
+    </tab>
+    <tab active="steps.step3" select="steps.percent=40">
+      <tab-heading ng-class="{'text-success': check.3 === true, 'text-danger':check.3 === false}">
+        <i class="fa" ng-class="{'fa-check': check.3 === true, 'fa-times':check.3 === false}"></i>
+        Promoters Details
+      </tab-heading>
+      <h4>Promoters Details</h4>
+      <form name="step3" class="form-validation form-horizontal" novalidate>
+      <div class="">
+        <button type="submit" class="btn btn-default btn-rounded" ng-click="steps.step2=true">Prev</button>
+        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step4=true">Next</button>
+      </div>
+      <fieldset ng-disabled="locked">
+        <div class="form-group">
+          <label for="promoter_pan" class="col-sm-3 control-label">PAN of any 1 promoter</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.3.promoter_pan" placeholder="PAN Number of Promoter" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="promoter_pan_name" class="col-sm-3 control-label">Name on PAN Card</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.3.promoter_pan_name" placeholder="Name on PAN Card" required>
+          </div>
+        </div>
+      </fieldset>
+      </form>
+    </tab>
+    <tab active="steps.step4" select="steps.percent=60">
+      <tab-heading ng-class="{'text-success': check.4 === true, 'text-danger':check.4 === false}">
+        <i class="fa" ng-class="{'fa-check': check.4 === true, 'fa-times':check.4 === false}"></i>
+        Bank Account Details
+      </tab-heading>
+      <h4>Bank Account Details</h4>
+      <form name="step4" class="form-validation form-horizontal" novalidate>
+      <div class="">
+        <button type="submit" class="btn btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
+        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step5=true">Next</button>
+      </div>
+      <fieldset ng-disabled="locked">
+        <div class="form-group">
+          <label for="bank_name" class="col-sm-3 control-label">Name of Bank</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.4.bank_name" placeholder="Name of Bank" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_account_number" class="col-sm-3 control-label">Bank Account Number</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.4.bank_account_number" placeholder="Bank Account Number" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_account_name" class="col-sm-3 control-label">Account Holder Name</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.4.bank_account_name" placeholder="Accunt Holder Name" required>
+            <span class="help-block">Should be same as bussiness/individual name</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_account_type" class="col-sm-3 control-label">Bank Account Type</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.4.bank_account_type" placeholder="Bank Account Type e.g. Current, Savings" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_branch_address" class="col-sm-3 control-label">Branch Address</label>
+          <div class="col-sm-8">
+            <textarea class="form-control" ng-model="data.4.bank_branch" placeholder="Name of Bank" required></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bank_branch_ifsc" class="col-sm-3 control-label">Branch IFSC Code</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" ng-model="data.4.bank_branch_ifsc" placeholder="IFSC Code of the Bank Branch" required>
+          </div>
+        </div>
+      </fieldset>
+      </form>
+    </tab>
+    <tab active="steps.step5" select="steps.percent=80">
+      <tab-heading ng-class="{'text-success': check.5 === true, 'text-danger':check.5 === false}">
+        <i class="fa" ng-class="{'fa-check': check.5 === true, 'fa-times':check.5 === false}"></i>
+        Documents Upload
+      </tab-heading>
+      <h4>Documents Uploads</h4>
+      <form name="step5" class="form-validation form-horizontal" novalidate>
+      <div class="">
+        <button type="submit" class="btn btn-default btn-rounded" ng-click="steps.step4=true">Prev</button>
+        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step6=true" >Next</button>
+      </div>
+      <fieldset ng-disabled="locked">
+        <alert type="info">The links to uploaded files are valid for one hour, refresh the page if they do not work.</alert>
+        <div class="form-group">
+          <label for="bussiness_proof" class="col-sm-3 control-label">Bussiness Proof </label>
+          <div class="col-sm-8">
+            <span class="help-block">
+                Upload scan of following(not needed for individual):
+              <li>Partnership Agreement (Mandatory, if partnership firm)</li>
+              <li>Certificate of Incorporation (Mandatory if private limited)</li>
+              <li>Trust/Society/NGO etc. registration proof</li>
+            </span>    
+              <div class="m-t m-b">
+                 <a href="{{files.bussiness_proof}}" target="_blank" ng-show="files.bussiness_proof">{{files.bussiness_proof}}</a>
+                <span ng-hide="files.bussiness_proof">No file Uploaded</span>
+              </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bussiness_pan" class="col-sm-3 control-label">Bussiness PAN</label>
+          <div class="col-sm-8">
+            <span class="help-block">Company Pan Card (Sole Proprietor can use personal PAN)</span>
+            <div class="m-t m-b">
+                 <a href="{{files.bussiness_pan_proof}}" target="_blank" ng-show="files.bussiness_pan_proof">{{files.bussiness_pan_proof}}</a>
+                <span ng-hide="files.bussiness_pan_proof">No file Uploaded</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="promoter_pan" class="col-sm-3 control-label">Promoter PAN</label>
+          <div class="col-sm-8">
+            <span class="help-block">
+            Upload PAN card scan of at least one promoter, whose details have been filled earlier.
+            In case of individual, upload your personal PAN.
+            </span>
+            <div class="m-t m-b">
+                 <a href="{{files.promoter_pan_proof}}" target="_blank" ng-show="files.promoter_pan_proof">{{files.promoter_pan_proof}}</a>
+                <span ng-hide="files.promoter_pan_proof">No file Uploaded</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="address_proof" class="col-sm-3 control-label">Address Proof </label>
+          <div class="col-sm-8">
+            <span class="help-block">
+            Upload one of following:
+            <li>Electricity Bill (< two months old)</li>
+            <li>Telephone Bill (< two months old)</li>
+            <li>Bank Account Statement (< two months old)</li>
+            </span>
+            <div class="m-t m-b">
+                <a href="{{files.address_proof}}" target="_blank" ng-show="files.address_proof">{{files.address_proof}}</a>
+                <span ng-hide="files.address_proof">No file Uploaded</span>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      </form>
+    </tab>
+    <tab active="steps.step6" select="steps.percent=100">
+      <tab-heading ng-class="{'text-success': check.6 === true, 'text-danger':check.6 === false}">
+        <i class="fa" ng-class="{'fa-check': check.6 === true, 'fa-times':check.6 === false}"></i>
+        Submit Form
+      </tab-heading>
+      <h4>Submit For Activation</h4>
+      <form name="step6" class="form-validation form-horizontal" novalidate>
+        <div class="">
+          <button type="submit" class="btn btn-default btn-rounded" ng-click="steps.step5=true">Prev</button>
+          <button type="submit" class="pull-right btn btn-default btn-rounded disabled">Next</button>
+        </div>
+        <fieldset ng-disabled="locked">
+        </fieldset>
+      </form>
+    </tab>
+  </tabset>
+</div>
+</div>
