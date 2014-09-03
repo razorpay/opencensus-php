@@ -6,9 +6,9 @@
     <div class="panel-heading m-t m-b">
       Merchant: <strong>{{merchant.id}}</strong>
     </div>
-  <div class="text-center m-t">
-    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
-  </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
     <div class="row wrapper">
       <div class="list-group">
         <a href class="list-group-item">
@@ -82,12 +82,18 @@
           Pricing Plan
         </a>
       </div>
-      <div class="text-center">
-        <h2 class="m-t m-b font-thin h3">Actions</h2>
+    </div>
+  </div>
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Actions
+    </div>
+    <div class="row wrapper">    
+      <div >
         <a href="{{'/admin/merchant/' + merchant.id + '/login'}}" target="_blank">
           <button  class="btn btn-primary btn-rounded">Login as Merchant</button>
         </a>
-        <a ui-sref="app.merchants.activation({id:merchant.id})"target="_blank">
+        <a ui-sref="app.merchants.activation({id:merchant.id})">
           <button class="btn btn-primary btn-rounded">See Activation Form Details</button>
         </a>
         <button class="btn btn-primary btn-rounded" ng-show="merchant.locked==0 "ng-click="lockForm()">Lock Activation Form</button>
