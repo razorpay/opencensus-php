@@ -127,6 +127,13 @@ var app = angular.module('app', [
             .state('lockme', {
                 url: '/lockme/:email',
                 templateUrl: 'tpl/page_lockme.html',
+                resolve: {
+                    authorize: ['authorization',
+                      function(authorization) {
+                        return authorization.authorize();
+                      }
+                    ]
+                },
                 data: {
                   role: 'guest'
                 }

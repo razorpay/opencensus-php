@@ -66,24 +66,11 @@ var app = angular.module('app', [
             })
             .state('app.dashboard', {
                 url: '/dashboard',
-                templateUrl: 'tpl/app_dashboard.html',
-                resolve: {
-                    deps: ['uiLoad',
-                      function( uiLoad ){
-                        return uiLoad.load( ['js/libs/moment.min.js']);
-                    }]
-                }
+                templateUrl: 'tpl/admin/app_dashboard.html'
             })
             .state('app.merchants', {
                 url: '/merchants',
-                template: '<div ui-view class="fade-in-down"></div>',
-                // use resolve to load other dependences
-                resolve: {
-                    deps: ['uiLoad',
-                      function( uiLoad ){
-                        return uiLoad.load( ['js/libs/moment.min.js']);
-                    }]
-                }
+                template: '<div ui-view class="fade-in-down"></div>'
             })
             .state('app.merchants.list', {
                 url: '/list',
@@ -100,14 +87,7 @@ var app = angular.module('app', [
             })
             .state('app.pricing', {
                 url: '/pricing',
-                template: '<div ui-view class="fade-in-down"></div>',
-                // use resolve to load other dependences
-                resolve: {
-                    deps: ['uiLoad',
-                      function( uiLoad ){
-                        return uiLoad.load( ['js/libs/moment.min.js']);
-                    }]
-                }
+                template: '<div ui-view class="fade-in-down"></div>'
             })
             .state('app.pricing.list', {
                 url: '/list',
@@ -126,6 +106,13 @@ var app = angular.module('app', [
             .state('lockme', {
                 url: '/lockme/:username',
                 templateUrl: 'tpl/admin/page_lockme.html',
+                resolve: {
+                    authorize: ['adminAuthorization',
+                      function(adminAuthorization) {
+                        return adminAuthorization.authorize();
+                      }
+                    ]
+                },
                 data: {
                   role: 'guest'
                 }
