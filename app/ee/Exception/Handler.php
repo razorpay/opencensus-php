@@ -54,6 +54,10 @@ class Handler
         {
             return ApiResponse::serverError();
         }
+        else
+        {
+            return \Response::make($exception->getTraceAsString());
+        }
     }
 
     public function baseExceptionHandler(BaseException $exception, $code)
