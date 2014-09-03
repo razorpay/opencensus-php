@@ -74,8 +74,8 @@ var app = angular.module('app', [
                     }]
                 }
             })
-            .state('app.transactions', {
-                url: '/transactions',
+            .state('app.merchants', {
+                url: '/merchants',
                 template: '<div ui-view class="fade-in-down"></div>',
                 // use resolve to load other dependences
                 resolve: {
@@ -85,29 +85,23 @@ var app = angular.module('app', [
                     }]
                 }
             })
-            .state('app.transactions.list', {
+            .state('app.merchants.list', {
                 url: '/list',
-                templateUrl: 'tpl/app_transactions.html',
+                templateUrl: 'tpl/admin/app_merchants.html',
                 // use resolve to load other dependences
             })
-            .state('app.transactions.refunds', {
-                url: '/refunded',
-                templateUrl: 'tpl/app_transactions.html',
-                data: {
-                  status: 'refunded'
-                }
+            .state('app.merchants.detail', {
+                url: '/:id/detail',
+                templateUrl: 'tpl/admin/app_merchant_detail.html'
             })
-            .state('app.transactions.detail', {
-                url: '/:id',
-                templateUrl: 'tpl/app_transaction_detail.html'
+            .state('app.merchants.activation', {
+                url: '/:id/activation',
+                templateUrl: 'tpl/admin/app_merchant_activation.html'
             })
-            .state('app.settlements', {
-                url: '/settlements',
-                templateUrl: 'tpl/app_dashboard.html'
-            })
-            .state('app.keys', {
-                url: '/keys',
-                templateUrl: 'tpl/app_keys.html',
+            .state('app.pricing', {
+                url: '/pricing',
+                template: '<div ui-view class="fade-in-down"></div>',
+                // use resolve to load other dependences
                 resolve: {
                     deps: ['uiLoad',
                       function( uiLoad ){
@@ -115,13 +109,18 @@ var app = angular.module('app', [
                     }]
                 }
             })
-            .state('app.activation', {
-                url: '/activation',
-                templateUrl: 'tpl/app_activation.html'
+            .state('app.pricing.list', {
+                url: '/list',
+                templateUrl: 'tpl/admin/app_pricings.html',
+                // use resolve to load other dependences
             })
-            .state('app.profile', {
-                url: '/profile',
-                templateUrl: 'tpl/app_profile.html'
+            .state('app.pricing.detail', {
+                url: '/:id/detail',
+                templateUrl: 'tpl/admin/app_pricing_detail.html'
+            })
+            .state('app.admins', {
+                url: '/admins',
+                templateUrl: 'tpl/admin/app_admins.html'
             })
             // others
             .state('lockme', {
@@ -149,25 +148,9 @@ var app = angular.module('app', [
                 url: '/signin',
                 templateUrl: 'tpl/admin/page_signin.html'
             })
-            .state('access.signup', {
-                url: '/signup',
-                templateUrl: 'tpl/page_signup.html'
-            })
-            .state('access.forgotpwd', {
-                url: '/forgotpwd',
-                templateUrl: 'tpl/page_forgotpwd.html'
-            })
             .state('access.404', {
                 url: '/404',
                 templateUrl: 'tpl/page_404.html'
-            })
-            .state('access.confirm', {
-                url: '/confirm/:token',
-                templateUrl: 'tpl/page_confirm.html'
-            })
-            .state('access.resetpwd', {
-                url: '/resetpwd/:token',
-                templateUrl: 'tpl/page_resetpwd.html'
             })
     }
   ]
