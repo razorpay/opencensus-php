@@ -41,7 +41,7 @@ Route::filter('auth', function()
 
 Route::filter('auth_admin', function()
 {
-	if (Auth::admin()->guest()) return Redirect::guest('/admin/login');
+	if (Auth::admin()->guest()) return Response::json(array('success' => false, 'data' => array()));
 });
 
 Route::filter('superadmin', function()

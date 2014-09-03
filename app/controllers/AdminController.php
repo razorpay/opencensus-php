@@ -21,128 +21,43 @@ class AdminController extends BaseController
     // }
 
     /**
-     * Stage One - The Login form
-     * @return  Login View
-     */
-    public function getLogin()
-    {
-        return View::make('admin.getLogin');
-    }
-
-    /**
      * Stage Two - The Duo Auth form
      * @return Duo Login View or Redirect on error
      */
-    public function postLogin()
+    public function postSignin()
     {
         $user = array(
             'username' => Input::get('username'),
             'password' => Input::get('password')
         );
 
-        // /**
-        //  * Validate the user details, but don't log the user in
-        //  */
-        // if (Auth::admin()->validate($user))
-        // {
-        //     $username = Input::get('username');
-
-        //     $duoinfo = array(
-        //         'HOST' => $this->_laravelDuo->get_host(),
-        //         'POST' => URL::to('/') . '/admin/duologin',
-        //         'USER' => $username,
-        //         'SIG'  => $this->_laravelDuo->signRequest(
-        //                             $this->_laravelDuo->get_ikey(),
-        //                             $this->_laravelDuo->get_skey(),
-        //                             $this->_laravelDuo->get_akey(),
-        //                             $username)
-        //     );
-
-        //     return View::make('admin.duologin')
-        //                 ->with(compact('duoinfo'))
-        //                 ->with('title', 'Duo Authentication');
-        // }
-        // else
-        // {
-        //     return View::make('admin.getLogin')
-        //                 ->with('error', 'Invalid Username/Password')
-        //                 ->with('title', 'Login');
-        // }
-        
         if(Auth::admin()->attempt($user))
         {
-            return Redirect::to('/admin');
+             return Response::json(array('success' => true));
         }
         else
         {
-            return Redirect::action('AdminController@getLogin')
-                                ->with('error', array("Invalid Username/password"));
+            return Response::json(array('success' => false, 'errors' => array('Invalid username/password.')));
         }
     }
 
-    /**
-     * Stage Three - After Duo Auth Form
-     * @return Redirect to home
-     */
-    // public function postDuologin()
-    // {
-    //     /**
-    //      * Sent back from Duo
-    //      */
-    //     $response = Input::get('sig_response');
+    public function getAdmin()
+    {
+        $admin = Auth::admin()->get()->toArray();
 
-    //     $U = $this->_laravelDuo->verifyResponse(
-    //                     $this->_laravelDuo->get_ikey(),
-    //                     $this->_laravelDuo->get_skey(),
-    //                     $this->_laravelDuo->get_akey(),
-    //                     $response
-    //     );
-
-    //     /**
-    //      * Duo response returns USER field from Stage Two
-    //      */
-    //     if ($U){
-
-    //         /**
-    //          * Get the id of the authenticated user from their email address
-    //          */
-    //         $id = Admin::getIdFromUsername($U);
-
-    //         /**
-    //          * Log the user in by their ID
-    //          */
-    //         Auth::admin()->loginUsingId($id);
-
-    //         /**
-    //          * Check Auth worked, redirect to homepage if so
-    //          */
-    //         if (Auth::admin()->check())
-    //         {
-    //             return Redirect::to('/admin');
-    //         }
-    //     }
-
-    //     /**
-    //      * Otherwise, Auth failed, redirect to homepage with message
-    //      */
-    //     return View::make('admin.getLogin')
-    //                 ->with('error', 'Authentication Failed!')
-    //                 ->with('title', 'Login');
-
-    // }
-
-
+        return array('success' => true, 'data' => $admin);
+    }
 
     public function getLogout()
     {
         Auth::admin()->logout();
 
-        return Redirect::action('AdminController@getLogin');
+        return Response::json(array('success' => true));
     }
 
-    public function getPassword()
+    public function getKeepAlive()
     {
-        return View::make('admin.getPassword');
+        return ['success' => true];
     }
 
     public function postPassword()
@@ -151,15 +66,13 @@ class AdminController extends BaseController
 
         list($error, $data) = (new Service\Admin)->changePassword($input, Auth::admin()->get());
 
-        $view = Redirect::action('AdminController@getPassword');
-
         if (empty($error))
         {
-            $view->with('error', array('Password changed successfully'));
+            return Response::json(array('success' => true));
         }
         else
         {
-            $view->with('data', $data)->with('error', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
         }
 
         return $view;
@@ -167,10 +80,7 @@ class AdminController extends BaseController
 
     public function getIndex()
     {
-        $activations = (new Service\Admin)->listPendingActivations();
-
-        return View::make('admin.getIndex')
-                    ->with('activations', $activations);
+        return View::make('admin.getIndex');
     }
 
     public function getMerchantList()

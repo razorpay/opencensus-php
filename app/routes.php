@@ -14,6 +14,8 @@
 
 Route::get('/', 'MerchantController@getIndex');
 
+Route::get('/admin', 'AdminController@getIndex');
+
 Route::group(array('before' => 'auth'), function()
 {
     Route::get('/user', 'MerchantController@getUser');
@@ -21,6 +23,10 @@ Route::group(array('before' => 'auth'), function()
     Route::get('/user/keepalive', 'MerchantController@getKeepAlive');
 
     Route::get('/user/logout', 'MerchantController@getLogout');
+
+    Route::get('/keys/csv', 'MerchantController@getCsv');
+
+    Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
     Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
 
@@ -30,22 +36,10 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
 
-    Route::get('/keys/csv', 'MerchantController@getCsv');
-
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
-
-    Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
     Route::group(array('before' => 'csrf'), function()
     {
-        Route::post('/{mode}/keys', 'MerchantController@postKeys');
-
-        Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
-
-        Route::post('/{mode}/transactions/{id}/capture', 'TransactionController@postCaptureTransaction');
-
-        Route::post('/{mode}/transactions/{id}/refund', 'TransactionController@postRefundTransaction');
-
         Route::post('/activation', 'MerchantController@postActivation');
 
         Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
@@ -53,6 +47,14 @@ Route::group(array('before' => 'auth'), function()
         Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile');
 
         Route::post('/password', 'MerchantController@postPassword');
+
+        Route::post('/{mode}/keys', 'MerchantController@postKeys');
+
+        Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
+
+        Route::post('/{mode}/transactions/{id}/capture', 'TransactionController@postCaptureTransaction');
+
+        Route::post('/{mode}/transactions/{id}/refund', 'TransactionController@postRefundTransaction');
     });
 });
 
@@ -73,10 +75,12 @@ Route::group(array('before' => 'guest'), function()
 });
 
 Route::group(array('before' => 'auth_admin'), function()
-{
-    Route::get('/admin', 'AdminController@getIndex');
+{   
+    Route::get('/admin/user', 'AdminController@getAdmin');
 
     Route::get('/admin/logout', 'AdminController@getLogout');
+
+    Route::get('/admin/keepalive', 'AdminController@getKeepAlive');
 
     Route::get('/admin/password', 'AdminController@getPassword');
 
@@ -131,9 +135,7 @@ Route::group(array('before' => 'auth_admin'), function()
 
 Route::group(array('before' => 'guest_admin'), function()
 {
-    Route::get('/admin/login', 'AdminController@getLogin');
-
-    Route::post('/admin/login', array('before' => 'csrf','uses'=> 'AdminController@postLogin'));
+    Route::post('/admin/signin', array('before' => 'csrf','uses'=> 'AdminController@postSignin'));
 
     Route::post('/admin/duologin', 'AdminController@postDuologin');
 });
