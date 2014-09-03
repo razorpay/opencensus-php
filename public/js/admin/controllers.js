@@ -12,7 +12,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
       // config
       $scope.app = {
-        name: 'Razorpay',
+        name: 'RZP Admin',
         version: '0.9.1',
         today: new Date(),
         // for chart colors
@@ -236,253 +236,135 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
       });
   }])
-
-
-  //Dashboard Aggregations controller
-  .controller('AggregationsCtrl', ['$scope', '$http', 'modeFactory',
-    function($scope, $http, modeFactory) {
+  //Merchant List controller
+  .controller('MerchantsCtrl', ['$scope', '$http',
+    function($scope, $http) {
 
     //Aggreagates
-    $scope.aggregations = {};
+    $scope.merchants = {};
 
-    $scope.aggregations.data = {
-                        success: 0,
-                        amount: 0,
-                        txns: 0
-                    };
+    generateTable();
 
-    var request = $http.get("/"+modeFactory.getMode()+"/analytics/aggregations");
+    function generateTable() {
+      var request = $http.get("/admin/merchant/list");
 
-    request.success(function(result){
-      
-      if (result.data !== null) {
-          if (parseInt(result.data.txn_count) !== 0)
-              $scope.aggregations.data.success = parseInt(result.data.successful_txn_count * 100/result.data.txn_count);
-          $scope.aggregations.data.amount = result.data.total_amount;
-          $scope.aggregations.data.txns = result.data.txn_count;
-      }
-    });
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.merchants = data.data;
+        }
+      });
+    }
   }])
+  .controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFactory', 'CSRF_TOKEN',
+    function($scope, $http, $stateParams, alertsFactory, CSRF_TOKEN) {
+      $scope.alerts = alertsFactory.getHandler();
 
-  //Dashboard graphs/date picker controller
-  .controller('DashboardCtrl', ['$scope', '$http', 'modeFactory', 'dateFactory',
-    function($scope, $http, modeFactory, dateFactory) {
-
-      
-      initialiseStatType();
-      initialiseGraphs();
-      
-      //Watches changes in parameters and trigger regeneration fo graph if any changes
-      $scope.$watch('showSpline', function() {
-         $scope.refreshGraph = !$scope.refreshGraph;
-      });
-    
-      //@todo once angular 1.3 is stable switch to watchgroup
-      $scope.$watch('statType + date.startDate + date.endDate',function() {
-         generateGraphs();
-      });
-
-      function initialiseStatType(){
-        //Stat Type handlers
-        $scope.statType = 'day';
-
-        $scope.stats = {day: "Daily", week: "Weekly", month: "Monthly", year: "Yearly"};
-
-        $scope.setStat = function(type) {
-          $scope.statType = type;
-        };
+      $scope.merchant = {
+        id: $stateParams.id
       };
 
-      function initialiseGraphs() {
-        //Date Handlers
-        $scope.date = dateFactory.getHandler($scope);
+      generateMerchant();
+      
+      $scope.lockForm = function(){
+        $scope.alerts.addAlert('info', 'Processing...', true);
         
-        //Graphs Initalisers
-        $scope.showSpline = true;
+        var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/lock?_token="+CSRF_TOKEN);
 
-        $scope.refreshGraph = false; //Variable that is toggled whenever we want the graph to be refreshed
-
-        var graphData = {
-          data: [ [0,0] ],
-          options: {
-            colors: [$scope.app.color.info, $scope.app.color.primary],
-            series: { shadowSize: 3 },
-            xaxis: {mode: 'time', timezone: "browser"},
-            yaxis:{ font: { color: '#a1a7ac' }},
-            grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#dce5ec' },
-            tooltip: true,
-            tooltipOpts: {
-              defaultTheme: false, 
-              shifts: { x: 10, y: -25 }
-            }
+        request
+        .success(function(data){
+          if(data.success) {
+            $scope.alerts.addAlert('success', 'Merchant Form Locked', true);
+            generateMerchant();
           }
-        };
-
-        $scope.successfull = graphData;
-        $scope.transactions = graphData;
-        
-        $scope.successfull.options.tooltipOpts.content = 'Date: %x <br/> Count: %y';
-        $scope.successfull.options.tooltipOpts.content = 'Date: %x <br/> Amount: %y';
-      };
-
-      function generateGraphs() {
-        if(!$scope.date.startDate || !$scope.date.endDate) return;
-
-        var from = parseInt(($scope.date.startDate.getTime())/1000) - 1;
-        var to = parseInt(($scope.date.endDate.getTime())/1000) + 1;
-
-        var request = $http.get("/" + modeFactory.getMode() + "/analytics/transactions?type="+$scope.statType+"&from=" + from + "&to="+ to);
-
-
-        request.success(function(data){
-          $scope.successfull.data = [];
-          $scope.transactions.data = [];
-
-          angular.forEach(data.data , function(value, key){
-            $scope.successfull.data.push([
-              parseInt(value.created_at)*1000,
-              parseInt(value.count)
-            ]);
-
-            $scope.transactions.data.push([
-              parseInt(value.created_at)*1000,
-              parseInt(value.amount)
-            ]);
-          });
-
-          $scope.successfull.options.xaxis.minTickSize = getMinTickSize($scope.statType);
-          $scope.transactions.options.xaxis.minTickSize = getMinTickSize($scope.statType);
-
-          $scope.refreshGraph = !$scope.refreshGraph;
+          else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', null, true);
         });
       };
 
-      function getMinTickSize(statType){
-        if(statType === 'week'){
-          return [7, 'day'];
-        }
-        else{
-          return [1, statType];
-        }
-      };
-  }])
-
-  //Transactions Listing Controller
-  .controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '$state',
-    function($scope, $http, modeFactory, alertsFactory, $state){
-      //Intialise alerts and scope functions
-      $scope.alerts = alertsFactory.getHandler();
-
-      $scope.transactions = {
-          data: {},
-          id: '',
-          count: 0,
-          countStart: 0,
-          countEnd: 0,
-          skip: 0,
-          from: 0,
-          to: 4102444800,
-          status: ''
-      };
-
-
-      $scope.$watch('transactions.status', regenerate);
-
-      //@todo seperate refund controller later
-      //Used for refunds list display route
-      if($state.current.data.status) $scope.transactions.status = $state.current.data.status;
-
-      generateTable();
-      
-      $scope.next= function() {
-        clear('id');
-        $scope.transactions.skip += 10;
-        generateTable();
-      }
-
-      $scope.prev= function() {
-        clear('id');
-        $scope.transactions.skip -= 10;
-        generateTable();
-      }
-
-      $scope.search= function() {
-        clear('skip');
-        generateTable();
-      }
-
-      $scope.regenerate = regenerate;
-
-      $scope.getStatusClass = function(status) {
-        var mapper = {
-          open: "bg-light",
-          authorized: "bg-info",
-          captured: "bg-success",
-          refunded: "bg-warning",
-          failed: "bg-danger"
-        }
-        return mapper[status];
-      }
-
-      function clear(field){
-        if(field === 'id')
-          $scope.transactions.id = '';
-        if(field === 'skip')
-          $scope.transactions.skip = 0;
-      }
-
-      function regenerate(){
-        clear('skip');
-        clear('id');
-        generateTable();
-      }
-
-      function generateTable() {
-        $scope.alerts.addAlert('info', "Processing... ", true);
-        var query =
-          "count=10" +
-          "&skip="+ $scope.transactions.skip +
-          "&from="+ $scope.transactions.from +
-          "&to="+ $scope.transactions.to;
-
-        if($scope.transactions.status !== '')
-          query += "&status=" + $scope.transactions.status;
-
-        if($scope.transactions.id === '')
-          var request = $http.get("/" + modeFactory.getMode() +  "/transactions?" + query);
-        else
-          var request = $http.get("/" + modeFactory.getMode() +  "/transactions/" + $scope.transactions.id);
+      $scope.unlockForm = function(){
+        $scope.alerts.addAlert('info', 'Processing...', true);
         
+        var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/unlock?_token="+CSRF_TOKEN);
+
+        request
+        .success(function(data){
+          if(data.success) {
+            $scope.alerts.addAlert('success', 'Merchant Form Unlocked', true);
+            generateMerchant();
+          }
+          else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', null, true);
+        });
+      };
+
+      $scope.activateMerchant = function(){
+        $scope.alerts.addAlert('info', 'Processing...', true);
+        
+        var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/activate?_token="+CSRF_TOKEN);
+
+        request
+        .success(function(data){
+          if(data.success) {
+            $scope.alerts.addAlert('success', 'Merchant Activated successfully', true);
+            generateMerchant();
+          }
+          else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', null, true);
+        });
+      };
+
+      $scope.assignPricing = function(){
+        //@todo
+        ;
+      };
+
+      function generateMerchant() {
+        $scope.alerts.addAlert('info', 'Processing...', true);
+        var request = $http.get("/admin/merchant/"+$scope.merchant.id);
+
         request
         .success(function(data){
           $scope.alerts.resetAlerts();
-
           if(data.success) {
-            $scope.transactions.data = data.data;
+            $scope.merchant = data.details;
 
-            $scope.transactions.count = data.count;
-
-            $scope.transactions.countStart = $scope.transactions.skip + 1;
-
-            if(data.count === 0) $scope.transactions.countEnd = $scope.transactions.countStart;
-
-            else $scope.transactions.countEnd = $scope.transactions.countStart + $scope.transactions.count -1;
-
-            $scope.allowPrev = $scope.transactions.countStart !== 1;
-            
-            $scope.allowNext=$scope.transactions.count >= 10;
+            $scope.merchant.pricing_plan = data.pricing_plan;
+            $scope.merchant.terminal = data.terminal;
+            $scope.merchant.activation_progress = parseInt(($scope.merchant.steps_finished.length * 100)/ 6);
           }
           else {
-            angular.forEach(data.errors, function(value, key){
-              $scope.alerts.addAlert('danger', value);
-            });            
-          }          
+            $scope.alerts.addAlert('danger');
+          }
         })
         .error(function(){
           $scope.alerts.addAlert('danger', null, true);
         });
       }
   }])
+
+  
 
   //Single Transaction Details controller
   .controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
