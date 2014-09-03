@@ -221,4 +221,71 @@ angular.module('app.services', [])
 					}
 				};
 			})
+			// Fetches & stores details of currently logged in user
+			.factory('admin', ['$q', '$http', '$timeout', '$idle',
+			  function($q, $http, $timeout, $idle) {
+			    var _identity = undefined,
+			      _authenticated = false;
+
+			    return {
+			      isIdentityResolved: function() {
+			        return angular.isDefined(_identity);
+			      },
+			      isAuthenticated: function() {
+			        return _authenticated;
+			      },
+			      authenticate: function(identity) {
+			        _identity = identity;
+			        _authenticated = identity != null;
+			      },
+			      identity: function(force) {
+			        var deferred = $q.defer();
+
+			        if (force === true) _identity = undefined;
+
+			        // check and see if we have retrieved the identity data from the server. if we have, reuse it by immediately resolving
+			        if (angular.isDefined(_identity)) {
+			          deferred.resolve(_identity);
+
+			          return deferred.promise;
+			        }
+
+					$http.get('/admin/user', { ignoreErrors: true })
+						.success(function(data) {
+							_identity = data.data;
+					   		_authenticated = data.success === true;
+					   		if(_authenticated) $idle.watch();
+					   		else $idle.unwatch();
+							deferred.resolve(_identity);
+						})
+						.error(function () {
+						   _identity = null;
+						   _authenticated = false;
+						   deferred.resolve(_identity);
+					});
+
+			        return deferred.promise;
+			      }
+			    };
+			  }
+			])
+			//Authorisation service
+			//Checks if the logged in user is allowed to browse to the requested url, redirects him otherwise.
+			.factory('adminAuthorization', ['$rootScope', '$state', 'admin', '$location',
+			  function($rootScope, $state, admin, $location) {
+			    return {
+			      authorize: function() {
+			      	return admin.identity()
+				          .then(function() {
+				          	if($rootScope.toState.data.role === 'auth') {
+				            	if (admin.isAuthenticated() === false) $state.go('access.signin'); // user is signed in but not authorized for desired state
+				        	}
+				        	else if($rootScope.toState.data.role === 'guest') {
+				        		if (admin.isAuthenticated() === true) $state.go('app.dashboard'); // user is signed in but not authorized for desired state
+				        	}
+				        });
+				    }			        
+			    };
+			  }
+			])
 ;
