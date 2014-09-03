@@ -166,11 +166,11 @@ class AdminController extends BaseController
 
         if(empty($error))
         {
-            return Redirect::to('/admin/merchant/'.$id.'/pricing')->with('status', array('Pricing added successfully'));
+            return Response::json(array('success' => true));
         }
         else
         {
-            return Redirect::to('/admin/merchant/'.$id.'/pricing')->with('status', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 
@@ -248,7 +248,7 @@ class AdminController extends BaseController
     {
         $data = (new Service\Admin)->fetchPricingPlan();
 
-        return View::make('admin.getPricingList')->with('plans', $data['data']);
+        return Response::json(array('success' => true, 'data' => $data['data']));
     }
 
     public function getPricingRules($id)
