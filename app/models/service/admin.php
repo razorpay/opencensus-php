@@ -137,8 +137,7 @@ class Admin extends Service
             'steps_finished'    => json_decode($merchant_details['steps_finished'], true),
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
-            'merchant'          => $merchant->toArray()
-        );
+        ) + $merchant->toArray();
         
         return $response;
     }

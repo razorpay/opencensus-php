@@ -87,8 +87,7 @@ class AdminController extends BaseController
     {
         $merchants = (new Service\Admin)->listMerchants();
         
-        return View::make('admin.getMerchantList')
-                   ->with('data', $merchants);
+        return Response::json(array('success' => true, 'data' => $merchants));
     }
 
     public function getMerchantLogin($id)
@@ -108,10 +107,12 @@ class AdminController extends BaseController
 
         $pricing_plan = (new Service\Admin)->fetchMerchantPricing($id);
 
-        return View::make('admin.getMerchant')
-                   ->with('details', $details)
-                   ->with('terminal', $terminal)
-                   ->with('pricing_plan', $pricing_plan);
+        return array(
+                    'success'=> true,
+                    'details' => $details,
+                    'terminal' => $terminal,
+                    'pricing_plan' => $pricing_plan
+                );
     }
 
     public function getMerchantTerminal($id)
@@ -180,11 +181,11 @@ class AdminController extends BaseController
 
         if(empty($error))
         {
-            return Redirect::to('/admin/merchant/'.$id)->with('status', array('Merchant activated successfully'));
+             return Response::json(array('success' => true));
         }
         else
         {
-            return Redirect::to('/admin/merchant/'.$id)->with('status', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 
@@ -206,15 +207,13 @@ class AdminController extends BaseController
     {
         $error = (new Service\Admin)->lockMerchant($id);
 
-        $view = Redirect::to('/admin/merchant/'.$id);
-
         if(empty($error))
         {
-            return $view->with('status', array('Merchant activation form locked Successfully!'));
+             return Response::json(array('success' => true));
         }
         else
         {
-            return $view->with('status', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 
@@ -226,11 +225,11 @@ class AdminController extends BaseController
 
         if(empty($error))
         {
-            return $view->with('status', array('Merchant activation form unlocked Successfully!'));
+             return Response::json(array('success' => true));
         }
         else
         {
-            return $view->with('status', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 

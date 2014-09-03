@@ -82,8 +82,6 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/keepalive', 'AdminController@getKeepAlive');
 
-    Route::get('/admin/password', 'AdminController@getPassword');
-
     Route::post('/admin/password', array('before'=>'csrf', 'uses'=>'AdminController@postPassword'));
 
     Route::get('/admin/merchant/list', 'AdminController@getMerchantList');
@@ -92,7 +90,7 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
 
-    Route::get('/admin/merchant/{id}/login', array('before'=>'csrf', 'uses'=>'AdminController@getMerchantLogin'));
+    Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin');
 
     Route::get('/admin/merchant/{id}/lock', array('before'=>'csrf', 'uses' => 'AdminController@getLockMerchantDetails'));
 
