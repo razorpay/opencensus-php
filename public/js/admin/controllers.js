@@ -244,9 +244,14 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
     $scope.merchants = {};
 
     generateTable();
-
+    
     function generateTable() {
-      var request = $http.get("/admin/merchant/list");
+      if($scope.pending){
+        var request = $http.get("/admin/merchant/list?pending=true");
+      }
+      else{
+        var request = $http.get("/admin/merchant/list");
+      }
 
       request
       .success(function(data){
@@ -474,7 +479,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       $scope.files = {};
 
       $scope.locked = true;
-      
+
       getData();
 
       function getData() {
