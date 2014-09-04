@@ -132,7 +132,7 @@ class Gateway extends Hdfc\Gateway
                     'MockHdfc: Action code not recognized. Action: ' . $this->data['action']);
         }
 
-        return $xml;
+        return $this->makeResponse($xml);
     }
 
     public function enroll()
@@ -165,7 +165,7 @@ class Gateway extends Hdfc\Gateway
 
         $xml = Hdfc\Utility::createXml($res);
 
-        return $xml;
+        return $this->makeResponse($xml);
     }
 
     public function authEnrolled()
@@ -192,7 +192,16 @@ class Gateway extends Hdfc\Gateway
 
         $xml = Hdfc\Utility::createXml($res);
 
-        return $xml;
+        return $this->makeResponse($xml);
+    }
+
+    protected function makeResponse($xml)
+    {
+        $response = \Response::make($xml);
+
+        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+
+        return $response;
     }
 
     protected function captureTransactionOnGateway()

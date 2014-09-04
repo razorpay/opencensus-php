@@ -106,7 +106,7 @@ class ApiResponse
 
         $jsonp = false;
 
-        $path = \Request::path();
+        $path = $request->path();
 
         if (self::isJsonpRequired($path))
         {

@@ -16,7 +16,7 @@ class MockHdfcController extends BaseController
     {
         $input = Input::all();
 
-        return Response::make($this->mockHdfcGateway->enroll($input));
+        return $this->mockHdfcGateway->enroll($input);
     }
 
     public function transaction()
