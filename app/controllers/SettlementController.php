@@ -6,11 +6,18 @@ use Models\Settlement;
 
 class SettlementController extends BaseController
 {
-    public function postHdfcMpr()
+    public function postGatewayMpr()
     {
         $input = Input::all();
 
-        $data = (new Settlement\Service)->hdfcMpr($input);
+        $data = (new Settlement\Service)->gatewayMpr($input);
+
+        return $data;
+    }
+
+    public function getLedgerRecords()
+    {
+        $data = (new Settlement\Service)->getLedgerRecords();
 
         return $data;
     }
