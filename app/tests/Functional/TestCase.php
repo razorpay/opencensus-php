@@ -71,8 +71,8 @@ class TestCase extends ParentTestCase
         //
 
         $this->entities = array(
+            'pricing'     => $this->createDefaultPricingPlan(),
             'merchant'    => $this->createEntityInTestAndLive('merchant', ['id' => '363e4efa820b0c06208ccd99']),
-            'pricing'     => $this->createEntityInTestAndLive('pricing', ['id' => '138bee1175c23b9b794cda8e']),
             'terminal'    => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
             'key'         => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
             'balance'     => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
@@ -168,6 +168,59 @@ class TestCase extends ParentTestCase
         $liveEntity->setConnection('live')->save();
 
         $entity->exists = true;
+    }
+
+    public function createDefaultPricingPlan()
+    {
+        $pricingPlanId = '13906d42c88a41ee4e2d812e';
+
+        $rows = array(
+                    array(
+                        'id' => '13906d42c88a41ee4e2d812e',
+                        'plan_id' => '13906d42c88a41ee4e2d812e',
+                        'plan_name' => 'testDefaultPlan',
+                        'payment_mode' => 'card',
+                        'payment_mode_type' => null,
+                        'payment_network' => null,
+                        'payment_issuer' => null,
+                        'percent_rate' => '2000',
+                        'fixed_rate' => 0,
+                    ),
+                    array(
+                        'id' => '13906de1816d11113ef4f86f',
+                        'plan_id' => '13906d42c88a41ee4e2d812e',
+                        'plan_name' => 'testDefaultPlan',
+                        'payment_mode' => 'card',
+                        'payment_mode_type' => null,
+                        'payment_network' => 'AMEX',
+                        'payment_issuer' => null,
+                        'percent_rate' => 3000,
+                        'fixed_rate' => 0,
+                    ),
+                    array(
+                        'id' => '13906df591e73f02d8afc302',
+                        'plan_id' => '13906d42c88a41ee4e2d812e',
+                        'plan_name' => 'testDefaultPlan',
+                        'payment_mode' => 'card',
+                        'payment_mode_type' => null,
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => null,
+                        'percent_rate' => 3000,
+                        'fixed_rate' => 0,
+                    ),
+                );
+
+        $repo = new \Models\Pricing\Repository;
+        foreach ($rows as $row)
+        {
+            $pricing = new \Models\Pricing\Entity;
+            $pricing->fill($row);
+            $repo->saveOrFail($pricing);
+        }
+
+        $pricing = (new \Models\Pricing\Repository)->getPricingPlanByIdOrFailPublic($pricingPlanId);
+
+        return $pricing;
     }
 
     protected function eloquentUnguard()

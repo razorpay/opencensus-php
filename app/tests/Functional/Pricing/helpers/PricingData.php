@@ -183,9 +183,9 @@ return [
                         )
                     ),
                     array(
-                        'name' => 'testFixturePlan',
+                        'name' => 'testDefaultPlan',
                         'entity' => 'pricing_plan',
-                        'count' => 1,
+                        'count' => 3,
                         'rules' => array(
                             array()
                             ),
