@@ -62,7 +62,7 @@ trait RepositoryUpdateTestAndLive
         $this->db->connection('test')->commit();
 
         // Now that the entity has been updated in both live and test databases,
-        // update the one passed as argument in this function
+        // update the entity (in-memory) passed as argument in this function
         $attributes = $liveEntity->getAttributes();
         $entity->setRawAttributes($attributes, true);
         $entity->exists = true;
@@ -92,11 +92,29 @@ trait RepositoryUpdateTestAndLive
         $diff1 = array_diff_assoc($testAttributes, $liveAttributes);
         $diff2 = array_diff_assoc($liveAttributes, $testAttributes);
 
-        if ((count($diff1) > 0) or
-            (count($diff2) > 0))
+        $diff = false;
+        $msg = '';
+
+        if (count($diff1) > 0)
         {
-            throw new Exception\LogicException(
-                'A row in test and live database do not match' . PHP_EOL);
+            ob_start();
+            print_r($diff1);
+            $msg .= ob_get_clean() . PHP_EOL;
+            $diff = true;
+        }
+        if (count($diff2) > 0)
+        {
+            ob_start();
+            print_r($diff2);
+            $msg .= ob_get_clean() . PHP_EOL;
+            $diff = true;
+        }
+
+        if ($diff)
+        {
+            $msg = 'Entity: ' . $this->entity . PHP_EOL . $msg;
+            $msg = 'A row in test and live database do not match' . PHP_EOL . $msg;
+            throw new Exception\LogicException($msg);
         }
 
         // Update the test and live entities
