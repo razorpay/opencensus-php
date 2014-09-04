@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Action;
+use Gateway\MockHdfc;
 use Models\Card;
 use ReflectionClass;
 use Requests;
@@ -27,6 +28,38 @@ class Gateway extends Hdfc\Gateway
         $this->request = \Request::getFacadeRoot();
     }
 
+    public function generateMpr()
+    {
+        $mpr = (new MockHdfc\Repository)->getUnreportedTransactions();
+
+        $mprHeadings = array_keys($mpr->first()->toArrayForMprReport());
+
+        foreach($mprHeadings as &$heading)
+        {
+            $heading = strtoupper($heading);
+            $heading = str_replace('_', ' ', $heading);
+        }
+
+        $mprArray = array();
+        array_push($mprArray, $mprHeadings);
+
+        foreach($mpr->all() as $row)
+        {
+            array_push($mprArray, array_values($row->toArrayForMprReport()));
+        }
+
+        $fp = fopen('hdfc_mpr.xlsx', 'w');
+
+        foreach ($mprArray as $row)
+        {
+            fputcsv($fp, $row);
+        }
+
+        fclose($fp);
+
+        return 'hdfc_mpr.xlsx';
+    }
+
     public function capture(array $input)
     {
         parent::capture($input);
@@ -43,35 +76,37 @@ class Gateway extends Hdfc\Gateway
         $netAmount = $amount - $msf;
 
         $attributes = array(
-            'merchant_code' => $this->terminal['gateway_merchant_id'],
-            'terminal_number' => $this->terminal['gateway_terminal_id'],
-            'rfc_fmt' => 'BAT',
-            'bat_nbr' => 1,
-            'card_type' => $this->input['txn']['card']['network'] . 'LOCAL',
-            'card_number' => $this->input['txn']['card']['iin'] . 'xxxxxx' . $this->input['txn']['card']['last4'],
-            'trans_date' => (new Carbon('now'))->format('d-M-y'),
-            'settle_date' => (new Carbon('now'))->format('d-M-y'),
-            'approv_code' => '000000',
-            'intl_amt' => 0,
-            'domestic_amt' => $amount,
-            'tran_id' => $this->supportTxnResponse['data']['tranid'],
-            'upvalue' => '\`',
-            'merchant_trackid' => $this->input['txn']['id'],
-            'msf' => $msf,
-            'service_tax' => $serviceTax,
-            'edu_cess' => $educationCess,
-            'net_amount' => $netAmount,
-            'debitcredit_type' => 'CC',
-            'udf1' => '',
-            'udf2' => '',
-            'udf3' => '',
-            'udf4' => '',
-            'udf5' => '',
+            'merchant_code'     => $this->terminal['gateway_merchant_id'],
+            'terminal_number'   => $this->terminal['gateway_terminal_id'],
+            'rfc_fmt'           => 'BAT',
+            'bat_nbr'           => 1,
+            'card_type'         => $this->input['txn']['card']['network'] . ' ' . 'LOCAL',
+            'card_number'       => $this->input['txn']['card']['iin'] . 'xxxxxx' . $this->input['txn']['card']['last4'],
+            'trans_date'        => (new Carbon('now'))->format('d-M-y'),
+            'settle_date'       => (new Carbon('now'))->format('d-M-y'),
+            'approv_code'       => '000000',
+            'intl_amt'          => 0,
+            'domestic_amt'      => $amount,
+            'tran_id'           => $this->supportTxnResponse['data']['tranid'],
+            'upvalue'           => '`',
+            'merchant_trackid'  => $this->input['txn']['id'],
+            'msf'               => $msf,
+            'service_tax'       => $serviceTax,
+            'edu_cess'          => $educationCess,
+            'net_amount'        => $netAmount,
+            'debitcredit_type'  => 'CC',
+            'udf1'              => '',
+            'udf2'              => '',
+            'udf3'              => '',
+            'udf4'              => '',
+            'udf5'              => '',
+            'sequence_number'   => $this->supportTxnResponse['data']['ref'],
+            'mpr_generated'     => 0,
         );
 
         $mprGenerator = new MprGenerator($attributes);
 
-        (new Hdfc\Repository)->save($mprGenerator);
+        (new MockHdfc\Repository)->saveOrFail($mprGenerator);
     }
 
     public function gatewayTransaction()

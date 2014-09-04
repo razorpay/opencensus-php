@@ -35,7 +35,26 @@ class MprGenerator extends Entity
         'udf3',
         'udf4',
         'udf5',
+        'sequence_number',
+        'mpr_generated',
     );
 
     protected $hidden = array();
+
+    public function getMerchantTrackidAttribute($value)
+    {
+        return 'txn-' . $value;
+    }
+
+    public function toArrayForMprReport()
+    {
+        $array = $this->toArray();
+
+        unset($array['created_at']);
+        unset($array['updated_at']);
+        unset($array['mpr_generated']);
+
+        return $array;
+    }
+
 }
