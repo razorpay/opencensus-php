@@ -2,11 +2,13 @@
 
 namespace Gateway\Hdfc;
 
+use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
 use Models\Card;
 use Models\Ledger;
 use Models\Terminal;
+use Models\Transaction;
 use Trace\Trace;
 
 class MerchantPaymentReport
@@ -21,19 +23,19 @@ class MerchantPaymentReport
         throw new Exception\LogicException('Hdfc mpr: Transaction id not found');
     }
 
-    public function reconcile($input, $ledgerId, $entitiesArray)
+    public function reconcile($input, $ledgerId, $entities)
     {
         // Translate from hdfc mpr raw fields to the database ones
         $attributes = $this->getTranslatedAttributes($input);
 
-        $repo = new HdfcRepository;
+        $repo = new Hdfc\Repository;
 
         $hdfcTxn = $repo->findOrFail($attributes['gateway_transaction_id']);
 
         // Add primary key ledger_id
-        $attributes['ledger_id'] = $ledger_id;
+        $attributes['ledger_id'] = $ledgerId;
 
-        if ($attributes['gateway_transaction_id'] !== $hdfcTxn['gateway_transaction_id'])
+        if ((string)$attributes['gateway_transaction_id'] !== $hdfcTxn['gateway_transaction_id'])
         {
             throw new Exception\LogicException('Hdfc mpr: Gateway transaction id does not match');
         }
@@ -46,63 +48,64 @@ class MerchantPaymentReport
 
         // Now convert the data to the format as understood by
         // API Ledger, Card and other entities
-        $apiAttributes = $this->translateAndVerifyAttributes($attributes);
+        $apiAttributes = $this->translateAndVerifyAttributes($mpr, $entities);
 
         return $apiAttributes;
     }
 
-    protected function getTranslatedAttributes($input)
+    protected function getTranslatedAttributes($row)
     {
         $attributes = array(
             'transaction_id'            => $row['merchant_trackid'],
-            'gateway_transaction_id'    => $row['tran id'],
-            'gateway_merchant_id'       => $row['merchant code'],
-            'gateway_terminal_id'       => $row['terminal number'],
-            'card_network'              => $row['card type'],
-            'card_number'               => $row['card number'],
+            'gateway_transaction_id'    => $row['tran_id'],
+            'gateway_merchant_id'       => $row['merchant_code'],
+            'gateway_terminal_id'       => $row['terminal_number'],
+            'card_network'              => $row['card_type'],
+            'card_number'               => $row['card_number'],
             'card_type'                 => $row['debitcredit_type'],
-            'capture_date'              => $row['trans date'],
-            'settlement_date'           => $row['settle date'],
-            'international_amount'      => $row['intl_amt'] * 100,
-            'domestic_amount'           => $row['domestic amt'] * 100,
-            'net_amount'                => $row['net amount'] * 100,
-            'gateway_net_fee'           => $row['msf'] * 100,
-            'service_tax'               => $row['service tax'] * 100,
-            'education_cess'            => $row['edu cess'] * 100,
-            'reconciliation_format'     => $row['rfc fmt'],
-            'batch_number'              => $row['bat nbr'],
+            'capture_date'              => $row['trans_date'],
+            'settlement_date'           => $row['settle_date'],
+            'international_amount'      => (int) $row['intl_amt'] * 100,
+            'domestic_amount'           => (int) $row['domestic_amt'] * 100,
+            'net_amount'                => (int) $row['net_amount'] * 100,
+            'gateway_net_fee'           => (int) $row['msf'] * 100,
+            'service_tax'               => (int) $row['service_tax'] * 100,
+            'education_cess'            => (int) $row['edu_cess'] * 100,
+            'reconciliation_format'     => $row['rfc_fmt'],
+            'batch_number'              => $row['bat_nbr'],
             'upvalue'                   => $row['upvalue'],
-            'sequence_number'           => $row['sequence number'],
-            'approve_code'              => $row['approv code']);
+            'sequence_number'           => $row['sequence_number'],
+            'approve_code'              => $row['approv_code']);
 
-        $attributes['gateway_fee'] = $attributes['amount'] - $attributes['net_amount'];
+        $attributes['gateway_fee'] = $attributes['international_amount'] + $attributes['domestic_amount'] - $attributes['net_amount'];
 
         return $attributes;
     }
 
-    protected function translateAndVerifyAttributes($attributes, $entitiesArray)
+    protected function translateAndVerifyAttributes($mpr, $entities)
     {
-        list($amount, $indian) = $this->getAmountAndNationality($attributes);
+        list($amount, $indian) = $this->getAmountAndNationality($mpr);
 
-        $this->verifyTerminal($input, $entititesArray['terminal']);
+        $this->verifyTerminal($mpr, $entities['terminal']);
 
         $this->verifyCaptureTime(
-            $attributes['capture_date'],
-            $entitiesArray['transaction']['captured_at']);
+            $mpr['capture_date'],
+            $entities['transaction']['captured_at']);
 
-        $this->verifySettlementDate($input['settlement_date']);
+        $this->verifySettlementDate($mpr['settlement_date']);
 
         $this->verifyTransactionAttributes(
-            $attributes,
-            $entitiesArray['transaction']);
+            $mpr,
+            $entities['transaction']);
 
-        $card = $entitiesArray['card'];
+        $card = $entities['card'];
+
         $this->verifyCardFirstAndLast4(
-                $attributes['card_number'],
+                $mpr['card_number'],
                 $card[Card\Entity::IIN],
                 $card[Card\Entity::LAST4]);
 
-        $card = $this->translateCardAttributes($attributes, $card);
+        $card = $this->translateCardAttributes($mpr, $card);
 
         if ($indian)
         {
@@ -114,7 +117,7 @@ class MerchantPaymentReport
         }
 
         $ledger = array(
-            Ledger\Entity::GATEWAY_FEE   => $attributes['gateway_fee']);
+            Ledger\Entity::GATEWAY_FEE   => $mpr['gateway_fee']);
 
         $apiData = array(
             'card'        => $card,
@@ -123,17 +126,17 @@ class MerchantPaymentReport
         return $apiData;
     }
 
-    protected function verifyTransactionAttributes($attributes, $transaction)
+    protected function verifyTransactionAttributes($mpr, $transaction)
     {
-        $txnId = $transaction[Transaction\Entity::ID];
+        $txnId = 'txn-' . $transaction[Transaction\Entity::ID];
 
-        if ($attributes['transaction_id'] !== $txnId)
+        if ($mpr['transaction_id'] !== $txnId)
         {
             throw new Exception\LogicException(
                 'Hdfc mpr: Transaction id does not match');
         }
 
-        if ($attributes['amount'] !== $transaction['amount'])
+        if ((string) $mpr->getAmount() !== $transaction['amount'])
         {
             throw new Exception\LogicException(
                 'Hdfc mpr: Transaction amount does not match');
@@ -151,8 +154,8 @@ class MerchantPaymentReport
 
     protected function verifyCaptureTime($captureDate, $captureTimestamp)
     {
-        $mprDate = new Carbon($captureDate);
-        $apiTimestamp = new Carbon($captureTimestamp);
+        $mprDate = Carbon::createFromFormat('d-M-y', $captureDate);
+        $apiTimestamp = Carbon::createFromTimestampUTC($captureTimestamp);
 
         // @todo: finish this
         if (false)
@@ -174,11 +177,11 @@ class MerchantPaymentReport
         }
     }
 
-    protected function translateCardAttributes($attributes, $card)
+    protected function translateCardAttributes($mpr, $card)
     {
         $card = array(
-            Card\Entity::TYPE    => $this->translateCardType($data['card_type']),
-            Card\Entity::NETWORK => $this->translateCardNetwork($data['card_network']));
+            Card\Entity::TYPE    => $this->translateCardType($mpr['card_type']),
+            Card\Entity::NETWORK => $this->translateCardNetwork($mpr['card_network']));
 
         return $card;
     }
@@ -210,9 +213,9 @@ class MerchantPaymentReport
             'VISA LOCAL'        => Card\Network::VISA,
             'MASTERCARD LOCAL'  => Card\Network::MC,
             'RUPAY LOCAL'       => Card\Network::RUPAY,
-            'MAESTRO LOCAL'     => Card\Network::MAESTRO);
+            'MAESTRO LOCAL'     => Card\Network::MAES);
 
-        if (in_array($networkTranslation, $cardNetwork))
+        if (in_array($cardNetwork, $networkTranslation))
         {
             $network = $networkTranslation($cardNetwork);
         }
@@ -242,12 +245,12 @@ class MerchantPaymentReport
         }
     }
 
-    protected function getAmountAndNationality($attributes)
+    protected function getAmountAndNationality($mpr)
     {
         $indian = null;
 
-        $da = $attributes['domestic_amount'];
-        $ia = $attributes['international_amount'];
+        $da = $mpr['domestic_amount'];
+        $ia = $mpr['international_amount'];
 
         if (($da !== 0) and ($ia !== 0))
         {
@@ -264,14 +267,14 @@ class MerchantPaymentReport
         if ($da !== 0)
         {
             $indian = true;
-            $amount = $attributes['domestic_amount'];
+            $amount = $mpr['domestic_amount'];
         }
-        else if ($attributes['international_amount'] !== 0)
+        else if ($mpr['international_amount'] !== 0)
         {
             $indian = false;
-            $amount = $attributes['international_amount'];
+            $amount = $mpr['international_amount'];
         }
 
-        return array($amount, $india);
+        return array($amount, $indian);
     }
 }

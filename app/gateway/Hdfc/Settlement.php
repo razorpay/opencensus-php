@@ -12,31 +12,28 @@ class Mpr extends Base\Entity
     protected $primaryKey = 'id';
 
     protected $fillable = array(
-        'merchant code',
-        'terminal number',
-        'rec fmt',
-        'bat nbr',
-        'card type',
-        'card number',
-        'trans date',
-        'settle date',
-        'approv code',
-        'intnl amt',
-        'domestic amt',
-        'tran_id',
+        'transaction_id',
+        'gateway_transaction_id',
+        'gateway_merchant_id',
+        'gateway_terminal_id',
+        'card_network',
+        'card_number',
+        'card_type',
+        'capture_date',
+        'settlement_date',
+        'international_amount',
+        'domestic_amount',
+        'net_amount',
+        'gateway_net_fee',
+        'gateway_fee',
+        'service_tax',
+        'education_cess',
+        'reconciliation_format',
+        'batch_number',
         'upvalue',
-        'merchant_trackid',
-        'msf',
-        'service tax',
-        'edu cess',
-        'net amount',
-        'debitcredit_type',
-        'udf1',
-        'udf2',
-        'udf3',
-        'udf4',
-        'udf5',
-        'sequence number');
+        'sequence_number',
+        'approve_code',
+    );
 
     public function transaction()
     {
@@ -46,5 +43,10 @@ class Mpr extends Base\Entity
     public function getTrackId()
     {
         return $this->getAttribute('trackid');
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute('internation_amount') + $this->getAttribute('domestic_amount');
     }
 }
