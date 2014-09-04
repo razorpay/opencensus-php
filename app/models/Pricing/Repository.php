@@ -37,12 +37,20 @@ class Repository extends Base\Repository
         return $plan;
     }
 
-    public function getPricingPlanByMerchantAndPaymentNetworks($merchantId, array $networks = array())
+    public function getPricingPlanByIdAndPaymentNetworks($id, array $networks = array())
     {
         $repo = $this->repo;
 
-        return $repo::where(Pricing\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->whereIn(Pricing\Entity::PAYMENT_NETWORK, $networks);
+        // cannot use laravel's whereIn here because it doesn't give correct result with 'null'
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+                    ->where(function($query) use ($networks)
+                    {
+                        $query->where(Pricing\Entity::PAYMENT_NETWORK, '=', null)
+                              ->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $networks[0]);
+                    })
+//                    ->whereIn(Pricing\Entity::PAYMENT_NETWORK, array('AMEX'))
+                    ->orderBy(Pricing\Entity::ID, 'desc')
+                    ->get();
     }
 
     public function getPricingPlans()
