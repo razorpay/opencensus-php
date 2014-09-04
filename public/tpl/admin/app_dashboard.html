@@ -6,8 +6,11 @@
     <div class="panel-heading">
       List of all Merchants Pending Activation
     </div>
-    <div class="table-responsive">
-      <table ui-jq="dataTable" class="table table-striped b-t b-light">
+    <div class="panel-body b-b b-light">
+      Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+    </div>
+    <div>
+      <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="table table-responsive table-striped b-t b-light">
         <thead>
           <tr>
             <th>Merchant Id</th>
@@ -31,7 +34,17 @@
             </td>
             <td>{{row.created_at*1000 | date:'medium'}}</td>         
           </tr>
+          <tr ng-show="merchants.length == 0">
+            <td colspan="6">No Merchants</td>
+          </tr>
         </tbody>
+        <tfoot >
+          <tr>
+              <td colspan="6" class="text-center">
+                  <ul class="pagination"></ul>
+              </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>

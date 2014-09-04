@@ -91,8 +91,7 @@ var app = angular.module('app', [
             })
             .state('app.pricing.list', {
                 url: '/list',
-                templateUrl: 'tpl/admin/app_pricings.html',
-                // use resolve to load other dependences
+                templateUrl: 'tpl/admin/app_pricings.html'
             })
             .state('app.pricing.detail', {
                 url: '/:id/detail',
