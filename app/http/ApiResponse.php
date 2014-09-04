@@ -59,16 +59,43 @@ class ApiResponse
 
     public static function generateResponse($code)
     {
+        list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
+
+        return self::json($publicError, $httpStatusCode);
+    }
+
+    public static function getErrorResponseFields($code)
+    {
         $error = new Error($code);
 
         $publicError = $error->toPublicArray();
 
         $httpStatusCode = $error->getHttpStatusCode();
 
+        return array($publicError, $httpStatusCode);
+    }
+
+    public static function serverError($debug, $exception = null)
+    {
+        list($publicError, $httpStatusCode) =
+                self::getErrorResponseFields(ErrorCode::SERVER_ERROR);
+
+        if (($debug) and
+            ($exception !== null))
+        {
+            $exceptionArr['message'] = $exception->getMessage();
+            $exceptionArr['code'] = $exception->getCode();
+            $exceptionArr['file'] = $exception->getFile();
+            $exceptionArr['line'] = $exception->getLine();
+            $exceptionArr['trace'] = $exception->getTrace();
+
+            $publicError['exception'] = $exceptionArr;
+        }
+
         return self::json($publicError, $httpStatusCode);
     }
 
-    public static function serverError()
+    protected static function debugException($e)
     {
         return self::generateResponse(ErrorCode::SERVER_ERROR);
     }

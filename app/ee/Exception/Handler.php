@@ -47,17 +47,7 @@ class Handler
             return;
         }
 
-        //
-        // If debug is false, then return standard server error response
-        //
-        if ($this->debug === false)
-        {
-            return ApiResponse::serverError();
-        }
-        else
-        {
-            return \Response::make($exception->getTraceAsString());
-        }
+        return ApiResponse::serverError($this->debug, $exception);
     }
 
     public function baseExceptionHandler(BaseException $exception, $code)
