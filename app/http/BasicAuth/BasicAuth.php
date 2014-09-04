@@ -128,6 +128,7 @@ class BasicAuth
 
         if ($keyId === false)
         {
+            $this->creds['key'] = '';
             return;
         }
 

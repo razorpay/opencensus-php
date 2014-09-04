@@ -95,7 +95,8 @@ trait RepositoryUpdateTestAndLive
         if ((count($diff1) > 0) or
             (count($diff2) > 0))
         {
-            throw new Exception\LogicException('A row in test and live database do not match');
+            throw new Exception\LogicException(
+                'A row in test and live database do not match' . PHP_EOL);
         }
 
         // Update the test and live entities
