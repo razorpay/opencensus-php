@@ -89,6 +89,14 @@ trait RepositoryUpdateTestAndLive
         $testAttributes = $testEntity->getAttributes();
         $liveAttributes = $liveEntity->getAttributes();
 
+        // Timestamps are allowed to be different
+        // Ignore timestamps for similarity.
+        unset(
+            $testAttributes['created_at'],
+            $testAttributes['updated_at'],
+            $liveAttributes['created_at'],
+            $liveAttributes['updated_at']);
+
         $diff1 = array_diff_assoc($testAttributes, $liveAttributes);
         $diff2 = array_diff_assoc($liveAttributes, $testAttributes);
 
