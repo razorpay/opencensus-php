@@ -17,7 +17,6 @@ trait RequestResponseFlowTrait
         try
         {
             $response = $this->makeRequest($data['request']);
-            //sd($response->getContent());
         }
         catch (BaseException $e)
         {
@@ -108,6 +107,11 @@ trait RequestResponseFlowTrait
             $request['server'] = $server;
         }
 
+        if (isset($request['files']) === false)
+        {
+            $request['files'] = array();
+        }
+
         if ($this->cloud)
         {
             $request['server']['REMOTE_ADDR'] = '10.0.123.123';
@@ -117,7 +121,7 @@ trait RequestResponseFlowTrait
             $request['method'],
             $request['url'],
             $request['content'],
-            array(),
+            $request['files'],
             $request['server']);
 //s($response->getContent());
         return $response;
