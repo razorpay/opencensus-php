@@ -34,7 +34,8 @@ class CreatePricing extends Migration
             $table->string(Pricing::PAYMENT_MODE_TYPE)
                   ->nullable();
 
-            $table->string(Pricing::PAYMENT_NETWORK);
+            $table->string(Pricing::PAYMENT_NETWORK)
+                  ->nullable();
 
             $table->string(Pricing::PAYMENT_ISSUER)
                   ->nullable();
