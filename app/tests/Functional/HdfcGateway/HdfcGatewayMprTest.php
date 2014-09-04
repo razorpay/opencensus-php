@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\HdfcGateway;
 
+use Config;
 use Tests\Functional\TestCase;
 use Tests\Functional\Transaction\TransactionAuthFlowTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -26,6 +27,9 @@ class HdfcGatewayMprTest extends TestCase
 
     public function testUploadMpr()
     {
+        $defaultGateway = Config::get('gateway.default');
+        Config::set('gateway.default', 'mockhdfc');
+
         $txns = array();
 
         $r = range(1,1);
@@ -50,6 +54,8 @@ class HdfcGatewayMprTest extends TestCase
         $this->setupAppBasicAuthParams();
 
         $this->startTest();
+
+        Config::set('gateway.default', $defaultGateway);
     }
 
     public function startTest($testDataToReplace = array())
