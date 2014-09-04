@@ -49,10 +49,55 @@
           <span class="pull-right" tooltip="{{merchant.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></span>
           Activated
         </a>
+        <div href class="list-group-item" ng-init="isPricingCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs"  ng-click="isPricingCollapsed = !isPricingCollapsed" ng-show="merchant.pricing_plan.length != 0">Expand</button>
+              <span ng-hide="merchant.pricing_plan.length != 0">No Pricing Assigned</span>
+            </span>
+          Pricing Plan
+        </div>
+          <div collapse="isPricingCollapsed" class="panel-body">
+            <a href class="list-group-item">
+              <span class="pull-right">{{merchant.pricing_plan.id}}</span>
+              Plan Id
+            </a>
+            <div class="list-group-item">
+              <span class="pull-right"><a ui-sref="app.pricing.detail({id:merchant.pricing_plan.id})" ng-show="merchant.pricing.length != 0">{{merchant.pricing_plan.name}} (Click to see/edit plan)</a></span>
+              Plan Name
+            </div>
+            <div class="list-group-item">
+              Plan Rules
+              <div class="m-t list-group-item">
+                <table class="table table-striped b-light">
+                  <thead>
+                        <th>Payment Mode</th>
+                        <th>Payment Mode Type</th>
+                        <th>Payment Network</th>
+                        <th>Payment Issuer</th>
+                        <th>Percent Rate</th>
+                        <th>Fixed Rate</th>
+                  </thead>
+                  <tbody>
+                  <tr ng-repeat="rule in merchant.pricing_plan.rules">
+                        <td>{{rule.payment_mode || 'Any'}}</td>
+                        <td>{{rule.payment_mode_type || 'Any'}}</td>
+                        <td>{{rule.payment_network || 'Any'}}</td>
+                        <td>{{rule.payment_issuer || 'Any'}}</td>
+                        <td>{{rule.percent_rate/100}} %</td>
+                        <td>{{rule.fixed_rate/100 | currency:"INR "}}</td>     
+                  </tr>
+                </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         <a href class="list-group-item" ng-init="isTerminalCollapsed = true">
           <span class="pull-right" ng-show="merchant.terminal">
             <button class="btn btn-default btn-xs pull-right"  ng-click="isTerminalCollapsed = !isTerminalCollapsed" ng-show="merchant.terminal.length != 0">Expand</button>
-            <span ng-hide="merchant.terminal != 0">No terminal Assigned</span>
+            <span ng-hide="merchant.terminal.length != 0">
+              No terminal Assigned
+              <button class="btn btn-primary btn-rounded" ng-click="openAssignTerminal()">Assign Terminal</button>
+            </span>
           </span>
           Terminal
         </a>
@@ -73,14 +118,7 @@
               <span class="pull-right">{{merchant.terminal.created_at*1000 | date:'medium'}}</span>
               Created At
             </a>
-        </div>
-        <a href class="list-group-item">
-          <span class="pull-right">
-            <span ng-show="merchant.pricing_plan.length != 0">{{merchant.pricing_plan}}</span>
-            <span ng-hide="merchant.pricing_plan.length != 0">No Pricing Assigned</span>
-          </span>
-          Pricing Plan
-        </a>
+          </div>
       </div>
     </div>
   </div>
@@ -116,14 +154,16 @@
   <div class="modal-body">
     <span class="text-danger"><strong>Warning: The assigned pricing plan will replace the current pricing plan and affect all future test/live transactions.</strong></span>
     <form class="form-horizontal">
-      <div class="form-group">
+      <div class="form-group" ng-hide="pricing_plans.length == 0">
         <label class="col-lg-2 control-label">Plan to be Assigned</label>
-        <div class="col-lg-10">
-          <select name="account" class="form-control m-b" ng-model="pricing_plan_id">
+        <div class="col-lg-10" >
+          <select name="account" class="form-control m-b" ng-model="pricing_plan_id" >
+              <option value="">None</option>
               <option ng-repeat="plan in pricing_plans" value="{{plan.id}}">{{plan.name}}</option>
           </select>
         </div>
       </div>
+      <h4 ng-show="pricing_plans.length == 0">No Plans available. First create a pricing plan <a ui-sref="app.pricing.list">here</a></h4>
     </form>
   </div>
   <div class="modal-footer">
