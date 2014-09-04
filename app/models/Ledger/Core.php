@@ -3,8 +3,10 @@
 namespace Models\Ledger;
 
 use Models\Base;
+use Models\Card;
 use Models\Ledger;
 use Models\Merchant;
+use Models\Pricing;
 use Models\Transaction;
 
 class Core
@@ -67,44 +69,64 @@ class Core
         $record['entity_id'] = $entities['transaction']->getKey();
         $record['entity_type'] = 'transaction';
 
-        $this->updateCardNetworkAndCountry($card, $data['card']);
+        $this->updateCardNetworkAndCountry($entities['card'], $data['card']);
 
         list($fee, $pricingRuleId) = $this->calculateMerchantFees();
 
-        $ledger['fee'] = $fee;
-        $ledger['credit'] = $ledger['amount'] - $fee;
-        $ledger['pricing_rule_id'] = $pricingRuleId;
+        $record['fee'] = $fee;
+        $record['credit'] = $record['amount'] - $fee;
+        $record['debit'] = 0;
+        $record['pricing_rule_id'] = $pricingRuleId;
+        $record['escrow_balance'] = 0;
 
         $apiFee = $fee - $record['gateway_fee'];
 
-        $this->updateBalances($ledger);
+        $this->updateBalances($record);
 
-        (new Ledger\Repository)->save($ledger);
+        (new Ledger\Repository)->save($record);
+
+        return $record;
+    }
+
+    protected function calculateMerchantFees()
+    {
+        $entities = $this->entities;
+
+        $pricing = new Pricing\Fee;
+        return $pricing->calculateMerchantFees(
+                    $entities['merchant'],
+                    $entities['card'],
+                    $entities['transaction']['amount']);
     }
 
     protected function updateBalances($ledger)
     {
         $merchantRepo = new Merchant\Repository();
 
-        $nodalBalance = $merchantRepo->getEscrowBalanceLockForUpdate();
-        $merchantBalance = $merchantRepo->getBalanceLockForUpdate($merchant->getKey());
+//        $nodalBalance = $merchantRepo->getEscrowBalanceLockForUpdate();
+        $merchantBalance = $merchantRepo->getBalanceLockForUpdate($this->entities['merchant']->getKey());
 
         $merchantBalance->addAmount($ledger['credit']);
         $merchantRepo->save($merchantBalance);
 
         $apiFee = $ledger['fee'] - $ledger['gateway_fee'];
-        $nodalBalance->addAmount($apiFee);
-        $merchantRepo->save($nodalBalance);
+  //      $nodalBalance->addAmount($apiFee);
+  //      $merchantRepo->save($nodalBalance);
 
         $ledger['api_fee'] = $apiFee;
         $ledger['balance'] = $merchantBalance->getBalance();
-        $ledger['escrow_balance'] = $nodalBalance->getBalance();
+    //    $ledger['escrow_balance'] = $nodalBalance->getBalance();
     }
 
     protected function updateCardNetworkAndCountry($card, $data)
     {
         $card->setCountry($data['country']);
-        $card->setNetwork($data['network']);
+
+        if (($data['network'] !== null) and
+            ($data['network'] !== ''))
+        {
+            $card->setNetwork($data['network']);
+        }
 
         (new Card\Repository)->saveOrFail($card);
     }

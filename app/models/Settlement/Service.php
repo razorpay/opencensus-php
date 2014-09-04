@@ -10,11 +10,12 @@ use EE\Error\ErrorCode;
 
 class Service extends Base\Service
 {
-    public function hdfcMpr($input)
+    public function gatewayMpr($input)
     {
-        $file = $input['hdfc_mpr'];
+        $mprFile = $input['mpr'];
+        $gateway = $input['gateway'];
 
-        $filePath = $file->getRealPath();
+        $filePath = $mprFile->getRealPath();
 
         $data = \Excel::load($filePath)
                       ->noHeading()
@@ -22,29 +23,77 @@ class Service extends Base\Service
                       ->formatDates(false)
                       ->toArray();
 
-        $data = $data[0];
+        if ((count($data) === 3) and
+            (count($data[1]) === 0))
+        {
+            //
+            // For excel files, with 3 sheets, we get the
+            // data for first sheet only, discarding other sheets.
+            // The simple check to determine sheets is that they will 3
+            // in number and data in second sheet should be empty.
+            //
+            $data = $data[0];
+        }
+
         $headings = array_shift($data);
 
-        foreach ($input as $row)
+        foreach($headings as &$attr)
         {
-            $this->reconcileHdfcMprRecord($input);
+            $attr = strtolower($attr);
+            $attr = str_replace(' ', '_', $attr);
         }
+
+        $headingCount = count($headings);
+
+        $lgrs = array();
+
+        $r = range(1, $headingCount);
+        foreach ($data as $row)
+        {
+            foreach($r as $i)
+            {
+                if (isset($row[$i]) === false)
+                {
+                    $row = array_slice($row, 0, $i - 1, true) +
+                           array($i => null) +
+                           array_slice($row, $i - 1, null, true);
+                }
+            }
+
+            $assocArray = array_combine($headings, $row);
+            $lgr = $this->reconcileMprRecord($assocArray, $gateway);
+            array_push($lgrs, $lgr);
+        }
+
+        return $lgrs;
     }
 
-    protected function reconcileHdfcMprRecord($input)
+    protected function reconcileMprRecord($record, $gateway)
     {
         $lgrCore = new Ledger\Core;
 
-        $transactionId = Gateway::call('getTransactionId', $input, 'test');
+        $transactionId = Gateway::call('getTransactionId', $record, 'test');
 
         $lgrCore->loadEntities($transactionId);
 
-        $lgrCore->newRecord();
+        $lgr = $lgrCore->newRecord();
 
-        $entitiesArray = $core->entittiesToArray();
+        $entitiesArray = $lgrCore->entitiesToArray();
 
-        $data = Gateway::call('reconcile', $entitiesArray, 'test');
+        $params = array(
+            'input' => $record,
+            'ledgerId' => $lgr->getKey(),
+            'entities' => $entitiesArray);
 
-        $lgrCore->reconcileRecord($data);
+        $data = Gateway::call('reconcile', $params, 'test');
+
+        $lgr = $lgrCore->reconcileRecord($data);
+
+        return $lgr;
+    }
+
+    public function getLedgerRecords()
+    {
+        return (new Ledger\Repository)->all();
     }
 }
