@@ -259,7 +259,7 @@ class AdminController extends BaseController
     {
         $data = (new Service\Admin)->fetchPricingPlan($id);
 
-        return View::make('admin.getPricingRules')->with('plan', $data);
+        return Response::json(array('success' => true, 'data' => $data));
     }
 
     public function postPricingRules($id)

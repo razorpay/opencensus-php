@@ -14,8 +14,7 @@ class Transaction extends Manager
         'currency'      => 'currency',
         'amount'        => 'amount',
         'status'        => 'status',
-        'created_at'    => 'created_at',
-        'updated_at'    => 'updated_at'
+        'created_at'    => 'created_at'
     );
 
     protected static $fetchRules = array(
