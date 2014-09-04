@@ -3,26 +3,41 @@
 namespace Models\Pricing;
 
 use EE\Exception;
+use Models\Pricing;
 
 class Fee
 {
+    protected $defaultPricingPlan = '13906d42c88a41ee4e2d812e';
+
     public function calculateMerchantFees($merchant, $card, $amount)
     {
-        $merchantId = $merchant->getKey();
         $networks = array($card->getNetwork(), null);
 
+        $pricingPlanId = $merchant->getPricingPlanId();
+        $mode = \BasicAuth::getMode();
+
+        if ($pricingPlanId === null)
+        {
+            if ($mode === 'live')
+            {
+                throw new Exception\LogicException(
+                    'No pricing plan assigned for merchant id: ' . $merchant->getKey());
+            }
+
+            $pricingPlanId = $this->defaultPricingPlan;
+        }
+
         $pricingRepo = new Pricing\Repository;
-        $pricing = $pricingRepo->getPricingPlanByMerchantAndPaymentNetworks(
-                                    $merchantId,
-                                    $networks);
+
+        $pricing = $pricingRepo->getPricingPlanByIdAndPaymentNetworks($pricingPlanId, $networks);
 
         $rule = null;
-
-        if (count($pricing) === 1)
+        $rules = $pricing->all();
+        if (count($rules) === 1)
         {
             $rule = $pricing->first();
         }
-        else if (count($pricing) === 2)
+        else if (count($rules) === 2)
         {
             foreach ($pricing->all() as $item)
             {
@@ -35,7 +50,8 @@ class Fee
         }
         else
         {
-            throw new Exception\LogicException('Failed to find a valid pricing rule for the transaction');
+            throw new Exception\LogicException(
+                'Failed to find a valid pricing rule for the transaction');
         }
 
         $percent = $rule->getAttribute(Pricing\Entity::PERCENT_RATE);
@@ -43,7 +59,7 @@ class Fee
 
         $fee = (($amount * $percent) / 100) + $fixed;
 
-        return array($fee, $item->getKey());
+        return array($fee, $rule->getKey());
     }
 
     public function calculateGatewayFees($lgr)
