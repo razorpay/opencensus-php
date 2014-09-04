@@ -136,11 +136,11 @@ class AdminController extends BaseController
 
         if(empty($error))
         {
-            return Redirect::to('/admin/merchant/'.$id.'/terminal')->with('status', array('Terminal added successfully'));
+            return Response::json(array('success' => true));
         }
         else
         {
-            return Redirect::to('/admin/merchant/'.$id.'/terminal')->with('status', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 
@@ -149,8 +149,6 @@ class AdminController extends BaseController
         $details = (new Service\Admin)->fetchMerchantDetails($id);
 
         $pricing = (new Service\Admin)->fetchMerchantPricing($id);
-
-        //sd($pricing);
 
         $pricing_plans = (new Service\Admin)->fetchPricingPlan();
 

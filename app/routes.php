@@ -82,8 +82,6 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/keepalive', 'AdminController@getKeepAlive');
 
-    Route::post('/admin/password', array('before'=>'csrf', 'uses'=>'AdminController@postPassword'));
-
     Route::get('/admin/merchant/list', 'AdminController@getMerchantList');
 
     Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
@@ -92,17 +90,9 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin');
 
-    Route::get('/admin/merchant/{id}/lock', array('before'=>'csrf', 'uses' => 'AdminController@getLockMerchantDetails'));
-
-    Route::get('/admin/merchant/{id}/unlock', array('before'=>'csrf', 'uses' => 'AdminController@getUnlockMerchantDetails'));
-
     Route::get('/admin/merchant/{id}/terminal', 'AdminController@getMerchantTerminal');
 
-    Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
-
     Route::get('/admin/merchant/{id}/pricing', 'AdminController@getMerchantPricing');
-
-    Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
 
     Route::get('/admin/merchant/{id}/activate', array('before'=>'csrf', 'uses' => 'AdminController@getMerchantActivation'));
 
@@ -118,6 +108,19 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::post('/admin/pricing/{id}', array('before'=>'csrf', 'uses'=>'AdminController@postPricingRules'));
 
+    Route::group(array('before' => 'csrf'), function()
+    {
+        Route::get('/admin/merchant/{id}/lock', array('before'=>'csrf', 'uses' => 'AdminController@getLockMerchantDetails'));
+
+        Route::get('/admin/merchant/{id}/unlock', array('before'=>'csrf', 'uses' => 'AdminController@getUnlockMerchantDetails'));
+
+        Route::post('/admin/password', array('before'=>'csrf', 'uses'=>'AdminController@postPassword'));
+
+        Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
+
+        Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
+    });
+    
     Route::group(array('before' => 'superadmin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');
