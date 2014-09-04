@@ -13,6 +13,7 @@ class Core
     public function create($input, $merchant)
     {
         $input['merchant_id'] = $merchant->getKey();
+
         $terminal = (new Terminal\Entity)->build($input);
 
         $this->validateNoExistingTerminal($terminal);

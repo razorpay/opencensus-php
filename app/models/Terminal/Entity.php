@@ -25,6 +25,8 @@ class Entity extends Base\UniqueIdEntity
 
     protected $hidden = array(self::GATEWAY_TERMINAL_PASSWORD);
 
+    protected $genereateIdOnCreate = true;
+
     /**
      * Fields which will be modified before
      * input validation
