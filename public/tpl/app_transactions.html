@@ -41,7 +41,6 @@
             <th>Currency</th>
             <th>Amount</th>
             <th>Created At</th>
-            <th>Updated At</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -51,11 +50,10 @@
             <td>{{row.currency}}
             <td>{{row.amount/100 | currency:""}}</td>
             <td>{{row.created_at*1000 | fromNow}}</td>
-            <td>{{row.updated_at*1000 | fromNow}}</td>
             <td><span class="label text-base" title="{{row.status}}" ng-class="getStatusClass(row.status)">{{row.status | titlecase}}</span></td>          
           </tr>
           <tr ng-show="transactions.count === 0">
-            <td colspan="6" class="text-center">
+            <td colspan="5" class="text-center">
             No Transactions
             </td>
           </tr>

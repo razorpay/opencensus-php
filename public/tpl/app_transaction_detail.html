@@ -43,10 +43,6 @@
           <span class="pull-right">{{transaction.created_at*1000 | fromNow}} ({{transaction.created_at*1000 | date : 'medium'}})</span>
           Created At
         </a>
-        <a href class="list-group-item">
-          <span class="pull-right">{{transaction.updated_at*1000 | fromNow}} ({{transaction.updated_at*1000 | date : 'medium'}})</span>
-          Updated At
-        </a>
         <a href class="list-group-item" ng-init="isCollapsed = true">
           <span class="pull-right">
             <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="transaction.udf.length != 0">Expand</button>
