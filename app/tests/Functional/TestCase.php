@@ -70,6 +70,9 @@ class TestCase extends ParentTestCase
         // but you are not required to use it.
         //
 
+        $apiMerchant = $this->createEntityInTestAndLive('merchant', ['id' => '134510ae166900007a9677a9']);
+        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '134510ae166900007a9677a9']);
+
         $this->entities = array(
             'pricing'     => $this->createDefaultPricingPlan(),
             'merchant'    => $this->createEntityInTestAndLive('merchant', ['id' => '363e4efa820b0c06208ccd99']),
