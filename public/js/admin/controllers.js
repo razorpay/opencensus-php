@@ -374,6 +374,38 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         });
       };
 
+      $scope.assignTerminal = function(terminal){
+        $scope.alerts.addAlert('info', 'Processing...', true);
+        
+        var data = terminal;
+
+        data._token = CSRF_TOKEN;
+
+        var request = $http({
+                      method: "post",
+                      url: "/admin/merchant/"+$scope.merchant.id+"/terminal",
+                      transformRequest: transformRequestAsFormPost,
+                      data: data
+        });
+
+        request
+        .success(function(data){
+          if(data.success) {
+            $scope.alerts.addAlert('success', 'Terminal Assigned successfully', true);
+            generateMerchant();
+          }
+          else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', null, true);
+        });
+      };
+
       var assignPricingModalCtrl = function ($scope, $modalInstance, pricing_plans, current) {
         $scope.pricing_plans = pricing_plans;
         $scope.pricing_plan_id = current;
@@ -409,6 +441,32 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         modalInstance.result.then(
           function (plan_id) {
             $scope.assignPricing(plan_id);
+          },
+          function () {
+            ;
+          });
+      };
+
+      var assignTerminalModalCtrl = function ($scope, $modalInstance) {
+        $scope.ok = function (terminal) {
+          $modalInstance.close(terminal);
+        };
+
+        $scope.cancel = function () {
+          $modalInstance.dismiss('cancel');
+        };
+      };
+
+      $scope.openAssignTerminal = function () {
+        var modalInstance = $modal.open({
+          templateUrl: 'assignTerminalModalContent.html',
+          controller: assignTerminalModalCtrl,
+          size: 'lg'
+        });
+
+        modalInstance.result.then(
+          function (terminal) {
+            $scope.assignTerminal(terminal);
           },
           function () {
             ;

@@ -2,7 +2,41 @@
   <h1 class="m-n font-thin h3">Merchant Detail</h1>
 </div>
 <div class="wrapper-md" ng-controller="MerchantDetailCtrl">
-  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+  <div class="panel panel-default col-sm-2 col-sm-offset-2" >
+    <div class="panel-heading m-t m-b">
+      Actions
+    </div>
+    <div class="row wrapper">
+      <div class="list-group">
+        <a href="{{'/admin/merchant/' + merchant.id + '/login'}}" target="_blank" class="list-group-item">
+          Login as Merchant
+        </a>
+        <a ui-sref="app.merchants.activation({id:merchant.id})" class="list-group-item">
+          See Activation Form Details
+        </a>
+        <a href class="list-group-item" ng-show="merchant.locked==0 "ng-click="lockForm()">
+          Lock Activation Form
+        </a>
+        <a href class="list-group-item" ng-show="merchant.locked==1 "ng-click="unlockForm()">
+          Unlock Activation Form
+        </a>
+        <a href class="list-group-item"
+        ng-show="merchant.activated==0" 
+        ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating? 
+        "ng-click="activateMerchant()"
+        >
+          Activate Merchant
+        </a>
+        <a href class="list-group-item" ng-click="openAssignPricing()">
+          Assign Pricing
+        </a>
+        <a href class="list-group-item" ng-hide="merchant.terminal.length" ng-click="openAssignTerminal()">
+          Assign Terminal
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default col-sm-6" >
     <div class="panel-heading m-t m-b">
       Merchant: <strong>{{merchant.id}}</strong>
     </div>
@@ -92,11 +126,10 @@
             </div>
           </div>
         <a href class="list-group-item" ng-init="isTerminalCollapsed = true">
-          <span class="pull-right" ng-show="merchant.terminal">
+          <span class="pull-right">
             <button class="btn btn-default btn-xs pull-right"  ng-click="isTerminalCollapsed = !isTerminalCollapsed" ng-show="merchant.terminal.length != 0">Expand</button>
             <span ng-hide="merchant.terminal.length != 0">
               No terminal Assigned
-              <button class="btn btn-primary btn-rounded" ng-click="openAssignTerminal()">Assign Terminal</button>
             </span>
           </span>
           Terminal
@@ -122,44 +155,20 @@
       </div>
     </div>
   </div>
-  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
-    <div class="panel-heading m-t m-b">
-      Actions
-    </div>
-    <div class="row wrapper">    
-      <div >
-        <a href="{{'/admin/merchant/' + merchant.id + '/login'}}" target="_blank">
-          <button  class="btn btn-primary btn-rounded">Login as Merchant</button>
-        </a>
-        <a ui-sref="app.merchants.activation({id:merchant.id})">
-          <button class="btn btn-primary btn-rounded">See Activation Form Details</button>
-        </a>
-        <button class="btn btn-primary btn-rounded" ng-show="merchant.locked==0 "ng-click="lockForm()">Lock Activation Form</button>
-        <button class="btn btn-primary btn-rounded" ng-show="merchant.locked==1 "ng-click="unlockForm()">Unlock Activation Form</button>
-
-        <button class="btn btn-primary btn-rounded" 
-        ng-show="merchant.activated==0" 
-        ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating? 
-        "ng-click="activateMerchant()"
-        >Activate Merchant</button>
-        <button class="btn btn-primary btn-rounded" ng-click="openAssignPricing()">Assign Pricing</button>
-      </div>
-    </div>
-  </div>
 </div>
 <script type="text/ng-template" id="assignPricingModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Assign Pricing Plan</h3>
   </div>
   <div class="modal-body">
-    <span class="text-danger"><strong>Warning: The assigned pricing plan will replace the current pricing plan and affect all future test/live transactions.</strong></span>
+    <span class="text-danger"><strong>
+    Warning: The assigned pricing plan will replace the current pricing plan and affect all future test/live transactions.
+    </strong></span>
     <form class="form-horizontal">
       <div class="form-group" ng-hide="pricing_plans.length == 0">
         <label class="col-lg-2 control-label">Plan to be Assigned</label>
         <div class="col-lg-10" >
-          <select name="account" class="form-control m-b" ng-model="pricing_plan_id" >
-              <option value="">None</option>
-              <option ng-repeat="plan in pricing_plans" value="{{plan.id}}">{{plan.name}}</option>
+          <select class="form-control m-b" ng-model="pricing_plan_id" ng-options="plan.id as plan.name for plan in pricing_plans">
           </select>
         </div>
       </div>
@@ -169,5 +178,53 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="assignTerminalModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Assign Terminal</h3>
+  </div>
+  <div class="modal-body">
+    <span class="text-danger"><strong>
+    Warning: The terminal once assigned can not be changed.
+    </strong></span>
+    <form class="form-horizontal" ng-init="terminal={gateway:'HDFC'}">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Gateway:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" ng-model="terminal.gateway">
+             <option value="HDFC" selected>HDFC</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Gateway Merchant Id:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" ng-model="terminal.gateway_merchant_id" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Gateway Terminal Id:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" ng-model="terminal.gateway_terminal_id" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Gateway Terminal Password:</label>
+        <div class="col-lg-10" >
+          <input type="password" class="form-control m-b" ng-model="terminal.gateway_terminal_password" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Confirm Gateway Terminal Password:</label>
+        <div class="col-lg-10" >
+          <input type="password" class="form-control m-b" ng-model="terminal.gateway_terminal_password_confirmation" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary" ng-confirm-click="Terminal once assigned can not be changed, ensure you have checked all values" ng-click="ok(terminal)">OK</button>
   </div>
 </script>
