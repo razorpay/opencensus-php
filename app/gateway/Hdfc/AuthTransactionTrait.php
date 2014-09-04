@@ -94,7 +94,7 @@ trait AuthTransactionTrait
 
         if ($this->error)
         {
-            $this->throwException($this->authEnrolledResponse['error']['code']);
+            $this->throwException($this->authEnrolledResponse['error']);
         }
     }
 
@@ -122,7 +122,7 @@ trait AuthTransactionTrait
 
         if ($this->error)
         {
-            $this->throwException($this->authNotEnrolledResponse['error']['code']);
+            $this->throwException($this->authNotEnrolledResponse['error']);
         }
     }
 

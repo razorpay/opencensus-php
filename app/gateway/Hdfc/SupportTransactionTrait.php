@@ -49,7 +49,7 @@ trait SupportTransactionTrait
 
         if ($this->error)
         {
-            $this->throwException($this->supportTxnResponse['error']['code']);
+            $this->throwException($this->supportTxnResponse['error']);
         }
     }
 

@@ -76,4 +76,22 @@ class ErrorHandler
 
         $response['error'] = self::getErrorDetails($code);
     }
+
+    public static function setGatewayWrongStatusCode(array & $response, $status_code)
+    {
+        $code = Hdfc\ErrorCode::RP00008;
+
+        $response['error'] = self::getErrorDetails($code);
+
+        $response['error']['text'] .= ' stautus_code: ' . $status_code;
+    }
+
+    public static function setGatewayWrongContentType(array & $response, $contentType)
+    {
+        $code = Hdfc\ErrorCode::RP00009;
+
+        $response['error'] = self::getErrorDetails($code);
+
+        $response['error']['text'] .= ' content-type: ' . $contentType;
+    }
 }

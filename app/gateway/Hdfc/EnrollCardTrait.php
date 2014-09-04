@@ -46,7 +46,7 @@ trait EnrollCardTrait
         //
         if ($this->error)
         {
-            $this->throwException($this->enrollResponse['error']['code']);
+            $this->throwException($this->enrollResponse['error']);
         }
 
         //
@@ -61,7 +61,7 @@ trait EnrollCardTrait
         {
             $this->persistAfterEnroll();
 
-            $this->throwException($this->enrollResponse['error']['code']);
+            $this->throwException($this->enrollResponse['error']);
         }
 
         //

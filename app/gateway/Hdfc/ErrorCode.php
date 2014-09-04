@@ -100,15 +100,20 @@ class ErrorCode
     const PY20002   = 'PY20002';
     const PY20006   = 'PY20006';
 
+    //
+    // The error codes starting with 'RP' are our custom ones
+    // to handle different error cases not covered by their
+    // the gateway defined error codes.
+    //
+
     /**
      * Invalid error code.
-     * Set it whenever encountering and unknown error code
-     * or 'result'
+     * Set it whenever encountering an unknown error code
      */
     const RP00001   = 'RP00001';
 
     /**
-     * When for the given request, the result code
+     * When for the given request, the returned 'result' code
      * isn't recognized
      */
     const RP00002   = 'RP00002';
@@ -138,10 +143,17 @@ class ErrorCode
      */
     const RP00007   = 'RP00007';
 
-    //
-    // The error codes starting with 'RP' are our custom ones
-    // to handle unknow error cases returned from bank.
-    //
+    /**
+     * When response status_code is greater than 500
+     * signifying gateway server error
+     */
+    const RP00008   = 'RP00008';
+
+    /**
+     * When response content-type is not
+     * application/xml
+     */
+    const RP00009   = 'RP00009';
 
     public static $errorMessages = array(
         Hdfc\ErrorCode::FSS0001   => 'Authentication Not Available',
@@ -220,6 +232,8 @@ class ErrorCode
         Hdfc\ErrorCode::RP00005   => 'Denied by risk',
         Hdfc\ErrorCode::RP00006   => 'Authorization not approved',
         Hdfc\ErrorCode::RP00007   => 'Capture/Refund not done',
+        Hdfc\ErrorCode::RP00008   => 'Gateway error. Wrong response status_code.',
+        Hdfc\ErrorCode::RP00009   => 'Wrong resposne content-type, not application/xml',
     );
 
     /**
@@ -285,6 +299,8 @@ class ErrorCode
         Hdfc\ErrorCode::RP00005   => Error\ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK,
         Hdfc\ErrorCode::RP00006   => Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
         Hdfc\ErrorCode::RP00007   => Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+        Hdfc\ErrorCode::RP00008   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        Hdfc\ErrorCode::RP00009   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
     );
 
     public static $invalidErrorCode = Hdfc\ErrorCode::RP00001;

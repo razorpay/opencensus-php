@@ -238,6 +238,12 @@ class Gateway extends BaseGateway
      */
     protected $exception;
 
+    /**
+     * Response received from gateway request
+     * @var
+     */
+    protected $response;
+
     public function __construct()
     {
         parent::__construct();
@@ -378,11 +384,45 @@ class Gateway extends BaseGateway
 
         $response['xml'] = $response['response']->body;
 
-        Utility::parseResponseXml($response);
-
         $this->repo->saveXml($this->id, $response['xml'], $response['type']);
 
-        $this->checkError($response);
+        $this->checkResponseStatusCode($response);
+
+        if ($this->error === false)
+        {
+            $this->checkResponseContentType($response);
+        }
+
+        if ($this->error === false)
+        {
+            Utility::parseResponseXml($response);
+
+            $this->checkResponseErrorCode($response);
+        }
+    }
+
+    protected function checkResponseStatusCode(& $response)
+    {
+        $status_code = (int) $response['response']->status_code;
+
+        if ($status_code >= 500)
+        {
+            Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $status_code);
+
+            $this->error = true;
+        }
+    }
+
+    protected function checkResponseContentType(& $response)
+    {
+        $contentType = $response['response']->headers['content-type'];
+
+        if (strpos($contentType, 'application/xml') === false)
+        {
+            Hdfc\ErrorHandler::setGatewayWrongContentType($response, $contentType);
+
+            $this->error = true;
+        }
     }
 
     protected function setTerminalInRequest(array & $request)
@@ -390,20 +430,26 @@ class Gateway extends BaseGateway
         $terminal = $this->terminal;
 
         if ($terminal['gateway'] !== 'hdfc')
+        {
             throw new \InvalidArgumentException(
-                'hdfc gateway: wrong terminal supplied, ');
+                'hdfc gateway: wrong terminal supplied. Gateway: ' . $terminal['gateway']);
+        }
 
         $id = $terminal['gateway_terminal_id'];
         $pwd = $terminal['gateway_terminal_password'];
 
+        // For 'test' mode, replace any random terminal given with
+        // hdfc test terminal
         if ($this->mode === 'test')
+        {
             list($id, $pwd) = $this->getCredentials();
+        }
 
         $request['data']['id'] = $id;
         $request['data']['password'] = $pwd;
     }
 
-    protected function checkError($response)
+    protected function checkResponseErrorCode($response)
     {
         //
         // This step is very crucial for deciding future steps in
@@ -423,17 +469,14 @@ class Gateway extends BaseGateway
     public function postRequest($request)
     {
         $request['options'] = $this->getRequestOptions();
-        $response = null;
 
-        $response = $this->sendGatewayRequest($request);
+        $this->response = $this->sendGatewayRequest($request);
 
-// echo $response->body . PHP_EOL;
-        return $response;
+        return $this->response;
     }
 
     protected function sendGatewayRequest($request)
     {
-  //      echo $request['xml'] .  PHP_EOL;
         return Requests::post(
                     $request['url'],
                     $request['header'],
@@ -522,15 +565,17 @@ class Gateway extends BaseGateway
         throw $exception;
     }
 
-    protected function throwException($gatewayErrorCode)
+    protected function throwException($error)
     {
+        $gatewayErrorCode = $error['code'];
+
         if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
             ($gatewayErrorCode === Hdfc\ErrorCode::RP00004))
         {
             $this->throwGatewayTimeoutException($gatewayErrorCode);
         }
 
-        $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
+        $gatewayErrorDesc = $error['text'];
 
         $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
 
