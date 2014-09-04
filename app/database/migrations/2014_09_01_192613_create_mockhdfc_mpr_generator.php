@@ -40,6 +40,8 @@ class CreateMockhdfcMprGenerator extends Migration
             $table->string('udf3');
             $table->string('udf4');
             $table->string('udf5');
+            $table->string('sequence_number');
+            $table->boolean('mpr_generated')->default(0);
             $table->integer('created_at');
             $table->integer('updated_at');
         });
