@@ -60,6 +60,7 @@ class Entity extends Base\UniqueIdEntity
         self::NAME,
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
+        self::IIN,
         self::LAST4,
         self::NETWORK);
 
@@ -151,12 +152,12 @@ class Entity extends Base\UniqueIdEntity
         }
     }
 
-    protected function setCountry($country)
+    public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);
     }
 
-    protected function setNetwork($network)
+    public function setNetwork($network)
     {
         $this->setAttribute(self::NETWORK, $network);
     }
