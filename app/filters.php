@@ -69,12 +69,12 @@ Route::filter('auth.internal', function()
 
 Route::filter('guest', function()
 {
-	if (Auth::merchant()->check()) return Redirect::to('/');
+	if (Auth::merchant()->check()) return Response::json(array('success' => false, 'errors' => array("You are already logged in, please refresh and try again")));
 });
 
 Route::filter('guest_admin', function()
 {
-	if (Auth::admin()->check()) return Redirect::to('/admin');
+	if (Auth::admin()->check()) return Response::json(array('success' => false, 'errors' => array("You are already logged in, please refresh and try again")));
 });
 
 /*
