@@ -101,10 +101,14 @@ trait TransactionAuthFlowTrait
 
         $content = $response->getContent();
 
-        if (json_decode($content) === null)
+        if ((json_decode($content) === null) and
+            (get_class($response) === 'Illuminate\Http\Response') and
+            ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
+            ($response->getStatusCode() === 200))
         {
             //
-            // Card is a debit card
+            // Card has 3d-secure enabled
+            // In which case, run card 3dsecure flow
             //
 
             $uri = $this->client->getRequest()->getUri();
