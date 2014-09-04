@@ -3,11 +3,12 @@
 namespace Http\BasicAuth;
 
 use Config;
+use EE\Error\ErrorCode;
+use EE\Exception;
 use Hash;
 use Http\ApiResponse;
 use Models\Key;
 use Models\Merchant;
-use EE\Error\ErrorCode;
 
 class BasicAuth
 {
@@ -464,7 +465,23 @@ class BasicAuth
 
         $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
+        $this->checkMerchantActivatedForLive();
+
         return $this->merchant;
+    }
+
+    protected function checkMerchantActivatedForLive()
+    {
+        $mode = $this->getMode();
+
+        if ($mode === 'test')
+            return;
+
+        if ($this->merchant->isActivated() === false)
+        {
+            throw new Exception\LogicException(
+                'Must not be able to make live requst when not activated');
+        }
     }
 
     protected function invalidApiKey()
