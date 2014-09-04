@@ -40,4 +40,20 @@ class Entity extends EloquentEx
             }
         }
     }
+
+    /**
+     * Get the default foreign key name for the model.
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+        $class = get_class($this);
+        $segments = explode('\\',$class);
+
+        if (end($segments) === 'Entity')
+            return snake_case(prev($segments)).'_id';
+        else
+            return parent::getForeignKey();
+    }
 }
