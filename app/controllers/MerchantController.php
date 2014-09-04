@@ -82,4 +82,18 @@ class MerchantController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function postLiveEnable($id)
+    {
+        $data = (new Merchant\Service)->liveEnable($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postLiveDisable($id)
+    {
+        $data = (new Merchant\Service)->liveDisable($id);
+
+        return ApiResponse::json($data);
+    }
 }

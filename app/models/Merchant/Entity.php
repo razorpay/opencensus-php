@@ -6,28 +6,44 @@ use Models\Base;
 
 class Entity extends Base\UniqueIdEntity
 {
-    const ID = 'id';
-    const NAME = 'name';
-    const EMAIL = 'email';
-    const ACTIVATED = 'activated';
-    const PRICING_PLAN_ID = 'pricing_plan_id';
+    const ID                = 'id';
+    const NAME              = 'name';
+    const EMAIL             = 'email';
+    const ACTIVATED         = 'activated';
+    const LIVE              = 'live';
+    const PRICING_PLAN_ID   = 'pricing_plan_id';
 
     protected $table = \Constants\Table::MERCHANT;
 
     protected $fillable = array(
         self::ID,
         self::NAME,
-        self::EMAIL,
-        self::ACTIVATED);
+        self::EMAIL);
 
     public function isActivated()
     {
         return $this->getAttribute(self::ACTIVATED);
     }
 
+    public function isLive()
+    {
+        return $this->getAttribute(self::LIVE);
+    }
+
     public function activate()
     {
         $this->setAttribute(self::ACTIVATED, true);
+        $this->setAttribute(self::LIVE, true);
+    }
+
+    public function liveEnable()
+    {
+        $this->setAttribute(self::LIVE, true);
+    }
+
+    public function liveDisable()
+    {
+        $this->setAttribute(self::LIVE, false);
     }
 
     public function keys()

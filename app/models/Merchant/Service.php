@@ -179,4 +179,54 @@ class Service extends Base\Service
 
         return $merchant->toArray();
     }
+
+    public function liveEnable($id)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        if ($merchant->isActivated() === false)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED);
+        }
+
+        if ($merchant->isLive())
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_LIVE);
+        }
+
+        $merchant->liveEnable();
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant->toArray();
+    }
+
+    public function liveDisable($id)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        if ($merchant->isActivated() === false)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED);
+        }
+
+        if ($merchant->isLive() === false)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE);
+        }
+
+        $merchant->liveDisable();
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant->toArray();
+    }
 }

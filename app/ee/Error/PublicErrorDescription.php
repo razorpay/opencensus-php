@@ -127,6 +127,15 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED =
         'The merchant has already been activated';
 
+    const BAD_REQUEST_MERCHANT_NOT_ACTIVATED =
+        'The merchant has not been activated. This action can only be taken for activated merchants';
+
+    const BAD_REQUEST_MERCHANT_ALREADY_LIVE =
+        'The merchant is already live';
+
+    const BAD_REQUEST_MERCHANT_NOT_LIVE =
+        'The merchant is not live currently';
+
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED =
         'The merchant has no pricing assigned';
 

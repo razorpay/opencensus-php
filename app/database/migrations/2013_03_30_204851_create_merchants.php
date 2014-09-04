@@ -31,6 +31,9 @@ class CreateMerchants extends Migration {
             $table->boolean(Merchant::ACTIVATED)
                   ->default(0);
 
+            $table->boolean(Merchant::LIVE)
+                  ->default(0);
+
             $table->char(Merchant::PRICING_PLAN_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
