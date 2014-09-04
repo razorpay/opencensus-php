@@ -87,15 +87,7 @@ var app = angular.module('app', [
             })
             .state('app.pricing', {
                 url: '/pricing',
-                template: '<div ui-view class="fade-in-down"></div>'
-            })
-            .state('app.pricing.list', {
-                url: '/list',
-                templateUrl: 'tpl/admin/app_pricings.html'
-            })
-            .state('app.pricing.detail', {
-                url: '/:id/detail',
-                templateUrl: 'tpl/admin/app_pricing_detail.html'
+                templateUrl: 'tpl/admin/app_pricing.html'
             })
             .state('app.admins', {
                 url: '/admins',
