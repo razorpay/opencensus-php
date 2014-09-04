@@ -374,9 +374,9 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         });
       };
 
-      var assignPricingModalCtrl = function ($scope, $modalInstance, pricing_plans) {
+      var assignPricingModalCtrl = function ($scope, $modalInstance, pricing_plans, current) {
         $scope.pricing_plans = pricing_plans;
-        console.log($scope.pricing_plans);
+        $scope.pricing_plan_id = current;
         $scope.ok = function (pricing_plan_id) {
           $modalInstance.close(pricing_plan_id);
         };
@@ -390,6 +390,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
         var pricing_plans = getPricingPlans();
 
+        var currentPlan = $scope.merchant.pricing_plan.id || "";
+
         var modalInstance = $modal.open({
           templateUrl: 'assignPricingModalContent.html',
           controller: assignPricingModalCtrl,
@@ -397,6 +399,9 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           resolve: {
             pricing_plans: function () {
               return pricing_plans;
+            },
+            current: function() {
+              return currentPlan;
             }
           }
         });
@@ -487,7 +492,6 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
         request.success(function(data){
           if(data.success){
-            console.log(data);
             angular.forEach(data.merchant.steps_finished, function(value, key) {
               $scope.check[value] = true;
             });
