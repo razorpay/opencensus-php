@@ -516,4 +516,42 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         });
       };
   }])
+  //Pricing List controller
+  .controller('PricingsCtrl', ['$scope', '$http',
+    function($scope, $http) {
+      
+      $scope.pricing_plans = {};
+      $scope.show_plan = {};
+
+      generateTable();
+      
+      $scope.showPlan = function(id) {
+        console.log($scope.show_plan.id == id);
+        if($scope.show_plan.id == id) {
+          $scope.show_plan={};
+          return;
+        }
+
+        var request = $http.get("/admin/pricing/" + id);
+        
+        request
+        .success(function(data){
+          if(data.success) {
+            console.log(data);
+            $scope.show_plan = data.data;
+          }
+        });
+      }
+      function generateTable() {
+        var request = $http.get("/admin/pricing/list");
+        
+        request
+        .success(function(data){
+          if(data.success) {
+            console.log(data);
+            $scope.pricing_plans = data.data;
+          }
+        });
+      }
+  }])
   ;

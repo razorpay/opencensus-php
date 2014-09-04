@@ -1,0 +1,76 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">Pricing Plans</h1>
+</div>
+<div class="wrapper-md" ng-controller="PricingsCtrl">
+  <div class="panel panel-default" >
+    <div class="panel-heading">
+      List of all Plans {{refreshPricing}}
+    </div>
+    <div class="panel-body b-b b-light">
+      Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+    </div>
+    <div>
+    <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="table table-responsive table-striped b-t b-light">
+        <thead>
+          <tr>
+            <th>Plan ID</th>
+            <th>Plan Name</th>
+            <th>No. of Rules</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="row in pricing_plans">
+            <td><a ui-sref="app.pricing.detail({id:row.id})">{{row.id}}</a></td>
+            <td>{{row.name}}</td>      
+            <td>{{row.count}}</td>
+            <td>
+              <button class="btn btn-default btn-xs"  ng-click="showPlan(row.id)">Show/Hide Rules</button>
+            </td>
+          </tr>
+          <tr ng-show="pricing_plans.length == 0">
+            <td colspan="4">No Pricing Plans</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+              <td colspan="4" class="text-center">
+                  <ul class="pagination"></ul>
+              </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+  <div class="panel panel-default"  ng-show="show_plan.id">
+    <div class="panel-heading">
+      Plan Rules - Plan Id: {{show_plan.id}}
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped b-t b-light">
+        <thead>
+          <th>Rule Id</th>
+          <th>Payment Mode</th>
+          <th>Payment Mode Type</th>
+          <th>Payment Network</th>
+          <th>Payment Issuer</th>
+          <th>Percent Rate</th>
+          <th>Fixed Rate</th>
+          <th>Created At</th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="rule in show_plan.rules">
+            <td>{{rule.id}}</td>
+            <td>{{rule.payment_mode || 'Any'}}</td>
+            <td>{{rule.payment_mode_type || 'Any'}}</td>
+            <td>{{rule.payment_network || 'Any'}}</td>
+            <td>{{rule.payment_issuer || 'Any'}}</td>
+            <td>{{rule.percent_rate/100}} %</td>
+            <td>{{rule.fixed_rate/100 | currency:"INR "}}</td>
+            <td>{{rule.created_at*1000 | date:'medium'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
