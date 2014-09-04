@@ -24,6 +24,24 @@ class DatabaseSeeder extends Seeder {
         {
             DB::table(Table::MERCHANT)->insert(
                 array(
+                    'id'            =>  '134510ae166900007a9677a9',
+                    'name'          =>  'Razorpay',
+                    'email'         =>  'shashank@razorpay.com',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  '134510ae166900007a9677a9',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::MERCHANT)->insert(
+                array(
                     'id'            =>  '363e4efa820b0c06208ccd99',
                     'name'          =>  'Harshil',
                     'email'         =>  'das@razorpay.com',

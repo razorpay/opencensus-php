@@ -25,7 +25,7 @@ class Repository extends Base\Repository
 
     public function getEscrowBalanceLockForUpdate()
     {
-        $apiId = 'dd';
+        $apiId = '134510ae166900007a9677a9';
 
         return $this->getBalanceLockForUpdate($apiId);
     }

@@ -103,19 +103,19 @@ class Core
     {
         $merchantRepo = new Merchant\Repository();
 
-//        $nodalBalance = $merchantRepo->getEscrowBalanceLockForUpdate();
+        $nodalBalance = $merchantRepo->getEscrowBalanceLockForUpdate();
         $merchantBalance = $merchantRepo->getBalanceLockForUpdate($this->entities['merchant']->getKey());
 
         $merchantBalance->addAmount($ledger['credit']);
         $merchantRepo->save($merchantBalance);
 
         $apiFee = $ledger['fee'] - $ledger['gateway_fee'];
-  //      $nodalBalance->addAmount($apiFee);
-  //      $merchantRepo->save($nodalBalance);
+        $nodalBalance->addAmount($apiFee);
+        $merchantRepo->save($nodalBalance);
 
         $ledger['api_fee'] = $apiFee;
         $ledger['balance'] = $merchantBalance->getBalance();
-    //    $ledger['escrow_balance'] = $nodalBalance->getBalance();
+        $ledger['escrow_balance'] = $nodalBalance->getBalance();
     }
 
     protected function updateCardNetworkAndCountry($card, $data)
