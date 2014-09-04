@@ -270,11 +270,11 @@ class AdminController extends BaseController
 
         if(empty($error))
         {
-            return Redirect::to('/admin/pricing/'.$id)->with('status', array('Rule Added successfully'));
+             return Response::json(array('success' => true));
         }
         else
         {
-            return Redirect::to('/admin/pricing/'.$id)->with('status', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 
@@ -291,11 +291,11 @@ class AdminController extends BaseController
 
         if(isset($response['error']) === false)
         {
-            return Redirect::to('/admin/pricing/'.$response['id'])->with('status', array('Plan Added successfully'));
+             return Response::json(array('success' => true, 'data' => $response));
         }
         else
         {
-            return Redirect::to('/admin/pricing/new')->with('status', array($response['error']['description']));
+            return Response::json(array('success' => false, 'errors' => array($response['error']['description'])));
         }
     }
 
