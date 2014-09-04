@@ -577,6 +577,16 @@ class Gateway extends BaseGateway
 
         $gatewayErrorDesc = $error['text'];
 
+        /**
+         * For error codes returned by gateway, the error messages are in a format
+         * which we don't parse. So get the standard messages for those from here.
+         */
+        if (strpos($gatewayErrorCode, 'RP') === false)
+        {
+            $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
+        }
+
+
         $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
 
         $exception = null;
