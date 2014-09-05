@@ -132,9 +132,6 @@ class MerchantController extends BaseController
         $input = Input::all();
         unset($input['_token']);
 
-        $error = array();
-        $data  = array();
-
         if($id != 5)
         {
             $error = (new Service\MerchantDetails)->saveDetails($id, $input);  

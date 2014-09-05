@@ -2,6 +2,8 @@
 
 use Models\Service;
 
+use Http\AppResponse;
+
 class TransactionController extends BaseController
 {
     public function postIndex($mode)
@@ -25,10 +27,7 @@ class TransactionController extends BaseController
 
         $data = (new Service\Transaction)->getAnalytics($input, $mode);
 
-        return array(
-            'data' => $data, 
-            'mode' => $mode
-        );
+        return AppResponse::jsonResponse([], $data);
     }
 
     public function getAggregations($mode)
@@ -39,10 +38,7 @@ class TransactionController extends BaseController
 
         $data = (new Service\Transaction)->getAggregations($merchant_id, $mode);
 
-        return array(
-            'data' => $data,
-            'mode' => $mode
-        );
+        return AppResponse::jsonResponse([], $data);
     }
 
     public function getTransactions($mode)
@@ -51,18 +47,18 @@ class TransactionController extends BaseController
 
         $input = Input::all();
 
-        $data = (new Service\Transaction)->fetchListFromApi($input, $mode);
+        list($error, $data) = (new Service\Transaction)->fetchListFromApi($input, $mode);
 
-        return $data;
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getTransaction($mode, $id = NULL)
     {
         $this->checkMode($mode);
         
-        $data = (new Service\Transaction)->fetchTxnFromApi($id, $mode);
+        list($error, $data) = (new Service\Transaction)->fetchTxnFromApi($id, $mode);
 
-        return $data;
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postCaptureTransaction($mode, $id = NULL)
@@ -71,18 +67,18 @@ class TransactionController extends BaseController
         
         $amount = Input::get('amount');
 
-        $data = (new Service\Transaction)->captureTxn($id, $amount, $mode);
+        $error = (new Service\Transaction)->captureTxn($id, $amount, $mode);
 
-        return $data;
+        return AppResponse::jsonResponse($error);
     }
 
     public function postRefundTransaction($mode, $id = NULL)
     {
         $this->checkMode($mode);
         
-        $data = (new Service\Transaction)->refundTxn($id, $mode);
+        $error = (new Service\Transaction)->refundTxn($id, $mode);
 
-        return $data;
+        return AppResponse::jsonResponse($error);
     }
 
     protected function checkMode($mode)

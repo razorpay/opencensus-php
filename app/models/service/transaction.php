@@ -16,6 +16,8 @@ class Transaction extends Service
 
     public function fetchListFromApi(array $input, $mode)
     {
+        $data = array();
+
         list($error,$options) = Manager\Transaction::createValidate($input, 'fetch')->getData();
 
         if (empty($error))
@@ -26,19 +28,15 @@ class Transaction extends Service
             $response = $this->api->transaction->all($options);
 
             $data = Manager\Transaction::mapKeys($response);
-
-            $response = array('success' => true) + $data;
-        }
-        else
-        {
-            $response = array('success' => false, 'errors' => $error);
         }
 
-        return $response;
+        return array($error, $data);
     }
 
     public function fetchTxnFromApi($id, $mode)
     {
+        $data = array();
+
         list($error, $options) = Manager\Transaction::createValidate(['id' => $id], 'fetch')->getData();
 
         if (empty($error))
@@ -51,23 +49,23 @@ class Transaction extends Service
             {
                 $data = $this->api->transaction->fetch($id)->toArray();
 
-                $response = array('success' => true, 'count' => 1, 'data' => array($data));
+                $data = array('count' => 1, 'data' => array($data));
             }
             catch(\Exception $e)
             {
-                $response = array('success' => false, 'errors' => array('Transaction not found.'));
+                $error[] = 'Transaction not found.';
             }
         }
-        else
-        {
-            $response = array('success' => false, 'errors' => $error);
-        }
-        return $response;
+
+        return array($error, $data);
     }
 
     public function captureTxn($id, $amount, $mode)
     {
+        $error = array();
+
         $merchant_id = \Auth::merchant()->id();
+
         $this->setApiCredentials($merchant_id, $mode);
 
         try
@@ -79,17 +77,19 @@ class Transaction extends Service
         }
         catch(\Exception $e)
         {
-            return ['success' => false];
+            $error[] = "Capture Failed";
         }
 
-        if(isset($data['error']) === false and isset($data['status']) === true and $data['status'] === "captured")
-            return ['success' => true];
-        else
-            return ['success' => false];
+        if(isset($data['error']) === true or isset($data['status']) === false or $data['status'] !== "captured")
+            $error[] = "Capture Failed";
+
+        return $error;
     }
 
     public function refundTxn($id, $mode)
-    {
+    {   
+        $error = array();
+
         $merchant_id = \Auth::merchant()->id();
         $this->setApiCredentials($merchant_id, $mode);
 
@@ -102,13 +102,13 @@ class Transaction extends Service
         }
         catch(\Exception $e)
         {
-            return ['success' => false];
+            $error[] = "Refund Failed";
         }
               
-        if(isset($data['error']) === false and isset($data['status']) === true and $data['status'] === "refunded")
-            return ['success' => true];
-        else
-            return ['success' => false];
+        if(isset($data['error']) === true or isset($data['status']) === false or $data['status'] !== "refunded")
+            $error[] = "Refund Failed";
+        
+        return array();
     }
 
     /**
