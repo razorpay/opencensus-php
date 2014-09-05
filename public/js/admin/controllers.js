@@ -550,10 +550,10 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         request
         .success(function(data){
           if(data.success) {
-            $scope.merchant = data.details;
+            $scope.merchant = data.data.details;
 
-            $scope.merchant.pricing_plan = data.pricing_plan;
-            $scope.merchant.terminal = data.terminal;
+            $scope.merchant.pricing_plan = data.data.pricing_plan;
+            $scope.merchant.terminal = data.data.terminal;
             $scope.merchant.activation_progress = parseInt(($scope.merchant.steps_finished.length * 100)/ 6);
           }
           else {
@@ -596,19 +596,19 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
         request.success(function(data){
           if(data.success){
-            angular.forEach(data.merchant.steps_finished, function(value, key) {
+            angular.forEach(data.data.merchant.steps_finished, function(value, key) {
               $scope.check[value] = true;
             });
 
-            angular.forEach(data.data.data, function(value, key){
+            angular.forEach(data.data.activation.data, function(value, key){
               $scope.data[key] = value;       
             });
 
-            angular.forEach(data.data.files, function(value, key){
+            angular.forEach(data.data.activation.files, function(value, key){
               $scope.files[key] = value;
             });
 
-            $scope.merchant = data.merchant;
+            $scope.merchant = data.data.merchant;
           
           }
           else {

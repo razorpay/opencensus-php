@@ -903,8 +903,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         .success(function(data){
           $scope.alerts.resetAlerts();
           if(data.success) {
-            $scope.keys.count = data.count;
-            $scope.keys.data = data.data;
+            $scope.keys.count = data.data.count;
+            $scope.keys.data = data.data.data;
           }
           else {
             $scope.alerts.addAlert('danger');
@@ -941,7 +941,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         request.success(function(data){
           if(data.success) {
             $scope.alerts.addAlert('success', "Key Rolled", true);
-            $scope.openNewKey('lg', {id: data.key_id, secret:data.secret});
+            $scope.openNewKey('lg', {id: data.data.key_id, secret:data.data.secret});
           }
           else {
             $scope.alerts.addAlert('danger', null, true);
