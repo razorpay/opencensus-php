@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Console\Migrations\RefreshCommand;
+use Symfony\Component\Console\Input\InputOption;
 
 class RzpDbRefresh extends RefreshCommand
 {
@@ -37,19 +38,34 @@ class RzpDbRefresh extends RefreshCommand
     {
         if ( ! $this->confirmToProceed()) return;
 
-        $this->info('<info>Refreshing test database.</info>');
-
         $force = $this->input->getOption('force');
 
-        $this->call('migrate:refresh', array(
-            '--database' => 'test', '--force' => $force
-        ));
+        $install = $this->input->getOption('install');
 
-        $this->info('<info>Refreshing live database.</info>');
+        if ($install)
+        {
+            $this->info('<info>Installing test database.</info>');
 
-        $this->call('migrate:refresh', array(
-            '--database' => 'live', '--force' => $force
-        ));
+            $this->call('migrate', array('--database' => 'test'));
+
+            $this->info('<info>Installing live database.</info>');
+
+            $this->call('migrate', array('--database' => 'live'));
+        }
+        else
+        {
+            $this->info('<info>Refreshing test database.</info>');
+
+            $this->call('migrate:refresh', array(
+                '--database' => 'test', '--force' => $force
+            ));
+
+            $this->info('<info>Refreshing live database.</info>');
+
+            $this->call('migrate:refresh', array(
+                '--database' => 'live', '--force' => $force
+            ));
+        }
 
         if ($this->needsSeeding())
         {
@@ -58,5 +74,19 @@ class RzpDbRefresh extends RefreshCommand
             $this->runSeeder('test');
             $this->runSeeder('live');
         }
+    }
+
+    /**
+     * Get the console command options.
+     *
+     * @return array
+     */
+    protected function getOptions()
+    {
+        $array = parent::getOptions();
+
+        array_push($array, ['install', null, InputOption::VALUE_NONE, 'Will only install instead of refresh']);
+
+        return $array;
     }
 }
