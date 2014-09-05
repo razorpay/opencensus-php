@@ -24,7 +24,7 @@
         <tbody>
           <tr ng-repeat="row in merchants">
             <td><a ui-sref="app.merchants.detail({id:row.id})">{{row.id}}</a></td>
-            <td>{{row.name}}
+            <td>{{row.name}}</td>
             <td>{{row.email}}</td>
             <td>
               <i class="fa" ng-class="{'fa-check text-success': row.confirm_token == null, 'fa-times text-danger':row.confirm_token != null}"></i>
