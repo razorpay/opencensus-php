@@ -48,12 +48,22 @@ class Entity extends EloquentEx
      */
     public function getForeignKey()
     {
+        return snake_case($this->getEntityName()) . '_id';
+    }
+
+    public function getEntityName()
+    {
         $class = get_class($this);
+
         $segments = explode('\\',$class);
 
         if (end($segments) === 'Entity')
-            return snake_case(prev($segments)).'_id';
+        {
+            return prev($segments);
+        }
         else
-            return parent::getForeignKey();
+        {
+            return class_basename($this);
+        }
     }
 }

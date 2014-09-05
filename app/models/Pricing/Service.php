@@ -18,19 +18,11 @@ class Service extends Base\Service
 
     public function createPricingPlan($input)
     {
-        Pricing\Validator::createPlanValidate($input);
+        $pricing = (new Pricing\Entity)->build($input);
 
-        $plans = $this->repo->getPricingPlanByName($input[Entity::PLAN_NAME]);
+        $plan = $this->repo->getPricingPlanByName($input[Entity::PLAN_NAME]);
 
-        if ($plans->count() > 0)
-            throw new Exception\BadRequestException(
-                null,
-                ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
-
-        $pricing = new Pricing\Entity($input);
-        $pricing->generateId();
-
-        $pricing->newPlan();
+        Pricing\Validator::validatePlanCountZero($plan);
 
         $this->repo->saveOrFail($pricing);
 
@@ -43,11 +35,7 @@ class Service extends Base\Service
     {
         $plan = $this->repo->getPricingPlanByIdOrFailPublic($id);
 
-        Pricing\Validator::addPlanRuleValidate($plan, $input);
-
-        $rule = new Pricing\Entity();
-
-        $rule->fillRule($input, $plan);
+        $rule = (new Pricing\Entity)->addPlanRule($input, $plan);
 
         (new Pricing\Repository)->saveOrFail($rule);
 

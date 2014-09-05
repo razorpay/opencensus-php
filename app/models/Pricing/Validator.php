@@ -19,7 +19,7 @@ class Validator extends Base\Validator
 
     protected static $addPlanRuleValidators = array('addPlanRuleExtras');
 
-    protected static $addPlanRules = array(
+    protected static $createPlanRules = array(
         Entity::PLAN_NAME => 'required|alpha_num|max:20');
 
     protected function validateAddPlanRuleExtras($input)
@@ -33,31 +33,27 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function createPlanValidate($input)
+    public function createPlanValidate($input)
     {
-        $instance = new static;
-
         $planInput[Entity::PLAN_NAME] =
             (isset($input[Entity::PLAN_NAME])) ? $input[Entity::PLAN_NAME] : null;
 
-        $instance->validateInput('addPlan', $planInput);
+        $this->validateInput('createPlan', $planInput);
 
         unset($input[Entity::PLAN_NAME]);
 
-        $instance->validateInput('addPlanRule', $input);
+        $this->validateInput('addPlanRule', $input);
     }
 
-    public static function addPlanRuleValidate(Plan $plan, $input)
+    public function addPlanRuleValidate(Plan $plan, $input)
     {
-        $instance = new static;
-
-        $instance->validateInput('addPlanRule', $input);
+        $this->validateInput('addPlanRule', $input);
 
         $rule = $plan->first();
 
-        $instance->matchGateway($rule, $input);
+        $this->matchGateway($rule, $input);
 
-        $instance->matchPaymentRules($plan, $input);
+        $this->matchPaymentRules($plan, $input);
     }
 
     protected function matchGateway($planRule, $input)
@@ -97,5 +93,15 @@ class Validator extends Base\Validator
     protected function processValidationFailure($messages, $operation, $input)
     {
         throw new Exception\BadRequestException($messages);
+    }
+
+    public static function validatePlanCountZero($plan)
+    {
+        if ($plan->count() > 0)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
+        }
     }
 }

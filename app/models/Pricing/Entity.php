@@ -42,16 +42,7 @@ class Entity extends Base\UniqueIdEntity
      */
     protected static $modifiers = array('inputRemoveBlanks', 'inputProvideDefaults');
 
-    protected function modifyInputRemoveBlank(& $input)
-    {
-        foreach ($input as $key => $value)
-        {
-            if ($input[$key] === '')
-            {
-                $input[$key] = null;
-            }
-        }
-    }
+    protected static $generators = array('plan_id');
 
     protected function modifyInputProvideDefaults(& $input)
     {
@@ -66,7 +57,33 @@ class Entity extends Base\UniqueIdEntity
         }
     }
 
-    public function newPlan()
+    public function build(array $input = array())
+    {
+        $this->modify($input);
+
+        $this->getValidator()->createPlanValidate($input);
+
+        $this->generate($input);
+
+        $this->fill($input);
+
+        return $this;
+    }
+
+    public function addPlanRule($input, $plan)
+    {
+        $this->modify($input);
+
+        $this->validateInput('addPlanRule', $input);
+
+        $this->fill($input);
+
+        $this->fillRule($input, $plan);
+
+        return $this;
+    }
+
+    protected function generatePlanId()
     {
         $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
     }
