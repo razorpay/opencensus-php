@@ -118,7 +118,9 @@ Route::group(array('before' => 'auth_admin'), function()
         
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
 
-        Route::get('/admin/merchant/{id}/deactivate', 'AdminController@getMerchantDeactivation');
+        Route::get('/admin/merchant/{id}/live/enable', 'AdminController@getMerchantLiveEnable');
+
+        Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
     });
 
     Route::group(array('before' => 'superadmin'), function()

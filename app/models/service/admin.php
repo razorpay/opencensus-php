@@ -131,13 +131,20 @@ class Admin extends Service
     public function fetchMerchantDetails($id)
     {   
         $merchant = DAL\Merchant::with('MerchantDetails')->findorfail($id);
-        
+
+        $request = (new Request)->setCredentials();
+
+        $response = $request->process('GET', 'merchants/'.$id);
+
+        Manager\Merchant::checkAPIMatch($merchant, $response);
+
         $merchant_details =  $merchant->MerchantDetails;
 
         $response = array(
             'steps_finished'    => json_decode($merchant_details['steps_finished'], true),
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
+            'live'              => $response['live']
         ) + $merchant->toArray();
         
         return $response;
@@ -283,22 +290,49 @@ class Admin extends Service
         return array();
     }
 
-    public function deactivateMerchant($id)
+    public function liveEnableMerchant($id)
     {
-        $merchant = DAL\Merchant::findorfail($id);
+        $error = array();
 
-        $details = $this->fetchMerchantDetails($id);
+        $merchant = DAL\Merchant::findorfail($id);
 
         if((int)$merchant->activated === 0)
         {
-            return array('Merchant is already inactive.');
+            return array('Merchant must be active before enabling/disabling live transactions.');
         }
 
-        //@todo mark merchant inactive in api first
-            
-        $merchant->activated = 0;
-        $merchant->save();  
-        
+        $request = (new Request)->setCredentials();
+
+        $response = $request->process('POST', 'merchants/'.$id.'/live/enable');
+
+        if(isset($response['error']))
+        {
+            return array(json_encode($response['error']['description']));
+        } 
+
+        return array();
+    }
+
+    public function liveDisableMerchant($id)
+    {
+        $error = array();
+
+        $merchant = DAL\Merchant::findorfail($id);
+
+        if((int)$merchant->activated === 0)
+        {
+            return array('Merchant must be active before enabling/disabling live transactions.');
+        }
+
+        $request = (new Request)->setCredentials();
+
+        $response = $request->process('POST', 'merchants/'.$id.'/live/disable');
+
+        if(isset($response['error']))
+        {
+            return array(json_encode($response['error']['description']));
+        } 
+
         return array();
     }
 

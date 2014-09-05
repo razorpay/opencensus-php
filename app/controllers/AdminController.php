@@ -189,17 +189,32 @@ class AdminController extends BaseController
         }
     }
 
-    public function getMerchantDeactivation($id)
+    public function getMerchantLiveEnable($id)
     {   
-        $error = (new Service\Admin)->deactivateMerchant($id);
+
+        $error = (new Service\Admin)->liveEnableMerchant($id);
 
         if(empty($error))
         {
-            return Redirect::to('/admin/merchant/'.$id)->with('status', array('Merchant deactivated successfully'));
+             return Response::json(array('success' => true));
         }
         else
         {
-            return Redirect::to('/admin/merchant/'.$id)->with('status', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
+        }
+    }
+
+    public function getMerchantLiveDisable($id)
+    {   
+        $error = (new Service\Admin)->liveDisableMerchant($id);
+
+        if(empty($error))
+        {
+             return Response::json(array('success' => true));
+        }
+        else
+        {
+            return Response::json(array('success' => false, 'errors' => $error));
         }
     }
 
