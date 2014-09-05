@@ -191,19 +191,60 @@ angular.module('app.directives', ['ui.load'])
       }
      };
   }])
-  .directive('ngConfirmClick', [
-  function(){
+  .directive('ngConfirmClick', ['$modal',
+  function($modal){
     return {
       priority: -1,
       restrict: 'A',
       link: function(scope, element, attrs){
         element.bind('click', function(e){
           var message = attrs.ngConfirmClick;
-          if(message && !confirm(message)){
-            e.stopImmediatePropagation();
-            e.preventDefault();
-          }
+
+          var click = attrs.ngClick;
+
+          console.log(click, scope);
+
+          var confirmModalCtrl = function ($scope, $modalInstance, message) {
+            $scope.message = message;
+            $scope.ok = function () {
+              $modalInstance.close();
+            };
+            $scope.cancel = function () {
+              $modalInstance.dismiss('cancel');
+            };
+          };
+  
+          var modalInstance = $modal.open({
+              controller: confirmModalCtrl,
+              size: 'sm',
+              resolve: {
+                message: function () {
+                  return message;
+                }
+              },
+              template: '<div class="modal-header">' +
+                  '<h3 class="modal-title">Alert</h3>' +
+                '</div>' +
+                '<div class="modal-body">' +
+                    '<h4>{{message}}</h4>' +
+                '</div>' +
+                '<div class="modal-footer">' +                  
+                    '<button class="btn btn-default" ng-click="cancel()">Cancel</button>' +
+                    '<button class="btn btn-primary" ng-click="ok()">OK</button>' +
+                '</div>'
+          });
+
+          modalInstance.result.then(
+              function () {
+                scope.$eval(click); 
+              },
+              function () {
+              });
+        
+          e.stopImmediatePropagation();
+          e.preventDefault();
         });
+
       }
     }
   }
