@@ -44,6 +44,13 @@ class Merchant extends Manager
         '_token'
     );
 
+    protected static $api_dashboard_mappings = array(
+            'id' => 'id',
+            'name' => 'name',
+            'email' => 'email',
+            'activated' => 'activated'
+    );
+
     protected static $registerGenerators = array('id', 'confirm_token', 'password');
 
     protected static $loginGenerators = array('remember');
@@ -80,5 +87,14 @@ class Merchant extends Manager
     {
         $this->setField(
             'confirm_token', bin2hex(openssl_random_pseudo_bytes(32/2)));
+    }
+
+    public static function checkAPIMatch($merchant, $api_response)
+    {
+        foreach(static::$api_dashboard_mappings as $key => $value){
+            if($api_response[$key] !== $merchant[$value]) {
+                throw new \Exception('Merchant data mismatch with api for '.$merchant['id'].' at '.$key);
+            }
+        }
     }
 }
