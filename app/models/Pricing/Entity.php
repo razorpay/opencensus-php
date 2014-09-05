@@ -40,13 +40,26 @@ class Entity extends Base\UniqueIdEntity
      *
      * @var array
      */
-    protected static $modifiers = array('inputRemoveBlanks');
+    protected static $modifiers = array('inputRemoveBlanks', 'inputProvideDefaults');
 
     protected function modifyInputRemoveBlank(& $input)
     {
         foreach ($input as $key => $value)
         {
             if ($input[$key] === '')
+            {
+                $input[$key] = null;
+            }
+        }
+    }
+
+    protected function modifyInputProvideDefaults(& $input)
+    {
+        $nullables = array(self::PAYMENT_MODE_TYPE, self::PAYMENT_NETWORK, self::PAYMENT_ISSUER);
+
+        foreach ($nullables as $key)
+        {
+            if (isset($input[$key]) === false)
             {
                 $input[$key] = null;
             }
