@@ -553,25 +553,27 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
 
         request.success(function(data){
-          $scope.successfull.data = [];
-          $scope.transactions.data = [];
+          if(data.success){
+            $scope.successfull.data = [];
+            $scope.transactions.data = [];
 
-          angular.forEach(data.data , function(value, key){
-            $scope.successfull.data.push([
-              parseInt(value.created_at)*1000,
-              parseInt(value.count)
-            ]);
+            angular.forEach(data.data , function(value, key){
+              $scope.successfull.data.push([
+                parseInt(value.created_at)*1000,
+                parseInt(value.count)
+              ]);
 
-            $scope.transactions.data.push([
-              parseInt(value.created_at)*1000,
-              parseInt(value.amount)
-            ]);
-          });
+              $scope.transactions.data.push([
+                parseInt(value.created_at)*1000,
+                parseInt(value.amount)
+              ]);
+            });
 
-          $scope.successfull.options.xaxis.minTickSize = getMinTickSize($scope.statType);
-          $scope.transactions.options.xaxis.minTickSize = getMinTickSize($scope.statType);
+            $scope.successfull.options.xaxis.minTickSize = getMinTickSize($scope.statType);
+            $scope.transactions.options.xaxis.minTickSize = getMinTickSize($scope.statType);
 
-          $scope.refreshGraph = !$scope.refreshGraph;
+            $scope.refreshGraph = !$scope.refreshGraph;
+          }
         });
       };
 
@@ -676,19 +678,21 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           $scope.alerts.resetAlerts();
 
           if(data.success) {
-            $scope.transactions.data = data.data;
+            $scope.transactions.data = data.data.data;
 
-            $scope.transactions.count = data.count;
+            $scope.transactions.count = data.data.count;
 
             $scope.transactions.countStart = $scope.transactions.skip + 1;
 
-            if(data.count === 0) $scope.transactions.countEnd = $scope.transactions.countStart;
+            if(data.data.count === 0) 
+              $scope.transactions.countEnd = $scope.transactions.countStart;
 
-            else $scope.transactions.countEnd = $scope.transactions.countStart + $scope.transactions.count -1;
+            else 
+              $scope.transactions.countEnd = $scope.transactions.countStart + $scope.transactions.count -1;
 
             $scope.allowPrev = $scope.transactions.countStart !== 1;
             
-            $scope.allowNext=$scope.transactions.count >= 10;
+            $scope.allowNext = $scope.transactions.count >= 10;
           }
           else {
             angular.forEach(data.errors, function(value, key){
@@ -801,7 +805,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           $scope.alerts.resetAlerts();
 
           if(data.success) {
-            $scope.transaction = data.data[0];
+            $scope.transaction = data.data.data[0];
           }
           else {
             angular.forEach(data.errors, function(error, key) {
@@ -883,7 +887,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         .success(function(data){
           if(data.success){
             $scope.alerts.addAlert('success', "Key Generated", true);
-            $scope.openNewKey('lg', {id: data.data.id, secret:data.data.secret});
+            $scope.openNewKey({id: data.data.id, secret:data.data.secret});
           }
           else {
             $scope.alerts.addAlert('danger', null, true);
@@ -941,7 +945,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         request.success(function(data){
           if(data.success) {
             $scope.alerts.addAlert('success', "Key Rolled", true);
-            $scope.openNewKey('lg', {id: data.data.key_id, secret:data.data.secret});
+            $scope.openNewKey({id: data.data.key_id, secret:data.data.secret});
           }
           else {
             $scope.alerts.addAlert('danger', null, true);
@@ -966,11 +970,10 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         };
       };
 
-      $scope.openRollKey = function (size, key_id) {
+      $scope.openRollKey = function (key_id) {
         var modalInstance = $modal.open({
           templateUrl: 'rollKeyModalContent.html',
           controller: rollKeyModalCtrl,
-          size: size,
           resolve: {
             key_id: function () {
               return key_id;
@@ -994,12 +997,11 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         };
       };
 
-      $scope.openNewKey = function (size, key) {
+      $scope.openNewKey = function (key) {
         var modalInstance = $modal.open({
           templateUrl: 'newKeyModalContent.html',
           controller: newKeyModalCtrl,
           backdrop: 'static',
-          size: size,
           resolve: {
             key: function () {
               return key;
@@ -1081,23 +1083,23 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         var request = $http.get('/activation/details');
 
         request.success(function(data){
-          var steps_finished = JSON.parse(data.steps_finished);
+          var steps_finished = JSON.parse(data.data.steps_finished);
 
           angular.forEach(steps_finished, function(value, key) {
             $scope.check[value] = true;
           });
 
-          angular.forEach(data.data, function(value, key){
+          angular.forEach(data.data.data, function(value, key){
             $scope.data[key] = value;       
           });
 
-          angular.forEach(data.files, function(value, key){
+          angular.forEach(data.data.files, function(value, key){
             $scope.fileAlerts[key].addAlert('success', 'File already uploaded');
           });
 
-          if(parseInt(data.submitted)) {
+          if(parseInt(data.data.submitted)) {
             user.identity().then(function(data){
-              if(parseInt(data.activated)) {
+              if(parseInt(data.data.activated)) {
                 $scope.formAlerts.addAlert('info', 'User is already live');
               }
               else 
@@ -1105,7 +1107,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
             });
           }
 
-          if(parseInt(data.locked)) {
+          if(parseInt(data.data.locked)) {
             $scope.locked = true;
             $scope.formAlerts.addAlert('warning', 'Form has been locked by admin, changes are not allowed.');
           }

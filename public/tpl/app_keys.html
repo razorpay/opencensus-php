@@ -26,7 +26,7 @@
             </td>
             <td>
               <span ng-show="key.expired_at">None</span>
-              <span ng-hide="key.expired_at"><a href tooltip="Roll Key" ng-click="openRollKey(lg, key.id)"><i class="glyphicon glyphicon-refresh"></i></span>
+              <span ng-hide="key.expired_at"><a href tooltip="Roll Key" ng-click="openRollKey(key.id)"><i class="glyphicon glyphicon-refresh"></i></span>
             </td>
           </tr>
           <tr ng-show="keys.count === 0">
