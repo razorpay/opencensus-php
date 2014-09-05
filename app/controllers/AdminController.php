@@ -117,16 +117,6 @@ class AdminController extends BaseController
                 );
     }
 
-    public function getMerchantTerminal($id)
-    {   
-        $details = (new Service\Admin)->fetchMerchantDetails($id);
-
-        $terminal = (new Service\Admin)->fetchMerchantTerminal($id);
-
-        return View::make('admin.getMerchantTerminal')
-                   ->with('terminal', $terminal)
-                   ->with('details', $details);
-    }
 
     public function postMerchantTerminal($id)
     {   
@@ -142,20 +132,6 @@ class AdminController extends BaseController
         {
             return Response::json(array('success' => false, 'errors' => $error));
         }
-    }
-
-    public function getMerchantPricing($id)
-    {   
-        $details = (new Service\Admin)->fetchMerchantDetails($id);
-
-        $pricing = (new Service\Admin)->fetchMerchantPricing($id);
-
-        $pricing_plans = (new Service\Admin)->fetchPricingPlan();
-
-        return View::make('admin.getMerchantPricing')
-                   ->with('details', $details)
-                   ->with('pricing', $pricing)
-                   ->with('pricing_plans', $pricing_plans);
     }
 
     public function postMerchantPricing($id)
@@ -236,8 +212,6 @@ class AdminController extends BaseController
     {
         $error = (new Service\Admin)->unlockMerchant($id);
 
-        $view = Redirect::to('/admin/merchant/'.$id);
-
         if(empty($error))
         {
              return Response::json(array('success' => true));
@@ -279,9 +253,7 @@ class AdminController extends BaseController
     {   
         $input = Input::all();
 
-        $data = (new Service\Admin)->fetchPricingPlan($id);
-
-        $error = (new Service\Admin)->addPricingPlanRule($data['id'], $input);
+        $error = (new Service\Admin)->addPricingPlanRule($id, $input);
 
         if(empty($error))
         {
@@ -291,11 +263,6 @@ class AdminController extends BaseController
         {
             return Response::json(array('success' => false, 'errors' => $error));
         }
-    }
-
-    public function getNewPricingPlan()
-    {
-        return View::make('admin.getNewPricingPlan');
     }
 
     public function postNewPricingPlan()
@@ -318,21 +285,21 @@ class AdminController extends BaseController
     {
         $admins = (new Service\Admin)->getAdmins();
 
-        return View::make('admin.getAdmins')
-                   ->with('admins', $admins);
+        return Response::json(array('success' => true, 'data' => $admins));
     }
 
     public function getDeleteAdmin($id)
     {
-        $response = (new Service\Admin)->deleteAdmin($id);
+        $error = (new Service\Admin)->deleteAdmin($id);
 
-        return Redirect::action('AdminController@getAdmins')
-                        ->with('success', $response);
-    }
-
-    public function getAddAdmin()
-    {
-        return View::make('admin.getAddAdmin');
+        if(empty($error))
+        {
+             return Response::json(array('success' => true));
+        }
+        else
+        {
+            return Response::json(array('success' => false, 'errors' => $error));
+        }
     }
 
     public function postAddAdmin()
@@ -341,17 +308,13 @@ class AdminController extends BaseController
 
         list($error, $data) = (new Service\Admin)->add($input, Auth::admin()->get());
 
-        $view = Redirect::action('AdminController@getAddAdmin');
-
         if (empty($error))
         {
-            $view->with('error', array('Admin added successfully!'));
+             return Response::json(array('success' => true));
         }
         else
         {
-            $view->with('data', $data)->with('error', $error);
+            return Response::json(array('success' => false, 'errors' => $error));
         }
-
-        return $view;
     }
 }

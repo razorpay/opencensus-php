@@ -90,13 +90,7 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin');
 
-    Route::get('/admin/merchant/{id}/terminal', 'AdminController@getMerchantTerminal');
-
-    Route::get('/admin/merchant/{id}/pricing', 'AdminController@getMerchantPricing');
-
     Route::get('/admin/pricing/list', 'AdminController@getPricingList');
-
-    Route::get('/admin/pricing/new', 'AdminController@getNewPricingPlan');
 
     Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
 
@@ -126,10 +120,8 @@ Route::group(array('before' => 'auth_admin'), function()
     Route::group(array('before' => 'superadmin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');
-
+        
         Route::get('/admin/users/{id}/delete', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
-
-        Route::get('/admin/users/add', 'AdminController@getAddAdmin');
 
         Route::post('/admin/users/add', array('before'=>'csrf', 'uses'=> 'AdminController@postAddAdmin'));
 

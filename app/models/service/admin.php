@@ -63,17 +63,15 @@ class Admin extends Service
 
     public function deleteAdmin($id)
     {
-        if($id === \Auth::admin()->id()) return false;
-        try
-        {
-            $admin = DAL\Admin::findorfail($id);
-            $admin->delete();
-        }
-        catch(\Exception $e)
-        {
-            return false;
-        }
-        return true;
+        $error = array();
+
+        if($id === \Auth::admin()->id())
+         $error[] = 'You can not delete yourself.';
+
+        $admin = DAL\Admin::findorfail($id);
+        $admin->delete();
+
+        return $error;
     }
 
     /* Adds a new admin
@@ -132,13 +130,13 @@ class Admin extends Service
     {   
         $merchant = DAL\Merchant::with('MerchantDetails')->findorfail($id);
 
+        $merchant_details =  $merchant->MerchantDetails;
+        
         $request = (new Request)->setCredentials();
 
         $response = $request->process('GET', 'merchants/'.$id);
 
         Manager\Merchant::checkAPIMatch($merchant, $response);
-
-        $merchant_details =  $merchant->MerchantDetails;
 
         $response = array(
             'steps_finished'    => json_decode($merchant_details['steps_finished'], true),
