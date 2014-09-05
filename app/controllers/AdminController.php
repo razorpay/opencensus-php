@@ -2,6 +2,8 @@
 
 use Models\Service;
 
+use Http\AppResponse;
+
 class AdminController extends BaseController
 {
 
@@ -21,38 +23,30 @@ class AdminController extends BaseController
     
     public function postSignin()
     {
-        $user = array(
-            'username' => Input::get('username'),
-            'password' => Input::get('password')
-        );
+        $input = Input::all();
 
-        if(Auth::admin()->attempt($user))
-        {
-             return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => array('Invalid username/password.')));
-        }
+        list($error, $data) = (new Service\Admin)->login($input);
+
+        return AppResponse::jsonResponse($error);
     }
 
     public function getAdmin()
     {
         $admin = Auth::admin()->get()->toArray();
 
-        return array('success' => true, 'data' => $admin);
+        return AppResponse::jsonResponse([], $admin);
     }
 
     public function getLogout()
     {
         Auth::admin()->logout();
 
-        return Response::json(array('success' => true));
+        return AppResponse::jsonResponse([]);
     }
 
     public function getKeepAlive()
     {
-        return ['success' => true];
+        return AppResponse::jsonResponse([]);
     }
 
     public function postPassword()
@@ -61,14 +55,7 @@ class AdminController extends BaseController
 
         list($error, $data) = (new Service\Admin)->changePassword($input, Auth::admin()->get());
 
-        if (empty($error))
-        {
-            return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function getMerchantList()
@@ -76,8 +63,8 @@ class AdminController extends BaseController
         $pending = Input::has('pending') ? true : false;
 
         $merchants = (new Service\Admin)->listMerchants($pending);
-        
-        return Response::json(array('success' => true, 'data' => $merchants));
+
+        return AppResponse::jsonResponse([], $merchants);
     }
 
     public function getMerchantLogin($id)
@@ -97,12 +84,13 @@ class AdminController extends BaseController
 
         $pricing_plan = (new Service\Admin)->fetchMerchantPricing($id);
 
-        return array(
-                    'success'=> true,
+        $data = array(
                     'details' => $details,
                     'terminal' => $terminal,
                     'pricing_plan' => $pricing_plan
                 );
+
+        return AppResponse::jsonResponse([], $data);
     }
 
 
@@ -112,14 +100,7 @@ class AdminController extends BaseController
 
         $error = (new Service\Admin)->postMerchantTerminal($id, $input);
 
-        if(empty($error))
-        {
-            return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function postMerchantPricing($id)
@@ -128,14 +109,7 @@ class AdminController extends BaseController
 
         $error = (new Service\Admin)->postMerchantPricing($id, $input);
 
-        if(empty($error))
-        {
-            return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function getMerchantActivation($id)
@@ -143,14 +117,7 @@ class AdminController extends BaseController
 
         $error = (new Service\Admin)->activateMerchant($id);
 
-        if(empty($error))
-        {
-             return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function getMerchantLiveEnable($id)
@@ -158,56 +125,28 @@ class AdminController extends BaseController
 
         $error = (new Service\Admin)->liveEnableMerchant($id);
 
-        if(empty($error))
-        {
-             return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function getMerchantLiveDisable($id)
     {   
         $error = (new Service\Admin)->liveDisableMerchant($id);
 
-        if(empty($error))
-        {
-             return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function getLockMerchantDetails($id)
     {
         $error = (new Service\Admin)->lockMerchant($id);
 
-        if(empty($error))
-        {
-             return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function getUnlockMerchantDetails($id)
     {
         $error = (new Service\Admin)->unlockMerchant($id);
 
-        if(empty($error))
-        {
-             return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function getMerchantDetails($id)
@@ -216,25 +155,26 @@ class AdminController extends BaseController
 
         $activation_details = (new Service\Admin)->fetchMerchantActivationDetails($id);
 
-        return Response::json(array(
-            'success' => true,
-            'data' => $activation_details,
+        $data = array(
+            'activation' => $activation_details,
             'merchant'   => $details
-        ));
+        );
+
+        return AppResponse::jsonResponse([], $data);
     }
 
     public function getPricingList()
     {
         $data = (new Service\Admin)->fetchPricingPlan();
 
-        return Response::json(array('success' => true, 'data' => $data['data']));
+        return AppResponse::jsonResponse([], $data['data']);
     }
 
     public function getPricingRules($id)
     {
         $data = (new Service\Admin)->fetchPricingPlan($id);
 
-        return Response::json(array('success' => true, 'data' => $data));
+        return AppResponse::jsonResponse([], $data);
     }
 
     public function postPricingRules($id)
@@ -243,51 +183,30 @@ class AdminController extends BaseController
 
         $error = (new Service\Admin)->addPricingPlanRule($id, $input);
 
-        if(empty($error))
-        {
-             return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function postNewPricingPlan()
     {
         $input = Input::all();
 
-        $response = (new Service\Admin)->createPricingPlan($input);
+        list($error, $data) = (new Service\Admin)->createPricingPlan($input);
 
-        if(isset($response['error']) === false)
-        {
-             return Response::json(array('success' => true, 'data' => $response));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => array($response['error']['description'])));
-        }
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getAdmins()
     {
         $admins = (new Service\Admin)->getAdmins();
 
-        return Response::json(array('success' => true, 'data' => $admins));
+        return AppResponse::jsonResponse([], $admins);
     }
 
     public function getDeleteAdmin($id)
     {
         $error = (new Service\Admin)->deleteAdmin($id);
 
-        if(empty($error))
-        {
-             return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function postAddAdmin()
@@ -296,13 +215,6 @@ class AdminController extends BaseController
 
         list($error, $data) = (new Service\Admin)->add($input, Auth::admin()->get());
 
-        if (empty($error))
-        {
-             return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 }

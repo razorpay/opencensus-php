@@ -8,6 +8,24 @@ use Models\Manager;
 class Admin extends Service
 {
 
+    public function login(array $input)
+    {
+        list($error, $data) = Manager\Admin::createValidate($input, 'login')->getData();
+
+        $verify = false;
+
+        if (empty($error))
+            $verify = \Auth::admin()->attempt(array(
+                'username'     => $data['username'],
+                'password'  => $input['password']
+            ));
+
+        if ($verify === true)
+            return [array(), $data];
+        else
+            return [['Email or password is invalid.'], $data];
+    }
+
     /**
      * Changes password oflogged in admin
      *
@@ -380,6 +398,11 @@ class Admin extends Service
         
         $response = $request->process('POST', 'pricing', $input);
 
-        return $response;
+        if(isset($response['error']))
+        {
+            $error[]=$response['error']['description'];
+        }
+
+        return array($error, $response);
     }
 }
