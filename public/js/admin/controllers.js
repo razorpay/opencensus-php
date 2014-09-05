@@ -114,7 +114,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
       };
   }])
 
-  //User profile Controller
+  //Admin profile Controller
   .controller('AdminCtrl', ['$scope', '$http', '$state', 'admin', 'CSRF_TOKEN', '$modal', 'alertsFactory', '$idle', '$keepalive',
     function($scope, $http, $state, admin, CSRF_TOKEN, $modal, alertsFactory, $idle, $keepalive) {
       
@@ -140,11 +140,11 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         };
       };
 
-      $scope.changePassword = function (size) {
+      $scope.changePassword = function () {
         var modalInstance = $modal.open({
           templateUrl: 'passwordModalContent.html',
           controller: passwordModalCtrl,
-          size: size
+          size: 'lg'
         });
 
         modalInstance.result.then(
