@@ -56,6 +56,10 @@ class HdfcGatewayMprTest extends TestCase
         $this->startTest();
 
         Config::set('gateway.default', $defaultGateway);
+
+        $this->assertTrue(
+            unlink('hdfc_mpr.xlsx'),
+            'Could not delete hdfc generated mpr file for test purposes');
     }
 
     public function startTest($testDataToReplace = array())

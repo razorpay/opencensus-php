@@ -99,6 +99,7 @@ class DatabaseSeeder extends Seeder {
                     'country'       =>  'IN',
                     'iin'           =>  '401200',
                     'last4'         =>  '7890',
+                    'length'        =>  '16',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
                     )
@@ -114,6 +115,7 @@ class DatabaseSeeder extends Seeder {
                     'country'       =>  'IN',
                     'iin'           =>  '401200',
                     'last4'         =>  '7891',
+                    'length'        =>  '16',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
                     )

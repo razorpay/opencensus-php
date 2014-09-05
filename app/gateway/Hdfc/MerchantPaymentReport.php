@@ -100,10 +100,9 @@ class MerchantPaymentReport
 
         $card = $entities['card'];
 
-        $this->verifyCardFirstAndLast4(
+        $this->verifyCardNumberProperties(
                 $mpr['card_number'],
-                $card[Card\Entity::IIN],
-                $card[Card\Entity::LAST4]);
+                $card);
 
         $card = $this->translateCardAttributes($mpr, $card);
 
@@ -196,12 +195,23 @@ class MerchantPaymentReport
      * @param  integer $iin
      * @param  integer $last4
      */
-    protected function verifyCardFirstAndLast4($number, $iin, $last4)
+    protected function verifyCardNumberProperties($number, $card)
     {
+        $iin = $card[Card\Entity::IIN];
+        $last4 = $card[Card\ENtity::LAST4];
+        $len = $card[Card\ENtity::LENGTH];
+
         if ((substr($number, 0, 4) !== substr($iin, 0, 4)) or
             (substr($number, -4) !== $last4))
         {
-            throw new Exception\LogicException('Hdfc mpr: card number does not match');
+            throw new Exception\LogicException(
+                'Hdfc mpr: card number does not match for card id' . $card[Card\Entity::ID]);
+        }
+
+        if (strlen($number) !== (int) $len)
+        {
+            throw new Exception\LogicException(
+                'Hdfc mpr: card number length does not match for card id ' . $card[Card\Entity::ID]);
         }
     }
 

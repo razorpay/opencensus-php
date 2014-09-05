@@ -14,6 +14,7 @@ class Entity extends Base\UniqueIdEntity
     const EXPIRY_YEAR       = 'expiry_year';
     const IIN               = 'iin';
     const LAST4             = 'last4';
+    const LENGTH            = 'length';
     const NETWORK           = 'network';
     const TYPE              = 'type';
     const ISSUER            = 'issuer';
@@ -53,7 +54,7 @@ class Entity extends Base\UniqueIdEntity
 
     protected static $modifiers = array('expiry_year', 'number');
 
-    protected static $generators = array(self::LAST4, self::ID, self::IIN);
+    protected static $generators = array(self::LAST4, self::ID, self::IIN, self::LENGTH);
 
     protected $visible = array(
         self::ID,
@@ -62,6 +63,7 @@ class Entity extends Base\UniqueIdEntity
         self::EXPIRY_YEAR,
         self::IIN,
         self::LAST4,
+        self::LENGTH,
         self::NETWORK);
 
     public function generateLast4($input)
@@ -76,6 +78,13 @@ class Entity extends Base\UniqueIdEntity
         $iin = substr($input['number'], 0, 6);
 
         $this->setAttribute(self::IIN, $iin);
+    }
+
+    public function generateLength($input)
+    {
+        $length = strlen($input['number']);
+
+        $this->setAttribute(self::LENGTH, $length);
     }
 
     public function modifyExpiryYear(& $input)
