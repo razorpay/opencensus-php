@@ -2,6 +2,8 @@
 
 use Models\Service;
 
+use Http\AppResponse;
+
 class MerchantController extends BaseController
 {
     public function getIndex()
@@ -17,14 +19,12 @@ class MerchantController extends BaseController
 
        $data = $merchant + $merchantDetails;
 
-       $response = array('success' => true, 'data' => $data);
-
-       return Response::JSON($response);
+       return AppResponse::jsonResponse([], $data);
     }
 
     public function getKeepAlive()
     {
-        return ['success' => true];
+        return AppResponse::jsonResponse([]);
     }
 
     public function postSignin()
@@ -33,10 +33,7 @@ class MerchantController extends BaseController
 
         list($error, $data) = (new Service\Merchant)->login($input);
 
-        if (empty($error))
-            return Response::json(array('success' => true));
-        else
-            return Response::json(array('success' => false, 'errors' => $error));
+        return AppResponse::jsonResponse($error);
     }
 
     public function postRegister()
@@ -45,14 +42,7 @@ class MerchantController extends BaseController
 
         list($error, $data) = (new Service\Merchant)->register($input);
 
-        if (empty($error))
-        {
-            return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function postPassword()
@@ -61,20 +51,14 @@ class MerchantController extends BaseController
 
         list($error, $data) = (new Service\Merchant)->changePassword($input);
 
-        if (empty($error))
-        {
-            return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function getLogout()
     {
         \Auth::merchant()->logout();
-        return Response::json(array('success' => true));
+        
+        return AppResponse::jsonResponse([]);
     }
 
     public function getCsv()
@@ -99,14 +83,14 @@ class MerchantController extends BaseController
     {
         $keys = (new Service\Merchant)->fetchKeysFromApi(\Auth::merchant()->id(), $mode);
 
-        return array('success' => true) + $keys;
+        return AppResponse::jsonResponse([], $keys);
     }
 
     public function postNewKey($mode)
     {
         $key = (new Service\Merchant)->createKey(\Auth::merchant()->id(), $mode);
 
-        return array('success' => true, 'data' => $key);
+        return AppResponse::jsonResponse([], $key);
     }
 
     public function postKeys($mode)
@@ -116,24 +100,16 @@ class MerchantController extends BaseController
 
         $input['merchant_id'] = \Auth::merchant()->id();
 
-        $data = (new Service\Merchant)->rollKeys($input, $mode);
+        list($error, $data) = (new Service\Merchant)->rollKeys($input, $mode);
 
-        return $data;
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getConfirm($token)
     {
-        $response = (new Service\Merchant)->confirm($token);
+        $error = (new Service\Merchant)->confirm($token);
 
-        if($response)
-        {   
-            return Response::json(array('success' => true));
-        
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => array('An error occured in email verification. Please check the link and try again')));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
 
@@ -141,21 +117,14 @@ class MerchantController extends BaseController
     {
         $response = (new Service\MerchantDetails)->fetchDetails();
         
-        return Response::json($response);
+        return AppResponse::jsonResponse([], $response);
     }
 
     public function postActivation()
     {
         $error = (new Service\MerchantDetails)->submitDetails();
 
-        if (empty($error))
-        {
-            return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function postSaveActivationStep($id)
@@ -175,14 +144,7 @@ class MerchantController extends BaseController
             $error = (new Service\MerchantDetails)->checkUploads();
         }
         
-        if (empty($error))
-        {
-            return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function postSaveActivationFile()
@@ -192,14 +154,7 @@ class MerchantController extends BaseController
 
         $error = (new Service\MerchantDetails)->saveUploadedFile($input);
 
-        if (empty($error))
-        {
-            return Response::json(array('success' => true));
-        }
-        else
-        {
-            return Response::json(array('success' => false, 'errors' => $error));
-        }
+        return AppResponse::jsonResponse($error);
     }
 
     public function sendConfirmationMail($job, $data)

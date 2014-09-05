@@ -60,7 +60,7 @@ class Merchant extends Service
         }
         catch(\Exception $e)
         {
-            return false;
+            return array('Invalid Confirmation Token');
         }
 
         $merchant_api_data = $merchant->generateApiData();
@@ -69,11 +69,11 @@ class Merchant extends Service
 
         $response = $request->process('POST', 'merchants', $merchant_api_data);
 
-        if(isset($response['error'])) return false;
+        if(isset($response['error'])) return array($response['error']['description']);
 
         $merchant->confirm();
 
-        return array_merge($response, $merchant->toArray());
+        return array();
     }
 
     public function login(array $input)
@@ -149,11 +149,11 @@ class Merchant extends Service
                 'merchant_id' => $input['merchant_id'],
                 'key_id' => $response['new']['id'],
                 'secret' => $response['new']['secret'],
-                'success' => true);
+            );
 
-            return $key_data;
+            return array($error, $key_data);
         }
         else
-            return ['success' => false];
+            return array($error, null);
     }
 }
