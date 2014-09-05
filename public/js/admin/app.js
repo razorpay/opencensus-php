@@ -91,7 +91,10 @@ var app = angular.module('app', [
             })
             .state('app.admins', {
                 url: '/admins',
-                templateUrl: 'tpl/admin/app_admins.html'
+                templateUrl: 'tpl/admin/app_admins.html',
+                data: {
+                  superadmin: true
+                }
             })
             // others
             .state('lockme', {

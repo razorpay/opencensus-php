@@ -279,6 +279,11 @@ angular.module('app.services', [])
 				          .then(function() {
 				          	if($rootScope.toState.data.role === 'auth') {
 				            	if (admin.isAuthenticated() === false) $state.go('access.signin'); // user is signed in but not authorized for desired state
+				        		if($rootScope.toState.data.superadmin) {
+	 				        		admin.identity().then(function(data){
+					        			if(data.superadmin != 1) $state.go('app.dashboard');
+					        		});	
+				        		}
 				        	}
 				        	else if($rootScope.toState.data.role === 'guest') {
 				        		if (admin.isAuthenticated() === true) $state.go('app.dashboard'); // user is signed in but not authorized for desired state
