@@ -29,6 +29,7 @@
 			"app/models",
 			"app/database/migrations",
 			"app/database/seeds",
+			"app/http",
 			"app/tests/TestCase.php",
 			"app/tests/IntegrationTestCase.php",
 			"app/tests/ModifiedZizacoIntegrationTestCase.php"
