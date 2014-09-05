@@ -16,6 +16,8 @@ Route::get('/', 'MerchantController@getIndex');
 
 Route::get('/admin', 'AdminController@getIndex');
 
+Route::post('/contact', 'MerchantController@postContact');
+
 Route::group(array('before' => 'auth'), function()
 {
     Route::get('/user', 'MerchantController@getUser');
@@ -78,9 +80,9 @@ Route::group(array('before' => 'auth_admin'), function()
 {   
     Route::get('/admin/user', 'AdminController@getAdmin');
 
-    Route::get('/admin/logout', 'AdminController@getLogout');
+    Route::get('/admin/user/logout', 'AdminController@getLogout');
 
-    Route::get('/admin/keepalive', 'AdminController@getKeepAlive');
+    Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
 
     Route::get('/admin/merchant/list', 'AdminController@getMerchantList');
 
@@ -131,13 +133,9 @@ Route::group(array('before' => 'auth_admin'), function()
 Route::group(array('before' => 'guest_admin'), function()
 {
     Route::post('/admin/signin', array('before' => 'csrf','uses'=> 'AdminController@postSignin'));
-
-    Route::post('/admin/duologin', 'AdminController@postDuologin');
 });
 
 Route::group(array('before' => 'auth.internal'), function()
 {
     Route::post('/{mode}/transactions', 'TransactionController@postIndex');
 });
-
-Route::post('/contact', 'MerchantController@postContact');

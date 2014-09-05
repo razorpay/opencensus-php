@@ -13,17 +13,12 @@ class AdminController extends BaseController
     | Defines the actions for an Admin on the dashboard
     |
     */
-    // private $_laravelDuo;
 
-    // function __construct(LaravelDuo\LaravelDuo $laravelDuo)
-    // {
-    //     $this->_laravelDuo = $laravelDuo;
-    // }
-
-    /**
-     * Stage Two - The Duo Auth form
-     * @return Duo Login View or Redirect on error
-     */
+    public function getIndex()
+    {
+        return View::make('admin.getIndex');
+    }
+    
     public function postSignin()
     {
         $user = array(
@@ -74,13 +69,6 @@ class AdminController extends BaseController
         {
             return Response::json(array('success' => false, 'errors' => $error));
         }
-
-        return $view;
-    }
-
-    public function getIndex()
-    {
-        return View::make('admin.getIndex');
     }
 
     public function getMerchantList()

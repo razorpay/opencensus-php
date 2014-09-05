@@ -163,7 +163,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
         var request = $http({
             method: "get",
-            url: "/admin/logout",
+            url: "/admin/user/logout",
             data: $scope.data
         });
 
