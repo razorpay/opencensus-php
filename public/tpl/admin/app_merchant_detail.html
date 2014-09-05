@@ -38,7 +38,7 @@
         <a href class="list-group-item" ng-click="openAssignPricing()">
           Assign Pricing
         </a>
-        <a href class="list-group-item" ng-hide="merchant.terminal.length" ng-click="openAssignTerminal()">
+        <a href class="list-group-item" ng-hide="merchant.terminal.length != 0" ng-click="openAssignTerminal()">
           Assign Terminal
         </a>
       </div>
