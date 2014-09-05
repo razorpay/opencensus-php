@@ -26,8 +26,6 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/user/logout', 'MerchantController@getLogout');
 
-    Route::get('/keys/csv', 'MerchantController@getCsv');
-
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
     Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
@@ -40,15 +38,17 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
 
+    Route::get('/keys/csv', 'MerchantController@getCsv');
+
     Route::group(array('before' => 'csrf'), function()
     {
+        Route::post('/password', 'MerchantController@postPassword');
+
         Route::post('/activation', 'MerchantController@postActivation');
 
         Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep');
 
         Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile');
-
-        Route::post('/password', 'MerchantController@postPassword');
 
         Route::post('/{mode}/keys', 'MerchantController@postKeys');
 
@@ -123,9 +123,9 @@ Route::group(array('before' => 'auth_admin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');
         
-        Route::get('/admin/users/{id}/delete', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
-
         Route::post('/admin/users/add', array('before'=>'csrf', 'uses'=> 'AdminController@postAddAdmin'));
+        
+        Route::get('/admin/users/{id}/delete', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
     });
 });

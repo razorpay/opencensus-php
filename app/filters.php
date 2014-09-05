@@ -1,5 +1,6 @@
-
 <?php
+
+use Http\AppResponse;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,12 +37,14 @@ App::after(function($request, $response)
 
 Route::filter('auth', function()
 {
-	if (Auth::merchant()->guest()) return Response::json(array('success' => false, 'data' => array()));
+	if (Auth::merchant()->guest()) 
+		return Response::json(array('success' => false, 'data' => array()));
 });
 
 Route::filter('auth_admin', function()
 {
-	if (Auth::admin()->guest()) return Response::json(array('success' => false, 'data' => array()));
+	if (Auth::admin()->guest()) 
+		return Response::json(array('success' => false, 'data' => array()));
 });
 
 Route::filter('superadmin', function()
@@ -69,12 +72,14 @@ Route::filter('auth.internal', function()
 
 Route::filter('guest', function()
 {
-	if (Auth::merchant()->check()) return Response::json(array('success' => false, 'errors' => array("You are already logged in, please refresh and try again")));
+	if (Auth::merchant()->check())  
+		return AppResponse::jsonResponse(array("You are already logged in, please refresh and try again"));
 });
 
 Route::filter('guest_admin', function()
 {
-	if (Auth::admin()->check()) return Response::json(array('success' => false, 'errors' => array("You are already logged in, please refresh and try again")));
+	if (Auth::admin()->check()) 
+		return AppResponse::jsonResponse(array("You are already logged in, please refresh and try again"));
 });
 
 /*
@@ -91,7 +96,5 @@ Route::filter('guest_admin', function()
 Route::filter('csrf', function()
 {
 	if (Session::token() != Input::get('_token'))
-	{
-		return Response::json(array('success'=>false, 'errors'=>array('Session timed out. Please refresh the page and try again.')));
-	}
+		return AppResponse::jsonResponse(array('Session timed out. Please refresh the page and try again.'));
 });
