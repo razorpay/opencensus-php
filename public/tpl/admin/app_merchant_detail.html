@@ -14,18 +14,26 @@
         <a ui-sref="app.merchants.activation({id:merchant.id})" class="list-group-item">
           See Activation Form Details
         </a>
-        <a href class="list-group-item" ng-show="merchant.locked==0 "ng-click="lockForm()">
+        <a href class="list-group-item" ng-show="merchant.locked==0" ng-click="lockForm()">
           Lock Activation Form
         </a>
-        <a href class="list-group-item" ng-show="merchant.locked==1 "ng-click="unlockForm()">
+        <a href class="list-group-item" ng-show="merchant.locked==1" ng-click="unlockForm()">
           Unlock Activation Form
         </a>
         <a href class="list-group-item"
         ng-show="merchant.activated==0" 
-        ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating? 
-        "ng-click="activateMerchant()"
+        ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
+        ng-click="activateMerchant()"
         >
           Activate Merchant
+        </a>
+        <a href class="list-group-item" ng-show="merchant.activated==1 && merchant.live==0" ng-click="enableLive()">
+          Enable Live Transactions
+        </a>
+        <a href class="list-group-item" ng-show="merchant.live==1 "ng-click="disableLive()"
+        ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?"
+        >
+          Disable Live Transactions
         </a>
         <a href class="list-group-item" ng-click="openAssignPricing()">
           Assign Pricing
@@ -75,13 +83,17 @@
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.locked == 1 ? 'Locked' : 'Unlocked'}}">
-            <i class="fa" ng-class="{'fa-lock': merchant.locked == 1, ' fa-unlock':merchant.locked == 0}"></i>
+            <i class="fa" ng-class="{'fa-lock text-danger': merchant.locked == 1, ' fa-unlock text-success':merchant.locked == 0}"></i>
           </span>
           Activation Form Status
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></span>
           Activated
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.live == 1 ? 'Live' : 'Not Live'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.live == 1, 'fa-times text-danger':merchant.live == 0}"></i></span>
+          Live
         </a>
         <div href class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">

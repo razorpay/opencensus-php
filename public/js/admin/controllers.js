@@ -340,6 +340,52 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         });
       };
 
+      $scope.enableLive = function() {
+        $scope.alerts.addAlert('info', 'Processing...', true);
+        
+        var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/enable?_token="+CSRF_TOKEN);
+
+        request
+        .success(function(data){
+          if(data.success) {
+            $scope.alerts.addAlert('success', 'Live transactions for merchant enabled successfully', true);
+            generateMerchant();
+          }
+          else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', null, true);
+        });
+      };
+
+      $scope.disableLive = function() {
+        $scope.alerts.addAlert('info', 'Processing...', true);
+        
+        var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/disable?_token="+CSRF_TOKEN);
+
+        request
+        .success(function(data){
+          if(data.success) {
+            $scope.alerts.addAlert('success', 'Live transactions for merchant disabled successfully', true);
+            generateMerchant();
+          }
+          else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', null, true);
+        });
+      };
+
       $scope.assignPricing = function(plan_id){
         $scope.alerts.addAlert('info', 'Processing...', true);
         
