@@ -1,0 +1,110 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">Admins</h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="AdminsCtrl">
+    <div class="panel-heading">
+      List of all Admins
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="panel-body b-b b-light">
+      Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+    </div>
+    <div>
+      <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="table-responsive table table-striped b-t b-light">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Creation Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="row in admins">
+            <td>{{row.name}}</td>
+            <td>{{row.username}}</td>
+            <td>{{row.email}}</td>    
+            <td>{{row.superadmin == 1 ? "Super Admin" : "Standard Admin"}}</td>
+            <td>{{row.created_at*1000 | date:'medium'}}</td>   
+            <td>
+              <a href ng-show="row.username != admin.username" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="delete(row.id)">
+                <i class="fa fa-minus-circle text-danger" tooltip="Delete"></i>
+              </a>    
+            </td> 
+          </tr>
+        </tbody>
+        <tfoot >
+          <tr>
+            <td colspan="6">
+              <a href ng-click="createAdmin()">Add new Admin</a>
+            </td>
+          </tr>
+          <tr>
+              <td colspan="6" class="text-center">
+                  <ul class="pagination"></ul>
+              </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+<script type="text/ng-template" id="newAdminModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">New Admin</h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-horizontal form-validation" ng-init="admin={superadmin:'0'}">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Full Name:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" ng-model="admin.name" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Username:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" ng-model="admin.username" />
+          <span class="help-block">Required to login to admin panel.</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Email:</label>
+        <div class="col-lg-10" >
+          <input type="email" class="form-control m-b" ng-model="admin.email" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Password:</label>
+        <div class="col-lg-10" >
+          <input type="password" class="form-control m-b" ng-model="admin.password" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Confirm Password:</label>
+        <div class="col-lg-10" >
+          <input type="password" class="form-control m-b" ng-model="admin.password_confirmation" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Role:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" ng-model="admin.superadmin">
+             <option value="0" selected>Standard Admin</option>
+             <option value="1">Super Admin</option>
+          </select>
+          <span class="help-block">Super Admins can add/remove other admins.</span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary" ng-click="ok(admin)">OK</button>
+  </div>
+</script>
