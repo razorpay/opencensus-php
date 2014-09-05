@@ -136,6 +136,11 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NOT_LIVE =
         'The merchant is not live currently';
 
+    const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED =
+        'There is a temporary block placed on the account currently because of which new payment operations are on put on hold.
+         If you are seeing this message unexpectedly, please drop a mail to contact@razorpay.com with your email-id and
+         we will look into the issue immediately.';
+
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED =
         'The merchant has no pricing assigned';
 

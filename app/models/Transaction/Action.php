@@ -3,6 +3,8 @@
 namespace Models\Transaction;
 
 use Dashboard;
+use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Gateway;
 use Models\Merchant;
 use Models\Terminal;
@@ -42,9 +44,33 @@ class Action
 
         $this->mode = $mode;
 
+        $this->checkMerchantPermissions();
+
         $this->repo = new Transaction\Repository;
 
         $this->terminal = $this->getTerminal();
+    }
+
+    protected function checkMerchantPermissions()
+    {
+        $merchant = $this->merchant;
+        $mode = $this->mode;
+
+        if ($mode === 'test')
+            return;
+
+        if ($merchant->isActivated() === false)
+        {
+            throw new Exception\LogicException(
+                'A non-activated merchant is making live request. Blasphemy!');
+        }
+
+        if ($merchant->isLive() === false)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
+        }
     }
 
     protected function trace($traceCode, $level = Trace::INFO)
