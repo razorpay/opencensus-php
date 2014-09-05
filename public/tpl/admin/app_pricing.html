@@ -47,11 +47,6 @@
       </table>
     </div>
   </div>
-
-  <div class="text-center m-t">
-    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
-  </div>
-
   <div class="panel panel-default"  ng-show="show_plan.id">
     <div class="panel-heading">
       Plan Id: {{show_plan.id}} <br/>
@@ -79,6 +74,16 @@
             <td>{{rule.percent_rate/100}} %</td>
             <td>{{rule.fixed_rate/100 | currency:"INR "}}</td>
             <td>{{rule.created_at*1000 | date:'medium'}}</td>
+          </tr>
+          <tr ng-show="new_rule.percent_rate || new_rule.fixed_rate">
+            <td>Preview Rule</td>
+            <td>{{new_rule.payment_mode || 'Any'}}</td>
+            <td>{{new_rule.payment_mode_type || 'Any'}}</td>
+            <td>{{new_rule.payment_network || 'Any'}}</td>
+            <td>{{new_rul.payment_issuer || 'Any'}}</td>
+            <td>{{new_rule.percent_rate/100}} %</td>
+            <td>{{new_rule.fixed_rate/100 | currency:"INR "}}</td>
+            <td>Preview Rule</td>
           </tr>
           <tr>
             <td>Add new Rule</td>
@@ -140,6 +145,14 @@
           <th>Fixed Rate</th>
         </thead>
         <tbody>
+          <tr ng-show="new_plan.percent_rate || new_plan.fixed_rate" tooltip="Preview">
+            <td>{{new_plan.payment_mode || 'Any'}}</td>
+            <td>{{new_plan.payment_mode_type || 'Any'}}</td>
+            <td>{{new_plan.payment_network || 'Any'}}</td>
+            <td>{{new_plan.payment_issuer || 'Any'}}</td>
+            <td>{{new_plan.percent_rate/100}} %</td>
+            <td>{{new_plan.fixed_rate/100 | currency:"INR "}}</td>
+          </tr>
           <tr>
             <td>
               <select class="form-control" ng-model="new_plan.payment_mode" required>
@@ -181,11 +194,16 @@
           <tr>
             <td collspan="6">
               <a href ng-click="savePlan()"><button class="btn btn-primary btn-rounded">Save and Add More Rules</button></a>
-              <a href ng-click="cancelPlan()"><button class="btn btn-primary btn-rounded">Cancel</button></a>
+              <a href ng-click="create_plan = false"><button class="btn btn-primary btn-rounded">Cancel</button></a>
             </td>
           </tr>
         </tfoot>
       </table>
     </div>
   </div>
+
+  <div class="text-center m-t">
+    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+  </div>
+
 </div>

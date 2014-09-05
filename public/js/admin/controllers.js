@@ -671,6 +671,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         request
         .success(function(data){
           if(data.success) {
+            $scope.create_plan = false;
+            $scope.new_plan = {};
             $scope.show_plan = data.data;
             $scope.new_rule = {};
           }
