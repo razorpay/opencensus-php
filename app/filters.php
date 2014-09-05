@@ -47,7 +47,7 @@ Route::filter('auth_admin', function()
 Route::filter('superadmin', function()
 {
     if (Auth::admin()->user()->isSuperAdmin() === false)
-        return App::abort(403, 'Unauthorized action.');
+        return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
 });
 
 Route::filter('auth.internal', function()
@@ -92,6 +92,6 @@ Route::filter('csrf', function()
 {
 	if (Session::token() != Input::get('_token'))
 	{
-		return array('success'=>false, 'errors'=>array('Session timed out. Please refresh the page and try again.'));
+		return Response::json(array('success'=>false, 'errors'=>array('Session timed out. Please refresh the page and try again.')));
 	}
 });
