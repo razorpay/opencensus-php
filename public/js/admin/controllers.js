@@ -64,6 +64,8 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           return (/iPhone|iPod|iPad|Silk|Android|BlackBerry|Opera Mini|IEMobile/).test(ua);
       }
 
+      $scope.flag = false;
+
   }])
 
   //Signin Controller

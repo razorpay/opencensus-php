@@ -10,10 +10,13 @@
     <title>Razorpay - Dashboard</title>
     <meta name="description" content="app, web app, responsive, responsive layout, admin, admin panel, admin dashboard, flat, flat ui, ui kit, AngularJS, ui route, charts, widgets, components" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <link rel="stylesheet" href="css/<!-- @echo DEST -->/style.css" type="text/css" />
-
 </head>
 <body ng-controller="AppCtrl">
+    <!-- The splash screen must be first -->
+    <div id="splash" ng-if="flag">
+      <h2>Loading...</h2>
+    </div>
+    <link rel="stylesheet" href="css/<!-- @echo DEST -->/style.css" type="text/css" />
     <div class="app" id="app" ng-class="{'app-header-fixed':app.settings.headerFixed, 'app-aside-fixed':app.settings.asideFixed, 'app-aside-folded':app.settings.asideFolded}" ui-view></div>
     <!-- jQuery & angular -->
     <script src="js/<!-- @echo DEST -->/pre.js"></script>
