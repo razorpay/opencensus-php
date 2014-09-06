@@ -327,11 +327,10 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         };
       };
 
-      $scope.changePassword = function (size) {
+      $scope.changePassword = function () {
         var modalInstance = $modal.open({
           templateUrl: 'passwordModalContent.html',
-          controller: passwordModalCtrl,
-          size: size
+          controller: passwordModalCtrl
         });
 
         modalInstance.result.then(
