@@ -20,37 +20,47 @@ module.exports = function(grunt){
 			}
 		},
 
-		stylus: {
-			production: {
-				files: {
-					'public/css/style.css': 'public/styl/style.styl'
-				},
-				options: {
-					compress: true
-				}
-			},
-			development: {
-				files: {
-					'public/css/style.css': 'public/styl/style.styl'
-				},
-				options: {
-					compress: false
-				}
-			}
-		},
-
-		jshint: {
-			development: ['public/js/main.js', 'public/js/activation.js'],
-			production: []
-		},
-
 		concat: {
 			development: {
 				files: {
-					'public/css/dev/style.css': ['public/css/lib/simplegrid.css','public/css/lib/pikaday.css','public/css/lib/reset.css','public/css/fonts.css','public/css/style.css'],
-					'public/js/dev/pre.js': ['public/js/lib/jquery.min.js','public/js/lib/moment.min.js','public/js/lib/pikaday.js','public/js/lib/highcharts.min.js','public/js/lib/path.min.js'],
-					'public/js/dev/post.js': ['public/js/main.js'],
-					'public/js/dev/activation.js': ['public/js/lib/bootstrap.fileinput.js','public/js/activation.js']
+					'public/css/dev/style.css': [
+													'public/css/bootstrap.css',
+													'public/css/animate.css',
+													'public/css/font-awesome.min.css',
+													'public/css/simple-line-icons.css',
+													'public/css/font.css',
+													'public/css/app.css'
+												],
+					'public/js/dev/pre.js': [
+													'public/js/jquery/jquery.min.js',
+													'public/js/libs/angular-file-upload-shim.min.js',
+													'public/js/angular/angular.min.js',
+													'public/js/angular/angular-cookies.min.js',
+													'public/js/angular/angular-animate.min.js',
+													'public/js/angular/angular-ui-router.min.js',
+													'public/js/angular/angular-translate.js',
+													'public/js/angular/angular-idle.min.js',
+													'public/js/angular/ngStorage.min.js',
+													'public/js/angular/ui-load.js',
+													'public/js/angular/ui-jq.js',
+													'public/js/angular/ui-validate.js',
+													'public/js/angular/ui-bootstrap-tpls.min.js',
+													'public/js/libs/angular-file-upload.min.js'
+											],
+					'public/js/dev/merchant.js': [
+													'public/js/app.js',
+													'public/js/services.js',
+													'public/js/controllers.js',
+													'public/js/filters.js',
+													'public/js/directives.js'
+												],
+					'public/js/dev/admin.js': [
+													'public/js/admin/app.js',
+													'public/js/services.js',
+													'public/js/admin/controllers.js',
+													'public/js/filters.js',
+													'public/js/directives.js'
+											]
 				}
 			},
 			production: {}
@@ -59,8 +69,16 @@ module.exports = function(grunt){
 		cssmin: {
 			development: {},
 			production: {
-				src: ['public/css/lib/simplegrid.css','public/css/lib/pikaday.css','public/css/lib/reset.css','public/css/fonts.css','public/css/style.css'],
-				dest: 'public/css/prod/style.css'
+				files: {
+					'public/css/prod/style.css': [
+													'public/css/bootstrap.css',
+													'public/css/animate.css',
+													'public/css/font-awesome.min.css',
+													'public/css/simple-line-icons.css',
+													'public/css/font.css',
+													'public/css/app.css'
+												]
+				}
 			}
 		},
 
@@ -68,25 +86,48 @@ module.exports = function(grunt){
 			development: {},
 			production: {
 				files: {
-					'public/js/prod/pre.js': ['public/js/lib/jquery.min.js','public/js/lib/moment.min.js','public/js/lib/pikaday.js','public/js/lib/highcharts.min.js','public/js/lib/path.min.js'],
-					'public/js/prod/post.js': ['public/js/main.js'],
-					'public/js/prod/activation.js': ['public/js/lib/bootstrap.fileinput.js','public/js/activation.js']
+					'public/js/prod/pre.js': [
+													'public/js/jquery/jquery.min.js',
+													'public/js/libs/angular-file-upload-shim.min.js',
+													'public/js/angular/angular.min.js',
+													'public/js/angular/angular-cookies.min.js',
+													'public/js/angular/angular-animate.min.js',
+													'public/js/angular/angular-ui-router.min.js',
+													'public/js/angular/angular-translate.js',
+													'public/js/angular/angular-idle.min.js',
+													'public/js/angular/ngStorage.min.js',
+													'public/js/angular/ui-load.js',
+													'public/js/angular/ui-jq.js',
+													'public/js/angular/ui-validate.js',
+													'public/js/angular/ui-bootstrap-tpls.min.js',
+													'public/js/libs/angular-file-upload.min.js'
+											],
+					'public/js/prod/merchant.js': [
+													'public/js/app.js',
+													'public/js/services.js',
+													'public/js/controllers.js',
+													'public/js/filters.js',
+													'public/js/directives.js'
+												],
+					'public/js/prod/admin.js': [
+													'public/js/admin/app.js',
+													'public/js/services.js',
+													'public/js/admin/controllers.js',
+													'public/js/filters.js',
+													'public/js/directives.js'
+												]	
 				}
 			}
 		},
 
 		preprocess: {
-			layout: {
-				src: 'app/views/templates/layout.blade.php.tmpl',
-				dest: 'app/views/layoutGenerated.blade.php'
+			admin: {
+				src: 'app/views/admin/getIndex.php.tmpl',
+				dest: 'app/views/admin/getIndexGenerated.php'
 			},
-			adminlayout: {
-				src: 'app/views/templates/admin/layout.blade.php.tmpl',
-				dest: 'app/views/admin/layoutGenerated.blade.php'
-			},
-			activation: {
-				src: 'app/views/templates/merchant/getActivation.blade.php.tmpl',
-				dest: 'app/views/merchant/getActivationGenerated.blade.php'
+			merchant: {
+				src: 'app/views/merchant/getIndex.php.tmpl',
+				dest: 'app/views/merchant/getIndexGenerated.php'
 			}
 		},
 
@@ -97,21 +138,21 @@ module.exports = function(grunt){
 				renameFiles: true
 			},
 			development: {
-				src: ['public/css/dev/style.css','public/js/dev/pre.js','public/js/dev/post.js','public/js/dev/activation.js'],
-				dest: ['app/views/layoutGenerated.blade.php', 'app/views/merchant/getActivationGenerated.blade.php', 'app/views/admin/layoutGenerated.blade.php']
+				src: ['public/css/dev/style.css','public/js/dev/pre.js','public/js/dev/merchant.js','public/js/dev/admin.js'],
+				dest: ['app/views/admin/getIndexGenerated.php', 'app/views/merchant/getIndexGenerated.php']
 			},
 			production: {
-				src: ['public/css/prod/style.css','public/js/prod/pre.js','public/js/prod/post.js','public/js/prod/activation.js'],
-				dest: ['app/views/layoutGenerated.blade.php', 'app/views/merchant/getActivationGenerated.blade.php', 'app/views/admin/layoutGenerated.blade.php']
+				src: ['public/css/prod/style.css','public/js/prod/pre.js','public/js/prod/merchant.js','public/js/prod/admin.js'],
+				dest: ['app/views/admin/getIndexGenerated.php', 'app/views/merchant/getIndexGenerated.php']
 			}
 		},
 
 		clean: {
-			development: ['public/css/dev/*.css'],
-			production: ['public/css/prod/*.css']
+			development: ['public/css/dev/*.css', 'public/js/dev/*.js'],
+			production: ['public/css/prod/*.css', 'public/js/prod/*.js']
 		}
 
 	});
 
-	grunt.registerTask('default',   ['env:'+config.environment,'clean:'+config.environment,'stylus:'+config.environment,'jshint:'+config.environment,'concat:'+config.environment,'cssmin:'+config.environment,'uglify:'+config.environment,'preprocess','hashres:'+config.environment]);
+	grunt.registerTask('default',   ['env:'+config.environment,'clean:'+config.environment,'concat:'+config.environment,'cssmin:'+config.environment,'uglify:'+config.environment,'preprocess','hashres:'+config.environment]);
 };

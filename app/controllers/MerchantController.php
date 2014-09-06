@@ -8,7 +8,7 @@ class MerchantController extends BaseController
 {
     public function getIndex()
     {
-        return View::make('merchant.getIndex');
+        return View::make('merchant.getIndexGenerated');
     }
 
     public function getUser()
