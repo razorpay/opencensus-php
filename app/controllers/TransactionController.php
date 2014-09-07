@@ -87,9 +87,9 @@ class TransactionController extends BaseController
     /**
     * Refund a transaction.
     */
-    public function postRefund($id)
+    public function postRefund($id, $input)
     {
-        $txn = $this->transaction->refund($id);
+        $txn = $this->transaction->refund($id, $input);
 
         return ApiResponse::json($txn);
     }

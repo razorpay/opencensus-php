@@ -10,15 +10,15 @@ class Refund extends Action
 {
     /**
      * Refunds a transaction
-     * @param  string              $id  Transaction Id
+     * @param  string   $id  Transaction Id
      *
      * @return Transaction\Entity
      */
-    public function process($id)
+    public function process($id, $input)
     {
         $txn = $this->retrieve($id);
 
-        Transaction\Validator::refundValidate($txn);
+        Transaction\Validator::refundValidate($txn, $input);
 
         $data = array(
                     'txn' => $txn->toArrayWithCard(),
@@ -28,7 +28,7 @@ class Refund extends Action
         {
             $this->callGatewayFunction(Transaction\Action::REFUND, $data);
 
-            $this->recordRefund();
+            $this->recordRefund($input);
 
             //
             // Analytics
@@ -47,7 +47,7 @@ class Refund extends Action
         return $txn;
     }
 
-    protected function recordRefund()
+    protected function recordRefund($input)
     {
         $this->repo->transaction(function()
         {
@@ -55,15 +55,31 @@ class Refund extends Action
 
             // (new Ledger\Core)->recordRefund($this->txn);
 
-            $this->updateTransactionRefunded();
+            $this->updateTransactionRefunded($input);
 
             $this->txn->save();
         });
     }
 
-    protected function updateTransactionRefunded()
+    protected function updateTransactionRefunded($input)
     {
-        $this->txn->setStatus(Transaction\Status::REFUNDED);
+        $amountRefunded = $txn->getAmountRefunded();
+        $amountCaptured = $txn->getAmount();
+        $amountToRefund = $input['input'];
+
+        $refundStatus = RefundStatus::PARTIAL;
+
+        if ($amountToRefund === ($amountCaptured + $amountRefunded))
+        {
+            $refundStatus = RefundStatus::FULL;
+        }
+
+        $amountRefunded += $amountToRefund;
+
+        $this->txn->setRefundStatus($refundStatus);
+        $this->txn->setAmountRefunded($amountRefunded);
+
+        $this->createRefundEntity($input);
 
         $this->trace(TraceCode::TRANSACTION_REFUND_SUCCESS);
     }

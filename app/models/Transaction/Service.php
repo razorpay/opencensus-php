@@ -50,10 +50,10 @@ class Service extends Base\Service
      *
      * @return Transaction\Entity
      */
-    public function refund($id)
+    public function refund($id, $input)
     {
         $txn = $this->getActionInstance(Transaction\Action::REFUND)
-                     ->process($id);
+                    ->process($id, $input);
 
         return $txn->toArrayPublic();
     }

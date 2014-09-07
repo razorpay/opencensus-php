@@ -54,6 +54,7 @@ class Action
     protected function checkMerchantPermissions()
     {
         $merchant = $this->merchant;
+
         $mode = $this->mode;
 
         if ($mode === 'test')

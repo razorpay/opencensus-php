@@ -48,7 +48,7 @@ class Authorize extends Action
             return $callbackData;
         }
 
-        $txn->setAuthAmount();
+        $txn->setAmountAuthorized();
 
         $this->updateTransactionAuthorized();
 

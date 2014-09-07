@@ -190,10 +190,10 @@ class MerchantPaymentReport
      * The format of card number given in hdfc mpr is
      * ????xxxxxxxx???? where each '?' denotes a digit
      * and each 'x' denotes masked digit
+     * Verifies card number length
      *
-     * @param  string  $number
-     * @param  integer $iin
-     * @param  integer $last4
+     * @param   string  $number
+     * @param   array   $card
      */
     protected function verifyCardNumberProperties($number, $card)
     {
