@@ -12,7 +12,10 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID       = 'merchant_id';
     const AUTH_AMOUNT       = 'auth_amount';
     const AMOUNT            = 'amount';
+    const AMOUNT_AUTHORIZED = 'amount_authorized';
+    const AMOUNT_REFUNDED   = 'amount_refunded';
     const STATUS            = 'status';
+    const REFUND_STATUS     = 'refund_status';
     const CURRENCY          = 'currency';
     const DESCRIPTION       = 'description';
     const ERROR_CODE        = 'error_code';
@@ -139,11 +142,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    public function setAuthAmount()
+    public function setAmountAuthorized()
     {
         $authAmount = $this->getAttribute(self::AMOUNT);
 
-        $this->setAttribute(self::AUTH_AMOUNT, $authAmount);
+        $this->setAttribute(self::AMOUNT_AUTHORIZED, $authAmount);
     }
 
     public function setStatus($status)
@@ -151,10 +154,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setStatusAndSave($status)
+    public function setRefundStatus($status)
     {
-        $this->setAttribute(self::STATUS, $status);
-        $this->save();
+        $this->setAttribute(self::REFUND_STATUS, $status);
+    }
+
+    public function setAmountRefunded($amount)
+    {
+        $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
     }
 
     public function setError($code, $desc)
@@ -200,17 +207,27 @@ class Entity extends Base\PublicEntity
 
     public function isAuthorized()
     {
-        return ($this->getAttribute(self::STATUS) == Status::AUTHORIZED);
+        return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
     }
 
     public function isCaptured()
     {
-        return ($this->getAttribute(self::STATUS) == Status::CAPTURED);
+        return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
     }
 
-    public function isRefunded()
+    public function isPartiallyOrFullyRefunded()
     {
-        return ($this->getAttribute(self::STATUS) == Status::REFUNDED);
+        return ! ($this->getAttribute(self::STATUS) === RefundStatus::NONE);
+    }
+
+    public function isFullyRefunded()
+    {
+        return ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::FULL);
+    }
+
+    public function isPartisallyRefunded()
+    {
+        return ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::PARTIAL);
     }
 
     public function isFailed()
@@ -233,6 +250,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return (int) $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getAmountRefunded()
+    {
+        return (int) $this->getAttribute(self::AMOUNT_REFUNDED);
     }
 
 // ----------------------- Getters Ends-----------------------------------------

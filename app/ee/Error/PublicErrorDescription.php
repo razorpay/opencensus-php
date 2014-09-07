@@ -34,8 +34,20 @@ class PublicErrorDescription
     const BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED =
         'This transaction has already been captured';
 
-    const BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED =
-        'This transaction has already been refunded';
+    const BAD_REQUEST_TRANSACTION_FULLY_REFUNDED =
+        'This transaction has been fully refunded';
+
+    const BAD_REQUEST_TRANSACTION_STATUS_NOT_CAPTURED =
+        'The transaction status should be captured for refund action to be taken';
+
+    const BAD_REQUEST_TRANSACTION_FULLY_REFUNDED =
+        'The transaction has been fully refunded already';
+
+    const BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_TOO_HIGH =
+        'The refund amount provided is greater than the amount that has not been refunded yet';
+
+    const BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_GREATER_THAN_CAPTURE =
+        'The refund amount proivded is greater than amount captured';
 
     const BAD_REQUEST_TRANSACTION_CARD_IS_NOT_ARRAY =
         'Card provided is not a dictionary';

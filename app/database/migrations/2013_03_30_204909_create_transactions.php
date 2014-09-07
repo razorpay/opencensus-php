@@ -28,7 +28,11 @@ class CreateTransactions  extends Migration
 
             $table->char(Transaction::MERCHANT_ID, Transaction::ID_LENGTH);
 
-            $table->integer(Transaction::AUTH_AMOUNT)
+            $table->integer(Transaction::AMOUNT_AUTHORIZED)
+                  ->unsigned()
+                  ->default(0);
+
+            $table->integer(Transaction::AMOUNT_REFUNDED)
                   ->unsigned()
                   ->default(0);
 
@@ -39,9 +43,10 @@ class CreateTransactions  extends Migration
                                         'open',
                                         'authorized',
                                         'captured',
-                                        'refunded',
                                         'failed'
                                         ));
+
+            $table->string(Transaction::REFUND_STATUS);
 
             $table->char(Transaction::CURRENCY, Transaction::CURRENCY_LENGTH);
 
