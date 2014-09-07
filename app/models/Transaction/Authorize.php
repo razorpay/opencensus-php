@@ -175,7 +175,7 @@ class Authorize extends Action
         //
         // Create txn entity
         //
-        $this->txn = $this->create($input, $card);
+        $this->txn = $this->createTransactionEntity($input, $card);
 
         $this->saveEntities();
 
@@ -198,7 +198,7 @@ class Authorize extends Action
      *
      * @return Transaction\Entity   A Transaction\Entity object
      */
-    public function create($input, Card\Entity $card)
+    public function createTransactionEntity($input, Card\Entity $card)
     {
         $txn = (new Transaction\Entity)->build($input);
 

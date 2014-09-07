@@ -87,8 +87,10 @@ class TransactionController extends BaseController
     /**
     * Refund a transaction.
     */
-    public function postRefund($id, $input)
+    public function postRefund($id)
     {
+        $input = Input::all();
+
         $txn = $this->transaction->refund($id, $input);
 
         return ApiResponse::json($txn);
@@ -100,7 +102,7 @@ class TransactionController extends BaseController
      */
     public function postCapture($id)
     {
-        $input = Input::get();
+        $input = Input::all();
 
         $txn = $this->transaction->capture($id, $input);
 
@@ -109,7 +111,7 @@ class TransactionController extends BaseController
 
     public function postCallback($id)
     {
-        $input = Input::get();
+        $input = Input::all();
 
         $data = null;
 

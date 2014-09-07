@@ -35,7 +35,7 @@ class Handler
     }
 
     public function genericExceptionHandler(\Exception $exception)
-    {
+    {// sd($exception->getTraceAsString());
         $this->traceException($exception);
 
         //

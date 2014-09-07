@@ -2,15 +2,15 @@
 
 namespace Models\Transaction;
 
-use Models\Base;
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Models\Base;
+use Models\Transaction\Refund;
 
 class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
-    const AUTH_AMOUNT       = 'auth_amount';
     const AMOUNT            = 'amount';
     const AMOUNT_AUTHORIZED = 'amount_authorized';
     const AMOUNT_REFUNDED   = 'amount_refunded';
@@ -42,8 +42,6 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::MERCHANT_ID,
-        self::STATUS,
-        self::AUTH_AMOUNT,
         self::AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
@@ -54,8 +52,11 @@ class Entity extends Base\PublicEntity
     protected $visible = array(
         self::ID,
         self::AMOUNT,
+        self::AMOUNT_AUTHORIZED,
+        self::AMOUNT_REFUNDED,
         self::CURRENCY,
         self::STATUS,
+        self::REFUND_STATUS,
         self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
@@ -72,6 +73,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
+        self::AMOUNT_REFUNDED,
+        self::REFUND_STATUS,
         self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
@@ -84,7 +87,7 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = array(self::CONTACT, self::UDF);
 
-    protected static $generators = array(self::STATUS, self::ID, self::UDF);
+    protected static $generators = array(self::STATUS, self::ID, self::UDF, self::REFUND_STATUS);
 
 // --------------------- Generators --------------------------------------------
 
@@ -93,11 +96,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, Status::OPEN);
     }
 
+    public function generateRefundStatus($input)
+    {
+        $this->setAttribute(self::REFUND_STATUS, Refund\Status::NONE);
+    }
+
     public function generateUdf($input)
     {
         if (isset($input['udf']) === false)
         {
-            ;//$this->setAttribute(self::UDF, array());
+            $this->setAttribute(self::UDF, array());
         }
     }
 
@@ -217,17 +225,17 @@ class Entity extends Base\PublicEntity
 
     public function isPartiallyOrFullyRefunded()
     {
-        return ! ($this->getAttribute(self::STATUS) === RefundStatus::NONE);
+        return ! ($this->getAttribute(self::STATUS) === Refund\Status::NONE);
     }
 
     public function isFullyRefunded()
     {
-        return ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::FULL);
+        return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::FULL);
     }
 
     public function isPartisallyRefunded()
     {
-        return ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::PARTIAL);
+        return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::PARTIAL);
     }
 
     public function isFailed()
@@ -255,6 +263,16 @@ class Entity extends Base\PublicEntity
     public function getAmountRefunded()
     {
         return (int) $this->getAttribute(self::AMOUNT_REFUNDED);
+    }
+
+    public function getAmountUnrefunded()
+    {
+        return (int) $this->getAmount() - $this->getAmountRefunded();
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
 // ----------------------- Getters Ends-----------------------------------------
@@ -291,6 +309,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
+    public function refunds()
+    {
+        return $this->hasMany('Models\Transaction\Refund\Entity');
+    }
+
     public function ledger()
     {
         return $this->belongsTo('Models\Ledger\Entity');
@@ -303,6 +326,29 @@ class Entity extends Base\PublicEntity
 
 // --------------- Relation to other entity section ends -----------------------
 
+    public function refundAmount($amount)
+    {
+        $amountUnrefunded = $this->getAmountUnrefunded();
+
+        if ($amount < $amountUnrefunded)
+        {
+            $this->setRefundStatus(Refund\Status::PARTIAL);
+        }
+        else if ($amount === $amountUnrefunded)
+        {
+            $this->setRefundStatus(Refund\Status::FULL);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Refund amount should be less than or equal to amount unrefunded');
+        }
+
+        $amountRefunded = $this->getAmountRefunded() + $amount;
+
+        $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
+    }
+
     public function scopeMerchantId($query, $merchantId)
     {
         return $query->where(self::MERCHANT_ID,'=',$merchantId);
@@ -310,10 +356,6 @@ class Entity extends Base\PublicEntity
 
     public function toArrayTraceRelevant()
     {
-        $data = $this->attributes;
-
-        $relevantData = array();
-
         $fields = array(
             self::ID,
             self::MERCHANT_ID,
@@ -322,7 +364,7 @@ class Entity extends Base\PublicEntity
             self::AMOUNT,
             self::ERROR_CODE);
 
-        $relevantData = array_intersect_key($data, array_flip($fields));
+        $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 
         return $relevantData;
     }

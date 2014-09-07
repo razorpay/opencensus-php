@@ -4,25 +4,27 @@ namespace Constants;
 
 class Table
 {
-    const TRANSACTION = 'transactions';
+    const BALANCE = 'balance';
 
     const CARD = 'cards';
 
-    const MERCHANT = 'merchants';
-
-    const TERMINAL = 'terminals';
-
-    const LEDGER = 'ledger';
+    const IIN = 'iins';
 
     const KEY = 'keys';
 
-    const IIN = 'iins';
+    const LEDGER = 'ledger';
 
-    const UNRECOGNIZED_CARD = 'unrecognized_cards';
-
-    const BALANCE = 'balance';
+    const MERCHANT = 'merchants';
 
     const PRICING = 'pricing';
 
+    const REFUND = 'refunds';
+
     const SETTLEMENT = 'settlements';
+
+    const TERMINAL = 'terminals';
+
+    const TRANSACTION = 'transactions';
+
+    const UNRECOGNIZED_CARD = 'unrecognized_cards';
 }

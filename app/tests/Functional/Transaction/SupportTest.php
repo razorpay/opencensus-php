@@ -81,8 +81,8 @@ class SupportTest extends TestCase
     {
         //WHEN
         //call for refund of transactions
-        $response = $this->call('POST', '/v1/transactions/'.$id.'/refund',  array('id' => $id), array(), $this->auth);
-        $content=$response->getContent();
+        $response = $this->call('POST', '/v1/transactions/'.$id.'/refund',  array(), array(), $this->auth);
+        $content = $response->getContent();
 
         //THEN
         //ensure output is json
@@ -91,6 +91,6 @@ class SupportTest extends TestCase
 
         //Check if transaction id matches, and refunded sucessfully
         $this->assertEquals($id, $refund['id']);
-        $this->assertEquals('refunded', $refund['status']);
+        $this->assertEquals('full', $refund['refund_status']);
     }
 }

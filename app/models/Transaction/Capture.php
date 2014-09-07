@@ -19,7 +19,7 @@ class Capture extends Action
     {
         $txn = $this->retrieve($id);
 
-        Transaction\Validator::captureValidate($txn, $input);
+        (new Transaction\Validator)->captureValidate($txn, $input);
 
         $data = array(
                     'txn' => $txn->toArrayWithCard(),

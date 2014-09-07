@@ -116,21 +116,6 @@ class Service extends Base\Service
         return $txn->toArrayPublic();
     }
 
-    public function reconcile($gateway, $input)
-    {
-        foreach ($input as $row)
-        {
-            $entry = (new Gateway\Manager)->mprTranslate($row, $ledger_id);
-
-            $this->reconcileEntry($entry);
-        }
-    }
-
-    public function reconcileEntry($input)
-    {
-
-    }
-
     protected function getActionInstance($action)
     {
         $bindings = array(
@@ -139,8 +124,6 @@ class Service extends Base\Service
             'trace'     => $this->trace,
             'mode'      => $this->mode);
 
-        $class = 'Models\Transaction\\'.ucfirst($action);
-
-        return new $class($this->merchant, $this->core, $this->trace, $this->mode);
+        return Transaction\Action::create($action, $bindings);
     }
 }

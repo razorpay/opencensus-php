@@ -46,7 +46,8 @@ class CreateTransactions  extends Migration
                                         'failed'
                                         ));
 
-            $table->string(Transaction::REFUND_STATUS);
+            $table->string(Transaction::REFUND_STATUS)
+                  ->default('none');
 
             $table->char(Transaction::CURRENCY, Transaction::CURRENCY_LENGTH);
 

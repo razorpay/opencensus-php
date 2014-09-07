@@ -1,12 +1,14 @@
 <?php
 
-namespace Models\Transaction;
+namespace Models\Transaction\Refund;
 
 use Models\Merchant;
 use Models\Transaction;
+use Models\Transaction\Action;
+use Models\Transaction\Refund;
 use Trace\TraceCode;
 
-class Refund extends Action
+class Process extends Action
 {
     /**
      * Refunds a transaction
@@ -18,17 +20,21 @@ class Refund extends Action
     {
         $txn = $this->retrieve($id);
 
-        Transaction\Validator::refundValidate($txn, $input);
+        $refund = (new Refund\Entity)->build($input, $txn);
+
+        $refund->merchant()->associate($this->merchant);
+
+        $this->refund = $refund;
 
         $data = array(
                     'txn' => $txn->toArrayWithCard(),
-                    'amount' => $txn['amount']);
+                    'amount' => $refund->getAmount());
 
         try
         {
             $this->callGatewayFunction(Transaction\Action::REFUND, $data);
 
-            $this->recordRefund($input);
+            $this->recordRefund();
 
             //
             // Analytics
@@ -47,7 +53,7 @@ class Refund extends Action
         return $txn;
     }
 
-    protected function recordRefund($input)
+    protected function recordRefund()
     {
         $this->repo->transaction(function()
         {
@@ -55,31 +61,16 @@ class Refund extends Action
 
             // (new Ledger\Core)->recordRefund($this->txn);
 
-            $this->updateTransactionRefunded($input);
+            $this->updateTransactionRefunded();
 
             $this->txn->save();
+            $this->refund->save();
         });
     }
 
-    protected function updateTransactionRefunded($input)
+    protected function updateTransactionRefunded()
     {
-        $amountRefunded = $txn->getAmountRefunded();
-        $amountCaptured = $txn->getAmount();
-        $amountToRefund = $input['input'];
-
-        $refundStatus = RefundStatus::PARTIAL;
-
-        if ($amountToRefund === ($amountCaptured + $amountRefunded))
-        {
-            $refundStatus = RefundStatus::FULL;
-        }
-
-        $amountRefunded += $amountToRefund;
-
-        $this->txn->setRefundStatus($refundStatus);
-        $this->txn->setAmountRefunded($amountRefunded);
-
-        $this->createRefundEntity($input);
+        $this->txn->refundAmount($this->refund->getAmount());
 
         $this->trace(TraceCode::TRANSACTION_REFUND_SUCCESS);
     }

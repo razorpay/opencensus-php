@@ -78,14 +78,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED
         ],
     ],
 

@@ -16,8 +16,6 @@ use Trace\TraceCode;
 
 class Core
 {
-    protected $txn;
-
     protected $trace;
 
     protected $txnRepo;

@@ -86,7 +86,7 @@ trait TransactionAuthFlowTrait
         // Check if transaction id matches, and refunded sucessfully
         //
         $this->assertEquals($id, $refund['id']);
-        $this->assertEquals('refunded', $refund['status']);
+        $this->assertEquals('full', $refund['refund_status']);
 
         return $refund;
     }

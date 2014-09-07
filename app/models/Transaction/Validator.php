@@ -198,44 +198,6 @@ class Validator extends Base\Validator
         }
     }
 
-    public function refundValidate($txn, $input)
-    {
-        if ($txn->isCaptured() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
-        }
-
-        //
-        // Don't continue if already fully refunded
-        //
-        if ($txn->isFullyRefunded())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_FULLY_REFUNDED);
-        }
-
-        $this->validateInput('refund', $input);
-
-        $amountToRefund = $input['amount'];
-
-        $amountCaptured = $txn->getAmount();
-
-        $amountRefunded = $txn->getAmountRefunded();
-
-        if ($amountToRefund > $amountCaptured)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_GREATER_THAN_CAPTURE);
-        }
-
-        if ($amountToRefund > ($amountCaptured - $amountRefunded))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_TOO_HIGH);
-        }
-    }
-
     public function captureValidate($txn, $input)
     {
         $this->failIfCaptured($txn);

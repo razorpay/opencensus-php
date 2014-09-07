@@ -51,6 +51,22 @@ class Action
         $this->terminal = $this->getTerminal();
     }
 
+    public static function create($action, $bindings)
+    {
+        $class = __NAMESPACE__ . '\\' . ucfirst($action);
+
+        if ($action === self::REFUND)
+        {
+            $class .= '\Process';
+        }
+
+        return new $class(
+            $bindings['merchant'],
+            $bindings['core'],
+            $bindings['trace'],
+            $bindings['mode']);
+    }
+
     protected function checkMerchantPermissions()
     {
         $merchant = $this->merchant;
