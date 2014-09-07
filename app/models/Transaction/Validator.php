@@ -21,6 +21,9 @@ class Validator extends Base\Validator
     protected static $captureRules = array(
         'amount'        => 'required|numeric|max:500000|min:100');
 
+    protected static $refundRules = array(
+        'amount'        => 'sometimes|numeric');
+
     protected static $createValidators = array('currency', 'contact', 'description', 'udf');
 
     protected function validateContact($input)
@@ -195,41 +198,56 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function refundValidate($txn)
+    public function refundValidate($txn, $input)
     {
-        //
-        // Don't continue if already refunded
-        //
-        if ($txn->isRefunded())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_REFUNDED);
-        }
-
         if ($txn->isCaptured() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
         }
+
+        //
+        // Don't continue if already fully refunded
+        //
+        if ($txn->isFullyRefunded())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSACTION_FULLY_REFUNDED);
+        }
+
+        $this->validateInput('refund', $input);
+
+        $amountToRefund = $input['amount'];
+
+        $amountCaptured = $txn->getAmount();
+
+        $amountRefunded = $txn->getAmountRefunded();
+
+        if ($amountToRefund > $amountCaptured)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_GREATER_THAN_CAPTURE);
+        }
+
+        if ($amountToRefund > ($amountCaptured - $amountRefunded))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_TOO_HIGH);
+        }
     }
 
-    public static function captureValidate($txn, $input)
+    public function captureValidate($txn, $input)
     {
-        self::failIfCaptured($txn);
+        $this->failIfCaptured($txn);
 
-        self::failIfNotAuth($txn);
+        $this->failIfNotAuth($txn);
 
-        self::captureInputValidate($input);
+        $this->validateInput('capture', $input);
 
-        self::captureAmountValidate($txn, $input);
+        $this->captureAmountValidate($txn, $input);
     }
 
-    public static function captureInputValidate($input)
-    {
-        (new static)->validateInput('capture', $input);
-    }
-
-    public static function captureAmountValidate($txn, $input)
+    public function captureAmountValidate($txn, $input)
     {
         if ($input['amount'] > $txn->getAttribute(Transaction\Entity::AMOUNT))
         {
@@ -238,7 +256,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function failIfCaptured($txn)
+    public function failIfCaptured($txn)
     {
         //
         // Don't continue if already captured
@@ -250,7 +268,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function failIfNotAuth($txn)
+    public function failIfNotAuth($txn)
     {
         if ($txn->isAuthorized() === false)
         {
