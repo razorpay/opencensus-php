@@ -137,4 +137,11 @@ class TransactionController extends BaseController
                 return View::make('gateway.callback')->with('data', $data);
         }
     }
+
+    public function getRefundsForTransaction($txnId)
+    {
+        $refunds = $this->transaction->retrieveRefundsForTransaction($txnId);
+
+        return ApiResponse::json($refunds);
+    }
 }
