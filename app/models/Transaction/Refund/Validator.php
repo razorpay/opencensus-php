@@ -10,7 +10,7 @@ use Models\Transaction;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'        => 'sometimes|numeric');
+        'amount'        => 'sometimes|numeric|min:1');
 
     protected static $createValidators = array(
         'transactionStatus',
@@ -29,7 +29,8 @@ class Validator extends Base\Validator
         if ($this->txn->isCaptured() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED);
+                null,
+                ErrorCode::BAD_REQUEST_TRANSACTION_STATUS_NOT_CAPTURED);
         }
     }
 
@@ -38,6 +39,7 @@ class Validator extends Base\Validator
         if ($this->txn->isFullyRefunded())
         {
             throw new Exception\BadRequestException(
+                null,
                 ErrorCode::BAD_REQUEST_TRANSACTION_FULLY_REFUNDED);
         }
     }
@@ -61,13 +63,20 @@ class Validator extends Base\Validator
         if ($amountToRefund > $amountCaptured)
         {
             throw new Exception\BadRequestException(
+                null,
                 ErrorCode::BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_GREATER_THAN_CAPTURED);
         }
 
         if ($amountToRefund > $txn->getAmountUnRefunded())
         {
             throw new Exception\BadRequestException(
+                null,
                 ErrorCode::BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED);
         }
+    }
+
+    protected function processValidationFailure($messages, $operation, $input)
+    {
+        throw new Exception\BadRequestException($messages);
     }
 }

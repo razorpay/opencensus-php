@@ -52,10 +52,45 @@ class Service extends Base\Service
      */
     public function refund($id, $input)
     {
-        $txn = $this->getActionInstance(Transaction\Action::REFUND)
-                    ->process($id, $input);
+        $refund = $this->getActionInstance(Transaction\Action::REFUND)
+                       ->process($id, $input);
 
-        return $txn->toArrayPublic();
+        return $refund->toArrayPublic();
+    }
+
+    public function retrieveRefund($id)
+    {
+        $refund = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+
+        return $refund->toArrayPublic();
+    }
+
+    public function retrieveRefundByIdAndTransactionId($id, $txnId)
+    {
+        $refund = $this->core->retrieveByIdAndMerchantId(
+                                    $id,
+                                    $this->merchant->getKey(),
+                                    $txnId);
+
+        return $refund->toArrayPublic();
+    }
+
+    public function retrieveRefundsForTransaction($txnId)
+    {
+        Transaction\Entity::verifyIdAndStripSign($txnId);
+
+        $refunds = (new Refund\Repository)->findForTransaction($txnId);
+
+        $count = count($refunds);
+
+        $collection = $refunds->transform(function($refund)
+        {
+            return $refund->toArrayPublic();
+        });
+
+        $refunds = $collection->all();
+
+        return array('count' => $count, 'data' => $refunds, 'entity' => 'collection');
     }
 
     /**

@@ -50,7 +50,7 @@ class Process extends Action
             throw $e;
         }
 
-        return $txn;
+        return $refund;
     }
 
     protected function recordRefund()

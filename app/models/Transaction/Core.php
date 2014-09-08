@@ -36,6 +36,18 @@ class Core
         return $txn;
     }
 
+    public function retrieveRefund($refundId, $merchantId, $txnId = null)
+    {
+        if ($txnId !== null)
+        {
+            Transaction\Entity::verifyIdAndStripSign($txnId);
+        }
+
+        Refund\Entity::verifyIdAndStripSign($refundId);
+
+        return (new Refund\Repository)->findOrFailPublicByParams($refundId, $merchantId, $txnId);
+    }
+
     public function retrieveById($id)
     {
         Transaction\Entity::verifyIdAndStripSign($id);

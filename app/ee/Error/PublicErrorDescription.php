@@ -44,7 +44,7 @@ class PublicErrorDescription
         'The refund amount proivded is greater than amount captured';
 
     const BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED =
-        'The refund amount provided is greater than the amount that has not been refunded yet';
+        'The refund amount provided is greater than the unrefunded amount';
 
     const BAD_REQUEST_TRANSACTION_CARD_IS_NOT_ARRAY =
         'Card provided is not a dictionary';

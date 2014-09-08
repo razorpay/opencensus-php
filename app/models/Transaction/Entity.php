@@ -87,7 +87,12 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = array(self::CONTACT, self::UDF);
 
-    protected static $generators = array(self::STATUS, self::ID, self::UDF, self::REFUND_STATUS);
+    protected static $generators = array(
+        self::STATUS,
+        self::ID,
+        self::UDF,
+        self::REFUND_STATUS,
+        self::AMOUNT_REFUNDED);
 
 // --------------------- Generators --------------------------------------------
 
@@ -107,6 +112,11 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(self::UDF, array());
         }
+    }
+
+    protected function generateAmountRefunded()
+    {
+        $this->setAttribute(self::AMOUNT_REFUNDED, 0);
     }
 
 // --------------------- Generators Ends ---------------------------------------
@@ -346,7 +356,7 @@ class Entity extends Base\PublicEntity
 
         $amountRefunded = $this->getAmountRefunded() + $amount;
 
-        $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
+        $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
     }
 
     public function scopeMerchantId($query, $merchantId)
