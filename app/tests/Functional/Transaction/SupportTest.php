@@ -89,8 +89,6 @@ class SupportTest extends TestCase
         $this->assertJson($content);
         $refund = json_decode($content, true);
 
-        //Check if transaction id matches, and refunded sucessfully
-        $this->assertEquals($id, $refund['id']);
-        $this->assertEquals('full', $refund['refund_status']);
+        $this->assertEquals('refund', $refund['entity']);
     }
 }

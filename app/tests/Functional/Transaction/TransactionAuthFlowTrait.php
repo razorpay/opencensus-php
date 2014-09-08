@@ -16,10 +16,16 @@ trait TransactionAuthFlowTrait
 
     protected function createAuthorizedTransactionEntity()
     {
-        $txn = $this->getDefaultTransactionArray();
-        unset($txn['card']);
-        $txn['merchant_id'] = '363e4efa820b0c06208ccd99';
-        $txn['status'] = 'authorized';
+        $txn = $this->getDefaultTransactionEntityArray();
+        $txn = $this->createEntity('transaction', $txn);
+        $txn = $txn->toArrayPublic();
+        return $txn;
+    }
+
+    protected function createCapturedTransactionEntity()
+    {
+        $txn = $this->getDefaultTransactionEntityArray();
+        $txn['status'] = 'captured';
         $txn = $this->createEntity('transaction', $txn);
         $txn = $txn->toArrayPublic();
         return $txn;
@@ -72,21 +78,32 @@ trait TransactionAuthFlowTrait
         return $content;
     }
 
-    protected function refundTransaction($id)
+    protected function refundTransaction($id, $amount = null)
     {
         $this->setupPrivateBasicAuthParams();
+
+        $content = array();
+
+        if ($amount !== null)
+        {
+            $content = array('amount' => $amount);
+        }
+
         $request = array(
             'method' => 'POST',
             'url' => '/transactions/'.$id.'/refund',
-            'content' => array());
+            'content' => $content);
 
         $refund = $this->makeRequestAndGetContent($request);
+//s($refund);
+        $this->assertEquals('refund', $refund['entity']);
 
-        //
-        // Check if transaction id matches, and refunded sucessfully
-        //
-        $this->assertEquals($id, $refund['id']);
-        $this->assertEquals('full', $refund['refund_status']);
+        if ($amount !== null)
+        {
+            $this->assertEquals($amount, $refund['amount']);
+        }
+
+ //       $this->assertEquals('txn-'.$id, $refund['transaction_id']);
 
         return $refund;
     }
@@ -312,5 +329,19 @@ trait TransactionAuthFlowTrait
         ];
 
         return $transaction;
+    }
+
+    protected function getDefaultTransactionEntityArray()
+    {
+        $txn = $this->getDefaultTransactionArray();
+
+        unset($txn['card']);
+        $txn['merchant_id'] = '363e4efa820b0c06208ccd99';
+        $txn['status'] = 'authorized';
+        $txn['refund_status'] = 'none';
+        $txn['amount_authorized'] = $txn['amount'];
+        $txn['amount_refunded'] = '0';
+
+        return $txn;
     }
 }

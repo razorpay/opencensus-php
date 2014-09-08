@@ -21,14 +21,20 @@ class TestCase extends ParentTestCase
     protected $dbTxnInProgress = false;
 
     protected static $fixtures = array(
-        'merchant'      => 'Models\Merchant\Entity',
+        'balance'       => 'Models\Merchant\Balance',
         'key'           => 'Models\Key\Entity',
+        'merchant'      => 'Models\Merchant\Entity',
+        'pricing'       => 'Models\Pricing\Entity',
+        'refund'        => 'Models\Transaction\Refund\Entity',
         'terminal'      => 'Models\Terminal\Entity',
         'transaction'   => 'Models\Transaction\Entity',
-        'balance'       => 'Models\Merchant\Balance',
-        'pricing'       => 'Models\Pricing\Entity');
+    );
 
     protected $auth = array();
+
+    protected $testDataFilePath;
+
+    protected $testData = array();
 
     /**
      * To denote whether to simulate unit tests with
@@ -44,43 +50,14 @@ class TestCase extends ParentTestCase
     {
         parent::setUp();
 
-        //
-        // Setting up db
-        //
-        Artisan::call('migrate');
-        Artisan::call('migrate', array('--database' => 'test'));
+        // Setup database
+        $this->runDbSetupOperations();
 
-        //
+        // Load test data
+        $this->loadTestData();
+
         // Enable filters
-        //
         Route::enableFilters();
-
-        //
-        // Start DB transaction so as
-        // to rollback once done
-        //
-        DB::connection('test')->beginTransaction();
-        DB::connection('live')->beginTransaction();
-        $this->dbTxnInProgress = true;
-
-        //
-        // Seed the db with required data
-        // This creates key entity and merchant entity
-        // This key can be used by default for most use-cases
-        // but you are not required to use it.
-        //
-
-        $apiMerchant = $this->createEntityInTestAndLive('merchant', ['id' => '134510ae166900007a9677a9']);
-        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '134510ae166900007a9677a9']);
-
-        $this->entities = array(
-            'pricing'     => $this->createDefaultPricingPlan(),
-            'merchant'    => $this->createEntityInTestAndLive('merchant', ['id' => '363e4efa820b0c06208ccd99']),
-            'terminal'    => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
-            'key'         => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
-            'balance'     => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
-            'transaction' => $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']),
-            );
     }
 
     public function tearDown()
@@ -98,6 +75,64 @@ class TestCase extends ParentTestCase
 
         DB::disconnect('live');
         DB::disconnect('test');
+    }
+
+    protected function loadTestData()
+    {
+        if ($this->testDataFilePath !== null)
+        {
+            $this->testData = require($this->testDataFilePath);
+        }
+    }
+
+    protected function runDbSetupOperations()
+    {
+        // Run DB migration
+        $this->dbMigrate();
+
+        //
+        // Start DB transaction so as
+        // to rollback once test is finished
+        // leaving a clean slate
+        //
+        DB::connection('test')->beginTransaction();
+        DB::connection('live')->beginTransaction();
+
+        $this->dbTxnInProgress = true;
+
+        // Seed DB with default entities to be used in
+        // tests
+        $this->seedDbWithDefaultEntities();
+    }
+
+    /**
+     * Migrates database
+     */
+    protected function dbMigrate()
+    {
+        Artisan::call('migrate');
+        Artisan::call('migrate', array('--database' => 'test'));
+    }
+
+    /**
+     * Seed the db with required data
+     * This creates key entity and merchant entity
+     * This key can be used by default for most use-cases
+     * but you are not required to use it.
+     */
+    protected function seedDbWithDefaultEntities()
+    {
+        $apiMerchant = $this->createEntityInTestAndLive('merchant', ['id' => '134510ae166900007a9677a9']);
+        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '134510ae166900007a9677a9']);
+
+        $this->entities = array(
+            'pricing'     => $this->createDefaultPricingPlan(),
+            'merchant'    => $this->createEntityInTestAndLive('merchant', ['id' => '363e4efa820b0c06208ccd99']),
+            'terminal'    => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            'key'         => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            'balance'     => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
+            'transaction' => $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            );
     }
 
     /**

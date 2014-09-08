@@ -40,6 +40,7 @@ Models\Transaction\Entity:
     amount: 100
     currency: INR
     status: open
+    refund_status: none
     contact: $integer
     udf: array
 

@@ -135,7 +135,7 @@ class CaptureTest extends TestCase
 
         $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
-        $txn = $this->refundTransaction($txn['id']);
+        $refund = $this->refundTransaction($txn['id']);
 
         $this->txn = $txn;
 
