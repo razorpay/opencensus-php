@@ -98,3 +98,4 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
         };
       };
   }]);
+//Rest controllers loaded from /public/js/controllers/*.js by grunt

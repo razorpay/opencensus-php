@@ -59,6 +59,7 @@ module.exports = function(grunt){
 													'public/js/admin/app.js',
 													'public/js/services.js',
 													'public/js/admin/controllers.js',
+													'public/js/admin/controllers/*.js',
 													'public/js/filters.js',
 													'public/js/directives.js'
 											]
@@ -115,6 +116,7 @@ module.exports = function(grunt){
 													'public/js/admin/app.js',
 													'public/js/services.js',
 													'public/js/admin/controllers.js',
+													'public/js/admin/controllers/*.js',
 													'public/js/filters.js',
 													'public/js/directives.js'
 												]	
