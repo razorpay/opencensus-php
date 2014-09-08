@@ -75,7 +75,7 @@
                 <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
             </div>
           </script>
-          <button  class="btn btn-primary btn-rounded" ng-click="open(lg)">Capture Transaction</button>
+          <button  class="btn btn-primary btn-rounded" ng-click="open()">Capture Transaction</button>
         </span>
         </div>
         <button ng-show="transaction.status==='captured'" class="btn btn-primary btn-rounded" ng-confirm-click="Are you sure you want to refund this transaction?" ng-click="refund()">Refund Transaction</button>

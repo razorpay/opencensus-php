@@ -1,0 +1,161 @@
+//API keys listing and rolling controller
+app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost', '$modal',
+  function($scope, $http, modeFactory, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost, $modal){
+    $scope.mode = modeFactory.getMode();
+    //Intialise alerts and scope functions
+    $scope.alerts = alertsFactory.getHandler();
+
+    $scope.keys = {
+      data: {},
+      count: 0
+    };
+
+    fetchKeys();
+    
+    $scope.generateKey = function(){
+      $scope.alerts.addAlert('info', "Processing..", true);
+
+      var data = {
+        _token: CSRF_TOKEN
+      }
+
+      var request = $http({
+                    method: "post",
+                    url: "/" + modeFactory.getMode() + "/key/new",
+                    transformRequest: transformRequestAsFormPost,
+                    data: data
+      });
+
+      request
+      .success(function(data){
+        if(data.success){
+          $scope.alerts.addAlert('success', "Key Generated", true);
+          $scope.openNewKey({id: data.data.id, secret:data.data.secret});
+        }
+        else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.rollKey = function(data) {
+      var key_id = data[0];
+      var delay_roll = parseInt(data[1]);
+
+      if(!key_id) {
+        $scope.alerts.addAlert('danger', null, true);
+        return;
+      };
+
+      $scope.alerts.addAlert('info', 'Processing... ', true);
+      var data = {
+        _token: CSRF_TOKEN,
+        id: key_id,
+        delay_roll: delay_roll
+      }
+
+      var request = $http({
+                    method: "post",
+                    url: "/" + modeFactory.getMode() + "/keys",
+                    transformRequest: transformRequestAsFormPost,
+                    data: data
+                });
+
+      request.success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', "Key Rolled", true);
+          $scope.openNewKey({id: data.data.key_id, secret:data.data.secret});
+        }
+        else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      })
+      .error(function(){
+        $scope.alerts.resetAlerts();
+        $scope.alerts.addAlert('danger', null, true);
+      })
+    };
+
+    $scope.openRollKey = function (key_id) {
+      var modalInstance = $modal.open({
+        templateUrl: 'rollKeyModalContent.html',
+        controller: rollKeyModalCtrl,
+        resolve: {
+          key_id: function () {
+            return key_id;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function (data) {
+          $scope.rollKey(data);
+        },
+        function () {
+          ;
+        });
+    };
+
+    $scope.openNewKey = function (key) {
+      var modalInstance = $modal.open({
+        templateUrl: 'newKeyModalContent.html',
+        controller: newKeyModalCtrl,
+        backdrop: 'static',
+        resolve: {
+          key: function () {
+            return key;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function () {
+          fetchKeys();
+        },
+        function () {
+          ;
+        });
+    };
+
+    var rollKeyModalCtrl = function ($scope, $modalInstance, key_id) {
+      $scope.delay_roll = 1;
+      $scope.ok = function (delay_roll) {
+        $modalInstance.close([key_id, delay_roll]);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+    };
+
+    var newKeyModalCtrl = function ($scope, $modalInstance, key) {
+      $scope.key = key;
+      $scope.ok = function () {
+        $modalInstance.close();
+      };
+    };
+
+    function fetchKeys(){
+      $scope.alerts.addAlert('info', "Processing..", true);
+
+      var request = $http.get('/'+$scope.mode+'/keys');
+
+      request
+      .success(function(data){
+        $scope.alerts.resetAlerts();
+        if(data.success) {
+          $scope.keys.count = data.data.count;
+          $scope.keys.data = data.data.data;
+        }
+        else {
+          $scope.alerts.addAlert('danger');
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      })
+    }
+}]);
