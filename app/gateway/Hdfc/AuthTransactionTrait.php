@@ -201,9 +201,7 @@ trait AuthTransactionTrait
     {
         $response = &$this->authNotEnrolledResponse;
 
-        $response['data']['processed'] = ($response['data']['result'] == 'APPROVED') ? 1 : 0;
-
-        if ($response['data']['processed'])
+        if ($this->error === false)
         {
             $this->trace(
                 Trace::INFO,

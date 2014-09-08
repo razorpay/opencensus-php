@@ -38,6 +38,9 @@ class RefundTest extends TestCase
 
     public function testRefund()
     {
+        $txn = $this->defaultAuthTransaction();
+        $txn = $this->captureTransaction($txn['id'], $txn['amount']);
+
         $refund = $this->startTest();
 
         $this->assertEquals(substr($refund['id'], 0, 5), 'rfnd-');
@@ -47,12 +50,15 @@ class RefundTest extends TestCase
 
     public function testMultipleRefunds()
     {
-        $this->refundTransaction($this->txn['id'], 10000);
-        $this->refundTransaction($this->txn['id'], 20000);
-        $this->refundTransaction($this->txn['id'], 12000);
-        $this->refundTransaction($this->txn['id'], 8000);
+        $txn = $this->defaultAuthTransaction();
+        $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/'.$this->txn['id'];
+        $this->refundTransaction($txn['id'], 10000);
+        $this->refundTransaction($txn['id'], 20000);
+        $this->refundTransaction($txn['id'], 12000);
+        $this->refundTransaction($txn['id'], 8000);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/'.$txn['id'];
 
         return $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
@@ -64,17 +70,23 @@ class RefundTest extends TestCase
 
     public function testMultipleRefundsWithHigherAmount()
     {
-        $this->refundTransaction($this->txn['id'], 10000);
-        $this->refundTransaction($this->txn['id'], 20000);
+        $txn = $this->defaultAuthTransaction();
+        $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
-        $this->startTest($this->txn['id'], 30000);
+        $this->refundTransaction($txn['id'], 10000);
+        $this->refundTransaction($txn['id'], 20000);
+
+        $this->startTest($txn['id'], 30000);
     }
 
     public function testRefundOnRefundedTransaction()
     {
-        $this->refundTransaction($this->txn['id']);
+        $txn = $this->defaultAuthTransaction();
+        $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
-        $this->startTest($this->txn['id'], 100);
+        $this->refundTransaction($txn['id']);
+
+        $this->startTest($txn['id'], 100);
     }
 
     public function testRefundOnAuthorizedTransaction()
