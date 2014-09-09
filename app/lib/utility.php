@@ -109,11 +109,19 @@ if (! function_exists('print_last_query'))
     }
 }
 
-if (! function_exists('sdd'))
+if (! function_exists('sddb'))
 {
-    function sdd($limit = 0)
+    function sddb($limit = 0)
     {
         sd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
+    }
+}
+
+if (! function_exists('sdb'))
+{
+    function sdb($limit = 0)
+    {
+        s(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
     }
 }
 
