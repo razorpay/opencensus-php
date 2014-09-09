@@ -353,6 +353,8 @@ class Gateway extends BaseGateway
         // Create xml from the fields
         $request['xml'] = Utility::createXml($request['data']);
 
+        $this->requestVar = $request;
+
         try
         {
             // send the request and get response
@@ -383,7 +385,7 @@ class Gateway extends BaseGateway
         }
 
         $response['xml'] = $response['response']->body;
-
+//sd($response);
         $this->repo->saveXml($this->id, $response['xml'], $response['type']);
 
         $this->checkResponseStatusCode($response);

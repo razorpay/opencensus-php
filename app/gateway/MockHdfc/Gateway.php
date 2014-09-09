@@ -13,19 +13,13 @@ use Requests;
 
 class Gateway extends Hdfc\Gateway
 {
-    protected $request;
-
-    protected $input;
-
-    protected $data = array();
-
-    protected $response = array();
-
     public function __construct()
     {
         parent::__construct();
 
         $this->request = \Request::getFacadeRoot();
+
+        $this->mockHdfcServer = \Config::get('gateway.mockhdfc_server');
     }
 
     public function generateMpr()
@@ -109,156 +103,60 @@ class Gateway extends Hdfc\Gateway
         (new MockHdfc\Repository)->saveOrFail($mprGenerator);
     }
 
-    public function gatewayTransaction()
+    protected function sendGatewayRequest($request)
     {
-        $action = Hdfc\Utility::getFieldFromXML($this->input, 'action');
-
-        switch ($action)
+        if ($this->mockHdfcServer)
         {
-            case Action::AUTHORIZE:
-                $xml = $this->authNotEnrolledOnGateway();
+            $request['url'] = $this->getMockRequestUrl($request['url']);
+
+            return parent::sendGatewayRequest($request);
+        }
+        else
+        {
+            $serverResponse = $this->callGatewayRequestFunctionInternally($request);
+
+            $response = new \Requests_Response();
+
+            $response->headers['Content-Type']  = 'application/xml; charset=UTF-8';
+            $response->headers['Cache-Control']  = 'no-cache';
+
+            $response->body = $serverResponse->getContent();
+            $response->status_code = 200;
+            $response->success = true;
+            // @todo: add url to response var
+
+            return $response;
+        }
+    }
+
+    protected function callGatewayRequestFunctionInternally($requestVar)
+    {
+        $server = new Server();
+        $server->setInput($requestVar['xml']);
+
+        $response = null;
+
+        switch($requestVar['type'])
+        {
+            case 'enroll':
+                $response = $server->enroll();
                 break;
 
-            case Action::CAPTURE:
-                $xml = $this->captureTransactionOnGateway();
+            case 'auth_enrolled':
+                $response = $server->authEnrolled();
                 break;
 
-            case Action::REFUND:
-                $xml = $this->refundTransactionOnGateway();
+            case 'auth_not_enrolled':
+            case 'capture':
+            case 'refund':
+                $response = $server->gatewayTransaction();
                 break;
 
             default:
-                throw new Exception\LogicException(
-                    'MockHdfc: Action code not recognized. Action: ' . $this->data['action']);
+                throw new Exception\LogicException('Unrecognized request type: ' . $requestVar['type']);
         }
 
-        return $this->makeResponse($xml);
-    }
-
-    public function enroll()
-    {
-        $this->processInput('enroll');
-
-        $iin = substr($this->data['card'], 0, 6);
-
-        $network = Card\Network::detectNetwork($iin);
-
-        $eci = null;
-        if (($network === Card\Network::VISA) or
-            ($network === Card\Network::DICL))
-            $eci = 6;
-
-        if (($network === Card\Network::MC) or
-            ($network === Card\Network::MAES))
-            $eci = 1;
-
-        $paymentId = random_integer(16);
-
-        $res = array(
-            'result'    => 'NOT ENROLLED',
-            'eci'       => $eci,
-            'paymentid' => $paymentId,
-            'trackid'   => $this->data['trackid'],
-            'PAReq'     => 'abcsafsf');
-
-        $this->copyUdfValues($res);
-
-        $xml = Hdfc\Utility::createXml($res);
-
-        return $this->makeResponse($xml);
-    }
-
-    public function authEnrolled()
-    {
-        $this->processInput();
-    }
-
-    protected function authNotEnrolledOnGateway()
-    {
-        $this->processInput('authNotEnrolled');
-
-        $res = array(
-            'result'    => 'APPROVED',
-            'auth'      => '999999',
-            'ref'       => random_integer(12),
-            'avr'       => 'N',
-            'postdate'  => $this->getPostDateForToday(),
-            'tranid'    => random_integer(15),
-            'trackid'   => $this->data['trackid'],
-            'payid'     => -1,
-            'amt'       => $this->data['amt']);
-
-        $this->copyUdfValues($res);
-
-        $xml = Hdfc\Utility::createXml($res);
-
-        return $this->makeResponse($xml);
-    }
-
-    protected function makeResponse($xml)
-    {
-        $response = \Response::make($xml);
-
-        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
-
         return $response;
-    }
-
-    protected function captureTransactionOnGateway()
-    {
-        $this->processInput('supportTxn');
-
-        $res = array(
-            'result'    => 'CAPTURED',
-            'auth'      => '999999',
-            'ref'       => random_integer(12),
-            'avr'       => 'N',
-            'postdate'  => $this->getPostDateForToday(),
-            'tranid'    => random_integer(15),
-            'trackid'   => $this->data['trackid'],
-            'payid'     => -1,
-            'amt'       => $this->data['amt']);
-
-        $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
-        $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
-
-        $xml = Hdfc\Utility::createXml($res);
-
-        return $xml;
-    }
-
-    protected function refundTransactionOnGateway()
-    {
-        $this->processInput('supportTxn');
-
-        $res = array(
-            'result'    => 'CAPTURED',
-            'auth'      => '999999',
-            'ref'       => random_integer(12),
-            'avr'       => 'N',
-            'postdate'  => $this->getPostDateForToday(),
-            'tranid'    => random_integer(15),
-            'trackid'   => $this->data['trackid'],
-            'payid'     => -1,
-            'amt'       => $this->data['amt']);
-
-        $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
-        $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
-
-        $xml = Hdfc\Utility::createXml($res);
-
-        return $xml;
-    }
-
-    protected function sendGatewayRequest($request)
-    {
-        $request['url'] = $this->getMockRequestUrl($request['url']);
-
-        return Requests::post(
-                    $request['url'],
-                    $request['header'],
-                    $request['xml'],
-                    $request['options']);
     }
 
     protected function getMockRequestUrl($url)
@@ -292,38 +190,13 @@ class Gateway extends Hdfc\Gateway
         return $url;
     }
 
-    public function setInput($input)
+    public function getRequestFields($name)
     {
-        $this->input = $input;
-    }
-
-    protected function processInput($name)
-    {
-        $input = $this->input;
-
         $var = $name.'Request';
 
         $array = $this->$var;
         $fields = $array['fields'];
 
-        Hdfc\Utility::getFieldsFromXML(
-            $input,
-            $fields,
-            $this->data);
-    }
-
-    protected function copyUdfValues(array & $res)
-    {
-        $r = range(1, 5);
-
-        foreach ($r as $i)
-        {
-            $res['udf'.$i] = $this->data['udf'.$i];
-        }
-    }
-
-    protected function getPostDateForToday()
-    {
-        return (new Carbon('now', 'Asia/Kolkata'))->format('md');
+        return $fields;
     }
 }

@@ -83,7 +83,7 @@ class ErrorHandler
 
         $response['error'] = self::getErrorDetails($code);
 
-        $response['error']['text'] .= ' stautus_code: ' . $status_code;
+        $response['error']['text'] .= ' status_code: ' . $status_code;
     }
 
     public static function setGatewayWrongContentType(array & $response, $contentType)

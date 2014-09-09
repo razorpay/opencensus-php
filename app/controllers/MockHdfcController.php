@@ -6,30 +6,24 @@ class MockHdfcController extends BaseController
     {
         parent::__construct();
 
-        $this->mockHdfcGateway = new Gateway\MockHdfc\Gateway;
+        $this->mockHdfcGatewayServer = new Gateway\MockHdfc\Server;
 
         $input = file_get_contents('php://input');
-        $this->mockHdfcGateway->setInput($input);
+        $this->mockHdfcGatewayServer->setInput($input);
     }
 
     public function enroll()
     {
-        $input = Input::all();
-
-        return $this->mockHdfcGateway->enroll($input);
+        return $this->mockHdfcGatewayServer->enroll();
     }
 
     public function transaction()
     {
-        $input = Input::all();
-
-        return $this->mockHdfcGateway->gatewayTransaction($input);
+        return $this->mockHdfcGatewayServer->gatewayTransaction();
     }
 
     public function authEnrolled()
     {
-        $input = Input::all();
-
-        return $this->mockHdfcGateway->authEnrolled($input);
+        return $this->mockHdfcGatewayServer->authEnrolled();
     }
 }

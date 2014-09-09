@@ -15,4 +15,6 @@ return array(
         'mock',
         'mockhdfc',
         'hdfc'),
+
+    'mockhdfc_server' => false,
 );
