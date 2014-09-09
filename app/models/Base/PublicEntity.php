@@ -11,7 +11,7 @@ class PublicEntity extends UniqueIdEntity
 
     protected static $sign = '';
 
-    private static $delimiter = '-';
+    protected static $delimiter = '-';
 
     /**
      * For an entity which is being exposed outside,
@@ -37,21 +37,33 @@ class PublicEntity extends UniqueIdEntity
         return $this->arrangePublicAttributes($array);
     }
 
+    /**
+     * Create a new Eloquent Collection instance.
+     *
+     * @param  array  $models
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function newCollection(array $models = array())
+    {
+        return new PublicCollection($models);
+    }
+
     public function setPublicAttributes(array & $array)
     {
         foreach ($this->publicSetters as $attr)
         {
-            $func = 'setPublic'.ucfirst($attr);
+            $func = 'setPublic'.ucfirst($attr).'Attribute';
+
             $this->$func($array);
         }
     }
 
-    public function setPublicId(array & $array)
+    public function setPublicIdAttribute(array & $array)
     {
         $array[self::ID] = $this->getPublicId();
     }
 
-    public function setPublicEntity(array & $array)
+    public function setPublicEntityAttribute(array & $array)
     {
         $array[self::ENTITY] = $this->entity;
     }

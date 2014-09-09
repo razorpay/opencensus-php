@@ -65,6 +65,11 @@ class Service extends Base\Service
         return $refund->toArrayPublic();
     }
 
+    public function retrieveMultipleRefunds($input)
+    {
+        ;
+    }
+
     public function retrieveRefundByIdAndTransactionId($id, $txnId)
     {
         $refund = $this->core->retrieveByIdAndMerchantId(
@@ -81,16 +86,7 @@ class Service extends Base\Service
 
         $refunds = (new Refund\Repository)->findForTransaction($txnId);
 
-        $count = count($refunds);
-
-        $collection = $refunds->transform(function($refund)
-        {
-            return $refund->toArrayPublic();
-        });
-
-        $refunds = $collection->all();
-
-        return array('count' => $count, 'data' => $refunds, 'entity' => 'collection');
+        return $refunds->toArrayPublic();
     }
 
     /**
@@ -132,16 +128,7 @@ class Service extends Base\Service
     {
         $txns = (new Transaction\Repository)->fetch($input);
 
-        $count = count($txns);
-
-        $collection = $txns->transform(function($txn)
-        {
-            return $txn->toArrayPublic();
-        });
-
-        $txns = $collection->all();
-
-        return array('count' => $count, 'data' => $txns, 'entity' => 'collection');
+        return $txns->toArrayPublic();
     }
 
     public function retrieveByIdAndMerchantId($id, $merchantId)

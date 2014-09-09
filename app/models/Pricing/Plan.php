@@ -2,7 +2,9 @@
 
 namespace Models\Pricing;
 
-class Plan extends \Illuminate\Database\Eloquent\Collection
+use Illuminate\Database\Eloquent\Collection;
+
+class Plan extends Collection
 {
     const ID = 'id';
     const COUNT = 'count';
