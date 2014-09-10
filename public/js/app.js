@@ -90,16 +90,29 @@ var app = angular.module('app', [
                 templateUrl: 'tpl/app_transactions.html',
                 // use resolve to load other dependences
             })
-            .state('app.transactions.refunds', {
-                url: '/refunded',
-                templateUrl: 'tpl/app_refunds.html',
-                data: {
-                  status: 'refunded'
-                }
-            })
             .state('app.transactions.detail', {
                 url: '/:id',
                 templateUrl: 'tpl/app_transaction_detail.html'
+            })
+            .state('app.refunds', {
+                url: '/refunds',
+                template: '<div ui-view class="fade-in-down"></div>',
+                // use resolve to load other dependences
+                resolve: {
+                    deps: ['uiLoad',
+                      function( uiLoad ){
+                        return uiLoad.load( ['js/libs/moment.min.js']);
+                    }]
+                }
+            })
+            .state('app.refunds.list', {
+                url: '/list',
+                templateUrl: 'tpl/app_refunds.html',
+                // use resolve to load other dependences
+            })
+            .state('app.refunds.detail', {
+                url: '/:id',
+                templateUrl: 'tpl/app_refund_detail.html'
             })
             .state('app.settlements', {
                 url: '/settlements',
