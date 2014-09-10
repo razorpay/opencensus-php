@@ -8,6 +8,8 @@ use Models\Transaction\Refund;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryFetchMultiple;
+
     protected $entity = 'Refund';
 
     public function findOrFailPublicByParams($id, $merchantId, $txnId = null)

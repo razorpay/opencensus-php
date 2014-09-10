@@ -8,76 +8,9 @@ use Models\Transaction;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryFetchMultiple;
+
     protected $entity = 'Transaction';
-
-    private static $fetchParamRules = array(
-        'created'       => 'numeric',
-        'from'          => 'numeric',
-        'to'            => 'numeric',
-        'count'         => 'numeric|max:100',
-        'skip'          => 'numeric',
-        'merchant_id'   => 'required',
-        'status'        => 'in:open,authorized,captured,refunded,failed');
-
-    /**
-     * Retrieves the transactions from database for a particular merchant.
-     * @param  array        $param
-     * @return Collection   A collection of transactions
-     */
-    public function fetch($param)
-    {
-        if ($param === null)
-        {
-            throw new Exception\InvalidArgumentException('$param not provided');
-        }
-        self::validateFetchParams($param);
-
-        $cols = array();
-
-        /*
-         * Create the query.
-         */
-        $repo = $this->repo;
-        $query = $repo::where(Transaction\Entity::MERCHANT_ID, '=', $param['merchant_id']);
-
-        if (isset($param['from']))
-        {
-            $query = $query->where(Transaction\Entity::UPDATED_AT, '>=', $param['from']);
-        }
-
-        if (isset($param['to']))
-        {
-            $query = $query->where(Transaction\Entity::UPDATED_AT, '<=', $param['to']);
-        }
-
-        if (isset($param['status']))
-        {
-            $query = $query->where(Transaction\Entity::STATUS, '=', $param['status']);
-        }
-
-        if (isset($param['count']))
-        {
-            $query->take($param['count']);
-        }
-        else
-        {
-            $query->take(10);
-        }
-
-        if (isset($param['skip']))
-        {
-            $query->skip($param['skip']);
-        }
-
-        $query->orderBy(Transaction\Entity::ID, 'desc');
-
-        return $query->with('card')->get();
-    }
-
-    public static function validateFetchParams(array $param)
-    {
-        validate(self::$fetchParamRules, $param);
-    }
 
     public function findByIdAndMerchantId($id, $merchantId, $failPublic = true)
     {
