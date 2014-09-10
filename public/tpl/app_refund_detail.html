@@ -1,0 +1,30 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">Refund Detail</h1>
+</div>
+<div class="wrapper-md" ng-controller="RefundDetailCtrl">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Refund: <strong>{{refund.id}}</strong>
+    </div>
+    <div class="row wrapper">
+      <div class="list-group">
+        <a ui-sref="app.transactions.detail({id:refund.transaction_id})" class="list-group-item">
+          <span class="pull-right">{{refund.transaction_id}}</span>
+          Transaction
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{refund.amount/100 | currency:""}}</span>
+          Amount
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{refund.currency}}</span>
+          Currency
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{refund.created_at*1000 | fromNow}} ({{refund.created_at*1000 | date : 'medium'}})</span>
+          Created At
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -35,7 +35,7 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in refunds.data">
-            <td>{{row.id}}</a></td>
+            <td><a ui-sref="app.refunds.detail({id:row.id})">{{row.id}}</a></td>
             <td><a ui-sref="app.transactions.detail({id:row.transaction_id})">{{row.transaction_id}}</a></td>
             <td>{{row.currency}}
             <td>{{row.amount/100 | currency:""}}</td>
