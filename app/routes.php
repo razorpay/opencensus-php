@@ -36,6 +36,10 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
 
+    Route::get('/{mode}/refunds', 'RefundController@getRefunds');
+
+    Route::get('/{mode}/refunds/{id}', 'RefundController@getRefund');
+
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
 
     Route::get('/keys/csv', 'MerchantController@getCsv');
