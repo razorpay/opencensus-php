@@ -131,9 +131,6 @@ trait SupportTransactionTrait
 
         $data = &$this->supportTxnRequest['data'];
 
-        // Collect credentials
-        list($data['id'], $data['password']) = static::getCredentials();
-
         $type = $this->supportTxnRequest['type'];
 
         $action = constant(__NAMESPACE__.'\Action::'.strtoupper($type));

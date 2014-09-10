@@ -139,6 +139,7 @@ class Gateway extends Hdfc\Gateway
         switch($requestVar['type'])
         {
             case 'enroll':
+                $this->handleTimeoutSpecialCase();
                 $response = $server->enroll();
                 break;
 
@@ -198,5 +199,17 @@ class Gateway extends Hdfc\Gateway
         $fields = $array['fields'];
 
         return $fields;
+    }
+
+    protected function handleTimeoutSpecialCase()
+    {
+        if ((isset($this->enrollRequest['data']['card'])) and
+            ($this->enrollRequest['data']['card'] === '4012001036275556'))
+        {
+            throw new \Requests_Exception(
+                'cURL error 28: Operation timed out after ' .
+                '10 ' . Hdfc\Config::TIMEOUT . '001 milliseconds with 0 bytes received', 'curlerror');
+
+        }
     }
 }

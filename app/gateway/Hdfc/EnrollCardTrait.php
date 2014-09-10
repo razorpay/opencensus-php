@@ -91,9 +91,6 @@ trait EnrollCardTrait
 
         $data = &$this->enrollRequest['data'];
 
-        // Collect creds
-        list($data['id'], $data['password']) = static::getCredentials();
-
         $data['trackid'] = $txn['id'];
 
         // Convert amount from integer to decimal

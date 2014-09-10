@@ -251,7 +251,7 @@ class Gateway extends BaseGateway
         $this->repo = new Hdfc\Repository();
     }
 
-    public static function getCredentials()
+    public function getCredentials()
     {
         $creds = Hdfc\Config::getCreds();
 
@@ -385,7 +385,7 @@ class Gateway extends BaseGateway
         }
 
         $response['xml'] = $response['response']->body;
-//sd($response);
+//s($response['xml']);
         $this->repo->saveXml($this->id, $response['xml'], $response['type']);
 
         $this->checkResponseStatusCode($response);
@@ -563,7 +563,7 @@ class Gateway extends BaseGateway
         $exception->setGatewayErrorCodeAndDesc(
             $code,
             $desc);
-
+//sd(get_class($exception));
         throw $exception;
     }
 
