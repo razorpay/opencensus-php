@@ -196,17 +196,21 @@ class BasicAuth
             return;
         }
 
-        // If we have a valid key, then send route not found
-        // since we don't want to give away internal routes.
-        // Otherwise say key not valid
-        if ($this->verifyKeyExistence() === false)
+        // Say invalid route for whenever
+        // appAuth authentication fails
+        return ApiResponse::routeNotFound();
+    }
+
+    public function proxyAuth()
+    {
+        if ($this->verifyInternalAppAsProxy() === true)
         {
-            return $this->invalidApiKey();
+            $this->setType(Type::APP_AUTH);
+
+            return;
         }
-        else
-        {
-            return ApiResponse::routeNotFound();
-        }
+
+        return ApiResponse::routeNotFound();
     }
 
 // --------------------- Basic Auths Ends --------------------------------------

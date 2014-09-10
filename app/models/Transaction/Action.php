@@ -148,7 +148,7 @@ class Action
     protected function traceTransactionFailed($error, $traceCode)
     {
         $traceData = array_merge(
-                        $txn->toArrayTraceRelevant(),
+                        $this->txn->toArrayTraceRelevant(),
                         ['error' => $error->getAttributes()]);
 
         // Tracing

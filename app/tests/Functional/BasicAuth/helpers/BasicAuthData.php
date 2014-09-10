@@ -39,18 +39,15 @@ return [
         ]
     ],
 
-    'testAppRoutesWithAppAuth' => [
+    'testAppRoutesWithInvalidPrivateAuth' => [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
                 ]
             ],
             'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'Exception',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
     ],
 

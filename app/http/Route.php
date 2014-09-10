@@ -85,12 +85,15 @@ final class Route
         'pricing_get_plan',
         'pricing_get_plan_rule',
         'hdfc_mpr',
-        'refund_fetch_by_id',
-        'refund_fetch_multiple',
-        'ledger_fetch',
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
         'mockhdfc_transaction',
+        );
+
+    public static $proxy = array(
+        'refund_fetch_by_id',
+        'refund_fetch_multiple',
+        'ledger_fetch',
         );
 
     protected static $router;
@@ -157,6 +160,11 @@ final class Route
             $router->group(array('before' => 'auth.public'), function()
             {
                 self::addRoutes('public');
+            });
+
+            $router->group(array('before' => 'auth.proxy'), function()
+            {
+                self::addRoutes('proxy');
             });
         });
 

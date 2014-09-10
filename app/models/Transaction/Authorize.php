@@ -2,14 +2,15 @@
 
 namespace Models\Transaction;
 
+use BasicAuth;
+use EE\Exception;
 use Http\Route;
 use Models\Card;
 use Models\Transaction;
+use Request;
 use Trace\Trace;
 use Trace\TraceCode;
 
-use BasicAuth;
-use Request;
 
 class Authorize extends Action
 {
@@ -20,6 +21,7 @@ class Authorize extends Action
         $this->traceTransactionNewRequest($input);
 
         list($txn, $cardData) = $this->createEntitites($input);
+        $this->txn = $txn;
 
         $this->trace(TraceCode::TRANSACTION_CREATED, Trace::DEBUG);
 
@@ -131,9 +133,9 @@ class Authorize extends Action
 
             return $callbackData;
         }
-        catch(BaseException $e)
+        catch(Exception\BaseException $e)
         {
-            $this->core->updateTransactionFailed(
+            $this->updateTransactionFailed(
                     $e->getError(),
                     TraceCode::TRANSACTION_AUTH_FAILURE);
 
