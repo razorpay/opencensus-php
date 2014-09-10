@@ -144,12 +144,14 @@
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Transactions</h4>
             <div class=" m-b">
               <div class="m-b" ng-repeat="row in transactions.data | limitTo: 5">
-                <span class="label text-base" tooltip="{{row.status}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
-                  <a ui-sref="app.transactions.detail({id:row.id})">{{row.amount | currency:row.currency + " "}}</a>
-                </span>&nbsp;&nbsp;&nbsp;&nbsp;{{row.id}}
-                <span class="pull-right">
-                  {{row.created_at*1000 | fromNow}}
-                </span>
+                <a ui-sref="app.transactions.detail({id:row.id})">
+                  <span class="label text-base" tooltip="{{row.status}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
+                    {{row.amount | currency:row.currency + " "}}
+                  </span>&nbsp;&nbsp;&nbsp;&nbsp;{{row.id}}
+                  <span class="pull-right">
+                    {{row.created_at*1000 | fromNow}}
+                  </span>
+                </a>
               </div>
             </div>
           </div>
@@ -158,12 +160,14 @@
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Refunds</h4>
             <div class=" m-b">
               <div class="m-b" ng-repeat="row in refunds.data | limitTo: 5">
-                <span class="label text-base bg-warning" tooltip="Refunded" tooltip-placement="right">
-                  <a ui-sref="app.refunds.detail({id:row.id})">{{row.amount | currency:row.currency + " "}}</a>
-                </span>&nbsp;&nbsp;&nbsp;&nbsp;{{row.id}}
-                <span class="pull-right">
-                  {{row.created_at*1000 | fromNow}}
-                </span>
+                <a ui-sref="app.refunds.detail({id:row.id})">
+                  <span class="label text-base bg-warning" tooltip="Refunded" tooltip-placement="right">
+                  {{row.amount | currency:row.currency + " "}}
+                  </span>&nbsp;&nbsp;&nbsp;&nbsp;{{row.id}}
+                  <span class="pull-right">
+                    {{row.created_at*1000 | fromNow}}
+                  </span>
+                </a>
               </div>
             </div>
           </div>
