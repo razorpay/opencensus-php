@@ -92,7 +92,7 @@ var app = angular.module('app', [
             })
             .state('app.transactions.refunds', {
                 url: '/refunded',
-                templateUrl: 'tpl/app_transactions.html',
+                templateUrl: 'tpl/app_refunds.html',
                 data: {
                   status: 'refunded'
                 }
