@@ -31,11 +31,7 @@ class TransactionRetrieveTest extends TestCase
 
     protected function retrieveTransactionsDefault()
     {
-        $response = $this->makeRequest($this->request);
-
-        $content = $response->getContent();
-
-        return json_decode($content);
+        return $this->makeRequestAndGetContent($this->request);
     }
 
     /**
@@ -49,14 +45,7 @@ class TransactionRetrieveTest extends TestCase
     {
         //GIVEN - Nothing
         //WHEN
-        $response = $this->makeRequest($this->request);
-
-        $content = $response->getContent();
-
-        //THEN
-        $this->assertJson($content);
-
-        $transactions = json_decode($content, true);
+        $content = $this->makeRequestAndGetContent($this->request);
     }
 
     /**
@@ -67,46 +56,29 @@ class TransactionRetrieveTest extends TestCase
         $transactions = $this->retrieveTransactionsDefault();
 
         //GIVEN
-        $id = $transactions->data[0]->id;
+        $id = $transactions['data'][0]['id'];
 
         //WHEN
         $request = $this->request;
         $request['url'] .= '/'.$id;
 
-        $response = $this->makeRequest($request);
-
-        $content = $response->getContent();
-
-        //THEN
-        $this->assertJson($content);
-
-        $transaction = json_decode($content, true);
+        $transaction = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($id, $transaction['id']);
     }
 
-    /**
-     * @group testRetrieveTransactionWithStatusAndCount
-     */
-    public function testRetrieveTransactionWithStatusAndCount()
+    public function testRetrieveTransactionWithCount()
     {
         $transactions = $this->retrieveTransactionsDefault();
 
         //GIVEN
-        $status = $transactions->data[0]->status;
-        $id = $transactions->data[0]->id;
+        $status = $transactions['data'][0]['status'];
+        $id = $transactions['data'][0]['id'];
 
         $request = $this->request;
-        $request['content'] = array('count' => 1, 'status' => $status);
+        $request['content'] = array('count' => 1);
         //WHEN
-        $response = $this->makeRequest($request);
-//        $response = $this->call('GET', "/transactions/?count=1&status=".$status);
-        $content = $response->getContent();
-
-        //THEN
-        $this->assertJson($content);
-
-        $transaction = json_decode($content, true);
+        $transaction = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($id, $transaction['data'][0]['id']);
     }
@@ -117,10 +89,10 @@ class TransactionRetrieveTest extends TestCase
     public function testRetrieveTransactionsWithCreatedAt()
     {
         $transactions = $this->retrieveTransactionsDefault();
-        $id = $transactions->data[0]->id;
+        $id = $transactions['data'][0]['id'];
 
         //GIVEN
-        $created_at = $transactions->data[0]->created_at;
+        $created_at = $transactions['data'][0]['created_at'];
 
         //WHEN
         $response = $this->call('GET', "/v1/transactions/?created=".$created_at, array(), array(), $this->auth);

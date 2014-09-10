@@ -6,25 +6,16 @@ use Models\Transaction;
 
 class TransactionController extends BaseController
 {
-    protected $merchantId = null;
-
-    protected $merchant = null;
-
     protected $transaction;
 
     public function __construct()
     {
-        $this->merchant = BasicAuth::getMerchant();
-
-        $this->merchantId = $this->merchant->getKey();
-
         $this->transaction = new Transaction\Service();
     }
 
     public function getTransaction($id)
     {
-        $txn = $this->transaction->retrieveByIdAndMerchantId(
-                                        $id, $this->merchant->getKey());
+        $txn = $this->transaction->retrieveTransaction($id);
 
         return ApiResponse::json($txn);
     }
@@ -35,8 +26,6 @@ class TransactionController extends BaseController
     public function getTransactions()
     {
         $input = Input::all();
-
-        $input['merchant_id'] = $this->merchantId;
 
         $txns = $this->transaction->retrieveMultiple($input);
 
@@ -49,8 +38,6 @@ class TransactionController extends BaseController
     public function postCreateTransaction()
     {
         $input = Input::all();
-
-        $input['merchant_id'] = $this->merchantId;
 
         $data = $this->transaction->process($input);
 
@@ -76,8 +63,6 @@ class TransactionController extends BaseController
 
         unset($input['callback']);
         unset($input['_']);
-
-        $input['merchant_id'] = $this->merchantId;
 
         $txn = $this->transaction->process($input);
 
@@ -124,7 +109,9 @@ class TransactionController extends BaseController
         catch (RecoverableException $exception)
         {
             if (App::runningUnitTests())
+            {
                 throw $exception;
+            }
 
             $error = $exception->getError();
 
@@ -134,7 +121,9 @@ class TransactionController extends BaseController
         finally
         {
             if ($data !== null)
+            {
                 return View::make('gateway.callback')->with('data', $data);
+            }
         }
     }
 
@@ -143,5 +132,21 @@ class TransactionController extends BaseController
         $refunds = $this->transaction->retrieveRefundsForTransaction($txnId);
 
         return ApiResponse::json($refunds);
+    }
+
+    public function getRefund($id)
+    {
+        $refunds = $this->transaction->retrieveRefund($id);
+
+        return ApiResponse::json($refunds);
+    }
+
+    public function getRefunds()
+    {
+        $input = Input::all();
+
+        $refunds = $this->transaction->retrieveMultipleRefunds($input);
+
+        return ApiResponse::json($txns);
     }
 }

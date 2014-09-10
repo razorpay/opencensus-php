@@ -28,6 +28,8 @@ class Service extends Base\Service
      */
     public function process(array $input)
     {
+        $input['merchant_id'] = $this->merchant->getKey();
+
         $data = $this->getActionInstance(Transaction\Action::AUTHORIZE)
                      ->process($input);
 
@@ -67,7 +69,11 @@ class Service extends Base\Service
 
     public function retrieveMultipleRefunds($input)
     {
-        ;
+        $input['merchant_id'] = $this->merchant->getKey();
+
+        $refunds = (new Transaction\Refund\Repository)->fetch($input);
+
+        return $refunds->toArrayPublic();
     }
 
     public function retrieveRefundByIdAndTransactionId($id, $txnId)
@@ -126,14 +132,16 @@ class Service extends Base\Service
 
     public function retrieveMultiple(array $input)
     {
+        $input['merchant_id'] = $this->merchant->getKey();
+
         $txns = (new Transaction\Repository)->fetch($input);
 
         return $txns->toArrayPublic();
     }
 
-    public function retrieveByIdAndMerchantId($id, $merchantId)
+    public function retrieveTransaction($id)
     {
-        $txn = $this->core->retrieveByIdAndMerchantId($id, $merchantId);
+        $txn = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
 
         return $txn->toArrayPublic();
     }

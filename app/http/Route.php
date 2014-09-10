@@ -21,6 +21,7 @@ final class Route
         'transaction_fetch_refunds'         => ['get',  'transactions/{id}/refunds',            'TransactionController@getRefundsForTransaction'],
         'transaction_fetch_refund_by_id'    => ['get',  'transactions/{txnId}/refund/{rfndId}', 'TransactionController@getRefundByRefundAndTransactionId'],
         'refund_fetch_by_id'                => ['get',  'refunds/{id}',                         'TransactionController@getRefundById'],
+        'refund_fetch_multiple'             => ['get',  'refunds/{param?}',                     'TransactionController@getRefunds'],
         'merchant_create'                   => ['post', 'merchants',                            'MerchantController@postCreateMerchant'],
         'merchant_fetch'                    => ['get',  'merchants/{id}',                       'MerchantController@getMerchant'],
         'merchant_create_key'               => ['post', 'merchants/{id}/keys',                  'MerchantController@postCreateKeys'],
@@ -60,7 +61,6 @@ final class Route
         'transaction_fetch_multiple',
         'transaction_fetch_refunds',
         'transaction_fetch_refund_by_id',
-        'refund_fetch_by_id',
         );
 
     public static $internal = array(
@@ -84,6 +84,8 @@ final class Route
         'pricing_get_plan',
         'pricing_get_plan_rule',
         'hdfc_mpr',
+        'refund_fetch_by_id',
+        'refund_fetch_multiple',
         'ledger_fetch',
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
