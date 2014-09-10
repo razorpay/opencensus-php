@@ -10,18 +10,8 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
         count: 0,
         countStart: 0,
         countEnd: 0,
-        skip: 0,
-        from: 0,
-        to: 4102444800,
-        status: ''
+        skip: 0
     };
-
-
-    $scope.$watch('transactions.status', regenerate);
-
-    //@todo seperate refund controller later
-    //Used for refunds list display route
-    if($state.current.data.status) $scope.transactions.status = $state.current.data.status;
 
     generateTable();
     
@@ -49,7 +39,6 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
         open: "bg-light",
         authorized: "bg-info",
         captured: "bg-success",
-        refunded: "bg-warning",
         failed: "bg-danger"
       }
       return mapper[status];
@@ -72,12 +61,7 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
       $scope.alerts.addAlert('info', "Processing... ", true);
       var query =
         "count=10" +
-        "&skip="+ $scope.transactions.skip +
-        "&from="+ $scope.transactions.from +
-        "&to="+ $scope.transactions.to;
-
-      if($scope.transactions.status !== '')
-        query += "&status=" + $scope.transactions.status;
+        "&skip="+ $scope.transactions.skip;
 
       if($scope.transactions.id === '')
         var request = $http.get("/" + modeFactory.getMode() +  "/transactions?" + query);

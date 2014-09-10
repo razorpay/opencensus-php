@@ -10,18 +10,7 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="row wrapper">
-      <div class="col-sm-5 m-b-xs">
-        <label for="filter">Status: </label>
-        <select name="filter" class="input-sm form-control w-sm inline v-middle" ng-model="transactions.status">
-          <option value="">None</option>
-          <option value="open">Open</option>
-          <option value="authorized">Authorized</option>
-          <option value="captured">Captured</option>
-          <option value="refunded">Refunded</option>
-          <option value="failed">Failed</option>
-        </select>           
-      </div>
-      <div class="col-sm-4">
+      <div class="col-sm-9 m-b-xs">
       </div>
       <div class="col-sm-3">
         <div class="input-group">

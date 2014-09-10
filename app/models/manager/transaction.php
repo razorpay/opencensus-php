@@ -22,8 +22,7 @@ class Transaction extends Manager
         'from'          => 'numeric',
         'to'            => 'numeric',
         'count'         => 'numeric|max:100',
-        'skip'          => 'numeric',
-        'status'        => 'in:open,authorized,captured,refunded,failed'
+        'skip'          => 'numeric'
     );
 
     protected static $processRules = array(
