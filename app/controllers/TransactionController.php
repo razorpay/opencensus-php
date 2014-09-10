@@ -147,6 +147,6 @@ class TransactionController extends BaseController
 
         $refunds = $this->transaction->retrieveMultipleRefunds($input);
 
-        return ApiResponse::json($txns);
+        return ApiResponse::json($refunds);
     }
 }
