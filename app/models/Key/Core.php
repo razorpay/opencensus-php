@@ -2,11 +2,27 @@
 
 namespace Models\Key;
 
+use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Key;
 
 class Core
 {
-    protected $key = null;
+    public function createFirstKey($merchantId, $mode)
+    {
+        $repo = new Key\Repository;
+
+        $keys = $repo->getKeysForMerchant($merchantId);
+
+        if (count($keys) > 0)
+        {
+            throw new Exception\BadRequestException(
+                null,
+                ErrorCode::BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED);
+        }
+
+        return $this->createAndReturnWithSecret($merchantId, $mode);
+    }
 
     /**
      * Creates a key and saves to db.
@@ -18,11 +34,16 @@ class Core
      */
     public function createAndReturnWithSecret($merchantId, $mode)
     {
+        $repo = new Key\Repository;
+
         $key = new Key\Entity();
+
         $key->setMerchantId($merchantId);
 
+        // Generate secret which will be returned to merchant
         $secret = $key->generateSecret();
-        (new Key\Repository)->saveOrFail($key);
+
+        $repo->saveOrFail($key);
 
         $keyData = $key->toArrayPublic();
         $keyData[Key\Entity::SECRET] = $secret;

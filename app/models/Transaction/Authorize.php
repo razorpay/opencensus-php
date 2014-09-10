@@ -15,6 +15,8 @@ class Authorize extends Action
 {
     public function process($input)
     {
+        $input['merchant_id'] = $this->merchant->getKey();
+
         $this->traceTransactionNewRequest($input);
 
         list($txn, $cardData) = $this->createEntitites($input);

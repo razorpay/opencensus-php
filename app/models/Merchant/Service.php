@@ -47,20 +47,18 @@ class Service extends Base\Service
         return array_merge($merchant->toArray(), ['entity' => 'merchant']);
     }
 
+    public function fetchMultiple($input)
+    {
+        $merchants = $this->repo->fetchMultiple($input);
+
+        return $merchants->toArray();
+    }
+
     public function createKey($merchantId)
     {
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
-        $keys = (new Key\Repository)->getKeysForMerchant($merchantId);
-
-        if (count($keys) > 0)
-        {
-            throw new Exception\BadRequestException(
-                null,
-                ErrorCode::BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED);
-        }
-
-        $keyData = (new Key\Core)->createAndReturnWithSecret($merchantId, $this->mode);
+        $keyData = (new Key\Core)->createFirstKey($merchantId, $this->mode);
 
         return $keyData;
     }

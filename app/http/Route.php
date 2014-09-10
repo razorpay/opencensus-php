@@ -24,6 +24,7 @@ final class Route
         'refund_fetch_multiple'             => ['get',  'refunds/{param?}',                     'TransactionController@getRefunds'],
         'merchant_create'                   => ['post', 'merchants',                            'MerchantController@postCreateMerchant'],
         'merchant_fetch'                    => ['get',  'merchants/{id}',                       'MerchantController@getMerchant'],
+        'merchant_fetch_multiple'           => ['get',  'merchants/{param?}',                   'MerchantController@getMerchants'],
         'merchant_create_key'               => ['post', 'merchants/{id}/keys',                  'MerchantController@postCreateKeys'],
         'merchant_fetch_keys'               => ['get',  'merchants/{id}/keys',                  'MerchantController@getKeys'],
         'merchant_replace_key'              => ['put',  'merchants/{merchantId}/keys/{keyId}',  'MerchantController@putKeys'],

@@ -10,8 +10,11 @@ use Models\Merchant;
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryFetchMultiple;
 
     protected $entity = 'Merchant';
+
+//    protected $merchantIdRequiredForMultipleFetch = false;
 
     public function getBalanceLockForUpdate($id)
     {

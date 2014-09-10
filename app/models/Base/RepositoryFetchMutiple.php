@@ -11,15 +11,18 @@ trait RepositoryFetchMultiple
         'from'          => 'numeric',
         'to'            => 'numeric',
         'count'         => 'numeric|max:100',
-        'skip'          => 'numeric',
-        'merchant_id'   => 'required');
+        'skip'          => 'numeric');
+
+    protected $params = array();
+
+    protected $merchantIdRequiredForMultipleFetch = true;
 
     /**
      * Retrieves the entities according to given fetch params
      * @params array        $params
      * @return Collection   A collection of entities
      */
-    public function fetch($params)
+    public function fetch($params, $merchantId = null)
     {
         if ($params === null)
         {
@@ -35,7 +38,16 @@ trait RepositoryFetchMultiple
          */
         $repo = $this->repo;
 
-        $query = $repo::where(Common::MERCHANT_ID, '=', $params['merchant_id']);
+        if (($this->merchantIdRequiredForMultipleFetch) and
+            ($merchantId === null))
+        {
+            throw new Exception\InvalidArgumentException('Merchant Id is required for fetch query');
+        }
+
+        if ($merchantId !== null)
+        {
+            $query = $repo::where(Common::MERCHANT_ID, '=', $merchantId);
+        }
 
         if (isset($params['from']))
         {
@@ -66,7 +78,7 @@ trait RepositoryFetchMultiple
         return $query->get();
     }
 
-    public function validateFetchParams(array $params)
+    protected function validateFetchParams(array $params)
     {
         validate(self::$fetchParamRules, $params);
     }
