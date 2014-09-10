@@ -23,7 +23,7 @@ class Repository extends Base\Repository
             $query->where(Refund\Entity::TRANSACTION_ID, '=', $txnId);
         }
 
-        $query->findOrFailPublic($id);
+        return $query->findOrFailPublic($id);
     }
 
     public function findForTransaction($txnId)
