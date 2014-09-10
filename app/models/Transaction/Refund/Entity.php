@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::ID,
+        self::TRANSACTION_ID, 
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
