@@ -39,12 +39,7 @@ class CreateTransactions  extends Migration
             $table->integer(Transaction::AMOUNT)
                   ->unsigned();
 
-            $table->enum(Transaction::STATUS, array(
-                                        'open',
-                                        'authorized',
-                                        'captured',
-                                        'failed'
-                                        ));
+            $table->string(Transaction::STATUS);
 
             $table->string(Transaction::REFUND_STATUS)
                   ->default('none');
