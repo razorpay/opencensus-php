@@ -62,8 +62,10 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'mod
 
       var refundAmount = parseInt(amount);
 
-      if(!refundAmount){
-        $scope.alerts.addAlert('danger', 'Invalid refund amount', true);
+      var unrefundedAmount = parseInt($scope.transaction.amount) - parseInt($scope.transaction.amount_refunded);
+
+      if(!refundAmount || refundAmount > unrefundedAmount){
+        $scope.alerts.addAlert('danger', 'Refund amount should be an integer and less than amount minus amount refunded.', true);
         return;
       }
 

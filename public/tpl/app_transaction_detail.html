@@ -86,7 +86,7 @@
           <button  class="btn btn-primary btn-rounded" ng-click="open()">Capture Transaction</button>
         </span>
         </div>
-        <div  ng-show="transaction.status==='captured'">
+        <div  ng-show="transaction.status==='captured' && transaction.refund_status !== 'full'">
         <span ng-controller="RefundModalCtrl">
           <script type="text/ng-template" id="refundModalContent.html">
             <div class="modal-header">

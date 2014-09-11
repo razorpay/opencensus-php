@@ -108,7 +108,7 @@ class Transaction extends Service
             return $error;
         }
 
-        if(isset($data['error']) === true or isset($data['refund_status']) === false or $data['refund_status'] === "none")
+        if($data['entity'] !== "refund" or $data['amount'] != $amount)
             $error[] = "Refund Failed";
         
         return $error;
