@@ -14,6 +14,10 @@ class Transaction extends Manager
         'currency'      => 'currency',
         'amount'        => 'amount',
         'status'        => 'status',
+        'amount_refunded' => 'amount_refunded',
+        'refund_status' =>  'refund_status',
+        'error_code'    => 'error_code',
+        'error_description' => 'error_description',
         'created_at'    => 'created_at'
     );
 
