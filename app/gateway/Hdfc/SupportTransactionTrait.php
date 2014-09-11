@@ -43,7 +43,10 @@ trait SupportTransactionTrait
             $this->supportTxnRequest,
             $this->supportTxnResponse);
 
-        $this->validateSupportTxnResponse();
+        if ($this->error === false)
+        {
+            $this->validateSupportTxnResponse();
+        }
 
         $this->persistAfterSupportTxn('refund');
 

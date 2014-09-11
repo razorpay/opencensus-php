@@ -41,7 +41,7 @@ class RefundTest extends TestCase
         $txn = $this->defaultAuthTransaction();
         $txn = $this->captureTransaction($txn['id'], $txn['amount']);
 
-        $refund = $this->startTest($txn['id']);
+        $refund = $this->startTest($txn['id'], $txn['amount']);
 
         $this->assertEquals(substr($refund['id'], 0, 5), 'rfnd-');
 
