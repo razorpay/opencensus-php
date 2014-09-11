@@ -70,11 +70,11 @@ class Entity extends Base\UniqueIdEntity
         return $this;
     }
 
-    public function addPlanRule($input, $plan)
+    public function addPlanRule($input, Plan $plan)
     {
         $this->modify($input);
 
-        $this->validateInput('addPlanRule', $input);
+        $this->getValidator()->addPlanRuleValidate($input, $plan);
 
         $this->fill($input);
 

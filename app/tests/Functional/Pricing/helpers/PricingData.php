@@ -61,6 +61,32 @@ return [
         ],
     ],
 
+    'testAddDuplicatePricingPlanRule' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [
+                'payment_mode' => 'card',
+                'payment_mode_type'  => 'credit',
+                'payment_network' => 'DICL',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
+
     'testGetPricingPlan' => [
         'response' => [
             'content' => [

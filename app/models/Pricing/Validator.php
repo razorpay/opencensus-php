@@ -45,9 +45,15 @@ class Validator extends Base\Validator
         $this->validateInput('addPlanRule', $input);
     }
 
-    public function addPlanRuleValidate(Plan $plan, $input)
+    public function addPlanRuleValidate($input, Plan $plan)
     {
         $this->validateInput('addPlanRule', $input);
+
+        if ($plan->count() === 0)
+        {
+            throw new Exception\LogicException(
+                'No plan rule exists for the defined plan. Blasphemy!');
+        }
 
         $rule = $plan->first();
 
