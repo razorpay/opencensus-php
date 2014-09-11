@@ -42,7 +42,8 @@ final class Route
         'pricing_get_plan'                  => ['get',  'pricing/{id}',                         'PricingController@getPricingPlan'],
         'pricing_get_plan_rule'             => ['get',  'pricing/{planId}/rule/{ruleId}',       'PricingController@getPricingPlanRule'],
         'pricing_add_plan_rule'             => ['post', 'pricing/{id}/rule',                    'PricingController@postAddPricingPlanRule'],
-        'ledger_fetch'                      => ['get',  'ledger',                               'SettlementController@getLedgerRecords'],
+        'ledger_fetch_by_id'                => ['get',  'ledger/{id}',                          'SettlementController@getLedgerRecord'],
+        'ledger_fetch'                      => ['get',  'ledger/{param?}',                      'SettlementController@getLedgerRecords'],
         'hdfc_mpr'                          => ['post', 'gateway/mpr',                          'SettlementController@postGatewayMpr'],
         'mockhdfc_enroll'                   => ['post', 'gateway/mockhdfc/enroll',              'MockHdfcController@enroll'],
         'mockhdfc_transaction'              => ['post', 'gateway/mockhdfc/transaction',         'MockHdfcController@transaction'],
@@ -93,6 +94,7 @@ final class Route
     public static $proxy = array(
         'refund_fetch_by_id',
         'refund_fetch_multiple',
+        'ledger_fetch_by_id',
         'ledger_fetch',
         );
 

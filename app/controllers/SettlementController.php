@@ -12,13 +12,22 @@ class SettlementController extends BaseController
 
         $data = (new Settlement\Service)->gatewayMpr($input);
 
-        return $data;
+        return ApiResponse::json($data);
     }
 
     public function getLedgerRecords()
     {
-        $data = (new Settlement\Service)->getLedgerRecords();
+        $input = Input::all();
 
-        return $data;
+        $data = (new Settlement\Service)->getLedgerRecords($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getLedgerRecord($id)
+    {
+        $data = (new Settlement\Service)->getLedgerRecord($id);
+
+        return ApiResponse::json($data);
     }
 }

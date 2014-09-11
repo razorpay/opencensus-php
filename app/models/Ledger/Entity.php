@@ -5,7 +5,7 @@ namespace Models\Ledger;
 use Models\Base;
 use Models\Transaction;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
     const ENTITY_ID         = 'entity_id';
@@ -34,6 +34,17 @@ class Entity extends Base\UniqueIdEntity
         self::AMOUNT,
         self::FEE,
         self::BALANCE);
+
+    protected $public = array(
+        self::ID,
+        self::AMOUNT,
+        self::DEBIT,
+        self::CREDIT,
+        self::FEE,
+        self::BALANCE,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        );
 
     public function merchant()
     {

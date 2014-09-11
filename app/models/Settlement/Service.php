@@ -92,8 +92,17 @@ class Service extends Base\Service
         return $lgr;
     }
 
-    public function getLedgerRecords()
+    public function getLedgerRecords($input)
     {
-        return (new Ledger\Repository)->all();
+        $lgrs = (new Ledger\Repository)->fetch($input);
+
+        return $lgrs->toPublicArray();
+    }
+
+    public function getLedgerRecordById($id)
+    {
+        $lgr = (new Ledger\Repository)->findByIdAndMerchantId($id, \BasicAuth::getMerchant()->getKey());
+
+        return $lgr->toArrayPublic();
     }
 }
