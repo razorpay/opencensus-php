@@ -3,6 +3,7 @@
 namespace Models\Transaction\Refund;
 
 use Models\Base;
+use Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
@@ -21,7 +22,7 @@ class Entity extends Base\PublicEntity
 
     protected $genereateIdOnCreate = true;
 
-    protected static $generators = array('amount', 'currency');
+    protected static $generators = array(self::AMOUNT, self::CURRENCY);
 
     protected $fillable = array(
         self::MERCHANT_ID,
@@ -31,11 +32,14 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::ID,
-        self::TRANSACTION_ID, 
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
+        self::TRANSACTION_ID,
         self::CREATED_AT);
+
+    protected $publicSetters = array(
+        self::ID, self::ENTITY, self::TRANSACTION_ID);
 
     public function transaction()
     {
@@ -74,5 +78,11 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function setPublicTransactionIdAttribute(array & $array)
+    {
+        $array[self::TRANSACTION_ID] =
+            Transaction\Entity::getSign() . static::$delimiter . $this->getAttribute(self::TRANSACTION_ID);
     }
 }

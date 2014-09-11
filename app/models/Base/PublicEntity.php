@@ -26,7 +26,7 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $public = array();
 
-    protected $publicSetters = array('id', 'entity');
+    protected $publicSetters = array(self::ID, self::ENTITY);
 
     public function toArrayPublic()
     {
@@ -52,7 +52,7 @@ class PublicEntity extends UniqueIdEntity
     {
         foreach ($this->publicSetters as $attr)
         {
-            $func = 'setPublic'.ucfirst($attr).'Attribute';
+            $func = 'setPublic'.studly_case($attr).'Attribute';
 
             $this->$func($array);
         }
@@ -60,12 +60,12 @@ class PublicEntity extends UniqueIdEntity
 
     public function setPublicIdAttribute(array & $array)
     {
-        $array[self::ID] = $this->getPublicId();
+        $array[static::ID] = $this->getPublicId();
     }
 
     public function setPublicEntityAttribute(array & $array)
     {
-        $array[self::ENTITY] = $this->entity;
+        $array[static::ENTITY] = $this->entity;
     }
 
     public function arrangePublicAttributes(array $array)
@@ -82,7 +82,7 @@ class PublicEntity extends UniqueIdEntity
 
     public function getPublicId()
     {
-        return static::$sign . self::$delimiter . $this->getKey();
+        return static::$sign . static::$delimiter . $this->getKey();
     }
 
     public static function verifyIdAndStripSign(& $id)
@@ -102,15 +102,20 @@ class PublicEntity extends UniqueIdEntity
 
     protected static function stripSign(& $id)
     {
-        if (strpos($id, static::$sign . self::$delimiter) === false)
+        if (strpos($id, static::$sign . static::$delimiter) === false)
         {
             return false;
         }
 
-        $len = strlen(static::$sign . self::$delimiter);
+        $len = strlen(static::$sign . static::$delimiter);
 
         $id = substr($id, $len);
 
         return true;
+    }
+
+    public static function getSign()
+    {
+        return static::$sign;
     }
 }
