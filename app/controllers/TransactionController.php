@@ -75,8 +75,10 @@ class TransactionController extends BaseController
     public function postRefundTransaction($mode, $id = NULL)
     {
         $this->checkMode($mode);
+
+        $amount = Input::get('amount');
         
-        $error = (new Service\Transaction)->refundTxn($id, $mode);
+        $error = (new Service\Transaction)->refundTxn($id, $amount, $mode);
 
         return AppResponse::jsonResponse($error);
     }

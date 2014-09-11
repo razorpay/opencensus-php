@@ -78,6 +78,7 @@ class Transaction extends Service
         catch(\Exception $e)
         {
             $error[] = "Capture Failed";
+            return $error;
         }
 
         if(isset($data['error']) === true or isset($data['status']) === false or $data['status'] !== "captured")
@@ -86,7 +87,7 @@ class Transaction extends Service
         return $error;
     }
 
-    public function refundTxn($id, $mode)
+    public function refundTxn($id, $amount, $mode)
     {   
         $error = array();
 
@@ -97,18 +98,20 @@ class Transaction extends Service
         {
             $data = $this->api->transaction
                             ->fetch($id)
-                            ->refund()
+                            ->refund(array('amount' => $amount))
                             ->toArray();  
+            
         }
         catch(\Exception $e)
         {
             $error[] = "Refund Failed";
+            return $error;
         }
-              
-        if(isset($data['error']) === true or isset($data['status']) === false or $data['status'] !== "refunded")
+
+        if(isset($data['error']) === true or isset($data['refund_status']) === false or $data['refund_status'] === "none")
             $error[] = "Refund Failed";
         
-        return array();
+        return $error;
     }
 
     /**
