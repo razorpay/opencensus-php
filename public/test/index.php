@@ -73,6 +73,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 <h3>Test Capture/Refund</h3>
 <form name ="refund" method="post" action="http://<?=$private_url?>/transactions/">
 <input type="text" id="refund_id" placeholder="Enter transaction id to refund"/>
+<input type="text" id="amount" name="amount" placeholder="Enter transaction id to refund"/>
 <input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
 <form name ="capture" method="post" action="http://<?=$private_url?>/transactions/">

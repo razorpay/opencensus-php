@@ -338,6 +338,13 @@ class Entity extends Base\PublicEntity
 
     public function refundAmount($amount)
     {
+        if (ctype_digit($amount) === false)
+        {
+            throw new Exception\InvalidArgumentException('amount should only have digits.');
+        }
+
+        $amount = (int) $amount;
+
         $amountUnrefunded = $this->getAmountUnrefunded();
 
         if ($amount < $amountUnrefunded)

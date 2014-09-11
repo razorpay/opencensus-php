@@ -67,7 +67,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_GREATER_THAN_CAPTURED);
         }
 
-        if ($amountToRefund > $txn->getAmountUnRefunded())
+        if ($amountToRefund > $txn->getAmountUnrefunded())
         {
             throw new Exception\BadRequestException(
                 null,
