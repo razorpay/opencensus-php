@@ -16,12 +16,20 @@
           Amount
         </a>
         <a href class="list-group-item">
+          <span class="pull-right">{{transaction.amount_refunded/100 | currency:""}}</span>
+          Amount Refunded
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right">{{transaction.currency}}</span>
           Currency
         </a>
         <a href class="list-group-item">
           <span class="label text-base pull-right" title="{{transaction.status}}" ng-class="getStatusClass(transaction.status)">{{transaction.status | titlecase}}</span>
           Status
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{transaction.refund_status | titlecase}}</span>
+          Refund Status
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{transaction.description}}<span ng-hide="transaction.description">No Description</span></span>
@@ -36,7 +44,7 @@
           Contact
         </a>
         <a href class="list-group-item" ng-show="transaction.error_code">
-          <span class="pull-right">{{transaction.error_code + " : " + transaction.error_description}}</span>
+          <span class="pull-right" tooltip="Click to see details" ng-confirm-click="{{transaction.error_description}}">{{transaction.error_code}}</span>
           Error
         </a>
         <a href class="list-group-item">
@@ -78,7 +86,26 @@
           <button  class="btn btn-primary btn-rounded" ng-click="open()">Capture Transaction</button>
         </span>
         </div>
-        <button ng-show="transaction.status==='captured'" class="btn btn-primary btn-rounded" ng-confirm-click="Are you sure you want to refund this transaction?" ng-click="refund()">Refund Transaction</button>
+        <div  ng-show="transaction.status==='captured'">
+        <span ng-controller="RefundModalCtrl">
+          <script type="text/ng-template" id="refundModalContent.html">
+            <div class="modal-header">
+              <h3 class="modal-title">Refund Transaction</h3>
+            </div>
+            <div class="modal-body">
+                <form>
+                <label>Amount to refund (in Paisa):</label>
+                  <input type="text" placeholder="Amount to Refund (in Paisa)" class="form-control" ng-model="amount">
+                </form>
+            </div>
+            <div class="modal-footer">                  
+                <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+                <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
+            </div>
+          </script>
+          <button  class="btn btn-primary btn-rounded" ng-click="open()">Refund Transaction</button>
+        </span>
+        </div>
       </div>
     </div>
   </div>

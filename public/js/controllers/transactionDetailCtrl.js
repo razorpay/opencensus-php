@@ -47,8 +47,7 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'mod
       request.success(function(data){
         if(data.success){
           $scope.alerts.addAlert('success', "Transaction Captured", true);
-          $scope.transaction.status = "captured";
-          $scope.transaction.amount = captureAmount;
+          fetchTransaction();
         }
         else {
           $scope.alerts.addAlert('danger', null, true);
@@ -59,10 +58,20 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'mod
       })
     };
 
-    $scope.refund = function() {
+    $scope.refund = function(amount) {
+
+      var refundAmount = parseInt(amount);
+
+      if(!refundAmount){
+        $scope.alerts.addAlert('danger', 'Invalid refund amount', true);
+        return;
+      }
+
       $scope.alerts.addAlert('info', 'Processing... ', true);
+
       var data = {
-        _token: CSRF_TOKEN
+        _token: CSRF_TOKEN,
+        amount: refundAmount
       }
 
       var request = $http({
@@ -73,29 +82,25 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'mod
                 });
 
       request.success(function(data){
-        if(data.success) {
+        if(data.success){
           $scope.alerts.addAlert('success', "Transaction Refunded", true);
-          $scope.transaction.status = "refunded";
+    
+          fetchTransaction();  
         }
         else {
           $scope.alerts.addAlert('danger', null, true);
         }
       })
       .error(function(){
-        $scope.alerts.resetAlerts();
         $scope.alerts.addAlert('danger', null, true);
       })
     };
 
-    function fetchTransaction() {
-      $scope.alerts.addAlert('info', 'Processing...', true);
-  
+    function fetchTransaction() {  
       var request = $http.get("/" + modeFactory.getMode() +  "/transactions/" + $scope.transaction.id);
 
       request
       .success(function(data) {
-        $scope.alerts.resetAlerts();
-
         if(data.success) {
           $scope.transaction = data.data.data[0];
         }
@@ -138,6 +143,40 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'mod
       modalInstance.result.then(
         function (amount) {
           $scope.capture(amount);
+        },
+        function () {
+          ;
+        });
+    };
+}])
+//Refund Modal Box Controller
+.controller('RefundModalCtrl', ['$scope', '$modal', '$log', 
+  function($scope, $modal, $log) {
+    var ModalInstanceCtrl = function ($scope, $modalInstance, amount) {
+      $scope.amount = amount;
+      $scope.ok = function (amount) {
+        $modalInstance.close(amount);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+    };
+
+    $scope.open = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'refundModalContent.html',
+        controller: ModalInstanceCtrl,
+        resolve: {
+          amount: function () {
+            return $scope.transaction.amount - $scope.transaction.amount_refunded;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function (amount) {
+          $scope.refund(amount);
         },
         function () {
           ;
