@@ -35,7 +35,7 @@
             </a>
             <ul class="dropdown-menu animated fadeInRight w">
               <li ng-repeat="(langKey, label) in langs">
-                <a ng-click="setLang(langKey)" href="#">{{label}}</a>
+                <a ng-click="setLang(langKey)" class="dropdown-toggle" href>{{label}}</a>
               </li>
             </ul>
           </li> 
@@ -45,7 +45,7 @@
             </a>
             <ul class="dropdown-menu animated fadeInRight w">
               <li ng-repeat="mode in modes()">
-                <a ng-click="selectMode(mode)" href>{{mode | titlecase}}</a>
+                <a ng-click="selectMode(mode)" class="dropdown-toggle" href>{{mode | titlecase}}</a>
               </li>
             </ul>
           </li>         
