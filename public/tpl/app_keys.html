@@ -7,12 +7,12 @@
       {{mode | titlecase}} keys
     </div>
     <div class="table-responsive">
-      <table class="table table-striped b-t b-light">
+      <table class="table table-striped b-t b-light" ui-jq="footable">
         <thead>
           <tr>
-            <th>Key Id</th>
-            <th>Created At</th>
-            <th>Expiry</th>
+            <th data-toggle="true">Key Id</th>
+            <th data-hide="phone,tablet">Created At</th>
+            <th data-hide="phone,tablet">Expiry</th>
             <th>Action</th>
           </tr>
         </thead>
