@@ -26,10 +26,10 @@ build:
           code: cp app/config/grunt.sample.json app/config/grunt.json && sed -i "2s/development/production/" app/config/grunt.json
       - grunt:
           tasks: default
-      - desmondmorris/selenium-install@0.0.2
-      - script:
-          name: run unit tests
-          code: phpunit
+      # - desmondmorris/selenium-install@0.0.2
+      # - script:
+      #     name: run unit tests
+      #     code: phpunit
     after-steps:
       - sherzberg/slack-notify:
           subdomain: razorpay
