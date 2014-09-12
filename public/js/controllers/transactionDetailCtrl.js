@@ -1,6 +1,6 @@
 //Single Transaction Details controller
-app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
-  function($scope, $http, $stateParams, modeFactory, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost) {
+app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$modal', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
+  function($scope, $http, $stateParams, $modal, modeFactory, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
@@ -20,6 +20,48 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'mod
       }
       return mapper[status];
     }
+    
+    $scope.openRefundModal  = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'refundModalContent.html',
+        controller: 'RefundModalCtrl',
+        resolve: {
+          amount: function () {
+            return $scope.transaction.amount - $scope.transaction.amount_refunded;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function (amount) {
+          $scope.refund(amount);
+        },
+        function () {
+          ;
+        }
+      );
+    };
+
+    $scope.openCaptureModal = function() {
+      var modalInstance = $modal.open({
+        templateUrl: 'captureModalContent.html',
+        controller: 'CaptureModalCtrl',
+        resolve: {
+          amount: function () {
+            return $scope.transaction.amount;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function (amount) {
+          $scope.capture(amount);
+        },
+        function () {
+          ;
+        }
+      );
+    };
 
     $scope.capture = function(amount) {
 
@@ -118,70 +160,26 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', 'mod
     };
 }])
 //Capture Modal Box Controller
-.controller('CaptureModalCtrl', ['$scope', '$modal', '$log', 
-  function($scope, $modal, $log) {
-    var ModalInstanceCtrl = function ($scope, $modalInstance, amount) {
-      $scope.amount = amount;
-      $scope.ok = function (amount) {
-        $modalInstance.close(amount);
-      };
-
-      $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
-      };
+.controller('CaptureModalCtrl', ['$scope', '$modalInstance', 'amount', 
+  function($scope, $modalInstance, amount) {
+    $scope.amount = amount;
+    $scope.ok = function (amount) {
+      $modalInstance.close(amount);
     };
 
-    $scope.open = function () {
-      var modalInstance = $modal.open({
-        templateUrl: 'captureModalContent.html',
-        controller: ModalInstanceCtrl,
-        resolve: {
-          amount: function () {
-            return $scope.transaction.amount;
-          }
-        }
-      });
-
-      modalInstance.result.then(
-        function (amount) {
-          $scope.capture(amount);
-        },
-        function () {
-          ;
-        });
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
     };
 }])
 //Refund Modal Box Controller
-.controller('RefundModalCtrl', ['$scope', '$modal', '$log', 
-  function($scope, $modal, $log) {
-    var ModalInstanceCtrl = function ($scope, $modalInstance, amount) {
-      $scope.amount = amount;
-      $scope.ok = function (amount) {
-        $modalInstance.close(amount);
-      };
-
-      $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
-      };
+.controller('RefundModalCtrl', ['$scope', '$modalInstance', 'amount', 
+  function($scope, $modalInstance, amount) {
+    $scope.amount = amount;
+    $scope.ok = function (amount) {
+      $modalInstance.close(amount);
     };
 
-    $scope.open = function () {
-      var modalInstance = $modal.open({
-        templateUrl: 'refundModalContent.html',
-        controller: ModalInstanceCtrl,
-        resolve: {
-          amount: function () {
-            return $scope.transaction.amount - $scope.transaction.amount_refunded;
-          }
-        }
-      });
-
-      modalInstance.result.then(
-        function (amount) {
-          $scope.refund(amount);
-        },
-        function () {
-          ;
-        });
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
     };
 }]);

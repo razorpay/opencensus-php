@@ -198,7 +198,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       var modalInstance = $modal.open({
         templateUrl: 'assignPricingModalContent.html',
-        controller: assignPricingModalCtrl,
+        controller: 'assignPricingModalCtrl',
         size: 'lg',
         resolve: {
           pricing_plans: function () {
@@ -222,7 +222,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     $scope.openAssignTerminal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'assignTerminalModalContent.html',
-        controller: assignTerminalModalCtrl,
+        controller: 'assignTerminalModalCtrl',
         size: 'lg'
       });
 
@@ -234,29 +234,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
           ;
         });
     };
-
-    var assignPricingModalCtrl = function ($scope, $modalInstance, pricing_plans, current) {
-      $scope.pricing_plans = pricing_plans;
-      $scope.pricing_plan_id = current;
-      $scope.ok = function (pricing_plan_id) {
-        $modalInstance.close(pricing_plan_id);
-      };
-
-      $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
-      };
-    };
-
-    var assignTerminalModalCtrl = function ($scope, $modalInstance) {
-      $scope.ok = function (terminal) {
-        $modalInstance.close(terminal);
-      };
-
-      $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
-      };
-    };
-
 
     function getPricingPlans(){
       var plans = [];
@@ -303,4 +280,26 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+}])
+.controller('assignPricingModalCtrl', ['$scope', '$modalInstance', 'pricing_plans', 'current',
+  function ($scope, $modalInstance, pricing_plans, current) {
+      $scope.pricing_plans = pricing_plans;
+      $scope.pricing_plan_id = current;
+      $scope.ok = function (pricing_plan_id) {
+        $modalInstance.close(pricing_plan_id);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+.controller('assignTerminalModalCtrl', ['$scope', '$modalInstance',
+  function ($scope, $modalInstance) {
+      $scope.ok = function (terminal) {
+        $modalInstance.close(terminal);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
 }]);

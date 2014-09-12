@@ -202,20 +202,8 @@ angular.module('app.directives', ['ui.load'])
 
           var click = attrs.ngClick;
 
-          console.log(click, scope);
-
-          var confirmModalCtrl = function ($scope, $modalInstance, message) {
-            $scope.message = message;
-            $scope.ok = function () {
-              $modalInstance.close();
-            };
-            $scope.cancel = function () {
-              $modalInstance.dismiss('cancel');
-            };
-          };
-  
           var modalInstance = $modal.open({
-              controller: confirmModalCtrl,
+              controller: 'confirmModalCtrl',
               size: 'sm',
               resolve: {
                 message: function () {

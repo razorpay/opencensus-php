@@ -82,7 +82,7 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
     $scope.openRollKey = function (key_id) {
       var modalInstance = $modal.open({
         templateUrl: 'rollKeyModalContent.html',
-        controller: rollKeyModalCtrl,
+        controller: 'rollKeyModalCtrl',
         resolve: {
           key_id: function () {
             return key_id;
@@ -102,7 +102,7 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
     $scope.openNewKey = function (key) {
       var modalInstance = $modal.open({
         templateUrl: 'newKeyModalContent.html',
-        controller: newKeyModalCtrl,
+        controller: 'newKeyModalCtrl',
         backdrop: 'static',
         resolve: {
           key: function () {
@@ -118,24 +118,6 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
         function () {
           ;
         });
-    };
-
-    var rollKeyModalCtrl = function ($scope, $modalInstance, key_id) {
-      $scope.delay_roll = 1;
-      $scope.ok = function (delay_roll) {
-        $modalInstance.close([key_id, delay_roll]);
-      };
-
-      $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
-      };
-    };
-
-    var newKeyModalCtrl = function ($scope, $modalInstance, key) {
-      $scope.key = key;
-      $scope.ok = function () {
-        $modalInstance.close();
-      };
     };
 
     function fetchKeys(){
@@ -158,4 +140,23 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
         $scope.alerts.addAlert('danger', null, true);
       })
     }
-}]);
+}])
+.controller('rollKeyModalCtrl', ['$scope', '$modalInstance', 'key_id',
+ function ($scope, $modalInstance, key_id) {
+      $scope.delay_roll = 1;
+      $scope.ok = function (delay_roll) {
+        $modalInstance.close([key_id, delay_roll]);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+.controller('newKeyModalCtrl', ['$scope', '$modalInstance', 'key',
+  function ($scope, $modalInstance, key) {
+      $scope.key = key;
+      $scope.ok = function () {
+        $modalInstance.close();
+      };
+}])
+;

@@ -39,7 +39,7 @@ app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFacto
   $scope.createAdmin = function () {
     var modalInstance = $modal.open({
       templateUrl: 'newAdminModalContent.html',
-      controller: newAdminModalCtrl,
+      controller: 'newAdminModalCtrl',
       size: 'lg'
     });
 
@@ -51,15 +51,6 @@ app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFacto
       function () {
         ;
       });
-  };
-
-  var newAdminModalCtrl = function ($scope, $modalInstance) {
-    $scope.ok = function (data) {
-      $modalInstance.close(data);
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
   };
 
   function newAdminRequest(data){
@@ -103,4 +94,13 @@ app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFacto
       }
     });
   }
+}])
+.controller('newAdminModalCtrl', ['$scope', '$modalInstance', 
+  function ($scope, $modalInstance) {
+    $scope.ok = function (data) {
+      $modalInstance.close(data);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
 }]);

@@ -79,7 +79,7 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
           if(mode == "live" && parseInt(userData.activated) !== 1) {
             var modalInstance = $modal.open({
               templateUrl: 'activationModalContent.html',
-              controller: activationModalCtrl,
+              controller: 'activationModalCtrl',
               size: 'sm'
             });
           }
@@ -87,15 +87,26 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
             modeFactory.selectMode(mode);   
           }
         });
-      };
-
-      var activationModalCtrl = function ($scope, $modalInstance) {
+      }; 
+  }])
+  .controller('activationModalCtrl', ['$scope', '$modalInstance',
+    function ($scope, $modalInstance) {
         $scope.ok = function () {
           $modalInstance.close();
         };
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
-      };
-  }]);
+  }])
+  .controller('confirmModalCtrl', ['$scope', '$modalInstance', 'message',
+    function ($scope, $modalInstance, message) {
+            $scope.message = message;
+            $scope.ok = function () {
+              $modalInstance.close();
+            };
+            $scope.cancel = function () {
+              $modalInstance.dismiss('cancel');
+            };
+  }])
+  ;
 //Rest controllers loaded from /public/js/controllers/*.js by grunt

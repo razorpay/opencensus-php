@@ -67,7 +67,6 @@
       </div>
       <div class="text-center">
         <div  ng-show="transaction.status==='authorized'">
-        <span ng-controller="CaptureModalCtrl">
           <script type="text/ng-template" id="captureModalContent.html">
             <div class="modal-header">
               <h3 class="modal-title">Capture Transaction</h3>
@@ -83,11 +82,9 @@
                 <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
             </div>
           </script>
-          <button  class="btn btn-primary btn-rounded" ng-click="open()">Capture Transaction</button>
-        </span>
+          <button  class="btn btn-primary btn-rounded" ng-click="openCaptureModal()">Capture Transaction</button>
         </div>
         <div  ng-show="transaction.status==='captured' && transaction.refund_status !== 'full'">
-        <span ng-controller="RefundModalCtrl">
           <script type="text/ng-template" id="refundModalContent.html">
             <div class="modal-header">
               <h3 class="modal-title">Refund Transaction</h3>
@@ -103,8 +100,7 @@
                 <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
             </div>
           </script>
-          <button  class="btn btn-primary btn-rounded" ng-click="open()">Refund Transaction</button>
-        </span>
+          <button  class="btn btn-primary btn-rounded" ng-click="openRefundModal()">Refund Transaction</button>
         </div>
       </div>
     </div>

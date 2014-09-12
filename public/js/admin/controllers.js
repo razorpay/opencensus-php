@@ -66,5 +66,15 @@ angular.module('app.controllers', ['pascalprecht.translate', 'ngCookies'])
 
       $scope.flag = false;
 
+  }])
+  .controller('confirmModalCtrl', ['$scope', '$modalInstance', 'message',
+    function ($scope, $modalInstance, message) {
+            $scope.message = message;
+            $scope.ok = function () {
+              $modalInstance.close();
+            };
+            $scope.cancel = function () {
+              $modalInstance.dismiss('cancel');
+            };
   }]);
 //Rest controllers loaded from /public/js/admin/controllers/*.js by grunt

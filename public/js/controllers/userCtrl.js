@@ -27,7 +27,7 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '
     $scope.changePassword = function () {
       var modalInstance = $modal.open({
         templateUrl: 'passwordModalContent.html',
-        controller: passwordModalCtrl
+        controller: 'passwordModalCtrl'
       });
 
       modalInstance.result.then(
@@ -80,15 +80,6 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '
       return request;
     };
 
-    var passwordModalCtrl = function ($scope, $modalInstance) {
-      $scope.ok = function (data) {
-        $modalInstance.close(data);
-      };
-      $scope.cancel = function () {
-        $modalInstance.dismiss('cancel');
-      };
-    };
-    
     function passwordChangeRequest(data) {
       $scope.alerts.addAlert('info', 'Processing...', true);
 
@@ -129,4 +120,13 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '
       }
     }
 
+}])
+.controller('passwordModalCtrl', ['$scope', '$modalInstance',
+  function($scope, $modalInstance){
+    $scope.ok = function (data) {
+        $modalInstance.close(data);
+      };
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
 }]);
