@@ -53,9 +53,9 @@
     <tab active="steps.step2" select="steps.percent=20">
       <tab-heading ng-class="{'text-success': check.2 === true, 'text-danger':check.2 === false}">
         <i class="fa" ng-class="{'fa-check': check.2 === true, 'fa-times':check.2 === false}"></i>
-        Bussiness Details
+        Business Details
       </tab-heading>
-      <h4>Bussiness Details </h4>
+      <h4>Business Details </h4>
       <form name="step2" class="form-validation form-horizontal" ng-submit="submit(2)" novalidate>
       <fieldset ng-disabled="locked">
         <div class="m-t m-b text-center">
@@ -84,13 +84,13 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="bussines_category" class="col-sm-3 control-label">Bussiness Category</label>
+          <label for="bussines_category" class="col-sm-3 control-label">Business Category</label>
           <div class="col-sm-8">
             <input type="text" class="form-control" ng-model="data.2.bussiness_category" placeholder="Bussiness Category" required>
           </div>
         </div>
         <div class="form-group">
-          <label for="bussines_subcategory" class="col-sm-3 control-label">Bussiness Subcategory</label>
+          <label for="bussines_subcategory" class="col-sm-3 control-label">Business Subcategory</label>
           <div class="col-sm-8">
             <input type="text" class="form-control" ng-model="data.2.bussiness_subcategory" placeholder="Bussiness Subcategory" required>
           </div>
@@ -181,10 +181,10 @@
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_model" class="col-sm-3 control-label">Bussiness Model</label>
+        <label for="bussiness_model" class="col-sm-3 control-label">Business Model</label>
           <div class="col-sm-8">
             <textarea class="form-control" ng-model="data.2.bussiness_model" placeholder="Bussiness Model"></textarea>
-            <span class="help-block">Explain little about your bussiness model and future plans. Essential for startups</span>
+            <span class="help-block">Please give a brief explanation of your business model and future plans (Essential for startups)</span>
           </div>
         </div>
         <div class="form-group">
@@ -210,9 +210,9 @@
     <tab active="steps.step3" select="steps.percent=40">
       <tab-heading ng-class="{'text-success': check.3 === true, 'text-danger':check.3 === false}">
         <i class="fa" ng-class="{'fa-check': check.3 === true, 'fa-times':check.3 === false}"></i>
-        Promoters Details
+        Promoter's Details
       </tab-heading>
-      <h4>Promoters Details</h4>
+      <h4>Promoter's Details</h4>
       <form name="step3" class="form-validation form-horizontal" ng-submit="submit(3)" novalidate>
       <fieldset ng-disabled="locked">
         <div class="m-t m-b text-center">
@@ -269,8 +269,8 @@
         <div class="form-group">
           <label for="bank_account_name" class="col-sm-3 control-label">Account Holder Name</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.4.bank_account_name" placeholder="Accunt Holder Name" required>
-            <span class="help-block">Should be same as bussiness/individual name</span>
+            <input type="text" class="form-control" ng-model="data.4.bank_account_name" placeholder="Account Holder Name" required>
+            <span class="help-block">Should be same as business/individual name</span>
           </div>
         </div>
         <div class="form-group">
@@ -311,7 +311,7 @@
           <alert ng-repeat="alert in alerts[5].getAlerts()" type="{{alert.type}}" close="alerts[5].closeAlert($index)">{{alert.msg}}</alert>
         </div>
         <div class="form-group">
-          <label for="bussiness_proof" class="col-sm-3 control-label">Bussiness Proof </label>
+          <label for="bussiness_proof" class="col-sm-3 control-label">Business Proof </label>
           <div class="col-sm-8">
             <span class="help-block">
                 Upload scan of following(not needed for individual):
@@ -326,7 +326,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="bussiness_pan" class="col-sm-3 control-label">Bussiness PAN</label>
+          <label for="bussiness_pan" class="col-sm-3 control-label">Business PAN</label>
           <div class="col-sm-8">
             <span class="help-block">Company Pan Card (Sole Proprietor can use personal PAN)</span>
             <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" ng-file-select="onFileSelect($files, 'bussiness_pan_proof')">
