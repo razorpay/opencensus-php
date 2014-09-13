@@ -211,6 +211,7 @@ angular.module('app.services', [])
 					this.open = function($event, key) {
 						$event.preventDefault();
 						$event.stopPropagation();
+						$scope.date.opened = {};
 						$scope.date.opened[key] = true;
 					};			  
 				};
