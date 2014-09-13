@@ -351,7 +351,7 @@ class Gateway extends BaseGateway
         $this->setTerminalInRequest($request);
 
         // Create xml from the fields
-        $request['xml'] = Utility::createXml($request['data']);
+        $request['content'] = Utility::createXml($request['data']);
 
         $this->requestVar = $request;
 
@@ -373,7 +373,7 @@ class Gateway extends BaseGateway
             {
                 $this->error = true;
 
-                $response['xml'] = '';
+                $response['content'] = '';
                 Hdfc\ErrorHandler::setTimeoutError($response);
 
                 return;
@@ -475,15 +475,6 @@ class Gateway extends BaseGateway
         $this->response = $this->sendGatewayRequest($request);
 
         return $this->response;
-    }
-
-    protected function sendGatewayRequest($request)
-    {
-        return Requests::post(
-                    $request['url'],
-                    $request['header'],
-                    $request['xml'],
-                    $request['options']);
     }
 
     protected function getRequestOptions()

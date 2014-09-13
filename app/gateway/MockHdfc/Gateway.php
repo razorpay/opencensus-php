@@ -132,7 +132,7 @@ class Gateway extends Hdfc\Gateway
     protected function callGatewayRequestFunctionInternally($requestVar)
     {
         $server = new Server();
-        $server->setInput($requestVar['xml']);
+        $server->setInput($requestVar['content']);
 
         $response = null;
 
