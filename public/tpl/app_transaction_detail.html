@@ -1,10 +1,10 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">Transaction Detail</h1>
 </div>
-<div class="wrapper-md" ng-controller="TransactionDetailCtrl">
+<div class="wrapper-md transaction-wrapper" ng-controller="TransactionDetailCtrl">
   <div class="panel panel-default col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
-      Transaction: <strong>{{transaction.id}}</strong>
+      Transaction Id: <strong>{{transaction.id}}</strong>
     </div>
   <div class="text-center m-t">
     <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>

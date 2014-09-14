@@ -7,19 +7,19 @@
     <form name="signin" ng-submit="submit(signin.$valid)" class="form-validation" ng-controller="SigninCtrl" novalidate>
       <div class="list-group list-group-sm">
         <div class="list-group-item">
-          <input type="email" ng-model="data.email" placeholder="Email" class="form-control no-border" required>
+          <input type="email" ng-model="data.email" name="email" placeholder="Email" class="form-control no-border" required>
         </div>
         <div class="list-group-item">
-           <input type="password" ng-model="data.password" placeholder="Password" class="form-control no-border" required>
+           <input type="password" ng-model="data.password" name="password" placeholder="Password" class="form-control no-border" required>
         </div>
       </div>
-      <button type="submit" class="btn btn-lg btn-primary btn-block">Log in</button>
+      <button type="submit" name="submit" class="btn btn-lg btn-primary btn-block">Log in</button>
       
       <div class="text-center m-t m-b">
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
 
-      <div ng-show="notactivated" class="m-t">
+      <div ng-if="notactivated" class="m-t">
         <div class="alert alert-danger">
           <p>Email Id not confirmed. Please check your inbox for confirmation mail. <br/>
           <a ng-click="resend(signin.$valid)" class="btn btn-sm btn-success">Click here to resend it.</a></p>

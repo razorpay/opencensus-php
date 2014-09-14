@@ -7,7 +7,7 @@
       {{mode | titlecase}} keys
     </div>
     <div class="table-responsive">
-      <table class="table table-striped b-t b-light" ui-jq="footable">
+      <table class="keys-table table table-striped b-t b-light" ui-jq="footable">
         <thead>
           <tr>
             <th data-toggle="true">Key Id</th>
@@ -26,12 +26,14 @@
             </td>
             <td>
               <span ng-show="key.expired_at">None</span>
-              <span ng-hide="key.expired_at"><a href tooltip="Roll Key" ng-click="openRollKey(key.id)"><i class="glyphicon glyphicon-refresh"></i></span>
+              <span ng-hide="key.expired_at">
+                <a href tooltip="Roll Key" class="roll_key" ng-click="openRollKey(key.id)"><i class="glyphicon glyphicon-refresh"></i></a>
+              </span>
             </td>
           </tr>
           <tr ng-show="keys.count === 0">
             <td colspan="4" class="text-center">
-              <a href ng-click="generateKey()">Generate new {{mode | titlecase}} key</a>
+              <a href id="generateKey" ng-click="generateKey()">Generate new {{mode | titlecase}} key</a>
             </td>
           </tr>
 
@@ -58,7 +60,7 @@
   <div class="modal-header">
     <h3 class="modal-title">Roll Key</h3>
   </div>
-  <div class="modal-body">
+  <div class="modal-body roll-key-modal">
       <form>
         <div class="radio">
           <label class="i-checks">
@@ -78,14 +80,14 @@
   </div>
   <div class="modal-footer">                  
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary" ng-click="ok(delay_roll)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(delay_roll)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="newKeyModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">New Key</h3>
   </div>
-  <div class="modal-body">
+  <div class="modal-body new-key-modal">
     <form class="form-horizontal">
       <div class="form-group">
         <label class="col-lg-2 control-label">Key Id</label>
@@ -104,6 +106,6 @@
   </div>
   <div class="modal-footer">
 
-      <button class="btn btn-primary" ng-confirm-click="Are you sure you have saved the key details? This is the last time we will show you the key secret." ng-click="ok()">OK</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Are you sure you have saved the key details? This is the last time we will show you the key secret." ng-click="ok()">OK</button>
   </div>
 </script>

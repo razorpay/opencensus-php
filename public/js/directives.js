@@ -213,12 +213,12 @@ angular.module('app.directives', ['ui.load'])
               template: '<div class="modal-header">' +
                   '<h3 class="modal-title">Alert</h3>' +
                 '</div>' +
-                '<div class="modal-body">' +
+                '<div class="confirm-modal modal-body">' +
                     '<h4>{{message}}</h4>' +
                 '</div>' +
                 '<div class="modal-footer">' +                  
                     '<button class="btn btn-default" ng-click="cancel()">Cancel</button>' +
-                    '<button class="btn btn-primary" ng-click="ok()">OK</button>' +
+                    '<button class="btn btn-primary confirm-ok" ng-click="ok()">OK</button>' +
                 '</div>'
           });
 
