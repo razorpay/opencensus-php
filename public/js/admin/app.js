@@ -17,7 +17,8 @@ var app = angular.module('app', [
     'app.directives',
     'app.controllers',
     'angularFileUpload',
-    'ngIdle'
+    'ngIdle',
+    'ngSanitize'
   ])
 .run(
   [          '$rootScope', '$state', '$stateParams', 'admin', 'adminAuthorization',

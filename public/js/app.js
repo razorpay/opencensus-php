@@ -17,7 +17,8 @@ var app = angular.module('app', [
     'app.directives',
     'app.controllers',
     'angularFileUpload',
-    'ngIdle'
+    'ngIdle',
+    'ngSanitize'
   ])
 .run(
   [          '$rootScope', '$state', '$stateParams', 'user', 'authorization',
@@ -184,6 +185,10 @@ var app = angular.module('app', [
             .state('access.confirm', {
                 url: '/confirm/:token',
                 templateUrl: 'tpl/page_confirm.html'
+            })
+            .state('access.resend', {
+                url: '/resend',
+                templateUrl: 'tpl/page_resend_confirm.html'
             })
             .state('access.resetpwd', {
                 url: '/resetpwd/:token',
