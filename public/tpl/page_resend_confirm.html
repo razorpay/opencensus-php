@@ -1,0 +1,31 @@
+<div class="container w-xxl w-auto-xs">
+  <a href="#/" class="col-sm-12 text-center m-t m-b"><img class="img-responsive" src="img/logo_black.png" alt="."></a>
+  <div class="m-b-lg">
+    <div class="wrapper text-center">
+      <strong>Resend Confirmation Mail</strong>
+    </div>
+    <form name="resend" ng-submit="submit(resend.$valid)" class="form-validation" ng-controller="ResendConfirmCtrl" novalidate>
+      <div class="list-group list-group-sm">
+        <div class="list-group-item">
+          <input type="email" ng-model="data.email" placeholder="Email" class="form-control no-border" required>
+        </div>
+        <div class="list-group-item">
+           <input type="password" ng-model="data.password" placeholder="Password" class="form-control no-border" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-lg btn-primary btn-block">Resend Confirmation Mail</button>
+      
+      <div class="text-center m-t m-b">
+        <span ng-repeat="alert in alerts.getAlerts()">
+          <alert type="{{alert.type}}" close="alerts.closeAlert($index)" ng-bind-html="alert.msg"></alert>
+        </span>
+      </div>
+
+      <div class="text-center m-t m-b"><a ui-sref="access.forgotpwd">Forgot password?</a></div>
+      <div class="line line-dashed"></div>
+      <p class="text-center"><small>Already confirmed?</small></p>
+      <a ui-sref="access.signin" class="btn btn-lg btn-default btn-block">Sign in</a>
+    </form>
+  </div>
+  <div class="text-center" ng-include="'tpl/blocks/page_footer.html'"></div>
+</div>
