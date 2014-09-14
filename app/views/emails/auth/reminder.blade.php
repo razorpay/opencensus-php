@@ -12,5 +12,16 @@
 			Or you may open the following link in your browser: <br/>
 			<a href="{{ URL::to('/#/access/resetpwd/'.$token) }}" target="_blank">{{ URL::to('/#/access/resetpwd/'.$token) }}</a>
 		</div>
+
+		<div>
+			<p>
+			--<br/>
+			The Razorpay Team <br/>
+			<a href="mailto:contact@razorpay.com">contact@razorpay.com</a>
+			</p>
+			<a href="https://razorpay.com" target="_blank">
+				<img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
+			</a>
+		</div>
 	</body>
 </html>

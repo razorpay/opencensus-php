@@ -14,10 +14,14 @@
 		</div>
 
 		<div>
-			<p>--<br/>
+			<p>
+			--<br/>
 			The Razorpay Team <br/>
-			contact@razorpay.com </br/>
-			<img src="<?php echo $message->embed('public/img/logo_black.png'); ?>">
-			
+			<a href="mailto:contact@razorpay.com">contact@razorpay.com</a>
+			</p>
+			<a href="https://razorpay.com" target="_blank">
+				<img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
+			</a>
+		</div>
 	</body>
 </html>
