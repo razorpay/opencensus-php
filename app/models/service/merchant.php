@@ -80,19 +80,57 @@ class Merchant extends Service
     {
         list($error, $data) = Manager\Merchant::createValidate($input, 'login')->getData();
 
-        $verify = false;
-
-        if (empty($error))
-            $verify = \Auth::merchant()->attempt(array(
+        if (empty($error)) 
+        {      
+            $credentials = array(
                 'email'     => $data['email'],
-                'password'  => $input['password'],
-                'confirm_token' => Null
-            ), $data['remember']);
+                'password'  => $input['password']
+            );
 
-        if ($verify === true)
-            return [array(), $data];
-        else
-            return [['Email or password is invalid.'], $data];
+            if(\Auth::merchant()
+                        ->attempt($credentials + array('confirm_token' => Null))) 
+            {
+                return [array(), $data];
+            }
+            elseif(\Auth::merchant()->validate($credentials))
+            {
+                $error = 'Email Id not confirmed. Please check your inbox for confirmation mail or <a href="'.\URL::to('#/access/resend').'">click here to resend</a> it.';
+
+                return [[$error], $data];
+            }
+        }
+        
+        return [['Email or password is invalid.'], $data];
+    }
+
+    public function resendConfirmation(array $input)
+    {
+        list($error, $data) = Manager\Merchant::createValidate($input, 'login')->getData();
+
+        if (empty($error)) 
+        {      
+            $credentials = array(
+                'email'     => $data['email'],
+                'password'  => $input['password']
+            );
+
+            if(\Auth::merchant()
+                        ->once($credentials)) 
+            {
+                $merchant = \Auth::merchant()->get();
+
+                if($merchant->confirm_token === NULL)
+                {
+                    return [['Merchant already confirmed. You can login <a href="'.\URL::to('#/access/signin').'">here</a>'], $data];
+                }
+
+                \Queue::push('MerchantController@sendConfirmationMail',array('merchant' => $merchant->generateEmailData()));
+                
+                return [[], $data];
+            }
+        }
+        
+        return [['Email or password is invalid.'], $data];
     }
 
     public function fetch($merchant_id)

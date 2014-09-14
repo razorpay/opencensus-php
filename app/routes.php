@@ -74,6 +74,8 @@ Route::group(array('before' => 'guest'), function()
 
         Route::post('/user/register', 'MerchantController@postRegister');
 
+        Route::post('/user/resend', 'MerchantController@postResendConfirmation');
+
         Route::post('/user/password/reset', 'PasswordController@postRemind');
 
         Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
