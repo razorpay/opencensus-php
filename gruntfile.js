@@ -45,7 +45,6 @@ module.exports = function(grunt){
 													'public/js/angular/ui-jq.js',
 													'public/js/angular/ui-validate.js',
 													'public/js/angular/ui-bootstrap-tpls.min.js',
-													'public/js/angular/angular-sanitize.min.js',
 													'public/js/libs/angular-file-upload.min.js'
 											],
 					'public/js/dev/merchant.js': [
@@ -103,7 +102,6 @@ module.exports = function(grunt){
 													'public/js/angular/ui-jq.js',
 													'public/js/angular/ui-validate.js',
 													'public/js/angular/ui-bootstrap-tpls.min.js',
-													'public/js/angular/angular-sanitize.min.js',
 													'public/js/libs/angular-file-upload.min.js'
 											],
 					'public/js/prod/merchant.js': [
