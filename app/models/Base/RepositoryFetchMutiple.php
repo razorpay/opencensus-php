@@ -82,4 +82,9 @@ trait RepositoryFetchMultiple
     {
         validate(self::$fetchParamRules, $params);
     }
+
+    public function setMerchantIdRequiredForMultipleFetch($required)
+    {
+        $this->merchantIdRequiredForMultipleFetch = $required;
+    }
 }

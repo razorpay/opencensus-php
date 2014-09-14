@@ -334,14 +334,15 @@ class Gateway extends BaseGateway
 
     public function getTransactionId($input)
     {
-        return Hdfc\MerchantPaymentReport::getTransactionid($input);
+        return Hdfc\Mpr\Reconciler::getTransactionid($input);
     }
 
     public function reconcile($input)
     {
-        $mpr = new Hdfc\MerchantPaymentReport();
-
-        return $mpr->reconcile($input['input'], $input['ledgerId'], $input['entities']);
+        return (new Hdfc\Mpr\Reconciler)->reconcile(
+            $input['input'],
+            $input['ledgerId'],
+            $input['entities']);
     }
 
 // ----------------------Gateway operations end --------------------------------

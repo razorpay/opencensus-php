@@ -222,4 +222,11 @@ class Repository extends Base\Repository
 
         return $repo::where('trackid','=',$id)->firstOrFail();
     }
+
+    public function retrieveMultipleTransactions(array $ids)
+    {
+        $repo = $this->repo;
+
+        return $repo::whereIn('trackid', '=', $ids)->get();
+    }
 }

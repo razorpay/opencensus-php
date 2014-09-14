@@ -105,4 +105,63 @@ class Service extends Base\Service
 
         return $lgr->toArrayPublic();
     }
+
+    public function generateTestMprForToday()
+    {
+        if ($mode !== 'test')
+        {
+            return;
+        }
+
+        // Get the timestamp on T-1 day 12 am for IST
+        $t = Carbon::today('Asia/Kolkata');
+        $t_1 = $t->copy()->addDays(-1);
+
+        $t = $t->timestamp;
+        $t_1 = $t_1->timestmap;
+
+        $txnRepo = new Transaction\Repository;
+        $txnRepo->setMerchantIdRequiredForMultipleFetch(false);
+
+        $params['from'] = $t;
+        $params['to'] = $t_1;
+
+        $txns = $txnRepo->fetch($params);
+
+        $rfndRepo = new Refund\Repository;
+        $rfndRepo->setMerchantIdRequiredForMultipleFetch(false);
+
+        $params['from'] = $t;
+        $params['to'] = $t_1;
+
+        $refunds = $rfndRepo->fetch($params);
+
+        $txns->load('merchant', 'merchant.terminal', 'card');
+        $rows = array();
+
+        foreach($txns->all() as $txn)
+        {
+            $cols = array(
+                'transaction' => $txn->toArray(),
+                'merchant'    => $txn->merchant->toArray(),
+                'terminal'    => $txn->merchant->terminal->toArray(),
+                'card'        => $txn->card->toArray()
+            );
+
+            array_push($rows, $cols);
+        }
+
+        $mprFile = (new Gateway)->call('generateMpr', $rows, 'test');
+
+        \Mail::send('', array(), function($message)
+        {
+            $message->from('shashankkumar.me@gmail.com', 'shk');
+
+            $message->to('mpr@mpr.razorpay.com')->cc('settlement@razorpay.com');
+
+            $message->attach($filename);
+        });
+
+        return 'done!';
+    }
 }

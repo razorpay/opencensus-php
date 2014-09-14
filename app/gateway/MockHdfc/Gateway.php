@@ -24,8 +24,30 @@ class Gateway extends Hdfc\Gateway
 
     public function generateMpr()
     {
-        $mpr = (new MockHdfc\Repository)->getUnreportedTransactions();
+        $repo = new MockHdfc\Repository;
 
+        $mpr = $repo->getUnreportedTransactions();
+
+        list($mprArray, $trackids) = $this->convertToMprArray($mpr);
+
+        $filename = 'hdfc_mpr.xlsx';
+
+        $fp = fopen($filename, 'w');
+
+        foreach ($mprArray as $row)
+        {
+            fputcsv($fp, $row);
+        }
+
+        fclose($fp);
+
+        $repo->setMprGeneratedTrue($trackids);
+
+        return $filename;
+    }
+
+    protected function convertToMprArray($mpr)
+    {
         $mprHeadings = array_keys($mpr->first()->toArrayForMprReport());
 
         foreach($mprHeadings as &$heading)
@@ -35,23 +57,17 @@ class Gateway extends Hdfc\Gateway
         }
 
         $mprArray = array();
+        $trackids = array();
+
         array_push($mprArray, $mprHeadings);
 
         foreach($mpr->all() as $row)
         {
             array_push($mprArray, array_values($row->toArrayForMprReport()));
+            array_push($trackids, $row->getKey());
         }
 
-        $fp = fopen('hdfc_mpr.xlsx', 'w');
-
-        foreach ($mprArray as $row)
-        {
-            fputcsv($fp, $row);
-        }
-
-        fclose($fp);
-
-        return 'hdfc_mpr.xlsx';
+        return array($mprArray, $trackids);
     }
 
     public function capture(array $input)

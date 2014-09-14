@@ -30,4 +30,9 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function sendSettlements()
+    {
+        (new Settlement\Service)->sendSettlements();
+    }
 }

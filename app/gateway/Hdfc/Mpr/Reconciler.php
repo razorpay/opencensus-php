@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace Gateway\Hdfc\Mpr;
 
 use Carbon\Carbon;
 use EE\Exception;
@@ -11,7 +11,7 @@ use Models\Terminal;
 use Models\Transaction;
 use Trace\Trace;
 
-class MerchantPaymentReport
+class Reconciler
 {
     public static function getTransactionId($input)
     {
