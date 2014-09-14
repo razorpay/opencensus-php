@@ -94,7 +94,7 @@ class Merchant extends Service
             }
             elseif(\Auth::merchant()->validate($credentials))
             {
-                $error = 'Email Id not confirmed. Please check your inbox for confirmation mail or <a href="'.\URL::to('#/access/resend').'">click here to resend</a> it.';
+                $error = 'notactivated';
 
                 return [[$error], $data];
             }

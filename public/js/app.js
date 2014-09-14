@@ -186,10 +186,6 @@ var app = angular.module('app', [
                 url: '/confirm/:token',
                 templateUrl: 'tpl/page_confirm.html'
             })
-            .state('access.resend', {
-                url: '/resend',
-                templateUrl: 'tpl/page_resend_confirm.html'
-            })
             .state('access.resetpwd', {
                 url: '/resetpwd/:token',
                 templateUrl: 'tpl/page_resetpwd.html'

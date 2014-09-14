@@ -35,6 +35,46 @@
                 }
                 else {
                   $scope.alerts.resetAlerts();
+                  
+                  if(data.errors[0] == "notactivated") {
+                    $scope.notactivated = true;
+                  }
+                  else {
+                    angular.forEach(data.errors, function(error, key) {
+                    $scope.alerts.addAlert('danger', error);
+                    }); 
+                  }
+                }
+              })
+              .error(function() {
+                $scope.alerts.addAlert('danger', null, true);
+              })
+      };
+
+      $scope.resend = function($valid) {
+        if(!$valid)  {
+          $scope.alerts.addAlert('danger', 'Please fill all the fields', true);     
+          return false;     
+        }
+
+        $scope.notactivated = false;
+        
+        $scope.alerts.addAlert('info', 'Processing...', true);
+
+        var request = $http({
+                    method: "post",
+                    url: "/user/resend",
+                    transformRequest: transformRequestAsFormPost,
+                    data: $scope.data
+                });
+
+        request
+              .success(function(data) {
+                if(data.success) {
+                  $scope.alerts.addAlert('success', 'Confirmation mail re-sent, please check your inbox.', true);
+                }
+                else {
+                  $scope.alerts.resetAlerts();
                   angular.forEach(data.errors, function(error, key) {
                   $scope.alerts.addAlert('danger', error);
                   });      
