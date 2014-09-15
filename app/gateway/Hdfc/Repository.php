@@ -4,6 +4,7 @@ namespace Gateway\Hdfc;
 
 use EE\Exception;
 use Gateway\Hdfc;
+use Gateway\Hdfc\Transaction;
 use Models\Base;
 
 class Repository extends Base\Repository
@@ -60,13 +61,13 @@ class Repository extends Base\Repository
 
     public function persistAfterEnroll($request, $response)
     {
-        if ($response['enroll_result'] === Hdfc\Result::ENROLLED)
+        if ($response['enroll_result'] === Transaction\Result::ENROLLED)
         {
-            $status = Hdfc\Status::ENROLLED;
+            $status = Transaction\Status::ENROLLED;
         }
-        else if ($response['enroll_result'] === Hdfc\Result::NOT_ENROLLED)
+        else if ($response['enroll_result'] === Transaction\Result::NOT_ENROLLED)
         {
-            $status = Hdfc\Status::NOT_ENROLLED;
+            $status = Transaction\Status::NOT_ENROLLED;
         }
 
         $attributes = array(
@@ -86,11 +87,11 @@ class Repository extends Base\Repository
     {
         $attributes = array(
             'trackid' => $id,
-            'action' => Hdfc\Action::AUTHORIZE,
+            'action' => Transaction\Action::AUTHORIZE,
             'error_code' => $error['code'],
             'error_text' => $error['text'],
             'enroll_result' => $error['enroll_result'],
-            'status' => Hdfc\Status::ENROLL_FAILED);
+            'status' => Transaction\Status::ENROLL_FAILED);
 
         $repo = $this->repo;
 
@@ -100,8 +101,8 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolled($model, $data)
     {
         $attributes = array(
-            'status' => Hdfc\Status::AUTHORIZED,
-            'action' => Hdfc\Action::AUTHORIZE,
+            'status' => Transaction\Status::AUTHORIZED,
+            'action' => Transaction\Action::AUTHORIZE,
             'result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
@@ -117,7 +118,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolled($model, $data)
     {
         $attributes = array(
-            'status'    => Hdfc\Status::AUTHORIZED,
+            'status'    => Transaction\Status::AUTHORIZED,
             'result'    => $data['result'],
             'ref'       => $data['ref'],
             'auth'      => $data['auth'],
@@ -132,8 +133,8 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolledError($model, $error)
     {
         $attributes = array(
-            'action' => Hdfc\Action::AUTHORIZE,
-            'status' => Hdfc\Status::AUTH_NOT_ENROLL_FAILED,
+            'action' => Transaction\Action::AUTHORIZE,
+            'status' => Transaction\Status::AUTH_NOT_ENROLL_FAILED,
             'error_code' => $error['code'],
             'error_text' => $error['text']);
 
@@ -145,8 +146,8 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolledError($model, $error)
     {
         $attributes = array(
-            'action' => Hdfc\Action::AUTHORIZE,
-            'status' => Hdfc\Status::AUTH_ENROLL_FAILED,
+            'action' => Transaction\Action::AUTHORIZE,
+            'status' => Transaction\Status::AUTH_ENROLL_FAILED,
             'error_code' => $error['code'],
             'error_text' => $error['text']);
 
@@ -162,12 +163,12 @@ class Repository extends Base\Repository
 
         switch($action)
         {
-            case Hdfc\Action::REFUND:
-                $status = Hdfc\Status::REFUNDED;
+            case Transaction\Action::REFUND:
+                $status = Transaction\Status::REFUNDED;
                 break;
 
-            case Hdfc\Action::CAPTURE:
-                $status = Hdfc\Status::CAPTURED;
+            case Transaction\Action::CAPTURE:
+                $status = Transaction\Status::CAPTURED;
                 break;
 
             default:
@@ -195,13 +196,13 @@ class Repository extends Base\Repository
         switch($type)
         {
             case 'refund':
-                $action = Hdfc\Action::REFUND;
-                $status = Hdfc\Status::REFUND_FAILED;
+                $action = Transaction\Action::REFUND;
+                $status = Transaction\Status::REFUND_FAILED;
                 break;
 
             case 'capture':
-                $action = Hdfc\Action::CAPTURE;
-                $status = Hdfc\Status::CAPTURE_FAILED;
+                $action = Transaction\Action::CAPTURE;
+                $status = Transaction\Status::CAPTURE_FAILED;
                 break;
         }
 

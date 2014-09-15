@@ -6,7 +6,7 @@ use EE\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
-    'cardTimeout' => [
+    'testCardTimeout' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -30,7 +30,7 @@ return [
         ],
     ],
 
-    'creditCardSuccess' => [
+    'testCreditCardSuccess' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -45,7 +45,7 @@ return [
         ],
     ],
 
-    'creditCardAuthNotAvailable1' => [
+    'testCreditCardAuthNotAvailable1' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -69,7 +69,7 @@ return [
         ],
     ],
 
-    'creditCardAuthNotAvailable2' => [
+    'testCreditCardAuthNotAvailable2' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -93,7 +93,7 @@ return [
         ],
     ],
 
-    'signatureFailure1' => [
+    'testSignatureFailure1' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -117,7 +117,7 @@ return [
         ],
     ],
 
-    'signatureFailure2' => [
+    'testSignatureFailure2' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -142,7 +142,7 @@ return [
 
     ],
 
-    'debitCardSuccess1' => [
+    'testDebitCardSuccess1' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -157,7 +157,7 @@ return [
         ],
     ],
 
-    'debitCardSuccess2' => [
+    'testDebitCardSuccess2' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -173,7 +173,7 @@ return [
 
     ],
 
-    'debitCardSuccess3' => [
+    'testDebitCardSuccess3' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -187,7 +187,8 @@ return [
             ],
         ],
     ],
-    'debitCardSuccess4' => [
+
+    'testDebitCardSuccess4' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -201,7 +202,8 @@ return [
             ],
         ],
     ],
-    'debitCardSuccess5' => [
+
+    'testDebitCardSuccess5' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -215,7 +217,8 @@ return [
             ],
         ],
     ],
-    'paresNotSuccess' => [
+
+    'testParesNotSuccess' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -239,7 +242,7 @@ return [
         ],
     ],
 
-    'debitCardAuthNotAvailable1' => [
+    'testDebitCardAuthNotAvailable1' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -262,7 +265,7 @@ return [
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
-    'debitCardAuthNotAvailable2' => [
+    'testDebitCardAuthNotAvailable2' => [
         'request' => [
             'content' => [
                 'card' => [

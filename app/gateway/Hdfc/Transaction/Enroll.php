@@ -1,15 +1,28 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace Gateway\Hdfc\Transaction;
 
 use EE\Exception;
 use Gateway\Hdfc;
+use Gateway\Hdfc\Transaction;
 use Models\Card;
 use Trace\Trace;
 use Trace\TraceCode;
 
-trait EnrollCardTrait
+trait Enroll
 {
+    /**
+     * Mapping of keys from rzp to
+     * to hdfc gateway for card
+     * @var array
+     */
+    protected $cardKeyMappings = array(
+        'name' => 'member',
+        'number' => 'card',
+        'expiry_month' => 'expmonth',
+        'expiry_year' => 'expyear',
+        'cvv' => 'cvv2');
+
     /**
      * Sends request for enrolling the card
      * with hdfc gateway
@@ -73,7 +86,7 @@ trait EnrollCardTrait
 
         $this->persistAfterEnroll();
 
-        $this->setEnrollStatus();
+        return $this->getEnrollStatus();
     }
 
     /**
@@ -123,7 +136,7 @@ trait EnrollCardTrait
         //
         $data['currencycode'] = self::INR_CODE;
 
-        $data['action'] = Hdfc\Action::AUTHORIZE;
+        $data['action'] = Action::AUTHORIZE;
     }
 
     /**
@@ -254,7 +267,7 @@ trait EnrollCardTrait
         $network = $this->input['card']['network'];
         $enroll = $this->enrollResponse['data']['enroll_result'];
 
-        $notEnrolled = ($enroll === Hdfc\Result::NOT_ENROLLED);
+        $notEnrolled = ($enroll === Transaction\Result::NOT_ENROLLED);
 
         //
         // ECI checks only need to be done for NOT_ENROLLED cases
@@ -316,7 +329,7 @@ trait EnrollCardTrait
         // 'enrollSuccess' variable tells us whether
         // its a success code or failure.
         //
-        list($result, $success) = Hdfc\Result::getResultCode($result);
+        list($result, $success) = Transaction\Result::getResultCode($result);
 
         // Set the enroll result code irrespective of success/failure.
         $this->enrollResponse['data']['enroll_result'] = $result;
@@ -347,13 +360,13 @@ trait EnrollCardTrait
 
         switch ($enrollResult)
         {
-            case Hdfc\Result::FSS0001_ENROLLED:
+            case Transaction\Result::FSS0001_ENROLLED:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $this->enrollResponse,
                     Hdfc\ErrorCode::FSS0001);
                 break;
 
-            case Hdfc\Result::UNKNOWN_ERROR_ENROLLED:
+            case Transaction\Result::UNKNOWN_ERROR_ENROLLED:
                 //
                 // If enroll failed with an invalid code, set error
                 // for that and mark the operation as failure.
@@ -382,27 +395,17 @@ trait EnrollCardTrait
      *
      * @return  void
      */
-    protected function setEnrollStatus()
-    {
-        //
-        // By default, enrollStatus should be null
-        //
-
-        Assert($this->enrollStatus === null);
-
-        if ($this->error)
-            $this->enrollStatus = false;
-        else
-            $this->enrollStatus = $this->enrollResponse['data']['enroll_result'];
-    }
-
-    /**
-     * Returns enrollStatus
-     *
-     * @return void
-     */
     protected function getEnrollStatus()
     {
-        return $this->enrollStatus;
+        if ($this->error)
+        {
+            $enrollStatus = false;
+        }
+        else
+        {
+            $enrollStatus = $this->enrollResponse['data']['enroll_result'];
+        }
+
+        return $enrollStatus;
     }
 }

@@ -1,13 +1,14 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace Gateway\Hdfc\Transaction;
 
-use Gateway\Hdfc;
 use EE\Exception;
+use Gateway\Hdfc;
+use Gateway\Hdfc\Transaction;
 use Trace\Trace;
 use Trace\TraceCode;
 
-trait AuthTransactionTrait
+trait Authorize
 {
     /**
      * 1.   We reach here after card enroll request has been successful.
@@ -19,14 +20,14 @@ trait AuthTransactionTrait
      *
      * @return void
      */
-    protected function decideAuthStepAfterEnroll()
+    protected function decideAuthStepAfterEnroll($enrollStatus)
     {
-        switch ($this->enrollStatus)
+        switch ($enrollStatus)
         {
-            case Hdfc\Result::ENROLLED:
+            case Transaction\Result::ENROLLED:
                 return $this->getFieldsForFormSubmitToBankACS();
 
-            case Hdfc\Result::NOT_ENROLLED:
+            case Transaction\Result::NOT_ENROLLED:
                 return $this->postAuthNotEnrolledRequestToBank();
 
             default:
@@ -63,9 +64,9 @@ trait AuthTransactionTrait
         // Throw exception otherwise.
         //
 
-        Assert((int) $this->model->enroll_result === Hdfc\Result::ENROLLED);
+        Assert((int) $this->model->enroll_result === Transaction\Result::ENROLLED);
 
-        if ($this->model->status !== Hdfc\Status::ENROLLED)
+        if ($this->model->status !== Status::ENROLLED)
         {
             throw new Exception\InvalidArgumentException('Gateway Exception: Status not valid');
         }
@@ -98,7 +99,7 @@ trait AuthTransactionTrait
 
     protected function postAuthNotEnrolledRequestToBank()
     {
-        if ($this->model->status !== Hdfc\Status::NOT_ENROLLED)
+        if ($this->model->status !== Status::NOT_ENROLLED)
         {
             throw new Exception\InvalidArgumentException('Gateway Exception: Status not valid');
         }
@@ -140,24 +141,24 @@ trait AuthTransactionTrait
         //
         switch ($result)
         {
-            case Hdfc\Result::APPROVED:
+            case Transaction\Result::APPROVED:
                 break;
 
-            case Hdfc\Result::NOT_APPROVED:
+            case Transaction\Result::NOT_APPROVED:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $authResponse,
                     Hdfc\ErrorCode::RP00006);
                 $this->error = true;
                 break;
 
-            case Hdfc\Result::HOST_TIMEOUT:
+            case Transaction\Result::HOST_TIMEOUT:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $authResponse,
                     Hdfc\ErrorCode::RP00004);
                 $this->error = true;
                 break;
 
-            case Hdfc\Result::DENIED_BY_RISK:
+            case Transaction\Result::DENIED_BY_RISK:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $authResponse,
                     Hdfc\ErrorCode::RP00005);

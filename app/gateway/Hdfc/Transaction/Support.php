@@ -1,13 +1,14 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace Gateway\Hdfc\Transaction;
 
+use EE\Exception;
 use Gateway\Hdfc;
+use Gateway\Hdfc\Transaction;
 use Trace\Trace;
 use Trace\TraceCode;
-use EE\Exception;
 
-trait SupportTransactionTrait
+trait Support
 {
     /**
      * Forms the crux of doing support
@@ -74,24 +75,24 @@ trait SupportTransactionTrait
         //
         switch ($result)
         {
-            case Hdfc\Result::CAPTURED:
+            case Transaction\Result::CAPTURED:
                 break;
 
-            case Hdfc\Result::NOT_CAPTURED:
+            case Transaction\Result::NOT_CAPTURED:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $authResponse,
                     Hdfc\ErrorCode::RP00006);
                 $this->error = true;
                 break;
 
-            case Hdfc\Result::HOST_TIMEOUT:
+            case Transaction\Result::HOST_TIMEOUT:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $authResponse,
                     Hdfc\ErrorCode::RP00004);
                 $this->error = true;
                 break;
 
-            case Hdfc\Result::DENIED_BY_RISK:
+            case Transaction\Result::DENIED_BY_RISK:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $authResponse,
                     Hdfc\ErrorCode::RP00005);

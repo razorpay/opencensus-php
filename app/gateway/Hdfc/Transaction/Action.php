@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace Gateway\Hdfc\Transaction;
 
 class Action
 {

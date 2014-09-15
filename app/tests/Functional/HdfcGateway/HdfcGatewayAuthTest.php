@@ -170,9 +170,7 @@ class HdfcGatewayAuthTest extends TestCase
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];
 
-        $name = lcfirst(substr($func, 4));
-
-        $testData = $this->testData[$name];
+        $testData = $this->testData[$func];
 
         $this->replaceDefualtValues($testData['request']['content']);
 

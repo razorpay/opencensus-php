@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Hdfc;
+namespace Gateway\Hdfc\Transaction;
 
 use Gateway\Hdfc;
 
@@ -82,17 +82,17 @@ final class Result
         switch ($result)
         {
             case 'ENROLLED':
-                $result = Hdfc\Result::ENROLLED;
+                $result = self::ENROLLED;
                 break;
             case 'NOT ENROLLED':
-                $result = Hdfc\Result::NOT_ENROLLED;
+                $result = self::NOT_ENROLLED;
                 break;
             case 'FSS0001-Authentication Not Available':
-                $result = Hdfc\Result::FSS0001_ENROLLED;
+                $result = self::FSS0001_ENROLLED;
                 $success = false;
                 break;
             default:
-                $result = Hdfc\Result::UNKNOWN_ERROR_ENROLLED;
+                $result = self::UNKNOWN_ERROR_ENROLLED;
                 $success = false;
         }
 

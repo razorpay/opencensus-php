@@ -25,7 +25,8 @@ class Utility
             (strpos($msg, 'Network is unreachable') !==false) or
             (strpos($msg, 'Name or service not known') !== false) or
             (strpos($msg, 'Failed to connect') !== false) or
-            (strpos($msg, 'Could not resolve host') !== false))
+            (strpos($msg, 'Could not resolve host') !== false) or
+            (strpos($msg, 'Resolving timed out') !== false))
         {
             return true;
         }

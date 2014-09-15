@@ -35,7 +35,7 @@ class SupportTest extends TestCase
         // create an auth transaction using card 1
         //
         $this->setupPublicBasicAuthParams();
-        $testData = $this->testData['creditCardSuccess'];
+        $testData = $this->testData['testCreditCardSuccess'];
         $this->replaceDefualtValues($testData['request']['content']);
 
         $txn = $this->runRequestResponseFlow($testData);

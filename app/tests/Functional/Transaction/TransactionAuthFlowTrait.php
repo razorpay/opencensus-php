@@ -183,7 +183,15 @@ trait TransactionAuthFlowTrait
         $method = $form->getMethod();
         $values = $form->getValues();
 
-        $response = Requests::post($uri, array(), $values);
+        try
+        {
+            $response = Requests::post($uri, array(), $values);
+        }
+        catch(\Requests_Exception $e)
+        {
+            echo '3d secure failed';
+            throw $e;
+        }
 
         $form = $this->dcTransactionGetCallbackForm($response, $uri);
 

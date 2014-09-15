@@ -5,7 +5,7 @@ namespace Gateway\MockHdfc;
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
-use Gateway\Hdfc\Action;
+use Gateway\Hdfc\Transaction\Action;
 use Gateway\MockHdfc;
 use Models\Card;
 
