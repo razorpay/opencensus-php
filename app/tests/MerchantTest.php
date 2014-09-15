@@ -70,7 +70,6 @@ class MerchantTest extends IntegrationTestCase
     public function testLogin()
     {
         $this->browser
-            ->click(l::IdOrName('signin')) 
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 2000)
             ->type(l::IdOrName('email'), $this->merchant->email)   // Fill name
             ->type(l::IdOrName('password'), '123456')   // Fill slug
