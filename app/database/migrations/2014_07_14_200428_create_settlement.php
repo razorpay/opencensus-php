@@ -34,18 +34,6 @@ class CreateSettlement extends Migration {
             $table->char(Settlement::LEDGER_ID, Settlement::ID_LENGTH)
                   ->unique();
 
-            $table->integer(Settlement::TRANSACTION_AMOUNT)
-                  ->unsigned();
-
-            $table->integer(Settlement::TRANSACTION_FEES)
-                  ->unsigned();
-
-            $table->integer(Settlement::REFUND_AMOUNT)
-                  ->unsigned();
-
-            $table->integer(Settlement::REFUND_FEES)
-                  ->unsigned();
-
             // Adds created_at and updated_at columns to the table
             $table->integer(Settlement::CREATED_AT);
             $table->integer(Settlement::UPDATED_AT);
