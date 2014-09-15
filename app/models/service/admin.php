@@ -274,21 +274,6 @@ class Admin extends Service
             return array('Activation form has not been submitted by merchant yet.');
         }
 
-        if((int)$merchant->activated === 1)
-        {
-            return array('Merchant is already active.');
-        }
-        
-        if(empty($this->fetchMerchantPricing($id)))
-        {
-            return array('Merchant must be assigned a pricing plan before he is activated');
-        }
-
-        if(empty($this->fetchMerchantTerminal($id)))
-        {
-            return array('Merchant must be assigned a gateway terminal before he is activated');
-        }
-
         $request = (new Request)->setCredentials();
 
         $response = $request->process('POST', 'merchants/'.$id.'/activate/');
