@@ -19,6 +19,8 @@ class Service
     {
         $secret = Config::get('api.auth_pass');
 
+        Api::$baseUrl = $_ENV['API_URL'];
+
         $this->api = new Api('rzp_'.$mode.'_'.$merchant_id, $secret);
     }
 }
