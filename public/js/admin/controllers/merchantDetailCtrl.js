@@ -191,18 +191,12 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.openAssignPricing = function () {
-
-      var pricing_plans = getPricingPlans();
-
       var currentPlan = $scope.merchant.pricing_plan.id || "";
 
       var modalInstance = $modal.open({
         templateUrl: 'assignPricingModalContent.html',
         controller: 'assignPricingModalCtrl',
         resolve: {
-          pricing_plans: function () {
-            return pricing_plans;
-          },
           current: function() {
             return currentPlan;
           }
@@ -233,36 +227,14 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         });
     };
 
-    function getPricingPlans(){
-      var plans = [];
-
-      $scope.alerts.addAlert('info', 'Processing...', true);
-
-      var request = $http.get("/admin/pricing/list");
-
-      request
-      .success(function(data){
-        $scope.alerts.resetAlerts();
-        if(data.success) {
-          angular.forEach(data.data, function(value, key){
-            plans.push({'id': value.id, 'name':value.name});
-          })
-        }
-        else {
-          $scope.alerts.addAlert('danger');
-        }
-      })
-      .error(function(){
-        $scope.alerts.addAlert('danger', null, true);
-      })
-      return plans;
-    };
-
     function generateMerchant() {
+      $scope.alerts.addAlert('info', 'Processing...');
       var request = $http.get("/admin/merchant/"+$scope.merchant.id);
 
       request
       .success(function(data){
+        $scope.alerts.resetAlerts(true);
+        
         if(data.success) {
           $scope.merchant = data.data.details;
 
@@ -271,19 +243,36 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
           $scope.merchant.activation_progress = parseInt(($scope.merchant.steps_finished.length * 100)/ 6);
         }
         else {
-          $scope.alerts.addAlert('danger', null, true);
+          $scope.alerts.addAlert('danger', null);
         }
       })
       .error(function(){
-        $scope.alerts.addAlert('danger', null, true);
+        $scope.alerts.resetAlerts(true);
+        $scope.alerts.addAlert('danger', null);
       });
     }
 }])
-.controller('assignPricingModalCtrl', ['$scope', '$modalInstance', 'pricing_plans', 'current',
-  function ($scope, $modalInstance, pricing_plans, current) {
-      $scope.pricing_plans = pricing_plans;
+.controller('assignPricingModalCtrl', ['$scope', '$modalInstance', '$http', 'current',
+  function ($scope, $modalInstance, $http, current) {
+      $scope.loading = true;
+
+      $scope.pricing_plans = [];
       $scope.pricing_plan_id = current;
+
+      var request = $http.get("/admin/pricing/list");
+      request
+        .success(function(data){       
+          if(data.success) {
+            angular.forEach(data.data, function(value, key){
+              $scope.pricing_plans.push({'id': value.id, 'name':value.name});
+            });
+
+            $scope.loading = false;
+          }
+        });
+
       $scope.ok = function (pricing_plan_id) {
+        console.log(pricing_plan_id);
         $modalInstance.close(pricing_plan_id);
       };
 

@@ -183,8 +183,11 @@ angular.module('app.services', [])
 						if(reset) this.alerts = [];
 						this.alerts.push({type: $type, msg: $message});
 					},
-					this.resetAlerts = function() {
-						this.alerts = [];
+					this.resetAlerts = function(last) {
+						if(!last)
+							this.alerts = [];
+						else
+							this.alerts.pop();
 					}
 				};
 

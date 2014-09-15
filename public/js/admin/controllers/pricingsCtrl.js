@@ -103,11 +103,14 @@ app.controller('PricingsCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKEN'
       });
     }
     function generateTable() {
+      $scope.alerts.addAlert('info', 'Processing...');
+
       var request = $http.get("/admin/pricing/list");
       
       request
       .success(function(data){
         if(data.success) {
+          $scope.alerts.resetAlerts(true);
           $scope.pricing_plans = data.data;
         }
       });

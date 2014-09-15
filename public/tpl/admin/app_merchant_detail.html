@@ -177,14 +177,15 @@
     Warning: The assigned pricing plan will replace the current pricing plan and affect all future test/live transactions.
     </strong></span>
     <form class="form-horizontal">
-      <div class="form-group" ng-hide="pricing_plans.length == 0">
+      <div class="form-group" ng-show="loading === false && pricing_plans.length > 0">
         <label class="col-lg-2 control-label">Plan to be Assigned</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="pricing_plan_id" ng-model="pricing_plan_id" ng-options="plan.id as plan.name for plan in pricing_plans">
           </select>
         </div>
       </div>
-      <h4 ng-show="pricing_plans.length == 0">No Plans available. First create a pricing plan <a ui-sref="app.pricing.list">here</a></h4>
+      <h5 ng-if="loading">Loading Plans....</h5>
+      <h4 ng-if="loading === false && pricing_plans.length == 0">No Plans available. First create a pricing plan <a ui-sref="app.pricing.list">here</a></h4>
     </form>
   </div>
   <div class="modal-footer">
