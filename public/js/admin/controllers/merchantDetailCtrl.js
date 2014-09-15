@@ -17,7 +17,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       request
       .success(function(data){
         if(data.success) {
-          $scope.alerts.addAlert('success', 'Merchant Form Locked', true);
+          $scope.alerts.addAlert('success', 'Merchant Form locked successfully', true);
           generateMerchant();
         }
         else {
@@ -40,7 +40,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       request
       .success(function(data){
         if(data.success) {
-          $scope.alerts.addAlert('success', 'Merchant Form Unlocked', true);
+          $scope.alerts.addAlert('success', 'Merchant Form unlocked successfully', true);
           generateMerchant();
         }
         else {
@@ -199,7 +199,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       var modalInstance = $modal.open({
         templateUrl: 'assignPricingModalContent.html',
         controller: 'assignPricingModalCtrl',
-        size: 'lg',
         resolve: {
           pricing_plans: function () {
             return pricing_plans;
@@ -223,7 +222,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       var modalInstance = $modal.open({
         templateUrl: 'assignTerminalModalContent.html',
         controller: 'assignTerminalModalCtrl',
-        size: 'lg'
       });
 
       modalInstance.result.then(

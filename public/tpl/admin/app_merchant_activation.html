@@ -1,7 +1,7 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">Activation Form</h1>
 </div>
-<div class="wrapper-md" ng-controller="MerchantActivationCtrl">
+<div class="wrapper-md activation-wrapper" ng-controller="MerchantActivationCtrl">
 <div class="text-center m-t m-b">
   <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
 </div>
@@ -50,9 +50,9 @@
       </tab-heading>
       <h4>Contact Details</h4>
       <form name="step1" class="form-validation form-horizontal" novalidate>
-      <div class="">
-        <button type="submit" class="btn btn-default btn-rounded disabled">Prev</button>
-        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step2=true">Next</button>
+      <div class="prev-next">
+        <button type="submit" class="btn btn-prev btn-default btn-rounded disabled">Prev</button>
+        <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step2=true">Next</button>
       </div>
       <fieldset ng-disabled="locked">
         <div class="form-group">
@@ -89,9 +89,9 @@
       </tab-heading>
       <h4>Bussiness Details </h4>
       <form name="step2" class="form-validation form-horizontal" novalidate>
-      <div class="">
-        <button type="button" class="btn btn-default btn-rounded" ng-click="steps.step1=true">Prev</button>
-        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step3=true">Next</button>
+      <div class="prev-next">
+        <button type="button" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step1=true">Prev</button>
+        <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step3=true">Next</button>
       </div>
       <fieldset ng-disabled="locked">
         <div class="form-group">
@@ -232,9 +232,9 @@
       </tab-heading>
       <h4>Promoters Details</h4>
       <form name="step3" class="form-validation form-horizontal" novalidate>
-      <div class="">
-        <button type="submit" class="btn btn-default btn-rounded" ng-click="steps.step2=true">Prev</button>
-        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step4=true">Next</button>
+      <div class="prev-next">
+        <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step2=true">Prev</button>
+        <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step4=true">Next</button>
       </div>
       <fieldset ng-disabled="locked">
         <div class="form-group">
@@ -259,9 +259,9 @@
       </tab-heading>
       <h4>Bank Account Details</h4>
       <form name="step4" class="form-validation form-horizontal" novalidate>
-      <div class="">
-        <button type="submit" class="btn btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
-        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step5=true">Next</button>
+      <div class="prev-next">
+        <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
+        <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step5=true">Next</button>
       </div>
       <fieldset ng-disabled="locked">
         <div class="form-group">
@@ -311,9 +311,9 @@
       </tab-heading>
       <h4>Documents Uploads</h4>
       <form name="step5" class="form-validation form-horizontal" novalidate>
-      <div class="">
-        <button type="submit" class="btn btn-default btn-rounded" ng-click="steps.step4=true">Prev</button>
-        <button type="submit" class="pull-right btn btn-default btn-rounded" ng-click="steps.step6=true" >Next</button>
+      <div class="prev-next">
+        <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step4=true">Prev</button>
+        <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step6=true" >Next</button>
       </div>
       <fieldset ng-disabled="locked">
         <alert type="info">The links to uploaded files are valid for one hour, refresh the page if they do not work.</alert>
@@ -380,9 +380,9 @@
       </tab-heading>
       <h4>Submit For Activation</h4>
       <form name="step6" class="form-validation form-horizontal" novalidate>
-        <div class="">
-          <button type="submit" class="btn btn-default btn-rounded" ng-click="steps.step5=true">Prev</button>
-          <button type="submit" class="pull-right btn btn-default btn-rounded disabled">Next</button>
+        <div class="prev-next">
+          <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step5=true">Prev</button>
+          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded disabled">Next</button>
         </div>
         <fieldset ng-disabled="locked">
         </fieldset>

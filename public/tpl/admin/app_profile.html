@@ -1,7 +1,7 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">Admin Profile</h1>
 </div>
-<div class="wrapper-md" ng-controller="AdminCtrl">
+<div class="wrapper-md profile-wrapper" ng-controller="AdminCtrl">
   <div class="panel panel-default col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
       Admin Username: <strong>{{admin.username}}</strong>
@@ -34,25 +34,25 @@
         <div class="modal-header">
           <h3 class="modal-title">Change Password</h3>
         </div>
-        <div class="modal-body">
+        <div class="modal-body change-pwd-modal">
             <form ng-init="data={}">
               <div class="form-group">
-                  <input type="password" placeholder="Current Password" class="form-control" ng-model="data.old_password">
+                  <input type="password" placeholder="Current Password" class="form-control" name="old_password" ng-model="data.old_password">
               </div>
               <div class="form-group">
-                  <input type="password" placeholder="New Password" class="form-control" ng-model="data.password">
+                  <input type="password" placeholder="New Password" class="form-control" name="password" ng-model="data.password">
               </div>
               <div class="form-group">
-                  <input type="password" placeholder="Confirm New Password" class="form-control" ng-model="data.password_confirmation">
+                  <input type="password" placeholder="Confirm New Password" class="form-control" name="password_confirmation" ng-model="data.password_confirmation">
               </div>
             </form>
         </div>
         <div class="modal-footer">                  
             <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-            <button class="btn btn-primary" ng-click="ok(data)">Change Password</button>
+            <button class="btn btn-primary modal-ok" ng-click="ok(data)">Change Password</button>
         </div>
       </script>
-      <button  class="btn btn-primary btn-rounded" ng-click="changePassword()">Change Password</button>
+      <button  class="btn btn-primary btn-rounded btn-change-pwd" ng-click="changePassword()">Change Password</button>
     </div>
   </div>
 </div>

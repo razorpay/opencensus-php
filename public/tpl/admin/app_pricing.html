@@ -4,13 +4,13 @@
 <div class="wrapper-md" ng-controller="PricingsCtrl">
   <div class="panel panel-default" >
     <div class="panel-heading">
-      List of all Plans {{refreshPricing}}
+      List of all Plans
     </div>
     <div class="panel-body b-b b-light">
       Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
     </div>
     <div>
-    <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="table table-responsive table-striped b-t b-light">
+    <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="pricing-table table table-responsive table-striped b-t b-light">
         <thead>
           <tr>
             <th>Plan ID</th>
@@ -25,7 +25,7 @@
             <td>{{row.name}}</td>      
             <td>{{row.count}}</td>
             <td>
-              <button class="btn btn-default btn-xs"  ng-click="showPlan(row.id)">Show/Hide Rules</button>
+              <button class="btn btn-default btn-xs btn-show-plan"  ng-click="showPlan(row.id)">Show/Hide Rules</button>
             </td>
           </tr>
           <tr ng-show="pricing_plans.length == 0">
@@ -47,7 +47,7 @@
       </table>
     </div>
   </div>
-  <div class="panel panel-default"  ng-show="show_plan.id">
+  <div class="panel panel-default" id="show-plan-panel" ng-if="show_plan.id">
     <div class="panel-heading">
       Plan Id: {{show_plan.id}} <br/>
       Plan Name: {{show_plan.name}}
@@ -88,19 +88,19 @@
           <tr>
             <td>Add new Rule</td>
             <td>
-              <select class="form-control" ng-model="new_rule.payment_mode" required>
+              <select class="form-control" name="payment_mode" ng-model="new_rule.payment_mode" required>
                   <option value="card">Card</option>
               </select>
             </td>
             <td>
-              <select class="form-control" ng-model="new_rule.payment_mode_type">
+              <select class="form-control" name="payment_mode_type" ng-model="new_rule.payment_mode_type">
                   <option value="credit">Credit</option>
                   <option value="debit">Debit</option>
                   <option value="">Both</option>
               </select>
             </td>
             <td>
-              <select class="form-control" ng-model="new_rule.payment_network">
+              <select class="form-control" name="payment_network" ng-model="new_rule.payment_network">
                   <option value="">All</option>
                   <option value="VISA">VISA</option>
                   <option value="MC">MasterCard</option>
@@ -110,16 +110,16 @@
               </select>
             </td>
             <td>
-              <select class="form-control" ng-model="new_rule.payment_issuer">
+              <select class="form-control" name="payment_issuer" ng-model="new_rule.payment_issuer">
                   <option value="">All</option>
                   <option value="HDFC">HDFC</option>
               </select>
             </td>
             <td>
-              <input class="form-control" type="text" ng-model="new_rule.percent_rate" tooltip="Percent rate multiplied by 100 e.g. enter 2.89% as 289" placeholder="As integer" required/>
+              <input class="form-control" type="text" name="percent_rate" ng-model="new_rule.percent_rate" tooltip="Percent rate multiplied by 100 e.g. enter 2.89% as 289" placeholder="As integer" required/>
             </td>
             <td>
-              <input class="form-control" type="text" ng-model="new_rule.fixed_rate" tooltip="Fixed rate in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
+              <input class="form-control" type="text" name="fixed_rate" ng-model="new_rule.fixed_rate" tooltip="Fixed rate in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
             </td>
             <td>
               <a href ng-click="saveRule()"><button class="btn btn-primary btn-rounded">Save</button></a>
@@ -130,9 +130,9 @@
       </table>
     </div>
   </div>
-  <div class="panel panel-default"  ng-show="create_plan">
+  <div class="panel panel-default" id="create-plan-panel"  ng-if="create_plan">
     <div class="panel-heading">
-      Plan Name: <input type="text" ng-model="new_plan.plan_name" placeholder="Plan Name" />
+      Plan Name: <input type="text" name="plan_name" ng-model="new_plan.plan_name" placeholder="Plan Name" />
     </div>
     <div class="table-responsive">
       <table class="table table-striped b-t b-light">
@@ -155,19 +155,19 @@
           </tr>
           <tr>
             <td>
-              <select class="form-control" ng-model="new_plan.payment_mode" required>
+              <select class="form-control" name="payment_mode" ng-model="new_plan.payment_mode" required>
                   <option value="card">Card</option>
               </select>
             </td>
             <td>
-              <select class="form-control" ng-model="new_plan.payment_mode_type">
+              <select class="form-control" name="payment_mode_type" ng-model="new_plan.payment_mode_type">
                   <option value="credit">Credit</option>
                   <option value="debit">Debit</option>
                   <option value="">Both</option>
               </select>
             </td>
             <td>
-              <select class="form-control" ng-model="new_plan.payment_network">
+              <select class="form-control" name="payment_network" ng-model="new_plan.payment_network">
                   <option value="">All</option>
                   <option value="VISA">VISA</option>
                   <option value="MC">MasterCard</option>
@@ -177,16 +177,16 @@
               </select>
             </td>
             <td>
-              <select class="form-control" ng-model="new_plan.payment_issuer">
+              <select class="form-control" name="payment_issuer" ng-model="new_plan.payment_issuer">
                   <option value="">All</option>
                   <option value="HDFC">HDFC</option>
               </select>
             </td>
             <td>
-              <input class="form-control" type="text" ng-model="new_plan.percent_rate" tooltip="Percent rate multiplied by 100 e.g. enter 2.89% as 289" placeholder="As integer" required/>
+              <input class="form-control" type="text" name="percent_rate" ng-model="new_plan.percent_rate" tooltip="Percent rate multiplied by 100 e.g. enter 2.89% as 289" placeholder="As integer" required/>
             </td>
             <td>
-              <input class="form-control" type="text" ng-model="new_plan.fixed_rate" tooltip="Fixed rate in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
+              <input class="form-control" type="text" name="fixed_rate" ng-model="new_plan.fixed_rate" tooltip="Fixed rate in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
             </td>
           </tr>
         </tbody>

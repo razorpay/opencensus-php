@@ -1,12 +1,12 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">Merchant Detail</h1>
 </div>
-<div class="wrapper-md" ng-controller="MerchantDetailCtrl">
+<div class="wrapper-md merchant-wrapper" ng-controller="MerchantDetailCtrl">
   <div class="panel panel-default col-sm-2 col-sm-offset-2" >
     <div class="panel-heading m-t m-b">
       Actions
     </div>
-    <div class="row wrapper">
+    <div class="row wrapper actions-wrapper">
       <div class="list-group">
         <a href="{{'/admin/merchant/' + merchant.id + '/login'}}" target="_blank" class="list-group-item">
           Login as Merchant
@@ -172,7 +172,7 @@
   <div class="modal-header">
     <h3 class="modal-title">Assign Pricing Plan</h3>
   </div>
-  <div class="modal-body">
+  <div class="modal-body pricing-modal">
     <span class="text-danger"><strong>
     Warning: The assigned pricing plan will replace the current pricing plan and affect all future test/live transactions.
     </strong></span>
@@ -180,7 +180,7 @@
       <div class="form-group" ng-hide="pricing_plans.length == 0">
         <label class="col-lg-2 control-label">Plan to be Assigned</label>
         <div class="col-lg-10" >
-          <select class="form-control m-b" ng-model="pricing_plan_id" ng-options="plan.id as plan.name for plan in pricing_plans">
+          <select class="form-control m-b" name="pricing_plan_id" ng-model="pricing_plan_id" ng-options="plan.id as plan.name for plan in pricing_plans">
           </select>
         </div>
       </div>
@@ -189,14 +189,14 @@
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned plan for the merchant will be replace with selected." ng-click="ok(pricing_plan_id)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="assignTerminalModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Assign Terminal</h3>
   </div>
-  <div class="modal-body">
+  <div class="modal-body terminal-modal">
     <span class="text-danger"><strong>
     Warning: The terminal once assigned can not be changed.
     </strong></span>
@@ -210,33 +210,33 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-lg-2 control-label">Gateway Merchant Id:</label>
+        <label for="gateway_merchant_id" class="col-lg-2 control-label">Gateway Merchant Id:</label>
         <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" ng-model="terminal.gateway_merchant_id" />
+          <input type="text" class="form-control m-b" name="gateway_merchant_id" ng-model="terminal.gateway_merchant_id" />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-lg-2 control-label">Gateway Terminal Id:</label>
+        <label for="gateway_terminal_id" class="col-lg-2 control-label">Gateway Terminal Id:</label>
         <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" ng-model="terminal.gateway_terminal_id" />
+          <input type="text" class="form-control m-b" name="gateway_terminal_id" ng-model="terminal.gateway_terminal_id" />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-lg-2 control-label">Gateway Terminal Password:</label>
+        <label for="gateway_terminal_password" class="col-lg-2 control-label">Gateway Terminal Password:</label>
         <div class="col-lg-10" >
-          <input type="password" class="form-control m-b" ng-model="terminal.gateway_terminal_password" />
+          <input type="password" class="form-control m-b" name="gateway_terminal_password" ng-model="terminal.gateway_terminal_password" />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-lg-2 control-label">Confirm Gateway Terminal Password:</label>
+        <label for="gateway_terminal_password_confirmation" class="col-lg-2 control-label">Confirm Gateway Terminal Password:</label>
         <div class="col-lg-10" >
-          <input type="password" class="form-control m-b" ng-model="terminal.gateway_terminal_password_confirmation" />
+          <input type="password" class="form-control m-b" name="gateway_terminal_password_confirmation" ng-model="terminal.gateway_terminal_password_confirmation" />
         </div>
       </div>
     </form>
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary" ng-confirm-click="Terminal once assigned can not be changed, ensure you have checked all values" ng-click="ok(terminal)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Terminal once assigned can not be changed, ensure you have checked all values" ng-click="ok(terminal)">OK</button>
   </div>
 </script>

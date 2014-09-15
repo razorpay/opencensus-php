@@ -13,7 +13,7 @@
       Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
     </div>
     <div>
-      <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="table-responsive table table-striped b-t b-light">
+      <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="admins-table table-responsive table table-striped b-t b-light">
         <thead>
           <tr>
             <th>Name</th>
@@ -58,37 +58,37 @@
   <div class="modal-header">
     <h3 class="modal-title">New Admin</h3>
   </div>
-  <div class="modal-body">
+  <div class="modal-body new-admin-modal">
     <form class="form-horizontal form-validation" ng-init="admin={superadmin:'0'}">
       <div class="form-group">
         <label class="col-lg-2 control-label">Full Name:</label>
         <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" ng-model="admin.name" />
+          <input type="text" class="form-control m-b" name="name" ng-model="admin.name" />
         </div>
       </div>
       <div class="form-group">
         <label class="col-lg-2 control-label">Username:</label>
         <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" ng-model="admin.username" />
+          <input type="text" class="form-control m-b" name="username" ng-model="admin.username" />
           <span class="help-block">Required to login to admin panel.</span>
         </div>
       </div>
       <div class="form-group">
         <label class="col-lg-2 control-label">Email:</label>
         <div class="col-lg-10" >
-          <input type="email" class="form-control m-b" ng-model="admin.email" />
+          <input type="email" class="form-control m-b" name="email" ng-model="admin.email" />
         </div>
       </div>
       <div class="form-group">
         <label class="col-lg-2 control-label">Password:</label>
         <div class="col-lg-10" >
-          <input type="password" class="form-control m-b" ng-model="admin.password" />
+          <input type="password" class="form-control m-b" name="password" ng-model="admin.password" />
         </div>
       </div>
       <div class="form-group">
         <label class="col-lg-2 control-label">Confirm Password:</label>
         <div class="col-lg-10" >
-          <input type="password" class="form-control m-b" ng-model="admin.password_confirmation" />
+          <input type="password" class="form-control m-b" name="password_confirmation" ng-model="admin.password_confirmation" />
         </div>
       </div>
       <div class="form-group">
@@ -105,6 +105,6 @@
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary" ng-click="ok(admin)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(admin)">OK</button>
   </div>
 </script>
