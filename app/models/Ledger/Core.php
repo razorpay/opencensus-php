@@ -57,7 +57,7 @@ class Core
         return $entitiesArray;
     }
 
-    public function reconcileRecord($data)
+    public function reconcileRecord($data, $reconciledAt)
     {
         $record = $this->record;
 
@@ -83,6 +83,7 @@ class Core
 
         $this->updateBalances($record);
 
+        $this->setReconciledAt($reconciledAt);
         (new Ledger\Repository)->save($record);
 
         return $record;
@@ -107,6 +108,7 @@ class Core
         $merchantBalance = $merchantRepo->getBalanceLockForUpdate($this->entities['merchant']->getKey());
 
         $merchantBalance->addAmount($ledger['credit']);
+        $merchantBalance->subAmount($ledger['debit']);
         $merchantRepo->save($merchantBalance);
 
         $apiFee = $ledger['fee'] - $ledger['gateway_fee'];

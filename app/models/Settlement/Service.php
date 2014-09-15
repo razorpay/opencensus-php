@@ -2,11 +2,12 @@
 
 namespace Models\Settlement;
 
+use EE\Error\ErrorCode;
+use EE\Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Models\Base;
 use Models\Gateway;
 use Models\Ledger;
-use EE\Exception;
-use EE\Error\ErrorCode;
 
 class Service extends Base\Service
 {
@@ -48,10 +49,16 @@ class Service extends Base\Service
         $lgrs = array();
 
         $r = range(1, $headingCount);
+
+        $reconciledAt = time();
+
         foreach ($data as $row)
         {
             foreach($r as $i)
             {
+                // Some keys may have corresponding blank columns
+                // In such cases, excel does not provide a value for it.
+                // So, we manually set those keys to 'null'
                 if (isset($row[$i]) === false)
                 {
                     $row = array_slice($row, 0, $i - 1, true) +
@@ -61,14 +68,14 @@ class Service extends Base\Service
             }
 
             $assocArray = array_combine($headings, $row);
-            $lgr = $this->reconcileMprRecord($assocArray, $gateway);
+            $lgr = $this->reconcileMprRecord($assocArray, $gateway, $reconciledAt);
             array_push($lgrs, $lgr);
         }
 
         return $lgrs;
     }
 
-    protected function reconcileMprRecord($record, $gateway)
+    protected function reconcileMprRecord($record, $gateway, $reconciledAt)
     {
         $lgrCore = new Ledger\Core;
 
@@ -87,7 +94,7 @@ class Service extends Base\Service
 
         $data = Gateway::call('reconcile', $params, 'test');
 
-        $lgr = $lgrCore->reconcileRecord($data);
+        $lgr = $lgrCore->reconcileRecord($data, $reconciledAt);
 
         return $lgr;
     }
@@ -120,21 +127,15 @@ class Service extends Base\Service
         $t = $t->timestamp;
         $t_1 = $t_1->timestmap;
 
-        $txnRepo = new Transaction\Repository;
-        $txnRepo->setMerchantIdRequiredForMultipleFetch(false);
-
-        $params['from'] = $t;
-        $params['to'] = $t_1;
+        $txnRepo = (new Transaction\Repository)->findByStatusBetweenTimestmaps(
+                        Transaction\Status::CAPTURED,
+                        $t_1,
+                        $t);
 
         $txns = $txnRepo->fetch($params);
 
         $rfndRepo = new Refund\Repository;
-        $rfndRepo->setMerchantIdRequiredForMultipleFetch(false);
-
-        $params['from'] = $t;
-        $params['to'] = $t_1;
-
-        $refunds = $rfndRepo->fetch($params);
+        $refunds = $rfndRepo->findBetweenTimestamps($t_1, $t);
 
         $txns->load('merchant', 'merchant.terminal', 'card');
         $rows = array();
@@ -163,5 +164,73 @@ class Service extends Base\Service
         });
 
         return 'done!';
+    }
+
+    public function generateSettlements()
+    {
+        // Get the timestamp today at 12 am
+        $t = Carbon::today('Asia/Kolkata');
+
+        $lgrRepo = new Ledger\Repository;
+
+        $lgrs = $lgrRepo->fetchTransactionsExpectedToSettle($t);
+
+        $mercRepo = new Merchant\Repository;
+
+        $merchantId = $lgrs->first()->getMerchantId();
+        $merchant = $mercRepo->findOrFail($merchantId);
+
+        $settlements = new Collection();
+        $setlRepo = new Settlement\Repository;
+        $amount = 0;
+
+        foreach ($lgrs->all() as $lgr)
+        {
+            if ($lgr->getMerchantId() !== $merchantId)
+            {
+                $setlLedger = $this->settlementLedger($merchant, $amount);
+
+                $input = array(
+                    'amount' => $amount,
+                    'merchant_id' => $merchantId,
+                    'ledger_id' => $setlLedger->getKey());
+
+                $setl = (new Settlement\Entity)->build($input);
+                $setlLedger->setAttribute(Ledger\Entity::ENTITY_ID, $setl->getKey());
+                $merchantBalance = $merchantRepo->getBalanceLockForUpdate($this->entities['merchant']->getKey());
+                $merchantBalance->subAmount($ledger['debit']);
+                $merchantRepo->save($merchantBalance);
+                $setlLedger['balance'] = $merchantBalance->getBalance();
+
+                $lgrRepo->save($setlLedger);
+                $setlRepo->save($setl);
+
+                $merchantId = $lgr->getMerchantId();
+                $amount = 0;
+            }
+
+            $amount += $lgr->getCredit() - $lgr->getDebit();
+        }
+
+        $lgrRepo->settled($lgrs, $t);
+
+        return $setlements->toArray();
+    }
+
+    protected function settlementLedger($merchant, $amount)
+    {
+        $lgr = new Ledger\Entity;
+
+        $values = array(
+            Ledger\Entity::MERCHANT_ID => $merchant->getKey(),
+            Ledger\Entity::DEBIT => $amount,
+            Ledger\Entity::FEE => 0,
+            Ledger\Entity::AMOUNT => $amount,
+            Ledger\Entity::ENTITY_TYPE => 'settlement',
+        );
+
+        $lgr->build($values);
+
+        return $lgr;
     }
 }

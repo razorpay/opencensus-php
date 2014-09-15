@@ -12,10 +12,6 @@ class Entity extends Base\UniqueIdEntity
     const AMOUNT                = 'amount';
     const STATUS                = 'status';
     const LEDGER_ID             = 'ledger_id';
-    const TRANSACTION_AMOUNT    = 'transaction_amount';
-    const TRANSACTION_FEES      = 'transaction_fees';
-    const REFUND_AMOUNT         = 'refund_amount';
-    const REFUND_FEES           = 'refund_fees';
 
     protected $table = \Constants\Table::SETTLEMENT;
 
@@ -25,11 +21,7 @@ class Entity extends Base\UniqueIdEntity
         self::AMOUNT,
         self::STATUS,
         self::MERCHANT_ID,
-        self::LEDGER_ID,
-        self::TRANSACTION_AMOUNT,
-        self::TRANSACTION_FEES,
-        self::REFUND_AMOUNT,
-        self::REFUND_FEES);
+        self::LEDGER_ID);
 
     public function merchant()
     {

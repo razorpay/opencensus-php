@@ -24,6 +24,16 @@ class Repository extends Base\Repository
             return $query->findOrFail($id);
     }
 
+    public function findByStatusBetweenTimestamps($status, $from, $to)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Transaction\Entity::STATUS, '=', $status)
+                    ->where(Common::CREATED_AT, '>=', $from)
+                    ->where(Common::CREATED_AT, '<=', $to)
+                    ->get();
+    }
+
     public function reloadAndLockForUpdate($txn)
     {
         $repo = $this->repo;

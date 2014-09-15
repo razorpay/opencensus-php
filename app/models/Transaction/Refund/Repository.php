@@ -32,4 +32,13 @@ class Repository extends Base\Repository
 
         return $repo::where(Refund\Entity::TRANSACTION_ID, '=', $txnId);
     }
+
+    public function findBetweenTimestamps($from, $to)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Common::CREATED_AT, '>=', $from)
+                    ->where(Common::CREATED_AT, '<=', $to)
+                    ->get();
+    }
 }

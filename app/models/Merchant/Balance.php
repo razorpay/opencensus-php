@@ -16,22 +16,24 @@ class Balance extends Base\UniqueIdEntity
 
     public function addAmount($amount)
     {
-        if (is_numeric($amount) === false)
-        {
-            throw new Exception\InvalidArgumentException('Unsigned integer required. Supplied: '.$amount);
-        }
+        $this->checkNumeric($amount);
 
         $this->attributes[self::BALANCE] += (int) $amount;
     }
 
     public function subtractAmount($amount)
     {
-        if (is_numeric($amount) === false)
+        $this->checkNumeric($amount);
+
+        $this->attributes[self::BALANCE] -= (int) $amount;
+    }
+
+    protected function checkNumeric($arg)
+    {
+        if (is_numeric($arg) === false)
         {
             throw new Exception\InvalidArgumentException('Unsigned integer required. Supplied: '.$amount);
         }
-
-        $this->attributes[self::BALANCE] -= (int) $amount;
     }
 
     public function getBalance()

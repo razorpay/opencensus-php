@@ -7,7 +7,8 @@ use Constants\Table;
 use Models\Merchant;
 use Models\Merchant\Balance;
 
-class CreateBalance extends Migration {
+class CreateBalance extends Migration
+{
 
     /**
      * Run the migrations.

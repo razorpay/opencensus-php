@@ -9,37 +9,48 @@ use Models\Base;
 class Generator
 {
     protected $headings = array(
-            'merchant_code',
-            'terminal_number',
-            'rfc_fmt',
-            'bat_nbr',
-            'card_type',
-            'card_number',
-            'trans_date',
-            'settle_date',
-            'approv_code',
-            'intl_amt',
-            'domestic_amt',
-            'tran_id',
-            'upvalue',
-            'merchant_trackid',
-            'msf',
-            'service_tax',
-            'edu_cess',
-            'net_amount',
-            'debitcredit_type',
-            'udf1',
-            'udf2',
-            'udf3',
-            'udf4',
-            'udf5',
-            'sequence_number',
-        );
+        'merchant_code',
+        'terminal_number',
+        'rfc_fmt',
+        'bat_nbr',
+        'card_type',
+        'card_number',
+        'trans_date',
+        'settle_date',
+        'approv_code',
+        'intl_amt',
+        'domestic_amt',
+        'tran_id',
+        'upvalue',
+        'merchant_trackid',
+        'msf',
+        'service_tax',
+        'edu_cess',
+        'net_amount',
+        'debitcredit_type',
+        'udf1',
+        'udf2',
+        'udf3',
+        'udf4',
+        'udf5',
+        'sequence_number',
+    );
 
     const SERVICE_TAX_PERCENT = 12;
     const EDUCATION_CESS_PERCENT = 0.36;
 
     public function generateMpr(array $input)
+    {
+        $hdfcTxns = $this->fetchHdfcTransactions($input);
+
+        $mprArray = $this->generateMprArray($input, $hdfcTxns);
+
+        $filename = $this->generateMprFile($mprArray);
+
+        return $filename;
+    }
+
+    protected function fetchHdfcTransactions($input)
     {
         $transactions = array_slice($input, 'transaction');
         $trackids = array_slice($transactions, 'id');
@@ -48,20 +59,17 @@ class Generator
 
         $n = count($input);
 
-        if (count(hdfcTxns) !== $n)
+        if (count($hdfcTxns) !== $n)
         {
-            throw new Exception\LogicException('Hdfc mpr: counts do not match: ' . $n . ' vs ' . count(hdfcTxns));
+            throw new Exception\LogicException(
+                'Hdfc mpr: counts do not match: ' . $n . ' vs ' . count($hdfcTxns));
         }
 
-        $mprArray = array();
-        array_push($mprArray, $this->headings);
+        return $hdfcTxns;
+    }
 
-        for ($i = 0; $i < $n; $i++)
-        {
-            $values = $this->generateMprRow($input[$i], $hdfcTxns[$i]);
-            array_push($mprArray, $values);
-        }
-
+    protected function generateMprFile($mprArray)
+    {
         $filename = 'hdfc_mpr.xlsx';
 
         $fp = fopen($filename, 'w');
@@ -72,9 +80,21 @@ class Generator
         }
 
         fclose($fp);
+    }
 
-        return $filename;
+    protected function generateMprArray($input, $hdfcTxns)
+    {
+        $mprArray = array();
 
+        array_push($mprArray, $this->headings);
+
+        for ($i = 0; $i < $n; $i++)
+        {
+            $values = $this->generateMprRow($input[$i], $hdfcTxns[$i]);
+            array_push($mprArray, $values);
+        }
+
+        return $mprArray;
     }
 
     protected function generateMprRow($input, $hdfcTxn)

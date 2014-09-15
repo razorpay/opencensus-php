@@ -20,6 +20,9 @@ class Entity extends Base\PublicEntity
     const GATEWAY_FEE       = 'gateway_fee';
     const API_FEE           = 'api_fee';
     const ESCROW_BALANCE    = 'escrow_balance';
+    const RECONCILED_AT     = 'reconciled_at';
+    const SETTLED           = 'settled';
+    const SETTLED_AT        = 'settled_at';
 
     protected $table = \Constants\Table::LEDGER;
 
@@ -78,5 +81,15 @@ class Entity extends Base\PublicEntity
             self::ENTITY_TYPE   => 'transaction');
 
         $this->fill($lgrData);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function setReconciledAt($timestamp)
+    {
+        $this->setAttribute(self::RECONCILED_AT, $timestamp);
     }
 }

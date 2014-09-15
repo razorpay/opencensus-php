@@ -56,6 +56,14 @@ class CreateLedger  extends Migration
 
             $table->integer(Ledger::ESCROW_BALANCE);
 
+            $table->boolean(Ledger::SETTLED)
+                  ->default(0);
+
+            $table->integer(Ledger::SETTLED_AT);
+
+            $table->integer(Ledger::RECONCILED_AT)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Ledger::CREATED_AT);
             $table->integer(Ledger::UPDATED_AT);
