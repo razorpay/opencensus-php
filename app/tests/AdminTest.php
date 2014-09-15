@@ -36,9 +36,9 @@ class AdminTest extends IntegrationTestCase
             $this->admin = $this->createEntity('admin');
             $this->merchant = $this->createEntity('merchant', array('id'=>static::generateRandomString(24), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
             $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
-            
-            if((new Models\Service\Merchant)->confirm($this->merchant->confirm_token) === false)
-            $this->fail('Failure in merchant activation, check merchant tests to ensure it is working');
+            $error = (new Models\Service\Merchant)->confirm($this->merchant->confirm_token);
+            if(empty($error) === false)
+                $this->fail($error[0]);
         }
     }
 
@@ -126,9 +126,8 @@ class AdminTest extends IntegrationTestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table > tbody > tr > td').length > 5", 20000)
             ->click(l::linkContaining($this->merchant->id))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-info').length == 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 20000);
 
-        $this->assertFalse($this->browser->isElementPresent(l::css('.alert')));
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText("Merchant Detail");
 

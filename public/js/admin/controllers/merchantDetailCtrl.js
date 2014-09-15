@@ -243,7 +243,10 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
           $scope.merchant.activation_progress = parseInt(($scope.merchant.steps_finished.length * 100)/ 6);
         }
         else {
-          $scope.alerts.addAlert('danger', null);
+          $scope.alerts.resetAlerts(true);
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', key + ':' + value);
+          });
         }
       })
       .error(function(){
