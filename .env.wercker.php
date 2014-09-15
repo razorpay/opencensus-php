@@ -50,5 +50,7 @@
     'AWS_KEY_SECRET'    => '', // Your AWS Secret Access Key
     'AWS_REGION'        => 'us-east-1',
 
+    //Should mail be faked, set true in testing/development See mail.php for details
+    'MAIL_PRETEND'      => true
     );
 ?>
