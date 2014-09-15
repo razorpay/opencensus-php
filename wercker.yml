@@ -29,12 +29,15 @@ build:
       - desmondmorris/selenium-install@0.0.2
       - script:
           name: run unit tests
-          code: phpunit
+          code: phpunit --stop-on-error --stop-on-failure
     after-steps:
       - sherzberg/slack-notify:
           subdomain: razorpay
           token: $SLACK_TOKEN
           channel: general
+      - script: 
+          name: copy screenshot
+          code: cp app/storage/selenium.png $WERCKER_REPORT_ARTIFACTS_DIR/selenium.png
 deploy:
     steps:
       - script:
