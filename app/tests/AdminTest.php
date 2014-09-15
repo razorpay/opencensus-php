@@ -48,20 +48,14 @@ class AdminTest extends IntegrationTestCase
     public function testLogin()
     {
         $this->browser
-            ->open(URL::action('AdminController@getLogin'))    // Visits login page
+            ->open(URL::to('/admin#/access/signin'))    // Visits login page
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 2000)
             ->type(l::IdOrName('username'), $this->admin->username)   // Fill username
             ->type(l::IdOrName('password'), '123456')   // Fill password
-            ->click(l::css('#form-button'))                 // Click in the button
-            ->waitForPageToLoad(2000);                      // Wait for page to load
+            ->click(l::IdOrName('submit'))                 // Click in the button
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 2000);
 
-        // Asserts if at the end the user is at the index
-        $this->assertEquals(URL::action('AdminController@getIndex'),$this->browser->getLocation());
-
-        $this->browser
-            ->click(l::linkContaining('Manage Merchant'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText($this->merchant->id);
+        $this->assertBodyHasText("Pending Activations");
     }
 
     /**
@@ -71,65 +65,128 @@ class AdminTest extends IntegrationTestCase
     {   
         // Check opening of pricing page from dashboard
         $this->browser
-            ->open(URL::action('AdminController@getIndex'))
+            ->open(URL::to('/admin#'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#pricingNav').length > 0", 2000)
             ->click(l::linkContaining('Pricing Plans'))   
-            ->waitForPageToLoad(2000);                      // Wait for page to load
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.pricing-table').length > 0", 2000);                      // Wait for page to load
 
-        $this->assertEquals(URL::action('AdminController@getPricingList'),$this->browser->getLocation());
+        $this->assertBodyHasText("List of all Plans");
 
 
         //Tests creation of new plan
         $this->browser
-            ->open(URL::action('AdminController@getPricingList'))
-            ->waitForPageToLoad(2000)
-            ->click(l::linkContaining('Create new plan'))   
-            ->waitForPageToLoad(2000)
+            ->click(l::linkContaining('Create New Pricing Plan'))   
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#create-plan-panel').is(':visible')", 2000)  
             ->type(l::IdOrName('plan_name'), static::generateRandomString(7))
             ->select(l::IdOrName('payment_mode'), 'Card')
             ->select(l::IdOrName('payment_mode_type'), 'Credit')
             ->type(l::IdOrName('percent_rate'), '280')
             ->type(l::IdOrName('fixed_rate'), '200')
-            ->click(l::css('.btn-primary'))
-            ->waitForPageToLoad(2000);
+            ->click(l::linkContaining('Save and Add More Rules'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 2000);
 
-        $this->assertBodyHasText("Plan Added successfully");
+        $this->assertBodyHasText("Plan created successfully");
 
         //Tests Creation of new rule
         $this->browser
-            ->select(l::IdOrName('payment_mode'), 'Card')
-            ->select(l::IdOrName('payment_mode_type'), 'Credit')
-            ->select(l::IdOrName('payment_issuer'), 'HDFC')            
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#show-plan-panel').is(':visible')", 2000)  
+            ->select(l::IdOrName('payment_mode_type'), 'Debit')
+            ->select(l::IdOrName('payment_mode'), 'Card')         
             ->type(l::IdOrName('percent_rate'), '280')
             ->type(l::IdOrName('fixed_rate'), '200')
-            ->click(l::css('.btn-primary'))
-            ->waitForPageToLoad(2000);
+            ->click(l::linkContaining('Save'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 2000);
 
-        $this->assertBodyHasText("Rule Added successfully");
-
-        //Check Opening of pricing rules from price list
-        $this->browser
-            ->open(URL::action('AdminController@getPricingList'))
-            ->waitForPageToLoad(2000)
-            ->click(l::linkContaining('View/Edit Plan Rules'))   
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText("Plan Name:");
+        $this->assertBodyHasText("Rule added successfully");
     }
 
     /**
      * Tests merchant listing for admin
      */
-    public function testMerchants()
+    public function testMerchantsList()
     {
         $this->browser
-            ->open(URL::action('AdminController@getIndex'))
+            ->open(URL::to('/admin#'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#merchantsNav').length > 0", 2000)
             ->click(l::linkContaining('Merchants'))   
-            ->waitForPageToLoad(2000);                      // Wait for page to load
-
-        $this->assertEquals(URL::action('AdminController@getMerchantList'),$this->browser->getLocation());
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table').length > 0", 2000);
 
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText($this->merchant->email);
+    }
+
+    /**
+     * Tests merchant details management for admin
+     */
+    public function testMerchantDetails()
+    {   
+        //Get merchant details & actions
+        $this->browser
+            ->open(URL::to('/admin#/app/merchants/list'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table > tbody > tr > td').length > 5", 2000)
+            ->click(l::linkContaining($this->merchant->id))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert')));
+        $this->assertBodyHasText($this->merchant->id);
+        $this->assertBodyHasText("Merchant Detail");
+
+        //Lock Activation Form
+        $this->browser
+            ->click(l::linkContaining('Lock Activation Form'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 2000);
+
+        $this->assertBodyHasText('Merchant Form locked successfully');
+
+        //Unlock Activation Form
+        $this->browser
+            ->click(l::linkContaining('Unlock Activation Form'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 2000);
+
+        $this->assertBodyHasText('Merchant Form unlocked successfully');
+
+        //Assign Pricing
+        $this->browser
+            ->click(l::linkContaining('Assign Pricing'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.pricing-modal').length > 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('[name=\"pricing_plan_id\"] > option').length > 1", 2000)
+            ->select(l::IdOrName('pricing_plan_id'), 'index=1')
+            ->click(l::css('.modal-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 2000)
+            ->click(l::css('.confirm-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.pricing-modal').length == 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-info').length == 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
+
+        $this->assertTrue($this->browser->isElementPresent(l::css('.alert-success')));
+
+        $this->assertBodyHasText('Plan Assigned successfully');
+
+        //Assign Terminal
+        $this->browser
+            ->click(l::linkContaining('Assign Terminal'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.terminal-modal').length > 0", 2000)
+            ->type(l::IdOrName('gateway_merchant_id'), static::generateRandomString(10))
+            ->type(l::IdOrName('gateway_terminal_id'), static::generateRandomString(10))
+            ->type(l::IdOrName('gateway_terminal_password'), 'testing')
+            ->type(l::IdOrName('gateway_terminal_password_confirmation'), 'testing')
+            ->click(l::css('.modal-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 2000)
+            ->click(l::css('.confirm-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.terminal-modal').length == 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-info').length == 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
+
+        $this->assertTrue($this->browser->isElementPresent(l::css('.alert-success')));
+
+        $this->assertBodyHasText('Terminal Assigned successfully');
+
+        $this->browser
+            ->click(l::linkContaining('See Activation Form Details'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper').length > 0", 2000);
+
     }
     
     /**
@@ -138,91 +195,18 @@ class AdminTest extends IntegrationTestCase
     public function testLoginAsMerchant()
     {   
         $this->browser
-            ->open(URL::action('AdminController@getMerchantList'))
-            ->waitForPageToLoad(2000);
+            ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 2000);
+
 
         $loginAsMerchantLink = $this->browser->getAttribute('link=Login as Merchant@href');
 
         $this->browser
             ->open(URL::to($loginAsMerchantLink))
-            ->waitForPageToLoad(2000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 2000);                     // Wait for page to load
 
-        $this->assertEquals(URL::action('MerchantController@getIndex').'/#!/',$this->browser->getLocation());
+        $this->assertBodyHasText("Welcome to Razorpay");
     }
-
-    /**
-     * Tests checking merchnat status and locking/unlocking merchant form
-     */
-    public function testMerchantStatus()
-    {   
-        $this->browser
-            ->open(URL::action('AdminController@getMerchantList'))
-            ->waitForPageToLoad(2000)
-            ->click(l::linkContaining('Manage Merchant'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText($this->merchant->id);
-
-        $this->assertEquals(URL::action('AdminController@getMerchant', $this->merchant->id),$this->browser->getLocation());
-
-        $this->browser
-            ->click(l::linkContaining('Lock Form for user'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText('Merchant activation form locked Successfully!');
-
-        $this->browser
-            ->click(l::linkContaining('Unlock Form for user'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText('Merchant activation form unlocked Successfully!');
-
-        $this->browser
-            ->click(l::linkContaining('Check Activation Form Details'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertEquals(URL::to('/admin/merchant/'.$this->merchant->id.'/details'),$this->browser->getLocation());
-    }
-
-    public function testAddMerchantPricing()
-    {   
-        // Check opening of pricing page from dashboard
-        $this->browser
-            ->open(URL::action('AdminController@getMerchant', $this->merchant->id))
-            ->click(l::linkContaining('Modify Pricing Plan'))   
-            ->waitForPageToLoad(2000);                      // Wait for page to load
-
-        $this->assertEquals(URL::action('AdminController@getMerchantPricing', $this->merchant->id),$this->browser->getLocation());
-
-        $this->browser
-            ->select(l::IdOrName('pricing_plan_id'), 'index=1')
-            ->click(l::css('.btn-primary'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText('Pricing added successfully');
-    }
-
-    public function testAddMerchantTerminal()
-    {   
-        // Check opening of pricing page from dashboard
-        $this->browser
-            ->open(URL::action('AdminController@getMerchant', $this->merchant->id))
-            ->click(l::linkContaining('Add Terminal'))   
-            ->waitForPageToLoad(2000);                      // Wait for page to load
-
-        $this->assertEquals(URL::action('AdminController@getMerchantTerminal', $this->merchant->id),$this->browser->getLocation());
-
-        $this->browser
-            ->type(l::IdOrName('gateway_merchant_id'), static::generateRandomString(10))
-            ->type(l::IdOrName('gateway_terminal_id'), static::generateRandomString(10))
-            ->type(l::IdOrName('gateway_terminal_password'), 'testing')
-            ->type(l::IdOrName('gateway_terminal_password_confirmation'), 'testing')
-            ->click(l::css('.btn-primary'))
-            ->waitForPageToLoad(2000);
-
-        $this->assertBodyHasText('Terminal added successfully');
-    }
-
 
     /**
      * Tests checking of merchant activation details by admin
@@ -232,19 +216,19 @@ class AdminTest extends IntegrationTestCase
         
         //Browsing the whole form
         $this->browser
-            ->open(URL::to('/admin/merchant/'.$this->merchant->id.'/details'))
-            ->waitForPageToLoad(2000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(0)').is(':visible')", 2000)
-            ->click(l::css('#activation-form > fieldset:eq(0) > .prev-next > .next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(1)').is(':visible')", 2000)
-            ->click(l::css('#activation-form > fieldset:eq(1) > .prev-next > .next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(2)').is(':visible')", 2000)
-            ->click(l::css('#activation-form > fieldset:eq(2) > .prev-next > .next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(3)').is(':visible')", 2000)
-            ->click(l::css('#activation-form > fieldset:eq(3) > .prev-next > .next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(4)').is(':visible')", 2000)
-            ->click(l::css('#activation-form > fieldset:eq(4) > .prev-next > .next'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activation-form > fieldset:eq(5)').is(':visible')", 2000);
+            ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/activation'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper').length > 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step1\"]').is(':visible')", 2000)
+            ->click(l::css('form[name="step1"] > .prev-next > .btn-next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step2\"]').is(':visible')", 2000)
+            ->click(l::css('form[name="step2"] > .prev-next > .btn-next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"]').is(':visible')", 2000)
+            ->click(l::css('form[name="step3"] > .prev-next > .btn-next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step4\"]').is(':visible')", 2000)
+            ->click(l::css('form[name="step4"] > .prev-next > .btn-next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"]').is(':visible')", 2000)
+            ->click(l::css('form[name="step5"] > .prev-next > .btn-next'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step6\"]').is(':visible')", 2000);
     }
 
     /**
@@ -253,47 +237,111 @@ class AdminTest extends IntegrationTestCase
 
     public function testMerchantActivation()
     {   
-        //Registers merchant in API so that he can be activated
-        
         $this->browser
-            ->open(URL::to('admin/merchant/'.$this->merchant->id))
-            ->waitForPageToLoad(2000)
+            ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 2000)
             ->click(l::linkContaining('Activate Merchant'))
-            ->waitForPageToLoad(2000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 2000)
+            ->click(l::css('.confirm-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length == 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-info').length == 0", 2000);
 
-        $this->browser->getConfirmation();
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
-        $this->assertBodyHasText('Merchant activated successfully');
+        $this->assertTrue($this->browser->isElementPresent(l::css('.alert-success')));
+
+        $this->assertBodyHasText('Merchant Activated successfully');
     }
 
-    public function testMerchantDeactivation()
+    public function testMerchantLiveEnableDisable()
     {   
-        //Registers merchant in API so that he can be activated
-        
         $this->browser
-            ->open(URL::to('admin/merchant/'.$this->merchant->id))
-            ->waitForPageToLoad(2000)
-            ->click(l::linkContaining('Deactivate Merchant'))
-            ->waitForPageToLoad(2000);
+            ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 2000)
+            ->click(l::linkContaining('Disable Live Transactions'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 2000)
+            ->click(l::css('.confirm-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length == 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-info').length == 0", 2000);
 
-        $this->browser->getConfirmation();
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
-        $this->assertBodyHasText('Merchant deactivated successfully');
+        $this->assertTrue($this->browser->isElementPresent(l::css('.alert-success')));
+
+        $this->assertBodyHasText('Live transactions for merchant disabled successfully');
+
+
+        $this->browser
+            ->click(l::linkContaining('Enable Live Transactions'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-info').length == 0", 2000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
+
+        $this->assertTrue($this->browser->isElementPresent(l::css('.alert-success')));
+
+        $this->assertBodyHasText('Live transactions for merchant enabled successfully');
     }
+
     /**
-     * Tests Change Password
+     * Tests Admins Mangement
      */
-    public function testChangePassword()
+    public function testManageAdmins()
     {
-         $this->browser
-            ->open(URL::action('AdminController@getIndex'))
-            ->click(l::linkContaining('Change Password'))
-            ->waitForPageToLoad(2000)
+        //Testing admins display
+        $this->browser
+            ->open(URL::to('/admin#'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#adminsNav').length > 0", 2000)
+            ->click(l::IdOrName('adminsNav')) 
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.admins-table > tbody > tr').length > 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 2000);    
+
+        $this->assertBodyHasText($this->admin->name);
+
+        $this->assertBodyHasText($this->admin->username);
+
+        //Test Add Admin
+        $this->browser
+            ->click(l::linkContaining('Add new Admin'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-admin-modal').length > 0", 2000)
+            ->type(l::IdOrName('name'), 'Tester')
+            ->type(l::IdOrName('username'), static::generateRandomString(7))
+            ->type(l::IdOrName('email'), static::generateMerchantEmail())
+            ->type(l::IdOrName('password'), '1234567')
+            ->type(l::IdOrName('password_confirmation'), '1234567')
+            ->click(l::css('.modal-ok'))                 // Click in the button
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-admin-modal').length == 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 2000);
+
+        $this->assertBodyHasText("Admin created successfully");
+    }
+
+    /**
+     * Tests Profile Panel Display
+     */
+    public function testProfilePanel()
+    {
+        //Testing profile display
+        $this->browser
+            ->open(URL::to('/admin#'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#profileNav').length > 0", 2000)
+            ->click(l::IdOrName('profileNav')) 
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.profile-wrapper').length > 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 2000);    
+
+        $this->assertBodyHasText($this->admin->name);
+
+        $this->assertBodyHasText($this->admin->username);
+
+        //Test Change Password
+        $this->browser
+            ->click(l::css('.btn-change-pwd'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length > 0", 2000)
             ->type(l::IdOrName('old_password'), '123456')
             ->type(l::IdOrName('password'), '1234567')
             ->type(l::IdOrName('password_confirmation'), '1234567')
-            ->click(l::css('#form-button'))                 // Click in the button
-            ->waitForPageToLoad(2000);
+            ->click(l::css('.modal-ok'))                 // Click in the button
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length == 0", 2000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 2000);
 
         $this->assertBodyHasText("Password changed successfully");
     }
@@ -304,11 +352,10 @@ class AdminTest extends IntegrationTestCase
     public function testLogout()
     {
         $this->browser
-            ->open(URL::action('AdminController@getIndex'))    // Visits the 'stuff' index
-            ->click(l::linkContaining('Sign Out'))                 // Click in the button
-            ->waitForPageToLoad(2000);                      // Wait for page to load
-        
-        // Asserts if at the end the user is at the stuff index again
-        $this->assertEquals(URL::action('AdminController@getLogin'),$this->browser->getLocation());
+            ->open(URL::to('/admin')) 
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.user-dropdown').length > 0", 2000)
+            ->click(l::css('.user-dropdown'))                 
+            ->click(l::linkContaining('Logout'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 2000);
     }
 }
