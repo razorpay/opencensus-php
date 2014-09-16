@@ -14,8 +14,6 @@ class Repository extends Base\Repository
 
     protected $entity = 'Merchant';
 
-//    protected $merchantIdRequiredForMultipleFetch = false;
-
     public function getBalanceLockForUpdate($id)
     {
         return Merchant\Balance::lockForUpdate()->findOrFail($id);
@@ -60,5 +58,10 @@ class Repository extends Base\Repository
         {
             $q->where('balance', '>', 0);
         })->get();
+    }
+
+    public function isMerchantIdRequiredForFetch()
+    {
+        return false;
     }
 }

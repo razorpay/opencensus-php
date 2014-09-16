@@ -49,7 +49,7 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $merchants = $this->repo->fetchMultiple($input);
+        $merchants = $this->repo->fetch($input);
 
         return $merchants->toArray();
     }
