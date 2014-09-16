@@ -47,8 +47,8 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Refund\Entity::ID, '=', $id)
-                    ->where(Refund\Entity::TRANSACTION_ID, '=', $txnId)
-                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId);
+        return $repo::where(Refund\Entity::TRANSACTION_ID, '=', $txnId)
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->find($id);
     }
 }

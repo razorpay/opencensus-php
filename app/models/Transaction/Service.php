@@ -79,8 +79,8 @@ class Service extends Base\Service
 
         $refund = (new Refund\Repository)->fetchByIdTxnIdMerchantId(
                                     $rfndId,
-                                    $this->merchant->getKey(),
-                                    $txnId);
+                                    $txnId,
+                                    $this->merchant->getKey());
 
         return $refund->toArrayPublic();
     }
