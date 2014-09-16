@@ -17,9 +17,9 @@ class Refund extends Service
         {
             $merchant_id = \Auth::merchant()->id();
             
-            $request = (new Request)->setCredentials($mode, $merchant_id);
+            $this->setApiCredentials($merchant_id, $mode);
             
-            $response = $request->process('GET', 'refunds');
+            $response = $this->api->refund->all($options);
 
             $data = Manager\Refund::mapKeys($response);
         }
@@ -37,13 +37,17 @@ class Refund extends Service
         {
             $merchant_id = \Auth::merchant()->id();
             
-            $request = (new Request)->setCredentials($mode, $merchant_id);
-            
-            $response = $request->process('GET', 'refunds/'.$id);
+            $this->setApiCredentials($merchant_id, $mode);
 
-            if(isset($response['error']) and isset($response['error']['description']))
+            $response =  array();
+            
+            try
             {
-                $error[] = 'Transaction not found.';
+                $response = $this->api->refund->fetch($id)->toArray();
+            }
+            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            {
+                $error[] = $e->getCode();
             }
             
             $data = array('count' => 1, 'data' => array($response));
