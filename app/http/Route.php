@@ -19,7 +19,7 @@ final class Route
         'transaction_fetch_by_id'           => ['get',  'transactions/{id}',                    'TransactionController@getTransaction'],
         'transaction_fetch_multiple'        => ['get',  'transactions/{param?}',                'TransactionController@getTransactions'],
         'transaction_fetch_refunds'         => ['get',  'transactions/{id}/refunds',            'TransactionController@getRefundsForTransaction'],
-        'transaction_fetch_refund_by_id'    => ['get',  'transactions/{txnId}/refund/{rfndId}', 'TransactionController@getRefundByRefundAndTransactionId'],
+        'transaction_fetch_refund_by_id'    => ['get',  'transactions/{txnId}/refunds/{rfndId}','TransactionController@getRefundByRefundAndTransactionId'],
         'refund_fetch_by_id'                => ['get',  'refunds/{id}',                         'TransactionController@getRefund'],
         'refund_fetch_multiple'             => ['get',  'refunds/{param?}',                     'TransactionController@getRefunds'],
         'merchant_create'                   => ['post', 'merchants',                            'MerchantController@postCreateMerchant'],

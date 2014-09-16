@@ -149,4 +149,11 @@ class TransactionController extends BaseController
 
         return ApiResponse::json($refunds);
     }
+
+    public function getRefundByRefundAndTransactionId($txnId, $rfndId)
+    {
+        $refunds = $this->transaction->retrieveRefundByIdAndTransactionId($txnId, $rfndId);
+
+        return ApiResponse::json($refunds);
+    }
 }

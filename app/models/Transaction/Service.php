@@ -72,10 +72,10 @@ class Service extends Base\Service
         return $refunds->toArrayPublic();
     }
 
-    public function retrieveRefundByIdAndTransactionId($id, $txnId)
+    public function retrieveRefundByIdAndTransactionId($txnId, $rfndId)
     {
         $refund = $this->core->retrieveByIdAndMerchantId(
-                                    $id,
+                                    $rfndId,
                                     $this->merchant->getKey(),
                                     $txnId);
 
