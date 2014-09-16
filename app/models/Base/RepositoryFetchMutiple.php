@@ -38,7 +38,7 @@ trait RepositoryFetchMultiple
          */
         $repo = $this->repo;
 
-        if (($this->merchantIdRequiredForMultipleFetch) and
+        if (($this->isMerchantIdRequiredForFetch()) and
             ($merchantId === null))
         {
             throw new Exception\InvalidArgumentException('Merchant Id is required for fetch query');
@@ -86,5 +86,10 @@ trait RepositoryFetchMultiple
     public function setMerchantIdRequiredForMultipleFetch($required)
     {
         $this->merchantIdRequiredForMultipleFetch = $required;
+    }
+
+    public function isMerchantIdRequiredForFetch()
+    {
+        return $this->merchantIdRequiredForMultipleFetch;
     }
 }
