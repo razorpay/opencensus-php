@@ -74,7 +74,10 @@ class Service extends Base\Service
 
     public function retrieveRefundByIdAndTransactionId($txnId, $rfndId)
     {
-        $refund = $this->core->retrieveByIdAndMerchantId(
+        Transaction\Entity::verifyIdAndStripSign($txnId);
+        Refund\Entity::verifyIdAndStripSign($rfndId);
+
+        $refund = (new Refund\Repository)->retrieveByIdAndMerchantId(
                                     $rfndId,
                                     $this->merchant->getKey(),
                                     $txnId);
