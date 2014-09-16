@@ -32,7 +32,8 @@
 			"app/http",
 			"app/tests/TestCase.php",
 			"app/tests/IntegrationTestCase.php",
-			"app/tests/ModifiedZizacoIntegrationTestCase.php"
+			"app/tests/ModifiedZizacoIntegrationTestCase.php",
+			"app/rzp",
 		]
 	},
 	"scripts": {

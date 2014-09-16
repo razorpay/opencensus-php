@@ -1195,7 +1195,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/rzp-php.git",
-                "reference": "4a1009a393cf62ffda934e78ecd9e441f757d22e"
+                "reference": "a0327da1bb293ad0fb7b2c61a411bb9c613edf6d"
             },
             "require": {
                 "ext-json": "*",
@@ -1220,7 +1220,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2014-09-15 12:11:26"
+            "time": "2014-09-16 12:09:06"
         },
         {
             "name": "rmccue/requests",
@@ -2515,6 +2515,7 @@
         "zizaco/testcases-laravel": 20,
         "mockery/mockery": 20
     },
+    "prefer-stable": false,
     "platform": [
 
     ],
