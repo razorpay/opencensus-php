@@ -341,22 +341,46 @@ class Admin extends Service
         return array();
     }
 
-    public function fetchPricingPlan($id = NULL)
+    public function fetchPricingPlans()
     {   
-        $request = (new Request)->setCredentials();
+        $errors = array();
 
-        if($id===NULL)
+        $response = array();
+
+        $this->setApiCredentials();
+
+        try
         {
-            $response = $request->process('GET', 'pricing/merchants');
+            $response = $this->api->pricing->merchants()->toArray();
+
+            $response = $response['data'];
         }
-        else
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $response = $request->process('GET', 'pricing/'.$id);
+            $errors[] = $e->getCode();
         }
 
-        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($response['error']));
+        return array($errors, $response);
+    }
 
-        return $response;
+    public function fetchPricingPlan($id)
+    {       
+        $errors = array();
+
+        $response = array();
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->pricing->fetch($id)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getCode();
+        }
+
+        return array($errors, $response);
     }
 
     public function addPricingPlanRule($id, $input)
@@ -365,13 +389,15 @@ class Admin extends Service
 
         $error = array();
         
-        $request = (new Request)->setCredentials();
-        
-        $response = $request->process('POST', 'pricing/'.$id.'/rule', $input);
+        $this->setApiCredentials();
 
-        if(isset($response['error']))
+        try
         {
-            $error[]=$response['error']['description'];
+            $response = $this->api->pricing->fetch($id)->createRule($input);
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getCode();
         }
 
         return $error;
@@ -382,14 +408,18 @@ class Admin extends Service
         unset($input['_token']);
 
         $error = array();
-        
-        $request = (new Request)->setCredentials();
-        
-        $response = $request->process('POST', 'pricing', $input);
 
-        if(isset($response['error']))
+        $response = array();
+        
+        $this->setApiCredentials();
+
+        try
         {
-            $error[]=$response['error']['description'];
+            $response = $this->api->pricing->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getCode();
         }
 
         return array($error, $response);

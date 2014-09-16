@@ -165,16 +165,16 @@ class AdminController extends BaseController
 
     public function getPricingList()
     {
-        $data = (new Service\Admin)->fetchPricingPlan();
+        list($error, $data) = (new Service\Admin)->fetchPricingPlans();
 
-        return AppResponse::jsonResponse([], $data['data']);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getPricingRules($id)
     {
-        $data = (new Service\Admin)->fetchPricingPlan($id);
+        list($error, $data) = (new Service\Admin)->fetchPricingPlan($id);
 
-        return AppResponse::jsonResponse([], $data);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postPricingRules($id)
