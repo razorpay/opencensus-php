@@ -149,11 +149,11 @@ class Admin extends Service
         $merchant = DAL\Merchant::with('MerchantDetails')->findorfail($id);
 
         $merchant_details =  $merchant->MerchantDetails;
+
+        $this->setApiCredentials();
+
+        $response = $this->api->merchant->fetch($id);
         
-        $request = (new Request)->setCredentials();
-
-        $response = $request->process('GET', 'merchants/'.$id);
-
         //@todo This is failing tests on wercker, fix
         //Manager\Merchant::checkAPIMatch($merchant, $response);
 
