@@ -42,4 +42,13 @@ class Repository extends Base\Repository
                     ->where(Common::CREATED_AT, '<=', $to)
                     ->get();
     }
+
+    public function fetchByIdTxnIdMerchantId($id, $txnId, $merchantId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Refund\Entity::ID, '=', $id)
+                    ->where(Refund\Entity::TRANSACTION_ID, '=', $txnId)
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId);
+    }
 }

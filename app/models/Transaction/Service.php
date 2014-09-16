@@ -77,7 +77,7 @@ class Service extends Base\Service
         Transaction\Entity::verifyIdAndStripSign($txnId);
         Refund\Entity::verifyIdAndStripSign($rfndId);
 
-        $refund = (new Refund\Repository)->retrieveByIdAndMerchantId(
+        $refund = (new Refund\Repository)->fetchByIdTxnIdMerchantId(
                                     $rfndId,
                                     $this->merchant->getKey(),
                                     $txnId);
