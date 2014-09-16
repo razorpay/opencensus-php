@@ -6,6 +6,9 @@
     <div class="panel-heading m-t m-b">
       Refund: <strong>{{refund.id}}</strong>
     </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
     <div class="row wrapper">
       <div class="list-group">
         <a ui-sref="app.transactions.detail({id:refund.transaction_id})" class="list-group-item">
