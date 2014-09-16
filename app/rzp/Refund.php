@@ -9,7 +9,7 @@ class Refund extends Entity
      */
     public function fetch($id)
     {
-        return parent::fetch();
+        return parent::fetch($id);
     }
 
     public function all($options = array())
