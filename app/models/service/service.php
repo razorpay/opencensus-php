@@ -2,7 +2,7 @@
 
 namespace Models\Service;
 
-use Razorpay\Api\Api;
+use RZP\Api;
 use Config;
 
 class Service
@@ -15,12 +15,15 @@ class Service
     }
 
 
-    public function setApiCredentials($merchant_id = NULL, $mode)
+    public function setApiCredentials($merchant_id = NULL, $mode = 'live')
     {
+        $id = 'rzp_'.$mode;
+
+        if($merchant_id)
+            $id = $id.'_'.$merchant_id;
+
         $secret = Config::get('api.auth_pass');
 
-        Api::$baseUrl = $_ENV['API_URL'];
-
-        $this->api = new Api('rzp_'.$mode.'_'.$merchant_id, $secret);
+        $this->api = new Api($id, $secret);
     }
 }

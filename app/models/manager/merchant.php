@@ -29,6 +29,15 @@ class Merchant extends Manager
         '_token'        =>      'required'
     );
 
+    protected static $terminalRules = array(
+        'gateway'               => 'required',
+        'gateway_merchant_id'   => 'required',
+        'gateway_terminal_id'   => 'required',
+        'gateway_terminal_password'                 =>      'required|confirmed',
+        'gateway_terminal_password_confirmation'    =>      'required',
+        '_token'                                    =>      'required'
+    );
+
     protected static $unsetRegisterInput = array(
         'password_confirmation',
         '_token'
@@ -41,6 +50,11 @@ class Merchant extends Manager
 
     protected static $unsetPasswordInput = array(
         'password_confirmation',
+        '_token'
+    );
+
+    protected static $unsetTerminalInput = array(
+        'gateway_terminal_password_confirmation',
         '_token'
     );
 

@@ -97,9 +97,9 @@ class MerchantController extends BaseController
 
     public function postNewKey($mode)
     {
-        $key = (new Service\Merchant)->createKey(\Auth::merchant()->id(), $mode);
+        list($error, $data) = (new Service\Merchant)->createKey(\Auth::merchant()->id(), $mode);
 
-        return AppResponse::jsonResponse([], $key);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postKeys($mode)

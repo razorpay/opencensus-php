@@ -65,11 +65,16 @@ class Merchant extends Service
 
         $merchant_api_data = $merchant->generateApiData();
 
-        $request = (new Request)->setCredentials();
+        $this->setApiCredentials();
 
-        $response = $request->process('POST', 'merchants', $merchant_api_data);
-
-        if(isset($response['error'])) return array($response['error']['description']);
+        try
+        {
+            $response = $this->api->merchant->create($merchant_api_data);
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return array($e->getCode());
+        }
 
         $merchant->confirm();
 
@@ -142,24 +147,38 @@ class Merchant extends Service
 
     public function fetchKeysFromApi($merchant_id, $mode)
     {
-        $request = (new Request)->setCredentials($mode);
-        $response = $request->process('GET', 'merchants/'.$merchant_id.'/keys');
+        $this->setApiCredentials(null, $mode);
+
+        $response = $this->api->merchant
+                                ->fetch($merchant_id)
+                                ->keys()
+                                ->all()
+                                ->toArray();
 
         return $response;
     }
 
     public function createKey($merchant_id, $mode)
     {
-        $request = (new Request)->setCredentials($mode);
+        $errors = array();
+        $data = array();
 
-        $response = $request->process('POST', 'merchants/'.$merchant_id.'/keys');
-        
-        if(isset($response['error']))
+        $this->setApiCredentials(null, $mode);
+
+        try
         {
-            throw new \Exception('API responded with error');
+            $data = $this->api->merchant
+                                ->fetch($merchant_id)
+                                ->keys()
+                                ->create()
+                                ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getCode();
         }
 
-        return $response;
+        return array($errors, $data);
     }
 
     public function rollKeys(array $input, $mode)
@@ -170,24 +189,30 @@ class Merchant extends Service
         {
             $arr = Manager\Key::buildKeyUpdateData($data);
 
-            $request = (new Request)->setCredentials($mode);
+            $this->setApiCredentials(null, $mode);
 
-            $url = 'merchants/'.$data['merchant_id'].'/keys/'.$data['id'];
-
-            $response = $request->process('PUT', $url, $arr);
-
-            if ((isset($response['old']) === false) or
-                (isset($response['new']) === false))
+            $key_data= array();
+            
+            try
             {
-                return ['status' => false];
+                $response = $this->api->merchant
+                                    ->fetch($data['merchant_id'])
+                                    ->keys()
+                                    ->fetch($data['id'])
+                                    ->roll($arr)
+                                    ->toArray();
+                
+                $key_data = array(
+                    'old_id' => $data['id'],
+                    'merchant_id' => $input['merchant_id'],
+                    'key_id' => $response['new']['id'],
+                    'secret' => $response['new']['secret'],
+                );
             }
-
-            $key_data = array(
-                'old_id' => $data['id'],
-                'merchant_id' => $input['merchant_id'],
-                'key_id' => $response['new']['id'],
-                'secret' => $response['new']['secret'],
-            );
+            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            {
+                $error[] = $e->getCode();
+            }
 
             return array($error, $key_data);
         }

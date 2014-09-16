@@ -205,60 +205,57 @@ class Admin extends Service
 
     public function fetchMerchantTerminal($id)
     {   
-        $request = (new Request)->setCredentials();
+        $this->setApiCredentials();
 
-        $response = $request->process('GET', 'merchants/'.$id.'/terminal');
-
-        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($response['error']));
+        $response = $this->api->merchant->fetch($id)->fetchTerminal()->toArray();
 
         return $response;
     }
 
     public function postMerchantTerminal($id, $input)
     {   
-        if($input['gateway_terminal_password'] !== $input['gateway_terminal_password_confirmation'])
+
+        list($error, $data) = Manager\Merchant::createValidate($input, 'terminal')->getData();
+
+        if(empty($error))
         {
-            return array('Password do not match');
+            $this->setApiCredentials();
+
+            try
+            {
+                $response = $this->api->merchant->fetch($id)->setTerminal($data)->toArray();
+            }
+            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            {
+                $error[] = $e->getCode();
+            }   
         }
 
-        unset($input['_token']);
-        unset($input['gateway_terminal_password_confirmation']);
-
-        $request = (new Request)->setCredentials();
-
-        $response = $request->process('POST', 'merchants/'.$id.'/terminal', $input);
-
-        if(isset($response['error']))
-        {
-            return array($response['error']['description']);
-        }
-
-        return array();
+        return $error;
     }
 
     public function fetchMerchantPricing($id)
-    {   
-        $request = (new Request)->setCredentials();
+    { 
+        $this->setApiCredentials();
 
-        $response = $request->process('GET', 'merchants/'.$id.'/pricing');
-
-        if(isset($response['error'])) throw new \Exception('API responded with error: '.json_encode($response['error']));
+        $response = $this->api->merchant->fetch($id)->fetchPricing()->toArray();
 
         return $response;
-
     }
 
     public function postMerchantPricing($id, $input)
     {   
         unset($input['_token']);
 
-        $request = (new Request)->setCredentials();
+        $this->setApiCredentials();
 
-        $response = $request->process('POST', 'merchants/'.$id.'/pricing', $input);
-
-        if(isset($response['error']))
+        try
         {
-            return array($response['error']['description']);
+            $response = $this->api->merchant->fetch($id)->setPricing($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return array($e->getCode());
         }
 
         return array();
@@ -275,14 +272,16 @@ class Admin extends Service
             return array('Activation form has not been submitted by merchant yet.');
         }
 
-        $request = (new Request)->setCredentials();
+        $this->setApiCredentials();
 
-        $response = $request->process('POST', 'merchants/'.$id.'/activate/');
-
-        if(isset($response['error']))
+        try
         {
-            return array(json_encode($response['error']['description']));
-        } 
+            $this->api->merchant->fetch($id)->activate();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return array($e->getCode());
+        }
      
         $merchant->activated = 1;
         $merchant->save();
@@ -303,14 +302,16 @@ class Admin extends Service
             return array('Merchant must be active before enabling/disabling live transactions.');
         }
 
-        $request = (new Request)->setCredentials();
+        $this->setApiCredentials();
 
-        $response = $request->process('POST', 'merchants/'.$id.'/live/enable');
-
-        if(isset($response['error']))
+        try
         {
-            return array(json_encode($response['error']['description']));
-        } 
+            $this->api->merchant->fetch($id)->enable();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return array($e->getCode());
+        }
 
         return array();
     }
@@ -326,14 +327,16 @@ class Admin extends Service
             return array('Merchant must be active before enabling/disabling live transactions.');
         }
 
-        $request = (new Request)->setCredentials();
+        $this->setApiCredentials();
 
-        $response = $request->process('POST', 'merchants/'.$id.'/live/disable');
-
-        if(isset($response['error']))
+        try
         {
-            return array(json_encode($response['error']['description']));
-        } 
+            $this->api->merchant->fetch($id)->disable();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return array($e->getCode());
+        }
 
         return array();
     }
