@@ -53,7 +53,7 @@
         </a>
         <a href class="list-group-item" ng-init="isCollapsed = true">
           <span class="pull-right">
-            <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="transaction.udf.length != 0">Expand</button>
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="transaction.udf.length != 0">Show/Hide</button>
             <span ng-hide="transaction.udf.length != 0">No UDF Fields</span>
           </span>
           UDF Fields
@@ -62,6 +62,19 @@
           <a href class="list-group-item" ng-repeat="(label,key) in transaction.udf">
             <span class="pull-right">{{key}}</span>
             {{label}}
+          </a>
+        </div>
+        <a href class="list-group-item"  ng-init="isRefundsCollapsed = true">
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="transaction.refund_status != 'none'">Show/Hide</button>
+            <span ng-hide="transaction.refund_status != 'none'">No Refunds</span>
+          </span>
+          Refunds
+        </a>
+        <div collapse="isRefundsCollapsed" class="panel-body">
+          <a class="list-group-item" ng-repeat="refund in transaction.refunds" ui-sref="app.refunds.detail({id:refund.id})">
+            <span class="pull-right">{{refund.created_at*1000 | fromNow}} ({{refund.created_at*1000 | date:'medium'}})</span>
+            {{refund.amount/100 | currency:refund.currency + " "}}
           </a>
         </div>
       </div>

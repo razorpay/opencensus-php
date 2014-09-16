@@ -140,6 +140,35 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
       })
     };
 
+    $scope.showRefunds = function() {
+
+      if($scope.isRefundsCollapsed === false) {
+        $scope.isRefundsCollapsed = true;
+        return;
+      }
+
+      $scope.alerts.addAlert('info', 'Processing... ', true);
+
+      var request = $http.get("/" + modeFactory.getMode() + "/transactions/"  + $scope.transaction.id + "/refunds");
+
+      request.success(function(data){
+        $scope.alerts.resetAlerts();
+        
+        if(data.success){
+          $scope.transaction.refunds = data.data;
+          $scope.isRefundsCollapsed = false;
+        }
+        else {
+          angular.forEach(data.errors, function(error, key) {
+            $scope.alerts.addAlert('danger', error);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     function fetchTransaction() {  
       var request = $http.get("/" + modeFactory.getMode() +  "/transactions/" + $scope.transaction.id);
 

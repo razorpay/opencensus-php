@@ -33,7 +33,7 @@
 			"app/tests/TestCase.php",
 			"app/tests/IntegrationTestCase.php",
 			"app/tests/ModifiedZizacoIntegrationTestCase.php",
-			"app/rzp",
+			"app/rzp"
 		]
 	},
 	"scripts": {
