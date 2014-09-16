@@ -32,6 +32,8 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
 
+    Route::get('/{mode}/transactions/{id}/refunds', 'TransactionController@getTransactionRefunds');
+
     Route::get('/{mode}/analytics/transactions', 'TransactionController@getAnalytics');
 
     Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');

@@ -61,6 +61,15 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getTransactionRefunds($mode, $id = NULL)
+    {
+        $this->checkMode($mode);
+        
+        list($error, $data) = (new Service\Transaction)->fetchTxnRefundsFromApi($id, $mode);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postCaptureTransaction($mode, $id = NULL)
     {
         $this->checkMode($mode);

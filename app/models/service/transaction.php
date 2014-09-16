@@ -60,6 +60,38 @@ class Transaction extends Service
         return array($error, $data);
     }
 
+    public function fetchTxnRefundsFromApi($id, $mode)
+    {
+        $data = array();
+
+        list($error, $options) = Manager\Transaction::createValidate(['id' => $id], 'fetch')->getData();
+
+        if (empty($error))
+        {
+            $merchant_id = \Auth::merchant()->id();
+            $this->setApiCredentials($merchant_id, $mode);
+
+            $id = $options['id'];
+            try
+            {
+                $data = $this->api->transaction
+                                        ->fetch($id)
+                                        ->refunds()
+                                        ->all()
+                                        ->toArray();
+
+                $data = $data['data'];
+
+            }
+            catch(\Exception $e)
+            {
+                $error[] = 'Request Failed';
+            }
+        }
+
+        return array($error, $data);
+    }
+
     public function captureTxn($id, $amount, $mode)
     {
         $error = array();
