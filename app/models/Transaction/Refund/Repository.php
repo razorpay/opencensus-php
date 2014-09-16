@@ -30,7 +30,8 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Refund\Entity::TRANSACTION_ID, '=', $txnId);
+        return $repo::where(Refund\Entity::TRANSACTION_ID, '=', $txnId)
+                    ->get();
     }
 
     public function findBetweenTimestamps($from, $to)
