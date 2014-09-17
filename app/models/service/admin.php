@@ -146,23 +146,24 @@ class Admin extends Service
 
     public function fetchMerchantDetails($id)
     {   
-        $merchant = DAL\Merchant::with('MerchantDetails')->findorfail($id);
-
-        $merchant_details =  $merchant->MerchantDetails;
+        $merchant_details = DAL\MerchantDetails::findorfail($id);
 
         $this->setApiCredentials();
 
-        $response = $this->api->merchant->fetch($id)->toArray();
+        $data = $this->api->merchant->fetch($id)->toArray();
+
+        $data['merchant_details'] = $merchant_details;
         
         //@todo This is failing tests on wercker, fix
+        //$merchant = DAL\Merchant::findorfail($id);
         //Manager\Merchant::checkAPIMatch($merchant, $response);
 
         $response = array(
             'steps_finished'    => json_decode($merchant_details['steps_finished'], true),
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
-            'live'              => $response['live']
-        ) + $merchant->toArray();
+            'live'              => $data['live']
+        ) + $data;
         
         return $response;
     }
