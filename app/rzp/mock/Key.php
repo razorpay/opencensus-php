@@ -2,26 +2,11 @@
 
 namespace RZP\Mock;
 
-use RZP\Entity;
-
-class Key extends Entity
+class Key extends MockEntity
 {   
-    protected static $key;
-
-    public function __construct()
-    {
-        static::$key = array(
-            'id'            => "rzp_test_1394bbab963387ab84de5ef8",
-            'entity'        => "key",
-            'created_at'    => time(),
-            'expired_at'    => NULL,
-            'secret'        => "thisissecret"
-        );
-    }
-
     public function create($params = null)
     {
-        $this->mock(static::$key);
+        $this->mock(self::$mockData['key']);
 
         return $this;
     }
@@ -31,7 +16,7 @@ class Key extends Entity
         $roll = array(
             'old_id'      => $this->id,
             'merchant_id' => $this->merchant_id,
-            'new'         => static::$key
+            'new'         => self::$mockData['key']
         );
 
         $this->mock($roll);
@@ -48,7 +33,7 @@ class Key extends Entity
 
     public function all($options = array())
     {
-        $this->mockCollection(static::$key);
+        $this->mockCollection(self::$mockData['key']);
 
         return $this;
     }

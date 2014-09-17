@@ -2,45 +2,21 @@
 
 namespace RZP\Mock;
 
-use RZP\Entity;
-
-class Transaction extends Entity
+class Transaction extends MockEntity
 {
-    protected static $transaction;
-
-    public function __construct()
-    {
-        static::$transaction = array(
-            'id'                  => "txn-13946931b04cd00f45057372",
-            'entity'              => "transaction",
-            'amount'              => "499",
-            'currency'            => "INR",
-            'status'              => "authorized",
-            'amount_refunded'     => "0",
-            'refund_status'       => "none",
-            'description'         => NULL,
-            'email'               => "shk@gmail.com",
-            'contact'             => "1234567890",
-            'udf'                 => array(),
-            'error_code'          => NULL,
-            'error_description'   => NULL,
-            'created_at'          => time()
-        );
-    }
-
     /**
      * @param $id Transaction id
      */
     public function fetch($id)
     {
-        $this->mock(static::$transaction);
+        $this->mock(self::$mockData['transaction'], array('id' => $id));
 
         return $this;
     }
 
     public function all($options = array())
     {
-        $this->mockCollection(static::$transaction);
+        $this->mockCollection(self::$mockData['transaction']);
 
         return $this;
     }
@@ -50,16 +26,7 @@ class Transaction extends Entity
      */
     public function refund($attributes = array())
     {
-        $refund = array(
-            'id'                => "rfnd-139469414bbe64deb0d1c0c5",
-            'entity'            => "refund",
-            'amount'            => $attributes['amount'],
-            'currency'          => "INR",
-            'transaction_id'    => $this->id,
-            'created_at'        => time()
-        );
-
-        $this->mock($refund);
+        $this->mock(self::$mockData['refund'], array('amount' => $attributes['amount']));
         
         return $this;
     }
@@ -69,8 +36,8 @@ class Transaction extends Entity
      */
     public function capture($attributes = array())
     {
-        $this->mock(static::$transaction, array('status' => "captured"));
-        
+        $this->mock(self::$mockData['transaction'], array('status' => "captured"));
+
         return $this;
     }
 

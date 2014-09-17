@@ -2,43 +2,25 @@
 
 namespace RZP\Mock;
 
-use RZP\Entity;
-
-class Merchant extends Entity
+class Merchant extends MockEntity
 {
-    protected static $merchant;
-
-    public function __construct()
-    {
-        static::$merchant = array(
-            'id'    =>  "363e4efa820b0c06208ccd99",
-            'name'  =>  "Harshil",
-            'email' =>  "test@razorpay.com",
-            'activated' => 0,
-            'live'      => 0,
-            'pricing_plan_id' => null,
-            'created_at'      => time(),
-            'updated_at'      => time(),
-            'entity'          => "merchant"
-        );
-    }
     public function create($params = null)
     {
-        $this->mock(static::$merchant);
+        $this->mock(self::$mockData['merchant']);
 
         return $this;
     }
 
     public function fetch($id)
     {   
-        $this->mock(static::$merchant, array('id' => $id));
+        $this->mock(self::$mockData['merchant'], array('id' => $id));
 
         return $this;
     }
 
     public function all($options = array())
     {
-        $this->mockCollection(static::$merchant);
+        $this->mockCollection(self::$mockData['merchant']);
 
         return $this;
     }
@@ -54,7 +36,7 @@ class Merchant extends Entity
 
     public function activate()
     {
-        $this->mock(static::$merchant, array('activated' => 1));
+        $this->mock(self::$mockData['merchant'], array('activated' => 1));
 
         return $this;
     }
@@ -62,7 +44,7 @@ class Merchant extends Entity
     //Enables live transactions for merchant
     public function enable()
     {
-        $this->mock(static::$merchant, array('activated' => 1, 'live' => 1));
+        $this->mock(self::$mockData['merchant'], array('activated' => 1, 'live' => 1));
 
         return $this;
     }
@@ -70,7 +52,7 @@ class Merchant extends Entity
     //disable live transactions for merchant
     public function disable()
     {
-        $this->mock(static::$merchant, array('activated' => 1));
+        $this->mock(self::$mockData['merchant'], array('activated' => 1));
 
         return $this;
     }
@@ -84,29 +66,7 @@ class Merchant extends Entity
 
     public function setPricing($params)
     {
-        $pricing = array(
-            'id'    => "1394832550f5e5d96eea81fe",
-            'name'  => "mockPlan",
-            'entity'=> "pricing_plan",
-            'count' => 1,
-            'rules' => array(
-                array(
-                    'id'                => "139486ac075f729bb334aa57",
-                    'plan_id'           => "1394832550f5e5d96eea81fe",
-                    'plan_name'         => "testRule",
-                    'gateway'           => NULL,
-                    'payment_mode'      => "card",
-                    'payment_mode_type' => "debit",
-                    'payment_network'   => NULL,
-                    'payment_issuer'    => NULL,
-                    'percent_rate'      => "223",
-                    'fixed_rate'        => "223",
-                    'created_at'        => time(),
-                    'updated_at'        => time(),
-                    'expired_at'        => NULL
-                )
-            )
-        );
+        $pricing = self::$mockData['pricing_plan'];
 
         $this->mock($pricing);
 
@@ -115,26 +75,14 @@ class Merchant extends Entity
 
     public function fetchTerminal()
     {   
-        $terminal = array();
-
-        $this->mock($terminal);
+        $this->mock(array());
 
         return $this;
     }
 
     public function setTerminal($params)
     {
-        $terminal = array(
-            'id'                    => "14aa47c4a93d6e9b9c7ef51a",
-            'merchant_id'           => "363e4efa820b0c06208ccd99",
-            'gateway'               => $params['gateway'],
-            'gateway_merchant_id'   => $params['gateway_merchant_id'],
-            'gateway_terminal_id'   => $params['gateway_terminal_id'],
-            'created_at'            => time(),
-            'updated_at'            => time()
-        );
-
-        $this->mock($terminal);
+        $this->mock(self::$mockData['terminal']);
 
         return $this;
     }
