@@ -29,7 +29,7 @@ class CaptureTest extends TestCase
     {
         parent::setUp();
 
-        $this->testData = include(__DIR__.'/helpers/capture.php');
+        $this->testData = require(__DIR__.'/helpers/capture.php');
 
         $this->txn = $this->createAuthorizedTransactionEntity();
 
@@ -47,9 +47,7 @@ class CaptureTest extends TestCase
 
     public function testCaptureTwice()
     {
-        $txn = $this->defaultAuthTransaction();
-
-        $txn = $this->captureTransaction($txn['id'], $txn['amount']);
+        $txn = $this->fixtures->createTransactionCapturedEntity()->toArrayPublic();
 
         $this->txn = $txn;
 
@@ -168,7 +166,9 @@ class CaptureTest extends TestCase
     protected function checkAndSetIdAndAmount(& $id = null, & $amount = null)
     {
         if ($id === null)
+        {
             $id = $this->txn['id'];
+        }
 
         if ($amount === null)
         {

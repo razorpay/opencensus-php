@@ -19,17 +19,47 @@ class Fixtures
         'hdfc'          => 'Gateway\Hdfc\Entity',
     );
 
-    protected function createTransactionAuthorizedEntity(array $attributes = array())
+    public function createTransactionAuthorizedEntity(array $attributes = array())
     {
-        $attributes = [
-            'amount'            =>  '50000',
-            'currency'          =>  'INR',
-            'email'             =>  'a@b.com',
-            'contact'           =>  '9918899029',
-            'status'            =>  'authorized',
-        ];
+        $defaultValues = array('status' => 'authorized');
 
-        return $transaction;
+        $attributes = array_merge($attributes, $defaultValues);
+
+        $txn = $this->createEntity('transaction', $attributes);
+
+        $hdfcTxn = $this->createEntity(
+            'hdfc',
+            ['trackid' => $txn->getKey(), 'amount' => $txn->getAmount()]);
+
+        return $txn;
+    }
+
+    public function createTransactionCapturedEntity(array $attributes = array())
+    {
+        $defaultValues = array(
+            'status' => 'captured',
+            'captured_at' => time(),
+            'created_at' => time() - 10);
+
+        $attributes = array_merge($attributes, $defaultValues);
+
+        $txn = $this->createTransactionEntity($attributes);
+
+        $hdfcTxn = $this->createEntity(
+            'hdfc',
+            ['trackid' => $txn->getKey(), 'amount' => $txn->getAmount()]);
+
+        return $txn;
+    }
+
+    public function createTransactionEntity(array $attributes = array())
+    {
+        $defaultValues = array(
+            'merchant_id' => '363e4efa820b0c06208ccd99');
+
+        $attributes = array_merge($attributes, $defaultValues);
+
+        return $this->createEntity('transaction', $attributes);
     }
 
     protected function createHdfcTransactionAuthorizedEntity(array $attributes = array())
@@ -60,10 +90,6 @@ class Fixtures
 
     public function createEntity($entity, $attributes = array())
     {
-        // $func = 'replace'.ucfirst($entity).'Entity' . 'Attributes';
-
-        // $attributes = $this->$func($attributes);
-
         if (($entity === 'merchant') or
             ($entity === 'pricing'))
         {
@@ -71,11 +97,6 @@ class Fixtures
         }
 
         return $this->save($entity, $attributes);
-    }
-
-    protected function replaceMerchantEntityAttributes($attributes)
-    {
-        ;
     }
 
     protected function createEntityInTestAndLive($entity, $attributes = array())

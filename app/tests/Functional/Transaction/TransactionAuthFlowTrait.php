@@ -352,4 +352,23 @@ trait TransactionAuthFlowTrait
 
         return $txn;
     }
+
+    protected function getDefaultHdfcEntityArray()
+    {
+        $hdfcTxn = array(
+            'action'        =>  4,
+            'enroll_result' =>  2,
+            'status'        =>  'not_enrolled',
+            'result'        =>  'APPROVED',
+            'eci'           =>  '6',
+            'auth'          =>  '999999',
+            'ref'           =>  random_integer(12),
+            'avr'           =>  'N',
+            'postdate'      =>  (new Carbon('now', 'Asia/Kolkata'))->format('md'),
+            'tranid'        =>  random_integer(15),
+            'payid'         =>  -1,
+            'amt'           =>  500);
+
+        return $hdfcTxn;
+    }
 }

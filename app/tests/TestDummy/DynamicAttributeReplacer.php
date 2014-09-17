@@ -35,23 +35,49 @@ class DynamicAttributeReplacer extends BaseReplacer
      */
     protected function updateColumnValue($value)
     {
-        return preg_replace_callback('/\$([a-z]+)/', function($matches)
+        if (is_array($value))
+            return $value;
+
+        $matches = array();
+
+        $isMatch = preg_match('/\$([a-zA-Z]+)/', $value, $matches);
+
+        $ret = $value;
+
+        if ($isMatch)
         {
             if ($this->isASupportedFakeType($fakeType = $matches[1]))
             {
-                return call_user_func([$this, 'getFake' . ucwords($fakeType)]);
+                $ret = call_user_func([$this, 'getFake' . ucwords($fakeType)]);
             }
+            else
+            {
+                //
+                // If we don't support a method, then faker should.
+                // The parent class silently returned without throwing error
+                // but I think we should throw error rather than failing silently.
+                //
 
-            //
-            // If we don't support a method, then faker should.
-            // The parent class silently returned without throwing error
-            // but I think we should throw error rather than failing silently.
-            //
+                try
+                {
+                    $ret = $this->fake->$fakeType;
+                }
+                catch (\InvalidArgumentException $e)
+                {
+                    ;
+                }
+            }
+        }
 
-            return $this->fake->$fakeType;
+        // If $value is non-scalar like array, then just return it.
+        // Otherwise replace it with the matched part
+        // eg: ab$integer should become ab1234
 
-            // // If we don't recognize it, we'll just keep it as it is.
-            // return $matches[0];
-        }, $value);
+        if (is_scalar($ret))
+        {
+            preg_replace('/\$([a-z]+)/', $value, $ret);
+        }
+
+        return $ret;
     }
 }

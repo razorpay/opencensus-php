@@ -1,7 +1,7 @@
 Models\Merchant\Entity:
     id: $uniqueid
     name: $string
-    email: harshil$integer@gmail.com
+    email: $email
 
 Models\Terminal\Entity:
     id: $uniqueid
@@ -39,13 +39,15 @@ Models\Transaction\Entity:
     card_id:
         type: Models\Card\Entity
     amount: 100
+    amount_refunded: 0
     currency: INR
     status: open
     refund_status: none
     contact: $integer
-    udf: emptyarray
+    udf: $emptyarray
     gateway: hdfc
     email: $email
+    captured_at: null
 
 Models\Transaction\Refund\Entity:
     id: $uniqueid
@@ -72,13 +74,14 @@ Gateway\Hdfc\Entity:
     id: $integer
     trackid:
         type: Models\Transaction\Entity
-    gateway_transaction_id: $integer$integer
+    gateway_transaction_id: $hdfcTxnId
     action: 4
+    amount: $integer
     enroll_result: 2
     status: authorized
     result: APPROVED
     eci: 6
     auth: 999999
-    ref: hdfcRef
+    ref: $hdfcRef
     avr: N
-    postdate: hdfcPostDate
+    postdate: $hdfcPostDate

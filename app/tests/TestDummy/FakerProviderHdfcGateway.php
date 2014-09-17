@@ -16,4 +16,9 @@ class FakerProviderHdfcGateway extends Base
     {
         return random_integer(12);
     }
+
+    public function hdfcTxnId()
+    {
+        return random_integer(15);
+    }
 }

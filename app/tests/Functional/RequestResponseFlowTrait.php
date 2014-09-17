@@ -48,7 +48,7 @@ trait RequestResponseFlowTrait
     }
 
     public function processAndAssertException($actual, $expected)
-    {
+    {//sd($actual->getTraceAsString());
         $class = (isset($expected['class'])) ? $expected['class'] : 'EE\Exceptions\RecoverableException';
 
         $this->assertExceptionClass($actual, $class);
