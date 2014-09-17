@@ -222,7 +222,8 @@ trait Enroll
         {
             $this->model = $this->repo->persistAfterEnrollError(
                             $this->id,
-                            $this->enrollResponse['error']);
+                            $this->enrollResponse['error'],
+                            $this->enrollRequest['data']);
 
             $this->id = $this->model->id;
 

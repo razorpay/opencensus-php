@@ -74,6 +74,7 @@ class Repository extends Base\Repository
             'trackid' => $request['trackid'],
             'gateway_transaction_id' => $response['paymentid'],
             'action' => $request['action'],
+            'amount' => $request['amt'],
             'enroll_result' => $response['enroll_result'],
             'status' => $status,
             'eci' => $response['eci']);
@@ -83,11 +84,12 @@ class Repository extends Base\Repository
         return $this->createOrFail($attributes);
     }
 
-    public function persistAfterEnrollError($id, array $error)
+    public function persistAfterEnrollError($id, array $error, $requestdata)
     {
         $attributes = array(
             'trackid' => $id,
             'action' => Transaction\Action::AUTHORIZE,
+            'amount' => $requestdata['amt'],
             'error_code' => $error['code'],
             'error_text' => $error['text'],
             'enroll_result' => $error['enroll_result'],
@@ -103,6 +105,7 @@ class Repository extends Base\Repository
         $attributes = array(
             'status' => Transaction\Status::AUTHORIZED,
             'action' => Transaction\Action::AUTHORIZE,
+            'amount' => $data['amt'],
             'result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
@@ -120,6 +123,7 @@ class Repository extends Base\Repository
         $attributes = array(
             'status'    => Transaction\Status::AUTHORIZED,
             'result'    => $data['result'],
+            'amount'    => $data['amt'],
             'ref'       => $data['ref'],
             'auth'      => $data['auth'],
             'avr'       => $data['avr'],
@@ -178,6 +182,7 @@ class Repository extends Base\Repository
         $attributes = array(
             'trackid'                => $responseData['trackid'],
             'gateway_transaction_id' => $responseData['tranid'],
+            'amount'                 => $responseData['amt'],
             'action'                 => $requestData['action'],
             'status'                 => $status,
             'result'                 => $responseData['result'],
@@ -189,7 +194,7 @@ class Repository extends Base\Repository
         return $this->createOrFail($attributes);
     }
 
-    public function persistAfterSupportTxnError($id, $gateway_transaction_id, array $error, $type)
+    public function persistAfterSupportTxnError($id, $requestdata, array $error, $type)
     {
         $action = '';
         $status = '';
@@ -208,7 +213,8 @@ class Repository extends Base\Repository
 
         $attributes = array(
             'trackid'                   => $id,
-            'gateway_transaction_id'    => $gateway_transaction_id,
+            'gateway_transaction_id'    => $requestdata['transid'],
+            'amount'                    => $requestdata['amount'],
             'error_code'                => $error['code'],
             'error_text'                => $error['result'],
             'action'                    => $action,

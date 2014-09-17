@@ -185,7 +185,7 @@ trait Support
         {
             $this->model = $this->repo->persistAfterSupportTxnError(
                                 $this->id,
-                                $this->supportTxnRequest['data']['transid'],
+                                $this->supportTxnRequest['data'],
                                 $this->supportTxnResponse['error'],
                                 $type);
 
