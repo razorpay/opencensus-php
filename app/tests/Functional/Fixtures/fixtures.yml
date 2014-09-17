@@ -58,8 +58,14 @@ Models\Pricing\Entity:
 
 Gateway\Hdfc\Entity:
     id: $integer
-    trackid:
-    gateway_transaction_id:
+    trackid: $string
+    gateway_transaction_id: $integer$integer
     action: 4
-    enroll_result: NOT_ENROLLED
+    enroll_result: 2
     status: authorized
+    result: APPROVED
+    eci: 6
+    auth: 999999
+    ref: $integer$integer
+    avr: N
+    postdate: 1709

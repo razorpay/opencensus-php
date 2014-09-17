@@ -109,7 +109,7 @@ class PricingTest extends TestCase
 
     public function testMerchantGetPricingPlan()
     {
-        $this->createEntityInTestAndLive('pricing');
+        $this->createEntity('pricing');
         $merchant2 = $this->createEntity(
             'merchant',
             array(
