@@ -21,7 +21,7 @@ class Key extends Entity
 
     public function create($params = null)
     {
-        $this->fill(static::$key);
+        $this->mock(static::$key);
 
         return $this;
     }
@@ -34,7 +34,7 @@ class Key extends Entity
             'new'         => static::$key
         );
 
-        $this->fill($roll);
+        $this->mock($roll);
 
         return $this;
     }
@@ -48,13 +48,7 @@ class Key extends Entity
 
     public function all($options = array())
     {
-        $collection = array(
-            'entity'    =>  'collection',
-            'count'     => 1,
-            'data'      => array(static::$key)
-        );
-
-        $this->fill($collection);
+        $this->mockCollection(static::$key);
 
         return $this;
     }

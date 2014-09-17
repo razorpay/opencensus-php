@@ -39,71 +39,45 @@ class Pricing extends Entity
 
     public function create($params = null)
     {
-        $this->fill(static::$pricing);
+        $this->mock(static::$pricing);
 
         return $this;
     }
 
     public function fetch($id)
     {
-        $this->fill(static::$pricing);
-
-        $this->id = $id;
+        $this->mock(static::$pricing, array('id' => $id));
 
         return $this;
     }
 
     public function all($options = array())
     {
-        $collection = array(
-            'entity'    => 'collection',
-            'count'     => 1,
-            'data'      => array(static::$pricing)
-        );
-
-        $this->fill($collection);
+        $this->mockCollection(static::$pricing);
 
         return $this;
     }
 
     public function merchants()
     {
-        $collection = array(
-            'entity'    => 'collection',
-            'count'     => 1,
-            'data'      => array(static::$pricing)
-        );
-
-        $this->fill($collection);
-
-        return $this;
+        return $this->all();
     }
 
     public function gateways()
     {
-        $collection = array(
-            'entity'    => 'collection',
-            'count'     => 1,
-            'data'      => array(static::$pricing)
-        );
-
-        $this->fill($collection);
-
-        return $this;
+        return $this->all();
     }
 
     public function fetchRule($id)
     {
-        $this->fill(static::$rule);
-
-        $this->id = $id;
+        $this->mock(static::$rule, array('id' => $id));
 
         return $this;
     }
 
     public function createRule($params)
     {
-        $this->fill(static::$rule);
+        $this->mock(static::$rule);
 
         return $this;
     }

@@ -33,20 +33,14 @@ class Transaction extends Entity
      */
     public function fetch($id)
     {
-        $this->fill(static::$transaction);
+        $this->mock(static::$transaction);
 
         return $this;
     }
 
     public function all($options = array())
     {
-        $collection = array(
-            'entity'    => 'collection',
-            'count'     => 1,
-            'data'      => array(static::$transaction)
-        );
-
-        $this->fill($collection);
+        $this->mockCollection(static::$transaction);
 
         return $this;
     }
@@ -65,7 +59,7 @@ class Transaction extends Entity
             'created_at'        => time()
         );
 
-        $this->fill($refund);
+        $this->mock($refund);
         
         return $this;
     }
@@ -75,10 +69,8 @@ class Transaction extends Entity
      */
     public function capture($attributes = array())
     {
-        $this->fill(static::$transaction);
-
-        $this->status = "captured";
-
+        $this->mock(static::$transaction, array('status' => "captured"));
+        
         return $this;
     }
 

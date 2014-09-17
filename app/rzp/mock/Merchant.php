@@ -24,30 +24,21 @@ class Merchant extends Entity
     }
     public function create($params = null)
     {
-        $this->fill(static::$merchant);
+        $this->mock(static::$merchant);
 
         return $this;
     }
 
     public function fetch($id)
     {   
-
-        $this->fill(static::$merchant);
-
-        $this->id = $id;
+        $this->mock(static::$merchant, array('id' => $id));
 
         return $this;
     }
 
     public function all($options = array())
     {
-        $collection = array(
-            'count'     =>  1,
-            'entity'    => 'collection',
-            'data'      =>array(static::$merchant)
-        );
-
-        $this->fill($collection);
+        $this->mockCollection(static::$merchant);
 
         return $this;
     }
@@ -63,9 +54,7 @@ class Merchant extends Entity
 
     public function activate()
     {
-        $this->fill(static::$merchant);
-
-        $this->activated = 1;
+        $this->mock(static::$merchant, array('activated' => 1));
 
         return $this;
     }
@@ -73,11 +62,7 @@ class Merchant extends Entity
     //Enables live transactions for merchant
     public function enable()
     {
-        $this->fill(static::$merchant);
-
-        $this->activated = 1;
-
-        $this->live = 1;
+        $this->mock(static::$merchant, array('activated' => 1, 'live' => 1));
 
         return $this;
     }
@@ -85,18 +70,14 @@ class Merchant extends Entity
     //disable live transactions for merchant
     public function disable()
     {
-        $this->fill(static::$merchant);
-
-        $this->activated = 1;
+        $this->mock(static::$merchant, array('activated' => 1));
 
         return $this;
     }
 
     public function fetchPricing()
     {
-        $pricing = array();
-
-        $this->fill($pricing);
+        $this->mock(array());
 
         return $this;
     }
@@ -127,7 +108,7 @@ class Merchant extends Entity
             )
         );
 
-        $this->fill($pricing);
+        $this->mock($pricing);
 
         return $this;
     }
@@ -136,7 +117,7 @@ class Merchant extends Entity
     {   
         $terminal = array();
 
-        $this->fill($terminal);
+        $this->mock($terminal);
 
         return $this;
     }
@@ -153,7 +134,7 @@ class Merchant extends Entity
             'updated_at'            => time()
         );
 
-        $this->fill($terminal);
+        $this->mock($terminal);
 
         return $this;
     }

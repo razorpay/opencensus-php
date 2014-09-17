@@ -25,20 +25,14 @@ class Refund extends Entity
      */
     public function fetch($id)
     {
-        $this->fill(static::$refund);
+        $this->mock(static::$refund);
 
         return $this;
     }
 
     public function all($options = array())
     {
-        $collection = array(
-            'entity'    => 'collection',
-            'count'     => 1,
-            'data'      => array(static::$refund)
-        );
-
-        $this->fill($collection);
+        $this->mockCollection(static::$refund);
 
         return $this;
     }
