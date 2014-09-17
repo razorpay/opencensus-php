@@ -1,8 +1,12 @@
 <?php
+namespace Tests\Integration;
 
 use Selenium\Locator as l;
+use Models;
+use URL;
+use Exception;
 
-class MerchantTest extends IntegrationTestCase
+class MerchantTest extends TestCase
 {   
     protected $merchant;
 

@@ -1,12 +1,13 @@
 <?php
-
 /**
  * Overrides private functions of Zizaco\TestCases\IntegrationTestCase to make them protected and allowing overriding later
  */
 
+namespace Tests\Integration;
+
 use Zizaco\TestCases\IntegrationTestCase;
 
-class ModifiedZizacoIntegrationTestCase extends IntegrationTestCase
+class ZizacoIntegrationTestCase extends IntegrationTestCase
 {   
    protected static function launchServer()
     {

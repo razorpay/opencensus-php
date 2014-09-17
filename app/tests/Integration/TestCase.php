@@ -1,11 +1,12 @@
 <?php
-/**
- * Base class for creating integration tests using selenium for dashboard
- */
+namespace Tests\Integration;
 
 use Laracasts\TestDummy\Factory;
+use Eloquent;
+use DB;
+use PHPUnit_Runner_BaseTestRunner;
 
-class IntegrationTestCase extends ModifiedZizacoIntegrationTestCase
+class TestCase extends ZizacoIntegrationTestCase
 {   
     protected static $fixtures = array(
         'merchant' => 'Models\DAL\Merchant',
