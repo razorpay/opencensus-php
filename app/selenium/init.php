@@ -1,6 +1,9 @@
 <?php
 //Performs tasks required when laravel is served by artisan for selenium
 
+//Mock RZP API
+$_ENV['API_MOCK'] = true;
+
 //Mock S3
 	$s3 = Mockery::mock('overload:Aws\S3\S3Client');
 
