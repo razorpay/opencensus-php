@@ -275,7 +275,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         });
 
       $scope.ok = function (pricing_plan_id) {
-        console.log(pricing_plan_id);
         $modalInstance.close(pricing_plan_id);
       };
 

@@ -89,7 +89,8 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
       request.success(function(data){
         if(data.success){
           $scope.alerts.addAlert('success', "Transaction Captured", true);
-          fetchTransaction();
+          $scope.transaction.status = "captured";
+          $scope.transaction.amount = captureAmount;
         }
         else {
           $scope.alerts.addAlert('danger', null, true);
@@ -128,8 +129,13 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
       request.success(function(data){
         if(data.success){
           $scope.alerts.addAlert('success', "Transaction Refunded", true);
-    
-          fetchTransaction();  
+      
+          if(refundAmount == unrefundedAmount)
+            $scope.transaction.refund_status = 'full';
+          else
+            $scope.transaction.refund_status = 'partial';
+
+          $scope.transaction.amount_refunded = parseInt($scope.transaction.amount_refunded) + refundAmount; 
         }
         else {
           $scope.alerts.addAlert('danger', null, true);

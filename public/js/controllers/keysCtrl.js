@@ -114,6 +114,14 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
           }
         }
       });
+
+      modalInstance.result.then(
+        function () {
+          ;
+        },
+        function () {
+          ;
+        });
     };
 
     function fetchKeys(){

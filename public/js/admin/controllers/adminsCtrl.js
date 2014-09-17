@@ -45,7 +45,6 @@ app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFacto
 
     modalInstance.result.then(
       function (data) {
-        console.log(data);
         newAdminRequest(data);
       },
       function () {

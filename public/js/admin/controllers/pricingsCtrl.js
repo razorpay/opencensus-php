@@ -35,7 +35,7 @@ app.controller('PricingsCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKEN'
         if(data.success) {
           $scope.alerts.addAlert('success', 'Plan created successfully', true);
           $scope.create_plan = false;
-          generateTable();
+          $scope.pricing_plans.push(data.data);
           $scope.showPlan(data.data.id);
         }
         else {
@@ -69,8 +69,7 @@ app.controller('PricingsCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKEN'
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Rule added successfully', true);
-          $scope.show_plan = {};
-          $scope.showPlan(plan_id);
+          $scope.show_plan.rules.push(data.data);
         }
         else {
           $scope.alerts.resetAlerts();
