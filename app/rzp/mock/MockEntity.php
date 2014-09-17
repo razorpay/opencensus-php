@@ -10,7 +10,7 @@ class MockEntity extends Entity
 
     public function __construct()
     {
-        static::$mockData = include(__DIR__.'/helpers/mockData.php');
+        static::$mockData = MockData::getData();
     }
 
     protected function mock($data, $attributes = array())
@@ -32,5 +32,5 @@ class MockEntity extends Entity
         );
 
         $this->fill($collection);
-    }   
+    }
 }
