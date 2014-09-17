@@ -181,9 +181,9 @@ class AdminController extends BaseController
     {   
         $input = Input::all();
 
-        $error = (new Service\Admin)->addPricingPlanRule($id, $input);
+        list($error, $data) = (new Service\Admin)->addPricingPlanRule($id, $input);
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postNewPricingPlan()

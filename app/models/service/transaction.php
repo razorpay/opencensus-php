@@ -25,7 +25,7 @@ class Transaction extends Service
             $merchant_id = \Auth::merchant()->id();
             $this->setApiCredentials($merchant_id, $mode);
 
-            $response = $this->api->transaction->all($options);
+            $response = $this->api->transaction->all($options)->toArray();
 
             $data = Manager\Transaction::mapKeys($response);
         }

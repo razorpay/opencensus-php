@@ -391,19 +391,21 @@ class Admin extends Service
         unset($input['_token']);
 
         $error = array();
+
+        $response = array();
         
         $this->setApiCredentials();
 
         try
         {
-            $response = $this->api->pricing->fetch($id)->createRule($input);
+            $response = $this->api->pricing->fetch($id)->createRule($input)->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getCode();
         }
 
-        return $error;
+        return array($error, $response);
     }
 
     public function createPricingPlan($input)
