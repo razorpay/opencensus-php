@@ -31,7 +31,7 @@ build:
           name: run unit tests
           code: phpunit --stop-on-error --stop-on-failure
     after-steps:
-      - sherzberg/slack-notify:
+      - williamli/slack-notify-no-owner-info:
           subdomain: razorpay
           token: $SLACK_TOKEN
           channel: general
@@ -82,7 +82,7 @@ deploy:
                 -o StrictHostKeyChecking=no dashboard.razorpay.com
                 "(cd ~/dashboard/ && php artisan up)"
     after-steps:
-      - sherzberg/slack-notify:
+      - williamli/slack-notify-no-owner-info:
           subdomain: razorpay
           token: $SLACK_TOKEN
           channel: general
