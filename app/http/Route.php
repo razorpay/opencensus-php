@@ -68,6 +68,7 @@ final class Route
     public static $internal = array(
         'merchant_create',
         'merchant_fetch',
+        'merchant_fetch_multiple',
         'merchant_create_key',
         'merchant_fetch_keys',
         'merchant_replace_key',

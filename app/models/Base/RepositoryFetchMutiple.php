@@ -44,9 +44,11 @@ trait RepositoryFetchMultiple
             throw new Exception\InvalidArgumentException('Merchant Id is required for fetch query');
         }
 
+        $query = (new $repo)->newQuery();
+
         if ($merchantId !== null)
         {
-            $query = $repo::where(Common::MERCHANT_ID, '=', $merchantId);
+            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
         }
 
         if (isset($params['from']))
