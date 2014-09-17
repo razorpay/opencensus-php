@@ -1,10 +1,10 @@
 Models\Merchant\Entity:
-    id: $string
+    id: $uniqueid
     name: $string
     email: harshil$integer@gmail.com
 
 Models\Terminal\Entity:
-    id: $string
+    id: $uniqueid
     merchant_id: Models\Merchant\Entity
     gateway: hdfc
     gateway_merchant_id: $string
@@ -12,14 +12,14 @@ Models\Terminal\Entity:
     gateway_terminal_password: eyJpdiI6ImQwTWJVdElNdUtpeFpOR2VpMWxuT0E9PSIsInZhbHVlIjoiaWk1SDVOZGxBQkM2OTRHNzFIOG0yRzYzUlZDT05wSjdodjB2aWxjSHhJaz0iLCJtYWMiOiIxOTBiMGE0ZmU2NmUwOTQ0M2EwY2Y1MjJmZWU1ZWE4MTliOWMxNzlhMzBhZTMzNzg4ZTBmY2JjMWE5NjA1M2QwIn0=
 
 Models\Merchant\Balance:
-    id: $string
+    id: $uniqueid
 
 Models\Card\Entity:
-    id: $string$string$string
+    id: $uniqueid
     name: $string
     network: MC
     expiry_month: 01
-    expiry_year: 1999
+    expiry_year: 2017
     type: VISA
     country: IN
     last4: 7890
@@ -33,6 +33,7 @@ Models\Key\Entity:
     secret: $2y$10$UVD2ZERxHs0QyL7gaElrWOfvwAx11m.G374AGKpPnyn8VK4FN5Yry
 
 Models\Transaction\Entity:
+    id: $uniqueid
     merchant_id:
         type: Models\Merchant\Entity
     card_id:
@@ -42,11 +43,22 @@ Models\Transaction\Entity:
     status: open
     refund_status: none
     contact: $integer
-    udf: array
+    udf: emptyarray
     gateway: hdfc
+    email: $email
+
+Models\Transaction\Refund\Entity:
+    id: $uniqueid
+    transaction_id:
+        type: Models\Transaction\Entity
+    merhcant_id:
+        type: Models\Merchant\Entity
+    amount: 100
+    currency: INR
+    ledger_id: Models\Ledger\Entity
 
 Models\Pricing\Entity:
-    id: $string
+    id: $uniqueid
     plan_id: 5053edf267a4a6d1d26b43df
     plan_name: testFixturePlan
     payment_mode: card
@@ -58,7 +70,8 @@ Models\Pricing\Entity:
 
 Gateway\Hdfc\Entity:
     id: $integer
-    trackid: $string
+    trackid:
+        type: Models\Transaction\Entity
     gateway_transaction_id: $integer$integer
     action: 4
     enroll_result: 2
@@ -66,6 +79,6 @@ Gateway\Hdfc\Entity:
     result: APPROVED
     eci: 6
     auth: 999999
-    ref: $integer$integer
+    ref: hdfcRef
     avr: N
-    postdate: 1709
+    postdate: hdfcPostDate

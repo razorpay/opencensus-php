@@ -3,7 +3,7 @@
 namespace Tests\Functional\Fixtures;
 
 use Eloquent;
-use Laracasts\TestDummy\Factory;
+use Tests\TestDummy\Factory;
 use Models;
 
 class Fixtures
@@ -18,6 +18,24 @@ class Fixtures
         'transaction'   => 'Models\Transaction\Entity',
         'hdfc'          => 'Gateway\Hdfc\Entity',
     );
+
+    protected function createTransactionAuthorizedEntity(array $attributes = array())
+    {
+        $attributes = [
+            'amount'            =>  '50000',
+            'currency'          =>  'INR',
+            'email'             =>  'a@b.com',
+            'contact'           =>  '9918899029',
+            'status'            =>  'authorized',
+        ];
+
+        return $transaction;
+    }
+
+    protected function createHdfcTransactionAuthorizedEntity(array $attributes = array())
+    {
+        ;
+    }
 
     /**
      * Seed the db with required data
@@ -42,21 +60,22 @@ class Fixtures
 
     public function createEntity($entity, $attributes = array())
     {
+        // $func = 'replace'.ucfirst($entity).'Entity' . 'Attributes';
+
+        // $attributes = $this->$func($attributes);
+
         if (($entity === 'merchant') or
             ($entity === 'pricing'))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
 
-        $this->eloquentUnguard();
+        return $this->save($entity, $attributes);
+    }
 
-        $entity = self::$entityMap[$entity];
-
-        $entity = Factory::create($entity, $attributes);
-
-        $this->eloquentReguard();
-
-        return $entity;
+    protected function replaceMerchantEntityAttributes($attributes)
+    {
+        ;
     }
 
     protected function createEntityInTestAndLive($entity, $attributes = array())
@@ -74,6 +93,19 @@ class Fixtures
         $liveEntity->setConnection('live')->save();
 
         $entity->exists = true;
+    }
+
+    protected function save($entity, $attributes)
+    {
+        $this->eloquentUnguard();
+
+        $entity = self::$entityMap[$entity];
+
+        $entity = Factory::create($entity, $attributes);
+
+        $this->eloquentReguard();
+
+        return $entity;
     }
 
     public function createDefaultPricingPlan()
