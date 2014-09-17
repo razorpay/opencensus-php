@@ -52,8 +52,8 @@ class Generator
 
     protected function fetchHdfcTransactions($input)
     {
-        $transactions = array_slice($input, 'transaction');
-        $trackids = array_slice($transactions, 'id');
+        $transactions = array_column($input, 'transaction');
+        $trackids = array_column($transactions, 'id');
 
         $hdfcTxns = (new Hdfc\Repository)->retrieveMultipleTransactions($trackids);
 
@@ -70,7 +70,11 @@ class Generator
 
     protected function generateMprFile($mprArray)
     {
-        $filename = 'hdfc_mpr.xlsx';
+        // @todo: remove sys_get_temp_dir. the doc comments don't recommend it.
+        // Create a temp file name
+        $filename =  tempnam(sys_get_temp_dir(), 'hdfc_mpr');
+        // Remove .tmp ext and add .xlsx instead
+        $filename = str_replace('.tmp', '.xlsx', $filename);
 
         $fp = fopen($filename, 'w');
 

@@ -230,4 +230,11 @@ class Repository extends Base\Repository
 
         return $repo::whereIn('trackid', '=', $ids)->get();
     }
+
+    public function fetchBetweenTimestamps($from, $to)
+    {
+        $repo = $this->repo;
+
+        return $repo::whereBetween('created_at', $from, $to);
+    }
 }

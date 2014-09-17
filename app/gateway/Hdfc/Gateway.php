@@ -318,6 +318,11 @@ class Gateway extends BaseGateway
             $input['entities']);
     }
 
+    public function generateMpr($input)
+    {
+        return (new Hdfc\Mpr\Generator)->generateMpr($input);
+    }
+
 // ----------------------Gateway operations end --------------------------------
 
     protected function runRequestResponseFlow(array &$request, array &$response)
