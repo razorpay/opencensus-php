@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const CARD_ID           = 'card_id';
     const LEDGER_ID         = 'ledger_id';
     const CAPTURED_AT       = 'captured_at';
+    const GATEWAY           = 'gateway';
 
     const CURRENCY_LENGTH   = 3;
 
@@ -92,7 +93,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::UDF,
         self::REFUND_STATUS,
-        self::AMOUNT_REFUNDED);
+        self::AMOUNT_REFUNDED,
+        self::GATEWAY);
 
 // --------------------- Generators --------------------------------------------
 
@@ -112,6 +114,11 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(self::UDF, array());
         }
+    }
+
+    public function generateGateway()
+    {
+        $this->setAttribute(self::GATEWAY, 'hdfc');
     }
 
     protected function generateAmountRefunded()

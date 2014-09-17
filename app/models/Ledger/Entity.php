@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT,
         self::AMOUNT,
         self::FEE,
+        self::GATEWAY_FEE,
         self::BALANCE);
 
     protected $public = array(

@@ -43,6 +43,7 @@ Models\Transaction\Entity:
     refund_status: none
     contact: $integer
     udf: array
+    gateway: hdfc
 
 Models\Pricing\Entity:
     id: $string

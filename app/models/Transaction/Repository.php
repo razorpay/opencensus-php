@@ -34,6 +34,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
+    {
+        $repo = $this->repo;
+
+        return $repo::whereBetween(Transaction\Entity::CAPTURED_AT, array($from, $to))
+                    ->where(Transaction\Entity::STATUS, '=', Transaction\Status::CAPTURED)
+                    ->where('gateway', '=', $gateway)
+                    ->get();
+    }
+
     public function reloadAndLockForUpdate($txn)
     {
         $repo = $this->repo;

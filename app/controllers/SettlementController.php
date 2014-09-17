@@ -8,9 +8,7 @@ class SettlementController extends BaseController
 {
     public function postGatewayMpr()
     {
-        $input = Input::all();
-
-        $data = (new Settlement\Service)->gatewayMpr($input);
+        $data = (new Settlement\Service)->generateGatewayMpr();
 
         return ApiResponse::json($data);
     }

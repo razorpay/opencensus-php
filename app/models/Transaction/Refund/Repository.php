@@ -38,8 +38,8 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Common::CREATED_AT, '>=', $from)
-                    ->where(Common::CREATED_AT, '<=', $to)
+        return $repo::where(Refund\Entity::CREATED_AT, '>=', $from)
+                    ->where(Refund\Entity::CREATED_AT, '<=', $to)
                     ->get();
     }
 

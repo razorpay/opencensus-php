@@ -72,6 +72,8 @@ class CreateTransactions  extends Migration
             $table->integer(Transaction::CAPTURED_AT)
                   ->nullable();
 
+            $table->string(Transaction::GATEWAY);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Transaction::CREATED_AT);
             $table->integer(Transaction::UPDATED_AT);
