@@ -18,7 +18,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Merchant Form locked successfully', true);
-          generateMerchant();
+          $scope.merchant.locked = 1;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -41,7 +41,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Merchant Form unlocked successfully', true);
-          generateMerchant();
+          $scope.merchant.locked = 0;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -64,7 +64,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Merchant Activated successfully', true);
-          generateMerchant();
+          $scope.merchant.activated = 1;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -87,7 +87,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Live transactions for merchant enabled successfully', true);
-          generateMerchant();
+          $scope.merchant.live = 1;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -110,7 +110,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Live transactions for merchant disabled successfully', true);
-          generateMerchant();
+          $scope.merchant.live = 0;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -144,7 +144,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Plan Assigned successfully', true);
-          generateMerchant();
+          $scope.merchant.pricing_plan = data.data;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -176,7 +176,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Terminal Assigned successfully', true);
-          generateMerchant();
+          $scope.merchant.terminal = data.data;
         }
         else {
           $scope.alerts.resetAlerts();

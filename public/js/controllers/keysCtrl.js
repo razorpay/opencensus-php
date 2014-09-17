@@ -30,6 +30,8 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
       .success(function(data){
         if(data.success){
           $scope.alerts.addAlert('success', "Key Generated", true);
+          $scope.keys.data.push(data.data);
+          $scope.keys.count = parseInt($scope.keys.count) + 1;
           $scope.openNewKey({id: data.data.id, secret:data.data.secret});
         }
         else {
@@ -67,7 +69,9 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
       request.success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', "Key Rolled", true);
-          $scope.openNewKey({id: data.data.key_id, secret:data.data.secret});
+          $scope.keys.data.push(data.data.new);
+          $scope.keys.count = parseInt($scope.keys.count) + 1;
+          $scope.openNewKey({id: data.data.new.id, secret:data.data.new.secret});
         }
         else {
           $scope.alerts.addAlert('danger', null, true);
@@ -110,14 +114,6 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
           }
         }
       });
-
-      modalInstance.result.then(
-        function () {
-          fetchKeys();
-        },
-        function () {
-          ;
-        });
     };
 
     function fetchKeys(){
