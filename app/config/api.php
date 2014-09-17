@@ -10,5 +10,5 @@ return array(
     'url'       =>  $_ENV['API_URL'],
     'ip'        =>  '10.0.0.140',
     'auth_pass' =>  $_ENV['API_AUTH_PASS'],
-
+    'mock'      =>  $_ENV['API_MOCK']
 );

@@ -21,6 +21,7 @@
      */
     'API_URL'           => 'http://api.razorpay.com/',
     'API_AUTH_PASS'     => 'secret',
+    'API_MOCK'          => false,
 
     /**
      *  QUEUE System Configuration
