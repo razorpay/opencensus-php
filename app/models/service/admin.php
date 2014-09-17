@@ -152,7 +152,7 @@ class Admin extends Service
 
         $this->setApiCredentials();
 
-        $response = $this->api->merchant->fetch($id);
+        $response = $this->api->merchant->fetch($id)->toArray();
         
         //@todo This is failing tests on wercker, fix
         //Manager\Merchant::checkAPIMatch($merchant, $response);
@@ -223,7 +223,7 @@ class Admin extends Service
 
             try
             {
-                $response = $this->api->merchant->fetch($id)->setTerminal($data)->toArray();
+                $data = $this->api->merchant->fetch($id)->setTerminal($data)->toArray();
             }
             catch(\Razorpay\Api\Errors\BadRequestError $e)
             {
@@ -231,7 +231,7 @@ class Admin extends Service
             }   
         }
 
-        return $error;
+        return array($error, $data);
     }
 
     public function fetchMerchantPricing($id)
@@ -247,18 +247,21 @@ class Admin extends Service
     {   
         unset($input['_token']);
 
+        $error = array(); 
+        $data = array();
+
         $this->setApiCredentials();
 
         try
         {
-            $response = $this->api->merchant->fetch($id)->setPricing($input)->toArray();
+            $data = $this->api->merchant->fetch($id)->setPricing($input)->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getCode());
+            $error[] = $e->getCode();
         }
 
-        return array();
+        return array($error, $data);
     }
 
     public function activateMerchant($id)

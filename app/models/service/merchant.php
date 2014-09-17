@@ -205,8 +205,7 @@ class Merchant extends Service
                 $key_data = array(
                     'old_id' => $data['id'],
                     'merchant_id' => $input['merchant_id'],
-                    'key_id' => $response['new']['id'],
-                    'secret' => $response['new']['secret'],
+                    'new' => $response['new']
                 );
             }
             catch(\Razorpay\Api\Errors\BadRequestError $e)

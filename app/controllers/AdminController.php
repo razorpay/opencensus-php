@@ -98,18 +98,18 @@ class AdminController extends BaseController
     {   
         $input = Input::all();
 
-        $error = (new Service\Admin)->postMerchantTerminal($id, $input);
+        list($error, $data) = (new Service\Admin)->postMerchantTerminal($id, $input);
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postMerchantPricing($id)
     {   
         $input = Input::all();
 
-        $error = (new Service\Admin)->postMerchantPricing($id, $input);
+        list($error, $data) = (new Service\Admin)->postMerchantPricing($id, $input);
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getMerchantActivation($id)
