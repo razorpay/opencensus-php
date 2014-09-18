@@ -191,6 +191,24 @@ angular.module('app.directives', ['ui.load'])
       }
      };
   }])
+  .directive('loadingBar', ['$compile',
+    function($compile) {
+     return {
+      restrict: 'AC',
+      template:'<span class="bar"></span>',
+      priority: -1,
+      link: function(scope, el, attrs) {        
+        el.addClass('butterbar');
+        el.attr('busy', "");
+        el.attr('busy-add-classes', "active");
+        el.attr('busy-remove-classes', "hide");
+        el.attr('not-busy-add-classes', "hide");
+        el.attr('not-busy-remove-classes', "active");
+        el.removeAttr("loading-bar");
+        $compile(el)(scope);
+      }
+     };
+  }])
   .directive('ngConfirmClick', ['$modal',
   function($modal){
     return {
