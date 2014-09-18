@@ -1,7 +1,7 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">User Profile</h1>
 </div>
-<div class="wrapper-md profile-wrapper" ng-controller="UserCtrl">
+<div class="wrapper-md profile-wrapper">
   <div class="panel panel-default col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
       Merchant Id: <strong>{{user.id}}</strong>
@@ -20,7 +20,7 @@
           Email Id
         </a>
         <a href class="list-group-item">
-          <span class="pull-right" tooltip="{{activated(user.activated)}}"><i class="fa" ng-class="{'fa-check text-success': user.activated == 1, 'fa-times text-danger':user.activated == 0}"></i></span>
+          <span class="pull-right" tooltip="{{user.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': user.activated == 1, 'fa-times text-danger':user.activated == 0}"></i></span>
           Activation Status
         </a>
         <a href class="list-group-item">
