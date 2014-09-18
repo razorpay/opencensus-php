@@ -21,7 +21,12 @@ App::before(function($request)
 
 App::after(function($request, $response)
 {
-	//
+	//This is necessary for protection against json/jsonp array vulnerability
+	//Refer https://docs.angularjs.org/api/ng/service/$http JSON Vulnerability Protection
+	if($response instanceof \Illuminate\Http\JsonResponse) {
+        $json = ")]}',\n" . $response->getContent();
+        return $response->setContent($json);
+    }
 });
 
 /*
