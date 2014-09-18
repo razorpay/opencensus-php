@@ -8,15 +8,6 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '
 
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.activated = function(activated) {
-      if(activated == 1) {
-        return "Activated";
-      }
-      else {
-        return "Not Activated";
-      }
-    };
-
     $scope.logout = function() {
       logoutRequest()
         .finally(function() {
@@ -61,6 +52,46 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '
       });
     });
     
+    $scope.$on('$keepalive', function() {
+        $http({
+          method: "get",
+          url: "/user/keepalive",
+          notBusy: true
+        })
+        .success(function(data){
+          if(data.success == false) {
+            location.reload();
+          }
+        })
+        .error(function(){
+          if($scope.connectModal) return;
+
+          var connectModalInstance = $modal.open({
+              controller: ['$scope', '$modalInstance',
+                function ($scope, $modalInstance) {
+                  $scope.ok = function () {
+                    $modalInstance.close();
+                  }
+              }],
+              template: '<div class="modal-header">' +
+                  '<h3 class="modal-title">Alert</h3>' +
+                '</div>' +
+                '<div class="confirm-modal modal-body">' +
+                    '<h4>Can not communicate with the server!<br/>Please check your connection and refresh the page.</h4>' +
+                '</div>' +
+                '<div class="modal-footer">' +
+                    '<button class="btn btn-primary confirm-ok" ng-click="ok()">OK</button>' +
+                '</div>'
+          });
+
+          $scope.connectModal = true;
+          
+          connectModalInstance.result.finally(function () {
+              $scope.connectModal = false;
+          });         
+        });
+    });
+
     function logoutRequest(){
       $scope.data = {
         _token: CSRF_TOKEN
