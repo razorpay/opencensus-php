@@ -17,10 +17,11 @@ var app = angular.module('app', [
     'app.directives',
     'app.controllers',
     'angularFileUpload',
-    'ngIdle'
+    'ngIdle',
+    'ngBusy'
   ])
 .run(
-  [          '$rootScope', '$state', '$stateParams', 'user', 'authorization',
+  [          '$rootScope', '$state', '$stateParams', 'user', 'authorization', 
     function ($rootScope,   $state,   $stateParams, user, authorization) {
         $rootScope.$on('$stateChangeStart', function(event, toState, toStateParams) {
         // track the state the user wants to go to; authorization service needs this
@@ -213,8 +214,7 @@ var app = angular.module('app', [
 .config(['$keepaliveProvider', '$idleProvider', function($keepaliveProvider, $idleProvider) {
   $idleProvider.idleDuration(10*60);
   $idleProvider.warningDuration(15);
-  $keepaliveProvider.interval(5*60);
-  $keepaliveProvider.http('/user/keepalive');
+  $keepaliveProvider.interval(60);
 }])
 
 /**
