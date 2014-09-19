@@ -31,7 +31,8 @@ class CaptureTest extends TestCase
 
         $this->testData = require(__DIR__.'/helpers/capture.php');
 
-        $this->txn = $this->createAuthorizedTransactionEntity();
+        $txn = $this->fixtures->createTransactionAuthorizedEntity();
+        $this->txn = $txn->toArrayPublic();
 
         $this->setupPrivateBasicAuthParams();
     }

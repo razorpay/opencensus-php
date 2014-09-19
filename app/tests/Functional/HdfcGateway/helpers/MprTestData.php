@@ -9,9 +9,9 @@ return [
     'testUploadMpr' => [
         'request' => [
             'content' => [
-                'gateway' => 'mockhdfc',
+                'gateway' => 'hdfc',
             ],
-            'url' => '/gateway/mpr',
+            'url' => '/gateway/mpr/reconcile',
             'method' => 'POST'
         ],
         'response' => [

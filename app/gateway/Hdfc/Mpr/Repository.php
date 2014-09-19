@@ -47,6 +47,6 @@ class Mpr extends Base\Entity
 
     public function getAmount()
     {
-        return $this->getAttribute('internation_amount') + $this->getAttribute('domestic_amount');
+        return $this->getAttribute('international_amount') + $this->getAttribute('domestic_amount');
     }
 }

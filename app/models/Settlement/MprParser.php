@@ -6,6 +6,8 @@ use Excel;
 
 class MprParser
 {
+    protected static $headings = array();
+
     public static function parseMprFile($mprFile)
     {
         $data = self::getDataFromMprFile($mprFile);
@@ -50,11 +52,11 @@ class MprParser
             $attr = strtolower($attr);
             $attr = str_replace(' ', '_', $attr);
 
-            if (in_array($this->headings, $attr) === false)
-            {
-                throw new Exception\LogicException(
-                    'Hdfc mpr: heading mis-match. Value: ' . $attr);
-            }
+            // if (in_array($this->headings, $attr) === false)
+            // {
+            //     throw new Exception\LogicException(
+            //         'Hdfc mpr: heading mis-match. Value: ' . $attr);
+            // }
         }
 
         $headingCount = count($headings);

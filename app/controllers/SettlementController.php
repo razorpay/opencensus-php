@@ -6,9 +6,18 @@ use Models\Settlement;
 
 class SettlementController extends BaseController
 {
-    public function postGatewayMpr()
+    public function postGatewayMprReconcile()
     {
-        $data = (new Settlement\Service)->generateGatewayMpr();
+        $input = Input::all();
+
+        $data = (new Settlement\Service)->gatewayMprReconcile($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postGatewayMprGenerate()
+    {
+        $data = (new Settlement\Service)->gatewayMprGenerate();
 
         return ApiResponse::json($data);
     }

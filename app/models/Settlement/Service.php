@@ -11,13 +11,13 @@ use Models\Ledger;
 
 class Service extends Base\Service
 {
-    public function gatewayMpr($input)
+    public function gatewayMprReconcile($input)
     {
         $data = MprParser::parseMprFile($input['mpr']);
 
         $reconciler = new Reconciler($data, $input['gateway']);
 
-        return $reconciler->reconcile();
+        return $reconciler->reconcile($data, $input['gateway']);
     }
 
     public function getLedgerRecords($input)
@@ -102,7 +102,7 @@ class Service extends Base\Service
         return $lgr;
     }
 
-    public function generateGatewayMpr()
+    public function gatewayMprGenerate()
     {
         $generator = new MprGenerator($this->mode);
 

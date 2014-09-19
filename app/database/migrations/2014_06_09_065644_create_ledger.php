@@ -59,7 +59,8 @@ class CreateLedger  extends Migration
             $table->boolean(Ledger::SETTLED)
                   ->default(0);
 
-            $table->integer(Ledger::SETTLED_AT);
+            $table->integer(Ledger::SETTLED_AT)
+                  ->nullable();
 
             $table->integer(Ledger::RECONCILED_AT)
                   ->nullable();

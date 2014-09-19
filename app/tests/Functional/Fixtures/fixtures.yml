@@ -34,11 +34,11 @@ Models\Key\Entity:
 
 Models\Transaction\Entity:
     id: $uniqueid
-    merchant_id:
-        type: Models\Merchant\Entity
+    merchant_id: 363e4efa820b0c06208ccd99
     card_id:
         type: Models\Card\Entity
-    amount: 100
+    amount: 1000000
+    amount_authorized: 100
     amount_refunded: 0
     currency: INR
     status: open

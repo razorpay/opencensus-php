@@ -22,30 +22,6 @@ class Gateway extends Hdfc\Gateway
         $this->mockHdfcServer = \Config::get('gateway.mockhdfc_server');
     }
 
-    public function generateMpr($input)
-    {
-        $repo = new MockHdfc\Repository;
-
-        $mpr = $repo->getUnreportedTransactions();
-
-        list($mprArray, $trackids) = $this->convertToMprArray($mpr);
-
-        $filename = 'hdfc_mpr.xlsx';
-
-        $fp = fopen($filename, 'w');
-
-        foreach ($mprArray as $row)
-        {
-            fputcsv($fp, $row);
-        }
-
-        fclose($fp);
-
-        $repo->setMprGeneratedTrue($trackids);
-
-        return $filename;
-    }
-
     protected function convertToMprArray($mpr)
     {
         $mprHeadings = array_keys($mpr->first()->toArrayForMprReport());

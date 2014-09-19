@@ -23,8 +23,8 @@ class MprGenerator
         $gateway = 'hdfc';
 
         // Get the timestamp on T-1 day 12 am for IST
-        $from = Carbon::today('Asia/Kolkata')->subSecond(1);
-        $to = Carbon::yesterday('Asia/Kolkata');
+        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $to = Carbon::today('Asia/Kolkata')->subSecond(1)->timestamp;
 
         $txnRepo = new Transaction\Repository;
         $txns = $txnRepo->fetchCapturedForGatewayBetweenTimestamp(
@@ -43,7 +43,7 @@ class MprGenerator
 
         $this->sendMprMail($mprFile);
 
-        return 'done!';
+        return $mprFile;
     }
 
     protected function getRelatedEntities($txns)
@@ -69,13 +69,13 @@ class MprGenerator
 
     protected function sendMprMail($mprFile)
     {
-        \Mail::send('', array(), function($message)
+        \Mail::send('hdfc.mpr', array(), function($message) use ($mprFile)
         {
             $message->from('shashankkumar.me@gmail.com', 'shk');
 
-            $message->to('sandboxf697ec003a374fb798a36a45d622d5f6.mailgun.org')->cc('settlement@razorpay.com');
+            $message->to('testmpr@sandboxf697ec003a374fb798a36a45d622d5f6.mailgun.org')->cc('settlement@razorpay.com');
 
-            $message->attach($filename);
+            $message->attach($mprFile);
         });
     }
 

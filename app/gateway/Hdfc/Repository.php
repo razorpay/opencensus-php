@@ -234,7 +234,16 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::whereIn('trackid', '=', $ids)->get();
+        return $repo::whereIn('trackid', $ids)->get();
+    }
+
+    public function retrieveCapturedTransactions(array $ids)
+    {
+        $repo = $this->repo;
+
+        return $repo::whereIn('trackid', $ids)
+                    ->where('status', '=', Transaction\Status::CAPTURED)
+                    ->get();
     }
 
     public function fetchBetweenTimestamps($from, $to)

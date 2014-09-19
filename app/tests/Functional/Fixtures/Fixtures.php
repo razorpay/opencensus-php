@@ -19,17 +19,27 @@ class Fixtures
         'hdfc'          => 'Gateway\Hdfc\Entity',
     );
 
+    public function times($times)
+    {
+        Factory::times($times);
+
+        return $this;
+    }
+
     public function createTransactionAuthorizedEntity(array $attributes = array())
     {
         $defaultValues = array('status' => 'authorized');
 
-        $attributes = array_merge($attributes, $defaultValues);
+        $attributes = array_merge($defaultValues, $attributes);
 
         $txn = $this->createEntity('transaction', $attributes);
 
-        $hdfcTxn = $this->createEntity(
-            'hdfc',
-            ['trackid' => $txn->getKey(), 'amount' => $txn->getAmount()]);
+        $hdfcTxn = $this->createHdfcTransactionAuthorizedEntity(
+            array(
+                'trackid' => $txn->getKey(),
+                'amount' => $txn->getAmount(),
+                'created_at' => $txn->created_at,
+            ));
 
         return $txn;
     }
@@ -41,30 +51,36 @@ class Fixtures
             'captured_at' => time(),
             'created_at' => time() - 10);
 
-        $attributes = array_merge($attributes, $defaultValues);
+        $attributes = array_merge($defaultValues, $attributes);
 
-        $txn = $this->createTransactionEntity($attributes);
+        $txn = $this->createEntity('transaction', $attributes);
 
-        $hdfcTxn = $this->createEntity(
-            'hdfc',
-            ['trackid' => $txn->getKey(), 'amount' => $txn->getAmount()]);
+        $hdfcAttrArray = array(
+            'trackid' => $txn->getKey(),
+            'amount' => $txn->getAmount(),
+            'created_at' => $txn->created_at);
+
+        $hdfcTxnAuthorized = $this->createHdfcTransactionAuthorizedEntity(
+            $hdfcAttrArray);
+
+        $hdfcTxnCaptured = $this->createHdfcTransactionCapturedEntity(
+            $hdfcAttrArray);
 
         return $txn;
     }
 
-    public function createTransactionEntity(array $attributes = array())
-    {
-        $defaultValues = array(
-            'merchant_id' => '363e4efa820b0c06208ccd99');
-
-        $attributes = array_merge($attributes, $defaultValues);
-
-        return $this->createEntity('transaction', $attributes);
-    }
-
     protected function createHdfcTransactionAuthorizedEntity(array $attributes = array())
     {
-        ;
+        $attributes['action'] = 4;
+        $attributes['status'] = 'authorized';
+        return $this->createEntity('hdfc', $attributes);
+    }
+
+    protected function createHdfcTransactionCapturedEntity(array $attributes = array())
+    {
+        $attributes['action'] = 5;
+        $attributes['status'] = 'captured';
+        return $this->createEntity('hdfc', $attributes);
     }
 
     /**

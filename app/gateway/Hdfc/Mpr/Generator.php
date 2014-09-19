@@ -2,6 +2,7 @@
 
 namespace Gateway\Hdfc\Mpr;
 
+use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
 use Models\Base;
@@ -55,7 +56,7 @@ class Generator
         $transactions = array_column($input, 'transaction');
         $trackids = array_column($transactions, 'id');
 
-        $hdfcTxns = (new Hdfc\Repository)->retrieveMultipleTransactions($trackids);
+        $hdfcTxns = (new Hdfc\Repository)->retrieveCapturedTransactions($trackids);
 
         $n = count($input);
 
@@ -72,9 +73,7 @@ class Generator
     {
         // @todo: remove sys_get_temp_dir. the doc comments don't recommend it.
         // Create a temp file name
-        $filename =  tempnam(sys_get_temp_dir(), 'hdfc_mpr');
-        // Remove .tmp ext and add .xlsx instead
-        $filename = str_replace('.tmp', '.xlsx', $filename);
+        $filename =  tempnam(sys_get_temp_dir(), 'hdfc_mpr') . '.xlsx';
 
         $fp = fopen($filename, 'w');
 
@@ -84,6 +83,8 @@ class Generator
         }
 
         fclose($fp);
+
+        return $filename;
     }
 
     protected function generateMprArray($input, $hdfcTxns)
@@ -92,7 +93,9 @@ class Generator
 
         array_push($mprArray, $this->headings);
 
-        for ($i = 0; $i < $n; $i++)
+        $count = count($input);
+
+        for ($i = 0; $i < $count; $i++)
         {
             $values = $this->generateMprRow($input[$i], $hdfcTxns[$i]);
             array_push($mprArray, $values);
@@ -103,33 +106,33 @@ class Generator
 
     protected function generateMprRow($input, $hdfcTxn)
     {
-        $amount = $input['transaction']['amount'];
+        $amount = $input['transaction']['amount'] / 100;
 
         $msf = $amount * 2 / 100;
 
-        $serviceTax = $amount * self::SERVICE_TAX_PERCENT / 100;
-        $educationCess = $amount * self::EDUCATION_CESS_PERCENT / 100;
+        $serviceTax = $msf * self::SERVICE_TAX_PERCENT / 100;
+        $educationCess = $msf * self::EDUCATION_CESS_PERCENT / 100;
 
-        $netAmount = $amount - $msf;
+        $netAmount = $amount - ($msf + $serviceTax + $educationCess);
 
-        $maskedCardNumber = $this->input['transaction']['card']['iin'] . 'xxxxxx' .
-                            $this->input['transaction']['card']['last4'];
+        $maskedCardNumber = $input['card']['iin'] . 'xxxxxx' .
+                            $input['card']['last4'];
 
         $attributes = array(
-            'merchant_code'     => $this->terminal['gateway_merchant_id'],
-            'terminal_number'   => $this->terminal['gateway_terminal_id'],
+            'merchant_code'     => $input['terminal']['gateway_merchant_id'],
+            'terminal_number'   => $input['terminal']['gateway_terminal_id'],
             'rfc_fmt'           => 'BAT',
             'bat_nbr'           => 1,
-            'card_type'         => $this->input['transaction']['card']['network'] . ' ' . 'LOCAL',
+            'card_type'         => $input['card']['network'] . ' ' . 'LOCAL',
             'card_number'       => $maskedCardNumber,
             'trans_date'        => (new Carbon('now'))->format('d-M-y'),
             'settle_date'       => (new Carbon('now'))->format('d-M-y'),
             'approv_code'       => '000000',
             'intl_amt'          => 0,
             'domestic_amt'      => $amount,
-            'tran_id'           => $hdfcTxn['tranid'],
+            'tran_id'           => $hdfcTxn['gateway_transaction_id'],
             'upvalue'           => '`',
-            'merchant_trackid'  => $this->input['transaction']['id'],
+            'merchant_trackid'  => 'txn-'.$input['transaction']['id'],
             'msf'               => $msf,
             'service_tax'       => $serviceTax,
             'edu_cess'          => $educationCess,
@@ -142,10 +145,6 @@ class Generator
             'udf5'              => '',
             'sequence_number'   => $hdfcTxn['ref'],
         );
-
-        $mprGenerator = new MprGenerator($attributes);
-
-        (new MockHdfc\Repository)->saveOrFail($mprGenerator);
 
         return array_values($attributes);
     }

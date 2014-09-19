@@ -6,8 +6,12 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Models\Base;
+use Models\Card;
 use Models\Gateway;
 use Models\Ledger;
+use Models\Merchant;
+use Models\Pricing;
+use Models\Transaction;
 
 class Reconciler
 {
@@ -25,7 +29,7 @@ class Reconciler
         $this->feeCalculator = new Pricing\Fee;
     }
 
-    public function reconciler($mprData, $gateway)
+    public function reconcile($mprData, $gateway)
     {
         $lgrs = array();
 
@@ -77,7 +81,7 @@ class Reconciler
         $amount = $this->txn->getAmount();
         $credit = $amount - $fee;
         $gatewayFee = $data['ledger']['gateway_fee'];
-        $apiFee = $fee - $gateway_fee;
+        $apiFee = $fee - $gatewayFee;
 
         $lgrData = array(
             Ledger\Entity::AMOUNT => $amount,
@@ -115,7 +119,7 @@ class Reconciler
 
     protected function calculateMerchantFees()
     {
-        return $feeCalculator->calculateMerchantFees(
+        return $this->feeCalculator->calculateMerchantFees(
                     $this->merchant,
                     $this->card,
                     $this->txn->getAmount());
@@ -132,18 +136,18 @@ class Reconciler
         $merchantBalance->subAmount($this->lgr['debit']);
         $merchantRepo->save($merchantBalance);
 
-        $nodalBalance->addAmount($this->ledger['api_fee']);
+        $nodalBalance->addAmount($this->lgr['api_fee']);
         $merchantRepo->save($nodalBalance);
 
-        $lgr['balance'] = $merchantBalance->getBalance();
-        $lgr['escrow_balance'] = $nodalBalance->getBalance();
+        $this->lgr['balance'] = $merchantBalance->getBalance();
+        $this->lgr['escrow_balance'] = $nodalBalance->getBalance();
     }
 
     protected function newLedgerRecord()
     {
         $lgr = new Ledger\Entity;
         $lgr->generateId();
-        $lgr->setReconciledAt($reconciledAt);
+        $lgr->setReconciledAt($this->reconciledAtTimestamp);
 
         $this->lgr = $lgr;
         $this->entities['ledger'] = $lgr;
@@ -153,10 +157,11 @@ class Reconciler
 
     protected function loadEntities($transactionId)
     {
-        $this->txn  = (new Transaction\Core)->retrieveById($transactionId);
+        $txn  = (new Transaction\Core)->retrieveById($transactionId);
         $this->merchant = $txn->merchant;
         $this->card = $txn->card;
         $this->terminal = $txn->merchant->terminal;
+        $this->txn = $txn;
 
         return $entitiesArray = array(
             'transaction' => $this->txn->toArray(),

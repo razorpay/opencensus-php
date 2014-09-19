@@ -2,10 +2,11 @@
 
 namespace Tests\Functional\HdfcGateway;
 
+use Carbon\Carbon;
 use Config;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Tests\Functional\TestCase;
 use Tests\Functional\Transaction\TransactionAuthFlowTrait;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class HdfcGatewayMprTest extends TestCase
 {
@@ -27,24 +28,32 @@ class HdfcGatewayMprTest extends TestCase
 
     public function testUploadMpr()
     {
-        $this->markTestIncomplete();
-        $defaultGateway = Config::get('gateway.default');
-        Config::set('gateway.default', 'mockhdfc');
-
         $txns = array();
 
         $r = range(1,1);
 
+        $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+        $capturedAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+
+
         foreach ($r as $i)
         {
-            $txn = $this->defaultAuthTransaction();
-
-            $txn = $this->captureTransaction($txn['id'], $txn['amount']);
+            $txn = $this->fixtures->createTransactionCapturedEntity(
+                ['captured_at' => $capturedAt, 'created_at' => $createdAt]);
 
             array_push($txns, $txn);
         }
 
-        $mprFile = (new \Gateway\MockHdfc\Gateway)->generateMpr();
+        \Config::set('mail.pretend', true);
+
+        $this->setupAppBasicAuthParams();
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/gateway/mpr/generate',
+            'content' => array());
+
+        $mprFile = $this->makeRequestAndGetContent($request);
 
         $mimeType = 'application/vnd.ms-excel';
 
@@ -56,11 +65,9 @@ class HdfcGatewayMprTest extends TestCase
 
         $this->startTest();
 
-        Config::set('gateway.default', $defaultGateway);
-
         $this->assertTrue(
-            unlink('hdfc_mpr.xlsx'),
-            'Could not delete hdfc generated mpr file for test purposes');
+            unlink($mprFile),
+            'Could not delete hdfc mpr file generated during testing');
     }
 
     public function startTest($testDataToReplace = array())
