@@ -29,8 +29,7 @@ module.exports = function(grunt){
 													'public/css/font-awesome.min.css',
 													'public/css/simple-line-icons.css',
 													'public/css/font.css',
-													'public/css/app.css',
-													'public/css/spinner.css'
+													'public/css/app.css'
 												],
 					'public/js/dev/pre.js': [
 													'public/js/jquery/jquery.min.js',
@@ -80,8 +79,7 @@ module.exports = function(grunt){
 													'public/css/font-awesome.min.css',
 													'public/css/simple-line-icons.css',
 													'public/css/font.css',
-													'public/css/app.css',
-													'public/css/spinner.css'
+													'public/css/app.css'
 												]
 				}
 			}

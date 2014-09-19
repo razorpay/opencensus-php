@@ -214,10 +214,8 @@ angular.module('app.directives', ['ui.load'])
      return {
       restrict: 'E',
       template:'<div busy not-busy-add-classes="hide" busy-remove-classes="hide">' + 
-                  '<svg class="spinner" width="24px" height="24px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">' +
-                    '<circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>' +
-                  '</svg>' +
-                '</div>',
+                  '<img src="img/loading-bubbles.svg" alt="Loading icon" />' + 
+              '</div>',
       priority: -1
      };
   })
