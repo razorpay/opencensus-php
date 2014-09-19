@@ -96,7 +96,7 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#transactionsNav').length > 0", 20000)
             ->click(l::IdOrName('transactionsNav')) 
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.transactions-table').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 20000);    
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);    
 
         $this->assertBodyHasText("List of all transactions");
     }
@@ -110,7 +110,7 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#refundsNav').length > 0", 20000)
             ->click(l::IdOrName('refundsNav')) 
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.refunds-table').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 20000);    
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);    
 
         $this->assertBodyHasText("List of all refunds");
     }
@@ -133,7 +133,7 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#keysNav').length > 0", 20000)
             ->click(l::IdOrName('keysNav')) 
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.keys-table').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 20000);    
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);    
 
         $this->assertBodyHasText("API Keys");
 
@@ -154,8 +154,12 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 20000)
             ->click(l::css('.confirm-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-key-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);  
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);  
         
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
+
+        $this->assertBodyHasText("Key Generated");        
+
         //Testing rolling of key
         $this->browser
             ->click(l::css('.roll_key'))
@@ -166,8 +170,11 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-ok').length > 0", 20000)
             ->click(l::css('.confirm-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-key-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
+
+        $this->assertBodyHasText("Key Rolled"); 
     }
 
     /**
@@ -180,7 +187,7 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activationNav').length > 0", 20000)
             ->click(l::IdOrName('activationNav')) 
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 20000);   
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);   
 
         $this->assertBodyHasText("Contact Details");
 
@@ -287,7 +294,7 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#profileNav').length > 0", 20000)
             ->click(l::IdOrName('profileNav')) 
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.profile-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 20000);    
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);    
 
         $this->assertBodyHasText($this->merchant->name);
 
@@ -302,7 +309,7 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('password_confirmation'), '1234567')
             ->click(l::css('.modal-ok'))                 // Click in the button
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText("Password changed successfully");
     }

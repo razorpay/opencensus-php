@@ -99,7 +99,7 @@ class AdminTest extends TestCase
             ->type(l::IdOrName('percent_rate'), '280')
             ->type(l::IdOrName('fixed_rate'), '200')
             ->click(l::linkContaining('Save'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length > 1", 20000);
 
         $this->assertBodyHasText("Rule added successfully");
     }
@@ -130,7 +130,7 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table > tbody > tr > td').length > 5", 20000)
             ->click(l::linkContaining($this->merchant->id))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText("Merchant Detail");
@@ -145,7 +145,7 @@ class AdminTest extends TestCase
         //Unlock Activation Form
         $this->browser
             ->click(l::linkContaining('Unlock Activation Form'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText('Merchant Form unlocked successfully');
 
@@ -159,7 +159,7 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 20000)
             ->click(l::css('.confirm-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.pricing-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
@@ -177,7 +177,7 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 20000)
             ->click(l::css('.confirm-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.terminal-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
@@ -189,7 +189,7 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-ok').length > 0", 20000)
             ->click(l::css('.confirm-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
@@ -253,12 +253,12 @@ class AdminTest extends TestCase
         $this->browser
             ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length > 0", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length > 1", 20000)
             ->click(l::linkContaining('Disable Live Transactions'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-ok').length > 0", 20000)
             ->click(l::css('.confirm-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
@@ -267,7 +267,7 @@ class AdminTest extends TestCase
 
         $this->browser
             ->click(l::linkContaining('Enable Live Transactions'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
@@ -285,7 +285,7 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#adminsNav').length > 0", 20000)
             ->click(l::IdOrName('adminsNav')) 
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.admins-table > tbody > tr').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 20000);    
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);    
 
         $this->assertBodyHasText($this->admin->name);
 
@@ -302,7 +302,7 @@ class AdminTest extends TestCase
             ->type(l::IdOrName('password_confirmation'), '1234567')
             ->click(l::css('.modal-ok'))                 // Click in the button
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-admin-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText("Admin created successfully");
     }
@@ -318,7 +318,7 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#profileNav').length > 0", 20000)
             ->click(l::IdOrName('profileNav')) 
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.profile-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert').length == 0", 20000);    
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);    
 
         $this->assertBodyHasText($this->admin->name);
 
@@ -333,7 +333,7 @@ class AdminTest extends TestCase
             ->type(l::IdOrName('password_confirmation'), '1234567')
             ->click(l::css('.modal-ok'))                 // Click in the button
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length == 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText("Password changed successfully");
     }
