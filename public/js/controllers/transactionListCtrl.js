@@ -58,7 +58,6 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
     }
 
     function generateTable() {
-      $scope.alerts.addAlert('info', "Processing... ", true);
       var query =
         "count=10" +
         "&skip="+ $scope.transactions.skip;

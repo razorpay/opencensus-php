@@ -112,8 +112,6 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '
     };
 
     function passwordChangeRequest(data) {
-      $scope.alerts.addAlert('info', 'Processing...', true);
-
       data._token = CSRF_TOKEN;
 
       var request = $http({

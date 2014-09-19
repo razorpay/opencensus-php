@@ -13,8 +13,6 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
     fetchKeys();
     
     $scope.generateKey = function(){
-      $scope.alerts.addAlert('info', "Processing..", true);
-
       var data = {
         _token: CSRF_TOKEN
       }
@@ -52,7 +50,6 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
         return;
       };
 
-      $scope.alerts.addAlert('info', 'Processing... ', true);
       var data = {
         _token: CSRF_TOKEN,
         id: key_id,
@@ -125,8 +122,6 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
     };
 
     function fetchKeys(){
-      $scope.alerts.addAlert('info', "Processing..", true);
-
       var request = $http.get('/'+$scope.mode+'/keys');
 
       request

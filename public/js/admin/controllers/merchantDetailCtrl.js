@@ -10,8 +10,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     generateMerchant();
     
     $scope.lockForm = function(){
-      $scope.alerts.addAlert('info', 'Processing...', true);
-      
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/lock?_token="+CSRF_TOKEN);
 
       request
@@ -33,8 +31,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.unlockForm = function(){
-      $scope.alerts.addAlert('info', 'Processing...', true);
-      
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/unlock?_token="+CSRF_TOKEN);
 
       request
@@ -56,8 +52,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.activateMerchant = function(){
-      $scope.alerts.addAlert('info', 'Processing...', true);
-      
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/activate?_token="+CSRF_TOKEN);
 
       request
@@ -79,8 +73,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.enableLive = function() {
-      $scope.alerts.addAlert('info', 'Processing...', true);
-      
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/enable?_token="+CSRF_TOKEN);
 
       request
@@ -102,8 +94,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.disableLive = function() {
-      $scope.alerts.addAlert('info', 'Processing...', true);
-      
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/disable?_token="+CSRF_TOKEN);
 
       request
@@ -125,8 +115,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.assignPricing = function(plan_id){
-      $scope.alerts.addAlert('info', 'Processing...', true);
-      
       var data = {
         _token: CSRF_TOKEN,
         pricing_plan_id: plan_id
@@ -159,8 +147,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.assignTerminal = function(terminal){
-      $scope.alerts.addAlert('info', 'Processing...', true);
-      
       var data = terminal;
 
       data._token = CSRF_TOKEN;
@@ -228,7 +214,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     function generateMerchant() {
-      $scope.alerts.addAlert('info', 'Processing...');
       var request = $http.get("/admin/merchant/"+$scope.merchant.id);
 
       request

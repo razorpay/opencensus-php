@@ -13,8 +13,6 @@ app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFacto
   generateTable();
   
   $scope.delete = function(id) {
-    $scope.alerts.addAlert('info', 'Processing...', true);
-
     var request = $http.get("/admin/users/" + id + "/delete?_token="+CSRF_TOKEN);
 
     request
@@ -53,8 +51,6 @@ app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFacto
   };
 
   function newAdminRequest(data){
-    $scope.alerts.addAlert('info', 'Processing...', true);
-
     data._token = CSRF_TOKEN;
 
     var request = $http({

@@ -11,8 +11,6 @@ app.controller('RefundDetailCtrl', ['$scope', '$http', '$stateParams', 'modeFact
     fetchRefund();
 
     function fetchRefund() {
-      $scope.alerts.addAlert('info', 'Processing...', true);
-  
       var request = $http.get("/" + modeFactory.getMode() +  "/refunds/" + $scope.refund.id);
 
       request

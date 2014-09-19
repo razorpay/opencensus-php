@@ -58,7 +58,6 @@ app.controller('RefundsListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFact
     }
 
     function generateTable() {
-      $scope.alerts.addAlert('info', "Processing... ", true);
       var query =
         "count=10" +
         "&skip="+ $scope.refunds.skip;

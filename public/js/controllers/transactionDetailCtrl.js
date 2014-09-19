@@ -72,8 +72,6 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
         return;
       }
 
-      $scope.alerts.addAlert('info', 'Processing... ', true);
-
       var data = {
         _token: CSRF_TOKEN,
         amount: captureAmount
@@ -111,8 +109,6 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
         $scope.alerts.addAlert('danger', 'Refund amount should be an integer and less than amount minus amount refunded.', true);
         return;
       }
-
-      $scope.alerts.addAlert('info', 'Processing... ', true);
 
       var data = {
         _token: CSRF_TOKEN,
@@ -152,8 +148,6 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
         $scope.isRefundsCollapsed = true;
         return;
       }
-
-      $scope.alerts.addAlert('info', 'Processing... ', true);
 
       var request = $http.get("/" + modeFactory.getMode() + "/transactions/"  + $scope.transaction.id + "/refunds");
 

@@ -94,8 +94,6 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKE
     };
 
     function saveStep(step){
-      $scope.alerts[step].addAlert('info', 'Processing...', true);
-
       var data = {
         _token: CSRF_TOKEN,
       };
@@ -180,8 +178,6 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKE
     };
 
     function submitForm(step){
-      $scope.alerts[step].addAlert('info', 'Processing...', true);
-
       if($scope.data[6].agree_terms !== true) {
         $scope.alerts[step].addAlert('danger', 'You must agree to the terms & conditions to use Razorpay services', true);
         return;

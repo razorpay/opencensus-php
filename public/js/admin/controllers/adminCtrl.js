@@ -71,8 +71,6 @@ app.controller('AdminCtrl', ['$scope', '$http', '$state', 'admin', 'CSRF_TOKEN',
     };
 
     function passwordChangeRequest(data) {
-      $scope.alerts.addAlert('info', 'Processing...', true);
-
       data._token = CSRF_TOKEN;
 
       var request = $http({
