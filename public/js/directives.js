@@ -198,7 +198,7 @@ angular.module('app.directives', ['ui.load'])
       template:'<span class="bar"></span>',
       priority: -1,
       link: function(scope, el, attrs) {        
-        el.addClass('butterbar');
+        el.addClass('butterbar hide');
         el.attr('busy', "");
         el.attr('busy-add-classes', "active");
         el.attr('busy-remove-classes', "hide");
@@ -213,7 +213,7 @@ angular.module('app.directives', ['ui.load'])
     function() {
      return {
       restrict: 'E',
-      template:'<div busy not-busy-add-classes="hide" busy-remove-classes="hide">' + 
+      template:'<div busy not-busy-add-classes="hide" busy-remove-classes="hide" class="hide">' + 
                   '<img src="img/loading-bubbles.svg" alt="Loading icon" />' + 
               '</div>',
       priority: -1
