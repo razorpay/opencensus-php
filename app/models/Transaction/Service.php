@@ -19,8 +19,6 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Transaction\Core();
-
-        $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
     /**
