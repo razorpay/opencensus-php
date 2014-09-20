@@ -19,7 +19,13 @@ class SettlementTest extends TestCase
         //
         // load test data
         //
-        $this->testData = include(__DIR__.'/helpers/MprTestData.php');
+        // $this->testData = include(__DIR__.'/helpers/MprTestData.php');
+    }
+
+    public function testDummy()
+    {
+        // apparently you need to have a test per tets file!
+
     }
 
     protected function startTest($testDataToReplace = array())
