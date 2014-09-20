@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT            = 'amount';
     const DEBIT             = 'debit';
     const CREDIT            = 'credit';
+    const CURRENCY          = 'currency';
     const FEE               = 'fee';
     const PRICING_RULE_ID   = 'pricing_rule_id';
     const BALANCE           = 'balance';
@@ -45,12 +46,20 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::AMOUNT,
+        self::CURRENCY,
         self::DEBIT,
         self::CREDIT,
         self::FEE,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         );
+
+    protected static $generators = array(self::ID, self::CURRENCY);
+
+    protected function generateCurrency()
+    {
+        $this->setAttribute(self::CURRENCY, 'INR');
+    }
 
     public function merchant()
     {

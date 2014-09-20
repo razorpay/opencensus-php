@@ -46,6 +46,8 @@ class CreateLedger  extends Migration
             $table->integer(Ledger::CREDIT)
                   ->unsigned();
 
+            $table->char(Ledger::CURRENCY, 3);
+
             $table->integer(Ledger::BALANCE)
                   ->unsigned();
 
