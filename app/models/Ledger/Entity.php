@@ -47,7 +47,6 @@ class Entity extends Base\PublicEntity
         self::DEBIT,
         self::CREDIT,
         self::FEE,
-        self::BALANCE,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         );
