@@ -1,0 +1,69 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Settlements
+    <spinner class="inline"></spinner>
+  </h1>
+</h1>
+</div>
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="SettlementsListCtrl">
+    <div class="panel-heading">
+      List of all settlements
+    </div>
+    <div class="text-center col-sm-offset-4 col-sm-4 m-t m-b">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="row wrapper">
+      <div class="col-sm-9 m-b-xs">
+      </div>
+      <div class="col-sm-3">
+        <div class="input-group">
+          <input type="text" class="input-sm form-control" placeholder="Search Settlement Id" ng-model="settlements.id">
+          <span class="input-group-btn">
+            <button class="btn btn-sm btn-default" type="button" ng-click="search()">Go!</button>
+            <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()">Clear</button>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="settlements-table table table-striped b-t b-light" ui-jq="footable">
+        <thead>
+          <tr>
+            <th>Settlement Id</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="row in settlements.data">
+            <td><a ui-sref="app.settlements.detail({id:row.id})">{{row.id}}</a></td>
+            <td>{{row.amount/100 | currency:"INR "}}</td>
+            <td>{{row.status | titlecase}}</td>     
+          </tr>
+          <tr ng-show="settlements.count === 0">
+            <td colspan="3" class="text-center">
+            No Settlements
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+    <footer class="panel-footer">
+      <div class="row">
+        <div class="col-sm-4 hidden-xs">
+        </div>
+        <div class="col-sm-4 text-center">
+          <small class="text-muted inline m-t-sm m-b-sm">Showing {{settlements.countStart}}-{{settlements.countEnd}}</small>
+        </div>
+        <div class="col-sm-4 text-right text-center-xs">                
+          <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
+            <li ng-click="allowPrev && prev()"><button class="btn btn-default fa fa-chevron-left" ng-disabled="!allowPrev"></button></li>
+            <li ng-click="allowNext && next()"><button class="btn btn-default  fa fa-chevron-right" ng-disabled="!allowNext"></button></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>

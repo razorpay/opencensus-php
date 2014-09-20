@@ -1,0 +1,28 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Settlement Detail
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md" ng-controller="SettlementDetailCtrl">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Settlement Id: <strong>{{settlement.id}}</strong>
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="row wrapper">
+      <div class="list-group">
+        <a href class="list-group-item">
+          <span class="pull-right">{{settlement.amount/100 | currency:"INR "}}</span>
+          Amount
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{settlement.status | titlecase}}</span>
+          Status
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
