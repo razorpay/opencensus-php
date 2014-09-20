@@ -39,7 +39,8 @@ class Entity extends Base\PublicEntity
         self::API_FEE,
         self::GATEWAY_FEE,
         self::BALANCE,
-        self::PRICING_RULE_ID);
+        self::PRICING_RULE_ID,
+        self::SETTLED_AT);
 
     protected $public = array(
         self::ID,

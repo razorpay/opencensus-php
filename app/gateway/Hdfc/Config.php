@@ -4,7 +4,7 @@ namespace Gateway\Hdfc;
 
 final class Config
 {
-    const TIMEOUT = 5;
+    const TIMEOUT = 30;
 
     public static function getCreds(){
         //modify and add actual ID, password

@@ -123,7 +123,6 @@ class Repository extends Base\Repository
         $attributes = array(
             'status'    => Transaction\Status::AUTHORIZED,
             'result'    => $data['result'],
-            'amount'    => $data['amt'],
             'ref'       => $data['ref'],
             'auth'      => $data['auth'],
             'avr'       => $data['avr'],
