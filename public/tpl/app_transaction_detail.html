@@ -1,0 +1,48 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Transaction Detail
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md" ng-controller="TransactionDetailCtrl">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Transaction Id: <strong>{{transaction.id}}</strong>
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="row wrapper">
+      <div class="list-group">
+        <a class="list-group-item">
+          <span class="pull-right">{{transaction.entity_type}}</span>
+          Entity Type
+        </a>
+        <a class="list-group-item">
+          <span class="pull-right">{{transaction.entity_id}}</span>
+          Entity Id
+        </a>
+        <a class="list-group-item">
+          <span class="pull-right">{{transaction.currency}}</span>
+          Currency
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{transaction.amount/100 | currency:""}}</span>
+          Amount
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{transaction.debit/100 | currency:""}}</span>
+          Debit
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{transaction.credit/100 | currency:""}}</span>
+          Credit
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{transaction.fee/100 | currency:""}}</span>
+          Fee
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
