@@ -13,7 +13,7 @@
            <input type="password" ng-model="data.password" name="password" placeholder="Password" class="form-control no-border" required>
         </div>
       </div>
-      <button type="submit" name="submit" class="btn btn-lg btn-primary btn-block" busy="Please Wait..." busy-disabled>Log in</button>
+      <button type="submit" name="submit" class="btn btn-lg btn-primary btn-block">Log in</button>
       
 
       <div class="text-center m-t m-b">
@@ -24,7 +24,7 @@
       <div ng-if="notactivated" class="m-t">
         <div class="alert alert-danger">
           <p>Email Id not confirmed. Please check your inbox for confirmation mail. <br/>
-          <a ng-click="resend(signin.$valid)" class="btn btn-sm btn-success" busy="Please Wait...">Click here to resend it.</a></p>
+          <a ng-click="resend(signin.$valid)" class="btn btn-sm btn-success">Click here to resend it.</a></p>
         </div>
       </div>
 
