@@ -51,6 +51,46 @@ app.controller('AdminCtrl', ['$scope', '$http', '$state', 'admin', 'CSRF_TOKEN',
       });
     });
 
+    $scope.$on('$keepalive', function() {
+        $http({
+          method: "get",
+          url: "/admin/user/keepalive",
+          notBusy: true
+        })
+        .success(function(data){
+          if(data.success == false) {
+            location.reload();
+          }
+        })
+        .error(function(){
+          if($scope.connectModal) return;
+
+          var connectModalInstance = $modal.open({
+              controller: ['$scope', '$modalInstance',
+                function ($scope, $modalInstance) {
+                  $scope.ok = function () {
+                    $modalInstance.close();
+                  }
+              }],
+              template: '<div class="modal-header">' +
+                  '<h3 class="modal-title">Alert</h3>' +
+                '</div>' +
+                '<div class="confirm-modal modal-body">' +
+                    '<h4>Can not communicate with the server!<br/>Please check your connection and refresh the page.</h4>' +
+                '</div>' +
+                '<div class="modal-footer">' +
+                    '<button class="btn btn-primary confirm-ok" ng-click="ok()">OK</button>' +
+                '</div>'
+          });
+
+          $scope.connectModal = true;
+          
+          connectModalInstance.result.finally(function () {
+              $scope.connectModal = false;
+          });         
+        });
+    });
+
     function logoutRequest(){
       $scope.data = {
         _token: CSRF_TOKEN

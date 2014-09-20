@@ -1,3 +1,4 @@
+<div ng-controller="AdminCtrl">
   <!-- navbar -->
   <div data-ng-include=" 'tpl/admin/blocks/header.html' " class="app-header navbar">
   </div>
@@ -22,8 +23,7 @@
     &copy; {{app.today | date:'yyyy'}} Copyright {{app.name}}
   </div>
   <!-- / footer -->
-  </div>
-
+</div>
 <script type="text/ng-template" id="warning-dialog.html">
   <div ng-idle-countdown="countdown" ng-init="countdown=15">
   <div class="modal-header">

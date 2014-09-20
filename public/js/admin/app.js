@@ -162,8 +162,7 @@ var app = angular.module('app', [
 .config(['$keepaliveProvider', '$idleProvider', function($keepaliveProvider, $idleProvider) {
   $idleProvider.idleDuration(10*60);
   $idleProvider.warningDuration(15);
-  $keepaliveProvider.interval(5*60);
-  $keepaliveProvider.http('/admin/user/keepalive');
+  $keepaliveProvider.interval(60);
 }])
 
 /**
