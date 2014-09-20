@@ -30,7 +30,7 @@ build:
           name: Upload Coverage to cc.razorpay.com
           code: curl -F "coverage=@/tmp/$WERCKER_GIT_BRANCH.tar.gz" https://cc.razorpay.com/$WERCKER_GIT_REPOSITORY/upload/?token=$COVERAGE_TOKEN
     after-steps:
-      - sherzberg/slack-notify:
+      - williamli/slack-notify-no-owner-info:
           subdomain: razorpay
           token: $SLACK_TOKEN
           channel: general
@@ -78,7 +78,7 @@ deploy:
                 -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
                 "(cd ~/api/ && php artisan up)"
     after-steps:
-      - sherzberg/slack-notify:
+      - williamli/slack-notify-no-owner-info:
           subdomain: razorpay
           token: $SLACK_TOKEN
           channel: general
