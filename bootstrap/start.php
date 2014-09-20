@@ -64,7 +64,7 @@ require $framework.'/Illuminate/Foundation/start.php';
 /**
  * Adds sameorigin to all response headers
  */
-App::middleware('Illuminate\Http\FrameGuard');
+//App::middleware('Illuminate\Http\FrameGuard');
 
 /*
 |--------------------------------------------------------------------------

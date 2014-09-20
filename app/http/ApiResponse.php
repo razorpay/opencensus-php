@@ -50,6 +50,11 @@ class ApiResponse
         $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
     }
 
+    public static function setSameOriginInHeaders($response)
+    {
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN', false);
+    }
+
     protected static function attachJsonpCallback($request, $response)
     {
         $callback = $request->input('callback');
@@ -123,6 +128,8 @@ class ApiResponse
         }
 
         self::stopBrowserCaching($response);
+
+        self::setSameOriginInHeaders($response);
 
         return $response;
     }
