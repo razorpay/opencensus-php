@@ -143,11 +143,11 @@
       <!-- tasks -->
       <div class="panel wrapper" >
         <div class="row">
-          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="TransactionsListCtrl">
-            <a ui-sref="app.transactions.list" tooltip="See All Transactions" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
-            <h4 class="font-thin m-t-none m-b-md text-muted">Recent Transactions</h4>
-              <div class="m-b m-l row" ng-repeat="row in transactions.data | limitTo: 5">
-                <a ui-sref="app.transactions.detail({id:row.id})">
+          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="PaymentsListCtrl">
+            <a ui-sref="app.payments.list" tooltip="See All Payments" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
+            <h4 class="font-thin m-t-none m-b-md text-muted">Recent Payments</h4>
+              <div class="m-b m-l row" ng-repeat="row in payments.data | limitTo: 5">
+                <a ui-sref="app.payments.detail({id:row.id})">
                   <div class="col-xs-3 col-md-2 label text-base" tooltip="{{row.status}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
                     {{row.amount | currency:row.currency + " "}}
                   </div>
@@ -175,12 +175,12 @@
                 </a>
               </div>
           </div>
-          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="TransactionsListCtrl">
-            <a ui-sref="app.settlements" tooltip="See All Settlements" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
+          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="SettlementsListCtrl">
+            <a ui-sref="app.settlements.list" tooltip="See All Settlements" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Settlements</h4>
-            <div class="m-b m-b m-l row" style="text-overflow: hidden" ng-repeat="row in transactions.data | limitTo: 5">
+            <div class="m-b m-b m-l row" style="text-overflow: hidden" ng-repeat="row in settlements.data | limitTo: 5">
               <div class="col-xs-3 col-md-2 label text-base" tooltip="{{row.status}}" tooltip-placement="right" ng-class="getStatusClass(row.status)">
-                <a ui-sref="app.transactions.detail({id:row.id})">{{row.amount | currency:row.currency + " "}}</a>
+                <a ui-sref="app.settlements.detail({id:row.id})">{{row.amount | currency:"INR "}}</a>
               </div>
               <div class="col-xs-9 col-md-10">
                 <span class="hidden-xs">{{row.id}}</span>
