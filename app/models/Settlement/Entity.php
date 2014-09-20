@@ -5,7 +5,7 @@ namespace Models\Settlement;
 use Models\Base;
 use Models\Transaction;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
@@ -22,6 +22,11 @@ class Entity extends Base\UniqueIdEntity
         self::STATUS,
         self::MERCHANT_ID,
         self::LEDGER_ID);
+
+    protected $public = array(
+        self::ID,
+        self::AMOUNT,
+        self::STATUS);
 
     public function merchant()
     {
