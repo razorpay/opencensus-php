@@ -2,6 +2,7 @@
 
 namespace Models\Settlement;
 
+use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,7 +16,19 @@ use Models\Transaction;
 
 class Reconciler
 {
-    protected $reconciledAtTimestamp;
+    /**
+     * All transactions in the current mpr
+     * will have the same reconciledAt timestamp
+     * @var int
+     */
+    protected $reconciledAt;
+
+    /**
+     * It's set to tomorrow's timestamp if default is null
+     * The default value can changed during testing
+     * @var int
+     */
+    public static $settledAt = null;
 
     protected $lgr;
     protected $merchant;
@@ -24,9 +37,15 @@ class Reconciler
 
     public function __construct($mprData, $gateway)
     {
-        $this->reconciledAtTimestamp = time();
+        $this->reconciledAt = time();
 
         $this->feeCalculator = new Pricing\Fee;
+
+        if (self::$settledAt === null)
+        {
+            $timestamp = Carbon::tomorrow('Asia/Kolkata')->timestamp;
+            self::$settledAt = $timestamp;
+        }
     }
 
     public function reconcile($mprData, $gateway)
@@ -93,7 +112,8 @@ class Reconciler
             Ledger\Entity::CREDIT => $credit,
             Ledger\Entity::DEBIT => 0,
             Ledger\Entity::PRICING_RULE_ID => $pricingRuleId,
-            Ledger\Entity::API_FEE => $apiFee);
+            Ledger\Entity::API_FEE => $apiFee,
+            Ledger\Entity::SETTLED_AT => self::$settledAt);
 
         $this->lgr->fill($lgrData);
 
@@ -147,7 +167,7 @@ class Reconciler
     {
         $lgr = new Ledger\Entity;
         $lgr->generateId();
-        $lgr->setReconciledAt($this->reconciledAtTimestamp);
+        $lgr->setReconciledAt($this->reconciledAt);
 
         $this->lgr = $lgr;
         $this->entities['ledger'] = $lgr;
