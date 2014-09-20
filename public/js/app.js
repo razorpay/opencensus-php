@@ -49,7 +49,8 @@ var app = angular.module('app', [
 
         $urlRouterProvider
             .otherwise('/app/dashboard');
-        $stateProvider            
+        $stateProvider
+            //Logged in routes            
             .state('app', {
                 abstract: true,
                 url: '/app',
@@ -173,21 +174,7 @@ var app = angular.module('app', [
                 url: '/profile',
                 templateUrl: 'tpl/app_profile.html'
             })
-            // others
-            .state('lockme', {
-                url: '/lockme/:email',
-                templateUrl: 'tpl/page_lockme.html',
-                resolve: {
-                    authorize: ['authorization',
-                      function(authorization) {
-                        return authorization.authorize();
-                      }
-                    ]
-                },
-                data: {
-                  role: 'guest'
-                }
-            })
+            //Guest Routes
             .state('access', {
                 url: '/access',
                 template: '<div ui-view class="fade-in-right-big smooth"></div>',
@@ -206,6 +193,10 @@ var app = angular.module('app', [
                 url: '/signin',
                 templateUrl: 'tpl/page_signin.html'
             })
+            .state('access.lockme', {
+                url: '/lockme/:email',
+                templateUrl: 'tpl/page_lockme.html',
+            })
             .state('access.signup', {
                 url: '/signup',
                 templateUrl: 'tpl/page_signup.html'
@@ -214,10 +205,6 @@ var app = angular.module('app', [
                 url: '/forgotpwd',
                 templateUrl: 'tpl/page_forgotpwd.html'
             })
-            .state('access.404', {
-                url: '/404',
-                templateUrl: 'tpl/page_404.html'
-            })
             .state('access.confirm', {
                 url: '/confirm/:token',
                 templateUrl: 'tpl/page_confirm.html'
@@ -225,6 +212,11 @@ var app = angular.module('app', [
             .state('access.resetpwd', {
                 url: '/resetpwd/:token',
                 templateUrl: 'tpl/page_resetpwd.html'
+            })
+            //404
+            .state('404', {
+                url: '/404',
+                templateUrl: 'tpl/page_404.html'
             })
     }
   ]

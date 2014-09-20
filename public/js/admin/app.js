@@ -49,7 +49,8 @@ var app = angular.module('app', [
 
         $urlRouterProvider
             .otherwise('/app/dashboard');
-        $stateProvider            
+        $stateProvider  
+            //Logged in routes          
             .state('app', {
                 abstract: true,
                 url: '/app',
@@ -101,21 +102,7 @@ var app = angular.module('app', [
                 url: '/profile',
                 templateUrl: 'tpl/admin/app_profile.html'
             })
-            // others
-            .state('lockme', {
-                url: '/lockme/:username',
-                templateUrl: 'tpl/admin/page_lockme.html',
-                resolve: {
-                    authorize: ['adminAuthorization',
-                      function(adminAuthorization) {
-                        return adminAuthorization.authorize();
-                      }
-                    ]
-                },
-                data: {
-                  role: 'guest'
-                }
-            })
+            //Guest Routes
             .state('access', {
                 url: '/access',
                 template: '<div ui-view class="fade-in-right-big smooth"></div>',
@@ -134,7 +121,12 @@ var app = angular.module('app', [
                 url: '/signin',
                 templateUrl: 'tpl/admin/page_signin.html'
             })
-            .state('access.404', {
+            .state('access.lockme', {
+                url: '/lockme/:username',
+                templateUrl: 'tpl/page_lockme.html',
+            })
+            //other
+            .state('404', {
                 url: '/404',
                 templateUrl: 'tpl/page_404.html'
             })
