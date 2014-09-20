@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Service;
+namespace Models\Ledger;
 
 use EE\Error\ErrorCode;
 use EE\Exception;
@@ -12,9 +12,9 @@ class Service extends Base\Service
 {
     public function getLedgerRecords($input)
     {
-        $lgrs = (new Ledger\Repository)->fetch($input);
-
-        return $lgrs->toPublicArray();
+        $lgrs = (new Ledger\Repository)->fetch($input, $this->merchant->getKey());
+        
+        return $lgrs->toArrayPublic();
     }
 
     public function getLedgerRecordById($id)

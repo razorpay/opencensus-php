@@ -3,6 +3,7 @@
 use Http\ApiResponse;
 use EE\Exception\RecoverableException;
 use Models\Settlement;
+use Models\Ledger;
 
 class SettlementController extends BaseController
 {
