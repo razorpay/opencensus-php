@@ -4,7 +4,7 @@ namespace Models\Base;
 
 use EE\Exception;
 
-trait RepositoryFetchMultiple
+trait RepositoryFetch
 {
     protected static $fetchParamRules = array(
         'created'       => 'numeric',
@@ -93,5 +93,14 @@ trait RepositoryFetchMultiple
     public function isMerchantIdRequiredForFetch()
     {
         return $this->merchantIdRequiredForMultipleFetch;
+    }
+
+    public function findByIdAndMerchantId($id, $merchantId)
+    {
+        $repo = $this->repo;
+
+        $query = $repo::where(Common::MERCHANT_ID, $merchantId);
+
+        return $query->findOrFailPublic($id);
     }
 }

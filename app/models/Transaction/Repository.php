@@ -8,21 +8,9 @@ use Models\Transaction;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetchMultiple;
+    use Base\RepositoryFetch;
 
     protected $entity = 'Transaction';
-
-    public function findByIdAndMerchantId($id, $merchantId, $failPublic = true)
-    {
-        $repo = $this->repo;
-
-        $query = $repo::where(Transaction\Entity::MERCHANT_ID, $merchantId);
-
-        if ($failPublic)
-            return $query->findOrFailPublic($id);
-        else
-            return $query->findOrFail($id);
-    }
 
     public function findByStatusBetweenTimestamps($status, $from, $to)
     {

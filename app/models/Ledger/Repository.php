@@ -7,25 +7,9 @@ use Models\Ledger;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetchMultiple;
+    use Base\RepositoryFetch;
 
     protected $entity = 'Ledger';
-
-    public function findByIdAndMerchantId($id, $merchantId, $failPublic = true)
-    {
-        $repo = $this->repo;
-
-        $query = $repo::where(Transaction\Entity::MERCHANT_ID, $merchantId);
-
-        if ($failPublic)
-        {
-            return $query->findOrFailPublic($id);
-        }
-        else
-        {
-            return $query->findOrFail($id);
-        }
-    }
 
     public function fetchTransactionsExpectedToSettle($timestamp)
     {

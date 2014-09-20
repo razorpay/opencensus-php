@@ -8,7 +8,7 @@ use Models\Transaction\Refund;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetchMultiple;
+    use Base\RepositoryFetch;
 
     protected $entity = 'Refund';
 
