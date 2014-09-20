@@ -45,7 +45,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$state', 'admin', 'CSRF_TOKEN',
 
     $scope.$on('$idleTimeout', function() {
       logoutRequest().finally(function(){
-        $state.go('lockme', { "username": $scope.admin.username}).finally(function(){
+        $state.go('access.lockme', { "username": $scope.admin.username}).finally(function(){
           closeModals();
         });
       });

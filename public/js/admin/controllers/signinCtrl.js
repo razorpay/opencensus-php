@@ -18,8 +18,8 @@ app.controller('SigninCtrl', ['$scope', '$http', '$state', '$stateParams', 'aler
         return false;     
       }
 
-      $scope.alerts.addAlert('info', 'Processing...', true);
-
+      $scope.alerts.resetAlerts();
+      
       var request = $http({
                   method: "post",
                   url: "/admin/signin",
