@@ -38,6 +38,10 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/{mode}/refunds/{id}', 'TransactionController@getRefund');
 
+    Route::get('/{mode}/settlements', 'TransactionController@getSettlements');
+
+    Route::get('/{mode}/settlements/{id}', 'TransactionController@getSettlement');
+
     Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
 
     Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');

@@ -132,6 +132,26 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getSettlements($mode)
+    {
+        $this->checkMode($mode);
+
+        $input = Input::all();
+
+        list($error, $data) = (new Service\Settlement)->fetchListFromApi($input, $mode);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getSettlement($mode, $id = NULL)
+    {
+        $this->checkMode($mode);
+        
+        list($error, $data) = (new Service\Settlement)->fetchFromApi($id, $mode);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     protected function checkMode($mode)
     {
         if($mode !== 'live' and $mode !== 'test')
