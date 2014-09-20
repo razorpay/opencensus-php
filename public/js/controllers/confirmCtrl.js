@@ -12,8 +12,8 @@ app.controller('ConfirmCtrl', ['$scope', '$http', '$state', '$stateParams', 'ale
       $state.go('access.signin');
     }
 
-    $scope.alerts.addAlert('info', 'Processing...', true);
-
+    $scope.alerts.resetAlerts();
+    
     var request = $http({
                       method: "get",
                       url: "/user/confirm/"+token

@@ -22,8 +22,8 @@ app.controller('ResetPasswordCtrl', ['$scope', '$http', '$state', '$stateParams'
           return true;     
         }
 
-        $scope.alerts.addAlert('info', 'Processing...', true);
-
+        $scope.alerts.resetAlerts();
+        
         var request = $http({
                     method: "post",
                     url: "/user/password/reset/"+$scope.data.token,

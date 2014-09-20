@@ -18,7 +18,7 @@
           return false;     
         }
 
-        $scope.alerts.addAlert('info', 'Processing...', true);
+        $scope.alerts.resetAlerts();
 
         var request = $http({
                     method: "post",
@@ -59,8 +59,8 @@
 
         $scope.notactivated = false;
         
-        $scope.alerts.addAlert('info', 'Processing...', true);
-
+        $scope.alerts.resetAlerts();
+        
         var request = $http({
                     method: "post",
                     url: "/user/resend",

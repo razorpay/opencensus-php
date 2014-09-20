@@ -22,8 +22,8 @@ app.controller('RegisterCtrl', ['$scope', '$http', 'alertsFactory', 'transformRe
           return true;
         }
 
-        $scope.alerts.addAlert('info', 'Processing...', true);
-
+        $scope.alerts.resetAlerts();
+        
         var request = $http({
                     method: "post",
                     url: "/user/register",

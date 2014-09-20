@@ -9,8 +9,6 @@ app.controller('ForgotPasswordCtrl', ['$scope', '$http', 'alertsFactory', 'trans
     }
 
     $scope.submit = function() {
-        $scope.alerts.addAlert('info', 'Processing...', true);
-
         var request = $http({
                     method: "post",
                     url: "/user/password/reset",
