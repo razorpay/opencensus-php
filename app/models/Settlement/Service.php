@@ -2,8 +2,6 @@
 
 namespace Models\Settlement;
 
-use EE\Error\ErrorCode;
-use EE\Exception;
 use Models\Base;
 use Models\Gateway;
 use Models\Ledger;

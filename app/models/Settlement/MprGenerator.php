@@ -11,9 +11,25 @@ use Models\Transaction\Refund;
 
 class MprGenerator
 {
+    /**
+     * It's set to yesterday's timestamp if default is null.
+     *
+     * @var int
+     */
+    public static $fromTimestamp = null;
+
+    /**
+     * It's set to today's timestamp -1 if default is null
+     *
+     * @var int
+     */
+    public static $toTimestamp = null;
+
     public function __construct($mode)
     {
         $this->mode = $mode;
+
+        $this->initTimestamps();
     }
 
     public function generateTestMprForToday()
@@ -22,16 +38,16 @@ class MprGenerator
 
         $gateway = 'hdfc';
 
-        // Get the timestamp on T-1 day 12 am for IST
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->subSecond(1)->timestamp;
-
         $txnRepo = new Transaction\Repository;
         $txns = $txnRepo->fetchCapturedForGatewayBetweenTimestamp(
-                            $from, $to, $gateway);
+                            self::$fromTimestamp,
+                            self::$toTimestamp,
+                            $gateway);
 
         $rfndRepo = new Refund\Repository;
-        $refunds = $rfndRepo->findBetweenTimestamps($from, $to);
+        $refunds = $rfndRepo->findBetweenTimestamps(
+                            self::$fromTimestamp,
+                            self::$toTimestamp);
 
         if ($txns->count() === 0)
         {
@@ -71,7 +87,7 @@ class MprGenerator
     {
         \Mail::send('hdfc.mpr', array(), function($message) use ($mprFile)
         {
-            $message->from('shashankkumar.me@gmail.com', 'shk');
+            $message->from('hdfc_mpr_generator@mg.razorpay.com', 'hdfcMprGenerator');
 
             $message->to('testmpr@sandboxf697ec003a374fb798a36a45d622d5f6.mailgun.org')->cc('settlement@razorpay.com');
 
@@ -84,6 +100,20 @@ class MprGenerator
         if ($this->mode !== 'test')
         {
             throw new Exception\LogicException('Not in test mode');
+        }
+    }
+
+    protected function initTimestamps()
+    {
+        if (self::$fromTimestamp === null)
+        {
+            // Get the timestamp on T-1 day 12 am for IST
+            self::$fromTimestamp = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        }
+
+        if (self::$toTimestamp === null)
+        {
+            self::$toTimestamp = Carbon::today('Asia/Kolkata')->subSecond(1)->timestamp;
         }
     }
 }

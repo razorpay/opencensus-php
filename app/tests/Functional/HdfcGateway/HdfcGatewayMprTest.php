@@ -16,8 +16,6 @@ class HdfcGatewayMprTest extends TestCase
     {
         parent::setUp();
 
-        $gateway = 'mockhdfc';
-
         $this->setupPublicBasicAuthParams();
 
         //
@@ -34,7 +32,6 @@ class HdfcGatewayMprTest extends TestCase
 
         $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
         $capturedAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
-
 
         foreach ($r as $i)
         {

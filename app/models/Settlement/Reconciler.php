@@ -25,7 +25,7 @@ class Reconciler
 
     /**
      * It's set to tomorrow's timestamp if default is null
-     * The default value can changed during testing
+     * The default value can be changed during testing
      * @var int
      */
     public static $settledAt = null;
