@@ -43,7 +43,9 @@ final class Route
         'pricing_get_plan_rule'             => ['get',  'pricing/{planId}/rule/{ruleId}',       'PricingController@getPricingPlanRule'],
         'pricing_add_plan_rule'             => ['post', 'pricing/{id}/rule',                    'PricingController@postAddPricingPlanRule'],
         'ledger_fetch_by_id'                => ['get',  'ledger/{id}',                          'SettlementController@getLedgerRecord'],
-        'ledger_fetch'                      => ['get',  'ledger/{param?}',                      'SettlementController@getLedgerRecords'],
+        'ledger_fetch_multiple'             => ['get',  'ledger/{param?}',                      'SettlementController@getLedgerRecords'],
+        'setl_fetch_by_id'                  => ['get',  'settlements/{id}',                     'SettlementController@getSettlement'],
+        'setl_fetch_multiple'               => ['get',  'settlements/{param?}',                 'SettlementController@getSettlements'],
         'hdfc_mpr_reconcile'                => ['post', 'gateway/mpr/reconcile',                'SettlementController@postGatewayMprReconcile'],
         'hdfc_mpr_generate'                 => ['post', 'gateway/mpr/generate',                 'SettlementController@postGatewayMprGenerate'],
         'mockhdfc_enroll'                   => ['post', 'gateway/mockhdfc/enroll',              'MockHdfcController@enroll'],
@@ -98,7 +100,9 @@ final class Route
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'ledger_fetch_by_id',
-        'ledger_fetch',
+        'ledger_fetch_multiple',
+        'setl_fetch_by_id',
+        'setl_fetch_multiple'
         );
 
     protected static $router;

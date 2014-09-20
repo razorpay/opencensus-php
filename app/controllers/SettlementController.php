@@ -42,4 +42,20 @@ class SettlementController extends BaseController
     {
         (new Settlement\Service)->sendSettlements();
     }
+
+    public function getSettlement($id)
+    {
+        $data = (new Settlement\Service)->getSettlement($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getSettlements()
+    {
+        $input = Input::all();
+
+        $settlements = (new Settlement\Service)->getSettlements($input);
+
+        return ApiResponse::json($settlements);
+    }
 }
