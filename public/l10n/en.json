@@ -8,9 +8,10 @@
     "nav" : {
       "HEADER" : "Features",
       "DASHBOARD" : "Dashboard",
-      "TRANSACTIONS" : "Transactions",
+      "PAYMENTS" : "Payments",
       "REFUNDS" : "Refunds",
       "SETTLEMENTS" : "Settlements",
+      "TRANSACTIONS" : "Transactions",
       "settings" : {
         "SETTINGS": "Settings",
         "API_KEYS": "Api Keys",

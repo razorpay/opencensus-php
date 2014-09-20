@@ -1,14 +1,14 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">
-    Transactions 
+    Payments
     <spinner class="inline"></spinner>
   </h1>
 </h1>
 </div>
 <div class="wrapper-md">
-  <div class="panel panel-default" ng-controller="TransactionsListCtrl">
+  <div class="panel panel-default" ng-controller="PaymentsListCtrl">
     <div class="panel-heading">
-      List of all transactions
+      List of all payments
     </div>
     <div class="text-center col-sm-offset-4 col-sm-4 m-t m-b">
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -18,7 +18,7 @@
       </div>
       <div class="col-sm-3">
         <div class="input-group">
-          <input type="text" class="input-sm form-control" placeholder="Search Transaction Id" ng-model="transactions.id">
+          <input type="text" class="input-sm form-control" placeholder="Search Payment Id" ng-model="payments.id">
           <span class="input-group-btn">
             <button class="btn btn-sm btn-default" type="button" ng-click="search()">Go!</button>
             <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()">Clear</button>
@@ -27,10 +27,10 @@
       </div>
     </div>
     <div class="table-responsive">
-      <table class="transactions-table table table-striped b-t b-light" ui-jq="footable">
+      <table class="payments-table table table-striped b-t b-light" ui-jq="footable">
         <thead>
           <tr>
-            <th data-toggle="true">Transaction Id</th>
+            <th data-toggle="true">Payment Id</th>
             <th data-hide="phone,tablet">Currency</th>
             <th>Amount</th>
             <th data-hide="phone,tablet">Amount Refunded</th>
@@ -39,17 +39,17 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in transactions.data">
-            <td><a ui-sref="app.transactions.detail({id:row.id})">{{row.id}}</a></td>
+          <tr ng-repeat="row in payments.data">
+            <td><a ui-sref="app.payments.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.currency}}
             <td>{{row.amount/100 | currency:""}}</td>
             <td>{{row.amount_refunded/100 | currency:""}}</td>
             <td>{{row.created_at*1000 | fromNow}}</td>
             <td><span class="label text-base" title="{{row.status}}" ng-class="getStatusClass(row.status)">{{row.status | titlecase}}</span></td>          
           </tr>
-          <tr ng-show="transactions.count === 0">
+          <tr ng-show="payments.count === 0">
             <td colspan="5" class="text-center">
-            No Transactions
+            No Payments
             </td>
           </tr>
 
@@ -61,7 +61,7 @@
         <div class="col-sm-4 hidden-xs">
         </div>
         <div class="col-sm-4 text-center">
-          <small class="text-muted inline m-t-sm m-b-sm">Showing {{transactions.countStart}}-{{transactions.countEnd}}</small>
+          <small class="text-muted inline m-t-sm m-b-sm">Showing {{payments.countStart}}-{{payments.countEnd}}</small>
         </div>
         <div class="col-sm-4 text-right text-center-xs">                
           <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">

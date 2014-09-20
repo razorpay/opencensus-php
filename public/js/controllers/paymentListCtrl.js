@@ -1,10 +1,10 @@
-//Transactions Listing Controller
-app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '$state',
+//Payments Listing Controller
+app.controller('PaymentsListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '$state',
   function($scope, $http, modeFactory, alertsFactory, $state){
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.transactions = {
+    $scope.payments = {
         data: {},
         id: '',
         count: 0,
@@ -17,13 +17,13 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
     
     $scope.next= function() {
       clear('id');
-      $scope.transactions.skip += 10;
+      $scope.payments.skip += 10;
       generateTable();
     }
 
     $scope.prev= function() {
       clear('id');
-      $scope.transactions.skip -= 10;
+      $scope.payments.skip -= 10;
       generateTable();
     }
 
@@ -46,9 +46,9 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
 
     function clear(field){
       if(field === 'id')
-        $scope.transactions.id = '';
+        $scope.payments.id = '';
       if(field === 'skip')
-        $scope.transactions.skip = 0;
+        $scope.payments.skip = 0;
     }
 
     function regenerate(){
@@ -60,33 +60,33 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
     function generateTable() {
       var query =
         "count=10" +
-        "&skip="+ $scope.transactions.skip;
+        "&skip="+ $scope.payments.skip;
 
-      if($scope.transactions.id === '')
-        var request = $http.get("/" + modeFactory.getMode() +  "/transactions?" + query);
+      if($scope.payments.id === '')
+        var request = $http.get("/" + modeFactory.getMode() +  "/payments?" + query);
       else
-        var request = $http.get("/" + modeFactory.getMode() +  "/transactions/" + $scope.transactions.id);
+        var request = $http.get("/" + modeFactory.getMode() +  "/payments/" + $scope.payments.id);
       
       request
       .success(function(data){
         $scope.alerts.resetAlerts();
 
         if(data.success) {
-          $scope.transactions.data = data.data.data;
+          $scope.payments.data = data.data.data;
 
-          $scope.transactions.count = data.data.count;
+          $scope.payments.count = data.data.count;
 
-          $scope.transactions.countStart = $scope.transactions.skip + 1;
+          $scope.payments.countStart = $scope.payments.skip + 1;
 
           if(data.data.count === 0) 
-            $scope.transactions.countEnd = $scope.transactions.countStart;
+            $scope.payments.countEnd = $scope.payments.countStart;
 
           else 
-            $scope.transactions.countEnd = $scope.transactions.countStart + $scope.transactions.count -1;
+            $scope.payments.countEnd = $scope.payments.countStart + $scope.payments.count -1;
 
-          $scope.allowPrev = $scope.transactions.countStart !== 1;
+          $scope.allowPrev = $scope.payments.countStart !== 1;
           
-          $scope.allowNext = $scope.transactions.count >= 10;
+          $scope.allowNext = $scope.payments.count >= 10;
         }
         else {
           angular.forEach(data.errors, function(value, key){

@@ -1,14 +1,14 @@
-//Single Transaction Details controller
-app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$modal', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
+//Single Payment Details controller
+app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
   function($scope, $http, $stateParams, $modal, modeFactory, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.transaction = {
+    $scope.payment = {
       id: $stateParams.id
     };
 
-    fetchTransaction();
+    fetchPayment();
 
     $scope.getStatusClass = function(status) {
       var mapper = {
@@ -27,7 +27,7 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
         controller: 'RefundModalCtrl',
         resolve: {
           amount: function () {
-            return $scope.transaction.amount - $scope.transaction.amount_refunded;
+            return $scope.payment.amount - $scope.payment.amount_refunded;
           }
         }
       });
@@ -48,7 +48,7 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
         controller: 'CaptureModalCtrl',
         resolve: {
           amount: function () {
-            return $scope.transaction.amount;
+            return $scope.payment.amount;
           }
         }
       });
@@ -79,16 +79,16 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
 
       var request = $http({
                     method: "post",
-                    url: "/" + modeFactory.getMode() + "/transactions/"  + $scope.transaction.id + "/capture",
+                    url: "/" + modeFactory.getMode() + "/payments/"  + $scope.payment.id + "/capture",
                     transformRequest: transformRequestAsFormPost,
                     data: data
                 });
 
       request.success(function(data){
         if(data.success){
-          $scope.alerts.addAlert('success', "Transaction Captured", true);
-          $scope.transaction.status = "captured";
-          $scope.transaction.amount = captureAmount;
+          $scope.alerts.addAlert('success', "Payment Captured", true);
+          $scope.payment.status = "captured";
+          $scope.payment.amount = captureAmount;
         }
         else {
           $scope.alerts.addAlert('danger', null, true);
@@ -103,7 +103,7 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
 
       var refundAmount = parseInt(amount);
 
-      var unrefundedAmount = parseInt($scope.transaction.amount) - parseInt($scope.transaction.amount_refunded);
+      var unrefundedAmount = parseInt($scope.payment.amount) - parseInt($scope.payment.amount_refunded);
 
       if(!refundAmount || refundAmount > unrefundedAmount){
         $scope.alerts.addAlert('danger', 'Refund amount should be an integer and less than amount minus amount refunded.', true);
@@ -117,21 +117,21 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
 
       var request = $http({
                     method: "post",
-                    url: "/" + modeFactory.getMode() + "/transactions/"  + $scope.transaction.id + "/refund",
+                    url: "/" + modeFactory.getMode() + "/payments/"  + $scope.payment.id + "/refund",
                     transformRequest: transformRequestAsFormPost,
                     data: data
                 });
 
       request.success(function(data){
         if(data.success){
-          $scope.alerts.addAlert('success', "Transaction Refunded", true);
+          $scope.alerts.addAlert('success', "Payment Refunded", true);
       
           if(refundAmount == unrefundedAmount)
-            $scope.transaction.refund_status = 'full';
+            $scope.payment.refund_status = 'full';
           else
-            $scope.transaction.refund_status = 'partial';
+            $scope.payment.refund_status = 'partial';
 
-          $scope.transaction.amount_refunded = parseInt($scope.transaction.amount_refunded) + refundAmount; 
+          $scope.payment.amount_refunded = parseInt($scope.payment.amount_refunded) + refundAmount; 
         }
         else {
           $scope.alerts.addAlert('danger', null, true);
@@ -149,13 +149,13 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
         return;
       }
 
-      var request = $http.get("/" + modeFactory.getMode() + "/transactions/"  + $scope.transaction.id + "/refunds");
+      var request = $http.get("/" + modeFactory.getMode() + "/payments/"  + $scope.payment.id + "/refunds");
 
       request.success(function(data){
         $scope.alerts.resetAlerts();
         
         if(data.success){
-          $scope.transaction.refunds = data.data;
+          $scope.payment.refunds = data.data;
           $scope.isRefundsCollapsed = false;
         }
         else {
@@ -169,13 +169,13 @@ app.controller('TransactionDetailCtrl', ['$scope', '$http', '$stateParams', '$mo
       });
     };
 
-    function fetchTransaction() {  
-      var request = $http.get("/" + modeFactory.getMode() +  "/transactions/" + $scope.transaction.id);
+    function fetchPayment() {  
+      var request = $http.get("/" + modeFactory.getMode() +  "/payments/" + $scope.payment.id);
 
       request
       .success(function(data) {
         if(data.success) {
-          $scope.transaction = data.data.data[0];
+          $scope.payment = data.data.data[0];
         }
         else {
           angular.forEach(data.errors, function(error, key) {

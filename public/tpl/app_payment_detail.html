@@ -1,13 +1,13 @@
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">
-    Transaction Detail
+    Payment Detail
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md transaction-wrapper" ng-controller="TransactionDetailCtrl">
+<div class="wrapper-md payment-wrapper" ng-controller="PaymentDetailCtrl">
   <div class="panel panel-default col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
-      Transaction Id: <strong>{{transaction.id}}</strong>
+      Payment Id: <strong>{{payment.id}}</strong>
     </div>
   <div class="text-center m-t">
     <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -15,77 +15,77 @@
     <div class="row wrapper">
       <div class="list-group">
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.amount/100 | currency:""}}</span>
+          <span class="pull-right">{{payment.amount/100 | currency:""}}</span>
           Amount
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.amount_refunded/100 | currency:""}}</span>
+          <span class="pull-right">{{payment.amount_refunded/100 | currency:""}}</span>
           Amount Refunded
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.currency}}</span>
+          <span class="pull-right">{{payment.currency}}</span>
           Currency
         </a>
         <a href class="list-group-item">
-          <span class="label text-base pull-right" title="{{transaction.status}}" ng-class="getStatusClass(transaction.status)">{{transaction.status | titlecase}}</span>
+          <span class="label text-base pull-right" title="{{payment.status}}" ng-class="getStatusClass(payment.status)">{{payment.status | titlecase}}</span>
           Status
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.refund_status | titlecase}}</span>
+          <span class="pull-right">{{payment.refund_status | titlecase}}</span>
           Refund Status
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.description}}<span ng-hide="transaction.description">No Description</span></span>
+          <span class="pull-right">{{payment.description}}<span ng-hide="payment.description">No Description</span></span>
           Description
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.email}}</span>
+          <span class="pull-right">{{payment.email}}</span>
           Email
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.contact}}</span>
+          <span class="pull-right">{{payment.contact}}</span>
           Contact
         </a>
-        <a href class="list-group-item" ng-show="transaction.error_code">
-          <span class="pull-right" tooltip="Click to see details" ng-confirm-click="{{transaction.error_description}}">{{transaction.error_code}}</span>
+        <a href class="list-group-item" ng-show="payment.error_code">
+          <span class="pull-right" tooltip="Click to see details" ng-confirm-click="{{payment.error_description}}">{{payment.error_code}}</span>
           Error
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.created_at*1000 | fromNow}} ({{transaction.created_at*1000 | date : 'medium'}})</span>
+          <span class="pull-right">{{payment.created_at*1000 | fromNow}} ({{payment.created_at*1000 | date : 'medium'}})</span>
           Created At
         </a>
         <a href class="list-group-item" ng-init="isCollapsed = true">
           <span class="pull-right">
-            <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="transaction.udf.length != 0">Show/Hide</button>
-            <span ng-hide="transaction.udf.length != 0">No UDF Fields</span>
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="payment.udf.length != 0">Show/Hide</button>
+            <span ng-hide="payment.udf.length != 0">No UDF Fields</span>
           </span>
           UDF Fields
         </a>
         <div collapse="isCollapsed" class="panel-body">
-          <a href class="list-group-item" ng-repeat="(label,key) in transaction.udf">
+          <a href class="list-group-item" ng-repeat="(label,key) in payment.udf">
             <span class="pull-right">{{key}}</span>
             {{label}}
           </a>
         </div>
         <a href class="list-group-item"  ng-init="isRefundsCollapsed = true">
           <span class="pull-right">
-            <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="transaction.refund_status != 'none'">Show/Hide</button>
-            <span ng-hide="transaction.refund_status != 'none'">No Refunds</span>
+            <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="payment.refund_status != 'none'">Show/Hide</button>
+            <span ng-hide="payment.refund_status != 'none'">No Refunds</span>
           </span>
           Refunds
         </a>
         <div collapse="isRefundsCollapsed" class="panel-body">
-          <a class="list-group-item" ng-repeat="refund in transaction.refunds" ui-sref="app.refunds.detail({id:refund.id})">
+          <a class="list-group-item" ng-repeat="refund in payment.refunds" ui-sref="app.refunds.detail({id:refund.id})">
             <span class="pull-right">{{refund.created_at*1000 | fromNow}} ({{refund.created_at*1000 | date:'medium'}})</span>
             {{refund.amount/100 | currency:refund.currency + " "}}
           </a>
         </div>
       </div>
       <div class="text-center">
-        <div  ng-show="transaction.status==='authorized'">
+        <div  ng-show="payment.status==='authorized'">
           <script type="text/ng-template" id="captureModalContent.html">
             <div class="modal-header">
-              <h3 class="modal-title">Capture Transaction</h3>
+              <h3 class="modal-title">Capture Payment</h3>
             </div>
             <div class="modal-body">
                 <form>
@@ -98,12 +98,12 @@
                 <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
             </div>
           </script>
-          <button  class="btn btn-primary btn-rounded" ng-click="openCaptureModal()">Capture Transaction</button>
+          <button  class="btn btn-primary btn-rounded" busy="Please wait..." ng-click="openCaptureModal()">Capture Payment</button>
         </div>
-        <div  ng-show="transaction.status==='captured' && transaction.refund_status !== 'full'">
+        <div  ng-show="payment.status==='captured' && payment.refund_status !== 'full'">
           <script type="text/ng-template" id="refundModalContent.html">
             <div class="modal-header">
-              <h3 class="modal-title">Refund Transaction</h3>
+              <h3 class="modal-title">Refund Payment</h3>
             </div>
             <div class="modal-body">
                 <form>
@@ -116,7 +116,7 @@
                 <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
             </div>
           </script>
-          <button  class="btn btn-primary btn-rounded" ng-click="openRefundModal()">Refund Transaction</button>
+          <button  class="btn btn-primary btn-rounded" busy="Please wait..." ng-click="openRefundModal()">Refund Payment</button>
         </div>
       </div>
     </div>
