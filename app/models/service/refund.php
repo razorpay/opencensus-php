@@ -27,7 +27,7 @@ class Refund extends Service
         return array($error, $data);
     }
 
-    public function fetchRefundFromApi($id, $mode)
+    public function fetchFromApi($id, $mode)
     {
         $data = array();
 

@@ -28,19 +28,19 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
-    Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
+    Route::get('/{mode}/payments', 'TransactionController@getTransactions');
 
-    Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
+    Route::get('/{mode}/payments/{id}', 'TransactionController@getTransaction');
 
-    Route::get('/{mode}/transactions/{id}/refunds', 'TransactionController@getTransactionRefunds');
+    Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getTransactionRefunds');
 
     Route::get('/{mode}/analytics/transactions', 'TransactionController@getAnalytics');
 
     Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
 
-    Route::get('/{mode}/refunds', 'RefundController@getRefunds');
+    Route::get('/{mode}/refunds', 'TransactionController@getRefunds');
 
-    Route::get('/{mode}/refunds/{id}', 'RefundController@getRefund');
+    Route::get('/{mode}/refunds/{id}', 'TrnasactionController@getRefund');
 
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
 
@@ -60,9 +60,9 @@ Route::group(array('before' => 'auth'), function()
 
         Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
 
-        Route::post('/{mode}/transactions/{id}/capture', 'TransactionController@postCaptureTransaction');
+        Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCaptureTransaction');
 
-        Route::post('/{mode}/transactions/{id}/refund', 'TransactionController@postRefundTransaction');
+        Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundTransaction');
     });
 });
 

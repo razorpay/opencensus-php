@@ -47,7 +47,7 @@ class TransactionController extends BaseController
 
         $input = Input::all();
 
-        list($error, $data) = (new Service\Transaction)->fetchListFromApi($input, $mode);
+        list($error, $data) = (new Service\Payment)->fetchListFromApi($input, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -56,7 +56,7 @@ class TransactionController extends BaseController
     {
         $this->checkMode($mode);
         
-        list($error, $data) = (new Service\Transaction)->fetchTxnFromApi($id, $mode);
+        list($error, $data) = (new Service\Payment)->fetchFromApi($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -65,7 +65,7 @@ class TransactionController extends BaseController
     {
         $this->checkMode($mode);
         
-        list($error, $data) = (new Service\Transaction)->fetchTxnRefundsFromApi($id, $mode);
+        list($error, $data) = (new Service\Payment)->fetchRefundsFromApi($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -76,7 +76,7 @@ class TransactionController extends BaseController
         
         $amount = Input::get('amount');
 
-        $error = (new Service\Transaction)->captureTxn($id, $amount, $mode);
+        $error = (new Service\Payment)->capture($id, $amount, $mode);
 
         return AppResponse::jsonResponse($error);
     }
@@ -87,9 +87,29 @@ class TransactionController extends BaseController
 
         $amount = Input::get('amount');
         
-        $error = (new Service\Transaction)->refundTxn($id, $amount, $mode);
+        $error = (new Service\Payment)->refund($id, $amount, $mode);
 
         return AppResponse::jsonResponse($error);
+    }
+
+    public function getRefunds($mode)
+    {
+        $this->checkMode($mode);
+
+        $input = Input::all();
+
+        list($error, $data) = (new Service\Refund)->fetchListFromApi($input, $mode);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getRefund($mode, $id = NULL)
+    {
+        $this->checkMode($mode);
+        
+        list($error, $data) = (new Service\Refund)->fetchFromApi($id, $mode);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 
     protected function checkMode($mode)
