@@ -75,8 +75,8 @@ var app = angular.module('app', [
                     }]
                 }
             })
-            .state('app.transactions', {
-                url: '/transactions',
+            .state('app.payments', {
+                url: '/payments',
                 template: '<div ui-view class="fade-in-down"></div>',
                 // use resolve to load other dependences
                 resolve: {
@@ -86,14 +86,14 @@ var app = angular.module('app', [
                     }]
                 }
             })
-            .state('app.transactions.list', {
+            .state('app.payments.list', {
                 url: '/list',
-                templateUrl: 'tpl/app_transactions.html',
+                templateUrl: 'tpl/app_payments.html',
                 // use resolve to load other dependences
             })
-            .state('app.transactions.detail', {
+            .state('app.payments.detail', {
                 url: '/:id',
-                templateUrl: 'tpl/app_transaction_detail.html'
+                templateUrl: 'tpl/app_payment_detail.html'
             })
             .state('app.refunds', {
                 url: '/refunds',
@@ -117,7 +117,43 @@ var app = angular.module('app', [
             })
             .state('app.settlements', {
                 url: '/settlements',
-                templateUrl: 'tpl/app_dashboard.html'
+                template: '<div ui-view class="fade-in-down"></div>',
+                // use resolve to load other dependences
+                resolve: {
+                    deps: ['uiLoad',
+                      function( uiLoad ){
+                        return uiLoad.load( ['js/libs/moment.min.js']);
+                    }]
+                }
+            })
+            .state('app.settlements.list', {
+                url: '/list',
+                templateUrl: 'tpl/app_settlements.html',
+                // use resolve to load other dependences
+            })
+            .state('app.settlements.detail', {
+                url: '/:id',
+                templateUrl: 'tpl/app_settlement_detail.html'
+            })
+            .state('app.transactions', {
+                url: '/transactions',
+                template: '<div ui-view class="fade-in-down"></div>',
+                // use resolve to load other dependences
+                resolve: {
+                    deps: ['uiLoad',
+                      function( uiLoad ){
+                        return uiLoad.load( ['js/libs/moment.min.js']);
+                    }]
+                }
+            })
+            .state('app.transactions.list', {
+                url: '/list',
+                templateUrl: 'tpl/app_transactions.html',
+                // use resolve to load other dependences
+            })
+            .state('app.transactions.detail', {
+                url: '/:id',
+                templateUrl: 'tpl/app_transaction_detail.html'
             })
             .state('app.keys', {
                 url: '/keys',
