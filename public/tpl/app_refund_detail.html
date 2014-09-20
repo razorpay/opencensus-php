@@ -7,16 +7,16 @@
 <div class="wrapper-md" ng-controller="RefundDetailCtrl">
   <div class="panel panel-default col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
-      Refund: <strong>{{refund.id}}</strong>
+      Refund Id: <strong>{{refund.id}}</strong>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a ui-sref="app.transactions.detail({id:refund.transaction_id})" class="list-group-item">
+        <a ui-sref="app.payments.detail({id:refund.transaction_id})" class="list-group-item">
           <span class="pull-right">{{refund.transaction_id}}</span>
-          Transaction
+          Payment
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{refund.amount/100 | currency:""}}</span>

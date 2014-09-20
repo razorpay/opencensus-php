@@ -1,4 +1,4 @@
-//Single Transaction Details controller
+//Single Refund Details controller
 app.controller('RefundDetailCtrl', ['$scope', '$http', '$stateParams', 'modeFactory', 'alertsFactory',
   function($scope, $http, $stateParams, modeFactory, alertsFactory) {
     //Intialise alerts and scope functions
