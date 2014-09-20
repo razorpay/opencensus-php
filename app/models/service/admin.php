@@ -23,7 +23,7 @@ class Admin extends Service
         if ($verify === true)
             return [array(), $data];
         else
-            return [['Email or password is invalid.'], $data];
+            return [['Username or password is invalid.'], $data];
     }
 
     /**
