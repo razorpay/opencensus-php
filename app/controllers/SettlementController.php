@@ -26,14 +26,14 @@ class SettlementController extends BaseController
     {
         $input = Input::all();
 
-        $data = (new Settlement\Service)->getLedgerRecords($input);
+        $data = (new Ledger\Service)->getLedgerRecords($input);
 
         return ApiResponse::json($data);
     }
 
     public function getLedgerRecord($id)
     {
-        $data = (new Settlement\Service)->getLedgerRecord($id);
+        $data = (new Ledger\Service)->getLedgerRecord($id);
 
         return ApiResponse::json($data);
     }

@@ -19,20 +19,6 @@ class Service extends Base\Service
         return $reconciler->reconcile($data, $input['gateway']);
     }
 
-    public function getLedgerRecords($input)
-    {
-        $lgrs = (new Ledger\Repository)->fetch($input);
-
-        return $lgrs->toPublicArray();
-    }
-
-    public function getLedgerRecordById($id)
-    {
-        $lgr = (new Ledger\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
-
-        return $lgr->toArrayPublic();
-    }
-
     public function generateSettlements()
     {
         $settler = new Settler();
