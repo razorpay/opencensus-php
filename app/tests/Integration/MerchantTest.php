@@ -88,17 +88,17 @@ class MerchantTest extends TestCase
     }
 
     /**
-     * Tests transactions panel display
+     * Tests payments panel display
      */
-    public function testTransactionsList()
+    public function testPaymentsList()
     {
         $this->browser
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#transactionsNav').length > 0", 20000)
-            ->click(l::IdOrName('transactionsNav')) 
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.transactions-table').length > 0", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#paymentsNav').length > 0", 20000)
+            ->click(l::IdOrName('paymentsNav')) 
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.payments-table').length > 0", 20000)
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);    
 
-        $this->assertBodyHasText("List of all transactions");
+        $this->assertBodyHasText("List of all payments");
     }
 
     /**
