@@ -46,7 +46,7 @@ class Payment extends Service
             }
             catch(\Exception $e)
             {
-                $error[] = 'Payment not found.';
+                $error[] = $e->getCode();
             }
         }
 

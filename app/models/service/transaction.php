@@ -53,7 +53,7 @@ class Transaction extends Service
             }
             catch(\Exception $e)
             {
-                $error[] = 'Transaction not found.';
+                $error[] = $e->getCode();
             }
         }
 
