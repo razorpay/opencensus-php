@@ -22,7 +22,7 @@ class SettlementTest extends TestCase
         $this->testData = include(__DIR__.'/helpers/MprTestData.php');
     }
 
-    public function startTest($testDataToReplace = array())
+    protected function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
