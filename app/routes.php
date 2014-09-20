@@ -28,19 +28,23 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/activation/details', 'MerchantController@getActivationDetails');
 
-    Route::get('/{mode}/payments', 'TransactionController@getTransactions');
+    Route::get('/{mode}/payments', 'TransactionController@getPayments');
 
-    Route::get('/{mode}/payments/{id}', 'TransactionController@getTransaction');
+    Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment');
 
-    Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getTransactionRefunds');
+    Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getPaymentRefunds');
+
+    Route::get('/{mode}/refunds', 'TransactionController@getRefunds');
+
+    Route::get('/{mode}/refunds/{id}', 'TransactionController@getRefund');
+
+    Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
+
+    Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
 
     Route::get('/{mode}/analytics/transactions', 'TransactionController@getAnalytics');
 
     Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
-
-    Route::get('/{mode}/refunds', 'TransactionController@getRefunds');
-
-    Route::get('/{mode}/refunds/{id}', 'TrnasactionController@getRefund');
 
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
 

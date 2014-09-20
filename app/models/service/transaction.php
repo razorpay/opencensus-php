@@ -16,12 +16,48 @@ class Transaction extends Service
 
     public function fetchListFromApi(array $input, $mode)
     {
-        ;
+        $data = array();
+
+        list($error,$options) = Manager\Transaction::createValidate($input, 'fetch')->getData();
+
+        if (empty($error))
+        {
+            $merchant_id = \Auth::merchant()->id();
+            $this->setApiCredentials($merchant_id, $mode);
+
+            $response = $this->api->ledger->all($options)->toArray();
+
+            $data = Manager\Transaction::mapKeys($response);
+        }
+
+        return array($error, $data);
     }
 
     public function fetchFromApi($id, $mode)
     {
-        ;
+        $data = array();
+
+        list($error, $options) = Manager\Transaction::createValidate(['id' => $id], 'fetch')->getData();
+
+        if (empty($error))
+        {
+            $merchant_id = \Auth::merchant()->id();
+            $this->setApiCredentials($merchant_id, $mode);
+
+            $id = $options['id'];
+            try
+            {
+                $data = $this->api->ledger->fetch($id)->toArray();
+
+                $data = array('count' => 1, 'data' => array($data));
+            }
+            catch(\Exception $e)
+            {
+                $error[] = 'Transaction not found.';
+            }
+        }
+
+        return array($error, $data);
     }
 
     /**

@@ -47,7 +47,7 @@ class TransactionController extends BaseController
 
         $input = Input::all();
 
-        list($error, $data) = (new Service\Payment)->fetchListFromApi($input, $mode);
+        list($error, $data) = (new Service\Transaction)->fetchListFromApi($input, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -56,12 +56,32 @@ class TransactionController extends BaseController
     {
         $this->checkMode($mode);
         
+        list($error, $data) = (new Service\Transaction)->fetchFromApi($id, $mode);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getPayments($mode)
+    {
+        $this->checkMode($mode);
+
+        $input = Input::all();
+
+        list($error, $data) = (new Service\Payment)->fetchListFromApi($input, $mode);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getPayment($mode, $id = NULL)
+    {
+        $this->checkMode($mode);
+        
         list($error, $data) = (new Service\Payment)->fetchFromApi($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getTransactionRefunds($mode, $id = NULL)
+    public function getPaymentRefunds($mode, $id = NULL)
     {
         $this->checkMode($mode);
         
