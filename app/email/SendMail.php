@@ -23,5 +23,7 @@ class SendMail
 
             $message->attach($mprFile);
         });
+
+        $job->delete();
     }
 }
