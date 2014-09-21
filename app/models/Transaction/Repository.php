@@ -28,7 +28,7 @@ class Repository extends Base\Repository
 
         return $repo::whereBetween(Transaction\Entity::CAPTURED_AT, array($from, $to))
                     ->where(Transaction\Entity::STATUS, '=', Transaction\Status::CAPTURED)
-                    ->where('gateway', '=', $gateway)
+                    ->where(Transaction\Entity::GATEWAY, '=', $gateway)
                     ->get();
     }
 

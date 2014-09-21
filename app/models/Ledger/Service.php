@@ -12,7 +12,7 @@ class Service extends Base\Service
 {
     public function getLedgerRecords($input)
     {
-        $lgrs = (new Ledger\Repository)->fetch($input);
+        $lgrs = (new Ledger\Repository)->fetch($input, $this->merchant->getKey());
 
         return $lgrs->toPublicArray();
     }
