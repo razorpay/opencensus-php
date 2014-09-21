@@ -13,3 +13,4 @@
 
 Artisan::add(new RzpDbRefresh);
 Artisan::add(new CaptureAll);
+Artisan::add(new MprGenerate);
