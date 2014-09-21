@@ -116,7 +116,7 @@ class TraceWriter extends Logger
 
     public function fire($job, $trace)
     {
-        $recorder = new self();
+        $writer = new self();
 
         $writer->addRecord($trace['level'], $trace['message'], $trace['context']);
 

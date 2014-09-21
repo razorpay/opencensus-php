@@ -307,7 +307,7 @@ class Gateway extends BaseGateway
 
     public function getTransactionId($input)
     {
-        return Hdfc\Mpr\Reconciler::getTransactionid($input);
+        return Hdfc\Mpr\Reconciler::getTransactionId($input);
     }
 
     public function reconcile($input)

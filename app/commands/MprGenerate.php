@@ -52,6 +52,13 @@ class MprGenerate extends Command
         $r = (new \Models\Settlement\Service)->gatewayMprGenerate();
 
         $this->info($r);
+
+        $reconcile = $this->input->getOption('reconcile');
+
+        if (($reconcile) and (is_string($r)) and (file_exists($r)))
+        {
+            Artisan::call('rzp:mpr_reconcile', array('--file' => $r));
+        }
     }
 
     /**
@@ -64,6 +71,8 @@ class MprGenerate extends Command
         $array = parent::getOptions();
 
         array_push($array, ['today', null, InputOption::VALUE_NONE, 'Will generate mpr for today\'s transactions']);
+
+        array_push($array, ['reconcile', null, InputOption::VALUE_NONE, 'Also reconciles the mpr']);
 
         return $array;
     }

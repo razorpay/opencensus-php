@@ -25,7 +25,8 @@ class CreateLedger  extends Migration
             $table->char(Ledger::ID, Ledger::ID_LENGTH)
                   ->primary();
 
-            $table->char(Ledger::ENTITY_ID, Ledger::ID_LENGTH);
+            $table->char(Ledger::ENTITY_ID, Ledger::ID_LENGTH)
+                  ->unique();
 
             $table->string(Ledger::ENTITY_TYPE, 20);
 

@@ -41,20 +41,22 @@ class Settler
 
         $settled = true;
 
+        $this->setlRepo->beginTransaction();
+
         try
         {
             $settlements = $this->process($lgrs);
 
-            $this->commit();
+            $this->setlRepo->commit();
         }
         catch (\Exception $e)
         {
-            $this->rollback();
+            $this->setlRepo->rollback();
 
             $settled = false;
-        }
 
-        // @todo: what happens in case of failure?
+            throw $e;
+        }
 
         return $settlements->toArray();
     }

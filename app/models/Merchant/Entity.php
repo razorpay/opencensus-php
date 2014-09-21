@@ -70,12 +70,6 @@ class Entity extends Base\UniqueIdEntity
             'Models\Terminal\Entity');
     }
 
-    public function pricingPlan()
-    {
-        return $this->hasMany(
-            'Models\Pricing\Entity');
-    }
-
     public function setPricingPlan($planId)
     {
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);

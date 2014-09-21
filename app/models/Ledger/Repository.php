@@ -45,4 +45,21 @@ class Repository extends Base\Repository
 
         return $count;
     }
+
+    public function findByEntityId($entityId, $fail = false)
+    {
+        $repo = $this->repo;
+
+        $lgr = $repo::where(Ledger\Entity::ENTITY_ID, '=', $entityId)
+                    ->first();
+
+        if (($lgr === null) and
+            ($fail))
+        {
+            throw new Exception\LogicException(
+                'Failed to find ledger with entity_id: ' . $entityId);
+        }
+
+        return $lgr;
+    }
 }

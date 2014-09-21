@@ -1,8 +1,9 @@
 <?php
 
 use Illuminate\Console\Command;
-use Symfony\Component\Console\Input\InputOption;
 use Models\Settlement\MprGenerator;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class MprReconcile extends Command
 {
@@ -42,13 +43,16 @@ class MprReconcile extends Command
         $this->laravel['rzp.mode'] = $mode;
         Database\DefaultConnection::set($mode);
 
-        $file = $this->input->getOption('file');
+        $mprFile = $this->input->getOption('file');
 
-        $input['mpr'] = $file;
+        $mimeType = 'application/vnd.ms-excel';
+        $mprUploadedFile = new UploadedFile($mprFile, $mprFile, $mimeType, filesize($mprFile), null, true);
+
+        $input['mpr'] = $mprUploadedFile;
         $input['gateway'] = 'hdfc';
 
         $r = (new \Models\Settlement\Service)->gatewayMprReconcile($input);
-
+        $r = json_encode($r);
         $this->info($r);
     }
 

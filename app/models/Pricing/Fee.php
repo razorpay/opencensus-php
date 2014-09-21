@@ -7,6 +7,10 @@ use Models\Pricing;
 
 class Fee
 {
+    const SERVICE_TAX_PERCENT = 12;
+
+    const EDUCATION_CESS_PERCENT = 0.36;
+
     protected $defaultPricingPlan = '13906d42c88a41ee4e2d812e';
 
     public function calculateMerchantFees($merchant, $card, $amount)
@@ -33,6 +37,7 @@ class Fee
 
         $rule = null;
         $rules = $pricing->all();
+
         if (count($rules) === 1)
         {
             $rule = $pricing->first();
@@ -57,13 +62,14 @@ class Fee
         $percent = $rule->getAttribute(Pricing\Entity::PERCENT_RATE);
         $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
 
-        $fee = (($amount * $percent) / 100) + $fixed;
+        $fee = (($amount * $percent) / 10000) + $fixed;
+        $fee = (int) ceil($fee);
+
+        $serviceTax = (int) ceil(($fee * self::SERVICE_TAX_PERCENT) / 100);
+        $educationCess = (int) ceil(($fee * self::EDUCATION_CESS_PERCENT) / 100);
+
+        $fee += $serviceTax + $educationCess;
 
         return array($fee, $rule->getKey());
-    }
-
-    public function calculateGatewayFees($lgr)
-    {
-        ;
     }
 }

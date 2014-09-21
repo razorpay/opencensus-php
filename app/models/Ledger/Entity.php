@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT,
         self::CREDIT,
         self::AMOUNT,
+        self::CURRENCY,
         self::FEE,
         self::API_FEE,
         self::GATEWAY_FEE,
@@ -53,13 +54,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         );
-
-    protected static $generators = array(self::ID, self::CURRENCY);
-
-    protected function generateCurrency()
-    {
-        $this->setAttribute(self::CURRENCY, 'INR');
-    }
 
     public function merchant()
     {

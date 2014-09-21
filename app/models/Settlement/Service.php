@@ -14,7 +14,9 @@ class Service extends Base\Service
 
         $reconciler = new Reconciler($data, $input['gateway']);
 
-        return $reconciler->reconcile($data, $input['gateway']);
+        $lgrs = $reconciler->reconcile($data, $input['gateway']);
+
+        return $lgrs->toArrayPublic();
     }
 
     public function generateSettlements()

@@ -5,6 +5,7 @@ namespace Gateway\Hdfc\Mpr;
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
+use Gateway\Hdfc\Mpr;
 use Models\Card;
 use Models\Ledger;
 use Models\Terminal;
@@ -29,11 +30,7 @@ class Reconciler
         $attributes = $this->getTranslatedAttributes($input);
 
         $repo = new Hdfc\Repository;
-
         $hdfcTxn = $repo->findOrFail($attributes['gateway_transaction_id']);
-
-        // Add primary key ledger_id
-        $attributes['ledger_id'] = $ledgerId;
 
         if ((string)$attributes['gateway_transaction_id'] !== $hdfcTxn['gateway_transaction_id'])
         {
@@ -41,10 +38,14 @@ class Reconciler
         }
 
         // Create Hdfc mpr record
-        $mpr = new Hdfc\Mpr($attributes);
+        $mpr = new Hdfc\Mpr\Entity($attributes);
 
-        // Save to database
-        $repo->saveOrFail($mpr);
+        $repo = new Mpr\Repository;
+        if ($this->checkPreviousEntries($mpr, $repo) === false)
+        {
+            // Save to database
+            $repo->saveOrFail($mpr);
+        }
 
         // Now convert the data to the format as understood by
         // API Ledger, Card and other entities
@@ -55,6 +56,9 @@ class Reconciler
 
     protected function getTranslatedAttributes($row)
     {
+        // Remove 'txn-' from beginning of transaction_id
+        $row['merchant_trackid'] = substr($row['merchant_trackid'], 4);
+
         $attributes = array(
             'transaction_id'            => $row['merchant_trackid'],
             'gateway_transaction_id'    => $row['tran_id'],
@@ -127,7 +131,7 @@ class Reconciler
 
     protected function verifyTransactionAttributes($mpr, $transaction)
     {
-        $txnId = 'txn-' . $transaction[Transaction\Entity::ID];
+        $txnId = $transaction[Transaction\Entity::ID];
 
         if ($mpr['transaction_id'] !== $txnId)
         {
@@ -286,5 +290,56 @@ class Reconciler
         }
 
         return array($amount, $indian);
+    }
+
+    protected function checkPreviousEntries($curr, $repo)
+    {
+        $prev = $repo->find($curr->getKey());
+
+        if ($prev === null)
+        {
+            return false;
+        }
+
+        $attrPrev = $prev->getAttributes();
+        $attrCurr = $curr->getAttributes();
+
+        // Timestamps are allowed to be different
+        // Ignore timestamps for similarity.
+        unset(
+            $attrPrev['created_at'],
+            $attrPrev['updated_at'],
+            $attrCurr['created_at'],
+            $attrCurr['updated_at']);
+
+        $diff1 = array_diff_assoc($attrPrev, $attrCurr);
+        $diff2 = array_diff_assoc($attrCurr, $attrPrev);
+
+        $diff = false;
+        $msg = '';
+
+        if (count($diff1) > 0)
+        {
+            ob_start();
+            print_r($diff1);
+            $msg .= ob_get_clean() . PHP_EOL;
+            $diff = true;
+        }
+        if (count($diff2) > 0)
+        {
+            ob_start();
+            print_r($diff2);
+            $msg .= ob_get_clean() . PHP_EOL;
+            $diff = true;
+        }
+
+        if ($diff)
+        {
+            $msg = 'Entity: Hdfc curr row' . PHP_EOL . $msg;
+            $msg = 'Previous hdfc mpr row do not match' . PHP_EOL . $msg;
+            throw new Exception\LogicException($msg);
+        }
+
+        return true;
     }
 }

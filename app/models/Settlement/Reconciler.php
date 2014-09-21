@@ -5,7 +5,6 @@ namespace Models\Settlement;
 use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Illuminate\Database\Eloquent\Collection;
 use Models\Base;
 use Models\Card;
 use Models\Gateway;
@@ -46,19 +45,39 @@ class Reconciler
             $timestamp = Carbon::tomorrow('Asia/Kolkata')->timestamp;
             self::$settledAt = $timestamp;
         }
+
+        $this->initRepos();
     }
 
     public function reconcile($mprData, $gateway)
     {
-        $lgrs = array();
+        $this->lgrRepo->beginTransaction();
+
+        try
+        {
+            $lgrs = $this->process($mprData, $gateway);
+
+            $this->lgrRepo->commit();
+        }
+        catch (\Exception $e)
+        {
+            $this->lgrRepo->rollback();
+
+            throw $e;
+        }
+
+        return $lgrs;
+    }
+
+    protected function process($mprData, $gateway)
+    {
+        $lgrs = new Base\PublicCollection;
 
         foreach ($mprData as $row)
         {
-            $lgr = $this->reconcileMprRecord(
-                $row,
-                $gateway);
+            $lgr = $this->reconcileMprRecord($row, $gateway);
 
-            array_push($lgrs, $lgr);
+            $lgrs->push($lgr);
         }
 
         return $lgrs;
@@ -99,6 +118,7 @@ class Reconciler
 
         $amount = $this->txn->getAmount();
         $credit = $amount - $fee;
+
         $gatewayFee = $data['ledger']['gateway_fee'];
         $apiFee = $fee - $gatewayFee;
 
@@ -111,15 +131,19 @@ class Reconciler
             Ledger\Entity::FEE => $fee,
             Ledger\Entity::CREDIT => $credit,
             Ledger\Entity::DEBIT => 0,
+            Ledger\Entity::CURRENCY => 'INR',
             Ledger\Entity::PRICING_RULE_ID => $pricingRuleId,
             Ledger\Entity::API_FEE => $apiFee,
             Ledger\Entity::SETTLED_AT => self::$settledAt);
 
         $this->lgr->fill($lgrData);
 
-        $this->updateBalances($lgr);
+        if ($this->checkPreviousEntries($lgr, $this->lgrRepo) === false)
+        {
+            $this->updateBalances($lgr);
 
-        (new Ledger\Repository)->save($lgr);
+            $this->lgrRepo->save($lgr);
+        }
 
         return $lgr;
     }
@@ -159,8 +183,8 @@ class Reconciler
         $nodalBalance->addAmount($this->lgr['api_fee']);
         $merchantRepo->save($nodalBalance);
 
-        $this->lgr['balance'] = $merchantBalance->getBalance();
-        $this->lgr['escrow_balance'] = $nodalBalance->getBalance();
+        $this->lgr[Ledger\Entity::BALANCE] = $merchantBalance->getBalance();
+        $this->lgr[Ledger\Entity::ESCROW_BALANCE] = $nodalBalance->getBalance();
     }
 
     protected function newLedgerRecord()
@@ -178,6 +202,7 @@ class Reconciler
     protected function loadEntities($transactionId)
     {
         $txn  = (new Transaction\Core)->retrieveById($transactionId);
+
         $this->merchant = $txn->merchant;
         $this->card = $txn->card;
         $this->terminal = $txn->merchant->terminal;
@@ -189,5 +214,62 @@ class Reconciler
             'card' => $this->card->toArray(),
             'terminal' => $this->terminal->toArray(),
             'ledger' => $this->lgr->toArray());
+    }
+
+    protected function initRepos()
+    {
+        $this->lgrRepo = new Ledger\Repository;
+    }
+
+    protected function checkPreviousEntries($curr, $repo)
+    {
+        $prev = $repo->findByEntityId($curr->entity_id);
+
+        if ($prev === null)
+        {
+            return false;
+        }
+
+        $attrPrev = $prev->getAttributes();
+        $attrCurr = $curr->getAttributes();
+
+        $fields = array(
+            'created_at', 'updated_at', 'balance', 'reconciled_at', 'settled_at', 'id', 'escrow_balance', 'settled');
+
+        foreach ($fields as $field)
+        {
+            unset($attrPrev[$field]);
+            unset($attrCurr[$field]);
+        }
+
+        $diff1 = array_diff_assoc($attrPrev, $attrCurr);
+        $diff2 = array_diff_assoc($attrCurr, $attrPrev);
+
+        $diff = false;
+        $msg = '';
+
+        if (count($diff1) > 0)
+        {
+            ob_start();
+            print_r($diff1);
+            $msg .= ob_get_clean() . PHP_EOL;
+            $diff = true;
+        }
+        if (count($diff2) > 0)
+        {
+            ob_start();
+            print_r($diff2);
+            $msg .= ob_get_clean() . PHP_EOL;
+            $diff = true;
+        }
+
+        if ($diff)
+        {
+            $msg = 'Entity: Ledger row' . PHP_EOL . $msg;
+            $msg = 'Previous Ledger row do not match' . PHP_EOL . $msg;
+            throw new Exception\LogicException($msg);
+        }
+
+        return true;
     }
 }

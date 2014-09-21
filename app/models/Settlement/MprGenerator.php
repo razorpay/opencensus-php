@@ -59,9 +59,10 @@ class MprGenerator
             }
 
             $array = $this->getRelatedEntities($txns);
+
             $mprFile = Gateway::call('generateMpr', $array, 'test');
 
-            $this->sendMprMail($mprFile);
+            $this->queueMprMail($mprFile);
 
             return $mprFile;
         }
@@ -84,10 +85,12 @@ class MprGenerator
 
         foreach($txns->all() as $txn)
         {
+            $merchant = $txn->merchant;
+
             $cols = array(
                 'transaction' => $txn->toArray(),
-                'merchant'    => $txn->merchant->toArray(),
-                'terminal'    => $txn->merchant->terminal->toArray(),
+                'merchant'    => $merchant->toArray(),
+                'terminal'    => $merchant->terminal->toArray(),
                 'card'        => $txn->card->toArray()
             );
 
@@ -97,16 +100,9 @@ class MprGenerator
         return $array;
     }
 
-    protected function sendMprMail($mprFile)
+    protected function queueMprMail($mprFile)
     {
-        \Mail::send('hdfc.mpr', array(), function($message) use ($mprFile)
-        {
-            $message->from('hdfc_mpr_generator@mg.razorpay.com', 'hdfcMprGenerator');
-
-            $message->to('testmpr@sandboxf697ec003a374fb798a36a45d622d5f6.mailgun.org')->cc('settlement@razorpay.com');
-
-            $message->attach($mprFile);
-        });
+        \Queue::push('Email\SendMail@sendHdfcMprMail', array('mprFile' => $mprFile));
     }
 
     protected function checkMode()

@@ -2,7 +2,8 @@
 
 use Constants\Table;
 
-class DatabaseSeeder extends Seeder {
+class DatabaseSeeder extends Seeder
+{
 
     /**
      * Run the database seeds.
@@ -219,6 +220,48 @@ class DatabaseSeeder extends Seeder {
                     'updated_at'    => time()
                     )
                 );
+
+            DB::table(Table::PRICING)->insert(
+                array(
+                    'id' => '13906d42c88a41ee4e2d812e',
+                    'plan_id' => '13906d42c88a41ee4e2d812e',
+                    'plan_name' => 'defaultPlan',
+                    'payment_mode' => 'card',
+                    'payment_mode_type' => null,
+                    'payment_network' => null,
+                    'payment_issuer' => null,
+                    'percent_rate' => '200',
+                    'fixed_rate' => 0,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ),
+                array(
+                    'id' => '13906de1816d11113ef4f86f',
+                    'plan_id' => '13906d42c88a41ee4e2d812e',
+                    'plan_name' => 'defaultPlan',
+                    'payment_mode' => 'card',
+                    'payment_mode_type' => null,
+                    'payment_network' => 'AMEX',
+                    'payment_issuer' => null,
+                    'percent_rate' => 300,
+                    'fixed_rate' => 0,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ),
+                array(
+                    'id' => '13906df591e73f02d8afc302',
+                    'plan_id' => '13906d42c88a41ee4e2d812e',
+                    'plan_name' => 'defaultPlan',
+                    'payment_mode' => 'card',
+                    'payment_mode_type' => null,
+                    'payment_network' => 'DICL',
+                    'payment_issuer' => null,
+                    'percent_rate' => 300,
+                    'fixed_rate' => 0,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                )
+            );
         });
     }
 }

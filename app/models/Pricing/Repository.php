@@ -13,28 +13,37 @@ class Repository extends Base\Repository
 
     protected $entity = 'Pricing';
 
-    public function getPricingPlanById($id)
+    public function getPricingPlanById($id, $fail = false, $public = false)
     {
         $repo = $this->repo;
 
-        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+        $pricing = $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
                      ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                      ->orderBy(Pricing\Entity::ID, 'desc')
                      ->get();
+
+        if (($pricing->count() === 0) and
+            ($fail))
+        {
+            if ($public)
+            {
+                throw new Exception\BadRequestException(
+                    null,
+                    ErrorCode::BAD_REQUEST_INVALID_ID);
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'No pricing plan found for id: ' . $id);
+            }
+        }
+
+        return $pricing;
     }
 
     public function getPricingPlanByIdOrFailPublic($id)
     {
-        $plan = $this->getPricingPlanById($id);
-
-        if ($plan->count() === 0)
-        {
-            throw new Exception\BadRequestException(
-                null,
-                ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
-        return $plan;
+        return $this->getPricingPlanById($id, true, true);
     }
 
     public function getPricingPlanByIdAndPaymentNetworks($id, array $networks = array())

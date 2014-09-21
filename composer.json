@@ -32,6 +32,7 @@
             "app/controllers",
             "app/dashboard",
             "app/database",
+            "app/email",
             "app/ee",
             "app/gateway",
             "app/http",
