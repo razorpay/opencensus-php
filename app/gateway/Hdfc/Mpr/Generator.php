@@ -113,6 +113,10 @@ class Generator
         $serviceTax = $msf * self::SERVICE_TAX_PERCENT / 100;
         $educationCess = $msf * self::EDUCATION_CESS_PERCENT / 100;
 
+        $this->roundUp($msf);
+        $this->roundUp($serviceTax);
+        $this->roundUp($educationCess);
+
         $netAmount = $amount - ($msf + $serviceTax + $educationCess);
 
         $maskedCardNumber = $input['card']['iin'] . 'xxxxxx' .
@@ -147,5 +151,10 @@ class Generator
         );
 
         return array_values($attributes);
+    }
+
+    protected function roundUp(& $amount)
+    {
+        $amount = ceil($amount * 100) / 100;
     }
 }
