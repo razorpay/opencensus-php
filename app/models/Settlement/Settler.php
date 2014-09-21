@@ -6,7 +6,6 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Models\Transaction;
-use Illuminate\Database\Eloquent\Collection;
 
 class Settler
 {
@@ -36,7 +35,7 @@ class Settler
 
     public function settle()
     {
-        $t= = self::$settlementTimestamp;
+        $t = self::$settlementTimestamp;
 
         $lgrs = $lgrRepo->fetchTransactionsExpectedToSettle($t);
 
@@ -130,7 +129,7 @@ class Settler
 
     protected function initSettlementTimestamp()
     {
-        if ($settlementTimestamp === null)
+        if (self::$settlementTimestamp === null)
         {
             // Get the timestamp today at 12 am
             $timestamp = Carbon::today('Asia/Kolkata')->timestamp;

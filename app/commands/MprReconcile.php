@@ -4,21 +4,21 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Models\Settlement\MprGenerator;
 
-class MprGenerate extends Command
+class MprReconcile extends Command
 {
     /**
      * The console command name.
      *
      * @var string
      */
-    protected $name = 'rzp:mpr_generate';
+    protected $name = 'rzp:mpr_reconcile';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generates mpr for test mode for today';
+    protected $description = 'Reconciles the given mpr file';
 
     /**
      * Create a new command instance.
@@ -42,14 +42,12 @@ class MprGenerate extends Command
         $this->laravel['rzp.mode'] = $mode;
         Database\DefaultConnection::set($mode);
 
-        $today = $this->input->getOption('today');
+        $file = $this->input->getOption('file');
 
-        if ($today)
-        {
-            MprGenerator::setTodayTimestamps();
-        }
+        $input['mpr'] = $file;
+        $input['gateway'] = 'hdfc';
 
-        $r = (new \Models\Settlement\Service)->gatewayMprGenerate();
+        $r = (new \Models\Settlement\Service)->gatewayMprReconcile($input);
 
         $this->info($r);
     }
@@ -63,7 +61,7 @@ class MprGenerate extends Command
     {
         $array = parent::getOptions();
 
-        array_push($array, ['today', null, InputOption::VALUE_NONE, 'Will generate mpr for today\'s transactions']);
+        array_push($array, ['file', 'f', InputOption::VALUE_REQUIRED, 'Reconcile the txns in the mpr file being provided']);
 
         return $array;
     }

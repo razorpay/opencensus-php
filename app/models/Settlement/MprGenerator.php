@@ -29,6 +29,8 @@ class MprGenerator
     {
         $this->mode = $mode;
 
+        $this->env = \App::environment();
+
         $this->initTimestamps();
     }
 
@@ -38,28 +40,40 @@ class MprGenerator
 
         $gateway = 'hdfc';
 
-        $txnRepo = new Transaction\Repository;
-        $txns = $txnRepo->fetchCapturedForGatewayBetweenTimestamp(
-                            self::$fromTimestamp,
-                            self::$toTimestamp,
-                            $gateway);
-
-        $rfndRepo = new Refund\Repository;
-        $refunds = $rfndRepo->findBetweenTimestamps(
-                            self::$fromTimestamp,
-                            self::$toTimestamp);
-
-        if ($txns->count() === 0)
+        try
         {
-            return 'no new transactions! Lets wrap up!';
+            $txnRepo = new Transaction\Repository;
+            $txns = $txnRepo->fetchCapturedForGatewayBetweenTimestamp(
+                                self::$fromTimestamp,
+                                self::$toTimestamp,
+                                $gateway);
+
+            $rfndRepo = new Refund\Repository;
+            $refunds = $rfndRepo->findBetweenTimestamps(
+                                self::$fromTimestamp,
+                                self::$toTimestamp);
+
+            if ($txns->count() === 0)
+            {
+                return 'no new transactions! Lets wrap up!';
+            }
+
+            $array = $this->getRelatedEntities($txns);
+            $mprFile = Gateway::call('generateMpr', $array, 'test');
+
+            $this->sendMprMail($mprFile);
+
+            return $mprFile;
         }
+        catch (\Exception $e)
+        {
 
-        $array = $this->getRelatedEntities($txns);
-        $mprFile = Gateway::call('generateMpr', $array, 'test');
-
-        $this->sendMprMail($mprFile);
-
-        return $mprFile;
+            // if ($this->env === 'testing')
+            // {
+            //     throw $e;
+            // }
+            throw $e;
+        }
     }
 
     protected function getRelatedEntities($txns)
@@ -115,5 +129,11 @@ class MprGenerator
         {
             self::$toTimestamp = Carbon::today('Asia/Kolkata')->subSecond(1)->timestamp;
         }
+    }
+
+    public static function setTodayTimestamps()
+    {
+        self::$fromTimestamp = Carbon::today('Asia/Kolkata')->timestamp;
+        self::$toTimestamp = time();
     }
 }

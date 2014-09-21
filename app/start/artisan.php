@@ -14,3 +14,5 @@
 Artisan::add(new RzpDbRefresh);
 Artisan::add(new CaptureAll);
 Artisan::add(new MprGenerate);
+Artisan::add(new MprReconcile);
+Artisan::add(new SettlementGenerate);
