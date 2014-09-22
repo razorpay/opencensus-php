@@ -4,30 +4,30 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md" ng-controller="RefundDetailCtrl">
+<div class="wrapper-md" ng-controller="EntityDetailCtrl" ng-init="generate('refund')">
   <div class="panel panel-default col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
-      Refund Id: <strong>{{refund.id}}</strong>
+      Refund Id: <strong>{{entity.id}}</strong>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a ui-sref="app.payments.detail({id:refund.transaction_id})" class="list-group-item">
-          <span class="pull-right">{{refund.transaction_id}}</span>
+        <a ui-sref="app.payments.detail({id:entity.transaction_id})" class="list-group-item">
+          <span class="pull-right">{{entity.transaction_id}}</span>
           Payment
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{refund.amount/100 | currency:""}}</span>
+          <span class="pull-right">{{entity.amount/100 | currency:""}}</span>
           Amount
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{refund.currency}}</span>
+          <span class="pull-right">{{entity.currency}}</span>
           Currency
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{refund.created_at*1000 | fromNow}} ({{refund.created_at*1000 | date : 'medium'}})</span>
+          <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
           Created At
         </a>
       </div>

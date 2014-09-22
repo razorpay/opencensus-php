@@ -4,10 +4,10 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md" ng-controller="TransactionDetailCtrl">
+<div class="wrapper-md" ng-controller="EntityDetailCtrl" ng-init="generate('transaction')">
   <div class="panel panel-default col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
-      Transaction Id: <strong>{{transaction.id}}</strong>
+      Transaction Id: <strong>{{entity.id}}</strong>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -15,31 +15,31 @@
     <div class="row wrapper">
       <div class="list-group">
         <a class="list-group-item">
-          <span class="pull-right">{{transaction.entity_type}}</span>
+          <span class="pull-right">{{entity.entity_type}}</span>
           Entity Type
         </a>
         <a class="list-group-item">
-          <span class="pull-right">{{transaction.entity_id}}</span>
+          <span class="pull-right">{{entity.entity_id}}</span>
           Entity Id
         </a>
         <a class="list-group-item">
-          <span class="pull-right">{{transaction.currency}}</span>
+          <span class="pull-right">{{entity.currency}}</span>
           Currency
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.amount/100 | currency:""}}</span>
+          <span class="pull-right">{{entity.amount/100 | currency:""}}</span>
           Amount
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.debit/100 | currency:""}}</span>
+          <span class="pull-right">{{entity.debit/100 | currency:""}}</span>
           Debit
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.credit/100 | currency:""}}</span>
+          <span class="pull-right">{{entity.credit/100 | currency:""}}</span>
           Credit
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{transaction.fee/100 | currency:""}}</span>
+          <span class="pull-right">{{entity.fee/100 | currency:""}}</span>
           Fee
         </a>
       </div>

@@ -5,8 +5,8 @@
   </h1>
 </h1>
 </div>
-<div class="wrapper-md">
-  <div class="panel panel-default" ng-controller="SettlementsListCtrl">
+<div class="wrapper-md" ng-controller="EntityListCtrl" ng-init="generate('settlement')">
+  <div class="panel panel-default">
     <div class="panel-heading">
       List of all settlements
     </div>
@@ -18,7 +18,7 @@
       </div>
       <div class="col-sm-3">
         <div class="input-group">
-          <input type="text" class="input-sm form-control" placeholder="Search Settlement Id" ng-model="settlements.id">
+          <input type="text" class="input-sm form-control" placeholder="Search Settlement Id" ng-model="entity.id">
           <span class="input-group-btn">
             <button class="btn btn-sm btn-default" type="button" ng-click="search()" busy="...">Go!</button>
             <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
@@ -36,12 +36,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in settlements.data">
+          <tr ng-repeat="row in entity.data">
             <td><a ui-sref="app.settlements.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.amount/100 | currency:"INR "}}</td>
             <td>{{row.status | titlecase}}</td>     
           </tr>
-          <tr ng-show="settlements.count === 0">
+          <tr ng-show="entity.count === 0">
             <td colspan="3" class="text-center">
             No Settlements
             </td>
@@ -55,7 +55,7 @@
         <div class="col-sm-4 hidden-xs">
         </div>
         <div class="col-sm-4 text-center">
-          <small class="text-muted inline m-t-sm m-b-sm">Showing {{settlements.countStart}}-{{settlements.countEnd}}</small>
+          <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
         </div>
         <div class="col-sm-4 text-right text-center-xs">                
           <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">

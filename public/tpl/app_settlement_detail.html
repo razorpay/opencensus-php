@@ -4,10 +4,10 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md" ng-controller="SettlementDetailCtrl">
+<div class="wrapper-md" ng-controller="EntityDetailCtrl" ng-init="generate('settlement')">
   <div class="panel panel-default col-sm-6 col-sm-offset-3" >
     <div class="panel-heading m-t m-b">
-      Settlement Id: <strong>{{settlement.id}}</strong>
+      Settlement Id: <strong>{{entity.id}}</strong>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -15,11 +15,11 @@
     <div class="row wrapper">
       <div class="list-group">
         <a href class="list-group-item">
-          <span class="pull-right">{{settlement.amount/100 | currency:"INR "}}</span>
+          <span class="pull-right">{{entity.amount/100 | currency:"INR "}}</span>
           Amount
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{settlement.status | titlecase}}</span>
+          <span class="pull-right">{{entity.status | titlecase}}</span>
           Status
         </a>
       </div>

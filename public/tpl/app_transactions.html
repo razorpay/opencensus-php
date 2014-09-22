@@ -5,8 +5,8 @@
   </h1>
 </h1>
 </div>
-<div class="wrapper-md">
-  <div class="panel panel-default" ng-controller="TransactionsListCtrl">
+<div class="wrapper-md" ng-controller="EntityListCtrl" ng-init="generate('transaction')">
+  <div class="panel panel-default">
     <div class="panel-heading">
       List of all transactions
     </div>
@@ -40,7 +40,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in transactions.data">
+          <tr ng-repeat="row in entity.data">
             <td><a ui-sref="app.transactions.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.entity_type}} - {{row.entity_id}}</td>
             <td>{{row.currency}}</td>
@@ -49,7 +49,7 @@
             <td>{{row.credit/100 | currency:""}}</td>
             <td>{{row.fee/100 | currency:""}}</td>        
           </tr>
-          <tr ng-show="transactions.count === 0">
+          <tr ng-show="entity.count === 0">
             <td colspan="7" class="text-center">
             No Transactions
             </td>
@@ -63,7 +63,7 @@
         <div class="col-sm-4 hidden-xs">
         </div>
         <div class="col-sm-4 text-center">
-          <small class="text-muted inline m-t-sm m-b-sm">Showing {{transactions.countStart}}-{{transactions.countEnd}}</small>
+          <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
         </div>
         <div class="col-sm-4 text-right text-center-xs">                
           <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">

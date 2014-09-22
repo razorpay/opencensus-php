@@ -4,8 +4,8 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md">
-  <div class="panel panel-default" ng-controller="RefundsListCtrl">
+<div class="wrapper-md" ng-controller="EntityListCtrl" ng-init="generate('refund')">
+  <div class="panel panel-default">
     <div class="panel-heading">
       List of all refunds
     </div>
@@ -17,7 +17,7 @@
       </div>
       <div class="col-sm-3">
         <div class="input-group">
-          <input type="text" class="input-sm form-control" placeholder="Search Refund Id" ng-model="refunds.id">
+          <input type="text" class="input-sm form-control" placeholder="Search Refund Id" ng-model="entity.id">
           <span class="input-group-btn">
             <button class="btn btn-sm btn-default" type="button" ng-click="search()" busy="...">Go!</button>
             <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
@@ -37,14 +37,14 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in refunds.data">
+          <tr ng-repeat="row in entity.data">
             <td><a ui-sref="app.refunds.detail({id:row.id})">{{row.id}}</a></td>
             <td><a ui-sref="app.payments.detail({id:row.transaction_id})">{{row.transaction_id}}</a></td>
             <td>{{row.currency}}
             <td>{{row.amount/100 | currency:""}}</td>
             <td>{{row.created_at*1000 | fromNow}}</td>          
           </tr>
-          <tr ng-show="refunds.count === 0">
+          <tr ng-show="entity.count === 0">
             <td colspan="5" class="text-center">
             No Refunds
             </td>
@@ -58,7 +58,7 @@
         <div class="col-sm-4 hidden-xs">
         </div>
         <div class="col-sm-4 text-center">
-          <small class="text-muted inline m-t-sm m-b-sm">Showing {{refunds.countStart}}-{{refunds.countEnd}}</small>
+          <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
         </div>
         <div class="col-sm-4 text-right text-center-xs">                
           <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
