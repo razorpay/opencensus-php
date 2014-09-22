@@ -246,8 +246,6 @@ class Admin extends Service
 
     public function postMerchantPricing($id, $input)
     {   
-        unset($input['_token']);
-
         $error = array(); 
         $data = array();
 
@@ -389,8 +387,6 @@ class Admin extends Service
 
     public function addPricingPlanRule($id, $input)
     {   
-        unset($input['_token']);
-
         $error = array();
 
         $response = array();
@@ -411,8 +407,6 @@ class Admin extends Service
 
     public function createPricingPlan($input)
     {
-        unset($input['_token']);
-
         $error = array();
 
         $response = array();

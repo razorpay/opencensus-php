@@ -9,8 +9,7 @@ class Admin extends Manager
 {
     protected static $loginRules = array(
         'username'  =>      'required|alpha_dash',
-        'password'  =>      'required|between:6,50',
-        '_token'    =>      'required'
+        'password'  =>      'required|between:6,50'
     );
     
     protected static $registerRules = array(
@@ -19,28 +18,21 @@ class Admin extends Manager
         'password'              => 'required|between:6,50|confirmed',
         'password_confirmation' => 'required|between:6,50',
         'email'                 => 'required|email|unique:admins',
-        'superadmin'            => 'required|in:1,0',
-        '_token'                => 'required'
+        'superadmin'            => 'required|in:1,0'
     );
 
     protected static $passwordRules = array(
         'old_password'          => 'required',
         'password'              => 'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50',
-        '_token'                => 'required');
-
-    protected static $unsetLoginInput = array(
-        'password',
-        '_token'
+        'password_confirmation' => 'required|between:6,50'
     );
 
-    protected static $unsetRegisterInput = array(
-        '_token'
+    protected static $unsetLoginInput = array(
+        'password'
     );
 
     protected static $unsetPasswordInput = array(
-        'password_confirmation',
-        '_token'
+        'password_confirmation'
     );
 
     protected static $registerGenerators = array('password');

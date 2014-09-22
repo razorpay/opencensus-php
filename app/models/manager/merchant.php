@@ -11,22 +11,19 @@ class Merchant extends Manager
         'name'                  => 'required|alpha_space|max:200',
         'email'                 => 'required|email|unique:merchants',
         'password'              => 'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50',
-        '_token'                => 'required'
+        'password_confirmation' => 'required|between:6,50'
     );
 
     protected static $loginRules = array(
         'email'     =>      'required|email',
         'password'  =>      'required|between:6,50',
-        'remember'  =>      'in:on',
-        '_token'    =>      'required'
+        'remember'  =>      'in:on'
     );
 
     protected static $passwordRules = array(
         'old_password'  =>      'required',
         'password'      =>      'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50',
-        '_token'        =>      'required'
+        'password_confirmation' => 'required|between:6,50'
     );
 
     protected static $terminalRules = array(
@@ -34,28 +31,23 @@ class Merchant extends Manager
         'gateway_merchant_id'   => 'required',
         'gateway_terminal_id'   => 'required',
         'gateway_terminal_password'                 =>      'required|confirmed',
-        'gateway_terminal_password_confirmation'    =>      'required',
-        '_token'                                    =>      'required'
+        'gateway_terminal_password_confirmation'    =>      'required'
     );
 
     protected static $unsetRegisterInput = array(
-        'password_confirmation',
-        '_token'
+        'password_confirmation'
     );
 
     protected static $unsetLoginInput = array(
-        'password',
-        '_token'
+        'password'
     );
 
     protected static $unsetPasswordInput = array(
-        'password_confirmation',
-        '_token'
+        'password_confirmation'
     );
 
     protected static $unsetTerminalInput = array(
-        'gateway_terminal_password_confirmation',
-        '_token'
+        'gateway_terminal_password_confirmation'
     );
 
     protected static $api_dashboard_mappings = array(

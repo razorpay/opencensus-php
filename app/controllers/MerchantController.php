@@ -105,7 +105,6 @@ class MerchantController extends BaseController
     public function postKeys($mode)
     {
         $input = Input::all();
-        unset($input['_token']);
 
         $input['merchant_id'] = \Auth::merchant()->id();
 
@@ -139,7 +138,6 @@ class MerchantController extends BaseController
     public function postSaveActivationStep($id)
     {
         $input = Input::all();
-        unset($input['_token']);
 
         if($id != 5)
         {
@@ -156,7 +154,6 @@ class MerchantController extends BaseController
     public function postSaveActivationFile()
     {
         $input = Input::all();
-        unset($input['_token']);
 
         $error = (new Service\MerchantDetails)->saveUploadedFile($input);
 
