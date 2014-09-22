@@ -54,12 +54,14 @@ class MprGenerator
         {
             $this->queueMprGenerationFailureMail($e);
 
+            (new SlackNotification)->queueOperationFailure('mpr_generation', $e);
+
             $this->queueMprGenerationFailureSlackNotification($e);
 
             throw $e;
         }
 
-        $this->queueMprGenerationSlackNotification($data);
+        (new SlackNotification)->queueOperationSuccess('mpr_generation', $data['count']);
 
         return $data['file'];
     }
@@ -165,37 +167,6 @@ class MprGenerator
                 $message->attach($data['file']);
             }
         });
-    }
-
-    protected function queueMprGenerationSlackNotification($data)
-    {
-        $message = 'Mpr file generated with ' . $data['count'] . ' transactions ';
-
-        $func = __CLASS__ . '@sendSlackNotification';
-
-        $this->queue->push($func, $message);
-    }
-
-    protected function queueMprGenerationFailureSlackNotification($e)
-    {
-        $message = 'Failed to generate mpr file. ' . PHP_EOL;
-
-        $message .= 'Exception class: ' . get_class($e) . ', ' .
-                    'Exception message: ' . $e->getMessage();
-
-        $func = __CLASS__ . '@sendSlackNotification';
-
-        $this->queue->push($func, $message);
-    }
-
-    public function sendSlackNotification($job, $message)
-    {
-        $channel = '#settlements';
-        $username = 'settlements';
-
-        $job->delete();
-
-        (new \Services\Slack)->send($message, $channel, $username);
     }
 
     protected function checkMode()

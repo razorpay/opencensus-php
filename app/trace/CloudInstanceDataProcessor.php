@@ -17,7 +17,7 @@ class CloudInstanceDataProcessor
     {
         $app = \App::getFacadeRoot();
 
-        $data = $app->getInstanceData();
+        $data = $app['instance']->getInstanceData();
 
         $record['instance'] = $data;
 

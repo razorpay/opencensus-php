@@ -40,6 +40,8 @@ class Reconciler
 
         $this->feeCalculator = new Pricing\Fee;
 
+        $this->queue = \Queue::getFacadeRoot();
+
         if (self::$settledAt === null)
         {
             $timestamp = Carbon::tomorrow('Asia/Kolkata')->timestamp;
@@ -63,14 +65,14 @@ class Reconciler
         {
             $this->lgrRepo->rollback();
 
-            $this->queueMprReconciliationFailureSlackNotification($e);
+            (new SlackNotification)->queueOperationFailure('mpr_reconciliation', $e);
 
             throw $e;
         }
 
         $count = $lgrs->count();
 
-        $this->queueMprReconciliationSlackNotification($count);
+        (new SlackNotification)->queueOperationSuccess('mpr_reconciliation', $count);
 
         return $lgrs;
     }
@@ -277,36 +279,5 @@ class Reconciler
         }
 
         return true;
-    }
-
-    protected function queueMprReconciliationFailureSlackNotification($e)
-    {
-        $message = 'Failed to reconcile mpr file. ' . PHP_EOL;
-
-        $message .= 'Exception class: ' . get_class($e) . ', ' .
-                    'Exception message: ' . $e->getMessage();
-
-        $func = __CLASS__ . '@sendSlackNotification';
-
-        $this->queue->push($func, $message);
-    }
-
-    protected function queueMprReconciliationSlackNotification($count)
-    {
-        $message = 'Reconciled mpr file ' . $count . ' transactions';
-
-        $func = __CLASS__ . '@sendSlackNotification';
-
-        $this->queue->push($func, $message);
-    }
-
-    public function sendSlackNotification($job, $message)
-    {
-        $channel = '#settlements';
-        $username = 'settlements';
-
-        $job->delete();
-
-        (new \Services\Slack)->send($message, $channel, $username);
     }
 }

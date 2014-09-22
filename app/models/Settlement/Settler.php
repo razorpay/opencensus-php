@@ -30,6 +30,8 @@ class Settler
 
         $this->initSettlementTimestamp();
 
+        $this->queue = \Queue::getFacadeRoot();
+
         $this->settlements = new Collection;
     }
 
@@ -53,14 +55,14 @@ class Settler
         {
             $this->setlRepo->rollback();
 
-            $this->queueSettlementFailureSlackNotification($e);
+            (new SlackNotification)->queueOperationFailure('settlements', $e);
 
             $settled = false;
 
             throw $e;
         }
 
-        $this->queueSettlementSuccessSlackNotification($settlements->count());
+        (new SlackNotification)->queueOperationSuccess('settlements', $count);
 
         return $settlements->toArray();
     }
