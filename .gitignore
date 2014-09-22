@@ -6,7 +6,7 @@
 Thumbs.db
 grunt.json
 node_modules/
-*Generated.php
+*Generated.blade.php
 dev/
 prod/
 bootstrap/environment.php
