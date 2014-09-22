@@ -78,7 +78,7 @@ class Payment extends Service
             }
             catch(\Exception $e)
             {
-                $error[] = 'Request Failed';
+                $error[] = $e->getCode();
             }
         }
 
@@ -102,7 +102,7 @@ class Payment extends Service
         }
         catch(\Exception $e)
         {
-            $error[] = "Capture Failed";
+            $error[] = $e->getCode();
             return $error;
         }
 
@@ -129,7 +129,7 @@ class Payment extends Service
         }
         catch(\Exception $e)
         {
-            $error[] = "Refund Failed";
+            $error[] = $e->getCode();
             return $error;
         }
 
