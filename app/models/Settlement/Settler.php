@@ -53,10 +53,14 @@ class Settler
         {
             $this->setlRepo->rollback();
 
+            $this->queueSettlementFailureSlackNotification($e);
+
             $settled = false;
 
             throw $e;
         }
+
+        $this->queueSettlementSuccessSlackNotification($settlements->count());
 
         return $settlements->toArray();
     }
@@ -137,5 +141,36 @@ class Settler
             $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
             self::$settlementTimestamp = $timestamp;
         }
+    }
+
+    protected function queueSettlementFailureSlackNotification($e)
+    {
+        $message = 'Failed to send out settlements. ' . PHP_EOL;
+
+        $message .= 'Exception class: ' . get_class($e) . ', ' .
+                    'Exception message: ' . $e->getMessage();
+
+        $func = __CLASS__ . '@sendSlackNotification';
+
+        $this->queue->push($func, $message);
+    }
+
+    protected function queueSettlementSuccessSlackNotification($count)
+    {
+        $message = 'Settlements sent out for ' . $count . ' merchants';
+
+        $func = __CLASS__ . '@sendSlackNotification';
+
+        $this->queue->push($func, $message);
+    }
+
+    public function sendSlackNotification($job, $message)
+    {
+        $channel = '#settlements';
+        $username = 'settlements';
+
+        $job->delete();
+
+        (new \Services\Slack)->send($message, $channel, $username);
     }
 }

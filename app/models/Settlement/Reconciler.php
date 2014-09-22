@@ -63,8 +63,14 @@ class Reconciler
         {
             $this->lgrRepo->rollback();
 
+            $this->queueMprReconciliationFailureSlackNotification($e);
+
             throw $e;
         }
+
+        $count = $lgrs->count();
+
+        $this->queueMprReconciliationSlackNotification($count);
 
         return $lgrs;
     }
@@ -271,5 +277,36 @@ class Reconciler
         }
 
         return true;
+    }
+
+    protected function queueMprReconciliationFailureSlackNotification($e)
+    {
+        $message = 'Failed to reconcile mpr file. ' . PHP_EOL;
+
+        $message .= 'Exception class: ' . get_class($e) . ', ' .
+                    'Exception message: ' . $e->getMessage();
+
+        $func = __CLASS__ . '@sendSlackNotification';
+
+        $this->queue->push($func, $message);
+    }
+
+    protected function queueMprReconciliationSlackNotification($count)
+    {
+        $message = 'Reconciled mpr file ' . $count . ' transactions';
+
+        $func = __CLASS__ . '@sendSlackNotification';
+
+        $this->queue->push($func, $message);
+    }
+
+    public function sendSlackNotification($job, $message)
+    {
+        $channel = '#settlements';
+        $username = 'settlements';
+
+        $job->delete();
+
+        (new \Services\Slack)->send($message, $channel, $username);
     }
 }
