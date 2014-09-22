@@ -32,12 +32,12 @@
             "app/controllers",
             "app/dashboard",
             "app/database",
-            "app/email",
             "app/ee",
             "app/gateway",
             "app/http",
             "app/lib",
             "app/models",
+            "app/services",
             "app/tests",
             "app/trace"
         ]
