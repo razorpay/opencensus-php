@@ -25,6 +25,9 @@ App::after(function($request, $response)
 	//Refer https://docs.angularjs.org/api/ng/service/$http JSON Vulnerability Protection
 	if($response instanceof \Illuminate\Http\JsonResponse) {
         $json = ")]}',\n" . $response->getContent();
+    
+        //Set XSRF_TOKEN Cookie for use by angular. Using native PHP function since laravel encrypts all cookies
+        setcookie('XSRF-TOKEN', csrf_token(), 0,'/');
         return $response->setContent($json);
     }
 });
@@ -100,6 +103,7 @@ Route::filter('guest_admin', function()
 
 Route::filter('csrf', function()
 {
-	if (Session::token() != Input::get('_token'))
-		return AppResponse::jsonResponse(array('Session timed out. Please refresh the page and try again.'));
+//Angular sends X-XSRF-TOKEN header with all request because XSRF-TOKEN cookie is set in after filter   
+	if (Session::token() !== Request::header('X-XSRF-TOKEN'))
+		return AppResponse::jsonResponse(array('Invalid session. Please refresh the page and try again.'));
 });
