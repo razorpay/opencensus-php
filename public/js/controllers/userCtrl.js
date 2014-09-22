@@ -1,6 +1,6 @@
 //User profile Controller
-app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '$modal', 'alertsFactory', '$idle', '$keepalive',
-  function($scope, $http, $state, user, CSRF_TOKEN, $modal, alertsFactory, $idle, $keepalive) {
+app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', '$modal', 'alertsFactory', '$idle', '$keepalive',
+  function($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive) {
     
     user.identity().then(function(data){
       $scope.user = data;
@@ -93,14 +93,9 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '
     });
 
     function logoutRequest(){
-      $scope.data = {
-        _token: CSRF_TOKEN
-      }
-
       var request = $http({
           method: "get",
-          url: "/user/logout",
-          data: $scope.data
+          url: "/user/logout"
       });
 
       request
@@ -112,8 +107,6 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', 'CSRF_TOKEN', '
     };
 
     function passwordChangeRequest(data) {
-      data._token = CSRF_TOKEN;
-
       var request = $http({
         method: "post",
         url: "/password",

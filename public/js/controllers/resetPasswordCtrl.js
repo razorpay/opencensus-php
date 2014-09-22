@@ -1,16 +1,14 @@
  //Reset Passsword Controller
-app.controller('ResetPasswordCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
-  function($scope, $http, $state, $stateParams, alertsFactory, transformRequestAsFormPost, CSRF_TOKEN) {
+app.controller('ResetPasswordCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 'transformRequestAsFormPost', 
+  function($scope, $http, $state, $stateParams, alertsFactory, transformRequestAsFormPost) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.success = false;
 
     $scope.data = {
-      _token: CSRF_TOKEN
-    }
-
-    $scope.data.token = $stateParams.token;
+      token: $stateParams.token
+    };
 
     if(!$scope.data.token) {
       $state.go('access.signin');

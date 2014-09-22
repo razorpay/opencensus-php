@@ -1,7 +1,7 @@
 //Single Payment Details controller
 //Child of TransactionDetailCtrl
-app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
-  function($scope, $http, $stateParams, $modal, modeFactory, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost) {
+app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal', 'modeFactory', 'alertsFactory', 'transformRequestAsFormPost',
+  function($scope, $http, $stateParams, $modal, modeFactory, alertsFactory, transformRequestAsFormPost) {
     $scope.getStatusClass = function(status) {
       var mapper = {
         open: "bg-light",
@@ -65,7 +65,6 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
       }
 
       var data = {
-        _token: CSRF_TOKEN,
         amount: captureAmount
       }
 
@@ -105,7 +104,6 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
       }
 
       var data = {
-        _token: CSRF_TOKEN,
         amount: refundAmount
       }
 

@@ -1,6 +1,6 @@
 //Activation Form Controller
-app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost', '$upload', 'user',
-  function($scope, $http, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost, $upload, user){
+app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', '$upload', 'user',
+  function($scope, $http, alertsFactory, transformRequestAsFormPost, $upload, user){
     $scope.steps={
       percent:0,
       step1:true
@@ -94,13 +94,7 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKE
     };
 
     function saveStep(step){
-      var data = {
-        _token: CSRF_TOKEN,
-      };
-
-      angular.forEach($scope.data[step], function(value, key) {
-        data[key] = value;
-      });
+      var data = $scope.data[step];
 
       var request = $http({
                     method: "post",
@@ -139,7 +133,6 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKE
       var request = $upload.upload({
         url: '/activation/save/file',
         method: 'POST',
-        data: {_token: CSRF_TOKEN},
         file: file, 
         fileFormDataName: fieldname,
         formDataAppender: function(fd, key, val) {
@@ -183,19 +176,10 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKE
         return;
       }
 
-      var data = {
-        _token: CSRF_TOKEN,
-      };
-
-      angular.forEach($scope.data[step], function(value, key){
-        data[key] = value;
-      });
-
       var request = $http({
                     method: "post",
                     url: "/activation",
-                    transformRequest: transformRequestAsFormPost,
-                    data: data
+                    transformRequest: transformRequestAsFormPost
       });
 
       request

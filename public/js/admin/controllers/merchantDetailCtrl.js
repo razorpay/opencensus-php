@@ -1,6 +1,6 @@
 //Merchant Details Controller
-app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost', '$modal',
-  function($scope, $http, $stateParams, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost, $modal) {
+app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFactory', 'transformRequestAsFormPost', '$modal',
+  function($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal) {
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.merchant = {
@@ -10,7 +10,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     generateMerchant();
     
     $scope.lockForm = function(){
-      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/lock?_token="+CSRF_TOKEN);
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/lock");
 
       request
       .success(function(data){
@@ -31,7 +31,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.unlockForm = function(){
-      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/unlock?_token="+CSRF_TOKEN);
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/unlock");
 
       request
       .success(function(data){
@@ -52,7 +52,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.activateMerchant = function(){
-      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/activate?_token="+CSRF_TOKEN);
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/activate");
 
       request
       .success(function(data){
@@ -73,7 +73,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.enableLive = function() {
-      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/enable?_token="+CSRF_TOKEN);
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/enable");
 
       request
       .success(function(data){
@@ -94,7 +94,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.disableLive = function() {
-      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/disable?_token="+CSRF_TOKEN);
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/disable");
 
       request
       .success(function(data){
@@ -116,7 +116,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
     $scope.assignPricing = function(plan_id){
       var data = {
-        _token: CSRF_TOKEN,
         pricing_plan_id: plan_id
       };
 
@@ -147,15 +146,11 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.assignTerminal = function(terminal){
-      var data = terminal;
-
-      data._token = CSRF_TOKEN;
-
       var request = $http({
                     method: "post",
                     url: "/admin/merchant/"+$scope.merchant.id+"/terminal",
                     transformRequest: transformRequestAsFormPost,
-                    data: data
+                    data: terminal
       });
 
       request

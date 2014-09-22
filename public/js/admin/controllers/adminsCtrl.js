@@ -1,6 +1,6 @@
 //Admin List controller
-app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
-  function($scope, $http, $modal, admin, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost) {
+app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFactory', 'transformRequestAsFormPost',
+  function($scope, $http, $modal, admin, alertsFactory, transformRequestAsFormPost) {
 
   $scope.admins = {};
 
@@ -13,7 +13,7 @@ app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFacto
   generateTable();
   
   $scope.delete = function(id) {
-    var request = $http.get("/admin/users/" + id + "/delete?_token="+CSRF_TOKEN);
+    var request = $http.get("/admin/users/" + id + "/delete");
 
     request
     .success(function(data){
@@ -51,8 +51,6 @@ app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFacto
   };
 
   function newAdminRequest(data){
-    data._token = CSRF_TOKEN;
-
     var request = $http({
                   method: "post",
                   url: "/admin/users/add",

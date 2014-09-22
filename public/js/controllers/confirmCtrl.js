@@ -1,6 +1,6 @@
   //Confirmation Controller
-app.controller('ConfirmCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
-  function($scope, $http, $state, $stateParams, alertsFactory, transformRequestAsFormPost, CSRF_TOKEN) {
+app.controller('ConfirmCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 
+  function($scope, $http, $state, $stateParams, alertsFactory) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 

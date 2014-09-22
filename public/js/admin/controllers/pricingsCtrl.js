@@ -1,6 +1,6 @@
 //Pricing List controller
-app.controller('PricingsCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
-  function($scope, $http, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost) {
+app.controller('PricingsCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost',
+  function($scope, $http, alertsFactory, transformRequestAsFormPost) {
     
     $scope.alerts=alertsFactory.getHandler();
     $scope.pricing_plans = {};
@@ -18,8 +18,6 @@ app.controller('PricingsCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKEN'
 
     $scope.savePlan = function(){
       var data = $scope.new_plan;
-
-      data._token = CSRF_TOKEN;
 
       var request = $http({
                     method: "post",
@@ -51,8 +49,6 @@ app.controller('PricingsCtrl', ['$scope', '$http', 'alertsFactory', 'CSRF_TOKEN'
     $scope.saveRule = function(){
       var data = $scope.new_rule;
       var plan_id = $scope.show_plan.id;
-
-      data._token = CSRF_TOKEN;
 
       var request = $http({
                     method: "post",

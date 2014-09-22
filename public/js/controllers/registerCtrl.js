@@ -1,13 +1,11 @@
 //Registration Controller
-app.controller('RegisterCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
-  function($scope, $http, alertsFactory, transformRequestAsFormPost, CSRF_TOKEN) {
+app.controller('RegisterCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', 
+  function($scope, $http, alertsFactory, transformRequestAsFormPost) {
     
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.data = {
-      _token: CSRF_TOKEN
-    }
+    $scope.data = {};
 
     $scope.agree = false;
 

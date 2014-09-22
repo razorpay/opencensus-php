@@ -1,6 +1,6 @@
 //Admin profile Controller
-app.controller('AdminCtrl', ['$scope', '$http', '$state', 'admin', 'CSRF_TOKEN', '$modal', 'alertsFactory', '$idle', '$keepalive',
-  function($scope, $http, $state, admin, CSRF_TOKEN, $modal, alertsFactory, $idle, $keepalive) {
+app.controller('AdminCtrl', ['$scope', '$http', '$state', 'admin', '$modal', 'alertsFactory', '$idle', '$keepalive',
+  function($scope, $http, $state, admin, $modal, alertsFactory, $idle, $keepalive) {
     
     admin.identity().then(function(data){
       $scope.admin = data;
@@ -92,14 +92,9 @@ app.controller('AdminCtrl', ['$scope', '$http', '$state', 'admin', 'CSRF_TOKEN',
     });
 
     function logoutRequest(){
-      $scope.data = {
-        _token: CSRF_TOKEN
-      }
-
       var request = $http({
           method: "get",
-          url: "/admin/user/logout",
-          data: $scope.data
+          url: "/admin/user/logout"
       });
 
       request
@@ -111,8 +106,6 @@ app.controller('AdminCtrl', ['$scope', '$http', '$state', 'admin', 'CSRF_TOKEN',
     };
 
     function passwordChangeRequest(data) {
-      data._token = CSRF_TOKEN;
-
       var request = $http({
         method: "post",
         url: "/admin/password",

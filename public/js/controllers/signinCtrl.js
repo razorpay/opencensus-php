@@ -1,9 +1,7 @@
   //Signin Controller
-  app.controller('SigninCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 'user', 'transformRequestAsFormPost', 'CSRF_TOKEN', 
-    function($scope, $http, $state, $stateParams, alertsFactory, user, transformRequestAsFormPost, CSRF_TOKEN) {
-      $scope.data = {
-        _token: CSRF_TOKEN
-      }
+  app.controller('SigninCtrl', ['$scope', '$http', '$state', '$stateParams', 'alertsFactory', 'user', 'transformRequestAsFormPost', 
+    function($scope, $http, $state, $stateParams, alertsFactory, user, transformRequestAsFormPost) {
+      $scope.data = {};
 
       //Intialise alerts and scope functions
       $scope.alerts = alertsFactory.getHandler();

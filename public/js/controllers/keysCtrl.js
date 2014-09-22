@@ -1,6 +1,6 @@
 //API keys listing and rolling controller
-app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost', '$modal',
-  function($scope, $http, modeFactory, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost, $modal){
+app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', 'transformRequestAsFormPost', '$modal',
+  function($scope, $http, modeFactory, alertsFactory, transformRequestAsFormPost, $modal){
     $scope.mode = modeFactory.getMode();
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
@@ -13,15 +13,10 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
     fetchKeys();
     
     $scope.generateKey = function(){
-      var data = {
-        _token: CSRF_TOKEN
-      }
-
       var request = $http({
                     method: "post",
                     url: "/" + modeFactory.getMode() + "/key/new",
-                    transformRequest: transformRequestAsFormPost,
-                    data: data
+                    transformRequest: transformRequestAsFormPost
       });
 
       request
@@ -51,7 +46,6 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
       };
 
       var data = {
-        _token: CSRF_TOKEN,
         id: key_id,
         delay_roll: delay_roll
       }
