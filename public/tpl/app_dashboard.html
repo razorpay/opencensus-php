@@ -158,6 +158,9 @@
                   </div>
                 </a>
               </div>
+              <div class="m-b m-l row" ng-show="entity.data.length == 0">
+                No Recent Payments
+              </div>
           </div>
           <div class="col-md-4 b-r b-light no-border-xs" ng-controller="EntityListCtrl" ng-init="generate('refund')">
             <a ui-sref="app.refunds.list" tooltip="See All Refunds" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
@@ -174,6 +177,9 @@
                   </div>
                 </a>
               </div>
+              <div class="m-b m-l row" ng-show="entity.data.length == 0">
+                No Recent Refunds
+              </div>
           </div>
           <div class="col-md-4 b-r b-light no-border-xs" ng-controller="EntityListCtrl" ng-init="generate('settlement')">
             <a ui-sref="app.settlements.list" tooltip="See All Settlements" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
@@ -187,6 +193,9 @@
                 <span class="visible-xs-inline">{{row.id | limitTo:10}}... </span>
                 <span class="pull-right">{{row.created_at*1000 | fromNow}}</span>
               </div>
+            </div>
+            <div class="m-b m-l row" ng-show="entity.data.length == 0">
+              No Recent Settlements
             </div>
           </div>
         </div>
