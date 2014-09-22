@@ -1,10 +1,10 @@
-//Transactions Listing Controller
-app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '$state',
+//Entities Listing Controller
+app.controller('EntityListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '$state',
   function($scope, $http, modeFactory, alertsFactory, $state){
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
-    $scope.transactions = {
+    $scope.entity = {
         data: {},
         id: '',
         count: 0,
@@ -12,18 +12,21 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
         countEnd: 0,
         skip: 0
     };
-
-    generateTable();
     
+    $scope.generate = function(entity){
+      $scope.entity.type = entity;
+      generateTable();
+    }
+
     $scope.next= function() {
       clear('id');
-      $scope.transactions.skip += 10;
+      $scope.entity.skip += 10;
       generateTable();
     }
 
     $scope.prev= function() {
       clear('id');
-      $scope.transactions.skip -= 10;
+      $scope.entity.skip -= 10;
       generateTable();
     }
 
@@ -36,9 +39,9 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
 
     function clear(field){
       if(field === 'id')
-        $scope.transactions.id = '';
+        $scope.entity.id = '';
       if(field === 'skip')
-        $scope.transactions.skip = 0;
+        $scope.entity.skip = 0;
     }
 
     function regenerate(){
@@ -48,35 +51,41 @@ app.controller('TransactionsListCtrl', ['$scope', '$http', 'modeFactory', 'alert
     }
 
     function generateTable() {
+
+      if(!$scope.entity.type){
+        console.log("Error: No Entity Type Sepcified");
+        return;
+      } 
+      
       var query =
         "count=10" +
-        "&skip="+ $scope.transactions.skip;
+        "&skip="+ $scope.entity.skip;
 
-      if($scope.transactions.id === '')
-        var request = $http.get("/" + modeFactory.getMode() +  "/transactions?" + query);
+      if($scope.entity.id === '')
+        var request = $http.get("/" + modeFactory.getMode() +  "/" + $scope.entity.type + "s?" + query);
       else
-        var request = $http.get("/" + modeFactory.getMode() +  "/transactions/" + $scope.transactions.id);
+        var request = $http.get("/" + modeFactory.getMode() +  "/entity/" + $scope.entity.id);
       
       request
       .success(function(data){
         $scope.alerts.resetAlerts();
 
         if(data.success) {
-          $scope.transactions.data = data.data.data;
+          $scope.entity.data = data.data.data;
 
-          $scope.transactions.count = data.data.count;
+          $scope.entity.count = data.data.count;
 
-          $scope.transactions.countStart = $scope.transactions.skip + 1;
+          $scope.entity.countStart = $scope.entity.skip + 1;
 
           if(data.data.count === 0) 
-            $scope.transactions.countEnd = $scope.transactions.countStart;
+            $scope.entity.countEnd = $scope.entity.countStart;
 
           else 
-            $scope.transactions.countEnd = $scope.transactions.countStart + $scope.transactions.count -1;
+            $scope.entity.countEnd = $scope.entity.countStart + $scope.entity.count -1;
 
-          $scope.allowPrev = $scope.transactions.countStart !== 1;
+          $scope.allowPrev = $scope.entity.countStart !== 1;
           
-          $scope.allowNext = $scope.transactions.count >= 10;
+          $scope.allowNext = $scope.entity.count >= 10;
         }
         else {
           angular.forEach(data.errors, function(value, key){
