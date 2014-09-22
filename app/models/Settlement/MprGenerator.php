@@ -8,6 +8,7 @@ use Models\Ledger;
 use Models\Merchant;
 use Models\Transaction;
 use Models\Transaction\Refund;
+use Queue;
 
 class MprGenerator
 {
@@ -27,13 +28,15 @@ class MprGenerator
 
     protected $queue;
 
-    public function __construct($mode)
+    public function __construct($mode = '')
     {
         $this->mode = $mode;
 
         $this->env = \App::environment();
 
         $this->queue = Queue::getFacadeRoot();
+
+        $this->mail = \Mail::getFacadeRoot();
 
         $this->initTimestamps();
     }
@@ -45,8 +48,6 @@ class MprGenerator
             $data = $this->process();
 
             $this->queueMprGenerationMail($data);
-
-            $this->queueMprGenerationSlackNotification($data);
         }
         catch (\Exception $e)
         {
@@ -57,12 +58,16 @@ class MprGenerator
             throw $e;
         }
 
+        $this->queueMprGenerationSlackNotification($data);
+
         return $data['file'];
     }
 
     protected function process()
     {
         $this->checkMode();
+
+        $gateway = 'hdfc';
 
         $txnRepo = new Transaction\Repository;
         $txns = $txnRepo->fetchCapturedForGatewayBetweenTimestamp(
@@ -84,7 +89,7 @@ class MprGenerator
 
         $array = $this->getRelatedEntities($txns);
 
-        list($mprFile, $count) = Gateway::call('generateMpr', $array, 'test');
+        $mprFile = Gateway::call('generateMpr', $array, 'test');
 
         return array('file' => $mprFile, 'count' => $count);
     }
@@ -114,12 +119,14 @@ class MprGenerator
 
     protected function queueMprGenerationMail($data)
     {
-        $func = __NAMESPACE__ . '@sendHdfcMprMail';
+        $func = __CLASS__ . '@sendHdfcMprMail';
 
-        $message = 'Hdfc mpr file: ' . $data['mprFile'] .
-        ' generated on ' . date('F j, Y, g:i a') . PHP_EOL;
+        $message = 'Hdfc mpr file: ' . $data['file'] .
+        ' generated ' . PHP_EOL;
 
         $message .= 'Number of transactions: ' . $data['count'];
+
+        $message .= ' Env: ' . $this->env;
 
         $data['message'] = $message;
         $this->queue->push($func, $data);
@@ -127,13 +134,15 @@ class MprGenerator
 
     protected function queueMprGenerationFailureMail($e)
     {
-        $func = __NAMESPACE__ . '@sendHdfcMprMail';
+        $func = __CLASS__ . '@sendHdfcMprMail';
 
-        $message = 'Failed to generate Hdfc mpr file on ' . date('F j, Y, g:i a') . PHP_EOL;
+        $message = 'Failed to generate Hdfc mpr file' . PHP_EOL;
 
         $message .= ' Exception Message: ' . $e->getMessage();
         $message .= ' Exception Trace: ' . $e->getTraceAsString();
         $message .= ' Exception Class: ' . get_class($e);
+
+        $message .- ' Env: ' . $this->env;
 
         $data['message'] = $message;
 
@@ -159,9 +168,9 @@ class MprGenerator
 
     protected function queueMprGenerationSlackNotification($data)
     {
-        $message = 'Mpr file generated with ' . $data['count'] . ' transactions on ' . date('F j, Y, g:i a');
+        $message = 'Mpr file generated with ' . $data['count'] . ' transactions ';
 
-        $func = __NAMESPACE__ . '@sendSlackNotification';
+        $func = __CLASS__ . '@sendSlackNotification';
 
         $this->queue->push($func, $message);
     }
@@ -171,7 +180,7 @@ class MprGenerator
         $message = 'Failed to generate mpr file. Exception class: ' . get_class($e) .
                    ' Exception message: ' . $e->getMessage();
 
-        $func = __NAMESPACE__ . '@sendSlackNotification';
+        $func = __CLASS__ . '@sendSlackNotification';
 
         $this->queue->push($func, $message);
     }
