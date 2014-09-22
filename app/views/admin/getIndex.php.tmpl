@@ -51,9 +51,6 @@
     <script src="{{asset('js/<!-- @echo DEST -->/pre.js')}}"></script>
     <!-- App -->
     <script src="{{asset('js/<!-- @echo DEST -->/admin.js')}}"></script>
-    <script>
-    angular.module("app").constant("CSRF_TOKEN", '<?php echo csrf_token(); ?>');
-    </script>
     <!-- Lazy loading --> 
 </body>
 </html>
