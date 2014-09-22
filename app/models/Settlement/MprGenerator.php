@@ -25,56 +25,68 @@ class MprGenerator
      */
     public static $toTimestamp = null;
 
+    protected $queue;
+
     public function __construct($mode)
     {
         $this->mode = $mode;
 
         $this->env = \App::environment();
 
+        $this->queue = Queue::getFacadeRoot();
+
         $this->initTimestamps();
     }
 
     public function generateTestMprForToday()
     {
-        $this->checkMode();
-
-        $gateway = 'hdfc';
-
         try
         {
-            $txnRepo = new Transaction\Repository;
-            $txns = $txnRepo->fetchCapturedForGatewayBetweenTimestamp(
-                                self::$fromTimestamp,
-                                self::$toTimestamp,
-                                $gateway);
+            $data = $this->process();
 
-            $rfndRepo = new Refund\Repository;
-            $refunds = $rfndRepo->findBetweenTimestamps(
-                                self::$fromTimestamp,
-                                self::$toTimestamp);
+            $this->queueMprGenerationMail($data);
 
-            if ($txns->count() === 0)
-            {
-                return 'no new transactions! Lets wrap up!';
-            }
-
-            $array = $this->getRelatedEntities($txns);
-
-            $mprFile = Gateway::call('generateMpr', $array, 'test');
-
-            $this->queueMprMail($mprFile);
-
-            return $mprFile;
+            $this->queueMprGenerationSlackNotification($data);
         }
         catch (\Exception $e)
         {
+            $this->queueMprGenerationFailureMail($e);
 
-            // if ($this->env === 'testing')
-            // {
-            //     throw $e;
-            // }
+            $this->queueMprGenerationFailureSlackNotification($e);
+
             throw $e;
         }
+
+        return $data['file'];
+    }
+
+    protected function process()
+    {
+        $this->checkMode();
+
+        $txnRepo = new Transaction\Repository;
+        $txns = $txnRepo->fetchCapturedForGatewayBetweenTimestamp(
+                            self::$fromTimestamp,
+                            self::$toTimestamp,
+                            $gateway);
+
+        $rfndRepo = new Refund\Repository;
+        $refunds = $rfndRepo->findBetweenTimestamps(
+                            self::$fromTimestamp,
+                            self::$toTimestamp);
+
+        $count = $txns->count();
+
+        if ($count === 0)
+        {
+            return array('file' => null, 'count' => 0);
+        }
+
+        $array = $this->getRelatedEntities($txns);
+
+        list($mprFile, $count) = Gateway::call('generateMpr', $array, 'test');
+
+        return array('file' => $mprFile, 'count' => $count);
     }
 
     protected function getRelatedEntities($txns)
@@ -100,9 +112,78 @@ class MprGenerator
         return $array;
     }
 
-    protected function queueMprMail($mprFile)
+    protected function queueMprGenerationMail($data)
     {
-        \Queue::push('Email\SendMail@sendHdfcMprMail', array('mprFile' => $mprFile));
+        $func = __NAMESPACE__ . '@sendHdfcMprMail';
+
+        $message = 'Hdfc mpr file: ' . $data['mprFile'] .
+        ' generated on ' . date('F j, Y, g:i a') . PHP_EOL;
+
+        $message .= 'Number of transactions: ' . $data['count'];
+
+        $data['message'] = $message;
+        $this->queue->push($func, $data);
+    }
+
+    protected function queueMprGenerationFailureMail($e)
+    {
+        $func = __NAMESPACE__ . '@sendHdfcMprMail';
+
+        $message = 'Failed to generate Hdfc mpr file on ' . date('F j, Y, g:i a') . PHP_EOL;
+
+        $message .= ' Exception Message: ' . $e->getMessage();
+        $message .= ' Exception Trace: ' . $e->getTraceAsString();
+        $message .= ' Exception Class: ' . get_class($e);
+
+        $data['message'] = $message;
+
+        $this->queue->push($func, $data);
+    }
+
+    public function sendHdfcMprMail($job, $data)
+    {
+        $job->delete();
+
+        $this->mail->send('hdfc.mpr', $data, function($message) use ($data)
+        {
+            $message->from('hdfc_mpr_generator@mg.razorpay.com', 'hdfcMprGenerator');
+
+            $message->to('hdfc_mpr_test@mg.razorpay.com')->cc('settlement@razorpay.com');
+
+            if (isset($data['file']))
+            {
+                $message->attach($data['file']);
+            }
+        });
+    }
+
+    protected function queueMprGenerationSlackNotification($data)
+    {
+        $message = 'Mpr file generated with ' . $data['count'] . ' transactions on ' . date('F j, Y, g:i a');
+
+        $func = __NAMESPACE__ . '@sendSlackNotification';
+
+        $this->queue->push($func, $message);
+    }
+
+    protected function queueMprGenerationFailureSlackNotification($e)
+    {
+        $message = 'Failed to generate mpr file. Exception class: ' . get_class($e) .
+                   ' Exception message: ' . $e->getMessage();
+
+        $func = __NAMESPACE__ . '@sendSlackNotification';
+
+        $this->queue->push($func, $message);
+    }
+
+    public function sendSlackNotification($job, $message)
+    {
+        $channel = '#settlements';
+        $username = 'settlements';
+
+        $job->delete();
+
+        (new \Services\Slack)->send($message, $channel, $username);
     }
 
     protected function checkMode()
