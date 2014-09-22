@@ -1,15 +1,7 @@
 //Single Payment Details controller
+//Child of TransactionDetailCtrl
 app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal', 'modeFactory', 'alertsFactory', 'CSRF_TOKEN', 'transformRequestAsFormPost',
   function($scope, $http, $stateParams, $modal, modeFactory, alertsFactory, CSRF_TOKEN, transformRequestAsFormPost) {
-    //Intialise alerts and scope functions
-    $scope.alerts = alertsFactory.getHandler();
-
-    $scope.payment = {
-      id: $stateParams.id
-    };
-
-    fetchPayment();
-
     $scope.getStatusClass = function(status) {
       var mapper = {
         open: "bg-light",
@@ -27,7 +19,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
         controller: 'RefundModalCtrl',
         resolve: {
           amount: function () {
-            return $scope.payment.amount - $scope.payment.amount_refunded;
+            return $scope.entity.amount - $scope.entity.amount_refunded;
           }
         }
       });
@@ -48,7 +40,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
         controller: 'CaptureModalCtrl',
         resolve: {
           amount: function () {
-            return $scope.payment.amount;
+            return $scope.entity.amount;
           }
         }
       });
@@ -79,7 +71,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
 
       var request = $http({
                     method: "post",
-                    url: "/" + modeFactory.getMode() + "/payments/"  + $scope.payment.id + "/capture",
+                    url: "/" + modeFactory.getMode() + "/payments/"  + $scope.entity.id + "/capture",
                     transformRequest: transformRequestAsFormPost,
                     data: data
                 });
@@ -87,11 +79,13 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
       request.success(function(data){
         if(data.success){
           $scope.alerts.addAlert('success', "Payment Captured", true);
-          $scope.payment.status = "captured";
-          $scope.payment.amount = captureAmount;
+          $scope.entity.status = "captured";
+          $scope.entity.amount = captureAmount;
         }
         else {
-          $scope.alerts.addAlert('danger', null, true);
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       })
       .error(function(){
@@ -103,7 +97,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
 
       var refundAmount = parseInt(amount);
 
-      var unrefundedAmount = parseInt($scope.payment.amount) - parseInt($scope.payment.amount_refunded);
+      var unrefundedAmount = parseInt($scope.entity.amount) - parseInt($scope.entity.amount_refunded);
 
       if(!refundAmount || refundAmount > unrefundedAmount){
         $scope.alerts.addAlert('danger', 'Refund amount should be an integer and less than amount minus amount refunded.', true);
@@ -117,7 +111,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
 
       var request = $http({
                     method: "post",
-                    url: "/" + modeFactory.getMode() + "/payments/"  + $scope.payment.id + "/refund",
+                    url: "/" + modeFactory.getMode() + "/payments/"  + $scope.entity.id + "/refund",
                     transformRequest: transformRequestAsFormPost,
                     data: data
                 });
@@ -127,14 +121,16 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
           $scope.alerts.addAlert('success', "Payment Refunded", true);
       
           if(refundAmount == unrefundedAmount)
-            $scope.payment.refund_status = 'full';
+            $scope.entity.refund_status = 'full';
           else
-            $scope.payment.refund_status = 'partial';
+            $scope.entity.refund_status = 'partial';
 
-          $scope.payment.amount_refunded = parseInt($scope.payment.amount_refunded) + refundAmount; 
+          $scope.entity.amount_refunded = parseInt($scope.entity.amount_refunded) + refundAmount; 
         }
         else {
-          $scope.alerts.addAlert('danger', null, true);
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       })
       .error(function(){
@@ -149,13 +145,13 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
         return;
       }
 
-      var request = $http.get("/" + modeFactory.getMode() + "/payments/"  + $scope.payment.id + "/refunds");
+      var request = $http.get("/" + modeFactory.getMode() + "/payments/"  + $scope.entity.id + "/refunds");
 
       request.success(function(data){
         $scope.alerts.resetAlerts();
         
         if(data.success){
-          $scope.payment.refunds = data.data;
+          $scope.entity.refunds = data.data;
           $scope.isRefundsCollapsed = false;
         }
         else {
@@ -167,25 +163,6 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
       .error(function(){
         $scope.alerts.addAlert('danger', null, true);
       });
-    };
-
-    function fetchPayment() {  
-      var request = $http.get("/" + modeFactory.getMode() +  "/payments/" + $scope.payment.id);
-
-      request
-      .success(function(data) {
-        if(data.success) {
-          $scope.payment = data.data.data[0];
-        }
-        else {
-          angular.forEach(data.errors, function(error, key) {
-            $scope.alerts.addAlert('danger', error);
-          });      
-        }
-      })
-      .error(function() {
-        $scope.alerts.addAlert('danger', null, true);
-      }); 
     };
 }])
 //Capture Modal Box Controller
