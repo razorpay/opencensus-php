@@ -50,14 +50,17 @@ module.exports = function(grunt){
 											],
 					'public/js/dev/merchant.js': [
 													'public/js/app.js',
+													'public/js/jq-config.js',
 													'public/js/services.js',
 													'public/js/controllers.js',
 													'public/js/controllers/*.js',
 													'public/js/filters.js',
-													'public/js/directives.js'
+													'public/js/directives.js',
+													'public/js/libs/moment.min.js'
 												],
 					'public/js/dev/admin.js': [
 													'public/js/admin/app.js',
+													'public/js/jq-config.js',
 													'public/js/services.js',
 													'public/js/admin/controllers.js',
 													'public/js/admin/controllers/*.js',
@@ -108,14 +111,17 @@ module.exports = function(grunt){
 											],
 					'public/js/prod/merchant.js': [
 													'public/js/app.js',
+													'public/js/jq-config.js',
 													'public/js/services.js',
 													'public/js/controllers.js',
 													'public/js/controllers/*.js',
 													'public/js/filters.js',
-													'public/js/directives.js'
+													'public/js/directives.js',
+													'public/js/libs/moment.min.js'
 												],
 					'public/js/prod/admin.js': [
 													'public/js/admin/app.js',
+													'public/js/jq-config.js',
 													'public/js/services.js',
 													'public/js/admin/controllers.js',
 													'public/js/admin/controllers/*.js',
@@ -129,11 +135,11 @@ module.exports = function(grunt){
 		preprocess: {
 			admin: {
 				src: 'app/views/admin/getIndex.php.tmpl',
-				dest: 'app/views/admin/getIndexGenerated.php'
+				dest: 'app/views/admin/getIndexGenerated.blade.php'
 			},
 			merchant: {
 				src: 'app/views/merchant/getIndex.php.tmpl',
-				dest: 'app/views/merchant/getIndexGenerated.php'
+				dest: 'app/views/merchant/getIndexGenerated.blade.php'
 			}
 		},
 
@@ -145,11 +151,11 @@ module.exports = function(grunt){
 			},
 			development: {
 				src: ['public/css/dev/style.css','public/js/dev/pre.js','public/js/dev/merchant.js','public/js/dev/admin.js'],
-				dest: ['app/views/admin/getIndexGenerated.php', 'app/views/merchant/getIndexGenerated.php']
+				dest: ['app/views/admin/getIndexGenerated.blade.php', 'app/views/merchant/getIndexGenerated.blade.php']
 			},
 			production: {
 				src: ['public/css/prod/style.css','public/js/prod/pre.js','public/js/prod/merchant.js','public/js/prod/admin.js'],
-				dest: ['app/views/admin/getIndexGenerated.php', 'app/views/merchant/getIndexGenerated.php']
+				dest: ['app/views/admin/getIndexGenerated.blade.php', 'app/views/merchant/getIndexGenerated.blade.php']
 			}
 		},
 
