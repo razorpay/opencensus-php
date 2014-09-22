@@ -21,6 +21,8 @@ class Slack
 
     public function __construct()
     {
+        $this->env = \App::environment();
+
         $this->initSlackConfig();
 
         $this->initInstanceData();
@@ -51,16 +53,7 @@ class Slack
      */
     public function send($message, $channel, $username)
     {
-        $message .= ' Env: ' . \App::environment();
-
-        $cloud = ($this->cloud) ? 'true' : 'false';
-
-        $message .= ' Cloud: ' .  $cloud;
-
-        if ($this->cloud)
-        {
-            $message .= ' Instance Id: ' . $this->instanceId;
-        }
+        $message .= $this->getGenericMessage();
 
         $payload = array(
             'text' => $message,
@@ -73,13 +66,33 @@ class Slack
 
         if ($this->pretend === false)
         {
-            $response = Requests::post($url, array(), $content);
-
-            if ($response->status_code !== 200)
-            {
-                throw new Exception\LogicException(
-                    'Posting to slack failed with error message: ' . $response->body);
-            }
+            $this->postRequest($url, $content);
         }
+    }
+
+    protected function postRequest($url, $content)
+    {
+        $response = Requests::post($url, array(), $content);
+
+        if ($response->status_code !== 200)
+        {
+            throw new Exception\LogicException(
+                'Posting to slack failed with error message: ' . $response->body);
+        }
+    }
+
+    protected function getGenericMessage()
+    {
+        $message = ' Env: ' . $this->env . PHP_EOL;
+
+        $cloud = ($this->cloud) ? 'true' : 'false';
+        $message .= ' Cloud: ' .  $cloud . ', ';
+
+        if ($this->cloud)
+        {
+            $message .= ' Instance Id: ' . $this->instanceId . PHP_EOL;
+        }
+
+        return $message;
     }
 }

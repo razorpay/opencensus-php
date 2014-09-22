@@ -3,6 +3,7 @@
 namespace Models\Settlement;
 
 use Carbon\Carbon;
+use EE\Exception;
 use Models\Gateway;
 use Models\Ledger;
 use Models\Merchant;
@@ -177,8 +178,10 @@ class MprGenerator
 
     protected function queueMprGenerationFailureSlackNotification($e)
     {
-        $message = 'Failed to generate mpr file. Exception class: ' . get_class($e) .
-                   ' Exception message: ' . $e->getMessage();
+        $message = 'Failed to generate mpr file. ' . PHP_EOL;
+
+        $message .= 'Exception class: ' . get_class($e) . ', ' .
+                    'Exception message: ' . $e->getMessage();
 
         $func = __CLASS__ . '@sendSlackNotification';
 
