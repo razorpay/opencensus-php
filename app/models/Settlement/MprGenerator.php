@@ -38,12 +38,12 @@ class MprGenerator
         $this->queue = Queue::getFacadeRoot();
 
         $this->mail = \Mail::getFacadeRoot();
-
-        $this->initTimestamps();
     }
 
-    public function generateTestMprForToday()
+    public function generateTestMpr($input)
     {
+        $this->initTimestamps($input);
+
         try
         {
             $data = $this->process();
@@ -55,8 +55,6 @@ class MprGenerator
             $this->queueMprGenerationFailureMail($e);
 
             (new SlackNotification)->queueOperationFailure('mpr_generation', $e);
-
-            $this->queueMprGenerationFailureSlackNotification($e);
 
             throw $e;
         }
@@ -122,6 +120,9 @@ class MprGenerator
 
     protected function queueMprGenerationMail($data)
     {
+        if ($data['count'] === 0)
+            return;
+
         $func = __CLASS__ . '@sendHdfcMprMail';
 
         $message = 'Hdfc mpr file: ' . $data['file'] .
@@ -132,6 +133,9 @@ class MprGenerator
         $message .= ' Env: ' . $this->env;
 
         $data['message'] = $message;
+        $data['env'] = $this->env;
+        $data['mode'] = $this->mode;
+
         $this->queue->push($func, $data);
     }
 
@@ -158,9 +162,11 @@ class MprGenerator
 
         $this->mail->send('hdfc.mpr', $data, function($message) use ($data)
         {
+            $email = 'hdfc_mpr_' . $data['env'] . '_' . $data['mode'] . '@mg.razorpay.com';
+
             $message->from('hdfc_mpr_generator@mg.razorpay.com', 'hdfcMprGenerator');
 
-            $message->to('hdfc_mpr_test@mg.razorpay.com')->cc('settlement@razorpay.com');
+            $message->to($email)->cc('settlement@razorpay.com');
 
             if (isset($data['file']))
             {
@@ -177,8 +183,15 @@ class MprGenerator
         }
     }
 
-    protected function initTimestamps()
+    protected function initTimestamps($input)
     {
+        if ((isset($input['today'])) and
+            ($input['today'] === '1'))
+        {
+            self::setTodayTimestamps();
+            return;
+        }
+
         if (self::$fromTimestamp === null)
         {
             // Get the timestamp on T-1 day 12 am for IST

@@ -3,19 +3,71 @@
 namespace Models\Settlement;
 
 use Excel;
+use EE\Exception;
 
 class MprParser
 {
     protected static $headings = array();
 
-    public static function parseMprFile($mprFile)
+    public function __construct()
     {
-        $data = self::getDataFromMprFile($mprFile);
+        $app = \App::getFacadeRoot();
 
-        return self::parseMprFileDataIntoAssocArray($data);
+        $this->mode = $app['rzp.mode'];
+        $this->env = $app->environment();
     }
 
-    protected static function getDataFromMprFile($mprFile)
+    public function process($input)
+    {
+        $this->checkInput($input);
+
+        $mprFile = $input['attachment-1'];
+
+        return $this->parseMprFile($mprFile);
+    }
+
+    protected function checkInput($input)
+    {
+        $recipient = 'hdfc_mpr_' . $this->env . '_' . $this->mode . '@mg.razorpay.com';
+
+        if ((isset($input['recipient']) === false) or
+            ($input['recipient'] !== $recipient))
+        {
+            $recipient = (isset($input['recipient'])) ? $input['recipient'] : 'unset';
+
+            $msg = 'Email recipient does not match with env and mode. ' .
+                   'Env: '. $this->env . ' Mode: ' . $this->mode .
+                   'Recipient: ' . $recipient;
+
+            throw new Exception\LogicException($msg);
+        }
+
+        if (isset($input['attachment-count']) === false)
+        {
+            throw new Exception\LogicException('attachment-count not set');
+        }
+
+        $count = $input['attachment-count'];
+        if ($count !== '1')
+        {
+            throw new Exception\LogicException(
+                'attachment-count should be exactly one. Count: ' . $count);
+        }
+
+        if (isset($input['attachment-1']) === false)
+        {
+            throw new Exception\LogicException('attachment-1 not provided. Fishy!');
+        }
+    }
+
+    public function parseMprFile($mprFile)
+    {
+        $data = $this->getDataFromMprFile($mprFile);
+
+        return $this->parseMprFileDataIntoAssocArray($data);
+    }
+
+    protected function getDataFromMprFile($mprFile)
     {
         $filePath = $mprFile->getRealPath();
 
@@ -40,7 +92,7 @@ class MprParser
         return $data;
     }
 
-    protected static function parseMprFileDataIntoAssocArray($data)
+    protected function parseMprFileDataIntoAssocArray($data)
     {
         $assocArray = array();
 

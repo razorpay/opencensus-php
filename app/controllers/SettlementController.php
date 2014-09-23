@@ -18,7 +18,9 @@ class SettlementController extends BaseController
 
     public function postGatewayMprGenerate()
     {
-        $data = (new Settlement\Service)->gatewayMprGenerate();
+        $input = Input::all();
+
+        $data = (new Settlement\Service)->gatewayMprGenerate($input);
 
         return ApiResponse::json($data);
     }

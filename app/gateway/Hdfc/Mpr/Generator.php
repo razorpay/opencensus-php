@@ -122,6 +122,12 @@ class Generator
         $maskedCardNumber = $input['card']['iin'] . 'xxxxxx' .
                             $input['card']['last4'];
 
+        $capturedAt = $input['transaction']['captured_at'];
+        $capturedAt = (new Carbon('Asia/Kolkata'))->setTimestamp($capturedAt);
+
+        $transactionDate = $capturedAt->format('d-M-y');
+        $setlDate = $capturedAt->addDay(1)->format('d-M-y');
+
         $attributes = array(
             'merchant_code'     => $input['terminal']['gateway_merchant_id'],
             'terminal_number'   => $input['terminal']['gateway_terminal_id'],
@@ -129,8 +135,8 @@ class Generator
             'bat_nbr'           => 1,
             'card_type'         => $input['card']['network'] . ' ' . 'LOCAL',
             'card_number'       => $maskedCardNumber,
-            'trans_date'        => (new Carbon('now'))->format('d-M-y'),
-            'settle_date'       => (new Carbon('now'))->format('d-M-y'),
+            'trans_date'        => $transactionDate,
+            'settle_date'       => $setlDate,
             'approv_code'       => '000000',
             'intl_amt'          => 0,
             'domestic_amt'      => $amount,

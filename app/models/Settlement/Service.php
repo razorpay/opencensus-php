@@ -10,11 +10,13 @@ class Service extends Base\Service
 {
     public function gatewayMprReconcile($input)
     {
-        $data = MprParser::parseMprFile($input['mpr']);
+        \Log::info($input);
 
-        $reconciler = new Reconciler($data, $input['gateway']);
+        $data = (new MprParser)->process($input);
 
-        $lgrs = $reconciler->reconcile($data, $input['gateway']);
+        $reconciler = new Reconciler;
+
+        $lgrs = $reconciler->reconcile($data, 'hdfc');
 
         return $lgrs->toArrayPublic();
     }
@@ -28,11 +30,11 @@ class Service extends Base\Service
         return $setlements->toArray();
     }
 
-    public function gatewayMprGenerate()
+    public function gatewayMprGenerate($input)
     {
         $generator = new MprGenerator($this->mode);
 
-        return $generator->generateTestMprForToday();
+        return $generator->generateTestMpr($input);
     }
 
     public function getSettlement($id)

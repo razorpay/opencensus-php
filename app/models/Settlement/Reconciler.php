@@ -34,7 +34,7 @@ class Reconciler
     protected $transaction;
     protected $card;
 
-    public function __construct($mprData, $gateway)
+    public function __construct()
     {
         $this->reconciledAt = time();
 

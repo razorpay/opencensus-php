@@ -56,7 +56,11 @@ class HdfcGatewayMprTest extends TestCase
 
         $mprUploadedFile = new UploadedFile($mprFile, $mprFile, $mimeType, filesize($mprFile), null, true);
 
-        $this->testData[__FUNCTION__]['request']['files']['mpr'] = $mprUploadedFile;
+        $request = &$this->testData[__FUNCTION__]['request'];
+        $request['content']['recipient'] = 'hdfc_mpr_testing_test@mg.razorpay.com';
+        $request['content']['attachment-count'] = '1';
+
+        $request['files']['attachment-1'] = $mprUploadedFile;
 
         $this->setupAppBasicAuthParams();
 
