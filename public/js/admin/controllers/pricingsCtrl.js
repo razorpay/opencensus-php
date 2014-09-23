@@ -62,6 +62,7 @@ app.controller('PricingsCtrl', ['$scope', '$http', 'alertsFactory', 'transformRe
         if(data.success) {
           $scope.alerts.addAlert('success', 'Rule added successfully', true);
           $scope.show_plan.rules.push(data.data);
+          $scope.new_rule = {};
         }
         else {
           $scope.alerts.resetAlerts();
