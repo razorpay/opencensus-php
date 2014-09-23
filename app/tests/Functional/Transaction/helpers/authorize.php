@@ -177,27 +177,6 @@ return [
         ],
     ],
 
-    'testTxnCardAsNull' => [
-        'request' => [
-            'content' => [
-                'card' => null,
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'card',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_CARD_NOT_PROVIDED,
-        ],
-    ],
-
     'testAmountBelowMin' => [
         'request' => [
             'content' => [
@@ -365,20 +344,6 @@ return [
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_SHOULD_BE_ARRAY,
-        ],
-    ],
-
-    'testUdfNull' => [
-        'request' => [
-            'content' => [
-            ],
-        ],
-        'response' => [
-            'content' => [
-            'status' => 'authorized',
-            'udf' => array(),
-            ],
-            'status_code' => 200,
         ],
     ],
 

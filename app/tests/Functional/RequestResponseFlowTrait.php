@@ -102,6 +102,10 @@ trait RequestResponseFlowTrait
         {
             $request['content'] = array();
         }
+        else
+        {
+            $this->convertContentToString($request['content']);
+        }
 
         if (isset($request['server']) === false)
         {
@@ -172,5 +176,25 @@ trait RequestResponseFlowTrait
         $request['url'] = $url;
 
         $request['method'] = $method;
+    }
+
+    protected function convertContentToString(& $content)
+    {
+        if (is_array($content) === false)
+        {
+            return;
+        }
+
+        foreach ($content as $key => $value)
+        {
+            if (is_array($value) === true)
+            {
+                $this->convertContentToString($value);
+            }
+            else
+            {
+                $content[$key] = (string) $value;
+            }
+        }
     }
 }

@@ -71,11 +71,6 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
-    public function testTxnCardAsNull()
-    {
-        $this->startTest();
-    }
-
     public function testTxnCardAsString()
     {
         $this->startTest();
@@ -131,13 +126,6 @@ class AuthorizeTest extends TestCase
     public function testUdfMissing()
     {
         unset($this->txn['udf']);
-
-        $this->startTest();
-    }
-
-    public function testUdfNull()
-    {
-        $this->txn['udf'] = null;
 
         $this->startTest();
     }
