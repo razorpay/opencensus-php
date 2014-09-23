@@ -15,7 +15,8 @@ use Http\AppResponse;
 
 App::before(function($request)
 {
-	//
+    //Set Cookie for use by angular (Setting in after filter fails selenium tests, hence queuing in before filter)
+	Cookie::queue('XSRF-TOKEN', csrf_token(), 0, '/', null, false, false);
 });
 
 
@@ -26,8 +27,6 @@ App::after(function($request, $response)
 	if($response instanceof \Illuminate\Http\JsonResponse) {
         $json = ")]}',\n" . $response->getContent();
     
-        //Set XSRF_TOKEN Cookie for use by angular. Using native PHP function since laravel encrypts all cookies
-        setcookie('XSRF-TOKEN', csrf_token(), 0,'/');
         return $response->setContent($json);
     }
 });
@@ -103,7 +102,7 @@ Route::filter('guest_admin', function()
 
 Route::filter('csrf', function()
 {
-//Angular sends X-XSRF-TOKEN header with all request because XSRF-TOKEN cookie is set in after filter   
-	if (Session::token() !== Request::header('X-XSRF-TOKEN'))
+    //Angular sends X-XSRF-TOKEN header with all request because XSRF-TOKEN cookie is set in after filter   
+	if (Session::token() !== Crypt::decrypt(Request::header('X-XSRF-TOKEN')))
 		return AppResponse::jsonResponse(array('Invalid session. Please refresh the page and try again.'));
 });

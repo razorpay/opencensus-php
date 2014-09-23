@@ -29,9 +29,9 @@ return array(
 	|
 	*/
 
-	'lifetime' => 0,
+	'lifetime' => 60*60*4,
 
-	'expire_on_close' => true,
+	'expire_on_close' => false,
 
 	/*
 	|--------------------------------------------------------------------------
