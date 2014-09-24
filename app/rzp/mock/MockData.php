@@ -70,9 +70,9 @@ class MockData {
                 'created_at'            => time(),
                 'updated_at'            => time()
             ),
-            'transaction'       => array(
-                'id'                  => "txn-13946931b04cd00f45057372",
-                'entity'              => "transaction",
+            'payment'       => array(
+                'id'                  => "pay-13946931b04cd00f45057372",
+                'entity'              => "payment",
                 'amount'              => "499",
                 'currency'            => "INR",
                 'status'              => "authorized",
@@ -91,9 +91,24 @@ class MockData {
                 'entity'            => "refund",
                 'amount'            => "100",
                 'currency'          => "INR",
-                'transaction_id'    => "txn-13946931b04cd00f45057372",
+                'payment_id'        => "pay-13946931b04cd00f45057372",
                 'created_at'        => time()
-            )
+            ),
+            'settlement'      => array(
+                'id'                => 'setl-139469414eee64deb0d1c0c5',
+                'amount'            => '399',
+                'status'            => ''
+            ),
+            'transaction'      => array(
+                'id'                =>  'txn-139469abc12364deb0d1c0c5',
+                'entity_id'         =>  'pay-13946931b04cd00f45057372',    
+                'entity_type'       =>  'payment',        
+                'amount'            =>  '499',    
+                'currency'          =>  'INR',
+                'debit'             =>  '0',
+                'credit'            =>  '400',    
+                'fee'               =>  '99' 
+            ),
         );
     }  
 }

@@ -2,27 +2,27 @@
 
 namespace RZP\Mock;
 
-class Transaction extends MockEntity
+class Payment extends MockEntity
 {
     /**
-     * @param $id Transaction id
+     * @param $id Payment id
      */
     public function fetch($id)
     {
-        $this->mock(self::$mockData['transaction'], array('id' => $id));
+        $this->mock(self::$mockData['payment'], array('id' => $id));
 
         return $this;
     }
 
     public function all($options = array())
     {
-        $this->mockCollection(self::$mockData['transaction']);
+        $this->mockCollection(self::$mockData['payment']);
 
         return $this;
     }
 
     /**
-     * @param $id Transaction id
+     * @param $id Payment id
      */
     public function refund($attributes = array())
     {
@@ -32,11 +32,11 @@ class Transaction extends MockEntity
     }
 
     /**
-     * @param $id Transaction id
+     * @param $id Payment id
      */
     public function capture($attributes = array())
     {
-        $this->mock(self::$mockData['transaction'], array('status' => "captured"));
+        $this->mock(self::$mockData['payment'], array('status' => "captured"));
 
         return $this;
     }
@@ -45,7 +45,7 @@ class Transaction extends MockEntity
     {
         $entity = new Refund();
 
-        $entity->transaction_id = $this->id;
+        $entity->payment_id = $this->id;
 
         return $entity;
     }
