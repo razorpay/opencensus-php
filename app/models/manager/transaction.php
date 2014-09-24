@@ -13,7 +13,8 @@ class Transaction extends Manager
         'id'                =>  'id',
         'entity_id'         =>  'entity_id',    
         'entity_type'       =>  'entity_type',        
-        'amount'            =>  'amount',    
+        'amount'            =>  'amount',
+        'currency'          =>  'currency',    
         'debit'             =>  'debit',
         'credit'            =>  'credit',    
         'fee'               =>  'fee' 
