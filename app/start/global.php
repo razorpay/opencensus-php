@@ -49,6 +49,14 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 App::error(function(Exception $exception, $code)
 {
 	Log::error($exception);
+
+    if(Config::get('app.debug') !== true)
+    {
+        if($code == '404')
+            return Redirect::to('/#/404');   
+        else
+            return Response::json(array('success' => false, 'errors' => ['Internal Server Error']));
+    }
 });
 
 /*
