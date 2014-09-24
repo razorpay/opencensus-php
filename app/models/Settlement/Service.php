@@ -4,7 +4,7 @@ namespace Models\Settlement;
 
 use Models\Base;
 use Models\Gateway;
-use Models\Ledger;
+use Models\Settlement;
 
 class Service extends Base\Service
 {

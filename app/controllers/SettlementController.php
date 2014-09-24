@@ -36,7 +36,7 @@ class SettlementController extends BaseController
 
     public function getLedgerRecord($id)
     {
-        $data = (new Ledger\Service)->getLedgerRecord($id);
+        $data = (new Ledger\Service)->getLedgerRecordById($id);
 
         return ApiResponse::json($data);
     }
