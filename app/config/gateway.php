@@ -9,7 +9,7 @@ return array(
     |
     */
 
-    'default' => 'mockhdfc',
+    'default' => 'hdfc',
 
     'available' => array(
         'mock',
