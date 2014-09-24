@@ -39,7 +39,7 @@
         <tbody>
           <tr ng-repeat="row in entity.data">
             <td><a ui-sref="app.refunds.detail({id:row.id})">{{row.id}}</a></td>
-            <td><a ui-sref="app.payments.detail({id:row.transaction_id})">{{row.transaction_id}}</a></td>
+            <td><a ui-sref="app.payments.detail({id:row.payment_id})">{{row.payment_id}}</a></td>
             <td>{{row.currency}}
             <td>{{row.amount/100 | currency:""}}</td>
             <td>{{row.created_at*1000 | fromNow}}</td>          
