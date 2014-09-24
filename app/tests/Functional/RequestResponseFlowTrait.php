@@ -8,7 +8,7 @@ use Requests;
 trait RequestResponseFlowTrait
 {
     /**
-     * Auths a transaction & tests it is corrrectly done
+     * Auths a payment & tests it is corrrectly done
      */
     public function runRequestResponseFlow($data)
     {

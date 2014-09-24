@@ -9,19 +9,19 @@ use Gateway\Hdfc\Mpr;
 use Models\Card;
 use Models\Ledger;
 use Models\Terminal;
-use Models\Transaction;
+use Models\Payment;
 use Trace\Trace;
 
 class Reconciler
 {
-    public static function getTransactionId($input)
+    public static function getPaymentId($input)
     {
         if (isset($input['merchant_trackid']))
         {
             return $input['merchant_trackid'];
         }
 
-        throw new Exception\LogicException('Hdfc mpr: Transaction id not found');
+        throw new Exception\LogicException('Hdfc mpr: Payment id not found');
     }
 
     public function reconcile($input, $ledgerId, $entities)
@@ -30,11 +30,11 @@ class Reconciler
         $attributes = $this->getTranslatedAttributes($input);
 
         $repo = new Hdfc\Repository;
-        $hdfcTxn = $repo->findOrFail($attributes['gateway_transaction_id']);
+        $hdfcTxn = $repo->findOrFail($attributes['gateway_payment_id']);
 
-        if ((string)$attributes['gateway_transaction_id'] !== $hdfcTxn['gateway_transaction_id'])
+        if ((string)$attributes['gateway_payment_id'] !== $hdfcTxn['gateway_payment_id'])
         {
-            throw new Exception\LogicException('Hdfc mpr: Gateway transaction id does not match');
+            throw new Exception\LogicException('Hdfc mpr: Gateway payment id does not match');
         }
 
         // Create Hdfc mpr record
@@ -56,12 +56,12 @@ class Reconciler
 
     protected function getTranslatedAttributes($row)
     {
-        // Remove 'txn-' from beginning of transaction_id
+        // Remove 'txn-' from beginning of payment_id
         $row['merchant_trackid'] = substr($row['merchant_trackid'], 4);
 
         $attributes = array(
-            'transaction_id'            => $row['merchant_trackid'],
-            'gateway_transaction_id'    => $row['tran_id'],
+            'payment_id'            => $row['merchant_trackid'],
+            'gateway_payment_id'    => $row['tran_id'],
             'gateway_merchant_id'       => $row['merchant_code'],
             'gateway_terminal_id'       => $row['terminal_number'],
             'card_network'              => $row['card_type'],
@@ -94,13 +94,13 @@ class Reconciler
 
         $this->verifyCaptureTime(
             $mpr['capture_date'],
-            $entities['transaction']['captured_at']);
+            $entities['payment']['captured_at']);
 
         $this->verifySettlementDate($mpr['settlement_date']);
 
-        $this->verifyTransactionAttributes(
+        $this->verifyPaymentAttributes(
             $mpr,
-            $entities['transaction']);
+            $entities['payment']);
 
         $card = $entities['card'];
 
@@ -129,20 +129,20 @@ class Reconciler
         return $apiData;
     }
 
-    protected function verifyTransactionAttributes($mpr, $transaction)
+    protected function verifyPaymentAttributes($mpr, $payment)
     {
-        $txnId = $transaction[Transaction\Entity::ID];
+        $txnId = $payment[Payment\Entity::ID];
 
-        if ($mpr['transaction_id'] !== $txnId)
+        if ($mpr['payment_id'] !== $txnId)
         {
             throw new Exception\LogicException(
-                'Hdfc mpr: Transaction id does not match');
+                'Hdfc mpr: Payment id does not match');
         }
 
-        if ((string) $mpr->getAmount() !== $transaction['amount'])
+        if ((string) $mpr->getAmount() !== $payment['amount'])
         {
             throw new Exception\LogicException(
-                'Hdfc mpr: Transaction amount does not match');
+                'Hdfc mpr: Payment amount does not match');
         }
     }
 

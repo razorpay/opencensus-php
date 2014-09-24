@@ -3,7 +3,7 @@
 namespace Models\Settlement;
 
 use Models\Base;
-use Models\Transaction;
+use Models\Payment;
 
 class Entity extends Base\PublicEntity
 {

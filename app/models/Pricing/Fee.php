@@ -56,7 +56,7 @@ class Fee
         else
         {
             throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the transaction');
+                'Failed to find a valid pricing rule for the payment');
         }
 
         $percent = $rule->getAttribute(Pricing\Entity::PERCENT_RATE);

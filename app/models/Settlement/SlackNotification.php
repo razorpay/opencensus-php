@@ -14,8 +14,8 @@ class SlackNotification
         'settlements');
 
     protected $messages = array(
-        'mpr_generation' => 'Mpr file generated. Transactions count: ',
-        'mpr_reconciliation' => 'Mpr file reconciled. Transactions count: ',
+        'mpr_generation' => 'Mpr file generated. Payments count: ',
+        'mpr_reconciliation' => 'Mpr file reconciled. Payments count: ',
         'settlements' => 'Settlements sent out. Merchants count: ');
 
     public function __construct()

@@ -1,0 +1,52 @@
+<?php
+
+namespace Models\Payment;
+
+use EE\Exception;
+use Models\Base;
+use Models\Payment;
+
+class Repository extends Base\Repository
+{
+    use Base\RepositoryFetch;
+
+    protected $entity = 'Payment';
+
+    public function findByStatusBetweenTimestamps($status, $from, $to)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Payment\Entity::STATUS, '=', $status)
+                    ->where(Common::CREATED_AT, '>=', $from)
+                    ->where(Common::CREATED_AT, '<=', $to)
+                    ->get();
+    }
+
+    public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
+    {
+        $repo = $this->repo;
+
+        return $repo::whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
+                    ->where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
+                    ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    public function reloadAndLockForUpdate($txn)
+    {
+        $repo = $this->repo;
+
+        $reloadedEntity = $repo::lockForUpdate()->findOrFail($txn->getKey());
+
+        $attributes = $reloadedEntity->getAttributes();
+
+        $txn->setRawAttributes($attributes, true);
+    }
+
+    public function lockForUpdate($id)
+    {
+        $repo = $this->repo;
+
+        $repo::lockForUpdate()->findOrFail($id);
+    }
+}

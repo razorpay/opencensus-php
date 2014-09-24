@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 
     protected $entity = 'Ledger';
 
-    public function fetchTransactionsExpectedToSettle($timestamp)
+    public function fetchPaymentsExpectedToSettle($timestamp)
     {
         $repo = $this->repo;
 

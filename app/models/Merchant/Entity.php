@@ -52,10 +52,10 @@ class Entity extends Base\UniqueIdEntity
             'Models\Key\Entity');
     }
 
-    public function transactions()
+    public function payments()
     {
         return $this->hasMany(
-            'Models\Transaction\Entity');
+            'Models\Payment\Entity');
     }
 
     public function balance()

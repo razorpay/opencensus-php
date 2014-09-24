@@ -5,7 +5,7 @@ namespace Models\Settlement;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Illuminate\Database\Eloquent\Collection;
-use Models\Transaction;
+use Models\Payment;
 
 class Settler
 {
@@ -39,11 +39,11 @@ class Settler
     {
         $t = self::$settlementTimestamp;
 
-        $lgrs = $lgrRepo->fetchTransactionsExpectedToSettle($t);
+        $lgrs = $lgrRepo->fetchPaymentsExpectedToSettle($t);
 
         $settled = true;
 
-        $this->setlRepo->beginTransaction();
+        $this->setlRepo->beginPayment();
 
         try
         {

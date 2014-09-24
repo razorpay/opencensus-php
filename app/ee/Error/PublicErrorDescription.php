@@ -5,7 +5,7 @@ namespace EE\Error;
 class PublicErrorDescription
 {
     const GATEWAY_ERROR =
-        'There is a problem with the gateway causing the transaction to fail';
+        'There is a problem with the gateway causing the payment to fail';
 
     const SERVER_ERROR =
         'The server encountered an error. The incident has been reported to admins';
@@ -28,29 +28,29 @@ class PublicErrorDescription
     const CARD_ERROR_NOT_SUPPORTED =
         'Card network not currently supported';
 
-    const BAD_REQUEST_TRANSACTION_ALREADY_PROCCESSED =
-        'The transaction has already been processed. Did you press the back button in browser?';
+    const BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED =
+        'The payment has already been processed. Did you press the back button in browser?';
 
-    const BAD_REQUEST_TRANSACTION_ALREADY_CAPTURED =
-        'This transaction has already been captured';
+    const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED =
+        'This payment has already been captured';
 
-    const BAD_REQUEST_TRANSACTION_STATUS_NOT_CAPTURED =
-        'The transaction status should be captured for refund action to be taken';
+    const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED =
+        'The payment status should be captured for refund action to be taken';
 
-    const BAD_REQUEST_TRANSACTION_FULLY_REFUNDED =
-        'The transaction has been fully refunded already';
+    const BAD_REQUEST_PAYMENT_FULLY_REFUNDED =
+        'The payment has been fully refunded already';
 
-    const BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_GREATER_THAN_CAPTURED =
+    const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED =
         'The refund amount proivded is greater than amount captured';
 
-    const BAD_REQUEST_TRANSACTION_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED =
+    const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED =
         'The refund amount provided is greater than the unrefunded amount';
 
-    const BAD_REQUEST_TRANSACTION_CARD_IS_NOT_ARRAY =
+    const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY =
         'Card provided is not a dictionary';
 
-    const BAD_REQUEST_TRANSACTION_CARD_NOT_PROVIDED =
-        'Transaction Exception: Card not provided';
+    const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED =
+        'Payment Exception: Card not provided';
 
     const BAD_REQUEST_INVALID_ID =
         'The id provided does not exist';
@@ -67,8 +67,8 @@ class PublicErrorDescription
     const BAD_REQUEST_URL_NOT_FOUND =
         'The requested URL was not found on the server.';
 
-    const BAD_REQUEST_TRANSACTION_CAPTURE_ONLY_AUTHORIZED =
-        'Only transactions which have been authorized and not yet captured can be captured';
+    const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED =
+        'Only payments which have been authorized and not yet captured can be captured';
 
     const BAD_REQUEST_UDF_TOO_MANY_KEYS =
         'Number of fields in udf should be less than or equal to 15';

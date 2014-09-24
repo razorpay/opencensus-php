@@ -1,6 +1,6 @@
 <!doctype html>
 <head>
-    <title>Razorpay - Transaction in progress</title>
+    <title>Razorpay - Payment in progress</title>
 </head>
 <body>
 <script>
@@ -92,6 +92,6 @@ var XD = function() {
 var data = {{json_encode($data);}};
 XD.postMessage(data,'*',window.parent);
 </script>
-Your transaction is currently in progress. Please wait.
+Your payment is currently in progress. Please wait.
 </body>
 </html>

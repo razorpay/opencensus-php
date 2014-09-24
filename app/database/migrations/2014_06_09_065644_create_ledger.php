@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 use Models\Ledger\Entity as Ledger;
 use Models\Merchant;
-use Models\Transaction;
+use Models\Payment;
 
 class CreateLedger  extends Migration
 {
@@ -79,9 +79,9 @@ class CreateLedger  extends Migration
                   ->on_delete('restrict');
         });
 
-        Schema::table(Table::TRANSACTION, function(Blueprint $table)
+        Schema::table(Table::PAYMENT, function(Blueprint $table)
         {
-            $table->foreign(Transaction\Entity::LEDGER_ID)
+            $table->foreign(Payment\Entity::LEDGER_ID)
                   ->references(Ledger::ID)
                   ->on(Table::LEDGER)
                   ->on_delete('restrict');
@@ -101,9 +101,9 @@ class CreateLedger  extends Migration
                 TABLE::LEDGER.'_'.Ledger::MERCHANT_ID.'_foreign');
         });
 
-        Schema::table(Table::TRANSACTION, function($table)
+        Schema::table(Table::PAYMENT, function($table)
         {
-            $table->dropForeign(Table::TRANSACTION.'_'.Transaction\Entity::LEDGER_ID.'_foreign');
+            $table->dropForeign(Table::PAYMENT.'_'.Payment\Entity::LEDGER_ID.'_foreign');
         });
 
         Schema::drop(Table::LEDGER);

@@ -6,7 +6,7 @@ class Entity extends \Models\Base\Entity
 {
     protected $fields = array(
         'id',
-        'gateway_transaction_id',
+        'gateway_payment_id',
         'trackid',
         'action',
         'enroll_result',
@@ -24,13 +24,13 @@ class Entity extends \Models\Base\Entity
 
     protected $table = 'hdfc';
 
-    protected $primaryKey = 'gateway_transaction_id';
+    protected $primaryKey = 'gateway_payment_id';
 
     protected $guarded = array();
 
-    public function transaction()
+    public function payment()
     {
-        return $this->belongsTo('Transaction', 'trackid', 'id');
+        return $this->belongsTo('Payment', 'trackid', 'id');
     }
 
     public function getTrackId()

@@ -4,7 +4,7 @@ namespace Gateway\Hdfc;
 
 use EE\Exception;
 use Gateway\Hdfc;
-use Gateway\Hdfc\Transaction;
+use Gateway\Hdfc\Payment;
 use Models\Base;
 
 class Repository extends Base\Repository
@@ -61,18 +61,18 @@ class Repository extends Base\Repository
 
     public function persistAfterEnroll($request, $response)
     {
-        if ($response['enroll_result'] === Transaction\Result::ENROLLED)
+        if ($response['enroll_result'] === Payment\Result::ENROLLED)
         {
-            $status = Transaction\Status::ENROLLED;
+            $status = Payment\Status::ENROLLED;
         }
-        else if ($response['enroll_result'] === Transaction\Result::NOT_ENROLLED)
+        else if ($response['enroll_result'] === Payment\Result::NOT_ENROLLED)
         {
-            $status = Transaction\Status::NOT_ENROLLED;
+            $status = Payment\Status::NOT_ENROLLED;
         }
 
         $attributes = array(
             'trackid' => $request['trackid'],
-            'gateway_transaction_id' => $response['paymentid'],
+            'gateway_payment_id' => $response['paymentid'],
             'action' => $request['action'],
             'amount' => $request['amt'],
             'enroll_result' => $response['enroll_result'],
@@ -88,12 +88,12 @@ class Repository extends Base\Repository
     {
         $attributes = array(
             'trackid' => $id,
-            'action' => Transaction\Action::AUTHORIZE,
+            'action' => Payment\Action::AUTHORIZE,
             'amount' => $requestdata['amt'],
             'error_code' => $error['code'],
             'error_text' => $error['text'],
             'enroll_result' => $error['enroll_result'],
-            'status' => Transaction\Status::ENROLL_FAILED);
+            'status' => Payment\Status::ENROLL_FAILED);
 
         $repo = $this->repo;
 
@@ -103,14 +103,14 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolled($model, $data)
     {
         $attributes = array(
-            'status' => Transaction\Status::AUTHORIZED,
-            'action' => Transaction\Action::AUTHORIZE,
+            'status' => Payment\Status::AUTHORIZED,
+            'action' => Payment\Action::AUTHORIZE,
             'amount' => $data['amt'],
             'result' => $data['result'],
             'ref' => $data['ref'],
             'auth' => $data['auth'],
             'avr' => $data['avr'],
-            'gateway_transaction_id' => $data['tranid'],
+            'gateway_payment_id' => $data['tranid'],
             'postdate' => $data['postdate']);
 
         $model->fill($attributes);
@@ -121,7 +121,7 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolled($model, $data)
     {
         $attributes = array(
-            'status'    => Transaction\Status::AUTHORIZED,
+            'status'    => Payment\Status::AUTHORIZED,
             'result'    => $data['result'],
             'ref'       => $data['ref'],
             'auth'      => $data['auth'],
@@ -136,8 +136,8 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolledError($model, $error)
     {
         $attributes = array(
-            'action' => Transaction\Action::AUTHORIZE,
-            'status' => Transaction\Status::AUTH_NOT_ENROLL_FAILED,
+            'action' => Payment\Action::AUTHORIZE,
+            'status' => Payment\Status::AUTH_NOT_ENROLL_FAILED,
             'error_code' => $error['code'],
             'error_text' => $error['text']);
 
@@ -149,8 +149,8 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolledError($model, $error)
     {
         $attributes = array(
-            'action' => Transaction\Action::AUTHORIZE,
-            'status' => Transaction\Status::AUTH_ENROLL_FAILED,
+            'action' => Payment\Action::AUTHORIZE,
+            'status' => Payment\Status::AUTH_ENROLL_FAILED,
             'error_code' => $error['code'],
             'error_text' => $error['text']);
 
@@ -166,12 +166,12 @@ class Repository extends Base\Repository
 
         switch($action)
         {
-            case Transaction\Action::REFUND:
-                $status = Transaction\Status::REFUNDED;
+            case Payment\Action::REFUND:
+                $status = Payment\Status::REFUNDED;
                 break;
 
-            case Transaction\Action::CAPTURE:
-                $status = Transaction\Status::CAPTURED;
+            case Payment\Action::CAPTURE:
+                $status = Payment\Status::CAPTURED;
                 break;
 
             default:
@@ -180,7 +180,7 @@ class Repository extends Base\Repository
 
         $attributes = array(
             'trackid'                => $responseData['trackid'],
-            'gateway_transaction_id' => $responseData['tranid'],
+            'gateway_payment_id' => $responseData['tranid'],
             'amount'                 => $responseData['amt'],
             'action'                 => $requestData['action'],
             'status'                 => $status,
@@ -200,19 +200,19 @@ class Repository extends Base\Repository
         switch($type)
         {
             case 'refund':
-                $action = Transaction\Action::REFUND;
-                $status = Transaction\Status::REFUND_FAILED;
+                $action = Payment\Action::REFUND;
+                $status = Payment\Status::REFUND_FAILED;
                 break;
 
             case 'capture':
-                $action = Transaction\Action::CAPTURE;
-                $status = Transaction\Status::CAPTURE_FAILED;
+                $action = Payment\Action::CAPTURE;
+                $status = Payment\Status::CAPTURE_FAILED;
                 break;
         }
 
         $attributes = array(
             'trackid'                   => $id,
-            'gateway_transaction_id'    => $requestdata['transid'],
+            'gateway_payment_id'    => $requestdata['transid'],
             'amount'                    => $requestdata['amount'],
             'error_code'                => $error['code'],
             'error_text'                => $error['result'],
@@ -229,19 +229,19 @@ class Repository extends Base\Repository
         return $repo::where('trackid','=',$id)->firstOrFail();
     }
 
-    public function retrieveMultipleTransactions(array $ids)
+    public function retrieveMultiplePayments(array $ids)
     {
         $repo = $this->repo;
 
         return $repo::whereIn('trackid', $ids)->get();
     }
 
-    public function retrieveCapturedTransactions(array $ids)
+    public function retrieveCapturedPayments(array $ids)
     {
         $repo = $this->repo;
 
         return $repo::whereIn('trackid', $ids)
-                    ->where('status', '=', Transaction\Status::CAPTURED)
+                    ->where('status', '=', Payment\Status::CAPTURED)
                     ->get();
     }
 
@@ -252,10 +252,10 @@ class Repository extends Base\Repository
         return $repo::whereBetween('created_at', $from, $to);
     }
 
-    public function findByGatewayTransactionId($id)
+    public function findByGatewayPaymentId($id)
     {
         $repo = $this->repo;
 
-        return $repo::where('gateway_transaction_id', '=', $id)->first();
+        return $repo::where('gateway_payment_id', '=', $id)->first();
     }
 }

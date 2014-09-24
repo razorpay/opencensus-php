@@ -8,11 +8,11 @@ class Entity extends Base\Entity
 {
     protected $table = 'hdfc_mpr';
 
-    protected $primaryKey = 'transaction_id';
+    protected $primaryKey = 'payment_id';
 
     protected $fillable = array(
-        'transaction_id',
-        'gateway_transaction_id',
+        'payment_id',
+        'gateway_payment_id',
         'gateway_merchant_id',
         'gateway_terminal_id',
         'card_network',
@@ -34,9 +34,9 @@ class Entity extends Base\Entity
         'approve_code',
     );
 
-    public function transaction()
+    public function payment()
     {
-        return $this->belongsTo('Models\Gateway\Transaction', 'trackid', 'id');
+        return $this->belongsTo('Models\Payment\Entity', 'trackid', 'id');
     }
 
     public function getTrackId()

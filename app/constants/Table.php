@@ -24,7 +24,7 @@ class Table
 
     const TERMINAL = 'terminals';
 
-    const TRANSACTION = 'transactions';
+    const PAYMENT = 'payments';
 
     const UNRECOGNIZED_CARD = 'unrecognized_cards';
 }

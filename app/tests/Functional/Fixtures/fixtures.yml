@@ -32,7 +32,7 @@ Models\Key\Entity:
         type: Models\Merchant\Entity
     secret: $2y$10$UVD2ZERxHs0QyL7gaElrWOfvwAx11m.G374AGKpPnyn8VK4FN5Yry
 
-Models\Transaction\Entity:
+Models\Payment\Entity:
     id: $uniqueid
     merchant_id: 363e4efa820b0c06208ccd99
     card_id:
@@ -49,10 +49,10 @@ Models\Transaction\Entity:
     email: $email
     captured_at: null
 
-Models\Transaction\Refund\Entity:
+Models\Payment\Refund\Entity:
     id: $uniqueid
-    transaction_id:
-        type: Models\Transaction\Entity
+    payment_id:
+        type: Models\Payment\Entity
     merhcant_id:
         type: Models\Merchant\Entity
     amount: 100
@@ -73,8 +73,8 @@ Models\Pricing\Entity:
 Gateway\Hdfc\Entity:
     id: $integer
     trackid:
-        type: Models\Transaction\Entity
-    gateway_transaction_id: $hdfcTxnId
+        type: Models\Payment\Entity
+    gateway_payment_id: $hdfcTxnId
     action: 4
     amount: $integer
     enroll_result: 2

@@ -70,7 +70,7 @@ class MprGenerate extends Command
     {
         $array = parent::getOptions();
 
-        array_push($array, ['today', null, InputOption::VALUE_NONE, 'Will generate mpr for today\'s transactions']);
+        array_push($array, ['today', null, InputOption::VALUE_NONE, 'Will generate mpr for today\'s payments']);
 
         array_push($array, ['reconcile', null, InputOption::VALUE_NONE, 'Also reconciles the mpr']);
 

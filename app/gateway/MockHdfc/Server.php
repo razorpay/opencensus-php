@@ -5,7 +5,7 @@ namespace Gateway\MockHdfc;
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
-use Gateway\Hdfc\Transaction\Action;
+use Gateway\Hdfc\Payment\Action;
 use Gateway\MockHdfc;
 use Models\Card;
 
@@ -50,7 +50,7 @@ class Server
         return $input;
     }
 
-    public function gatewayTransaction()
+    public function gatewayPayment()
     {
         $action = Hdfc\Utility::getFieldFromXML($this->input, 'action');
 
@@ -61,11 +61,11 @@ class Server
                 break;
 
             case Action::CAPTURE:
-                $xml = $this->captureTransactionOnGateway();
+                $xml = $this->capturePaymentOnGateway();
                 break;
 
             case Action::REFUND:
-                $xml = $this->refundTransactionOnGateway();
+                $xml = $this->refundPaymentOnGateway();
                 break;
 
             default:
@@ -146,7 +146,7 @@ class Server
 
         $paymentid = $this->data['paymentid'];
 
-        $gatewayTxn = (new Hdfc\Repository)->findByGatewayTransactionId($paymentid);
+        $gatewayTxn = (new Hdfc\Repository)->findByGatewayPaymentId($paymentid);
 
         if ($gatewayTxn === null)
         {
@@ -238,7 +238,7 @@ class Server
         return $response;
     }
 
-    protected function captureTransactionOnGateway()
+    protected function capturePaymentOnGateway()
     {
         $this->processInput('supportTxn');
 
@@ -253,7 +253,7 @@ class Server
         return $xml;
     }
 
-    protected function refundTransactionOnGateway()
+    protected function refundPaymentOnGateway()
     {
         $this->processInput('supportTxn');
 

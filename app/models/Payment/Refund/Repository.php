@@ -1,0 +1,54 @@
+<?php
+
+namespace Models\Payment\Refund;
+
+use EE\Exception;
+use Models\Base;
+use Models\Payment\Refund;
+
+class Repository extends Base\Repository
+{
+    use Base\RepositoryFetch;
+
+    protected $entity = 'Refund';
+
+    public function findOrFailPublicByParams($id, $merchantId, $txnId = null)
+    {
+        $repo = $this->repo;
+
+        $query = $repo::where(Refund\Entity::MERCHANT_ID, '=', $merchantId);
+
+        if ($txnId !== null)
+        {
+            $query->where(Refund\Entity::PAYMENT_ID, '=', $txnId);
+        }
+
+        return $query->findOrFailPublic($id);
+    }
+
+    public function findForPayment($txnId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Refund\Entity::PAYMENT_ID, '=', $txnId)
+                    ->get();
+    }
+
+    public function findBetweenTimestamps($from, $to)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Refund\Entity::CREATED_AT, '>=', $from)
+                    ->where(Refund\Entity::CREATED_AT, '<=', $to)
+                    ->get();
+    }
+
+    public function fetchByIdTxnIdMerchantId($id, $txnId, $merchantId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Refund\Entity::PAYMENT_ID, '=', $txnId)
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->find($id);
+    }
+}

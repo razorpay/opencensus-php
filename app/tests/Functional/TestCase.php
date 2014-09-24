@@ -86,7 +86,7 @@ class TestCase extends ParentTestCase
         $this->dbMigrate();
 
         //
-        // Start DB transaction so as
+        // Start DB payment so as
         // to rollback once test is finished
         // leaving a clean slate
         //

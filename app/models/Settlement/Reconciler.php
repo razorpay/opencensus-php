@@ -11,12 +11,12 @@ use Models\Gateway;
 use Models\Ledger;
 use Models\Merchant;
 use Models\Pricing;
-use Models\Transaction;
+use Models\Payment;
 
 class Reconciler
 {
     /**
-     * All transactions in the current mpr
+     * All payments in the current mpr
      * will have the same reconciledAt timestamp
      * @var int
      */
@@ -31,7 +31,7 @@ class Reconciler
 
     protected $lgr;
     protected $merchant;
-    protected $transaction;
+    protected $payment;
     protected $card;
 
     public function __construct()
@@ -93,11 +93,11 @@ class Reconciler
 
     protected function reconcileMprRecord($mprRecord, $gateway)
     {
-        $transactionId = Gateway::call('getTransactionId', $mprRecord, 'test');
+        $paymentId = Gateway::call('getPaymentId', $mprRecord, 'test');
 
         $lgr = $this->newLedgerRecord();
 
-        $entitiesArray = $this->loadEntities($transactionId);
+        $entitiesArray = $this->loadEntities($paymentId);
 
         $params = array(
             'input' => $mprRecord,
@@ -135,7 +135,7 @@ class Reconciler
             Ledger\Entity::GATEWAY_FEE => $data['ledger']['gateway_fee'],
             Ledger\Entity::MERCHANT_ID => $this->merchant->getKey(),
             Ledger\Entity::ENTITY_ID => $this->txn->getKey(),
-            Ledger\Entity::ENTITY_TYPE => 'transaction',
+            Ledger\Entity::ENTITY_TYPE => 'payment',
             Ledger\Entity::FEE => $fee,
             Ledger\Entity::CREDIT => $credit,
             Ledger\Entity::DEBIT => 0,
@@ -207,9 +207,9 @@ class Reconciler
         return $lgr;
     }
 
-    protected function loadEntities($transactionId)
+    protected function loadEntities($paymentId)
     {
-        $txn  = (new Transaction\Core)->retrieveById($transactionId);
+        $txn  = (new Payment\Core)->retrieveById($paymentId);
 
         $this->merchant = $txn->merchant;
         $this->card = $txn->card;
@@ -217,7 +217,7 @@ class Reconciler
         $this->txn = $txn;
 
         return $entitiesArray = array(
-            'transaction' => $this->txn->toArray(),
+            'payment' => $this->txn->toArray(),
             'merchant' => $this->merchant->toArray(),
             'card' => $this->card->toArray(),
             'terminal' => $this->terminal->toArray(),

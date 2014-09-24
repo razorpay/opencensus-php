@@ -42,7 +42,7 @@ class Generator
 
     public function generateMpr(array $input)
     {
-        $hdfcTxns = $this->fetchHdfcTransactions($input);
+        $hdfcTxns = $this->fetchHdfcPayments($input);
 
         $mprArray = $this->generateMprArray($input, $hdfcTxns);
 
@@ -51,12 +51,12 @@ class Generator
         return $filename;
     }
 
-    protected function fetchHdfcTransactions($input)
+    protected function fetchHdfcPayments($input)
     {
-        $transactions = array_column($input, 'transaction');
-        $trackids = array_column($transactions, 'id');
+        $payments = array_column($input, 'payment');
+        $trackids = array_column($payments, 'id');
 
-        $hdfcTxns = (new Hdfc\Repository)->retrieveCapturedTransactions($trackids);
+        $hdfcTxns = (new Hdfc\Repository)->retrieveCapturedPayments($trackids);
 
         $n = count($input);
 
@@ -106,7 +106,7 @@ class Generator
 
     protected function generateMprRow($input, $hdfcTxn)
     {
-        $amount = $input['transaction']['amount'] / 100;
+        $amount = $input['payment']['amount'] / 100;
 
         $msf = $amount * 2 / 100;
 
@@ -122,10 +122,10 @@ class Generator
         $maskedCardNumber = $input['card']['iin'] . 'xxxxxx' .
                             $input['card']['last4'];
 
-        $capturedAt = $input['transaction']['captured_at'];
+        $capturedAt = $input['payment']['captured_at'];
         $capturedAt = (new Carbon('Asia/Kolkata'))->setTimestamp($capturedAt);
 
-        $transactionDate = $capturedAt->format('d-M-y');
+        $captureDate = $capturedAt->format('d-M-y');
         $setlDate = $capturedAt->addDay(1)->format('d-M-y');
 
         $attributes = array(
@@ -135,14 +135,14 @@ class Generator
             'bat_nbr'           => 1,
             'card_type'         => $input['card']['network'] . ' ' . 'LOCAL',
             'card_number'       => $maskedCardNumber,
-            'trans_date'        => $transactionDate,
+            'trans_date'        => $captureDate,
             'settle_date'       => $setlDate,
             'approv_code'       => '000000',
             'intl_amt'          => 0,
             'domestic_amt'      => $amount,
-            'tran_id'           => $hdfcTxn['gateway_transaction_id'],
+            'tran_id'           => $hdfcTxn['gateway_payment_id'],
             'upvalue'           => '`',
-            'merchant_trackid'  => 'txn-'.$input['transaction']['id'],
+            'merchant_trackid'  => 'txn-'.$input['payment']['id'],
             'msf'               => $msf,
             'service_tax'       => $serviceTax,
             'edu_cess'          => $educationCess,

@@ -3,7 +3,7 @@
 namespace Models\Ledger;
 
 use Models\Base;
-use Models\Transaction;
+use Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
@@ -66,15 +66,15 @@ class Entity extends Base\PublicEntity
 
         switch($type)
         {
-            case 'transaction':
-                return $this->hasOne('Models\Transaction\Entity');
+            case 'payment':
+                return $this->hasOne('Models\Payment\Entity');
                 break;
             case 'refund':
-                return $this->hasOne('Models\Transaction\Entity');
+                return $this->hasOne('Models\Payment\Entity');
                 break;
             default:
                 throw new Exception\InvalidArgumentException(
-                    'only transaction and refund supported currently');
+                    'only payment and refund supported currently');
         }
     }
 
@@ -84,7 +84,7 @@ class Entity extends Base\PublicEntity
             self::MERCHANT_ID   => $txn->getMerchantId(),
             self::AMOUNT        => $txn->getAmount(),
             self::ENTITY_ID     => $txn->getKey(),
-            self::ENTITY_TYPE   => 'transaction');
+            self::ENTITY_TYPE   => 'payment');
 
         $this->fill($lgrData);
     }

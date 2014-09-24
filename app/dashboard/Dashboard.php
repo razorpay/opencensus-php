@@ -10,7 +10,7 @@ class Dashboard
 {
     /**
      * Resource specifier
-     * For example, transactions, cards, etc.
+     * For example, payments, cards, etc.
      */
     protected static $resource;
 

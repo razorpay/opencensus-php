@@ -5,7 +5,7 @@
  * via the api of FSF gateway (which HDFC uses) and which
  * we actually interact with.
  *
- * The transaction flow for a purchase/auth txn
+ * The payment flow for a purchase/auth txn
  * in few simple words goes like this:
  * 1. We send an enroll request for a card
  * 2. For certain cards (probably cc) we get a 'NOT ENROLLED' response back
@@ -28,25 +28,25 @@ use EE\Error;
 use EE\Exception;
 use Gateway\BaseGateway;
 use Gateway\Hdfc;
-use Gateway\Hdfc\Transaction;
+use Gateway\Hdfc\Payment;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
 class Gateway extends BaseGateway
 {
-    use Transaction\Enroll;
-    use Transaction\Authorize;
-    use Transaction\Support;
+    use Payment\Enroll;
+    use Payment\Authorize;
+    use Payment\Support;
 
     /**
-     * App transaction id
+     * App payment id
      * @var string
      */
     protected $id;
 
     /**
-     * Curent Hdfc Transaction Model
+     * Curent Hdfc Payment Model
      * @var Hdfc\Entity
      */
     protected $model = null;
@@ -305,9 +305,9 @@ class Gateway extends BaseGateway
             'Hdfc gateway does not support voids');
     }
 
-    public function getTransactionId($input)
+    public function getPaymentId($input)
     {
-        return Hdfc\Mpr\Reconciler::getTransactionId($input);
+        return Hdfc\Mpr\Reconciler::getPaymentId($input);
     }
 
     public function reconcile($input)
@@ -434,7 +434,7 @@ class Gateway extends BaseGateway
     {
         //
         // This step is very crucial for deciding future steps in
-        // transaction flow.
+        // payment flow.
         //
         // For any operation, whether enroll, auth or support,
         // the success or failure at different stages is decided on the basis of
@@ -578,9 +578,9 @@ class Gateway extends BaseGateway
 
                 break;
 
-            case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF:
-            case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN:
-            case Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT:
+            case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF:
+            case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN:
+            case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT:
                 $exception = new Exception\GatewayErrorException(
                                 $apiErrorCode,
                                 $gatewayErrorCode,

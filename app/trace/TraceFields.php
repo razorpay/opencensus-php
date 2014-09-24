@@ -3,7 +3,7 @@
 namespace Trace;
 
 use Trace\TraceCode;
-use Models\Transaction\Entity as Transaction;
+use Models\Payment\Entity as Payment;
 
 class TraceFields
 {
@@ -15,83 +15,83 @@ class TraceFields
             'code'
         ),
 
-        TraceCode::TRANSACTION_NEW_REQUEST => array(
-            Transaction::MERCHANT_ID,
-            Transaction::AMOUNT,
+        TraceCode::PAYMENT_NEW_REQUEST => array(
+            Payment::MERCHANT_ID,
+            Payment::AMOUNT,
         ),
 
-        TraceCode::TRANSACTION_CREATED => array(
-            Transaction::ID,
-            Transaction::MERCHANT_ID,
-            Transaction::CARD_ID,
-            Transaction::STATUS,
-            Transaction::AMOUNT,
+        TraceCode::PAYMENT_CREATED => array(
+            Payment::ID,
+            Payment::MERCHANT_ID,
+            Payment::CARD_ID,
+            Payment::STATUS,
+            Payment::AMOUNT,
         ),
 
-        TraceCode::TRANSACTION_CREATE_FAILED => array(),
+        TraceCode::PAYMENT_CREATE_FAILED => array(),
 
-        TraceCode::TRANSACTION_FAILED => array(
-            Transaction::ID,
-            Transaction::MERCHANT_ID,
-            Transaction::CARD_ID,
-            Transaction::STATUS,
-            Transaction::AMOUNT,
-            Transaction::ERROR_CODE,
+        TraceCode::PAYMENT_FAILED => array(
+            Payment::ID,
+            Payment::MERCHANT_ID,
+            Payment::CARD_ID,
+            Payment::STATUS,
+            Payment::AMOUNT,
+            Payment::ERROR_CODE,
             'error'
         ),
 
-        TraceCode::TRANSACTION_AUTH_FAILURE => array(
-            Transaction::ID,
-            Transaction::MERCHANT_ID,
-            Transaction::CARD_ID,
-            Transaction::STATUS,
-            Transaction::AMOUNT,
-            Transaction::ERROR_CODE,
+        TraceCode::PAYMENT_AUTH_FAILURE => array(
+            Payment::ID,
+            Payment::MERCHANT_ID,
+            Payment::CARD_ID,
+            Payment::STATUS,
+            Payment::AMOUNT,
+            Payment::ERROR_CODE,
             'error'
         ),
 
-        TraceCode::TRANSACTION_REFUND_FAILURE => array(
-            Transaction::ID,
-            Transaction::MERCHANT_ID,
-            Transaction::CARD_ID,
-            Transaction::STATUS,
-            Transaction::AMOUNT,
-            Transaction::ERROR_CODE,
+        TraceCode::PAYMENT_REFUND_FAILURE => array(
+            Payment::ID,
+            Payment::MERCHANT_ID,
+            Payment::CARD_ID,
+            Payment::STATUS,
+            Payment::AMOUNT,
+            Payment::ERROR_CODE,
             'error'
         ),
 
-        TraceCode::TRANSACTION_CAPTURE_FAILURE => array(
-            Transaction::ID,
-            Transaction::MERCHANT_ID,
-            Transaction::CARD_ID,
-            Transaction::STATUS,
-            Transaction::AMOUNT,
-            Transaction::ERROR_CODE,
+        TraceCode::PAYMENT_CAPTURE_FAILURE => array(
+            Payment::ID,
+            Payment::MERCHANT_ID,
+            Payment::CARD_ID,
+            Payment::STATUS,
+            Payment::AMOUNT,
+            Payment::ERROR_CODE,
             'error'
         ),
 
-        TraceCode::TRANSACTION_AUTH_SUCCESS => array(
-            Transaction::ID,
-            Transaction::MERCHANT_ID,
-            Transaction::CARD_ID,
-            Transaction::STATUS,
-            Transaction::AMOUNT,
+        TraceCode::PAYMENT_AUTH_SUCCESS => array(
+            Payment::ID,
+            Payment::MERCHANT_ID,
+            Payment::CARD_ID,
+            Payment::STATUS,
+            Payment::AMOUNT,
         ),
 
-        TraceCode::TRANSACTION_REFUND_SUCCESS => array(
-            Transaction::ID,
-            Transaction::MERCHANT_ID,
-            Transaction::CARD_ID,
-            Transaction::STATUS,
-            Transaction::AMOUNT,
+        TraceCode::PAYMENT_REFUND_SUCCESS => array(
+            Payment::ID,
+            Payment::MERCHANT_ID,
+            Payment::CARD_ID,
+            Payment::STATUS,
+            Payment::AMOUNT,
         ),
 
-        TraceCode::TRANSACTION_CAPTURE_SUCCESS => array(
-            Transaction::ID,
-            Transaction::MERCHANT_ID,
-            Transaction::CARD_ID,
-            Transaction::STATUS,
-            Transaction::AMOUNT,
+        TraceCode::PAYMENT_CAPTURE_SUCCESS => array(
+            Payment::ID,
+            Payment::MERCHANT_ID,
+            Payment::CARD_ID,
+            Payment::STATUS,
+            Payment::AMOUNT,
         ),
 
         TraceCode::GATEWAY_ENROLL_REQUEST => array(

@@ -13,9 +13,9 @@ class Fixtures
         'key'           => 'Models\Key\Entity',
         'merchant'      => 'Models\Merchant\Entity',
         'pricing'       => 'Models\Pricing\Entity',
-        'refund'        => 'Models\Transaction\Refund\Entity',
+        'refund'        => 'Models\Payment\Refund\Entity',
         'terminal'      => 'Models\Terminal\Entity',
-        'transaction'   => 'Models\Transaction\Entity',
+        'payment'   => 'Models\Payment\Entity',
         'hdfc'          => 'Gateway\Hdfc\Entity',
     );
 
@@ -26,15 +26,15 @@ class Fixtures
         return $this;
     }
 
-    public function createTransactionAuthorizedEntity(array $attributes = array())
+    public function createPaymentAuthorizedEntity(array $attributes = array())
     {
         $defaultValues = array('status' => 'authorized');
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $txn = $this->createEntity('transaction', $attributes);
+        $txn = $this->createEntity('payment', $attributes);
 
-        $hdfcTxn = $this->createHdfcTransactionAuthorizedEntity(
+        $hdfcTxn = $this->createHdfcPaymentAuthorizedEntity(
             array(
                 'trackid' => $txn->getKey(),
                 'amount' => $txn->getAmount(),
@@ -44,7 +44,7 @@ class Fixtures
         return $txn;
     }
 
-    public function createTransactionCapturedEntity(array $attributes = array())
+    public function createPaymentCapturedEntity(array $attributes = array())
     {
         $defaultValues = array(
             'status' => 'captured',
@@ -53,30 +53,30 @@ class Fixtures
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $txn = $this->createEntity('transaction', $attributes);
+        $txn = $this->createEntity('payment', $attributes);
 
         $hdfcAttrArray = array(
             'trackid' => $txn->getKey(),
             'amount' => $txn->getAmount(),
             'created_at' => $txn->created_at);
 
-        $hdfcTxnAuthorized = $this->createHdfcTransactionAuthorizedEntity(
+        $hdfcTxnAuthorized = $this->createHdfcPaymentAuthorizedEntity(
             $hdfcAttrArray);
 
-        $hdfcTxnCaptured = $this->createHdfcTransactionCapturedEntity(
+        $hdfcTxnCaptured = $this->createHdfcPaymentCapturedEntity(
             $hdfcAttrArray);
 
         return $txn;
     }
 
-    protected function createHdfcTransactionAuthorizedEntity(array $attributes = array())
+    protected function createHdfcPaymentAuthorizedEntity(array $attributes = array())
     {
         $attributes['action'] = 4;
         $attributes['status'] = 'authorized';
         return $this->createEntity('hdfc', $attributes);
     }
 
-    protected function createHdfcTransactionCapturedEntity(array $attributes = array())
+    protected function createHdfcPaymentCapturedEntity(array $attributes = array())
     {
         $attributes['action'] = 5;
         $attributes['status'] = 'captured';
@@ -100,7 +100,7 @@ class Fixtures
             'terminal'    => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
             'key'         => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
             'balance'     => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
-            'transaction' => $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            'payment' => $this->createEntity('payment', ['merchant_id' => '363e4efa820b0c06208ccd99']),
             );
     }
 

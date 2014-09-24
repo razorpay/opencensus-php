@@ -6,11 +6,11 @@ use Carbon\Carbon;
 use Config;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Tests\Functional\TestCase;
-use Tests\Functional\Transaction\TransactionAuthFlowTrait;
+use Tests\Functional\Payment\PaymentAuthFlowTrait;
 
 class HdfcGatewayMprTest extends TestCase
 {
-    use TransactionAuthFlowTrait;
+    use PaymentAuthFlowTrait;
 
     public function setUp()
     {
@@ -35,7 +35,7 @@ class HdfcGatewayMprTest extends TestCase
 
         foreach ($r as $i)
         {
-            $txn = $this->fixtures->createTransactionCapturedEntity(
+            $txn = $this->fixtures->createPaymentCapturedEntity(
                 ['captured_at' => $capturedAt, 'created_at' => $createdAt]);
 
             array_push($txns, $txn);

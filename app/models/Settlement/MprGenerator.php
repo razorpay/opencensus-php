@@ -7,8 +7,8 @@ use EE\Exception;
 use Models\Gateway;
 use Models\Ledger;
 use Models\Merchant;
-use Models\Transaction;
-use Models\Transaction\Refund;
+use Models\Payment;
+use Models\Payment\Refund;
 use Queue;
 
 class MprGenerator
@@ -70,7 +70,7 @@ class MprGenerator
 
         $gateway = 'hdfc';
 
-        $txnRepo = new Transaction\Repository;
+        $txnRepo = new Payment\Repository;
         $txns = $txnRepo->fetchCapturedForGatewayBetweenTimestamp(
                             self::$fromTimestamp,
                             self::$toTimestamp,
@@ -106,7 +106,7 @@ class MprGenerator
             $merchant = $txn->merchant;
 
             $cols = array(
-                'transaction' => $txn->toArray(),
+                'payment' => $txn->toArray(),
                 'merchant'    => $merchant->toArray(),
                 'terminal'    => $merchant->terminal->toArray(),
                 'card'        => $txn->card->toArray()
@@ -128,7 +128,7 @@ class MprGenerator
         $message = 'Hdfc mpr file: ' . $data['file'] .
         ' generated ' . PHP_EOL;
 
-        $message .= 'Number of transactions: ' . $data['count'];
+        $message .= 'Number of payments: ' . $data['count'];
 
         $message .= ' Env: ' . $this->env;
 

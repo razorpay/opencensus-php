@@ -7,7 +7,7 @@ use Models\Card;
 use Models\Ledger;
 use Models\Merchant;
 use Models\Pricing;
-use Models\Transaction;
+use Models\Payment;
 
 class Core
 {

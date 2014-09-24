@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Config;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Tests\Functional\TestCase;
-use Tests\Functional\Transaction\TransactionAuthFlowTrait;
+use Tests\Functional\Payment\PaymentAuthFlowTrait;
 
 class SettlementTest extends TestCase
 {

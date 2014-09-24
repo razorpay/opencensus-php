@@ -11,17 +11,17 @@ final class Route
      */
 
     protected static $apiRoutes = array(
-        'transaction_create'                => ['post', 'transactions',                         'TransactionController@postCreateTransaction'],
-        'transaction_jsonp'                 => ['post', 'transactions/jsonp',                   'TransactionController@getJSONP'],
-        'transaction_callback'              => ['post', 'transactions/callback/{id}',           'TransactionController@postCallback'],
-        'transaction_refund'                => ['post', 'transactions/{id}/refund',             'TransactionController@postRefund'],
-        'transaction_capture'               => ['post', 'transactions/{id}/capture',            'TransactionController@postCapture'],
-        'transaction_fetch_by_id'           => ['get',  'transactions/{id}',                    'TransactionController@getTransaction'],
-        'transaction_fetch_multiple'        => ['get',  'transactions/{param?}',                'TransactionController@getTransactions'],
-        'transaction_fetch_refunds'         => ['get',  'transactions/{id}/refunds',            'TransactionController@getRefundsForTransaction'],
-        'transaction_fetch_refund_by_id'    => ['get',  'transactions/{txnId}/refunds/{rfndId}','TransactionController@getRefundByRefundAndTransactionId'],
-        'refund_fetch_by_id'                => ['get',  'refunds/{id}',                         'TransactionController@getRefund'],
-        'refund_fetch_multiple'             => ['get',  'refunds/{param?}',                     'TransactionController@getRefunds'],
+        'payment_create'                    => ['post', 'payments',                             'PaymentController@postCreatePayment'],
+        'payment_jsonp'                     => ['post', 'payments/jsonp',                       'PaymentController@getJSONP'],
+        'payment_callback'                  => ['post', 'payments/callback/{id}',               'PaymentController@postCallback'],
+        'payment_refund'                    => ['post', 'payments/{id}/refund',                 'PaymentController@postRefund'],
+        'payment_capture'                   => ['post', 'payments/{id}/capture',                'PaymentController@postCapture'],
+        'payment_fetch_by_id'               => ['get',  'payments/{id}',                        'PaymentController@getPayment'],
+        'payment_fetch_multiple'            => ['get',  'payments/{param?}',                    'PaymentController@getPayments'],
+        'payment_fetch_refunds'             => ['get',  'payments/{id}/refunds',                'PaymentController@getRefundsForPayment'],
+        'payment_fetch_refund_by_id'        => ['get',  'payments/{txnId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'],
+        'refund_fetch_by_id'                => ['get',  'refunds/{id}',                         'PaymentController@getRefund'],
+        'refund_fetch_multiple'             => ['get',  'refunds/{param?}',                     'PaymentController@getRefunds'],
         'merchant_create'                   => ['post', 'merchants',                            'MerchantController@postCreateMerchant'],
         'merchant_fetch'                    => ['get',  'merchants/{id}',                       'MerchantController@getMerchant'],
         'merchant_fetch_multiple'           => ['get',  'merchants/{param?}',                   'MerchantController@getMerchants'],
@@ -49,24 +49,24 @@ final class Route
         'hdfc_mpr_reconcile'                => ['post', 'gateway/mpr/reconcile',                'SettlementController@postGatewayMprReconcile'],
         'hdfc_mpr_generate'                 => ['post', 'gateway/mpr/generate',                 'SettlementController@postGatewayMprGenerate'],
         'mockhdfc_enroll'                   => ['post', 'gateway/mockhdfc/enroll',              'MockHdfcController@enroll'],
-        'mockhdfc_transaction'              => ['post', 'gateway/mockhdfc/transaction',         'MockHdfcController@transaction'],
+        'mockhdfc_payment'              => ['post', 'gateway/mockhdfc/payment',         'MockHdfcController@payment'],
         'mockhdfc_auth_enrolled'            => ['post', 'gateway/mockhdfc/auth_enrolled',       'MockHdfcController@authEnrolled'],
         'mockhdfc_3dsecure'                 => ['post', 'gateway/3dsecure',                     'MockHdfcController@post3dSecure'],
         );
 
     public static $public = array(
-        'transaction_create',
-        'transaction_jsonp',
-        'transaction_callback',
+        'payment_create',
+        'payment_jsonp',
+        'payment_callback',
         );
 
     public static $private = array(
-        'transaction_refund',
-        'transaction_capture',
-        'transaction_fetch_by_id',
-        'transaction_fetch_multiple',
-        'transaction_fetch_refunds',
-        'transaction_fetch_refund_by_id',
+        'payment_refund',
+        'payment_capture',
+        'payment_fetch_by_id',
+        'payment_fetch_multiple',
+        'payment_fetch_refunds',
+        'payment_fetch_refund_by_id',
         );
 
     public static $internal = array(
@@ -94,7 +94,7 @@ final class Route
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
-        'mockhdfc_transaction',
+        'mockhdfc_payment',
         );
 
     public static $proxy = array(
@@ -116,7 +116,7 @@ final class Route
     public static function getDoNotLogURLs()
     {
         $doNotLogUrls = array(
-            self::$apiRoutes['transaction_jsonp'][1]);
+            self::$apiRoutes['payment_jsonp'][1]);
 
         return $doNotLogUrls;
     }
@@ -124,7 +124,7 @@ final class Route
     public static function isJsonpRoute($route)
     {
         $jsonpRoute = array(
-            self::$apiRoutes['transaction_jsonp'][1]);
+            self::$apiRoutes['payment_jsonp'][1]);
 
         return in_array($route, $jsonpRoute);
     }

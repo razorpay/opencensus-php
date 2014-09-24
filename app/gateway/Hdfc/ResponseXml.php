@@ -11,8 +11,8 @@ class ResponseXml extends Base\Entity
 
     protected $guarded = array();
 
-    public function transaction()
+    public function payment()
     {
-        return $this->belongsTo('Transaction', 'trackid', 'id');
+        return $this->belongsTo('Payment', 'trackid', 'id');
     }
 }
