@@ -505,8 +505,7 @@ body {
   overflow-x: hidden;
 }
 .app {
-  height: auto;
-  min-height: 100%;
+  height: 100%;
   width: 100%;
   position: relative;
 }
@@ -552,9 +551,10 @@ body {
   padding-bottom: 50px;
   float: left;
   width: 100%;
+  height: 100%;
 }
 .app-footer {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
