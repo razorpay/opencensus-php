@@ -12,7 +12,7 @@ class Table
 
     const KEY = 'keys';
 
-    const LEDGER = 'ledger';
+    const TRANSACTION = 'transaction';
 
     const MERCHANT = 'merchants';
 

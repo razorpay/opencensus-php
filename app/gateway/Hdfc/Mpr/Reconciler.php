@@ -7,7 +7,7 @@ use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Mpr;
 use Models\Card;
-use Models\Ledger;
+use Models\Transaction;
 use Models\Terminal;
 use Models\Payment;
 use Trace\Trace;
@@ -24,7 +24,7 @@ class Reconciler
         throw new Exception\LogicException('Hdfc mpr: Payment id not found');
     }
 
-    public function reconcile($input, $ledgerId, $entities)
+    public function reconcile($input, $transactionId, $entities)
     {
         // Translate from hdfc mpr raw fields to the database ones
         $attributes = $this->getTranslatedAttributes($input);
@@ -48,7 +48,7 @@ class Reconciler
         }
 
         // Now convert the data to the format as understood by
-        // API Ledger, Card and other entities
+        // API Transaction, Card and other entities
         $apiAttributes = $this->translateAndVerifyAttributes($mpr, $entities);
 
         return $apiAttributes;
@@ -119,12 +119,12 @@ class Reconciler
             $card[Card\Entity::COUNTRY] = null;
         }
 
-        $ledger = array(
-            Ledger\Entity::GATEWAY_FEE   => $mpr['gateway_fee']);
+        $transaction = array(
+            Transaction\Entity::GATEWAY_FEE   => $mpr['gateway_fee']);
 
         $apiData = array(
             'card'        => $card,
-            'ledger'      => $ledger);
+            'transaction'      => $transaction);
 
         return $apiData;
     }

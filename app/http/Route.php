@@ -19,7 +19,7 @@ final class Route
         'payment_fetch_by_id'               => ['get',  'payments/{id}',                        'PaymentController@getPayment'],
         'payment_fetch_multiple'            => ['get',  'payments/{param?}',                    'PaymentController@getPayments'],
         'payment_fetch_refunds'             => ['get',  'payments/{id}/refunds',                'PaymentController@getRefundsForPayment'],
-        'payment_fetch_refund_by_id'        => ['get',  'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'],
+        'payment_fetch_refund_by_id'        => ['get',  'payments/{paymentId}/refunds/{rfndId}','PaymentController@getRefundByRefundAndPaymentId'],
         'refund_fetch_by_id'                => ['get',  'refunds/{id}',                         'PaymentController@getRefund'],
         'refund_fetch_multiple'             => ['get',  'refunds/{param?}',                     'PaymentController@getRefunds'],
         'merchant_create'                   => ['post', 'merchants',                            'MerchantController@postCreateMerchant'],
@@ -42,14 +42,14 @@ final class Route
         'pricing_get_plan'                  => ['get',  'pricing/{id}',                         'PricingController@getPricingPlan'],
         'pricing_get_plan_rule'             => ['get',  'pricing/{planId}/rule/{ruleId}',       'PricingController@getPricingPlanRule'],
         'pricing_add_plan_rule'             => ['post', 'pricing/{id}/rule',                    'PricingController@postAddPricingPlanRule'],
-        'ledger_fetch_by_id'                => ['get',  'ledger/{id}',                          'SettlementController@getLedgerRecord'],
-        'ledger_fetch_multiple'             => ['get',  'ledger/{param?}',                      'SettlementController@getLedgerRecords'],
+        'transaction_fetch_by_id'           => ['get',  'transactions/{id}',                    'SettlementController@getTransactionRecord'],
+        'transaction_fetch_multiple'        => ['get',  'transactions/{param?}',                'SettlementController@getTransactionRecords'],
         'setl_fetch_by_id'                  => ['get',  'settlements/{id}',                     'SettlementController@getSettlement'],
         'setl_fetch_multiple'               => ['get',  'settlements/{param?}',                 'SettlementController@getSettlements'],
         'hdfc_mpr_reconcile'                => ['post', 'gateway/mpr/reconcile',                'SettlementController@postGatewayMprReconcile'],
         'hdfc_mpr_generate'                 => ['post', 'gateway/mpr/generate',                 'SettlementController@postGatewayMprGenerate'],
         'mockhdfc_enroll'                   => ['post', 'gateway/mockhdfc/enroll',              'MockHdfcController@enroll'],
-        'mockhdfc_payment'              => ['post', 'gateway/mockhdfc/payment',         'MockHdfcController@payment'],
+        'mockhdfc_payment'                  => ['post', 'gateway/mockhdfc/payment',             'MockHdfcController@payment'],
         'mockhdfc_auth_enrolled'            => ['post', 'gateway/mockhdfc/auth_enrolled',       'MockHdfcController@authEnrolled'],
         'mockhdfc_3dsecure'                 => ['post', 'gateway/3dsecure',                     'MockHdfcController@post3dSecure'],
         );
@@ -100,8 +100,8 @@ final class Route
     public static $proxy = array(
         'refund_fetch_by_id',
         'refund_fetch_multiple',
-        'ledger_fetch_by_id',
-        'ledger_fetch_multiple',
+        'transaction_fetch_by_id',
+        'transaction_fetch_multiple',
         'setl_fetch_by_id',
         'setl_fetch_multiple'
         );

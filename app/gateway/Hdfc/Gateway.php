@@ -314,7 +314,7 @@ class Gateway extends BaseGateway
     {
         return (new Hdfc\Mpr\Reconciler)->reconcile(
             $input['input'],
-            $input['ledgerId'],
+            $input['transactionId'],
             $input['entities']);
     }
 

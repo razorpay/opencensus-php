@@ -5,7 +5,7 @@ namespace Models\Settlement;
 use Carbon\Carbon;
 use EE\Exception;
 use Models\Gateway;
-use Models\Ledger;
+use Models\Transaction;
 use Models\Merchant;
 use Models\Payment;
 use Models\Payment\Refund;

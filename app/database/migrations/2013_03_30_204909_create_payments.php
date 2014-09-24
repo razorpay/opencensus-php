@@ -7,7 +7,7 @@ use Constants\Table;
 use Models\Payment\Entity as Payment;
 use Models\Merchant;
 use Models\Card;
-use Models\Ledger;
+use Models\Transaction;
 
 class CreatePayments  extends Migration
 {
@@ -65,7 +65,7 @@ class CreatePayments  extends Migration
 
             $table->binary(Payment::UDF);
 
-            $table->string(Payment::LEDGER_ID, Payment::ID_LENGTH)
+            $table->string(Payment::TRANSACTION_ID, Payment::ID_LENGTH)
                   ->unique()
                   ->nullable();
 

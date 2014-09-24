@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Ledger;
+namespace Models\Transaction;
 
 use Models\Base;
 

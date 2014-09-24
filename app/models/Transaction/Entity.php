@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Ledger;
+namespace Models\Transaction;
 
 use Models\Base;
 use Models\Payment;
@@ -25,9 +25,9 @@ class Entity extends Base\PublicEntity
     const SETTLED           = 'settled';
     const SETTLED_AT        = 'settled_at';
 
-    protected $table = \Constants\Table::LEDGER;
+    protected $table = \Constants\Table::TRANSACTION;
 
-    protected static $sign = 'lgr';
+    protected static $sign = 'txn';
 
     protected $fillable = array(
         self::ENTITY_ID,
@@ -80,13 +80,13 @@ class Entity extends Base\PublicEntity
 
     public function fillPartiallyFromPayment($payment)
     {
-        $lgrData = array(
+        $txnData = array(
             self::MERCHANT_ID   => $payment->getMerchantId(),
             self::AMOUNT        => $payment->getAmount(),
             self::ENTITY_ID     => $payment->getKey(),
             self::ENTITY_TYPE   => 'payment');
 
-        $this->fill($lgrData);
+        $this->fill($txnData);
     }
 
     public function getMerchantId()

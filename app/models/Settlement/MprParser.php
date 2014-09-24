@@ -113,7 +113,7 @@ class MprParser
 
         $headingCount = count($headings);
 
-        $lgrs = array();
+        $txns = array();
 
         $r = range(1, $headingCount);
 

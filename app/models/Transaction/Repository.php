@@ -1,37 +1,37 @@
 <?php
 
-namespace Models\Ledger;
+namespace Models\Transaction;
 
 use Models\Base;
-use Models\Ledger;
+use Models\Transaction;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'Ledger';
+    protected $entity = 'Transaction';
 
     public function fetchPaymentsExpectedToSettle($timestamp)
     {
         $repo = $this->repo;
 
-        return $repo::where(Ledger\Entity::SETTLED_AT, '=', $timestamp)
-                    ->whereNull(Ledger\Entity::RECONCILED_AT)
-                    ->orderBy(Ledger\Entity::MERCHANT_ID)
-                    ->orderBy(Ledger\Entity::ID);
+        return $repo::where(Transaction\Entity::SETTLED_AT, '=', $timestamp)
+                    ->whereNull(Transaction\Entity::RECONCILED_AT)
+                    ->orderBy(Transaction\Entity::MERCHANT_ID)
+                    ->orderBy(Transaction\Entity::ID);
     }
 
-    public function settled($lgrs, $settledAt)
+    public function settled($txns, $settledAt)
     {
         $repo = $this->repo;
 
-        $ids = array_slice($lgrs, 'id');
+        $ids = array_slice($txns, 'id');
 
         $values = array(
-            Ledger\Entity::SETTLED_AT => $settledAt,
-            Ledger\Entity::SETTLED => true);
+            Transaction\Entity::SETTLED_AT => $settledAt,
+            Transaction\Entity::SETTLED => true);
 
-        $count = $repo::whereIn(Ledger\Entity::ID, $ids)
+        $count = $repo::whereIn(Transaction\Entity::ID, $ids)
                       ->update($values);
 
         $expected = count($ids);
@@ -50,16 +50,16 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        $lgr = $repo::where(Ledger\Entity::ENTITY_ID, '=', $entityId)
+        $txn = $repo::where(Transaction\Entity::ENTITY_ID, '=', $entityId)
                     ->first();
 
-        if (($lgr === null) and
+        if (($txn === null) and
             ($fail))
         {
             throw new Exception\LogicException(
-                'Failed to find ledger with entity_id: ' . $entityId);
+                'Failed to find transaction with entity_id: ' . $entityId);
         }
 
-        return $lgr;
+        return $txn;
     }
 }

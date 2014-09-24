@@ -11,7 +11,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
     const STATUS                = 'status';
-    const LEDGER_ID             = 'ledger_id';
+    const TRANSACTION_ID             = 'transaction_id';
 
     protected $table = \Constants\Table::SETTLEMENT;
 
@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::STATUS,
         self::MERCHANT_ID,
-        self::LEDGER_ID);
+        self::TRANSACTION_ID);
 
     protected $public = array(
         self::ID,
@@ -33,8 +33,8 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
-    public function ledger()
+    public function transaction()
     {
-        return $this->belongsTo('Models\Ledger\Entity');
+        return $this->belongsTo('Models\Transaction\Entity');
     }
 }

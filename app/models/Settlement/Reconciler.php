@@ -8,7 +8,7 @@ use EE\Exception;
 use Models\Base;
 use Models\Card;
 use Models\Gateway;
-use Models\Ledger;
+use Models\Transaction;
 use Models\Merchant;
 use Models\Pricing;
 use Models\Payment;
@@ -29,7 +29,7 @@ class Reconciler
      */
     public static $settledAt = null;
 
-    protected $lgr;
+    protected $txn;
     protected $merchant;
     protected $payment;
     protected $card;
@@ -53,67 +53,67 @@ class Reconciler
 
     public function reconcile($mprData, $gateway)
     {
-        $this->lgrRepo->beginTransaction();
+        $this->txnRepo->beginTransaction();
 
         try
         {
-            $lgrs = $this->process($mprData, $gateway);
+            $txns = $this->process($mprData, $gateway);
 
-            $this->lgrRepo->commit();
+            $this->txnRepo->commit();
         }
         catch (\Exception $e)
         {
-            $this->lgrRepo->rollback();
+            $this->txnRepo->rollback();
 
             (new SlackNotification)->queueOperationFailure('mpr_reconciliation', $e);
 
             throw $e;
         }
 
-        $count = $lgrs->count();
+        $count = $txns->count();
 
         (new SlackNotification)->queueOperationSuccess('mpr_reconciliation', $count);
 
-        return $lgrs;
+        return $txns;
     }
 
     protected function process($mprData, $gateway)
     {
-        $lgrs = new Base\PublicCollection;
+        $txns = new Base\PublicCollection;
 
         foreach ($mprData as $row)
         {
-            $lgr = $this->reconcileMprRecord($row, $gateway);
+            $txn = $this->reconcileMprRecord($row, $gateway);
 
-            $lgrs->push($lgr);
+            $txns->push($txn);
         }
 
-        return $lgrs;
+        return $txns;
     }
 
     protected function reconcileMprRecord($mprRecord, $gateway)
     {
         $paymentId = Gateway::call('getPaymentId', $mprRecord, 'test');
 
-        $lgr = $this->newLedgerRecord();
+        $txn = $this->newTransactionRecord();
 
         $entitiesArray = $this->loadEntities($paymentId);
 
         $params = array(
             'input' => $mprRecord,
-            'ledgerId' => $lgr->getKey(),
+            'transactionId' => $txn->getKey(),
             'entities' => $entitiesArray);
 
         $data = Gateway::call('reconcile', $params, 'test');
 
-        $lgr = $this->reconcileRecord($data);
+        $txn = $this->reconcileRecord($data);
 
-        return $lgr;
+        return $txn;
     }
 
     protected function reconcileRecord($data)
     {
-        $lgr = $this->lgr;
+        $txn = $this->txn;
 
         $entities = $this->entities;
 
@@ -127,33 +127,33 @@ class Reconciler
         $amount = $this->payment->getAmount();
         $credit = $amount - $fee;
 
-        $gatewayFee = $data['ledger']['gateway_fee'];
+        $gatewayFee = $data['transaction']['gateway_fee'];
         $apiFee = $fee - $gatewayFee;
 
-        $lgrData = array(
-            Ledger\Entity::AMOUNT => $amount,
-            Ledger\Entity::GATEWAY_FEE => $data['ledger']['gateway_fee'],
-            Ledger\Entity::MERCHANT_ID => $this->merchant->getKey(),
-            Ledger\Entity::ENTITY_ID => $this->payment->getKey(),
-            Ledger\Entity::ENTITY_TYPE => 'payment',
-            Ledger\Entity::FEE => $fee,
-            Ledger\Entity::CREDIT => $credit,
-            Ledger\Entity::DEBIT => 0,
-            Ledger\Entity::CURRENCY => 'INR',
-            Ledger\Entity::PRICING_RULE_ID => $pricingRuleId,
-            Ledger\Entity::API_FEE => $apiFee,
-            Ledger\Entity::SETTLED_AT => self::$settledAt);
+        $txnData = array(
+            Transaction\Entity::AMOUNT => $amount,
+            Transaction\Entity::GATEWAY_FEE => $data['transaction']['gateway_fee'],
+            Transaction\Entity::MERCHANT_ID => $this->merchant->getKey(),
+            Transaction\Entity::ENTITY_ID => $this->payment->getKey(),
+            Transaction\Entity::ENTITY_TYPE => 'payment',
+            Transaction\Entity::FEE => $fee,
+            Transaction\Entity::CREDIT => $credit,
+            Transaction\Entity::DEBIT => 0,
+            Transaction\Entity::CURRENCY => 'INR',
+            Transaction\Entity::PRICING_RULE_ID => $pricingRuleId,
+            Transaction\Entity::API_FEE => $apiFee,
+            Transaction\Entity::SETTLED_AT => self::$settledAt);
 
-        $this->lgr->fill($lgrData);
+        $this->txn->fill($txnData);
 
-        if ($this->checkPreviousEntries($lgr, $this->lgrRepo) === false)
+        if ($this->checkPreviousEntries($txn, $this->txnRepo) === false)
         {
-            $this->updateBalances($lgr);
+            $this->updateBalances($txn);
 
-            $this->lgrRepo->save($lgr);
+            $this->txnRepo->save($txn);
         }
 
-        return $lgr;
+        return $txn;
     }
 
     protected function updateCardNetworkAndCountry($card, $network, $country)
@@ -184,27 +184,27 @@ class Reconciler
         $nodalBalance = $merchantRepo->getEscrowBalanceLockForUpdate();
         $merchantBalance = $merchantRepo->getBalanceLockForUpdate($this->merchant->getKey());
 
-        $merchantBalance->addAmount($this->lgr['credit']);
-        $merchantBalance->subAmount($this->lgr['debit']);
+        $merchantBalance->addAmount($this->txn['credit']);
+        $merchantBalance->subAmount($this->txn['debit']);
         $merchantRepo->save($merchantBalance);
 
-        $nodalBalance->addAmount($this->lgr['api_fee']);
+        $nodalBalance->addAmount($this->txn['api_fee']);
         $merchantRepo->save($nodalBalance);
 
-        $this->lgr[Ledger\Entity::BALANCE] = $merchantBalance->getBalance();
-        $this->lgr[Ledger\Entity::ESCROW_BALANCE] = $nodalBalance->getBalance();
+        $this->txn[Transaction\Entity::BALANCE] = $merchantBalance->getBalance();
+        $this->txn[Transaction\Entity::ESCROW_BALANCE] = $nodalBalance->getBalance();
     }
 
-    protected function newLedgerRecord()
+    protected function newTransactionRecord()
     {
-        $lgr = new Ledger\Entity;
-        $lgr->generateId();
-        $lgr->setReconciledAt($this->reconciledAt);
+        $txn = new Transaction\Entity;
+        $txn->generateId();
+        $txn->setReconciledAt($this->reconciledAt);
 
-        $this->lgr = $lgr;
-        $this->entities['ledger'] = $lgr;
+        $this->txn = $txn;
+        $this->entities['transaction'] = $txn;
 
-        return $lgr;
+        return $txn;
     }
 
     protected function loadEntities($paymentId)
@@ -221,12 +221,12 @@ class Reconciler
             'merchant' => $this->merchant->toArray(),
             'card' => $this->card->toArray(),
             'terminal' => $this->terminal->toArray(),
-            'ledger' => $this->lgr->toArray());
+            'transaction' => $this->txn->toArray());
     }
 
     protected function initRepos()
     {
-        $this->lgrRepo = new Ledger\Repository;
+        $this->txnRepo = new Transaction\Repository;
     }
 
     protected function checkPreviousEntries($curr, $repo)
@@ -273,8 +273,8 @@ class Reconciler
 
         if ($diff)
         {
-            $msg = 'Entity: Ledger row' . PHP_EOL . $msg;
-            $msg = 'Previous Ledger row do not match' . PHP_EOL . $msg;
+            $msg = 'Entity: Transaction row' . PHP_EOL . $msg;
+            $msg = 'Previous Transaction row do not match' . PHP_EOL . $msg;
             throw new Exception\LogicException($msg);
         }
 

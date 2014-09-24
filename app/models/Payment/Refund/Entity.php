@@ -12,7 +12,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID        = 'payment_id';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
-    const LEDGER_ID         = 'ledger_id';
+    const TRANSACTION_ID         = 'transaction_id';
 
     protected $table = \Constants\Table::REFUND;
 

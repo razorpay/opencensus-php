@@ -57,7 +57,7 @@ Models\Payment\Refund\Entity:
         type: Models\Merchant\Entity
     amount: 100
     currency: INR
-    ledger_id: Models\Ledger\Entity
+    transaction_id: Models\Transaction\Entity
 
 Models\Pricing\Entity:
     id: $uniqueid

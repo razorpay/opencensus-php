@@ -11,7 +11,7 @@ class Settler
 {
     protected $setlRepo;
 
-    protected $lgrRepo;
+    protected $txnRepo;
 
     protected $merchRepo;
 
@@ -39,7 +39,7 @@ class Settler
     {
         $t = self::$settlementTimestamp;
 
-        $lgrs = $lgrRepo->fetchPaymentsExpectedToSettle($t);
+        $txns = $txnRepo->fetchPaymentsExpectedToSettle($t);
 
         $settled = true;
 
@@ -47,7 +47,7 @@ class Settler
 
         try
         {
-            $settlements = $this->process($lgrs);
+            $settlements = $this->process($txns);
 
             $this->setlRepo->commit();
         }
@@ -67,71 +67,71 @@ class Settler
         return $settlements->toArray();
     }
 
-    protected function process($lgrs)
+    protected function process($txns)
     {
-        $merchantId = $lgrs->first()->getMerchantId();
+        $merchantId = $txns->first()->getMerchantId();
         $merchant = $this->merchRepo->findOrFail($merchantId);
 
         $amount = 0;
 
-        foreach ($lgrs->all() as $lgr)
+        foreach ($txns->all() as $txn)
         {
-            if ($lgr->getMerchantId() !== $merchantId)
+            if ($txn->getMerchantId() !== $merchantId)
             {
-                $merchantId = $lgr->getMerchantId();
+                $merchantId = $txn->getMerchantId();
                 $merchant = $this->merchRepo->findOrFail($merchantId);
                 $amount = 0;
             }
 
-            $amount += $lgr->getCredit() - $lgr->getDebit();
+            $amount += $txn->getCredit() - $txn->getDebit();
         }
 
-        $lgrRepo->settled($lgrs, $t);
+        $txnRepo->settled($txns, $t);
     }
 
     protected function createMerchantSettlement()
     {
-        $setlLedger = $this->createSettlementLedger($merchant, $amount);
+        $setlTransaction = $this->createSettlementTransaction($merchant, $amount);
 
         $input = array(
             Settlement\Entity::AMOUNT       => $amount,
             Settlement\Entity::MERCHANT_ID  => $merchant->getKey(),
-            Settlement\Entity::LEDGER_ID    => $setlLedger->getKey());
+            Settlement\Entity::TRANSACTION_ID    => $setlTransaction->getKey());
 
         $setl = (new Settlement\Entity)->build($input);
 
         $merchantBalance = $this->merchRepo->getBalanceLockForUpdate($merchant->getKey());
-        $merchantBalance->subAmount($ledger['debit']);
+        $merchantBalance->subAmount($transaction['debit']);
 
-        $setlLedger->setAttribute(Ledger\Entity::ENTITY_ID, $setl->getKey());
-        $setlLedger->setAttribute(Ledger\Entity::BALANCE, $merchantBalance->getBalance());
+        $setlTransaction->setAttribute(Transaction\Entity::ENTITY_ID, $setl->getKey());
+        $setlTransaction->setAttribute(Transaction\Entity::BALANCE, $merchantBalance->getBalance());
 
-        $lgrRepo->save($setlLedger);
+        $txnRepo->save($setlTransaction);
         $setlRepo->save($setl);
         $merchantRepo->save($merchantBalance);
     }
 
-    protected function createSettlementLedger($merchant, $amount)
+    protected function createSettlementTransaction($merchant, $amount)
     {
-        $lgr = new Ledger\Entity;
+        $txn = new Transaction\Entity;
 
         $values = array(
-            Ledger\Entity::MERCHANT_ID => $merchant->getKey(),
-            Ledger\Entity::DEBIT => $amount,
-            Ledger\Entity::FEE => 0,
-            Ledger\Entity::AMOUNT => $amount,
-            Ledger\Entity::ENTITY_TYPE => 'settlement',
+            Transaction\Entity::MERCHANT_ID => $merchant->getKey(),
+            Transaction\Entity::DEBIT => $amount,
+            Transaction\Entity::FEE => 0,
+            Transaction\Entity::AMOUNT => $amount,
+            Transaction\Entity::ENTITY_TYPE => 'settlement',
         );
 
-        $lgr->build($values);
+        $txn->build($values);
 
-        return $lgr;
+        return $txn;
     }
 
     protected function initRepos()
     {
         $this->setlRepo = new Settlement\Repository;
-        $this->lgrRepo = new Ledger\Repository;
+        $this->txnRepo = new Transaction\Repository;
         $this->merchRepo = new Merchant\Repository;
     }
 

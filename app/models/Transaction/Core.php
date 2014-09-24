@@ -1,10 +1,10 @@
 <?php
 
-namespace Models\Ledger;
+namespace Models\Transaction;
 
 use Models\Base;
 use Models\Card;
-use Models\Ledger;
+use Models\Transaction;
 use Models\Merchant;
 use Models\Pricing;
 use Models\Payment;

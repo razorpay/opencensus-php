@@ -16,9 +16,9 @@ class Service extends Base\Service
 
         $reconciler = new Reconciler;
 
-        $lgrs = $reconciler->reconcile($data, 'hdfc');
+        $txns = $reconciler->reconcile($data, 'hdfc');
 
-        return $lgrs->toArrayPublic();
+        return $txns->toArrayPublic();
     }
 
     public function generateSettlements()

@@ -59,7 +59,7 @@ class Process extends Action
         {
             $this->repo->lockForUpdate($this->payment->getKey());
 
-            // (new Ledger\Core)->recordRefund($this->payment);
+            // (new Transaction\Core)->recordRefund($this->payment);
 
             $this->updatePaymentRefunded();
 

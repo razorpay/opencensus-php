@@ -3,7 +3,7 @@
 use Http\ApiResponse;
 use EE\Exception\RecoverableException;
 use Models\Settlement;
-use Models\Ledger;
+use Models\Transaction;
 
 class SettlementController extends BaseController
 {
@@ -25,18 +25,18 @@ class SettlementController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function getLedgerRecords()
+    public function getTransactionRecords()
     {
         $input = Input::all();
 
-        $data = (new Ledger\Service)->getLedgerRecords($input);
+        $data = (new Transaction\Service)->getTransactionRecords($input);
 
         return ApiResponse::json($data);
     }
 
-    public function getLedgerRecord($id)
+    public function getTransactionRecord($id)
     {
-        $data = (new Ledger\Service)->getLedgerRecordById($id);
+        $data = (new Transaction\Service)->getTransactionRecordById($id);
 
         return ApiResponse::json($data);
     }

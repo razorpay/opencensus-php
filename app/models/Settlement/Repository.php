@@ -3,7 +3,7 @@
 namespace Models\Settlement;
 
 use Models\Base;
-use Models\Ledger;
+use Models\Transaction;
 
 class Repository extends Base\Repository
 {

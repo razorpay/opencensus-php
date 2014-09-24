@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
     const CONTACT           = 'contact';
     const UDF               = 'udf';
     const CARD_ID           = 'card_id';
-    const LEDGER_ID         = 'ledger_id';
+    const TRANSACTION_ID         = 'transaction_id';
     const CAPTURED_AT       = 'captured_at';
     const GATEWAY           = 'gateway';
 
@@ -331,9 +331,9 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('Models\Payment\Refund\Entity');
     }
 
-    public function ledger()
+    public function transaction()
     {
-        return $this->belongsTo('Models\Ledger\Entity');
+        return $this->belongsTo('Models\Transaction\Entity');
     }
 
     public function hdfc()

@@ -8,7 +8,7 @@ use EE\Exception\BadRequestException;
 use Models\Gateway;
 
 use Models\Card;
-use Models\Ledger;
+use Models\Transaction;
 use Models\Payment;
 
 use Trace\Trace;

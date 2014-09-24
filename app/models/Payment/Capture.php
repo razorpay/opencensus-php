@@ -56,7 +56,7 @@ class Capture extends Action
         {
             $this->repo->lockForUpdate($this->payment->getKey());
 
-            // (new Ledger\Core)->recordCapture($this->$payment);
+            // (new Transaction\Core)->recordCapture($this->$payment);
 
             $this->updatePaymentCaptured();
 
