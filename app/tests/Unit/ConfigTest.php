@@ -19,4 +19,11 @@ class ConfigTest extends \Tests\TestCase
     {
         $this->assertEquals(30, \Gateway\Hdfc\Config::TIMEOUT);
     }
+
+    public function testDefaultGateway()
+    {
+        $config = require app_path().'/config/gateway.php';
+
+        $this->assertEquals('hdfc', $config['default']);
+    }
 }
