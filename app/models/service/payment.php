@@ -18,7 +18,7 @@ class Payment extends Service
             $merchant_id = \Auth::merchant()->id();
             $this->setApiCredentials($merchant_id, $mode);
 
-            $response = $this->api->transaction->all($options)->toArray();
+            $response = $this->api->payment->all($options)->toArray();
 
             $data = Manager\Payment::mapKeys($response);
         }
@@ -40,7 +40,7 @@ class Payment extends Service
             $id = $options['id'];
             try
             {
-                $data = $this->api->transaction->fetch($id)->toArray();
+                $data = $this->api->payment->fetch($id)->toArray();
 
                 $data = array('count' => 1, 'data' => array($data));
             }
@@ -67,7 +67,7 @@ class Payment extends Service
             $id = $options['id'];
             try
             {
-                $data = $this->api->transaction
+                $data = $this->api->payment
                                         ->fetch($id)
                                         ->refunds()
                                         ->all()
@@ -95,7 +95,7 @@ class Payment extends Service
 
         try
         {
-            $data = $this->api->transaction
+            $data = $this->api->payment
                                 ->fetch($id)
                                 ->capture(array('amount' => $amount))
                                 ->toArray();
@@ -121,7 +121,7 @@ class Payment extends Service
 
         try
         {
-            $data = $this->api->transaction
+            $data = $this->api->payment
                             ->fetch($id)
                             ->refund(array('amount' => $amount))
                             ->toArray();  

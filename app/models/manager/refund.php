@@ -13,7 +13,7 @@ class Refund extends Manager
         'id'            => 'id',
         'currency'      => 'currency',
         'amount'        => 'amount',
-        'transaction_id'=> 'transaction_id',
+        'payment_id'    => 'payment_id',
         'created_at'    => 'created_at'
     );
 
