@@ -30,7 +30,7 @@ class Entity extends Base\PublicEntity
 
     const CURRENCY_LENGTH   = 3;
 
-    const MIN_TXN_AMOUNT = 100;
+    const MIN_PAYMENT_AMOUNT = 100;
 
     protected $table = \Constants\Table::PAYMENT;
 

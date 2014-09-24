@@ -160,7 +160,7 @@ class Gateway extends BaseGateway
      * @var array
      */
     protected $supportPaymentRequest = array(
-        'url' => Hdfc\Urls::TEST_SUPPORT_TXN_URL,
+        'url' => Hdfc\Urls::TEST_SUPPORT_PAYMENT_URL,
         'type' => '',
         'fields' => array('action', 'amt', 'member', 'transid', 'trackid'),
         'header' => array('Content-Type:text/xml'),

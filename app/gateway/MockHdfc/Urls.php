@@ -10,5 +10,5 @@ class Urls
 
     const TEST_AUTH_ENROLLED_URL = 'gateway/mockhdfc/auth_enrolled';
 
-    const TEST_SUPPORT_TXN_URL = 'gateway/mockhdfc/payment';
+    const TEST_SUPPORT_PAYMENT_URL = 'gateway/mockhdfc/payment';
 }
