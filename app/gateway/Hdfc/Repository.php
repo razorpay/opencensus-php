@@ -251,4 +251,11 @@ class Repository extends Base\Repository
 
         return $repo::whereBetween('created_at', $from, $to);
     }
+
+    public function findByGatewayTransactionId($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('gateway_transaction_id', '=', $id)->first();
+    }
 }

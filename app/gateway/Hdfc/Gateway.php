@@ -113,7 +113,7 @@ class Gateway extends BaseGateway
     protected $authEnrolledRequest = array(
         'url' => Hdfc\Urls::TEST_AUTH_ENROLLED_URL,
         'type' => 'auth_enrolled',
-        'fields' => array('paymentid', 'MD'),
+        'fields' => array('paymentid', 'PaRes'),
         'header' => array('Content-Type:text/xml'),
         'xml' => '',
         'data' => array());
@@ -364,7 +364,7 @@ class Gateway extends BaseGateway
         }
 
         $response['xml'] = $response['response']->body;
-//s($response['xml']);
+
         $this->repo->saveXml($this->id, $response['xml'], $response['type']);
 
         $this->checkResponseStatusCode($response);

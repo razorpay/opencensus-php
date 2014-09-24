@@ -51,6 +51,7 @@ final class Route
         'mockhdfc_enroll'                   => ['post', 'gateway/mockhdfc/enroll',              'MockHdfcController@enroll'],
         'mockhdfc_transaction'              => ['post', 'gateway/mockhdfc/transaction',         'MockHdfcController@transaction'],
         'mockhdfc_auth_enrolled'            => ['post', 'gateway/mockhdfc/auth_enrolled',       'MockHdfcController@authEnrolled'],
+        'mockhdfc_3dsecure'                 => ['post', 'gateway/3dsecure',                     'MockHdfcController@post3dSecure'],
         );
 
     public static $public = array(
@@ -132,21 +133,33 @@ final class Route
     {
         foreach (self::$$type as $routeName)
         {
-            $routeInfo = self::$apiRoutes[$routeName];
-
-            $method = $routeInfo[0];
-            $uri = $routeInfo[1];
-            $action = $routeInfo[2];
-
-            $router = self::$router;
-
-            $router->$method($uri, array('as' => $routeName, 'uses' => $action));
+            self::addRoute($routeName);
         }
+    }
+
+    protected static function addRoute($name)
+    {
+        $info = self::$apiRoutes[$name];
+
+        $method = $info[0];
+        $uri = $info[1];
+        $action = $info[2];
+
+        $router = self::$router;
+
+        $router->$method($uri, array('as' => $name, 'uses' => $action));
+    }
+
+    protected static function add3dSecureRoute()
+    {
+        self::addRoute('mockhdfc_3dsecure');
     }
 
     public static function defineApiRoutes()
     {
         $router = self::$router;
+
+        self::add3dSecureRoute();
 
         $router->group(array('prefix' => 'v1'), function() use ($router)
         {

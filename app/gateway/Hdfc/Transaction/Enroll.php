@@ -152,7 +152,6 @@ trait Enroll
      * 5. .(dot)
      *
      * @param  array      $data [description]
-     * @return [type]       [description]
      */
     protected function udfCheckAndMeetHdfcRequirements(array & $data)
     {

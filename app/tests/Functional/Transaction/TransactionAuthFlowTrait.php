@@ -171,7 +171,9 @@ trait TransactionAuthFlowTrait
                 $this->fail('Transaction Timed out');
             }
             else
+            {
                 throw $e;
+            }
         }
 
         //
@@ -180,25 +182,39 @@ trait TransactionAuthFlowTrait
         //
 
         $uri = $form->getUri();
+
         $method = $form->getMethod();
         $values = $form->getValues();
 
-        try
+        $gateway = $this->app['config']->get('gateway.default');
+
+        if ($gateway === 'mockhdfc')
         {
-            $response = Requests::post($uri, array(), $values);
+            $server = $this->auth;
+
+            $response = $this->call($method, $uri, $values, array(), $server);
+            $content = $response->getContent();
         }
-        catch(\Requests_Exception $e)
+        else
         {
-            echo '3d secure failed';
-            throw $e;
+            try
+            {
+                $response = Requests::post($uri, array(), $values);
+                $content = $response->body;
+            }
+            catch(\Requests_Exception $e)
+            {
+                echo '3d secure failed';
+                throw $e;
+            }
         }
 
-        $form = $this->dcTransactionGetCallbackForm($response, $uri);
+        $form = $this->dcTransactionGetCallbackForm($content, $uri);
 
         return $form;
     }
 
-    protected function dcTransactionGetCallbackForm($response, $uri)
+    protected function dcTransactionGetCallbackForm($content, $uri)
     {
         //
         // crawl the repsonse to get callback form
@@ -206,7 +222,7 @@ trait TransactionAuthFlowTrait
 
         $crawler = new Crawler('', $uri);
 
-        $crawler->addContent($response->body);
+        $crawler->addContent($content);
 
         $form = $crawler->selectButton('Submit')->form();
 
