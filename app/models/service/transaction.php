@@ -25,7 +25,7 @@ class Transaction extends Service
             $merchant_id = \Auth::merchant()->id();
             $this->setApiCredentials($merchant_id, $mode);
 
-            $response = $this->api->ledger->all($options)->toArray();
+            $response = $this->api->transaction->all($options)->toArray();
 
             $data = Manager\Transaction::mapKeys($response);
         }
@@ -47,7 +47,7 @@ class Transaction extends Service
             $id = $options['id'];
             try
             {
-                $data = $this->api->ledger->fetch($id)->toArray();
+                $data = $this->api->transaction->fetch($id)->toArray();
 
                 $data = array('count' => 1, 'data' => array($data));
             }
