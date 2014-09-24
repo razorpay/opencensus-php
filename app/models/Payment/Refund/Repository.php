@@ -12,25 +12,25 @@ class Repository extends Base\Repository
 
     protected $entity = 'Refund';
 
-    public function findOrFailPublicByParams($id, $merchantId, $txnId = null)
+    public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
         $repo = $this->repo;
 
         $query = $repo::where(Refund\Entity::MERCHANT_ID, '=', $merchantId);
 
-        if ($txnId !== null)
+        if ($paymentId !== null)
         {
-            $query->where(Refund\Entity::PAYMENT_ID, '=', $txnId);
+            $query->where(Refund\Entity::PAYMENT_ID, '=', $paymentId);
         }
 
         return $query->findOrFailPublic($id);
     }
 
-    public function findForPayment($txnId)
+    public function findForPayment($paymentId)
     {
         $repo = $this->repo;
 
-        return $repo::where(Refund\Entity::PAYMENT_ID, '=', $txnId)
+        return $repo::where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->get();
     }
 
@@ -43,11 +43,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchByIdTxnIdMerchantId($id, $txnId, $merchantId)
+    public function fetchByIdPaymentIdMerchantId($id, $paymentId, $merchantId)
     {
         $repo = $this->repo;
 
-        return $repo::where(Refund\Entity::PAYMENT_ID, '=', $txnId)
+        return $repo::where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
                     ->find($id);
     }

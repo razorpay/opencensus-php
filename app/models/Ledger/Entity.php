@@ -78,12 +78,12 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function fillPartiallyFromTxn($txn)
+    public function fillPartiallyFromPayment($payment)
     {
         $lgrData = array(
-            self::MERCHANT_ID   => $txn->getMerchantId(),
-            self::AMOUNT        => $txn->getAmount(),
-            self::ENTITY_ID     => $txn->getKey(),
+            self::MERCHANT_ID   => $payment->getMerchantId(),
+            self::AMOUNT        => $payment->getAmount(),
+            self::ENTITY_ID     => $payment->getKey(),
             self::ENTITY_TYPE   => 'payment');
 
         $this->fill($lgrData);

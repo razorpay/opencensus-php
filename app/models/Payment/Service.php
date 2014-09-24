@@ -32,8 +32,8 @@ class Service extends Base\Service
         //
         // The returned value could be either Payment
         // model or an array containing callback data.
-        // We convert txn model to array
-        // if it's a txn model
+        // We convert payment model to array
+        // if it's a payment model
         //
         if ($data instanceof Payment\Entity)
             $data = $data->toArrayPublic();
@@ -70,24 +70,24 @@ class Service extends Base\Service
         return $refunds->toArrayPublic();
     }
 
-    public function retrieveRefundByIdAndPaymentId($txnId, $rfndId)
+    public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
-        Payment\Entity::verifyIdAndStripSign($txnId);
+        Payment\Entity::verifyIdAndStripSign($paymentId);
         Refund\Entity::verifyIdAndStripSign($rfndId);
 
-        $refund = (new Refund\Repository)->fetchByIdTxnIdMerchantId(
+        $refund = (new Refund\Repository)->fetchByIdPaymentIdMerchantId(
                                     $rfndId,
-                                    $txnId,
+                                    $paymentId,
                                     $this->merchant->getKey());
 
         return $refund->toArrayPublic();
     }
 
-    public function retrieveRefundsForPayment($txnId)
+    public function retrieveRefundsForPayment($paymentId)
     {
-        Payment\Entity::verifyIdAndStripSign($txnId);
+        Payment\Entity::verifyIdAndStripSign($paymentId);
 
-        $refunds = (new Refund\Repository)->findForPayment($txnId);
+        $refunds = (new Refund\Repository)->findForPayment($paymentId);
 
         return $refunds->toArrayPublic();
     }
@@ -101,10 +101,10 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
-        $txn = $this->getActionInstance(Payment\Action::CAPTURE)
+        $payment = $this->getActionInstance(Payment\Action::CAPTURE)
                     ->process($id, $input);
 
-        return $txn->toArrayPublic();
+        return $payment->toArrayPublic();
     }
 
     /**
@@ -121,24 +121,24 @@ class Service extends Base\Service
      */
     public function bankAcsCallback($id, array $input)
     {
-        $txn = $this->getActionInstance(Payment\Action::AUTHORIZE)
+        $payment = $this->getActionInstance(Payment\Action::AUTHORIZE)
                     ->callback($id, $input);
 
-        return $txn->toArrayPublic();
+        return $payment->toArrayPublic();
     }
 
     public function retrieveMultiple(array $input)
     {
-        $txns = (new Payment\Repository)->fetch($input, $this->merchant->getKey());
+        $payments = (new Payment\Repository)->fetch($input, $this->merchant->getKey());
 
-        return $txns->toArrayPublic();
+        return $payments->toArrayPublic();
     }
 
     public function retrievePayment($id)
     {
-        $txn = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
 
-        return $txn->toArrayPublic();
+        return $payment->toArrayPublic();
     }
 
     protected function getActionInstance($action)

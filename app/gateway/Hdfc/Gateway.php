@@ -5,17 +5,17 @@
  * via the api of FSF gateway (which HDFC uses) and which
  * we actually interact with.
  *
- * The payment flow for a purchase/auth txn
+ * The payment flow for a purchase/auth payment
  * in few simple words goes like this:
  * 1. We send an enroll request for a card
  * 2. For certain cards (probably cc) we get a 'NOT ENROLLED' response back
- *    2.1. For these cards, we send auth request and complete the txn.
+ *    2.1. For these cards, we send auth request and complete the payment.
  * 3. For certain cards (probably dc) we get an 'ENROLLED' response back
  *    3.1. For these cards, we send a request to acquiring bank (hdfc)
  *         ACS where the customer enters card fields etc. and the bank
  *         redirects to a url provided by us.
  *    3.2. From the redirected url, we send auth request and
- *         complete the txn.
+ *         complete the payment.
  *
  * Note: Refer to HDFC FSF Payment Gateway Integration
  *       Version 4.0 pdf document
@@ -54,8 +54,8 @@ class Gateway extends BaseGateway
     const INR_CODE = 356;
 
     /**
-     * If during the txn flow, we detect an
-     * error, or the txn fails for any reason,
+     * If during the payment flow, we detect an
+     * error, or the payment fails for any reason,
      * then this variable is set to true.
      * @var boolean
      */
@@ -159,7 +159,7 @@ class Gateway extends BaseGateway
      * request for refunds/captures
      * @var array
      */
-    protected $supportTxnRequest = array(
+    protected $supportPaymentRequest = array(
         'url' => Hdfc\Urls::TEST_SUPPORT_TXN_URL,
         'type' => '',
         'fields' => array('action', 'amt', 'member', 'transid', 'trackid'),
@@ -167,7 +167,7 @@ class Gateway extends BaseGateway
         'xml' => '',
         'data' => array());
 
-    protected $supportTxnResponse = array(
+    protected $supportPaymentResponse = array(
         'fields' => array(
             'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
             'udf2', 'udf5', 'amt', 'error_text'),
@@ -189,7 +189,7 @@ class Gateway extends BaseGateway
     protected $bankAcsResponseRules = array(
         'PaRes'     => 'required',
         'MD'        => 'required|numeric|digits_between:1,19',
-        'txn'       => 'required|array');
+        'payment'       => 'required|array');
 
     /**
      * Either ENROLLED or NOT_ENROLLED
@@ -258,14 +258,14 @@ class Gateway extends BaseGateway
     {
         parent::refund($input);
 
-        $this->supportTxn($input, 'refund');
+        $this->supportPayment($input, 'refund');
     }
 
     public function capture(array $input)
     {
         parent::capture($input);
 
-        $this->supportTxn($input, 'capture');
+        $this->supportPayment($input, 'capture');
     }
 
     /**
@@ -281,7 +281,7 @@ class Gateway extends BaseGateway
     {
         validate($this->bankAcsResponseRules, $input);
 
-        $this->id = $input['txn']['id'];
+        $this->id = $input['payment']['id'];
 
         $this->model = $this->repo->findOrFail($input['MD']);
 
@@ -290,7 +290,7 @@ class Gateway extends BaseGateway
         if ($this->id !== $trackid)
         {
             throw new Exception\LogicException(
-                'app txn '. $this->id . ' should be equal to track id . '. $trackid);
+                'app payment '. $this->id . ' should be equal to track id . '. $trackid);
         }
 
         $this->postAuthEnrolledRequest($input);

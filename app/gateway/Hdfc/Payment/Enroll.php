@@ -28,12 +28,12 @@ trait Enroll
      * with hdfc gateway
      *
      * @param  array $input
-     * Should contain 'txn' and 'card' arrays
+     * Should contain 'payment' and 'card' arrays
      *
      */
     protected function enrollCard(array $input)
     {
-        $this->setId($input['txn']['id']);
+        $this->setId($input['payment']['id']);
 
         //
         // Fields to be sent to HDFC gateway for card-enrollment
@@ -94,27 +94,27 @@ trait Enroll
      * enrolling the card
      *
      * @param  array $input
-     * Contains the 'txn' and 'card' details
+     * Contains the 'payment' and 'card' details
      */
     protected function createEnrollRequestFields($input)
     {
-        $txn = $input['txn'];
+        $payment = $input['payment'];
 
         $card = $input['card'];
 
         $data = &$this->enrollRequest['data'];
 
-        $data['trackid'] = $txn['id'];
+        $data['trackid'] = $payment['id'];
 
         // Convert amount from integer to decimal
-        $data['amt'] = $txn['amount']/100;
+        $data['amt'] = $payment['amount']/100;
 
         // Collect udf fields
         $data['udf1'] = 'junk';
 
-        $data['udf2'] = $txn['email'];
+        $data['udf2'] = $payment['email'];
 
-        $data['udf3'] = $txn['contact'];
+        $data['udf3'] = $payment['contact'];
 
         $data['udf4'] = 'junk';
 

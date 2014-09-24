@@ -189,50 +189,50 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function bankAcsCallbackValidate($txn, $input)
+    public static function bankAcsCallbackValidate($payment, $input)
     {
-        if ($txn->isOpen() === false)
+        if ($payment->isOpen() === false)
         {
             throw new Exception\BadRequestException(
                 null, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
         }
     }
 
-    public function captureValidate($txn, $input)
+    public function captureValidate($payment, $input)
     {
-        $this->failIfCaptured($txn);
+        $this->failIfCaptured($payment);
 
-        $this->failIfNotAuth($txn);
+        $this->failIfNotAuth($payment);
 
         $this->validateInput('capture', $input);
 
-        $this->captureAmountValidate($txn, $input);
+        $this->captureAmountValidate($payment, $input);
     }
 
-    public function captureAmountValidate($txn, $input)
+    public function captureAmountValidate($payment, $input)
     {
-        if ($input['amount'] > $txn->getAttribute(Payment\Entity::AMOUNT))
+        if ($input['amount'] > $payment->getAttribute(Payment\Entity::AMOUNT))
         {
             throw new Exception\BadRequestException(
                 null, ErrorCode::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH, 'amount');
         }
     }
 
-    public function failIfCaptured($txn)
+    public function failIfCaptured($payment)
     {
         //
         // Don't continue if already captured
         //
-        if ($txn->isCaptured())
+        if ($payment->isCaptured())
         {
             throw new Exception\BadRequestException(
                 null, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
         }
     }
 
-    public function failIfNotAuth($txn)
+    public function failIfNotAuth($payment)
     {
-        if ($txn->isAuthorized() === false)
+        if ($payment->isAuthorized() === false)
         {
             throw new Exception\BadRequestException(
                 null, ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);

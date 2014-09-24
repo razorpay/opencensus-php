@@ -8,7 +8,7 @@ use Tests\Functional\TestCase;
  * Tests for capture payments
  *
  * For capture payments, first we need to create an
- * authorized payment. By default, an authorized txn entity
+ * authorized payment. By default, an authorized payment entity
  * is provided. However, it doesn't have a corresponding record
  * in hdfc gateway.
  *
@@ -23,7 +23,7 @@ class CaptureTest extends TestCase
 
     protected $testData = null;
 
-    protected $txn = null;
+    protected $payment = null;
 
     public function setUp()
     {
@@ -31,15 +31,15 @@ class CaptureTest extends TestCase
 
         $this->testData = require(__DIR__.'/helpers/capture.php');
 
-        $txn = $this->fixtures->createPaymentAuthorizedEntity();
-        $this->txn = $txn->toArrayPublic();
+        $payment = $this->fixtures->createPaymentAuthorizedEntity();
+        $this->payment = $payment->toArrayPublic();
 
         $this->setupPrivateBasicAuthParams();
     }
 
     public function testCapture()
     {
-        $this->txn = $this->defaultAuthPayment();
+        $this->payment = $this->defaultAuthPayment();
 
         $this->setupPrivateBasicAuthParams();
 
@@ -48,9 +48,9 @@ class CaptureTest extends TestCase
 
     public function testCaptureTwice()
     {
-        $txn = $this->fixtures->createPaymentCapturedEntity()->toArrayPublic();
+        $payment = $this->fixtures->createPaymentCapturedEntity()->toArrayPublic();
 
-        $this->txn = $txn;
+        $this->payment = $payment;
 
         $this->startTest();
     }
@@ -59,7 +59,7 @@ class CaptureTest extends TestCase
     {
         $amount = 10000;
 
-        $this->txn = $this->defaultAuthPayment();
+        $this->payment = $this->defaultAuthPayment();
 
         $this->setupPrivateBasicAuthParams();
 
@@ -68,21 +68,21 @@ class CaptureTest extends TestCase
 
     public function testCaptureWithMoreAmountThanAuth()
     {
-        $amount = $this->txn['amount'] + 1000;
+        $amount = $this->payment['amount'] + 1000;
 
         $this->startTest(null, $amount);
     }
 
     public function testCaptureWithNoAmount()
     {
-        unset($this->txn['amount']);
+        unset($this->payment['amount']);
 
         $this->startTest();
     }
 
     public function testCaptureWithZeroAmount()
     {
-        $this->txn['amount'] = 0;
+        $this->payment['amount'] = 0;
 
         $this->startTest();
     }
@@ -92,16 +92,16 @@ class CaptureTest extends TestCase
         //
         // Minium amount allowed for capture
         //
-        $this->txn['amount'] = 99;
+        $this->payment['amount'] = 99;
 
         $this->startTest();
     }
 
     public function testCaptureWithMinAmountAllowed()
     {
-        $this->txn = $this->defaultAuthPayment();
+        $this->payment = $this->defaultAuthPayment();
 
-        $this->txn['amount'] = 100;
+        $this->payment['amount'] = 100;
 
         $this->setupPrivateBasicAuthParams();
         $this->startTest();
@@ -109,34 +109,34 @@ class CaptureTest extends TestCase
 
     public function testCaptureWithOverflowingAmount()
     {
-        $this->txn['amount'] = 100000000000000000000000000000000000;
+        $this->payment['amount'] = 100000000000000000000000000000000000;
 
         $this->startTest();
     }
 
     public function testCaptureWithNegativeAmount()
     {
-        $this->txn['amount'] = -10000;
+        $this->payment['amount'] = -10000;
 
         $this->startTest();
     }
 
     public function testCaptureWithRandomId()
     {
-        $this->txn['id'] = '2fe34ae575104c0a95c3';
+        $this->payment['id'] = '2fe34ae575104c0a95c3';
 
         $this->startTest();
     }
 
     public function testCaptureAfterRefund()
     {
-        $txn = $this->defaultAuthPayment();
+        $payment = $this->defaultAuthPayment();
 
-        $txn = $this->capturePayment($txn['id'], $txn['amount']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $refund = $this->refundPayment($txn['id']);
+        $refund = $this->refundPayment($payment['id']);
 
-        $this->txn = $txn;
+        $this->payment = $payment;
 
         $this->startTest();
     }
@@ -168,13 +168,13 @@ class CaptureTest extends TestCase
     {
         if ($id === null)
         {
-            $id = $this->txn['id'];
+            $id = $this->payment['id'];
         }
 
         if ($amount === null)
         {
-            if (isset($this->txn['amount']))
-                $amount = $this->txn['amount'];
+            if (isset($this->payment['amount']))
+                $amount = $this->payment['amount'];
         }
     }
 }

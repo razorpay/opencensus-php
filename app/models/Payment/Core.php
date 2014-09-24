@@ -18,42 +18,42 @@ class Core
 {
     protected $trace;
 
-    protected $txnRepo;
+    protected $paymentRepo;
 
     public function __construct()
     {
         $this->trace = Trace::getInstance();
 
-        $this->txnRepo = (new Payment\Repository);
+        $this->paymentRepo = (new Payment\Repository);
     }
 
     public function retrieveByIdAndMerchantId($id, $merchantId)
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $txn = $this->txnRepo->findByIdAndMerchantId($id, $merchantId);
+        $payment = $this->paymentRepo->findByIdAndMerchantId($id, $merchantId);
 
-        return $txn;
+        return $payment;
     }
 
-    public function retrieveRefund($refundId, $merchantId, $txnId = null)
+    public function retrieveRefund($refundId, $merchantId, $paymentId = null)
     {
-        if ($txnId !== null)
+        if ($paymentId !== null)
         {
-            Payment\Entity::verifyIdAndStripSign($txnId);
+            Payment\Entity::verifyIdAndStripSign($paymentId);
         }
 
         Refund\Entity::verifyIdAndStripSign($refundId);
 
-        return (new Refund\Repository)->findOrFailPublicByParams($refundId, $merchantId, $txnId);
+        return (new Refund\Repository)->findOrFailPublicByParams($refundId, $merchantId, $paymentId);
     }
 
     public function retrieveById($id)
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $txn = $this->txnRepo->findOrFail($id);
+        $payment = $this->paymentRepo->findOrFail($id);
 
-        return $txn;
+        return $payment;
     }
 }

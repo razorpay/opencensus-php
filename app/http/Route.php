@@ -19,7 +19,7 @@ final class Route
         'payment_fetch_by_id'               => ['get',  'payments/{id}',                        'PaymentController@getPayment'],
         'payment_fetch_multiple'            => ['get',  'payments/{param?}',                    'PaymentController@getPayments'],
         'payment_fetch_refunds'             => ['get',  'payments/{id}/refunds',                'PaymentController@getRefundsForPayment'],
-        'payment_fetch_refund_by_id'        => ['get',  'payments/{txnId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'],
+        'payment_fetch_refund_by_id'        => ['get',  'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'],
         'refund_fetch_by_id'                => ['get',  'refunds/{id}',                         'PaymentController@getRefund'],
         'refund_fetch_multiple'             => ['get',  'refunds/{param?}',                     'PaymentController@getRefunds'],
         'merchant_create'                   => ['post', 'merchants',                            'MerchantController@postCreateMerchant'],

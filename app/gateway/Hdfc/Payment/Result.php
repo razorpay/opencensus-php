@@ -66,7 +66,7 @@ final class Result
      */
 
     /**
-     * Result codes received in response for txn
+     * Result codes received in response for payment
      */
     const CAPTURED = 'CAPTURED';
     const APPROVED = 'APPROVED';

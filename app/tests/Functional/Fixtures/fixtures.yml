@@ -74,7 +74,7 @@ Gateway\Hdfc\Entity:
     id: $integer
     trackid:
         type: Models\Payment\Entity
-    gateway_payment_id: $hdfcTxnId
+    gateway_payment_id: $hdfcPaymentId
     action: 4
     amount: $integer
     enroll_result: 2

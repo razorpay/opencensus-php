@@ -65,7 +65,7 @@ class MprReconcile extends Command
     {
         $array = parent::getOptions();
 
-        array_push($array, ['file', 'f', InputOption::VALUE_REQUIRED, 'Reconcile the txns in the mpr file being provided']);
+        array_push($array, ['file', 'f', InputOption::VALUE_REQUIRED, 'Reconcile the payments in the mpr file being provided']);
 
         return $array;
     }

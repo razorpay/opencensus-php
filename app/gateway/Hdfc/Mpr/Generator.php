@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
 use Models\Base;
+use Models\Payment;
 
 class Generator
 {
@@ -42,9 +43,9 @@ class Generator
 
     public function generateMpr(array $input)
     {
-        $hdfcTxns = $this->fetchHdfcPayments($input);
+        $hdfcPayments = $this->fetchHdfcPayments($input);
 
-        $mprArray = $this->generateMprArray($input, $hdfcTxns);
+        $mprArray = $this->generateMprArray($input, $hdfcPayments);
 
         $filename = $this->generateMprFile($mprArray);
 
@@ -56,17 +57,17 @@ class Generator
         $payments = array_column($input, 'payment');
         $trackids = array_column($payments, 'id');
 
-        $hdfcTxns = (new Hdfc\Repository)->retrieveCapturedPayments($trackids);
+        $hdfcPayments = (new Hdfc\Repository)->retrieveCapturedPayments($trackids);
 
         $n = count($input);
 
-        if (count($hdfcTxns) !== $n)
+        if (count($hdfcPayments) !== $n)
         {
             throw new Exception\LogicException(
-                'Hdfc mpr: counts do not match: ' . $n . ' vs ' . count($hdfcTxns));
+                'Hdfc mpr: counts do not match: ' . $n . ' vs ' . count($hdfcPayments));
         }
 
-        return $hdfcTxns;
+        return $hdfcPayments;
     }
 
     protected function generateMprFile($mprArray)
@@ -87,7 +88,7 @@ class Generator
         return $filename;
     }
 
-    protected function generateMprArray($input, $hdfcTxns)
+    protected function generateMprArray($input, $hdfcPayments)
     {
         $mprArray = array();
 
@@ -97,14 +98,14 @@ class Generator
 
         for ($i = 0; $i < $count; $i++)
         {
-            $values = $this->generateMprRow($input[$i], $hdfcTxns[$i]);
+            $values = $this->generateMprRow($input[$i], $hdfcPayments[$i]);
             array_push($mprArray, $values);
         }
 
         return $mprArray;
     }
 
-    protected function generateMprRow($input, $hdfcTxn)
+    protected function generateMprRow($input, $hdfcPayment)
     {
         $amount = $input['payment']['amount'] / 100;
 
@@ -128,6 +129,8 @@ class Generator
         $captureDate = $capturedAt->format('d-M-y');
         $setlDate = $capturedAt->addDay(1)->format('d-M-y');
 
+        $trackid = Payment\Entity::getIdPrefix() . $input['payment']['id'];
+
         $attributes = array(
             'merchant_code'     => $input['terminal']['gateway_merchant_id'],
             'terminal_number'   => $input['terminal']['gateway_terminal_id'],
@@ -140,9 +143,9 @@ class Generator
             'approv_code'       => '000000',
             'intl_amt'          => 0,
             'domestic_amt'      => $amount,
-            'tran_id'           => $hdfcTxn['gateway_payment_id'],
+            'tran_id'           => $hdfcPayment['gateway_payment_id'],
             'upvalue'           => '`',
-            'merchant_trackid'  => 'txn-'.$input['payment']['id'],
+            'merchant_trackid'  => $trackid,
             'msf'               => $msf,
             'service_tax'       => $serviceTax,
             'edu_cess'          => $educationCess,
@@ -153,7 +156,7 @@ class Generator
             'udf3'              => '',
             'udf4'              => '',
             'udf5'              => '',
-            'sequence_number'   => $hdfcTxn['ref'],
+            'sequence_number'   => $hdfcPayment['ref'],
         );
 
         return array_values($attributes);

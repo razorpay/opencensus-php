@@ -162,9 +162,9 @@ class BasicAuthTest extends TestCase
             'method' => 'GET',
             'url' => '/payments');
 
-        $txn = $this->makeRequestAndGetContent($request);
+        $payment = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('entity', $txn);
-        $this->assertEquals($txn['entity'], 'payment');
+        $this->assertArrayHasKey('entity', $payment);
+        $this->assertEquals($payment['entity'], 'payment');
     }
 }

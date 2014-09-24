@@ -20,7 +20,7 @@ class TestCase extends ParentTestCase
 
     protected $fixtures;
 
-    protected $dbTxnInProgress = false;
+    protected $dbTransactionInProgress = false;
 
     protected $auth = array();
 
@@ -60,12 +60,12 @@ class TestCase extends ParentTestCase
         //
         // Undo DB Changes after test
         //
-        if ($this->dbTxnInProgress === true)
+        if ($this->dbTransactionInProgress === true)
         {
             DB::connection('live')->rollBack();
             DB::connection('test')->rollBack();
 
-            $this->dbTxnInProgress = false;
+            $this->dbTransactionInProgress = false;
         }
 
         DB::disconnect('live');
@@ -93,7 +93,7 @@ class TestCase extends ParentTestCase
         DB::connection('test')->beginTransaction();
         DB::connection('live')->beginTransaction();
 
-        $this->dbTxnInProgress = true;
+        $this->dbTransactionInProgress = true;
 
         // Seed DB with default entities to be used in
         // tests

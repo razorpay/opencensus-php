@@ -118,4 +118,9 @@ class PublicEntity extends UniqueIdEntity
     {
         return static::$sign;
     }
+
+    public static function getIdPrefix()
+    {
+        return static::$sign . static::$delimiter;
+    }
 }

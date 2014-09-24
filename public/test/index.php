@@ -23,7 +23,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 	</tr>
 </table>
 <br><br>
-<form method="post" id="txnform" action="//<?=$public_url?>/payments">
+<form method="post" id="paymentform" action="//<?=$public_url?>/payments">
 <table border="1" align="center"  width="300">
 	<tr>
 	<th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>

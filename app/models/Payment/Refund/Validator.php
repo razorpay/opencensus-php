@@ -17,16 +17,16 @@ class Validator extends Base\Validator
         'paymentRefundStatus',
         'refundAmount');
 
-    protected $txn;
+    protected $payment;
 
-    public function setPayment($txn)
+    public function setPayment($payment)
     {
-        $this->txn = $txn;
+        $this->payment = $payment;
     }
 
     protected function validatePaymentStatus($input)
     {
-        if ($this->txn->isCaptured() === false)
+        if ($this->payment->isCaptured() === false)
         {
             throw new Exception\BadRequestException(
                 null,
@@ -36,7 +36,7 @@ class Validator extends Base\Validator
 
     protected function validatePaymentRefundStatus($input)
     {
-        if ($this->txn->isFullyRefunded())
+        if ($this->payment->isFullyRefunded())
         {
             throw new Exception\BadRequestException(
                 null,
@@ -51,11 +51,11 @@ class Validator extends Base\Validator
             return;
         }
 
-        $txn = $this->txn;
+        $payment = $this->payment;
 
         $amountToRefund = $input['amount'];
 
-        $amountCaptured = $txn->getAmount();
+        $amountCaptured = $payment->getAmount();
 
         // Although both these checks could be combined,
         // it's done separately to give better error message
@@ -67,7 +67,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED);
         }
 
-        if ($amountToRefund > $txn->getAmountUnrefunded())
+        if ($amountToRefund > $payment->getAmountUnrefunded())
         {
             throw new Exception\BadRequestException(
                 null,

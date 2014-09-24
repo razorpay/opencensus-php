@@ -14,57 +14,57 @@ trait Support
      * Forms the crux of doing support
      * payments (capture and refund).
      *
-     * @param  array    $input array containing txn
+     * @param  array    $input array containing payment
      *                         and card details
      * @param  string   $type  should be either 'capture'
      *                         or 'refund'
      * @return array
      */
-    protected function supportTxn($input, $type)
+    protected function supportPayment($input, $type)
     {
-        $this->getModel($input['txn']['id']);
+        $this->getModel($input['payment']['id']);
 
         //
-        // Mark the type of support txn.
+        // Mark the type of support payment.
         // It will be either 'capture' or 'refund'
         //
-        $this->setSupportTxnType($type);
+        $this->setSupportPaymentType($type);
 
         //
-        // Fill the fields required for the txn
+        // Fill the fields required for the payment
         //
-        $this->createSupportTxnRequestFields($input);
+        $this->createSupportPaymentRequestFields($input);
 
         $this->trace(
             TRACE::DEBUG,
             TraceCode::GATEWAY_SUPPORT_REQUEST,
-            $this->supportTxnRequest);
+            $this->supportPaymentRequest);
 
         $this->runRequestResponseFlow(
-            $this->supportTxnRequest,
-            $this->supportTxnResponse);
+            $this->supportPaymentRequest,
+            $this->supportPaymentResponse);
 
         if ($this->error === false)
         {
-            $this->validateSupportTxnResponse();
+            $this->validateSupportPaymentResponse();
         }
 
-        $this->persistAfterSupportTxn('refund');
+        $this->persistAfterSupportPayment('refund');
 
         if ($this->error)
         {
-            $this->throwException($this->supportTxnResponse['error']);
+            $this->throwException($this->supportPaymentResponse['error']);
         }
     }
 
-    protected function isSupportTxnSuccess()
+    protected function isSupportPaymentSuccess()
     {
         if ($this->error)
         {
             return false;
         }
 
-        $response = & $this->supportTxnResponse;
+        $response = & $this->supportPaymentResponse;
 
         $result = $response['data']['result'];
 
@@ -110,14 +110,14 @@ trait Support
         return ! ($this->error);
     }
 
-    protected function setSupportTxnType($type)
+    protected function setSupportPaymentType($type)
     {
         Assert(($type === 'capture') or
                ($type === 'refund'));
 
-        $this->supportTxnRequest['type'] = $type;
+        $this->supportPaymentRequest['type'] = $type;
 
-        $this->supportTxnResponse['type'] = $type;
+        $this->supportPaymentResponse['type'] = $type;
     }
 
     /**
@@ -125,17 +125,17 @@ trait Support
      * payment refund/capture
      *
      * @param  array $input
-     * Contains the 'txn' details
+     * Contains the 'payment' details
      */
-    protected function createSupportTxnRequestFields($input)
+    protected function createSupportPaymentRequestFields($input)
     {
-        $txn = $input['txn'];
+        $payment = $input['payment'];
 
-        $card = $input['txn']['card'];
+        $card = $input['payment']['card'];
 
-        $data = &$this->supportTxnRequest['data'];
+        $data = &$this->supportPaymentRequest['data'];
 
-        $type = $this->supportTxnRequest['type'];
+        $type = $this->supportPaymentRequest['type'];
 
         $action = constant(__NAMESPACE__.'\Action::'.strtoupper($type));
 
@@ -153,11 +153,11 @@ trait Support
         $data['trackid'] = $this->id;
     }
 
-    protected function validateSupportTxnResponse()
+    protected function validateSupportPaymentResponse()
     {
-        $data = $this->supportTxnResponse['data'];
+        $data = $this->supportPaymentResponse['data'];
 
-        $this->validateSupportTxnTrackId();
+        $this->validateSupportPaymentTrackId();
 
         $this->validatePostDate($data['postdate']);
     }
@@ -168,42 +168,42 @@ trait Support
      *
      * @return void
      */
-    protected function validateSupportTxnTrackId()
+    protected function validateSupportPaymentTrackId()
     {
-        $trackid = $this->supportTxnResponse['data']['trackid'];
+        $trackid = $this->supportPaymentResponse['data']['trackid'];
 
-        if ($trackid !== $this->supportTxnRequest['data']['trackid'])
+        if ($trackid !== $this->supportPaymentRequest['data']['trackid'])
         {
             throw new Exception\InvalidArgumentException(
                 'Gateway Exception: Track id do not match');
         }
     }
 
-    protected function persistAfterSupportTxn($type = 'capture')
+    protected function persistAfterSupportPayment($type = 'capture')
     {
         if ($this->error)
         {
-            $this->model = $this->repo->persistAfterSupportTxnError(
+            $this->model = $this->repo->persistAfterSupportPaymentError(
                                 $this->id,
-                                $this->supportTxnRequest['data'],
-                                $this->supportTxnResponse['error'],
+                                $this->supportPaymentRequest['data'],
+                                $this->supportPaymentResponse['error'],
                                 $type);
 
             $this->trace(
                 Trace::ERROR,
                 TraceCode::GATEWAY_SUPPORT_ERROR,
-                $this->supportTxnResponse);
+                $this->supportPaymentResponse);
         }
         else
         {
-            $this->model = $this->repo->persistAfterSupportTxn(
-                    $this->supportTxnRequest['data'],
-                    $this->supportTxnResponse['data']);
+            $this->model = $this->repo->persistAfterSupportPayment(
+                    $this->supportPaymentRequest['data'],
+                    $this->supportPaymentResponse['data']);
 
             $this->trace(
                 Trace::INFO,
                 TraceCode::GATEWAY_SUPPORT_RESPONSE,
-                $this->supportTxnResponse);
+                $this->supportPaymentResponse);
         }
     }
 }

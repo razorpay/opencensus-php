@@ -15,9 +15,9 @@ class PaymentController extends BaseController
 
     public function getPayment($id)
     {
-        $txn = $this->payment->retrievePayment($id);
+        $payment = $this->payment->retrievePayment($id);
 
-        return ApiResponse::json($txn);
+        return ApiResponse::json($payment);
     }
 
     /**
@@ -27,9 +27,9 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
-        $txns = $this->payment->retrieveMultiple($input);
+        $payments = $this->payment->retrieveMultiple($input);
 
-        return ApiResponse::json($txns);
+        return ApiResponse::json($payments);
     }
 
     /**
@@ -64,9 +64,9 @@ class PaymentController extends BaseController
         unset($input['callback']);
         unset($input['_']);
 
-        $txn = $this->payment->process($input);
+        $payment = $this->payment->process($input);
 
-        return ApiResponse::json($txn);
+        return ApiResponse::json($payment);
     }
 
     /**
@@ -76,9 +76,9 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
-        $txn = $this->payment->refund($id, $input);
+        $payment = $this->payment->refund($id, $input);
 
-        return ApiResponse::json($txn);
+        return ApiResponse::json($payment);
     }
 
     /**
@@ -89,9 +89,9 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
-        $txn = $this->payment->capture($id, $input);
+        $payment = $this->payment->capture($id, $input);
 
-        return ApiResponse::json($txn);
+        return ApiResponse::json($payment);
     }
 
     public function postCallback($id)
@@ -125,9 +125,9 @@ class PaymentController extends BaseController
         }
     }
 
-    public function getRefundsForPayment($txnId)
+    public function getRefundsForPayment($paymentId)
     {
-        $refunds = $this->payment->retrieveRefundsForPayment($txnId);
+        $refunds = $this->payment->retrieveRefundsForPayment($paymentId);
 
         return ApiResponse::json($refunds);
     }
@@ -148,9 +148,9 @@ class PaymentController extends BaseController
         return ApiResponse::json($refunds);
     }
 
-    public function getRefundByRefundAndPaymentId($txnId, $rfndId)
+    public function getRefundByRefundAndPaymentId($paymentId, $rfndId)
     {
-        $refunds = $this->payment->retrieveRefundByIdAndPaymentId($txnId, $rfndId);
+        $refunds = $this->payment->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
 
         return ApiResponse::json($refunds);
     }

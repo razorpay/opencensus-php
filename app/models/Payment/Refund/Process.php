@@ -18,16 +18,16 @@ class Process extends Action
      */
     public function process($id, $input)
     {
-        $txn = $this->retrieve($id);
+        $payment = $this->retrieve($id);
 
-        $refund = (new Refund\Entity)->build($input, $txn);
+        $refund = (new Refund\Entity)->build($input, $payment);
 
         $refund->merchant()->associate($this->merchant);
 
         $this->refund = $refund;
 
         $data = array(
-                    'txn' => $txn->toArrayWithCard(),
+                    'payment' => $payment->toArrayWithCard(),
                     'amount' => $refund->getAmount());
 
         try
@@ -39,7 +39,7 @@ class Process extends Action
             //
             // Analytics
             //
-            $this->dashboardQueueRecord($txn);
+            $this->dashboardQueueRecord($payment);
         }
         catch(BaseException $e)
         {
@@ -57,20 +57,20 @@ class Process extends Action
     {
         $this->repo->transaction(function()
         {
-            $this->repo->lockForUpdate($this->txn->getKey());
+            $this->repo->lockForUpdate($this->payment->getKey());
 
-            // (new Ledger\Core)->recordRefund($this->txn);
+            // (new Ledger\Core)->recordRefund($this->payment);
 
             $this->updatePaymentRefunded();
 
-            $this->txn->save();
+            $this->payment->save();
             $this->refund->save();
         });
     }
 
     protected function updatePaymentRefunded()
     {
-        $this->txn->refundAmount($this->refund->getAmount());
+        $this->payment->refundAmount($this->refund->getAmount());
 
         $this->trace(TraceCode::PAYMENT_REFUND_SUCCESS);
     }

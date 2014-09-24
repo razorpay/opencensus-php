@@ -25,7 +25,7 @@ class AuthorizeTest extends TestCase
 
         $this->setupPublicBasicAuthParams();
 
-        $this->txn = $this->getDefaultPaymentArray();
+        $this->payment = $this->getDefaultPaymentArray();
     }
 
     public function testInvalidEmailInPayment()
@@ -35,7 +35,7 @@ class AuthorizeTest extends TestCase
 
     public function testEmailMissing()
     {
-        unset($this->txn['email']);
+        unset($this->payment['email']);
         $this->startTest();
     }
 
@@ -66,12 +66,12 @@ class AuthorizeTest extends TestCase
 
     public function testCardMissing()
     {
-        unset($this->txn['card']);
+        unset($this->payment['card']);
 
         $this->startTest();
     }
 
-    public function testTxnCardAsString()
+    public function testPaymentCardAsString()
     {
         $this->startTest();
     }
@@ -98,7 +98,7 @@ class AuthorizeTest extends TestCase
 
     public function testDescriptionMissing()
     {
-        unset($this->txn['description']);
+        unset($this->payment['description']);
 
         $this->startTest();
     }
@@ -125,7 +125,7 @@ class AuthorizeTest extends TestCase
 
     public function testUdfMissing()
     {
-        unset($this->txn['udf']);
+        unset($this->payment['udf']);
 
         $this->startTest();
     }
@@ -184,9 +184,9 @@ class AuthorizeTest extends TestCase
 
         $testData = $this->testData[$func];
 
-        $this->replaceValuesRecursively($this->txn, $testData['request']['content']);
+        $this->replaceValuesRecursively($this->payment, $testData['request']['content']);
 
-        $testData['request']['content'] = $this->txn;
+        $testData['request']['content'] = $this->payment;
 
         $this->runRequestResponseFlow($testData);
     }

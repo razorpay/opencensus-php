@@ -34,7 +34,7 @@ class Entity extends Base\PublicEntity
 
     protected $table = \Constants\Table::PAYMENT;
 
-    protected static $sign = 'txn';
+    protected static $sign = 'pay';
 
     protected $entity = 'payment';
 

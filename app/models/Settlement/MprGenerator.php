@@ -70,8 +70,8 @@ class MprGenerator
 
         $gateway = 'hdfc';
 
-        $txnRepo = new Payment\Repository;
-        $txns = $txnRepo->fetchCapturedForGatewayBetweenTimestamp(
+        $paymentRepo = new Payment\Repository;
+        $payments = $paymentRepo->fetchCapturedForGatewayBetweenTimestamp(
                             self::$fromTimestamp,
                             self::$toTimestamp,
                             $gateway);
@@ -81,35 +81,35 @@ class MprGenerator
                             self::$fromTimestamp,
                             self::$toTimestamp);
 
-        $count = $txns->count();
+        $count = $payments->count();
 
         if ($count === 0)
         {
             return array('file' => null, 'count' => 0);
         }
 
-        $array = $this->getRelatedEntities($txns);
+        $array = $this->getRelatedEntities($payments);
 
         $mprFile = Gateway::call('generateMpr', $array, 'test');
 
         return array('file' => $mprFile, 'count' => $count);
     }
 
-    protected function getRelatedEntities($txns)
+    protected function getRelatedEntities($payments)
     {
-        $txns->load('merchant', 'merchant.terminal', 'card');
+        $payments->load('merchant', 'merchant.terminal', 'card');
 
         $array = array();
 
-        foreach($txns->all() as $txn)
+        foreach($payments->all() as $payment)
         {
-            $merchant = $txn->merchant;
+            $merchant = $payment->merchant;
 
             $cols = array(
-                'payment' => $txn->toArray(),
+                'payment' => $payment->toArray(),
                 'merchant'    => $merchant->toArray(),
                 'terminal'    => $merchant->terminal->toArray(),
-                'card'        => $txn->card->toArray()
+                'card'        => $payment->card->toArray()
             );
 
             array_push($array, $cols);

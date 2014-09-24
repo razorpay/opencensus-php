@@ -8,7 +8,7 @@ use Tests\Functional\TestCase;
  * Tests for refund payments
  *
  * For refund payments, first we need to create a
- * captured payment. By default, an captured txn entity
+ * captured payment. By default, an captured payment entity
  * is provided. However, it doesn't have a corresponding record
  * in hdfc gateway.
  *
@@ -21,7 +21,7 @@ class RefundTest extends TestCase
 {
     use PaymentAuthFlowTrait;
 
-    protected $txn = null;
+    protected $payment = null;
 
     public function setUp()
     {
@@ -31,17 +31,17 @@ class RefundTest extends TestCase
 
         $this->testData = include(__DIR__.'/helpers/refund.php');
 
-        $this->txn = $this->createCapturedPaymentEntity();
+        $this->payment = $this->createCapturedPaymentEntity();
 
         $this->setupPrivateBasicAuthParams();
     }
 
     public function testRefund()
     {
-        $txn = $this->defaultAuthPayment();
-        $txn = $this->capturePayment($txn['id'], $txn['amount']);
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $refund = $this->startTest($txn['id'], (string)$txn['amount']);
+        $refund = $this->startTest($payment['id'], (string)$payment['amount']);
 
         $this->assertEquals(substr($refund['id'], 0, 5), 'rfnd-');
 
@@ -50,48 +50,48 @@ class RefundTest extends TestCase
 
     public function testMultipleRefunds()
     {
-        $txn = $this->defaultAuthPayment();
-        $txn = $this->capturePayment($txn['id'], $txn['amount']);
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->refundPayment($txn['id'], '10000');
-        $this->refundPayment($txn['id'], '20000');
-        $this->refundPayment($txn['id'], '12000');
-        $this->refundPayment($txn['id'], '8000');
+        $this->refundPayment($payment['id'], '10000');
+        $this->refundPayment($payment['id'], '20000');
+        $this->refundPayment($payment['id'], '12000');
+        $this->refundPayment($payment['id'], '8000');
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$txn['id'];
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['id'];
 
         return $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
     public function testRefundWithHigherAmount()
     {
-        $this->startTest($this->txn['id'], 50001);
+        $this->startTest($this->payment['id'], 50001);
     }
 
     public function testMultipleRefundsWithHigherAmount()
     {
-        $txn = $this->defaultAuthPayment();
-        $txn = $this->capturePayment($txn['id'], $txn['amount']);
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->refundPayment($txn['id'], 10000);
-        $this->refundPayment($txn['id'], 20000);
+        $this->refundPayment($payment['id'], 10000);
+        $this->refundPayment($payment['id'], 20000);
 
-        $this->startTest($txn['id'], 30000);
+        $this->startTest($payment['id'], 30000);
     }
 
     public function testRefundOnRefundedPayment()
     {
-        $txn = $this->defaultAuthPayment();
-        $txn = $this->capturePayment($txn['id'], $txn['amount']);
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->refundPayment($txn['id']);
+        $this->refundPayment($payment['id']);
 
-        $this->startTest($txn['id'], 100);
+        $this->startTest($payment['id'], 100);
     }
 
     public function testRefundOnAuthorizedPayment()
     {
-        $this->txn = $this->defaultAuthPayment();
+        $this->payment = $this->defaultAuthPayment();
 
         $this->setupPrivateBasicAuthParams();
 
@@ -108,14 +108,14 @@ class RefundTest extends TestCase
         $this->startTest(null, 0);
     }
 
-    public function startTest($txnId = null, $amount = null)
+    public function startTest($paymentId = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
 
         $testData = $this->testData[$name];
 
-        $this->setRequestData($testData['request'], $txnId, $amount);
+        $this->setRequestData($testData['request'], $paymentId, $amount);
 
         return $this->runRequestResponseFlow($testData);
     }
@@ -138,7 +138,7 @@ class RefundTest extends TestCase
     {
         if ($id === null)
         {
-            $id = $this->txn['id'];
+            $id = $this->payment['id'];
         }
 
     }

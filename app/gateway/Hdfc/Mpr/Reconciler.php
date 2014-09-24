@@ -30,9 +30,9 @@ class Reconciler
         $attributes = $this->getTranslatedAttributes($input);
 
         $repo = new Hdfc\Repository;
-        $hdfcTxn = $repo->findOrFail($attributes['gateway_payment_id']);
+        $hdfcPayment = $repo->findOrFail($attributes['gateway_payment_id']);
 
-        if ((string)$attributes['gateway_payment_id'] !== $hdfcTxn['gateway_payment_id'])
+        if ((string)$attributes['gateway_payment_id'] !== $hdfcPayment['gateway_payment_id'])
         {
             throw new Exception\LogicException('Hdfc mpr: Gateway payment id does not match');
         }
@@ -56,12 +56,12 @@ class Reconciler
 
     protected function getTranslatedAttributes($row)
     {
-        // Remove 'txn-' from beginning of payment_id
+        // Remove 'pay-' from beginning of payment_id
         $row['merchant_trackid'] = substr($row['merchant_trackid'], 4);
 
         $attributes = array(
-            'payment_id'            => $row['merchant_trackid'],
-            'gateway_payment_id'    => $row['tran_id'],
+            'payment_id'                => $row['merchant_trackid'],
+            'gateway_payment_id'        => $row['tran_id'],
             'gateway_merchant_id'       => $row['merchant_code'],
             'gateway_terminal_id'       => $row['terminal_number'],
             'card_network'              => $row['card_type'],
@@ -131,9 +131,9 @@ class Reconciler
 
     protected function verifyPaymentAttributes($mpr, $payment)
     {
-        $txnId = $payment[Payment\Entity::ID];
-
-        if ($mpr['payment_id'] !== $txnId)
+        $paymentId = $payment[Payment\Entity::ID];
+//sd($paymentId, $mpr['payment_id']);
+        if ($mpr['payment_id'] !== $paymentId)
         {
             throw new Exception\LogicException(
                 'Hdfc mpr: Payment id does not match');

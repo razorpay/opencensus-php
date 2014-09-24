@@ -20,19 +20,19 @@ class Authorize extends Action
 
         $this->tracePaymentNewRequest($input);
 
-        list($txn, $cardData) = $this->createEntitites($input);
-        $this->txn = $txn;
+        list($payment, $cardData) = $this->createEntitites($input);
+        $this->payment = $payment;
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
         //
         // Call gateway with required info
         //
-        $txnInfo = array(
-                    'txn' => $txn->toArray(),
+        $paymentInfo = array(
+                    'payment' => $payment->toArray(),
                     'card' => $cardData);
 
-        $callbackData = $this->callGateway($txnInfo);
+        $callbackData = $this->callGateway($paymentInfo);
 
         if ($callbackData !== null)
         {
@@ -52,11 +52,11 @@ class Authorize extends Action
             return $callbackData;
         }
 
-        $txn->setAmountAuthorized();
+        $payment->setAmountAuthorized();
 
         $this->updatePaymentAuthorized();
 
-        return $txn;
+        return $payment;
     }
 
     /**
@@ -69,11 +69,11 @@ class Authorize extends Action
      * @param  array               $input   contains fields provided
      *                                      by bank
      *
-     * @return Payment\Entity           Updated txn entity
+     * @return Payment\Entity           Updated payment entity
      */
     public function callback($id, array $input)
     {
-        $txn = $this->retrieve($id);
+        $payment = $this->retrieve($id);
 
         //
         // This field is received back from bank acs.
@@ -81,18 +81,18 @@ class Authorize extends Action
         //
         unset($input['csrf']);
 
-        $input['txn'] = $txn->toArray();
+        $input['payment'] = $payment->toArray();
 
         try
         {
-            Payment\Validator::bankAcsCallbackValidate($txn, $input);
+            Payment\Validator::bankAcsCallbackValidate($payment, $input);
 
             $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
         }
         catch (BaseException $e)
         {
             $this->updatePaymentFailed(
-                $txn,
+                $payment,
                 $e->getError(),
                 TraceCode::PAYMENT_AUTH_FAILURE);
 
@@ -101,7 +101,7 @@ class Authorize extends Action
 
         $this->updatePaymentAuthorized();
 
-        return $txn;
+        return $payment;
     }
 
     protected function attachCallbackUrl(& $callbackData)
@@ -112,7 +112,7 @@ class Authorize extends Action
 
         $urlSegment = substr($urlSegment, 0, $pos);
 
-        $urlSegment .= '/' . $this->txn->getPublicId();
+        $urlSegment .= '/' . $this->payment->getPublicId();
 
         $scheme = Request::getScheme().'://';
         $host = Request::getHost();
@@ -144,10 +144,10 @@ class Authorize extends Action
     }
 
     /**
-     * Creates card and txn entities
+     * Creates card and payment entities
      *
      * @param  array $input Input required for creating
-     *                      card and txn entities
+     *                      card and payment entities
      *
      * @return array        Returns an array containing
      *                      Payment\Entity object and
@@ -177,50 +177,50 @@ class Authorize extends Action
         unset($input['card']);
 
         //
-        // Create txn entity
+        // Create payment entity
         //
-        $this->txn = $this->createPaymentEntity($input, $card);
+        $this->payment = $this->createPaymentEntity($input, $card);
 
         $this->saveEntities();
 
-        return array($this->txn, $cardData);
+        return array($this->payment, $cardData);
     }
 
     protected function saveEntities()
     {
-        (new Card\Repository)->saveOrFail($this->txn->card);
+        (new Card\Repository)->saveOrFail($this->payment->card);
 
-        $this->repo->saveOrFail($this->txn);
+        $this->repo->saveOrFail($this->payment);
     }
 
     /**
      * Creates an entry for a new payment
      *
      * @param  array                $input  Input relevant to creating
-     *                                      a txn row in db
+     *                                      a payment row in db
      * @param  Card\Entity          $card   Card
      *
      * @return Payment\Entity   A Payment\Entity object
      */
     public function createPaymentEntity($input, Card\Entity $card)
     {
-        $txn = (new Payment\Entity)->build($input);
+        $payment = (new Payment\Entity)->build($input);
 
         //
         // Associate payment to card
         //
-        $txn->card()->associate($card);
+        $payment->card()->associate($card);
 
-        return $txn;
+        return $payment;
     }
 
     protected function updatePaymentAuthorized()
     {
-        $txn = $this->txn;
+        $payment = $this->payment;
 
-        $txn->setStatus(Payment\Status::AUTHORIZED);
+        $payment->setStatus(Payment\Status::AUTHORIZED);
 
-        $txn->save();
+        $payment->save();
 
         $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
     }

@@ -11,21 +11,21 @@ class Capture extends Action
     /**
      * Capture a previous auth payment
      *
-     * @param  string              $id  Id of txn to be captured
+     * @param  string              $id  Id of payment to be captured
      *
      * @return Payment\Entity       Payment\Entity object
      */
     public function process($id, array $input = array())
     {
-        $txn = $this->retrieve($id);
+        $payment = $this->retrieve($id);
 
-        (new Payment\Validator)->captureValidate($txn, $input);
+        (new Payment\Validator)->captureValidate($payment, $input);
 
         $data = array(
-                    'txn' => $txn->toArrayWithCard(),
+                    'payment' => $payment->toArrayWithCard(),
                     'amount' => $input['amount']);
 
-        $txn->setCaptureAmount($input['amount']);
+        $payment->setCaptureAmount($input['amount']);
 
         try
         {
@@ -36,7 +36,7 @@ class Capture extends Action
             //
             // Analytics
             //
-            $this->dashboardQueueRecord($txn);
+            $this->dashboardQueueRecord($payment);
         }
         catch (BaseException $e)
         {
@@ -47,29 +47,29 @@ class Capture extends Action
             throw $e;
         }
 
-        return $txn;
+        return $payment;
     }
 
     protected function recordCapture()
     {
         $this->repo->transaction(function()
         {
-            $this->repo->lockForUpdate($this->txn->getKey());
+            $this->repo->lockForUpdate($this->payment->getKey());
 
-            // (new Ledger\Core)->recordCapture($this->$txn);
+            // (new Ledger\Core)->recordCapture($this->$payment);
 
             $this->updatePaymentCaptured();
 
-            $this->txn->save();
+            $this->payment->save();
         });
     }
 
 
     protected function updatePaymentCaptured()
     {
-        $this->txn->setStatus(Payment\Status::CAPTURED);
+        $this->payment->setStatus(Payment\Status::CAPTURED);
 
-        $this->txn->setCaptureTimestamp();
+        $this->payment->setCaptureTimestamp();
 
         $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }

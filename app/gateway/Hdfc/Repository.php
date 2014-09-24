@@ -159,7 +159,7 @@ class Repository extends Base\Repository
         $this->saveOrFail($model);
     }
 
-    public function persistAfterSupportTxn($requestData, $responseData)
+    public function persistAfterSupportPayment($requestData, $responseData)
     {
         $status = '';
         $action = $requestData['action'];
@@ -193,7 +193,7 @@ class Repository extends Base\Repository
         return $this->createOrFail($attributes);
     }
 
-    public function persistAfterSupportTxnError($id, $requestdata, array $error, $type)
+    public function persistAfterSupportPaymentError($id, $requestdata, array $error, $type)
     {
         $action = '';
         $status = '';

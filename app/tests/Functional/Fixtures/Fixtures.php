@@ -32,16 +32,16 @@ class Fixtures
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $txn = $this->createEntity('payment', $attributes);
+        $payment = $this->createEntity('payment', $attributes);
 
-        $hdfcTxn = $this->createHdfcPaymentAuthorizedEntity(
+        $hdfcPayment = $this->createHdfcPaymentAuthorizedEntity(
             array(
-                'trackid' => $txn->getKey(),
-                'amount' => $txn->getAmount(),
-                'created_at' => $txn->created_at,
+                'trackid' => $payment->getKey(),
+                'amount' => $payment->getAmount(),
+                'created_at' => $payment->created_at,
             ));
 
-        return $txn;
+        return $payment;
     }
 
     public function createPaymentCapturedEntity(array $attributes = array())
@@ -53,20 +53,20 @@ class Fixtures
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $txn = $this->createEntity('payment', $attributes);
+        $payment = $this->createEntity('payment', $attributes);
 
         $hdfcAttrArray = array(
-            'trackid' => $txn->getKey(),
-            'amount' => $txn->getAmount(),
-            'created_at' => $txn->created_at);
+            'trackid' => $payment->getKey(),
+            'amount' => $payment->getAmount(),
+            'created_at' => $payment->created_at);
 
-        $hdfcTxnAuthorized = $this->createHdfcPaymentAuthorizedEntity(
+        $hdfcPaymentAuthorized = $this->createHdfcPaymentAuthorizedEntity(
             $hdfcAttrArray);
 
-        $hdfcTxnCaptured = $this->createHdfcPaymentCapturedEntity(
+        $hdfcPaymentCaptured = $this->createHdfcPaymentCapturedEntity(
             $hdfcAttrArray);
 
-        return $txn;
+        return $payment;
     }
 
     protected function createHdfcPaymentAuthorizedEntity(array $attributes = array())

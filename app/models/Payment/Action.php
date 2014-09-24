@@ -24,7 +24,7 @@ class Action
 
     protected $trace;
 
-    protected $txn;
+    protected $payment;
 
     protected $mode;
 
@@ -92,7 +92,7 @@ class Action
 
     protected function trace($traceCode, $level = Trace::INFO)
     {
-        $data = $this->txn->toArrayTraceRelevant();
+        $data = $this->payment->toArrayTraceRelevant();
 
         $this->trace->addRecord($level, $traceCode, $data);
     }
@@ -103,13 +103,13 @@ class Action
 
         $desc = $error->getDescription();
 
-        $txn = $this->txn;
+        $payment = $this->payment;
 
-        $txn->setStatus(Payment\Status::FAILED);
+        $payment->setStatus(Payment\Status::FAILED);
 
-        $txn->setError($code, $desc);
+        $payment->setError($code, $desc);
 
-        $txn->save();
+        $payment->save();
 
         $this->tracePaymentFailed($error, $traceCode);
     }
@@ -148,7 +148,7 @@ class Action
     protected function tracePaymentFailed($error, $traceCode)
     {
         $traceData = array_merge(
-                        $this->txn->toArrayTraceRelevant(),
+                        $this->payment->toArrayTraceRelevant(),
                         ['error' => $error->getAttributes()]);
 
         // Tracing
@@ -157,20 +157,20 @@ class Action
             $traceData);
     }
 
-    protected function dashboardQueueRecord($txn)
+    protected function dashboardQueueRecord($payment)
     {
         $data = array_merge(
-                    $txn->toArray(),
-                    ['merchant_id' => $txn->getMerchantId()]);
+                    $payment->toArray(),
+                    ['merchant_id' => $payment->getMerchantId()]);
 
         Dashboard\Payment::getInstance()->queueRecord($data);
     }
 
     protected function retrieve($id)
     {
-        $this->txn = $this->core->retrieveByIdAndMerchantId(
+        $this->payment = $this->core->retrieveByIdAndMerchantId(
                                     $id, $this->merchant->getKey());
 
-        return $this->txn;
+        return $this->payment;
     }
 }

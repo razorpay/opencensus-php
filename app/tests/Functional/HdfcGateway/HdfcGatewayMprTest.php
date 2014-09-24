@@ -26,7 +26,7 @@ class HdfcGatewayMprTest extends TestCase
 
     public function testUploadMpr()
     {
-        $txns = array();
+        $payments = array();
 
         $r = range(1,1);
 
@@ -35,10 +35,10 @@ class HdfcGatewayMprTest extends TestCase
 
         foreach ($r as $i)
         {
-            $txn = $this->fixtures->createPaymentCapturedEntity(
+            $payment = $this->fixtures->createPaymentCapturedEntity(
                 ['captured_at' => $capturedAt, 'created_at' => $createdAt]);
 
-            array_push($txns, $txn);
+            array_push($payments, $payment);
         }
 
         \Config::set('mail.pretend', true);

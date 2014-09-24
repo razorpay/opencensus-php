@@ -16,34 +16,34 @@ trait PaymentAuthFlowTrait
 
     protected function createAuthorizedPaymentEntity()
     {
-        $txn = $this->getDefaultPaymentEntityArray();
-        $txn = $this->createEntity('payment', $txn);
-        $txn = $txn->toArrayPublic();
-        return $txn;
+        $payment = $this->getDefaultPaymentEntityArray();
+        $payment = $this->createEntity('payment', $payment);
+        $payment = $payment->toArrayPublic();
+        return $payment;
     }
 
     protected function createCapturedPaymentEntity()
     {
-        $txn = $this->getDefaultPaymentEntityArray();
-        $txn['status'] = 'captured';
-        $txn = $this->createEntity('payment', $txn);
-        $txn = $txn->toArrayPublic();
-        return $txn;
+        $payment = $this->getDefaultPaymentEntityArray();
+        $payment['status'] = 'captured';
+        $payment = $this->createEntity('payment', $payment);
+        $payment = $payment->toArrayPublic();
+        return $payment;
     }
 
     protected function defaultAuthPayment()
     {
-        $txn = $this->getDefaultPaymentArray();
+        $payment = $this->getDefaultPaymentArray();
 
-        return $this->doAuthPayment($txn);
+        return $this->doAuthPayment($payment);
     }
 
-    protected function doAuthPayment($txn)
+    protected function doAuthPayment($payment)
     {
         $request = array(
             'method' => 'POST',
             'url' => '/payments',
-            'content' => $txn);
+            'content' => $payment);
 
         $this->setupPublicBasicAuthParams();
 
@@ -53,7 +53,7 @@ trait PaymentAuthFlowTrait
 
         $content = json_decode($content, true);
 
-        $this->assertEquals($txn['amount'], $content['amount']);
+        $this->assertEquals($payment['amount'], $content['amount']);
         $this->assertEquals('authorized', $content['status']);
 
         return $content;
@@ -102,8 +102,6 @@ trait PaymentAuthFlowTrait
         {
             $this->assertEquals($amount, $refund['amount']);
         }
-
- //       $this->assertEquals('txn-'.$id, $refund['payment_id']);
 
         return $refund;
     }
@@ -357,21 +355,21 @@ trait PaymentAuthFlowTrait
 
     protected function getDefaultPaymentEntityArray()
     {
-        $txn = $this->getDefaultPaymentArray();
+        $payment = $this->getDefaultPaymentArray();
 
-        unset($txn['card']);
-        $txn['merchant_id'] = '363e4efa820b0c06208ccd99';
-        $txn['status'] = 'authorized';
-        $txn['refund_status'] = 'none';
-        $txn['amount_authorized'] = $txn['amount'];
-        $txn['amount_refunded'] = '0';
+        unset($payment['card']);
+        $payment['merchant_id'] = '363e4efa820b0c06208ccd99';
+        $payment['status'] = 'authorized';
+        $payment['refund_status'] = 'none';
+        $payment['amount_authorized'] = $payment['amount'];
+        $payment['amount_refunded'] = '0';
 
-        return $txn;
+        return $payment;
     }
 
     protected function getDefaultHdfcEntityArray()
     {
-        $hdfcTxn = array(
+        $hdfcPayment = array(
             'action'        =>  4,
             'enroll_result' =>  2,
             'status'        =>  'not_enrolled',
@@ -385,6 +383,6 @@ trait PaymentAuthFlowTrait
             'payid'         =>  -1,
             'amt'           =>  500);
 
-        return $hdfcTxn;
+        return $hdfcPayment;
     }
 }

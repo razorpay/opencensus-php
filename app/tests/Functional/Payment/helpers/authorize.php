@@ -136,7 +136,7 @@ return [
         ],
     ],
 
-    'testTxnCardAsString' => [
+    'testPaymentCardAsString' => [
         'request' => [
             'content' => [
                 'card' => 'dfdf',

@@ -124,7 +124,7 @@ class Reconciler
             $data['card']['network'],
             $data['card']['country']);
 
-        $amount = $this->txn->getAmount();
+        $amount = $this->payment->getAmount();
         $credit = $amount - $fee;
 
         $gatewayFee = $data['ledger']['gateway_fee'];
@@ -134,7 +134,7 @@ class Reconciler
             Ledger\Entity::AMOUNT => $amount,
             Ledger\Entity::GATEWAY_FEE => $data['ledger']['gateway_fee'],
             Ledger\Entity::MERCHANT_ID => $this->merchant->getKey(),
-            Ledger\Entity::ENTITY_ID => $this->txn->getKey(),
+            Ledger\Entity::ENTITY_ID => $this->payment->getKey(),
             Ledger\Entity::ENTITY_TYPE => 'payment',
             Ledger\Entity::FEE => $fee,
             Ledger\Entity::CREDIT => $credit,
@@ -174,7 +174,7 @@ class Reconciler
         return $this->feeCalculator->calculateMerchantFees(
                     $this->merchant,
                     $this->card,
-                    $this->txn->getAmount());
+                    $this->payment->getAmount());
     }
 
     protected function updateBalances()
@@ -209,15 +209,15 @@ class Reconciler
 
     protected function loadEntities($paymentId)
     {
-        $txn  = (new Payment\Core)->retrieveById($paymentId);
+        $payment  = (new Payment\Core)->retrieveById($paymentId);
 
-        $this->merchant = $txn->merchant;
-        $this->card = $txn->card;
-        $this->terminal = $txn->merchant->terminal;
-        $this->txn = $txn;
+        $this->merchant = $payment->merchant;
+        $this->card = $payment->card;
+        $this->terminal = $payment->merchant->terminal;
+        $this->payment = $payment;
 
         return $entitiesArray = array(
-            'payment' => $this->txn->toArray(),
+            'payment' => $this->payment->toArray(),
             'merchant' => $this->merchant->toArray(),
             'card' => $this->card->toArray(),
             'terminal' => $this->terminal->toArray(),

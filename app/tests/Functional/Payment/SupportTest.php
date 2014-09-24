@@ -38,13 +38,13 @@ class SupportTest extends TestCase
         $testData = $this->testData['testCreditCardSuccess'];
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $txn = $this->runRequestResponseFlow($testData);
+        $payment = $this->runRequestResponseFlow($testData);
 
         // get its payment id
-        $id = $txn['id'];
+        $id = $payment['id'];
 
         // get amount
-        $amount = $txn['amount'];
+        $amount = $payment['amount'];
 
         $this->setupPrivateBasicAuthParams();
         $this->capture($id, $amount);

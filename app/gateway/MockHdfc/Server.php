@@ -146,9 +146,9 @@ class Server
 
         $paymentid = $this->data['paymentid'];
 
-        $gatewayTxn = (new Hdfc\Repository)->findByGatewayPaymentId($paymentid);
+        $gatewayPayment = (new Hdfc\Repository)->findByGatewayPaymentId($paymentid);
 
-        if ($gatewayTxn === null)
+        if ($gatewayPayment === null)
         {
             throw new Exception\LogicException($paymentid . ' not found');
         }
@@ -161,8 +161,8 @@ class Server
             'postdate'  => $this->getPostDateForToday(),
             'paymentid' => $paymentid,
             'tranid'    => $paymentid,
-            'trackid'   => $gatewayTxn['merchant_trackid'],
-            'amt'       => $gatewayTxn['amount']);
+            'trackid'   => $gatewayPayment['merchant_trackid'],
+            'amt'       => $gatewayPayment['amount']);
 
 
 //        $this->copyUdfValues($res);
@@ -184,7 +184,7 @@ class Server
         }
         else
         {
-            $res = $this->getDefaultTxnSuccessArray();
+            $res = $this->getDefaultPaymentSuccessArray();
             $res['result'] = 'APPROVED';
 
             $this->copyUdfValues($res);
@@ -205,7 +205,7 @@ class Server
         }
         else
         {
-            $res = $this->getDefaultTxnSuccessArray();
+            $res = $this->getDefaultPaymentSuccessArray();
             $res['result'] = 'APPROVED';
 
             $this->copyUdfValues($res);
@@ -240,9 +240,9 @@ class Server
 
     protected function capturePaymentOnGateway()
     {
-        $this->processInput('supportTxn');
+        $this->processInput('supportPayment');
 
-        $res = $this->getDefaultTxnSuccessArray();
+        $res = $this->getDefaultPaymentSuccessArray();
         $res['result'] = 'CAPTURED';
 
         $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
@@ -255,9 +255,9 @@ class Server
 
     protected function refundPaymentOnGateway()
     {
-        $this->processInput('supportTxn');
+        $this->processInput('supportPayment');
 
-        $res = $this->getDefaultTxnSuccessArray();
+        $res = $this->getDefaultPaymentSuccessArray();
         $res['result'] = 'CAPTURED';
 
         $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
@@ -305,7 +305,7 @@ class Server
         return random_integer(16);
     }
 
-    protected function getDefaultTxnSuccessArray()
+    protected function getDefaultPaymentSuccessArray()
     {
         $res = array(
             'auth'      => '999999',
