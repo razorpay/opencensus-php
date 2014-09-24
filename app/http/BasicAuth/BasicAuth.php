@@ -29,12 +29,13 @@ class BasicAuth
      */
 
     /**
-     * Key id and secret sent by client for
-     * basic auth
+     * Key and secret sent by client for
+     * basic auth.
      * @var array
      */
     private $creds = array(
         'key' => '',
+        'public_key' => '',
         'secret' => '');
 
     /**
@@ -112,6 +113,7 @@ class BasicAuth
         }
 
         $this->creds['secret'] = $secret;
+        $this->credts['public_key'] = $key;
 
         return $this->checkAndSetKeyId($key);
     }
@@ -437,7 +439,7 @@ class BasicAuth
 
     public function getPublicKey()
     {
-        return $this->key->getKey();
+        return $this->creds['public_key'];
     }
 
 // --------------------- Getters Ends ------------------------------------------
