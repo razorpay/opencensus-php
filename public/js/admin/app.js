@@ -24,13 +24,18 @@ var app = angular.module('app', [
   [          '$rootScope', '$state', '$stateParams', 'admin', 'adminAuthorization',
     function ($rootScope,   $state,   $stateParams, admin, adminAuthorization) {
         $rootScope.$on('$stateChangeStart', function(event, toState, toStateParams) {
-        // track the state the user wants to go to; authorization service needs this
-        $rootScope.toState = toState;
-        $rootScope.toStateParams = toStateParams;
-        // if the user is resolved, do an authorization check immediately. otherwise,
-        // it'll be done when the state it resolved.
-        if (admin.isIdentityResolved()) adminAuthorization.authorize();
-      });   
+            // track the state the user wants to go to; authorization service needs this
+            $rootScope.toState = toState;
+            $rootScope.toStateParams = toStateParams;
+
+            // if the user is resolved, do an authorization check immediately. otherwise,
+            // it'll be done when the state it resolved.
+            if (admin.isIdentityResolved()) adminAuthorization.authorize();
+        });
+
+        $rootScope.$on('$stateChangeError', function(event) {
+          $state.go('500');
+        });
     }
   ]
 )
@@ -129,6 +134,11 @@ var app = angular.module('app', [
             .state('404', {
                 url: '/404',
                 templateUrl: 'tpl/page_404.html'
+            })
+            //500
+            .state('500', {
+                url: '/500',
+                templateUrl: 'tpl/page_500.html'
             })
     }
   ]
