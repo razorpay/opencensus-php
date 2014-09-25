@@ -24,6 +24,8 @@ class PaymentRetrieveTest extends TestCase
 
         $this->setupPrivateBasicAuthParams();
 
+        $payment = $this->fixtures->createPaymentCapturedEntity();
+
         $this->request = array(
             'method' => 'GET',
             'url' => '/payments');
@@ -43,8 +45,6 @@ class PaymentRetrieveTest extends TestCase
     */
     public function testRetrievePayment()
     {
-        //GIVEN - Nothing
-        //WHEN
         $content = $this->makeRequestAndGetContent($this->request);
     }
 

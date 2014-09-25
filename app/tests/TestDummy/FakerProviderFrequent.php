@@ -15,4 +15,9 @@ class FakerProviderFrequent extends Base
     {
         return array();
     }
+
+    public function timestamp()
+    {
+        return time();
+    }
 }

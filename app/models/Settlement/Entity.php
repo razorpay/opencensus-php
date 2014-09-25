@@ -11,11 +11,13 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
     const STATUS                = 'status';
-    const TRANSACTION_ID             = 'transaction_id';
+    const TRANSACTION_ID        = 'transaction_id';
 
     protected $table = \Constants\Table::SETTLEMENT;
 
     protected static $sign = 'setl';
+
+    protected $entity = 'settlement';
 
     protected $fillable = array(
         self::AMOUNT,
@@ -25,6 +27,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::AMOUNT,
         self::STATUS);
 

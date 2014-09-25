@@ -24,8 +24,12 @@ class SettlementTest extends TestCase
 
     public function testDummy()
     {
-        // apparently you need to have a test per tets file!
+        // apparently you need to have a test per test file!
+    }
 
+    public function testSettlement()
+    {
+        ;
     }
 
     protected function startTest($testDataToReplace = array())

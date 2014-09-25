@@ -2,10 +2,14 @@
 
 namespace Models\Settlement;
 
+use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Illuminate\Database\Eloquent\Collection;
-use Models\Payment;
+use Models\Base;
+use Models\Merchant;
+use Models\Settlement;
+use Models\Transaction;
 
 class Settler
 {
@@ -28,26 +32,18 @@ class Settler
     {
         $this->initRepos();
 
-        $this->initSettlementTimestamp();
-
         $this->queue = \Queue::getFacadeRoot();
 
         $this->settlements = new Collection;
     }
 
-    public function settle()
+    public function settle($input = array())
     {
-        $t = self::$settlementTimestamp;
-
-        $txns = $txnRepo->fetchPaymentsExpectedToSettle($t);
-
-        $settled = true;
-
-        $this->setlRepo->beginPayment();
+        $this->setlRepo->beginTransaction();
 
         try
         {
-            $settlements = $this->process($txns);
+            $settlements = $this->process($input);
 
             $this->setlRepo->commit();
         }
@@ -57,27 +53,36 @@ class Settler
 
             (new SlackNotification)->queueOperationFailure('settlements', $e);
 
-            $settled = false;
-
             throw $e;
         }
 
-        (new SlackNotification)->queueOperationSuccess('settlements', $count);
+        (new SlackNotification)->queueOperationSuccess('settlements', $settlements->count());
 
-        return $settlements->toArray();
+        return $settlements;
     }
 
-    protected function process($txns)
+    protected function process($input)
     {
+        $txns = $this->fetchTransactionsToSettle($input);
+
+        $settlements = new Base\PublicCollection;
+
+        if ($txns->count() === 0)
+        {
+            return $settlements;
+        }
+
         $merchantId = $txns->first()->getMerchantId();
         $merchant = $this->merchRepo->findOrFail($merchantId);
-
         $amount = 0;
 
         foreach ($txns->all() as $txn)
         {
             if ($txn->getMerchantId() !== $merchantId)
             {
+                $setl = $this->createMerchantSettlement($merchant, $amount);
+                $settlements->push($setl);
+
                 $merchantId = $txn->getMerchantId();
                 $merchant = $this->merchRepo->findOrFail($merchantId);
                 $amount = 0;
@@ -86,29 +91,38 @@ class Settler
             $amount += $txn->getCredit() - $txn->getDebit();
         }
 
-        $txnRepo->settled($txns, $t);
+        $setl = $this->createMerchantSettlement($merchant, $amount);
+        $settlements->push($setl);
+
+        $this->txnRepo->settled($txns, self::$settlementTimestamp);
+
+        return $settlements;
     }
 
-    protected function createMerchantSettlement()
+    protected function createMerchantSettlement($merchant, $amount)
     {
         $setlTransaction = $this->createSettlementTransaction($merchant, $amount);
 
-        $input = array(
-            Settlement\Entity::AMOUNT       => $amount,
-            Settlement\Entity::MERCHANT_ID  => $merchant->getKey(),
-            Settlement\Entity::TRANSACTION_ID    => $setlTransaction->getKey());
+        $attributes = array(
+            Settlement\Entity::AMOUNT           => $amount,
+            Settlement\Entity::MERCHANT_ID      => $merchant->getKey(),
+            Settlement\Entity::TRANSACTION_ID   => $setlTransaction->getKey(),
+            Settlement\Entity::STATUS           => 'abc');
 
-        $setl = (new Settlement\Entity)->build($input);
+        $setl = (new Settlement\Entity)->fill($attributes);
+        $setl->generateId();
 
         $merchantBalance = $this->merchRepo->getBalanceLockForUpdate($merchant->getKey());
-        $merchantBalance->subAmount($transaction['debit']);
+        $merchantBalance->subAmount($setlTransaction['debit']);
 
         $setlTransaction->setAttribute(Transaction\Entity::ENTITY_ID, $setl->getKey());
         $setlTransaction->setAttribute(Transaction\Entity::BALANCE, $merchantBalance->getBalance());
 
-        $txnRepo->save($setlTransaction);
-        $setlRepo->save($setl);
-        $merchantRepo->save($merchantBalance);
+        $this->txnRepo->save($setlTransaction);
+        $this->setlRepo->save($setl);
+        $this->merchRepo->save($merchantBalance);
+
+        return $setl;
     }
 
     protected function createSettlementTransaction($merchant, $amount)
@@ -118,14 +132,38 @@ class Settler
         $values = array(
             Transaction\Entity::MERCHANT_ID => $merchant->getKey(),
             Transaction\Entity::DEBIT => $amount,
+            Transaction\Entity::CREDIT => 0,
+            Transaction\Entity::CURRENCY => 'INR',
+            Transaction\Entity::GATEWAY_FEE => 0,
+            Transaction\Entity::API_FEE => 0,
+            Transaction\Entity::ESCROW_BALANCE => 0,
+            Transaction\Entity::SETTLED_AT => time(),
             Transaction\Entity::FEE => 0,
             Transaction\Entity::AMOUNT => $amount,
             Transaction\Entity::ENTITY_TYPE => 'settlement',
         );
 
-        $txn->build($values);
+        $txn->fill($values);
+        $txn->generateId();
 
         return $txn;
+    }
+
+    protected function fetchTransactionsToSettle($input)
+    {
+        $ts = $this->initSettlementTimestamp($input);
+
+        if ((isset($input['all'])) and
+            ($input['all'] === '1'))
+        {
+            $txns = $this->txnRepo->fetchUnsettledTransactions();
+        }
+        else
+        {
+            $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
+        }
+
+        return $txns;
     }
 
     protected function initRepos()
@@ -135,7 +173,7 @@ class Settler
         $this->merchRepo = new Merchant\Repository;
     }
 
-    protected function initSettlementTimestamp()
+    protected function initSettlementTimestamp($input)
     {
         if (self::$settlementTimestamp === null)
         {
@@ -143,5 +181,7 @@ class Settler
             $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
             self::$settlementTimestamp = $timestamp;
         }
+
+        return self::$settlementTimestamp;
     }
 }

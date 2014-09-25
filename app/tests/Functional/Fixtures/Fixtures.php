@@ -39,6 +39,7 @@ class Fixtures
                 'trackid' => $payment->getKey(),
                 'amount' => $payment->getAmount(),
                 'created_at' => $payment->created_at,
+                'updated_at' => $payment->created_at,
             ));
 
         return $payment;
@@ -49,7 +50,8 @@ class Fixtures
         $defaultValues = array(
             'status' => 'captured',
             'captured_at' => time(),
-            'created_at' => time() - 10);
+            'created_at' => time() - 10,
+            'updated_at' => time() - 5);
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -58,7 +60,8 @@ class Fixtures
         $hdfcAttrArray = array(
             'trackid' => $payment->getKey(),
             'amount' => $payment->getAmount(),
-            'created_at' => $payment->created_at);
+            'created_at' => $payment->created_at,
+            'updated_at' => $payment->created_at);
 
         $hdfcPaymentAuthorized = $this->createHdfcPaymentAuthorizedEntity(
             $hdfcAttrArray);
@@ -130,6 +133,9 @@ class Fixtures
         $liveEntity->setConnection('live')->save();
 
         $entity->exists = true;
+        $entity->setRawAttributes($liveEntity->getAttributes(), true);
+
+        return $entity;
     }
 
     protected function save($entity, $attributes)

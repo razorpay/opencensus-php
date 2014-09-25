@@ -11,21 +11,39 @@ class Repository extends Base\Repository
 
     protected $entity = 'Transaction';
 
-    public function fetchPaymentsExpectedToSettle($timestamp)
+    public function fetchTxnsExpectedToSettle($timestamp)
     {
         $repo = $this->repo;
 
         return $repo::where(Transaction\Entity::SETTLED_AT, '=', $timestamp)
-                    ->whereNull(Transaction\Entity::RECONCILED_AT)
+                    ->where(Transaction\Entity::SETTLED, '=', 0)
+                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
-                    ->orderBy(Transaction\Entity::ID);
+                    ->orderBy(Transaction\Entity::ID)
+                    ->get();
+    }
+
+    public function fetchUnsettledTransactions()
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Transaction\Entity::SETTLED, '=', 0)
+                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
+                    ->orderBy(Transaction\Entity::MERCHANT_ID)
+                    ->orderBy(Transaction\Entity::ID)
+                    ->get();
     }
 
     public function settled($txns, $settledAt)
     {
         $repo = $this->repo;
 
-        $ids = array_slice($txns, 'id');
+        if ($txns->count() === 0)
+        {
+            return;
+        }
+
+        $ids = $txns->getIds();
 
         $values = array(
             Transaction\Entity::SETTLED_AT => $settledAt,

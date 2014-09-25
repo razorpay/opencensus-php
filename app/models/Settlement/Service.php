@@ -21,13 +21,13 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
-    public function generateSettlements()
+    public function initiateSettlements($input)
     {
         $settler = new Settler();
 
-        $settler->settle();
+        $settlements = $settler->settle($input);
 
-        return $setlements->toArray();
+        return $settlements->toArrayPublic();
     }
 
     public function gatewayMprGenerate($input)

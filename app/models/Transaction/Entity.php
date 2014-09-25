@@ -29,6 +29,8 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'txn';
 
+    protected $entity = 'transaction';
+
     protected $fillable = array(
         self::ENTITY_ID,
         self::ENTITY_TYPE,
@@ -41,11 +43,13 @@ class Entity extends Base\PublicEntity
         self::API_FEE,
         self::GATEWAY_FEE,
         self::BALANCE,
+        self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
         self::SETTLED_AT);
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
         self::DEBIT,
@@ -94,8 +98,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getCredit()
+    {
+        return $this->getAttribute(self::CREDIT);
+    }
+
+    public function getDebit()
+    {
+        return $this->getAttribute(self::DEBIT);
+    }
+
     public function setReconciledAt($timestamp)
     {
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
+    }
+
+    public function setPublicEntityIdAttribute(array & $array)
+    {
+        $entity = 'Models\\'.ucfirst($array[self::ENTITY_TYPE]) . '\Entity';
+        $sign = $entity::getIdPrefix();
+
+        $array[self::ENTITY_ID] = $sign . $array[self::ENTITY_ID];
     }
 }
