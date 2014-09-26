@@ -1,0 +1,84 @@
+box: wercker/php
+services:
+    - wercker/mysql
+build:
+    # The steps that will be executed on build
+    steps:
+      # A custom script step, name value is used in the UI
+      # and the code value contains the command that get executed
+      - script:
+          name: copy env file
+          code: cp .env.wercker.php .env.testing.php
+      - script:
+          name: set composer to use github oauth token
+          code: composer config -g github-oauth.github.com $github_token
+      - add-ssh-key:
+          keyname: RZP_API
+      - script:
+          name: install dependencies
+          code: composer install --no-interaction
+      - script:
+          name: create report dir
+          code: mkdir ./report
+      - script:
+          name: run unit tests
+          code: phpunit --debug --verbose --coverage-html ./report
+      - script:
+          name: Generate coverage zip for upload
+          code: (cd ./report && tar zcvf /tmp/$WERCKER_GIT_BRANCH.tar.gz .)
+      - script:
+          name: Upload Coverage to cc.razorpay.com
+          code: curl -F "coverage=@/tmp/$WERCKER_GIT_BRANCH.tar.gz" https://cc.razorpay.com/$WERCKER_GIT_REPOSITORY/upload/?token=$COVERAGE_TOKEN
+    after-steps:
+      - williamli/slack-notify-no-owner-info:
+          subdomain: razorpay
+          token: $SLACK_TOKEN
+          channel: general
+deploy:
+    steps:
+      - script:
+          name: Change to production mode
+          code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
+      - script:
+          name: Create lease on AWS
+          code: wget -O /dev/null https://ac.razorpay.com/invite/$concierge_token --quiet
+      - add-to-known_hosts:
+          hostname: $WERCKER_DEPLOYTARGET_NAME
+      - mktemp:
+          envvar: PRIVATEKEY_PATH
+      - create-file:
+          name: write key
+          filename: $PRIVATEKEY_PATH
+          content: $AWS_deploykey
+          overwrite: true
+          hide-from-log: true
+      - script:
+          name: Put application in maintenance mode
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
+                "(cd ~/api/ && php artisan down)"
+      - script:
+          name: copy with rsync over ssh
+          code: >
+                rsync -avz --force --delete --progress
+                --exclude-from=.rsyncignore
+                -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+                ./ ubuntu@$WERCKER_DEPLOYTARGET_NAME:/home/ubuntu/api/
+      - script:
+          name: Perform DB migrations
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
+                "(cd ~/api/ && php artisan migrate && php artisan migrate --database=test)"
+      - script:
+          name: start application
+          code: >
+                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+                -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
+                "(cd ~/api/ && php artisan up)"
+    after-steps:
+      - williamli/slack-notify-no-owner-info:
+          subdomain: razorpay
+          token: $SLACK_TOKEN
+          channel: general

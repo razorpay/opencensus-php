@@ -41,7 +41,7 @@ class Utility
 
         if (count($input1) !== count($input2))
         {
-            throw new \InvalidArgumentException("Number of elements in both arrays is not equal");
+            throw new \EE\Exception\InvalidArgumentException("Number of elements in both arrays is not equal");
         }
 
         for ($i = 0; $i < $count; $i++)
@@ -53,18 +53,8 @@ class Utility
     }
 }
 
-if (! function_exists('is_assoc_array'))
+if (! function_exists('array_merge_intersect'))
 {
-	/**
-	 * Checks if the array is assoc or sequential
-	 * 
-	 * It compares the keys (which for a sequential array are 
-	 * always 0,1,2 etc) to the keys of the keys (which 
-	 * will always be 0,1,2 etc).
-	 *
-	 * @param  array  $array
-	 * @return bool
-	 */
 	function array_merge_intersect(array &$array1, $array2, $array3)
 	{
 		$intersect = array_intersect($array2, $array3);
@@ -75,4 +65,85 @@ if (! function_exists('is_assoc_array'))
 	}
 }
 
+if (! function_exists('array_assoc_flatten'))
+{
+    function array_assoc_flatten(array $array, $parent_key = null)
+    {
+        $return = array();
 
+        foreach ($array as $key => $value)
+        {
+            $key = ($parent_key === null) ? $key : $parent_key . '.' . $key;
+            if (is_array($value))
+            {
+                $tmp = array_assoc_flatten($value, $key);
+                $return = array_merge($return, $tmp);
+            }
+            else
+            {
+                $return[$key] = $value;
+            }
+        }
+
+        return $return;
+    }
+}
+
+if (! function_exists('get_last_query'))
+{
+    function get_last_query()
+    {
+        $queries = DB::getQueryLog();
+
+        $last_query = end($queries);
+
+        return $last_query;
+    }
+}
+
+if (! function_exists('print_last_query'))
+{
+    function print_last_query()
+    {
+        var_dump(get_last_query());
+    }
+}
+
+if (! function_exists('sddb'))
+{
+    function sddb($limit = 0)
+    {
+        sd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
+    }
+}
+
+if (! function_exists('sdb'))
+{
+    function sdb($limit = 0)
+    {
+        s(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
+    }
+}
+
+if (! function_exists('ddd'))
+{
+    function ddd($limit = 0)
+    {
+        dd(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit));
+    }
+}
+
+if (! function_exists('random_integer'))
+{
+    function random_integer($length = 1)
+    {
+        $integer = '';
+
+        for($i = 0; $i < $length; $i++)
+        {
+            $integer .= mt_rand(0, 9);
+        }
+
+        return (int) $integer;
+    }
+}

@@ -1,0 +1,505 @@
+<?php
+
+namespace Http\BasicAuth;
+
+use Config;
+use EE\Error\ErrorCode;
+use EE\Exception;
+use Hash;
+use Http\ApiResponse;
+use Models\Key;
+use Models\Merchant;
+
+class BasicAuth
+{
+    /*
+     * Basic Auth currently goes as follows:
+     *
+     * Public -
+     * rzp_mode_keyId:
+     *
+     * Private -
+     * rzp_mode_keyId:merchant_secret
+     *
+     * Application -
+     * rzp_mode:app_secret
+     *
+     * Application proxy -
+     * rzp_mode_merchantId:app_secret
+     *
+     */
+
+    /**
+     * Key and secret sent by client for
+     * basic auth.
+     * @var array
+     */
+    private $creds = array(
+        'key' => '',
+        'public_key' => '',
+        'secret' => '');
+
+    /**
+     * Key used for authentication
+     * @var Key\Entity
+     */
+    private $key = null;
+
+    /**
+     * Merchant who is being authenticated
+     * either by himself or by an internal
+     * application
+     *
+     * @var Merchant\Entity
+     */
+    private $merchant = null;
+
+    /**
+     * During app authentication, the app
+     * which has been authenticated.
+     *
+     * @var string
+     */
+    private $internalApp = null;
+
+    /**
+     * Authentication mode - test, live
+     * @var string
+     */
+    private $mode;
+
+    /**
+     * Authentication type - private, public, internal
+     * @var string
+     */
+    private $type;
+
+    /**
+     * Whether an internal app is doing an authentication
+     * proxy to perform some action on merchant's
+     * behalf
+     * @var boolean
+     */
+    private $proxy;
+
+    /**
+     * Laravel request class instance
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * Array of configurations of internal applications
+     * @var array
+     */
+    protected $internalAppConfigs;
+
+    public function init($app)
+    {
+        $this->request = $app['request'];
+        $this->internalAppConfigs = $app['config']->get('applications');
+        $this->cloud = $app['config']->get('app.cloud');
+    }
+
+    public function setCredentials()
+    {
+        $key = $this->request->getUser();
+
+        $secret = $this->request->getPassword();
+
+        if (($key === null) and
+            ($secret === null))
+        {
+            return ApiResponse::httpAuthExpected();
+        }
+
+        $this->creds['secret'] = $secret;
+        $this->credts['public_key'] = $key;
+
+        return $this->checkAndSetKeyId($key);
+    }
+
+    public function checkAndSetKeyId($key)
+    {
+        if (($this->verifyKeyLength($key) === false) or
+            ($this->verifyKeyPrefix($key) === false) or
+            ($this->verifyAndSetMode($key) === false))
+        {
+            return $this->invalidApiKey();
+        }
+
+        $keyId = substr($key, 9);
+
+        if ($keyId === false)
+        {
+            $this->creds['key'] = '';
+            return;
+        }
+
+        $this->creds['key'] = $keyId;
+    }
+
+// --------------------- Basic Auths -------------------------------------------
+
+    public function privateAuth()
+    {
+        if ($this->verifyKeyExistence())
+        {
+            $response = $this->verifySecret();
+
+            if ($response === true)
+            {
+                $this->setType(Type::PRIVATE_AUTH);
+
+                return;
+            }
+
+            return $response;
+        }
+        else if ($this->verifyInternalAppAsProxy() === true)
+        {
+            $this->setType(Type::PRIVATE_AUTH);
+
+            return;
+        }
+
+        return $this->invalidApiKey();
+    }
+
+    /**
+     * Allows requests with public keys to get through.
+     * Also allows private key based requests too
+     */
+    public function publicAuth()
+    {
+        if ($this->verifyKeyExistence() === false)
+        {
+            return $this->invalidApiKey();
+        }
+
+        if ($this->getSecret() !== '')
+        {
+            return ApiResponse::generateResponse(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
+        }
+
+        $this->fetchMerchantOfKey($this->key);
+
+        $this->setType(Type::PUBLIC_AUTH);
+    }
+
+    public function appAuth()
+    {
+        // Check key is blank and it's an internal app
+        if (($this->isKeyBlank()) and
+            ($this->verifyInternalApp()))
+        {
+            $this->setType(Type::APP_AUTH);
+
+            return;
+        }
+
+        // Say invalid route for whenever
+        // appAuth authentication fails
+        return ApiResponse::routeNotFound();
+    }
+
+    public function proxyAuth()
+    {
+        if ($this->verifyInternalAppAsProxy() === true)
+        {
+            $this->setType(Type::APP_AUTH);
+
+            return;
+        }
+
+        return ApiResponse::routeNotFound();
+    }
+
+// --------------------- Basic Auths Ends --------------------------------------
+
+// --------------------- Verifiers ---------------------------------------------
+
+    public function verifyHttps()
+    {
+        if (($this->request->getHttpHost() === 'api.razorpay.com') and
+            ($this->request->secure() === false))
+        {
+            return ApiResponse::generateResponse(
+                ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
+        }
+    }
+
+    protected function verifyKeyLength($key)
+    {
+        $keyLen = strlen($key);
+
+        return (($keyLen === 3 + 1 + 4 + 1 + 24) or
+                ($keyLen === 3 + 1 + 4));
+    }
+
+    protected function verifyKeyPrefix($key)
+    {
+        return (substr($key, 0, 4) === 'rzp_');
+    }
+
+    protected function verifyAndSetMode($key)
+    {
+        $mode = substr($key, 4, 4);
+
+        if ($mode === 'live')
+        {
+            $this->setMode(Mode::LIVE);
+        }
+        else if ($mode === 'test')
+        {
+            $this->setMode(Mode::TEST);
+        }
+        else
+        {
+            return false;
+        }
+
+        if ((strlen($key) > 8) and
+            (substr($key, 8, 1) !== '_'))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Verify key exists by fetching it
+     * @return boolean
+     */
+    protected function verifyKeyExistence()
+    {
+        $keyId = $this->getKey();
+
+        if ($keyId === '')
+            return;
+
+        //
+        // For keys sent by merchants, make sure they exist in db.
+        //
+        $key = $this->fetchKey($keyId);
+
+        return ($key !== null);
+    }
+
+    /**
+     * Used for private/secret authentication.
+     * These requests are expected to originate
+     * from merchant's server
+     *
+     * @param  string   $keyId
+     * @param  string   $keySecret
+     * @return boolean/Response
+     */
+    protected function verifySecret()
+    {
+        $keyEntity = $this->key;
+
+        $secret = $this->getSecret();
+
+        if ($secret === '')
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
+        }
+
+        if (Hash::check($secret, $keyEntity->getSecret()) === false)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
+        }
+
+        $this->fetchMerchantOfKey($keyEntity);
+
+        return true;
+    }
+
+    /**
+     * Matches the secret provided against the list of
+     * applications secrets with us. If any matches, then
+     * that  particular app is allowed to continue
+     * it's operation.
+     *
+     * If a merchant id is provided, then the app is
+     * authenticating as that merchant and trying to
+     * perform operations related to that merchant.
+     *
+     * Used if private authentication fails
+     *
+     * @return boolean
+     */
+    protected function verifyInternalAppAsProxy()
+    {
+        if ($this->verifyInternalApp() === false)
+        {
+            return false;
+        }
+
+        // The key in case of app proxy will be the merhcant id
+        $merchantId = $this->getKey();
+
+        $this->merchant = (new Merchant\Repository)->find($merchantId);
+
+        // If merchant id isn't found, then return false.
+        return ($this->merchant !== null);
+    }
+
+    /**
+     * Verify the request is made by an internal app
+     * Verifies client ip and then matches the app secret
+     * @return boolean
+     */
+    protected function verifyInternalApp()
+    {
+        return (($this->verifyClientIpInternal()) and
+                ($this->verifyInternalAppSecret()));
+    }
+
+    /**
+     * Verifies that the request is coming from an internal ip
+     * In this case, it's amazon's internal ip
+     * in the 10.0.*.* range
+     * @return boolean
+     */
+    protected function verifyClientIpInternal()
+    {
+        // Only if the application is deployed in cloud,
+        // then verify internal ip
+//        if ($this->cloud === false)
+            return true;
+
+        // Check request is from internal ip
+        $clientIp = $this->request->getClientIp();
+
+        $clientIpRegex = '/^10\.0\.[0-9]{1,3}\.[0-9]{1,3}$/';
+
+        return preg_match($clientIpRegex, $clientIp);
+    }
+
+    /**
+     * Verifies the secret given against the list of
+     * app secrets
+     * @return boolean
+     */
+    protected function verifyInternalAppSecret()
+    {
+        $secret = $this->getSecret();
+
+        $internalApps = $this->internalAppConfigs;
+
+        $verify = false;
+
+        foreach ($internalApps as $name => $info)
+        {
+            if ($info['secret'] === $secret)
+            {
+                $verify = true;
+
+                $this->internalApp = $name;
+
+                break;
+            }
+        }
+
+        return $verify;
+    }
+
+// --------------------- Verifiers Ends ----------------------------------------
+
+// --------------------- Getters -----------------------------------------------
+
+    protected function getKey()
+    {
+        return $this->creds['key'];
+    }
+
+    private function getSecret()
+    {
+        return $this->creds['secret'];
+    }
+
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    public function getMerchant()
+    {
+        return $this->merchant;
+    }
+
+    public function getMerchantId()
+    {
+        return $this->merchant->getKey();
+    }
+
+    public function getPublicKey()
+    {
+        return $this->creds['public_key'];
+    }
+
+// --------------------- Getters Ends ------------------------------------------
+
+// --------------------- Setters -----------------------------------------------
+
+    protected function setMode($mode)
+    {
+        $this->mode = $mode;
+    }
+
+    protected function setType($type)
+    {
+        $this->type = $type;
+    }
+
+// --------------------- Setters Ends ------------------------------------------
+
+    protected function fetchKey($keyId)
+    {
+        $this->key = (new Key\Repository)->findNotExpired($keyId);
+
+        return $this->key;
+    }
+
+    protected function fetchMerchantOfKey($key)
+    {
+        $merchantId = $key->getMerchantId();
+
+        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $this->checkMerchantActivatedForLive();
+
+        return $this->merchant;
+    }
+
+    protected function checkMerchantActivatedForLive()
+    {
+        $mode = $this->getMode();
+
+        if ($mode === 'test')
+            return;
+
+        if ($this->merchant->isActivated() === false)
+        {
+            throw new Exception\LogicException(
+                'Must not be able to make live requst when not activated');
+        }
+    }
+
+    protected function invalidApiKey()
+    {
+       return ApiResponse::unauthorized(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
+    }
+
+    protected function isKeyBlank()
+    {
+        return ($this->getKey() === '');
+    }
+}

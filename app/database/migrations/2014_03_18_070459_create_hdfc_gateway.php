@@ -3,71 +3,88 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateHdfcGateway extends Migration {
+use Gateway\Hdfc;
+use Models\Base\UniqueIdEntity;
 
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		Schema::create('hdfc', function(Blueprint $table){
-			$table->engine = 'InnoDB';
+class CreateHdfcGateway extends Migration
+{
 
-			$table->bigInteger('paymentid')
-				  ->unsigned();
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('hdfc', function(Blueprint $table)
+        {
+            $table->engine = 'InnoDB';
 
-			$table->string('action', 1);
+            $table->increments('id');
 
-			$table->string('trackid', 32);
+            $table->char('trackid', UniqueIdEntity::ID_LENGTH);
 
-			$table->string('enroll_result', 255);
+            $table->bigInteger('gateway_payment_id')
+                  ->unsigned()
+                  ->nullable();
 
-			$table->string('status', 50);
+            $table->string('action', 1);
 
-			$table->string('auth_result', 255)
-				  ->nullable();
+            $table->string('amount', 10);
 
-			$table->string('eci', 2);
+            $table->string('enroll_result', Hdfc\Constants::ENROLL_RESULT_LENGTH)
+                  ->nullable();
 
-			$table->string('auth', 6)
-				  ->nullable();
+            $table->string('status', Hdfc\Constants::STATUS_LENGTH);
 
-			$table->string('ref', 12)
-				  ->nullable();
+            $table->string('result', Hdfc\Constants::AUTH_RESULT_LENGTH)
+                  ->nullable();
 
-			$table->string('avr', 3)
-				  ->nullable();
+            $table->string('eci', Hdfc\Constants::ECI_LENGTH)
+                  ->nullable();
 
-			$table->string('postdate', 6)
-				  ->nullable();
+            $table->string('auth', Hdfc\Constants::AUTH_LENGTH)
+                  ->nullable();
 
-			$table->string('error_text', 255)
-				  ->nullable();
+            $table->string('ref', Hdfc\Constants::REF_LENGTH)
+                  ->nullable();
 
-			$table->timestamps();
+            $table->string('avr', Hdfc\Constants::AVR_LENGTH)
+                  ->nullable();
 
-			$table->foreign('trackid')
-				  ->references('id')
-				  ->on('transactions')
-				  ->on_delete('restrict');
-		});
-	}
+            $table->string('postdate', Hdfc\Constants::POSTDATE_LENGTH)
+                  ->nullable();
 
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
-		Schema::table('hdfc', function($table){
+            $table->string('error_code', Hdfc\Constants::ERROR_CODE_LENGTH)
+                  ->nullable();
 
-			$table->dropForeign('hdfc_trackid_foreign');
-		});
+            $table->string('error_text', Hdfc\Constants::ERROR_TEXT_LENGTH)
+                  ->nullable();
 
-		Schema::drop('hdfc');
-	}
+            // Adds created_at and updated_at columns to the table
+            $table->integer('created_at');
+            $table->integer('updated_at');
+
+            $table->foreign('trackid')
+                  ->references('id')
+                  ->on('payments')
+                  ->on_delete('restrict');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('hdfc', function($table)
+        {
+            $table->dropForeign('hdfc_trackid_foreign');
+        });
+
+        Schema::drop('hdfc');
+    }
 
 }

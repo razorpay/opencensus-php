@@ -2,79 +2,57 @@
 
 namespace Gateway;
 
+use Requests;
+use Trace\Trace;
+
 class BaseGateway
 {
-	protected $txn_key_mappings = array();
+    protected $trace;
 
-	protected $card_key_mappints = array();
+    protected $input;
 
-	public function process($input)
-	{
-		$this->txn = $input['txn'];
+    public function __construct()
+    {
+        $this->trace = Trace::getInstance();
+    }
 
-		$this->card = $input['card'];
+    public function authorize(array $input)
+    {
+        $this->input = $input;
+    }
 
-		$this->mapKeys($txn, $txn_key_mappings);
+    public function capture(array $input)
+    {
+        $this->input = $input;
+    }
 
-		$this->mapKeys($card, $card_key_mappings);
+    public function refund(array $input)
+    {
+        $this->input = $input;
+    }
 
-		$this->runGenerators();
-	}
+    protected function mapKeys($array, $map, &$data)
+    {
+        foreach ($map as $keyOld => $keyNew)
+        {
+            if (isset($array[$keyOld]))
+            {
+                $data[$keyNew] = $array[$keyOld];
+            }
+        }
+    }
 
-	protected function mapKeys($array, $map, &$data)
-	{
-		foreach ($map as $keyOld => $keyNew)
-		{
-			if (isset($array[$keyOld]))
-			{
-				$data[$keyNew] = $array[$keyOld];
-			}
-		}
-	}
+    protected function sendGatewayRequest($request)
+    {
+        if (isset($request['options']) === false)
+        {
+            $request['options']  = array();
+        }
 
-	protected function copyValues($array)
-	{
-		$fields = array_intersect(array_keys($array), $this->fields);
-
-		foreach ($fields as $field)
-		{
-			$data[$field] = $array[$field];
-		}
-	}
-
-	protected function runGenerators()
-	{
-		if (count ($this->generators) === 0)
-			return;
-
-		foreach ($generators as $generator)
-		{
-			$method = 'generate'.studly_case($generator);
-
-			$this->$$method();
-		}
-	}
-
-	protected function createRequest()
-	{
-		$ch = curl_init() or die(curl_error());
-		curl_setopt($ch, CURLOPT_PORT, $this->port);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, Array($header));
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $this->content);
-		curl_setopt($ch, CURLOPT_URL, $this->url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-
-		$data1 = curl_exec($ch) or die(curl_error());
-
-		curl_close($ch);
-
-		$initial_response = $data1;
-
-		$error = GetTextBetweenTags($initialResponse, "<error_text>", "</error_text");
-
-		$enroll_result = GetTextBetweenTags($initial_response, "<result>", "</result>");
-	}
+        return Requests::post(
+                    $request['url'],
+                    $request['header'],
+                    $request['content'],
+                    $request['options']);
+    }
 }

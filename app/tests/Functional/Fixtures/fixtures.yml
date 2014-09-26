@@ -1,0 +1,87 @@
+Models\Merchant\Entity:
+    id: $uniqueid
+    name: $string
+    email: $email
+
+Models\Terminal\Entity:
+    id: $uniqueid
+    merchant_id: Models\Merchant\Entity
+    gateway: hdfc
+    gateway_merchant_id: $string
+    gateway_terminal_id: $string
+    gateway_terminal_password: eyJpdiI6ImQwTWJVdElNdUtpeFpOR2VpMWxuT0E9PSIsInZhbHVlIjoiaWk1SDVOZGxBQkM2OTRHNzFIOG0yRzYzUlZDT05wSjdodjB2aWxjSHhJaz0iLCJtYWMiOiIxOTBiMGE0ZmU2NmUwOTQ0M2EwY2Y1MjJmZWU1ZWE4MTliOWMxNzlhMzBhZTMzNzg4ZTBmY2JjMWE5NjA1M2QwIn0=
+
+Models\Merchant\Balance:
+    id: $uniqueid
+
+Models\Card\Entity:
+    id: $uniqueid
+    name: $string
+    network: MC
+    expiry_month: 01
+    expiry_year: 2017
+    type: VISA
+    country: IN
+    last4: 7890
+    iin: 401200
+    length: 16
+
+Models\Key\Entity:
+    id: d9c6bf091a1a64cb5678d8c1
+    merchant_id:
+        type: Models\Merchant\Entity
+    secret: $2y$10$UVD2ZERxHs0QyL7gaElrWOfvwAx11m.G374AGKpPnyn8VK4FN5Yry
+
+Models\Payment\Entity:
+    id: $uniqueid
+    merchant_id: 363e4efa820b0c06208ccd99
+    card_id:
+        type: Models\Card\Entity
+    amount: 1000000
+    amount_authorized: 100
+    amount_refunded: 0
+    currency: INR
+    status: open
+    refund_status: none
+    contact: $integer
+    udf: $emptyarray
+    gateway: hdfc
+    email: $email
+    captured_at: null
+
+Models\Payment\Refund\Entity:
+    id: $uniqueid
+    payment_id:
+        type: Models\Payment\Entity
+    merhcant_id:
+        type: Models\Merchant\Entity
+    amount: 100
+    currency: INR
+    transaction_id: Models\Transaction\Entity
+
+Models\Pricing\Entity:
+    id: $uniqueid
+    plan_id: 5053edf267a4a6d1d26b43df
+    plan_name: testFixturePlan
+    payment_mode: card
+    payment_mode_type: credit
+    payment_network: VISA
+    payment_issuer: ICIC
+    percent_rate: 1000
+    fixed_rate: 10000
+
+Gateway\Hdfc\Entity:
+    id: $integer
+    trackid:
+        type: Models\Payment\Entity
+    gateway_payment_id: $hdfcPaymentId
+    action: 4
+    amount: $integer
+    enroll_result: 2
+    status: authorized
+    result: APPROVED
+    eci: 6
+    auth: 999999
+    ref: $hdfcRef
+    avr: N
+    postdate: $hdfcPostDate

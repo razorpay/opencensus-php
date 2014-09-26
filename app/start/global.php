@@ -1,5 +1,7 @@
 <?php
 
+use Whoops\Handler\PrettyPageHandler;
+
 /*
 |--------------------------------------------------------------------------
 | Register The Laravel Class Loader
@@ -12,15 +14,7 @@
 */
 
 ClassLoader::addDirectories(array(
-
-	app_path().'/commands',
-	app_path().'/controllers',
-	app_path().'/gateway',
-	app_path().'/models',
-	app_path().'/database/seeds',
-	app_path().'/lib',
-	app_path().'/exceptions'
-
+    // For rzp, we are using composer for loading all dirs
 ));
 
 /*
@@ -33,6 +27,7 @@ ClassLoader::addDirectories(array(
 | build a basic log file setup which creates a single file for logs.
 |
 */
+
 
 Log::useFiles(storage_path().'/logs/laravel.log');
 
@@ -49,10 +44,7 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 |
 */
 
-App::error(function(Exception $exception, $code)
-{
-	Log::error($exception);
-});
+new EE\Exception\Handler();
 
 /*
 |--------------------------------------------------------------------------
@@ -67,7 +59,7 @@ App::error(function(Exception $exception, $code)
 
 App::down(function()
 {
-	return Response::make("Be right back!", 503);
+    return Response::make("Be right back!", 503);
 });
 
 /*
@@ -82,6 +74,12 @@ App::down(function()
 */
 
 require app_path().'/filters.php';
-require app_path().'/lib//utility.php';
-require app_path().'/lib//utility2.php';
+require_once app_path().'/lib//utility.php';
+require_once app_path().'/lib//utility2.php';
 require app_path().'/lib/validation.php';
+
+Validator::resolver(function($translator, $data, $rules, $messages)
+{
+    return new Razorpay\Spine\Validation\LaravelValidatorEx(
+                    $translator, $data, $rules, $messages);
+});

@@ -1,0 +1,63 @@
+<?php
+
+use Http\ApiResponse;
+use Models\Pricing;
+
+class PricingController extends BaseController
+{
+    public function postCreatePricingPlan()
+    {
+        $input = Input::all();
+
+        $data = (new Pricing\Service)->createPricingPlan($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPricingPlan($id)
+    {
+        $data = (new Pricing\Service)->getPricingPlanById($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPricingPlans()
+    {
+        $data = (new Pricing\Service)->getPricingPlans();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMerchantPricingPlans()
+    {
+        $data = (new Pricing\Service)->getMerchantPricingPlans();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getGatewayPricingPlans()
+    {
+        $data = (new Pricing\Service)->getGatewayPricingPlans();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAddPricingPlanRule($id)
+    {
+        $input = Input::all();
+
+        $data = (new Pricing\Service)->addPricingPlanRule($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deletePricingPlanRule($id)
+    {
+        ;
+    }
+
+    public function deletePricingPlan($id)
+    {
+        ;
+    }
+}

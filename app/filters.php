@@ -1,7 +1,5 @@
 <?php
 
-use Models\Service\BasicAuth;
-
 /*
 |--------------------------------------------------------------------------
 | Application & Route Filters
@@ -13,15 +11,37 @@ use Models\Service\BasicAuth;
 |
 */
 
-App::before(function($request)
+$app['instance'] = new Services\AwsInstance;
+
+//
+// Initialize BasicAuth with $app
+// This is put here instead of BasicAuthServiceProvider
+// because ServiceProvider calls the BasicAuth constructor only
+// once between unit tests while filters are called every-time
+//
+App::before(function() use ($app)
 {
-	//
+    $app['basicauth']->init($app);
 });
 
-
-App::after(function($request, $response)
+App::before(function()
 {
-	//
+    return BasicAuth::verifyHttps();
+});
+
+App::before(function()
+{
+    return BasicAuth::setCredentials();
+});
+
+App::before(function() use ($app)
+{
+    $mode = BasicAuth::getMode();
+
+    $app['rzp.mode'] = $mode;
+
+    Database\DefaultConnection::set($mode);
+
 });
 
 /*
@@ -29,67 +49,35 @@ App::after(function($request, $response)
 | Authentication Filters
 |--------------------------------------------------------------------------
 |
-| The following filters are used to verify that the user of the current
-| session is logged into this application. The "basic" filter easily
-| integrates HTTP Basic authentication for quick, simple checking.
+| The following filters are used to verify public, private and application
+| basic auth depending on the route.
 |
 */
 
 /**
  * Only allows requests with secret keys to get through.
  */
-Route::filter('auth', function()
+Route::filter('auth.private',  function()
 {
-	$_SERVER['PHP_AUTH_USER'] = 'd9c6bf091a1a64cb5678d8c1d5e7360f';
-	if (isset($_SERVER['PHP_AUTH_USER']))
-	{
-		$key = $_SERVER['PHP_AUTH_USER'];
-
-		if (BasicAuth::getInstance()->verifySecret($key) == false)
-		{
-			return Response::view('error.401', array(), 401);
-		}
-	}
-	else 
-	{
-		return Response::view('error.401', array(), 401);
-	}
-
+    return BasicAuth::privateAuth();
 });
 
-
 /**
- * Only allows requests with public keys to get through.
+ * Allows requests with public keys to get through.
  */
 Route::filter('auth.public', function()
 {
-	if (isset($_SERVER['PHP_AUTH_USER']))
-	{
-		$key = $_SERVER['PHP_AUTH_USER'];
-
-		if (BasicAuth::verifyPublic($key) == false)
-		{
-			return Response::view('error.401', array(), 401);
-		}
-	}
-	else return Response::view('error.401', array(), 401);
-
+    return BasicAuth::publicAuth();
 });
 
-/*
-|--------------------------------------------------------------------------
-| Guest Filter
-|--------------------------------------------------------------------------
-|
-| The "guest" filter is the counterpart of the authentication filters as
-| it simply checks that the current user is not logged in. A redirect
-| response will be issued if they are, which you may freely change.
-|
-*/
-
-Route::filter('guest', function()
+Route::filter('auth.app', function()
 {
-	if (Auth::check()) return Redirect::to('/');
+    return BasicAuth::appAuth();
+});
+
+Route::filter('auth.proxy', function()
+{
+    return BasicAuth::proxyAuth();
 });
 
 /*
@@ -105,8 +93,20 @@ Route::filter('guest', function()
 
 Route::filter('csrf', function()
 {
-	if (Session::token() != Input::get('_token'))
-	{
-		throw new Illuminate\Session\TokenMismatchException;
-	}
+    if (Session::token() != Input::get('_token'))
+    {
+        throw new Illuminate\Session\TokenMismatchException;
+    }
 });
+
+/*
+|--------------------------------------------------------------------------
+| X-Frame Protection Filter
+|--------------------------------------------------------------------------
+|
+| The X-Frame filter is responsible for protecting your application against
+| cross-site iframing. By default laravel does this but we have explicitly
+| removed that so this filter needs to be applied everywhere we don't need
+| iframe support
+|
+*/

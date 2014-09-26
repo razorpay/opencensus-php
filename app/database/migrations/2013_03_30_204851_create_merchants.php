@@ -3,39 +3,53 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMerchants extends Migration {
+use Constants\Table;
 
-	/**
-	 * Make changes to the database.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		Schema::create('merchants', function(Blueprint $table){
-			$table->engine = 'InnoDB';
+use Models\Merchant\Entity as Merchant;
 
-			$table->increments('id');
+class CreateMerchants extends Migration
+{
 
-			$table->string('email', 255)
-				  ->unique();
+    /**
+     * Make changes to the database.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create(Table::MERCHANT, function(Blueprint $table)
+        {
+            $table->engine = 'InnoDB';
 
-			$table->string('pwd', 50);	// For storing passwords in string form. *Not for production*
+            $table->char(Merchant::ID, Merchant::ID_LENGTH)
+                  ->primary();
 
-			$table->string('hash', 100); // For storing passwords after encrypting them.
+            $table->string(Merchant::NAME);
 
-			$table->timestamps();
-		});
-	}
+            $table->string(Merchant::EMAIL, 255)
+                  ->unique();
 
-	/**
-	 * Revert the changes to the database.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
-		Schema::drop('merchants');
-	}
+            $table->boolean(Merchant::ACTIVATED)
+                  ->default(0);
 
+            $table->boolean(Merchant::LIVE)
+                  ->default(0);
+
+            $table->char(Merchant::PRICING_PLAN_ID, Merchant::ID_LENGTH)
+                  ->nullable();
+
+            $table->integer(Merchant::CREATED_AT);
+            $table->integer(Merchant::UPDATED_AT);
+        });
+    }
+
+    /**
+     * Revert the changes to the database.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::drop(Table::MERCHANT);
+    }
 }

@@ -1,7 +1,16 @@
 <?php
 
-class TestCase extends Illuminate\Foundation\Testing\TestCase {
+namespace Tests;
 
+/**
+ * Base test case class provided bdy laravel all, test cases inherit it
+ * ALl test cases follow, GIVEN, WHEN, THEN structure
+ */
+
+use Laracasts\TestDummy\Factory;
+
+class TestCase extends \Illuminate\Foundation\Testing\TestCase
+{
 	/**
 	 * Creates the application.
 	 *
@@ -16,4 +25,8 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase {
 		return require __DIR__.'/../../bootstrap/start.php';
 	}
 
+    public function setUp()
+    {
+        parent::setUp();
+    }
 }

@@ -3,8 +3,12 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCards extends Migration {
+use Constants\Table;
 
+use Models\Card\Entity as Card;
+
+class CreateCards extends Migration
+{
     /**
      * Make changes to the database.
      *
@@ -12,61 +16,59 @@ class CreateCards extends Migration {
      */
     public function up()
     {
-        Schema::create('cards', function(Blueprint $table){
-                
+        Schema::create(Table::CARD, function(Blueprint $table)
+        {
+
             $table->engine = 'InnoDB';
-    
-            $table->increments('id');
 
-            $table->string('number', 19);
+            $table->char(Card::ID, Card::ID_LENGTH)
+                  ->primary();
 
-            $table->string('name');
+            $table->string(Card::NAME);
 
-            $table->string('cvv', 4);
+            $table->string(Card::EXPIRY_MONTH, 2);
 
-            $table->string('expiry_month', 2);
+            $table->string(Card::EXPIRY_YEAR, 4);
 
-            $table->string('expiry_year', 2);
+            $table->string(Card::IIN, 6);
 
-            $table->string('last4', 4);
+            $table->char(Card::LAST4, 4);
 
-            $table->string('type');
+            $table->char(Card::LENGTH, 2);
 
-            /**
-             * Two letter ISO codes representing the country of the card.
-             */
-            $table->string('country', 2);
+            $table->string(Card::NETWORK, 10);
 
-            $table->string('address_line1')
+            $table->string(Card::TYPE, 7)
                   ->nullable();
 
-            $table->string('address_line2')
+            $table->string(Card::ISSUER, 100)
                   ->nullable();
 
-            $table->string('address_city')
-                  ->nullable();
-            
-            $table->string('address_state')
+            $table->char(Card::COUNTRY, Card::COUNTRY_LENGTH)
                   ->nullable();
 
-            $table->integer('address_zip')
+            $table->string(Card::ADDRESS_LINE1)
+                  ->nullable();
+
+            $table->string(Card::ADDRESS_LINE2)
+                  ->nullable();
+
+            $table->string(Card::ADDRESS_CITY)
+                  ->nullable();
+
+            $table->string(Card::ADDRESS_STATE)
+                  ->nullable();
+
+            $table->integer(Card::ADDRESS_ZIP)
                   ->unsigned()
                   ->nullable();
 
-            $table->string('address_country')
+            $table->string(Card::ADDRESS_COUNTRY)
                   ->nullable();
 
-            $table->boolean('cvv_check')
-                  ->nullable();
-
-            $table->boolean('address_line1_check')
-                  ->nullable();
-
-            $table->boolean('address_zip_check')
-                  ->nullable();
-
-            $table->timestamps();
-
+            // Adds created_at and updated_at columns to the table
+            $table->integer(Card::CREATED_AT);
+            $table->integer(Card::UPDATED_AT);
         });
     }
 
@@ -77,7 +79,7 @@ class CreateCards extends Migration {
      */
     public function down()
     {
-        Schema::drop('cards');
+        Schema::drop(Table::CARD);
     }
 
 }

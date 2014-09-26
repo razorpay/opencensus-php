@@ -1,118 +1,267 @@
 <?php
 
-class DatabaseSeeder extends Seeder {
+use Constants\Table;
 
-	/**
-	 * Run the database seeds.
-	 *
-	 * @return void
-	 */
-	public function run()
-	{
-		Eloquent::unguard();
+class DatabaseSeeder extends Seeder
+{
 
-		$this->seed();
-	}
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        Eloquent::unguard();
 
-	private function seed()
-	{
-		DB::table('merchants')->insert(
-			array(
-				'email'	=>	'hm@gmail.com',
-				'pwd'	=>	'password',
-				'hash'	=>	'$2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO'
-				)
-			);
+        $this->seed();
 
-		DB::table('merchants')->insert(
-			array(
-				'email'	=>	'shk@gmail.com',
-				'pwd'	=>	'password',
-				'hash'	=>	'$2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO'
-				)
-			);
-	
-		DB::table('merchants')->insert(
-			array(
-				'email'	=>	'abd@gmail.com',
-				'pwd'	=>	'password',
-				'hash'	=>	'$2y$10$nXJFmdCSrpImMZMs5RX1TenKOP44pDsYDFsP1rvail3hjKbM.2VOO'
-				)
-			);
+        $this->call('IinsTableSeeder');
+    }
 
-		DB::table('cards')->insert(
-			array(
-				'number'		=>	'1234567890',
-				'name'	        =>	'shk',
-				'expiry_month'	=>	'01',
-				'expiry_year'	=>	'99',
-				'cvv'			=>	'000',
-				'type'			=>	'visa',
-				'country'		=>	'IN',
-				'last4'			=>	'7890',
-				)
-			);
+    private function seed()
+    {
+        DB::transaction(function()
+        {
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  '134510ae166900007a9677a9',
+                    'name'          =>  'Razorpay',
+                    'email'         =>  'shashank@razorpay.com',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
 
-		DB::table('cards')->insert(
-			array(
-				'number'		=>	'1234567891',
-				'name'	        =>	'shk',
-				'expiry_month'	=>	'01',
-				'expiry_year'	=>	'12',
-				'cvv'			=>	'000',
-				'type'			=>	'visa',
-				'country'		=>	'IN',
-				'last4'			=>	'7891',
-				)
-			);
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  '134510ae166900007a9677a9',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
 
-		DB::table('cardtokens')->insert(
-			array(
-				'card_id'		=>	2,
-				'merchant_id'	=>	1,
-				'token'			=>	'174bdd3e456c8f6f'
-				)
-			);
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  '363e4efa820b0c06208ccd99',
+                    'name'          =>  'Harshil',
+                    'email'         =>  'das@razorpay.com',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
 
-		DB::table('keys')->insert(
-			array(
-				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360e',
-				'merchant_id'	=>	1,
-				'live'			=>	1,
-				'active'		=>	1,
-				'secret'		=>	0
-				)
-			);
-		
-		DB::table('keys')->insert(
-			array(
-				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360f',
-				'merchant_id'	=>	1,
-				'live'			=>	1,
-				'active'		=>	1,
-				'secret'		=>	1
-				)
-			);
+            DB::table(Table::MERCHANT)->insert(
+                array(
+                    'id'            =>  'f725411687297c5fce0af5c4',
+                    'name'          =>  'testname',
+                    'email'         =>  'shk@razorpay.com',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
 
-		DB::table('keys')->insert(
-			array(
-				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360g',
-				'merchant_id'	=>	2,
-				'live'			=>	1,
-				'active'		=>	1,
-				'secret'		=>	0
-				)
-			);
+            DB::table(Table::TERMINAL)->insert(
+                array(
+                    'id'                    => '14aa47c4a93d6e9b9c7ef51a',
+                    'merchant_id'           => '363e4efa820b0c06208ccd99',
+                    'gateway'               => 'hdfc',
+                    'gateway_merchant_id'   => 'merch123',
+                    'gateway_terminal_id'   => '123456',
+                    'gateway_terminal_password' => Crypt::encrypt('encryptpass'),
+                    'created_at'            =>  time(),
+                    'updated_at'            =>  time(),
+                    )
+                );
 
-		DB::table('keys')->insert(
-			array(
-				'id'			=>	'd9c6bf091a1a64cb5678d8c1d5e7360h',
-				'merchant_id'	=>	2,
-				'live'			=>	1,
-				'active'		=>	1,
-				'secret'		=>	1
-				)
-			);
-	}
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  '363e4efa820b0c06208ccd99',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    )
+                );
 
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  'f725411687297c5fce0af5c4',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    )
+                );
+
+            DB::table(Table::CARD)->insert(
+                array(
+                    'id'            =>  '174bdd3e456c8f6f174bdd3e',
+                    'name'          =>  'shk',
+                    'expiry_month'  =>  '01',
+                    'expiry_year'   =>  '99',
+                    'network'       =>  'visa',
+                    'country'       =>  'IN',
+                    'iin'           =>  '401200',
+                    'last4'         =>  '7890',
+                    'length'        =>  '16',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    )
+                );
+
+            DB::table(Table::CARD)->insert(
+                array(
+                    'id'            =>  '274bdd3e456c8f6f174bdd3f',
+                    'name'          =>  'shk',
+                    'expiry_month'  =>  '01',
+                    'expiry_year'   =>  '12',
+                    'network'       =>  'visa',
+                    'country'       =>  'IN',
+                    'iin'           =>  '401200',
+                    'last4'         =>  '7891',
+                    'length'        =>  '16',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    )
+                );
+
+            DB::table(Table::KEY)->insert(
+                array(
+                    'id'            =>  'd9c6bf091a1a64cb5678d8c1',
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'secret'        =>  Hash::make('thisissupersecret'),
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::KEY)->insert(
+                array(
+                    'id'            =>  'd9c6bf091a1a64cb5678d8c2',
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'secret'        =>  Hash::make('thisissupersecret'),
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::KEY)->insert(
+                array(
+                    'id'            =>  'd9c6bf091a1a64cb5678d8c3',
+                    'merchant_id'   =>  'f725411687297c5fce0af5c4',
+                    'secret'        =>  Hash::make('thisissupersecret'),
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::KEY)->insert(
+                array(
+                    'id'            =>  'd9c6bf091a1a64cb5678d8c4',
+                    'merchant_id'   =>  'f725411687297c5fce0af5c4',
+                    'secret'        =>  Hash::make('thisissupersecret'),
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::PRICING)->insert(
+                array(
+                    'id'            => 'c5484d12aafacc2023608c79',
+                    'plan_id'       => '501f6ad55b9a845fe509e09e',
+                    'plan_name'     => 'Education',
+                    'gateway'       => 'hdfc',
+                    'payment_mode'  => 'card',
+                    'payment_mode_type' => 'credit',
+                    'payment_network'=> 'DICL',
+                    'payment_issuer' => 'HDFC',
+                    'percent_rate'  => '289',
+                    'fixed_rate'    => '0',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    ),
+
+                array(
+                    'id'            => 'e5484d12aafacc2023608c79',
+                    'plan_id'       => '501f6ad55b9a845fe509e09e',
+                    'plan_name'     => 'Education',
+                    'gateway'       => 'hdfc',
+                    'payment_mode'  => 'card',
+                    'payment_mode_type' => 'credit',
+                    'percent_rate'  => '300',
+                    'fixed_rate'    => '0',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    ),
+
+                array(
+                    'id'            => 'c5484d12aafacc2023608c79',
+                    'plan_id'       => '501f6ad55b9a845fe509e09e',
+                    'plan_name'     => 'Education',
+                    'gateway'       => 'hdfc',
+                    'payment_mode'  => 'card',
+                    'payment_mode_type' => 'debit',
+                    'percent_rate'  => '250',
+                    'fixed_rate'    => '0',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    ),
+
+                array(
+                    'id'            => 'b5484d12aafacc2023608c79',
+                    'plan_id'       => '501f6ad55b9a845fe509e09e',
+                    'plan_name'     => 'Education',
+                    'gateway'       => 'icici',
+                    'payment_mode'  => 'nb',
+                    'percent_rate'  => '0',
+                    'fixed_rate'    => '3000',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    )
+                );
+
+            DB::table(Table::PRICING)->insert(
+                array(
+                    'id' => '13906d42c88a41ee4e2d812e',
+                    'plan_id' => '13906d42c88a41ee4e2d812e',
+                    'plan_name' => 'defaultPlan',
+                    'payment_mode' => 'card',
+                    'payment_mode_type' => null,
+                    'payment_network' => null,
+                    'payment_issuer' => null,
+                    'percent_rate' => '200',
+                    'fixed_rate' => 0,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ),
+                array(
+                    'id' => '13906de1816d11113ef4f86f',
+                    'plan_id' => '13906d42c88a41ee4e2d812e',
+                    'plan_name' => 'defaultPlan',
+                    'payment_mode' => 'card',
+                    'payment_mode_type' => null,
+                    'payment_network' => 'AMEX',
+                    'payment_issuer' => null,
+                    'percent_rate' => 300,
+                    'fixed_rate' => 0,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ),
+                array(
+                    'id' => '13906df591e73f02d8afc302',
+                    'plan_id' => '13906d42c88a41ee4e2d812e',
+                    'plan_name' => 'defaultPlan',
+                    'payment_mode' => 'card',
+                    'payment_mode_type' => null,
+                    'payment_network' => 'DICL',
+                    'payment_issuer' => null,
+                    'percent_rate' => 300,
+                    'fixed_rate' => 0,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                )
+            );
+        });
+    }
 }

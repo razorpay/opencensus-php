@@ -1,0 +1,2818 @@
+"400016","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"400017","CLASSIC","Visa","debit","IN",
+"400018","CORPORATE T&E","Visa","debit","IN","STATE BANK OF INDIA"
+"400019","CORPORATE T&E","Visa","debit","IN",
+"400032","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"400033",,"Visa","debit","IN",
+"400034",,"Visa","debit","IN",
+"400035","CLASSIC","Visa","debit","IN",
+"400036","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"400037",,"Visa","debit","IN",
+"400038","CORPORATE T&E","Visa","debit","IN","STATE BANK OF INDIA"
+"400040","CORPORATE T&E","Visa","debit","IN","STATE BANK OF INDIA"
+"400042","CORPORATE T&E","Visa","debit","IN","STATE BANK OF INDIA"
+"400043",,"Visa","debit","IN",
+"400044",,"Visa","debit","IN",
+"400045",,"Visa","debit","IN",
+"400666","CLASSIC","Visa","credit","IN","SBI CARDS AND PAYMENT SERVICES PTE, LTD."
+"400667","PREMIER","Visa","credit","IN","SBI CARDS AND PAYMENT SERVICES PTE, LTD."
+"401151","ELECTRON","Visa","debit","IN","AXIS BANK, LTD."
+"401152","ELECTRON","Visa","debit","IN","UTI BANK, LTD."
+"401822",,"Visa",,"IN",
+"401823",,"Visa",,"IN",
+"402368","PREMIER","Visa","credit","IN","ICICI BANK, LTD."
+"402565","CLASSIC","Visa","debit","IN",
+"402635","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"402657","ELECTRON","Visa","debit","IN","ICICI BANK, LTD."
+"402735",,"Visa",,"IN","DENA BANK"
+"402741","CLASSIC","Visa","debit","IN","CORPORATION BANK"
+"402742",,"Visa",,"IN","CORPORATION BANK"
+"402780",,"Visa",,"IN",
+"402790","ELECTRON","Visa","debit","IN","CANARA BANK"
+"402853","PREMIER","Visa","credit","IN","ICICI BANK, LTD."
+"402874","INFINITE","Visa","credit","IN","STANDARD CHARTERED BANK"
+"402969","ELECTRON","Visa","debit","IN","INDUSIND BANK, LTD."
+"402970",,"Visa",,"IN","INDUSIND BANK, LTD."
+"402985","ELECTRON","Visa","debit","IN","BANK OF BARODA"
+"402986",,"Visa",,"IN","BANK OF BARODA"
+"403250","CLASSIC","Visa","debit","IN",
+"403251","GOLD PREMIUM","Visa","debit","IN",
+"403362",,"Visa",,"IN","ANDHRA BANK"
+"403398","ELECTRON","Visa","debit","IN","SYNDICATE BANK"
+"403399",,"Visa",,"IN","SYNDICATE BANK"
+"403405","CLASSIC","Visa","credit","IN","DENA BANK"
+"403523",,"Visa",,"IN",
+"403748",,"Visa",,"IN",
+"403749",,"Visa",,"IN",
+"404241","ELECTRON","Visa","debit","IN","AXIS BANK, LTD."
+"404276","CLASSIC","Visa","credit","IN","HDFC BANK, LTD."
+"404278","CLASSIC","Visa","credit","IN","SBI CARDS AND PAYMENT SERVICES PTE, LTD."
+"404322","ELECTRON","Visa","debit","IN","KARUR VYSYA BANK, LTD."
+"404834","ELECTRON","Visa","debit","IN","FEDERAL BANK, LTD."
+"404835",,"Visa",,"IN","FEDERAL BANK, LTD."
+"405028","PLATINUM","Visa","credit","IN","HDFC BANK, LTD."
+"405238","ELECTRON","Visa","debit","IN","BANK OF INDIA"
+"405450","CLASSIC","Visa","credit","IN","CITIBANK"
+"405451","PREMIER","Visa","credit","IN","CITIBANK"
+"405533","SIGNATURE","Visa","credit","IN","ICICI BANK, LTD."
+"405663",,"Visa",,"IN","UTI BANK, LTD."
+"405994",,"Visa",,"IN",
+"405995",,"Visa",,"IN",
+"405997",,"Visa",,"IN",
+"406228","PLATINUM","Visa","debit","IN","AXIS BANK, LTD."
+"406229","ELECTRON","Visa","debit","IN","AXIS BANK, LTD."
+"406477",,"Visa",,"IN","STATE BANK OF INDIA"
+"407438","CORPORATE T&E","Visa","credit","IN","AXIS BANK, LTD."
+"407439","CORPORATE T&E","Visa","credit","IN","AXIS BANK, LTD."
+"407651","PREMIER","Visa","credit","IN","ICICI BANK, LTD."
+"407652",,"Visa",,"IN","DEVELOPMENT credit BANK, LTD."
+"407659","CLASSIC","Visa","credit","IN","ICICI BANK, LTD."
+"407706","CORPORATE T&E","Visa","debit","IN","AXIS BANK, LTD."
+"408925",,"Visa",,"IN",
+"408971",,"Visa",,"IN",
+"408982",,"Visa",,"IN",
+"409030","CLASSIC","Visa","credit","IN","SYNDICATE BANK"
+"409031","PREMIER","Visa","credit","IN","SYNDICATE BANK"
+"409064","CLASSIC","Visa","credit","IN","VIJAYA BANK"
+"409361","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"409386","ELECTRON","Visa","debit","IN","IDBI BANK, LTD."
+"409643","ELECTRON","Visa","debit","IN","ICICI BANK, LTD."
+"410028","CLASSIC","Visa","debit","IN","DEVELOPMENT credit BANK, LTD."
+"410030",,"Visa",,"IN","DEVELOPMENT credit BANK, LTD."
+"410043","CORPORATE T","Visa","credit","IN","SYNDICATE BANK"
+"410059","CLASSIC","Visa","credit","IN","ICICI BANK, LTD."
+"410153",,"Visa",,"IN","UNITED BANK OF INDIA"
+"410202","BUSINESS","Visa","credit","IN","ICICI BANK, LTD."
+"410529",,"Visa",,"IN","LORD KRISHNA BANK"
+"411146","SIGNATURE","Visa","credit","IN","AXIS BANK, LTD."
+"412903","CLASSIC","Visa","credit","IN","STANDARD CHARTERED BANK"
+"412904","CLASSIC","Visa","credit","IN","STANDARD CHARTERED BANK"
+"412905","PREMIER","Visa","credit","IN","STANDARD CHARTERED BANK"
+"412929",,"Visa",,"IN","CITIBANK"
+"413085","PREPAID","Visa","debit","IN","CITICORP"
+"413289","BUSINESS","Visa","credit","IN","ICICI BANK, LTD."
+"413441",,"Visa",,"IN",
+"414366","CLASSIC","Visa","credit","IN",
+"414367","BUSINESS","Visa","credit","IN",
+"414752","SIGNATURE","Visa","credit","IN","INDUSIND BANK, LTD."
+"414767","SIGNATURE","Visa","credit","IN",
+"414772","SIGNATURE","Visa","credit","IN","INDUSIND BANK, LTD."
+"416021","PLATINUM","Visa","debit","IN","HDFC BANK, LTD."
+"416419","ELECTRON","Visa","debit","IN","BNP PARIBAS"
+"416452",,"Visa",,"IN","IDBI BANK, LTD."
+"416453",,"Visa",,"IN","BNP PARIBAS"
+"416643","PREMIER","Visa","credit","IN",
+"416644","PLATINUM","Visa","credit","IN",
+"416645","BUSINESS","Visa","credit","IN",
+"416646","CORPORATE T&E","Visa","credit","IN","KOTAK MAHINDRA BANK"
+"417846",,"Visa",,"IN",
+"417847",,"Visa",,"IN",
+"417848","PLATINUM","Visa","credit","IN",
+"417916",,"Visa",,"IN",
+"417917","CLASSIC","Visa","debit","IN","AXIS BANK, LTD."
+"417918","ELECTRON","Visa","debit","IN",
+"417921","CLASSIC","Visa","debit","IN",
+"418123","CLASSIC","Visa","debit","IN",
+"418124",,"Visa","debit","IN",
+"418126",,"Visa",,"IN","AXIS BANK"
+"418130","CLASSIC","Visa","debit","IN","SARASWAT CO-OPERATIVE BANK, LTD."
+"418133","PREMIER","Visa","debit","IN","ICICI BANK, LTD."
+"418136","SIGNATURE","Visa","credit","IN","HDFC BANK, LTD."
+"418157","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"418158","PREMIER","Visa","debit","IN","ICICI BANK, LTD."
+"418174","CORPORATE T&E","Visa","debit","IN","AXIS BANK, LTD."
+"418175","CORPORATE T&E","Visa","debit","IN","AXIS BANK, LTD."
+"418176",,"Visa","debit","IN",
+"418177",,"Visa","debit","IN",
+"418210","PLATINUM","Visa","debit","IN","AXIS BANK, LTD."
+"418212","BUSINESS","Visa","credit","IN","AXIS BANK, LTD."
+"418219","CLASSIC","Visa","debit","IN","HDFC BANK, LTD."
+"418226","BUSINESS","Visa","debit","IN","AXIS BANK, LTD."
+"418228","SIGNATURE","Visa","debit","IN","AXIS BANK, LTD."
+"418234","CORPORATE T&E","Visa","debit","IN","HDFC BANK, LTD."
+"418235",,"Visa","debit","IN",
+"418241",,"Visa",,"IN",
+"418254","CORPORATE T&E","Visa","debit","IN",
+"418255","CORPORATE T&E","Visa","debit","IN","HDFC BANK, LTD."
+"418261",,"Visa",,"IN",
+"418264","CORPORATE T&E","Visa","debit","IN","HDFC BANK, LTD."
+"418276","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"418356","CLASSIC","Visa","credit","IN",
+"418357","PREMIER","Visa","credit","IN",
+"418685","PREMIER","Visa","credit","IN","DHANALAKSHMI BANK, LTD."
+"418686","PLATINUM","Visa","credit","IN","DHANALAKSHMI BANK, LTD."
+"418688","CORPORATE T&E","Visa","credit","IN","DHANALAKSHMI BANK, LTD."
+"419607","BUSINESS","Visa","credit","IN","STANDARD CHARTERED BANK"
+"419788","CLASSIC","Visa","credit","IN",
+"419789","PREMIER","Visa","credit","IN",
+"419937",,"Visa",,"IN",
+"419952",,"Visa",,"IN",
+"419975",,"Visa",,"IN",
+"419981",,"Visa",,"IN",
+"420580","ELECTRON","Visa","debit","IN","ICICI BANK, LTD."
+"421175","CORPORATE T&E","Visa","debit","IN","CITIBANK"
+"421189","ELECTRON","Visa","debit","IN","GE MONEY FINANCIAL SERVICES, LTD."
+"421190","PLUS","Visa","debit","IN","GE COUNTRYWIDE CONSUMER FINANCIAL SERVICES, LTD."
+"421308","CLASSIC","Visa","debit","IN",
+"421314","CLASSIC","Visa","debit","IN","HDFC BANK, LTD."
+"421318","CLASSIC","Visa","debit","IN","HDFC BANK, LTD."
+"421319","CLASSIC","Visa","debit","IN","UNITED BANK OF INDIA"
+"421320","CORPORATE T&E","Visa","debit","IN","HDFC BANK, LTD."
+"421321",,"Visa","debit","IN",
+"421322","PREPAID","Visa","debit","IN","HDFC BANK, LTD."
+"421323","PREMIER","Visa","debit","IN","ICICI BANK, LTD."
+"421324","CLASSIC","Visa","debit","IN","INDUSIND BANK, LTD."
+"421325","CORPORATE T&E","Visa","debit","IN","AXIS BANK, LTD."
+"421326","CORPORATE T","Visa","debit","IN","UTI BANK, LTD."
+"421327","CORPORATE T","Visa","debit","IN","UTI BANK, LTD."
+"421328","CORPORATE T&E","Visa","debit","IN","HDFC BANK, LTD."
+"421329","PREMIER","Visa","debit","IN","ICICI BANK, LTD."
+"421331","CORPORATE T&E","Visa","debit","IN","HDFC BANK, LTD."
+"421332","CORPORATE T&E","Visa","debit","IN","HDFC BANK, LTD."
+"421334","CLASSIC","Visa","debit","IN",
+"421335","CLASSIC","Visa","debit","IN","CENTURION BANK OF PUNJAB, LTD."
+"421337","CLASSIC","Visa","debit","IN","ALLAHABAD BANK"
+"421341","CLASSIC","Visa","debit","IN","VIJAYA BANK"
+"421368","CLASSIC","Visa","debit","IN","UNION BANK OF INDIA"
+"421380","CLASSIC","Visa","debit","IN","AXIS BANK, LTD."
+"421392","PREMIER","Visa","debit","IN","HDFC BANK, LTD."
+"421394","GOLD PREMIUM","Visa","debit","IN","CENTURION BANK OF PUNJAB, LTD."
+"421395","PREMIER","Visa","debit","IN","ICICI BANK, LTD."
+"421409","CLASSIC","Visa","debit","IN","BANK OF MAHARASHTRA"
+"421424","PREMIER","Visa","debit","IN","HDFC BANK, LTD."
+"421426","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"421438","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"421458","CLASSIC","Visa","debit","IN","CANARA BANK"
+"421466","CORPORATE T&E","Visa","debit","IN","AXIS BANK, LTD."
+"421478","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"421479","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"421480","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"421490","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"421491","PREMIER","Visa","debit","IN","IDBI BANK, LTD."
+"421492","CLASSIC","Visa","debit","IN","KARNATAKA BANK, LTD."
+"421493","CLASSIC","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"421495","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"421517","CLASSIC","Visa","debit","IN","DHANALAKSHMI BANK, LTD."
+"421519","CORPORATE T&E","Visa","debit","IN","AXIS BANK, LTD."
+"421520","CORPORATE","Visa","debit","IN","UTI BANK, LTD."
+"421539","CLASSIC","Visa","debit","IN","AXIS BANK, LTD."
+"421560","CLASSIC","Visa","debit","IN","CATHOLIC SYRIAN BANK, LTD."
+"421572","PREMIER","Visa","debit","IN","AXIS BANK, LTD."
+"421578","CLASSIC","Visa","debit","IN","HDFC BANK, LTD."
+"421590","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"421601","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"421602","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"421603","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"421604","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"421605","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"421606","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"421617","CLASSIC","Visa","debit","IN","DEUTSCHE BANK AG"
+"421621","PREMIER","Visa","debit","IN","DEUTSCHE BANK AG"
+"421627","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"421628","BUSINESS","Visa","debit","IN","ICICI BANK, LTD."
+"421630","PREMIER","Visa","debit","IN","ICICI BANK, LTD."
+"421674","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"421681","PREMIER","Visa","debit","IN","INDUSIND BANK, LTD."
+"421687","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"421688","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"421752",,"Visa",,"IN","DEUTSCHE BANK AG"
+"422132","CLASSIC","Visa","debit","IN","INDIAN OVERSEAS BANK"
+"422198","PREMIER","Visa","credit","IN","INDIAN OVERSEAS BANK"
+"422316",,"Visa",,"IN","CATHOLIC SYRIAN BANK, LTD."
+"422677","CLASSIC","Visa","debit","IN","CENTURION BANK OF PUNJAB, LTD."
+"422678","CLASSIC","Visa","debit","IN","HDFC BANK, LTD."
+"423226","CLASSIC","Visa","credit","IN","ICICI BANK, LTD."
+"423227","PREMIER","Visa","credit","IN","ICICI BANK, LTD."
+"423364",,"Visa",,"IN",
+"424000",,"Visa",,"IN",
+"424001",,"Visa",,"IN",
+"424002",,"Visa",,"IN",
+"424003",,"Visa",,"IN",
+"424004",,"Visa",,"IN",
+"424005",,"Visa",,"IN",
+"424006",,"Visa",,"IN",
+"424007",,"Visa",,"IN",
+"424008",,"Visa",,"IN",
+"424009",,"Visa",,"IN",
+"424010",,"Visa",,"IN",
+"424011",,"Visa",,"IN",
+"424012",,"Visa",,"IN",
+"424013",,"Visa",,"IN",
+"424014",,"Visa",,"IN",
+"424015",,"Visa",,"IN",
+"424016",,"Visa",,"IN",
+"424017",,"Visa",,"IN",
+"424018",,"Visa",,"IN",
+"424019",,"Visa",,"IN",
+"424020",,"Visa",,"IN",
+"424021",,"Visa",,"IN",
+"424022",,"Visa",,"IN",
+"424023",,"Visa",,"IN",
+"424024",,"Visa",,"IN",
+"424025",,"Visa",,"IN",
+"424026",,"Visa",,"IN",
+"424027",,"Visa",,"IN",
+"424028",,"Visa",,"IN",
+"424029",,"Visa",,"IN",
+"424030",,"Visa",,"IN",
+"424031",,"Visa",,"IN",
+"424032",,"Visa",,"IN",
+"424033",,"Visa",,"IN",
+"424034",,"Visa",,"IN",
+"424035",,"Visa",,"IN",
+"424036",,"Visa",,"IN",
+"424037",,"Visa",,"IN",
+"424038",,"Visa",,"IN",
+"424039",,"Visa",,"IN",
+"424040",,"Visa",,"IN",
+"424041",,"Visa",,"IN",
+"424042",,"Visa",,"IN",
+"424043",,"Visa",,"IN",
+"424044",,"Visa",,"IN",
+"424045",,"Visa",,"IN",
+"424046",,"Visa",,"IN",
+"424047",,"Visa",,"IN",
+"424048",,"Visa",,"IN",
+"424049",,"Visa",,"IN",
+"424050",,"Visa",,"IN",
+"424051",,"Visa",,"IN",
+"424052",,"Visa",,"IN",
+"424053",,"Visa",,"IN",
+"424054",,"Visa",,"IN",
+"424055",,"Visa",,"IN",
+"424056",,"Visa",,"IN",
+"424057",,"Visa",,"IN",
+"424058",,"Visa",,"IN",
+"424059",,"Visa",,"IN",
+"424060",,"Visa",,"IN",
+"424061",,"Visa",,"IN",
+"424062",,"Visa",,"IN",
+"424063",,"Visa",,"IN",
+"424064",,"Visa",,"IN",
+"424065",,"Visa",,"IN",
+"424066",,"Visa",,"IN",
+"424067",,"Visa",,"IN",
+"424068",,"Visa",,"IN",
+"424069",,"Visa",,"IN",
+"424070",,"Visa",,"IN",
+"424071",,"Visa",,"IN",
+"424072",,"Visa",,"IN",
+"424073",,"Visa",,"IN",
+"424074",,"Visa",,"IN",
+"424075",,"Visa",,"IN",
+"424076",,"Visa",,"IN",
+"424077",,"Visa",,"IN",
+"424078",,"Visa",,"IN",
+"424079",,"Visa",,"IN",
+"424080",,"Visa",,"IN",
+"424081",,"Visa",,"IN",
+"424082",,"Visa",,"IN",
+"424083",,"Visa",,"IN",
+"424084",,"Visa",,"IN",
+"424085",,"Visa",,"IN",
+"424086",,"Visa",,"IN",
+"424087",,"Visa",,"IN",
+"424088",,"Visa",,"IN",
+"424089",,"Visa",,"IN",
+"424090",,"Visa",,"IN",
+"424091",,"Visa",,"IN",
+"424092",,"Visa",,"IN",
+"424093",,"Visa",,"IN",
+"424094",,"Visa",,"IN",
+"424095",,"Visa",,"IN",
+"424096",,"Visa",,"IN",
+"424097",,"Visa",,"IN",
+"424098",,"Visa",,"IN",
+"424099",,"Visa",,"IN",
+"424202",,"Visa",,"IN",
+"424203",,"Visa",,"IN",
+"424209",,"Visa",,"IN",
+"424220",,"Visa",,"IN",
+"424221",,"Visa",,"IN",
+"424246",,"Visa",,"IN",
+"424272",,"Visa",,"IN",
+"424273",,"Visa",,"IN",
+"424287",,"Visa",,"IN",
+"424288",,"Visa",,"IN",
+"424292",,"Visa",,"IN",
+"424293",,"Visa",,"IN",
+"424294",,"Visa",,"IN",
+"424295",,"Visa",,"IN",
+"424296",,"Visa",,"IN",
+"424297",,"Visa",,"IN",
+"424298",,"Visa",,"IN",
+"424299",,"Visa",,"IN",
+"424300",,"Visa",,"IN",
+"424301",,"Visa",,"IN",
+"424304",,"Visa",,"IN",
+"424322",,"Visa",,"IN",
+"424323",,"Visa",,"IN",
+"424338",,"Visa",,"IN",
+"424341",,"Visa",,"IN",
+"424351",,"Visa",,"IN",
+"424355",,"Visa",,"IN",
+"424356",,"Visa",,"IN",
+"424357",,"Visa",,"IN",
+"424364",,"Visa",,"IN",
+"424375",,"Visa",,"IN",
+"424376",,"Visa",,"IN",
+"424380",,"Visa",,"IN",
+"424387",,"Visa",,"IN",
+"424388",,"Visa",,"IN",
+"424389",,"Visa",,"IN",
+"424390",,"Visa",,"IN",
+"424406",,"Visa",,"IN",
+"424425",,"Visa",,"IN",
+"424427",,"Visa",,"IN",
+"424433",,"Visa",,"IN",
+"424445",,"Visa",,"IN",
+"424457",,"Visa",,"IN",
+"424458",,"Visa",,"IN",
+"424489",,"Visa",,"IN",
+"424493",,"Visa",,"IN",
+"424494",,"Visa",,"IN",
+"424495",,"Visa",,"IN",
+"424496",,"Visa",,"IN",
+"424497",,"Visa",,"IN",
+"424498",,"Visa",,"IN",
+"424511",,"Visa",,"IN",
+"424522",,"Visa",,"IN",
+"424523",,"Visa",,"IN",
+"424524",,"Visa",,"IN",
+"424525",,"Visa",,"IN",
+"424526",,"Visa",,"IN",
+"424527",,"Visa",,"IN",
+"424528",,"Visa",,"IN",
+"424529",,"Visa",,"IN",
+"424530",,"Visa",,"IN",
+"424531",,"Visa",,"IN",
+"424532",,"Visa",,"IN",
+"424533",,"Visa",,"IN",
+"424545",,"Visa",,"IN",
+"424546",,"Visa",,"IN",
+"424556",,"Visa",,"IN",
+"424560",,"Visa",,"IN",
+"424569",,"Visa",,"IN",
+"424570",,"Visa",,"IN",
+"424571",,"Visa",,"IN",
+"424572",,"Visa",,"IN",
+"424574",,"Visa",,"IN",
+"424578",,"Visa",,"IN",
+"424579",,"Visa",,"IN",
+"424580",,"Visa",,"IN",
+"424581",,"Visa",,"IN",
+"424582",,"Visa",,"IN",
+"424583",,"Visa",,"IN",
+"424584",,"Visa",,"IN",
+"424585",,"Visa",,"IN",
+"424590",,"Visa",,"IN",
+"424591",,"Visa",,"IN",
+"424592",,"Visa",,"IN",
+"424593",,"Visa",,"IN",
+"424594",,"Visa",,"IN",
+"424595",,"Visa",,"IN",
+"424596",,"Visa",,"IN",
+"424597",,"Visa",,"IN",
+"424598",,"Visa",,"IN",
+"424633",,"Visa",,"IN",
+"424639",,"Visa",,"IN",
+"424659",,"Visa",,"IN",
+"424686",,"Visa",,"IN",
+"424707",,"Visa",,"IN",
+"424708",,"Visa",,"IN",
+"424709",,"Visa",,"IN",
+"424710",,"Visa",,"IN",
+"424711",,"Visa",,"IN",
+"424712",,"Visa",,"IN",
+"424737",,"Visa",,"IN",
+"424741",,"Visa",,"IN",
+"424742",,"Visa",,"IN",
+"424760",,"Visa",,"IN",
+"424761",,"Visa",,"IN",
+"424762",,"Visa",,"IN",
+"424764",,"Visa",,"IN",
+"424768",,"Visa",,"IN",
+"424774",,"Visa",,"IN",
+"424777",,"Visa",,"IN",
+"424800",,"Visa",,"IN",
+"424801",,"Visa",,"IN",
+"424802",,"Visa",,"IN",
+"424803",,"Visa",,"IN",
+"424804",,"Visa",,"IN",
+"424805",,"Visa",,"IN",
+"424806",,"Visa",,"IN",
+"424807",,"Visa",,"IN",
+"424808",,"Visa",,"IN",
+"424809",,"Visa",,"IN",
+"424810",,"Visa",,"IN",
+"424811",,"Visa",,"IN",
+"424812",,"Visa",,"IN",
+"424813",,"Visa",,"IN",
+"424814",,"Visa",,"IN",
+"424815",,"Visa",,"IN",
+"424816",,"Visa",,"IN",
+"424817",,"Visa",,"IN",
+"424818",,"Visa",,"IN",
+"424819",,"Visa",,"IN",
+"424820",,"Visa",,"IN",
+"424821",,"Visa",,"IN",
+"424822",,"Visa",,"IN",
+"424823",,"Visa",,"IN",
+"424824",,"Visa",,"IN",
+"424825",,"Visa",,"IN",
+"424826",,"Visa",,"IN",
+"424827",,"Visa",,"IN",
+"424828",,"Visa",,"IN",
+"424829",,"Visa",,"IN",
+"424830",,"Visa",,"IN",
+"424831",,"Visa",,"IN",
+"424832",,"Visa",,"IN",
+"424833",,"Visa",,"IN",
+"424834",,"Visa",,"IN",
+"424835",,"Visa",,"IN",
+"424836",,"Visa",,"IN",
+"424837",,"Visa",,"IN",
+"424838",,"Visa",,"IN",
+"424839",,"Visa",,"IN",
+"424840",,"Visa",,"IN",
+"424841",,"Visa",,"IN",
+"424842",,"Visa",,"IN",
+"424843",,"Visa",,"IN",
+"424844",,"Visa",,"IN",
+"424845",,"Visa",,"IN",
+"424846",,"Visa",,"IN",
+"424847",,"Visa",,"IN",
+"424848",,"Visa",,"IN",
+"424849",,"Visa",,"IN",
+"424850",,"Visa",,"IN",
+"424851",,"Visa",,"IN",
+"424852",,"Visa",,"IN",
+"424853",,"Visa",,"IN",
+"424854",,"Visa",,"IN",
+"424855",,"Visa",,"IN",
+"424856",,"Visa",,"IN",
+"424857",,"Visa",,"IN",
+"424858",,"Visa",,"IN",
+"424859",,"Visa",,"IN",
+"424860",,"Visa",,"IN",
+"424861",,"Visa",,"IN",
+"424862",,"Visa",,"IN",
+"424863",,"Visa",,"IN",
+"424864",,"Visa",,"IN",
+"424865",,"Visa",,"IN",
+"424866",,"Visa",,"IN",
+"424867",,"Visa",,"IN",
+"424868",,"Visa",,"IN",
+"424869",,"Visa",,"IN",
+"424870",,"Visa",,"IN",
+"424871",,"Visa",,"IN",
+"424872",,"Visa",,"IN",
+"424873",,"Visa",,"IN",
+"424874",,"Visa",,"IN",
+"424875",,"Visa",,"IN",
+"424876",,"Visa",,"IN",
+"424877",,"Visa",,"IN",
+"424878",,"Visa",,"IN",
+"424879",,"Visa",,"IN",
+"424880",,"Visa",,"IN",
+"424881",,"Visa",,"IN",
+"424882",,"Visa",,"IN",
+"424883",,"Visa",,"IN",
+"424884",,"Visa",,"IN",
+"424885",,"Visa",,"IN",
+"424886",,"Visa",,"IN",
+"424887",,"Visa",,"IN",
+"424888",,"Visa",,"IN",
+"424889",,"Visa",,"IN",
+"424890",,"Visa",,"IN",
+"424891",,"Visa",,"IN",
+"424892",,"Visa",,"IN",
+"424893",,"Visa",,"IN",
+"424894",,"Visa",,"IN",
+"424895",,"Visa",,"IN",
+"424896",,"Visa",,"IN",
+"424897",,"Visa",,"IN",
+"424898",,"Visa",,"IN",
+"424899",,"Visa",,"IN",
+"424912",,"Visa",,"IN",
+"424920",,"Visa",,"IN",
+"424921",,"Visa",,"IN",
+"424922",,"Visa",,"IN",
+"424931",,"Visa",,"IN",
+"424932",,"Visa",,"IN",
+"424935",,"Visa",,"IN",
+"424937",,"Visa",,"IN",
+"424942",,"Visa",,"IN",
+"424945",,"Visa",,"IN",
+"424970",,"Visa",,"IN",
+"424977",,"Visa",,"IN","CORPORATION BANK"
+"424983",,"Visa",,"IN",
+"424987",,"Visa",,"IN",
+"424988",,"Visa",,"IN",
+"424990",,"Visa",,"IN",
+"424991",,"Visa",,"IN",
+"424992",,"Visa",,"IN",
+"424993",,"Visa",,"IN",
+"424994",,"Visa",,"IN",
+"424995",,"Visa",,"IN",
+"424996",,"Visa",,"IN",
+"424997",,"Visa",,"IN",
+"424998",,"Visa",,"IN",
+"424999",,"Visa",,"IN",
+"425805","CLASSIC","Visa","credit","IN","CORPORATION BANK"
+"425806","PREMIER","Visa","credit","IN","CORPORATION BANK"
+"426015",,"Visa",,"IN","ICICI BANK, LTD."
+"426057",,"Visa",,"IN","IDBI BANK, LTD."
+"426063","CLASSIC","Visa","credit","IN","BANK OF INDIA"
+"426241","CLASSIC","Visa","credit","IN","INDIAN OVERSEAS BANK"
+"426242",,"Visa",,"IN","INDIAN OVERSEAS BANK"
+"426365",,"Visa",,"IN","IDBI BANK, LTD."
+"426923",,"Visa",,"IN","ABN AMRO BANK, N.V."
+"427298",,"Visa",,"IN",
+"428090",,"Visa",,"IN",
+"428091",,"Visa",,"IN",
+"428092",,"Visa",,"IN",
+"428093",,"Visa",,"IN",
+"428094",,"Visa",,"IN",
+"428095",,"Visa",,"IN",
+"428096",,"Visa",,"IN",
+"428097",,"Visa",,"IN",
+"428098",,"Visa",,"IN",
+"428099",,"Visa",,"IN",
+"428306","CLASSIC","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"428313","CLASSIC","Visa","debit","IN","INDIAN OVERSEAS BANK"
+"428320","CLASSIC","Visa","debit","IN","UCO BANK"
+"428348","PREMIER","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"428376","PREMIER","Visa","debit","IN","STATE BANK OF INDIA"
+"428377",,"Visa",,"IN",
+"428382","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"428383","PREMIER","Visa","debit","IN","ICICI BANK, LTD."
+"428414","PLATINUM","Visa","debit","IN",
+"428479","BUSINESS","Visa","credit","IN",
+"428626","BUSINESS","Visa","debit","IN",
+"428627",,"Visa","debit","IN",
+"428675","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"429303","PREMIER","Visa","credit","IN","VIJAYA BANK"
+"429304","GOLD PREMIUM","Visa","credit","IN","VIJAYA BANK"
+"429344","CLASSIC","Visa","credit","IN","STANDARD CHARTERED BANK"
+"429345",,"Visa",,"IN","STANDARD CHARTERED BANK"
+"429390","CLASSIC","Visa","credit","IN","BANK OF BARODA"
+"429391",,"Visa",,"IN","KOTAK MAHINDRA BANK, LTD."
+"429393","CLASSIC","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"430366","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"430367","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"430370","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"430371","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"430450",,"Visa",,"IN","ALLAHABAD BANK"
+"430463","SIGNATURE","Visa","credit","IN","CITIBANK"
+"431118",,"Visa",,"IN","BANK OF INDIA"
+"431119","PREMIER","Visa","credit","IN","BANK OF INDIA"
+"431263",,"Visa",,"IN","VIJAYA BANK"
+"431754","CLASSIC","Visa","credit","IN","SBI CARDS AND PAYMENT SERVICES PTE, LTD."
+"431757","CLASSIC","Visa","credit","IN","SBI CARDS AND PAYMENT SERVICES PTE, LTD."
+"431759","GOLD PREMIUM","Visa","credit","IN","SBI CARDS AND PAYMENT SERVICES PTE, LTD."
+"431761",,"Visa",,"IN","UTI BANK, LTD."
+"431921","CORPORATE T&E","Visa","debit","IN","CITIBANK"
+"431922","CORPORATE T&E","Visa","debit","IN","CITIBANK"
+"431990","CORPORATE T&E","Visa","debit","IN",
+"432090",,"Visa",,"IN",
+"432093",,"Visa",,"IN",
+"432094",,"Visa",,"IN",
+"432098",,"Visa",,"IN",
+"432099",,"Visa",,"IN",
+"432198","GIFT","Visa","debit","IN",
+"432199","GIFT","Visa","debit","IN",
+"432707",,"Visa",,"IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"432808","CLASSIC","Visa","credit","IN","INDIAN BANK"
+"432809","PREMIER","Visa","credit","IN","INDIAN BANK"
+"432960",,"Visa",,"IN","STANDARD CHARTERED BANK"
+"433273",,"Visa",,"IN","HDFC BANK, LTD."
+"433274",,"Visa",,"IN","HDFC BANK, LTD."
+"433275",,"Visa",,"IN","HDFC BANK, LTD."
+"433948","PREMIER","Visa","credit","IN","BARCLAYS BANK PLC"
+"433950","PLATINUM","Visa","credit","IN","BARCLAYS BANK PLC"
+"433951","CLASSIC","Visa","credit","IN","BARCLAYS BANK PLC"
+"433973",,"Visa",,"IN",
+"434071","PREMIER","Visa","credit","IN","BANK OF INDIA"
+"434081",,"Visa",,"IN","KARUR VYSYA BANK, LTD."
+"434672",,"Visa",,"IN","UTI BANK, LTD."
+"434673",,"Visa",,"IN","CENTURION BANK OF PUNJAB, LTD."
+"434676","CLASSIC","Visa","debit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"434677","CLASSIC","Visa","credit","IN","HDFC BANK, LTD."
+"434678","PREMIER","Visa","credit","IN","HDFC BANK, LTD."
+"434975","CLASSIC","Visa","credit","IN","AXIS BANK, LTD."
+"434990","BUSINESS","Visa","credit","IN","AXIS BANK, LTD."
+"435700","ELECTRON","Visa","debit","IN","ORIENTAL BANK OF COMMERCE"
+"435708","ELECTRON","Visa","debit","IN","ORIENTAL BANK OF COMMERCE"
+"435736","CLASSIC","Visa","debit","IN","AXIS BANK, LTD."
+"436303","PLATINUM","Visa","debit","IN","HDFC BANK, LTD."
+"436306","INFINITE","Visa","credit","IN","HDFC BANK, LTD."
+"436311","PLATINUM","Visa","debit","IN","STATE BANK OF INDIA"
+"436328","CORPORATE T&E","Visa","debit","IN",
+"436329",,"Visa",,"IN",
+"436330","CORPORATE T&E","Visa","debit","IN",
+"436331",,"Visa","debit","IN",
+"436333","PREMIER","Visa","debit","IN","SYNDICATE BANK"
+"436336","CLASSIC","Visa","debit","IN","AXIS BANK, LTD."
+"436359","CLASSIC","Visa","debit","IN","DHANALAKSHMI BANK, LTD."
+"436360","PLATINUM","Visa","debit","IN","DHANALAKSHMI BANK, LTD."
+"436369","PLATINUM","Visa","debit","IN",
+"436370",,"Visa","debit","IN",
+"436371",,"Visa","debit","IN",
+"436372","BUSINESS","Visa","debit","IN",
+"436388","PREMIER","Visa","credit","IN",
+"436389","PLATINUM","Visa","credit","IN",
+"436390","CORPORATE T&E","Visa","credit","IN",
+"436393","PLATINUM","Visa","debit","IN",
+"436395","BUSINESS","Visa","debit","IN",
+"436408","CORPORATE T&E","Visa","debit","IN",
+"436409",,"Visa","debit","IN",
+"436410",,"Visa","debit","IN",
+"436412","CORPORATE T&E","Visa","debit","IN",
+"436413",,"Visa",,"IN",
+"436426","CLASSIC","Visa","debit","IN",
+"436427",,"Visa","debit","IN",
+"436428",,"Visa","debit","IN",
+"436430","CLASSIC","Visa","debit","IN",
+"436431",,"Visa",,"IN",
+"436437","CLASSIC","Visa","debit","IN",
+"436518","CLASSIC","Visa","debit","IN","AXIS BANK, LTD."
+"436520","BUSINESS","Visa","credit","IN","HDFC BANK, LTD."
+"436534","SIGNATURE","Visa","debit","IN",
+"436538","CLASSIC","Visa","debit","IN","UNION BANK OF INDIA"
+"436543","PLATINUM","Visa","debit","IN",
+"436558","PREMIER","Visa","debit","IN",
+"436560","INFINITE","Visa","credit","IN","AXIS BANK, LTD."
+"436584","CORPORATE T&E","Visa","debit","IN",
+"436585",,"Visa","debit","IN",
+"436595","PLATINUM","Visa","debit","IN",
+"436596",,"Visa","debit","IN",
+"437364","CLASSIC","Visa","debit","IN","UNION BANK OF INDIA"
+"437365",,"Visa","debit","IN",
+"437366",,"Visa","debit","IN",
+"437378","PLATINUM","Visa","credit","IN","ANDHRA BANK"
+"437382","PLATINUM","Visa","debit","IN",
+"437383",,"Visa","debit","IN",
+"437384",,"Visa","debit","IN",
+"437385",,"Visa","debit","IN",
+"437386",,"Visa","debit","IN",
+"437387",,"Visa","debit","IN",
+"437388","CLASSIC","Visa","debit","IN",
+"437392","PLATINUM","Visa","debit","IN","SYNDICATE BANK"
+"437400","PLATINUM","Visa","debit","IN",
+"437401",,"Visa","debit","IN",
+"437402",,"Visa","debit","IN",
+"437403",,"Visa","debit","IN",
+"437405","PLATINUM","Visa","debit","IN",
+"437406",,"Visa","debit","IN",
+"437409","PLATINUM","Visa","debit","IN",
+"437410","CORPORATE T&E","Visa","debit","IN","ING VYSYA BANK_, LTD."
+"437411",,"Visa","debit","IN",
+"437412",,"Visa","debit","IN",
+"437413",,"Visa","debit","IN",
+"437415","CORPORATE T&E","Visa","debit","IN","ING VYSYA BANK_, LTD."
+"437416",,"Visa","debit","IN",
+"437501","CLASSIC","Visa","debit","IN","SOUTH INDIAN BANK, LTD."
+"437502","PREMIER","Visa","debit","IN","SOUTH INDIAN BANK, LTD."
+"437503","PLATINUM","Visa","debit","IN","SOUTH INDIAN BANK, LTD."
+"437515",,"Visa",,"IN",
+"437532","CLASSIC","Visa","debit","IN","BANK OF INDIA"
+"437546","INFINITE","Visa","credit","IN","HDFC BANK, LTD."
+"437547","CLASSIC","Visa","debit","IN","AXIS BANK, LTD."
+"437549",,"Visa",,"IN",
+"437551","PLATINUM","Visa","credit","IN",
+"437570",,"Visa",,"IN",
+"437706","PREMIER","Visa","debit","IN",
+"437737","CLASSIC","Visa","debit","IN","BARCLAY CARD"
+"437738","PLATINUM","Visa","debit","IN","BARCLAYS BANK PLC"
+"437748","PLATINUM","Visa","credit","IN","SBI CARDS AND PAYMENT SERVICES PTE, LTD."
+"437749","CLASSIC","Visa","debit","IN",
+"437754","CLASSIC","Visa","debit","IN","CORPORATION BANK"
+"437891","CLASSIC","Visa","debit","IN",
+"437899","CLASSIC","Visa","debit","IN",
+"438105","CLASSIC","Visa","credit","IN","SBI CARDS AND PAYMENT SERVICES PTE, LTD."
+"438110",,"Visa",,"IN","CANARA BANK"
+"438411",,"Visa","credit","IN","HSBC"
+"438430",,"Visa","credit","IN","HSBC"
+"438431",,"Visa","credit","IN","HSBC"
+"438436",,"Visa","credit","IN","HSBC"
+"438438",,"Visa","credit","IN","HSBC"
+"438439",,"Visa","credit","IN","HSBC"
+"438440",,"Visa","credit","IN","HSBC"
+"438443",,"Visa","credit","IN","HSBC"
+"438446",,"Visa","credit","IN","HSBC"
+"438448",,"Visa","credit","IN","HSBC"
+"438449",,"Visa","credit","IN","HSBC"
+"438455",,"Visa","credit","IN","HSBC"
+"438456",,"Visa","credit","IN","HSBC"
+"438457",,"Visa","credit","IN","HSBC"
+"438458",,"Visa","credit","IN","HSBC"
+"438459","PREMIER","Visa","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"438465",,"Visa","credit","IN","HSBC"
+"438468",,"Visa","credit","IN","HSBC"
+"438477",,"Visa","credit","IN","HSBC"
+"438478",,"Visa","credit","IN","HSBC"
+"438479",,"Visa","credit","IN","HSBC"
+"438495",,"Visa","credit","IN","HSBC"
+"438498",,"Visa","credit","IN","HSBC"
+"438587","PREMIER","Visa","credit","IN","CITIBANK"
+"438624","CLASSIC","Visa","debit","IN","HDFC BANK, LTD."
+"438628","PLATINUM","Visa","credit","IN","CITIBANK"
+"439126",,"Visa",,"IN","STANDARD CHARTERED BANK"
+"439154","CLASSIC","Visa","credit","IN","UNION BANK OF INDIA"
+"439155","PREMIER","Visa","credit","IN","UNION BANK OF INDIA"
+"439173",,"Visa",,"IN","JAMMU AND KASHMIR BANK, LTD."
+"441283","CLASSIC","Visa","credit","IN","INDUSIND BANK, LTD."
+"441284","PREMIER","Visa","credit","IN","INDUSIND BANK, LTD."
+"441285","PLATINUM","Visa","credit","IN","INDUSIND BANK, LTD."
+"442378","GOLD PREMIUM","Visa","credit","IN","BANK OF BARODA"
+"442411","PREMIER","Visa","debit","IN","YES BANK, LTD."
+"442419","PLATINUM","Visa","debit","IN",
+"442420",,"Visa","debit","IN",
+"442437","CLASSIC","Visa","debit","IN","DEVELOPMENT credit BANK, LTD."
+"444341","CLASSIC","Visa","credit","IN","ICICI BANK, LTD."
+"445041","CLASSIC","Visa","debit","IN","CORPORATION BANK"
+"445063","CORPORATE T&E","Visa","debit","IN","AXIS BANK, LTD."
+"445064",,"Visa","debit","IN",
+"445065",,"Visa","debit","IN",
+"445068","ELECTRON","Visa","debit","IN","AXIS BANK, LTD."
+"445069","ELECTRON","Visa","debit","IN",
+"445073","PREMIER","Visa","debit","IN","AXIS BANK, LTD."
+"445084","CORPORATE T&E","Visa","credit","IN","ICICI BANK, LTD."
+"445085","CLASSIC","Visa","debit","IN",
+"445532","CLASSIC","Visa","debit","IN",
+"445533",,"Visa","debit","IN",
+"445534",,"Visa","debit","IN",
+"445535",,"Visa","debit","IN",
+"447692","CLASSIC","Visa","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"447746","CLASSIC","Visa","credit","IN","ICICI BANK, LTD."
+"447747","PREMIER","Visa","credit","IN","ICICI BANK, LTD."
+"447748",,"Visa",,"IN","ICICI BANK, LTD."
+"447758","CLASSIC","Visa","credit","IN","ICICI BANK, LTD."
+"450106",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450120",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450121",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450122",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450123",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450124",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450125",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450126",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450127",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450128",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450129",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450130",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450131",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450132",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450133",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450134",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450135",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450136",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450137",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450138",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450139",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450140",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450141",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450142",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450143",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450144",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450145",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450146",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450147",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450148",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450149",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450150",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450151",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450153",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450154",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450155",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450156",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450157",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450158",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450159",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450160",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450161",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450162",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450163",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450164",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450165",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450166",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450167",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450168",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450169",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450170",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450171",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450172",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450173",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450174",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450175",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450176",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450177",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450178",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450179",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450182",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450186",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450187",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450188",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450189",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450190",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450191",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450192",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450193",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450194",,"Visa",,"IN","BARCLAYS BANK PLC"
+"450478",,"Visa","credit","IN",
+"450502",,"Visa","credit","IN",
+"450503",,"Visa","credit","IN",
+"450504",,"Visa","credit","IN",
+"450506",,"Visa","credit","IN",
+"450523",,"Visa","credit","IN",
+"450527",,"Visa","credit","IN",
+"450572",,"Visa",,"IN","STANDARD CHARTERED BANK"
+"450623","CLASSIC","Visa","credit","IN","ANDHRA BANK"
+"450720",,"Visa",,"IN","BANK OF AMERICA N.T. AND, S.A."
+"450721",,"Visa",,"IN","BANK OF AMERICA N.T. AND, S.A."
+"450900","BUSINESS","Visa","credit","IN","CITIBANK"
+"451104",,"Visa",,"IN",
+"451150","CLASSIC","Visa","credit","IN","ANDHRA BANK"
+"451452","PLATINUM","Visa","credit","IN",
+"451455","PLATINUM","Visa","credit","IN",
+"451456","PLATINUM","Visa","credit","IN",
+"451457","PLATINUM","Visa","credit","IN",
+"451458","PLATINUM","Visa","credit","IN",
+"451459","PLATINUM","Visa","credit","IN",
+"451460","PLATINUM","Visa","credit","IN",
+"451469",,"Visa",,"IN","ORIENTAL BANK OF COMMERCE"
+"451487",,"Visa",,"IN","BANK OF INDIA"
+"451840","BUSINESS","Visa","credit","IN","CANARA BANK"
+"452055",,"Visa",,"IN",
+"452059","CLASSIC","Visa","credit","IN",
+"452497",,"Visa",,"IN","STANDARD CHARTERED BANK"
+"453757",,"Visa",,"IN",
+"453992","PREMIER","Visa","credit","IN","ANDHRA BANK"
+"453995","GOLD PREMIUM","Visa","credit","IN","ANDHRA BANK"
+"454107",,"Visa","debit","IN","STANDARD CHARTERED BANK INDIA"
+"454180",,"Visa","debit","IN","STANDARD CHARTERED BANK INDIA"
+"454181",,"Visa","debit","IN","STANDARD CHARTERED BANK INDIA"
+"454198","PLATINUM","Visa","credit","IN","STANDARD CHARTERED BANK"
+"454362","CLASSIC","Visa","credit","IN","CANARA BANK"
+"454363","CLASSIC","Visa","credit","IN","CANARA BANK"
+"454485","CLASSIC","Visa","credit","IN","CENTRAL BANK OF INDIA"
+"455038","CLASSIC","Visa","credit","IN","CITIBANK"
+"455390","CORPORATE T&E","Visa","credit","IN","CITIBANK"
+"455446","PLATINUM","Visa","debit","IN","ICICI BANK, LTD."
+"455451","PLATINUM","Visa","debit","IN","ICICI BANK, LTD."
+"455452","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"455454","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"456342","CLASSIC","Visa","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"456398","CLASSIC","Visa","credit","IN","STANDARD CHARTERED BANK"
+"456407","BUSINESS","Visa","credit","IN","CITIBANK"
+"456719","PREMIER","Visa","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"456822","CLASSIC","Visa","credit","IN","CITIBANK"
+"457036","BUSINESS","Visa","credit","IN","STANDARD CHARTERED BANK"
+"457262","SIGNATURE BUSINESS","Visa","credit","IN","HDFC BANK, LTD."
+"457274","PLATINUM","Visa","debit","IN",
+"457323","CLASSIC","Visa","debit","IN",
+"457355","CLASSIC","Visa","debit","IN",
+"457357",,"Visa",,"IN",
+"457392","CLASSIC","Visa","debit","IN",
+"457474","BUSINESS","Visa","debit","IN",
+"457486","PREMIER","Visa","debit","IN",
+"457487","SIGNATURE","Visa","debit","IN",
+"457488","PLATINUM","Visa","debit","IN",
+"457500","SIGNATURE","Visa","debit","IN","DBS BANK, LTD."
+"457514",,"Visa",,"IN",
+"457528",,"Visa","debit","IN",
+"457552",,"Visa",,"IN",
+"457553",,"Visa",,"IN",
+"457580",,"Visa",,"IN",
+"457581",,"Visa",,"IN",
+"457582",,"Visa",,"IN",
+"457583",,"Visa",,"IN",
+"457584",,"Visa",,"IN",
+"457585",,"Visa",,"IN",
+"457586",,"Visa",,"IN",
+"457587",,"Visa",,"IN",
+"457588",,"Visa",,"IN",
+"457589",,"Visa",,"IN",
+"457590",,"Visa",,"IN",
+"457597",,"Visa",,"IN",
+"457623",,"Visa",,"IN",
+"457624",,"Visa",,"IN",
+"457625",,"Visa","debit","IN",
+"457626",,"Visa","debit","IN",
+"457704",,"Visa",,"IN",
+"457741",,"Visa",,"IN",
+"457742",,"Visa",,"IN",
+"457743",,"Visa",,"IN",
+"458104","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458105","CLASSIC","Visa","debit","IN","TARJETAS BCT, S.A."
+"458110","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458112","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458118","PLATINUM","Visa","debit","IN","IDBI BANK, LTD."
+"458134","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458135","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458136","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458139","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458140","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458159","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458451","CLASSIC","Visa","debit","IN","CORPORATION BANK"
+"458452","PREMIER","Visa","debit","IN","CORPORATION BANK"
+"458545","PLATINUM","Visa","debit","IN",
+"458546",,"Visa","debit","IN",
+"458576",,"Visa",,"IN","CORPORATION BANK"
+"458585",,"Visa",,"IN","CENTRAL BANK OF INDIA"
+"458599",,"Visa",,"IN","AXIS BANK, LTD."
+"458777","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"458778","PREMIER","Visa","debit","IN","IDBI BANK, LTD."
+"459150","CLASSIC","Visa","debit","IN",
+"459151",,"Visa","debit","IN",
+"459152","PREMIER","Visa","debit","IN",
+"459153","PLATINUM","Visa","debit","IN",
+"459154","PREMIER","Visa","debit","IN","STATE BANK OF INDIA"
+"459155","PREMIER","Visa","debit","IN",
+"459156",,"Visa","debit","IN",
+"459157",,"Visa","debit","IN",
+"459158",,"Visa","debit","IN",
+"459159",,"Visa",,"IN",
+"459160",,"Visa",,"IN",
+"459161",,"Visa","debit","IN",
+"459162",,"Visa","debit","IN",
+"459163",,"Visa","debit","IN",
+"459164",,"Visa",,"IN",
+"459165",,"Visa",,"IN",
+"459166",,"Visa","debit","IN",
+"459167",,"Visa","debit","IN",
+"459168",,"Visa","debit","IN",
+"459169",,"Visa",,"IN",
+"459170",,"Visa",,"IN",
+"459171",,"Visa","debit","IN",
+"459172",,"Visa","debit","IN",
+"459173",,"Visa","debit","IN",
+"459174",,"Visa",,"IN",
+"459175",,"Visa",,"IN",
+"459176",,"Visa","debit","IN",
+"459177",,"Visa","debit","IN",
+"459178",,"Visa","debit","IN",
+"459179",,"Visa",,"IN",
+"459180",,"Visa",,"IN",
+"459181","PREMIER","Visa","debit","IN",
+"459182",,"Visa",,"IN",
+"459183",,"Visa",,"IN",
+"459184",,"Visa",,"IN",
+"459185",,"Visa",,"IN",
+"459186",,"Visa",,"IN",
+"459187",,"Visa",,"IN",
+"459188",,"Visa",,"IN",
+"459189",,"Visa",,"IN",
+"459200",,"Visa",,"IN",
+"459201",,"Visa",,"IN",
+"459202",,"Visa",,"IN",
+"459203",,"Visa",,"IN",
+"459204",,"Visa",,"IN",
+"459205",,"Visa",,"IN",
+"459557","SIGNATURE","Visa","debit","IN",
+"459815",,"Visa",,"IN",
+"459816",,"Visa",,"IN",
+"459845",,"Visa",,"IN",
+"459890",,"Visa",,"IN",
+"461111","PLATINUM","Visa","debit","IN","HDFC BANK, LTD."
+"461112",,"Visa","debit","IN",
+"461113",,"Visa","debit","IN",
+"461116","PLATINUM","Visa","credit","IN","AXIS BANK, LTD."
+"461117","PREMIER","Visa","credit","IN","AXIS BANK, LTD."
+"461118","SIGNATURE","Visa","credit","IN","AXIS BANK, LTD."
+"461133",,"Visa",,"IN",
+"461134","BUSINESS","Visa","debit","IN",
+"461148","CLASSIC","Visa","debit","IN","BANK OF BARODA"
+"461701",,"Visa",,"IN",
+"461704","CLASSIC","Visa","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"461707","CLASSIC","Visa","credit","IN",
+"461708",,"Visa",,"IN",
+"461709","SIGNATURE","Visa","credit","IN",
+"461714","PREMIER","Visa","credit","IN",
+"461715","BUSINESS","Visa","credit","IN",
+"461716","PLATINUM","Visa","credit","IN",
+"461721","PLATINUM","Visa","credit","IN",
+"461722",,"Visa",,"IN",
+"461730","CLASSIC","Visa","debit","IN","DHANALAKSHMI BANK, LTD."
+"461732","PLATINUM","Visa","debit","IN",
+"461749","CORPORATE T&E","Visa","credit","IN","ICICI BANK, LTD."
+"461759",,"Visa",,"IN",
+"461786","PLATINUM","Visa","credit","IN","HDFC BANK, LTD."
+"461787","SIGNATURE","Visa","credit","IN","HDFC BANK, LTD."
+"461796","PREMIER","Visa","credit","IN",
+"461797",,"Visa",,"IN",
+"461928","CLASSIC","Visa","debit","IN","JPMORGAN CHASE BANK INDIA"
+"461933","CLASSIC","Visa","debit","IN","CITY UNION BANK LTD"
+"461934","PREMIER","Visa","debit","IN","CITY UNION BANK LTD"
+"461940","CORPORATE T&E","Visa","credit","IN","CANARA BANK"
+"461991","CORPORATE T&E","Visa","debit","IN","AXIS BANK, LTD."
+"461992",,"Visa","debit","IN",
+"461999","PREMIER","Visa","debit","IN","KARNATAKA BANK, LTD."
+"462242","PREMIER","Visa","credit","IN","CENTRAL BANK OF INDIA"
+"462243","PLATINUM","Visa","credit","IN","CENTRAL BANK OF INDIA"
+"462244","CLASSIC","Visa","debit","IN","CENTRAL BANK OF INDIA"
+"462264","CLASSIC","Visa","debit","IN","CANARA BANK"
+"462269","PLATINUM","Visa","debit","IN",
+"462270",,"Visa","debit","IN",
+"462271","PLATINUM","Visa","credit","IN","STANDARD CHARTERED BANK"
+"462272","PLATINUM","Visa","debit","IN",
+"462273","PLATINUM","Visa","credit","IN",
+"462409","BUSINESS","Visa","credit","IN",
+"462411",,"Visa",,"IN",
+"462412",,"Visa",,"IN",
+"462413",,"Visa",,"IN",
+"462415",,"Visa",,"IN",
+"462477",,"Visa",,"IN",
+"462488",,"Visa",,"IN",
+"462490",,"Visa",,"IN",
+"462491",,"Visa",,"IN",
+"462494",,"Visa",,"IN",
+"462495",,"Visa",,"IN",
+"462750","TRAVEL MONEY","Visa","debit","IN","INTERPAYMENT SERVICES, LTD."
+"462846","CLASSIC","Visa","credit","IN",
+"462847","PREMIER","Visa","credit","IN",
+"462848","PLATINUM","Visa","credit","IN",
+"462851","BUSINESS","Visa","debit","IN","KARUR VYSYA BANK, LTD."
+"462858","CORPORATE T&E","Visa","debit","IN","AXIS BANK, LTD."
+"462859",,"Visa","debit","IN",
+"462860",,"Visa","debit","IN",
+"462861",,"Visa","debit","IN",
+"462862",,"Visa","debit","IN",
+"462863",,"Visa","debit","IN",
+"462864",,"Visa","debit","IN",
+"462865",,"Visa","debit","IN",
+"462866",,"Visa","debit","IN",
+"462904","BUSINESS","Visa","debit","IN","ICICI BANK, LTD."
+"462952","CORPORATE T&E","Visa","debit","IN","ICICI BANK, LTD."
+"462963","CLASSIC","Visa","credit","IN","UNION BANK OF INDIA"
+"462986","PLATINUM","Visa","credit","IN","ICICI BANK, LTD."
+"462994","PLATINUM","Visa","credit","IN",
+"462996","CORPORATE T&E","Visa","debit","IN",
+"462999","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"463216",,"Visa",,"IN",
+"463217",,"Visa",,"IN",
+"463228",,"Visa",,"IN",
+"463237",,"Visa",,"IN",
+"463238",,"Visa",,"IN",
+"463665","PLATINUM","Visa","debit","IN","STANDARD CHARTERED BANK"
+"463733","CLASSIC","Visa","debit","IN","UNION BANK OF INDIA"
+"463786","CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"463787","BUSINESS","Visa","credit","IN","INDUSIND BANK, LTD."
+"463795","CLASSIC","Visa","debit","IN",
+"463908",,"Visa",,"IN","STANDARD CHARTERED BANK"
+"463920","CLASSIC","Visa","credit","IN","BANK OF BARODA"
+"463921","PREMIER","Visa","credit","IN","BANK OF BARODA"
+"464558","CORPORATE T&E","Visa","credit","IN",
+"464559","PREMIER","Visa","debit","IN",
+"464560",,"Visa",,"IN",
+"464561",,"Visa",,"IN",
+"464958","CORPORATE T&E","Visa","credit","IN",
+"464963","CLASSIC","Visa","debit","IN","KARNATAKA BANK, LTD."
+"464970","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"464978","CORPORATE T&E","Visa","credit","IN",
+"466059","CLASSIC","Visa","debit","IN","IDBI BANK, LTD."
+"466256","BUSINESS","Visa","debit","IN","DBS BANK, LTD."
+"466257","BUSINESS","Visa","debit","IN","DBS BANK, LTD."
+"466517",,"Visa",,"IN",
+"466518",,"Visa",,"IN",
+"466519",,"Visa",,"IN",
+"466520",,"Visa",,"IN",
+"466521",,"Visa",,"IN",
+"466535","CLASSIC","Visa","debit","IN",
+"466545",,"Visa",,"IN",
+"466546",,"Visa",,"IN",
+"466547",,"Visa",,"IN",
+"466567",,"Visa","debit","IN",
+"466592",,"Visa",,"IN",
+"466593",,"Visa",,"IN",
+"466594",,"Visa",,"IN",
+"466595",,"Visa",,"IN",
+"466597",,"Visa",,"IN",
+"466704","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"466706","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"466730","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"466731","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"467029",,"Visa",,"IN",
+"467030",,"Visa",,"IN",
+"467031",,"Visa",,"IN",
+"467190","PREMIER","Visa","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"467191","CLASSIC","Visa","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"467741","CORPORATE T&E","Visa","credit","IN","HDFC BANK, LTD."
+"467742",,"Visa",,"IN",
+"467878","CLASSIC","Visa","debit","IN","DEVELOPMENT credit BANK, LTD."
+"467879",,"Visa","debit","IN","FIRST USA BANK"
+"467880",,"Visa","debit","IN","FIRST USA BANK"
+"467881",,"Visa","debit","IN","FIRST USA BANK"
+"467882",,"Visa",,"IN","FIRST USA BANK"
+"467937","CLASSIC","Visa","debit","IN","LAKSHMI VILAS BANK"
+"467967","CORPORATE T&E","Visa","debit","IN",
+"467968",,"Visa","debit","IN",
+"468545",,"Visa",,"IN",
+"468556","BUSINESS","Visa","debit","IN",
+"468557",,"Visa","debit","IN",
+"468560","CLASSIC","Visa","debit","IN",
+"468742",,"Visa",,"IN",
+"468743",,"Visa",,"IN",
+"468772",,"Visa",,"IN",
+"468799",,"Visa",,"IN",
+"468805","ELECTRON","Visa","debit","IN","AXIS BANK, LTD."
+"468817","ELECTRON","Visa","debit","IN","ANDHRA BANK"
+"468822","ELECTRON","Visa","debit","IN","IDBI BANK, LTD."
+"468943",,"Visa","credit","IN",
+"469330","PLATINUM","Visa","debit","IN",
+"469353","BUSINESS","Visa","debit","IN",
+"469375","PLATINUM","Visa","debit","IN",
+"469386","CORPORATE T&E","Visa","debit","IN","IDBI BANK, LTD."
+"469387",,"Visa","debit","IN",
+"469388",,"Visa","debit","IN",
+"469568","ELECTRON","Visa","debit","IN","DENA BANK"
+"469583",,"Visa",,"IN","STANDARD CHARTERED BANK"
+"469643","SIGNATURE","Visa","debit","IN",
+"469644","CLASSIC","Visa","debit","IN",
+"469645","BUSINESS","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"469646",,"Visa","debit","IN",
+"470003",,"Visa",,"IN",
+"470006",,"Visa",,"IN",
+"470039",,"Visa",,"IN",
+"470042",,"Visa",,"IN",
+"470053",,"Visa",,"IN",
+"470061",,"Visa",,"IN",
+"470062",,"Visa",,"IN",
+"470063",,"Visa",,"IN",
+"470064",,"Visa",,"IN",
+"470065",,"Visa",,"IN",
+"470066",,"Visa",,"IN",
+"470067",,"Visa",,"IN",
+"470068",,"Visa",,"IN",
+"470069",,"Visa",,"IN",
+"470070",,"Visa",,"IN",
+"470071",,"Visa",,"IN",
+"470072",,"Visa",,"IN",
+"470073",,"Visa",,"IN",
+"470074",,"Visa",,"IN",
+"470075",,"Visa",,"IN",
+"470076",,"Visa",,"IN",
+"470077",,"Visa",,"IN",
+"470078",,"Visa",,"IN",
+"470079",,"Visa",,"IN",
+"470080",,"Visa",,"IN",
+"470081",,"Visa",,"IN",
+"470082",,"Visa",,"IN",
+"470083",,"Visa",,"IN",
+"470084",,"Visa",,"IN",
+"470085",,"Visa",,"IN",
+"470086",,"Visa",,"IN",
+"470087",,"Visa",,"IN",
+"470088",,"Visa",,"IN",
+"470089",,"Visa",,"IN",
+"470090",,"Visa",,"IN",
+"470154",,"Visa",,"IN",
+"470163",,"Visa",,"IN",
+"470164",,"Visa",,"IN",
+"470170",,"Visa",,"IN",
+"470171",,"Visa",,"IN",
+"470172",,"Visa",,"IN",
+"470173",,"Visa",,"IN",
+"470174",,"Visa",,"IN",
+"470175",,"Visa",,"IN",
+"470176",,"Visa",,"IN",
+"470177",,"Visa",,"IN",
+"470178",,"Visa",,"IN",
+"470179",,"Visa",,"IN",
+"470180",,"Visa",,"IN",
+"470181",,"Visa",,"IN",
+"470185",,"Visa",,"IN",
+"470192",,"Visa",,"IN",
+"470194",,"Visa",,"IN",
+"470196",,"Visa",,"IN",
+"470197",,"Visa",,"IN",
+"470201",,"Visa",,"IN",
+"470202",,"Visa",,"IN",
+"470203",,"Visa",,"IN",
+"470204",,"Visa",,"IN",
+"470205",,"Visa",,"IN",
+"470206",,"Visa",,"IN",
+"470207",,"Visa",,"IN",
+"470208",,"Visa",,"IN",
+"470209",,"Visa",,"IN",
+"470210",,"Visa",,"IN",
+"470211",,"Visa",,"IN",
+"470212",,"Visa",,"IN",
+"470213",,"Visa",,"IN",
+"470214",,"Visa",,"IN",
+"470215",,"Visa",,"IN",
+"470216",,"Visa",,"IN",
+"470217",,"Visa",,"IN",
+"470218",,"Visa",,"IN",
+"470219",,"Visa",,"IN",
+"470220",,"Visa",,"IN",
+"470221",,"Visa",,"IN",
+"470222",,"Visa",,"IN",
+"470223",,"Visa",,"IN",
+"470224",,"Visa",,"IN",
+"470225",,"Visa",,"IN",
+"470226",,"Visa",,"IN",
+"470227",,"Visa",,"IN",
+"470228",,"Visa",,"IN",
+"470229",,"Visa",,"IN",
+"470230",,"Visa",,"IN",
+"470231",,"Visa",,"IN",
+"470232",,"Visa",,"IN",
+"470233",,"Visa",,"IN",
+"470234",,"Visa",,"IN",
+"470235",,"Visa",,"IN",
+"470236",,"Visa",,"IN",
+"470237",,"Visa",,"IN",
+"470238",,"Visa",,"IN",
+"470239",,"Visa",,"IN",
+"470240",,"Visa",,"IN",
+"470241",,"Visa",,"IN",
+"470242",,"Visa",,"IN",
+"470243",,"Visa",,"IN",
+"470244",,"Visa",,"IN",
+"470245",,"Visa",,"IN",
+"470246",,"Visa",,"IN",
+"470247",,"Visa",,"IN",
+"470248",,"Visa",,"IN",
+"470249",,"Visa",,"IN",
+"470250",,"Visa",,"IN",
+"470251",,"Visa",,"IN",
+"470252",,"Visa",,"IN",
+"470253",,"Visa",,"IN",
+"470254",,"Visa",,"IN",
+"470255",,"Visa",,"IN",
+"470256",,"Visa",,"IN",
+"470257",,"Visa",,"IN",
+"470258",,"Visa",,"IN",
+"470259",,"Visa",,"IN",
+"470260",,"Visa",,"IN",
+"470261",,"Visa",,"IN",
+"470262",,"Visa",,"IN",
+"470263",,"Visa",,"IN",
+"470264",,"Visa",,"IN",
+"470265",,"Visa",,"IN",
+"470266",,"Visa",,"IN",
+"470267",,"Visa",,"IN",
+"470268",,"Visa",,"IN",
+"470269",,"Visa",,"IN",
+"470270",,"Visa",,"IN",
+"470271",,"Visa",,"IN",
+"470272",,"Visa",,"IN",
+"470273",,"Visa",,"IN",
+"470274",,"Visa",,"IN",
+"470275",,"Visa",,"IN",
+"470276",,"Visa",,"IN",
+"470277",,"Visa",,"IN",
+"470278",,"Visa",,"IN",
+"470279",,"Visa",,"IN",
+"470280",,"Visa",,"IN",
+"470281",,"Visa",,"IN",
+"470282",,"Visa",,"IN",
+"470283",,"Visa",,"IN",
+"470284",,"Visa",,"IN",
+"470285",,"Visa",,"IN",
+"470286",,"Visa",,"IN",
+"470287",,"Visa",,"IN",
+"470288",,"Visa",,"IN",
+"470289",,"Visa",,"IN",
+"470290",,"Visa",,"IN",
+"470291",,"Visa",,"IN",
+"470292",,"Visa",,"IN",
+"470293",,"Visa",,"IN",
+"470294",,"Visa",,"IN",
+"470295",,"Visa",,"IN",
+"470296",,"Visa",,"IN",
+"470297",,"Visa",,"IN",
+"470298",,"Visa",,"IN",
+"470299",,"Visa",,"IN",
+"470332",,"Visa",,"IN",
+"470333",,"Visa",,"IN",
+"470334",,"Visa",,"IN",
+"470335",,"Visa",,"IN",
+"470337",,"Visa",,"IN",
+"470338",,"Visa",,"IN",
+"470339",,"Visa",,"IN",
+"470340",,"Visa",,"IN",
+"470341",,"Visa",,"IN",
+"470344",,"Visa",,"IN",
+"470345",,"Visa",,"IN",
+"470348",,"Visa",,"IN",
+"470349",,"Visa",,"IN",
+"470353",,"Visa",,"IN",
+"470354",,"Visa",,"IN",
+"470355",,"Visa",,"IN",
+"470359",,"Visa",,"IN",
+"470362",,"Visa",,"IN",
+"470364",,"Visa",,"IN",
+"470366",,"Visa",,"IN",
+"470367",,"Visa",,"IN",
+"470368",,"Visa",,"IN",
+"470369",,"Visa",,"IN",
+"470370",,"Visa",,"IN",
+"470371",,"Visa",,"IN",
+"470380",,"Visa",,"IN",
+"470381",,"Visa",,"IN",
+"470382",,"Visa",,"IN",
+"470383",,"Visa",,"IN",
+"470386",,"Visa",,"IN",
+"470387",,"Visa",,"IN",
+"470388",,"Visa",,"IN",
+"470389",,"Visa",,"IN",
+"470390",,"Visa",,"IN",
+"470391",,"Visa",,"IN",
+"470392",,"Visa",,"IN",
+"470393",,"Visa",,"IN",
+"470396",,"Visa",,"IN",
+"470397",,"Visa",,"IN",
+"470398",,"Visa",,"IN",
+"470400",,"Visa",,"IN",
+"470427",,"Visa",,"IN",
+"470428",,"Visa",,"IN",
+"470431",,"Visa",,"IN",
+"470436",,"Visa",,"IN",
+"470441","CLASSIC","Visa","credit","IN",
+"470444",,"Visa",,"IN",
+"470447",,"Visa",,"IN",
+"470450",,"Visa",,"IN",
+"470453",,"Visa",,"IN",
+"470454",,"Visa",,"IN",
+"470456","PLATINUM","Visa","debit","IN",
+"470457",,"Visa",,"IN",
+"470458",,"Visa",,"IN",
+"470459",,"Visa",,"IN",
+"470461",,"Visa",,"IN",
+"470462",,"Visa",,"IN",
+"470463",,"Visa",,"IN",
+"470464",,"Visa",,"IN",
+"470470",,"Visa",,"IN",
+"470471",,"Visa",,"IN",
+"470472",,"Visa",,"IN",
+"470473",,"Visa",,"IN",
+"470474",,"Visa",,"IN",
+"470475",,"Visa",,"IN",
+"470476",,"Visa",,"IN",
+"470477",,"Visa",,"IN",
+"470479",,"Visa",,"IN",
+"470480",,"Visa",,"IN",
+"470481",,"Visa",,"IN",
+"470482",,"Visa",,"IN",
+"470483",,"Visa",,"IN",
+"470485",,"Visa",,"IN",
+"470486",,"Visa",,"IN",
+"470487",,"Visa",,"IN",
+"470488",,"Visa",,"IN",
+"470490",,"Visa",,"IN",
+"470491",,"Visa",,"IN",
+"470492",,"Visa",,"IN",
+"470493",,"Visa",,"IN",
+"470494",,"Visa",,"IN",
+"470495",,"Visa",,"IN",
+"470496",,"Visa",,"IN",
+"470528",,"Visa",,"IN",
+"470533",,"Visa",,"IN",
+"470535",,"Visa",,"IN",
+"470536",,"Visa",,"IN",
+"470537",,"Visa",,"IN",
+"470539",,"Visa",,"IN",
+"470540",,"Visa",,"IN",
+"470541",,"Visa",,"IN",
+"470545",,"Visa",,"IN",
+"470546",,"Visa",,"IN",
+"470555",,"Visa",,"IN",
+"470557",,"Visa",,"IN",
+"470559",,"Visa",,"IN",
+"470560",,"Visa",,"IN",
+"470561",,"Visa",,"IN",
+"470562",,"Visa",,"IN",
+"470566",,"Visa",,"IN",
+"470567",,"Visa",,"IN",
+"470569",,"Visa",,"IN",
+"470571",,"Visa",,"IN",
+"470573","PLATINUM","Visa","credit","IN","ICICI BANK, LTD."
+"470574",,"Visa",,"IN",
+"470575",,"Visa",,"IN",
+"470576",,"Visa",,"IN",
+"470577",,"Visa",,"IN",
+"470589","BUSINESS","Visa","debit","IN","ICICI BANK, LTD."
+"470590",,"Visa",,"IN",
+"470591",,"Visa",,"IN",
+"470594",,"Visa",,"IN",
+"470595",,"Visa",,"IN",
+"470596",,"Visa",,"IN",
+"470597",,"Visa",,"IN",
+"470600",,"Visa",,"IN",
+"470601",,"Visa",,"IN",
+"470604",,"Visa",,"IN",
+"470605",,"Visa",,"IN",
+"470606",,"Visa",,"IN",
+"470607",,"Visa",,"IN",
+"470610",,"Visa",,"IN",
+"470611",,"Visa",,"IN",
+"470612",,"Visa",,"IN",
+"470613","PLATINUM","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"470614",,"Visa","debit","IN",
+"470615",,"Visa",,"IN",
+"470619",,"Visa",,"IN",
+"470622",,"Visa",,"IN",
+"470623",,"Visa",,"IN",
+"470632",,"Visa",,"IN",
+"470633",,"Visa",,"IN",
+"470634",,"Visa",,"IN",
+"470635",,"Visa",,"IN",
+"470636",,"Visa",,"IN",
+"470638",,"Visa",,"IN",
+"470641",,"Visa",,"IN",
+"470643",,"Visa",,"IN",
+"470650",,"Visa",,"IN",
+"470656",,"Visa",,"IN",
+"470657",,"Visa",,"IN",
+"470658",,"Visa",,"IN",
+"470659",,"Visa",,"IN",
+"470660",,"Visa",,"IN",
+"470663",,"Visa",,"IN",
+"470664",,"Visa",,"IN",
+"470666",,"Visa",,"IN",
+"470667",,"Visa",,"IN",
+"470668",,"Visa",,"IN",
+"470669",,"Visa",,"IN",
+"470671",,"Visa",,"IN",
+"470672",,"Visa",,"IN",
+"470682",,"Visa",,"IN",
+"470683",,"Visa",,"IN",
+"470684",,"Visa",,"IN",
+"470685",,"Visa",,"IN",
+"470689",,"Visa",,"IN",
+"470697",,"Visa",,"IN",
+"470730",,"Visa",,"IN",
+"470767",,"Visa",,"IN",
+"470770",,"Visa",,"IN",
+"470771",,"Visa",,"IN",
+"470772",,"Visa",,"IN",
+"470822",,"Visa",,"IN",
+"470823",,"Visa",,"IN",
+"470843",,"Visa",,"IN",
+"470845",,"Visa",,"IN",
+"470848",,"Visa",,"IN",
+"470849",,"Visa",,"IN",
+"470855",,"Visa",,"IN",
+"470856",,"Visa",,"IN",
+"470857",,"Visa",,"IN",
+"470859",,"Visa",,"IN",
+"470862",,"Visa",,"IN",
+"470866",,"Visa",,"IN",
+"470867",,"Visa",,"IN",
+"470869",,"Visa",,"IN",
+"470870",,"Visa",,"IN",
+"470871",,"Visa",,"IN",
+"470872",,"Visa",,"IN",
+"470873",,"Visa",,"IN",
+"470874",,"Visa",,"IN",
+"470878",,"Visa",,"IN",
+"470879",,"Visa",,"IN",
+"470880",,"Visa",,"IN",
+"470881",,"Visa",,"IN",
+"470883",,"Visa",,"IN",
+"470885",,"Visa",,"IN",
+"470886",,"Visa",,"IN",
+"470887",,"Visa",,"IN",
+"470888",,"Visa",,"IN",
+"470889",,"Visa",,"IN",
+"470900",,"Visa",,"IN",
+"470901",,"Visa",,"IN",
+"470902",,"Visa",,"IN",
+"470903",,"Visa",,"IN",
+"470904",,"Visa",,"IN",
+"470905",,"Visa",,"IN",
+"470906",,"Visa",,"IN",
+"470907",,"Visa",,"IN",
+"470908",,"Visa",,"IN",
+"470909",,"Visa",,"IN",
+"470910",,"Visa",,"IN",
+"470911",,"Visa",,"IN",
+"470912",,"Visa",,"IN",
+"470913",,"Visa",,"IN",
+"470914",,"Visa",,"IN",
+"470915",,"Visa",,"IN",
+"470917",,"Visa",,"IN",
+"470918",,"Visa",,"IN",
+"470919",,"Visa",,"IN",
+"470920",,"Visa",,"IN",
+"470921",,"Visa",,"IN",
+"470923",,"Visa",,"IN",
+"470924",,"Visa",,"IN",
+"470930",,"Visa",,"IN",
+"470931",,"Visa",,"IN",
+"470932",,"Visa",,"IN",
+"470933",,"Visa",,"IN",
+"470934",,"Visa",,"IN",
+"470935",,"Visa",,"IN",
+"470936",,"Visa",,"IN",
+"470937",,"Visa",,"IN",
+"470938",,"Visa",,"IN",
+"470939",,"Visa",,"IN",
+"470940",,"Visa",,"IN",
+"470941",,"Visa",,"IN",
+"470942",,"Visa",,"IN",
+"470943",,"Visa",,"IN",
+"470944",,"Visa",,"IN",
+"470945",,"Visa",,"IN",
+"470946",,"Visa",,"IN",
+"470949",,"Visa",,"IN",
+"470950",,"Visa",,"IN",
+"470951",,"Visa",,"IN",
+"470952",,"Visa",,"IN",
+"470953",,"Visa",,"IN",
+"470954",,"Visa",,"IN",
+"470955",,"Visa",,"IN",
+"470956",,"Visa",,"IN",
+"470957",,"Visa",,"IN",
+"470958",,"Visa",,"IN",
+"470959",,"Visa",,"IN",
+"470960",,"Visa",,"IN",
+"470961",,"Visa",,"IN",
+"470962",,"Visa",,"IN",
+"470963",,"Visa",,"IN",
+"470964",,"Visa",,"IN",
+"470966",,"Visa",,"IN",
+"470967",,"Visa",,"IN",
+"470968",,"Visa",,"IN",
+"470969",,"Visa",,"IN",
+"470970",,"Visa",,"IN",
+"470971",,"Visa",,"IN",
+"470972",,"Visa",,"IN",
+"470973",,"Visa",,"IN",
+"470974",,"Visa",,"IN",
+"470975",,"Visa",,"IN",
+"470976",,"Visa",,"IN",
+"470977",,"Visa",,"IN",
+"470978",,"Visa",,"IN",
+"470979",,"Visa",,"IN",
+"470980",,"Visa",,"IN",
+"470981",,"Visa",,"IN",
+"470982",,"Visa",,"IN",
+"470983",,"Visa",,"IN",
+"470984",,"Visa",,"IN",
+"470985",,"Visa",,"IN",
+"470986",,"Visa",,"IN",
+"470987",,"Visa",,"IN",
+"470988",,"Visa",,"IN",
+"470989",,"Visa",,"IN",
+"470990",,"Visa",,"IN",
+"470991",,"Visa",,"IN",
+"470992",,"Visa",,"IN",
+"470993",,"Visa",,"IN",
+"470994",,"Visa",,"IN",
+"470995",,"Visa",,"IN",
+"470996",,"Visa",,"IN",
+"470997",,"Visa",,"IN",
+"470998",,"Visa",,"IN",
+"470999",,"Visa",,"IN",
+"471267",,"Visa",,"IN",
+"471268",,"Visa",,"IN",
+"471288",,"Visa",,"IN",
+"471289",,"Visa",,"IN",
+"471860","PLATINUM","Visa","credit","IN","AXIS BANK, LTD."
+"471861","PREMIER","Visa","credit","IN","AXIS BANK, LTD."
+"471862",,"Visa",,"IN",
+"471863","CLASSIC","Visa","credit","IN","AXIS BANK, LTD."
+"471864","CORPORATE T&E","Visa","credit","IN","AXIS BANK, LTD."
+"471865",,"Visa",,"IN",
+"472255",,"Visa",,"IN",
+"472256",,"Visa",,"IN",
+"472257",,"Visa",,"IN",
+"472258",,"Visa",,"IN",
+"472259",,"Visa",,"IN",
+"472262",,"Visa",,"IN",
+"472326","PREPAID","Visa","debit","IN","INTERPAYMENT SERVICES, LTD."
+"472614","CLASSIC","Visa","credit","IN",
+"472638","CLASSIC","Visa","credit","IN",
+"472642","CLASSIC","Visa","credit","IN",
+"472643","CLASSIC","Visa","credit","IN",
+"472645","CLASSIC","Visa","credit","IN",
+"472652","CLASSIC","Visa","credit","IN",
+"472655","CLASSIC","Visa","credit","IN",
+"472680","CLASSIC","Visa","credit","IN",
+"472803",,"Visa",,"IN","CENTURION BANK OF PUNJAB, LTD."
+"472810",,"Visa",,"IN","CENTURION BANK OF PUNJAB, LTD."
+"473106","CORPORATE T&E","Visa","debit","IN","ICICI BANK, LTD."
+"473107","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"473108","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"473115","CORPORATE T&E","Visa","debit","IN","ICICI BANK, LTD."
+"473133","CORPORATE T&E","Visa","debit","IN","ICICI BANK, LTD."
+"473134","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"473136","BUSINESS","Visa","debit","IN","ICICI BANK, LTD."
+"473148","BUSINESS","Visa","debit","IN","ICICI BANK, LTD."
+"473176","CORPORATE T&E","Visa","debit","IN","ICICI BANK, LTD."
+"473177","BUSINESS","Visa","debit","IN","ICICI BANK, LTD."
+"473195","ELECTRON","Visa","debit","IN","ICICI BANK, LTD."
+"473196","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"474816","PREPAID - CLASSIC","Visa","debit","IN","STATE BANK OF INDIA"
+"474833",,"Visa",,"IN",
+"474846","PLATINUM","Visa","credit","IN","ICICI BANK, LTD."
+"474847","INFINITE","Visa","credit","IN","ICICI BANK, LTD."
+"474849","CLASSIC","Visa","debit","IN","WOORI BANK"
+"474850","GOLD","Visa","debit","IN","WOORI BANK"
+"474851","BUSINESS","Visa","debit","IN","WOORI BANK"
+"474856","CLASSIC","Visa","debit","IN","AXIS BANK LIMITED"
+"474865","PREPAID","Visa","debit","IN","HDFC BANK LIMITED"
+"476136","CLASSIC","Visa","credit","IN",
+"476137","CLASSIC","Visa","credit","IN",
+"476338","CLASSIC","Visa","debit","IN","STANDARD CHARTERED BANK"
+"476641","PREPAID - PLATINUM","Visa","debit","IN","HDFC BANK LIMITED"
+"476643",,"Visa",,"IN",
+"476646","PREPAID","Visa","debit","IN","HDFC BANK LIMITED"
+"476654","CLASSIC","Visa","debit","IN","ICICI BANK, LTD."
+"476655","GOLD","Visa","debit","IN","INDIAN OVERSEAS BANK"
+"476657","PREPAID - CORPORATE T&E","Visa","debit","IN","HDFC BANK LIMITED"
+"476658","CLASSIC","Visa","debit","IN","HDFC BANK LIMITED"
+"476659","PLATINUM","Visa","debit","IN","INDIAN OVERSEAS BANK"
+"476660","SIGNATURE","Visa","debit","IN","INDIAN OVERSEAS BANK"
+"477035",,"Visa",,"IN",
+"477036",,"Visa",,"IN",
+"477037",,"Visa",,"IN",
+"477369",,"Visa",,"IN","DHANALAKSHMI BANK, LTD."
+"477394",,"Visa",,"IN","ICICI BANK, LTD."
+"478074",,"Visa",,"IN",
+"478075",,"Visa",,"IN",
+"478086",,"Visa",,"IN",
+"478087",,"Visa",,"IN",
+"478893","PREMIER","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"478910","PREMIER","Visa","credit","IN","BANK OF BARODA"
+"478949",,"Visa",,"IN","INDUSIND BANK, LTD."
+"479829","CLASSIC","Visa","credit","IN","HDFC BANK, LTD."
+"479830","GOLD PREMIUM","Visa","credit","IN","HDFC BANK, LTD."
+"480414","PURCHASING","Visa","credit","IN",
+"480475","PURCHASING","Visa","debit","IN",
+"480855","PURCHASING","Visa","credit","IN","ICICI BANK, LTD."
+"483540","PLATINUM","Visa","debit","IN",
+"483541","CLASSIC","Visa","debit","IN","CATHOLIC SYRIAN BANK, LTD."
+"483555","CLASSIC","Visa","debit","IN","DEVELOPMENT credit BANK, LTD."
+"483580","CLASSIC","Visa","debit","IN",
+"483581","PREMIER","Visa","debit","IN",
+"483595",,"Visa",,"IN",
+"483599",,"Visa",,"IN",
+"483742","PLATINUM","Visa","debit","IN","ALLAHABAD BANK"
+"483744","PREPAID - CLASSIC","Visa","debit","IN","VIJAYA BANK"
+"483745","CLASSIC","Visa","debit","IN","ABHYUDAYA CO-OPERATIVE BANK LTD"
+"483746","PLATINUM","Visa","debit","IN","ABHYUDAYA CO-OPERATIVE BANK LTD"
+"483748","PREPAID","Visa","debit","IN","CITY UNION BANK LTD"
+"483749","PREPAID","Visa","debit","IN","CITY UNION BANK LTD"
+"483779","GOLD","Visa","debit","IN","ALLAHABAD BANK"
+"484069","SIGNATURE","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"484070","INFINITE","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"484762","PREMIER","Visa","debit","IN",
+"484763","PLATINUM","Visa","debit","IN",
+"484798","INFINITE","Visa","debit","IN",
+"484843","PLATINUM","Visa","debit","IN",
+"484844",,"Visa","debit","IN",
+"485443","PLATINUM","Visa","debit","IN","AXIS BANK, LTD."
+"485444",,"Visa","debit","IN",
+"485445",,"Visa","debit","IN",
+"485446","PLATINUM","Visa","debit","IN","HDFC BANK, LTD."
+"485468","PLATINUM","Visa","debit","IN","BANK OF BARODA"
+"485498","SIGNATURE","Visa","credit","IN","HDFC BANK, LTD."
+"485499",,"Visa","debit","IN",
+"485905","PURCHASING","Visa","credit","IN",
+"486149",,"Visa",,"IN","UNION BANK OF INDIA"
+"486269","PLATINUM","Visa","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"486272","CLASSIC","Visa","credit","IN","CANARA BANK"
+"486292","CLASSIC","Visa","debit","IN","AXIS BANK, LTD."
+"486293","PREMIER","Visa","credit","IN","CANARA BANK"
+"486333","CLASSIC","Visa","debit","IN","BANK OF BARODA"
+"486337","CLASSIC","Visa","debit","IN",
+"486351","PLATINUM","Visa","debit","IN",
+"486368","PREPAID","Visa","debit","IN","THE RATNAKAR BANK LIMITED"
+"486369","CLASSIC","Visa","debit","IN","THE RATNAKAR BANK LIMITED"
+"486370","CLASSIC","Visa","debit","IN",
+"486376","CLASSIC","Visa","debit","IN","DHANALAKSHMI BANK, LTD."
+"486377",,"Visa","debit","IN",
+"486378","CLASSIC","Visa","debit","IN","DHANALAKSHMI BANK, LTD."
+"486409","CORPORATE T&E","Visa","credit","IN","ICICI BANK, LTD."
+"486410","CORPORATE T&E","Visa","credit","IN","ICICI BANK, LTD."
+"486461","CORPORATE T&E","Visa","credit","IN","SBI CARDS AND PAYMENT SERVICES PTE, LTD."
+"486536","PURCHASING","Visa","credit","IN","ICICI BANK, LTD."
+"486575","PURCHASING","Visa","credit","IN","HDFC BANK, LTD."
+"486586","PURCHASING","Visa","credit","IN","AXIS BANK, LTD."
+"486602",,"Visa",,"IN",
+"486630",,"Visa",,"IN",
+"488904","PLATINUM","Visa","debit","IN",
+"488932","PLATINUM","Visa","debit","IN","CANARA BANK"
+"488939","PREMIER","Visa","debit","IN",
+"488994","CORPORATE T&E","Visa","credit","IN","HDFC BANK, LTD."
+"489021","CLASSIC","Visa","debit","IN",
+"489051","PREMIER","Visa","debit","IN","DHANALAKSHMI BANK, LTD."
+"489083","PREMIER","Visa","debit","IN","UNION BANK OF INDIA"
+"489084","PLATINUM","Visa","debit","IN","UNION BANK OF INDIA"
+"489376","SIGNATURE","Visa","credit","IN","HDFC BANK, LTD."
+"489377","PLATINUM","Visa","credit","IN","HDFC BANK, LTD."
+"489604","CLASSIC","Visa","debit","IN","KOTAK MAHINDRA BANK, LTD."
+"489664","ELECTRON","Visa","debit","IN","INDUSIND BANK, LTD."
+"489668",,"Visa",,"IN","ING VYSYA BANK_, LTD."
+"489782",,"Visa",,"IN","CENTURION BANK OF PUNJAB, LTD."
+"490222","ELECTRON","Visa","debit","IN","AXIS BANK, LTD."
+"490223","ELECTRON","Visa","debit","IN","AXIS BANK, LTD."
+"490235",,"Visa",,"IN","STANDARD CHARTERED BANK"
+"490246","CLASSIC","Visa","debit","IN","HDFC BANK, LTD."
+"490247","BUSINESS","Visa","credit","IN","ICICI BANK, LTD."
+"490254","ELECTRON","Visa","debit","IN","AXIS BANK, LTD."
+"490269",,"Visa",,"IN","AXIS BANK, LTD."
+"490280","PREMIER","Visa","debit","IN","CORPORATION BANK"
+"490900","CLASSIC","Visa","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"491817","PREMIER","Visa","credit","IN","CANARA BANK"
+"492140","CLASSIC","Visa","credit","IN","VIJAYA BANK"
+"492459",,"Visa",,"IN","KARNATAKA BANK, LTD."
+"493714","GOLD PREMIUM","Visa","credit","IN","CITIBANK"
+"493826","CORPORATE T&E","Visa","credit","IN","BANK OF BARODA"
+"493827","CLASSIC","Visa","credit","IN","BANK OF BARODA"
+"494076","CLASSIC","Visa","credit","IN","STANDARD CHARTERED BANK"
+"494077","PREMIER","Visa","credit","IN","STANDARD CHARTERED BANK"
+"494367",,"Visa",,"IN","ANDHRA BANK"
+"502165",,"Maestro","debit","IN",
+"510128","GOLD","MasterCard","credit","IN","SBI CARDS AND PAYMENT SERVICES PVT., LTD."
+"510135","GOLD","MasterCard","credit","IN","SBI CARDS AND PAYMENT SERVICES PVT., LTD."
+"510401",,"MasterCard",,"IN",
+"510402",,"MasterCard",,"IN",
+"510404",,"MasterCard",,"IN",
+"510405",,"MasterCard",,"IN",
+"510406",,"MasterCard",,"IN",
+"510407",,"MasterCard",,"IN",
+"510408",,"MasterCard",,"IN",
+"510409",,"MasterCard",,"IN",
+"510416",,"MasterCard",,"IN",
+"510418",,"MasterCard",,"IN",
+"510419",,"MasterCard",,"IN",
+"510420",,"MasterCard",,"IN",
+"510421",,"MasterCard","credit","IN","BANK OF BARODA"
+"510423",,"MasterCard",,"IN",
+"510425",,"MasterCard",,"IN",
+"510427",,"MasterCard",,"IN",
+"510430",,"MasterCard",,"IN",
+"510431",,"MasterCard",,"IN",
+"510434",,"MasterCard",,"IN","IDBI BANK, LTD."
+"510437",,"MasterCard",,"IN",
+"510439",,"MasterCard",,"IN",
+"510441",,"MasterCard",,"IN",
+"510448",,"MasterCard","credit","IN","CENTRAL BANK OF INDIA"
+"510452",,"MasterCard",,"IN",
+"510455",,"MasterCard",,"IN",
+"510460","PREPAID","MasterCard","debit","IN","CITIBANK"
+"510463",,"MasterCard",,"IN",
+"510475",,"MasterCard",,"IN",
+"510477",,"MasterCard",,"IN",
+"510478",,"MasterCard",,"IN",
+"510480",,"MasterCard",,"IN","ORIENTAL BANK OF COMMERCE"
+"510485",,"MasterCard",,"IN",
+"510486",,"MasterCard",,"IN",
+"510488",,"MasterCard",,"IN",
+"510489",,"MasterCard",,"IN",
+"510490",,"MasterCard",,"IN",
+"510492",,"MasterCard",,"IN",
+"510493",,"MasterCard",,"IN",
+"510495",,"MasterCard",,"IN",
+"510500",,"MasterCard",,"IN",
+"510517",,"MasterCard","credit","IN","AXIS BANK, LTD."
+"510538",,"MasterCard",,"IN","JAMMU AND KASHMIR BANK, LTD."
+"510557","STANDARD","MasterCard","debit","IN",
+"510820","STANDARD","MasterCard","debit","IN",
+"511665","PREPAID","MasterCard","debit","IN","HDFC BANK, LTD."
+"511666","PREPAID - BUSINESS","MasterCard","credit","IN","HDFC BANK LIMITED"
+"511870","STANDARD","MasterCard","credit","IN","AXIS BANK, LTD."
+"511872","PREPAID","MasterCard","debit","IN","AXIS BANK, LTD."
+"511878","STANDARD","MasterCard","credit","IN","STATE BANK OF INDIA"
+"512042","PLATINUM","MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"512121",,"MasterCard",,"IN","STANDARD CHARTERED BANK"
+"512260",,"MasterCard","credit","IN","AXIS BANK, LTD."
+"512358",,"MasterCard",,"IN","JAMMU AND KASHMIR BANK, LTD."
+"512384","GOLD","MasterCard","credit","IN","BANK OF BARODA"
+"512622",,"MasterCard","credit","IN","SBI CARDS AND PAYMENT SERVICES PVT., LTD."
+"512652","STANDARD","MasterCard","credit","IN","PUNJAB NATIONAL BANK"
+"512967","PLATINUM","MasterCard","debit","IN","HDFC BANK, LTD."
+"512968",,"MasterCard","debit","IN",
+"512971","PLATINUM","MasterCard","debit","IN","CANARA BANK"
+"513094",,"MasterCard",,"IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"513347","STANDARD","MasterCard","credit","IN",
+"514260","STANDARD","MasterCard","debit","IN","COMMONWEALTH BANK OF AUSTRALIA"
+"514831","BUSINESS","MasterCard","credit","IN","YES BANK, LTD."
+"514833","BUSINESS","MasterCard","credit","IN","AXIS BANK, LTD."
+"514834","BUSINESS","MasterCard","credit","IN","HDFC BANK, LTD."
+"514837","BUSINESS","MasterCard","credit","IN","UNION BANK OF INDIA"
+"514840","BUSINESS","MasterCard","credit","IN","BANK OF INDIA"
+"515566","PLATINUM","MasterCard","debit","IN","CITIBANK"
+"515748",,"MasterCard",,"IN",
+"515875","PLATINUM","MasterCard","credit","IN","JAMMU AND KASHMIR BANK, LTD."
+"516068","STANDARD","MasterCard","credit","IN","INDUSIND BANK, LTD."
+"516472",,"MasterCard","debit","IN",
+"517550","PLATINUM","MasterCard","debit","IN","YES BANK, LTD."
+"517574","PLATINUM","MasterCard","debit","IN",
+"517635","STANDARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"517637","STANDARD","MasterCard","credit","IN","ICICI BANK, LTD."
+"517652","GOLD","MasterCard","credit","IN","HDFC BANK, LTD."
+"517653","GOLD","MasterCard","credit","IN","ICICI BANK, LTD."
+"517700",,"MasterCard","credit","IN","CITIBANK"
+"517719","STANDARD","MasterCard","credit","IN","ICICI BANK, LTD."
+"517755","GOLD","MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"517782",,"MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"517797",,"MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"517798",,"MasterCard",,"IN","HONGKONG AND SHANGHAI BANKING CORPORATION, LTD."
+"517804",,"MasterCard",,"IN","BNP PARIBAS"
+"517819",,"MasterCard",,"IN","BNP PARIBAS"
+"517899","GOLD","MasterCard","debit","IN",
+"518192",,"MasterCard","credit","IN","JAMMU AND KASHMIR BANK, LTD."
+"518732",,"MasterCard",,"IN","BANK OF BARODA"
+"518936","PLATINUM","MasterCard","credit","IN","CITIBANK"
+"519065","BUSINESS","MasterCard","credit","IN","CANARA BANK"
+"519253",,"MasterCard",,"IN",
+"519254",,"MasterCard",,"IN",
+"519255",,"MasterCard",,"IN",
+"519256",,"MasterCard",,"IN",
+"519518","PREPAID","MasterCard","debit","IN","PUNJAB NATIONAL BANK"
+"519522","PREPAID","MasterCard","debit","IN","ICICI BANK, LTD."
+"519537","PREPAID","MasterCard","debit","IN","ICICI BANK, LTD."
+"519608",,"MasterCard",,"IN",
+"519609",,"MasterCard",,"IN",
+"519617","STANDARD","MasterCard","debit","IN","PUNJAB NATIONAL BANK"
+"519619","STANDARD","MasterCard","debit","IN",
+"519620",,"MasterCard","debit","IN",
+"519622","STANDARD","MasterCard","debit","IN","BANK OF INDIA"
+"519760",,"MasterCard",,"IN",
+"519826",,"MasterCard",,"IN",
+"519831",,"MasterCard",,"IN",
+"519860",,"MasterCard",,"IN",
+"519883",,"MasterCard",,"IN",
+"519900",,"MasterCard",,"IN",
+"520386","PLATINUM","MasterCard","credit","IN","CITIBANK"
+"520897",,"MasterCard","credit","IN","CANARA BANK"
+"521074","STANDARD","MasterCard","debit","IN","PUNJAB NATIONAL BANK"
+"521075","STANDARD","MasterCard","debit","IN","UNION BANK OF INDIA"
+"521086","STANDARD","MasterCard","debit","IN","BANK OF BARODA"
+"521106",,"MasterCard",,"IN",
+"521107",,"MasterCard",,"IN",
+"521108",,"MasterCard",,"IN",
+"521109",,"MasterCard",,"IN",
+"521110",,"MasterCard",,"IN",
+"521111",,"MasterCard",,"IN",
+"521112",,"MasterCard",,"IN",
+"521113",,"MasterCard",,"IN",
+"521114",,"MasterCard",,"IN",
+"521115",,"MasterCard",,"IN",
+"521143","PREPAID","MasterCard","debit","IN","ICICI BANK, LTD."
+"521163","STANDARD","MasterCard","debit","IN","IDBI BANK, LTD."
+"521782",,"MasterCard","debit","IN",
+"521947",,"MasterCard",,"IN",
+"521953",,"MasterCard",,"IN",
+"521978",,"MasterCard",,"IN",
+"522306",,"MasterCard",,"IN",
+"522310",,"MasterCard",,"IN",
+"522346",,"MasterCard",,"IN",
+"522352",,"MasterCard",,"IN",
+"522358",,"MasterCard",,"IN",
+"522669",,"MasterCard",,"IN",
+"522852",,"MasterCard",,"IN",
+"522892",,"MasterCard","credit","IN",
+"523116","STANDARD","MasterCard",,"IN",
+"523157","PREPAID","MasterCard","debit","IN","FEDERAL BANK, LTD."
+"523165","STANDARD","MasterCard",,"IN",
+"523166","STANDARD","MasterCard",,"IN",
+"523429",,"MasterCard","credit","IN",
+"523937",,"MasterCard",,"IN","DEUTSCHE BANK AG"
+"523950","PLATINUM","MasterCard","credit","IN","ROYAL BANK OF SCOTLAND, N.V."
+"523951","PLATINUM","MasterCard","credit","IN","ICICI BANK, LTD."
+"523988","PLATINUM","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"523990","PLATINUM","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"524098","GOLD","MasterCard","credit","IN","JAMMU AND KASHMIR BANK, LTD."
+"524111","PLATINUM","MasterCard","credit","IN","HDFC BANK, LTD."
+"524133","PLATINUM","MasterCard","credit","IN","CITIBANK"
+"524162","PLATINUM","MasterCard","credit","IN","CENTRAL BANK OF INDIA"
+"524178","PLATINUM","MasterCard","credit","IN","AXIS BANK, LTD."
+"524181",,"MasterCard",,"IN",
+"524182","PLATINUM","MasterCard","credit","IN","SBI CARDS AND PAYMENT SERVICES PVT., LTD."
+"524193","PLATINUM","MasterCard","credit","IN","ICICI BANK, LTD."
+"524216","PLATINUM","MasterCard","credit","IN","HDFC BANK, LTD."
+"524240","PLATINUM","MasterCard","credit","IN","AXIS BANK, LTD."
+"524247","PLATINUM","MasterCard","credit","IN","SBI CARDS AND PAYMENT SERVICES PVT., LTD."
+"524253",,"MasterCard",,"IN",
+"524254",,"MasterCard",,"IN",
+"524317","PLATINUM","MasterCard","credit","IN","SBI CARDS AND PAYMENT SERVICES PVT., LTD."
+"524368","PLATINUM","MasterCard","credit","IN","HDFC BANK, LTD."
+"524373","PLATINUM","MasterCard","credit","IN","ROYAL BANK OF SCOTLAND, N.V."
+"524376","PLATINUM","MasterCard","credit","IN","ICICI BANK, LTD."
+"524446",,"MasterCard",,"IN",
+"524498",,"MasterCard",,"IN",
+"524499",,"MasterCard",,"IN",
+"524508",,"MasterCard",,"IN",
+"524512",,"MasterCard",,"IN",
+"524598",,"MasterCard",,"IN",
+"524610",,"MasterCard",,"IN",
+"524877","STANDARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"524931",,"MasterCard",,"IN",
+"525442",,"MasterCard",,"IN",
+"525760",,"MasterCard",,"IN","HDFC BANK, LTD."
+"525996",,"MasterCard","credit","IN","ICICI BANK, LTD."
+"526419","STANDARD","MasterCard","debit","IN","HDFC BANK, LTD."
+"526421","PREPAID","MasterCard","debit","IN","CITIBANK"
+"526468","STANDARD","MasterCard","credit","IN","SBI CARDS AND PAYMENT SERVICES PVT., LTD."
+"526495","STANDARD","MasterCard","credit","IN","BANK OF INDIA"
+"526701","STANDARD","MasterCard","credit","IN","AXIS BANK, LTD."
+"526702","STANDARD","MasterCard","credit","IN","YES BANK, LTD."
+"526715","PREPAID","MasterCard","debit","IN","HDFC BANK, LTD."
+"526718","PREPAID","MasterCard","debit","IN","AXIS BANK, LTD."
+"526730","PREPAID","MasterCard","debit","IN","AXIS BANK, LTD."
+"526731",,"MasterCard",,"IN","UTI BANK, LTD."
+"526732",,"MasterCard",,"IN","UTI BANK, LTD."
+"526733",,"MasterCard",,"IN","UTI BANK, LTD."
+"526734",,"MasterCard",,"IN","UTI BANK, LTD."
+"526834","GOLD","MasterCard","credit","IN",
+"526861","GOLD","MasterCard","credit","IN","INDUSIND BANK, LTD."
+"526905",,"MasterCard",,"IN",
+"526908",,"MasterCard",,"IN",
+"527019",,"MasterCard",,"IN",
+"527386",,"MasterCard",,"IN",
+"527672",,"MasterCard",,"IN",
+"527687",,"MasterCard",,"IN",
+"527692",,"MasterCard",,"IN",
+"527759",,"MasterCard",,"IN",
+"528095","STANDARD","MasterCard","credit","IN","STATE BANK OF INDIA"
+"528571",,"MasterCard",,"IN",
+"528677",,"MasterCard",,"IN",
+"528678",,"MasterCard",,"IN",
+"528756","GOLD","MasterCard","debit","IN","STANDARD CHARTERED BANK"
+"528882",,"MasterCard",,"IN",
+"528887",,"MasterCard",,"IN",
+"528945","PLATINUM","MasterCard","credit","IN","HDFC BANK, LTD."
+"529117","PLATINUM","MasterCard","credit","IN","CITIBANK"
+"529131","GOLD","MasterCard","credit","IN","CANARA BANK"
+"529185",,"MasterCard",,"IN",
+"529186",,"MasterCard",,"IN",
+"529321",,"MasterCard",,"IN","STANDARD CHARTERED GRINDLAYS BANK, LTD."
+"529372","BUSINESS","MasterCard","credit","IN","ICICI BANK, LTD."
+"529374","BUSINESS","MasterCard","credit","IN","ICICI BANK, LTD."
+"529375",,"MasterCard",,"IN",
+"529376",,"MasterCard",,"IN",
+"529495",,"MasterCard","credit","IN","CITIBANK"
+"529552","PREPAID","MasterCard","debit","IN","IDBI BANK, LTD."
+"529557",,"MasterCard",,"IN",
+"529608",,"MasterCard",,"IN",
+"529615",,"MasterCard",,"IN",
+"529616",,"MasterCard",,"IN",
+"529617",,"MasterCard",,"IN",
+"529618",,"MasterCard",,"IN",
+"529621",,"MasterCard",,"IN",
+"529870",,"MasterCard",,"IN",
+"529971","PREPAID","MasterCard","debit","IN","ICICI BANK, LTD."
+"529972","PREPAID","MasterCard","debit","IN","ICICI BANK, LTD."
+"529973","PREPAID","MasterCard","debit","IN","ICICI BANK, LTD."
+"530151",,"MasterCard",,"IN","BANK OF PUNJAB, LTD."
+"530483","PREPAID","MasterCard","debit","IN","CITIBANK NA INDIA BRANCH DBA CITI PREPAID SERVICES IND"
+"530488","PREPAID","MasterCard","debit","IN","CITIBANK NA INDIA BRANCH DBA CITI PREPAID SERVICES IND"
+"530504","PREPAID","MasterCard","debit","IN","CITIBANK NA INDIA BRANCH DBA CITI PREPAID SERVICES IND"
+"530508","PREPAID","MasterCard","debit","IN","CITIBANK NA INDIA BRANCH DBA CITI PREPAID SERVICES IND"
+"530557","PREPAID","MasterCard","debit","IN","YES BANK, LTD."
+"530559","GOLD","MasterCard","credit","IN",
+"530562",,"MasterCard",,"IN",
+"531091",,"MasterCard",,"IN",
+"531662","PLATINUM","MasterCard","credit","IN","CITIBANK"
+"531804","STANDARD","MasterCard","debit","IN","ICICI BANK, LTD."
+"531820","STANDARD","MasterCard","credit","IN","ROYAL BANK OF SCOTLAND, N.V."
+"531831","STANDARD","MasterCard","debit","IN","HDFC BANK, LTD."
+"532662","PLATINUM","MasterCard","debit","IN","CITIBANK"
+"532663",,"MasterCard","debit","IN",
+"532666","PLATINUM","MasterCard","debit","IN","ICICI BANK, LTD."
+"532673","PLATINUM","MasterCard","debit","IN","STANDARD CHARTERED BANK"
+"532676","PLATINUM","MasterCard","debit","IN","HDFC BANK, LTD."
+"532700","PLATINUM","MasterCard","debit","IN","ROYAL BANK OF SCOTLAND, N.V."
+"532702","PLATINUM","MasterCard","debit","IN","AXIS BANK, LTD."
+"532711","PLATINUM","MasterCard","debit","IN","FEDERAL BANK, LTD."
+"532718","PLATINUM","MasterCard","debit","IN","ICICI BANK, LTD."
+"532728","PLATINUM","MasterCard","debit","IN","STANDARD CHARTERED BANK"
+"532729","PLATINUM","MasterCard","debit","IN","ICICI BANK, LTD."
+"532731","PLATINUM","MasterCard","debit","IN","AXIS BANK, LTD."
+"532734","PLATINUM","MasterCard","debit","IN","AXIS BANK, LTD."
+"532960","CORPORATE CARD","MasterCard","credit","IN","CITIBANK N.A., INDIA"
+"532961","CORPORATE CARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"532973","CORPORATE CARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"533102","WORLD debit EMBOSSED","MasterCard","debit","IN","AXIS BANK, LTD."
+"533112","WORLD debit EMBOSSED","MasterCard","debit","IN","ICICI BANK, LTD."
+"533121",,"MasterCard",,"IN",
+"533134",,"MasterCard",,"IN",
+"533135",,"MasterCard",,"IN",
+"533136",,"MasterCard",,"IN",
+"533310","PREPAID","MasterCard","debit","IN",
+"533601","PREPAID","MasterCard","debit","IN",
+"533714",,"MasterCard",,"IN",
+"533744",,"MasterCard",,"IN",
+"533890","PREPAID","MasterCard","debit","IN","CITIBANK"
+"533905","PREPAID","MasterCard","debit","IN","CITIBANK NA INDIA BRANCH DBA CITI PREPAID SERVICES IND"
+"533930","PREPAID","MasterCard","debit","IN","PUNJAB NATIONAL BANK"
+"533931",,"MasterCard",,"IN",
+"533932",,"MasterCard",,"IN",
+"533983","PREPAID","MasterCard","debit","IN","YES BANK, LTD."
+"534044","BUSINESS","MasterCard","credit","IN","ICICI BANK, LTD."
+"534131",,"MasterCard",,"IN",
+"534145",,"MasterCard",,"IN",
+"534238","PREPAID","MasterCard","debit","IN","CENTRAL BANK OF INDIA"
+"534327",,"MasterCard",,"IN",
+"534330",,"MasterCard",,"IN",
+"534332",,"MasterCard",,"IN",
+"534334",,"MasterCard",,"IN",
+"534337",,"MasterCard",,"IN",
+"534340",,"MasterCard",,"IN",
+"535930","STANDARD","MasterCard","credit","IN","STATE BANK OF INDIA"
+"535931","PREPAID","MasterCard","debit","IN","STANDARD CHARTERED BANK"
+"535932",,"MasterCard",,"IN",
+"535933",,"MasterCard",,"IN",
+"535934","STANDARD","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"535938","STANDARD","MasterCard","credit","IN","INDIAN BANK"
+"535960","STANDARD","MasterCard","debit","IN","ICICI BANK, LTD."
+"535985",,"MasterCard",,"IN",
+"536016",,"MasterCard",,"IN",
+"536017",,"MasterCard",,"IN",
+"536019",,"MasterCard",,"IN",
+"536593","PREPAID","MasterCard","debit","IN","PUNJAB NATIONAL BANK"
+"537903",,"MasterCard",,"IN",
+"537904",,"MasterCard",,"IN",
+"537905",,"MasterCard",,"IN",
+"537906",,"MasterCard",,"IN",
+"537907",,"MasterCard",,"IN",
+"537908",,"MasterCard",,"IN",
+"537909",,"MasterCard",,"IN",
+"537910",,"MasterCard",,"IN",
+"537911",,"MasterCard",,"IN",
+"537912",,"MasterCard",,"IN",
+"537913",,"MasterCard",,"IN",
+"538426",,"MasterCard",,"IN",
+"538830","GOLD","MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"539998","STANDARD","MasterCard","debit","IN","ICICI BANK, LTD."
+"540021",,"MasterCard",,"IN","BANK OF INDIA"
+"540082","GOLD","MasterCard","credit","IN","VIJAYA BANK"
+"540128",,"MasterCard","credit","IN","CENTRAL BANK OF INDIA"
+"540165",,"MasterCard","credit","IN","CITIBANK"
+"540175",,"MasterCard","credit","IN","CITIBANK"
+"540259","GOLD","MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"540282",,"MasterCard","credit","IN","ICICI BANK, LTD."
+"540303",,"MasterCard","credit","IN","BANK OF BARODA"
+"540460",,"MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"540461",,"MasterCard",,"IN","STANDARD CHARTERED BANK"
+"540529","CORPORATE PURCHASING","MasterCard","credit","IN","ICICI BANK, LTD."
+"540531","CORPORATE PURCHASING","MasterCard","credit","IN","CITIBANK N.A., INDIA"
+"540536","CORPORATE PURCHASING","MasterCard","credit","IN",
+"540626",,"MasterCard",,"IN","BANK OF INDIA"
+"540711","GOLD","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"540763",,"MasterCard",,"IN",
+"541089","GOLD","MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"541174",,"MasterCard","credit","IN","BANK OF INDIA"
+"541175","GOLD","MasterCard","credit","IN","BANK OF INDIA"
+"541445",,"MasterCard","credit","IN","CENTRAL BANK OF INDIA"
+"541497","GOLD","MasterCard","credit","IN","CITIBANK"
+"541538","STANDARD","MasterCard","credit","IN","ROYAL BANK OF SCOTLAND, N.V."
+"542034",,"MasterCard","credit","IN","BANK OF INDIA"
+"542086",,"MasterCard","credit","IN","ANDHRA BANK"
+"542176",,"MasterCard","credit","IN","VIJAYA BANK"
+"542207","STANDARD","MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"542225","GOLD","MasterCard","debit","IN",
+"542505","GOLD","MasterCard","credit","IN","ROYAL BANK OF SCOTLAND, N.V."
+"542531",,"MasterCard","credit","IN","CITIBANK"
+"542556","PLATINUM","MasterCard","credit","IN","CITIBANK"
+"543053","PREPAID","MasterCard","debit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"543080","PREPAID","MasterCard","debit","IN","ICICI BANK, LTD."
+"543186",,"MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"543252","GOLD","MasterCard","debit","IN",
+"543423","PREPAID","MasterCard","debit","IN","ICICI BANK, LTD."
+"545207","WORLD CARD","MasterCard","credit","IN","ICICI BANK, LTD."
+"545226","WORLD CARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"545332",,"MasterCard",,"IN",
+"545354",,"MasterCard",,"IN",
+"545422",,"MasterCard","credit","IN","CANARA BANK"
+"545964","PLATINUM","MasterCard","credit","IN","HDFC BANK, LTD."
+"546522","GOLD","MasterCard","debit","IN","IDBI BANK, LTD."
+"547101","PREPAID","MasterCard","debit","IN",
+"547277","BUSINESS","MasterCard","credit","IN","SBI CARDS AND PAYMENT SERVICES PVT., LTD."
+"547344",,"MasterCard","credit","IN","BANK OF BARODA"
+"547359","BUSINESS","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"547467","BUSINESS","MasterCard","credit","IN","ICICI BANK, LTD."
+"547827","BUSINESS","MasterCard","credit","IN","ROYAL BANK OF SCOTLAND, N.V."
+"548026","PREPAID","MasterCard","debit","IN","FEDERAL BANK, LTD."
+"548245","PLATINUM","MasterCard","credit","IN","BANK OF BARODA"
+"548568","PREPAID","MasterCard","debit","IN","INDUSIND BANK, LTD."
+"548592","PREPAID","MasterCard","debit","IN","INDUSIND BANK, LTD."
+"548891",,"MasterCard",,"IN","ANZ GRINDLAYS BANK, LTD."
+"549124","PLATINUM","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"549132","WORLD CARD","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"549172",,"MasterCard",,"IN",
+"549177","PLATINUM","MasterCard","debit","IN","CITIBANK"
+"549253","PREPAID","MasterCard","debit","IN","ANDHRA BANK"
+"549749","STANDARD","MasterCard","debit","IN","IDBI BANK, LTD."
+"549751","STANDARD","MasterCard","credit","IN","AXIS BANK, LTD."
+"549752","STANDARD","MasterCard","credit","IN","PUNJAB NATIONAL BANK"
+"549753",,"MasterCard",,"IN",
+"549759","STANDARD","MasterCard","credit","IN","CANARA BANK"
+"549777","STANDARD","MasterCard","credit","IN","CITIBANK"
+"549778",,"MasterCard",,"IN",
+"549779",,"MasterCard",,"IN",
+"549852","WORLD CARD","MasterCard","credit","IN","CITIBANK"
+"549871","PREPAID","MasterCard","debit","IN",
+"550331","PREPAID","MasterCard","debit","IN","AXIS BANK, LTD."
+"550332",,"MasterCard",,"IN",
+"550333",,"MasterCard",,"IN",
+"550334",,"MasterCard",,"IN",
+"550335","PREPAID","MasterCard","debit","IN","AXIS BANK, LTD."
+"550336","PREPAID","MasterCard","debit","IN","AXIS BANK, LTD."
+"550337",,"MasterCard",,"IN",
+"550338","PREPAID","MasterCard","debit","IN","AXIS BANK, LTD."
+"550339",,"MasterCard",,"IN",
+"550340",,"MasterCard",,"IN",
+"550341","PREPAID","MasterCard","debit","IN","AXIS BANK, LTD."
+"550372",,"MasterCard",,"IN","HDFC BANK, LTD."
+"550375",,"MasterCard",,"IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"550610",,"MasterCard",,"IN","UTI BANK, LTD."
+"552088","PLATINUM","MasterCard","credit","IN","HDFC BANK, LTD."
+"552093","PLATINUM","MasterCard","credit","IN","CITIBANK"
+"552137","PLATINUM","MasterCard","credit","IN","CITIBANK"
+"552260","WORLD CARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"552274","WORLD CARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"552344","WORLD CARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"552385","WORLD CARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"552394","WORLD CARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"552418",,"MasterCard",,"IN",
+"552468",,"MasterCard",,"IN",
+"552790","CORPORATE CARD","MasterCard","credit","IN","CITIBANK N.A., INDIA"
+"552900","CORPORATE PURCHASING","MasterCard","credit","IN","CITIBANK N.A., INDIA"
+"553115",,"MasterCard",,"IN","HDFC BANK, LTD."
+"553160",,"MasterCard",,"IN",
+"553162","BUSINESS","MasterCard","credit","IN","HDFC BANK, LTD."
+"553408","CORPORATE CARD","MasterCard","credit","IN","INDUSIND BANK, LTD."
+"553414","CORPORATE CARD","MasterCard","credit","IN","ICICI BANK, LTD."
+"553418","CORPORATE CARD","MasterCard","credit","IN","SBI CARDS AND PAYMENT SERVICES PVT., LTD."
+"553583","BUSINESS","MasterCard","credit","IN","HDFC BANK, LTD."
+"553682","WORLD debit EMBOSSED","MasterCard","debit","IN","CITIBANK"
+"553683",,"MasterCard","debit","IN",
+"553684",,"MasterCard","debit","IN",
+"554049","PLATINUM","MasterCard","credit","IN","BANK OF BARODA"
+"554197",,"MasterCard",,"IN","ANDHRA BANK"
+"554350",,"MasterCard","credit","IN","BANK OF INDIA"
+"554351","GOLD","MasterCard","credit","IN","BANK OF INDIA"
+"554374","STANDARD","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"554375","GOLD","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"554378","STANDARD","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"554594","PREPAID","MasterCard","debit","IN","ANDHRA BANK"
+"554619","STANDARD","MasterCard","credit","IN","CITIBANK"
+"554623","PLATINUM","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"554637","PLATINUM","MasterCard","credit","IN","CITIBANK"
+"554837","STANDARD","MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"554851","GOLD","MasterCard","credit","IN","HONGKONG AND SHANGHAI BANKING CORP., LTD."
+"554879",,"MasterCard",,"IN","BANK OF INDIA"
+"555153",,"MasterCard",,"IN",
+"555160",,"MasterCard",,"IN",
+"555219",,"MasterCard",,"IN",
+"555936","STANDARD","MasterCard","debit","IN","IDBI BANK, LTD."
+"555942","STANDARD","MasterCard","credit","IN","FEDERAL BANK, LTD."
+"556004",,"MasterCard",,"IN",
+"556005",,"MasterCard",,"IN",
+"556015",,"MasterCard",,"IN",
+"556016",,"MasterCard",,"IN",
+"556017",,"MasterCard",,"IN",
+"556019",,"MasterCard",,"IN",
+"556027",,"MasterCard",,"IN",
+"556029",,"MasterCard",,"IN",
+"556032",,"MasterCard",,"IN",
+"556042","BUSINESS","MasterCard","credit","IN","HDFC BANK, LTD."
+"556044",,"MasterCard",,"IN",
+"556045",,"MasterCard",,"IN",
+"556049",,"MasterCard",,"IN",
+"556053",,"MasterCard",,"IN",
+"556060",,"MasterCard",,"IN",
+"556061",,"MasterCard",,"IN",
+"556062",,"MasterCard",,"IN",
+"556063",,"MasterCard",,"IN",
+"556064",,"MasterCard",,"IN",
+"556065",,"MasterCard",,"IN",
+"556066",,"MasterCard",,"IN",
+"556067",,"MasterCard",,"IN",
+"556068",,"MasterCard",,"IN",
+"556069",,"MasterCard",,"IN",
+"556070",,"MasterCard",,"IN",
+"556082",,"MasterCard",,"IN",
+"556087",,"MasterCard",,"IN",
+"556088",,"MasterCard",,"IN",
+"556090",,"MasterCard",,"IN",
+"556094",,"MasterCard",,"IN",
+"556095",,"MasterCard",,"IN",
+"556099",,"MasterCard",,"IN",
+"556102",,"MasterCard",,"IN",
+"556107",,"MasterCard",,"IN",
+"556109",,"MasterCard",,"IN",
+"556112",,"MasterCard",,"IN",
+"556113",,"MasterCard",,"IN",
+"556117",,"MasterCard",,"IN",
+"556118",,"MasterCard",,"IN",
+"556119",,"MasterCard",,"IN",
+"556120",,"MasterCard",,"IN",
+"556121",,"MasterCard",,"IN",
+"556122",,"MasterCard",,"IN",
+"556123",,"MasterCard",,"IN",
+"556124",,"MasterCard",,"IN",
+"556125",,"MasterCard",,"IN",
+"556126",,"MasterCard",,"IN",
+"556127",,"MasterCard",,"IN",
+"556128",,"MasterCard",,"IN",
+"556129",,"MasterCard",,"IN",
+"556130",,"MasterCard",,"IN",
+"556131",,"MasterCard",,"IN",
+"556132",,"MasterCard",,"IN",
+"556133",,"MasterCard",,"IN",
+"556134",,"MasterCard",,"IN",
+"556135",,"MasterCard",,"IN",
+"556136",,"MasterCard",,"IN",
+"556137",,"MasterCard",,"IN",
+"556138",,"MasterCard",,"IN",
+"556139",,"MasterCard",,"IN",
+"556140",,"MasterCard",,"IN",
+"556141",,"MasterCard",,"IN",
+"556142",,"MasterCard",,"IN",
+"556143",,"MasterCard",,"IN",
+"556144",,"MasterCard",,"IN",
+"556145",,"MasterCard",,"IN",
+"556146",,"MasterCard",,"IN",
+"556147",,"MasterCard",,"IN",
+"556148",,"MasterCard",,"IN",
+"556149",,"MasterCard",,"IN",
+"556150",,"MasterCard",,"IN",
+"556151",,"MasterCard",,"IN",
+"556152",,"MasterCard",,"IN",
+"556153",,"MasterCard",,"IN",
+"556154",,"MasterCard",,"IN",
+"556155",,"MasterCard",,"IN",
+"556156",,"MasterCard",,"IN",
+"556157",,"MasterCard",,"IN",
+"556158",,"MasterCard",,"IN",
+"556159",,"MasterCard",,"IN",
+"556160",,"MasterCard",,"IN",
+"556161",,"MasterCard",,"IN",
+"556162",,"MasterCard",,"IN",
+"556163",,"MasterCard",,"IN",
+"556164",,"MasterCard",,"IN",
+"556165",,"MasterCard",,"IN",
+"556166",,"MasterCard",,"IN",
+"556167",,"MasterCard",,"IN",
+"556168",,"MasterCard",,"IN",
+"556169",,"MasterCard",,"IN",
+"556170",,"MasterCard",,"IN",
+"556171",,"MasterCard",,"IN",
+"556172",,"MasterCard",,"IN",
+"556173",,"MasterCard",,"IN",
+"556174",,"MasterCard",,"IN",
+"556175",,"MasterCard",,"IN",
+"556176",,"MasterCard",,"IN",
+"556177",,"MasterCard",,"IN",
+"556178",,"MasterCard",,"IN",
+"556179",,"MasterCard",,"IN",
+"556180",,"MasterCard",,"IN",
+"556181",,"MasterCard",,"IN",
+"556182",,"MasterCard",,"IN",
+"556183",,"MasterCard",,"IN",
+"556184",,"MasterCard",,"IN",
+"556185",,"MasterCard",,"IN",
+"556186",,"MasterCard",,"IN",
+"556187",,"MasterCard",,"IN",
+"556188",,"MasterCard",,"IN",
+"556189",,"MasterCard",,"IN",
+"556190",,"MasterCard",,"IN",
+"556191",,"MasterCard",,"IN",
+"556192",,"MasterCard",,"IN",
+"556193",,"MasterCard",,"IN",
+"556194",,"MasterCard",,"IN",
+"556195",,"MasterCard",,"IN",
+"556196",,"MasterCard",,"IN",
+"556197",,"MasterCard",,"IN",
+"556198",,"MasterCard",,"IN",
+"556199",,"MasterCard",,"IN",
+"556200",,"MasterCard",,"IN",
+"556201",,"MasterCard",,"IN",
+"556202",,"MasterCard",,"IN",
+"556203",,"MasterCard",,"IN",
+"556204",,"MasterCard",,"IN",
+"556205",,"MasterCard",,"IN",
+"556206",,"MasterCard",,"IN",
+"556207",,"MasterCard",,"IN",
+"556208",,"MasterCard",,"IN",
+"556209",,"MasterCard",,"IN",
+"556210",,"MasterCard",,"IN",
+"556211",,"MasterCard",,"IN",
+"556212",,"MasterCard",,"IN",
+"556213",,"MasterCard",,"IN",
+"556214",,"MasterCard",,"IN",
+"556215",,"MasterCard",,"IN",
+"556216",,"MasterCard",,"IN",
+"556217",,"MasterCard",,"IN",
+"556218",,"MasterCard",,"IN",
+"556219",,"MasterCard",,"IN",
+"556220",,"MasterCard",,"IN",
+"556221",,"MasterCard",,"IN",
+"556222",,"MasterCard",,"IN",
+"556223",,"MasterCard",,"IN",
+"556224",,"MasterCard",,"IN",
+"556225",,"MasterCard",,"IN",
+"556226",,"MasterCard",,"IN",
+"556227",,"MasterCard",,"IN",
+"556228",,"MasterCard",,"IN",
+"556229",,"MasterCard",,"IN",
+"556230",,"MasterCard",,"IN",
+"556231",,"MasterCard",,"IN",
+"556232",,"MasterCard",,"IN",
+"556233",,"MasterCard",,"IN",
+"556234",,"MasterCard",,"IN",
+"556235",,"MasterCard",,"IN",
+"556236",,"MasterCard",,"IN",
+"556237",,"MasterCard",,"IN",
+"556238",,"MasterCard",,"IN",
+"556239",,"MasterCard",,"IN",
+"556240",,"MasterCard",,"IN",
+"556241",,"MasterCard",,"IN",
+"556242",,"MasterCard",,"IN",
+"556243",,"MasterCard",,"IN",
+"556244",,"MasterCard",,"IN",
+"556245",,"MasterCard",,"IN",
+"556246",,"MasterCard",,"IN",
+"556247",,"MasterCard",,"IN",
+"556248",,"MasterCard",,"IN",
+"556249",,"MasterCard",,"IN",
+"556250",,"MasterCard",,"IN",
+"556251",,"MasterCard",,"IN",
+"556252",,"MasterCard",,"IN",
+"556253",,"MasterCard",,"IN",
+"556254",,"MasterCard",,"IN",
+"556255",,"MasterCard",,"IN",
+"556256",,"MasterCard",,"IN",
+"556257",,"MasterCard",,"IN",
+"556258",,"MasterCard",,"IN",
+"556259",,"MasterCard",,"IN",
+"556260",,"MasterCard",,"IN",
+"556261",,"MasterCard",,"IN",
+"556262",,"MasterCard",,"IN",
+"556263",,"MasterCard",,"IN",
+"556264",,"MasterCard",,"IN",
+"556265",,"MasterCard",,"IN",
+"556266",,"MasterCard",,"IN",
+"556267",,"MasterCard",,"IN",
+"556268",,"MasterCard",,"IN",
+"556269",,"MasterCard",,"IN",
+"556270",,"MasterCard",,"IN",
+"556271",,"MasterCard",,"IN",
+"556272",,"MasterCard",,"IN",
+"556273",,"MasterCard",,"IN",
+"556274",,"MasterCard",,"IN",
+"556275",,"MasterCard",,"IN",
+"556276",,"MasterCard",,"IN",
+"556277",,"MasterCard",,"IN",
+"556278",,"MasterCard",,"IN",
+"556279",,"MasterCard",,"IN",
+"556280",,"MasterCard",,"IN",
+"556281",,"MasterCard",,"IN",
+"556282",,"MasterCard",,"IN",
+"556283",,"MasterCard",,"IN",
+"556284",,"MasterCard",,"IN",
+"556285",,"MasterCard",,"IN",
+"556286",,"MasterCard",,"IN",
+"556287",,"MasterCard",,"IN",
+"556288",,"MasterCard",,"IN",
+"556289",,"MasterCard",,"IN",
+"556290",,"MasterCard",,"IN",
+"556291",,"MasterCard",,"IN",
+"556292",,"MasterCard",,"IN",
+"556293",,"MasterCard",,"IN",
+"556294",,"MasterCard",,"IN",
+"556295",,"MasterCard",,"IN",
+"556297",,"MasterCard",,"IN",
+"556298",,"MasterCard",,"IN",
+"556299",,"MasterCard",,"IN",
+"556308",,"MasterCard",,"IN",
+"556310",,"MasterCard",,"IN",
+"556318",,"MasterCard",,"IN",
+"556325",,"MasterCard",,"IN",
+"556326",,"MasterCard",,"IN",
+"556327",,"MasterCard",,"IN",
+"556328",,"MasterCard",,"IN",
+"556332",,"MasterCard",,"IN",
+"556335",,"MasterCard",,"IN",
+"556348",,"MasterCard",,"IN",
+"556351",,"MasterCard",,"IN",
+"556356",,"MasterCard",,"IN",
+"556360",,"MasterCard",,"IN",
+"556361",,"MasterCard",,"IN",
+"556362",,"MasterCard",,"IN",
+"556363",,"MasterCard",,"IN",
+"556366",,"MasterCard",,"IN",
+"556367",,"MasterCard",,"IN",
+"556368",,"MasterCard",,"IN",
+"556369",,"MasterCard",,"IN",
+"556373",,"MasterCard",,"IN",
+"556374",,"MasterCard",,"IN",
+"556375",,"MasterCard",,"IN",
+"556376",,"MasterCard",,"IN",
+"556378",,"MasterCard",,"IN",
+"556379",,"MasterCard",,"IN",
+"556380",,"MasterCard",,"IN",
+"556381",,"MasterCard",,"IN",
+"556382",,"MasterCard",,"IN",
+"556383",,"MasterCard",,"IN",
+"556384",,"MasterCard",,"IN",
+"556385",,"MasterCard",,"IN",
+"556386",,"MasterCard",,"IN",
+"556387",,"MasterCard",,"IN",
+"556388",,"MasterCard",,"IN",
+"556389",,"MasterCard",,"IN",
+"556390",,"MasterCard",,"IN",
+"556391",,"MasterCard",,"IN",
+"556392",,"MasterCard",,"IN",
+"556393",,"MasterCard",,"IN",
+"556394",,"MasterCard",,"IN",
+"556395",,"MasterCard",,"IN",
+"556396",,"MasterCard",,"IN",
+"556397",,"MasterCard",,"IN",
+"556398",,"MasterCard",,"IN",
+"556399",,"MasterCard",,"IN",
+"556401",,"MasterCard",,"IN",
+"556402",,"MasterCard",,"IN",
+"556403",,"MasterCard",,"IN",
+"556404",,"MasterCard",,"IN",
+"556405",,"MasterCard",,"IN",
+"556407",,"MasterCard",,"IN",
+"556408",,"MasterCard",,"IN",
+"556409",,"MasterCard",,"IN",
+"556410",,"MasterCard",,"IN",
+"556411",,"MasterCard",,"IN",
+"556412",,"MasterCard",,"IN",
+"556413",,"MasterCard",,"IN",
+"556414",,"MasterCard",,"IN",
+"556415",,"MasterCard",,"IN",
+"556416",,"MasterCard",,"IN",
+"556417",,"MasterCard",,"IN",
+"556418",,"MasterCard",,"IN",
+"556419",,"MasterCard",,"IN",
+"556420",,"MasterCard",,"IN",
+"556421",,"MasterCard",,"IN",
+"556422",,"MasterCard",,"IN",
+"556423",,"MasterCard",,"IN",
+"556424",,"MasterCard",,"IN",
+"556425",,"MasterCard",,"IN",
+"556426",,"MasterCard",,"IN",
+"556427",,"MasterCard",,"IN",
+"556428",,"MasterCard",,"IN",
+"556429",,"MasterCard",,"IN",
+"556430",,"MasterCard",,"IN",
+"556431",,"MasterCard",,"IN",
+"556432",,"MasterCard",,"IN",
+"556433",,"MasterCard",,"IN",
+"556434",,"MasterCard",,"IN",
+"556435",,"MasterCard",,"IN",
+"556436",,"MasterCard",,"IN",
+"556437",,"MasterCard",,"IN",
+"556438",,"MasterCard",,"IN",
+"556439",,"MasterCard",,"IN",
+"556440",,"MasterCard",,"IN",
+"556441",,"MasterCard",,"IN",
+"556442",,"MasterCard",,"IN",
+"556443",,"MasterCard",,"IN",
+"556444",,"MasterCard",,"IN",
+"556445",,"MasterCard",,"IN",
+"556446",,"MasterCard",,"IN",
+"556447",,"MasterCard",,"IN",
+"556448",,"MasterCard",,"IN",
+"556449",,"MasterCard",,"IN",
+"556450",,"MasterCard",,"IN",
+"556451",,"MasterCard",,"IN",
+"556452",,"MasterCard",,"IN",
+"556453",,"MasterCard",,"IN",
+"556454",,"MasterCard",,"IN",
+"556455",,"MasterCard",,"IN",
+"556456",,"MasterCard",,"IN",
+"556457",,"MasterCard",,"IN",
+"556458",,"MasterCard",,"IN",
+"556459",,"MasterCard",,"IN",
+"556461",,"MasterCard",,"IN",
+"556462",,"MasterCard",,"IN",
+"556463",,"MasterCard",,"IN",
+"556464",,"MasterCard",,"IN",
+"556465",,"MasterCard",,"IN",
+"556468",,"MasterCard",,"IN",
+"556469",,"MasterCard",,"IN",
+"556471",,"MasterCard",,"IN",
+"556472",,"MasterCard",,"IN",
+"556473",,"MasterCard",,"IN",
+"556474",,"MasterCard",,"IN",
+"556475",,"MasterCard",,"IN",
+"556476",,"MasterCard",,"IN",
+"556477",,"MasterCard",,"IN",
+"556478",,"MasterCard",,"IN",
+"556479",,"MasterCard",,"IN",
+"556480",,"MasterCard",,"IN",
+"556481",,"MasterCard",,"IN",
+"556482",,"MasterCard",,"IN",
+"556483",,"MasterCard",,"IN",
+"556484",,"MasterCard",,"IN",
+"556485",,"MasterCard",,"IN",
+"556486",,"MasterCard",,"IN",
+"556487",,"MasterCard",,"IN",
+"556488",,"MasterCard",,"IN",
+"556489",,"MasterCard",,"IN",
+"556490",,"MasterCard",,"IN",
+"556491",,"MasterCard",,"IN",
+"556492",,"MasterCard",,"IN",
+"556493",,"MasterCard",,"IN",
+"556494",,"MasterCard",,"IN",
+"556495",,"MasterCard",,"IN",
+"556496",,"MasterCard",,"IN",
+"556497",,"MasterCard",,"IN",
+"556498",,"MasterCard",,"IN",
+"556499",,"MasterCard",,"IN",
+"556501",,"MasterCard",,"IN",
+"556502",,"MasterCard",,"IN",
+"556503",,"MasterCard",,"IN",
+"556504",,"MasterCard",,"IN",
+"556505",,"MasterCard",,"IN",
+"556507",,"MasterCard",,"IN",
+"556508",,"MasterCard",,"IN",
+"556509",,"MasterCard",,"IN",
+"556511",,"MasterCard",,"IN",
+"556512",,"MasterCard",,"IN",
+"556513",,"MasterCard",,"IN",
+"556514",,"MasterCard",,"IN",
+"556515",,"MasterCard",,"IN",
+"556516",,"MasterCard",,"IN",
+"556517",,"MasterCard",,"IN",
+"556518",,"MasterCard",,"IN",
+"556519",,"MasterCard",,"IN",
+"556521",,"MasterCard",,"IN",
+"556522",,"MasterCard",,"IN",
+"556523",,"MasterCard",,"IN",
+"556524",,"MasterCard",,"IN",
+"556525",,"MasterCard",,"IN",
+"556526",,"MasterCard",,"IN",
+"556527",,"MasterCard",,"IN",
+"556528",,"MasterCard",,"IN",
+"556529",,"MasterCard",,"IN",
+"556531",,"MasterCard",,"IN",
+"556532",,"MasterCard",,"IN",
+"556533",,"MasterCard",,"IN",
+"556534",,"MasterCard",,"IN",
+"556535",,"MasterCard",,"IN",
+"556536",,"MasterCard",,"IN",
+"556537",,"MasterCard",,"IN",
+"556538",,"MasterCard",,"IN",
+"556539",,"MasterCard",,"IN",
+"556540",,"MasterCard",,"IN",
+"556541",,"MasterCard",,"IN",
+"556542",,"MasterCard",,"IN",
+"556543",,"MasterCard",,"IN",
+"556544",,"MasterCard",,"IN",
+"556545",,"MasterCard",,"IN",
+"556546",,"MasterCard",,"IN",
+"556547",,"MasterCard",,"IN",
+"556548",,"MasterCard",,"IN",
+"556549",,"MasterCard",,"IN",
+"556550",,"MasterCard",,"IN",
+"556551",,"MasterCard",,"IN",
+"556552",,"MasterCard",,"IN",
+"556553",,"MasterCard",,"IN",
+"556554",,"MasterCard",,"IN",
+"556555",,"MasterCard",,"IN",
+"556556",,"MasterCard",,"IN",
+"556557",,"MasterCard",,"IN",
+"556558",,"MasterCard",,"IN",
+"556559",,"MasterCard",,"IN",
+"556561",,"MasterCard",,"IN",
+"556562",,"MasterCard",,"IN",
+"556563",,"MasterCard",,"IN",
+"556564",,"MasterCard",,"IN",
+"556565",,"MasterCard",,"IN",
+"556567",,"MasterCard",,"IN",
+"556568",,"MasterCard",,"IN",
+"556569",,"MasterCard",,"IN",
+"556570",,"MasterCard",,"IN",
+"556571",,"MasterCard",,"IN",
+"556572",,"MasterCard",,"IN",
+"556573",,"MasterCard",,"IN",
+"556574",,"MasterCard",,"IN",
+"556575",,"MasterCard",,"IN",
+"556576",,"MasterCard",,"IN",
+"556577",,"MasterCard",,"IN",
+"556578",,"MasterCard",,"IN",
+"556579",,"MasterCard",,"IN",
+"556581",,"MasterCard",,"IN",
+"556582",,"MasterCard",,"IN",
+"556583",,"MasterCard",,"IN",
+"556584",,"MasterCard",,"IN",
+"556585",,"MasterCard",,"IN",
+"556586",,"MasterCard",,"IN",
+"556587",,"MasterCard",,"IN",
+"556588",,"MasterCard",,"IN",
+"556589",,"MasterCard",,"IN",
+"556591",,"MasterCard",,"IN",
+"556592",,"MasterCard",,"IN",
+"556593",,"MasterCard",,"IN",
+"556594",,"MasterCard",,"IN",
+"556595",,"MasterCard",,"IN",
+"556596",,"MasterCard",,"IN",
+"556597",,"MasterCard",,"IN",
+"556598",,"MasterCard",,"IN",
+"556599",,"MasterCard",,"IN",
+"556602",,"MasterCard",,"IN",
+"556604",,"MasterCard",,"IN",
+"556606",,"MasterCard",,"IN",
+"556609",,"MasterCard",,"IN",
+"556618",,"MasterCard",,"IN",
+"556620","CORPORATE CARD","MasterCard","credit","IN","HDFC BANK, LTD."
+"556621",,"MasterCard",,"IN",
+"556627",,"MasterCard",,"IN",
+"556629",,"MasterCard",,"IN",
+"556631",,"MasterCard",,"IN",
+"556632",,"MasterCard",,"IN",
+"556640",,"MasterCard",,"IN",
+"556648",,"MasterCard",,"IN",
+"556649",,"MasterCard",,"IN",
+"556652",,"MasterCard",,"IN",
+"556667",,"MasterCard",,"IN",
+"556668",,"MasterCard",,"IN",
+"556669",,"MasterCard",,"IN",
+"556674",,"MasterCard",,"IN",
+"556683",,"MasterCard",,"IN",
+"556684",,"MasterCard",,"IN",
+"556685",,"MasterCard",,"IN",
+"556686",,"MasterCard",,"IN",
+"556687",,"MasterCard",,"IN",
+"556690",,"MasterCard",,"IN",
+"556691",,"MasterCard",,"IN",
+"556692",,"MasterCard",,"IN",
+"556693",,"MasterCard",,"IN",
+"556694",,"MasterCard",,"IN",
+"556695",,"MasterCard",,"IN",
+"556696",,"MasterCard",,"IN",
+"556697",,"MasterCard",,"IN",
+"556698",,"MasterCard",,"IN",
+"556699",,"MasterCard",,"IN",
+"556713",,"MasterCard",,"IN",
+"556720",,"MasterCard",,"IN",
+"556721",,"MasterCard",,"IN",
+"556725",,"MasterCard",,"IN",
+"556726",,"MasterCard",,"IN",
+"556727",,"MasterCard",,"IN",
+"556728",,"MasterCard",,"IN",
+"556729",,"MasterCard",,"IN",
+"556730",,"MasterCard",,"IN",
+"556731",,"MasterCard",,"IN",
+"556733",,"MasterCard",,"IN",
+"556737",,"MasterCard",,"IN",
+"556739",,"MasterCard",,"IN",
+"556740",,"MasterCard",,"IN",
+"556742",,"MasterCard",,"IN",
+"556743",,"MasterCard",,"IN",
+"556747",,"MasterCard",,"IN",
+"556754",,"MasterCard",,"IN",
+"556755",,"MasterCard",,"IN",
+"556756",,"MasterCard",,"IN",
+"556758",,"MasterCard",,"IN",
+"556762",,"MasterCard",,"IN",
+"556763",,"MasterCard",,"IN",
+"556764",,"MasterCard",,"IN",
+"556767",,"MasterCard",,"IN",
+"556768",,"MasterCard",,"IN",
+"556769",,"MasterCard",,"IN",
+"556770",,"MasterCard",,"IN",
+"556771",,"MasterCard",,"IN",
+"556772",,"MasterCard",,"IN",
+"556773",,"MasterCard",,"IN",
+"556774",,"MasterCard",,"IN",
+"556775",,"MasterCard",,"IN",
+"556776",,"MasterCard",,"IN",
+"556779",,"MasterCard",,"IN",
+"556783",,"MasterCard",,"IN",
+"556784",,"MasterCard",,"IN",
+"556787",,"MasterCard",,"IN",
+"556790",,"MasterCard",,"IN",
+"556793",,"MasterCard",,"IN",
+"556794",,"MasterCard",,"IN",
+"556795",,"MasterCard",,"IN",
+"556796",,"MasterCard",,"IN",
+"556797",,"MasterCard",,"IN",
+"556798",,"MasterCard",,"IN",
+"556799",,"MasterCard",,"IN",
+"556818",,"MasterCard",,"IN",
+"556819",,"MasterCard",,"IN",
+"556830",,"MasterCard",,"IN",
+"556832",,"MasterCard",,"IN",
+"556833",,"MasterCard",,"IN",
+"556834",,"MasterCard",,"IN",
+"556835",,"MasterCard",,"IN",
+"556836",,"MasterCard",,"IN",
+"556837",,"MasterCard",,"IN",
+"556839",,"MasterCard",,"IN",
+"556843",,"MasterCard",,"IN",
+"556844",,"MasterCard",,"IN",
+"556845",,"MasterCard",,"IN",
+"556847",,"MasterCard",,"IN",
+"556848",,"MasterCard",,"IN",
+"556849",,"MasterCard",,"IN",
+"556852",,"MasterCard",,"IN",
+"556853",,"MasterCard",,"IN",
+"556854",,"MasterCard",,"IN",
+"556855",,"MasterCard",,"IN",
+"556856",,"MasterCard",,"IN",
+"556857",,"MasterCard",,"IN",
+"556858",,"MasterCard",,"IN",
+"556859",,"MasterCard",,"IN",
+"556861",,"MasterCard",,"IN",
+"556863",,"MasterCard",,"IN",
+"556864",,"MasterCard",,"IN",
+"556865",,"MasterCard",,"IN",
+"556867",,"MasterCard",,"IN",
+"556868",,"MasterCard",,"IN",
+"556869",,"MasterCard",,"IN",
+"556884",,"MasterCard",,"IN",
+"556914",,"MasterCard",,"IN",
+"556916",,"MasterCard",,"IN",
+"556933",,"MasterCard",,"IN",
+"556966",,"MasterCard",,"IN",
+"556973",,"MasterCard",,"IN",
+"556974",,"MasterCard",,"IN",
+"556998",,"MasterCard",,"IN",
+"556999",,"MasterCard",,"IN",
+"557554","PLATINUM","MasterCard","debit","IN","PUNJAB NATIONAL BANK"
+"557582","PLATINUM","MasterCard","debit","IN","STATE BANK OF INDIA"
+"557584",,"MasterCard",,"IN",
+"557585","PLATINUM","MasterCard","debit","IN","CORPORATION BANK"
+"557586",,"MasterCard",,"IN",
+"557589","PLATINUM","MasterCard","debit","IN","BANK OF INDIA"
+"557629",,"MasterCard",,"IN",
+"557631",,"MasterCard",,"IN",
+"557632",,"MasterCard",,"IN",
+"557633","PLATINUM","MasterCard","debit","IN","INDIAN BANK"
+"557654","BUSINESS","MasterCard","credit","IN","AXIS BANK, LTD."
+"557664","STANDARD","MasterCard","credit","IN","UNION BANK OF INDIA"
+"557665",,"MasterCard",,"IN",
+"557677","STANDARD","MasterCard","credit","IN","STATE BANK OF INDIA"
+"557684","STANDARD","MasterCard","debit","IN","CORPORATION BANK"
+"557688","STANDARD","MasterCard","debit","IN","CORPORATION BANK"
+"557777",,"MasterCard","credit","IN","CENTRAL BANK OF INDIA"
+"557794",,"MasterCard","credit","IN","ANDHRA BANK"
+"558818","BUSINESS","MasterCard","credit","IN","HDFC BANK, LTD."
+"558853","BUSINESS","MasterCard","credit","IN",
+"558959","WORLD CARD","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"558963","BUSINESS","MasterCard","credit","IN","STANDARD CHARTERED BANK"
+"558983",,"MasterCard",,"IN",
+"559004","BUSINESS","MasterCard","credit","IN","CORPORATION BANK"
+"559300",,"MasterCard",,"IN",
+"559340",,"MasterCard",,"IN",
+"559341",,"MasterCard",,"IN",
+"559344",,"MasterCard",,"IN",
+"559345",,"MasterCard",,"IN",
+"559401",,"MasterCard",,"IN",
+"559426",,"MasterCard",,"IN",
+"559490",,"MasterCard",,"IN",
+"559491",,"MasterCard",,"IN",
+"559492",,"MasterCard",,"IN",
+"559493",,"MasterCard",,"IN",
+"559601",,"MasterCard",,"IN",
+"559602",,"MasterCard",,"IN",
+"559603",,"MasterCard",,"IN",
+"559604",,"MasterCard",,"IN",
+"559605",,"MasterCard",,"IN",
+"559606",,"MasterCard",,"IN",

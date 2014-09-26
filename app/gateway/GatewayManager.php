@@ -2,56 +2,38 @@
 
 namespace Gateway;
 
-class GatewayManager
+use Config;
+use EE\Exception;
+use Gateway\Hdfc;
+
+class GatewayManager extends \Illuminate\Support\Manager
 {
-	protected $gateways = array();
+    public function __construct()
+    {
+        $config = Config::get('gateway');
 
-	protected function createGatewayProvider()
-	{
-		$this->provider = new HDFC();
-	}
+        $this->available = $config['available'];
 
-	protected function gateway($gateway = null)
-	{
-		$gateway = $gateway ?: $this->getDefaultGateway();
+        $this->defaultDriver = $config['default'];
+    }
 
-		if ( ! isset($this->gateways[$gateway]))
-		{
-			$this->gateways[$gateway] = $this->createGateway($gateway);
-		}
+    public function createHdfcDriver()
+    {
+        return new Hdfc\Gateway();
+    }
 
-		return $this->gateways[$gateway];
-	}
+    public function createMockDriver()
+    {
+        return new Mock\Gateway();
+    }
 
-	protected function createGateway($gateway)
-	{
-		$method = 'create'.ucfirst($gateway).'Gateway';
+    public function createMockHdfcDriver()
+    {
+        return new MockHdfc\Gateway();
+    }
 
-		if (method_exists($this, $method))
-		{
-			return $this->$method();
-		}
-
-		throw new \InvalidArgumentException("Gateway $gateway not supported");
-	}
-
-	public function getDefaultGateway()
-	{
-		return 'Hdfc';
-	}
-
-	public function getGateways()
-	{
-		return $gateways;
-	}
-
-	public function createHdfcGateway()
-	{
-		return new HdfcGateway\HdfcGateway();
-	}
-
-	public function __call($method, $parameters)
-	{
-		return call_user_func_array(array($this->gateway(), $method), $parameters);
-	}
+    public function getDefaultDriver()
+    {
+        return $this->defaultDriver;
+    }
 }

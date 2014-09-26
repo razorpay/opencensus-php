@@ -26,7 +26,7 @@ return array(
 	|
 	*/
 
-	'url' => 'http://localhost',
+	'url' => 'http://api.razorpay.com',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -67,6 +67,14 @@ return array(
 
 	'key' => '4dkTd5lWhN40CkSrnyrRBuRMsSX9exXD',
 
+    /*
+     |
+     | Tells whether the application is deployed in amazon's cloud or
+     | running locally
+     |
+     */
+    'cloud' => $_ENV['CLOUD'],
+
 	/*
 	|--------------------------------------------------------------------------
 	| Autoloaded Service Providers
@@ -105,7 +113,10 @@ return array(
 		'Illuminate\Translation\TranslationServiceProvider',
 		'Illuminate\Validation\ValidationServiceProvider',
 		'Illuminate\View\ViewServiceProvider',
-		'Illuminate\Workbench\WorkbenchServiceProvider'
+		'Illuminate\Workbench\WorkbenchServiceProvider',
+        'Maatwebsite\Excel\ExcelServiceProvider',
+        'Http\BasicAuth\ServiceProvider',
+        'Trace\TraceServiceProvider',
 	),
 
 	/*
@@ -171,7 +182,8 @@ return array(
 		'URL'             => 'Illuminate\Support\Facades\URL',
 		'Validator'       => 'Illuminate\Support\Facades\Validator',
 		'View'            => 'Illuminate\Support\Facades\View',
-
+        'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
+        'BasicAuth'       => 'Http\BasicAuth\Facade'
 	),
 
 );
