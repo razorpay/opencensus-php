@@ -14,17 +14,18 @@ class BasicAuth
 {
     /*
      * Basic Auth currently goes as follows:
+     *
      * Public -
      * rzp_mode_keyId:
      *
      * Private -
-     * rzp_mode_keyId:secret
+     * rzp_mode_keyId:merchant_secret
      *
      * Application -
-     * rzp_mode:secret
+     * rzp_mode:app_secret
      *
-     * Applicatoin proxy -
-     * rzp_mode_merchantId:secret
+     * Application proxy -
+     * rzp_mode_merchantId:app_secret
      *
      */
 
@@ -224,7 +225,8 @@ class BasicAuth
         if (($this->request->getHttpHost() === 'api.razorpay.com') and
             ($this->request->secure() === false))
         {
-            return ApiResponse::generateResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
+            return ApiResponse::generateResponse(
+                ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
         }
     }
 
@@ -369,7 +371,7 @@ class BasicAuth
     {
         // Only if the application is deployed in cloud,
         // then verify internal ip
-        if ($this->cloud === false)
+//        if ($this->cloud === false)
             return true;
 
         // Check request is from internal ip
