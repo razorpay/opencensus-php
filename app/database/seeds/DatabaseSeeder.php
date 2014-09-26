@@ -93,6 +93,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::CARD)->insert(
                 array(
                     'id'            =>  '174bdd3e456c8f6f174bdd3e',
+                    'iin'           =>  '123456',
                     'name'          =>  'shk',
                     'expiry_month'  =>  '01',
                     'expiry_year'   =>  '99',
@@ -109,6 +110,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::CARD)->insert(
                 array(
                     'id'            =>  '274bdd3e456c8f6f174bdd3f',
+                    'iin'           =>  '123456',
                     'name'          =>  'shk',
                     'expiry_month'  =>  '01',
                     'expiry_year'   =>  '12',
