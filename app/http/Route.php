@@ -12,19 +12,19 @@ final class Route
 
     protected static $apiRoutes = array(
         'payment_create'                    => ['post', 'payments',                             'PaymentController@postCreatePayment'],
-        'payment_jsonp'                     => ['post', 'payments/jsonp',                       'PaymentController@getJSONP'],
+        'payment_jsonp'                     => ['get',  'payments/create/jsonp',                'PaymentController@getJSONP'],
         'payment_callback'                  => ['post', 'payments/callback/{id}',               'PaymentController@postCallback'],
         'payment_refund'                    => ['post', 'payments/{id}/refund',                 'PaymentController@postRefund'],
         'payment_capture'                   => ['post', 'payments/{id}/capture',                'PaymentController@postCapture'],
         'payment_fetch_by_id'               => ['get',  'payments/{id}',                        'PaymentController@getPayment'],
-        'payment_fetch_multiple'            => ['get',  'payments/{param?}',                    'PaymentController@getPayments'],
+        'payment_fetch_multiple'            => ['get',  'payments',                             'PaymentController@getPayments'],
         'payment_fetch_refunds'             => ['get',  'payments/{id}/refunds',                'PaymentController@getRefundsForPayment'],
         'payment_fetch_refund_by_id'        => ['get',  'payments/{paymentId}/refunds/{rfndId}','PaymentController@getRefundByRefundAndPaymentId'],
         'refund_fetch_by_id'                => ['get',  'refunds/{id}',                         'PaymentController@getRefund'],
-        'refund_fetch_multiple'             => ['get',  'refunds/{param?}',                     'PaymentController@getRefunds'],
+        'refund_fetch_multiple'             => ['get',  'refunds',                              'PaymentController@getRefunds'],
         'merchant_create'                   => ['post', 'merchants',                            'MerchantController@postCreateMerchant'],
         'merchant_fetch'                    => ['get',  'merchants/{id}',                       'MerchantController@getMerchant'],
-        'merchant_fetch_multiple'           => ['get',  'merchants/{param?}',                   'MerchantController@getMerchants'],
+        'merchant_fetch_multiple'           => ['get',  'merchants',                            'MerchantController@getMerchants'],
         'merchant_create_key'               => ['post', 'merchants/{id}/keys',                  'MerchantController@postCreateKeys'],
         'merchant_fetch_keys'               => ['get',  'merchants/{id}/keys',                  'MerchantController@getKeys'],
         'merchant_replace_key'              => ['put',  'merchants/{merchantId}/keys/{keyId}',  'MerchantController@putKeys'],
@@ -43,9 +43,9 @@ final class Route
         'pricing_get_plan_rule'             => ['get',  'pricing/{planId}/rule/{ruleId}',       'PricingController@getPricingPlanRule'],
         'pricing_add_plan_rule'             => ['post', 'pricing/{id}/rule',                    'PricingController@postAddPricingPlanRule'],
         'transaction_fetch_by_id'           => ['get',  'transactions/{id}',                    'SettlementController@getTransactionRecord'],
-        'transaction_fetch_multiple'        => ['get',  'transactions/{param?}',                'SettlementController@getTransactionRecords'],
+        'transaction_fetch_multiple'        => ['get',  'transactions',                         'SettlementController@getTransactionRecords'],
         'setl_fetch_by_id'                  => ['get',  'settlements/{id}',                     'SettlementController@getSettlement'],
-        'setl_fetch_multiple'               => ['get',  'settlements/{param?}',                 'SettlementController@getSettlements'],
+        'setl_fetch_multiple'               => ['get',  'settlements',                          'SettlementController@getSettlements'],
         'hdfc_mpr_reconcile'                => ['post', 'gateway/mpr/reconcile',                'SettlementController@postGatewayMprReconcile'],
         'hdfc_mpr_generate'                 => ['post', 'gateway/mpr/generate',                 'SettlementController@postGatewayMprGenerate'],
         'setl_initiate'                     => ['post', 'settlements/initiate',                 'SettlementController@postSettlementInitiate'],
@@ -105,8 +105,7 @@ final class Route
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
         'setl_fetch_by_id',
-        'setl_fetch_multiple'
-        );
+        'setl_fetch_multiple');
 
     protected static $router;
 
@@ -123,12 +122,11 @@ final class Route
         return $doNotLogUrls;
     }
 
-    public static function isJsonpRoute($route)
+    public static function isJsonpRoute($routeName)
     {
-        $jsonpRoute = array(
-            self::$apiRoutes['payment_jsonp'][1]);
+        $jsonpRoute = array('payment_jsonp');
 
-        return in_array($route, $jsonpRoute);
+        return in_array($routeName, $jsonpRoute);
     }
 
     protected static function addRoutes($type)
