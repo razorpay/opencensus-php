@@ -18,7 +18,8 @@ class ApiResponse
     {
         self::$jsonp = false;
 
-        $response = self::generateResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
+        $response = self::generateResponse(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
         $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
 

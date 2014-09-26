@@ -7,6 +7,7 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Hash;
 use Http\ApiResponse;
+use Http\Route;
 use Models\Key;
 use Models\Merchant;
 
@@ -94,11 +95,18 @@ class BasicAuth
      */
     protected $internalAppConfigs;
 
+    /**
+     * Current route name
+     * @var string
+     */
+    protected $routeName;
+
     public function init($app)
     {
         $this->request = $app['request'];
         $this->internalAppConfigs = $app['config']->get('applications');
         $this->cloud = $app['config']->get('app.cloud');
+        $this->routeName = $app['router']->currentRouteName();
     }
 
     public function setCredentials()
@@ -352,13 +360,30 @@ class BasicAuth
 
     /**
      * Verify the request is made by an internal app
-     * Verifies client ip and then matches the app secret
      * @return boolean
      */
     protected function verifyInternalApp()
     {
-        return (($this->verifyClientIpInternal()) and
-                ($this->verifyInternalAppSecret()));
+        if ($this->verifyInternalAppSecret() === false)
+        {
+            return false;
+        }
+
+        $app = $this->internalApp;
+
+        $appRoutes = Route::$internalApps[$this->internalApp];
+
+        if (in_array('*', $appRoutes))
+        {
+            return true;
+        }
+
+        if (in_array($this->routeName, $appRoutes) === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -371,7 +396,7 @@ class BasicAuth
     {
         // Only if the application is deployed in cloud,
         // then verify internal ip
-//        if ($this->cloud === false)
+        if ($this->cloud === false)
             return true;
 
         // Check request is from internal ip
@@ -382,11 +407,6 @@ class BasicAuth
         return preg_match($clientIpRegex, $clientIp);
     }
 
-    /**
-     * Verifies the secret given against the list of
-     * app secrets
-     * @return boolean
-     */
     protected function verifyInternalAppSecret()
     {
         $secret = $this->getSecret();
@@ -402,6 +422,12 @@ class BasicAuth
                 $verify = true;
 
                 $this->internalApp = $name;
+
+                if ((isset($info['cloud'])) and
+                    ($info['cloud'] === true))
+                {
+                    $verify = $this->verifyClientIpInternal();
+                }
 
                 break;
             }
