@@ -17,7 +17,7 @@ class Settler
 
     protected $txnRepo;
 
-    protected $merchRepo;
+    protected $merchantRepo;
 
     protected $settlements;
 
@@ -73,7 +73,7 @@ class Settler
         }
 
         $merchantId = $txns->first()->getMerchantId();
-        $merchant = $this->merchRepo->findOrFail($merchantId);
+        $merchant = $this->merchantRepo->findOrFail($merchantId);
         $amount = 0;
 
         foreach ($txns->all() as $txn)
@@ -84,7 +84,7 @@ class Settler
                 $settlements->push($setl);
 
                 $merchantId = $txn->getMerchantId();
-                $merchant = $this->merchRepo->findOrFail($merchantId);
+                $merchant = $this->merchantRepo->findOrFail($merchantId);
                 $amount = 0;
             }
 
@@ -103,6 +103,37 @@ class Settler
     {
         $setlTransaction = $this->createSettlementTransaction($merchant, $amount);
 
+        $setl = $this->createSettlementEntity($merchant, $amount, $setlTransaction);
+
+        $this->updateBalances($merchant, $setlTransaction);
+
+        $this->txnRepo->save($setlTransaction);
+        $this->setlRepo->save($setl);
+
+        return $setl;
+    }
+
+    protected function updateBalances($merchant, $setlTransaction)
+    {
+        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate();
+        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate(
+                                                    $merchant->getKey());
+
+        $merchantBalance->subAmount($setlTransaction['debit']);
+        $this->merchantRepo->save($merchantBalance);
+
+        $nodalBalance->subAmount($setlTransaction['debit']);
+        $this->merchantRepo->save($nodalBalance);
+
+        $attributes = array(
+            Transaction\Entity::BALANCE => $merchantBalance->getBalance(),
+            Transaction\Entity::ESCROW_BALANCE => $nodalBalance->getBalance());
+
+        $setlTransaction->fill($attributes);
+    }
+
+    protected function createSettlementEntity($merchant, $amount, $setlTransaction)
+    {
         $attributes = array(
             Settlement\Entity::AMOUNT           => $amount,
             Settlement\Entity::MERCHANT_ID      => $merchant->getKey(),
@@ -112,16 +143,11 @@ class Settler
         $setl = (new Settlement\Entity)->fill($attributes);
         $setl->generateId();
 
-        $merchantBalance = $this->merchRepo->getBalanceLockForUpdate($merchant->getKey());
-        $merchantBalance->subAmount($setlTransaction['debit']);
+        $attributes = array(
+            Transaction\Entity::ENTITY_ID => $setl->getKey(),
+            Transaction\Entity::ENTITY_TYPE => 'settlement');
 
-        $setlTransaction->setAttribute(Transaction\Entity::ENTITY_ID, $setl->getKey());
-        $setlTransaction->setAttribute(Transaction\Entity::BALANCE, $merchantBalance->getBalance());
-
-        $this->txnRepo->save($setlTransaction);
-        $this->setlRepo->save($setl);
-        $this->merchRepo->save($merchantBalance);
-
+        $setlTransaction->fill($attributes);
         return $setl;
     }
 
@@ -136,7 +162,6 @@ class Settler
             Transaction\Entity::CURRENCY => 'INR',
             Transaction\Entity::GATEWAY_FEE => 0,
             Transaction\Entity::API_FEE => 0,
-            Transaction\Entity::ESCROW_BALANCE => 0,
             Transaction\Entity::SETTLED_AT => time(),
             Transaction\Entity::FEE => 0,
             Transaction\Entity::AMOUNT => $amount,
@@ -170,7 +195,7 @@ class Settler
     {
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
-        $this->merchRepo = new Merchant\Repository;
+        $this->merchantRepo = new Merchant\Repository;
     }
 
     protected function initSettlementTimestamp($input)

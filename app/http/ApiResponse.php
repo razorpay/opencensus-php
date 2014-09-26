@@ -111,9 +111,9 @@ class ApiResponse
 
         $jsonp = false;
 
-        $path = $request->path();
+        $routeName = \Route::currentRouteName();
 
-        if (self::isJsonpRequired($path))
+        if (self::isJsonpRequired($routeName))
         {
             $data['http_status_code'] = $status;
 
@@ -134,10 +134,10 @@ class ApiResponse
         return $response;
     }
 
-    protected static function isJsonpRequired($path)
+    protected static function isJsonpRequired($routeName)
     {
         self::$jsonp = ((self::$jsonp !== false) and
-                        (Route::isJsonpRoute($path)));
+                        (Route::isJsonpRoute($routeName)));
 
         return self::$jsonp;
     }

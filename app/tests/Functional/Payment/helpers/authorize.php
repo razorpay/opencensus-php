@@ -6,6 +6,26 @@ use EE\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
+    'testJsonpPayment' =>[
+        'request' => [
+            'url' => '/payments/create/jsonp',
+            'method' => 'GET',
+            'content' => [
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'amount' => 50000,
+                'status' => 'authorized',
+                'refund_status' => 'none',
+            ]
+        ],
+        'jsonp' => true
+    ],
+
     'testInvalidEmailInPayment' => [
         'request' => [
             'content' => [

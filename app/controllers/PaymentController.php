@@ -70,8 +70,8 @@ class PaymentController extends BaseController
     }
 
     /**
-    * Refund a payment.
-    */
+     * Refund a payment.
+     */
     public function postRefund($id)
     {
         $input = Input::all();
@@ -82,8 +82,7 @@ class PaymentController extends BaseController
     }
 
     /**
-     * Captures a specific payment which was
-     * auth earlier
+     * Captures an authorized payment
      */
     public function postCapture($id)
     {

@@ -28,6 +28,11 @@ class AuthorizeTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
     }
 
+    public function testJsonpPayment()
+    {
+        $content = $this->startTest();
+    }
+
     public function testInvalidEmailInPayment()
     {
         $this->startTest();
@@ -188,6 +193,6 @@ class AuthorizeTest extends TestCase
 
         $testData['request']['content'] = $this->payment;
 
-        $this->runRequestResponseFlow($testData);
+        return $this->runRequestResponseFlow($testData);
     }
 }

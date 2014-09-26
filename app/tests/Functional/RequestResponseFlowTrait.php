@@ -41,10 +41,51 @@ trait RequestResponseFlowTrait
         return $this->processAndAssertResponseData($data, $response);
     }
 
+    protected function processJsonIfJsonp($data, & $content)
+    {
+        if ($data['jsonp'] === false)
+        {
+            return;
+        }
+
+        $this->assertArrayHasKey('callback', $data['request']['content'], 'Please define callback param for jsonp');
+
+        $callback = $data['request']['content']['callback'];
+
+        $start = '/**/'.$callback.'(';
+        $end = ');';
+
+        $ix = strlen($start);
+
+        if ((substr($content, 0, $ix) === $start) and
+            (substr($content, -2) === $end))
+        {
+            $ix = strlen($start);
+            $content = substr($content, $ix, -2);
+        }
+        else
+        {
+            $this->fail('Not a valid jsonp response');
+        }
+
+        return $content;
+    }
+
+    protected function  checkStatusCodeIfJsonp(& $content, $statusCode = '200')
+    {
+        $this->assertArrayHasKey('http_status_code', $content);
+
+        $this->assertEquals($content['http_status_code'], $statusCode);
+
+        unset($content['http_status_code']);
+    }
+
     protected function checkException($e, $data)
     {
         if (isset($data['exception']) === false)
+        {
             throw $e;
+        }
     }
 
     public function processAndAssertException($actual, $expected)
@@ -62,11 +103,15 @@ trait RequestResponseFlowTrait
     {
         $content = $response->getContent();
 
+        $this->processJsonIfJsonp($data, $content);
+
         $this->assertJson($content);
 
         $actualContent = json_decode($content, true);
 //s($actualContent);
         $expectedContent = $data['response']['content'];
+
+        $this->checkStatusCodeIfJsonp($actualContent);
 
         $this->assertArraySelectiveEquals($expectedContent, $actualContent);
 
