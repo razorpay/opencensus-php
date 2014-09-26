@@ -54,7 +54,7 @@ return [
     'testPrivateAuthOnPublicRoute' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/payments/jsonp',
+            'url' => '/payments/callback/abcd',
         ],
         'response' => [
             'content' => [

@@ -43,7 +43,8 @@ trait RequestResponseFlowTrait
 
     protected function processJsonIfJsonp($data, & $content)
     {
-        if ($data['jsonp'] === false)
+        if ((isset($data['json']) === false) or
+            ($data['jsonp'] === false))
         {
             return;
         }
@@ -73,6 +74,12 @@ trait RequestResponseFlowTrait
 
     protected function  checkStatusCodeIfJsonp(& $content, $statusCode = '200')
     {
+        if ((isset($data['json']) === false) or
+            ($data['jsonp'] === false))
+        {
+            return;
+        }
+
         $this->assertArrayHasKey('http_status_code', $content);
 
         $this->assertEquals($content['http_status_code'], $statusCode);
@@ -101,14 +108,8 @@ trait RequestResponseFlowTrait
 
     protected function processAndAssertResponseData($data, $response)
     {
-        $content = $response->getContent();
+        $actualContent = $this->getContentFromResponse($data, $response);
 
-        $this->processJsonIfJsonp($data, $content);
-
-        $this->assertJson($content);
-
-        $actualContent = json_decode($content, true);
-//s($actualContent);
         $expectedContent = $data['response']['content'];
 
         $this->checkStatusCodeIfJsonp($actualContent);
@@ -116,6 +117,17 @@ trait RequestResponseFlowTrait
         $this->assertArraySelectiveEquals($expectedContent, $actualContent);
 
         return $actualContent;
+    }
+
+    protected function getContentFromResponse($data, $response)
+    {
+        $content = $response->getContent();
+
+        $this->processJsonIfJsonp($data, $content);
+
+        $this->assertJson($content);
+
+        return json_decode($content, true);
     }
 
     protected function processAndAssertStatusCode($data, $response)
