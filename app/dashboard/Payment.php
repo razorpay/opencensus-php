@@ -6,7 +6,7 @@ use Models\Payment\Entity as PaymentEntity;
 
 class Payment extends Dashboard
 {
-    protected static $resource = 'payments';
+    protected static $resource = 'payment';
 
     /**
      * Any changes to this array
@@ -18,7 +18,6 @@ class Payment extends Dashboard
     protected static $fields = array(
         PaymentEntity::MERCHANT_ID,
         PaymentEntity::AMOUNT,
-        PaymentEntity::STATUS,
         PaymentEntity::CREATED_AT,
         PaymentEntity::UPDATED_AT);
 }
