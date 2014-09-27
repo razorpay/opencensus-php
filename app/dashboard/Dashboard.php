@@ -61,8 +61,12 @@ class Dashboard
         return $data;
     }
 
-    public function queueRecord($data = array())
-    {
+    public function queueRecord($entity)
+    {   
+        $data = array_merge(
+                    $entity->toArray(),
+                    ['merchant_id' => $entity->getMerchantId()]);
+
         $data = static::validateAndBuild($data);
 
         Queue::push('Dashboard\Dashboard@postRequest', array(
