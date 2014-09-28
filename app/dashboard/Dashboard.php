@@ -40,6 +40,11 @@ class Dashboard
         return $this->config['url'];
     }
 
+    protected function getAuthSecret()
+    {
+        return $this->config['secret'];
+    }
+
     public static function getInstance()
     {
         return new static;
@@ -56,8 +61,12 @@ class Dashboard
         return $data;
     }
 
-    public function queueRecord($data = array())
-    {
+    public function queueRecord($entity)
+    {   
+        $data = array_merge(
+                    $entity->toArray(),
+                    ['merchant_id' => $entity->getMerchantId()]);
+
         $data = static::validateAndBuild($data);
 
         Queue::push('Dashboard\Dashboard@postRequest', array(
@@ -70,10 +79,13 @@ class Dashboard
     {
         $mode = \BasicAuth::getMode();
 
+        $options = array('auth'=> array('rzp_api', $this->getAuthSecret()));
+
         $response = Requests::post(
-            $this->getUrl() . $mode . '/' . $data['resource'],
+            $this->getUrl() . $mode . '/transactions/' . $data['resource'],
             array(),
-            $data['message']
+            $data['message'],
+            $options
         );
 
         //
@@ -82,7 +94,11 @@ class Dashboard
         //
         if (!is_object(json_decode($response->body)) ||
             json_decode($response->body)->status === FALSE)
-                (new Repository)->persistAfterFail($data['message']);
+        {
+            (new Repository)->persistAfterFail($data['message']);
+            
+            return;
+        }
 
         $job->delete();
     }

@@ -5,6 +5,7 @@ namespace Models\Payment;
 use Models\Merchant;
 use Models\Payment;
 use Trace\TraceCode;
+use Dashboard\Payment as PaymentAnalytics;
 
 class Capture extends Action
 {
@@ -36,7 +37,7 @@ class Capture extends Action
             //
             // Analytics
             //
-            $this->dashboardQueueRecord($payment);
+            (new PaymentAnalytics)->queueRecord($this->payment);
         }
         catch (BaseException $e)
         {
