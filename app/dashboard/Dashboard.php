@@ -61,18 +61,29 @@ class Dashboard
         return $data;
     }
 
-    public function queueRecord($entity)
+    public function queueRecord($data)
     {   
-        $data = array_merge(
-                    $entity->toArray(),
-                    ['merchant_id' => $entity->getMerchantId()]);
+        if(is_a($data, 'Models\\Base\\PublicCollection') === true)
+        {
+            foreach($data as $entity)
+            {
+                //Recursively call this function for each entity in collection
+                $this->queueRecord($entity);
+            }
+        }
+        elseif(is_a($data, 'Models\\Base\\PublicEntity') === true)
+        {
+            $data = array_merge(
+                    $data->toArray(),
+                    ['merchant_id' => $data->getMerchantId()]);
 
-        $data = static::validateAndBuild($data);
+            $data = static::validateAndBuild($data);
 
-        Queue::push('Dashboard\Dashboard@postRequest', array(
-            'resource'  =>  static::$resource,
-            'message'   =>  $data
-        ));
+            Queue::push('Dashboard\Dashboard@postRequest', array(
+                'resource'  =>  static::$resource,
+                'message'   =>  $data
+            ));
+        }
     }
 
     public function postRequest($job, $data)
