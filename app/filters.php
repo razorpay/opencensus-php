@@ -62,8 +62,8 @@ Route::filter('superadmin', function()
 
 Route::filter('auth.internal', function()
 {
-	if ($_SERVER['REMOTE_ADDR'] !== $_SERVER['SERVER_ADDR'] || $_SERVER['REMOTE_ADDR'] !== \Config::get('api.ip'))
-		return Response::view('error.401', array(), 401);
+	if ($_SERVER['PHP_AUTH_USER'] !== \Config::get('api.auth_user') or $_SERVER['PHP_AUTH_PW'] !== \Config::get('api.auth_pass'))
+		return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
 });
 
 /*
