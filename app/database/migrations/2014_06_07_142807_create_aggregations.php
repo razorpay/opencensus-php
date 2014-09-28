@@ -32,6 +32,8 @@ class CreateAggregations extends Migration {
 
             $table->char('mode', 4);
 
+            $table->string('resource');
+
             $table->integer('created_at');
             $table->integer('updated_at');
 
