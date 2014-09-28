@@ -40,6 +40,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
     {
         $data = \DB::table('aggregations')
                     ->where('merchant_id','=',$data['merchant_id'])
+                    ->where('resource','=',$data['resource'])
                     ->where('mode','=',$mode)
                     ->first();
         return $data;
@@ -54,8 +55,10 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             'txn_count'             =>  1,
             'created_at'            =>  $data['updated_at'],
             'updated_at'            =>  $data['updated_at'],
+            'resource'              =>  $data['resource'],
             'mode'                  =>  $mode
         );
+
         \DB::table('aggregations')->insert($obj);
     }
 
@@ -69,6 +72,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         );
         \DB::table('aggregations')
             ->where('merchant_id','=',$data['merchant_id'])
+            ->where('resource','=',$data['resource'])
             ->where('mode', '=', $mode)
             ->update($obj);
     }

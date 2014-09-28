@@ -153,5 +153,5 @@ Route::group(array('before' => 'guest_admin'), function()
 
 Route::group(array('before' => 'auth.internal'), function()
 {
-    Route::post('/{mode}/transactions', 'TransactionController@postIndex');
+    Route::post('/{mode}/transactions/{resource}', 'TransactionController@postIndex');
 });

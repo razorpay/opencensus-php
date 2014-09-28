@@ -71,29 +71,24 @@ class Transaction extends Service
 
         if (empty($error))
         {
-            switch ($data['status'])
+            $this->aggregate($data, $mode);
+
+            //Only Payments analytics are stored
+            if($data['resource'] === "payment")
             {
-                case 'captured':
+                unset($data['resource']);
 
-                    $this->aggregate($data, $mode);
+                foreach (static::$timeIntervals as $type => $interval)
+                {
+                    $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type, $mode);
 
-                    foreach (static::$timeIntervals as $type => $interval)
-                    {
-                        $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type, $mode);
-
-                        if (NULL === $obj || strtotime($obj->created_at) < ($data['updated_at'] - $interval))
-                            $this->create($data, $type, $mode);
-                        else
-                            $this->update($data, $obj);
-                    }
-
-                    return true;
-                    break;
-
-                default:
-                    return false;
-                    break;
+                    if (NULL === $obj || ((int)($obj->created_at) + $interval <= $data['updated_at']))
+                        $this->create($data, $type, $mode);
+                    else
+                        $this->update($data, $obj);
+                }
             }
+            return true;
         }
         else
             return false;
@@ -118,6 +113,7 @@ class Transaction extends Service
         }
         $data['type'] = $type;
         $data['mode'] = $mode;
+
         DAL\Transaction::createOrFail($data);
     }
 

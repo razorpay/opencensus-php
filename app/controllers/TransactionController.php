@@ -6,11 +6,13 @@ use Http\AppResponse;
 
 class TransactionController extends BaseController
 {
-    public function postIndex($mode)
+    public function postIndex($mode, $resource)
     {
         $this->checkMode($mode);
 
         $input = Input::all();
+
+        $input['resource'] = $resource;
 
         $status = (new Service\Transaction)->process($input, $mode);
 
