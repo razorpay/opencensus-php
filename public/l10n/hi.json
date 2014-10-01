@@ -8,9 +8,10 @@
     "nav" : {
       "HEADER" : "सुविधाएँ",
       "DASHBOARD" : "डैशबोर्ड",
-      "TRANSACTIONS" : "लेनदेन",
+      "PAYMENTS" : "भुगतान",
       "REFUNDS" : "वापसी",
-      "SETTLEMENTS" : "भुगतान",
+      "SETTLEMENTS" : "समाशोधन",
+      "TRANSACTIONS" : "लेनदेन",
       "settings" : {
         "SETTINGS": "सेटिंग्स",
         "API_KEYS": "एपीआई चाबी",
