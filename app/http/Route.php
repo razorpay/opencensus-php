@@ -20,6 +20,7 @@ final class Route
         'payment_fetch_multiple'            => ['get',  'payments',                                 'PaymentController@getPayments'],
         'payment_fetch_refunds'             => ['get',  'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'],
         'payment_fetch_refund_by_id'        => ['get',  'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'],
+        'payment_auth_expire'               => ['post', 'payments/auth/expire',                     'PaymentController@postAuthExpire'],
         'refund_fetch_by_id'                => ['get',  'refunds/{id}',                             'PaymentController@getRefund'],
         'refund_fetch_multiple'             => ['get',  'refunds',                                  'PaymentController@getRefunds'],
         'merchant_create'                   => ['post', 'merchants',                                'MerchantController@postCreateMerchant'],

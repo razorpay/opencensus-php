@@ -141,6 +141,15 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    public function expireAuthorizations()
+    {
+        $timestamp = time() - 30 * 60;
+
+        $count = (new Payment\Repository)->expireAuthorizedPayments($timestamp);
+
+        return array('count' => $count);
+    }
+
     protected function getActionInstance($action)
     {
         $bindings = array(

@@ -49,4 +49,13 @@ class Repository extends Base\Repository
 
         $repo::lockForUpdate()->findOrFail($id);
     }
+
+    public function expireAuthorizedPayments($timestmap)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
+                    ->where(Payment\Entity::CREATED_AT, '<', $timestamp)
+                    ->update(array(Payment\Entity::STATUS => 'authorization_expired'));
+    }
 }

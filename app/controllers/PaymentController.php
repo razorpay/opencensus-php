@@ -153,4 +153,11 @@ class PaymentController extends BaseController
 
         return ApiResponse::json($refunds);
     }
+
+    public function postAuthExpire()
+    {
+        $data = $this->payment->expireAuthorizations();
+
+        return ApiResponse::json($data);
+    }
 }
