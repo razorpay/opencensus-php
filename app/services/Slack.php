@@ -19,31 +19,28 @@ class Slack
 
     protected $instance;
 
-    public function __construct()
+    public function __construct($app)
     {
-        $this->env = \App::environment();
+        $this->env = $app['env'];
 
-        $this->initSlackConfig();
+        $slackConfig = $app['config']->get('slack');
+        $this->initSlackConfig($slackConfig);
 
-        $this->initInstanceData();
+        $this->initInstanceData($app);
     }
 
-    protected function initSlackConfig()
+    protected function initSlackConfig($config)
     {
-        $config = \Config::get('slack');
-
         $this->token = $config['token'];
         $this->team = $config['team'];
         $this->pretend = $config['pretend'];
     }
 
-    protected function initInstanceData()
+    protected function initInstanceData($app)
     {
-        $app = \App::getFacadeRoot();
-
         $this->instanceId = $app['instance']->getInstanceId();
 
-        $this->cloud = \Config::get('app.cloud');
+        $this->cloud = $app['config']->get('app.cloud');
     }
 
     /**
@@ -61,6 +58,12 @@ class Slack
             'username' => $username);
 
         $content = array('payload' => json_encode($payload));
+
+        if ($this->token === null)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Slack token is null. Provide a meaninful token');
+        }
 
         $url = sprintf($this->url, $this->team, $this->token);
 

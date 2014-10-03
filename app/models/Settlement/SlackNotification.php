@@ -8,6 +8,8 @@ class SlackNotification
 {
     protected $queue;
 
+    protected $slack;
+
     protected $operations = array(
         'mpr_generation',
         'mpr_reconciliation',
@@ -51,6 +53,7 @@ class SlackNotification
 
         $job->delete();
 
-        (new \Services\Slack)->send($message, $channel, $username);
+        $app = \App::getFacadeRoot();
+        $app['slack']->send($message, $channel, $username);
     }
 }
