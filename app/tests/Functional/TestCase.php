@@ -52,7 +52,7 @@ class TestCase extends ParentTestCase
         $this->loadTestData();
 
         // Enable filters
-        Route::enableFilters();
+        $this->app['router']->enableFilters();
     }
 
     public function tearDown()
@@ -70,6 +70,8 @@ class TestCase extends ParentTestCase
 
         DB::disconnect('live');
         DB::disconnect('test');
+
+        parent::tearDown();
     }
 
     protected function loadTestData()

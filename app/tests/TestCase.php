@@ -2,6 +2,8 @@
 
 namespace Tests;
 
+use Mockery;
+
 /**
  * Base test case class provided bdy laravel all, test cases inherit it
  * ALl test cases follow, GIVEN, WHEN, THEN structure
@@ -28,5 +30,14 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
     public function setUp()
     {
         parent::setUp();
+
+        $this->config = $this->app['config'];
+    }
+
+    public function tearDown()
+    {
+        Mockery::close();
+
+        parent::tearDown();
     }
 }

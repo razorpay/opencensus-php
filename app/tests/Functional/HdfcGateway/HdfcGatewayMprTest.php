@@ -4,6 +4,7 @@ namespace Tests\Functional\HdfcGateway;
 
 use Carbon\Carbon;
 use Config;
+use Mockery;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Tests\Functional\Payment\PaymentAuthFlowTrait;
 use Tests\Functional\RequestResponseFlowTrait;
@@ -27,15 +28,41 @@ class HdfcGatewayMprTest extends TestCase
 
     public function testUploadMpr()
     {
+        $this->mockSlack();
+
+        // Create payments
         $payments = $this->createPaymentEntities();
 
+        // Generate the mpr file for above payments
         $mprFile = $this->generateMpr();
 
+        // Upload the generate mpr file for reconciliation
         $this->uploadMpr($mprFile);
 
+        // Check the txns corresponding to above payments after
+        // reconciliation
         $txns = $this->matchTransactions($payments);
 
+        // Generate settlements for above transactions
         $this->generateSettlements($txns);
+    }
+
+    protected function mockSlack()
+    {
+        $slackPretend = $this->config->get('slack.pretend');
+
+        if ($slackPretend === false)
+        {
+            return;
+        }
+
+        $slack = Mockery::mock('Services\Slack');
+
+        $this->app->instance('slack', $slack);
+
+        $slack->shouldReceive('send')
+              ->times(3)
+              ->with(Mockery::type('string'), '#settlements', 'settlements');
     }
 
     protected function generateSettlements($txns)
