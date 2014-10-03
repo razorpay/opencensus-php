@@ -23,7 +23,8 @@
     ],
     "require-dev": {
         "raveren/kint": ">=0.9",
-        "laracasts/testdummy": "1.*"
+        "laracasts/testdummy": "1.*",
+        "mockery/mockery": "*"
     },
     "autoload": {
         "classmap": [
