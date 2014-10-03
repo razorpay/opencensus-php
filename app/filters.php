@@ -24,9 +24,10 @@ App::after(function($request, $response)
 {
 	//This is necessary for protection against json/jsonp array vulnerability
 	//Refer https://docs.angularjs.org/api/ng/service/$http JSON Vulnerability Protection
-	if($response instanceof \Illuminate\Http\JsonResponse) {
+	if ($response instanceof \Illuminate\Http\JsonResponse)
+    {
         $json = ")]}',\n" . $response->getContent();
-    
+
         return $response->setContent($json);
     }
 });
@@ -44,26 +45,35 @@ App::after(function($request, $response)
 
 Route::filter('auth', function()
 {
-	if (Auth::merchant()->guest()) 
+	if (Auth::merchant()->guest())
+    {
 		return Response::json(array('success' => false, 'data' => array()));
+    }
 });
 
 Route::filter('auth_admin', function()
 {
-	if (Auth::admin()->guest()) 
+	if (Auth::admin()->guest())
+    {
 		return Response::json(array('success' => false, 'data' => array()));
+    }
 });
 
 Route::filter('superadmin', function()
 {
     if (Auth::admin()->user()->isSuperAdmin() === false)
+    {
         return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
+    }
 });
 
-Route::filter('auth.internal', function()
+Route::filter('auth.internal', function() use ($app)
 {
-	if ($_SERVER['PHP_AUTH_USER'] !== \Config::get('api.auth_user') or $_SERVER['PHP_AUTH_PW'] !== \Config::get('api.auth_pass'))
+	if (($_SERVER['PHP_AUTH_USER'] !== \Config::get('api.auth_user')) or
+        ($_SERVER['PHP_AUTH_PW'] !== \Config::get('api.auth_pass')))
+    {
 		return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
+    }
 });
 
 /*
@@ -79,14 +89,20 @@ Route::filter('auth.internal', function()
 
 Route::filter('guest', function()
 {
-	if (Auth::merchant()->check())  
-		return AppResponse::jsonResponse(array("You are already logged in, please refresh and try again"));
+	if (Auth::merchant()->check())
+    {
+		return AppResponse::jsonResponse(
+            array("You are already logged in, please refresh and try again"));
+    }
 });
 
 Route::filter('guest_admin', function()
 {
-	if (Auth::admin()->check()) 
-		return AppResponse::jsonResponse(array("You are already logged in, please refresh and try again"));
+	if (Auth::admin()->check())
+    {
+		return AppResponse::jsonResponse(
+            array("You are already logged in, please refresh and try again"));
+    }
 });
 
 /*
@@ -102,7 +118,14 @@ Route::filter('guest_admin', function()
 
 Route::filter('csrf', function()
 {
-    //Angular sends X-XSRF-TOKEN header with all request because XSRF-TOKEN cookie is set in after filter   
-	if (!Request::header('X-XSRF-TOKEN') or (Session::token() !== Crypt::decrypt(Request::header('X-XSRF-TOKEN'))))
-		return AppResponse::jsonResponse(array('Invalid session. Please refresh the page and try again.'));
+    //
+    // Angular sends X-XSRF-TOKEN header with all request because
+    // XSRF-TOKEN cookie is set in after filter
+    //
+	if ((Request::header('X-XSRF-TOKEN') === false) or
+        (Session::token() !== Crypt::decrypt(Request::header('X-XSRF-TOKEN'))))
+    {
+		return AppResponse::jsonResponse(
+            array('Invalid session. Please refresh the page and try again.'));
+    }
 });

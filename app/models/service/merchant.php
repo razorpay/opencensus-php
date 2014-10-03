@@ -12,7 +12,7 @@ class Merchant extends Service
         list($error, $data) = Manager\Merchant::createValidate($input, 'register')->getData();
 
         if (empty($error))
-        {   
+        {
             $merchant = DAL\Merchant::createOrFail($data);
 
             $merchant_details = DAL\MerchantDetails::createOrFail(array('merchant_id'=>$merchant->id));
@@ -30,7 +30,7 @@ class Merchant extends Service
         list($error, $data) = Manager\Merchant::createValidate($input, 'password')->getData();
 
         if (empty($error))
-        {   
+        {
             $merchant = \Auth::merchant()->user();
 
             $old_password = $data['old_password'];
@@ -85,26 +85,26 @@ class Merchant extends Service
     {
         list($error, $data) = Manager\Merchant::createValidate($input, 'login')->getData();
 
-        if (empty($error)) 
-        {      
+        if (empty($error))
+        {
             $credentials = array(
                 'email'     => $data['email'],
                 'password'  => $input['password']
             );
 
-            if(\Auth::merchant()
-                        ->attempt($credentials + array('confirm_token' => Null))) 
+            if (\Auth::merchant()
+                        ->attempt($credentials + array('confirm_token' => Null)))
             {
                 return [array(), $data];
             }
-            elseif(\Auth::merchant()->validate($credentials))
+            elseif (\Auth::merchant()->validate($credentials))
             {
                 $error = 'notactivated';
 
                 return [[$error], $data];
             }
         }
-        
+
         return [['Email or password is invalid.'], $data];
     }
 
@@ -112,29 +112,29 @@ class Merchant extends Service
     {
         list($error, $data) = Manager\Merchant::createValidate($input, 'login')->getData();
 
-        if (empty($error)) 
-        {      
+        if (empty($error))
+        {
             $credentials = array(
                 'email'     => $data['email'],
                 'password'  => $input['password']
             );
 
-            if(\Auth::merchant()
-                        ->once($credentials)) 
+            if (\Auth::merchant()
+                        ->once($credentials))
             {
                 $merchant = \Auth::merchant()->get();
 
-                if($merchant->confirm_token === NULL)
+                if ($merchant->confirm_token === null)
                 {
                     return [['Merchant already confirmed. You can login <a href="'.\URL::to('#/access/signin').'">here</a>'], $data];
                 }
 
                 \Queue::push('MerchantController@sendConfirmationMail',array('merchant' => $merchant->generateEmailData()));
-                
+
                 return [[], $data];
             }
         }
-        
+
         return [['Email or password is invalid.'], $data];
     }
 
@@ -192,7 +192,7 @@ class Merchant extends Service
             $this->setApiCredentials(null, $mode);
 
             $key_data= array();
-            
+
             try
             {
                 $response = $this->api->merchant
@@ -201,7 +201,7 @@ class Merchant extends Service
                                     ->fetch($data['id'])
                                     ->roll($arr)
                                     ->toArray();
-                
+
                 $key_data = array(
                     'old_id' => $data['id'],
                     'merchant_id' => $input['merchant_id'],

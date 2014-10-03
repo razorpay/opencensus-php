@@ -88,7 +88,7 @@ class MerchantDetails extends DAL
         'submitted',
         'locked'
     );
-    
+
     protected static $uploadKeys = array(
         'bussiness_proof'           => 'bussiness_proof_url',
         'bussiness_pan_proof'       => 'bussiness_pan_url',
@@ -134,9 +134,9 @@ class MerchantDetails extends DAL
         foreach($data as $origKey => $value)
         {
             // New key that we will insert into $newArray with
-            if(isset($map[$origKey]))
-            {   
-                if($data[$origKey] != null)
+            if (isset($map[$origKey]))
+            {
+                if ($data[$origKey] !== null)
                 {
                     $newKey = $map[$origKey];
 
@@ -180,12 +180,12 @@ class MerchantDetails extends DAL
 
         $documents_needed = static::$uploadDocuments;
 
-        while ($document = current($documents_needed)) 
+        while ($document = current($documents_needed))
         {
-            if($merchant_details[key($documents_needed)] == null)
+            if ($merchant_details[key($documents_needed)] == null)
             {
                 $error[] = $document;
-            } 
+            }
             next($documents_needed);
         }
         return $error;

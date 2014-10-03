@@ -7,7 +7,7 @@ use URL;
 use Exception;
 
 class AdminTest extends TestCase
-{   
+{
     protected $admin;
 
     protected $merchant;
@@ -17,11 +17,11 @@ class AdminTest extends TestCase
     protected static $migrated = false;
 
     public function setUp()
-    {   
+    {
         parent::setUp();
 
-        if(static::$migrated === false)
-        {   
+        if (static::$migrated === false)
+        {
             //Truncates all tables befor first test
             $this->truncateAll();
             static::$migrated = true;
@@ -41,8 +41,11 @@ class AdminTest extends TestCase
             $this->merchant = $this->createEntity('merchant', array('id'=>static::generateRandomString(24), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
             $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
             $error = (new Models\Service\Merchant)->confirm($this->merchant->confirm_token);
-            if(empty($error) === false)
+
+            if (empty($error) === false)
+            {
                 $this->fail($error[0]);
+            }
         }
     }
 
@@ -66,12 +69,12 @@ class AdminTest extends TestCase
      * Tests Pricing Module of admin
      */
     public function testPricing()
-    {   
+    {
         // Check opening of pricing page from dashboard
         $this->browser
             ->open(URL::to('/admin#'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#pricingNav').length > 0", 20000)
-            ->click(l::linkContaining('Pricing Plans'))   
+            ->click(l::linkContaining('Pricing Plans'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.pricing-table').length > 0", 20000);                      // Wait for page to load
 
         $this->assertBodyHasText("List of all Plans");
@@ -79,8 +82,8 @@ class AdminTest extends TestCase
 
         //Tests creation of new plan
         $this->browser
-            ->click(l::linkContaining('Create New Pricing Plan'))   
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#create-plan-panel').is(':visible')", 20000)  
+            ->click(l::linkContaining('Create New Pricing Plan'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#create-plan-panel').is(':visible')", 20000)
             ->type(l::IdOrName('plan_name'), static::generateRandomString(7))
             ->select(l::IdOrName('payment_mode'), 'Card')
             ->select(l::IdOrName('payment_mode_type'), 'Credit')
@@ -93,9 +96,9 @@ class AdminTest extends TestCase
 
         //Tests Creation of new rule
         $this->browser
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#show-plan-panel').is(':visible')", 20000)  
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#show-plan-panel').is(':visible')", 20000)
             ->select(l::IdOrName('payment_mode_type'), 'Debit')
-            ->select(l::IdOrName('payment_mode'), 'Card')         
+            ->select(l::IdOrName('payment_mode'), 'Card')
             ->type(l::IdOrName('percent_rate'), '280')
             ->type(l::IdOrName('fixed_rate'), '200')
             ->click(l::linkContaining('Save'))
@@ -112,7 +115,7 @@ class AdminTest extends TestCase
         $this->browser
             ->open(URL::to('/admin#'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#merchantsNav').length > 0", 20000)
-            ->click(l::linkContaining('Merchants'))   
+            ->click(l::linkContaining('Merchants'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table').length > 0", 20000);
 
         $this->assertBodyHasText($this->merchant->id);
@@ -123,7 +126,7 @@ class AdminTest extends TestCase
      * Tests merchant details management for admin
      */
     public function testMerchantDetails()
-    {   
+    {
         //Get merchant details & actions
         $this->browser
             ->open(URL::to('/admin#/app/merchants/list'))
@@ -201,19 +204,18 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper').length > 0", 20000);
 
     }
-    
+
     /**
      * Tests login as merchant for admin
      */
     public function testLoginAsMerchant()
-    {   
+    {
         $this->browser
             ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000);
 
-
         $loginAsMerchantLink = $this->browser->getAttribute('link=Login as Merchant@href');
-
+die();
         $this->browser
             ->open(URL::to($loginAsMerchantLink))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 20000);                     // Wait for page to load
@@ -229,8 +231,8 @@ class AdminTest extends TestCase
      * Tests checking of merchant activation details by admin
      */
     public function testMerchantActivationDetails()
-    {   
-        
+    {
+
         //Browsing the whole form
         $this->browser
             ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/activation'))
@@ -249,7 +251,7 @@ class AdminTest extends TestCase
     }
 
     public function testMerchantLiveEnableDisable()
-    {   
+    {
         $this->browser
             ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000)
@@ -283,9 +285,9 @@ class AdminTest extends TestCase
         $this->browser
             ->open(URL::to('/admin#'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#adminsNav').length > 0", 20000)
-            ->click(l::IdOrName('adminsNav')) 
+            ->click(l::IdOrName('adminsNav'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.admins-table > tbody > tr').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);    
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText($this->admin->name);
 
@@ -316,9 +318,9 @@ class AdminTest extends TestCase
         $this->browser
             ->open(URL::to('/admin#'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#profileNav').length > 0", 20000)
-            ->click(l::IdOrName('profileNav')) 
+            ->click(l::IdOrName('profileNav'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.profile-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);    
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText($this->admin->name);
 
@@ -344,9 +346,9 @@ class AdminTest extends TestCase
     public function testLogout()
     {
         $this->browser
-            ->open(URL::to('/admin')) 
+            ->open(URL::to('/admin'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.user-dropdown').length > 0", 20000)
-            ->click(l::css('.user-dropdown'))                 
+            ->click(l::css('.user-dropdown'))
             ->click(l::linkContaining('Logout'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 20000);
     }

@@ -50,10 +50,10 @@ App::error(function(Exception $exception, $code)
 {
 	Log::error($exception);
 
-    if(Config::get('app.debug') !== true)
+    if (Config::get('app.debug') !== true)
     {
-        if($code == '404')
-            return Redirect::to('/#/404');   
+        if ($code === '404')
+            return Redirect::to('/#/404');
         else
             return Response::json(array('success' => false, 'errors' => ['Internal Server Error']));
     }
@@ -91,7 +91,7 @@ require app_path().'/filters.php';
 require app_path().'/lib/validation.php';
 
 //Additional functionality during selenium testing, flag set in server.php
-if(getenv('selenium'))
+if (getenv('selenium'))
 {
 	require app_path().'/selenium/init.php';
 }

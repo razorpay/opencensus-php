@@ -74,7 +74,7 @@ class Transaction extends Service
             $this->aggregate($data, $mode);
 
             //Only Payments analytics are stored
-            if($data['resource'] === "payment")
+            if ($data['resource'] === "payment")
             {
                 unset($data['resource']);
 
@@ -82,16 +82,23 @@ class Transaction extends Service
                 {
                     $obj = DAL\Transaction::retrieveLastByType($data['merchant_id'], $type, $mode);
 
-                    if (NULL === $obj || ((int)($obj->created_at) + $interval <= $data['updated_at']))
+                    if (($obj === null) or
+                        (((int)($obj->created_at) + $interval <= $data['updated_at'])))
+                    {
                         $this->create($data, $type, $mode);
+                    }
                     else
+                    {
                         $this->update($data, $obj);
+                    }
                 }
             }
             return true;
         }
         else
+        {
             return false;
+        }
     }
 
     protected function create($data, $type, $mode)
@@ -120,7 +127,7 @@ class Transaction extends Service
     protected function aggregate($data, $mode)
     {
         $merchant_details = DAL\Merchant::getAggregations($data, $mode);
-        if (NULL === $merchant_details)
+        if (null === $merchant_details)
         {
             DAL\Merchant::createAggregations($data, $mode);
         }

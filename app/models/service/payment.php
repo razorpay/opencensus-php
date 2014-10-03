@@ -106,14 +106,14 @@ class Payment extends Service
             return $error;
         }
 
-        if(isset($data['error']) === true or isset($data['status']) === false or $data['status'] !== "captured")
+        if (isset($data['error']) === true or isset($data['status']) === false or $data['status'] !== "captured")
             $error[] = "Capture Failed";
 
         return $error;
     }
 
     public function refund($id, $amount, $mode)
-    {   
+    {
         $error = array();
 
         $merchant_id = \Auth::merchant()->id();
@@ -124,8 +124,8 @@ class Payment extends Service
             $data = $this->api->payment
                             ->fetch($id)
                             ->refund(array('amount' => $amount))
-                            ->toArray();  
-            
+                            ->toArray();
+
         }
         catch(\Exception $e)
         {
@@ -133,9 +133,9 @@ class Payment extends Service
             return $error;
         }
 
-        if($data['entity'] !== "refund" or $data['amount'] != $amount)
+        if ($data['entity'] !== "refund" or $data['amount'] !== $amount)
             $error[] = "Refund Failed";
-        
+
         return $error;
     }
 }

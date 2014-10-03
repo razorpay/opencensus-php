@@ -87,7 +87,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
      */
     public function confirm()
     {
-        $this->confirm_token = NULL;
+        $this->confirm_token = null;
         $this->save();
     }
 

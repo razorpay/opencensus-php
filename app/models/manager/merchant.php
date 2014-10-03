@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Models\Manager;
 
@@ -21,17 +21,17 @@ class Merchant extends Manager
     );
 
     protected static $passwordRules = array(
-        'old_password'  =>      'required',
-        'password'      =>      'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50'
+        'old_password'              => 'required',
+        'password'                  => 'required|between:6,50|confirmed',
+        'password_confirmation'     => 'required|between:6,50'
     );
 
     protected static $terminalRules = array(
-        'gateway'               => 'required',
-        'gateway_merchant_id'   => 'required',
-        'gateway_terminal_id'   => 'required',
-        'gateway_terminal_password'                 =>      'required|confirmed',
-        'gateway_terminal_password_confirmation'    =>      'required'
+        'gateway'                                   => 'required',
+        'gateway_merchant_id'                       => 'required',
+        'gateway_terminal_id'                       => 'required',
+        'gateway_terminal_password'                 => 'required|confirmed',
+        'gateway_terminal_password_confirmation'    => 'required'
     );
 
     protected static $unsetRegisterInput = array(
@@ -72,9 +72,10 @@ class Merchant extends Manager
 
     protected function generateRemember($input)
     {
-        $this->setField(
-            'remember', isset($input['remember']) && $input['remember'] === 'on'
-        );
+        $remember = (isset($input['remember'])) and
+                    ($input['remember'] === 'on');
+
+        $this->setField('remember', $remember);
     }
 
     /**
@@ -98,7 +99,7 @@ class Merchant extends Manager
     public static function checkAPIMatch($merchant, $api_response)
     {
         foreach(static::$api_dashboard_mappings as $key => $value){
-            if($api_response[$key] !== $merchant[$value]) {
+            if ($api_response[$key] !== $merchant[$value]) {
                 throw new \Exception('Merchant data mismatch with api for '.$merchant['id'].' at '.$key);
             }
         }

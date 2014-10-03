@@ -66,7 +66,7 @@ class MerchantController extends BaseController
     public function getLogout()
     {
         \Auth::merchant()->logout();
-        
+
         return AppResponse::jsonResponse([]);
     }
 
@@ -76,8 +76,11 @@ class MerchantController extends BaseController
             'id', 'secret'
         );
 
-        if (!isset($input['id']) || !isset($input['secret']))
+        if ((isset($input['id']) === false) or
+            (isset($input['secret']) === false))
+        {
             return;
+        }
 
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=rzp.csv');
@@ -124,7 +127,7 @@ class MerchantController extends BaseController
     public function getActivationDetails()
     {
         $response = (new Service\MerchantDetails)->fetchDetails();
-        
+
         return AppResponse::jsonResponse([], $response);
     }
 
@@ -139,15 +142,15 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        if($id != 5)
+        if ($id !== 5)
         {
-            $error = (new Service\MerchantDetails)->saveDetails($id, $input);  
+            $error = (new Service\MerchantDetails)->saveDetails($id, $input);
         }
         else
         {
             $error = (new Service\MerchantDetails)->checkUploads();
         }
-        
+
         return AppResponse::jsonResponse($error);
     }
 
@@ -173,7 +176,7 @@ class MerchantController extends BaseController
     }
 
     public function postContact()
-    {   
+    {
         $input = Input::all();
 
         Mail::send('emails.contact',compact('input'), function($m)

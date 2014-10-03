@@ -7,7 +7,7 @@ use DB;
 use PHPUnit_Runner_BaseTestRunner;
 
 class TestCase extends ZizacoIntegrationTestCase
-{   
+{
     protected static $fixtures = array(
         'merchant' => 'Models\DAL\Merchant',
         'merchant_details' => 'Models\DAL\MerchantDetails',
@@ -24,15 +24,17 @@ class TestCase extends ZizacoIntegrationTestCase
     public function tearDown()
     {
         $status = $this->getStatus();
-        
+
         /** Take a screenshot in case of failure **/
-        if ($status == PHPUnit_Runner_BaseTestRunner::STATUS_ERROR || $status == PHPUnit_Runner_BaseTestRunner::STATUS_FAILURE) {
+        if (($status == PHPUnit_Runner_BaseTestRunner::STATUS_ERROR) or
+            ($status == PHPUnit_Runner_BaseTestRunner::STATUS_FAILURE))
+        {
             $this->browser->captureEntirePageScreenshot(storage_path().'/selenium.png', "");
         }
 
         parent::tearDown();
     }
-    
+
     protected function createEntity($entity, $attributes = array(), $times = 1)
     {
         Eloquent::unguard();
@@ -64,7 +66,7 @@ class TestCase extends ZizacoIntegrationTestCase
     }
 
     protected function truncateAll()
-    {   
+    {
         DB::statement("SET foreign_key_checks=0");
 
         foreach(static::$fixtures as $model)

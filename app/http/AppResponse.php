@@ -8,14 +8,17 @@ class AppResponse
 {
     public static function jsonResponse($errors, $data = null)
     {
-        if(empty($errors)){
+        if (empty($errors))
+        {
             $response = array('success' => true);
 
-            if($data != null){
+            if ($data !== null)
+            {
                 $response = $response + array('data' => $data);
             }
         }
-        else {
+        else
+        {
             $response = array('success' => false, 'errors' => $errors);
         }
 

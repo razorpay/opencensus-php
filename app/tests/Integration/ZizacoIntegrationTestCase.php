@@ -8,10 +8,10 @@ namespace Tests\Integration;
 use Zizaco\TestCases\IntegrationTestCase;
 
 class ZizacoIntegrationTestCase extends IntegrationTestCase
-{   
+{
    protected static function launchServer()
     {
-        if(IntegrationTestCase::$serverLaunched)
+        if (IntegrationTestCase::$serverLaunched)
             return;
         /** Calling artisan serve with env=testing **/
         $command = "php artisan serve --env=testing --port 4443";
@@ -32,7 +32,7 @@ class ZizacoIntegrationTestCase extends IntegrationTestCase
         self::execAsync($command, $output_path);
         self::waitForOutput($output_path, $content, $timeout);
     }
-    
+
     protected static function waitForOutput($file, $output) {
         $found = FALSE;
         $max_tries = 30;
@@ -56,7 +56,7 @@ class ZizacoIntegrationTestCase extends IntegrationTestCase
         $processInfo = exec("lsof -i :$port");
         preg_match('/^\S+\s*(\d+)/', $processInfo, $matches);
 
-        if(isset($matches[1]))
+        if (isset($matches[1]))
         {
             $pid = $matches[1];
             exec("kill $pid");

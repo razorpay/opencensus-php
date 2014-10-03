@@ -8,7 +8,7 @@ use Models\Manager;
 class MerchantDetails extends Service
 {
     public function fetchDetails()
-    {       
+    {
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
         $merchant_details = DAL\MerchantDetails::filterForAjax($merchant_details);
@@ -18,25 +18,25 @@ class MerchantDetails extends Service
         return $merchant_details;
     }
     public function submitDetails()
-    {       
+    {
         $error = array();
         $data = array();
 
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
-        if($merchant_details->locked)
+        if ($merchant_details->locked)
         {
             $error[]= 'Form has been locked for editing by admin.';
             return $error;
         }
 
-        if((int)$merchant_details->submitted === 0)
+        if ((int)$merchant_details->submitted === 0)
         {
             //Check if already finished
             $steps_finished = json_decode($merchant_details->steps_finished, true);
-            
+
             $missing_steps = Manager\MerchantDetails::validateActivation($steps_finished);
-    
+
             foreach($missing_steps as $step)
             {
                 $error[] = 'Step '.$step.' has not been saved or contains errors. Please save all steps before submission.';
@@ -44,10 +44,10 @@ class MerchantDetails extends Service
 
             if (empty($missing_steps))
             {
-                if(in_array(6, $steps_finished) === false)
-                {    
+                if (in_array(6, $steps_finished) === false)
+                {
                     $steps_finished[] = 6;
-                    
+
                     $data['steps_finished'] = json_encode($steps_finished);
                 }
 
@@ -57,16 +57,16 @@ class MerchantDetails extends Service
                 $merchant_details->update($data);
             }
         }
-        
+
         return $error;
     }
 
     public function saveDetails($id, array $input)
-    {       
+    {
         //Check if already finished
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
-        if($merchant_details->locked)
+        if ($merchant_details->locked)
         {
             $error[]= 'Form has been locked for editing by admin.';
             return $error;
@@ -75,13 +75,13 @@ class MerchantDetails extends Service
         list($error, $data) = Manager\MerchantDetails::createValidate($input, 'step'.$id)->getData();
 
         if (empty($error))
-        {   
+        {
             $steps_finished = json_decode($merchant_details->steps_finished, true);
-        
-            if(in_array($id, $steps_finished) == false){
+
+            if (in_array($id, $steps_finished) == false){
                 $steps_finished[] = (int)$id;
             }
-            
+
             $data['steps_finished'] = json_encode($steps_finished);
 
             //Updating the model
@@ -91,12 +91,12 @@ class MerchantDetails extends Service
     }
 
     public function checkUploads()
-    {   
+    {
         $error = array();
 
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
-        if($merchant_details->locked)
+        if ($merchant_details->locked)
         {
             $error[]= 'Form has been locked for editing by admin.';
             return $error;
@@ -105,15 +105,15 @@ class MerchantDetails extends Service
         //Check if already finished
         $steps_finished = json_decode($merchant_details->steps_finished, true);
 
-        if(in_array(5, $steps_finished)){
+        if (in_array(5, $steps_finished)){
             //return success if already finished
             return $error;
         }
-                    
+
         $error = DAL\MerchantDetails::checkUploadedFiles($merchant_details);
 
         if (empty($error))
-        {   
+        {
             $steps_finished[] = 5;
 
             $steps_finished = json_encode($steps_finished);
@@ -126,10 +126,10 @@ class MerchantDetails extends Service
     }
 
     public function saveUploadedFile($input)
-    {   
+    {
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
-        
-        if($merchant_details->locked)
+
+        if ($merchant_details->locked)
         {
             $error[]= 'Form has been locked for editing by admin.';
             return $error;
@@ -138,7 +138,7 @@ class MerchantDetails extends Service
         $error = Manager\MerchantDetails::checkFileUpload($input);
 
         if (empty($error))
-        {   
+        {
             $data = DAL\MerchantDetails::getDataForUpload($input);
 
             $merchant_details = \Auth::merchant()->user()->MerchantDetails;

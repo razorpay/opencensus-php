@@ -54,10 +54,10 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getTransaction($mode, $id = NULL)
+    public function getTransaction($mode, $id = null)
     {
         $this->checkMode($mode);
-        
+
         list($error, $data) = (new Service\Transaction)->fetchFromApi($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
@@ -74,28 +74,28 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getPayment($mode, $id = NULL)
+    public function getPayment($mode, $id = null)
     {
         $this->checkMode($mode);
-        
+
         list($error, $data) = (new Service\Payment)->fetchFromApi($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getPaymentRefunds($mode, $id = NULL)
+    public function getPaymentRefunds($mode, $id = null)
     {
         $this->checkMode($mode);
-        
+
         list($error, $data) = (new Service\Payment)->fetchRefundsFromApi($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postCaptureTransaction($mode, $id = NULL)
+    public function postCaptureTransaction($mode, $id = null)
     {
         $this->checkMode($mode);
-        
+
         $amount = Input::get('amount');
 
         $error = (new Service\Payment)->capture($id, $amount, $mode);
@@ -103,12 +103,12 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function postRefundTransaction($mode, $id = NULL)
+    public function postRefundTransaction($mode, $id = null)
     {
         $this->checkMode($mode);
 
         $amount = Input::get('amount');
-        
+
         $error = (new Service\Payment)->refund($id, $amount, $mode);
 
         return AppResponse::jsonResponse($error);
@@ -125,10 +125,10 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getRefund($mode, $id = NULL)
+    public function getRefund($mode, $id = null)
     {
         $this->checkMode($mode);
-        
+
         list($error, $data) = (new Service\Refund)->fetchFromApi($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
@@ -145,10 +145,10 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getSettlement($mode, $id = NULL)
+    public function getSettlement($mode, $id = null)
     {
         $this->checkMode($mode);
-        
+
         list($error, $data) = (new Service\Settlement)->fetchFromApi($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
@@ -156,7 +156,7 @@ class TransactionController extends BaseController
 
     protected function checkMode($mode)
     {
-        if($mode !== 'live' and $mode !== 'test')
+        if ($mode !== 'live' and $mode !== 'test')
         {
             throw new \Exception('Invalid Mode');
         }

@@ -37,7 +37,7 @@ class Admin extends Service
     {
         list($error, $data) = Manager\Admin::createValidate($input, 'password')->getData();
 
-        if(empty($error) === false)
+        if (empty($error) === false)
         {
             return [$error, $data];
         }
@@ -59,8 +59,8 @@ class Admin extends Service
     }
 
     public function listMerchants($pending = false)
-    {   
-        if($pending === false)
+    {
+        if ($pending === false)
             return DAL\Merchant::get()->toArray();
         else {
             $merchants_inactive = DAL\Merchant::with('MerchantDetails')->where('activated', '=', '0')->get();
@@ -70,7 +70,7 @@ class Admin extends Service
                 return ($merchant->merchant_details->submitted == 1);
             });
 
-            return $merchants_submitted_inactive->toArray();      
+            return $merchants_submitted_inactive->toArray();
         }
     }
 
@@ -83,7 +83,7 @@ class Admin extends Service
     {
         $error = array();
 
-        if($id === \Auth::admin()->id())
+        if ($id === \Auth::admin()->id())
          $error[] = 'You can not delete yourself.';
 
         $admin = DAL\Admin::findorfail($id);
@@ -101,7 +101,7 @@ class Admin extends Service
         list($error, $data) = Manager\Admin::createValidate($input, 'register')->getData();
 
         if (empty($error))
-        {   
+        {
             $admin = DAL\Admin::createOrFail($data);
 
             $data = $admin->toArray();
@@ -140,12 +140,12 @@ class Admin extends Service
                 $file = 'ERROR';
             }
         }
-        
+
         return $response;
     }
 
     public function fetchMerchantDetails($id)
-    {   
+    {
         $merchant_details = DAL\MerchantDetails::findorfail($id);
 
         $this->setApiCredentials();
@@ -153,7 +153,7 @@ class Admin extends Service
         $data = $this->api->merchant->fetch($id)->toArray();
 
         $data['merchant_details'] = $merchant_details;
-        
+
         //@todo This is failing tests on wercker, fix
         //$merchant = DAL\Merchant::findorfail($id);
         //Manager\Merchant::checkAPIMatch($merchant, $response);
@@ -164,17 +164,17 @@ class Admin extends Service
             'submitted'         => $merchant_details['submitted'],
             'live'              => $data['live']
         ) + $data;
-        
+
         return $response;
     }
 
     public function lockMerchant($id)
-    {   
+    {
         $error = array();
 
         $merchant_details = DAL\MerchantDetails::findorfail($id);
 
-        if($merchant_details->locked === 1)
+        if ($merchant_details->locked === 1)
         {
             $error[] = 'Merchant already locked.';
             return $error;
@@ -187,12 +187,12 @@ class Admin extends Service
     }
 
     public function unlockMerchant($id)
-    {   
+    {
         $error = array();
 
         $merchant_details = DAL\MerchantDetails::findorfail($id);
 
-        if($merchant_details->locked === 0)
+        if ($merchant_details->locked === 0)
         {
             $error[] = 'Merchant already unlocked.';
             return $error;
@@ -205,7 +205,7 @@ class Admin extends Service
     }
 
     public function fetchMerchantTerminal($id)
-    {   
+    {
         $this->setApiCredentials();
 
         $response = $this->api->merchant->fetch($id)->fetchTerminal()->toArray();
@@ -214,11 +214,11 @@ class Admin extends Service
     }
 
     public function postMerchantTerminal($id, $input)
-    {   
+    {
 
         list($error, $data) = Manager\Merchant::createValidate($input, 'terminal')->getData();
 
-        if(empty($error))
+        if (empty($error))
         {
             $this->setApiCredentials();
 
@@ -229,14 +229,14 @@ class Admin extends Service
             catch(\Razorpay\Api\Errors\BadRequestError $e)
             {
                 $error[] = $e->getCode();
-            }   
+            }
         }
 
         return array($error, $data);
     }
 
     public function fetchMerchantPricing($id)
-    { 
+    {
         $this->setApiCredentials();
 
         $response = $this->api->merchant->fetch($id)->fetchPricing()->toArray();
@@ -245,8 +245,8 @@ class Admin extends Service
     }
 
     public function postMerchantPricing($id, $input)
-    {   
-        $error = array(); 
+    {
+        $error = array();
         $data = array();
 
         $this->setApiCredentials();
@@ -269,7 +269,7 @@ class Admin extends Service
 
         $details = $this->fetchMerchantDetails($id);
 
-        if((int)$details['submitted'] === 0)
+        if ((int)$details['submitted'] === 0)
         {
             return array('Activation form has not been submitted by merchant yet.');
         }
@@ -284,12 +284,12 @@ class Admin extends Service
         {
             return array($e->getCode());
         }
-     
+
         $merchant->activated = 1;
         $merchant->save();
 
         $this->lockMerchant($id);
-    
+
         return array();
     }
 
@@ -299,7 +299,7 @@ class Admin extends Service
 
         $merchant = DAL\Merchant::findorfail($id);
 
-        if((int)$merchant->activated === 0)
+        if ((int)$merchant->activated === 0)
         {
             return array('Merchant must be active before enabling/disabling live transactions.');
         }
@@ -324,7 +324,7 @@ class Admin extends Service
 
         $merchant = DAL\Merchant::findorfail($id);
 
-        if((int)$merchant->activated === 0)
+        if ((int)$merchant->activated === 0)
         {
             return array('Merchant must be active before enabling/disabling live transactions.');
         }
@@ -344,7 +344,7 @@ class Admin extends Service
     }
 
     public function fetchPricingPlans()
-    {   
+    {
         $errors = array();
 
         $response = array();
@@ -366,7 +366,7 @@ class Admin extends Service
     }
 
     public function fetchPricingPlan($id)
-    {       
+    {
         $errors = array();
 
         $response = array();
@@ -386,11 +386,11 @@ class Admin extends Service
     }
 
     public function addPricingPlanRule($id, $input)
-    {   
+    {
         $error = array();
 
         $response = array();
-        
+
         $this->setApiCredentials();
 
         try
@@ -410,7 +410,7 @@ class Admin extends Service
         $error = array();
 
         $response = array();
-        
+
         $this->setApiCredentials();
 
         try

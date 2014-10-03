@@ -6,7 +6,7 @@ class DAL extends \Eloquent
 {
     public static function createOrFail(array $attributes)
     {
-        if ( ! (NULL === $model = static::create($attributes))) return $model;
+        if ( ! (null === $model = static::create($attributes))) return $model;
 
         $e = array(
                 'model' => get_called_class(),

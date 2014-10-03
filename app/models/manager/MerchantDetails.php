@@ -69,14 +69,14 @@ class MerchantDetails extends Manager
 
         $uploadKeys = static::$uploadKeys;
 
-        if (count($input) != 1 OR in_array(key($input), $uploadKeys) == false)
+        if (count($input) !== 1 OR in_array(key($input), $uploadKeys) == false)
         {
             throw new \InvalidArgumentException('Invalid parameters.');
         }
 
         $file = current($input);
 
-        if(
+        if (
             in_array($file->getClientOriginalExtension(), static::$allowed_extensions) == false
             OR
             in_array($file->getMimeType(), static::$allowed_mimes) == false
@@ -86,7 +86,7 @@ class MerchantDetails extends Manager
         }
 
         return $error;
-        
+
     }
 
     public static function validateActivation($steps_finished)
@@ -95,11 +95,11 @@ class MerchantDetails extends Manager
 
         $missing_steps = array_diff($required_steps, $steps_finished);
 
-        return $missing_steps;        
+        return $missing_steps;
     }
 
     public static function sortDataInSteps($data)
-    {   
+    {
         $response = array();
         foreach($data as $key => $value) {
             if (array_key_exists($key, static::$step1Rules) === true) {
