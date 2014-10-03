@@ -157,15 +157,6 @@ class Action
             $traceData);
     }
 
-    protected function dashboardQueueRecord($payment)
-    {
-        $data = array_merge(
-                    $payment->toArray(),
-                    ['merchant_id' => $payment->getMerchantId()]);
-
-        Dashboard\Payment::getInstance()->queueRecord($data);
-    }
-
     protected function retrieve($id)
     {
         $this->payment = $this->core->retrieveByIdAndMerchantId(

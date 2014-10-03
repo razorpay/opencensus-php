@@ -128,4 +128,9 @@ class PublicEntity extends UniqueIdEntity
     {
         return $this->entity;
     }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(static::MERCHANT_ID);
+    }
 }
