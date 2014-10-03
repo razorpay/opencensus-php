@@ -143,7 +143,7 @@ class Service extends Base\Service
 
     public function expireAuthorizations()
     {
-        $timestamp = time() - 30 * 60;
+        $timestamp = time() - 24 * 60 * 60;
 
         $count = (new Payment\Repository)->expireAuthorizedPayments($timestamp);
 
