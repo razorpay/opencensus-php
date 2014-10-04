@@ -22,8 +22,8 @@ class Transaction extends Service
 
         if (empty($error))
         {
-            $merchant_id = \Auth::merchant()->id();
-            $this->setApiCredentials($merchant_id, $mode);
+            $merchantId = \Auth::merchant()->id();
+            $this->setApiCredentials($merchantId, $mode);
 
             $response = $this->api->transaction->all($options)->toArray();
 
@@ -41,8 +41,8 @@ class Transaction extends Service
 
         if (empty($error))
         {
-            $merchant_id = \Auth::merchant()->id();
-            $this->setApiCredentials($merchant_id, $mode);
+            $merchantId = \Auth::merchant()->id();
+            $this->setApiCredentials($merchantId, $mode);
 
             $id = $options['id'];
             try
@@ -145,9 +145,9 @@ class Transaction extends Service
         $obj->save();
     }
 
-    public function getAggregations($merchant_id, $mode)
+    public function getAggregations($merchantId, $mode)
     {
-        $data = DAL\Merchant::getAggregations(array('merchant_id' => $merchant_id), $mode);
+        $data = DAL\Merchant::getAggregations(array('merchant_id' => $merchantId), $mode);
         return $data;
     }
 

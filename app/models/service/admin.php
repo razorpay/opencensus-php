@@ -16,14 +16,18 @@ class Admin extends Service
 
         if (empty($error))
             $verify = \Auth::admin()->attempt(array(
-                'username'     => $data['username'],
+                'username'  => $data['username'],
                 'password'  => $input['password']
             ));
 
         if ($verify === true)
+        {
             return [array(), $data];
+        }
         else
+        {
             return [['Username or password is invalid.'], $data];
+        }
     }
 
     /**
@@ -61,9 +65,14 @@ class Admin extends Service
     public function listMerchants($pending = false)
     {
         if ($pending === false)
+        {
             return DAL\Merchant::get()->toArray();
-        else {
-            $merchants_inactive = DAL\Merchant::with('MerchantDetails')->where('activated', '=', '0')->get();
+        }
+        else
+        {
+            $merchants_inactive = DAL\Merchant::with('MerchantDetails')
+                                              ->where('activated', '=', '0')
+                                              ->get();
 
             $merchants_submitted_inactive = $merchants_inactive->filter(function($merchant)
             {

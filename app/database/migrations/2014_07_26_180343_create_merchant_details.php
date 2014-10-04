@@ -3,7 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMerchantDetails extends Migration {
+class CreateMerchantDetails extends Migration
+{
 
     /**
     * Run the migrations.
@@ -29,7 +30,7 @@ class CreateMerchantDetails extends Migration {
             $table->string('bussiness_type');
 
             $table->string('bussiness_category');
-            
+
             $table->string('bussiness_subcategory');
 
             $table->string('bussiness_registered_address');
@@ -61,7 +62,7 @@ class CreateMerchantDetails extends Migration {
             $table->integer('transaction_volume')->unsigned();
 
             $table->integer('transaction_value')->unsigned();
-            
+
             $table->string('promoter_pan');
 
             $table->string('promoter_pan_name');
@@ -107,13 +108,13 @@ class CreateMerchantDetails extends Migration {
     * @return void
     */
     public function down()
-    { 
+    {
         Schema::table('merchant_details', function(Blueprint $table)
         {
             $table->dropForeign('merchant_details_merchant_id_foreign');
         });
 
-        Schema::drop('merchant_details'); 
+        Schema::drop('merchant_details');
     }
 
 }

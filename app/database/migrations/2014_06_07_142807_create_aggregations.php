@@ -3,7 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateAggregations extends Migration {
+class CreateAggregations extends Migration
+{
 
     /**
      * Run the migrations.
@@ -55,7 +56,7 @@ class CreateAggregations extends Migration {
           $table->dropForeign('aggregations_merchant_id_foreign');
       });
 
-      Schema::drop('aggregations'); 
+      Schema::drop('aggregations');
     }
 
 }

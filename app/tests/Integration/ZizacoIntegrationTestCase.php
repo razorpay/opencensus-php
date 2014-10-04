@@ -46,7 +46,9 @@ class ZizacoIntegrationTestCase extends IntegrationTestCase
             if ( strstr($contents, $output) )
             {
                 $found = TRUE;
-            } else {
+            }
+            else
+            {
                 if ( ++$num_tries > $max_tries )
                 {
                     throw new \Exception("Failed to find $output in $file");

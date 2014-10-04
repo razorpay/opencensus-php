@@ -16,9 +16,9 @@ class Settlement extends Service
         if (empty($error))
         {
             $merchant_id = \Auth::merchant()->id();
-            
+
             $this->setApiCredentials($merchant_id, $mode);
-            
+
             $response = $this->api->settlement->all($options);
 
             $data = Manager\Settlement::mapKeys($response);
@@ -36,11 +36,11 @@ class Settlement extends Service
         if (empty($error))
         {
             $merchant_id = \Auth::merchant()->id();
-            
+
             $this->setApiCredentials($merchant_id, $mode);
 
             $response =  array();
-            
+
             try
             {
                 $response = $this->api->settlement->fetch($id)->toArray();
@@ -49,13 +49,10 @@ class Settlement extends Service
             {
                 $error[] = $e->getCode();
             }
-            
+
             $data = array('count' => 1, 'data' => array($response));
         }
 
         return array($error, $data);
     }
-
-
- 
 }
