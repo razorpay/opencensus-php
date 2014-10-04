@@ -4,6 +4,7 @@ use Auth;
 use Http\AppResponse;
 use Mail;
 use Models\Service;
+use Models\MerchantDetails;
 
 class MerchantController extends BaseController
 {
@@ -16,7 +17,7 @@ class MerchantController extends BaseController
     {
        $merchant = (new Service\Merchant)->fetch(Auth::merchant()->id());
 
-       $merchantDetails = (new Service\MerchantDetails)->fetchDetails();
+       $merchantDetails = (new MerchantDetails\Service)->fetchDetails();
 
        $data = $merchant + $merchantDetails;
 
@@ -125,14 +126,14 @@ class MerchantController extends BaseController
 
     public function getActivationDetails()
     {
-        $response = (new Service\MerchantDetails)->fetchDetails();
+        $response = (new MerchantDetails\Service)->fetchDetails();
 
         return AppResponse::jsonResponse([], $response);
     }
 
     public function postActivation()
     {
-        $error = (new Service\MerchantDetails)->submitDetails();
+        $error = (new MerchantDetails\Service)->submitDetails();
 
         return AppResponse::jsonResponse($error);
     }
@@ -143,11 +144,11 @@ class MerchantController extends BaseController
 
         if ((int) $id !== 5)
         {
-            $error = (new Service\MerchantDetails)->saveDetails($id, $input);
+            $error = (new MerchantDetails\Service)->saveDetails($id, $input);
         }
         else
         {
-            $error = (new Service\MerchantDetails)->checkUploads();
+            $error = (new MerchantDetails\Service)->checkUploads();
         }
 
         return AppResponse::jsonResponse($error);
@@ -157,7 +158,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $error = (new Service\MerchantDetails)->saveUploadedFile($input);
+        $error = (new MerchantDetails\Service)->saveUploadedFile($input);
 
         return AppResponse::jsonResponse($error);
     }
