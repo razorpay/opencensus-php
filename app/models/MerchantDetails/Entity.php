@@ -1,8 +1,10 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\MerchantDetails;
 
-class MerchantDetails extends DAL
+use Models\Base;
+
+class Entity extends Base\Entity
 {
     protected $table = 'merchant_details';
 
@@ -105,17 +107,15 @@ class MerchantDetails extends DAL
 
     public function merchant()
     {
-        return $this->belongsTo(
-            __NAMESPACE__.'\Merchant'
-        );
+        return $this->belongsTo('Models\Merchant\Entity');
     }
 
-    public static function filterForAjax($merchant_details)
+    public function filterForAjax()
     {
-        $details = static::filterDetails($merchant_details);
+        $details = $this->filterDetails();
 
         // remove the urls for ajax
-        foreach($details['files'] as &$file)
+        foreach ($details['files'] as &$file)
         {
            $file = '';
         }
@@ -123,25 +123,28 @@ class MerchantDetails extends DAL
         return $details;
     }
 
-    protected static function filterDetails($merchant_details)
+    public function filterDetails()
     {
-        $data = array_intersect_key($merchant_details->toArray(), array_flip(static::$ajaxFields));
+        $data = array_intersect_key(
+                    $this->toArray(),
+                    array_flip(static::$ajaxFields));
 
         $map = array_flip(static::$uploadKeys);
 
         $files = array();
 
-        foreach($data as $origKey => $value)
+        foreach ($data as $origKey => $value)
         {
             // New key that we will insert into $newArray with
             if (isset($map[$origKey]))
             {
-                if ($data[$origKey] !== null)
+                if ($data[$origKey] != null)
                 {
                     $newKey = $map[$origKey];
 
                     $files[$newKey] = $data[$origKey];
                 }
+
                 unset($data[$origKey]);
             }
         }
@@ -155,39 +158,90 @@ class MerchantDetails extends DAL
         unset($data['locked']);
 
         return array(
-            'data' =>  $data,
-            'files' => $files,
+            'data'           => $data,
+            'files'          => $files,
+            'locked'         => $locked
+            'submitted'      => $submitted,
             'steps_finished' => $steps_finished,
-            'submitted' => $submitted,
-            'locked' => $locked
         );
     }
 
-    public static function getDataForUpload($input)
+    protected function getFileUploadData($input)
     {
-        $key = key($input);
-
-        $file = current($input);
-
         $field = static::$uploadKeys[$key];
 
-        return array('key' => $key, 'file'  => $file, 'field'   => $field);
+        return array(
+            'key'   => key($input),
+            'file'  => current($input),
+            'field' => $field);
     }
 
-    public static function checkUploadedFiles($merchant_details)
+    public function checkUploadedFiles()
     {
         $error = array();
 
-        $documents_needed = static::$uploadDocuments;
-
-        while ($document = current($documents_needed))
+        foreach (static::$uploadDocuments as $key => $document)
         {
-            if ($merchant_details[key($documents_needed)] == null)
+            if ($this->getAttribute($key) == null)
             {
                 $error[] = $document;
             }
-            next($documents_needed);
         }
+
         return $error;
+    }
+
+    protected function getStepsFinishedAttribute($stepsFinished)
+    {
+        return json_decode($stepsFinished, true);
+    }
+
+    protected function setStepsFinishedAttribute($value)
+    {
+        $this->attributes['steps_finished'] = json_encode($value);
+    }
+
+    public function addStepToStepsFinished($step)
+    {
+        if ($step > 5)
+        {
+            throw new \LogicException('Step should be less than 5' . $step);
+        }
+
+        $stepsFinished = $this->getAttriute('steps_finished');
+
+        if (in_array($step, $stepsFinished) === false)
+        {
+            $stepsFinished[] = (int)$step;
+
+            $this->setAttribute('steps_finished', $stepsFinished);
+        }
+    }
+
+    public function markSubmittedTrue()
+    {
+        $this->setAttribute('submitted', 1);
+    }
+
+    public function isLocked()
+    {
+        return $this->getAttribute('locked');
+    }
+
+    public function isStepFinished($step)
+    {
+        // Check if already finished
+        $stepsFinished = $this->getAttriute('steps_finished');
+
+        return (in_array(5, $stepsFinished);
+    }
+
+    public function getStepsNotFinished()
+    {
+        $steps = range(1, 5);
+
+        $stepsFinished = $this->getAttriute('steps_finished');
+
+        return array_diff($steps, $stepsFinished);
     }
 }

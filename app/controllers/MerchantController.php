@@ -141,7 +141,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        if ($id !== 5)
+        if ((int) $id !== 5)
         {
             $error = (new Service\MerchantDetails)->saveDetails($id, $input);
         }

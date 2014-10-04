@@ -51,9 +51,9 @@ class Merchant extends Manager
     );
 
     protected static $api_dashboard_mappings = array(
-            'id' => 'id',
-            'name' => 'name',
-            'email' => 'email',
+            'id'        => 'id',
+            'name'      => 'name',
+            'email'     => 'email',
             'activated' => 'activated'
     );
 
@@ -97,7 +97,7 @@ class Merchant extends Manager
 
     public static function checkAPIMatch($merchant, $api_response)
     {
-        foreach(static::$api_dashboard_mappings as $key => $value)
+        foreach (static::$api_dashboard_mappings as $key => $value)
         {
             if ($api_response[$key] !== $merchant[$value])
             {

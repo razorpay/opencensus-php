@@ -1,10 +1,10 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\MerchantDetails;
 
-use Models\Service;
+use Models\Base;
 
-class MerchantDetails extends Manager
+class Validator extends Base\Validator
 {
     protected static $step1Rules = array(
         'contact_name'          => 'required|alpha_space|max:255',
@@ -69,58 +69,59 @@ class MerchantDetails extends Manager
 
         $uploadKeys = static::$uploadKeys;
 
-        if (count($input) !== 1 OR in_array(key($input), $uploadKeys) == false)
+        if ((count($input) !== 1) or
+            (in_array(key($input), $uploadKeys) == false))
         {
             throw new \InvalidArgumentException('Invalid parameters.');
         }
 
         $file = current($input);
 
-        if (
-            in_array($file->getClientOriginalExtension(), static::$allowed_extensions) == false
-            OR
-            in_array($file->getMimeType(), static::$allowed_mimes) == false
-        )
+        $extenstion = $file->getClientOriginalExtension();
+        if ((in_array($extension, static::$allowed_extensions) === false) or
+            (in_array($file->getMimeType(), static::$allowed_mimes) === false))
         {
             $error[] = 'Invalid File format. Only pdf, png and jpg is allowed.';
         }
 
         return $error;
-
     }
 
-    public static function validateActivation($steps_finished)
-    {
-        $required_steps = array(1, 2, 3, 4, 5);
-
-        $missing_steps = array_diff($required_steps, $steps_finished);
-
-        return $missing_steps;
-    }
-
+    /**
+     * Adds each key to an array of step digits
+     * The key belongs to that stepRules
+     * @param  array $data
+     * @return array
+     */
     public static function sortDataInSteps($data)
     {
         $response = array();
-        foreach($data as $key => $value)
+
+        foreach ($data as $key => $value)
         {
-            if (array_key_exists($key, static::$step1Rules) === true)
+            $step = self::checkKeyInStepRules($key);
+
+            if ($step !== null)
             {
-                $response['1'][$key] = $value;
-            }
-            else if (array_key_exists($key, static::$step2Rules) === true)
-            {
-                $response['2'][$key] = $value;
-            }
-            else if (array_key_exists($key, static::$step3Rules) === true)
-            {
-                $response['3'][$key] = $value;
-            }
-            else if (array_key_exists($key, static::$step4Rules) === true)
-            {
-                $response['4'][$key] = $value;
+                $response[$step][$key] = $value;
             }
         }
 
         return $response;
+    }
+
+    protected static checkKeyInStepRules($key)
+    {
+        $steps = range(1, 4);
+
+        foreach ($steps as $step)
+        {
+            $var = 'step'.$step.'Rules';
+
+            if (array_key_exists($key, static::$$var))
+            {
+                return $step;
+            }
+        }
     }
 }
