@@ -5,13 +5,13 @@ use Models;
 use URL;
 
 class AnalyticsTest extends TestCase
-{   
+{
     protected $merchant;
 
     protected $merchant_details;
 
     public function setUp()
-    {   
+    {
         parent::setUp();
 
         $this->merchant = $this->createEntity('merchant');
@@ -26,7 +26,7 @@ class AnalyticsTest extends TestCase
     {
         $resources = ['payment', 'refund', 'settlement'];
 
-        foreach($resources as $resource)
+        foreach ($resources as $resource)
         {
             for($i=0; $i<5; $i++)
             {
@@ -37,15 +37,15 @@ class AnalyticsTest extends TestCase
                     'merchant_id'   => $this->merchant->id
                 );
 
-                $response = $this->call('POST', '/test/transactions/'.$resource, $data);  
+                $response = $this->call('POST', '/test/transactions/'.$resource, $data);
 
                 $content = $response->getContent();
 
                 $this->assertJson($content);
-                
+
                 $obj = json_decode($content);
 
-                $this->assertTrue($obj->status);        
+                $this->assertTrue($obj->status);
             }
         }
     }

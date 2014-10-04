@@ -69,7 +69,7 @@ class TestCase extends ZizacoIntegrationTestCase
     {
         DB::statement("SET foreign_key_checks=0");
 
-        foreach(static::$fixtures as $model)
+        foreach (static::$fixtures as $model)
         {
             $model::truncate();
         }

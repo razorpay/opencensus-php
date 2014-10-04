@@ -96,7 +96,7 @@ class Transaction extends Manager
         foreach ($response['data'] as $obj)
         {
             $dataObj = [];
-            foreach(static::$api_dashboard_mappings as $key => $value)
+            foreach (static::$api_dashboard_mappings as $key => $value)
                 $dataObj[$value] = $obj[$key];
             $data[] = $dataObj;
         }

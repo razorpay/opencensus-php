@@ -123,11 +123,11 @@ class Admin extends Service
     {
         $merchant_details =  DAL\MerchantDetails::findorfail($id);
 
-        $response = DAL\MerchantDetails::filterDetails($merchant_details);
+        $response = $merchant_details->filterDetails();
 
         $response['data'] = Manager\MerchantDetails::sortDataInSteps($response['data']);
 
-        foreach($response['files'] as $key => &$file)
+        foreach ($response['files'] as $key => &$file)
         {
             $extension_position = strrpos($file, '.', -1);
             $extension  = substr($file, $extension_position + 1);
