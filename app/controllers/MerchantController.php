@@ -1,8 +1,9 @@
 <?php
 
-use Models\Service;
-
+use Auth;
 use Http\AppResponse;
+use Mail;
+use Models\Service;
 
 class MerchantController extends BaseController
 {
@@ -13,7 +14,7 @@ class MerchantController extends BaseController
 
     public function getUser()
     {
-       $merchant = (new Service\Merchant)->fetch(\Auth::merchant()->id());
+       $merchant = (new Service\Merchant)->fetch(Auth::merchant()->id());
 
        $merchantDetails = (new Service\MerchantDetails)->fetchDetails();
 
@@ -65,16 +66,14 @@ class MerchantController extends BaseController
 
     public function getLogout()
     {
-        \Auth::merchant()->logout();
+        Auth::merchant()->logout();
 
         return AppResponse::jsonResponse([]);
     }
 
     public function getCsv()
     {
-        $input = Input::only(
-            'id', 'secret'
-        );
+        $input = Input::only('id', 'secret');
 
         if ((isset($input['id']) === false) or
             (isset($input['secret']) === false))
@@ -93,14 +92,14 @@ class MerchantController extends BaseController
 
     public function getKeys($mode)
     {
-        $keys = (new Service\Merchant)->fetchKeysFromApi(\Auth::merchant()->id(), $mode);
+        $keys = (new Service\Merchant)->fetchKeysFromApi(Auth::merchant()->id(), $mode);
 
         return AppResponse::jsonResponse([], $keys);
     }
 
     public function postNewKey($mode)
     {
-        list($error, $data) = (new Service\Merchant)->createKey(\Auth::merchant()->id(), $mode);
+        list($error, $data) = (new Service\Merchant)->createKey(Auth::merchant()->id(), $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -109,7 +108,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $input['merchant_id'] = \Auth::merchant()->id();
+        $input['merchant_id'] = Auth::merchant()->id();
 
         list($error, $data) = (new Service\Merchant)->rollKeys($input, $mode);
 
@@ -167,7 +166,7 @@ class MerchantController extends BaseController
     {
         $merchant = $data['merchant'];
 
-        \Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
+        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
         {
             $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
         });
@@ -181,7 +180,8 @@ class MerchantController extends BaseController
 
         Mail::send('emails.contact',compact('input'), function($m)
         {
-            $m->to('contact@razorpay.com', 'Razorpay Contact')->subject('New Contact form submission');
+            $m->to('contact@razorpay.com', 'Razorpay Contact')
+              ->subject('New Contact form submission');
         });
 
         return Redirect::to("https://razorpay.com/postcontact/");
