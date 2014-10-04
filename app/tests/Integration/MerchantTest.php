@@ -18,12 +18,12 @@ class MerchantTest extends TestCase
 
         if (static::$migrated === false)
         {
-            //Truncates all tables befor first test
+            // Truncates all tables befor first test
             $this->truncateAll();
             static::$migrated = true;
         }
 
-        //Creates a new merchant if none exists in db otherwise uses that. This is necessary for persisting sessions between tests
+        // Creates a new merchant if none exists in db otherwise uses that. This is necessary for persisting sessions between tests
         try
         {
             $this->merchant = Models\DAL\Merchant::firstorfail();
@@ -128,7 +128,7 @@ class MerchantTest extends TestCase
      */
     public function testKeysPanel()
     {
-        //Testing keys display
+        // Testing keys display
          $this->browser
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#keysNav').length > 0", 20000)
             ->click(l::IdOrName('keysNav'))
@@ -139,7 +139,7 @@ class MerchantTest extends TestCase
 
         $this->assertBodyHasText("Key Id");
 
-        //Testing Generate new Key
+        // Testing Generate new Key
         $this->browser
             ->click(l::IdOrName('generateKey'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-key-modal').length > 0", 20000);
@@ -148,7 +148,7 @@ class MerchantTest extends TestCase
 
         $this->assertBodyHasText("Key Generated");
 
-        //New Key generated close the modal
+        // New Key generated close the modal
         $this->browser
             ->click(l::css('.modal-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 20000)
@@ -160,7 +160,7 @@ class MerchantTest extends TestCase
 
         $this->assertBodyHasText("Key Generated");
 
-        //Testing rolling of key
+        // Testing rolling of key
         $this->browser
             ->click(l::css('.roll_key'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.roll-key-modal').length > 0", 20000)
@@ -182,7 +182,7 @@ class MerchantTest extends TestCase
      */
     public function testActivationPanel()
     {
-        ///Testing keys display
+        // Testing keys display
          $this->browser
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#activationNav').length > 0", 20000)
             ->click(l::IdOrName('activationNav'))
@@ -191,7 +191,7 @@ class MerchantTest extends TestCase
 
         $this->assertBodyHasText("Contact Details");
 
-        //Fill in Contact details and save
+        // Fill in Contact details and save
         $this->browser
             ->click(l::css('form[name="step1"] > fieldset > .prev-next > .btn-save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step1\"] > fieldset > .alerts > .alert-danger').length > 0", 20000)
@@ -204,7 +204,7 @@ class MerchantTest extends TestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step1\"] > fieldset > .alerts > .alert-danger')));
 
-        //Fill in Bussiness Details and save
+        // Fill in Bussiness Details and save
         $this->browser
             ->click(l::css('form[name="step1"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step2\"]').is(':visible')", 20000)
@@ -228,7 +228,7 @@ class MerchantTest extends TestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step2\"] > fieldset > .alerts > .alert-danger')));
 
-        //Fill in Promoters Details and save
+        // Fill in Promoters Details and save
         $this->browser
             ->click(l::css('form[name="step2"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"]').is(':visible')", 20000)
@@ -239,7 +239,7 @@ class MerchantTest extends TestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step3\"] > fieldset > .alerts > .alert-danger')));
 
-        //Fill in Bank Account Details and save
+        // Fill in Bank Account Details and save
         $this->browser
             ->click(l::css('form[name="step3"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step4\"]').is(':visible')", 20000)
@@ -254,8 +254,8 @@ class MerchantTest extends TestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step4\"] > fieldset > .alerts > .alert-danger')));
 
-        //Upload documents and save
-        //S3 API is mocked in selenium/init.php to avoid requests to AWS
+        // Upload documents and save
+        // S3 API is mocked in selenium/init.php to avoid requests to AWS
         $this->browser
             ->click(l::css('form[name="step4"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"]').is(':visible')", 20000)
@@ -272,7 +272,7 @@ class MerchantTest extends TestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step4\"] > fieldset > .alerts > .alert-danger')));
 
-        //Submit for activation
+        // Submit for activation
         $this->browser
             ->click(l::css('form[name="step5"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step6\"]').is(':visible')", 20000)
@@ -289,7 +289,7 @@ class MerchantTest extends TestCase
      */
     public function testProfilePanel()
     {
-        //Testing profile display
+        // Testing profile display
         $this->browser
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#profileNav').length > 0", 20000)
             ->click(l::IdOrName('profileNav'))
@@ -300,7 +300,7 @@ class MerchantTest extends TestCase
 
         $this->assertBodyHasText($this->merchant->id);
 
-        //Test Change Password
+        // Test Change Password
         $this->browser
             ->click(l::css('.btn-change-pwd'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length > 0", 20000)

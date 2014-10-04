@@ -32,7 +32,7 @@ class MerchantDetails extends Service
 
         if ((int)$merchant_details->submitted === 0)
         {
-            //Check if already finished
+            // Check if already finished
             $steps_finished = json_decode($merchant_details->steps_finished, true);
 
             $missing_steps = Manager\MerchantDetails::validateActivation($steps_finished);
@@ -53,7 +53,7 @@ class MerchantDetails extends Service
 
                 $data['submitted'] = 1;
 
-                //Updating the model
+                // Updating the model
                 $merchant_details->update($data);
             }
         }
@@ -63,7 +63,7 @@ class MerchantDetails extends Service
 
     public function saveDetails($id, array $input)
     {
-        //Check if already finished
+        // Check if already finished
         $merchant_details = \Auth::merchant()->user()->MerchantDetails;
 
         if ($merchant_details->locked)
@@ -84,7 +84,7 @@ class MerchantDetails extends Service
 
             $data['steps_finished'] = json_encode($steps_finished);
 
-            //Updating the model
+            // Updating the model
             $merchant_details->update($data);
         }
         return $error;
@@ -102,11 +102,11 @@ class MerchantDetails extends Service
             return $error;
         }
 
-        //Check if already finished
+        // Check if already finished
         $steps_finished = json_decode($merchant_details->steps_finished, true);
 
         if (in_array(5, $steps_finished)){
-            //return success if already finished
+            // return success if already finished
             return $error;
         }
 
@@ -118,7 +118,7 @@ class MerchantDetails extends Service
 
             $steps_finished = json_encode($steps_finished);
 
-            //Updating the model
+            // Updating the model
             $merchant_details->steps_finished = $steps_finished;
             $merchant_details->save();
         }

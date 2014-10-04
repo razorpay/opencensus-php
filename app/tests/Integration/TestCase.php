@@ -17,7 +17,7 @@ class TestCase extends ZizacoIntegrationTestCase
     {
         parent::setUpBeforeClass();
 
-        //Refresh the db before a test
+        // Refresh the db before a test
         exec('cd ' . __DIR__ . '/../.. & php artisan migrate --env=testing');
     }
 

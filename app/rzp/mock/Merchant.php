@@ -12,7 +12,7 @@ class Merchant extends MockEntity
     }
 
     public function fetch($id)
-    {   
+    {
         $this->mock(self::$mockData['merchant'], array('id' => $id));
 
         return $this;
@@ -41,7 +41,7 @@ class Merchant extends MockEntity
         return $this;
     }
 
-    //Enables live transactions for merchant
+    // Enables live transactions for merchant
     public function enable()
     {
         $this->mock(self::$mockData['merchant'], array('activated' => 1, 'live' => 1));
@@ -49,7 +49,7 @@ class Merchant extends MockEntity
         return $this;
     }
 
-    //disable live transactions for merchant
+    // disable live transactions for merchant
     public function disable()
     {
         $this->mock(self::$mockData['merchant'], array('activated' => 1));
@@ -74,7 +74,7 @@ class Merchant extends MockEntity
     }
 
     public function fetchTerminal()
-    {   
+    {
         $this->mock(array());
 
         return $this;

@@ -114,7 +114,7 @@ class MerchantDetails extends DAL
     {
         $details = static::filterDetails($merchant_details);
 
-        //remove the urls for ajax
+        // remove the urls for ajax
         foreach($details['files'] as &$file)
         {
            $file = '';

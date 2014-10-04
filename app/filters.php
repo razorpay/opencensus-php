@@ -15,15 +15,15 @@ use Http\AppResponse;
 
 App::before(function($request)
 {
-    //Set Cookie for use by angular (Setting in after filter fails selenium tests, hence queuing in before filter)
+    // Set Cookie for use by angular (Setting in after filter fails selenium tests, hence queuing in before filter)
 	Cookie::queue('XSRF-TOKEN', csrf_token(), 0, '/', null, false, false);
 });
 
 
 App::after(function($request, $response)
 {
-	//This is necessary for protection against json/jsonp array vulnerability
-	//Refer https://docs.angularjs.org/api/ng/service/$http JSON Vulnerability Protection
+	// This is necessary for protection against json/jsonp array vulnerability
+	// Refer https:// docs.angularjs.org/api/ng/service/$http JSON Vulnerability Protection
 	if ($response instanceof \Illuminate\Http\JsonResponse)
     {
         $json = ")]}',\n" . $response->getContent();

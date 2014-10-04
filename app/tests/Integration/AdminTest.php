@@ -22,7 +22,7 @@ class AdminTest extends TestCase
 
         if (static::$migrated === false)
         {
-            //Truncates all tables befor first test
+            // Truncates all tables befor first test
             $this->truncateAll();
             static::$migrated = true;
         }
@@ -80,7 +80,7 @@ class AdminTest extends TestCase
         $this->assertBodyHasText("List of all Plans");
 
 
-        //Tests creation of new plan
+        // Tests creation of new plan
         $this->browser
             ->click(l::linkContaining('Create New Pricing Plan'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#create-plan-panel').is(':visible')", 20000)
@@ -94,7 +94,7 @@ class AdminTest extends TestCase
 
         $this->assertBodyHasText("Plan created successfully");
 
-        //Tests Creation of new rule
+        // Tests Creation of new rule
         $this->browser
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#show-plan-panel').is(':visible')", 20000)
             ->select(l::IdOrName('payment_mode_type'), 'Debit')
@@ -127,7 +127,7 @@ class AdminTest extends TestCase
      */
     public function testMerchantDetails()
     {
-        //Get merchant details & actions
+        // Get merchant details & actions
         $this->browser
             ->open(URL::to('/admin#/app/merchants/list'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table > tbody > tr > td').length > 5", 20000)
@@ -138,21 +138,21 @@ class AdminTest extends TestCase
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText("Merchant Detail");
 
-        //Lock Activation Form
+        // Lock Activation Form
         $this->browser
             ->click(l::linkContaining('Lock Activation Form'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.alert-success').length > 0", 20000);
 
         $this->assertBodyHasText('Merchant Form locked successfully');
 
-        //Unlock Activation Form
+        // Unlock Activation Form
         $this->browser
             ->click(l::linkContaining('Unlock Activation Form'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $this->assertBodyHasText('Merchant Form unlocked successfully');
 
-        //Assign Pricing
+        // Assign Pricing
         $this->browser
             ->click(l::linkContaining('Assign Pricing'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.pricing-modal').length > 0", 20000)
@@ -168,7 +168,7 @@ class AdminTest extends TestCase
 
         $this->assertBodyHasText('Plan Assigned successfully');
 
-        //Assign Terminal
+        // Assign Terminal
         $this->browser
             ->click(l::linkContaining('Assign Terminal'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.terminal-modal').length > 0", 20000)
@@ -186,7 +186,7 @@ class AdminTest extends TestCase
 
         $this->assertBodyHasText('Terminal Assigned successfully');
 
-        //Activate Merchant
+        // Activate Merchant
         $this->browser
             ->click(l::linkContaining('Activate Merchant'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-ok').length > 0", 20000)
@@ -198,7 +198,7 @@ class AdminTest extends TestCase
 
         $this->assertBodyHasText('Merchant Activated successfully');
 
-        //See Merchant Activation Details
+        // See Merchant Activation Details
         $this->browser
             ->click(l::linkContaining('See Activation Form Details'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper').length > 0", 20000);
@@ -215,7 +215,7 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000);
 
         $loginAsMerchantLink = $this->browser->getAttribute('link=Login as Merchant@href');
-die();
+
         $this->browser
             ->open(URL::to($loginAsMerchantLink))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 20000);                     // Wait for page to load
@@ -233,7 +233,7 @@ die();
     public function testMerchantActivationDetails()
     {
 
-        //Browsing the whole form
+        // Browsing the whole form
         $this->browser
             ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/activation'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper').length > 0", 20000)
@@ -281,7 +281,7 @@ die();
      */
     public function testManageAdmins()
     {
-        //Testing admins display
+        // Testing admins display
         $this->browser
             ->open(URL::to('/admin#'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#adminsNav').length > 0", 20000)
@@ -293,7 +293,7 @@ die();
 
         $this->assertBodyHasText($this->admin->username);
 
-        //Test Add Admin
+        // Test Add Admin
         $this->browser
             ->click(l::linkContaining('Add new Admin'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.new-admin-modal').length > 0", 20000)
@@ -314,7 +314,7 @@ die();
      */
     public function testProfilePanel()
     {
-        //Testing profile display
+        // Testing profile display
         $this->browser
             ->open(URL::to('/admin#'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#profileNav').length > 0", 20000)
@@ -326,7 +326,7 @@ die();
 
         $this->assertBodyHasText($this->admin->username);
 
-        //Test Change Password
+        // Test Change Password
         $this->browser
             ->click(l::css('.btn-change-pwd'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.change-pwd-modal').length > 0", 20000)

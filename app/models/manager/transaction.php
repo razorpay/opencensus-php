@@ -11,13 +11,13 @@ class Transaction extends Manager
      */
     protected static $api_dashboard_mappings = array(
         'id'                =>  'id',
-        'entity_id'         =>  'entity_id',    
-        'entity_type'       =>  'entity_type',        
+        'entity_id'         =>  'entity_id',
+        'entity_type'       =>  'entity_type',
         'amount'            =>  'amount',
-        'currency'          =>  'currency',    
+        'currency'          =>  'currency',
         'debit'             =>  'debit',
-        'credit'            =>  'credit',    
-        'fee'               =>  'fee' 
+        'credit'            =>  'credit',
+        'fee'               =>  'fee'
     );
 
     protected static $fetchRules = array(
@@ -60,22 +60,22 @@ class Transaction extends Manager
             switch($type)
             {
                 case 'day' :
-                    $time -= 31 * 24 * 60 * 60; //Last 1 month
+                    $time -= 31 * 24 * 60 * 60; // Last 1 month
                     $time = strtotime(date('j F Y', $time));
                     $this->setField('from', $time);
                     break;
                 case 'week':
-                    $time -= 31 * 24 * 60 * 60; //Last 1 month
+                    $time -= 31 * 24 * 60 * 60; // Last 1 month
                     $time = strtotime(date('o-\\WW', $time));
                     $this->setField('from', $time);
                     break;
                 case 'month':
-                    $time -= 5 * 31 * 24 * 60 * 60; //Last 5 months
+                    $time -= 5 * 31 * 24 * 60 * 60; // Last 5 months
                     $time = strtotime(date('M Y', $time));
                     $this->setField('from', $time);
                     break;
                 case 'year':
-                    $time -= 5 * 365 * 24 * 60 * 60; //Last 5 years
+                    $time -= 5 * 365 * 24 * 60 * 60; // Last 5 years
                     $time = strtotime('1 Jan ' . date('Y', $time));
                     $this->setField('from', $time);
                     break;

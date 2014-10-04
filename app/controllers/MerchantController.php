@@ -12,7 +12,7 @@ class MerchantController extends BaseController
         return View::make('merchant.getIndexGenerated');
     }
 
-    public function getUser()
+    public function getMerchant()
     {
        $merchant = (new Service\Merchant)->fetch(Auth::merchant()->id());
 

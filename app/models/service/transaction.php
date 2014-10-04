@@ -73,7 +73,7 @@ class Transaction extends Service
         {
             $this->aggregate($data, $mode);
 
-            //Only Payments analytics are stored
+            // Only Payments analytics are stored
             if ($data['resource'] === "payment")
             {
                 unset($data['resource']);
@@ -174,7 +174,7 @@ class Transaction extends Service
         }
     }
 
-    //@todo: see if this function can be improved.
+    // @todo: see if this function can be improved.
     protected function fillMissing($input, $array)
     {
         $data = [];

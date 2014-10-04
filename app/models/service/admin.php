@@ -154,9 +154,9 @@ class Admin extends Service
 
         $data['merchant_details'] = $merchant_details;
 
-        //@todo This is failing tests on wercker, fix
-        //$merchant = DAL\Merchant::findorfail($id);
-        //Manager\Merchant::checkAPIMatch($merchant, $response);
+        // @todo This is failing tests on wercker, fix
+        // $merchant = DAL\Merchant::findorfail($id);
+        // Manager\Merchant::checkAPIMatch($merchant, $response);
 
         $response = array(
             'steps_finished'    => json_decode($merchant_details['steps_finished'], true),
