@@ -1,6 +1,7 @@
 <?php
 /**
- * Overrides private functions of Zizaco\TestCases\IntegrationTestCase to make them protected and allowing overriding later
+ * Overrides private functions of Zizaco\TestCases\IntegrationTestCase to make
+ * them protected and allowing overriding later
  */
 
 namespace Tests\Integration;
@@ -33,17 +34,21 @@ class ZizacoIntegrationTestCase extends IntegrationTestCase
         self::waitForOutput($output_path, $content, $timeout);
     }
 
-    protected static function waitForOutput($file, $output) {
+    protected static function waitForOutput($file, $output)
+    {
         $found = FALSE;
         $max_tries = 30;
         $num_tries = 0;
-        while ( !$found ) {
+        while ( !$found )
+        {
             $contents = file_get_contents($file);
             // var_dump($contents);
-            if ( strstr($contents, $output) ) {
+            if ( strstr($contents, $output) )
+            {
                 $found = TRUE;
             } else {
-                if ( ++$num_tries > $max_tries ) {
+                if ( ++$num_tries > $max_tries )
+                {
                     throw new \Exception("Failed to find $output in $file");
                 }
                 sleep(1);

@@ -101,17 +101,22 @@ class MerchantDetails extends Manager
     public static function sortDataInSteps($data)
     {
         $response = array();
-        foreach($data as $key => $value) {
-            if (array_key_exists($key, static::$step1Rules) === true) {
+        foreach($data as $key => $value)
+        {
+            if (array_key_exists($key, static::$step1Rules) === true)
+            {
                 $response['1'][$key] = $value;
             }
-            else if (array_key_exists($key, static::$step2Rules) === true) {
+            else if (array_key_exists($key, static::$step2Rules) === true)
+            {
                 $response['2'][$key] = $value;
             }
-            else if (array_key_exists($key, static::$step3Rules) === true) {
+            else if (array_key_exists($key, static::$step3Rules) === true)
+            {
                 $response['3'][$key] = $value;
             }
-            else if (array_key_exists($key, static::$step4Rules) === true) {
+            else if (array_key_exists($key, static::$step4Rules) === true)
+            {
                 $response['4'][$key] = $value;
             }
         }

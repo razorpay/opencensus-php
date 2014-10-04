@@ -83,8 +83,7 @@ class Merchant extends Manager
      */
     public function generateId()
     {
-        $this->setField(
-            'id', bin2hex(openssl_random_pseudo_bytes(24/2)));
+        $this->setField('id', bin2hex(openssl_random_pseudo_bytes(24/2)));
     }
 
     /**
@@ -98,9 +97,12 @@ class Merchant extends Manager
 
     public static function checkAPIMatch($merchant, $api_response)
     {
-        foreach(static::$api_dashboard_mappings as $key => $value){
-            if ($api_response[$key] !== $merchant[$value]) {
-                throw new \Exception('Merchant data mismatch with api for '.$merchant['id'].' at '.$key);
+        foreach(static::$api_dashboard_mappings as $key => $value)
+        {
+            if ($api_response[$key] !== $merchant[$value])
+            {
+                throw new \Exception(
+                    'Merchant data mismatch with api for '.$merchant['id'].' at '.$key);
             }
         }
     }

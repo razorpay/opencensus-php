@@ -92,7 +92,7 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postCaptureTransaction($mode, $id = null)
+    public function postCapturePayment($mode, $id = null)
     {
         $this->checkMode($mode);
 
@@ -103,7 +103,7 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function postRefundTransaction($mode, $id = null)
+    public function postRefundPayment($mode, $id = null)
     {
         $this->checkMode($mode);
 

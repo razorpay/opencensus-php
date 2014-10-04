@@ -32,7 +32,7 @@ class Manager
     protected static $generators = array();
 
     /**
-     * Validator functions that will be 
+     * Validator functions that will be
      * rung during build on input data
      */
     protected static $validators = array();
@@ -53,7 +53,7 @@ class Manager
      * Denotes whether the current object
      * has been built from input (true) or
      * loaded from storage (false)
-     * 
+     *
      * @var boolean
      */
     protected $built = false;
@@ -100,9 +100,9 @@ class Manager
     /**
      * Verifies validity of input values and keys.
      * @param  array    $input     Input array supplied
-     * @param  string   $operation Operation for which input 
+     * @param  string   $operation Operation for which input
      *                             is supplied
-     * 
+     *
      * @return void     throws exception for error
      */
     protected function validateInput($input, $operation)
@@ -114,17 +114,17 @@ class Manager
 
     /**
      * Checks that all keys present in the input are allowed.
-     * 
+     *
      * @param  array    $input     Input array supplied
-     * @param  string   $operation Operation for which input 
+     * @param  string   $operation Operation for which input
      *                             is supplied
-     *                             
+     *
      * @return void     throws exception for error
      */
     protected function validateInputKeys($input, $operation)
     {
         $rules_var = $operation.'Rules';
-        
+
         $invalid_keys = array_keys(array_diff_key($input, static::$$rules_var));
 
         if (count($invalid_keys) > 0)
@@ -135,15 +135,15 @@ class Manager
 
     /**
      * Checks validity and presence of input values.
-     * 
+     *
      * @param  array    $input     Input array supplied
-     * @param  string   $operation Operation for which input 
+     * @param  string   $operation Operation for which input
      *                             is supplied
-     *                             
+     *
      * @return void     throws exception for error
      */
     protected function validateInputValues($input, $operation)
-    {   
+    {
         $rules_var = $operation.'Rules';
         $validation = \Validator::make(
                         $input,
@@ -154,7 +154,7 @@ class Manager
             $this->error = $validation->messages()->all();
         }
 
-        $this->runValidators($input, $operation);        
+        $this->runValidators($input, $operation);
     }
 
     protected function runValidators($input, $operation)
@@ -206,13 +206,13 @@ class Manager
 
     /**
      * Returns value of the field
-     * 
+     *
      * @param  string  $key
      * @return mixed
      */
     public function getField($key)
     {
-        if ((isset($this->field)) and 
+        if ((isset($this->field)) and
             (! in_array($key, $this->field)))
         {
             throw new \InvalidArgumentException();
@@ -226,7 +226,7 @@ class Manager
 
     public function setField($key, $value)
     {
-        if ((count($this->field) > 0) and 
+        if ((count($this->field) > 0) and
             (! in_array($key, $this->field)))
         {
             throw new \InvalidArgumentException();

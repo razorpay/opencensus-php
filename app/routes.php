@@ -68,9 +68,9 @@ Route::group(array('before' => 'auth'), function()
 
         Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
 
-        Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCaptureTransaction');
+        Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment');
 
-        Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundTransaction');
+        Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment');
     });
 });
 
