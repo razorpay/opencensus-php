@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "83bfe392bfb92f578d535833c2b0c602",
+    "hash": "a1d27d5b054857679678bed2d9fc829f",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1220,6 +1220,36 @@
                 "razorpay"
             ],
             "time": "2014-09-24 20:49:24"
+        },
+        {
+            "name": "razorpay/spine",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "git@bitbucket.org:razorpay/spine.git",
+                "reference": "94b0696ede06aaf908b061bca773ac86fc74fdd3"
+            },
+            "require": {
+                "laravel/framework": "4.2.*",
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "raveren/kint": ">=0.9"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Razorpay\\Spine\\": "src/"
+                }
+            },
+            "description": "Razorpay Spine",
+            "keywords": [
+                "api",
+                "php",
+                "razorpay",
+                "spine"
+            ],
+            "time": "2014-09-21 19:14:47"
         },
         {
             "name": "rmccue/requests",
@@ -2512,6 +2542,7 @@
     "stability-flags": {
         "razorpay/razorpay-php": 20,
         "ollieread/multiauth": 20,
+        "razorpay/spine": 20,
         "zizaco/testcases-laravel": 20,
         "mockery/mockery": 20
     },
