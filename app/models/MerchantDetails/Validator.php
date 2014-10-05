@@ -77,7 +77,7 @@ class Validator extends Base\Validator
 
         $file = current($input);
 
-        $extenstion = $file->getClientOriginalExtension();
+        $extension = $file->getClientOriginalExtension();
         if ((in_array($extension, static::$allowed_extensions) === false) or
             (in_array($file->getMimeType(), static::$allowed_mimes) === false))
         {

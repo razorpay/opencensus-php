@@ -120,7 +120,7 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            $data = $this->getFileUploadData($input);
+            $data = Entity::getFileUploadData($input);
             $error = $this->uploadFileToS3($data);
         }
 

@@ -23,7 +23,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'activated'
     );
 
-    protected static $createGenerators = array('id', 'confirm_token');
+    protected static $generators = array('id', 'confirm_token');
 
     /**
      * Generates UUid ID

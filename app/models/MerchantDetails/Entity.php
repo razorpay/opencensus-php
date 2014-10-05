@@ -166,9 +166,9 @@ class Entity extends Base\Entity
         );
     }
 
-    protected function getFileUploadData($input)
+    public static function getFileUploadData($input)
     {
-        $field = static::$uploadKeys[$key];
+        $field = static::$uploadKeys[key($input)];
 
         return array(
             'key'   => key($input),
@@ -253,5 +253,7 @@ class Entity extends Base\Entity
         {
             $this->addStepToStepsFinished($step);
         }
+
+        return $error;
     }
 }

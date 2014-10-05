@@ -46,16 +46,26 @@ Log::useFiles(storage_path().'/logs/laravel.log');
 |
 */
 
-App::error(function(Exception $exception, $code)
+App::error(function(Exception $e, $code)
 {
-	Log::error($exception);
+	Log::error($e);
 
-    if (Config::get('app.debug') !== true)
+    if (Config::get('app.debug') === false)
     {
         if ($code === '404')
             return Redirect::to('/#/404');
         else
             return Response::json(array('success' => false, 'errors' => ['Internal Server Error']));
+    }
+    else
+    {sd($e);
+        $arr = array(
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile(),
+            'trace' => $e->getTraceAsString());
+
+        sd($arr);
     }
 });
 
