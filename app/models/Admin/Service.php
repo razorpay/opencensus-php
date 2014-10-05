@@ -152,7 +152,7 @@ class Service extends Base\Service
         // Merchant\Validator::checkAPIMatch($merchant, $response);
 
         $response = array(
-            'steps_finished'    => json_decode($merchant_details['steps_finished'], true),
+            'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
             'live'              => $data['live']
@@ -209,7 +209,7 @@ class Service extends Base\Service
 
     public function postMerchantTerminal($id, $input)
     {
-        $error = (new Merchant\Validator)->validateInput('terminal', $input);
+        $error = (new Merchant\Validator)->validateInput('terminal', $input)->messages();
 
         if (empty($error))
         {
@@ -219,7 +219,7 @@ class Service extends Base\Service
 
             try
             {
-                $data = $this->api->merchant->fetch($id)->setTerminal($data)->toArray();
+                $data = $this->api->merchant->fetch($id)->setTerminal($input)->toArray();
             }
             catch(\Razorpay\Api\Errors\BadRequestError $e)
             {

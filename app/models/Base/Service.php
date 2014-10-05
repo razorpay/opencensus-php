@@ -2,6 +2,9 @@
 
 namespace Models\Base;
 
+use Config;
+use RZP\Api;
+
 class Service
 {
     public function setApiCredentials($merchant_id = null, $mode = 'live')

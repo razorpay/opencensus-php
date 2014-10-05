@@ -3,6 +3,8 @@
 namespace Models\Transaction;
 
 use Models\Base;
+use Models\Transaction;
+use Models\Merchant;
 
 class Service extends Base\Service
 {
@@ -20,7 +22,7 @@ class Service extends Base\Service
      */
     public function process(array $input, $mode)
     {
-        $error = (new Transaction\Validator)->validateInput('process', $input);
+        $error = (new Transaction\Validator)->validateInput('process', $input)->messages();
 
         if (empty($error) === false)
         {
@@ -37,10 +39,9 @@ class Service extends Base\Service
             foreach (static::$timeIntervals as $type => $interval)
             {
                 $obj = Transaction\Entity::retrieveLastByType($input['merchant_id'], $type, $mode);
-                $created_at = (int) $obj->create_at + $interval;
 
                 if (($obj === null) or
-                    ($created_at <= $input['updated_at']))
+                    ((int) $obj->create_at + $interval <= $input['updated_at']))
                 {
                     $this->create($input, $type, $mode);
                 }
@@ -101,7 +102,8 @@ class Service extends Base\Service
 
     public function getAggregations($merchantId, $mode)
     {
-        return Merchant\Entity::getAggregations(array('merchant_id' => $merchantId), $mode);
+        $array = array('merchant_id' => $merchantId, 'resource' => 'payment');
+        return Merchant\Entity::getAggregations($array, $mode);
     }
 
     public function getAnalytics($input, $mode)

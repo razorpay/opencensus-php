@@ -180,7 +180,7 @@ class Service extends Base\Service
 
     public function rollKeys(array $input, $mode)
     {
-        $error = (new Merchant\Validator)->validateInput('key', $input);
+        $error = (new Merchant\Validator)->validateInput('key', $input)->messages();
 
         if (empty($error) === false)
         {

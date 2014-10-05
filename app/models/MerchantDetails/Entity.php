@@ -208,7 +208,7 @@ class Entity extends Base\Entity
             throw new \LogicException('Step should be less than 5' . $step);
         }
 
-        $stepsFinished = $this->getAttriute('steps_finished');
+        $stepsFinished = $this->getAttribute('steps_finished');
 
         if (in_array($step, $stepsFinished) === false)
         {
@@ -231,7 +231,7 @@ class Entity extends Base\Entity
     public function isStepFinished($step)
     {
         // Check if already finished
-        $stepsFinished = $this->getAttriute('steps_finished');
+        $stepsFinished = $this->getAttribute('steps_finished');
 
         return in_array(5, $stepsFinished);
     }
@@ -240,7 +240,7 @@ class Entity extends Base\Entity
     {
         $steps = range(1, 5);
 
-        $stepsFinished = $this->getAttriute('steps_finished');
+        $stepsFinished = $this->getAttribute('steps_finished');
 
         return array_diff($steps, $stepsFinished);
     }

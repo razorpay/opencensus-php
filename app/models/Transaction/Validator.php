@@ -25,14 +25,14 @@ class Validator extends Base\Validator
 
     public function validateAnalytics(& $input)
     {
-        $error = $this->validateInput('analytics', $input);
+        $error = $this->validateInput('analytics', $input)->messages();
 
         if (empty($error) === false)
         {
             return $error;
         }
 
-        foreach ($analyticsGenerators as $generator)
+        foreach (static::$analyticsGenerators as $generator)
         {
             $method = 'generate' . ucfirst($generator);
 

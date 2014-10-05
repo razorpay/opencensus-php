@@ -2,6 +2,7 @@
 
 use Http\AppResponse;
 use Models\Admin;
+use Models\Merchant;
 
 class AdminController extends BaseController
 {

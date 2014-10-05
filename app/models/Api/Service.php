@@ -8,14 +8,12 @@ class Service extends Base\Service
 {
     public function __construct()
     {
-        $merchantId = \Auth::merchant()->id();
-
-        $this->setApiCredentials($merchantId, $mode);
+        $this->merchantId = \Auth::merchant()->id();
     }
 
     public function fetchEntity($id, $mode, $entity)
     {
-        $error = (new Validator)->validateInput(array('id' => $id), 'fetch');
+        $error = (new Validator)->validateInput(array('id' => $id), 'fetch')->messages();
 
         if (empty($error) === false)
         {
@@ -24,6 +22,7 @@ class Service extends Base\Service
 
         try
         {
+            $this->setApiCredentials($this->merchantId, $mode);
             $data = $this->api->payment->fetch($id)->toArray();
 
             $collection = array(
@@ -56,7 +55,7 @@ class Service extends Base\Service
     {
         $data = array();
 
-        $error = (new Validator)->validateInput($input, 'fetch');
+        $error = (new Validator)->validateInput('fetch', $input)->messages();
 
         if (empty($error) === false)
         {
@@ -67,6 +66,7 @@ class Service extends Base\Service
 
         try
         {
+            $this->setApiCredentials($this->merchantId, $mode);
             $collection = $this->api->$entity->all($input)->toArray();
 
             $this->mapKeys($collection);
@@ -104,12 +104,13 @@ class Service extends Base\Service
     {
         $data = array();
 
-        $error = (new Validator)->validateInput(array('id' => $id), 'fetch');
+        $error = (new Validator)->validateInput('fetch', array('id' => $id), '')->messages();
 
         if (empty($error))
         {
             try
             {
+                $this->setApiCredentials($this->merchantId, $mode);
                 $collection = $this->api->payment
                                         ->fetch($id)
                                         ->refunds()
@@ -133,6 +134,7 @@ class Service extends Base\Service
 
         try
         {
+            $this->setApiCredentials($this->merchantId, $mode);
             $data = $this->api->payment
                                 ->fetch($id)
                                 ->capture(array('amount' => $amount))
@@ -156,6 +158,7 @@ class Service extends Base\Service
 
         try
         {
+            $this->setApiCredentials($this->merchantId, $mode);
             $data = $this->api->payment
                               ->fetch($id)
                               ->refund(array('amount' => $amount))

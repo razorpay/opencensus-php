@@ -10,7 +10,7 @@ class Entity extends \Razorpay\Spine\Entity
 
         $this->modify($input);
 
-        $validator = $this->validateInput('create', $input);
+        $validator = $this->validateInput('create', $input)->messages();
 
         $this->validator = $validator;
 
@@ -30,7 +30,7 @@ class Entity extends \Razorpay\Spine\Entity
 
     public function edit(array $input = array(), $operation = 'edit')
     {
-        $validator = $this->validateInput($operation, $input);
+        $validator = $this->validateInput($operation, $input)->messages();
 
         if ($validator->fails())
         {
