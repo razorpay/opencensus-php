@@ -569,16 +569,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v4.2.10",
+            "version": "v4.2.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "3fe430a55ec73346c708f0b864820528d6c28eda"
+                "reference": "e29253c7f29e3b1ca716de7fe309b272e3ddf47d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/3fe430a55ec73346c708f0b864820528d6c28eda",
-                "reference": "3fe430a55ec73346c708f0b864820528d6c28eda",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/e29253c7f29e3b1ca716de7fe309b272e3ddf47d",
+                "reference": "e29253c7f29e3b1ca716de7fe309b272e3ddf47d",
                 "shasum": ""
             },
             "require": {
@@ -680,7 +680,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2014-10-02 19:50:12"
+            "time": "2014-10-04 18:48:27"
         },
         {
             "name": "maximebf/debugbar",
@@ -1227,7 +1227,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/spine.git",
-                "reference": "94b0696ede06aaf908b061bca773ac86fc74fdd3"
+                "reference": "36cc6ee7ae347377fee11d5bdb831e97b55a3c58"
             },
             "require": {
                 "laravel/framework": "4.2.*",
@@ -1249,7 +1249,7 @@
                 "razorpay",
                 "spine"
             ],
-            "time": "2014-09-21 19:14:47"
+            "time": "2014-10-05 21:52:50"
         },
         {
             "name": "rmccue/requests",
@@ -1352,20 +1352,20 @@
         },
         {
             "name": "swiftmailer/swiftmailer",
-            "version": "v5.2.2",
+            "version": "v5.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/swiftmailer/swiftmailer.git",
-                "reference": "e02f71a35436af4bd58a1bd90116089e632e29e1"
+                "reference": "b86b927dfefdb56ab0b22d1350033d9a38e9f205"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/e02f71a35436af4bd58a1bd90116089e632e29e1",
-                "reference": "e02f71a35436af4bd58a1bd90116089e632e29e1",
+                "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/b86b927dfefdb56ab0b22d1350033d9a38e9f205",
+                "reference": "b86b927dfefdb56ab0b22d1350033d9a38e9f205",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.2.4"
+                "php": ">=5.3.3"
             },
             "require-dev": {
                 "mockery/mockery": "~0.9.1"
@@ -1373,7 +1373,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "5.2-dev"
+                    "dev-master": "5.3-dev"
                 }
             },
             "autoload": {
@@ -1400,7 +1400,7 @@
                 "mail",
                 "mailer"
             ],
-            "time": "2014-09-20 07:17:36"
+            "time": "2014-10-04 05:53:18"
         },
         {
             "name": "symfony/browser-kit",
