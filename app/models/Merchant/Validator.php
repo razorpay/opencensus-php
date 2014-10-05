@@ -1,11 +1,10 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Merchant;
 
-use Models\DAL;
-use Models\Service;
+use Models\Base;
 
-class Merchant extends Manager
+class Validator extends Base\Validator
 {
     protected static $createRules = array(
         'name'                  => 'required|alpha_space|max:200',

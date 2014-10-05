@@ -29,7 +29,7 @@ class Service extends Base\Service
      * Changes password oflogged in admin
      *
      * @param  $input input array
-     * @param  $admin DAL\Admin Object
+     * @param  $admin Admin\Entity Object
      * @return  Status
      */
     public function changePassword($input, $admin)
@@ -148,8 +148,8 @@ class Service extends Base\Service
         $data['merchant_details'] = $merchant_details;
 
         // @todo This is failing tests on wercker, fix
-        // $merchant = DAL\Merchant::findorfail($id);
-        // Manager\Merchant::checkAPIMatch($merchant, $response);
+        // $merchant = Merchant\Entity::findorfail($id);
+        // Merchant\Validator::checkAPIMatch($merchant, $response);
 
         $response = array(
             'steps_finished'    => json_decode($merchant_details['steps_finished'], true),

@@ -1,10 +1,10 @@
 <?php
 
-namespace Models\Manager;
+namespace Models\Transaction;
 
-use Models\Service;
+use Models\Base;
 
-class Transaction extends Validator
+class Validator extends Base\Validator
 {
     protected static $processRules = array(
         'merchant_id'   =>  'required',

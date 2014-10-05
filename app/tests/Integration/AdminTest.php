@@ -30,8 +30,8 @@ class AdminTest extends TestCase
         /** Creates a new admin & merchant if none exist in db, else uses first admin. This is necesssary to persist sessions between tests **/
         try
         {
-            $this->admin = Models\DAL\Admin::firstorfail();
-            $this->merchant_details = Models\DAL\MerchantDetails::firstorfail();
+            $this->admin = Models\Admin\Entity::firstorfail();
+            $this->merchant_details = Models\MerchantDetails\Entity::firstorfail();
             $this->merchant = $this->merchant_details->merchant;
 
         }
@@ -40,7 +40,7 @@ class AdminTest extends TestCase
             $this->admin = $this->createEntity('admin');
             $this->merchant = $this->createEntity('merchant', array('id'=>static::generateRandomString(24), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
             $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
-            $error = (new Models\Service\Merchant)->confirm($this->merchant->confirm_token);
+            $error = (new Models\Merchant\Service)->confirm($this->merchant->confirm_token);
 
             if (empty($error) === false)
             {

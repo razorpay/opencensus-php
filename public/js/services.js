@@ -37,7 +37,7 @@ angular.module('app.services', [])
 						.success(function(data) {
 							_identity = data.data;
 							if(data.data.steps_finished) {
-								_identity.activation_progress = parseInt((JSON.parse(data.data.steps_finished).length * 100)/ 6);
+                                _identity.activation_progress = parseInt(((data.data.steps_finished).length * 100)/ 6);
 							}
 					   		_authenticated = data.success === true;
 					   		if(_authenticated) $idle.watch();
@@ -70,13 +70,13 @@ angular.module('app.services', [])
 				        		if (user.isAuthenticated() === true) $state.go('app.dashboard'); // user is signed in but not authorized for desired state
 				        	}
 				        });
-				    }			        
+				    }
 			    };
 			  }
 			])
 			.factory("modeFactory",['$state', '$localStorage', '$rootScope',
 			 function($state, $localStorage, $rootScope){
-				var modes = {test: "test", live: "live"};	
+				var modes = {test: "test", live: "live"};
 
 				var currentMode = "test";
 
@@ -86,14 +86,14 @@ angular.module('app.services', [])
 			      } else {
 			        $localStorage.rzp_mode = currentMode;
 			      }
-			    
+
 				$rootScope.$watch(function() {
 				  return currentMode;
 				}, function watchCallback(newValue, oldValue) {
 				  $localStorage.rzp_mode = newValue;
 				},
 				true);
-			    
+
 				return {
 					getMode: function(){
 						return currentMode;
@@ -111,61 +111,61 @@ angular.module('app.services', [])
 			//Transforms json array to form post fields, also modifies content type of submission
 			.factory("transformRequestAsFormPost",
             function() {
- 
+
                 // I prepare the request data for the form post.
                 function transformRequest( data, getHeaders ) {
- 
+
                     var headers = getHeaders();
- 					
+
                     headers[ "Content-Type" ] = "application/x-www-form-urlencoded; charset=utf-8";
- 
+
                     return( serializeData( data ) );
- 
+
                 }
- 
+
                 // Return the factory value.
                 return( transformRequest );
-                
+
                 function serializeData( data ) {
- 
+
                     // If this is not an object, defer to native stringification.
                     if ( ! angular.isObject( data ) ) {
- 
+
                         return( ( data == null ) ? "" : data.toString() );
- 
+
                     }
- 
+
                     var buffer = [];
- 
+
                     // Serialize each key in the object.
                     for ( var name in data ) {
- 
+
                         if ( ! data.hasOwnProperty( name ) ) {
- 
+
                             continue;
- 
+
                         }
- 
+
                         var value = data[ name ];
- 
+
                         buffer.push(
                             encodeURIComponent( name ) +
                             "=" +
                             encodeURIComponent( ( value == null ) ? "" : value )
                         );
- 
+
                     }
- 
+
                     // Serialize the buffer and clean it up for transportation.
                     var source = buffer
                         .join( "&" )
                         .replace( /%20/g, "+" )
                     ;
- 
+
                     return( source );
- 
+
                 }
- 
+
             })
 			//Alerts factory.
 			//Used for creating/removing alerts for display in a page.
@@ -216,7 +216,7 @@ angular.module('app.services', [])
 						$event.stopPropagation();
 						$scope.date.opened = {};
 						$scope.date.opened[key] = true;
-					};			  
+					};
 				};
 
 				return {
@@ -286,14 +286,14 @@ angular.module('app.services', [])
 				        		if($rootScope.toState.data.superadmin) {
 	 				        		admin.identity().then(function(data){
 					        			if(data.superadmin != 1) $state.go('app.dashboard');
-					        		});	
+					        		});
 				        		}
 				        	}
 				        	else if($rootScope.toState.data.role === 'guest') {
 				        		if (admin.isAuthenticated() === true) $state.go('app.dashboard'); // user is signed in but not authorized for desired state
 				        	}
 				        });
-				    }			        
+				    }
 			    };
 			  }
 			])

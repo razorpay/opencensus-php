@@ -3,7 +3,6 @@
 namespace Models\Merchant;
 
 use Models\Base;
-use Models\Manager;
 use Models\Merchant;
 use Models\MerchantDetails;
 
@@ -96,7 +95,7 @@ class Service extends Base\Service
         $merchant = \Auth::merchant();
 
         // @todo: explain this part
-        if (($merchant->attempt($credentials + array('confirm_token' => null) === false)) and
+        if (($merchant->attempt($credentials + array('confirm_token' => null)) === false) and
             ($merchant->validate($credentials)))
         {
             $error = ['not activated'];

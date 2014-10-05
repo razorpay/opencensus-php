@@ -46,7 +46,7 @@ class Service extends Base\Service
         $method = 'fetchCollection' . $entity;
         if (method_exists($this, $method))
         {
-            return $this->$method($input, $mode)
+            return $this->$method($input, $mode);
         }
 
         return $this->fetchEntityCollection($input, $mode, $entity);

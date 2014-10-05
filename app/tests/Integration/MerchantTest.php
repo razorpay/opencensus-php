@@ -26,7 +26,7 @@ class MerchantTest extends TestCase
         // Creates a new merchant if none exists in db otherwise uses that. This is necessary for persisting sessions between tests
         try
         {
-            $this->merchant = Models\DAL\Merchant::firstorfail();
+            $this->merchant = Models\Merchant\Entity::firstorfail();
         }
         catch(Exception $e)
         {

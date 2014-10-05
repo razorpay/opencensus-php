@@ -4,8 +4,6 @@ namespace Models\MerchantDetails;
 
 use AWS;
 use Models\Base;
-use Models\DAL;
-use Models\Manager;
 
 class Service extends Base\Service
 {

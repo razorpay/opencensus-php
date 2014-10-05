@@ -1,19 +1,19 @@
-Models\DAL\Merchant:
+Models\Merchant\Entity:
     id: $string$string
     name: $string $string
     email: $string@$string.com
     password: $2y$10$IP5kVEJI62lWf3CeQjAcQeZ27cYQckg5iu5/AzeXULx1xY6vcgc2q
 
-Models\DAL\Admin:
+Models\Admin\Entity:
     name: $string
     username: $string$string
     password: $2y$10$IP5kVEJI62lWf3CeQjAcQeZ27cYQckg5iu5/AzeXULx1xY6vcgc2q
     email: $string@$string.com
     superadmin: 1
 
-Models\DAL\MerchantDetails:
+Models\MerchantDetails\Entity:
     merchant_id:
-        type: Models\DAL\Merchant
+        type: Models\Merchant\Entity
     contact_name: $string
     contact_email: $string
     contact_mobile: $string

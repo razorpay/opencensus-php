@@ -9,11 +9,11 @@ use Route;
 use TestCase as ParentTestCase;
 
 class TestCase extends ParentTestCase
-{   
+{
     protected static $fixtures = array(
-        'merchant' => 'Models\DAL\Merchant',
-        'merchant_details' => 'Models\DAL\MerchantDetails',
-        'admin' => 'Models\DAL\Admin');
+        'merchant' => 'Models\Merchant\Entity',
+        'merchant_details' => 'Models\MerchantDetails\Entity',
+        'admin' => 'Models\Admin\Entity');
 
     public function setUp()
     {
@@ -28,7 +28,7 @@ class TestCase extends ParentTestCase
     {
         DB::rollback();
     }
-    
+
     protected function createEntity($entity, $attributes = array(), $times = 1)
     {
         Eloquent::unguard();
