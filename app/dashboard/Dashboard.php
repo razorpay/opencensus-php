@@ -79,7 +79,10 @@ class Dashboard
 
             $data = static::validateAndBuild($data);
 
+            $mode = \BasicAuth::getMode();
+
             Queue::push('Dashboard\Dashboard@postRequest', array(
+                'mode'  => $mode,
                 'resource'  =>  static::$resource,
                 'message'   =>  $data
             ));
@@ -88,7 +91,7 @@ class Dashboard
 
     public function postRequest($job, $data)
     {
-        $mode = \BasicAuth::getMode();
+        $mode = $data['mode'];
 
         $options = array('auth'=> array('rzp_api', $this->getAuthSecret()));
 
