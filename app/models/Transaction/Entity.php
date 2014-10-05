@@ -1,8 +1,10 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\Transaction;
 
-class Transaction extends DAL
+use Models\Base;
+
+class Entity extends Base\Entity
 {
     protected $table = 'transactions';
 
@@ -19,9 +21,7 @@ class Transaction extends DAL
 
     public function merchant()
     {
-        return $this->belongsTo(
-            __NAMESPACE__.'\Merchant'
-        );
+        return $this->belongsTo('Models\Merchant\Entity');
     }
 
     public static function retrieveLastByType($merchant_id, $type, $mode)

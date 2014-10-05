@@ -209,7 +209,7 @@ class Service extends Base\Service
 
     public function postMerchantTerminal($id, $input)
     {
-        $error = (new Merchant\Validator)->validateInput('termina', $input);
+        $error = (new Merchant\Validator)->validateInput('terminal', $input);
 
         if (empty($error))
         {
