@@ -1,11 +1,12 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\Merchant;
 
+use Models\Base;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
 
-class Merchant extends DAL implements UserInterface, RemindableInterface
+class Entity extends Base\Entity implements UserInterface, RemindableInterface
 {
     public $incrementing = false;
 
@@ -31,9 +32,12 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
 
     public function merchantDetails()
     {
-        return $this->hasOne(
-            __NAMESPACE__.'\MerchantDetails'
-        );
+        return $this->hasOne('Models\MerchantDetails\Entity');
+    }
+
+    public function changePassword($input)
+    {
+        return $this->edit($input, 'changePassword');
     }
 
     public static function getAggregations($data, $mode)
@@ -77,9 +81,9 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             ->update($obj);
     }
 
-    public function getMerchantForConfirmation($token)
+    public static function getMerchantForConfirmation($token)
     {
-        return $this->where('confirm_token', '=', $token)->firstorfail();
+        return static::where('confirm_token', '=', $token)->first();
     }
 
     /**
@@ -88,7 +92,6 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
     public function confirm()
     {
         $this->confirm_token = null;
-        $this->save();
     }
 
     /**
@@ -142,7 +145,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
      */
     public function getRememberToken()
     {
-        return $this->remember_token;
+        return $this->getAttribute('remember_token');
     }
 
     /**
@@ -153,7 +156,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
      */
     public function setRememberToken($value)
     {
-        $this->remember_token = $value;
+        $this->setAttribute('remember_token', $value);
     }
 
     /**

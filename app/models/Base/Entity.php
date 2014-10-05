@@ -4,6 +4,46 @@ namespace Models\Base;
 
 class Entity extends \Razorpay\Spine\Entity
 {
+    public function build(array $input = array())
+    {
+        $this->input = $input;
+
+        $this->modify($input);
+
+        $validator = $this->validateInput('create', $input);
+
+        $this->validator = $validator;
+
+        if ($validator->fails())
+        {
+            return $validator->messages();
+        }
+
+        $this->generate($input);
+
+        $this->unsetInput('create', $input);
+
+        $this->fill($input);
+
+        return array();
+    }
+
+    public function edit(array $input = array(), $operation = 'edit')
+    {
+        $validator = $this->validateInput($operation, $input);
+
+        if ($validator->fails())
+        {
+            return $validator->messages();
+        }
+
+        $this->unsetInput($operation, $input);
+
+        $this->fill($input);
+
+        return array();
+    }
+
     protected function asDateTime($value)
     {
         //

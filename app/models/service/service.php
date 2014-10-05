@@ -20,7 +20,9 @@ class Service
         $id = 'rzp_'.$mode;
 
         if ($merchant_id)
+        {
             $id = $id.'_'.$merchant_id;
+        }
 
         $secret = Config::get('api.auth_pass');
 

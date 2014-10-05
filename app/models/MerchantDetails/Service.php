@@ -50,7 +50,7 @@ class Service extends Base\Service
                 $merchantDetails->markSubmittedTrue();
 
                 // Updating the model
-                $merchantDetails->save();
+                $merchantDetails->saveOrFail();
             }
             else
             {
@@ -75,14 +75,12 @@ class Service extends Base\Service
             return $this->isLockedError();
         }
 
-        list($error, $data) = Validator::createValidate($input, 'step'.$step)->getData();
+        $error = $merchantDetails->finishStep($step, $input);
 
         // Save the finished steps if there are no errors
         if (empty($error))
         {
-            $merchantDetails->fill($data);
-            $merchantDetails->addStepToStepsFinished($step);
-            $merchantDetails->save();
+            $merchantDetails->saveOrFail();
         }
 
         return $error;
@@ -105,7 +103,7 @@ class Service extends Base\Service
         {
             $merchantDetails->addStepToStepsFinished(5);
 
-            $merchantDetails->save();
+            $merchantDetails->saveOrFail();
         }
 
         return $error;
@@ -155,7 +153,7 @@ class Service extends Base\Service
             $result = $s3->putObject($s3Obj);
 
             $merchantDetails->$data['field'] = $result['ObjectURL'];
-            $merchantDetails->save();
+            $merchantDetails->saveOrFail();
         }
         catch(\Exception $e)
         {

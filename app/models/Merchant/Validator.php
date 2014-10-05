@@ -17,14 +17,15 @@ class Merchant extends Manager
     protected static $loginRules = array(
         'email'     =>      'required|email',
         'password'  =>      'required|between:6,50',
-        'remember'  =>      'in:on'
     );
 
-    protected static $passwordRules = array(
+    protected static $changePasswordRules = array(
         'old_password'              => 'required',
         'password'                  => 'required|between:6,50|confirmed',
         'password_confirmation'     => 'required|between:6,50'
     );
+
+    protected static $changePasswordValidators = array('changePassword');
 
     protected static $terminalRules = array(
         'gateway'                                   => 'required',
@@ -34,16 +35,8 @@ class Merchant extends Manager
         'gateway_terminal_password_confirmation'    => 'required'
     );
 
-    protected static $unsetRegisterInput = array(
-        'password_confirmation'
-    );
-
     protected static $unsetLoginInput = array(
         'password'
-    );
-
-    protected static $unsetPasswordInput = array(
-        'password_confirmation'
     );
 
     protected static $unsetTerminalInput = array(
@@ -93,6 +86,18 @@ class Merchant extends Manager
     {
         $this->setField(
             'confirm_token', bin2hex(openssl_random_pseudo_bytes(32/2)));
+    }
+
+    protected function validateChangePassword($input)
+    {
+        $oldPassword = $input['old_password'];
+
+        $password = $this->entity->password;
+
+        if (\Hash::check($oldPassword, $password) === false)
+        {
+            $this->addError('old_password', 'Incorrect password');
+        }
     }
 
     public static function checkAPIMatch($merchant, $api_response)

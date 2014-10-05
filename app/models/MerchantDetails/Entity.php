@@ -244,4 +244,14 @@ class Entity extends Base\Entity
 
         return array_diff($steps, $stepsFinished);
     }
+
+    public function finishStep($step, $input)
+    {
+        $error = $this->edit($input, 'step'.$step);
+
+        if (empty($error))
+        {
+            $this->addStepToStepsFinished($step);
+        }
+    }
 }

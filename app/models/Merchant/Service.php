@@ -1,64 +1,60 @@
 <?php
 
-namespace Models\Service;
+namespace Models\Merchant;
 
-use Models\DAL;
+use Models\Base;
 use Models\Manager;
+use Models\Merchant;
+use Models\MerchantDetails;
 
-class Merchant extends Service
+class Merchant extends Base\Service
 {
     public function register(array $input)
     {
-        list($error, $data) = Manager\Merchant::createValidate($input, 'register')->getData();
+        $error = (new Merchant\Entity)->build($input);
 
-        if (empty($error))
+        if (empty($error) === false)
         {
-            $merchant = DAL\Merchant::createOrFail($data);
-
-            $merchant_details = DAL\MerchantDetails::createOrFail(array('merchant_id'=>$merchant->id));
-
-            \Queue::push('MerchantController@sendConfirmationMail',array('merchant' => $merchant->generateEmailData()));
-
-            $data = $merchant->toArray();
+            return [$error, null];
         }
 
-        return [$error, $data];
+        $merchant->saveOrFail();
+
+        $details = array('merchant_id' => $merchant->id);
+
+        MerchantDetails\Entity::createOrFail($details);
+
+        $this->queueConfirmationMail($merchant);
+
+        return [$error, $merchant->toArray()];
+    }
+
+    protected function queueConfirmationMail($merchant)
+    {
+        \Queue::push(
+            'MerchantController@sendConfirmationMail',
+            array('merchant' => $merchant->generateEmailData()));
     }
 
     public function changePassword(array $input)
     {
-        list($error, $data) = Manager\Merchant::createValidate($input, 'password')->getData();
+        $merchant = \Auth::merchant()->user();
+
+        $error = $merchant->changePassword($input);
 
         if (empty($error))
         {
-            $merchant = \Auth::merchant()->user();
-
-            $old_password = $data['old_password'];
-
-            unset($data['old_password']);
-
-            if (\Hash::check($old_password, $merchant->password) == false)
-            {
-                $error[] = 'Incorrect password';
-
-                return [$error, $data];
-            }
-
-            $merchant->update($data);
+            $merchant->save();
         }
 
-        return [$error, $data];
+        return [$error, null];
     }
 
     public function confirm($token)
     {
-        $merchant = new DAL\Merchant;
+        $merchant = Merchant\Entity::getMerchantForConfirmation($token);
 
-        try
-        {
-            $merchant = $merchant->getMerchantForConfirmation($token);
-        }
-        catch(\Exception $e)
+        if ($merchant === null)
         {
             return array('Invalid Confirmation Token');
         }
@@ -77,59 +73,59 @@ class Merchant extends Service
         }
 
         $merchant->confirm();
+        $merchant->saveOrFail();
 
         return array();
     }
 
     public function login(array $input)
     {
-        list($error, $data) = Manager\Merchant::createValidate($input, 'login')->getData();
+        $error = (new Merchant\Validator)->validateInput('login', $input)->messages();
 
-        if (empty($error))
+        if (empty($error) === false)
         {
-            $credentials = array(
-                'email'     => $data['email'],
-                'password'  => $input['password']
-            );
-
-            if (\Auth::merchant()
-                        ->attempt($credentials + array('confirm_token' => Null)))
-            {
-                return [array(), $data];
-            }
-            elseif (\Auth::merchant()->validate($credentials))
-            {
-                $error = 'notactivated';
-
-                return [[$error], $data];
-            }
+            return [['Email or password is invalid.'], null];
         }
 
-        return [['Email or password is invalid.'], $data];
+        $credentials = array(
+            'email'     => $input['email'],
+            'password'  => $input['password']
+        );
+
+        $merchant = \Auth::merchant();
+
+        // @todo: explain this part
+        if (($merchant->attempt($credentials + array('confirm_token' => null) === false)) and
+            ($merchant->validate($credentials)))
+        {
+            $error = ['not activated'];
+        }
+
+        return [$error, null];
     }
 
     public function resendConfirmation(array $input)
     {
-        list($error, $data) = Manager\Merchant::createValidate($input, 'login')->getData();
+        $error = (new Merchant\Validator)->validateInput('login', $input)->messages();
 
         if (empty($error))
         {
             $credentials = array(
-                'email'     => $data['email'],
+                'email'     => $input['email'],
                 'password'  => $input['password']
             );
 
-            if (\Auth::merchant()
-                        ->once($credentials))
+            if (\Auth::merchant()->once($credentials))
             {
                 $merchant = \Auth::merchant()->get();
 
                 if ($merchant->confirm_token === null)
                 {
-                    return [['Merchant already confirmed. You can login <a href="'.\URL::to('#/access/signin').'">here</a>'], $data];
+                    return [['Merchant already confirmed. You can login ' .
+                             '<a href="'.\URL::to('#/access/signin').'">here</a>'], $data];
                 }
 
-                \Queue::push('MerchantController@sendConfirmationMail',array('merchant' => $merchant->generateEmailData()));
+                $this->queueConfirmationMail($merchant);
 
                 return [[], $data];
             }
@@ -140,7 +136,7 @@ class Merchant extends Service
 
     public function fetch($merchant_id)
     {
-        $merchant = DAL\Merchant::findOrFail($merchant_id)->toArray();
+        $merchant = Merchant\Entity::findOrFail($merchant_id)->toArray();
 
         return $merchant;
     }
@@ -150,10 +146,10 @@ class Merchant extends Service
         $this->setApiCredentials(null, $mode);
 
         $response = $this->api->merchant
-                                ->fetch($merchant_id)
-                                ->keys()
-                                ->all()
-                                ->toArray();
+                              ->fetch($merchant_id)
+                              ->keys()
+                              ->all()
+                              ->toArray();
 
         return $response;
     }
@@ -216,6 +212,8 @@ class Merchant extends Service
             return array($error, $key_data);
         }
         else
+        {
             return array($error, null);
+        }
     }
 }

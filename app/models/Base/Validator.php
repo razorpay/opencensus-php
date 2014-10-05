@@ -2,9 +2,7 @@
 
 namespace Models\Base;
 
-use Razorpay\Spine\Vaidation\Validator as BaseValidator;
-
-class Validator extends BaseValidator
+class Validator extends \Razorpay\Spine\Validation\ValidatorError
 {
-    ;
+
 }
