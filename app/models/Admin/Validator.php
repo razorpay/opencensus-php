@@ -1,18 +1,17 @@
-<?php 
+<?php
 
-namespace Models\Manager;
+namespace Models\Admin;
 
-use Models\DAL;
-use Models\Service;
+use Models\Base;
 
-class Admin extends Manager
+class Validator extends Base\Validator
 {
     protected static $loginRules = array(
         'username'  =>      'required|alpha_dash',
         'password'  =>      'required|between:6,50'
     );
-    
-    protected static $registerRules = array(
+
+    protected static $createRules = array(
         'name'                  => 'required|between:3,100|alpha_space',
         'username'              => 'required|between:3,50|alpha_dash|unique:admins',
         'password'              => 'required|between:6,50|confirmed',
@@ -21,29 +20,23 @@ class Admin extends Manager
         'superadmin'            => 'required|in:1,0'
     );
 
-    protected static $passwordRules = array(
-        'old_password'          => 'required',
-        'password'              => 'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50'
+    protected static $changePasswordRules = array(
+        'old_password'              => 'required',
+        'password'                  => 'required|between:6,50|confirmed',
+        'password_confirmation'     => 'required|between:6,50'
     );
 
-    protected static $unsetLoginInput = array(
-        'password'
-    );
+    protected static $changePasswordValidators = array('changePassword');
 
-    protected static $unsetPasswordInput = array(
-        'password_confirmation'
-    );
-
-    protected static $registerGenerators = array('password');
-
-    protected static $passwordGenerators = array('password');
-
-
-    protected function generatePassword($input)
+    protected function validateChangePassword($input)
     {
-        $this->setField(
-            'password', \Hash::make($input['password'])
-        );
+        $oldPassword = $input['old_password'];
+
+        $password = $this->entity->password;
+
+        if (\Hash::check($oldPassword, $password) === false)
+        {
+            $this->addError('old_password', 'Incorrect password');
+        }
     }
 }

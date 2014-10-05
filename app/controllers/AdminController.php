@@ -20,7 +20,7 @@ class AdminController extends BaseController
     {
         return View::make('admin.getIndexGenerated');
     }
-    
+
     public function postSignin()
     {
         $input = Input::all();
@@ -95,7 +95,7 @@ class AdminController extends BaseController
 
 
     public function postMerchantTerminal($id)
-    {   
+    {
         $input = Input::all();
 
         list($error, $data) = (new Service\Admin)->postMerchantTerminal($id, $input);
@@ -104,7 +104,7 @@ class AdminController extends BaseController
     }
 
     public function postMerchantPricing($id)
-    {   
+    {
         $input = Input::all();
 
         list($error, $data) = (new Service\Admin)->postMerchantPricing($id, $input);
@@ -113,7 +113,7 @@ class AdminController extends BaseController
     }
 
     public function getMerchantActivation($id)
-    {   
+    {
 
         $error = (new Service\Admin)->activateMerchant($id);
 
@@ -121,7 +121,7 @@ class AdminController extends BaseController
     }
 
     public function getMerchantLiveEnable($id)
-    {   
+    {
 
         $error = (new Service\Admin)->liveEnableMerchant($id);
 
@@ -129,7 +129,7 @@ class AdminController extends BaseController
     }
 
     public function getMerchantLiveDisable($id)
-    {   
+    {
         $error = (new Service\Admin)->liveDisableMerchant($id);
 
         return AppResponse::jsonResponse($error);
@@ -150,7 +150,7 @@ class AdminController extends BaseController
     }
 
     public function getMerchantDetails($id)
-    {   
+    {
         $details = (new Service\Admin)->fetchMerchantDetails($id);
 
         $activation_details = (new Service\Admin)->fetchMerchantActivationDetails($id);
@@ -178,7 +178,7 @@ class AdminController extends BaseController
     }
 
     public function postPricingRules($id)
-    {   
+    {
         $input = Input::all();
 
         list($error, $data) = (new Service\Admin)->addPricingPlanRule($id, $input);
@@ -213,7 +213,7 @@ class AdminController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = (new Service\Admin)->add($input, Auth::admin()->get());
+        list($error, $data) = (new Service\Admin)->add($input);
 
         return AppResponse::jsonResponse($error);
     }

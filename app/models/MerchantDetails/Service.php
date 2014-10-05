@@ -16,7 +16,7 @@ class Service extends Base\Service
 
     public function fetchDetails()
     {
-        $merchantDetails = $this->merchantDetails
+        $merchantDetails = $this->merchantDetails;
 
         $details = $merchantDetails->filterForAjax();
 
@@ -30,7 +30,7 @@ class Service extends Base\Service
         $error = array();
         $data = array();
 
-        $merchantDetails = $this->merchantDetails
+        $merchantDetails = $this->merchantDetails;
 
         if ($merchantDetails->isLocked())
         {
@@ -68,7 +68,7 @@ class Service extends Base\Service
     public function saveDetails($step, array $input)
     {
         // Check if already finished
-        $merchantDetails = $this->merchantDetails
+        $merchantDetails = $this->merchantDetails;
 
         if ($merchantDetails->isLocked())
         {
@@ -90,7 +90,7 @@ class Service extends Base\Service
     {
         $error = array();
 
-        $merchantDetails = $this->merchantDetails
+        $merchantDetails = $this->merchantDetails;
 
         if ($merchantDetails->isLocked())
         {
@@ -111,7 +111,7 @@ class Service extends Base\Service
 
     public function saveUploadedFile($input)
     {
-        $merchantDetails = $this->merchantDetails
+        $merchantDetails = $this->merchantDetails;
 
         if ($merchantDetails->locked)
         {
@@ -129,7 +129,7 @@ class Service extends Base\Service
         return $error;
     }
 
-    protected uploadFileToS3($data)
+    protected function uploadFileToS3($data)
     {
         $merchantDetails = $this->merchantDetails;
         $id = $merchantDetails->merchant_id;

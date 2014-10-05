@@ -1,8 +1,6 @@
 <?php
 
-use Auth;
 use Http\AppResponse;
-use Mail;
 use Models\Service;
 use Models\MerchantDetails;
 

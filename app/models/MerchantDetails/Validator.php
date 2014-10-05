@@ -110,7 +110,7 @@ class Validator extends Base\Validator
         return $response;
     }
 
-    protected static checkKeyInStepRules($key)
+    protected static function checkKeyInStepRules($key)
     {
         $steps = range(1, 4);
 

@@ -160,7 +160,7 @@ class Entity extends Base\Entity
         return array(
             'data'           => $data,
             'files'          => $files,
-            'locked'         => $locked
+            'locked'         => $locked,
             'submitted'      => $submitted,
             'steps_finished' => $steps_finished,
         );
@@ -233,7 +233,7 @@ class Entity extends Base\Entity
         // Check if already finished
         $stepsFinished = $this->getAttriute('steps_finished');
 
-        return (in_array(5, $stepsFinished);
+        return in_array(5, $stepsFinished);
     }
 
     public function getStepsNotFinished()

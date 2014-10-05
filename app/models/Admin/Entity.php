@@ -1,10 +1,11 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\Admin;
 
 use Illuminate\Auth\UserInterface;
+use Models\Base;
 
-class Admin extends DAL implements UserInterface
+class Entity extends Base\Entity implements UserInterface
 {
     protected $table = 'admins';
 
@@ -18,6 +19,10 @@ class Admin extends DAL implements UserInterface
 
     protected $guarded = array('id');
 
+    public function changePassword($input)
+    {
+        return $this->edit($input, 'changePassword');
+    }
 
     /**
      * Get the unique identifier for the Academic institution
@@ -57,5 +62,10 @@ class Admin extends DAL implements UserInterface
     public function isSuperAdmin()
     {
         return ($this->superadmin == 1);
+    }
+
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = \Hash::make($password);
     }
 }

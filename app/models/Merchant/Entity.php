@@ -23,6 +23,26 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'activated'
     );
 
+    protected static $createGenerators = array('id', 'confirm_token');
+
+    /**
+     * Generates UUid ID
+     */
+    public function generateId()
+    {
+        $this->setAttribute('id', bin2hex(openssl_random_pseudo_bytes(24/2)));
+    }
+
+    /**
+     * Generates Confirmation token
+     */
+    public function generateConfirmToken()
+    {
+        $this->setAttribute(
+            'confirm_token',
+            bin2hex(openssl_random_pseudo_bytes(32/2)));
+    }
+
     public function transactions()
     {
         return $this->hasMany(
@@ -182,5 +202,10 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function isActive()
     {
         return ((int)$this->activated === 1);
+    }
+
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = \Hash::make($password);
     }
 }

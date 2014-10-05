@@ -7,11 +7,12 @@ use Models\Manager;
 use Models\Merchant;
 use Models\MerchantDetails;
 
-class Merchant extends Base\Service
+class Service extends Base\Service
 {
     public function register(array $input)
     {
-        $error = (new Merchant\Entity)->build($input);
+        $merchant = new Merchant\Entity;
+        $error = $merchant->build($input);
 
         if (empty($error) === false)
         {
@@ -115,7 +116,8 @@ class Merchant extends Base\Service
                 'password'  => $input['password']
             );
 
-            if (\Auth::merchant()->once($credentials))
+            $merchant = \Auth::merchant();
+            if ($merchant->once($credentials))
             {
                 $merchant = \Auth::merchant()->get();
 

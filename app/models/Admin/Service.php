@@ -1,33 +1,28 @@
 <?php
 
-namespace Models\Service;
+namespace Models\Admin;
 
-use Models\DAL;
-use Models\Manager;
+use Models\Base;
+use Models\Admin;
+use Models\Merchant;
+use Models\MerchantDetails;
 
-class Admin extends Service
+class Service extends Base\Service
 {
-
     public function login(array $input)
     {
-        list($error, $data) = Manager\Admin::createValidate($input, 'login')->getData();
+        $error = (new Admin\Validator)->validateInput('login', $input)->messages();
 
         $verify = false;
 
         if (empty($error))
-            $verify = \Auth::admin()->attempt(array(
-                'username'  => $data['username'],
-                'password'  => $input['password']
-            ));
+        {
+            $verify = \Auth::admin()->attempt($input);
+        }
 
-        if ($verify === true)
-        {
-            return [array(), $data];
-        }
-        else
-        {
-            return [['Username or password is invalid.'], $data];
-        }
+        $error = ($verify) ? [] : ['Username or password is invalid.'];
+
+        return [$error, null];
     }
 
     /**
@@ -37,40 +32,27 @@ class Admin extends Service
      * @param  $admin DAL\Admin Object
      * @return  Status
      */
-    public function changePassword($input, DAL\Admin $admin)
+    public function changePassword($input, $admin)
     {
-        list($error, $data) = Manager\Admin::createValidate($input, 'password')->getData();
+        $error = $admin->changePassword($input);
 
-        if (empty($error) === false)
+        if (empty($error))
         {
-            return [$error, $data];
+            $admin->saveOrFail();
         }
 
-        $old_password = $data['old_password'];
-
-        unset($data['old_password']);
-
-        if (\Hash::check($old_password, $admin->password) == false)
-        {
-            $error = array("Invalid Password");
-
-            return [$error, $data];
-        }
-
-        $admin = $admin->update($data);
-
-        return [$error, $data];
+        return [$error, null];
     }
 
     public function listMerchants($pending = false)
     {
         if ($pending === false)
         {
-            return DAL\Merchant::get()->toArray();
+            return Merchant\Entity::get()->toArray();
         }
         else
         {
-            $merchants_inactive = DAL\Merchant::with('MerchantDetails')
+            $merchants_inactive = Merchant\Entity::with('MerchantDetails')
                                               ->where('activated', '=', '0')
                                               ->get();
 
@@ -85,7 +67,7 @@ class Admin extends Service
 
     public function getAdmins()
     {
-        return DAL\Admin::get()->toArray();
+        return Admin\Entity::get()->toArray();
     }
 
     public function deleteAdmin($id)
@@ -93,9 +75,12 @@ class Admin extends Service
         $error = array();
 
         if ($id === \Auth::admin()->id())
-         $error[] = 'You can not delete yourself.';
+        {
+            $error[] = 'You can not delete yourself.';
+        }
 
-        $admin = DAL\Admin::findorfail($id);
+        $admin = Admin\Entity::findorfail($id);
+
         $admin->delete();
 
         return $error;
@@ -105,27 +90,26 @@ class Admin extends Service
      * @param $data input array
      * @return Status
      */
-    public function add($input, DAL\Admin $admin)
+    public function add($input)
     {
-        list($error, $data) = Manager\Admin::createValidate($input, 'register')->getData();
+        $admin = new Admin\Entity;
+        $error = $admin->build($input);
 
         if (empty($error))
         {
-            $admin = DAL\Admin::createOrFail($data);
-
-            $data = $admin->toArray();
+            $admin->saveOrFail();
         }
 
-        return [$error, $data];
+        return [$error, $admin->toArray()];
     }
 
     public function fetchMerchantActivationDetails($id)
     {
-        $merchant_details =  DAL\MerchantDetails::findorfail($id);
+        $merchant_details =  MerchantDetails\Entity::findorfail($id);
 
         $response = $merchant_details->filterDetails();
 
-        $response['data'] = Manager\MerchantDetails::sortDataInSteps($response['data']);
+        $response['data'] = MerchantDetails\Validator::sortDataInSteps($response['data']);
 
         foreach ($response['files'] as $key => &$file)
         {
@@ -155,7 +139,7 @@ class Admin extends Service
 
     public function fetchMerchantDetails($id)
     {
-        $merchant_details = DAL\MerchantDetails::findorfail($id);
+        $merchant_details = MerchantDetails\Entity::findorfail($id);
 
         $this->setApiCredentials();
 
@@ -181,11 +165,12 @@ class Admin extends Service
     {
         $error = array();
 
-        $merchant_details = DAL\MerchantDetails::findorfail($id);
+        $merchant_details = MerchantDetails\Entity::findorfail($id);
 
-        if ($merchant_details->locked === 1)
+        if ($merchant_details->isLocked())
         {
             $error[] = 'Merchant already locked.';
+
             return $error;
         }
 
@@ -199,7 +184,7 @@ class Admin extends Service
     {
         $error = array();
 
-        $merchant_details = DAL\MerchantDetails::findorfail($id);
+        $merchant_details = MerchantDetails\Entity::findorfail($id);
 
         if ($merchant_details->locked === 0)
         {
@@ -224,11 +209,12 @@ class Admin extends Service
 
     public function postMerchantTerminal($id, $input)
     {
-
-        list($error, $data) = Manager\Merchant::createValidate($input, 'terminal')->getData();
+        $error = (new Merchant\Validator)->validateInput('termina', $input);
 
         if (empty($error))
         {
+            unset($input['gateway_terminal_password_confirmation']);
+
             $this->setApiCredentials();
 
             try
@@ -274,7 +260,7 @@ class Admin extends Service
 
     public function activateMerchant($id)
     {
-        $merchant = DAL\Merchant::findorfail($id);
+        $merchant = Merchant\Entity::findorfail($id);
 
         $details = $this->fetchMerchantDetails($id);
 
@@ -306,11 +292,12 @@ class Admin extends Service
     {
         $error = array();
 
-        $merchant = DAL\Merchant::findorfail($id);
+        $merchant = Merchant\Entity::findorfail($id);
 
         if ((int)$merchant->activated === 0)
         {
-            return array('Merchant must be active before enabling/disabling live transactions.');
+            return array(
+                'Merchant must be active before enabling/disabling live transactions.');
         }
 
         $this->setApiCredentials();
@@ -331,7 +318,7 @@ class Admin extends Service
     {
         $error = array();
 
-        $merchant = DAL\Merchant::findorfail($id);
+        $merchant = Merchant\Entity::findorfail($id);
 
         if ((int)$merchant->activated === 0)
         {
