@@ -46,6 +46,19 @@ class Merchant extends Manager
             'activated' => 'activated'
     );
 
+    protected static $keyRules = array(
+        'id'                    => 'required',
+        'merchant_id'           => 'required',
+        'delay_roll'            => 'required|in:0,1'
+    );
+
+    public static function buildKeyUpdateData($old_key_data)
+    {
+        return array(
+            'delay_roll'    =>  $old_key_data['delay_roll']
+        );
+    }
+
     protected function validateChangePassword($input)
     {
         $oldPassword = $input['old_password'];

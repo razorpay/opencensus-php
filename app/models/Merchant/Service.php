@@ -181,41 +181,37 @@ class Service extends Base\Service
 
     public function rollKeys(array $input, $mode)
     {
-        list($error, $data) = Manager\Key::createValidate($input, 'create')->getData();
+        $error = (new Merchant\Validator)->validateInput('key', $input);
 
-        if (empty($error))
+        if (empty($error) === false)
         {
-            $arr = Manager\Key::buildKeyUpdateData($data);
-
-            $this->setApiCredentials(null, $mode);
-
-            $key_data= array();
-
-            try
-            {
-                $response = $this->api->merchant
-                                    ->fetch($data['merchant_id'])
-                                    ->keys()
-                                    ->fetch($data['id'])
-                                    ->roll($arr)
-                                    ->toArray();
-
-                $key_data = array(
-                    'old_id' => $data['id'],
-                    'merchant_id' => $input['merchant_id'],
-                    'new' => $response['new']
-                );
-            }
-            catch(\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error[] = $e->getCode();
-            }
-
-            return array($error, $key_data);
+            return [$error, null];
         }
-        else
+
+        $this->setApiCredentials(null, $mode);
+
+        $key_data = array();
+
+        try
         {
-            return array($error, null);
+            $response = $this->api->merchant
+                                ->fetch($input['merchant_id'])
+                                ->keys()
+                                ->fetch($input['id'])
+                                ->roll($input['delay_roll'])
+                                ->toArray();
+
+            $key_data = array(
+                'old_id'        => $input['id'],
+                'merchant_id'   => $input['merchant_id'],
+                'new'           => $response['new']
+            );
         }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getCode();
+        }
+
+        return array($error, $key_data);
     }
 }
