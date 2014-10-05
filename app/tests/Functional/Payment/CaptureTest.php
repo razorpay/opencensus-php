@@ -3,6 +3,8 @@
 namespace Tests\Functional\Payment;
 
 use Tests\Functional\TestCase;
+use Mockery;
+use Dashboard\Payment;
 
 /**
  * Tests for capture payments
@@ -43,6 +45,8 @@ class CaptureTest extends TestCase
 
         $this->setupPrivateBasicAuthParams();
 
+        $this->mockDashboardRequest();
+
         $this->startTest();
     }
 
@@ -51,6 +55,8 @@ class CaptureTest extends TestCase
         $payment = $this->fixtures->createPaymentCapturedEntity()->toArrayPublic();
 
         $this->payment = $payment;
+
+        $this->mockDashboardRequest(2);
 
         $this->startTest();
     }
@@ -62,6 +68,8 @@ class CaptureTest extends TestCase
         $this->payment = $this->defaultAuthPayment();
 
         $this->setupPrivateBasicAuthParams();
+
+        $this->mockDashboardRequest();
 
         $this->startTest(null, $amount);
     }
@@ -76,6 +84,8 @@ class CaptureTest extends TestCase
     public function testCaptureWithNoAmount()
     {
         unset($this->payment['amount']);
+
+        $this->mockDashboardRequest();
 
         $this->startTest();
     }
@@ -104,6 +114,9 @@ class CaptureTest extends TestCase
         $this->payment['amount'] = 100;
 
         $this->setupPrivateBasicAuthParams();
+
+        $this->mockDashboardRequest();
+
         $this->startTest();
     }
 
@@ -132,6 +145,8 @@ class CaptureTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
 
+        $this->mockDashboardRequest();
+        
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $refund = $this->refundPayment($payment['id']);
@@ -177,4 +192,16 @@ class CaptureTest extends TestCase
                 $amount = $this->payment['amount'];
         }
     }
+
+    protected function mockDashboardRequest($times = 1)
+    {
+        $dashboard = Mockery::mock('overload:Dashboard\Payment');
+
+        $this->app->instance('Dashboard\Payment', $dashboard);
+
+        $dashboard->shouldReceive('queueRecord')
+              ->times($times)
+              ->with(Mockery::type('Models\\Base\\PublicEntity'));
+    }
+
 }

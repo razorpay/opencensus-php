@@ -30,6 +30,8 @@ class HdfcGatewayMprTest extends TestCase
     {
         $this->mockSlack();
 
+        $this->mockDashboardRequest();
+
         // Create payments
         $payments = $this->createPaymentEntities();
 
@@ -63,6 +65,17 @@ class HdfcGatewayMprTest extends TestCase
         $slack->shouldReceive('send')
               ->times(3)
               ->with(Mockery::type('string'), '#settlements', 'settlements');
+    }
+
+    protected function mockDashboardRequest()
+    {
+        $dashboard = Mockery::mock('overload:Dashboard\Settlement');
+
+        $this->app->instance('Dashboard\Settlement', $dashboard);
+
+        $dashboard->shouldReceive('queueRecord')
+              ->times(1)
+              ->with(Mockery::type('Models\\Base\\PublicCollection'));
     }
 
     protected function generateSettlements($txns)
