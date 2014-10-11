@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder {
 			'total_amount'	=>  12345,
 			'txn_count'		=>	20,
 			'successful_txn_count' => 12,
+			'resource'		=> 'payment',
 			'created_at'	=>	time(),
 			'updated_at'	=>	time(),
 			'mode'			=> 	'test'

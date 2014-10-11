@@ -45,14 +45,14 @@
           <div class="row row-sm text-center">
             <div class="col-xs-6">
               <div class="panel padder-v item">
-                <div class="font-thin h1">{{111 | currency:"₹"}}</div>
-                <span class="text-muted text-xs">Last Settlement</span>
+                <div class="font-thin h1">{{aggregations.data.settlements}}</div>
+                <span class="text-muted text-xs">Total Settlements</span>
               </div>
             </div>
             <div class="col-xs-6">
               <div class="panel padder-v item">
-                <div class="font-thin h1">{{aggregations.data.txns}}</div>
-                <span class="text-muted text-xs">Total Transactions</span>
+                <div class="font-thin h1">{{aggregations.data.payments}}</div>
+                <span class="text-muted text-xs">Total Payments</span>
               </div>
             </div>
             <div class="col-xs-6">
@@ -63,7 +63,7 @@
             </div>
             <div class="col-xs-6">
               <div href class="block panel padder-v bg-danger dker item">
-                <span class="text-white font-thin h1 block">111</span>
+                <span class="text-white font-thin h1 block">{{aggregations.data.refunds}}</span>
                 <span class="text-muted text-xs">Total Refunds</span>
               </div>
             </div>

@@ -140,8 +140,19 @@ class Transaction extends Service
 
     public function getAggregations($merchant_id, $mode)
     {
-        $data = DAL\Merchant::getAggregations(array('merchant_id' => $merchant_id), $mode);
-        return $data;
+
+        $resources = array('payment', 'refund', 'settlement');
+
+        $response = array();
+
+        foreach($resources as $resource)
+        {
+            $data = array('merchant_id' => $merchant_id, 'resource' => $resource);
+
+            $response[$resource] = DAL\Merchant::getAggregations($data, $mode);       
+        }
+
+        return $response;
     }
 
     public function getAnalytics($input, $mode)
