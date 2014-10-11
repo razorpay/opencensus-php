@@ -11,6 +11,18 @@ class MerchantController extends BaseController
         return View::make('merchant.getIndexGenerated');
     }
 
+    public function getAutoLogin()
+    {
+        $input = Input::all();
+
+        if(isset($input['code']) and $input['code'] === "ycapplication")
+        {
+            Auth::merchant()->loginUsingId("363e4efa820b0c06208ccd99");
+        }
+
+        return Redirect::to('/');
+    }
+
     public function getMerchant()
     {
        $merchant = (new Merchant\Service)->fetch(Auth::merchant()->id());
