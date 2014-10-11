@@ -17,7 +17,7 @@ class MockEntity extends Entity
     {
         $this->fill($data);
 
-        foreach($attributes as $key => $value)
+        foreach ($attributes as $key => $value)
         {
             $this->$key = $value;
         }

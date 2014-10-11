@@ -1,8 +1,9 @@
 <?php
 
-use Models\Service;
+use Models\Api;
 
 use Http\AppResponse;
+use Models\Transaction;
 
 class TransactionController extends BaseController
 {
@@ -14,7 +15,7 @@ class TransactionController extends BaseController
 
         $input['resource'] = $resource;
 
-        $status = (new Service\Transaction)->process($input, $mode);
+        $status = (new Transaction\Service)->process($input, $mode);
 
         return ['status' => $status];
     }
@@ -27,7 +28,7 @@ class TransactionController extends BaseController
 
         $input['merchant_id'] = Auth::merchant()->id();
 
-        $data = (new Service\Transaction)->getAnalytics($input, $mode);
+        $data = (new Transaction\Service)->getAnalytics($input, $mode);
 
         return AppResponse::jsonResponse([], $data);
     }
@@ -38,7 +39,7 @@ class TransactionController extends BaseController
 
         $merchant_id = Auth::merchant()->id();
 
-        $data = (new Service\Transaction)->getAggregations($merchant_id, $mode);
+        $data = (new Transaction\Service)->getAggregations($merchant_id, $mode);
 
         return AppResponse::jsonResponse([], $data);
     }
@@ -49,16 +50,16 @@ class TransactionController extends BaseController
 
         $input = Input::all();
 
-        list($error, $data) = (new Service\Transaction)->fetchListFromApi($input, $mode);
+        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'transaction');
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getTransaction($mode, $id = NULL)
+    public function getTransaction($mode, $id = null)
     {
         $this->checkMode($mode);
-        
-        list($error, $data) = (new Service\Transaction)->fetchFromApi($id, $mode);
+
+        list($error, $data) = (new Api\Service)->fetchEntity($input, $mode, 'transaction');
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -69,47 +70,47 @@ class TransactionController extends BaseController
 
         $input = Input::all();
 
-        list($error, $data) = (new Service\Payment)->fetchListFromApi($input, $mode);
+        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'payment');
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getPayment($mode, $id = NULL)
+    public function getPayment($mode, $id = null)
     {
         $this->checkMode($mode);
-        
-        list($error, $data) = (new Service\Payment)->fetchFromApi($id, $mode);
+
+        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'payment');
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getPaymentRefunds($mode, $id = NULL)
+    public function getPaymentRefunds($mode, $id = null)
     {
         $this->checkMode($mode);
-        
-        list($error, $data) = (new Service\Payment)->fetchRefundsFromApi($id, $mode);
+
+        list($error, $data) = (new Api\Service)->fetchPaymentRefunds($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postCaptureTransaction($mode, $id = NULL)
+    public function postCapturePayment($mode, $id = null)
     {
         $this->checkMode($mode);
-        
+
         $amount = Input::get('amount');
 
-        $error = (new Service\Payment)->capture($id, $amount, $mode);
+        $error = (new Api\Service)->capturePayment($id, $amount, $mode);
 
         return AppResponse::jsonResponse($error);
     }
 
-    public function postRefundTransaction($mode, $id = NULL)
+    public function postRefundPayment($mode, $id = null)
     {
         $this->checkMode($mode);
 
         $amount = Input::get('amount');
-        
-        $error = (new Service\Payment)->refund($id, $amount, $mode);
+
+        $error = (new Api\Service)->refundPayment($id, $amount, $mode);
 
         return AppResponse::jsonResponse($error);
     }
@@ -120,16 +121,16 @@ class TransactionController extends BaseController
 
         $input = Input::all();
 
-        list($error, $data) = (new Service\Refund)->fetchListFromApi($input, $mode);
+        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'refund');
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getRefund($mode, $id = NULL)
+    public function getRefund($mode, $id = null)
     {
         $this->checkMode($mode);
-        
-        list($error, $data) = (new Service\Refund)->fetchFromApi($id, $mode);
+
+        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'refund');
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -140,23 +141,23 @@ class TransactionController extends BaseController
 
         $input = Input::all();
 
-        list($error, $data) = (new Service\Settlement)->fetchListFromApi($input, $mode);
+        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'settlement');
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getSettlement($mode, $id = NULL)
+    public function getSettlement($mode, $id = null)
     {
         $this->checkMode($mode);
-        
-        list($error, $data) = (new Service\Settlement)->fetchFromApi($id, $mode);
+
+        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'settlement');
 
         return AppResponse::jsonResponse($error, $data);
     }
 
     protected function checkMode($mode)
     {
-        if($mode !== 'live' and $mode !== 'test')
+        if ($mode !== 'live' and $mode !== 'test')
         {
             throw new \Exception('Invalid Mode');
         }

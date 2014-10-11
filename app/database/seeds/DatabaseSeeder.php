@@ -1,35 +1,36 @@
 <?php
 
-class DatabaseSeeder extends Seeder {
+class DatabaseSeeder extends Seeder
+{
 
 	/**
-	 * Run the database seeds.
-	 *
-	 * @return void
-	 */
-	public function run()
-	{
-		Eloquent::unguard();
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        Eloquent::unguard();
 
-		$this->seed();
-	}
+        $this->seed();
+    }
 
-	private function seed()
-	{
-		DB::table('merchants')->insert(array(
-			'id'			=>	'363e4efa820b0c06208ccd99',
-			'name'			=>	'Harshil',
-			'email'			=>	'das@razorpay.com',
-			'password'		=>	Hash::make('123456'),
-			'created_at'	=>	time(),
-			'updated_at'	=>	time()
-			)
-		);
+    private function seed()
+    {
+        DB::table('merchants')->insert(array(
+            'id'            =>  '363e4efa820b0c06208ccd99',
+            'name'          =>  'Harshil',
+            'email'         =>  'das@razorpay.com',
+            'password'      =>  Hash::make('123456'),
+            'created_at'    =>  time(),
+            'updated_at'    =>  time()
+            )
+        );
 
-		DB::table('merchant_details')->insert(array(
-			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
-			)
-		);
+        DB::table('merchant_details')->insert(array(
+            'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+            )
+        );
 
 		DB::table('aggregations')->insert(array(
 			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
@@ -43,42 +44,43 @@ class DatabaseSeeder extends Seeder {
 			)
 		);
 
-		DB::table('aggregations')->insert(array(
-			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
-			'total_amount'	=>  123456,
-			'txn_count'		=>	25,
-			'successful_txn_count' => 15,
-			'created_at'	=>	time(),
-			'updated_at'	=>	time(),
-			'mode'			=> 	'live'
-			)
-		);
+        DB::table('aggregations')->insert(array(
+            'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+            'total_amount'  =>  123456,
+            'txn_count'     =>  25,
+            'successful_txn_count' => 15,
+            'resource'      => 'payment',
+            'created_at'    =>  time(),
+            'updated_at'    =>  time(),
+            'mode'          =>  'live'
+            )
+        );
 
-		DB::table('admins')->insert(
-        	array(
-	        	array(
-	        	'name' => 'Harshil Mathur',
-	        	'username' => 'harshil',
-				'password'=> Hash::make('123456'),
-				'email' => 'harshil@razorpay.com',
-				'superadmin' => 1
-				),
-				array(
-	        	'name' => 'Shashank Kumar',
-	        	'username' => 'shk',
-				'password'=> Hash::make('123456'),
-				'email' => 'shashank@razorpay.com',
-				'superadmin' => 1
-				),
-				array(
-	        	'name' => 'Abhishek Das',
-	        	'username' => 'das',
-				'password'=> Hash::make('123456'),
-				'email' => 'das@razorpay.com',
-				'superadmin' => 0
-				)
-			)
-		);
-	}
+        DB::table('admins')->insert(
+            array(
+                array(
+                'name' => 'Harshil Mathur',
+                'username' => 'harshil',
+                'password'=> Hash::make('123456'),
+                'email' => 'harshil@razorpay.com',
+                'superadmin' => 1
+                ),
+                array(
+                'name' => 'Shashank Kumar',
+                'username' => 'shk',
+                'password'=> Hash::make('123456'),
+                'email' => 'shashank@razorpay.com',
+                'superadmin' => 1
+                ),
+                array(
+                'name' => 'Abhishek Das',
+                'username' => 'das',
+                'password'=> Hash::make('123456'),
+                'email' => 'das@razorpay.com',
+                'superadmin' => 0
+                )
+            )
+        );
+    }
 
 }

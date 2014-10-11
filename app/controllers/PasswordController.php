@@ -1,6 +1,7 @@
 <?php
 
-class PasswordController extends BaseController {
+class PasswordController extends BaseController
+{
 
 	/**
 	 * Display the password reminder view.

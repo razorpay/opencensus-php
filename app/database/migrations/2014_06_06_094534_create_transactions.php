@@ -3,7 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTransactions extends Migration {
+class CreateTransactions extends Migration
+{
 
     /**
      * Run the migrations.
@@ -33,7 +34,7 @@ class CreateTransactions extends Migration {
             $table->integer('count')
                   ->unsigned()
                   ->default(1);
-                  
+
             $table->char('mode', 4);
 
             $table->integer('created_at');
@@ -51,13 +52,13 @@ class CreateTransactions extends Migration {
      * @return void
      */
     public function down()
-    { 
+    {
       Schema::table('transactions', function(Blueprint $table)
       {
           $table->dropForeign('transactions_merchant_id_foreign');
       });
-      
-      Schema::drop('transactions'); 
+
+      Schema::drop('transactions');
     }
 
 }

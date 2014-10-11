@@ -1,11 +1,12 @@
 <?php
 
-namespace Models\DAL;
+namespace Models\Merchant;
 
+use Models\Base;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableInterface;
 
-class Merchant extends DAL implements UserInterface, RemindableInterface
+class Entity extends Base\Entity implements UserInterface, RemindableInterface
 {
     public $incrementing = false;
 
@@ -22,6 +23,26 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
         'activated'
     );
 
+    protected static $generators = array('id', 'confirm_token');
+
+    /**
+     * Generates UUid ID
+     */
+    public function generateId()
+    {
+        $this->setAttribute('id', bin2hex(openssl_random_pseudo_bytes(24/2)));
+    }
+
+    /**
+     * Generates Confirmation token
+     */
+    public function generateConfirmToken()
+    {
+        $this->setAttribute(
+            'confirm_token',
+            bin2hex(openssl_random_pseudo_bytes(32/2)));
+    }
+
     public function transactions()
     {
         return $this->hasMany(
@@ -31,9 +52,12 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
 
     public function merchantDetails()
     {
-        return $this->hasOne(
-            __NAMESPACE__.'\MerchantDetails'
-        );
+        return $this->hasOne('Models\MerchantDetails\Entity');
+    }
+
+    public function changePassword($input)
+    {
+        return $this->edit($input, 'changePassword');
     }
 
     public static function getAggregations($data, $mode)
@@ -77,9 +101,9 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
             ->update($obj);
     }
 
-    public function getMerchantForConfirmation($token)
+    public static function getMerchantForConfirmation($token)
     {
-        return $this->where('confirm_token', '=', $token)->firstorfail();
+        return static::where('confirm_token', '=', $token)->first();
     }
 
     /**
@@ -87,8 +111,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
      */
     public function confirm()
     {
-        $this->confirm_token = NULL;
-        $this->save();
+        $this->confirm_token = null;
     }
 
     /**
@@ -109,8 +132,8 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
     public function generateEmailData()
     {
         return array(
-            'name'  => $this->name,
-            'email' => $this->email,
+            'name'          => $this->name,
+            'email'         => $this->email,
             'confirm_token' => $this->confirm_token
         );
     }
@@ -142,7 +165,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
      */
     public function getRememberToken()
     {
-        return $this->remember_token;
+        return $this->getAttribute('remember_token');
     }
 
     /**
@@ -153,7 +176,7 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
      */
     public function setRememberToken($value)
     {
-        $this->remember_token = $value;
+        $this->setAttribute('remember_token', $value);
     }
 
     /**
@@ -179,5 +202,10 @@ class Merchant extends DAL implements UserInterface, RemindableInterface
     public function isActive()
     {
         return ((int)$this->activated === 1);
+    }
+
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = \Hash::make($password);
     }
 }

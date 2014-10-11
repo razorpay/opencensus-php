@@ -3,7 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMerchants extends Migration {
+class CreateMerchants extends Migration
+{
 
     /**
      * Run the migrations.
@@ -43,7 +44,7 @@ class CreateMerchants extends Migration {
      */
     public function down()
     {
-        Schema::drop('merchants'); 
+        Schema::drop('merchants');
     }
 
 }

@@ -18,8 +18,8 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
 
   request.success(function(result){
     
-    if (result.data !== null) {
-        if (parseInt(result.data.txn_count) !== 0)
+    if (result.data) {
+        if (result.data.payment && parseInt(result.data.payment.txn_count) !== 0)
             $scope.aggregations.data.success = parseInt(result.data.payment.successful_txn_count * 100/result.data.payment.txn_count);
         $scope.aggregations.data.amount = result.data.payment ? result.data.payment.total_amount : 0;
         $scope.aggregations.data.payments = result.data.payment ? result.data.payment.txn_count : 0;

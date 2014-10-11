@@ -57,19 +57,19 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
     };
 
     getData();
-    
+
     function getData() {
       var request = $http.get('/activation/details');
 
       request.success(function(data){
-        var steps_finished = JSON.parse(data.data.steps_finished);
+        var steps_finished = data.data.steps_finished;
 
         angular.forEach(steps_finished, function(value, key) {
           $scope.check[value] = true;
         });
 
         angular.forEach(data.data.data, function(value, key){
-          $scope.data[key] = value;       
+          $scope.data[key] = value;
         });
 
         angular.forEach(data.data.files, function(value, key){
@@ -81,7 +81,7 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
             if(parseInt(data.data.activated)) {
               $scope.formAlerts.addAlert('info', 'User is already live');
             }
-            else 
+            else
               $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');
           });
         }
@@ -125,7 +125,7 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
 
     function saveFile($files, fieldname) {
       var file = $files[0];
-      
+
       $scope.locked = true;
 
       $scope.fileAlerts[fieldname].addAlert('info', 'Uploading...', true);
@@ -133,7 +133,7 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
       var request = $upload.upload({
         url: '/activation/save/file',
         method: 'POST',
-        file: file, 
+        file: file,
         fileFormDataName: fieldname,
         formDataAppender: function(fd, key, val) {
           if (angular.isArray(val)) {

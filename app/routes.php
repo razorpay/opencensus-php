@@ -20,7 +20,7 @@ Route::post('/contact', 'MerchantController@postContact');
 
 Route::group(array('before' => 'auth'), function()
 {
-    Route::get('/user', 'MerchantController@getUser');
+    Route::get('/user', 'MerchantController@getMerchant');
 
     Route::get('/user/keepalive', 'MerchantController@getKeepAlive');
 
@@ -68,16 +68,16 @@ Route::group(array('before' => 'auth'), function()
 
         Route::post('/{mode}/key/new', 'MerchantController@postNewKey');
 
-        Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCaptureTransaction');
+        Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment');
 
-        Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundTransaction');
+        Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment');
     });
 });
 
 Route::group(array('before' => 'guest'), function()
 {
     Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
-    
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/user/signin', 'MerchantController@postSignin');
@@ -93,7 +93,7 @@ Route::group(array('before' => 'guest'), function()
 });
 
 Route::group(array('before' => 'auth_admin'), function()
-{   
+{
     Route::get('/admin/user', 'AdminController@getAdmin');
 
     Route::get('/admin/user/logout', 'AdminController@getLogout');
@@ -123,11 +123,11 @@ Route::group(array('before' => 'auth_admin'), function()
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
 
         Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
-        
+
         Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');
 
         Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
-        
+
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
 
         Route::get('/admin/merchant/{id}/live/enable', 'AdminController@getMerchantLiveEnable');
@@ -138,9 +138,9 @@ Route::group(array('before' => 'auth_admin'), function()
     Route::group(array('before' => 'superadmin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');
-        
+
         Route::post('/admin/users/add', array('before'=>'csrf', 'uses'=> 'AdminController@postAddAdmin'));
-        
+
         Route::get('/admin/users/{id}/delete', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
     });

@@ -18,15 +18,15 @@ class Api extends Razorpay\Api\Api
         parent::__construct($key, $secret);
     }
 
-    
+
     /**
      * @param string $name
      */
     function __get($name)
     {
-        if(self::$mock === true)
+        if (self::$mock === true)
         {
-            //Delay the response by 0.5 secs (avoids issue with non loading of js before calls)
+            // Delay the response by 0.5 secs (avoids issue with non loading of js before calls)
             usleep(500000);
             $className = __NAMESPACE__.'\\Mock\\'.ucwords($name);
         }
@@ -35,7 +35,7 @@ class Api extends Razorpay\Api\Api
             $className = __NAMESPACE__.'\\'.ucwords($name);
         }
 
-        if(class_exists($className) === true)
+        if (class_exists($className) === true)
         {
             $entity = new $className();
         }

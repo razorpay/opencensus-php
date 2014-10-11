@@ -3,7 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePasswordReminders extends Migration {
+class CreatePasswordReminders extends Migration
+{
 
 	/**
 	 * Run the migrations.

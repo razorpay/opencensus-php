@@ -1,5 +1,5 @@
 <?php
-    
+
     return array(
 
     /*
@@ -21,7 +21,7 @@
      */
     'API_URL'           => 'http://api.razorpay.com/',
     'API_AUTH_PASS'     => 'secret',
-    'API_MOCK'          => false,
+    'API_MOCK'          => true,
 
     /**
      *  QUEUE System Configuration
@@ -43,15 +43,17 @@
     | In order to communicate with an AWS service, you must provide your AWS
     | credentials including your AWS Access Key ID and your AWS Secret Key
     | Used for SQS and S3 file uploads
-    | 
+    |
     | Make them null when running on AWS using roles
-    | 
+    |
     */
     'AWS_KEY_ID'        => '', // Your AWS Access Key ID
     'AWS_KEY_SECRET'    => '', // Your AWS Secret Access Key
     'AWS_REGION'        => 'us-east-1',
 
-    //Should mail be faked, set true in testing/development See mail.php for details
+    /**
+     * Should mail be faked, set true in testing/development See mail.php for details
+     */
     'MAIL_PRETEND'      => true
     );
 ?>

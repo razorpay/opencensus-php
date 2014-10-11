@@ -1,8 +1,8 @@
 <?php
 
-use Models\Service;
-
 use Http\AppResponse;
+use Models\Merchant;
+use Models\MerchantDetails;
 
 class MerchantController extends BaseController
 {
@@ -11,11 +11,11 @@ class MerchantController extends BaseController
         return View::make('merchant.getIndexGenerated');
     }
 
-    public function getUser()
+    public function getMerchant()
     {
-       $merchant = (new Service\Merchant)->fetch(\Auth::merchant()->id());
+       $merchant = (new Merchant\Service)->fetch(Auth::merchant()->id());
 
-       $merchantDetails = (new Service\MerchantDetails)->fetchDetails();
+       $merchantDetails = (new MerchantDetails\Service)->fetchDetails();
 
        $data = $merchant + $merchantDetails;
 
@@ -31,7 +31,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = (new Service\Merchant)->login($input);
+        list($error, $data) = (new Merchant\Service)->login($input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -40,7 +40,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = (new Service\Merchant)->register($input);
+        list($error, $data) = (new Merchant\Service)->register($input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -49,7 +49,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = (new Service\Merchant)->resendConfirmation($input);
+        list($error, $data) = (new Merchant\Service)->resendConfirmation($input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -58,26 +58,27 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        list($error, $data) = (new Service\Merchant)->changePassword($input);
+        list($error, $data) = (new Merchant\Service)->changePassword($input);
 
         return AppResponse::jsonResponse($error);
     }
 
     public function getLogout()
     {
-        \Auth::merchant()->logout();
-        
+        Auth::merchant()->logout();
+
         return AppResponse::jsonResponse([]);
     }
 
     public function getCsv()
     {
-        $input = Input::only(
-            'id', 'secret'
-        );
+        $input = Input::only('id', 'secret');
 
-        if (!isset($input['id']) || !isset($input['secret']))
+        if ((isset($input['id']) === false) or
+            (isset($input['secret']) === false))
+        {
             return;
+        }
 
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=rzp.csv');
@@ -90,14 +91,14 @@ class MerchantController extends BaseController
 
     public function getKeys($mode)
     {
-        $keys = (new Service\Merchant)->fetchKeysFromApi(\Auth::merchant()->id(), $mode);
+        $keys = (new Merchant\Service)->fetchKeysFromApi(Auth::merchant()->id(), $mode);
 
         return AppResponse::jsonResponse([], $keys);
     }
 
     public function postNewKey($mode)
     {
-        list($error, $data) = (new Service\Merchant)->createKey(\Auth::merchant()->id(), $mode);
+        list($error, $data) = (new Merchant\Service)->createKey(Auth::merchant()->id(), $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -106,16 +107,16 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $input['merchant_id'] = \Auth::merchant()->id();
+        $input['merchant_id'] = Auth::merchant()->id();
 
-        list($error, $data) = (new Service\Merchant)->rollKeys($input, $mode);
+        list($error, $data) = (new Merchant\Service)->rollKeys($input, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
     public function getConfirm($token)
     {
-        $error = (new Service\Merchant)->confirm($token);
+        $error = (new Merchant\Service)->confirm($token);
 
         return AppResponse::jsonResponse($error);
     }
@@ -123,14 +124,14 @@ class MerchantController extends BaseController
 
     public function getActivationDetails()
     {
-        $response = (new Service\MerchantDetails)->fetchDetails();
-        
+        $response = (new MerchantDetails\Service)->fetchDetails();
+
         return AppResponse::jsonResponse([], $response);
     }
 
     public function postActivation()
     {
-        $error = (new Service\MerchantDetails)->submitDetails();
+        $error = (new MerchantDetails\Service)->submitDetails();
 
         return AppResponse::jsonResponse($error);
     }
@@ -139,15 +140,15 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        if($id != 5)
+        if ((int) $id !== 5)
         {
-            $error = (new Service\MerchantDetails)->saveDetails($id, $input);  
+            $error = (new MerchantDetails\Service)->saveDetails($id, $input);
         }
         else
         {
-            $error = (new Service\MerchantDetails)->checkUploads();
+            $error = (new MerchantDetails\Service)->checkUploads();
         }
-        
+
         return AppResponse::jsonResponse($error);
     }
 
@@ -155,7 +156,7 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $error = (new Service\MerchantDetails)->saveUploadedFile($input);
+        $error = (new MerchantDetails\Service)->saveUploadedFile($input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -164,7 +165,7 @@ class MerchantController extends BaseController
     {
         $merchant = $data['merchant'];
 
-        \Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
+        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
         {
             $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
         });
@@ -173,12 +174,13 @@ class MerchantController extends BaseController
     }
 
     public function postContact()
-    {   
+    {
         $input = Input::all();
 
         Mail::send('emails.contact',compact('input'), function($m)
         {
-            $m->to('contact@razorpay.com', 'Razorpay Contact')->subject('New Contact form submission');
+            $m->to('contact@razorpay.com', 'Razorpay Contact')
+              ->subject('New Contact form submission');
         });
 
         return Redirect::to("https://razorpay.com/postcontact/");
