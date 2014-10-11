@@ -13,7 +13,7 @@ class Service extends Base\Service
 
     public function fetchEntity($id, $mode, $entity)
     {
-        $error = (new Validator)->validateInput(array('id' => $id), 'fetch')->messages();
+        $error = (new Validator)->validateInput('fetch', array('id' => $id))->messages();
 
         if (empty($error) === false)
         {
@@ -23,7 +23,7 @@ class Service extends Base\Service
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api->payment->fetch($id)->toArray();
+            $data = $this->api->$entity->fetch($id)->toArray();
 
             $collection = array(
                 'count' => 1,
