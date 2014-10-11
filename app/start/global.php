@@ -58,7 +58,7 @@ App::error(function(Exception $e, $code)
             return Response::json(array('success' => false, 'errors' => ['Internal Server Error']));
     }
     else
-    {sd($e);
+    {
         $arr = array(
             'message' => $e->getMessage(),
             'line' => $e->getLine(),
