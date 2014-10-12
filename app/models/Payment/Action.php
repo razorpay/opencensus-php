@@ -2,7 +2,6 @@
 
 namespace Models\Payment;
 
-use Dashboard;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Gateway;

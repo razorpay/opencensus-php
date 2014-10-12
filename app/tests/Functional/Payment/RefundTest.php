@@ -3,6 +3,7 @@
 namespace Tests\Functional\Payment;
 
 use Tests\Functional\TestCase;
+use Mockery;
 
 /**
  * Tests for refund payments
@@ -39,6 +40,8 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
+        $this->mockDashboardRequest();
+
         $refund = $this->startTest($payment['id'], (string)$payment['amount']);
 
         $this->assertEquals(substr($refund['id'], 0, 5), 'rfnd-');
@@ -50,6 +53,8 @@ class RefundTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->mockDashboardRequest(4);
 
         $this->refundPayment($payment['id'], '10000');
         $this->refundPayment($payment['id'], '20000');
@@ -81,6 +86,8 @@ class RefundTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->mockDashboardRequest();
 
         $this->refundPayment($payment['id']);
 
@@ -139,5 +146,16 @@ class RefundTest extends TestCase
             $id = $this->payment['id'];
         }
 
+    }
+
+    protected function mockDashboardRequest($times = 1)
+    {
+        $dashboard = Mockery::mock('overload:Dashboard\Refund');
+
+        $this->app->instance('Dashboard\Refund', $dashboard);
+
+        $dashboard->shouldReceive('queueRecord')
+              ->times($times)
+              ->with(Mockery::type('Models\\Base\\PublicEntity'));
     }
 }
