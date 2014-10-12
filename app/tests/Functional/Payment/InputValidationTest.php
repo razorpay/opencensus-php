@@ -11,9 +11,9 @@ class PaymentValidationTest extends TestCase
 
     public function setUp()
     {
-        parent::setUp();
+        $this->testDataFilePath = __DIR__.'/helpers/cardNumbers.php';
 
-        $this->testData = include(__DIR__.'/helpers/cardNumbers.php');
+        parent::setUp();
 
         $this->setupPublicBasicAuthParams();
     }

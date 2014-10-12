@@ -11,14 +11,11 @@ class PricingTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/PricingData.php';
+
         parent::setUp();
 
         $this->setupAppBasicAuthParams();
-
-        //
-        // load test data
-        //
-        $this->testData = include(__DIR__.'/helpers/PricingData.php');
     }
 
     public function testCreatePricingPlan()

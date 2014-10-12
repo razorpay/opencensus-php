@@ -17,9 +17,9 @@ class SupportTest extends TestCase
 
     public function setUp()
     {
-        parent::setUp();
+        $this->testDataFilePath = __DIR__.'/helpers/cards.php';
 
-        $this->testData = include(__DIR__.'/helpers/cards.php');
+        parent::setUp();
     }
 
     /**

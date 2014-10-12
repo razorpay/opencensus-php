@@ -9,9 +9,6 @@ namespace Tests\Functional;
 
 use Artisan;
 use DB;
-use Eloquent;
-use Laracasts\TestDummy\Factory;
-use Route;
 use Tests\TestCase as ParentTestCase;
 
 class TestCase extends ParentTestCase

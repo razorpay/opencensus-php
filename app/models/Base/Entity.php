@@ -51,6 +51,15 @@ class Entity extends EloquentEx
         return snake_case($this->getEntityName()) . '_id';
     }
 
+    /**
+     * Since namespacing is ?/?/Entity
+     * This returns the second last segment of the namespace
+     * which is also the entity type is.
+     *
+     * eg: for Models/Transaction/Entity class, it returns Transaction
+     *
+     * @return string
+     */
     public function getEntityName()
     {
         $class = get_class($this);

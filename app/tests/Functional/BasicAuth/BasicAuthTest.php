@@ -11,14 +11,9 @@ class BasicAuthTest extends TestCase
 
     public function setUp()
     {
-        // $this->markTestIncomplete('Under construction');
+        $this->testDataFilePath = __DIR__.'/helpers/BasicAuthData.php';
 
         parent::setUp();
-
-        //
-        // load test data
-        //
-        $this->testData = include(__DIR__.'/helpers/BasicAuthData.php');
 
         $this->setupPrivateBasicAuthParams();
     }

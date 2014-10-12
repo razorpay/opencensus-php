@@ -16,14 +16,11 @@ class HdfcGatewayMprTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/MprTestData.php';
+
         parent::setUp();
 
         $this->setupPublicBasicAuthParams();
-
-        //
-        // load test data
-        //
-        $this->testData = include(__DIR__.'/helpers/MprTestData.php');
     }
 
     public function testUploadMpr()

@@ -29,8 +29,6 @@ class RefundTest extends TestCase
 
         parent::setUp();
 
-        $this->testData = include(__DIR__.'/helpers/refund.php');
-
         $this->payment = $this->createCapturedPaymentEntity();
 
         $this->setupPrivateBasicAuthParams();

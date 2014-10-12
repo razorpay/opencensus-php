@@ -27,9 +27,9 @@ class CaptureTest extends TestCase
 
     public function setUp()
     {
-        parent::setUp();
+        $this->testDataFilePath = __DIR__.'/helpers/capture.php';
 
-        $this->testData = require(__DIR__.'/helpers/capture.php');
+        parent::setUp();
 
         $payment = $this->fixtures->createPaymentAuthorizedEntity();
         $this->payment = $payment->toArrayPublic();

@@ -19,9 +19,9 @@ class AuthorizeTest extends TestCase
 
     public function setUp()
     {
-        parent::setUp();
+        $this->testDataFilePath = __DIR__.'/helpers/authorize.php';
 
-        $this->testData = include(__DIR__.'/helpers/authorize.php');
+        parent::setUp();
 
         $this->setupPublicBasicAuthParams();
 
