@@ -5,7 +5,7 @@ namespace Models\Payment;
 use Models\Merchant;
 use Models\Payment;
 use Trace\TraceCode;
-use Dashboard\Payment as PaymentAnalytics;
+use Dashboard\Notification as DashboardNotification;
 
 class Capture extends Action
 {
@@ -37,7 +37,7 @@ class Capture extends Action
             //
             // Analytics
             //
-            (new PaymentAnalytics)->queueRecord($this->payment);
+            DashboardNotification::send('payment', $this->payment);
         }
         catch (BaseException $e)
         {

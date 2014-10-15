@@ -7,7 +7,7 @@ use Models\Payment;
 use Models\Payment\Action;
 use Models\Payment\Refund;
 use Trace\TraceCode;
-use Dashboard\Refund as RefundAnalytics;
+use Dashboard\Notification as DashboardNotification;
 
 class Process extends Action
 {
@@ -40,7 +40,7 @@ class Process extends Action
             //
             // Analytics
             //
-            (new RefundAnalytics)->queueRecord($this->refund);
+            DashboardNotification::send('refund', $this->refund);
         }
         catch(BaseException $e)
         {
