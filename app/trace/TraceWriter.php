@@ -9,6 +9,7 @@ use Monolog\Processor;
 use Monolog\Handler;
 use Monolog\Formatter;
 use Request;
+use Queue;
 
 class TraceWriter extends Logger
 {
