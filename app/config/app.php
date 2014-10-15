@@ -118,6 +118,7 @@ return array(
         'Http\BasicAuth\ServiceProvider',
         'Trace\TraceServiceProvider',
         'Services\SlackServiceProvider',
+        'Services\DashboardServiceProvider',
 	),
 
 	/*
