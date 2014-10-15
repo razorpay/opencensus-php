@@ -243,6 +243,15 @@ class Validator extends Base\Validator
     {
         $bag = $messages;
 
+        $this->checkValidationFailureEmail($bag);
+
+        $this->checkValidationFailureContact($bag);
+
+        throw new Exception\BadRequestException($messages);
+    }
+
+    protected function checkValidationFailureEmail($bag)
+    {
         if ($bag->has(Entity::EMAIL))
         {
             $msg = $bag->first(Entity::EMAIL);
@@ -252,7 +261,10 @@ class Validator extends Base\Validator
                 ErrorCode::FIELD_ERROR_INVALID_EMAIL,
                 Entity::EMAIL);
         }
+    }
 
+    protected function checkValidationFailureContact($bag)
+    {
         if ($bag->has(Entity::CONTACT))
         {
             $msg = $bag->first(Entity::CONTACT);
@@ -262,7 +274,5 @@ class Validator extends Base\Validator
                 ErrorCode::FIELD_ERROR_INVALID_CONTACT,
                 Entity::CONTACT);
         }
-
-        throw new Exception\BadRequestException($messages);
     }
 }

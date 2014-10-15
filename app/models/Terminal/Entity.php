@@ -35,11 +35,6 @@ class Entity extends Base\UniqueIdEntity
      */
     protected static $modifiers = array('inputRemoveBlanks');
 
-    protected function setGatewayTerminalPasswordAttribute($password)
-    {
-        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password);
-    }
-
     public function getMerchantId()
     {
         return $this->attributes[self::MERCHANT_ID];
@@ -48,6 +43,11 @@ class Entity extends Base\UniqueIdEntity
     public function getGatewayMerchantId()
     {
         return $this->attributes[self::GATEWAY_MERCHANT_ID];
+    }
+
+    protected function setGatewayTerminalPasswordAttribute($password)
+    {
+        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password);
     }
 
     public function getGatewayTerminalPasswordAttribute()

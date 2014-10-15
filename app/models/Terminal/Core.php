@@ -16,14 +16,14 @@ class Core
 
         $terminal = (new Terminal\Entity)->build($input);
 
-        $this->validateNoExistingTerminal($terminal);
+        $this->validateExistingTerminal($terminal);
 
         $this->repo->saveOrFail($terminal);
 
         return $terminal;
     }
 
-    protected function validateNoExistingTerminal($terminal)
+    protected function validateExistingTerminal($terminal)
     {
         // Check no other terminal id exists for the merchant right now
         $params = array(
@@ -33,11 +33,25 @@ class Core
 
         $existingTerminals = $this->repo->getByParams($params);
 
-        if ($existingTerminals !== null)
+        $count = $existingTerminals->count();
+
+        if ($count === 2)
         {
             throw new Exception\BadRequestException(
                 null,
-                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_EXISTS_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED);
+        }
+        else if ($count === 1)
+        {
+            if ($terminal->getGateway() === $existingTerminals->first()->getGateway())
+            {
+                throw new Exception\BadRequestException(
+                    null, ErrorCode::BAD_REQUEST_TERMINAL_EXISTS_FOR_GATEWAY);
+            }
+        }
+        else if ($count > 2)
+        {
+            throw new Exception\LogicException('Terminal count should not exceed 2');
         }
 
         // Check no record with same 'gateway_merchant_id' exists
@@ -46,7 +60,7 @@ class Core
 
         $existingTerminals = $this->repo->getByParams($params);
 
-        if ($existingTerminals !== null)
+        if ($existingTerminals->count() !== 0)
         {
             throw new Exception\BadRequestException(
                 null,

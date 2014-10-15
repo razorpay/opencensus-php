@@ -15,7 +15,7 @@ class Fixtures
         'pricing'       => 'Models\Pricing\Entity',
         'refund'        => 'Models\Payment\Refund\Entity',
         'terminal'      => 'Models\Terminal\Entity',
-        'payment'   => 'Models\Payment\Entity',
+        'payment'       => 'Models\Payment\Entity',
         'hdfc'          => 'Gateway\Hdfc\Entity',
     );
 
@@ -83,6 +83,7 @@ class Fixtures
     {
         $attributes['action'] = 5;
         $attributes['status'] = 'captured';
+
         return $this->createEntity('hdfc', $attributes);
     }
 

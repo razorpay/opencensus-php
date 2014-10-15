@@ -5,7 +5,8 @@ Models\Merchant\Entity:
 
 Models\Terminal\Entity:
     id: $uniqueid
-    merchant_id: Models\Merchant\Entity
+    merchant_id:
+        type: Models\Merchant\Entity
     gateway: hdfc
     gateway_merchant_id: $string
     gateway_terminal_id: $string

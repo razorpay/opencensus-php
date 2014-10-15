@@ -74,9 +74,4 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED);
         }
     }
-
-    protected function processValidationFailure($messages, $operation, $input)
-    {
-        throw new Exception\BadRequestException($messages);
-    }
 }

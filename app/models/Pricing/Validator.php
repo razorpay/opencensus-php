@@ -96,11 +96,6 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function processValidationFailure($messages, $operation, $input)
-    {
-        throw new Exception\BadRequestException($messages);
-    }
-
     public static function validatePlanCountZero($plan)
     {
         if ($plan->count() > 0)

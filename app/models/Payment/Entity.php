@@ -131,7 +131,7 @@ class Entity extends Base\PublicEntity
 
     public function generateGateway()
     {
-        $this->setAttribute(self::GATEWAY, 'hdfc');
+        $this->setAttribute(self::GATEWAY, Payment\Gateway::HDFC);
     }
 
     protected function generateAmountRefunded()

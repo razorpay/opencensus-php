@@ -113,5 +113,5 @@ return [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_EXPIRED,
         ],
-    ]
+    ],
 ];
