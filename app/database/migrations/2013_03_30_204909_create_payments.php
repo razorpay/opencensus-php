@@ -28,6 +28,13 @@ class CreatePayments  extends Migration
 
             $table->char(Payment::MERCHANT_ID, Payment::ID_LENGTH);
 
+            $table->integer(Payment::AMOUNT)
+                  ->unsigned();
+
+            $table->string(Payment::METHOD);
+
+            $table->string(Payment::STATUS);
+
             $table->integer(Payment::AMOUNT_AUTHORIZED)
                   ->unsigned()
                   ->default(0);
@@ -35,11 +42,6 @@ class CreatePayments  extends Migration
             $table->integer(Payment::AMOUNT_REFUNDED)
                   ->unsigned()
                   ->default(0);
-
-            $table->integer(Payment::AMOUNT)
-                  ->unsigned();
-
-            $table->string(Payment::STATUS);
 
             $table->string(Payment::REFUND_STATUS)
                   ->default('none');

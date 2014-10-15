@@ -143,7 +143,6 @@ class RefundTest extends TestCase
         {
             $id = $this->payment['id'];
         }
-
     }
 
     protected function mockDashboardRequest($times = 1)

@@ -5,6 +5,7 @@ namespace Models\Payment;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
+use Models\Payment;
 use Models\Payment\Refund;
 
 class Entity extends Base\PublicEntity
@@ -15,6 +16,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_AUTHORIZED = 'amount_authorized';
     const AMOUNT_REFUNDED   = 'amount_refunded';
     const STATUS            = 'status';
+    const METHOD            = 'method';
     const REFUND_STATUS     = 'refund_status';
     const CURRENCY          = 'currency';
     const DESCRIPTION       = 'description';
@@ -44,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::AMOUNT,
+        self::METHOD,
         self::CURRENCY,
         self::DESCRIPTION,
         self::EMAIL,
@@ -52,6 +55,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = array(
         self::ID,
+        self::METHOD,
         self::AMOUNT,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
@@ -89,6 +93,7 @@ class Entity extends Base\PublicEntity
     protected static $modifiers = array(self::CONTACT, self::UDF);
 
     protected static $generators = array(
+        self::METHOD,
         self::STATUS,
         self::ID,
         self::UDF,
@@ -113,6 +118,14 @@ class Entity extends Base\PublicEntity
         if (isset($input['udf']) === false)
         {
             $this->setAttribute(self::UDF, array());
+        }
+    }
+
+    protected function generateMethod($input)
+    {
+        if (isset($input['method']) === false)
+        {
+            $this->setAttribute(self::METHOD, Payment\Method::CARD);
         }
     }
 

@@ -22,6 +22,4 @@ class Builder extends BaseBuilder
         // Next, we'll do any necessary dynamic replacements.
         return (new DynamicAttributeReplacer)->replace($data);
     }
-
-
 }

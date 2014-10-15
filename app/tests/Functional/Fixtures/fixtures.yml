@@ -9,7 +9,7 @@ Models\Terminal\Entity:
     gateway: hdfc
     gateway_merchant_id: $string
     gateway_terminal_id: $string
-    gateway_terminal_password: eyJpdiI6ImQwTWJVdElNdUtpeFpOR2VpMWxuT0E9PSIsInZhbHVlIjoiaWk1SDVOZGxBQkM2OTRHNzFIOG0yRzYzUlZDT05wSjdodjB2aWxjSHhJaz0iLCJtYWMiOiIxOTBiMGE0ZmU2NmUwOTQ0M2EwY2Y1MjJmZWU1ZWE4MTliOWMxNzlhMzBhZTMzNzg4ZTBmY2JjMWE5NjA1M2QwIn0=
+    gateway_terminal_password: encryptpass
 
 Models\Merchant\Balance:
     id: $uniqueid
@@ -35,6 +35,7 @@ Models\Key\Entity:
 Models\Payment\Entity:
     id: $uniqueid
     merchant_id: 363e4efa820b0c06208ccd99
+    method: card
     card_id:
         type: Models\Card\Entity
     amount: 1000000
