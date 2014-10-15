@@ -5,7 +5,7 @@ namespace Models\Payment;
 use Models\Merchant;
 use Models\Payment;
 use Trace\TraceCode;
-use Dashboard\Notification as DashboardNotification;
+use Dashboard\Dashboard as DashboardNotification;
 
 class Capture extends Action
 {
