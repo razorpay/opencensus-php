@@ -45,6 +45,11 @@ class Dashboard
         return $this->config['secret'];
     }
 
+    protected function getPretend()
+    {
+        return $this->config['pretend'];
+    }
+
     public static function getInstance()
     {
         return new static;
@@ -61,57 +66,34 @@ class Dashboard
         return $data;
     }
 
-    public function queueRecord($data)
-    {   
-        if(is_a($data, 'Models\\Base\\PublicCollection') === true)
-        {
-            foreach($data as $entity)
-            {
-                //Recursively call this function for each entity in collection
-                $this->queueRecord($entity);
-            }
-        }
-        elseif(is_a($data, 'Models\\Base\\PublicEntity') === true)
-        {
-            $data = array_merge(
-                    $data->toArray(),
-                    ['merchant_id' => $data->getMerchantId()]);
-
-            $data = static::validateAndBuild($data);
-
-            $mode = \BasicAuth::getMode();
-
-            Queue::push('Dashboard\Dashboard@postRequest', array(
-                'mode'  => $mode,
-                'resource'  =>  static::$resource,
-                'message'   =>  $data
-            ));
-        }
-    }
-
     public function postRequest($job, $data)
     {
         $mode = $data['mode'];
 
+        $payload = static::validateAndBuild($data['message']);
+
         $options = array('auth'=> array('rzp_api', $this->getAuthSecret()));
 
-        $response = Requests::post(
-            $this->getUrl() . $mode . '/transactions/' . $data['resource'],
-            array(),
-            $data['message'],
-            $options
-        );
-
-        //
-        // For debugging purposes,
-        // persist failed requests
-        //
-        if (!is_object(json_decode($response->body)) ||
-            json_decode($response->body)->status === FALSE)
+        if ($this->getPretend() === false)
         {
-            (new Repository)->persistAfterFail($data['message']);
-            
-            return;
+            $response = Requests::post(
+                $this->getUrl() . $mode . '/transactions/' . static::$resource,
+                array(),
+                $payload,
+                $options
+            );
+
+            //
+            // For debugging purposes,
+            // persist failed requests
+            //
+            if (!is_object(json_decode($response->body)) ||
+                json_decode($response->body)->status === FALSE)
+            {
+                (new Repository)->persistAfterFail($data['message']);
+                
+                return;
+            }
         }
 
         $job->delete();
