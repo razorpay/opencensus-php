@@ -87,8 +87,6 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->mockDashboardRequest();
-
         $this->refundPayment($payment['id']);
 
         $this->startTest($payment['id'], 100);
@@ -150,12 +148,19 @@ class RefundTest extends TestCase
 
     protected function mockDashboardRequest($times = 1)
     {
-        $dashboard = Mockery::mock('overload:Dashboard\Refund');
+        $config = $this->config->get('applications.dashboard');
 
-        $this->app->instance('Dashboard\Refund', $dashboard);
+        if ($config['pretend'] === false)
+        {
+            return;
+        }
+        
+        $dashboard = Mockery::mock('Services\Dashboard');
+
+        $this->app->instance('dashboard', $dashboard);
 
         $dashboard->shouldReceive('queueRecord')
               ->times($times)
-              ->with(Mockery::type('Models\\Base\\PublicEntity'));
+              ->with('refund', Mockery::type('Models\\Base\\PublicEntity'));
     }
 }

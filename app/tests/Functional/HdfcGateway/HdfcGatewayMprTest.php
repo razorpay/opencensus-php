@@ -66,13 +66,20 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function mockDashboardRequest()
     {
-        $dashboard = Mockery::mock('overload:Dashboard\Settlement');
+        $config = $this->config->get('applications.dashboard');
 
-        $this->app->instance('Dashboard\Settlement', $dashboard);
+        if ($config['pretend'] === false)
+        {
+            return;
+        }
+
+        $dashboard = Mockery::mock('Services\Dashboard');
+
+        $this->app->instance('dashboard', $dashboard);
 
         $dashboard->shouldReceive('queueRecord')
               ->times(1)
-              ->with(Mockery::type('Models\\Base\\PublicCollection'));
+              ->with('settlement', Mockery::type('Models\\Base\\PublicCollection'));
     }
 
     protected function generateSettlements($txns)

@@ -56,8 +56,6 @@ class CaptureTest extends TestCase
 
         $this->payment = $payment;
 
-        $this->mockDashboardRequest(2);
-
         $this->startTest();
     }
 
@@ -68,8 +66,6 @@ class CaptureTest extends TestCase
         $this->payment = $this->defaultAuthPayment();
 
         $this->setupPrivateBasicAuthParams();
-
-        $this->mockDashboardRequest();
 
         $this->startTest(null, $amount);
     }
@@ -84,8 +80,6 @@ class CaptureTest extends TestCase
     public function testCaptureWithNoAmount()
     {
         unset($this->payment['amount']);
-
-        $this->mockDashboardRequest();
 
         $this->startTest();
     }
@@ -115,8 +109,6 @@ class CaptureTest extends TestCase
 
         $this->setupPrivateBasicAuthParams();
 
-        $this->mockDashboardRequest();
-
         $this->startTest();
     }
 
@@ -145,8 +137,6 @@ class CaptureTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
 
-        $this->mockDashboardRequest();
-        
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $refund = $this->refundPayment($payment['id']);
@@ -195,13 +185,19 @@ class CaptureTest extends TestCase
 
     protected function mockDashboardRequest($times = 1)
     {
-        $dashboard = Mockery::mock('overload:Dashboard\Payment');
+        $config = $this->config->get('applications.dashboard');
 
-        $this->app->instance('Dashboard\Payment', $dashboard);
+        if ($config['pretend'] === false)
+        {
+            return;
+        }
+        
+        $dashboard = Mockery::mock('Services\Dashboard');
+
+        $this->app->instance('dashboard', $dashboard);
 
         $dashboard->shouldReceive('queueRecord')
               ->times($times)
-              ->with(Mockery::type('Models\\Base\\PublicEntity'));
+              ->with('payment', Mockery::type('Models\\Base\\PublicEntity'));
     }
-
 }
