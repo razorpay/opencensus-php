@@ -19,7 +19,7 @@ class IinsTableSeeder extends Seeder
             Card\Detail::BRAND,
             Card\Detail::TYPE,
             Card\Detail::COUNTRY,
-            Card\Detail::BANK);
+            Card\Detail::ISSUER);
 
         $assocRecords = array();
 

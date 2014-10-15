@@ -9,6 +9,7 @@ use Monolog\Processor;
 use Monolog\Handler;
 use Monolog\Formatter;
 use Request;
+use Queue;
 
 class TraceWriter extends Logger
 {
@@ -116,9 +117,7 @@ class TraceWriter extends Logger
 
     public function fire($job, $trace)
     {
-        $recorder = new self();
-
-        $writer->addRecord($trace['level'], $trace['message'], $trace['context']);
+        parent::addRecord($trace['level'], $trace['message'], $trace['context']);
 
         $job->delete();
     }
@@ -140,18 +139,11 @@ class TraceWriter extends Logger
 
     public function addRecord($level, $message, array $context = array())
     {
-        if ($this->config['queue'])
-        {
-            // Queue the logging the record
-            $this->queueRecord(
-                $level,
-                $message,
-                $context);
-        }
-        else
-        {
-            parent::addRecord($level, $message, $context);
-        }
+        // Queue the logging the record
+        $this->queueRecord(
+            $level,
+            $message,
+            $context);
     }
 
     public function queueRecord($level, $message, array $context = array())

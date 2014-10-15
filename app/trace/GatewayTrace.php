@@ -12,5 +12,5 @@ class GatewayTrace extends Trace
 
     protected static $compulsoryFields = array(
         'message',
-        'transaction_id');
+        'payment_id');
 }

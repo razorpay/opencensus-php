@@ -157,12 +157,12 @@ class ErrorCode
 
     public static $errorMessages = array(
         Hdfc\ErrorCode::FSS0001   => 'Authentication Not Available',
-        Hdfc\ErrorCode::FSS00002  => 'Duplicate Transaction Request',
+        Hdfc\ErrorCode::FSS00002  => 'Duplicate Payment Request',
 
         Hdfc\ErrorCode::GW00150   => 'Missing required data',
         Hdfc\ErrorCode::GW00151   => 'Invalid action type',
-        Hdfc\ErrorCode::GW00152   => 'Invalid Transaction Amount',
-        Hdfc\ErrorCode::GW00153   => 'Invalid Transaction ID',
+        Hdfc\ErrorCode::GW00152   => 'Invalid Payment Amount',
+        Hdfc\ErrorCode::GW00153   => 'Invalid Payment ID',
         Hdfc\ErrorCode::GW00154   => 'Invalid Terminal ID',
 
         Hdfc\ErrorCode::GW00157   => 'Invalid Payment Instrument',
@@ -186,13 +186,13 @@ class ErrorCode
         Hdfc\ErrorCode::GW00183   => 'Card Verification Digit Required',
 
         Hdfc\ErrorCode::GW00201   => 'Support Error Auth not found',
-        Hdfc\ErrorCode::GW00205   => 'Invalid Subsequent Transaction',
-        Hdfc\ErrorCode::GW00258   => 'Transaction Denied: Negative BIN',
-        Hdfc\ErrorCode::GW00259   => 'Transaction Denied: Declined Card',
-        Hdfc\ErrorCode::GW00261   => 'Transaction Denied: Captures exceed Authorizations',
+        Hdfc\ErrorCode::GW00205   => 'Invalid Subsequent Payment',
+        Hdfc\ErrorCode::GW00258   => 'Payment Denied: Negative BIN',
+        Hdfc\ErrorCode::GW00259   => 'Payment Denied: Declined Card',
+        Hdfc\ErrorCode::GW00261   => 'Payment Denied: Captures exceed Authorizations',
 
         Hdfc\ErrorCode::GW00456   => 'Invalid TranPortal Id',
-        Hdfc\ErrorCode::GW00458   => 'Invalid Transaction Attempt',
+        Hdfc\ErrorCode::GW00458   => 'Invalid Payment Attempt',
 
         Hdfc\ErrorCode::GV00001   => 'Unknown VPAS version',
         Hdfc\ErrorCode::GV00002   => 'Cardholder not enrolled',
@@ -243,23 +243,23 @@ class ErrorCode
      */
     public static $errorMap = array(
         Hdfc\ErrorCode::FSS0001   => Error\ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
-        Hdfc\ErrorCode::FSS00002  => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_DUPLICATE_REQUEST,
+        Hdfc\ErrorCode::FSS00002  => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
 
-        Hdfc\ErrorCode::GW00150   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_MISSING_DATA,
-        Hdfc\ErrorCode::GW00151   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_ACTION,
-        Hdfc\ErrorCode::GW00152   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_AMOUNT,
-        Hdfc\ErrorCode::GW00153   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_ID,
+        Hdfc\ErrorCode::GW00150   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
+        Hdfc\ErrorCode::GW00151   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
+        Hdfc\ErrorCode::GW00152   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
+        Hdfc\ErrorCode::GW00153   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
         Hdfc\ErrorCode::GW00154   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
 
         Hdfc\ErrorCode::GW00157   => Error\ErrorCode::GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR,
         Hdfc\ErrorCode::GW00160   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         Hdfc\ErrorCode::GW00161   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NAME,
-        Hdfc\ErrorCode::GW00162   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_UDF,
+        Hdfc\ErrorCode::GW00162   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF,
         Hdfc\ErrorCode::GW00163   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_ADDRESS,
         Hdfc\ErrorCode::GW00164   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_ZIP,
-        Hdfc\ErrorCode::GW00165   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_ID,
+        Hdfc\ErrorCode::GW00165   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
         Hdfc\ErrorCode::GW00166   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
-        Hdfc\ErrorCode::GW00167   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_CURRENCY,
+        Hdfc\ErrorCode::GW00167   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
         Hdfc\ErrorCode::GW00170   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
         Hdfc\ErrorCode::GW00177   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
         Hdfc\ErrorCode::GW00181   => Error\ErrorCode::CARD_ERROR_INSUFFICIENT_BALANCE,
@@ -267,9 +267,9 @@ class ErrorCode
         Hdfc\ErrorCode::GW00458   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
 
         Hdfc\ErrorCode::GW00201   => Error\ErrorCode::GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND,
-        Hdfc\ErrorCode::GW00205   => Error\ErrorCode::GATEWAY_ERROR_INVALID_SUBSEQUENT_TRANSACTION,
+        Hdfc\ErrorCode::GW00205   => Error\ErrorCode::GATEWAY_ERROR_INVALID_SUBSEQUENT_PAYMENT,
 
-        Hdfc\ErrorCode::GW00258   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_DENIED_NEGATIVE_BIN,
+        Hdfc\ErrorCode::GW00258   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN,
         Hdfc\ErrorCode::GW00259   => Error\ErrorCode::CARD_ERROR_CARD_DECLINED,
 
         Hdfc\ErrorCode::GW00456   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
@@ -282,7 +282,7 @@ class ErrorCode
         Hdfc\ErrorCode::GV00011   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE,
 
         Hdfc\ErrorCode::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
-        Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_INVALID_ACTION,
+        Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
         Hdfc\ErrorCode::PY20002   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_AMOUNT,
 
         Hdfc\ErrorCode::CM90000   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,

@@ -10,7 +10,7 @@ class Dashboard
 {
     /**
      * Resource specifier
-     * For example, transactions, cards, etc.
+     * For example, payments, cards, etc.
      */
     protected static $resource;
 
@@ -40,6 +40,16 @@ class Dashboard
         return $this->config['url'];
     }
 
+    protected function getAuthSecret()
+    {
+        return $this->config['secret'];
+    }
+
+    protected function getPretend()
+    {
+        return $this->config['pretend'];
+    }
+
     public static function getInstance()
     {
         return new static;
@@ -56,33 +66,35 @@ class Dashboard
         return $data;
     }
 
-    public function queueRecord($data = array())
-    {
-        $data = static::validateAndBuild($data);
-
-        Queue::push('Dashboard\Dashboard@postRequest', array(
-            'resource'  =>  static::$resource,
-            'message'   =>  $data
-        ));
-    }
-
     public function postRequest($job, $data)
     {
-        $mode = \BasicAuth::getMode();
+        $mode = $data['mode'];
 
-        $response = Requests::post(
-            $this->getUrl() . $mode . '/' . $data['resource'],
-            array(),
-            $data['message']
-        );
+        $payload = static::validateAndBuild($data['message']);
 
-        //
-        // For debugging purposes,
-        // persist failed requests
-        //
-        if (!is_object(json_decode($response->body)) ||
-            json_decode($response->body)->status === FALSE)
+        $options = array('auth'=> array('rzp_api', $this->getAuthSecret()));
+
+        if ($this->getPretend() === false)
+        {
+            $response = Requests::post(
+                $this->getUrl() . $mode . '/transactions/' . static::$resource,
+                array(),
+                $payload,
+                $options
+            );
+
+            //
+            // For debugging purposes,
+            // persist failed requests
+            //
+            if (!is_object(json_decode($response->body)) ||
+                json_decode($response->body)->status === FALSE)
+            {
                 (new Repository)->persistAfterFail($data['message']);
+                
+                return;
+            }
+        }
 
         $job->delete();
     }

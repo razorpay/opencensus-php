@@ -17,15 +17,18 @@ class Utility
     public static function checkTimeout(\Requests_Exception $e)
     {
         $msg = $e->getMessage();
+        $msg = strtolower($msg);
 
         //
         // check if timeout has occured
         //
-        if ((strpos($msg, 'Operation timed out')  !== false) or
-            (strpos($msg, 'Network is unreachable') !==false) or
-            (strpos($msg, 'Name or service not known') !== false) or
-            (strpos($msg, 'Failed to connect') !== false) or
-            (strpos($msg, 'Could not resolve host') !== false))
+        if ((strpos($msg, 'operation timed out')  !== false) or
+            (strpos($msg, 'network is unreachable') !==false) or
+            (strpos($msg, 'name or service not known') !== false) or
+            (strpos($msg, 'failed to connect') !== false) or
+            (strpos($msg, 'could not resolve host') !== false) or
+            (strpos($msg, 'resolving timed out') !== false) or
+            (strpos($msg, 'name lookup timed out' !== false)))
         {
             return true;
         }

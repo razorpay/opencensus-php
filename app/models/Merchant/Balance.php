@@ -2,6 +2,7 @@
 
 namespace Models\Merchant;
 
+use EE\Exception;
 use Models\Base;
 
 class Balance extends Base\UniqueIdEntity
@@ -16,22 +17,25 @@ class Balance extends Base\UniqueIdEntity
 
     public function addAmount($amount)
     {
-        if (is_numeric($amount) === false)
-        {
-            throw new Exception\InvalidArgumentException('Unsigned integer required. Supplied: '.$amount);
-        }
+        $this->checkNumeric($amount);
 
         $this->attributes[self::BALANCE] += (int) $amount;
     }
 
-    public function subtractAmount($amount)
+    public function subAmount($amount)
     {
-        if (is_numeric($amount) === false)
-        {
-            throw new Exception\InvalidArgumentException('Unsigned integer required. Supplied: '.$amount);
-        }
+        $this->checkNumeric($amount);
 
         $this->attributes[self::BALANCE] -= (int) $amount;
+    }
+
+    protected function checkNumeric($arg)
+    {
+        if (is_numeric($arg) === false)
+        {
+            throw new Exception\InvalidArgumentException('
+                Unsigned integer required. Supplied: '.$amount);
+        }
     }
 
     public function getBalance()

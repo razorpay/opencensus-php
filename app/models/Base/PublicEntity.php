@@ -118,4 +118,19 @@ class PublicEntity extends UniqueIdEntity
     {
         return static::$sign;
     }
+
+    public static function getIdPrefix()
+    {
+        return static::$sign . static::$delimiter;
+    }
+
+    public function getEntity()
+    {
+        return $this->entity;
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(static::MERCHANT_ID);
+    }
 }

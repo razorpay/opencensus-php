@@ -18,7 +18,8 @@ class ApiResponse
     {
         self::$jsonp = false;
 
-        $response = self::generateResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
+        $response = self::generateResponse(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
         $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
 
@@ -48,6 +49,11 @@ class ApiResponse
         // Put old time so that any browser cache gets expired
         //
         $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
+    }
+
+    public static function setSameOriginInHeaders($response)
+    {
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN', false);
     }
 
     protected static function attachJsonpCallback($request, $response)
@@ -106,9 +112,9 @@ class ApiResponse
 
         $jsonp = false;
 
-        $path = $request->path();
+        $routeName = \Route::currentRouteName();
 
-        if (self::isJsonpRequired($path))
+        if (self::isJsonpRequired($routeName))
         {
             $data['http_status_code'] = $status;
 
@@ -124,13 +130,15 @@ class ApiResponse
 
         self::stopBrowserCaching($response);
 
+        self::setSameOriginInHeaders($response);
+
         return $response;
     }
 
-    protected static function isJsonpRequired($path)
+    protected static function isJsonpRequired($routeName)
     {
         self::$jsonp = ((self::$jsonp !== false) and
-                        (Route::isJsonpRoute($path)));
+                        (Route::isJsonpRoute($routeName)));
 
         return self::$jsonp;
     }

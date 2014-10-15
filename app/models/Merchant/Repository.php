@@ -10,15 +10,18 @@ use Models\Merchant;
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
-    use Base\RepositoryFetchMultiple;
+    use Base\RepositoryFetch;
 
     protected $entity = 'Merchant';
-
-//    protected $merchantIdRequiredForMultipleFetch = false;
 
     public function getBalanceLockForUpdate($id)
     {
         return Merchant\Balance::lockForUpdate()->findOrFail($id);
+    }
+
+    public function getMerchantBalanceLockForUpdate($merchant)
+    {
+        return $this->getBalanceLockForUpdate($merchant->getKey());
     }
 
     public function updateBalance($balance)
@@ -45,5 +48,20 @@ class Repository extends Base\Repository
         }
 
         return $merchant->pricingPlan();
+    }
+
+    public function fetchMerchantsWithPositiveBalance()
+    {
+        $repo = $this->repo;
+
+        return $repo::whereHas('balance', function($q)
+        {
+            $q->where('balance', '>', 0);
+        })->get();
+    }
+
+    public function isMerchantIdRequiredForFetch()
+    {
+        return false;
     }
 }

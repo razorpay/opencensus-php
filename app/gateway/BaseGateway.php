@@ -2,6 +2,7 @@
 
 namespace Gateway;
 
+use Requests;
 use Trace\Trace;
 
 class BaseGateway
@@ -39,5 +40,19 @@ class BaseGateway
                 $data[$keyNew] = $array[$keyOld];
             }
         }
+    }
+
+    protected function sendGatewayRequest($request)
+    {
+        if (isset($request['options']) === false)
+        {
+            $request['options']  = array();
+        }
+
+        return Requests::post(
+                    $request['url'],
+                    $request['header'],
+                    $request['content'],
+                    $request['options']);
     }
 }

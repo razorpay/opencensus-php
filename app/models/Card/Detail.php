@@ -7,17 +7,12 @@ use Constants\Table;
 
 class Detail extends Base\Entity
 {
-    const IIN = 'iin';
-
-    const CATEGORY = 'category';
-
-    const BRAND = 'brand';
-
-    const TYPE = 'card_type';
-
-    const COUNTRY = 'country_code';
-
-    const BANK = 'bank';
+    const IIN       = 'iin';
+    const CATEGORY  = 'category';
+    const BRAND     = 'brand';
+    const TYPE      = 'card_type';
+    const COUNTRY   = 'country';
+    const ISSUER    = 'issuer';
 
     protected $table = Table::IIN;
 
@@ -26,4 +21,9 @@ class Detail extends Base\Entity
     public $timestamps = false;
 
     protected $guarded = array('*');
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
 }

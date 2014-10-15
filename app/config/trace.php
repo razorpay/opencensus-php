@@ -19,8 +19,6 @@ return array(
      */
     'introspection' => true,
 
-    'queue' => false,
-
     /*
     |--------------------------------------------------------------------------
     | Path for trace logs

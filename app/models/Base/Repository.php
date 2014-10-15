@@ -11,8 +11,6 @@ class Repository extends \Razorpay\Spine\Repository
     public function __construct()
     {
         parent::__construct();
-
-        $this->db = DB::getFacadeRoot();
     }
 
     public function findOrFailPublic($id, $columns = array('*'))

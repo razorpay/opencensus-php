@@ -24,11 +24,13 @@ class CreateHdfcGateway extends Migration
 
             $table->char('trackid', UniqueIdEntity::ID_LENGTH);
 
-            $table->bigInteger('gateway_transaction_id')
+            $table->bigInteger('gateway_payment_id')
                   ->unsigned()
                   ->nullable();
 
             $table->string('action', 1);
+
+            $table->string('amount', 10);
 
             $table->string('enroll_result', Hdfc\Constants::ENROLL_RESULT_LENGTH)
                   ->nullable();
@@ -65,7 +67,7 @@ class CreateHdfcGateway extends Migration
 
             $table->foreign('trackid')
                   ->references('id')
-                  ->on('transactions')
+                  ->on('payments')
                   ->on_delete('restrict');
         });
     }

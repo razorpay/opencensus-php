@@ -4,7 +4,7 @@ namespace Models\Base;
 
 use EE\Exception;
 
-trait RepositoryFetchMultiple
+trait RepositoryFetch
 {
     protected static $fetchParamRules = array(
         'created'       => 'numeric',
@@ -38,15 +38,17 @@ trait RepositoryFetchMultiple
          */
         $repo = $this->repo;
 
-        if (($this->merchantIdRequiredForMultipleFetch) and
+        if (($this->isMerchantIdRequiredForFetch()) and
             ($merchantId === null))
         {
             throw new Exception\InvalidArgumentException('Merchant Id is required for fetch query');
         }
 
+        $query = (new $repo)->newQuery();
+
         if ($merchantId !== null)
         {
-            $query = $repo::where(Common::MERCHANT_ID, '=', $merchantId);
+            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
         }
 
         if (isset($params['from']))
@@ -81,5 +83,24 @@ trait RepositoryFetchMultiple
     protected function validateFetchParams(array $params)
     {
         validate(self::$fetchParamRules, $params);
+    }
+
+    public function setMerchantIdRequiredForMultipleFetch($required)
+    {
+        $this->merchantIdRequiredForMultipleFetch = $required;
+    }
+
+    public function isMerchantIdRequiredForFetch()
+    {
+        return $this->merchantIdRequiredForMultipleFetch;
+    }
+
+    public function findByIdAndMerchantId($id, $merchantId)
+    {
+        $repo = $this->repo;
+
+        $query = $repo::where(Common::MERCHANT_ID, $merchantId);
+
+        return $query->findOrFailPublic($id);
     }
 }

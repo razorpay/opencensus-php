@@ -7,6 +7,7 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Hash;
 use Http\ApiResponse;
+use Http\Route;
 use Models\Key;
 use Models\Merchant;
 
@@ -14,27 +15,29 @@ class BasicAuth
 {
     /*
      * Basic Auth currently goes as follows:
+     *
      * Public -
      * rzp_mode_keyId:
      *
      * Private -
-     * rzp_mode_keyId:secret
+     * rzp_mode_keyId:merchant_secret
      *
      * Application -
-     * rzp_mode:secret
+     * rzp_mode:app_secret
      *
-     * Applicatoin proxy -
-     * rzp_mode_merchantId:secret
+     * Application proxy -
+     * rzp_mode_merchantId:app_secret
      *
      */
 
     /**
-     * Key id and secret sent by client for
-     * basic auth
+     * Key and secret sent by client for
+     * basic auth.
      * @var array
      */
     private $creds = array(
         'key' => '',
+        'public_key' => '',
         'secret' => '');
 
     /**
@@ -92,11 +95,18 @@ class BasicAuth
      */
     protected $internalAppConfigs;
 
+    /**
+     * Current route name
+     * @var string
+     */
+    protected $routeName;
+
     public function init($app)
     {
         $this->request = $app['request'];
         $this->internalAppConfigs = $app['config']->get('applications');
         $this->cloud = $app['config']->get('app.cloud');
+        $this->routeName = $app['router']->currentRouteName();
     }
 
     public function setCredentials()
@@ -112,6 +122,7 @@ class BasicAuth
         }
 
         $this->creds['secret'] = $secret;
+        $this->credts['public_key'] = $key;
 
         return $this->checkAndSetKeyId($key);
     }
@@ -222,7 +233,8 @@ class BasicAuth
         if (($this->request->getHttpHost() === 'api.razorpay.com') and
             ($this->request->secure() === false))
         {
-            return ApiResponse::generateResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
+            return ApiResponse::generateResponse(
+                ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
         }
     }
 
@@ -348,13 +360,30 @@ class BasicAuth
 
     /**
      * Verify the request is made by an internal app
-     * Verifies client ip and then matches the app secret
      * @return boolean
      */
     protected function verifyInternalApp()
     {
-        return (($this->verifyClientIpInternal()) and
-                ($this->verifyInternalAppSecret()));
+        if ($this->verifyInternalAppSecret() === false)
+        {
+            return false;
+        }
+
+        $app = $this->internalApp;
+
+        $appRoutes = Route::$internalApps[$this->internalApp];
+
+        if (in_array('*', $appRoutes))
+        {
+            return true;
+        }
+
+        if (in_array($this->routeName, $appRoutes) === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -378,11 +407,6 @@ class BasicAuth
         return preg_match($clientIpRegex, $clientIp);
     }
 
-    /**
-     * Verifies the secret given against the list of
-     * app secrets
-     * @return boolean
-     */
     protected function verifyInternalAppSecret()
     {
         $secret = $this->getSecret();
@@ -398,6 +422,12 @@ class BasicAuth
                 $verify = true;
 
                 $this->internalApp = $name;
+
+                if ((isset($info['cloud'])) and
+                    ($info['cloud'] === true))
+                {
+                    $verify = $this->verifyClientIpInternal();
+                }
 
                 break;
             }
@@ -437,7 +467,7 @@ class BasicAuth
 
     public function getPublicKey()
     {
-        return $this->key->getKey();
+        return $this->creds['public_key'];
     }
 
 // --------------------- Getters Ends ------------------------------------------

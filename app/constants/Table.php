@@ -12,7 +12,7 @@ class Table
 
     const KEY = 'keys';
 
-    const LEDGER = 'ledger';
+    const TRANSACTION = 'transaction';
 
     const MERCHANT = 'merchants';
 
@@ -24,7 +24,7 @@ class Table
 
     const TERMINAL = 'terminals';
 
-    const TRANSACTION = 'transactions';
+    const PAYMENT = 'payments';
 
     const UNRECOGNIZED_CARD = 'unrecognized_cards';
 }

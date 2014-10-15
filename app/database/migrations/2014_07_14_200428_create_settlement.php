@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
 use Models\Settlement\Entity as Settlement;
-use Models\Ledger;
+use Models\Transaction;
 use Models\Merchant;
 
 class CreateSettlement extends Migration {
@@ -31,20 +31,8 @@ class CreateSettlement extends Migration {
 
             $table->char(Settlement::MERCHANT_ID, Settlement::ID_LENGTH);
 
-            $table->char(Settlement::LEDGER_ID, Settlement::ID_LENGTH)
+            $table->char(Settlement::TRANSACTION_ID, Settlement::ID_LENGTH)
                   ->unique();
-
-            $table->integer(Settlement::TRANSACTION_AMOUNT)
-                  ->unsigned();
-
-            $table->integer(Settlement::TRANSACTION_FEES)
-                  ->unsigned();
-
-            $table->integer(Settlement::REFUND_AMOUNT)
-                  ->unsigned();
-
-            $table->integer(Settlement::REFUND_FEES)
-                  ->unsigned();
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Settlement::CREATED_AT);
@@ -55,9 +43,9 @@ class CreateSettlement extends Migration {
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Settlement::LEDGER_ID)
-                  ->references(Ledger\Entity::ID)
-                  ->on(Table::LEDGER)
+            $table->foreign(Settlement::TRANSACTION_ID)
+                  ->references(Transaction\Entity::ID)
+                  ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
         });
     }
@@ -72,7 +60,7 @@ class CreateSettlement extends Migration {
         Schema::table(Table::SETTLEMENT, function($table)
         {
             $table->dropForeign(
-                TABLE::SETTLEMENT.'_'.Settlement::LEDGER_ID.'_foreign');
+                TABLE::SETTLEMENT.'_'.Settlement::TRANSACTION_ID.'_foreign');
 
             $table->dropForeign(
                 TABLE::SETTLEMENT.'_'.Settlement::MERCHANT_ID.'_foreign');

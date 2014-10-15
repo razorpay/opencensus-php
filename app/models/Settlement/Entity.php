@@ -3,41 +3,41 @@
 namespace Models\Settlement;
 
 use Models\Base;
-use Models\Transaction;
+use Models\Payment;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
     const STATUS                = 'status';
-    const LEDGER_ID             = 'ledger_id';
-    const TRANSACTION_AMOUNT    = 'transaction_amount';
-    const TRANSACTION_FEES      = 'transaction_fees';
-    const REFUND_AMOUNT         = 'refund_amount';
-    const REFUND_FEES           = 'refund_fees';
+    const TRANSACTION_ID        = 'transaction_id';
 
     protected $table = \Constants\Table::SETTLEMENT;
 
     protected static $sign = 'setl';
 
+    protected $entity = 'settlement';
+
     protected $fillable = array(
         self::AMOUNT,
         self::STATUS,
         self::MERCHANT_ID,
-        self::LEDGER_ID,
-        self::TRANSACTION_AMOUNT,
-        self::TRANSACTION_FEES,
-        self::REFUND_AMOUNT,
-        self::REFUND_FEES);
+        self::TRANSACTION_ID);
+
+    protected $public = array(
+        self::ID,
+        self::ENTITY,
+        self::AMOUNT,
+        self::STATUS);
 
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
-    public function ledger()
+    public function transaction()
     {
-        return $this->belongsTo('Models\Ledger\Entity');
+        return $this->belongsTo('Models\Transaction\Entity');
     }
 }

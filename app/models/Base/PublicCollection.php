@@ -26,4 +26,15 @@ class PublicCollection extends Collection
 
         return $array;
     }
+
+    public function getIds()
+    {
+        $ids = array_map(function($item)
+        {
+            return $item->getKey();
+
+        }, $this->items);
+
+        return $ids;
+    }
 }

@@ -11,14 +11,9 @@ class BasicAuthTest extends TestCase
 
     public function setUp()
     {
-        // $this->markTestIncomplete('Under construction');
+        $this->testDataFilePath = __DIR__.'/helpers/BasicAuthData.php';
 
         parent::setUp();
-
-        //
-        // load test data
-        //
-        $this->testData = include(__DIR__.'/helpers/BasicAuthData.php');
 
         $this->setupPrivateBasicAuthParams();
     }
@@ -154,17 +149,17 @@ class BasicAuthTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function fetchTransactionSuccess()
+    protected function fetchPaymentSuccess()
     {
-        $transaction = $this->createEntity('transaction', ['merchant_id' => '363e4efa820b0c06208ccd99']);
+        $payment = $this->createEntity('payment', ['merchant_id' => '363e4efa820b0c06208ccd99']);
 
         $request = array(
             'method' => 'GET',
-            'url' => '/transactions');
+            'url' => '/payments');
 
-        $txn = $this->makeRequestAndGetContent($request);
+        $payment = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('entity', $txn);
-        $this->assertEquals($txn['entity'], 'transaction');
+        $this->assertArrayHasKey('entity', $payment);
+        $this->assertEquals($payment['entity'], 'payment');
     }
 }

@@ -5,7 +5,7 @@ namespace Gateway\MockHdfc;
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
-use Gateway\Hdfc\Action;
+use Gateway\Hdfc\Payment\Action;
 use Gateway\MockHdfc;
 use Models\Card;
 
@@ -30,6 +30,14 @@ class Server
         '4012001037490006',
         );
 
+    protected $debitCardNumbers = array(
+        '4012001037141112',
+        '4005559876540',
+        '4012001037167778',
+        '4012001037490014',
+        '4012001037141112',
+        );
+
     public function __construct()
     {
         $this->request = \Request::getFacadeRoot();
@@ -37,7 +45,12 @@ class Server
         $this->gateway = new Gateway;
     }
 
-    public function gatewayTransaction()
+    public function threeDSecure($input)
+    {
+        return $input;
+    }
+
+    public function gatewayPayment()
     {
         $action = Hdfc\Utility::getFieldFromXML($this->input, 'action');
 
@@ -48,11 +61,11 @@ class Server
                 break;
 
             case Action::CAPTURE:
-                $xml = $this->captureTransactionOnGateway();
+                $xml = $this->capturePaymentOnGateway();
                 break;
 
             case Action::REFUND:
-                $xml = $this->refundTransactionOnGateway();
+                $xml = $this->refundPaymentOnGateway();
                 break;
 
             default:
@@ -67,10 +80,6 @@ class Server
     {
         $this->processInput('enroll');
 
-        $iin = substr($this->data['card'], 0, 6);
-
-        $network = Card\Network::detectNetwork($iin);
-
         $cardNumber = $this->data['card'];
 
         if (($cardNumber === '4012001038488884') or
@@ -83,21 +92,45 @@ class Server
         }
         else
         {
-            $eci = null;
-            if (($network === Card\Network::VISA) or
-                ($network === Card\Network::DICL))
-                $eci = 6;
+            $iin = substr($cardNumber, 0, 6);
+            $network = Card\Network::detectNetwork($iin);
+            $type = $this->getCardType($cardNumber, $iin);
 
-            if (($network === Card\Network::MC) or
-                ($network === Card\Network::MAES))
-                $eci = 1;
+            $res = array();
+            if ($type === 'debit')
+            {
+                $res['result'] = 'ENROLLED';
 
-            $res = array(
-                'result'    => 'NOT ENROLLED',
-                'eci'       => $eci,
+                $request = \Request::getFacadeRoot();
+                $scheme = $request->getScheme().'://';
+                $host = $request->getHost();
+
+                $res['url'] = $scheme . $host . '/gateway/3dsecure';
+            }
+            else if (($type === 'credit') or
+                     ($type === ''))
+            {
+                $res['result'] = 'NOT ENROLLED';
+
+                $eci = null;
+
+                if (($network === Card\Network::VISA) or
+                    ($network === Card\Network::DICL))
+                    $eci = 6;
+
+                if (($network === Card\Network::MC) or
+                    ($network === Card\Network::MAES))
+                    $eci = 1;
+
+                $result['eci'] = $eci;
+            }
+
+            $resCommon = array(
                 'paymentid' => $this->getNewPaymentId(),
                 'trackid'   => $this->data['trackid'],
                 'PAReq'     => 'abcsafsf');
+
+            $res = array_merge($res, $resCommon);
         }
 
         $this->copyUdfValues($res);
@@ -109,7 +142,34 @@ class Server
 
     public function authEnrolled()
     {
-        $this->processInput();
+        $this->processInput('authEnrolled');
+
+        $paymentid = $this->data['paymentid'];
+
+        $gatewayPayment = (new Hdfc\Repository)->findByGatewayPaymentId($paymentid);
+
+        if ($gatewayPayment === null)
+        {
+            throw new Exception\LogicException($paymentid . ' not found');
+        }
+
+        $res = array(
+            'result'    => 'APPROVED',
+            'auth'      => '999999',
+            'ref'       => random_integer(12),
+            'avr'       => 'N',
+            'postdate'  => $this->getPostDateForToday(),
+            'paymentid' => $paymentid,
+            'tranid'    => $paymentid,
+            'trackid'   => $gatewayPayment['merchant_trackid'],
+            'amt'       => $gatewayPayment['amount']);
+
+
+//        $this->copyUdfValues($res);
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $this->makeResponse($xml);
     }
 
     protected function authNotEnrolledOnGateway()
@@ -124,7 +184,7 @@ class Server
         }
         else
         {
-            $res = $this->getDefaultTxnSuccessArray();
+            $res = $this->getDefaultPaymentSuccessArray();
             $res['result'] = 'APPROVED';
 
             $this->copyUdfValues($res);
@@ -133,6 +193,39 @@ class Server
         $xml = Hdfc\Utility::createXml($res);
 
         return $xml;
+    }
+
+    protected function authOnGateway()
+    {
+        $cardNumber = $this->data['card'];
+
+        if ($this->isSpecialCardNumber($cardNumber))
+        {
+            $res = $this->handleSpecialCardNumber($cardNumber);
+        }
+        else
+        {
+            $res = $this->getDefaultPaymentSuccessArray();
+            $res['result'] = 'APPROVED';
+
+            $this->copyUdfValues($res);
+        }
+
+        return $res;
+    }
+
+    protected function getCardType($cardNumber, $iin)
+    {
+        if (in_array($cardNumber, $this->debitCardNumbers))
+        {
+            return 'debit';
+        }
+
+        $cardDetails = (new Card\Repository)->retrieveDetails($iin);
+        if ($cardDetails === null)
+            return '';
+
+        return $cardDetails->getType();
     }
 
     protected function makeResponse($xml)
@@ -145,11 +238,11 @@ class Server
         return $response;
     }
 
-    protected function captureTransactionOnGateway()
+    protected function capturePaymentOnGateway()
     {
-        $this->processInput('supportTxn');
+        $this->processInput('supportPayment');
 
-        $res = $this->getDefaultTxnSuccessArray();
+        $res = $this->getDefaultPaymentSuccessArray();
         $res['result'] = 'CAPTURED';
 
         $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
@@ -160,11 +253,11 @@ class Server
         return $xml;
     }
 
-    protected function refundTransactionOnGateway()
+    protected function refundPaymentOnGateway()
     {
-        $this->processInput('supportTxn');
+        $this->processInput('supportPayment');
 
-        $res = $this->getDefaultTxnSuccessArray();
+        $res = $this->getDefaultPaymentSuccessArray();
         $res['result'] = 'CAPTURED';
 
         $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
@@ -212,7 +305,7 @@ class Server
         return random_integer(16);
     }
 
-    protected function getDefaultTxnSuccessArray()
+    protected function getDefaultPaymentSuccessArray()
     {
         $res = array(
             'auth'      => '999999',

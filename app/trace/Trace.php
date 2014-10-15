@@ -9,7 +9,7 @@ class Trace extends TraceWriter
 {
     /**
      * Name of the application component
-     * eg: transaction
+     * eg: payment
      *
      * @var string $component Application component
      */

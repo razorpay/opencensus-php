@@ -54,7 +54,7 @@ return [
     'testPrivateAuthOnPublicRoute' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/transactions/jsonp',
+            'url' => '/payments/callback/abcd',
         ],
         'response' => [
             'content' => [
@@ -70,7 +70,7 @@ return [
     'testPublicAuthOnPrivateRoute' => [
         'request' => [
             'method' => 'GET',
-            'url' => '/transactions/abcdeefa820b0c06208ccd99',
+            'url' => '/payments/abcdeefa820b0c06208ccd99',
         ],
         'response' => [
             'content' => [
@@ -86,7 +86,7 @@ return [
     'testPublicAuthWithWrongKeyId' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/transactions/jsonp',
+            'url' => '/payments/jsonp',
         ],
         'response' => [
             'content' => [
@@ -102,7 +102,7 @@ return [
     'testPrivateAuthWithWrongKeyId' => [
         'request' => [
             'method' => 'GET',
-            'url' => '/transactions/abcdeefa820b0c06208ccd99',
+            'url' => '/payments/abcdeefa820b0c06208ccd99',
         ],
         'response' => [
             'content' => [
@@ -118,7 +118,7 @@ return [
     'testPrivateAuthWithWrongSecret' => [
         'request' => [
             'method' => 'GET',
-            'url' => '/transactions/abcdeefa820b0c06208ccd99',
+            'url' => '/payments/abcdeefa820b0c06208ccd99',
         ],
         'response' => [
             'content' => [
@@ -166,7 +166,7 @@ return [
     'testProxyAuthOnPrivateRouteInCloud' => [
         'request' => [
             'method' => 'GET',
-            'url' => '/transactions',
+            'url' => '/payments',
             'content' => [
                 'count' => 1
             ]
@@ -176,7 +176,7 @@ return [
                 'entity' => 'collection',
                 'data' => [
                     [
-                        'entity' => 'transaction',
+                        'entity' => 'payment',
                     ],
                 ],
             ]
@@ -186,7 +186,7 @@ return [
     'testProxyAuthOnPrivateRouteNotInCloud' => [
         'request' => [
             'method' => 'GET',
-            'url' => 'transactions',
+            'url' => 'payments',
             'content' => [
                 'count' => 1
             ]

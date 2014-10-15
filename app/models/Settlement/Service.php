@@ -4,105 +4,50 @@ namespace Models\Settlement;
 
 use Models\Base;
 use Models\Gateway;
-use Models\Ledger;
-use EE\Exception;
-use EE\Error\ErrorCode;
+use Models\Settlement;
 
 class Service extends Base\Service
 {
-    public function gatewayMpr($input)
+    public function gatewayMprReconcile($input)
     {
-        $mprFile = $input['mpr'];
-        $gateway = $input['gateway'];
+        \Log::info($input);
 
-        $filePath = $mprFile->getRealPath();
+        $data = (new MprParser)->process($input);
 
-        $data = \Excel::load($filePath)
-                      ->noHeading()
-                      ->ignoreEmpty()
-                      ->formatDates(false)
-                      ->toArray();
+        $reconciler = new Reconciler;
 
-        if ((count($data) === 3) and
-            (count($data[1]) === 0))
-        {
-            //
-            // For excel files, with 3 sheets, we get the
-            // data for first sheet only, discarding other sheets.
-            // The simple check to determine sheets is that they will 3
-            // in number and data in second sheet should be empty.
-            //
-            $data = $data[0];
-        }
+        $txns = $reconciler->reconcile($data, 'hdfc');
 
-        $headings = array_shift($data);
-
-        foreach($headings as &$attr)
-        {
-            $attr = strtolower($attr);
-            $attr = str_replace(' ', '_', $attr);
-        }
-
-        $headingCount = count($headings);
-
-        $lgrs = array();
-
-        $r = range(1, $headingCount);
-        foreach ($data as $row)
-        {
-            foreach($r as $i)
-            {
-                if (isset($row[$i]) === false)
-                {
-                    $row = array_slice($row, 0, $i - 1, true) +
-                           array($i => null) +
-                           array_slice($row, $i - 1, null, true);
-                }
-            }
-
-            $assocArray = array_combine($headings, $row);
-            $lgr = $this->reconcileMprRecord($assocArray, $gateway);
-            array_push($lgrs, $lgr);
-        }
-
-        return $lgrs;
+        return $txns->toArrayPublic();
     }
 
-    protected function reconcileMprRecord($record, $gateway)
+    public function initiateSettlements($input)
     {
-        $lgrCore = new Ledger\Core;
+        $settler = new Settler();
 
-        $transactionId = Gateway::call('getTransactionId', $record, 'test');
+        $settlements = $settler->settle($input);
 
-        $lgrCore->loadEntities($transactionId);
-
-        $lgr = $lgrCore->newRecord();
-
-        $entitiesArray = $lgrCore->entitiesToArray();
-
-        $params = array(
-            'input' => $record,
-            'ledgerId' => $lgr->getKey(),
-            'entities' => $entitiesArray);
-
-        $data = Gateway::call('reconcile', $params, 'test');
-
-        $lgr = $lgrCore->reconcileRecord($data);
-
-        return $lgr;
+        return $settlements->toArrayPublic();
     }
 
-    public function getLedgerRecords($input)
+    public function gatewayMprGenerate($input)
     {
-        $lgrs = (new Ledger\Repository)->fetch($input);
+        $generator = new MprGenerator($this->mode);
 
-        return $lgrs->toPublicArray();
+        return $generator->generateTestMpr($input);
     }
 
-    public function getLedgerRecordById($id)
+    public function getSettlement($id)
     {
-        $lgr = (new Ledger\Repository)->findByIdAndMerchantId($id, \BasicAuth::getMerchant()->getKey());
+        $setl = (new Settlement\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
 
-        return $lgr->toArrayPublic();
+        return $setl->toArrayPublic();
+    }
+
+    public function getSettlements($input)
+    {
+        $settlements = (new Settlement\Repository)->fetch($input, $this->merchant->getKey());
+
+        return $settlements->toArrayPublic();
     }
 }

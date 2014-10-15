@@ -10,5 +10,5 @@ class Urls
 
     const TEST_AUTH_ENROLLED_URL = 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIPayerAuthenticationXMLServlet';
 
-    const TEST_SUPPORT_TXN_URL = 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet';
+    const TEST_SUPPORT_PAYMENT_URL = 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet';
 }

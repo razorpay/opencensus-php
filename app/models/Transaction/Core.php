@@ -2,58 +2,22 @@
 
 namespace Models\Transaction;
 
-use EE\Exception\BaseException;
-use EE\Exception\BadRequestException;
-
-use Models\Gateway;
-
+use Models\Base;
 use Models\Card;
-use Models\Ledger;
 use Models\Transaction;
-
-use Trace\Trace;
-use Trace\TraceCode;
+use Models\Merchant;
+use Models\Pricing;
+use Models\Payment;
 
 class Core
 {
-    protected $trace;
+    protected $entities = array();
 
-    protected $txnRepo;
+    protected $record;
 
     public function __construct()
     {
-        $this->trace = Trace::getInstance();
-
-        $this->txnRepo = (new Transaction\Repository);
-    }
-
-    public function retrieveByIdAndMerchantId($id, $merchantId)
-    {
-        Transaction\Entity::verifyIdAndStripSign($id);
-
-        $txn = $this->txnRepo->findByIdAndMerchantId($id, $merchantId);
-
-        return $txn;
-    }
-
-    public function retrieveRefund($refundId, $merchantId, $txnId = null)
-    {
-        if ($txnId !== null)
-        {
-            Transaction\Entity::verifyIdAndStripSign($txnId);
-        }
-
-        Refund\Entity::verifyIdAndStripSign($refundId);
-
-        return (new Refund\Repository)->findOrFailPublicByParams($refundId, $merchantId, $txnId);
-    }
-
-    public function retrieveById($id)
-    {
-        Transaction\Entity::verifyIdAndStripSign($id);
-
-        $txn = $this->txnRepo->findOrFail($id);
-
-        return $txn;
+        $this->merchant = \BasicAuth::getMerchant();
     }
 }
+

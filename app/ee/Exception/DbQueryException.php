@@ -11,6 +11,16 @@ class DbQueryException extends ServerErrorException
 {
     use DbQueryExceptionTrait;
 
+    /**
+     * Aim should be to fill the value of these attributes.
+     * @var array
+     */
+    protected $fields = array(
+        'operation',
+        'model',
+        'attributes',
+        'query');
+
     public function __construct(array $data, Exception $previous = null)
     {
         $code = ErrorCode::SERVER_ERROR_DB_QUERY_FAILED;

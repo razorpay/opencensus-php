@@ -24,4 +24,6 @@ return array(
     'HDFC_PASSWORD'             => getenv('HDFC_PASSWORD'),
 
     'CLOUD'                     => true,
+
+    'SLACK_TOKEN'               => ''
 );

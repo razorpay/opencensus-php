@@ -4,32 +4,29 @@ namespace Tests\Functional\HdfcGateway;
 
 /**
  * Tests all cards in cards.php to ensure they return expected response,
- * Purchase transactions are used, also tests if transactions are automatically
- * captured on successful transactions. Hold Transactions are tested in support test
+ * Purchase payments are used, also tests if payments are automatically
+ * captured on successful payments. Hold Payments are tested in support test
  * All test cases follow, GIVEN, WHEN, THEN structure
  */
 
 use Tests\Functional\TestCase;
-use Tests\Functional\Transaction\TransactionAuthFlowTrait;
+use Tests\Functional\Payment\PaymentAuthFlowTrait;
 
 class HdfcGatewayAuthTest extends TestCase
 {
-    use TransactionAuthFlowTrait;
+    use PaymentAuthFlowTrait;
 
     protected $testData = array();
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/../Payment/helpers/cards.php';
+
         parent::setUp();
 
         $gateway = \Config::get('gateway.default');
 
         $this->setupPublicBasicAuthParams();
-
-        //
-        // load test data
-        //
-        $this->testData = include(__DIR__.'/../Transaction/helpers/cards.php');
     }
 
     /**
@@ -170,9 +167,7 @@ class HdfcGatewayAuthTest extends TestCase
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];
 
-        $name = lcfirst(substr($func, 4));
-
-        $testData = $this->testData[$name];
+        $testData = $this->testData[$func];
 
         $this->replaceDefualtValues($testData['request']['content']);
 

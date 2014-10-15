@@ -24,4 +24,5 @@ return array(
     'HDFC_PASSWORD'             => 'hdfc_password',
 
     'CLOUD'                     => true,
+    'SLACK_TOKEN'               => ''
 );

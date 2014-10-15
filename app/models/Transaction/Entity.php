@@ -2,34 +2,28 @@
 
 namespace Models\Transaction;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
 use Models\Base;
-use Models\Transaction\Refund;
+use Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
+    const ENTITY_ID         = 'entity_id';
+    const ENTITY_TYPE       = 'entity_type';
     const MERCHANT_ID       = 'merchant_id';
     const AMOUNT            = 'amount';
-    const AMOUNT_AUTHORIZED = 'amount_authorized';
-    const AMOUNT_REFUNDED   = 'amount_refunded';
-    const STATUS            = 'status';
-    const REFUND_STATUS     = 'refund_status';
+    const DEBIT             = 'debit';
+    const CREDIT            = 'credit';
     const CURRENCY          = 'currency';
-    const DESCRIPTION       = 'description';
-    const ERROR_CODE        = 'error_code';
-    const ERROR_DESCRIPTION = 'error_description';
-    const EMAIL             = 'email';
-    const CONTACT           = 'contact';
-    const UDF               = 'udf';
-    const CARD_ID           = 'card_id';
-    const LEDGER_ID         = 'ledger_id';
-    const CAPTURED_AT       = 'captured_at';
-
-    const CURRENCY_LENGTH   = 3;
-
-    const MIN_TXN_AMOUNT = 100;
+    const FEE               = 'fee';
+    const PRICING_RULE_ID   = 'pricing_rule_id';
+    const BALANCE           = 'balance';
+    const GATEWAY_FEE       = 'gateway_fee';
+    const API_FEE           = 'api_fee';
+    const ESCROW_BALANCE    = 'escrow_balance';
+    const RECONCILED_AT     = 'reconciled_at';
+    const SETTLED           = 'settled';
+    const SETTLED_AT        = 'settled_at';
 
     protected $table = \Constants\Table::TRANSACTION;
 
@@ -37,352 +31,93 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'transaction';
 
-    protected $genereateIdOnCreate = true;
-
     protected $fillable = array(
-        self::ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::MERCHANT_ID,
+        self::DEBIT,
+        self::CREDIT,
         self::AMOUNT,
         self::CURRENCY,
-        self::DESCRIPTION,
-        self::EMAIL,
-        self::CONTACT,
-        self::UDF);
-
-    protected $visible = array(
-        self::ID,
-        self::AMOUNT,
-        self::AMOUNT_AUTHORIZED,
-        self::AMOUNT_REFUNDED,
-        self::CURRENCY,
-        self::STATUS,
-        self::REFUND_STATUS,
-        self::DESCRIPTION,
-        self::EMAIL,
-        self::CONTACT,
-        self::UDF,
-        self::ERROR_CODE,
-        self::ERROR_DESCRIPTION,
-        self::CAPTURED_AT,
-        self::CREATED_AT,
-        self::UPDATED_AT);
+        self::FEE,
+        self::API_FEE,
+        self::GATEWAY_FEE,
+        self::BALANCE,
+        self::ESCROW_BALANCE,
+        self::PRICING_RULE_ID,
+        self::SETTLED_AT);
 
     protected $public = array(
         self::ID,
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
-        self::STATUS,
-        self::AMOUNT_REFUNDED,
-        self::REFUND_STATUS,
-        self::DESCRIPTION,
-        self::EMAIL,
-        self::CONTACT,
-        self::UDF,
-        self::ERROR_CODE,
-        self::ERROR_DESCRIPTION,
-        self::CREATED_AT);
-
-    protected $guarded = array(self::ID);
-
-    protected static $modifiers = array(self::CONTACT, self::UDF);
-
-    protected static $generators = array(
-        self::STATUS,
-        self::ID,
-        self::UDF,
-        self::REFUND_STATUS,
-        self::AMOUNT_REFUNDED);
-
-// --------------------- Generators --------------------------------------------
-
-    public function generateStatus($input)
-    {
-        $this->setAttribute(self::STATUS, Status::OPEN);
-    }
-
-    public function generateRefundStatus($input)
-    {
-        $this->setAttribute(self::REFUND_STATUS, Refund\Status::NONE);
-    }
-
-    public function generateUdf($input)
-    {
-        if (isset($input['udf']) === false)
-        {
-            $this->setAttribute(self::UDF, array());
-        }
-    }
-
-    protected function generateAmountRefunded()
-    {
-        $this->setAttribute(self::AMOUNT_REFUNDED, 0);
-    }
-
-// --------------------- Generators Ends ---------------------------------------
-
-// --------------------- Modifiers ---------------------------------------------
-
-    protected function modifyContact(& $input)
-    {
-        if (isset($input['contact']) === false)
-            return;
-
-        $contact = & $input['contact'];
-
-        if (is_string($contact) === false)
-        {
-            return;
-        }
-
-        $contact = str_replace(' ', '', $contact);
-        $contact = str_replace('-', '', $contact);
-        $contact = str_replace('(', '', $contact);
-        $contact = str_replace(')', '', $contact);
-
-        return $contact;
-    }
-
-    protected function modifyUdf(& $input)
-    {
-        if (isset($input['udf']) === false)
-        {
-            $input['udf'] = array();
-        }
-    }
-
-// --------------------- Modifiers Ends ----------------------------------------
-
-// ----------------------- Setters ---------------------------------------------
-
-    public function setCaptureAmount($amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
-    public function setAmountAuthorized()
-    {
-        $authAmount = $this->getAttribute(self::AMOUNT);
-
-        $this->setAttribute(self::AMOUNT_AUTHORIZED, $authAmount);
-    }
-
-    public function setStatus($status)
-    {
-        $this->setAttribute(self::STATUS, $status);
-    }
-
-    public function setRefundStatus($status)
-    {
-        $this->setAttribute(self::REFUND_STATUS, $status);
-    }
-
-    public function setAmountRefunded($amount)
-    {
-        $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
-    }
-
-    public function setError($code, $desc)
-    {
-        $this->setAttribute(self::ERROR_CODE, $code);
-        $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
-    }
-
-    public function setCaptureTimestamp()
-    {
-        $this->setAttribute(self::CAPTURED_AT, time('now'));
-    }
-
-// ----------------------- Setters Ends-----------------------------------------
-
-// ----------------------- Mutator ---------------------------------------------
-
-    public function setAmountAttribute($amount)
-    {
-        $this->attributes[self::AMOUNT] = (int) $amount;
-    }
-
-    public function setUdfAttribute($udf)
-    {
-        $this->attributes[self::UDF] = serialize($udf);
-    }
-
-// ----------------------- Mutator Ends ----------------------------------------
-
-// ----------------------- Accessor --------------------------------------------
-
-    public function getUdfAttribute($udf)
-    {
-        return unserialize($udf);
-    }
-
-// ----------------------- Accessor Ends ---------------------------------------
-
-    public function isOpen()
-    {
-        return ($this->getAttribute(self::STATUS) == Status::OPEN);
-    }
-
-    public function isAuthorized()
-    {
-        return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
-    }
-
-    public function isCaptured()
-    {
-        return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
-    }
-
-    public function isPartiallyOrFullyRefunded()
-    {
-        return ! ($this->getAttribute(self::STATUS) === Refund\Status::NONE);
-    }
-
-    public function isFullyRefunded()
-    {
-        return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::FULL);
-    }
-
-    public function isPartisallyRefunded()
-    {
-        return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::PARTIAL);
-    }
-
-    public function isFailed()
-    {
-        return ($this->getAttribute(self::STATUS) == Status::FAILED);
-    }
-
-    protected function isStatus($status)
-    {
-        return ($this->getAttribute(self::STATUS) == $status);
-    }
-
-// ----------------------- Getters ---------------------------------------------
-
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
-    public function getAmount()
-    {
-        return (int) $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getAmountRefunded()
-    {
-        return (int) $this->getAttribute(self::AMOUNT_REFUNDED);
-    }
-
-    public function getAmountUnrefunded()
-    {
-        return (int) $this->getAmount() - $this->getAmountRefunded();
-    }
-
-    public function getCurrency()
-    {
-        return $this->getAttribute(self::CURRENCY);
-    }
-
-// ----------------------- Getters Ends-----------------------------------------
-
-    public function toArrayWithCard()
-    {
-        $data = $this->getAttributes();
-
-        $card = $this->card()->first();
-
-        if ($card === null)
-        {
-            throw new Exception\LogicException(
-                ErrorCode::SERVER_ERROR_ASSOCIATED_CARD_NOT_FOUND);
-        }
-
-        $cardData = $card->getAttributes();
-
-        $data['card'] = $cardData;
-
-        return $data;
-    }
-
-// --------------- Relation to other entities ----------------------------------
-
-    public function card()
-    {
-        return $this->belongsTo(
-            'Models\Card\Entity');
-    }
+        self::DEBIT,
+        self::CREDIT,
+        self::FEE,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        );
 
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
-    public function refunds()
+    public function entity()
     {
-        return $this->hasMany('Models\Transaction\Refund\Entity');
-    }
+        $type = $this->getAttribute(self::ENTITY_TYPE);
 
-    public function ledger()
-    {
-        return $this->belongsTo('Models\Ledger\Entity');
-    }
-
-    public function hdfc()
-    {
-        return $this->hasOne('hdfc', 'trackid', 'id');
-    }
-
-// --------------- Relation to other entity section ends -----------------------
-
-    public function refundAmount($amount)
-    {
-        if (ctype_digit($amount) === false)
+        switch($type)
         {
-            throw new Exception\InvalidArgumentException('amount should only have digits.');
+            case 'payment':
+                return $this->hasOne('Models\Payment\Entity');
+                break;
+            case 'refund':
+                return $this->hasOne('Models\Payment\Entity');
+                break;
+            default:
+                throw new Exception\InvalidArgumentException(
+                    'only payment and refund supported currently');
         }
-
-        $amount = (int) $amount;
-
-        $amountUnrefunded = $this->getAmountUnrefunded();
-
-        if ($amount < $amountUnrefunded)
-        {
-            $this->setRefundStatus(Refund\Status::PARTIAL);
-        }
-        else if ($amount === $amountUnrefunded)
-        {
-            $this->setRefundStatus(Refund\Status::FULL);
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Refund amount should be less than or equal to amount unrefunded');
-        }
-
-        $amountRefunded = $this->getAmountRefunded() + $amount;
-
-        $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
     }
 
-    public function scopeMerchantId($query, $merchantId)
+    public function fillPartiallyFromPayment($payment)
     {
-        return $query->where(self::MERCHANT_ID,'=',$merchantId);
+        $txnData = array(
+            self::MERCHANT_ID   => $payment->getMerchantId(),
+            self::AMOUNT        => $payment->getAmount(),
+            self::ENTITY_ID     => $payment->getKey(),
+            self::ENTITY_TYPE   => 'payment');
+
+        $this->fill($txnData);
     }
 
-    public function toArrayTraceRelevant()
+    public function getMerchantId()
     {
-        $fields = array(
-            self::ID,
-            self::MERCHANT_ID,
-            self::CARD_ID,
-            self::STATUS,
-            self::AMOUNT,
-            self::ERROR_CODE);
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
 
-        $relevantData = array_intersect_key($this->attributes, array_flip($fields));
+    public function getCredit()
+    {
+        return $this->getAttribute(self::CREDIT);
+    }
 
-        return $relevantData;
+    public function getDebit()
+    {
+        return $this->getAttribute(self::DEBIT);
+    }
+
+    public function setReconciledAt($timestamp)
+    {
+        $this->setAttribute(self::RECONCILED_AT, $timestamp);
+    }
+
+    public function setPublicEntityIdAttribute(array & $array)
+    {
+        $entity = 'Models\\'.ucfirst($array[self::ENTITY_TYPE]) . '\Entity';
+        $sign = $entity::getIdPrefix();
+
+        $array[self::ENTITY_ID] = $sign . $array[self::ENTITY_ID];
     }
 }

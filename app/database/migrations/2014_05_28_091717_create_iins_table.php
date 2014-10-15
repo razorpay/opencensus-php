@@ -27,7 +27,7 @@ class CreateIinsTable extends Migration {
 
             $table->char(Card\Detail::COUNTRY, Card\Entity::COUNTRY_LENGTH);
 
-            $table->string(Card\Detail::BANK, 100);
+            $table->string(Card\Detail::ISSUER, 100);
         });
     }
 

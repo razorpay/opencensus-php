@@ -11,6 +11,8 @@
 |
 */
 
+$app['instance'] = new Services\AwsInstance;
+
 //
 // Initialize BasicAuth with $app
 // This is put here instead of BasicAuthServiceProvider
@@ -32,19 +34,14 @@ App::before(function()
     return BasicAuth::setCredentials();
 });
 
-App::before(function()
+App::before(function() use ($app)
 {
     $mode = BasicAuth::getMode();
 
-    if ($mode === 'test')
-    {
-        Config::set('database.default', 'test');
-    }
+    $app['rzp.mode'] = $mode;
 
-    if ($mode === 'live')
-    {
-        Config::set('database.default', 'live');
-    }
+    Database\DefaultConnection::set($mode);
+
 });
 
 /*

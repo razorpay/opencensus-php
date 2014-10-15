@@ -18,7 +18,7 @@ class CaptureAll extends Command {
      *
      * @var string
      */
-    protected $description = 'Captures all the pending transactions, awaiting capture';
+    protected $description = 'Captures all the pending payments, awaiting capture';
 
     /**
      * Create a new command instance.
@@ -37,9 +37,9 @@ class CaptureAll extends Command {
      */
     public function fire()
     {
-        //Call transaction controller's capture fucntion
-        $transactionController=new TransactionController;
-        $response = $transactionController->capture();
+        //Call payment controller's capture fucntion
+        $paymentController = new PaymentController;
+        $response = $paymentController->capture();
 
         $captures=$response->getContent();
 
@@ -48,7 +48,7 @@ class CaptureAll extends Command {
         //Check if output is not NULL
         if (! $captures) return;
 
-        //Display the captured transaction's ids
+        //Display the captured payment's ids
         foreach($captures as $capture)
         {
             if ($capture->captured)

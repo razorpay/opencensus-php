@@ -143,9 +143,9 @@ class Entity extends Base\UniqueIdEntity
             }
 
             $arr = array(
-                self::TYPE    => $details['card_type'],
-                self::ISSUER  => $details['bank'],
-                self::COUNTRY => $details['country_code']);
+                self::TYPE    => $details['type'],
+                self::ISSUER  => $details['issuer'],
+                self::COUNTRY => $details['country']);
 
             $this->fill($arr);
 

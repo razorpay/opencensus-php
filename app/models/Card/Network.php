@@ -68,7 +68,8 @@ class Network
 
     public static $unsupportedNetworks = array(
         self::AMEX,
-        self::JCB);
+        self::JCB,
+        self::DISC);
 
     public static function detectNetwork($iin)
     {

@@ -11,14 +11,11 @@ class MerchantTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/MerchantData.php';
+
         parent::setUp();
 
         $this->setupAppBasicAuthParams();
-
-        //
-        // load test data
-        //
-        $this->testData = include(__DIR__.'/helpers/MerchantData.php');
     }
 
     /**

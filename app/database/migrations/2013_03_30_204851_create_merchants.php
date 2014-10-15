@@ -7,7 +7,8 @@ use Constants\Table;
 
 use Models\Merchant\Entity as Merchant;
 
-class CreateMerchants extends Migration {
+class CreateMerchants extends Migration
+{
 
     /**
      * Make changes to the database.

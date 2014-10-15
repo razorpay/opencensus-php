@@ -7,8 +7,8 @@ use Tests\TestCase;
 
 /**
  * Tests all cards in cards.php to ensure they return expected response,
- * Purchase transactions are used, also tests if transactions are automatically
- * captured on successful transactions. Hold Transactions are tested in support test
+ * Purchase payments are used, also tests if payments are automatically
+ * captured on successful payments. Hold Payments are tested in support test
  * All test cases follow, GIVEN, WHEN, THEN structure
  */
 

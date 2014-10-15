@@ -9,7 +9,17 @@ class MockHdfcController extends BaseController
         $this->mockHdfcGatewayServer = new Gateway\MockHdfc\Server;
 
         $input = file_get_contents('php://input');
+
         $this->mockHdfcGatewayServer->setInput($input);
+    }
+
+    public function post3dSecure()
+    {
+        $input = Input::all();
+
+        $data = $this->mockHdfcGatewayServer->threeDSecure($input);
+
+        return View::make('gateway.3dsecure')->with('data', $data);
     }
 
     public function enroll()
@@ -17,9 +27,9 @@ class MockHdfcController extends BaseController
         return $this->mockHdfcGatewayServer->enroll();
     }
 
-    public function transaction()
+    public function payment()
     {
-        return $this->mockHdfcGatewayServer->gatewayTransaction();
+        return $this->mockHdfcGatewayServer->gatewayPayment();
     }
 
     public function authEnrolled()

@@ -7,20 +7,20 @@ use EE\Exception\InvalidArgumentException;
 class TraceCode
 {
     /*
-     * Transaction component error messages
+     * Payment component error messages
      */
 
-    const TRANSACTION_NEW_REQUEST           = 'TRANSACTION_NEW_REQUEST';
-    const TRANSACTION_CREATED               = 'TRANSACTION_CREATED';
-    const TRANSACTION_CREATE_FAILED         = 'TRANSACTION_CREATE_FAILED';
-    const TRANSACTION_AUTH_SUCCESS          = 'TRANSACTION_AUTH_SUCCESS';
-    const TRANSACTION_AUTH_FAILURE          = 'TRANSACTION_AUTH_FAILURE';
-    const TRANSACTION_REFUND_SUCCESS        = 'TRANSACTION_REFUND_SUCCESS';
-    const TRANSACTION_REFUND_FAILURE        = 'TRANSACTION_REFUND_FAILURE';
-    const TRANSACTION_CAPTURE_SUCCESS       = 'TRANSACTION_CAPTURE_SUCCESS';
-    const TRANSACTION_CAPTURE_FAILURE       = 'TRANSACTION_CAPTURE_FAILURE';
+    const PAYMENT_NEW_REQUEST           = 'PAYMENT_NEW_REQUEST';
+    const PAYMENT_CREATED               = 'PAYMENT_CREATED';
+    const PAYMENT_CREATE_FAILED         = 'PAYMENT_CREATE_FAILED';
+    const PAYMENT_AUTH_SUCCESS          = 'PAYMENT_AUTH_SUCCESS';
+    const PAYMENT_AUTH_FAILURE          = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_REFUND_SUCCESS        = 'PAYMENT_REFUND_SUCCESS';
+    const PAYMENT_REFUND_FAILURE        = 'PAYMENT_REFUND_FAILURE';
+    const PAYMENT_CAPTURE_SUCCESS       = 'PAYMENT_CAPTURE_SUCCESS';
+    const PAYMENT_CAPTURE_FAILURE       = 'PAYMENT_CAPTURE_FAILURE';
 
-    const TRANSACTION_FAILED                = 'TRANSACTION_FAILED';
+    const PAYMENT_FAILED                = 'PAYMENT_FAILED';
     /*
      * Gateway component error messages
      */
@@ -41,17 +41,17 @@ class TraceCode
     const ERROR_EXCEPTION                   = 'ERROR_EXCEPTION';
 
     protected static $messages = array(
-        self::TRANSACTION_NEW_REQUEST               => 'Request for new transaction received',
-        self::TRANSACTION_CREATED                   => 'New transaction created',
-        self::TRANSACTION_CREATE_FAILED             => 'Transaction creation failed',
-        self::TRANSACTION_AUTH_SUCCESS              => 'Transaction authenticated successfully',
-        self::TRANSACTION_AUTH_FAILURE              => 'Transaction auth failed',
-        self::TRANSACTION_FAILED                    => 'Transaction failed',
-        self::TRANSACTION_REFUND_SUCCESS            => 'Transaction refunded successfully',
-        self::TRANSACTION_REFUND_FAILURE            => 'Transaction refund failed',
-        self::TRANSACTION_CAPTURE_SUCCESS           => 'Transaction captured successfully',
-        self::TRANSACTION_CAPTURE_FAILURE           => 'Transaction capture failed',
-        self::TRANSACTION_FAILED                    => 'Transaction failed',
+        self::PAYMENT_NEW_REQUEST               => 'Request for new payment received',
+        self::PAYMENT_CREATED                   => 'New payment created',
+        self::PAYMENT_CREATE_FAILED             => 'Payment creation failed',
+        self::PAYMENT_AUTH_SUCCESS              => 'Payment authenticated successfully',
+        self::PAYMENT_AUTH_FAILURE              => 'Payment auth failed',
+        self::PAYMENT_FAILED                    => 'Payment failed',
+        self::PAYMENT_REFUND_SUCCESS            => 'Payment refunded successfully',
+        self::PAYMENT_REFUND_FAILURE            => 'Payment refund failed',
+        self::PAYMENT_CAPTURE_SUCCESS           => 'Payment captured successfully',
+        self::PAYMENT_CAPTURE_FAILURE           => 'Payment capture failed',
+        self::PAYMENT_FAILED                    => 'Payment failed',
 
         self::GATEWAY_ENROLL_REQUEST                => 'Request for enrollment sent',
         self::GATEWAY_ENROLL_RESPONSE               => 'Enrollment response received',

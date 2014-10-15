@@ -9,23 +9,23 @@ require('config.php');//Load API Credentials
 
 $api = new Api(RZP_KEY_ID,RZP_KEY_SECRET);
 
-if(!isset($_POST['id'])) die("Transaction id required");
+if(!isset($_POST['id'])) die("Payment id required");
 
 $id = $_POST['id'];
 $amount = $_POST['amount'];
 
-$transaction = $api->transaction->get($id);
+$payment = $api->payment->get($id);
 
-if (($amount === $transaction->amount) and
-    ($transaction->error_code === null) and
-    ($transaction->status === 'authorized'))
+if (($amount === $payment->amount) and
+    ($payment->error_code === null) and
+    ($payment->status === 'authorized'))
 {
 	//
-    // Transaction was successful
+    // Payment was successful
 	// Do your server side handling
     //
 
-    echo json_encode($transaction);
+    echo json_encode($payment);
 }
 else
 {
