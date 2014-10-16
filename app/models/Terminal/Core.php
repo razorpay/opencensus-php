@@ -25,7 +25,6 @@ class Core
 
     protected function validateExistingTerminal($terminal)
     {
-        // Check no other terminal id exists for the merchant right now
         $params = array(
             Terminal\Entity::MERCHANT_ID => $terminal->getMerchantId());
 
@@ -35,6 +34,7 @@ class Core
 
         $count = $existingTerminals->count();
 
+        // Right now, at max two terminals are allowed
         if ($count === 2)
         {
             throw new Exception\BadRequestException(
@@ -42,6 +42,7 @@ class Core
         }
         else if ($count === 1)
         {
+            // If 1 exists, then another should not be added for the same gateway
             if ($terminal->getGateway() === $existingTerminals->first()->getGateway())
             {
                 throw new Exception\BadRequestException(

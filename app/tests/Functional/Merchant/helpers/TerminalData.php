@@ -24,7 +24,7 @@ return [
         ]
     ],
 
-    'testReassignTerminal' => [
+    'testReassignTerminalForSameGateway' => [
         'request' => [
             'content' => [
                 'gateway' => 'hdfc',
@@ -47,6 +47,25 @@ return [
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_EXISTS_FOR_GATEWAY,
+        ],
+    ],
+
+    'testAssignTerminalForDifferentGateway' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'atom',
+                'gateway_merchant_id' => '123abcd',
+                'gateway_terminal_id' => '',
+                'gateway_terminal_password' => '123abcdef'
+            ],
+            'url' => '/merchants/363e4efa820b0c06208ccd99/terminal',
+            'method' => 'POST'
+        ],
+        'response' => [
+              'content' => [
+                'gateway_merchant_id' => '123abcd',
+                'gateway_terminal_id' => '',
+            ]
         ],
     ]
 ];

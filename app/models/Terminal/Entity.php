@@ -27,14 +27,6 @@ class Entity extends Base\UniqueIdEntity
 
     protected $genereateIdOnCreate = true;
 
-    /**
-     * Fields which will be modified before
-     * input validation
-     *
-     * @var array
-     */
-    protected static $modifiers = array('inputRemoveBlanks');
-
     public function getMerchantId()
     {
         return $this->attributes[self::MERCHANT_ID];
@@ -57,12 +49,12 @@ class Entity extends Base\UniqueIdEntity
 
     public function getGatewayTerminalId()
     {
-        return $this->attribute[self::GATEWAY_TERMINAL_ID];
+        return $this->getAttribute(self::GATEWAY_TERMINAL_ID);
     }
 
     public function getGateway()
     {
-        return $this->attribute[self::GATEWAY];
+        return $this->getAttribute(self::GATEWAY);
     }
 
     public function merchant()

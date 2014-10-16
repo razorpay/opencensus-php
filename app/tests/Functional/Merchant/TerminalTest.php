@@ -28,7 +28,12 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
-    public function testReassignTerminal()
+    public function testReassignTerminalForSameGateway()
+    {
+        $this->startTest();
+    }
+
+    public function testAssignTerminalForDifferentGateway()
     {
         $this->startTest();
     }
