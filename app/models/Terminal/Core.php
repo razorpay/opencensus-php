@@ -38,7 +38,6 @@ class Core
         if ($count === 2)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED);
         }
         else if ($count === 1)
@@ -46,7 +45,7 @@ class Core
             if ($terminal->getGateway() === $existingTerminals->first()->getGateway())
             {
                 throw new Exception\BadRequestException(
-                    null, ErrorCode::BAD_REQUEST_TERMINAL_EXISTS_FOR_GATEWAY);
+                    ErrorCode::BAD_REQUEST_TERMINAL_EXISTS_FOR_GATEWAY);
             }
         }
         else if ($count > 2)
@@ -63,7 +62,6 @@ class Core
         if ($existingTerminals->count() !== 0)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS,
                 Terminal\Entity::GATEWAY_MERCHANT_ID);
         }

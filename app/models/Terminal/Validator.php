@@ -24,13 +24,13 @@ class Validator extends Base\Validator
             ($input[Entity::GATEWAY_TERMINAL_ID] === ''))
         {
             throw new Exception\BadRequestException(
-                null, ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT);
+                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT);
         }
         else if (($input[Entity::GATEWAY] === Gateway::ATOM) and
                  ($input[Entity::GATEWAY_TERMINAL_ID] !== ''))
         {
             throw new Exception\BadRequestException(
-                null, ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT);
+                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT);
         }
     }
 }

@@ -2,23 +2,21 @@
 
 namespace EE\Exception;
 
+use EE\Error\Error;
+
 class BadRequestException extends RecoverableException
 {
     use MessageFormats;
 
     public function __construct(
-        $message = null,
         $code = 0,
         $field = null,
         \Exception $previous = null)
     {
-        if ($this->decideFormat($message, $code, $field, $previous))
-            return;
+        $this->error = new Error($code, null, $field);
 
-        $message = $this->constructStringMessage($message);
+        $message = $this->error->getDescription();
 
-        $this->constructError($message, $code);
-
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, $code);
     }
 }

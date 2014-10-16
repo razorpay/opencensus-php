@@ -84,7 +84,6 @@ class Action
         if ($merchant->isLive() === false)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
     }

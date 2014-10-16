@@ -181,7 +181,7 @@ trait MessageFormats
 
         switch($category)
         {
-            case 'BadRequest':
+            case 'BadRequestValidationFailure':
                 $code = 'BAD_REQUEST_VALIDATION_FAILURE';
                 break;
             case 'FieldError':

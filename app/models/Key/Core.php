@@ -17,7 +17,6 @@ class Core
         if (count($keys) > 0)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED);
         }
 

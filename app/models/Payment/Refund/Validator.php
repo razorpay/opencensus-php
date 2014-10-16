@@ -29,7 +29,6 @@ class Validator extends Base\Validator
         if ($this->payment->isCaptured() === false)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
     }
@@ -39,7 +38,6 @@ class Validator extends Base\Validator
         if ($this->payment->isFullyRefunded())
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
         }
     }
@@ -63,14 +61,12 @@ class Validator extends Base\Validator
         if ($amountToRefund > $amountCaptured)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED);
         }
 
         if ($amountToRefund > $payment->getAmountUnrefunded())
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED);
         }
     }

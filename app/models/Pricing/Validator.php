@@ -28,7 +28,6 @@ class Validator extends Base\Validator
             (isset($input[Entity::FIXED_RATE]) === false))
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PRICING_RATE_NOT_DEFINED);
         }
     }
@@ -72,7 +71,6 @@ class Validator extends Base\Validator
                 ($input[Entity::GATEWAY] !== $gateway))
             {
                 throw new Exception\BadRequestException(
-                    null,
                     ErrorCode::BAD_REQUEST_PRICING_GATEWAY_REQUIRED);
             }
         }
@@ -90,7 +88,6 @@ class Validator extends Base\Validator
                 ($rule[Entity::PAYMENT_ISSUER] === $input[Entity::PAYMENT_ISSUER]))
             {
                 throw new Exception\BadRequestException(
-                    null,
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
         }
@@ -101,7 +98,6 @@ class Validator extends Base\Validator
         if ($plan->count() > 0)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
         }
     }

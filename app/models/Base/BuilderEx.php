@@ -17,7 +17,6 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
                 'operation' => 'find');
 
         throw new Exception\BadRequestException(
-            null,
             ErrorCode::BAD_REQUEST_INVALID_ID);
     }
 }
