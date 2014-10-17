@@ -20,9 +20,7 @@ class Repository extends Base\Repository
             $query = $query->where($key, '=', $value);
         }
 
-        // When a merchant can have multiple terminals,
-        // change this to get
-        return $query->first();
+        return $query->get();
     }
 
     public function getByMerchantId($id)

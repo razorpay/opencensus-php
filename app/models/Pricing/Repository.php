@@ -28,7 +28,6 @@ class Repository extends Base\Repository
             if ($public)
             {
                 throw new Exception\BadRequestException(
-                    null,
                     ErrorCode::BAD_REQUEST_INVALID_ID);
             }
             else

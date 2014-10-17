@@ -102,7 +102,7 @@ class Entity extends Base\PublicEntity
             else
                 $errorCode = ErrorCode::BAD_REQUEST_KEY_EXPIRING_SOON;
 
-            throw new Exception\BadRequestException(null, $errorCode);
+            throw new Exception\BadRequestException($errorCode);
         }
 
         $this->setExpired($roll);

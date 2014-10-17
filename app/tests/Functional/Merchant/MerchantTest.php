@@ -57,9 +57,7 @@ class MerchantTest extends TestCase
 
     public function testUpdateKeyExpireInFuture()
     {
-        $key = $this->getTestDataIndexKey();
-
-        $data = $this->testData[$key];
+        $data = $this->testData[__FUNCTION__];
 
         $content = $this->startTest();
 
@@ -70,9 +68,7 @@ class MerchantTest extends TestCase
 
     public function testUpdateKeyTwice()
     {
-        $key = $this->getTestDataIndexKey();
-
-        $data = $this->testData[$key];
+        $data = $this->testData[__FUNCTION__];
 
         //
         // Update key once
@@ -98,14 +94,6 @@ class MerchantTest extends TestCase
         $testData = $this->testData[$name];
 
         return $this->runRequestResponseFlow($testData);
-    }
-
-    protected function getTestDataIndexKey()
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $func = $trace[1]['function'];
-
-        return $func;
     }
 
     protected function createMerchant()

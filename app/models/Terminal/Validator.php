@@ -5,30 +5,32 @@ namespace Models\Terminal;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
+use Models\Payment\Gateway;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::MERCHANT_ID               => 'required|hexadecimal',
-        Entity::GATEWAY                   => 'required|in:HDFC',
+        Entity::GATEWAY                   => 'required|in:hdfc,atom',
         Entity::GATEWAY_MERCHANT_ID       => 'required',
-        Entity::GATEWAY_TERMINAL_ID       => 'required',
+        Entity::GATEWAY_TERMINAL_ID       => 'required_if:gateway,hdfc',
         Entity::GATEWAY_TERMINAL_PASSWORD => 'required');
 
-    public function addTerminalValidate($input, $terminals)
+    protected static $createValidators = array('terminal_id');
+
+    protected function validateTerminalId($input)
     {
-        foreach ($terminals as $terminal)
+        if (($input[Entity::GATEWAY] === Gateway::HDFC) and
+            ($input[Entity::GATEWAY_TERMINAL_ID] === ''))
         {
-            if ($terminal['gateway_terminal_id'] === $input['gateway_terminal_id'])
-                throw new Exception\BadRequestException(
-                    null,
-                    ErrorCode::BAD_REQUEST_TERMINAL_ID_EXISTS);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT);
         }
-    }
-
-
-    protected function processValidationFailure($messages, $operation, $input)
-    {
-        throw new Exception\BadRequestException($messages);
+        else if (($input[Entity::GATEWAY] === Gateway::ATOM) and
+                 ($input[Entity::GATEWAY_TERMINAL_ID] !== ''))
+        {sd($input[Entity::GATEWAY_TERMINAL_ID]);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT);
+        }
     }
 }

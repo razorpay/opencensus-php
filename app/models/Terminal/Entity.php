@@ -27,19 +27,6 @@ class Entity extends Base\UniqueIdEntity
 
     protected $genereateIdOnCreate = true;
 
-    /**
-     * Fields which will be modified before
-     * input validation
-     *
-     * @var array
-     */
-    protected static $modifiers = array('inputRemoveBlanks');
-
-    protected function setGatewayTerminalPassword($password)
-    {
-        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password);
-    }
-
     public function getMerchantId()
     {
         return $this->attributes[self::MERCHANT_ID];
@@ -50,19 +37,24 @@ class Entity extends Base\UniqueIdEntity
         return $this->attributes[self::GATEWAY_MERCHANT_ID];
     }
 
-    public function getGatewayTerminalPassword()
+    protected function setGatewayTerminalPasswordAttribute($password)
+    {
+        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password);
+    }
+
+    public function getGatewayTerminalPasswordAttribute()
     {
         return Crypt::decrypt($this->attributes[self::GATEWAY_TERMINAL_PASSWORD]);
     }
 
     public function getGatewayTerminalId()
     {
-        return $this->attribute[self::GATEWAY_TERMINAL_ID];
+        return $this->getAttribute(self::GATEWAY_TERMINAL_ID);
     }
 
     public function getGateway()
     {
-        return $this->attribute[self::GATEWAY];
+        return $this->getAttribute(self::GATEWAY);
     }
 
     public function merchant()
@@ -74,7 +66,7 @@ class Entity extends Base\UniqueIdEntity
     {
         $terminal = $this->toArray();
 
-        $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $this->getGatewayTerminalPassword();
+        $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $this->getGatewayTerminalPasswordAttribute();
 
         return $terminal;
     }

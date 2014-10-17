@@ -100,7 +100,6 @@ class Service extends Base\Service
         if (isset($input['pricing_plan_id']) === false)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PRICING_ID_REQURED,
                 'pricing_plan_id');
         }
@@ -156,7 +155,6 @@ class Service extends Base\Service
         if ($merchant->isActivated())
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
@@ -167,7 +165,6 @@ class Service extends Base\Service
         if ($terminal === null)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         }
 
@@ -185,14 +182,12 @@ class Service extends Base\Service
         if ($merchant->isActivated() === false)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED);
         }
 
         if ($merchant->isLive())
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_LIVE);
         }
 
@@ -210,14 +205,12 @@ class Service extends Base\Service
         if ($merchant->isActivated() === false)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED);
         }
 
         if ($merchant->isLive() === false)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE);
         }
 

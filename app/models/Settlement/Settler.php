@@ -10,7 +10,7 @@ use Models\Base;
 use Models\Merchant;
 use Models\Settlement;
 use Models\Transaction;
-use Dashboard\Notification as DashboardNotification;
+use Dashboard\Dashboard as DashboardNotification;
 
 class Settler
 {

@@ -35,26 +35,6 @@ class Dashboard
         }
     }
 
-    protected function getUrl()
-    {
-        return $this->config['url'];
-    }
-
-    protected function getAuthSecret()
-    {
-        return $this->config['secret'];
-    }
-
-    protected function getPretend()
-    {
-        return $this->config['pretend'];
-    }
-
-    public static function getInstance()
-    {
-        return new static;
-    }
-
     public static function validateAndBuild($data = array())
     {
         foreach($data as $key => $value)
@@ -72,12 +52,12 @@ class Dashboard
 
         $payload = static::validateAndBuild($data['message']);
 
-        $options = array('auth'=> array('rzp_api', $this->getAuthSecret()));
+        $options = array('auth'=> array('rzp_api', $this->config['secret']));
 
-        if ($this->getPretend() === false)
+        if ($this->config['pretend'] === false)
         {
             $response = Requests::post(
-                $this->getUrl() . $mode . '/transactions/' . static::$resource,
+                $this->config['url'] . $mode . '/transactions/' . static::$resource,
                 array(),
                 $payload,
                 $options
@@ -97,5 +77,11 @@ class Dashboard
         }
 
         $job->delete();
+    }
+
+    public static function send($resource, $payload)
+    {
+        $app = \App::getFacadeRoot();
+        $app['dashboard']->queueRecord($resource, $payload);
     }
 }

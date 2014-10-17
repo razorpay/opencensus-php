@@ -35,7 +35,6 @@ class EloquentEx extends \Razorpay\Spine\Entity
                 'operation' => 'find');
 
         throw new Exception\BadRequestException(
-            null,
             ErrorCode::BAD_REQUEST_INVALID_ID);
     }
 }

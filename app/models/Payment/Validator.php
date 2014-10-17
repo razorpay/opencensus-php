@@ -78,7 +78,6 @@ class Validator extends Base\Validator
         if (is_string($desc) === false)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING,
                 Entity::DESCRIPTION);
         }
@@ -86,7 +85,6 @@ class Validator extends Base\Validator
         if (strlen($desc) > 1000)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
                 Entity::DESCRIPTION);
         }
@@ -128,7 +126,7 @@ class Validator extends Base\Validator
 
         if ($code !== null)
         {
-            throw new Exception\BadRequestException(null, $code, 'udf');
+            throw new Exception\BadRequestException($code, 'udf');
         }
     }
 
@@ -163,7 +161,6 @@ class Validator extends Base\Validator
         if ($currency !== "INR")
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_CURRENCY_NOT_SUPPORTED,
                 'currency');
         }
@@ -175,7 +172,6 @@ class Validator extends Base\Validator
             ($input['card'] === null))
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED,
                 'card');
         }
@@ -183,7 +179,6 @@ class Validator extends Base\Validator
         if (is_array($input['card']) === false)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY,
                 'card');
         }
@@ -194,7 +189,7 @@ class Validator extends Base\Validator
         if ($payment->isOpen() === false)
         {
             throw new Exception\BadRequestException(
-                null, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
         }
     }
 
@@ -214,7 +209,7 @@ class Validator extends Base\Validator
         if ($input['amount'] > $payment->getAttribute(Payment\Entity::AMOUNT))
         {
             throw new Exception\BadRequestException(
-                null, ErrorCode::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH, 'amount');
+                ErrorCode::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH, 'amount');
         }
     }
 
@@ -226,7 +221,7 @@ class Validator extends Base\Validator
         if ($payment->isCaptured())
         {
             throw new Exception\BadRequestException(
-                null, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
         }
     }
 
@@ -235,7 +230,7 @@ class Validator extends Base\Validator
         if ($payment->isAuthorized() === false)
         {
             throw new Exception\BadRequestException(
-                null, ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);
         }
     }
 
@@ -243,6 +238,15 @@ class Validator extends Base\Validator
     {
         $bag = $messages;
 
+        $this->checkValidationFailureEmail($bag);
+
+        $this->checkValidationFailureContact($bag);
+
+        parent::processValidationFailure($messages, $operation, $input);
+    }
+
+    protected function checkValidationFailureEmail($bag)
+    {
         if ($bag->has(Entity::EMAIL))
         {
             $msg = $bag->first(Entity::EMAIL);
@@ -252,7 +256,10 @@ class Validator extends Base\Validator
                 ErrorCode::FIELD_ERROR_INVALID_EMAIL,
                 Entity::EMAIL);
         }
+    }
 
+    protected function checkValidationFailureContact($bag)
+    {
         if ($bag->has(Entity::CONTACT))
         {
             $msg = $bag->first(Entity::CONTACT);
@@ -262,7 +269,5 @@ class Validator extends Base\Validator
                 ErrorCode::FIELD_ERROR_INVALID_CONTACT,
                 Entity::CONTACT);
         }
-
-        throw new Exception\BadRequestException($messages);
     }
 }

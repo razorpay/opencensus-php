@@ -43,7 +43,6 @@ class Repository extends Base\Repository
         if ($pricing === null)
         {
             throw new Exception\BadRequestException(
-                null,
                 ErrorCode::BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT);
         }
 

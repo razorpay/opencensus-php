@@ -7,7 +7,7 @@ use Models\Payment;
 use Models\Payment\Action;
 use Models\Payment\Refund;
 use Trace\TraceCode;
-use Dashboard\Notification as DashboardNotification;
+use Dashboard\Dashboard as DashboardNotification;
 
 class Process extends Action
 {
