@@ -27,7 +27,7 @@ class Gateway extends BaseGateway
 
     protected $paymentResponse = array(
         'type' => 'payment',
-        'fields' => array())
+        'fields' => array());
 
     protected $error = false;
 
