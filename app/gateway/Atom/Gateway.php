@@ -9,6 +9,14 @@ use Models\Card;
 
 class Gateway extends BaseGateway
 {
+    protected $url = 'http://203.114.240.183/paynetz/epi/fts';
+
+    var $Login='160';
+    var $Password='Test@123';
+    var $MerchantName='ATOM';
+    var $TxnCurr='INR';
+    var $TxnScAmt='0';
+
     protected $paymentRequest = array(
         'type' => 'payment',
         'fields' => array('ttype', 'prodid', 'amt', 'txncurr', 'txnscamt',
@@ -36,13 +44,15 @@ class Gateway extends BaseGateway
     {
         parent::authorize($input);
 
-        $datenow = date("d/m/Y h:m:s");
-        $modifiedDate = str_replace(" ", "%20", $datenow);
+        $time = date('d/m/Y h:m:s');
+        // Replace space with '%20'
+        $time = str_replace(' ', '%20', $time);
+
         $url = Urls::ATOM_TEST_URL;
 
-        $request['content'] = array(
-            'login'         =>  Config::TEST_LOGIN,
-            'pass'          =>  Config::TEST_PASSWORD,
+        $request['data'] = array(
+            'login'         =>  $input['terminal']['gateway_merchant_id'],
+            'pass'          =>  $input['terminal']['gateway_terminal_password'],
             'ttype'         =>  'NBFundTransfer',
             'prodid'        =>  'NSE',
             'amt'           =>  $input['txn']['amount'] / 100,
@@ -51,7 +61,7 @@ class Gateway extends BaseGateway
             'clientcode'    =>  urlencode(base64_encode('123')),
             'txnid'         =>  $input['txn']['id'],
             'ru'            =>  'ur',
-            'date'          =>  $modifiedDate,
+            'date'          =>  $time,
             'custacc'       =>  '123456789012',
             );
 
@@ -59,17 +69,20 @@ class Gateway extends BaseGateway
 
         $response = $this->postRequest($request);
 
-        $xmlObjArray     = $this->xmltoarray($returnData);
+        $data = $this->xmltoarray($response);
 
-        $url = $xmlObjArray['url'];
-        $postFields  = "";
-        $postFields .= "&ttype=".$_POST['TType'];
-        $postFields .= "&tempTxnId=".$xmlObjArray['tempTxnId'];
-        $postFields .= "&token=".$xmlObjArray['token'];
-        $postFields .= "&txnStage=1";
-        $url = $payment->url."?".$postFields;
-        $this->writeLog($url."\n");
-        header("Location: ".$url);
+        $url = $data['url'];
+        $fields = array(
+            'ttype'         => 'NBFundTransfer',
+            'tempTxnId'     => $data['tempTxnId'],
+            'token'         => $data['token'],
+            'txnStage'      => '1');
+
+        $queryStr = http_build_query($fields);
+
+        $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
+
+        return $url;
     }
 
     protected function runRequestResponseFlow(array &$request, array &$response)
@@ -123,18 +136,19 @@ class Gateway extends BaseGateway
         }
     }
 
-    function writeLog($data)
+    protected function writeLog($data)
     {
-        $fileName = date("Y-m-d").".txt";
-        $fp = fopen("log/".$fileName, 'a+');
-        $data = date("Y-m-d H:i:s")." - ".$data;
+        $fileName = date('Y-m-d').'.txt';
+        $fp = fopen('log/'.$fileName, 'a+');
+        $data = date('Y-m-d H:i:s').' - '.$data;
         fwrite($fp,$data);
         fclose($fp);
     }
 
-    function xmltoarray($data){
+    protected function xmltoarray($data)
+    {
         $parser = xml_parser_create('');
-        xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, "UTF-8");
+        xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, 'UTF-8');
         xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
         xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
         xml_parse_into_struct($parser, trim($data), $xml_values);
