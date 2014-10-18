@@ -1,29 +1,22 @@
 <?php
 
-namespace Models\Payment;
+namespace Models\Payment\Processor;
 
-use BasicAuth;
 use EE\Exception;
-use Http\Route;
 use Models\Card;
 use Models\Payment;
-use Request;
 use Trace\Trace;
 use Trace\TraceCode;
 
-
-class Authorize extends Action
+trait Authorize
 {
-    public function process($input)
+    public function authorize($payment, $input)
     {
-        $input['merchant_id'] = $this->merchant->getKey();
-
-        $this->tracePaymentNewRequest($input);
-
-        list($payment, $cardData) = $this->createEntitites($input);
-        $this->payment = $payment;
+        $cardData = $this->createCardEntity($input);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+
+        $this->savePaymentAndCard();
 
         //
         // Call gateway with required info
@@ -32,7 +25,7 @@ class Authorize extends Action
                     'payment' => $payment->toArray(),
                     'card' => $cardData);
 
-        $callbackData = $this->callGateway($paymentInfo);
+        $callbackData = $this->callGatewayAuthorize($paymentInfo);
 
         if ($callbackData !== null)
         {
@@ -47,7 +40,7 @@ class Authorize extends Action
             // will be used to display form.
             //
 
-            $this->attachCallbackUrl($callbackData);
+            $callbackData['callbackUrl'] = $this->getCallbackUrl();
 
             return $callbackData;
         }
@@ -104,26 +97,7 @@ class Authorize extends Action
         return $payment;
     }
 
-    protected function attachCallbackUrl(& $callbackData)
-    {
-        $urlSegment = Route::getApiRouteUrl('payment_callback');
-
-        $pos = strrpos($urlSegment, '/');
-
-        $urlSegment = substr($urlSegment, 0, $pos);
-
-        $urlSegment .= '/' . $this->payment->getPublicId();
-
-        $scheme = Request::getScheme().'://';
-        $host = Request::getHost();
-        $key = BasicAuth::getPublicKey();
-
-        $callbackUrl = $scheme . $key . '@' . $host . '/v1/' . $urlSegment;
-
-        $callbackData['callbackUrl'] = $callbackUrl;
-    }
-
-    protected function callGateway(array $data)
+    protected function callGatewayAuthorize(array $data)
     {
         try
         {
@@ -153,13 +127,8 @@ class Authorize extends Action
      *                      Payment\Entity object and
      *                      card data array
      */
-    public function createEntitites(array $input)
+    public function createCardEntity(array $input)
     {
-        //
-        // Check that card key exists
-        //
-        Payment\Validator::checkCardKey($input);
-
         //
         // Creates card entity. But since we don't store
         // number and cvv for now, we get back a card data
@@ -171,47 +140,16 @@ class Authorize extends Action
 
         $card = $cardCore->getCard();
 
-        //
-        // Remove card key from input. Isn't needed
-        //
-        unset($input['card']);
+        $this->payment->card()->associate($card);
 
-        //
-        // Create payment entity
-        //
-        $this->payment = $this->createPaymentEntity($input, $card);
-
-        $this->saveEntities();
-
-        return array($this->payment, $cardData);
+        return $cardData;
     }
 
-    protected function saveEntities()
+    protected function savePaymentAndCard()
     {
         (new Card\Repository)->saveOrFail($this->payment->card);
 
         $this->repo->saveOrFail($this->payment);
-    }
-
-    /**
-     * Creates an entry for a new payment
-     *
-     * @param  array                $input  Input relevant to creating
-     *                                      a payment row in db
-     * @param  Card\Entity          $card   Card
-     *
-     * @return Payment\Entity   A Payment\Entity object
-     */
-    public function createPaymentEntity($input, Card\Entity $card)
-    {
-        $payment = (new Payment\Entity)->build($input);
-
-        //
-        // Associate payment to card
-        //
-        $payment->card()->associate($card);
-
-        return $payment;
     }
 
     protected function updatePaymentAuthorized()
@@ -223,10 +161,5 @@ class Authorize extends Action
         $payment->save();
 
         $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
-    }
-
-    protected function tracePaymentNewRequest($input)
-    {
-        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $input);
     }
 }

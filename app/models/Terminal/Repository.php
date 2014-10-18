@@ -30,6 +30,15 @@ class Repository extends Base\Repository
         return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $id)->first();
     }
 
+    public function getByMerchantIdAndGateway($id, $gateway)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $id)
+                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->first();
+    }
+
     public function getByGatewayTerminalId($gatewayTerminalId)
     {
         $repo = $this->repo;

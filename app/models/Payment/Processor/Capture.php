@@ -1,13 +1,13 @@
 <?php
 
-namespace Models\Payment;
+namespace Models\Payment\Processor;
 
 use Models\Merchant;
 use Models\Payment;
 use Trace\TraceCode;
 use Dashboard\Dashboard as DashboardNotification;
 
-class Capture extends Action
+trait Capture
 {
     /**
      * Capture a previous auth payment
@@ -16,7 +16,7 @@ class Capture extends Action
      *
      * @return Payment\Entity       Payment\Entity object
      */
-    public function process($id, array $input = array())
+    public function capture($id, array $input = array())
     {
         $payment = $this->retrieve($id);
 
@@ -28,16 +28,23 @@ class Capture extends Action
 
         $payment->setCaptureAmount($input['amount']);
 
+        $this->captureOnGateway($data);
+
+        $this->recordCapture();
+
+        return $this->payment;
+    }
+
+    public function captureNetBanking($payment)
+    {
+        return $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+    }
+
+    protected function captureOnGateway($data)
+    {
         try
         {
             $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
-
-            $this->recordCapture();
-
-            //
-            // Analytics
-            //
-            DashboardNotification::send('payment', $this->payment);
         }
         catch (BaseException $e)
         {
@@ -47,8 +54,6 @@ class Capture extends Action
 
             throw $e;
         }
-
-        return $payment;
     }
 
     protected function recordCapture()
@@ -57,12 +62,15 @@ class Capture extends Action
         {
             $this->repo->lockForUpdate($this->payment->getKey());
 
-            // (new Transaction\Core)->recordCapture($this->$payment);
-
             $this->updatePaymentCaptured();
 
             $this->payment->save();
         });
+
+        //
+        // Analytics
+        //
+        $this->notifyDashboard('payment', $this->payment);
     }
 
 

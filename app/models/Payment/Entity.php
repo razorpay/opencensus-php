@@ -316,7 +316,7 @@ class Entity extends Base\PublicEntity
         if ($card === null)
         {
             throw new Exception\LogicException(
-                ErrorCode::SERVER_ERROR_ASSOCIATED_CARD_NOT_FOUND);
+                'Associated card not found for the current payment entity');
         }
 
         $cardData = $card->getAttributes();

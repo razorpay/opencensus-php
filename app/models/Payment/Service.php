@@ -26,8 +26,7 @@ class Service extends Base\Service
      */
     public function process(array $input)
     {
-        $data = $this->getActionInstance(Payment\Action::AUTHORIZE)
-                     ->process($input);
+        $data = $this->processor()->process($input);
 
         //
         // The returned value could be either Payment
@@ -50,8 +49,7 @@ class Service extends Base\Service
      */
     public function refund($id, $input)
     {
-        $refund = $this->getActionInstance(Payment\Action::REFUND)
-                       ->process($id, $input);
+        $refund = $this->processor()->refund($id, $input);
 
         return $refund->toArrayPublic();
     }
@@ -101,8 +99,7 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
-        $payment = $this->getActionInstance(Payment\Action::CAPTURE)
-                    ->process($id, $input);
+        $payment = $this->processor()->capture($id, $input);
 
         return $payment->toArrayPublic();
     }
@@ -121,8 +118,7 @@ class Service extends Base\Service
      */
     public function bankAcsCallback($id, array $input)
     {
-        $payment = $this->getActionInstance(Payment\Action::AUTHORIZE)
-                    ->callback($id, $input);
+        $payment = $this->processor()->callback($id, $input);
 
         return $payment->toArrayPublic();
     }
@@ -150,7 +146,12 @@ class Service extends Base\Service
         return array('count' => $count);
     }
 
-    protected function getActionInstance($action)
+    protected function processor()
+    {
+        return Payment\Processor\Processor::create($this->getBindings());
+    }
+
+    protected function getBindings()
     {
         $bindings = array(
             'merchant'  => $this->merchant,
@@ -158,6 +159,6 @@ class Service extends Base\Service
             'trace'     => $this->trace,
             'mode'      => $this->mode);
 
-        return Payment\Action::create($action, $bindings);
+        return $bindings;
     }
 }
