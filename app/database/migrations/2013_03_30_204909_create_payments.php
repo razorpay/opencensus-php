@@ -7,6 +7,7 @@ use Constants\Table;
 use Models\Payment\Entity as Payment;
 use Models\Merchant;
 use Models\Card;
+use Models\Terminal;
 use Models\Transaction;
 
 class CreatePayments  extends Migration
@@ -76,6 +77,8 @@ class CreatePayments  extends Migration
 
             $table->string(Payment::GATEWAY);
 
+            $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
@@ -83,6 +86,11 @@ class CreatePayments  extends Migration
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
+            $table->foreign(Payment::TERMINAL_ID)
+                  ->references(Terminal\Entity::ID)
+                  ->on(Table::TERMINAL)
                   ->on_delete('restrict');
 
             $table->foreign(Payment::CARD_ID)
@@ -102,6 +110,8 @@ class CreatePayments  extends Migration
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->dropForeign(Table::PAYMENT.'_'.Payment::CARD_ID.'_foreign');
+
+            $table->dropForeign(Table::TERMINAL.'_'.Payment::TERMINAL_ID.'_foreign');
 
             $table->dropForeign(Table::PAYMENT.'_'.Payment::MERCHANT_ID.'_foreign');
         });

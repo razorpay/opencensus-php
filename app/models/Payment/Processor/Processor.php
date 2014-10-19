@@ -141,23 +141,21 @@ class Processor
      */
     protected function callGatewayFunction($action, array $input)
     {
-        $terminal = $this->getTerminal();
+        $terminal = $this->payment->terminal;
 
-        $gateway = $terminal->getGateway();
-
-        $terminal = $terminal->toArrayWithPassword();
+        $gateway = $this->payment->getGateway();
 
         return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
     }
 
-    protected function getTerminal()
+    protected function setTerminalForPayment($payment)
     {
         if ($this->terminal !== null)
         {
             return $this->terminal;
         }
 
-        $gateway = $this->payment->getGateway();
+        $gateway = $payment->getGateway();
 
         $terminal = (new Terminal\Repository)->getByMerchantIdAndGateway(
                                                     $this->merchant->getKey(), $gateway);
@@ -175,6 +173,8 @@ class Processor
         }
 
         $this->terminal = $terminal;
+
+        $payment->terminal()->associate($terminal);
 
         return $terminal;
     }
@@ -229,9 +229,11 @@ class Processor
 
         $payment = (new Payment\Entity)->build($input);
 
+        $payment->merchant()->associate($this->merchant);
+
         $this->setGatewayForPayment($payment);
 
-        $payment->merchant()->associate($this->merchant);
+        $this->setTerminalForPayment($payment);
 
         $this->payment = $payment;
 

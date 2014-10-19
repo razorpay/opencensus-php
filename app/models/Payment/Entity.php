@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID    = 'transaction_id';
     const CAPTURED_AT       = 'captured_at';
     const GATEWAY           = 'gateway';
+    const TERMINAL_ID       = 'terminal_id';
 
     const CURRENCY_LENGTH   = 3;
 
@@ -317,13 +318,17 @@ class Entity extends Base\PublicEntity
 
     public function card()
     {
-        return $this->belongsTo(
-            'Models\Card\Entity');
+        return $this->belongsTo('Models\Card\Entity');
     }
 
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
+    }
+
+    public function terminal()
+    {
+        return $this->belongsTo('Models\Terminal\Entity');
     }
 
     public function refunds()

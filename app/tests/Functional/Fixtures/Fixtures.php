@@ -28,7 +28,10 @@ class Fixtures
 
     public function createPaymentAuthorizedEntity(array $attributes = array())
     {
-        $defaultValues = array('status' => 'authorized');
+        $defaultValues = array(
+            'status' => 'authorized',
+            'terminal_id' => $this->entities['terminal']->getKey(),
+        );
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -49,6 +52,7 @@ class Fixtures
     {
         $defaultValues = array(
             'status' => 'captured',
+            'terminal_id' => $this->entities['terminal']->getKey(),
             'captured_at' => time(),
             'created_at' => time() - 10,
             'updated_at' => time() - 5);
@@ -98,14 +102,20 @@ class Fixtures
         $apiMerchant = $this->createEntity('merchant', ['id' => '134510ae166900007a9677a9']);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '134510ae166900007a9677a9']);
 
-        $this->entities = array(
-            'pricing'     => $this->createDefaultPricingPlan(),
-            'merchant'    => $this->createEntity('merchant', ['id' => '363e4efa820b0c06208ccd99']),
-            'terminal'    => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
-            'key'         => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
-            'balance'     => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
-            'payment' => $this->createEntity('payment', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+        $entities = array(
+            'pricing'   => $this->createDefaultPricingPlan(),
+            'merchant'  => $this->createEntity('merchant', ['id' => '363e4efa820b0c06208ccd99']),
+            'terminal'  => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            'key'       => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            'balance'   => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
             );
+
+        $entities['payment'] = $this->createEntity(
+                                        'payment',
+                                        ['merchant_id' => '363e4efa820b0c06208ccd99',
+                                        'terminal_id' => $entities['terminal']->getKey()]);
+
+        $this->entities = $entities;
     }
 
     public function createEntity($entity, $attributes = array())

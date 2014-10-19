@@ -153,7 +153,7 @@ class RefundTest extends TestCase
         {
             return;
         }
-        
+
         $dashboard = Mockery::mock('Services\Dashboard');
 
         $this->app->instance('dashboard', $dashboard);
