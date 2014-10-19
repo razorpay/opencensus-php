@@ -103,7 +103,7 @@ class Entity extends Base\PublicEntity
 
     public function generateStatus($input)
     {
-        $this->setAttribute(self::STATUS, Status::OPEN);
+        $this->setAttribute(self::STATUS, Status::CREATED);
     }
 
     public function generateRefundStatus($input)
@@ -220,9 +220,9 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor Ends ---------------------------------------
 
-    public function isOpen()
+    public function isCreated()
     {
-        return ($this->getAttribute(self::STATUS) == Status::OPEN);
+        return ($this->getAttribute(self::STATUS) == Status::CREATED);
     }
 
     public function isAuthorized()
