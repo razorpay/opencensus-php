@@ -52,6 +52,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED =
         'Payment Exception: Card not provided';
 
+    const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED =
+        'Net banking is not enabled for the merchant';
+
     const BAD_REQUEST_INVALID_ID =
         'The id provided does not exist';
 

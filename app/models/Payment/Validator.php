@@ -10,9 +10,10 @@ use Models\Payment;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'merchant_id'   =>  'required|hexadecimal|size:24',
         'amount'        =>  'required|numeric|max:50000000|min:100',
         'currency'      =>  'required|max:3',
+        'method'        =>  'in:card,net banking',
+        'card'          =>  'sometimes',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
@@ -24,7 +25,25 @@ class Validator extends Base\Validator
     protected static $refundRules = array(
         'amount'        => 'sometimes|numeric');
 
-    protected static $createValidators = array('currency', 'contact', 'description', 'udf');
+    protected static $createValidators = array('card_key', 'currency', 'contact', 'description', 'udf');
+
+    public static function validateCardKey($input)
+    {
+        if ((array_key_exists('card', $input) === false) or
+            ($input['card'] === null))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED,
+                'card');
+        }
+
+        if (is_array($input['card']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY,
+                'card');
+        }
+    }
 
     protected function validateContact($input)
     {
@@ -163,24 +182,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CURRENCY_NOT_SUPPORTED,
                 'currency');
-        }
-    }
-
-    public static function checkCardKey($input)
-    {
-        if ((array_key_exists('card', $input) === false) or
-            ($input['card'] === null))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED,
-                'card');
-        }
-
-        if (is_array($input['card']) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY,
-                'card');
         }
     }
 
