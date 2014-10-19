@@ -141,11 +141,13 @@ class Processor
      */
     protected function callGatewayFunction($action, array $input)
     {
-        $this->terminal = $this->getTerminal();
+        $terminal = $this->getTerminal();
 
-        $terminal = $this->terminal->toArrayWithPassword();
+        $gateway = $terminal->getGateway();
 
-        return Gateway::call($action, $input, $this->mode, $terminal);
+        $terminal = $terminal->toArrayWithPassword();
+
+        return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
     }
 
     protected function getTerminal()

@@ -90,7 +90,7 @@ class MprGenerator
 
         $array = $this->getRelatedEntities($payments);
 
-        $mprFile = Gateway::call('generateMpr', $array, 'test');
+        $mprFile = Gateway::call('hdfc', 'generateMpr', $array, 'test');
 
         return array('file' => $mprFile, 'count' => $count);
     }

@@ -9,12 +9,13 @@ return array(
     |
     */
 
-    'default' => 'hdfc',
-
     'available' => array(
-        'mock',
-        'mockhdfc',
-        'hdfc'),
+        'hdfc',
+        'atom'),
+
+    'mock_hdfc' => false,
+
+    'mock_atom' => false,
 
     'mockhdfc_server' => false,
 );

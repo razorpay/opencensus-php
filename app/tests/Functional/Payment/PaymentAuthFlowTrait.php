@@ -184,9 +184,9 @@ trait PaymentAuthFlowTrait
         $method = $form->getMethod();
         $values = $form->getValues();
 
-        $gateway = $this->app['config']->get('gateway.default');
+        $gateway = $this->app['config']->get('gateway');
 
-        if ($gateway === 'mockhdfc')
+        if ($gateway['mock_hdfc'] === true)
         {
             $server = $this->auth;
 

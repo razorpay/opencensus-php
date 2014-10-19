@@ -93,7 +93,7 @@ class Reconciler
 
     protected function reconcileMprRecord($mprRecord, $gateway)
     {
-        $paymentId = Gateway::call('getPaymentId', $mprRecord, 'test');
+        $paymentId = Gateway::call('hdfc', 'getPaymentId', $mprRecord, 'test');
 
         $txn = $this->newTransactionRecord();
 
@@ -104,7 +104,7 @@ class Reconciler
             'transactionId' => $txn->getKey(),
             'entities' => $entitiesArray);
 
-        $data = Gateway::call('reconcile', $params, 'test');
+        $data = Gateway::call('hdfc', 'reconcile', $params, 'test');
 
         $txn = $this->reconcileRecord($data);
 

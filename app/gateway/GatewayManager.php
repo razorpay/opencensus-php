@@ -8,32 +8,61 @@ use Gateway\Hdfc;
 
 class GatewayManager extends \Illuminate\Support\Manager
 {
-    public function __construct()
+    protected $gateways = array();
+
+    protected $mocks = array();
+
+    public function __construct($app)
     {
-        $config = Config::get('gateway');
+        parent::__construct($app);
 
-        $this->available = $config['available'];
+        $gatewayConfig = $this->app['config']->get('gateway');
 
-        $this->defaultDriver = $config['default'];
+        $this->gateways = $gatewayConfig['available'];
+
+        $this->registerMocks($gatewayConfig);
     }
 
-    public function createHdfcDriver()
+    protected function registerMocks($gatewayConfig)
     {
-        return new Hdfc\Gateway();
+        foreach ($this->gateways as $gateway)
+        {
+            if ((isset($gatewayConfig['mock_'.$gateway])) and
+                ($gatewayConfig['mock_'.$gateway] === true))
+            {
+                $this->mocks[] = $gateway;
+            }
+        }
     }
 
-    public function createMockDriver()
+    protected function createDriver($driver)
     {
-        return new Mock\Gateway();
-    }
+        if (in_array($driver, $this->gateways) === false)
+        {
+            throw new Exception\LogicException($driver . ' is not an available gateway');
+        }
 
-    public function createMockHdfcDriver()
-    {
-        return new MockHdfc\Gateway();
+        $mock = '';
+
+        if (in_array($driver, $this->mocks))
+        {
+            $mock = 'Mock';
+        }
+
+        // Constructs gateway class name in the format
+        // 'Gateway\{Mock}{GatewayName}\Gateway'
+        $class = 'Gateway\\'.$mock.ucfirst($driver).'\\'.'Gateway';
+
+        return new $class;
     }
 
     public function getDefaultDriver()
     {
-        return $this->defaultDriver;
+        throw new Exception\LogicException('No default gateway is specified');
+    }
+
+    public function gateway($gateway)
+    {
+        return parent::driver($gateway);
     }
 }
