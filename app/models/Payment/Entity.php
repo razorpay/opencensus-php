@@ -26,7 +26,7 @@ class Entity extends Base\PublicEntity
     const CONTACT           = 'contact';
     const UDF               = 'udf';
     const CARD_ID           = 'card_id';
-    const TRANSACTION_ID         = 'transaction_id';
+    const TRANSACTION_ID    = 'transaction_id';
     const CAPTURED_AT       = 'captured_at';
     const GATEWAY           = 'gateway';
 
@@ -90,16 +90,14 @@ class Entity extends Base\PublicEntity
 
     protected $guarded = array(self::ID);
 
-    protected static $modifiers = array(self::CONTACT, self::UDF);
+    protected static $modifiers = array(self::CONTACT);
 
     protected static $generators = array(
-        self::METHOD,
         self::STATUS,
         self::ID,
         self::UDF,
         self::REFUND_STATUS,
-        self::AMOUNT_REFUNDED,
-        self::GATEWAY);
+        self::AMOUNT_REFUNDED);
 
 // --------------------- Generators --------------------------------------------
 
@@ -119,19 +117,6 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(self::UDF, array());
         }
-    }
-
-    protected function generateMethod($input)
-    {
-        if (isset($input['method']) === false)
-        {
-            $this->setAttribute(self::METHOD, Payment\Method::CARD);
-        }
-    }
-
-    public function generateGateway()
-    {
-        $this->setAttribute(self::GATEWAY, Payment\Gateway::HDFC);
     }
 
     protected function generateAmountRefunded()
@@ -163,14 +148,6 @@ class Entity extends Base\PublicEntity
         return $contact;
     }
 
-    protected function modifyUdf(& $input)
-    {
-        if (isset($input['udf']) === false)
-        {
-            $input['udf'] = array();
-        }
-    }
-
 // --------------------- Modifiers Ends ----------------------------------------
 
 // ----------------------- Setters ---------------------------------------------
@@ -200,6 +177,11 @@ class Entity extends Base\PublicEntity
     public function setAmountRefunded($amount)
     {
         $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
+    }
+
+    public function setGateway($gateway)
+    {
+        $this->setAttribute(self::GATEWAY, $gateway);
     }
 
     public function setError($code, $desc)
@@ -303,6 +285,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
     }
 
 // ----------------------- Getters Ends-----------------------------------------
