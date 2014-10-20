@@ -4,6 +4,7 @@ namespace Models\Payment\Processor;
 
 use Models\Merchant;
 use Models\Payment;
+use Models\Transaction;
 use Trace\TraceCode;
 use Dashboard\Dashboard as DashboardNotification;
 
@@ -30,8 +31,6 @@ trait Capture
 
         $this->captureOnGateway($data);
 
-        $this->recordCapture();
-
         return $this->payment;
     }
 
@@ -45,6 +44,8 @@ trait Capture
         try
         {
             $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+
+            $this->recordCapture();
         }
         catch (BaseException $e)
         {
@@ -63,6 +64,8 @@ trait Capture
             $this->repo->lockForUpdate($this->payment->getKey());
 
             $this->updatePaymentCaptured();
+
+            $txn = (new Transaction\Core)->create($this->payment);
 
             $this->payment->save();
         });

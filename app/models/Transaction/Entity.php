@@ -4,6 +4,7 @@ namespace Models\Transaction;
 
 use Models\Base;
 use Models\Payment;
+use Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
@@ -68,18 +69,11 @@ class Entity extends Base\PublicEntity
     {
         $type = $this->getAttribute(self::ENTITY_TYPE);
 
-        switch($type)
-        {
-            case 'payment':
-                return $this->hasOne('Models\Payment\Entity');
-                break;
-            case 'refund':
-                return $this->hasOne('Models\Payment\Entity');
-                break;
-            default:
-                throw new Exception\InvalidArgumentException(
-                    'only payment and refund supported currently');
-        }
+        Transaction\Type::validateType($type);
+
+        $class = 'Models\\'.ucfirst($type).'\\'.'Entity';
+
+        return $this->belongsTo($class, self::ENTITY_ID);
     }
 
     public function fillPartiallyFromPayment($payment)
