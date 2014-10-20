@@ -57,8 +57,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT,
         self::FEE,
         self::ENTITY_ID,
-        self::ENTITY_TYPE,
-        );
+        self::ENTITY_TYPE);
 
     public function merchant()
     {

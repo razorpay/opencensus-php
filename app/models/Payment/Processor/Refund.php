@@ -63,14 +63,13 @@ trait Refund
         {
             $this->repo->lockForUpdate($this->payment->getKey());
 
-            // (new Transaction\Core)->recordRefund($this->payment);
-
             $this->updatePaymentRefunded();
 
             $txn = (new Transaction\Core)->createFromRefund($this->refund);
 
             $this->payment->save();
             $this->refund->save();
+            $txn->save();
         });
     }
 

@@ -68,9 +68,7 @@ class CreatePayments  extends Migration
 
             $table->binary(Payment::UDF);
 
-            $table->string(Payment::TRANSACTION_ID, Payment::ID_LENGTH)
-                  ->unique()
-                  ->nullable();
+            $table->string(Payment::TRANSACTION_ID, Payment::ID_LENGTH);
 
             $table->integer(Payment::CAPTURED_AT)
                   ->nullable();
@@ -93,6 +91,11 @@ class CreatePayments  extends Migration
                   ->on(Table::TERMINAL)
                   ->on_delete('restrict');
 
+            $table->foreign(Payment::TRANSACTION_ID)
+                  ->references(Terminal\Entity::ID)
+                  ->on(Table::TERMINAL)
+                  ->on_delete('restrict');
+
             $table->foreign(Payment::CARD_ID)
                   ->references(Card\Entity::ID)
                   ->on(Table::CARD)
@@ -110,6 +113,8 @@ class CreatePayments  extends Migration
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->dropForeign(Table::PAYMENT.'_'.Payment::CARD_ID.'_foreign');
+
+            $table->dropForeign(Table::TRANSACTION.'_'.Payment::TRANSACTION_ID.'_foreign');
 
             $table->dropForeign(Table::TERMINAL.'_'.Payment::TERMINAL_ID.'_foreign');
 

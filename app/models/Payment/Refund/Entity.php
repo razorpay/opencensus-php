@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
 
     protected $genereateIdOnCreate = true;
 
-    protected static $generators = array(self::AMOUNT, self::CURRENCY);
+    protected static $generators = array(self::ID, self::AMOUNT, self::CURRENCY);
 
     protected $fillable = array(
         self::MERCHANT_ID,

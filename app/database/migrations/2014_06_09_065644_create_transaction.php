@@ -50,14 +50,18 @@ class CreateTransaction  extends Migration
             $table->char(Transaction::CURRENCY, 3);
 
             $table->integer(Transaction::BALANCE)
-                  ->unsigned();
+                  ->unsigned()
+                  ->nullable();
 
             $table->integer(Transaction::GATEWAY_FEE)
-                  ->unsigned();
+                  ->unsigned()
+                  ->nullable();
 
-            $table->integer(Transaction::API_FEE);
+            $table->integer(Transaction::API_FEE)
+                  ->nullable();
 
-            $table->integer(Transaction::ESCROW_BALANCE);
+            $table->integer(Transaction::ESCROW_BALANCE)
+                  ->nullable();
 
             $table->boolean(Transaction::SETTLED)
                   ->default(0);
