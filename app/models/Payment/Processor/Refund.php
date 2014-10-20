@@ -7,6 +7,7 @@ use EE\Exception;
 use Http\Route;
 use Models\Card;
 use Models\Payment;
+use Models\Transaction;
 use Request;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -65,6 +66,8 @@ trait Refund
             // (new Transaction\Core)->recordRefund($this->payment);
 
             $this->updatePaymentRefunded();
+
+            $txn = (new Transaction\Core)->createFromRefund($this->refund);
 
             $this->payment->save();
             $this->refund->save();

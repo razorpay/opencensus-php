@@ -65,7 +65,7 @@ trait Capture
 
             $this->updatePaymentCaptured();
 
-            $txn = (new Transaction\Core)->create($this->payment);
+            $txn = (new Transaction\Core)->createFromPayment($this->payment);
 
             $this->payment->save();
         });

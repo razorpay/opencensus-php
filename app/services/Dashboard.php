@@ -7,7 +7,7 @@ use Queue;
 class Dashboard
 {
     public function queueRecord($resource, $data)
-    {   
+    {
         if(is_a($data, 'Models\\Base\\PublicCollection') === true)
         {
             foreach($data as $entity)

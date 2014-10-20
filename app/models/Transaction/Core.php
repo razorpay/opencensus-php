@@ -21,7 +21,7 @@ class Core
         $this->merchant = \BasicAuth::getMerchant();
     }
 
-    public function create($payment)
+    public function createFromPayment($payment)
     {
         list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
@@ -29,17 +29,16 @@ class Core
         // Gets settled_at timestamp from captured_at which is T+2
         //
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
-        $ts = Carbon::createFromTimestamp($capturedAt, 'Asia/Kolkata')
-                    ->startOfDay()
-                    ->addDays(2);
-
-        $settledAt = $ts->timestamp;
+        $settledAt = Carbon::createFromTimestamp($capturedAt, 'Asia/Kolkata')
+                           ->startOfDay()
+                           ->addDays(2)
+                           ->timestamp;
 
         $credit = $payment->getAmount() - $fee;
 
         $txnData = array(
             Transaction\Entity::AMOUNT => $payment->getAmount(),
-            Transaction\Entity::MERCHANT_ID => $this->merchant->getKey(),
+            Transaction\Entity::MERCHANT_ID => $payment->merchant->getKey(),
             Transaction\Entity::ENTITY_ID => $payment->getKey(),
             Transaction\Entity::ENTITY_TYPE => Transaction\Type::PAYMENT,
             Transaction\Entity::FEE => $fee,
@@ -54,6 +53,32 @@ class Core
 
         $txn->entity()->associate($payment);
         $payment->transaction()->associate($txn);
+
+        return $txn;
+    }
+
+    public function createFromRefund($refund)
+    {
+        $settledAt = Carbon::today('Asia/Kolkata')
+                           ->addDays(2)
+                           ->timestamp;
+
+        $txnData = array(
+            Transaction\Entity::AMOUNT => $refund->getAmount(),
+            Transaction\Entity::MERCHANT_ID => $refund->merchant->getKey(),
+            Transaction\Entity::ENTITY_ID => $refund->getKey(),
+            Transaction\Entity::ENTITY_TYPE => Transaction\Type::REFUND,
+            Transaction\Entity::FEE => 0,
+            Transaction\Entity::DEBIT => $refund->getAmount(),
+            Transaction\Entity::CREDIT => 0,
+            Transaction\Entity::CURRENCY => 'INR',
+            Transaction\Entity::SETTLED_AT => $settledAt);
+
+        $txn = new Transaction\Entity($txnData);
+        $txn->generateId();
+
+        $txn->entity()->associate($refund);
+        $refund->transaction()->associate($txn);
 
         return $txn;
     }

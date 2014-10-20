@@ -71,7 +71,12 @@ class Entity extends Base\PublicEntity
 
         Transaction\Type::validateType($type);
 
-        $class = 'Models\\'.ucfirst($type).'\\'.'Entity';
+        $class = 'Models\\';
+
+        if ($type === Transaction\Type::REFUND)
+            $class .= 'Payment\\';
+
+        $class .= ucfirst($type).'\\'.'Entity';
 
         return $this->belongsTo($class, self::ENTITY_ID);
     }
