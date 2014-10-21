@@ -82,6 +82,7 @@ class Fixtures
         $txn = (new Models\Transaction\Core)->createFromPayment($payment);
 
         $payment->save();
+        $txn->save();
 
         return $payment;
     }
