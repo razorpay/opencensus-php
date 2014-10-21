@@ -10,13 +10,15 @@ class Fixtures
 {
     protected static $entityMap = array(
         'balance'       => 'Models\Merchant\Balance',
+        'card'          => 'Models\Card\Entity',
+        'hdfc'          => 'Gateway\Hdfc\Entity',
         'key'           => 'Models\Key\Entity',
         'merchant'      => 'Models\Merchant\Entity',
+        'payment'       => 'Models\Payment\Entity',
         'pricing'       => 'Models\Pricing\Entity',
         'refund'        => 'Models\Payment\Refund\Entity',
         'terminal'      => 'Models\Terminal\Entity',
-        'payment'       => 'Models\Payment\Entity',
-        'hdfc'          => 'Gateway\Hdfc\Entity',
+        'transaction'   => 'Models\Transaction\Entity'
     );
 
     public function times($times)
@@ -59,7 +61,7 @@ class Fixtures
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = $this->createEntity('payment', $attributes);
+        $payment = $this->build('payment', $attributes);
 
         $hdfcAttrArray = array(
             'trackid' => $payment->getKey(),
@@ -73,7 +75,20 @@ class Fixtures
         $hdfcPaymentCaptured = $this->createHdfcPaymentCapturedEntity(
             $hdfcAttrArray);
 
+        $card = $this->createEntity('card');
+
+        $payment->card()->associate($card);
+
+        $txn = (new Models\Transaction\Core)->createFromPayment($payment);
+
+        $payment->save();
+
         return $payment;
+    }
+
+    protected function createTransactionForPayment($payment)
+    {
+        ;
     }
 
     protected function createHdfcPaymentAuthorizedEntity(array $attributes = array())
@@ -160,6 +175,24 @@ class Fixtures
         $this->eloquentReguard();
 
         return $entity;
+    }
+
+    protected function build($entity, $attributes)
+    {
+        $this->eloquentUnguard();
+
+        $entity = self::$entityMap[$entity];
+
+        $entity = Factory::build($entity, $attributes);
+
+        $this->eloquentReguard();
+
+        return $entity;
+    }
+
+    public function createCard()
+    {
+        ;
     }
 
     public function createDefaultPricingPlan()

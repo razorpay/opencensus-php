@@ -66,7 +66,8 @@ class CreateTransaction  extends Migration
             $table->boolean(Transaction::SETTLED)
                   ->default(0);
 
-            $table->integer(Transaction::SETTLED_AT);
+            $table->integer(Transaction::SETTLED_AT)
+                  ->nullable();
 
             $table->integer(Transaction::RECONCILED_AT)
                   ->nullable();
