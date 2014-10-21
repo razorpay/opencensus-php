@@ -68,7 +68,7 @@ class MprGenerator
     {
         $this->checkMode();
 
-        $gateway = 'hdfc';
+        $gateway = Payment\Gateway::HDFC;
 
         $paymentRepo = new Payment\Repository;
         $payments = $paymentRepo->fetchCapturedForGatewayBetweenTimestamp(
@@ -90,14 +90,14 @@ class MprGenerator
 
         $array = $this->getRelatedEntities($payments);
 
-        $mprFile = Gateway::call('hdfc', 'generateMpr', $array, 'test');
+        $mprFile = Gateway::call(Payment\Gateway::HDFC, 'generateMpr', $array, 'test');
 
         return array('file' => $mprFile, 'count' => $count);
     }
 
     protected function getRelatedEntities($payments)
     {
-        $payments->load('merchant', 'merchant.terminal', 'card');
+        $payments->load('merchant', 'terminal', 'card');
 
         $array = array();
 
@@ -106,10 +106,10 @@ class MprGenerator
             $merchant = $payment->merchant;
 
             $cols = array(
-                'payment' => $payment->toArray(),
-                'merchant'    => $merchant->toArray(),
-                'terminal'    => $merchant->terminal->toArray(),
-                'card'        => $payment->card->toArray()
+                'payment'   => $payment->toArray(),
+                'merchant'  => $merchant->toArray(),
+                'terminal'  => $payment->terminal->toArray(),
+                'card'      => $payment->card->toArray()
             );
 
             array_push($array, $cols);

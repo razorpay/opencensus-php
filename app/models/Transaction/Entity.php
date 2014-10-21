@@ -107,4 +107,9 @@ class Entity extends Base\PublicEntity
 
         $array[self::ENTITY_ID] = $sign . $array[self::ENTITY_ID];
     }
+
+    public function isReconciled()
+    {
+        return ($this->getAttribute(self::RECONCILED_AT) !== null);
+    }
 }

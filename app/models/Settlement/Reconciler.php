@@ -85,7 +85,10 @@ class Reconciler
         {
             $transaction = $this->reconcileMprRecord($row, $gateway);
 
-            $txns->push($transaction);
+            if ($transaction !== null)
+            {
+                $txns->push($transaction);
+            }
         }
 
         return $txns;
@@ -113,7 +116,11 @@ class Reconciler
     {
         $transaction = $this->transaction;
 
-        list($fee, $pricingRuleId) = $this->calculateMerchantFees();
+        if ($transaction->isReconciled())
+        {
+            // @todo: trace this
+            return;
+        }
 
         $this->updateCardNetworkAndCountry(
             $this->card,
@@ -121,6 +128,7 @@ class Reconciler
             $data['card']['country']);
 
         $amount = $this->payment->getAmount();
+        $fee = $this->payment->getAttribute(Transaction\Entity::FEE);
         $credit = $amount - $fee;
 
         $gatewayFee = $data['transaction']['gateway_fee'];
@@ -131,14 +139,14 @@ class Reconciler
             Transaction\Entity::API_FEE => $apiFee,
             Transaction\Entity::SETTLED_AT => self::$settledAt);
 
-        $this->transaction->fill($txnData);
-        $this->transaction->setReconciledAt($this->reconciledAt);
+        $transaction->fill($txnData);
+        $transaction->setReconciledAt($this->reconciledAt);
 
-        $this->updateBalances($this->transaction);
+        $this->updateBalances($transaction);
 
-        $this->txnRepo->save($this->transaction);
+        $this->txnRepo->save($transaction);
 
-        return $this->transaction;
+        return $transaction;
     }
 
     protected function updateCardNetworkAndCountry($card, $network, $country)
