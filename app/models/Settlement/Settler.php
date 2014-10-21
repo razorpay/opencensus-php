@@ -146,11 +146,8 @@ class Settler
         $setl = (new Settlement\Entity)->fill($attributes);
         $setl->generateId();
 
-        $attributes = array(
-            Transaction\Entity::ENTITY_ID => $setl->getKey(),
-            Transaction\Entity::ENTITY_TYPE => 'settlement');
+        $setlTransaction->entity()->associate($setl);
 
-        $setlTransaction->fill($attributes);
         return $setl;
     }
 
@@ -168,7 +165,7 @@ class Settler
             Transaction\Entity::SETTLED_AT => time(),
             Transaction\Entity::FEE => 0,
             Transaction\Entity::AMOUNT => $amount,
-            Transaction\Entity::ENTITY_TYPE => 'settlement',
+            Transaction\Entity::TYPE => Transaction\Type::SETTLEMENT,
         );
 
         $txn->fill($values);

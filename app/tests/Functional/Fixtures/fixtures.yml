@@ -78,7 +78,7 @@ Models\Pricing\Entity:
 Models\Transaction\Entity:
     id: $uniqueid
     entity_id: $uniqueid
-    entity_type: payment
+    type: payment
     merchant_id:
         type: Models\Merchant\Entity
     amount: $integer

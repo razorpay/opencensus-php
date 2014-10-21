@@ -28,7 +28,7 @@ class CreateTransaction  extends Migration
             $table->char(Transaction::ENTITY_ID, Transaction::ID_LENGTH)
                   ->unique();
 
-            $table->string(Transaction::ENTITY_TYPE, 20);
+            $table->string(Transaction::TYPE, 20);
 
             $table->char(Transaction::MERCHANT_ID, Transaction::ID_LENGTH);
 
