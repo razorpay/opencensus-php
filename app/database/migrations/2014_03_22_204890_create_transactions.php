@@ -8,7 +8,7 @@ use Models\Transaction\Entity as Transaction;
 use Models\Merchant;
 use Models\Payment;
 
-class CreateTransaction  extends Migration
+class CreateTransactions extends Migration
 {
 
     /**
@@ -76,19 +76,9 @@ class CreateTransaction  extends Migration
             $table->integer(Transaction::CREATED_AT);
             $table->integer(Transaction::UPDATED_AT);
 
-            $table->index(Transaction::ENTITY_ID);
-
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
-        });
-
-        Schema::table(Table::PAYMENT, function(Blueprint $table)
-        {
-            $table->foreign(Payment\Entity::TRANSACTION_ID)
-                  ->references(Transaction::ID)
-                  ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
         });
     }
@@ -104,11 +94,6 @@ class CreateTransaction  extends Migration
         {
             $table->dropForeign(
                 TABLE::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
-        });
-
-        Schema::table(Table::PAYMENT, function($table)
-        {
-            $table->dropForeign(Table::PAYMENT.'_'.Payment\Entity::TRANSACTION_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);
