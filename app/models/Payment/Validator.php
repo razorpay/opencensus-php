@@ -14,6 +14,7 @@ class Validator extends Base\Validator
         'currency'      =>  'required|max:3',
         'method'        =>  'in:card,net banking',
         'card'          =>  'sometimes',
+        'bank'          =>  'sometimes',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
@@ -25,9 +26,15 @@ class Validator extends Base\Validator
     protected static $refundRules = array(
         'amount'        => 'sometimes|numeric');
 
-    protected static $createValidators = array('card_key', 'currency', 'contact', 'description', 'udf');
+    protected static $createValidators = array(
+        'card_key',
+        'bank',
+        'currency',
+        'contact',
+        'description',
+        'udf');
 
-    public static function validateCardKey($input)
+    protected function validateCardKey($input)
     {
         if ((array_key_exists('card', $input) === false) or
             ($input['card'] === null))
@@ -43,6 +50,22 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY,
                 'card');
         }
+    }
+
+    protected function validateBank($input)
+    {
+        if ($input['method'] !== Payment\Method::NET_BANKING)
+        {
+            return;
+        }
+
+        if (isset($input['bank']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED);
+        }
+
+        Payment\Bank::checkValidBank($input['bank']);
     }
 
     protected function validateContact($input)
