@@ -6,7 +6,6 @@ use Models\Merchant;
 use Models\Payment;
 use Models\Transaction;
 use Trace\TraceCode;
-use Dashboard\Dashboard as DashboardNotification;
 
 trait Capture
 {

@@ -10,7 +10,7 @@ use Models\Base;
 use Models\Merchant;
 use Models\Settlement;
 use Models\Transaction;
-use Dashboard\Dashboard as DashboardNotification;
+use Dashboard\Dashboard;
 
 class Settler
 {
@@ -59,7 +59,7 @@ class Settler
 
         (new SlackNotification)->queueOperationSuccess('settlements', $settlements->count());
 
-        DashboardNotification::send('settlement', $settlements);
+        Dashboard::send('settlement', $settlements);
 
         return $settlements;
     }

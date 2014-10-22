@@ -3,7 +3,7 @@
 namespace Models\Payment\Processor;
 
 use BasicAuth;
-use Dashboard\Dashboard as DashboardNotification;
+use Dashboard\Dashboard;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Http\Route;
@@ -268,6 +268,6 @@ class Processor
 
     protected function notifyDashboard($type, $entity)
     {
-        DashboardNotification::send($type, $entity);
+        Dashboard::send($type, $entity);
     }
 }
