@@ -207,7 +207,7 @@ class Entity extends Base\PublicEntity
 
     public function setUdfAttribute($udf)
     {
-        $this->attributes[self::UDF] = serialize($udf);
+        $this->attributes[self::UDF] = json_encode($udf);
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
@@ -216,7 +216,7 @@ class Entity extends Base\PublicEntity
 
     public function getUdfAttribute($udf)
     {
-        return unserialize($udf);
+        return json_decode($udf, true);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
