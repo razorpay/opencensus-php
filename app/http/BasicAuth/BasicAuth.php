@@ -122,7 +122,7 @@ class BasicAuth
         }
 
         $this->creds['secret'] = $secret;
-        $this->credts['public_key'] = $key;
+        $this->creds['public_key'] = $key;
 
         return $this->checkAndSetKeyId($key);
     }

@@ -12,7 +12,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID        = 'payment_id';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
-    const TRANSACTION_ID         = 'transaction_id';
+    const TRANSACTION_ID    = 'transaction_id';
 
     protected $table = \Constants\Table::REFUND;
 
@@ -22,13 +22,22 @@ class Entity extends Base\PublicEntity
 
     protected $genereateIdOnCreate = true;
 
-    protected static $generators = array(self::AMOUNT, self::CURRENCY);
+    protected static $generators = array(self::ID, self::AMOUNT, self::CURRENCY);
 
     protected $fillable = array(
         self::MERCHANT_ID,
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY);
+
+    protected $visible = array(
+        self::ID,
+        self::PAYMENT_ID,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::TRANSACTION_ID,
+        self::CREATED_AT,
+        self::UPDATED_AT);
 
     protected $public = array(
         self::ID,
@@ -44,6 +53,11 @@ class Entity extends Base\PublicEntity
     public function payment()
     {
         return $this->belongsTo('Models\Payment\Entity');
+    }
+
+    public function transaction()
+    {
+        return $this->belongsTo('Models\Transaction\Entity');
     }
 
     public function merchant()

@@ -8,7 +8,7 @@ use Models\Transaction\Entity as Transaction;
 use Models\Merchant;
 use Models\Payment;
 
-class CreateTransaction  extends Migration
+class CreateTransactions extends Migration
 {
 
     /**
@@ -28,7 +28,7 @@ class CreateTransaction  extends Migration
             $table->char(Transaction::ENTITY_ID, Transaction::ID_LENGTH)
                   ->unique();
 
-            $table->string(Transaction::ENTITY_TYPE, 20);
+            $table->string(Transaction::TYPE, 20);
 
             $table->char(Transaction::MERCHANT_ID, Transaction::ID_LENGTH);
 
@@ -50,19 +50,24 @@ class CreateTransaction  extends Migration
             $table->char(Transaction::CURRENCY, 3);
 
             $table->integer(Transaction::BALANCE)
-                  ->unsigned();
+                  ->unsigned()
+                  ->nullable();
 
             $table->integer(Transaction::GATEWAY_FEE)
-                  ->unsigned();
+                  ->unsigned()
+                  ->nullable();
 
-            $table->integer(Transaction::API_FEE);
+            $table->integer(Transaction::API_FEE)
+                  ->nullable();
 
-            $table->integer(Transaction::ESCROW_BALANCE);
+            $table->integer(Transaction::ESCROW_BALANCE)
+                  ->nullable();
 
             $table->boolean(Transaction::SETTLED)
                   ->default(0);
 
-            $table->integer(Transaction::SETTLED_AT);
+            $table->integer(Transaction::SETTLED_AT)
+                  ->nullable();
 
             $table->integer(Transaction::RECONCILED_AT)
                   ->nullable();
@@ -71,19 +76,9 @@ class CreateTransaction  extends Migration
             $table->integer(Transaction::CREATED_AT);
             $table->integer(Transaction::UPDATED_AT);
 
-            $table->index(Transaction::ENTITY_ID);
-
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
-        });
-
-        Schema::table(Table::PAYMENT, function(Blueprint $table)
-        {
-            $table->foreign(Payment\Entity::TRANSACTION_ID)
-                  ->references(Transaction::ID)
-                  ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
         });
     }
@@ -99,11 +94,6 @@ class CreateTransaction  extends Migration
         {
             $table->dropForeign(
                 TABLE::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
-        });
-
-        Schema::table(Table::PAYMENT, function($table)
-        {
-            $table->dropForeign(Table::PAYMENT.'_'.Payment\Entity::TRANSACTION_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);

@@ -184,9 +184,9 @@ trait PaymentAuthFlowTrait
         $method = $form->getMethod();
         $values = $form->getValues();
 
-        $gateway = $this->app['config']->get('gateway.default');
+        $gateway = $this->app['config']->get('gateway');
 
-        if ($gateway === 'mockhdfc')
+        if ($gateway['mock_hdfc'] === true)
         {
             $server = $this->auth;
 
@@ -363,6 +363,7 @@ trait PaymentAuthFlowTrait
         $payment['refund_status'] = 'none';
         $payment['amount_authorized'] = $payment['amount'];
         $payment['amount_refunded'] = '0';
+        $payment['terminal_id'] = $this->fixtures->entities['terminal']->getKey();
 
         return $payment;
     }

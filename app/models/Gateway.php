@@ -6,9 +6,9 @@ use Gateway\GatewayManager;
 
 class Gateway
 {
-    public static function call($action, $input, $mode, $terminal = null)
+    public static function call($gateway, $action, $input, $mode, $terminal = null)
     {
-        $gateway = self::getGatewayInstance()->driver();
+        $gateway = self::getGatewayInstance($gateway);
 
         $gateway->setTerminal($terminal);
 
@@ -17,8 +17,10 @@ class Gateway
         return  $gateway->$action($input);
     }
 
-    protected static function getGatewayInstance()
+    protected static function getGatewayInstance($gateway)
     {
-        return new GatewayManager;
+        $app = \App::getFacadeRoot();
+        $gatewayManager = new GatewayManager($app);
+        return $gatewayManager->gateway($gateway);
     }
 }

@@ -73,7 +73,7 @@ class HdfcGatewayMprTest extends TestCase
             return;
         }
 
-        $dashboard = Mockery::mock('Services\Dashboard');
+        $dashboard = Mockery::mock('Dashboard\DashboardServiceProvider');
 
         $this->app->instance('dashboard', $dashboard);
 
@@ -135,7 +135,7 @@ class HdfcGatewayMprTest extends TestCase
                 'currency' => 'INR',
                 'debit' => 0,
                 'entity_id' => $payment->getPublicId(),
-                'entity_type' => 'payment');
+                'type' => 'payment');
 
             array_push($txns, $txn);
         }

@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         }
         else if (($input[Entity::GATEWAY] === Gateway::ATOM) and
                  ($input[Entity::GATEWAY_TERMINAL_ID] !== ''))
-        {sd($input[Entity::GATEWAY_TERMINAL_ID]);
+        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT);
         }

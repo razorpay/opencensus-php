@@ -4,12 +4,13 @@ namespace Models\Transaction;
 
 use Models\Base;
 use Models\Payment;
+use Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
     const ENTITY_ID         = 'entity_id';
-    const ENTITY_TYPE       = 'entity_type';
+    const TYPE              = 'type';
     const MERCHANT_ID       = 'merchant_id';
     const AMOUNT            = 'amount';
     const DEBIT             = 'debit';
@@ -33,7 +34,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::ENTITY_ID,
-        self::ENTITY_TYPE,
+        self::TYPE,
         self::MERCHANT_ID,
         self::DEBIT,
         self::CREDIT,
@@ -56,8 +57,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT,
         self::FEE,
         self::ENTITY_ID,
-        self::ENTITY_TYPE,
-        );
+        self::TYPE);
 
     public function merchant()
     {
@@ -66,31 +66,18 @@ class Entity extends Base\PublicEntity
 
     public function entity()
     {
-        $type = $this->getAttribute(self::ENTITY_TYPE);
+        $type = $this->getAttribute(self::TYPE);
 
-        switch($type)
-        {
-            case 'payment':
-                return $this->hasOne('Models\Payment\Entity');
-                break;
-            case 'refund':
-                return $this->hasOne('Models\Payment\Entity');
-                break;
-            default:
-                throw new Exception\InvalidArgumentException(
-                    'only payment and refund supported currently');
-        }
-    }
+        Transaction\Type::validateType($type);
 
-    public function fillPartiallyFromPayment($payment)
-    {
-        $txnData = array(
-            self::MERCHANT_ID   => $payment->getMerchantId(),
-            self::AMOUNT        => $payment->getAmount(),
-            self::ENTITY_ID     => $payment->getKey(),
-            self::ENTITY_TYPE   => 'payment');
+        $class = 'Models\\';
 
-        $this->fill($txnData);
+        if ($type === Transaction\Type::REFUND)
+            $class .= 'Payment\\';
+
+        $class .= ucfirst($type).'\\'.'Entity';
+
+        return $this->belongsTo($class, self::ENTITY_ID);
     }
 
     public function getMerchantId()
@@ -115,9 +102,14 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEntityIdAttribute(array & $array)
     {
-        $entity = 'Models\\'.ucfirst($array[self::ENTITY_TYPE]) . '\Entity';
+        $entity = 'Models\\'.ucfirst($array[self::TYPE]) . '\Entity';
         $sign = $entity::getIdPrefix();
 
         $array[self::ENTITY_ID] = $sign . $array[self::ENTITY_ID];
+    }
+
+    public function isReconciled()
+    {
+        return ($this->getAttribute(self::RECONCILED_AT) !== null);
     }
 }

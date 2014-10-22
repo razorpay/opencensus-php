@@ -1,6 +1,6 @@
 <?php
 
-namespace Dashboard;
+namespace Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 

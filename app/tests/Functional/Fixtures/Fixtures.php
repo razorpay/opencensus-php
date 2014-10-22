@@ -10,13 +10,15 @@ class Fixtures
 {
     protected static $entityMap = array(
         'balance'       => 'Models\Merchant\Balance',
+        'card'          => 'Models\Card\Entity',
+        'hdfc'          => 'Gateway\Hdfc\Entity',
         'key'           => 'Models\Key\Entity',
         'merchant'      => 'Models\Merchant\Entity',
+        'payment'       => 'Models\Payment\Entity',
         'pricing'       => 'Models\Pricing\Entity',
         'refund'        => 'Models\Payment\Refund\Entity',
         'terminal'      => 'Models\Terminal\Entity',
-        'payment'       => 'Models\Payment\Entity',
-        'hdfc'          => 'Gateway\Hdfc\Entity',
+        'transaction'   => 'Models\Transaction\Entity'
     );
 
     public function times($times)
@@ -28,7 +30,10 @@ class Fixtures
 
     public function createPaymentAuthorizedEntity(array $attributes = array())
     {
-        $defaultValues = array('status' => 'authorized');
+        $defaultValues = array(
+            'status' => 'authorized',
+            'terminal_id' => $this->entities['terminal']->getKey(),
+        );
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -49,13 +54,14 @@ class Fixtures
     {
         $defaultValues = array(
             'status' => 'captured',
+            'terminal_id' => $this->entities['terminal']->getKey(),
             'captured_at' => time(),
             'created_at' => time() - 10,
             'updated_at' => time() - 5);
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = $this->createEntity('payment', $attributes);
+        $payment = $this->build('payment', $attributes);
 
         $hdfcAttrArray = array(
             'trackid' => $payment->getKey(),
@@ -69,7 +75,21 @@ class Fixtures
         $hdfcPaymentCaptured = $this->createHdfcPaymentCapturedEntity(
             $hdfcAttrArray);
 
+        $card = $this->createEntity('card');
+
+        $payment->card()->associate($card);
+
+        $txn = (new Models\Transaction\Core)->createFromPayment($payment);
+
+        $payment->save();
+        $txn->save();
+
         return $payment;
+    }
+
+    protected function createTransactionForPayment($payment)
+    {
+        ;
     }
 
     protected function createHdfcPaymentAuthorizedEntity(array $attributes = array())
@@ -98,14 +118,20 @@ class Fixtures
         $apiMerchant = $this->createEntity('merchant', ['id' => '134510ae166900007a9677a9']);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '134510ae166900007a9677a9']);
 
-        $this->entities = array(
-            'pricing'     => $this->createDefaultPricingPlan(),
-            'merchant'    => $this->createEntity('merchant', ['id' => '363e4efa820b0c06208ccd99']),
-            'terminal'    => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
-            'key'         => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
-            'balance'     => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
-            'payment' => $this->createEntity('payment', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+        $entities = array(
+            'pricing'   => $this->createDefaultPricingPlan(),
+            'merchant'  => $this->createEntity('merchant', ['id' => '363e4efa820b0c06208ccd99']),
+            'terminal'  => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            'key'       => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
+            'balance'   => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
             );
+
+        $entities['payment'] = $this->createEntity(
+                                        'payment',
+                                        ['merchant_id' => '363e4efa820b0c06208ccd99',
+                                        'terminal_id' => $entities['terminal']->getKey()]);
+
+        $this->entities = $entities;
     }
 
     public function createEntity($entity, $attributes = array())
@@ -150,6 +176,24 @@ class Fixtures
         $this->eloquentReguard();
 
         return $entity;
+    }
+
+    protected function build($entity, $attributes)
+    {
+        $this->eloquentUnguard();
+
+        $entity = self::$entityMap[$entity];
+
+        $entity = Factory::build($entity, $attributes);
+
+        $this->eloquentReguard();
+
+        return $entity;
+    }
+
+    public function createCard()
+    {
+        ;
     }
 
     public function createDefaultPricingPlan()

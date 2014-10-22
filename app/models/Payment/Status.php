@@ -4,7 +4,7 @@ namespace Models\Payment;
 
 class Status
 {
-    const OPEN = 'open';
+    const CREATED = 'created';
     const AUTHORIZED = 'authorized';
     const CAPTURED = 'captured';
     const FAILED = 'failed';

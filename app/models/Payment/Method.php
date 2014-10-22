@@ -4,7 +4,7 @@ namespace Models\Payment;
 
 class Method
 {
-    const CARD = 'card';
-    const NET_BANKING = 'net banking';
-    const IMPS = 'imps';
+    const CARD          = 'card';
+    const IMPS          = 'imps';
+    const NET_BANKING   = 'net banking';
 }

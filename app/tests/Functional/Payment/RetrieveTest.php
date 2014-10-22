@@ -20,7 +20,7 @@ class PaymentRetrieveTest extends TestCase
     {
         parent::setUp();
 
-        $payment = $this->createEntity('payment', ['merchant_id' => '363e4efa820b0c06208ccd99']);
+        $payment = $this->fixtures->createPaymentAuthorizedEntity();
 
         $this->setupPrivateBasicAuthParams();
 

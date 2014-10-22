@@ -29,7 +29,7 @@ class Reconciler
      */
     public static $settledAt = null;
 
-    protected $txn;
+    protected $transaction;
     protected $merchant;
     protected $payment;
     protected $card;
@@ -83,9 +83,12 @@ class Reconciler
 
         foreach ($mprData as $row)
         {
-            $txn = $this->reconcileMprRecord($row, $gateway);
+            $transaction = $this->reconcileMprRecord($row, $gateway);
 
-            $txns->push($txn);
+            if ($transaction !== null)
+            {
+                $txns->push($transaction);
+            }
         }
 
         return $txns;
@@ -93,31 +96,31 @@ class Reconciler
 
     protected function reconcileMprRecord($mprRecord, $gateway)
     {
-        $paymentId = Gateway::call('getPaymentId', $mprRecord, 'test');
-
-        $txn = $this->newTransactionRecord();
+        $paymentId = Gateway::call('hdfc', 'getPaymentId', $mprRecord, 'test');
 
         $entitiesArray = $this->loadEntities($paymentId);
 
         $params = array(
             'input' => $mprRecord,
-            'transactionId' => $txn->getKey(),
+            'transactionId' => $this->transaction->getKey(),
             'entities' => $entitiesArray);
 
-        $data = Gateway::call('reconcile', $params, 'test');
+        $data = Gateway::call('hdfc', 'reconcile', $params, 'test');
 
-        $txn = $this->reconcileRecord($data);
+        $transaction = $this->reconcileRecord($data);
 
-        return $txn;
+        return $transaction;
     }
 
     protected function reconcileRecord($data)
     {
-        $txn = $this->txn;
+        $transaction = $this->transaction;
 
-        $entities = $this->entities;
-
-        list($fee, $pricingRuleId) = $this->calculateMerchantFees();
+        if ($transaction->isReconciled())
+        {
+            // @todo: trace this
+            return;
+        }
 
         $this->updateCardNetworkAndCountry(
             $this->card,
@@ -125,35 +128,25 @@ class Reconciler
             $data['card']['country']);
 
         $amount = $this->payment->getAmount();
+        $fee = $this->payment->getAttribute(Transaction\Entity::FEE);
         $credit = $amount - $fee;
 
         $gatewayFee = $data['transaction']['gateway_fee'];
         $apiFee = $fee - $gatewayFee;
 
         $txnData = array(
-            Transaction\Entity::AMOUNT => $amount,
             Transaction\Entity::GATEWAY_FEE => $data['transaction']['gateway_fee'],
-            Transaction\Entity::MERCHANT_ID => $this->merchant->getKey(),
-            Transaction\Entity::ENTITY_ID => $this->payment->getKey(),
-            Transaction\Entity::ENTITY_TYPE => 'payment',
-            Transaction\Entity::FEE => $fee,
-            Transaction\Entity::CREDIT => $credit,
-            Transaction\Entity::DEBIT => 0,
-            Transaction\Entity::CURRENCY => 'INR',
-            Transaction\Entity::PRICING_RULE_ID => $pricingRuleId,
             Transaction\Entity::API_FEE => $apiFee,
             Transaction\Entity::SETTLED_AT => self::$settledAt);
 
-        $this->txn->fill($txnData);
+        $transaction->fill($txnData);
+        $transaction->setReconciledAt($this->reconciledAt);
 
-        if ($this->checkPreviousEntries($txn, $this->txnRepo) === false)
-        {
-            $this->updateBalances($txn);
+        $this->updateBalances($transaction);
 
-            $this->txnRepo->save($txn);
-        }
+        $this->txnRepo->save($transaction);
 
-        return $txn;
+        return $transaction;
     }
 
     protected function updateCardNetworkAndCountry($card, $network, $country)
@@ -184,27 +177,15 @@ class Reconciler
         $nodalBalance = $merchantRepo->getEscrowBalanceLockForUpdate();
         $merchantBalance = $merchantRepo->getBalanceLockForUpdate($this->merchant->getKey());
 
-        $merchantBalance->addAmount($this->txn['credit']);
-        $merchantBalance->subAmount($this->txn['debit']);
+        $merchantBalance->addAmount($this->transaction['credit']);
+        $merchantBalance->subAmount($this->transaction['debit']);
         $merchantRepo->save($merchantBalance);
 
-        $nodalBalance->addAmount($this->txn['api_fee']);
+        $nodalBalance->addAmount($this->transaction['api_fee']);
         $merchantRepo->save($nodalBalance);
 
-        $this->txn[Transaction\Entity::BALANCE] = $merchantBalance->getBalance();
-        $this->txn[Transaction\Entity::ESCROW_BALANCE] = $nodalBalance->getBalance();
-    }
-
-    protected function newTransactionRecord()
-    {
-        $txn = new Transaction\Entity;
-        $txn->generateId();
-        $txn->setReconciledAt($this->reconciledAt);
-
-        $this->txn = $txn;
-        $this->entities['transaction'] = $txn;
-
-        return $txn;
+        $this->transaction[Transaction\Entity::BALANCE] = $merchantBalance->getBalance();
+        $this->transaction[Transaction\Entity::ESCROW_BALANCE] = $nodalBalance->getBalance();
     }
 
     protected function loadEntities($paymentId)
@@ -215,13 +196,14 @@ class Reconciler
         $this->card = $payment->card;
         $this->terminal = $payment->merchant->terminal;
         $this->payment = $payment;
+        $this->transaction = $payment->transaction;
 
         return $entitiesArray = array(
-            'payment' => $this->payment->toArray(),
-            'merchant' => $this->merchant->toArray(),
-            'card' => $this->card->toArray(),
-            'terminal' => $this->terminal->toArray(),
-            'transaction' => $this->txn->toArray());
+            'card'          => $this->card->toArray(),
+            'payment'       => $this->payment->toArray(),
+            'merchant'      => $this->merchant->toArray(),
+            'terminal'      => $this->terminal->toArray(),
+            'transaction'   => $this->transaction->toArray());
     }
 
     protected function initRepos()

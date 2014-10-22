@@ -43,13 +43,15 @@ Models\Payment\Entity:
     amount_authorized: 100
     amount_refunded: 0
     currency: INR
-    status: open
+    status: created
     refund_status: none
     contact: $integer
     udf: $emptyarray
     gateway: hdfc
     email: $email
     captured_at: null
+    transaction_id:
+        type: Models\Transaction\Entity
 
 Models\Payment\Refund\Entity:
     id: $uniqueid
@@ -59,7 +61,8 @@ Models\Payment\Refund\Entity:
         type: Models\Merchant\Entity
     amount: 100
     currency: INR
-    transaction_id: Models\Transaction\Entity
+    transaction_id:
+        type: Models\Transaction\Entity
 
 Models\Pricing\Entity:
     id: $uniqueid
@@ -71,6 +74,23 @@ Models\Pricing\Entity:
     payment_issuer: ICIC
     percent_rate: 1000
     fixed_rate: 10000
+
+Models\Transaction\Entity:
+    id: $uniqueid
+    entity_id: $uniqueid
+    type: payment
+    merchant_id:
+        type: Models\Merchant\Entity
+    amount: $integer
+    fee: $integer
+    pricing_rule_id: null
+    currency: INR
+    credit: $integer
+    debit: 0
+    balance: $integer
+    gateway_fee: null
+
+
 
 Gateway\Hdfc\Entity:
     id: $integer

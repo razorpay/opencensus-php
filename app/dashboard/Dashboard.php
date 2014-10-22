@@ -37,9 +37,9 @@ class Dashboard
 
     public static function validateAndBuild($data = array())
     {
-        foreach($data as $key => $value)
+        foreach ($data as $key => $value)
         {
-            if (!in_array($key, static::$fields))
+            if (in_array($key, static::$fields) === false)
                 unset($data[$key]);
         }
 
@@ -67,11 +67,11 @@ class Dashboard
             // For debugging purposes,
             // persist failed requests
             //
-            if (!is_object(json_decode($response->body)) ||
+            if (is_object(json_decode($response->body) === false) or
                 json_decode($response->body)->status === FALSE)
             {
                 (new Repository)->persistAfterFail($data['message']);
-                
+
                 return;
             }
         }
@@ -83,5 +83,30 @@ class Dashboard
     {
         $app = \App::getFacadeRoot();
         $app['dashboard']->queueRecord($resource, $payload);
+    }
+
+    public function queueRecord($resource, $data)
+    {
+        if (is_a($data, 'Models\\Base\\PublicCollection') === true)
+        {
+            foreach ($data as $entity)
+            {
+                // Recursively call this function for each entity in collection
+                $this->queueRecord($resource, $entity);
+            }
+        }
+        else if (is_a($data, 'Models\\Base\\PublicEntity') === true)
+        {
+            $data = array_merge(
+                    $data->toArray(),
+                    ['merchant_id' => $data->getMerchantId()]);
+
+            $mode = \BasicAuth::getMode();
+
+            Queue::push('Dashboard\\'.ucwords($resource).'@postRequest', array(
+                'mode'  => $mode,
+                'message'   =>  $data
+            ));
+        }
     }
 }

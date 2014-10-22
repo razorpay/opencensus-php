@@ -141,37 +141,21 @@ class Processor
      */
     protected function callGatewayFunction($action, array $input)
     {
-        $this->terminal = $this->getTerminal();
+        $terminal = $this->payment->terminal;
 
-        $terminal = $this->terminal->toArrayWithPassword();
+        $gateway = $this->payment->getGateway();
 
-        return Gateway::call($action, $input, $this->mode, $terminal);
+        return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
     }
 
-    protected function getTerminal()
+    protected function setTerminalForPayment($payment)
     {
         if ($this->terminal !== null)
         {
             return $this->terminal;
         }
 
-        $gateway = '';
-
-        $method = $this->payment['method'];
-
-        if ($method === Payment\Method::CARD)
-        {
-            $gateway = Payment\Gateway::HDFC;
-        }
-        else if ($method === Payment\Method::NET_BANKING)
-        {
-            $gateway === Payment\Gateway::ATOM;
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Unrecognized payment method ' . $method);
-        }
+        $gateway = $payment->getGateway();
 
         $terminal = (new Terminal\Repository)->getByMerchantIdAndGateway(
                                                     $this->merchant->getKey(), $gateway);
@@ -190,7 +174,34 @@ class Processor
 
         $this->terminal = $terminal;
 
+        $payment->terminal()->associate($terminal);
+
         return $terminal;
+    }
+
+    protected function setGatewayForPayment($payment)
+    {
+        $gateway = '';
+
+        $method = $payment['method'];
+
+        if ($method === Payment\Method::CARD)
+        {
+            $gateway = Payment\Gateway::HDFC;
+        }
+        else if ($method === Payment\Method::NET_BANKING)
+        {
+            $gateway === Payment\Gateway::ATOM;
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Unrecognized payment method ' . $method);
+        }
+
+        $payment->setGateway($gateway);
+
+        return $gateway;
     }
 
     protected function getCallbackUrl()
@@ -217,7 +228,13 @@ class Processor
         $this->tracePaymentNewRequest($input);
 
         $payment = (new Payment\Entity)->build($input);
+
         $payment->merchant()->associate($this->merchant);
+
+        $this->setGatewayForPayment($payment);
+
+        $this->setTerminalForPayment($payment);
+
         $this->payment = $payment;
 
         return $payment;
