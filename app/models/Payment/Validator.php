@@ -36,6 +36,11 @@ class Validator extends Base\Validator
 
     protected function validateCardKey($input)
     {
+        if ($input['method'] !== Payment\Method::CARD)
+        {
+            return;
+        }
+
         if ((array_key_exists('card', $input) === false) or
             ($input['card'] === null))
         {
@@ -65,7 +70,11 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED);
         }
 
-        Payment\Bank::checkValidBank($input['bank']);
+        if (Payment\Bank::isValidBank($input['bank']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE);
+        }
     }
 
     protected function validateContact($input)
@@ -233,7 +242,7 @@ class Validator extends Base\Validator
         if ($input['amount'] > $payment->getAttribute(Payment\Entity::AMOUNT))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH, 'amount');
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_GREATER_THAN_AUTH, 'amount');
         }
     }
 

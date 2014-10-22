@@ -23,8 +23,8 @@ trait Capture
         (new Payment\Validator)->captureValidate($payment, $input);
 
         $data = array(
-                    'payment' => $payment->toArrayWithCard(),
-                    'amount' => $input['amount']);
+            'payment' => $payment->toArrayWithCard(),
+            'amount' => $input['amount']);
 
         $payment->setCaptureAmount($input['amount']);
 
@@ -35,6 +35,10 @@ trait Capture
 
     public function captureNetBanking($payment)
     {
+        $data = array(
+            'payment'       => $payment->toArray(),
+            'callbackUrl'   => $this->getCallbackUrl());
+
         return $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
     }
 

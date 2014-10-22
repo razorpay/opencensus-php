@@ -55,10 +55,16 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED =
         'Net banking is not enabled for the merchant';
 
+    const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED =
+        'Bank not provided for net banking payment';
+
+    const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE =
+        'Bank code provided for net banking payment is invalid';
+
     const BAD_REQUEST_INVALID_ID =
         'The id provided does not exist';
 
-    const BAD_REQUEST_CAPTURE_AMOUNT_GREATER_THAN_AUTH =
+    const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_GREATER_THAN_AUTH =
         'Capture amount cannot be greater than authorized amount';
 
     const BAD_REQUEST_KEY_EXPIRED =

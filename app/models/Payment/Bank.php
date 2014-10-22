@@ -25,12 +25,8 @@ class Method
         self::SBIN => 'State Bank of India',
     );
 
-    public static function checkValidBank($bank)
+    public static function isValidBank($bank)
     {
-        if (defined(__CLASS__.'::'.$bank) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE);
-        }
+        return (defined(__CLASS__.'::'.$bank));
     }
 }
