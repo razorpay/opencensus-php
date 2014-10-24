@@ -10,7 +10,7 @@ use Models\Payment;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'        =>  'required|numeric|max:50000000|min:100',
+        'amount'        =>  'required|numeric|max:50000000',
         'currency'      =>  'required|max:3',
         'method'        =>  'in:card,net banking',
         'card'          =>  'sometimes',
@@ -28,6 +28,7 @@ class Validator extends Base\Validator
 
     protected static $createValidators = array(
         'card_key',
+        'amount',
         'bank',
         'currency',
         'contact',
@@ -54,6 +55,24 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY,
                 'card');
+        }
+    }
+
+    protected function validateAmount($input)
+    {
+        if (($input['method'] === Payment\Method::NET_BANKING) and
+            ($this->entity->getGateway() === Payment\Gateway::ATOM) and
+            ($input['amount'] < 5000))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY,
+                'amount');
+        }
+        else if ($input['amount'] < 100)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
+                'amount');
         }
     }
 

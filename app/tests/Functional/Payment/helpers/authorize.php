@@ -213,8 +213,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
         ],
     ],
 
