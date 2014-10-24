@@ -90,8 +90,15 @@ var XD = function() {
     };
 }();
 
+// Do not remove the below 'callback data' comments because they help
+// during tests for extracting callback data from js
+
+// Callback data //
 var data = {{json_encode($data);}};
+// Callback data //
+
 XD.postMessage(data,'*',window.parent);
+
 </script>
 Your payment is currently in progress. Please wait.
 </body>

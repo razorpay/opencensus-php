@@ -253,40 +253,16 @@ trait PaymentAuthFlowTrait
 
     protected function dcPaymentGetJsonFromCallback($content)
     {
-        $arr = explode("\n", $content);
+        $start = 'var data = ';
+        $end = '// Callback data //';
 
-        $n = 91;
+        $data = getTextBetweenStrings($content, $start, $end);
 
-        //
-        // @see callback.blade.php
-        // @todo: a better way might be to extract position of 'var data = '
-        // n = 91.
-        //
-        // Actual output is JS, but line $n of callback.blade.php
-        // starts with 'var data = ' and then the json data is printed
-        //
-        // So first, ensure that $n line is present.
-        //
-        if (isset($arr[$n]) === false)
-        {
-            var_dump($arr);
-            throw new \Exception('some error occured');
-        }
+        // Remove ';\n' at the end to get proper json string
+        $l = strlen($data);
+        $data = substr($data, 0, $l-2);
 
-        //
-        // If line is present, get it in array.
-        //
-
-        $line = $arr[$n];
-
-        //
-        // 11 = strlen("var data = ")
-        // -1 = to split the ; from end of js
-        // This gives us the desired json data returned.
-        //
-        $content = substr($line, 11,-1);
-
-        return $content;
+        return $data;
     }
 
     protected function getIdFromUri($uri)

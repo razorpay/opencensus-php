@@ -37,19 +37,20 @@ if (! function_exists('validate_keys'))
     }
 }
 
-if (! function_exists('getTextBetweenTags'))
+if (! function_exists('extractTextBetweenStrings'))
 {
-    function getTextBetweenTags($string, $start, $end)
+    function getTextBetweenStrings($string, $start, $end)
     {
         $string = " ".$string;
 
-        $ini = strpos($string,$start);
+        $ini = strpos($string, $start);
 
         if ($ini === false) return null;
 
         $ini += strlen($start);
-        $len = strpos($string,$end,$ini) - $ini;
-        return substr($string,$ini,$len);
+        $len = strpos($string, $end, $ini) - $ini;
+
+        return substr($string, $ini, $len);
     }
 }
 

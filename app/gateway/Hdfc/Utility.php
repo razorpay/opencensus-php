@@ -83,13 +83,13 @@ class Utility
     {
         foreach ($fields as $field)
         {
-            $array[$field] = GetTextBetweenTags($xml, "<$field>", "</$field>");
+            $array[$field] = getTextBetweenStrings($xml, "<$field>", "</$field>");
         }
     }
 
     public static function getFieldFromXML($xml, $field)
     {
-        return GetTextBetweenTags($xml, "<$field>", "</$field>");
+        return getTextBetweenStrings($xml, "<$field>", "</$field>");
     }
 
     /**
