@@ -12,60 +12,70 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 <!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
 <HTML>
 <HEAD>
-	<TITLE>Testing Page-TranPortal VbyV</TITLE>
+    <TITLE>Testing Page-TranPortal VbyV</TITLE>
 </HEAD>
 
 <BODY>
 <table border="1" align="center"  width="100%" >
-	<tr>
-	<td align = "left" width = "90%"><font  size = 5 color = darkblue face = verdana ><b>Testing Page</td>
-	<td align = "right"width = "10%"><img SRC="" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
-	</tr>
+    <tr>
+    <td align = "left" width = "90%"><font  size = 5 color = darkblue face = verdana ><b>Testing Page</b></td>
+    <td align = "right"width = "10%"><img SRC="" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
+    </tr>
 </table>
 <br><br>
 <form method="post" id="paymentform" action="//<?=$public_url?>/payments">
 <table border="1" align="center"  width="300">
-	<tr>
-	<th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>
-	</tr>
-	<tr>
-		<td colspan="40">Card No: </b> </td>
-		<td><input type="text" name="card[number]" value="4012001038443335" size="25"></td>
-	</tr>
-	<TR>
-		<TD colspan="40">CVV:</TD>
-		<TD><input size="3" type="text" name="card[cvv]" value="880" maxlength=4></TD>
-	</TR>
-	<TR>
-		<TD colspan ='40'>Exp Date:</TD>
+    <tr>
+    <th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>
+    </tr>
+    <tr>
+        <td colspan="40">Select Method: </td>
+        <td>
+            <select name="method">
+                <option value="net banking">Net Banking</option>
+                <option value="card" selected="selected">Card</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="40">Select Bank (Net Banking): </td>
+        <td>
+            <select name="bank">
+                <option value="SBIN">State Bank of India</option>
+                <option value="HDFC">HDFC Bank</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="40">Card No: </b> </td>
+        <td><input type="text" name="card[number]" value="4012001038443335" size="25"></td>
+    </tr>
+    <tr>
+        <td colspan="40">CVV:</td>
+        <td><input size="3" type="text" name="card[cvv]" value="880" maxlength=4></td>
+    </tr>
+    <tr>
+        <td colspan ='40'>Exp Date:</td>
         <td><input type="text" name="card[expiry_month]" value="11"></td>
         <td><input type="text" name="card[expiry_year]" value="2015"></td>
-		<tr>
-		<TD colspan='40'>Amount:</TD>
-		<td><input type="text" name="amount" size="25" value="500"></td>
-		</tr>
-		<!--<TR>
-		<TD colspan='40'>Hold:</TD>
-		<td>
-		<select name="hold">
-			<option value="0" selected>No</option>
-			<option value="1">Yes</option>
-			</select>
-		</td>
-	</tr>-->
-		<TR>
-		<TD colspan='40'>CardHolder/Member Name:</TD>
-		<td><input type="text" name="card[name]" size="25" value="shashank"></td>
-		<td><input type="text" name="email" size="25" value="shk@gmail.com"></td>
-		<td><input type="text" name="contact" size="25" value="1234567890"></td>
-		<input type="hidden" value="INR" name="currency">
-		</TR>
-		<tr>
-	<td colspan="100" align="center"><input type="submit" value="  Submit  "></td>
-	</tr>
-	<tr>
-	<th colspan="50" bgcolor="brown" height="15"></th>
-	</tr>
+        <tr>
+            <td colspan='40'>Amount:</td>
+            <td><input type="text" name="amount" size="25" value="500"></td>
+        </tr>
+        <tr>
+            <td colspan='40'>CardHolder/Member Name:</td>
+            <td><input type="text" name="card[name]" size="25" value="shashank"></td>
+            <td><input type="text" name="email" size="25" value="shk@gmail.com"></td>
+            <td><input type="text" name="contact" size="25" value="1234567890"></td>
+            <input type="hidden" value="INR" name="currency">
+        </tr>
+    </tr>
+    <tr>
+        <td colspan="100" align="center"><input type="submit" value="  Submit  "></td>
+    </tr>
+    <tr>
+        <th colspan="50" bgcolor="brown" height="15"></th>
+    </tr>
 </form>
 </table>
 <br><br>
@@ -85,14 +95,14 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 
 <table width="96%" border="0" cellspacing="0" cellpadding="0">
 <tr>
-	<td height="2" bgcolor="black" class="titleline"></td>
+    <td height="2" bgcolor="black" class="titleline"></td>
 </tr>
 </table>
 <table border="1" align="center"  width="100%" >
-	<tr>
-	<td align="left" width="90%"><font  size = 5 color = darkblue face = verdana ><b>Sample Page</td>
-	<td align="right"width="10%"><IMG SRC="" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
-	</tr>
+    <tr>
+    <td align="left" width="90%"><font  size = 5 color = darkblue face = verdana ><b>Sample Page</td>
+    <td align="right"width="10%"><IMG SRC="" WIDTH="169" HEIGHT="37" BORDER="0" ALT=""></td>
+    </tr>
 </table>
 
 </BODY>
