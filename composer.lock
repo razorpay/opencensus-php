@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f43bfacaca26605118656c3934079817",
+    "hash": "f25feeed8dfc21bca51bced7aa7413e2",
     "packages": [
         {
             "name": "classpreloader/classpreloader",
@@ -1510,7 +1510,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/spine.git",
-                "reference": "94b0696ede06aaf908b061bca773ac86fc74fdd3"
+                "reference": "b701694b8529771971f6195f7d27b85480eca79b"
             },
             "require": {
                 "laravel/framework": "4.2.*",
@@ -1532,7 +1532,7 @@
                 "razorpay",
                 "spine"
             ],
-            "time": "2014-09-21 19:14:47"
+            "time": "2014-10-24 15:12:28"
         },
         {
             "name": "rmccue/requests",
@@ -2534,9 +2534,7 @@
             },
             "type": "library",
             "extra": {
-                "branch-alias": [
-
-                ]
+                "branch-alias": []
             },
             "autoload": {
                 "psr-0": {
@@ -2774,9 +2772,7 @@
             "time": "2014-09-22 09:14:18"
         }
     ],
-    "aliases": [
-
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
         "razorpay/razorpay-php": 20,
@@ -2784,10 +2780,6 @@
         "maatwebsite/excel": 20
     },
     "prefer-stable": false,
-    "platform": [
-
-    ],
-    "platform-dev": [
-
-    ]
+    "platform": [],
+    "platform-dev": []
 }
