@@ -63,11 +63,24 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::TERMINAL)->insert(
                 array(
-                    'id'                    => '14aa47c4a93d6e9b9c7ef51a',
+                    'id'                    => '13aa47c4a93d6e9b9c7ef51a',
                     'merchant_id'           => '363e4efa820b0c06208ccd99',
                     'gateway'               => 'hdfc',
                     'gateway_merchant_id'   => 'merch123',
                     'gateway_terminal_id'   => '123456',
+                    'gateway_terminal_password' => Crypt::encrypt('encryptpass'),
+                    'created_at'            =>  time(),
+                    'updated_at'            =>  time(),
+                    )
+                );
+
+            DB::table(Table::TERMINAL)->insert(
+                array(
+                    'id'                    => '13a00c6c0a50b4eaf47f264b',
+                    'merchant_id'           => '363e4efa820b0c06208ccd99',
+                    'gateway'               => 'atom',
+                    'gateway_merchant_id'   => 'merch1234',
+                    'gateway_terminal_id'   => '',
                     'gateway_terminal_password' => Crypt::encrypt('encryptpass'),
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
