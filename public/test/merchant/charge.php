@@ -5,29 +5,35 @@ ini_set('display_errors','1');
 require('../../../vendor/autoload.php');//Load API
 
 use Razorpay\Api\Api;
-require('config.php');//Load API Credentials
+require('config.php'); // Load API Credentials
 
-$api = new Api(RZP_KEY_ID,RZP_KEY_SECRET);
+Api::$baseUrl = 'http://rzp/v1/';
+$api = new Api(RZP_KEY_ID, RZP_KEY_SECRET);
 
-if(!isset($_POST['id'])) die("Payment id required");
+if (isset($_POST['id']) === false)
+{
+    die("Payment id not provided");
+}
 
 $id = $_POST['id'];
 $amount = $_POST['amount'];
 
-$payment = $api->payment->get($id);
+$payment = $api->payment->fetch($id);
 
-if (($amount === $payment->amount) and
-    ($payment->error_code === null) and
-    ($payment->status === 'authorized'))
-{
-	//
-    // Payment was successful
-	// Do your server side handling
-    //
+echo json_encode($payment->toArray());
 
-    echo json_encode($payment);
-}
-else
-{
-	die("There was an error in processing your request");
-}
+// if (($amount === $payment->amount) and
+//     ($payment->error_code === null) and
+//     ($payment->status === 'authorized'))
+// {
+// 	//
+//     // Payment was successful
+// 	// Do your server side handling
+//     //
+
+//     echo json_encode($payment);
+// }
+// else
+// {
+// 	die("There was an error in processing your request");
+// }
