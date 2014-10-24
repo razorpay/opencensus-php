@@ -162,6 +162,7 @@ class Processor
 
         if ($terminal === null)
         {
+            $method = $payment->getAttribute(Payment\Entity::METHOD);
             if ($method === Payment\Method::NET_BANKING)
             {
                 throw new Exception\BadRequestException(
@@ -191,7 +192,7 @@ class Processor
         }
         else if ($method === Payment\Method::NET_BANKING)
         {
-            $gateway === Payment\Gateway::ATOM;
+            $gateway = Payment\Gateway::ATOM;
         }
         else
         {

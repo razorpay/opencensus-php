@@ -40,7 +40,7 @@ class Gateway extends BaseGateway
      * @param  array  $input
      * @return void
      */
-    public function authorize(array $input)
+    public function capture(array $input)
     {
         parent::authorize($input);
 
@@ -50,25 +50,26 @@ class Gateway extends BaseGateway
 
         $url = Urls::ATOM_TEST_URL;
 
-        $request['data'] = array(
-            'login'         =>  $input['terminal']['gateway_merchant_id'],
-            'pass'          =>  $input['terminal']['gateway_terminal_password'],
+        $request['content'] = array(
+            'login'         =>  $this->terminal['gateway_merchant_id'],
+            'pass'          =>  $this->terminal['gateway_terminal_password'],
             'ttype'         =>  'NBFundTransfer',
             'prodid'        =>  'NSE',
-            'amt'           =>  $input['txn']['amount'] / 100,
+            'amt'           =>  $input['payment']['amount'] / 100,
             'txncurr'       =>  'INR',
             'txnscamt'      =>  '0',
             'clientcode'    =>  urlencode(base64_encode('123')),
-            'txnid'         =>  $input['txn']['id'],
-            'ru'            =>  'ur',
+            'txnid'         =>  $input['payment']['id'],
+            'ru'            =>  $input['callbackUrl'],
             'date'          =>  $time,
             'custacc'       =>  '123456789012',
+            'bankid'        =>  '2001',
             );
 
         $request['url'] = Urls::ATOM_TEST_URL;
 
         $response = $this->postRequest($request);
-
+sd($response);
         $data = $this->xmltoarray($response);
 
         $url = $data['url'];
@@ -78,11 +79,35 @@ class Gateway extends BaseGateway
             'token'         => $data['token'],
             'txnStage'      => '1');
 
+        $attributes = array(
+            'id' => $input['payment']['id'],
+            'token' => $data['token'],
+            'gateway_payment_id' => $data['tempTxnId']);
+
+        $atom = new Atom\Entity($attributes);
+        $atom->saveOrFail();
+
         $queryStr = http_build_query($fields);
 
         $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
 
-        return $url;
+        $data = array(
+            'gateway' => 'atom',
+            'url' => $url);
+
+        header("Location: ".$url);
+
+        return $data;
+    }
+
+    public function postRequest($request)
+    {
+//        $request['options'] = $this->getRequestOptions();
+        $request['header'] = array();
+//        $request['content'] = array();
+        $this->response = $this->sendGatewayRequest($request);
+
+        return $this->response;
     }
 
     protected function runRequestResponseFlow(array &$request, array &$response)
@@ -136,6 +161,16 @@ class Gateway extends BaseGateway
         }
     }
 
+    public function setTerminal($terminal)
+    {
+        $this->terminal = $terminal;
+    }
+
+    public function setMode($mode)
+    {
+        $this->mode = $mode;
+    }
+
     protected function writeLog($data)
     {
         $fileName = date('Y-m-d').'.txt';
@@ -161,13 +196,4 @@ class Gateway extends BaseGateway
 
         return $returnArray;
     }
-}
-
-$processPayment = new ProcessPayment();
-$processPayment->requestMerchant();
-?>
-    }
-
-
-
 }

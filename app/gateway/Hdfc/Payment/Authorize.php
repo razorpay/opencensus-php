@@ -51,7 +51,8 @@ trait Authorize
         $enrollResponse = $this->enrollResponse;
 
         return array(
-                'data' => $enrollResponse['data']);
+                'data' => $enrollResponse['data'],
+                'gateway' => 'hdfc');
     }
 
 

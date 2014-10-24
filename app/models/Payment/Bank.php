@@ -2,7 +2,7 @@
 
 namespace Models\Payment;
 
-class Method
+class Bank
 {
     const ALLA = 'ALLA';
     const AXIS = 'AXIS';
