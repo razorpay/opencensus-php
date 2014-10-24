@@ -28,6 +28,15 @@ class CreateAtomGateway extends Migration
             $table->boolean('success')
                   ->nullable();
 
+            $table->string('bank_name')
+                  ->nullable();
+
+            $table->string('bank_transaction_id')
+                  ->nullable();
+
+            $table->text('callback_data')
+                  ->nullable();
+
             $table->integer('created_at');
             $table->integer('updated_at');
 

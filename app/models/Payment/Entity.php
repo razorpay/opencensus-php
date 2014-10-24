@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = array(
         self::ID,
+        self::PUBLIC_ID,
         self::METHOD,
         self::AMOUNT,
         self::AMOUNT_AUTHORIZED,
@@ -90,6 +91,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT);
 
     protected $guarded = array(self::ID);
+
+    protected $appends = array(self::PUBLIC_ID);
 
     protected static $modifiers = array(self::CONTACT);
 

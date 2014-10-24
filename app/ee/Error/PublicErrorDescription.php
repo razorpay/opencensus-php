@@ -13,6 +13,9 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REQUEST_TIMEOUT =
         'The gateway request to submit payment information timed out. Please submit your details again';
 
+    const GATEWAY_ERROR_PROCESSING_DECLINED =
+        'Payment failed due to processing error on gateway';
+
     const CARD_ERROR_INVALID_EXPIRY_DATE =
         'The expiry date is not valid';
 

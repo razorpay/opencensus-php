@@ -5,17 +5,12 @@ namespace Gateway\Atom;
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\BaseGateway;
+use Gateway\Atom;
 use Models\Card;
 
 class Gateway extends BaseGateway
 {
     protected $url = 'http://203.114.240.183/paynetz/epi/fts';
-
-    var $Login='160';
-    var $Password='Test@123';
-    var $MerchantName='ATOM';
-    var $TxnCurr='INR';
-    var $TxnScAmt='0';
 
     protected $paymentRequest = array(
         'type' => 'payment',
@@ -30,6 +25,8 @@ class Gateway extends BaseGateway
         'fields' => array());
 
     protected $error = false;
+
+    protected $exception;
 
     public function __construct()
     {
@@ -46,20 +43,18 @@ class Gateway extends BaseGateway
 
         $time = date('d/m/Y h:m:s');
         // Replace space with '%20'
-        $time = str_replace(' ', '%20', $time);
+         //$time = str_replace(' ', '%20', $time);
 
         $url = Urls::ATOM_TEST_URL;
 
         $request['content'] = array(
-            'login'         =>  $this->terminal['gateway_merchant_id'],
-            'pass'          =>  $this->terminal['gateway_terminal_password'],
             'ttype'         =>  'NBFundTransfer',
             'prodid'        =>  'NSE',
             'amt'           =>  $input['payment']['amount'] / 100,
             'txncurr'       =>  'INR',
             'txnscamt'      =>  '0',
             'clientcode'    =>  urlencode(base64_encode('123')),
-            'txnid'         =>  $input['payment']['id'],
+            'txnid'         =>  $input['payment']['public_id'],
             'ru'            =>  $input['callbackUrl'],
             'date'          =>  $time,
             'custacc'       =>  '123456789012',
@@ -69,8 +64,8 @@ class Gateway extends BaseGateway
         $request['url'] = Urls::ATOM_TEST_URL;
 
         $response = $this->postRequest($request);
-sd($response);
-        $data = $this->xmltoarray($response);
+
+        $data = $this->xmlToArray($response->body);
 
         $url = $data['url'];
         $fields = array(
@@ -79,6 +74,70 @@ sd($response);
             'token'         => $data['token'],
             'txnStage'      => '1');
 
+        $this->createAtomEntity($input, $data);
+
+        $queryStr = $this->buildGetQueryString($fields);
+
+        $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
+
+        $data = array(
+            'gateway' => 'atom',
+            'url' => $url);
+//sd($url);
+        header("Location: ".$url);
+die();
+        return $data;
+    }
+
+    public function callback(array $input)
+    {
+        $paymentId = $input['mer_txn'];
+
+        $payment = $input['payment'];
+        unset($input['payment']);
+
+        $atom = Atom\Entity::findOrFail($payment['id']);
+        $atom->setCallbackData($input);
+
+        if ($paymentId !== $payment['public_id'])
+        {
+            throw new Exception\LogicException(
+                'Payment public id and atom merchant txn id do not match. Payment public_id: ' .
+                $payment['public_id'], ' atom merchant txn id: ' . $input['mer_txn']);
+        }
+
+        $atomFCode = $input['f_code'];
+        if ($atomFCode === 'Ok')
+        {
+            $atom->setSuccess(true);
+        }
+        else if ($atomFCode === 'F')
+        {
+            $atom->setSuccess(false);
+            $this->error = true;
+            $this->exception = Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+        }
+        else
+        {
+            $atom->setSuccess(false);
+            $this->error = true;
+            $this->exception = Exception\LogicException(
+                'Atom f_code returned in callback has unrecognized value. Atom f_code: ' . $atomFCode);
+        }
+
+        $atom->setBankTransactionId($input['bank_txn']);
+        $atom->setBankName($input['bank_name']);
+        $atom->saveOrFail();
+
+        if ($this->error)
+        {
+            throw new $this->exception;
+        }
+    }
+
+    public function createAtomEntity($input, $data)
+    {
         $attributes = array(
             'id' => $input['payment']['id'],
             'token' => $data['token'],
@@ -86,28 +145,47 @@ sd($response);
 
         $atom = new Atom\Entity($attributes);
         $atom->saveOrFail();
-
-        $queryStr = http_build_query($fields);
-
-        $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
-
-        $data = array(
-            'gateway' => 'atom',
-            'url' => $url);
-
-        header("Location: ".$url);
-
-        return $data;
     }
 
     public function postRequest($request)
     {
-//        $request['options'] = $this->getRequestOptions();
         $request['header'] = array();
-//        $request['content'] = array();
+
+        $this->setTerminalInRequest($request);
+        //$request['content'] = http_build_query($request['content']);
+        //sd($request['content']);
         $this->response = $this->sendGatewayRequest($request);
 
         return $this->response;
+    }
+
+    protected function setTerminalInRequest(array & $request)
+    {
+        $terminal = $this->terminal;
+
+        if ($terminal['gateway'] !== 'atom')
+        {
+            throw new \InvalidArgumentException(
+                'atom gateway: wrong terminal supplied. Gateway: ' . $terminal['gateway']);
+        }
+
+        $login = $terminal['gateway_merchant_id'];
+        $pwd = $terminal['gateway_terminal_password'];
+
+        // For 'test' mode, replace any random terminal given with
+        // atom test terminal
+        if ($this->mode === 'test')
+        {
+            list($login, $pwd) = $this->getCredentials();
+        }
+
+        $request['content']['login'] = $login;
+        $request['content']['pass'] = $pwd;
+    }
+
+    protected function getCredentials()
+    {
+        return array('307', 'Test@123');
     }
 
     protected function runRequestResponseFlow(array &$request, array &$response)
@@ -180,7 +258,7 @@ sd($response);
         fclose($fp);
     }
 
-    protected function xmltoarray($data)
+    protected function xmlToArray($data)
     {
         $parser = xml_parser_create('');
         xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, 'UTF-8');
@@ -195,5 +273,17 @@ sd($response);
         $returnArray['token'] = $xml_values[6]['value'];
 
         return $returnArray;
+    }
+
+    protected function buildGetQueryString($data)
+    {
+        $str = '';
+
+        foreach ($data as $key => $value)
+        {
+            $str .= '&'.$key.'='.$value;
+        }
+
+        return $str;
     }
 }

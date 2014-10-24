@@ -9,6 +9,8 @@ class PublicEntity extends UniqueIdEntity
 {
     const ENTITY = 'entity';
 
+    const PUBLIC_ID = 'public_id';
+
     protected static $sign = '';
 
     protected static $delimiter = '-';
@@ -83,6 +85,11 @@ class PublicEntity extends UniqueIdEntity
     public function getPublicId()
     {
         return static::$sign . static::$delimiter . $this->getKey();
+    }
+
+    public function getPublicIdAttribute()
+    {
+        return $this->getPublicId();
     }
 
     public static function verifyIdAndStripSign(& $id)

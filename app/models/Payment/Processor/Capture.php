@@ -35,6 +35,7 @@ trait Capture
 
     public function captureNetBanking($payment)
     {
+        $payment->save();
         $data = array(
             'payment'       => $payment->toArray(),
             'callbackUrl'   => $this->getCallbackUrl());
