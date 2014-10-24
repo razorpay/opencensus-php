@@ -426,7 +426,8 @@ class BasicAuth
                 if ((isset($info['cloud'])) and
                     ($info['cloud'] === true))
                 {
-                    $verify = $this->verifyClientIpInternal();
+                    // Disable internal ip checks for now
+                    // $verify = $this->verifyClientIpInternal();
                 }
 
                 break;
