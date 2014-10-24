@@ -115,9 +115,9 @@ class CreatePayments  extends Migration
         {
             $table->dropForeign(Table::PAYMENT.'_'.Payment::CARD_ID.'_foreign');
 
-            $table->dropForeign(Table::TRANSACTION.'_'.Payment::TRANSACTION_ID.'_foreign');
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::TRANSACTION_ID.'_foreign');
 
-            $table->dropForeign(Table::TERMINAL.'_'.Payment::TERMINAL_ID.'_foreign');
+            $table->dropForeign(Table::PAYMENT.'_'.Payment::TERMINAL_ID.'_foreign');
 
             $table->dropForeign(Table::PAYMENT.'_'.Payment::MERCHANT_ID.'_foreign');
         });
