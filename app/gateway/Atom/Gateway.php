@@ -4,6 +4,7 @@ namespace Gateway\Atom;
 
 use Carbon\Carbon;
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Gateway\BaseGateway;
 use Gateway\Atom;
 use Models\Card;
@@ -81,11 +82,8 @@ class Gateway extends BaseGateway
         $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
 
         $data = array(
-            'gateway' => 'atom',
-            'url' => $url);
-//sd($url);
-        header("Location: ".$url);
-die();
+            'redirectUrl' => $url);
+
         return $data;
     }
 
@@ -115,14 +113,14 @@ die();
         {
             $atom->setSuccess(false);
             $this->error = true;
-            $this->exception = Exception\GatewayErrorException(
+            $this->exception = new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
         }
         else
         {
             $atom->setSuccess(false);
             $this->error = true;
-            $this->exception = Exception\LogicException(
+            $this->exception = new Exception\LogicException(
                 'Atom f_code returned in callback has unrecognized value. Atom f_code: ' . $atomFCode);
         }
 
@@ -132,7 +130,7 @@ die();
 
         if ($this->error)
         {
-            throw new $this->exception;
+            throw $this->exception;
         }
     }
 

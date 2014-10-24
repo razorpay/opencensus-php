@@ -32,7 +32,8 @@ var XD = function() {
                 // parameter.
                 //
                 target['postMessage'](message, target_url.replace( /([^:]+:\/\/[^\/]+).*/, '$1'));
-            } else if (target_url) {
+            }
+            else if (target_url) {
                 //
                 // the browser does not support window.postMessage,
                 // so use the window.location.hash fragment hack

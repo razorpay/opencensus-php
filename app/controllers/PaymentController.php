@@ -50,8 +50,14 @@ class PaymentController extends BaseController
                 ->with('data', $data['data'])
                 ->with('callbackUrl',$data['callbackUrl']);
         }
-
-        return ApiResponse::json($data);
+        else if (isset($data['redirectUrl']))
+        {
+            return Redirect::away($data['redirectUrl']);
+        }
+        else
+        {
+            return ApiResponse::json($data);
+        }
     }
 
     /**
@@ -62,11 +68,13 @@ class PaymentController extends BaseController
         $input = Input::all();
 
         unset($input['callback']);
+        // jQuery inserts underscore var with timestamp
+        // when cache is set to false. See jQuery docs for details
         unset($input['_']);
 
-        $payment = $this->payment->process($input);
+        $data = $this->payment->process($input);
 
-        return ApiResponse::json($payment);
+        return ApiResponse::json($data);
     }
 
     /**
