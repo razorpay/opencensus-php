@@ -207,19 +207,13 @@ class Processor
 
     protected function getCallbackUrl()
     {
-        $urlSegment = Route::getApiRouteUrl('payment_callback');
-
-        $pos = strrpos($urlSegment, '/');
-
-        $urlSegment = substr($urlSegment, 0, $pos);
-
-        $urlSegment .= '/' . $this->payment->getPublicId();
+        $url = \URL::route('payment_callback', ['id' => $this->payment->getPublicId()], false);
 
         $scheme = Request::getScheme().'://';
         $host = Request::getHost();
         $key = BasicAuth::getPublicKey();
 
-        $callbackUrl = $scheme . $key . '@' . $host . '/v1/' . $urlSegment;
+        $callbackUrl = $scheme . $key . '@' . $host . $url;
 
         return $callbackUrl;
     }

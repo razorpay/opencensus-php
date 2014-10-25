@@ -242,9 +242,9 @@ trait PaymentAuthFlowTrait
         unset($auth['PHP_AUTH_PW']);
 
         $request['method'] = 'POST';
-        $request['url'] = '/payments/callback/'.$id;
         $request['content'] = $form->getValues();
         $request['server'] = $auth;
+        $request['url'] = '/payments/'.$id.'/callback';
 
         $response = $this->makeRequestParent($request);
 
@@ -267,9 +267,10 @@ trait PaymentAuthFlowTrait
 
     protected function getIdFromUri($uri)
     {
-        $pos = strrpos($uri, '/');
+        // The url should be of format http://localhost/v1/payments/{id}/callback
+        // We will simply extract the id from it.
 
-        $id = substr($uri, $pos + 1);
+        $id = getTextBetweenStrings($uri, '/payments/', '/callback');
 
         return $id;
     }
