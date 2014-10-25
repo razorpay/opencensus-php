@@ -44,7 +44,7 @@ class Gateway extends BaseGateway
 
         $time = date('d/m/Y h:m:s');
         // Replace space with '%20'
-         //$time = str_replace(' ', '%20', $time);
+        // $time = str_replace(' ', '%20', $time);
 
         $url = Urls::ATOM_TEST_URL;
 
