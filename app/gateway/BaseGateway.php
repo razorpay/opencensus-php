@@ -31,15 +31,14 @@ class BaseGateway
         $this->input = $input;
     }
 
-    protected function mapKeys($array, $map, &$data)
+    public function setTerminal($terminal)
     {
-        foreach ($map as $keyOld => $keyNew)
-        {
-            if (isset($array[$keyOld]))
-            {
-                $data[$keyNew] = $array[$keyOld];
-            }
-        }
+        $this->terminal = $terminal;
+    }
+
+    public function setMode($mode)
+    {
+        $this->mode = $mode;
     }
 
     protected function sendGatewayRequest($request)
@@ -47,6 +46,11 @@ class BaseGateway
         if (isset($request['options']) === false)
         {
             $request['options']  = array();
+        }
+
+        if (isset($request['header']) === false)
+        {
+            $request['header'] = array();
         }
 
         return Requests::post(

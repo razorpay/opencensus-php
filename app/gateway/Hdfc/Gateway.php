@@ -481,16 +481,6 @@ class Gateway extends BaseGateway
         $this->id = $id;
     }
 
-    public function setTerminal($terminal)
-    {
-        $this->terminal = $terminal;
-    }
-
-    public function setMode($mode)
-    {
-        $this->mode = $mode;
-    }
-
     /**
      * Strips sensitive data before calling trace class to
      * prevent sensitive data from being traced
@@ -533,7 +523,7 @@ class Gateway extends BaseGateway
         $exception->setGatewayErrorCodeAndDesc(
             $code,
             $desc);
-//sd(get_class($exception));
+
         throw $exception;
     }
 

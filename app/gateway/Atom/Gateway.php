@@ -81,8 +81,7 @@ class Gateway extends BaseGateway
 
         $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
 
-        $data = array(
-            'redirectUrl' => $url);
+        $data = array('redirectUrl' => $url);
 
         return $data;
     }
@@ -104,7 +103,7 @@ class Gateway extends BaseGateway
                 $payment['public_id'], ' atom merchant txn id: ' . $input['mer_txn']);
         }
 
-        $atomFCode = $input['f_code'];
+        $atomFCode = (isset($input['f_code'])) ? $input['f_code'] : '';
         if ($atomFCode === 'Ok')
         {
             $atom->setSuccess(true);
@@ -119,8 +118,9 @@ class Gateway extends BaseGateway
         else
         {
             $atom->setSuccess(false);
+            $atom->saveOrFail();
             $this->error = true;
-            $this->exception = new Exception\LogicException(
+            throw new Exception\LogicException(
                 'Atom f_code returned in callback has unrecognized value. Atom f_code: ' . $atomFCode);
         }
 
@@ -147,11 +147,8 @@ class Gateway extends BaseGateway
 
     public function postRequest($request)
     {
-        $request['header'] = array();
-
         $this->setTerminalInRequest($request);
-        //$request['content'] = http_build_query($request['content']);
-        //sd($request['content']);
+
         $this->response = $this->sendGatewayRequest($request);
 
         return $this->response;
@@ -163,7 +160,7 @@ class Gateway extends BaseGateway
 
         if ($terminal['gateway'] !== 'atom')
         {
-            throw new \InvalidArgumentException(
+            throw new Exception\InvalidArgumentException(
                 'atom gateway: wrong terminal supplied. Gateway: ' . $terminal['gateway']);
         }
 
@@ -183,7 +180,7 @@ class Gateway extends BaseGateway
 
     protected function getCredentials()
     {
-        return array('307', 'Test@123');
+        return array(Config::TEST_LOGIN, Config::TEST_PASSWORD);
     }
 
     protected function runRequestResponseFlow(array &$request, array &$response)
@@ -235,16 +232,6 @@ class Gateway extends BaseGateway
                 $this->checkResponseErrorCode($response);
             }
         }
-    }
-
-    public function setTerminal($terminal)
-    {
-        $this->terminal = $terminal;
-    }
-
-    public function setMode($mode)
-    {
-        $this->mode = $mode;
     }
 
     protected function writeLog($data)

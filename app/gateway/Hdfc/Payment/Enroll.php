@@ -17,11 +17,11 @@ trait Enroll
      * @var array
      */
     protected $cardKeyMappings = array(
-        'name' => 'member',
-        'number' => 'card',
-        'expiry_month' => 'expmonth',
-        'expiry_year' => 'expyear',
-        'cvv' => 'cvv2');
+        'name'          => 'member',
+        'cvv'           => 'cvv2',
+        'number'        => 'card',
+        'expiry_month'  => 'expmonth',
+        'expiry_year'   => 'expyear');
 
     /**
      * Sends request for enrolling the card
@@ -407,5 +407,13 @@ trait Enroll
         }
 
         return $enrollStatus;
+    }
+
+    protected function mapKeys($array, $map, &$data)
+    {
+        foreach ($map as $keyOld => $keyNew)
+        {
+            $data[$keyNew] = $array[$keyOld];
+        }
     }
 }

@@ -146,8 +146,6 @@ trait PaymentAuthFlowTrait
 
         $content = $this->dcPaymentGetJsonFromCallback($content);
 
-        // return array($response, $content);
-
         $response->setContent($content);
 
         return $response;
