@@ -20,6 +20,11 @@ class Server
 
     }
 
+    public function txnStage1Submit($input)
+    {
+        ;
+    }
+
     protected function generateAtomToken()
     {
         $token = bin2hex(openssl_random_pseudo_bytes(46/2));
