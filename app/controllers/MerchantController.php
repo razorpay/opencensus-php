@@ -78,11 +78,25 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function getTerminals($id)
+    public function getTerminals($mid)
     {
-        $data = (new Merchant\Service)->getTerminal($id);
+        $data = (new Merchant\Service)->getTerminals($mid);
 
         return ApiResponse::json($data);
+    }
+
+    public function getTerminal($mid, $tid)
+    {
+        $data = (new Merchant\Service)->getTerminal($mid, $tid);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteTermianl($mid, $tid)
+    {
+        $data = (new Merchant\Serivce)->deleteTerminal($mid, $tid);
+
+        return ApiRespones::json($data);
     }
 
     public function postActivate($id)

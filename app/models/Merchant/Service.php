@@ -134,18 +134,34 @@ class Service extends Base\Service
         return $terminal->toArray();
     }
 
-    public function getTerminal($id)
+    public function getTerminals($mid)
     {
-        $merchant = $this->repo->findOrFailPublic($id);
+        $merchant = $this->repo->findOrFailPublic($mid);
 
-        $terminal = (new Terminal\Repository)->getByMerchantId($id);
+        $terminals = (new Terminal\Repository)->getByMerchantId($mid);
 
-        if ($terminal === null)
-        {
-            return array();
-        }
+        return $terminals->toArrayPublic();
+    }
 
-        return $terminal->toArray();
+    public function getTerminal($mid, $tid)
+    {
+        $merchant = $this->repo->findOrFailPublic($mid);
+
+        $terminal = (new Terminal\Repository)->getByIdAndMerchantId($mid, $id);
+
+        return $terminal->toArrayPublic();
+    }
+
+    public function deleteTerminal($mid, $tid)
+    {
+        $merchant = $this->repo->findOrFailPublic($mid);
+
+        $terminalRepo = new Terminal\Repository;
+        $terminal = $terminalRepo->getByIdAndMerchantId($mid, $id);
+
+        $terminalRepo->deleteOrFail($terminal);
+
+        return $terminal->toArrayPublic();
     }
 
     public function activate($id)

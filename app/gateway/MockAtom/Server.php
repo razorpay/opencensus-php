@@ -13,8 +13,8 @@ class Server
 {
     public function capture(array $input)
     {
-        $tempTxnId = random_integer(6),
-        $token = $this->generateAtomToken(),
+        $tempTxnId = random_integer(6);
+        $token = $this->generateAtomToken();
 
         return $this->getXmlFormattedResponse($tempTxnId, $token);
 

@@ -81,7 +81,6 @@ trait Capture
         $this->notifyDashboard('payment', $this->payment);
     }
 
-
     protected function updatePaymentCaptured()
     {
         $this->payment->setStatus(Payment\Status::CAPTURED);

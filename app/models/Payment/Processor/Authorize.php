@@ -45,8 +45,6 @@ trait Authorize
             return $callbackData;
         }
 
-        $payment->setAmountAuthorized();
-
         $this->updatePaymentAuthorized();
 
         return $payment;
@@ -156,9 +154,14 @@ trait Authorize
     {
         $payment = $this->payment;
 
+        $payment->setAmountAuthorized();
+
         $payment->setStatus(Payment\Status::AUTHORIZED);
 
+        $payment->terminal->incrementUsedCount();
+
         $payment->save();
+        $payment->terminal->save();
 
         $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
     }

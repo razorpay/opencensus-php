@@ -27,7 +27,18 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where(Terminal\Entity::MERCHANT_ID, '=', $id)->first();
+        return $repo::withTrashed()
+                    ->where(Terminal\Entity::MERCHANT_ID, '=', $id)
+                    ->get();
+    }
+
+    public function getByIdAndMerchantId($mid, $tid)
+    {
+        $repo = $this->repo;
+
+        return $repo::withTrashed()
+                    ->where(Terminal\Entity::MERCHANT_ID, '=', $id)
+                    ->findOrFail($tid);
     }
 
     public function getByMerchantIdAndGateway($id, $gateway)
@@ -45,5 +56,17 @@ class Repository extends Base\Repository
 
         return $repo::where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
                     ->findOrFail();
+    }
+
+    public function deleteOrFail($entity)
+    {
+        if ($entity->getUsedCount() === 0)
+        {
+            $entity->forceDelete();
+        }
+        else
+        {
+            $entity->deleteOrFail();
+        }
     }
 }

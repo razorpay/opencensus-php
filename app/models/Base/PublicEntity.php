@@ -131,6 +131,11 @@ class PublicEntity extends UniqueIdEntity
         return static::$sign . static::$delimiter;
     }
 
+    public static function getDelimiter()
+    {
+        return static::$delimiter;
+    }
+
     public function getEntity()
     {
         return $this->entity;

@@ -160,7 +160,8 @@ class Processor
         $terminal = (new Terminal\Repository)->getByMerchantIdAndGateway(
                                                     $this->merchant->getKey(), $gateway);
 
-        if ($terminal === null)
+        if (($terminal === null) or
+            ($terminal->trashed()))
         {
             $method = $payment->getAttribute(Payment\Entity::METHOD);
             if ($method === Payment\Method::NET_BANKING)

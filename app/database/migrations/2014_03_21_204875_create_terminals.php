@@ -7,7 +7,8 @@ use Constants\Table;
 use Models\Merchant;
 use Models\Terminal\Entity as Terminal;
 
-class CreateTerminals extends Migration {
+class CreateTerminals extends Migration
+{
 
     /**
      * Run the migrations.
@@ -25,6 +26,10 @@ class CreateTerminals extends Migration {
 
             $table->char(Terminal::MERCHANT_ID, 24);
 
+            $table->integer(Terminal::USED_COUNT)
+                  ->unsigned()
+                  ->default(0);
+
             $table->string(Terminal::GATEWAY);
 
             $table->string(Terminal::GATEWAY_MERCHANT_ID);
@@ -36,6 +41,10 @@ class CreateTerminals extends Migration {
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);
+
+            $table->integer(Terminal::DELETED_AT)
+                  ->unsigned()
+                  ->nullable();
 
             $table->foreign(Terminal::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
