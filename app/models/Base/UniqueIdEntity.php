@@ -124,11 +124,52 @@ class UniqueIdEntity extends Entity
     {
         $len = self::ID_LENGTH;
 
-        exec('date +%s%N', $nanotime, $status);
-        $hextime = dechex($nanotime[0]);
+        $hextime = dechex(self::getNanotimeInteger());
 
         $id = $hextime . bin2hex(openssl_random_pseudo_bytes(($len - 16)/2));
 
         return $id;
+    }
+
+    public static function generateUniqueId2()
+    {
+        // Timestmap of 1st Jan 2014!!
+        // 1388534400
+
+        $nanotime = self::getNanotimeInteger();
+
+        $nanotime -= 1388534400*1000*1000*1000;
+
+        $b62 = self::base62($nanotime);
+
+        $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(3)));
+
+        $rand = self::base62($dec);
+
+        if (strlen($rand) > 4)
+            $rand = substr($rand, 0, 4);
+
+        $id = $b62 . $rand;
+
+        return $id;
+    }
+
+    protected static function getNanotimeInteger()
+    {
+        exec('date +%s%N', $nanotime, $status);
+        return $nanotime[0];
+    }
+
+    protected static function base62($num)
+    {
+        $index = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+        $res = '';
+        do {
+            $res = $index[$num % 62] . $res;
+            $num = intval($num / 62);
+        } while ($num);
+
+        return $res;
     }
 }
