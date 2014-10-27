@@ -86,14 +86,26 @@ module.exports = function(grunt){
         },
 
         preprocess: {
-            admin: {
-                src: 'app/views/admin/getIndex.php.tmpl',
-                dest: 'app/views/admin/getIndexGenerated.blade.php'
+            phpTemplateFiles: {
+                files: [{
+                    expand: true,
+                    cwd: 'app/views/',
+                    src: ['**/*.blade.php.tmpl'],
+                    dest: 'app/views/',
+                    ext: '.blade.php',
+                    rename: function(dest, src) {
+                        var index = src.lastIndexOf("/") + 1;
+                        src = src.substr(0, index) + 'tmp' + src.substr(index);
+                        console.log(dest + src);
+                        return dest + src;
+                    }
+                }]
             },
-            merchant: {
-                src: 'app/views/merchant/getIndex.php.tmpl',
-                dest: 'app/views/merchant/getIndexGenerated.blade.php'
-            }
+            options: {
+                context: {
+                    DEST: 'generated'
+                }
+            },
         },
 
         hashres: {
@@ -102,14 +114,10 @@ module.exports = function(grunt){
                 fileNameFormat: '${name}.${hash}.${ext}',
                 renameFiles: true
             },
-            development: {
+            dist: {
                 src: ['public/css/generated/style.css','public/js/generated/*.js'],
-                dest: ['app/views/admin/getIndexGenerated.blade.php', 'app/views/merchant/getIndexGenerated.blade.php']
+                dest: ['app/views/**/tmp*.blade.php']
             },
-            production: {
-                src: ['public/css/generated/style.css','public/js/generated/*.js'],
-                dest: ['app/views/admin/getIndexGenerated.blade.php', 'app/views/merchant/getIndexGenerated.blade.php']
-            }
         },
 
         clean: ['public/css/generated/*.css', 'public/js/generated/*.js'],
@@ -132,13 +140,12 @@ module.exports = function(grunt){
     grunt.registerTask(
         'default',
         [
-            'env:'+config.environment,
             'clean',
             'concat',
             'cssmin:'+config.environment,
             'uglify:'+config.environment,
             'preprocess',
-            'hashres:'+config.environment
+            'hashres'
         ]
     );
 };

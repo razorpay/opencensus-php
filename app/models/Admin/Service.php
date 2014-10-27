@@ -144,7 +144,7 @@ class Service extends Base\Service
         $this->setApiCredentials();
 
         $data = $this->api->merchant->fetch($id)->toArray();
-
+//sd($data);
         $data['merchant_details'] = $merchant_details;
 
         // @todo This is failing tests on wercker, fix
@@ -202,7 +202,7 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->merchant->fetch($id)->fetchTerminal()->toArray();
+        $response = $this->api->merchant->fetch($id)->fetchTerminals()->toArray();
 
         return $response;
     }

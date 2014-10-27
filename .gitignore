@@ -6,7 +6,7 @@
 Thumbs.db
 grunt.json
 node_modules/
-*Generated.blade.php
+tmp*.blade.php
 generated/
 bootstrap/environment.php
 app/storage/selenium.png
