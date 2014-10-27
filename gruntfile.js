@@ -49,23 +49,13 @@ module.exports = function(grunt){
                                                     'public/js/libs/angular-file-upload.min.js'
                                             ],
                     'public/js/dev/merchant.js': [
-                                                    'public/js/app.js',
-                                                    'public/js/jq-config.js',
-                                                    'public/js/services.js',
-                                                    'public/js/controllers.js',
-                                                    'public/js/controllers/*.js',
-                                                    'public/js/filters.js',
-                                                    'public/js/directives.js',
+                                                    'public/js/merchant/**/*.js',
+                                                    'public/js/*.js',
                                                     'public/js/libs/moment.min.js'
                                                 ],
                     'public/js/dev/admin.js': [
-                                                    'public/js/admin/app.js',
-                                                    'public/js/jq-config.js',
-                                                    'public/js/services.js',
-                                                    'public/js/admin/controllers.js',
-                                                    'public/js/admin/controllers/*.js',
-                                                    'public/js/filters.js',
-                                                    'public/js/directives.js'
+                                                    'public/js/admin/**/*.js',
+                                                    'public/js/*.js'
                                             ]
                 }
             },
@@ -110,23 +100,13 @@ module.exports = function(grunt){
                                                     'public/js/libs/angular-file-upload.min.js'
                                             ],
                     'public/js/prod/merchant.js': [
-                                                    'public/js/app.js',
-                                                    'public/js/jq-config.js',
-                                                    'public/js/services.js',
-                                                    'public/js/controllers.js',
-                                                    'public/js/controllers/*.js',
-                                                    'public/js/filters.js',
-                                                    'public/js/directives.js',
+                                                    'public/js/merchant/**/*.js',
+                                                    'public/js/*.js',
                                                     'public/js/libs/moment.min.js'
                                                 ],
                     'public/js/prod/admin.js': [
-                                                    'public/js/admin/app.js',
-                                                    'public/js/jq-config.js',
-                                                    'public/js/services.js',
-                                                    'public/js/admin/controllers.js',
-                                                    'public/js/admin/controllers/*.js',
-                                                    'public/js/filters.js',
-                                                    'public/js/directives.js'
+                                                    'public/js/admin/**/*.js',
+                                                    'public/js/*.js'
                                                 ]
                 }
             }
@@ -167,8 +147,8 @@ module.exports = function(grunt){
         watch: {
             files: [
                 'public/js/*.js',
-                'public/js/admin/*.js',
-                'public/js/controllers/*.js',
+                'public/js/admin/**/*.js',
+                'public/js/merchant/**/*.js',
                 'public/css/*.css'
                 ],
             tasks: 'default',
