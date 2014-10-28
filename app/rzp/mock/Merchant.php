@@ -73,7 +73,7 @@ class Merchant extends MockEntity
         return $this;
     }
 
-    public function fetchTerminal()
+    public function fetchTerminals()
     {
         $this->mock(array());
 

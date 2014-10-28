@@ -24,7 +24,7 @@
           Unlock Activation Form
         </a>
         <a href class="list-group-item"
-        ng-show="merchant.activated==0" 
+        ng-show="merchant.activated==0"
         ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
         ng-click="activateMerchant()"
         >
@@ -69,7 +69,9 @@
           Registeration Date
         </a>
         <a href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.confirm_token == null, 'fa-times text-danger':merchant.confirm_token != null}"></i></span>
+          <span class="pull-right" tooltip="{{merchant.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
+            <i class="fa" ng-class="{'fa-check text-success': merchant.confirm_token == null, 'fa-times text-danger':merchant.confirm_token != null}"></i>
+          </span>
           Confirmed
         </a>
         <a href class="list-group-item">
@@ -111,7 +113,10 @@
               Plan Id
             </a>
             <div class="list-group-item">
-              <span class="pull-right"><a ui-sref="app.pricing.detail({id:merchant.pricing_plan.id})" ng-show="merchant.pricing.length != 0">{{merchant.pricing_plan.name}} (Click to see/edit plan)</a></span>
+              <span class="pull-right">
+                <a ui-sref="app.pricing.detail({id:merchant.pricing_plan.id})"
+                    ng-show="merchant.pricing.length != 0">{{merchant.pricing_plan.name}} (Click to see/edit plan)</a>
+              </span>
               Plan Name
             </div>
             <div class="list-group-item">
@@ -133,7 +138,7 @@
                         <td>{{rule.payment_network || 'Any'}}</td>
                         <td>{{rule.payment_issuer || 'Any'}}</td>
                         <td>{{rule.percent_rate/100}} %</td>
-                        <td>{{rule.fixed_rate/100 | currency:"INR "}}</td>     
+                        <td>{{rule.fixed_rate/100 | currency:"INR "}}</td>
                   </tr>
                 </tbody>
                 </table>
@@ -142,28 +147,33 @@
           </div>
         <a href class="list-group-item" ng-init="isTerminalCollapsed = true">
           <span class="pull-right">
-            <button class="btn btn-default btn-xs pull-right"  ng-click="isTerminalCollapsed = !isTerminalCollapsed" ng-show="merchant.terminal.length != 0">Expand</button>
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isTerminalCollapsed = !isTerminalCollapsed"
+                    ng-show="merchant.terminal.length != 0">Show/Hide</button>
             <span ng-hide="merchant.terminal.length != 0">
               No terminal Assigned
             </span>
           </span>
           Terminal
         </a>
-          <div collapse="isTerminalCollapsed" class="panel-body">
+          <div collapse="isTerminalCollapsed" class="panel-body" ng-repeat="terminal in merchant.terminal.data">
             <a href class="list-group-item">
-              <span class="pull-right">{{merchant.terminal.gateway}}</span>
+              <span class="pull-right">{{terminal.id}}</span>
+              Terminal Id
+            </a>
+            <a href class="list-group-item">
+              <span class="pull-right">{{terminal.gateway}}</span>
               Gateway
             </a>
             <a href class="list-group-item">
-              <span class="pull-right">{{merchant.terminal.gateway_merchant_id}}</span>
+              <span class="pull-right">{{terminal.gateway_merchant_id}}</span>
               Gateway Merchant ID
             </a>
             <a href class="list-group-item">
-              <span class="pull-right">{{merchant.terminal.gateway_terminal_id}}</span>
+              <span class="pull-right">{{terminal.gateway_terminal_id}}</span>
               Gateway Terminal ID
             </a>
             <a href class="list-group-item">
-              <span class="pull-right">{{merchant.terminal.created_at*1000 | date:'medium'}}</span>
+              <span class="pull-right">{{terminal.created_at*1000 | date:'medium'}}</span>
               Created At
             </a>
           </div>

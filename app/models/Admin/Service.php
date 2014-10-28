@@ -144,8 +144,8 @@ class Service extends Base\Service
         $this->setApiCredentials();
 
         $data = $this->api->merchant->fetch($id)->toArray();
-//sd($data);
-        $data['merchant_details'] = $merchant_details;
+
+        $data['merchant_details'] = $merchant_details->toArray();
 
         // @todo This is failing tests on wercker, fix
         // $merchant = Merchant\Entity::findorfail($id);
