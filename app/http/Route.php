@@ -31,7 +31,7 @@ final class Route
         'merchant_replace_key'              => ['put',  'merchants/{merchantId}/keys/{keyId}',      'MerchantController@putKeys'],
         'merchant_assign_pricing'           => ['post', 'merchants/{id}/pricing',                   'MerchantController@postAssignPricingPlan'],
         'merchant_get_pricing'              => ['get',  'merchants/{id}/pricing',                   'MerchantController@getPricingPlan'],
-        'merchant_create_terminal'          => ['post', 'merchants/{id}/terminal',                  'MerchantController@postCreateTerminal'],
+        'merchant_create_terminal'          => ['post', 'merchants/{id}/terminals',                 'MerchantController@postCreateTerminal'],
         'merchant_get_terminals'            => ['get',  'merchants/{id}/terminals',                 'MerchantController@getTerminals'],
         'merchant_get_terminal'             => ['get',  'merchants/{mid}/terminals/{tid}',          'MerchantController@getTermianl'],
         'merchant_delete_terminal'          => ['delete','merchants{mid}/terminals/{tid}',          'MerchantController@deleteTerminal'],

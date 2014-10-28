@@ -2,14 +2,14 @@
 
 namespace Models\Pricing;
 
-use Illuminate\Database\Eloquent\Collection;
+use Models\Base\PublicCollection;
 
-class Plan extends Collection
+class Plan extends PublicCollection
 {
-    const ID = 'id';
+    const ID    = 'id';
     const COUNT = 'count';
     const RULES = 'rules';
-    const NAME = 'name';
+    const NAME  = 'name';
 
     const ENTITY = 'pricing_plan';
 

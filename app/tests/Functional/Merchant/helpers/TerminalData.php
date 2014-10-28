@@ -32,7 +32,7 @@ return [
                 'gateway_terminal_id' => '123abcde',
                 'gateway_terminal_password' => '123abcdef'
             ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/terminal',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/terminals',
             'method' => 'POST'
         ],
         'response' => [
@@ -58,7 +58,7 @@ return [
                 'gateway_terminal_id' => '',
                 'gateway_terminal_password' => '123abcdef'
             ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/terminal',
+            'url' => '/merchants/363e4efa820b0c06208ccd99/terminals',
             'method' => 'POST'
         ],
         'response' => [
