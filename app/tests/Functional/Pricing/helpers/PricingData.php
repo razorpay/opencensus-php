@@ -22,7 +22,7 @@ return [
         'response' => [
             'content' => [
                 'name' => 'TestPlan1',
-                'entity' => 'pricing_plan',
+                'entity' => 'pricing',
                 'count' => 1,
                 'rules' => array(
                     array(
@@ -91,7 +91,7 @@ return [
         'response' => [
             'content' => [
                 'name' => 'TestPlan2',
-                'entity' => 'pricing_plan',
+                'entity' => 'pricing',
                 'count' => 4,
                 'rules' => array(
                     array(
@@ -148,7 +148,7 @@ return [
                 'data' => array(
                     array(
                         'name' => 'TestPlan2',
-                        'entity' => 'pricing_plan',
+                        'entity' => 'pricing',
                         'count' => 4,
                         'rules' => array(
                             array(
@@ -192,7 +192,7 @@ return [
                     ),
                     array(
                         'name' => 'TestPlan1',
-                        'entity' => 'pricing_plan',
+                        'entity' => 'pricing',
                         'count' => 1,
                         'rules' => array(
                             array(
@@ -210,7 +210,7 @@ return [
                     ),
                     array(
                         'name' => 'testDefaultPlan',
-                        'entity' => 'pricing_plan',
+                        'entity' => 'pricing',
                         'count' => 3,
                         'rules' => array(
                             array()
@@ -229,7 +229,7 @@ return [
         'response' => [
             'content' => [
                 'name' => 'TestPlan1',
-                'entity' => 'pricing_plan',
+                'entity' => 'pricing',
                 'count' => 1,
                 'rules' => array(
                     array(
@@ -252,7 +252,7 @@ return [
         'response' => [
             'content' => [
                 'name' => 'TestPlan1',
-                'entity' => 'pricing_plan',
+                'entity' => 'pricing',
                 'count' => 1,
                 'rules' => array(
                     array(
@@ -275,7 +275,7 @@ return [
         'response' => [
             'content' => [
                 'name' => 'TestPlan2',
-                'entity' => 'pricing_plan',
+                'entity' => 'pricing',
                 'count' => 4,
                 'rules' => array(
                     array(),
@@ -307,7 +307,7 @@ return [
             'content' => [
                 'id' => '5053edf267a4a6d1d26b43df',
                 'name' => 'testFixturePlan',
-                'entity' => 'pricing_plan',
+                'entity' => 'pricing',
                 'count' => 1,
                 'rules' => array(
                     array(

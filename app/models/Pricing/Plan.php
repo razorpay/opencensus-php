@@ -11,7 +11,7 @@ class Plan extends PublicCollection
     const RULES = 'rules';
     const NAME  = 'name';
 
-    const ENTITY = 'pricing_plan';
+    const ENTITY = 'pricing';
 
     /**
      * Get the collection of items as a plain array.
