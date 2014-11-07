@@ -128,21 +128,21 @@
         },
         {
             "name": "barryvdh/laravel-debugbar",
-            "version": "v1.7.7",
+            "version": "v1.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/barryvdh/laravel-debugbar.git",
-                "reference": "1f6f74832546841915a052b535dfb3d6957ac7c9"
+                "reference": "97d92e663c5e8e391f701629a515951280e1b724"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/1f6f74832546841915a052b535dfb3d6957ac7c9",
-                "reference": "1f6f74832546841915a052b535dfb3d6957ac7c9",
+                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/97d92e663c5e8e391f701629a515951280e1b724",
+                "reference": "97d92e663c5e8e391f701629a515951280e1b724",
                 "shasum": ""
             },
             "require": {
-                "laravel/framework": "~4.0|5.0",
-                "maximebf/debugbar": "~1.9.15",
+                "laravel/framework": "4.*|5.0.*",
+                "maximebf/debugbar": "1.10.*",
                 "php": ">=5.3.0",
                 "symfony/finder": "~2.3"
             },
@@ -178,7 +178,7 @@
                 "profiler",
                 "webprofiler"
             ],
-            "time": "2014-09-15 09:59:30"
+            "time": "2014-10-31 20:36:44"
         },
         {
             "name": "classpreloader/classpreloader",
@@ -684,16 +684,16 @@
         },
         {
             "name": "maximebf/debugbar",
-            "version": "1.9.15",
+            "version": "1.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/maximebf/php-debugbar.git",
-                "reference": "5d08b313576056234d464bedbba8ce1b26bcd918"
+                "reference": "348b49b3617c8295badef7f9fdb0aea15918154d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/maximebf/php-debugbar/zipball/5d08b313576056234d464bedbba8ce1b26bcd918",
-                "reference": "5d08b313576056234d464bedbba8ce1b26bcd918",
+                "url": "https://api.github.com/repos/maximebf/php-debugbar/zipball/348b49b3617c8295badef7f9fdb0aea15918154d",
+                "reference": "348b49b3617c8295badef7f9fdb0aea15918154d",
                 "shasum": ""
             },
             "require": {
@@ -711,7 +711,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.9-dev"
+                    "dev-master": "1.10-dev"
                 }
             },
             "autoload": {
@@ -735,7 +735,7 @@
             "keywords": [
                 "debug"
             ],
-            "time": "2014-08-20 15:25:30"
+            "time": "2014-10-31 19:59:37"
         },
         {
             "name": "monolog/monolog",
@@ -1194,7 +1194,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/rzp-php.git",
-                "reference": "5e0307b1aa5394b4df34cfc1e4812def830ed96a"
+                "reference": "18164ef1677f45bb01d3130c681a1e9755b93375"
             },
             "require": {
                 "ext-json": "*",
@@ -1219,7 +1219,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2014-10-24 21:10:54"
+            "time": "2014-11-07 19:22:34"
         },
         {
             "name": "razorpay/spine",
@@ -2323,12 +2323,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/padraic/mockery.git",
-                "reference": "8e567de2249a8f7eb8051a855b9d0a6472d38c8e"
+                "reference": "83fd9101183547a3a8cd68c155a5a6f63e7baefb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/8e567de2249a8f7eb8051a855b9d0a6472d38c8e",
-                "reference": "8e567de2249a8f7eb8051a855b9d0a6472d38c8e",
+                "url": "https://api.github.com/repos/padraic/mockery/zipball/83fd9101183547a3a8cd68c155a5a6f63e7baefb",
+                "reference": "83fd9101183547a3a8cd68c155a5a6f63e7baefb",
                 "shasum": ""
             },
             "require": {
@@ -2381,7 +2381,7 @@
                 "test double",
                 "testing"
             ],
-            "time": "2014-10-16 09:15:15"
+            "time": "2014-10-31 12:40:15"
         },
         {
             "name": "raveren/kint",
