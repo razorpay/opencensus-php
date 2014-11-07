@@ -34,7 +34,6 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_TERMINAL_ID,
-        self::GATEWAY_TERMINAL_PASSWORD,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT);
