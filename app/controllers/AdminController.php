@@ -86,10 +86,10 @@ class AdminController extends BaseController
 
         $data = array(
                     'details' => $details,
-                    'terminal' => $terminal,
+                    'terminals' => $terminal,
                     'pricing_plan' => $pricing_plan
                 );
-//sd($data);
+
         return AppResponse::jsonResponse([], $data);
     }
 

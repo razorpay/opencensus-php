@@ -11,29 +11,29 @@
     </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
-        <a href="{{'/admin/merchant/' + merchant.id + '/login'}}" target="_blank" class="list-group-item">
+        <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" target="_blank" class="list-group-item">
           Login as Merchant
         </a>
-        <a ui-sref="app.merchants.activation({id:merchant.id})" class="list-group-item">
+        <a ui-sref="app.merchants.activation({id:merchant.details.id})" class="list-group-item">
           See Activation Form Details
         </a>
-        <a href class="list-group-item" ng-show="merchant.locked==0" ng-click="lockForm()">
+        <a href class="list-group-item" ng-show="merchant.details.locked==0" ng-click="lockForm()">
           Lock Activation Form
         </a>
-        <a href class="list-group-item" ng-show="merchant.locked==1" ng-click="unlockForm()">
+        <a href class="list-group-item" ng-show="merchant.details.locked==1" ng-click="unlockForm()">
           Unlock Activation Form
         </a>
         <a href class="list-group-item"
-        ng-show="merchant.activated==0"
+        ng-show="merchant.details.activated==0"
         ng-confirm-click="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
         ng-click="activateMerchant()"
         >
           Activate Merchant
         </a>
-        <a href class="list-group-item" ng-show="merchant.activated==1 && merchant.live==0" ng-click="enableLive()">
+        <a href class="list-group-item" ng-show="merchant.details.activated==1 && merchant.details.live==0" ng-click="enableLive()">
           Enable Live Transactions
         </a>
-        <a href class="list-group-item" ng-show="merchant.live==1 "ng-click="disableLive()"
+        <a href class="list-group-item" ng-show="merchant.details.live==1 "ng-click="disableLive()"
         ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?"
         >
           Disable Live Transactions
@@ -41,7 +41,7 @@
         <a href class="list-group-item" ng-click="openAssignPricing()">
           Assign Pricing
         </a>
-        <a href class="list-group-item" ng-hide="merchant.terminal.length != 0" ng-click="openAssignTerminal()">
+        <a href class="list-group-item" ng-hide="merchant.terminals.data.length != 0" ng-click="openAssignTerminal()">
           Assign Terminal
         </a>
       </div>
@@ -49,7 +49,7 @@
   </div>
   <div class="panel panel-default col-sm-6" >
     <div class="panel-heading m-t m-b">
-      Merchant: <strong>{{merchant.id}}</strong>
+      Merchant: <strong>{{merchant.details.id}}</strong>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -57,52 +57,52 @@
     <div class="row wrapper">
       <div class="list-group">
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.name}}</span>
+          <span class="pull-right">{{merchant.details.name}}</span>
           Name
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.email}}</span>
+          <span class="pull-right">{{merchant.details.email}}</span>
           Email
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.created_at*1000 | date:'medium'}}</span>
+          <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
           Registeration Date
         </a>
         <a href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
-            <i class="fa" ng-class="{'fa-check text-success': merchant.confirm_token == null, 'fa-times text-danger':merchant.confirm_token != null}"></i>
+          <span class="pull-right" tooltip="{{merchant.details.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
+            <i class="fa" ng-class="{'fa-check text-success': merchant.details.confirm_token == null, 'fa-times text-danger':merchant.details.confirm_token != null}"></i>
           </span>
           Confirmed
         </a>
         <a href class="list-group-item">
           <span class="pull-right">
-            <b class="badge bg-success dk">{{merchant.activation_progress}}%</b>
+            <b class="badge bg-success dk">{{merchant.details.activation_progress}}%</b>
           </span>
           Activation Form Progress
         </a>
         <a href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.submitted == 1 ? 'Submitted' : 'Not Submitted'}}">
-            <i class="fa" ng-class="{'fa-check text-success': merchant.submitted == 1, ' fa-times text-danger':merchant.submitted == 0}"></i>
+          <span class="pull-right" tooltip="{{merchant.details.submitted == 1 ? 'Submitted' : 'Not Submitted'}}">
+            <i class="fa" ng-class="{'fa-check text-success': merchant.details.submitted == 1, ' fa-times text-danger':merchant.details.submitted == 0}"></i>
           </span>
           Activation Form Submitted
         </a>
         <a href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.locked == 1 ? 'Locked' : 'Unlocked'}}">
-            <i class="fa" ng-class="{'fa-lock text-danger': merchant.locked == 1, ' fa-unlock text-success':merchant.locked == 0}"></i>
+          <span class="pull-right" tooltip="{{merchant.details.locked == 1 ? 'Locked' : 'Unlocked'}}">
+            <i class="fa" ng-class="{'fa-lock text-danger': merchant.details.locked == 1, ' fa-unlock text-success':merchant.details.locked == 0}"></i>
           </span>
           Activation Form Status
         </a>
         <a href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></span>
+          <span class="pull-right" tooltip="{{merchant.details.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.activated == 1, 'fa-times text-danger':merchant.details.activated == 0}"></i></span>
           Activated
         </a>
         <a href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.live == 1 ? 'Live' : 'Not Live'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.live == 1, 'fa-times text-danger':merchant.live == 0}"></i></span>
+          <span class="pull-right" tooltip="{{merchant.details.live == 1 ? 'Live' : 'Not Live'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.live == 1, 'fa-times text-danger':merchant.details.live == 0}"></i></span>
           Live
         </a>
         <div href class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">
-              <button class="btn btn-default btn-xs"  ng-click="isPricingCollapsed = !isPricingCollapsed" ng-show="merchant.pricing_plan.length != 0">Expand</button>
+              <button class="btn btn-default btn-xs"  ng-click="isPricingCollapsed = !isPricingCollapsed" ng-show="merchant.pricing_plan.length != 0">Show/Hide</button>
               <span ng-hide="merchant.pricing_plan.length != 0">No Pricing Assigned</span>
             </span>
           Pricing Plan
@@ -148,14 +148,14 @@
         <a href class="list-group-item" ng-init="isTerminalCollapsed = true">
           <span class="pull-right">
             <button class="btn btn-default btn-xs pull-right"  ng-click="isTerminalCollapsed = !isTerminalCollapsed"
-                    ng-show="merchant.terminal.length != 0">Show/Hide</button>
-            <span ng-hide="merchant.terminal.length != 0">
+                    ng-show="merchant.terminals.data.length != 0">Show/Hide</button>
+            <span ng-hide="merchant.terminals.data.length != 0">
               No terminal Assigned
             </span>
           </span>
           Terminal
         </a>
-          <div collapse="isTerminalCollapsed" class="panel-body" ng-repeat="terminal in merchant.terminal.data">
+          <div collapse="isTerminalCollapsed" class="panel-body" ng-repeat="terminal in merchant.terminals.data">
             <a href class="list-group-item">
               <span class="pull-right">{{terminal.id}}</span>
               Terminal Id
