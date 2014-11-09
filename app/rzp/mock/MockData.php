@@ -98,7 +98,7 @@ class MockData
             'settlement'      => array(
                 'id'                => 'setl-139469414eee64deb0d1c0c5',
                 'amount'            => '399',
-                'status'            => ''
+                'status'            => 'completed'
             ),
             'transaction'      => array(
                 'id'                =>  'txn-139469abc12364deb0d1c0c5',
