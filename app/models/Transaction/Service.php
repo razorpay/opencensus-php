@@ -162,8 +162,8 @@ class Service extends Base\Service
             }
 
             foreach ($array as $obj)
-            {
-                if ((strtotime($obj->created_at)) == $i)
+            {   
+                if ((int)($obj->created_at) == $i)
                 {
                     $data[] = $obj->toArray();
                     $flag = true;

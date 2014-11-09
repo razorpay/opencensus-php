@@ -67,7 +67,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
 
       $scope.refreshGraph = false; //Variable that is toggled whenever we want the graph to be refreshed
 
-      var graphData = {
+      $scope.successfull = {
         data: [ [0,0] ],
         options: {
           colors: [$scope.app.color.info, $scope.app.color.primary],
@@ -83,11 +83,24 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
         }
       };
 
-      $scope.successfull = graphData;
-      $scope.transactions = graphData;
+      $scope.transactions = {
+        data: [ [0,0] ],
+        options: {
+          colors: [$scope.app.color.info, $scope.app.color.primary],
+          series: { shadowSize: 3 },
+          xaxis: {mode: 'time', timezone: "browser"},
+          yaxis:{ font: { color: '#a1a7ac' }},
+          grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#dce5ec' },
+          tooltip: true,
+          tooltipOpts: {
+            defaultTheme: false, 
+            shifts: { x: 10, y: -25 }
+          }
+        }
+      };
       
       $scope.successfull.options.tooltipOpts.content = 'Date: %x <br/> Count: %y';
-      $scope.successfull.options.tooltipOpts.content = 'Date: %x <br/> Amount: %y';
+      $scope.transactions.options.tooltipOpts.content = 'Date: %x <br/> Amount: %y';
     };
 
     function generateGraphs() {
