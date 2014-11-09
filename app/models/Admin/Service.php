@@ -145,7 +145,7 @@ class Service extends Base\Service
 
         $data = $this->api->merchant->fetch($id)->toArray();
 
-        $data['merchant_details'] = $merchant_details;
+        $data['merchant_details'] = $merchant_details->toArray();
 
         // @todo This is failing tests on wercker, fix
         // $merchant = Merchant\Entity::findorfail($id);
@@ -202,7 +202,7 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->merchant->fetch($id)->fetchTerminal()->toArray();
+        $response = $this->api->merchant->fetch($id)->fetchTerminals()->toArray();
 
         return $response;
     }

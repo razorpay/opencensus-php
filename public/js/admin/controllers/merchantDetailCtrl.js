@@ -1,4 +1,4 @@
-//Merchant Details Controller
+// Merchant Details Controller
 app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFactory', 'transformRequestAsFormPost', '$modal',
   function($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal) {
     $scope.alerts = alertsFactory.getHandler();
@@ -8,7 +8,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     generateMerchant();
-    
+
     $scope.lockForm = function(){
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/lock");
 
@@ -16,7 +16,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Merchant Form locked successfully', true);
-          $scope.merchant.locked = 1;
+          $scope.merchant.details.locked = 1;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -37,7 +37,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Merchant Form unlocked successfully', true);
-          $scope.merchant.locked = 0;
+          $scope.merchant.details.locked = 0;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -52,13 +52,14 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.activateMerchant = function(){
+
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/activate");
 
       request
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Merchant Activated successfully', true);
-          $scope.merchant.activated = 1;
+          $scope.merchant.details.activated = 1;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -79,7 +80,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Live transactions for merchant enabled successfully', true);
-          $scope.merchant.live = 1;
+          $scope.merchant.details.live = 1;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -100,7 +101,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Live transactions for merchant disabled successfully', true);
-          $scope.merchant.live = 0;
+          $scope.merchant.details.live = 0;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -214,13 +215,11 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       request
       .success(function(data){
         $scope.alerts.resetAlerts(true);
-        
-        if(data.success) {
-          $scope.merchant = data.data.details;
 
-          $scope.merchant.pricing_plan = data.data.pricing_plan;
-          $scope.merchant.terminal = data.data.terminal;
-          $scope.merchant.activation_progress = parseInt(($scope.merchant.steps_finished.length * 100)/ 6);
+        if(data.success) {
+          $scope.merchant = data.data;
+          $scope.merchant.id = data.data.details.id;
+          $scope.merchant.details.activation_progress = parseInt(($scope.merchant.details.steps_finished.length * 100)/ 6);
         }
         else {
           $scope.alerts.resetAlerts(true);
@@ -244,7 +243,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       var request = $http.get("/admin/pricing/list");
       request
-        .success(function(data){       
+        .success(function(data){
           if(data.success) {
             angular.forEach(data.data, function(value, key){
               $scope.pricing_plans.push({'id': value.id, 'name':value.name});

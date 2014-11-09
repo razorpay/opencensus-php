@@ -2,25 +2,25 @@
 
 namespace RZP\Mock;
 
-class Pricing extends MockEntity{   
+class Pricing extends MockEntity{
 
     public function create($params = null)
     {
-        $this->mock(self::$mockData['pricing_plan']);
+        $this->mock(self::$mockData['pricing']);
 
         return $this;
     }
 
     public function fetch($id)
     {
-        $this->mock(self::$mockData['pricing_plan'], array('id' => $id));
+        $this->mock(self::$mockData['pricing'], array('id' => $id));
 
         return $this;
     }
 
     public function all($options = array())
     {
-        $this->mockCollection(self::$mockData['pricing_plan']);
+        $this->mockCollection(self::$mockData['pricing']);
 
         return $this;
     }

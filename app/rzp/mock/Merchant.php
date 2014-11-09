@@ -66,14 +66,14 @@ class Merchant extends MockEntity
 
     public function setPricing($params)
     {
-        $pricing = self::$mockData['pricing_plan'];
+        $pricing = self::$mockData['pricing'];
 
         $this->mock($pricing);
 
         return $this;
     }
 
-    public function fetchTerminal()
+    public function fetchTerminals()
     {
         $this->mock(array());
 

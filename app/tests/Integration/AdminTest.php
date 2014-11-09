@@ -212,7 +212,7 @@ class AdminTest extends TestCase
     {
         $this->browser
             ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $loginAsMerchantLink = $this->browser->getAttribute('link=Login as Merchant@href');
 
@@ -265,7 +265,6 @@ class AdminTest extends TestCase
         $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
         $this->assertBodyHasText('Live transactions for merchant disabled successfully');
-
 
         $this->browser
             ->click(l::linkContaining('Enable Live Transactions'))
