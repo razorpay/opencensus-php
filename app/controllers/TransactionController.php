@@ -59,7 +59,7 @@ class TransactionController extends BaseController
     {
         $this->checkMode($mode);
 
-        list($error, $data) = (new Api\Service)->fetchEntity($input, $mode, 'transaction');
+        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'transaction');
 
         return AppResponse::jsonResponse($error, $data);
     }
