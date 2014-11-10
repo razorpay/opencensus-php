@@ -31,7 +31,8 @@
         <thead>
           <tr>
             <th data-toggle="true">Transaction Id</th>
-            <th>Entity</th>
+            <th data-hide="phone,tablet">Entity Type</th>
+            <th>Entity Id</th>
             <th data-hide="phone,tablet">Currency</th>
             <th data-hide="phone,tablet">Amount</th>
             <th>Debit</th>
@@ -42,7 +43,8 @@
         <tbody>
           <tr ng-repeat="row in entity.data">
             <td><a ui-sref="app.transactions.detail({id:row.id})">{{row.id}}</a></td>
-            <td>{{row.entity_type}} - {{row.entity_id}}</td>
+            <td>{{row.entity_type}}</td>
+            <td><a ui-sref="app.{{row.entity_type + 's'}}.detail({id:row.entity_id})">{{row.entity_id}}</td>
             <td>{{row.currency}}</td>
             <td>{{row.amount/100 | currency:""}}</td>
             <td>{{row.debit/100 | currency:""}}</td>
@@ -50,7 +52,7 @@
             <td>{{row.fee/100 | currency:""}}</td>        
           </tr>
           <tr ng-show="entity.count === 0">
-            <td colspan="7" class="text-center">
+            <td colspan="8" class="text-center">
             No Transactions
             </td>
           </tr>
