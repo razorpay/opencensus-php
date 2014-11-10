@@ -38,15 +38,39 @@ class DatabaseSeeder extends Seeder
         {
     		DB::table('aggregations')->insert(array(
     			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
-    			'total_amount'	=>  12345,
-    			'txn_count'		=>	20,
-    			'successful_txn_count' => 12,
+    			'total_amount'	=>  239871,
+    			'txn_count'		=>	21,
+    			'successful_txn_count' => 13,
     			'resource'		=> 'payment',
     			'created_at'	=>	time(),
     			'updated_at'	=>	time(),
     			'mode'			=> 	$mode
     			)
     		);
+
+            DB::table('aggregations')->insert(array(
+                'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                'total_amount'  =>  12345,
+                'txn_count'     =>  3,
+                'successful_txn_count' => 3,
+                'resource'      => 'refund',
+                'created_at'    =>  time(),
+                'updated_at'    =>  time(),
+                'mode'          =>  $mode
+                )
+            );
+
+            DB::table('aggregations')->insert(array(
+                'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                'total_amount'  =>  12345,
+                'txn_count'     =>  7,
+                'successful_txn_count' => 7,
+                'resource'      => 'settlement',
+                'created_at'    =>  time(),
+                'updated_at'    =>  time(),
+                'mode'          =>  $mode
+                )
+            );
 
 
             $types = array('day', 'week', 'month', 'year');
@@ -59,7 +83,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   =>  '363e4efa820b0c06208ccd99',
                     'type'  =>  $type,
                     'amount'     =>  5000,
-                    'count' => 15,
+                    'count' => 13,
                     'mode'      => $mode,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
@@ -69,7 +93,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   =>  '363e4efa820b0c06208ccd99',
                     'type'  =>  $type,
                     'amount'     =>  4500,
-                    'count' => 10,
+                    'count' => 9,
                     'mode'      => $mode,
                     'created_at'    =>  strtotime('-1 ' . $type, time()),
                     'updated_at'    =>  strtotime('-1 ' . $type, time())
@@ -79,7 +103,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   =>  '363e4efa820b0c06208ccd99',
                     'type'  =>  $type,
                     'amount'     =>  4200,
-                    'count' => 8,
+                    'count' => 10,
                     'mode'      => $mode,
                     'created_at'    =>  strtotime('-2 ' . $type, time()),
                     'updated_at'    =>  strtotime('-2 ' . $type, time())
@@ -89,7 +113,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   =>  '363e4efa820b0c06208ccd99',
                     'type'  =>  $type,
                     'amount'     =>  3600,
-                    'count' => 3,
+                    'count' => 8,
                     'mode'      => $mode,
                     'created_at'    =>  strtotime('-3 ' . $type, time()),
                     'updated_at'    =>  strtotime('-3 ' . $type, time())
@@ -99,7 +123,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   =>  '363e4efa820b0c06208ccd99',
                     'type'  =>  $type,
                     'amount'     =>  4500,
-                    'count' => 12,
+                    'count' => 6,
                     'mode'      => $mode,
                     'created_at'    =>  strtotime('-4 ' . $type, time()),
                     'updated_at'    =>  strtotime('-4 ' . $type, time())
@@ -108,11 +132,92 @@ class DatabaseSeeder extends Seeder
                 $data[] = array(
                     'merchant_id'   =>  '363e4efa820b0c06208ccd99',
                     'type'  =>  $type,
-                    'amount'     =>  5500,
+                    'amount'     =>  2500,
+                    'count' => 10,
+                    'mode'      => $mode,
+                    'created_at'    =>  strtotime('-6 ' . $type, time()),
+                    'updated_at'    =>  strtotime('-6 ' . $type, time())
+                );
+
+                $data[] = array(
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'type'  =>  $type,
+                    'amount'     =>  3300,
+                    'count' => 23,
+                    'mode'      => $mode,
+                    'created_at'    =>  strtotime('-7 ' . $type, time()),
+                    'updated_at'    =>  strtotime('-7 ' . $type, time())
+                );
+
+                $data[] = array(
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'type'  =>  $type,
+                    'amount'     =>  6500,
+                    'count' => 25,
+                    'mode'      => $mode,
+                    'created_at'    =>  strtotime('-8 ' . $type, time()),
+                    'updated_at'    =>  strtotime('-8 ' . $type, time())
+                );
+
+                $data[] = array(
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'type'  =>  $type,
+                    'amount'     =>  8000,
+                    'count' => 29,
+                    'mode'      => $mode,
+                    'created_at'    =>  strtotime('-9 ' . $type, time()),
+                    'updated_at'    =>  strtotime('-9 ' . $type, time())
+                );
+
+
+                $data[] = array(
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'type'  =>  $type,
+                    'amount'     =>  7900,
                     'count' => 18,
                     'mode'      => $mode,
-                    'created_at'    =>  strtotime('-5 ' . $type, time()),
-                    'updated_at'    =>  strtotime('-5 ' . $type, time())
+                    'created_at'    =>  strtotime('-10 ' . $type, time()),
+                    'updated_at'    =>  strtotime('-10 ' . $type, time())
+                );
+
+                $data[] = array(
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'type'  =>  $type,
+                    'amount'     =>  8200,
+                    'count' => 25,
+                    'mode'      => $mode,
+                    'created_at'    =>  strtotime('-11 ' . $type, time()),
+                    'updated_at'    =>  strtotime('-11 ' . $type, time())
+                );
+
+                $data[] = array(
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'type'  =>  $type,
+                    'amount'     =>  8400,
+                    'count' => 20,
+                    'mode'      => $mode,
+                    'created_at'    =>  strtotime('-12 ' . $type, time()),
+                    'updated_at'    =>  strtotime('-12 ' . $type, time())
+                );
+
+                $data[] = array(
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'type'  =>  $type,
+                    'amount'     =>  6100,
+                    'count' => 16,
+                    'mode'      => $mode,
+                    'created_at'    =>  strtotime('-13 ' . $type, time()),
+                    'updated_at'    =>  strtotime('-13 ' . $type, time())
+                );
+
+                $data[] = array(
+                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'type'  =>  $type,
+                    'amount'     =>  2600,
+                    'count' => 8,
+                    'mode'      => $mode,
+                    'created_at'    =>  strtotime('-14 ' . $type, time()),
+                    'updated_at'    =>  strtotime('-14 ' . $type, time())
                 );
                
                 foreach($data as $arr)
