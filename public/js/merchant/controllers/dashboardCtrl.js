@@ -24,7 +24,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
         $scope.aggregations.data.amount = result.data.payment ? result.data.payment.total_amount : 0;
         $scope.aggregations.data.payments = result.data.payment ? result.data.payment.txn_count : 0;
         $scope.aggregations.data.refunds = result.data.refund ? result.data.refund.txn_count : 0;
-        $scope.aggregations.data.settlement = result.data.settlement ? result.data.settlement.txn_count : 0;
+        $scope.aggregations.data.settlements = result.data.settlement ? result.data.settlement.txn_count : 0;
     }
   });
 }])
@@ -100,7 +100,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
       };
       
       $scope.successfull.options.tooltipOpts.content = 'Date: %x <br/> Count: %y';
-      $scope.transactions.options.tooltipOpts.content = 'Date: %x <br/> Amount: %y';
+      $scope.transactions.options.tooltipOpts.content = 'Date: %x <br/> Amount: ₹%y';
     };
 
     function generateGraphs() {
