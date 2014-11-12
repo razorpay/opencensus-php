@@ -7,7 +7,7 @@ require('../../../vendor/autoload.php');//Load API
 use Razorpay\Api\Api;
 require('config.php'); // Load API Credentials
 
-Api::$baseUrl = 'http://rzp/v1/';
+//Api::$baseUrl = 'http://rzp/v1/';
 $api = new Api(RZP_KEY_ID, RZP_KEY_SECRET);
 
 if (isset($_POST['id']) === false)
