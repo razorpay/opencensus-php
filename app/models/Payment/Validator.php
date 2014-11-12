@@ -60,9 +60,9 @@ class Validator extends Base\Validator
 
     protected function validateAmount($input)
     {
+        // @todo:check for atom gateway
         if (($input['method'] === Payment\Method::NET_BANKING) and
-            ($this->entity->getGateway() === Payment\Gateway::ATOM) and
-            ($input['amount'] < 5000))
+            (((int) $input['amount']) < 5000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY,
