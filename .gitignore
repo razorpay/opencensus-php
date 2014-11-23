@@ -5,3 +5,4 @@
 .DS_Store
 Thumbs.db
 /bootstrap/environment.php
+/public/test/config_dev.php

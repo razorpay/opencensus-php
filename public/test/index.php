@@ -1,7 +1,7 @@
 <?php
 
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
-
+die($baseurl);
 $key_id = 'rzp_test_d9c6bf091a1a64cb5678d8c1';
 $secret = 'thisissupersecret';
 
