@@ -17,7 +17,7 @@ class MerchantController extends BaseController
 
         if(isset($input['code']) and $input['code'] === "ycapplication")
         {
-            Auth::merchant()->loginUsingId("363e4efa820b0c06208ccd99");
+            Auth::merchant()->loginUsingId("10000000000000");
         }
 
         return Redirect::to('/');

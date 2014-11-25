@@ -17,7 +17,7 @@ class CreateMerchantDetails extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char('merchant_id', 24)->primary();
+            $table->char('merchant_id', 14)->primary();
 
             $table->string('contact_name')->nullable();
 

@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
     private function seed()
     {
         DB::table('merchants')->insert(array(
-            'id'            =>  '363e4efa820b0c06208ccd99',
+            'id'            =>  '10000000000000',
             'name'          =>  'Harshil',
             'email'         =>  'das@razorpay.com',
             'password'      =>  Hash::make('123456'),
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         );
 
         DB::table('merchant_details')->insert(array(
-            'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+            'merchant_id'   =>  '10000000000000',
             )
         );
 
@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
         foreach($modes as $mode)
         {
     		DB::table('aggregations')->insert(array(
-    			'merchant_id'	=>	'363e4efa820b0c06208ccd99',
+    			'merchant_id'	=>	'10000000000000',
     			'total_amount'	=>  239871,
     			'txn_count'		=>	21,
     			'successful_txn_count' => 13,
@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
     		);
 
             DB::table('aggregations')->insert(array(
-                'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                'merchant_id'   =>  '10000000000000',
                 'total_amount'  =>  12345,
                 'txn_count'     =>  3,
                 'successful_txn_count' => 3,
@@ -61,7 +61,7 @@ class DatabaseSeeder extends Seeder
             );
 
             DB::table('aggregations')->insert(array(
-                'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                'merchant_id'   =>  '10000000000000',
                 'total_amount'  =>  12345,
                 'txn_count'     =>  7,
                 'successful_txn_count' => 7,
@@ -76,11 +76,11 @@ class DatabaseSeeder extends Seeder
             $types = array('day', 'week', 'month', 'year');
 
             foreach($types as $type)
-            {   
+            {
                 $data = array();
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  5000,
                     'count' => 13,
@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  4500,
                     'count' => 9,
@@ -100,7 +100,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  4200,
                     'count' => 10,
@@ -110,7 +110,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  3600,
                     'count' => 8,
@@ -120,7 +120,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  4500,
                     'count' => 6,
@@ -130,7 +130,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  2500,
                     'count' => 10,
@@ -140,7 +140,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  3300,
                     'count' => 23,
@@ -150,7 +150,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  6500,
                     'count' => 25,
@@ -160,7 +160,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  8000,
                     'count' => 29,
@@ -171,7 +171,7 @@ class DatabaseSeeder extends Seeder
 
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  7900,
                     'count' => 18,
@@ -181,7 +181,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  8200,
                     'count' => 25,
@@ -191,7 +191,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  8400,
                     'count' => 20,
@@ -201,7 +201,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  6100,
                     'count' => 16,
@@ -211,7 +211,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'merchant_id'   =>  '10000000000000',
                     'type'  =>  $type,
                     'amount'     =>  2600,
                     'count' => 8,
@@ -219,7 +219,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'    =>  strtotime('-14 ' . $type, time()),
                     'updated_at'    =>  strtotime('-14 ' . $type, time())
                 );
-               
+
                 foreach($data as $arr)
                 {
                     switch($type)
