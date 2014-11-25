@@ -11,7 +11,7 @@ class Fee
 
     const EDUCATION_CESS_PERCENT = 0.36;
 
-    protected $defaultPricingPlan = '13906d42c88a41ee4e2d812e';
+    protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
     public function calculateMerchantFees($merchant, $card, $amount)
     {

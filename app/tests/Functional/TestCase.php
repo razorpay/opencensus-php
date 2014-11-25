@@ -126,12 +126,12 @@ class TestCase extends ParentTestCase
         $this->setupBasicAuthParams($user, $pwd);
     }
 
-    protected function setupProxyBasicAuthParams($user = 'rzp_test_363e4efa820b0c06208ccd99')
+    protected function setupProxyBasicAuthParams($user = 'rzp_test_10000000000000')
     {
         $this->setupAppBasicAuthParams($user);
     }
 
-    protected function setupPublicBasicAuthParams($user = 'rzp_test_d9c6bf091a1a64cb5678d8c1')
+    protected function setupPublicBasicAuthParams($user = 'rzp_test_1DP5mmOlF5G5ag')
     {
         $this->setupBasicAuthParams($user, '');
     }
@@ -140,7 +140,7 @@ class TestCase extends ParentTestCase
     {
         if ($user === null)
         {
-            $user = 'rzp_test_d9c6bf091a1a64cb5678d8c1';
+            $user = 'rzp_test_1DP5mmOlF5G5ag';
         }
 
         if ($pwd === null)

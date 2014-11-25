@@ -101,6 +101,16 @@ class BasicAuth
      */
     protected $routeName;
 
+    /**
+     * Contains valid lengths of key.
+     * rzp_mode - 3 + 1 + 4
+     * 3 + 1 + 4 + 1 + 24
+     * 3 + 1 + 4 + 1 + 14
+     * @var array
+     */
+    protected static $validKeyLengths = array(
+        8, 23, 33);
+
     public function init($app)
     {
         $this->request = $app['request'];
@@ -242,8 +252,7 @@ class BasicAuth
     {
         $keyLen = strlen($key);
 
-        return (($keyLen === 3 + 1 + 4 + 1 + 24) or
-                ($keyLen === 3 + 1 + 4));
+        return in_array($keyLen, static::$validKeyLengths);
     }
 
     protected function verifyKeyPrefix($key)

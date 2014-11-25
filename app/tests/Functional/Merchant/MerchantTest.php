@@ -99,7 +99,7 @@ class MerchantTest extends TestCase
     protected function createMerchant()
     {
         $merchant = array(
-                'id'    => '41ce4abda390575910cba897',
+                'id'    => '1X4hRFHFx4UiXt',
                 'name'  => 'Tester',
                 'email' => 'liveAndTest@localhost.com'
             );

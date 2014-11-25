@@ -9,7 +9,7 @@ return [
     'testCreateMerchant' => [
         'request' => [
             'content' => [
-                'id'    => '41ce4abda390575910cba897',
+                'id'    => '1X4hRFHFx4UiXt',
                 'name'  => 'Tester',
                 'email' => 'test@localhost.com'
             ],
@@ -18,19 +18,19 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' => '41ce4abda390575910cba897',
+                'id' => '1X4hRFHFx4UiXt',
             ],
         ],
     ],
 
     'testGetMerchant' => [
         'request' => [
-            'url' => '/merchants/41ce4abda390575910cba897',
+            'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'GET',
         ],
         'response' => [
             'content' => [
-                'id'    => '41ce4abda390575910cba897',
+                'id'    => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
                 'name'  => 'Tester',
                 'email' => 'liveAndTest@localhost.com',
@@ -42,7 +42,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/keys',
+            'url' => '/merchants/10000000000000/keys',
             'method' => 'get'
         ],
         'response' => [
@@ -50,7 +50,7 @@ return [
                 'count' => 1,
                 'data' => [
                     '0' => [
-                        'id' => 'rzp_test_d9c6bf091a1a64cb5678d8c1',
+                        'id' => 'rzp_test_1DP5mmOlF5G5ag',
                         'expired_at' => null
                     ],
                 ],
@@ -62,7 +62,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/rzp_test_d9c6bf091a1a64cb5678d8c1',
+            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
             'method' => 'PUT',
         ],
         'response' => [
@@ -80,7 +80,7 @@ return [
             'content' => [
                 'delay_roll' => '1'
             ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/rzp_test_d9c6bf091a1a64cb5678d8c1',
+            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
             'method' => 'PUT',
         ],
         'response' => [
@@ -97,7 +97,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/363e4efa820b0c06208ccd99/keys/rzp_test_d9c6bf091a1a64cb5678d8c1',
+            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
             'method' => 'PUT',
         ],
         'response' => [

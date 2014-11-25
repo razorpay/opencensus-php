@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         {
             DB::table(Table::MERCHANT)->insert(
                 array(
-                    'id'            =>  '134510ae166900007a9677a9',
+                    'id'            =>  '1cXSLlUU8V9sXl',
                     'name'          =>  'Razorpay',
                     'email'         =>  'shashank@razorpay.com',
                     'created_at'    =>  time(),
@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::BALANCE)->insert(
                 array(
-                    'id'            =>  '134510ae166900007a9677a9',
+                    'id'            =>  '1cXSLlUU8V9sXl',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::MERCHANT)->insert(
                 array(
-                    'id'            =>  '363e4efa820b0c06208ccd99',
+                    'id'            =>  '10000000000000',
                     'name'          =>  'Harshil',
                     'email'         =>  'das@razorpay.com',
                     'created_at'    =>  time(),
@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::MERCHANT)->insert(
                 array(
-                    'id'            =>  'f725411687297c5fce0af5c4',
+                    'id'            =>  '1MABTZjIwgLtRZ',
                     'name'          =>  'testname',
                     'email'         =>  'shk@razorpay.com',
                     'created_at'    =>  time(),
@@ -63,8 +63,8 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::TERMINAL)->insert(
                 array(
-                    'id'                    => '13aa47c4a93d6e9b9c7ef51a',
-                    'merchant_id'           => '363e4efa820b0c06208ccd99',
+                    'id'                    => '1n25f6uN5S1Z5a',
+                    'merchant_id'           => '10000000000000',
                     'gateway'               => 'hdfc',
                     'gateway_merchant_id'   => 'merch123',
                     'gateway_terminal_id'   => '123456',
@@ -76,8 +76,8 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::TERMINAL)->insert(
                 array(
-                    'id'                    => '13a00c6c0a50b4eaf47f264b',
-                    'merchant_id'           => '363e4efa820b0c06208ccd99',
+                    'id'                    => '1BjhC5CJAqNF7R',
+                    'merchant_id'           => '10000000000000',
                     'gateway'               => 'atom',
                     'gateway_merchant_id'   => 'merch1234',
                     'gateway_terminal_id'   => '',
@@ -89,7 +89,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::BALANCE)->insert(
                 array(
-                    'id'            =>  '363e4efa820b0c06208ccd99',
+                    'id'            =>  '10000000000000',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
                     )
@@ -97,7 +97,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::BALANCE)->insert(
                 array(
-                    'id'            =>  'f725411687297c5fce0af5c4',
+                    'id'            =>  '1MABTZjIwgLtRZ',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time(),
                     )
@@ -105,7 +105,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::CARD)->insert(
                 array(
-                    'id'            =>  '174bdd3e456c8f6f174bdd3e',
+                    'id'            =>  '1qGr3alAuTlB74',
                     'iin'           =>  '123456',
                     'name'          =>  'shk',
                     'expiry_month'  =>  '01',
@@ -122,7 +122,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::CARD)->insert(
                 array(
-                    'id'            =>  '274bdd3e456c8f6f174bdd3f',
+                    'id'            =>  '1qIPa5EJYzzfq0',
                     'iin'           =>  '123456',
                     'name'          =>  'shk',
                     'expiry_month'  =>  '01',
@@ -139,8 +139,8 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::KEY)->insert(
                 array(
-                    'id'            =>  'd9c6bf091a1a64cb5678d8c1',
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'id'            =>  '1DP5mmOlF5G5ag',
+                    'merchant_id'   =>  '10000000000000',
                     'secret'        =>  Hash::make('thisissupersecret'),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
@@ -149,8 +149,8 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::KEY)->insert(
                 array(
-                    'id'            =>  'd9c6bf091a1a64cb5678d8c2',
-                    'merchant_id'   =>  '363e4efa820b0c06208ccd99',
+                    'id'            =>  '1EYxuuhMWeKd3Z',
+                    'merchant_id'   =>  '10000000000000',
                     'secret'        =>  Hash::make('thisissupersecret'),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
@@ -159,8 +159,8 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::KEY)->insert(
                 array(
-                    'id'            =>  'd9c6bf091a1a64cb5678d8c3',
-                    'merchant_id'   =>  'f725411687297c5fce0af5c4',
+                    'id'            =>  '20oUUQQgVEc8DQ',
+                    'merchant_id'   =>  '1MABTZjIwgLtRZ',
                     'secret'        =>  Hash::make('thisissupersecret'),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
@@ -169,8 +169,8 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::KEY)->insert(
                 array(
-                    'id'            =>  'd9c6bf091a1a64cb5678d8c4',
-                    'merchant_id'   =>  'f725411687297c5fce0af5c4',
+                    'id'            =>  '229RzYXCimSVqj',
+                    'merchant_id'   =>  '1MABTZjIwgLtRZ',
                     'secret'        =>  Hash::make('thisissupersecret'),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
@@ -179,8 +179,8 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::PRICING)->insert(
                 array(
-                    'id'            => 'c5484d12aafacc2023608c79',
-                    'plan_id'       => '501f6ad55b9a845fe509e09e',
+                    'id'            => '1GuENK6Hl2BWGx',
+                    'plan_id'       => '1YXludj60w4pSp',
                     'plan_name'     => 'Education',
                     'gateway'       => 'hdfc',
                     'payment_mode'  => 'card',
@@ -196,7 +196,7 @@ class DatabaseSeeder extends Seeder
 
                 array(
                     'id'            => 'e5484d12aafacc2023608c79',
-                    'plan_id'       => '501f6ad55b9a845fe509e09e',
+                    'plan_id'       => '1YXludj60w4pSp',
                     'plan_name'     => 'Education',
                     'gateway'       => 'hdfc',
                     'payment_mode'  => 'card',
@@ -209,8 +209,8 @@ class DatabaseSeeder extends Seeder
                     ),
 
                 array(
-                    'id'            => 'c5484d12aafacc2023608c79',
-                    'plan_id'       => '501f6ad55b9a845fe509e09e',
+                    'id'            => '1GuENK6Hl2BWGx',
+                    'plan_id'       => '1YXludj60w4pSp',
                     'plan_name'     => 'Education',
                     'gateway'       => 'hdfc',
                     'payment_mode'  => 'card',
@@ -223,8 +223,8 @@ class DatabaseSeeder extends Seeder
                     ),
 
                 array(
-                    'id'            => 'b5484d12aafacc2023608c79',
-                    'plan_id'       => '501f6ad55b9a845fe509e09e',
+                    'id'            => '1qPS1eB4Q3UBQX',
+                    'plan_id'       => '1YXludj60w4pSp',
                     'plan_name'     => 'Education',
                     'gateway'       => 'icici',
                     'payment_mode'  => 'nb',
@@ -238,8 +238,8 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::PRICING)->insert(
                 array(
-                    'id' => '13906d42c88a41ee4e2d812e',
-                    'plan_id' => '13906d42c88a41ee4e2d812e',
+                    'id' => '1hDYlICobzOCYt',
+                    'plan_id' => '1hDYlICobzOCYt',
                     'plan_name' => 'defaultPlan',
                     'payment_mode' => 'card',
                     'payment_mode_type' => null,
@@ -251,8 +251,8 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    => time()
                 ),
                 array(
-                    'id' => '13906de1816d11113ef4f86f',
-                    'plan_id' => '13906d42c88a41ee4e2d812e',
+                    'id' => '1OwH8rTI0ejFxS',
+                    'plan_id' => '1hDYlICobzOCYt',
                     'plan_name' => 'defaultPlan',
                     'payment_mode' => 'card',
                     'payment_mode_type' => null,
@@ -264,8 +264,8 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    => time()
                 ),
                 array(
-                    'id' => '13906df591e73f02d8afc302',
-                    'plan_id' => '13906d42c88a41ee4e2d812e',
+                    'id' => '1fq0OXpgeyafQq',
+                    'plan_id' => '1hDYlICobzOCYt',
                     'plan_name' => 'defaultPlan',
                     'payment_mode' => 'card',
                     'payment_mode_type' => null,

@@ -10,7 +10,7 @@ use Models\Payment\Gateway;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::MERCHANT_ID               => 'required|hexadecimal',
+        Entity::MERCHANT_ID               => 'required|alpha_num',
         Entity::GATEWAY                   => 'required|in:hdfc,atom',
         Entity::GATEWAY_MERCHANT_ID       => 'required',
         Entity::GATEWAY_TERMINAL_ID       => 'required_if:gateway,hdfc',

@@ -223,7 +223,7 @@ return [
 
     'testMerchantAssignPricingPlan' => [
         'request' => [
-            'url' => '/merchants/363e4efa820b0c06208ccd99/pricing',
+            'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
         ],
         'response' => [
@@ -246,7 +246,7 @@ return [
 
     'testMerchantAssignAndGetPricingPlan' => [
         'request' => [
-            'url' => '/merchants/363e4efa820b0c06208ccd99/pricing',
+            'url' => '/merchants/10000000000000/pricing',
             'method' => 'GET'
         ],
         'response' => [
@@ -269,7 +269,7 @@ return [
 
     'testMerchantReplacePricingPlan' => [
         'request' => [
-            'url' => '/merchants/363e4efa820b0c06208ccd99/pricing',
+            'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
         ],
         'response' => [
@@ -289,7 +289,7 @@ return [
 
     'testMerchantGetPricingPlanNoPlanAssigned' => [
         'request' => [
-            'url' => '/merchants/363e4efa820b0c06208ccd99/pricing',
+            'url' => '/merchants/10000000000000/pricing',
             'method' => 'GET'
         ],
         'response' => [

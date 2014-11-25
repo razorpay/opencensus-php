@@ -9,7 +9,7 @@ return [
     'testAuthWithoutKeyOrPwd' => [
         'request' => [
             'content' => [
-                'id'    => '41ce4abda390575910cba897',
+                'id'    => '1X4hRFHFx4UiXt',
                 'name'  => 'Tester',
                 'email' => 'test@localhost.com'
             ],
@@ -70,7 +70,7 @@ return [
     'testPublicAuthOnPrivateRoute' => [
         'request' => [
             'method' => 'GET',
-            'url' => '/payments/abcdeefa820b0c06208ccd99',
+            'url' => '/payments/1kKG3wHhnPdcg8',
         ],
         'response' => [
             'content' => [
@@ -102,7 +102,7 @@ return [
     'testPrivateAuthWithWrongKeyId' => [
         'request' => [
             'method' => 'GET',
-            'url' => '/payments/abcdeefa820b0c06208ccd99',
+            'url' => '/payments/1kKG3wHhnPdcg8',
         ],
         'response' => [
             'content' => [
@@ -118,7 +118,7 @@ return [
     'testPrivateAuthWithWrongSecret' => [
         'request' => [
             'method' => 'GET',
-            'url' => '/payments/abcdeefa820b0c06208ccd99',
+            'url' => '/payments/1kKG3wHhnPdcg8',
         ],
         'response' => [
             'content' => [

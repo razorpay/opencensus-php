@@ -133,7 +133,7 @@ class PricingTest extends TestCase
         $id = $this->createPricingPlan()['id'];
 
         $request = array(
-            'url' => '/merchants/363e4efa820b0c06208ccd99/pricing',
+            'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST',
             'content' => ['pricing_plan_id' => $id]);
 

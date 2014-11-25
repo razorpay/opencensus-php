@@ -115,20 +115,20 @@ class Fixtures
      */
     public function seedDbWithDefaultEntities()
     {
-        $apiMerchant = $this->createEntity('merchant', ['id' => '134510ae166900007a9677a9']);
-        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '134510ae166900007a9677a9']);
+        $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl']);
+        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
 
         $entities = array(
             'pricing'   => $this->createDefaultPricingPlan(),
-            'merchant'  => $this->createEntity('merchant', ['id' => '363e4efa820b0c06208ccd99']),
-            'terminal'  => $this->createEntity('terminal', ['merchant_id' => '363e4efa820b0c06208ccd99']),
-            'key'       => $this->createEntity('key', ['merchant_id' => '363e4efa820b0c06208ccd99']),
-            'balance'   => $this->createEntity('balance', ['id' => '363e4efa820b0c06208ccd99']),
+            'merchant'  => $this->createEntity('merchant', ['id' => '10000000000000']),
+            'terminal'  => $this->createEntity('terminal', ['merchant_id' => '10000000000000']),
+            'key'       => $this->createEntity('key', ['merchant_id' => '10000000000000']),
+            'balance'   => $this->createEntity('balance', ['id' => '10000000000000']),
             );
 
         $entities['payment'] = $this->createEntity(
                                         'payment',
-                                        ['merchant_id' => '363e4efa820b0c06208ccd99',
+                                        ['merchant_id' => '10000000000000',
                                         'terminal_id' => $entities['terminal']->getKey()]);
 
         $this->entities = $entities;
@@ -198,12 +198,12 @@ class Fixtures
 
     public function createDefaultPricingPlan()
     {
-        $pricingPlanId = '13906d42c88a41ee4e2d812e';
+        $pricingPlanId = '1hDYlICobzOCYt';
 
         $rows = array(
                     array(
-                        'id' => '13906d42c88a41ee4e2d812e',
-                        'plan_id' => '13906d42c88a41ee4e2d812e',
+                        'id' => '1hDYlICobzOCYt',
+                        'plan_id' => '1hDYlICobzOCYt',
                         'plan_name' => 'testDefaultPlan',
                         'payment_mode' => 'card',
                         'payment_mode_type' => null,
@@ -213,8 +213,8 @@ class Fixtures
                         'fixed_rate' => 0,
                     ),
                     array(
-                        'id' => '13906de1816d11113ef4f86f',
-                        'plan_id' => '13906d42c88a41ee4e2d812e',
+                        'id' => '1OwH8rTI0ejFxS',
+                        'plan_id' => '1hDYlICobzOCYt',
                         'plan_name' => 'testDefaultPlan',
                         'payment_mode' => 'card',
                         'payment_mode_type' => null,
@@ -224,8 +224,8 @@ class Fixtures
                         'fixed_rate' => 0,
                     ),
                     array(
-                        'id' => '13906df591e73f02d8afc302',
-                        'plan_id' => '13906d42c88a41ee4e2d812e',
+                        'id' => '1fq0OXpgeyafQq',
+                        'plan_id' => '1hDYlICobzOCYt',
                         'plan_name' => 'testDefaultPlan',
                         'payment_mode' => 'card',
                         'payment_mode_type' => null,
