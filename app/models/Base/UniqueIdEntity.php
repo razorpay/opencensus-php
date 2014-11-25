@@ -27,7 +27,7 @@ class UniqueIdEntity extends Entity
 
     public function generateId()
     {
-        $this->setAttribute(self::ID, self::generateUniqueId2());
+        $this->setAttribute(self::ID, self::generateUniqueId());
     }
 
     /**
@@ -72,7 +72,7 @@ class UniqueIdEntity extends Entity
 
         if ($value === null)
         {
-            $value = self::generateUniqueId2($this->secureUid);
+            $value = self::generateUniqueId($this->secureUid);
 
             $this->setAttribute($key, $value);
         }
@@ -120,18 +120,18 @@ class UniqueIdEntity extends Entity
         return $res;
     }
 
+    // public static function generateUniqueId()
+    // {
+    //     $len = self::ID_LENGTH;
+
+    //     $hextime = dechex(self::getNanotimeInteger());
+
+    //     $id = $hextime . bin2hex(openssl_random_pseudo_bytes(($len - 16)/2));
+
+    //     return $id;
+    // }
+
     public static function generateUniqueId()
-    {
-        $len = self::ID_LENGTH;
-
-        $hextime = dechex(self::getNanotimeInteger());
-
-        $id = $hextime . bin2hex(openssl_random_pseudo_bytes(($len - 16)/2));
-
-        return $id;
-    }
-
-    public static function generateUniqueId2()
     {
         // Timestmap of 1st Jan 2014!!
         // 1388534400

@@ -15,7 +15,7 @@ trait CustomAssertions
     }
 
     public function assertArraySelectiveEquals(array $expected, array $actual)
-    {//sd($expected, $actual);
+    {
         foreach ($expected as $key => $value)
         {
             if (is_array($value))
