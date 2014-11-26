@@ -250,7 +250,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     protected static function base62($num)
     {
-        $index = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
         $res = '';
         do {
