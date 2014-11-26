@@ -300,12 +300,12 @@ return [
 
     'testMerchantGetPricingPlan' => [
         'request' => [
-            'url' => '/merchants/543cdc2e93ae13f61f52b3eb/pricing',
+            'url' => '/merchants/1FcXNxsHt5dOPI/pricing',
             'method' => 'GET'
         ],
         'response' => [
             'content' => [
-                'id' => '5053edf267a4a6d1d26b43df',
+                'id' => '1ycviEdCgurrFI',
                 'name' => 'testFixturePlan',
                 'entity' => 'pricing',
                 'count' => 1,

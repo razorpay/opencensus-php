@@ -170,7 +170,7 @@ class UniqueIdEntity extends Entity
 
     protected static function base62($num)
     {
-        $index = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
         $res = '';
         do {

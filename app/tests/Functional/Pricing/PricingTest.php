@@ -110,8 +110,8 @@ class PricingTest extends TestCase
         $merchant2 = $this->createEntity(
             'merchant',
             array(
-                'id' => '543cdc2e93ae13f61f52b3eb',
-                'pricing_plan_id' => '5053edf267a4a6d1d26b43df'));
+                'id' => '1FcXNxsHt5dOPI',
+                'pricing_plan_id' => '1ycviEdCgurrFI'));
 
         $this->startTest();
     }

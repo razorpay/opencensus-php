@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 
     function base62($num)
     {
-        $index = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
         $res = '';
         do {
@@ -30,7 +30,7 @@ error_reporting(E_ALL);
 
         // Convert to base 62
         $b62 = base62($nanotime);
-echo strlen($b62) . PHP_EOL;
+        echo strlen($b62) . PHP_EOL;
 
         // Generate 3 random bytes, convert to hex and then to dec
         $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(3)));

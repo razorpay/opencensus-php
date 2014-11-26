@@ -202,7 +202,7 @@ class Fixtures
 
         $rows = array(
                     array(
-                        'id' => '1hDYlICobzOCYt',
+                        'id' => '1nvp2XPMmaRLxb',
                         'plan_id' => '1hDYlICobzOCYt',
                         'plan_name' => 'testDefaultPlan',
                         'payment_mode' => 'card',

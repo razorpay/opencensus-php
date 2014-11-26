@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 
     function base62($num)
     {
-        $index = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
         $res = '';
         do {

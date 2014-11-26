@@ -66,7 +66,7 @@ Models\Payment\Refund\Entity:
 
 Models\Pricing\Entity:
     id: $uniqueid
-    plan_id: 5053edf267a4a6d1d26b43df
+    plan_id: 1ycviEdCgurrFI
     plan_name: testFixturePlan
     payment_mode: card
     payment_mode_type: credit
