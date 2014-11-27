@@ -8,8 +8,7 @@
 * `sudo a2ensite api.razorpay.com.conf`
 * `chmod -R o+wx app/storage/`
 *  Copy over `app/config/database.sample.php` to `app/config/database.php` and add db name & password.
-* `php artisan migrate` (Creates tables)
-* `php artisan db:seed` (Optional)
+* `php artisan rzp:dbr --install --seed` (Creates table and seeds them)
 
 #Testing
 
