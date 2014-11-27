@@ -54,7 +54,7 @@ return array(
             'username'  => $_ENV['DB_LIVE_USERNAME'],
             'password'  => $_ENV['DB_LIVE_PASSWORD'],
             'charset'   => 'utf8',
-            'collation' => 'utf8_unicode_ci',
+            'collation' => 'utf8_bin',
             'prefix'    => '',
             'strict'    => true
         ),
@@ -67,7 +67,7 @@ return array(
             'username'  => $_ENV['DB_TEST_USERNAME'],
             'password'  => $_ENV['DB_TEST_PASSWORD'],
             'charset'   => 'utf8',
-            'collation' => 'utf8_unicode_ci',
+            'collation' => 'utf8_bin',
             'prefix'    => '',
             'strict'    => true
         ),
