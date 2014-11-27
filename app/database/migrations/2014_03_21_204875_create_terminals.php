@@ -21,10 +21,10 @@ class CreateTerminals extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Terminal::ID, 24)
+            $table->char(Terminal::ID, Terminal::ID_LENGTH)
                   ->primary();
 
-            $table->char(Terminal::MERCHANT_ID, 24);
+            $table->char(Terminal::MERCHANT_ID, Terminal::ID_LENGTH);
 
             $table->integer(Terminal::USED_COUNT)
                   ->unsigned()

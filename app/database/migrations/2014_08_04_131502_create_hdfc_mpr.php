@@ -16,7 +16,7 @@ class CreateHdfcMpr extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char('payment_id', 24)
+            $table->char('payment_id', 14)
                   ->primary();
 
             $table->string('gateway_payment_id');
