@@ -8,9 +8,10 @@
 * `sudo a2ensite api.razorpay.com.conf`
 * `chmod -R o+wx app/storage/`
 * `php composer.phar install` to install project dependencies
-*  Copy over `.env.sample.php` to `.env.dev.php` and provide database usernames and password
-*  Copy over `bootstrap\sample.environment.php` to `bootstrap\environment.php`. This specifies the `dev` environment for local development.
-* `php artisan rzp:dbr --install --seed` (Creates table and seeds them)
+* Create 2 databases.
+* Copy over `.env.sample.php` to `.env.dev.php` and provide both database usernames and password
+* Copy over `bootstrap\sample.environment.php` to `bootstrap\environment.php`. This specifies the `dev` environment for local development.
+* `php artisan rzp:dbr --install --seed` (Creates tables and seeds them)
 
 #Testing
 
