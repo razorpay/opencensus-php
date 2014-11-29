@@ -35,19 +35,23 @@ class Gateway extends Hdfc\Gateway
         {
             $serverResponse = $this->callGatewayRequestFunctionInternally($request);
 
-            return $this->prepareResponse($serverResponse->getContent());
+            return $this->prepareInternalResponse($serverResponse);
         }
     }
 
-    protected function prepareResponse($content)
+    protected function prepareInternalResponse($serverResponse)
     {
         $response = new Requests_Response();
 
-        $response->headers['Content-Type']  = 'application/xml; charset=UTF-8';
-        $response->headers['Cache-Control']  = 'no-cache';
+        $response->headers = $serverResponse->headers->all();
 
-        $response->body = $content;
-        $response->status_code = 200;
+        foreach ($response->headers as $key => &$value)
+        {
+            $value = implode(';', $value);
+        }
+
+        $response->body = $serverResponse->getContent();
+        $response->status_code = $serverResponse->getStatusCode();
         $response->success = true;
         // @todo: add url to response var
 

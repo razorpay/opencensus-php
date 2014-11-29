@@ -120,17 +120,6 @@ class UniqueIdEntity extends Entity
         return $res;
     }
 
-    // public static function generateUniqueId()
-    // {
-    //     $len = self::ID_LENGTH;
-
-    //     $hextime = dechex(self::getNanotimeInteger());
-
-    //     $id = $hextime . bin2hex(openssl_random_pseudo_bytes(($len - 16)/2));
-
-    //     return $id;
-    // }
-
     public static function generateUniqueId()
     {
         // Timestmap of 1st Jan 2014!!

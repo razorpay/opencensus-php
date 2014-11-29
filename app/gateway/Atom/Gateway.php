@@ -77,6 +77,8 @@ class Gateway extends BaseGateway
 
         $this->createAtomEntity($input, $data);
 
+        // Cannot use http_build_query php function because
+        // params contain '%' sign which gets messed up by that function
         $queryStr = $this->buildGetQueryString($fields);
 
         $url = Urls::ATOM_TEST_URL.'?'.$queryStr;

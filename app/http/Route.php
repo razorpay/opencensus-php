@@ -56,6 +56,10 @@ final class Route
         'mockhdfc_payment'                  => ['post', 'gateway/mockhdfc/payment',                 'MockHdfcController@payment'],
         'mockhdfc_auth_enrolled'            => ['post', 'gateway/mockhdfc/auth_enrolled',           'MockHdfcController@authEnrolled'],
         'mockhdfc_3dsecure'                 => ['post', 'gateway/3dsecure',                         'MockHdfcController@post3dSecure'],
+        'mockatom_choose_bank'              => ['get',  'gateway/mockatom/',                        'MockHdfcController@getAtomChooseBank'],
+        'mockatom_init_netbanking'          => ['post', 'gateway/mockatom/',                        'MockHdfcController@postAtomInitNetbanking'],
+        'mockatom_rzp_bank'                 => ['post', 'gateway/mockatom/rzp_bank',                'MockHdfcController@postAtomRzpBankPage'],
+        'mockatom_rzp_bank_submit'          => ['post', 'gateway/mockatom/rzp_bank/submit',         'MockHdfcController@postAtomRzpBankSubmit'],
         );
 
     public static $public = array(
@@ -101,6 +105,10 @@ final class Route
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
         'mockhdfc_payment',
+        'mockatom_choose_bank',
+        'mockatom_init_netbanking',
+        'mockatom_rzp_bank',
+        'mockatom_rzp_bank_submit',
         );
 
     public static $proxy = array(

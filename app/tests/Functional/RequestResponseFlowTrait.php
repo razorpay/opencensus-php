@@ -111,7 +111,7 @@ trait RequestResponseFlowTrait
         $actualContent = $this->getContentFromResponse($data, $response);
 
         $expectedContent = $data['response']['content'];
-
+//s($actualContent, $expectedContent);
         $this->checkStatusCodeIfJsonp($actualContent);
 
         $this->assertArraySelectiveEquals($expectedContent, $actualContent);

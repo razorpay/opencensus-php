@@ -16,13 +16,16 @@
 
 <body onload="sub();">
 
-<form id="redirect" name="redirect" onsubmit="return true;" action="/paynetz/redirect.action" method="post">
-<table class="wwFormTable">
-    <select name="bankID" id="redirect_bankID">
-        <option value="2001">Razorpay Test Bank</option>
-    </select>
-</table>
-<input type="hidden" name="348901664" value="25-0-1A77AE839A367C7EF0C0D9C6CA9BD2EC" />
+<form id="redirect" name="redirect" onsubmit="return true;" action="{{{ $data['url'] }}}" method="post">
+    <table class="wwFormTable">
+        <select name="bankID" id="redirect_bankID">
+            <option value="2001">Razorpay Test Bank</option>
+        </select>
+        <br /><br />
+    </table>
+    <input type="hidden" name="tempTxnId" value="{{{ $data['tempTxnId'] }}}" />
+    <input type="hidden" name="348901664" value="25-0-1A77AE839A367C7EF0C0D9C6CA9BD2EC" />
+    <input type="submit" value="submit" />
 </form>
 
 </body>
