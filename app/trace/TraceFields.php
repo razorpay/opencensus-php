@@ -161,6 +161,10 @@ class TraceFields
             'data',
             'error'
         ),
+
+        TraceCode::GATEWAY_UNKNOWN_ERROR => array(
+            'description'
+        ),
     );
 
     /**

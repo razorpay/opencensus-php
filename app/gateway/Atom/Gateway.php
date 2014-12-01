@@ -5,9 +5,10 @@ namespace Gateway\Atom;
 use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Trace\Trace;
+use Trace\TraceCode;
 use Gateway\BaseGateway;
 use Gateway\Atom;
-use Models\Card;
 
 class Gateway extends BaseGateway
 {
@@ -42,70 +43,74 @@ class Gateway extends BaseGateway
     {
         parent::authorize($input);
 
-        $time = date('d/m/Y h:m:s');
-        // Replace space with '%20'
-        // $time = str_replace(' ', '%20', $time);
-
         $url = Urls::ATOM_TEST_URL;
 
-        $request['content'] = array(
-            'ttype'         =>  'NBFundTransfer',
-            'prodid'        =>  'NSE',
-            'amt'           =>  $input['payment']['amount'] / 100,
-            'txncurr'       =>  'INR',
-            'txnscamt'      =>  '0',
-            'clientcode'    =>  urlencode(base64_encode('123')),
-            'txnid'         =>  $input['payment']['public_id'],
-            'ru'            =>  $input['callbackUrl'],
-            'date'          =>  $time,
-            'custacc'       =>  '123456789012',
-            'bankid'        =>  '2001',
-            );
+        $request = $this->createTransactionRequestArray($input);
 
-        $request['url'] = Urls::ATOM_TEST_URL;
+        $response = array();
+        // Send first request.
+        $response = $this->runRequestResponseFlow($request, $response);
 
-        $response = $this->postRequest($request);
+        $data = $this->processPaymentInitiationResponse($response, $input);
 
-        $data = $this->xmlToArray($response->body);
-
-        $url = $data['url'];
-        $fields = array(
-            'ttype'         => 'NBFundTransfer',
-            'tempTxnId'     => $data['tempTxnId'],
-            'token'         => $data['token'],
-            'txnStage'      => '1');
-
-        $this->createAtomEntity($input, $data);
-
-        // Cannot use http_build_query php function because
-        // params contain '%' sign which gets messed up by that function
-        $queryStr = $this->buildGetQueryString($fields);
-
-        $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
+        $url = $this->createAtomRedirectUrl($data);
 
         $data = array('redirectUrl' => $url);
 
         return $data;
     }
 
+    /**
+     * We recieve callback from atom after bank net-banking transaction
+     * is complete
+     * @param  array    $input
+     */
     public function callback(array $input)
     {
+        // Get payment-id of the transaction
         $paymentId = $input['mer_txn'];
 
         $payment = $input['payment'];
+
+        // Unset payment entity, because we have to save $input to db
         unset($input['payment']);
 
         $atom = Atom\Entity::findOrFail($payment['id']);
+
+        // Set the data received from atom on atom payment entity
         $atom->setCallbackData($input);
 
-        if ($paymentId !== $payment['public_id'])
-        {
-            throw new Exception\LogicException(
-                'Payment public id and atom merchant txn id do not match. Payment public_id: ' .
-                $payment['public_id'], ' atom merchant txn id: ' . $input['mer_txn']);
-        }
+        $this->validatePaymentIdReceived($paymentId, $payment);
 
+        $this->processPaymentResponse($input, $atom);
+    }
+
+    protected function processPaymentInitiationResponse($response, $input)
+    {
+        // Convert xml body to array of fields
+        $data = $this->xmlToArray($response['response']->body);
+
+        // Fields returned from first request
+        $fields = array(
+            'ttype'         => 'NBFundTransfer',
+            'tempTxnId'     => $data['tempTxnId'],
+            'token'         => $data['token'],
+            'txnStage'      => '1');
+
+        // Save those fields with payment id
+        $this->createAtomEntity($input, $data);
+
+        return $fields;
+    }
+
+    protected function processPaymentResponse($input, $atom)
+    {
+        // Check if the transaction succeded or failed.
         $atomFCode = (isset($input['f_code'])) ? $input['f_code'] : '';
+
+        $error = false;
+        $exception = null;
+
         if ($atomFCode === 'Ok')
         {
             $atom->setSuccess(true);
@@ -113,8 +118,8 @@ class Gateway extends BaseGateway
         else if ($atomFCode === 'F')
         {
             $atom->setSuccess(false);
-            $this->error = true;
-            $this->exception = new Exception\GatewayErrorException(
+            $error = true;
+            $exception = new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
         }
         else
@@ -136,7 +141,24 @@ class Gateway extends BaseGateway
         }
     }
 
-    public function createAtomEntity($input, $data)
+    protected function createAtomRedirectUrl($data)
+    {
+        // Cannot use http_build_query php function because
+        // params contain '%' sign which gets messed up by that function
+        $queryStr = $this->buildGetQueryString($data);
+
+        $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
+
+        // This is the url to which the customer is redirected.
+        // Here, on atom's provided url, the bank choice is auto-submitted
+        // and bank login page comes. When customer logins and bank txn is complete,
+        // it's redirected to atom's site and then redirected back to our callbackUrl
+        // we provided earlier via 'ru' field.
+
+        return $url;
+    }
+
+    protected function createAtomEntity($input, $data)
     {
         $attributes = array(
             'id' => $input['payment']['id'],
@@ -154,6 +176,46 @@ class Gateway extends BaseGateway
         $this->response = $this->sendGatewayRequest($request);
 
         return $this->response;
+    }
+
+    protected function createTransactionRequestArray($input)
+    {
+        $time = date('d/m/Y h:m:s');
+        // Replace space with '%20'
+        // $time = str_replace(' ', '%20', $time);
+
+        $request['content'] = array(
+            'ttype'         =>  'NBFundTransfer',
+            'prodid'        =>  'NSE',
+            'amt'           =>  $input['payment']['amount'] / 100,
+            'txncurr'       =>  'INR',
+            'txnscamt'      =>  '0',
+            'clientcode'    =>  urlencode(base64_encode('123')),
+            'txnid'         =>  $input['payment']['public_id'],
+            'ru'            =>  $input['callbackUrl'],
+            'date'          =>  $time,
+            'custacc'       =>  '123456789012',
+            'bankid'        =>  '2001',
+            );
+
+        $request['url'] = Urls::ATOM_TEST_URL;
+
+        return $request;
+    }
+
+    /**
+     * Validate that public payment id matches the expected
+     * @param  string $paymentId
+     * @param  array  $payment
+     */
+    protected function validatePaymentIdReceived($paymentId, $payment)
+    {
+        if ($paymentId !== $payment['public_id'])
+        {
+            throw new Exception\LogicException(
+                'Payment public id and atom merchant txn id do not match. Payment public_id: ' .
+                $payment['public_id'], ' atom merchant txn id: ' . $input['mer_txn']);
+        }
     }
 
     protected function setTerminalInRequest(array & $request)
@@ -203,37 +265,52 @@ class Gateway extends BaseGateway
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (Utility::checkTimeout($e))
+            if (\Gateway\Utility::checkTimeout($e))
             {
-                $this->error = true;
-
-                $response['content'] = '';
-                // @todo: set error
-                return;
+                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }
             else
             {
                 throw $e;
             }
-
-            $response['xml'] = $response['response']->body;
-
-            $this->repo->saveXml($this->id, $response['xml'], $response['type']);
-
-            $this->checkResponseStatusCode($response);
-
-            if ($this->error === false)
-            {
-                $this->checkResponseContentType($response);
-            }
-
-            if ($this->error === false)
-            {
-                Utility::parseResponseXml($response);
-
-                $this->checkResponseErrorCode($response);
-            }
         }
+
+        $response['xml'] = $response['response']->body;
+
+        $this->validateResponseReceived($response);
+
+        return $response;
+    }
+
+    /**
+     * Validates that a proper response is received from atom gateway first request.
+     * Throws an exception otherwise
+     * @param  array $response
+     */
+    protected function validateResponseReceived($response)
+    {
+        if ($this->checkResponseStatusCode($response) === true)
+        {
+            return;
+        }
+
+        $gatewayErrorDesc = $response['xml'] . ' \n StatusCode: ' . $response['response']->status_code;
+
+        $this->trace->error(
+            TraceCode::GATEWAY_UNKNOWN_ERROR,
+            ['description' => $gatewayErrorDesc]);
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+            '',
+            $gatewayErrorDesc);
+    }
+
+    protected function checkResponseStatusCode(& $response)
+    {
+        $status_code = (int) $response['response']->status_code;
+
+        return ($status_code === 200);
     }
 
     protected function writeLog($data)

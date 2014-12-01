@@ -37,6 +37,7 @@ class TraceCode
     const GATEWAY_SUPPORT_REQUEST           = 'GATEWAY_SUPPORT_REQUEST';
     const GATEWAY_SUPPORT_RESPONSE          = 'GATEWAY_SUPPORT_RESPONSE';
     const GATEWAY_SUPPORT_ERROR             = 'GATEWAY_SUPPORT_ERROR';
+    const GATEWAY_UNKNOWN_ERROR             = 'GATEWAY_UNKNOWN_ERROR';
 
     const ERROR_EXCEPTION                   = 'ERROR_EXCEPTION';
 
@@ -65,6 +66,7 @@ class TraceCode
         self::GATEWAY_SUPPORT_REQUEST               => 'Support request sent',
         self::GATEWAY_SUPPORT_RESPONSE              => 'Support response received',
         self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
+        self::GATEWAY_UNKNOWN_ERROR                 => 'Unknown gateway error',
 
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured');
 
