@@ -91,6 +91,12 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testAmountLessThan50ForNetBanking()
+    {
+        $this->fixtures->createTerminalEntityForAtomGateway();
+        $this->startTest();
+    }
+
     public function testAmountNonNumeric()
     {
         $this->startTest();

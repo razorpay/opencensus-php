@@ -239,6 +239,29 @@ return [
         ],
     ],
 
+    'testAmountLessThan50ForNetBanking' => [
+        'request' => [
+            'content' => [
+                'method' => 'net banking',
+                'amount' => '4999',
+                'bank' => 'SBIN'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'amount',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY,
+        ],
+    ],
+
     'testAmountNonNumeric' => [
         'request' => [
             'content' => [

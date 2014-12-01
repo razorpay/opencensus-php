@@ -49,11 +49,21 @@ class NetBankingTest extends TestCase
         $url = getTextBetweenStrings($content, 'url=', '"');
         $url = str_replace('&amp;', '&', $url);
 
-        $response = Requests::get($url);
-        $cookie = $response->cookies['JSESSIONID']->value;
+        $headers = array();
+
+        $gateway = $this->app['config']->get('gateway');
+        if ($gateway['mock_atom'] === true)
+        {
+            $this->setupPrivateBasicAuthParams();
+        }
+        else
+        {
+            $response = Requests::get($url);
+            $cookie = $response->cookies['JSESSIONID']->value;
+            $headers = array('Cookie' => 'JSESSIONID=' . $cookie);
+        }
 
         $atomBaseUrl = 'http://203.114.240.183:80';
-        $headers = array('Cookie' => 'JSESSIONID=' . $cookie);
 
         // Atom fetches bank list and then auto-submits the form.
         // Completely unnecessary step! Even we skip it during testing
