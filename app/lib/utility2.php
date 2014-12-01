@@ -37,7 +37,7 @@ if (! function_exists('validate_keys'))
     }
 }
 
-if (! function_exists('extractTextBetweenStrings'))
+if (! function_exists('getTextBetweenStrings'))
 {
     function getTextBetweenStrings($string, $start, $end)
     {
