@@ -28,6 +28,33 @@ class Fixtures
         return $this;
     }
 
+    /**
+     * Seed the db with required data
+     * This creates key entity and merchant entity
+     * This key can be used by default for most use-cases
+     * but you are not required to use it.
+     */
+    public function seedDbWithDefaultEntities()
+    {
+        $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl']);
+        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
+
+        $entities = array(
+            'pricing'   => $this->createDefaultPricingPlan(),
+            'merchant'  => $this->createEntity('merchant', ['id' => '10000000000000']),
+            'terminal'  => $this->createEntity('terminal', ['merchant_id' => '10000000000000']),
+            'key'       => $this->createEntity('key', ['merchant_id' => '10000000000000']),
+            'balance'   => $this->createEntity('balance', ['id' => '10000000000000']),
+            );
+
+        $entities['payment'] = $this->createEntity(
+                                        'payment',
+                                        ['merchant_id' => '10000000000000',
+                                        'terminal_id' => $entities['terminal']->getKey()]);
+
+        $this->entities = $entities;
+    }
+
     public function createPaymentAuthorizedEntity(array $attributes = array())
     {
         $defaultValues = array(
@@ -107,31 +134,16 @@ class Fixtures
         return $this->createEntity('hdfc', $attributes);
     }
 
-    /**
-     * Seed the db with required data
-     * This creates key entity and merchant entity
-     * This key can be used by default for most use-cases
-     * but you are not required to use it.
-     */
-    public function seedDbWithDefaultEntities()
+    public function createTerminalEntityForAtomGateway(array $attributes = array())
     {
-        $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl']);
-        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
+        $attributes = array(
+            'merchant_id' => '10000000000000',
+            'gateway' => 'atom',
+            'gateway_merchant_id' => 'abcd',
+            'gateway_terminal_id' => 'abcde',
+            'gateway_terminal_password' => 'abcdef');
 
-        $entities = array(
-            'pricing'   => $this->createDefaultPricingPlan(),
-            'merchant'  => $this->createEntity('merchant', ['id' => '10000000000000']),
-            'terminal'  => $this->createEntity('terminal', ['merchant_id' => '10000000000000']),
-            'key'       => $this->createEntity('key', ['merchant_id' => '10000000000000']),
-            'balance'   => $this->createEntity('balance', ['id' => '10000000000000']),
-            );
-
-        $entities['payment'] = $this->createEntity(
-                                        'payment',
-                                        ['merchant_id' => '10000000000000',
-                                        'terminal_id' => $entities['terminal']->getKey()]);
-
-        $this->entities = $entities;
+        return $this->createEntity('terminal', $attributes);
     }
 
     public function createEntity($entity, $attributes = array())
