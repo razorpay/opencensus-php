@@ -42,19 +42,35 @@ class NetBankingTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
     }
 
+    /**
+     * Runs payment callback flow for atom net-banking transactions
+     * @param  array $response
+     */
     protected function runPaymentCallbackFlow($response)
     {
-        $content = $response->getContent();
-
-        $url = getTextBetweenStrings($content, 'url=', '"');
-        $url = str_replace('&amp;', '&', $url);
+        $url = $response->getTargetUrl();
 
         $headers = array();
 
         $gateway = $this->app['config']->get('gateway');
-        if ($gateway['mock_atom'] === true)
+        $mock = $gateway['mock_atom'];
+
+        if ($mock)
         {
-            $this->setupPrivateBasicAuthParams();
+            $this->setupAppBasicAuthParams();
+
+            // Extract the uri part after 'v1'.
+            // This removes the basic auth user/pwd from absolute url
+            // which would otherwise interfere with later requests.
+            // @note: In laravel tests, later requests will take up the basic auth
+            //        parameters of previous requests if the basic auth params were
+            //        supplied via absolute url and in the process ignore the ones
+            //        provided via $server. Weird gotcha!
+            $ix = strpos($url, '/v1/');
+            $uri = substr($url, $ix + 3);
+
+            $request = array('method' => 'GET', 'url' => $uri);
+            $response = $this->makeRequestParent($request);
         }
         else
         {
@@ -66,20 +82,44 @@ class NetBankingTest extends TestCase
         $atomBaseUrl = 'http://203.114.240.183:80';
 
         // Atom fetches bank list and then auto-submits the form.
-        // Completely unnecessary step! Even we skip it during testing
+        // Completely unnecessary step! We skip it during testing
         // $response = \Requests::post($atomBaseUrl . '/paynetz/banklist.action', $headers);
 
         $content = array('bankID' => '2001');
-        $url = $atomBaseUrl . '/paynetz/redirect.action';
-        $response = Requests::post($url, $headers, $content);
+        if ($mock)
+        {
+            $crawler = new Crawler($response->getContent(), $url);
+            $form = $crawler->filter('form')->form();
+            list($url, $method, $values) = $this->getDataFromForm($form);
 
-        $crawler = new Crawler($response->body, $url);
-        $form = $crawler->filter('form')->form();
+            // See above note.
+            $ix = strpos($url, '/v1/');
+            $uri = substr($url, $ix + 3);
 
-        list($url, $method, $values) = $this->getDataFromForm($form);
+            $request = array(
+                'method' => $method,
+                'url' => $uri,
+                'content' => $values);
 
-        $response = Requests::$method($url, $headers, $values);
-        $content = $response->body;
+            $response = $this->makeRequestParent($request);
+            $content = $response->getContent();
+        }
+        else
+        {
+            $url = $atomBaseUrl . '/paynetz/redirect.action';
+            $response = Requests::post($url, $headers, $content);
+        }
+
+        if ($mock === false)
+        {
+            $crawler = new Crawler($response->body, $url);
+            $form = $crawler->filter('form')->form();
+
+            list($url, $method, $values) = $this->getDataFromForm($form);
+
+            $response = Requests::$method($url, $headers, $values);
+            $content = $response->body;
+        }
 
         $itc = getTextBetweenStrings($content, 'ITC = ', ';');
         $bid = getTextBetweenStrings($content, "BID = '", "';");
@@ -87,11 +127,34 @@ class NetBankingTest extends TestCase
         $cc  = getTextBetweenStrings($content, 'clientCode = "', '";');
 
         $status = 'S';
-        $url = $atomBaseUrl . '/paynetz/atom?' . 'ITC='.$itc . '&BID='.$bid.'&clientCode='.$cc.'&amt='.$amt.'&Status='.$status;
-        $content = array('success' => $status);
-        $response = Requests::post($url, $headers, $content);
 
-        $crawler = new Crawler($response->body, $url);
+        $url = ($mock) ? '/gateway/mockatom/rzp_bank/submit' : $atomBaseUrl . '/paynetz/atom';
+        $url .= '?' . 'ITC='.$itc . '&BID='.$bid.'&clientCode='.$cc.'&amt='.$amt.'&Status='.$status;
+
+        $values = array('success' => $status);
+
+        if ($mock)
+        {
+            // For testing case, we add back tempTxnId because we don't maintian it
+            // in session
+            $tempTxnId = getTextBetweenStrings($content, 'tempTxnId = "', '";');
+            $url .= '&tempTxnId='.$tempTxnId;
+
+            $request = array(
+                'method' => 'POST',
+                'url' => $url,
+                'content' => $values);
+
+            $response = $this->makeRequestParent($request);
+            $content = $response->getContent();
+        }
+        else
+        {
+            $response = Requests::post($url, $headers, $content);
+            $content = $response->body;
+        }
+
+        $crawler = new Crawler($content, 'http://ab.com');
         $form = $crawler->filter('form')->form();
 
         $response = $this->submitPaymentCallbackForm($form);

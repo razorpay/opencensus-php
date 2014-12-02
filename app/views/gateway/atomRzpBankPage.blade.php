@@ -20,10 +20,10 @@
         }
 
         var ITC = {{{ $data['ITC'] }}};
-        var BID = "{{{ $data['BID'] }}}";
-        var amt = "{{{ $data['amount'] }}}";
+        var BID = '{{{ $data['BID'] }}}';
+        var amt = '{{{ $data['amount'] }}}';
         var clientCode = "{{{ $data['clientCode'] }}}";
-        var tempTxnId = "{{{ $data['tempTxnId'] }}}"
+        var tempTxnId = "{{{ $data['tempTxnId'] }}}";
         var url = "{{{ $data['url'] }}}" + "?ITC=" + ITC + "&BID=" + BID + "&ClientCode=" + clientCode + "&amt=" + amt + "&Status="+status;
         url = url + "&tempTxnId="+tempTxnId;
         alert("url : " + url);

@@ -37,14 +37,15 @@ trait PaymentCallbackTrait
 
         $uri = $form->getUri();
 
+        // Extract the payment id from absolute url
+
         $id = $this->getIdFromUri($uri);
 
-        $auth = $this->auth;
-        unset($auth['PHP_AUTH_PW']);
+        $this->setupPublicBasicAuthParams();
 
         $request['method'] = 'POST';
         $request['content'] = $form->getValues();
-        $request['server'] = $auth;
+
         $request['url'] = '/payments/'.$id.'/callback';
 
         $response = $this->makeRequestParent($request);
@@ -56,6 +57,11 @@ trait PaymentCallbackTrait
         $response->setContent($content);
 
         return $response;
+    }
+
+    protected function extractAndSubmitForm($content)
+    {
+        ;
     }
 
     protected function makeRequest($request)

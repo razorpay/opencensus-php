@@ -153,7 +153,13 @@ trait RequestResponseFlowTrait
     {
         $server = $this->auth;
 
-        $request['url'] = '/v1' . $request['url'];
+        // Adds '/v1' to beginning if not already there and
+        // not an absolute url
+        if ((strpos($request['url'], 'http') === false) and
+            (strpos($request['url'], '/v1') === false))
+        {
+            $request['url'] = '/v1' . $request['url'];
+        }
 
         if (isset($request['content']) === false)
         {
@@ -185,7 +191,7 @@ trait RequestResponseFlowTrait
             $request['content'],
             $request['files'],
             $request['server']);
-//s($response->getContent());
+
         return $response;
     }
 

@@ -145,7 +145,7 @@ trait PaymentAuthFlowTrait
         }
         catch(Exception $e)
         {
-            if (strpos($e->getMessage(), 'node list is empty') !== False)
+            if (strpos($e->getMessage(), 'node list is empty') !== false)
             {
                 $this->fail('Payment Timed out');
             }
