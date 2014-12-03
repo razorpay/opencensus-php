@@ -8,7 +8,7 @@ use Response;
 
 class ApiResponse
 {
-    protected static $jsonp = null;
+    protected static $jsonp;
 
     /**
      * Tells the browser that HTTP AUTH is expected
@@ -16,8 +16,6 @@ class ApiResponse
      */
     public static function httpAuthExpected()
     {
-        self::$jsonp = false;
-
         $response = self::generateResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
@@ -119,11 +117,13 @@ class ApiResponse
             $data['http_status_code'] = $status;
 
             $status = 200;
+
+            $jsonp = true;
         }
 
         $response = Response::json($data, $status);
 
-        if (self::$jsonp)
+        if ($jsonp)
         {
             self::attachJsonpCallback($request, $response);
         }
@@ -137,9 +137,6 @@ class ApiResponse
 
     protected static function isJsonpRequired($routeName)
     {
-        self::$jsonp = ((self::$jsonp !== false) and
-                        (Route::isJsonpRoute($routeName)));
-
-        return self::$jsonp;
+        return Route::isJsonpRoute($routeName);
     }
 }

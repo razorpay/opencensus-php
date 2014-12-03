@@ -12,7 +12,7 @@ final class Route
 
     protected static $apiRoutes = array(
         'payment_create'                    => ['post', 'payments',                                 'PaymentController@postCreatePayment'],
-        'payment_jsonp'                     => ['get',  'payments/create/jsonp',                    'PaymentController@getJSONP'],
+        'payment_create_jsonp'              => ['get',  'payments/create/jsonp',                    'PaymentController@getJSONP'],
         'payment_callback'                  => ['post', 'payments/{id}/callback',                   'PaymentController@postCallback'],
         'payment_refund'                    => ['post', 'payments/{id}/refund',                     'PaymentController@postRefund'],
         'payment_capture'                   => ['post', 'payments/{id}/capture',                    'PaymentController@postCapture'],
@@ -64,7 +64,7 @@ final class Route
 
     public static $public = array(
         'payment_create',
-        'payment_jsonp',
+        'payment_create_jsonp',
         'payment_callback',
         );
 
@@ -138,14 +138,14 @@ final class Route
     public static function getDoNotLogURLs()
     {
         $doNotLogUrls = array(
-            self::$apiRoutes['payment_jsonp'][1]);
+            self::$apiRoutes['payment_create_jsonp'][1]);
 
         return $doNotLogUrls;
     }
 
     public static function isJsonpRoute($routeName)
     {
-        $jsonpRoute = array('payment_jsonp');
+        $jsonpRoute = array('payment_create_jsonp');
 
         return in_array($routeName, $jsonpRoute);
     }
