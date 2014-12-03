@@ -63,23 +63,6 @@ class ErrorCode
     const GATEWAY_ERROR_CARD_INVALID_CVV                                    = 'GATEWAY_ERROR_CARD_INVALID_CVV';
     const GATEWAY_ERROR_CARD_MISSING_CVV                                    = 'GATEWAY_ERROR_CARD_MISSING_CVV';
 
-    /**
-     * Card errors catchable in the app
-     */
-    const CARD_ERROR_INVALID_NAME                                           = 'CARD_ERROR_INVALID_NAME';
-    const CARD_ERROR_INVALID_EXPIRY_MONTH                                   = 'CARD_ERROR_INVALID_EXPIRY_MONTH';
-    const CARD_ERROR_INVALID_EXPIRY_YEAR                                    = 'CARD_ERROR_INVALID_EXPIRY_YEAR';
-    const CARD_ERROR_INVALID_EXPIRY_DATE                                    = 'CARD_ERROR_INVALID_EXPIRY_DATE';
-    const CARD_ERROR_INVALID_CVV                                            = 'CARD_ERROR_INVALID_CVV';
-    const CARD_ERROR_INVALID_BRAND                                          = 'CARD_ERROR_INVALID_BRAND';
-    const CARD_ERROR_INVALID_NUMBER                                         = 'CARD_ERROR_INVALID_NUMBER';
-    const CARD_ERROR_CARD_DECLINED                                          = 'CARD_ERROR_CARD_DECLINED';
-    const CARD_ERROR_INSUFFICIENT_BALANCE                                   = 'CARD_ERROR_INSUFFICIENT_BALANCE';
-    const CARD_ERROR_NOT_SUPPORTED                                          = 'CARD_ERROR_NOT_SUPPORTED';
-
-    const FIELD_ERROR_INVALID_EMAIL                                         = 'FIELD_ERROR_INVALID_EMAIL';
-    const FIELD_ERROR_INVALID_CONTACT                                       = 'FIELD_ERROR_INVALID_CONTACT';
-
 // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                            = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                    = 'BAD_REQUEST_ONLY_HTTPS_ALLOWED';
@@ -110,6 +93,13 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                             = 'BAD_REQUEST_PAYMENT_INVALID_BANK_CODE';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                   = 'BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT';
     const BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY             = 'BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY';
+    const BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS                            = 'BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS';
+    const BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS                        = 'BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS';
+    const BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS                     = 'BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS';
+    const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                    = 'BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED';
+    const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                     = 'BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE';
+    const BAD_REQUEST_PAYMENT_CARD_DECLINED                                 = 'BAD_REQUEST_PAYMENT_CARD_DECLINED';
+    const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE';
 
     const BAD_REQUEST_URL_NOT_FOUND                                         = 'BAD_REQUEST_URL_NOT_FOUND';
     const BAD_REQUEST_UDF_SHOULD_BE_ARRAY                                   = 'BAD_REQUEST_UDF_SHOULD_BE_ARRAY';

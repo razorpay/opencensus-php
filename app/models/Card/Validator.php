@@ -42,9 +42,8 @@ class Validator extends Base\Validator
         if (($month < $currentMonth) &&
             ($year <= $currentYear))
         {
-            throw new Exception\CardErrorException(
-                null,
-                ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE);
         }
     }
 
@@ -76,10 +75,5 @@ class Validator extends Base\Validator
                 $msg = implode(',', $addr_unset) . ' address values are not set.';
             }
         }
-    }
-
-    protected function processValidationFailure($messages, $operation, $input)
-    {
-        throw new Exception\CardErrorException($messages);
     }
 }

@@ -35,15 +35,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_EMAIL,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'email',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 
@@ -55,15 +55,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_EMAIL,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'email',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_EMAIL,
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -76,15 +76,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_CONTACT,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'contact',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS,
         ],
     ],
 
@@ -97,15 +97,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_CONTACT,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'contact',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
         ],
     ],
 
@@ -166,7 +166,6 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'card',
                 ],
             ],
             'status_code' => 400,
@@ -186,7 +185,6 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'card',
                 ],
             ],
             'status_code' => 400,
@@ -227,15 +225,16 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::FIELD_ERROR_INVALID_CONTACT,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'contact',
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\FieldErrorException',
-            'internal_error_code' => ErrorCode::FIELD_ERROR_INVALID_CONTACT,
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
         ],
     ],
 
@@ -252,6 +251,7 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'amount',
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY,
                 ],
             ],
             'status_code' => 400,
@@ -328,6 +328,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING,
                     'field' => 'description',
                 ],
             ],

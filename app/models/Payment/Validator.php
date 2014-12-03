@@ -46,15 +46,13 @@ class Validator extends Base\Validator
             ($input['card'] === null))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED,
-                'card');
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED);
         }
 
         if (is_array($input['card']) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY,
-                'card');
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY);
         }
     }
 
@@ -92,7 +90,8 @@ class Validator extends Base\Validator
         if (Payment\Bank::isValidBank($input['bank']) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE);
+                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
+                'bank');
         }
     }
 
@@ -103,38 +102,40 @@ class Validator extends Base\Validator
         $code = null;
         $message = null;
 
+        $field = Entity::CONTACT;
+
         if (is_string($contact) === false)
         {
-            $message = 'Contact number can only contain digits and + symbol';
-            $code = ErrorCode::FIELD_ERROR_INVALID_CONTACT;
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
+                $field);
         }
 
         $origContact = $contact;
 
+        // Except digits, only '+' symbol is allowed in the beginning
         if ($contact[0] === '+')
             $contact = substr($contact, 1);
 
         if (is_numeric($contact) === false)
         {
-            $message = 'Contact number can only contain digits and + symbol';
-            $code = ErrorCode::FIELD_ERROR_INVALID_CONTACT;
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,
+                $field);
         }
 
         if (strlen($contact) < 10)
         {
-            $message = 'Contact number should be at least 10 digits';
-            $code = ErrorCode::FIELD_ERROR_INVALID_CONTACT;
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS,
+                $field);
         }
 
         if (strlen($contact) > 12)
         {
-            $message = 'Contact number should not be greater than 12 digits, including country code';
-            $code = ErrorCode::FIELD_ERROR_INVALID_CONTACT;
-        }
-
-        if ($code !== null)
-        {
-            throw new Exception\FieldErrorException($message, $code, Entity::CONTACT);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
+                $field);
         }
     }
 
@@ -286,16 +287,16 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function processValidationFailure($messages, $operation, $input)
-    {
-        $bag = $messages;
+    // protected function processValidationFailure($messages, $operation, $input)
+    // {
+    //     $bag = $messages;
 
-        $this->checkValidationFailureEmail($bag);
+    //     $this->checkValidationFailureEmail($bag);
 
-        $this->checkValidationFailureContact($bag);
+    //     $this->checkValidationFailureContact($bag);
 
-        parent::processValidationFailure($messages, $operation, $input);
-    }
+    //     parent::processValidationFailure($messages, $operation, $input);
+    // }
 
     protected function checkValidationFailureEmail($bag)
     {

@@ -43,7 +43,7 @@ trait RequestResponseFlowTrait
 
     protected function processJsonIfJsonp($data, & $content)
     {
-        if ((isset($data['json']) === false) or
+        if ((isset($data['jsonp']) === false) or
             ($data['jsonp'] === false))
         {
             return;

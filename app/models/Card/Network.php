@@ -102,7 +102,9 @@ class Network
         {
             if (in_array($cardNetwork, self::$unsupportedNetworks))
             {
-                throw new Exception\CardErrorException(ErrorCode::CARD_ERROR_NOT_SUPPORTED);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
+                    'number');
             }
         }
 

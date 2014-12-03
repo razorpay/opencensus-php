@@ -555,19 +555,6 @@ class Gateway extends BaseGateway
 
         switch ($apiErrorCode)
         {
-            case Error\ErrorCode::CARD_ERROR_INVALID_BRAND:
-            case Error\ErrorCode::CARD_ERROR_INVALID_NAME:
-            case Error\ErrorCode::CARD_ERROR_INVALID_NUMBER:
-            case Error\ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE:
-            case Error\ErrorCode::CARD_ERROR_CARD_DECLINED:
-                $exception = new Exception\CardErrorException($apiErrorCode);
-
-                $exception->setGatewayErrorCodeAndDesc(
-                    $gatewayErrorCode,
-                    $gatewayErrorDesc);
-
-                break;
-
             case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF:
             case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN:
             case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT:

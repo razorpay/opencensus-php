@@ -36,7 +36,7 @@ class ValidationTest extends TestCase
 
     public function testShortCardNumber()
     {
-        $this->setExpectedException('EE\Exception\CardErrorException');
+        $this->setExpectedException('EE\Exception\BadRequestValidationFailureException');
         $this->card->build($this->input);
     }
     public function test4DigitCVV()

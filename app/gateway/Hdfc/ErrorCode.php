@@ -262,7 +262,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00167   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
         Hdfc\ErrorCode::GW00170   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
         Hdfc\ErrorCode::GW00177   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
-        Hdfc\ErrorCode::GW00181   => Error\ErrorCode::CARD_ERROR_INSUFFICIENT_BALANCE,
+        Hdfc\ErrorCode::GW00181   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         Hdfc\ErrorCode::GW00183   => Error\ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
         Hdfc\ErrorCode::GW00458   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
 
@@ -270,7 +270,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00205   => Error\ErrorCode::GATEWAY_ERROR_INVALID_SUBSEQUENT_PAYMENT,
 
         Hdfc\ErrorCode::GW00258   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN,
-        Hdfc\ErrorCode::GW00259   => Error\ErrorCode::CARD_ERROR_CARD_DECLINED,
+        Hdfc\ErrorCode::GW00259   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
 
         Hdfc\ErrorCode::GW00456   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
 

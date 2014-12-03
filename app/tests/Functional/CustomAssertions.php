@@ -5,7 +5,7 @@ namespace Tests\Functional;
 trait CustomAssertions
 {
     public function assertExceptionClass($e, $class)
-    {
+    {//sd(get_class($e));
         if (($e instanceof $class) === false)
         {
             throw $e;

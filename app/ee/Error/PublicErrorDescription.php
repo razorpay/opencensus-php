@@ -16,21 +16,6 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PROCESSING_DECLINED =
         'Payment failed due to processing error on gateway';
 
-    const CARD_ERROR_INVALID_EXPIRY_DATE =
-        'The expiry date is not valid';
-
-    const CARD_ERROR_INVALID_BRAND =
-        'Currently the given card\'s brand is not supported by us';
-
-    const CARD_ERROR_CARD_DECLINED =
-        'The card was declined';
-
-    const CARD_ERROR_INSUFFICIENT_BALANCE =
-        'The card has insufficient balance';
-
-    const CARD_ERROR_NOT_SUPPORTED =
-        'Card network not currently supported';
-
     const BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED =
         'The payment has already been processed. Did you press the back button in browser?';
 
@@ -69,6 +54,24 @@ class PublicErrorDescription
 
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE =
         'Bank code provided for net banking payment is invalid';
+
+    const BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS =
+        'Contact number can only contain digits and + symbol';
+
+    const BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS =
+        'Contact number should be at least 10 digits';
+
+    const BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS =
+        'Contact number should not be greater than 12 digits, including country code';
+
+    const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED =
+        'Card network not supported curently';
+
+    const BAD_REQUEST_PAYMENT_CARD_DECLINED =
+        'Card decline by bank';
+
+    const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE =
+        'Expiry date is not valid';
 
     const BAD_REQUEST_INVALID_ID =
         'The id provided does not exist';

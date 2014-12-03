@@ -7,7 +7,7 @@ use Gateway\HdfcGateway\HdfcGatewayErrorCode;
 
 //contain array of test cards
 return [
-    'shortCardNumber' => [
+    'testShortCardNumber' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -18,18 +18,19 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'number',
                 ]
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\CardErrorException',
-            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'field' => 'number'
         ],
     ],
-    'nonNumericCardNumber' => [
+    'testNonNumericCardNumber' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -40,18 +41,18 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'number',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\CardErrorException',
-            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'cardNumberWithSpaces' => [
+    'testCardNumberWithSpaces' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -66,7 +67,7 @@ return [
             'status_code' => 200,
         ],
     ],
-    'longCardNumber' => [
+    'testLongCardNumber' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -77,18 +78,18 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'number',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\CardErrorException',
-            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'nonLuhnCardNumber' => [
+    'testNonLuhnCardNumber' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -99,18 +100,18 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::CARD_ERROR_INVALID_NUMBER,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'number',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\CardErrorException',
-            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_NUMBER,
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'invalidCardExpiryMonth' => [
+    'testInvalidCardExpiryMonth' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -121,18 +122,18 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::CARD_ERROR_INVALID_EXPIRY_MONTH,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'expiry_month',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\CardErrorException',
-            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_MONTH,
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'invalidCardExpiryYear' => [
+    'testInvalidCardExpiryYear' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -143,18 +144,18 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::CARD_ERROR_INVALID_EXPIRY_YEAR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'field' => 'expiry_year',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\CardErrorException',
-            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_YEAR,
+            'class' => 'EE\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'invalidCardExpiryDate' => [
+    'testInvalidCardExpiryDate' => [
         'request' => [
             'content' => [
                 'card' => [
@@ -166,15 +167,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE,
-                    'description' => PublicErrorDescription::CARD_ERROR_INVALID_EXPIRY_DATE,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
                 ]
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'EE\Exception\CardErrorException',
-            'internal_error_code' => ErrorCode::CARD_ERROR_INVALID_EXPIRY_DATE,
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         ],
     ],
 ];
