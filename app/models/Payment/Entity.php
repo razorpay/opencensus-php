@@ -112,7 +112,7 @@ class Entity extends Base\PublicEntity
 
     public function generateRefundStatus($input)
     {
-        $this->setAttribute(self::REFUND_STATUS, Refund\Status::NONE);
+        $this->setAttribute(self::REFUND_STATUS, Refund\Status::NULL);
     }
 
     public function generateUdf($input)
@@ -241,7 +241,7 @@ class Entity extends Base\PublicEntity
 
     public function isPartiallyOrFullyRefunded()
     {
-        return ! ($this->getAttribute(self::STATUS) === Refund\Status::NONE);
+        return ! ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::NULL);
     }
 
     public function isFullyRefunded()
@@ -249,7 +249,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::FULL);
     }
 
-    public function isPartisallyRefunded()
+    public function isPartiallyRefunded()
     {
         return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::PARTIAL);
     }

@@ -4,13 +4,9 @@ namespace Models\Payment;
 
 use EE\Exception\BaseException;
 use EE\Exception\BadRequestException;
-
-use Models\Gateway;
-
 use Models\Card;
 use Models\Transaction;
 use Models\Payment;
-
 use Trace\Trace;
 use Trace\TraceCode;
 

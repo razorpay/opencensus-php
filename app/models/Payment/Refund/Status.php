@@ -4,7 +4,7 @@ namespace Models\Payment\Refund;
 
 class Status
 {
-    const NONE = 'none';
+    const NULL = null;
     const FULL = 'full';
     const PARTIAL = 'partial';
 }

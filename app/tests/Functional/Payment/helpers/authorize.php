@@ -20,7 +20,7 @@ return [
                 'entity' => 'payment',
                 'amount' => 50000,
                 'status' => 'authorized',
-                'refund_status' => 'none',
+                'refund_status' => null,
             ]
         ],
         'jsonp' => true

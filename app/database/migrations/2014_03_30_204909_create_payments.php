@@ -45,7 +45,7 @@ class CreatePayments  extends Migration
                   ->default(0);
 
             $table->string(Payment::REFUND_STATUS)
-                  ->default('none');
+                  ->nullable();
 
             $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
 
