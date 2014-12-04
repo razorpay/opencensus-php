@@ -44,7 +44,11 @@ class Settler
 
         try
         {
-            $settlements = $this->process($input);
+            list($settlements, $txns) = $this->process($input);
+
+            $file = $this->createSettlementFile($settlements, $txns);
+
+            $this->transferFileToNodalBank($file);
 
             $this->setlRepo->commit();
         }
@@ -99,7 +103,7 @@ class Settler
 
         $this->txnRepo->settled($txns, self::$settlementTimestamp);
 
-        return $settlements;
+        return array($settlements, $txns);
     }
 
     protected function createMerchantSettlement($merchant, $amount)
@@ -172,6 +176,29 @@ class Settler
         $txn->generateId();
 
         return $txn;
+    }
+
+    protected function createSettlementFile($settlements, $txns)
+    {
+        // @todo: remove sys_get_temp_dir. the doc comments don't recommend it.
+        // Create a temp file name
+        $filename =  tempnam(sys_get_temp_dir(), 'hdfc_mpr') . '.xlsx';
+
+        $fp = fopen($filename, 'w');
+
+        foreach ($txns as $txn)
+        {
+            fputcsv($fp, $txn->toArray());
+        }
+
+        fclose($fp);
+
+        return $filename;
+    }
+
+    protected function transferFileToNodalBank($file)
+    {
+        ;
     }
 
     protected function fetchTransactionsToSettle($input)
