@@ -56,6 +56,7 @@ class ErrorCode
 
     const GW00456   = 'GW00456';
     const GW00458   = 'GW00458';
+    const GW00850   = 'GW00850';
 
     /**
      * All codes in GV000** series
@@ -193,6 +194,7 @@ class ErrorCode
 
         Hdfc\ErrorCode::GW00456   => 'Invalid TranPortal Id',
         Hdfc\ErrorCode::GW00458   => 'Invalid Payment Attempt',
+        Hdfc\ErrorCode::GW00850   => 'Missing Required data',
 
         Hdfc\ErrorCode::GV00001   => 'Unknown VPAS version',
         Hdfc\ErrorCode::GV00002   => 'Cardholder not enrolled',
@@ -265,6 +267,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00181   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         Hdfc\ErrorCode::GW00183   => Error\ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
         Hdfc\ErrorCode::GW00458   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        Hdfc\ErrorCode::GW00850   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
 
         Hdfc\ErrorCode::GW00201   => Error\ErrorCode::GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND,
         Hdfc\ErrorCode::GW00205   => Error\ErrorCode::GATEWAY_ERROR_INVALID_SUBSEQUENT_PAYMENT,

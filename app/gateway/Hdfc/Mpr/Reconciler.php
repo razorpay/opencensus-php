@@ -132,7 +132,7 @@ class Reconciler
     protected function verifyPaymentAttributes($mpr, $payment)
     {
         $paymentId = $payment[Payment\Entity::ID];
-//sd($paymentId, $mpr['payment_id']);
+
         if ($mpr['payment_id'] !== $paymentId)
         {
             throw new Exception\LogicException(
