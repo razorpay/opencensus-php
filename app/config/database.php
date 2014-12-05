@@ -46,12 +46,6 @@ return array(
 
 	'connections' => array(
 
-		'sqlite' => array(
-			'driver'   => 'sqlite',
-			'database' => __DIR__.'/../database/production.sqlite',
-			'prefix'   => '',
-		),
-
 		'mysql' => array(
 			'driver'    => 'mysql',
 			'host'      => $_ENV['DB_MYSQL_HOST'],
@@ -59,31 +53,10 @@ return array(
 			'database'  => $_ENV['DB_MYSQL_DATABASE'],
 			'username'  => $_ENV['DB_MYSQL_USERNAME'],
 			'password'  => $_ENV['DB_MYSQL_PASSWORD'],
-			'charset'   => 'utf8',
-			'collation' => 'utf8_unicode_ci',
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
 			'prefix'    => '',
 		),
-
-		'pgsql' => array(
-			'driver'   => 'pgsql',
-			'host'     => 'localhost',
-			'database' => 'database',
-			'username' => 'root',
-			'password' => '',
-			'charset'  => 'utf8',
-			'prefix'   => '',
-			'schema'   => 'public',
-		),
-
-		'sqlsrv' => array(
-			'driver'   => 'sqlsrv',
-			'host'     => 'localhost',
-			'database' => 'database',
-			'username' => 'root',
-			'password' => '',
-			'prefix'   => '',
-		),
-
 	),
 
 	/*
