@@ -8,7 +8,7 @@ class UniqueIdEntity extends Entity
 {
     const ID = 'id';
 
-    const ID_LENGTH = '14';
+    const ID_LENGTH = 14;
 
     protected $genereateIdOnCreate = false;
 
@@ -27,7 +27,7 @@ class UniqueIdEntity extends Entity
 
     public function generateId()
     {
-        $this->setAttribute(self::ID, self::generateUniqueId());
+        $this->setAttribute(self::ID, static::generateUniqueId());
     }
 
     /**
@@ -72,7 +72,7 @@ class UniqueIdEntity extends Entity
 
         if ($value === null)
         {
-            $value = self::generateUniqueId($this->secureUid);
+            $value = static::generateUniqueId($this->secureUid);
 
             $this->setAttribute($key, $value);
         }
@@ -136,13 +136,16 @@ class UniqueIdEntity extends Entity
         $b62 = self::base62($nanotime);
 
         // Generate 3 random bytes, convert to hex and then to dec
+        // @note: do not use bindec i.e. convert directly to dec
+        //        because it overflows!
         $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(3)));
+
         // Convert the random decimal generated to base 62
         $rand = self::base62($dec);
 
         // Only 4 base 62 digits are needed, so cutoff any more.
         if (strlen($rand) > 4)
-            $rand = substr($rand, 0, 4);
+            $rand = substr($rand, -4);
 
         // Combine the base 62 nanotime with 4 base 62 digits
         // and create a unique identifier

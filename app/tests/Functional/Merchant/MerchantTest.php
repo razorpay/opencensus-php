@@ -57,8 +57,6 @@ class MerchantTest extends TestCase
 
     public function testUpdateKeyExpireInFuture()
     {
-        $data = $this->testData[__FUNCTION__];
-
         $content = $this->startTest();
 
         $expired = time() + 10;
@@ -73,8 +71,7 @@ class MerchantTest extends TestCase
         //
         // Update key once
         //
-        $response = $this->makeRequest($data['request']);
-        $content = json_decode($response->getContent(), true);
+        $content = $this->makeRequestAndGetContent($data['request']);
 
         $expired = time() + 1;
 
@@ -84,6 +81,29 @@ class MerchantTest extends TestCase
         // Update the same key second time
         //
         $content = $this->startTest();
+    }
+
+    /**
+     * Checks that new key id generated is not
+     * associated with time like other entity ids
+     * The way to do this is to take a normal generated id
+     * and compare it with new key generated. Comparison is
+     * done for first few letters. If it's time dependant,
+     * then those will be same
+     */
+    public function testNewKeyIdRandom()
+    {
+        $content = $this->startTest();
+
+        $id = $this->fixtures->generateUniqueId();
+        $newKeyId = $content['new']['id'];
+        // strip prefix
+        $newKeyId = substr($newKeyId, 9);
+
+        $str1 = substr($id, 0, 3);
+        $str2 = substr($newKeyId, 0, 3);
+
+        $this->assertNotEquals($str1, $str2);
     }
 
     public function startTest()

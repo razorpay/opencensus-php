@@ -114,4 +114,19 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_EXPIRED,
         ],
     ],
+
+    'testNewKeyIdRandom' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'old' => [
+                ],
+                'new' => [
+                ]
+            ],
+        ],
+    ]
 ];

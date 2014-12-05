@@ -4,6 +4,7 @@ namespace Models\Key;
 
 use EE\Error\ErrorCode;
 use EE\Exception;
+use Hash;
 use Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -13,7 +14,8 @@ class Entity extends Base\PublicEntity
     const SECRET = 'secret';
     const EXPIRED_AT = 'expired_at';
 
-    const KEY_SECRET_HASH_LENTH = 100;
+    const SECRET_HASH_LENGTH = 100;
+    const SECRET_LENGTH = 24;
 
     protected $entity = 'key';
 
@@ -91,31 +93,39 @@ class Entity extends Base\PublicEntity
         return ($expiredAt <= time());
     }
 
-    public function checkAndSetExpired($roll = false)
+    public function checkAndSetExpired($delay = false)
     {
         if ($this->isExpiredOrExpiring())
         {
             $errorCode = null;
 
             if ($this->isExpired())
+            {
                 $errorCode = ErrorCode::BAD_REQUEST_KEY_EXPIRED;
+            }
             else
+            {
                 $errorCode = ErrorCode::BAD_REQUEST_KEY_EXPIRING_SOON;
+            }
 
             throw new Exception\BadRequestException($errorCode);
         }
 
-        $this->setExpired($roll);
+        $this->setExpired($delay);
     }
 
-    public function setExpired($roll = false)
+    protected function setExpired($delay = false)
     {
-        $time = 0;
+        $delaySeconds = 0;
 
-        if ($roll === true)
-            $time = self::DEFAULT_KEY_EXPIRY_TIME_ON_ROLL;
+        if ($delay === true)
+        {
+            // Delay by pre-specified time
+            $delaySeconds = self::DEFAULT_KEY_EXPIRY_TIME_ON_ROLL;
+        }
 
-        $this->setAttribute(self::EXPIRED_AT, time() + $time);
+        $expiredAt = time() + $delaySeconds;
+        $this->setAttribute(self::EXPIRED_AT, $expiredAt);
     }
 
     /**
@@ -127,9 +137,23 @@ class Entity extends Base\PublicEntity
     {
         $len = self::ID_LENGTH;
 
-        $secret = bin2hex(openssl_random_pseudo_bytes($len/2));
+        $secret = '';
+        $x = range(1,6);
+        foreach ($x as $n)
+        {
+            $hex = bin2hex(openssl_random_pseudo_bytes(4));
+            $dec = hexdec($hex);
 
-        $this->setAttribute(self::SECRET, \Hash::make($secret));
+            // Convert the random decimal generated to base 62
+            $partial = self::base62($dec);
+            $partial = substr($partial, -4);
+            $secret .= $partial;
+        }
+
+        $hash = Hash::make($secret);
+        $this->setAttribute(self::SECRET, $hash);
+
+        assert(strlen($secret) === self::SECRET_LENGTH);
 
         return $secret;
     }
@@ -138,7 +162,22 @@ class Entity extends Base\PublicEntity
     {
         $len = self::ID_LENGTH;
 
-        $id = bin2hex(openssl_random_pseudo_bytes($len/2));
+        $id = '';
+        $x = range(1,4);
+        foreach ($x as $n)
+        {
+            $hex = bin2hex(openssl_random_pseudo_bytes(4));
+            $dec = hexdec($hex);
+
+            // Convert the random decimal generated to base 62
+            $partial = self::base62($dec);
+            $partial = substr($partial, -4);
+            $id .= $partial;
+        }
+
+        $id = substr($id, -1 * $len);
+
+        assert(strlen($id) === self::ID_LENGTH);
 
         return $id;
     }

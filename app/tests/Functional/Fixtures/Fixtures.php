@@ -208,6 +208,11 @@ class Fixtures
         ;
     }
 
+    public function generateUniqueId()
+    {
+        return \Models\Base\UniqueIdEntity::generateUniqueId();
+    }
+
     public function createDefaultPricingPlan()
     {
         $pricingPlanId = '1hDYlICobzOCYt';

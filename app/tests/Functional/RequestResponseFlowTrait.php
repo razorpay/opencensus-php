@@ -28,7 +28,7 @@ trait RequestResponseFlowTrait
             $response = $e->generatePublicJsonResponse();
         }
         finally
-        {
+        {//s($response->getContent());
             if ((isset($e) === false) and
                 (isset($data['exception'])))
             {
