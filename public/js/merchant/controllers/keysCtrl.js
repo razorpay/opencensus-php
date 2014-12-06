@@ -11,7 +11,7 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
     };
 
     fetchKeys();
-    
+
     $scope.generateKey = function(){
       var request = $http({
                     method: "post",
@@ -123,7 +123,7 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
         $scope.alerts.resetAlerts();
         if(data.success) {
           $scope.keys.count = data.data.count;
-          $scope.keys.data = data.data.data;
+          $scope.keys.items = data.data.items;
         }
         else {
           $scope.alerts.addAlert('danger');

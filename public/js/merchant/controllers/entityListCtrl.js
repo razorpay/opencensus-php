@@ -12,7 +12,7 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFacto
         countEnd: 0,
         skip: 0
     };
-    
+
     $scope.generate = function(entity){
       $scope.entity.type = entity;
       generateTable();
@@ -55,8 +55,8 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFacto
       if(!$scope.entity.type){
         console.log("Error: No Entity Type Sepcified");
         return;
-      } 
-      
+      }
+
       var query =
         "count=10" +
         "&skip="+ $scope.entity.skip;
@@ -65,33 +65,33 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFacto
         var request = $http.get("/" + modeFactory.getMode() +  "/" + $scope.entity.type + "s?" + query);
       else
         var request = $http.get("/" + modeFactory.getMode() +  "/entity/" + $scope.entity.id);
-      
+
       request
       .success(function(data){
         $scope.alerts.resetAlerts();
 
         if(data.success) {
-          $scope.entity.data = data.data.data;
+          $scope.entity.items = data.data.items;
 
           $scope.entity.count = data.data.count;
 
           $scope.entity.countStart = $scope.entity.skip + 1;
 
-          if(data.data.count === 0) 
+          if(data.data.count === 0)
             $scope.entity.countEnd = $scope.entity.countStart;
 
-          else 
+          else
             $scope.entity.countEnd = $scope.entity.countStart + $scope.entity.count -1;
 
           $scope.allowPrev = $scope.entity.countStart !== 1;
-          
+
           $scope.allowNext = $scope.entity.count >= 10;
         }
         else {
           angular.forEach(data.errors, function(value, key){
             $scope.alerts.addAlert('danger', value);
-          });            
-        }          
+          });
+        }
       })
       .error(function(){
         $scope.alerts.addAlert('danger', null, true);

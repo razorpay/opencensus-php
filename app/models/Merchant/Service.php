@@ -69,7 +69,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getCode());
+            return array($e->getMessage());
         }
 
         $merchant->confirm();
@@ -172,7 +172,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $errors[] = $e->getCode();
+            $errors[] = $e->getMessage();
         }
 
         return array($errors, $data);
@@ -208,7 +208,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $error[] = $e->getCode();
+            $error[] = $e->getMessage();
         }
 
         return array($error, $key_data);

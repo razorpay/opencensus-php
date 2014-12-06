@@ -41,7 +41,7 @@
         <a href class="list-group-item" ng-click="openAssignPricing()">
           Assign Pricing
         </a>
-        <a href class="list-group-item" ng-hide="merchant.terminals.data.length != 0" ng-click="openAssignTerminal()">
+        <a href class="list-group-item" ng-hide="merchant.terminals.items.length != 0" ng-click="openAssignTerminal()">
           Assign Terminal
         </a>
       </div>
@@ -148,14 +148,14 @@
         <a href class="list-group-item" ng-init="isTerminalCollapsed = true">
           <span class="pull-right">
             <button class="btn btn-default btn-xs pull-right"  ng-click="isTerminalCollapsed = !isTerminalCollapsed"
-                    ng-show="merchant.terminals.data.length != 0">Show/Hide</button>
-            <span ng-hide="merchant.terminals.data.length != 0">
+                    ng-show="merchant.terminals.items.length != 0">Show/Hide</button>
+            <span ng-hide="merchant.terminals.items.length != 0">
               No terminal Assigned
             </span>
           </span>
           Terminal
         </a>
-          <div collapse="isTerminalCollapsed" class="panel-body" ng-repeat="terminal in merchant.terminals.data">
+          <div collapse="isTerminalCollapsed" class="panel-body" ng-repeat="terminal in merchant.terminals.items">
             <a href class="list-group-item">
               <span class="pull-right">{{terminal.id}}</span>
               Terminal Id

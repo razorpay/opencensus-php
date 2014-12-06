@@ -36,10 +36,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in entity.data">
+          <tr ng-repeat="row in entity.items">
             <td><a ui-sref="app.settlements.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.amount/100 | currency:"INR "}}</td>
-            <td>{{row.status | titlecase}}</td>     
+            <td>{{row.status | titlecase}}</td>
           </tr>
           <tr ng-show="entity.count === 0">
             <td colspan="3" class="text-center">
@@ -57,7 +57,7 @@
         <div class="col-sm-4 text-center">
           <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
         </div>
-        <div class="col-sm-4 text-right text-center-xs">                
+        <div class="col-sm-4 text-right text-center-xs">
           <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
             <li ng-click="allowPrev && prev()"><button class="btn btn-default fa fa-chevron-left" ng-disabled="!allowPrev"></button></li>
             <li ng-click="allowNext && next()"><button class="btn btn-default  fa fa-chevron-right" ng-disabled="!allowNext"></button></li>

@@ -223,7 +223,7 @@ class Service extends Base\Service
             }
             catch(\Razorpay\Api\Errors\BadRequestError $e)
             {
-                $error[] = $e->getCode();
+                $error[] = $e->getMessage();
             }
         }
 
@@ -252,7 +252,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $error[] = $e->getCode();
+            $error[] = $e->getMessage();
         }
 
         return array($error, $data);
@@ -277,7 +277,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getCode());
+            return array($e->getMessage());
         }
 
         $merchant->activated = 1;
@@ -308,7 +308,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getCode());
+            return array($e->getMessage());
         }
 
         return array();
@@ -333,7 +333,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getCode());
+            return array($e->getMessage());
         }
 
         return array();
@@ -351,11 +351,11 @@ class Service extends Base\Service
         {
             $response = $this->api->pricing->merchants()->toArray();
 
-            $response = $response['data'];
+            $response = $response['items'];
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $errors[] = $e->getCode();
+            $errors[] = $e->getMessage();
         }
 
         return array($errors, $response);
@@ -375,7 +375,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $errors[] = $e->getCode();
+            $errors[] = $e->getMessage();
         }
 
         return array($errors, $response);
@@ -395,7 +395,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $error[] = $e->getCode();
+            $error[] = $e->getMessage();
         }
 
         return array($error, $response);
@@ -415,7 +415,7 @@ class Service extends Base\Service
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $error[] = $e->getCode();
+            $error[] = $e->getMessage();
         }
 
         return array($error, $response);

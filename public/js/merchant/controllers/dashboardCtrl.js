@@ -17,7 +17,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
   var request = $http.get("/"+modeFactory.getMode()+"/analytics/aggregations");
 
   request.success(function(result){
-    
+
     if (result.data) {
         if (result.data.payment && parseInt(result.data.payment.txn_count) !== 0)
             $scope.aggregations.data.success = parseInt(result.data.payment.successful_txn_count * 100/result.data.payment.txn_count);
@@ -33,15 +33,15 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
 .controller('DashboardGraphsCtrl', ['$scope', '$http', 'modeFactory', 'dateFactory',
   function($scope, $http, modeFactory, dateFactory) {
 
-    
+
     initialiseStatType();
     initialiseGraphs();
-    
+
     //Watches changes in parameters and trigger regeneration fo graph if any changes
     $scope.$watch('showSpline', function() {
        $scope.refreshGraph = !$scope.refreshGraph;
     });
-  
+
     //@todo once angular 1.3 is stable switch to watchgroup
     $scope.$watch('statType + date.startDate + date.endDate',function() {
        generateGraphs();
@@ -61,7 +61,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
     function initialiseGraphs() {
       //Date Handlers
       $scope.date = dateFactory.getHandler($scope);
-      
+
       //Graphs Initalisers
       $scope.showSpline = true;
 
@@ -77,7 +77,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
           grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#dce5ec' },
           tooltip: true,
           tooltipOpts: {
-            defaultTheme: false, 
+            defaultTheme: false,
             shifts: { x: 10, y: -25 }
           }
         }
@@ -93,12 +93,12 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
           grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#dce5ec' },
           tooltip: true,
           tooltipOpts: {
-            defaultTheme: false, 
+            defaultTheme: false,
             shifts: { x: 10, y: -25 }
           }
         }
       };
-      
+
       $scope.successfull.options.tooltipOpts.content = 'Date: %x <br/> Count: %y';
       $scope.transactions.options.tooltipOpts.content = 'Date: %x <br/> Amount: ₹%y';
     };

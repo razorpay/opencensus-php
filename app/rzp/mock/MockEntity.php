@@ -28,7 +28,7 @@ class MockEntity extends Entity
         $collection = array(
             'entity'    => 'collection',
             'count'     => 1,
-            'data'      => array($data)
+            'items'      => array($data)
         );
 
         $this->fill($collection);
