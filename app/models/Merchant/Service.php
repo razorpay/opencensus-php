@@ -76,14 +76,7 @@ class Service extends Base\Service
 
         $keys = (new Key\Repository)->getKeysForMerchant($merchantId);
 
-        $keysArray = array();
-
-        foreach ($keys->all() as $key)
-        {
-            array_push($keysArray, $key->toArrayPublic());
-        }
-
-        return array('entity' => 'collection', 'count' => count($keys), 'data' => $keysArray);
+        return $keys->toArrayPublic();
     }
 
     public function retrieveById($id)
