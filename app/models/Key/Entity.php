@@ -178,7 +178,7 @@ class Entity extends Base\PublicEntity
         $id = substr($id, -1 * $len);
 
         assert(strlen($id) === self::ID_LENGTH);
-
+s($id);
         return $id;
     }
 

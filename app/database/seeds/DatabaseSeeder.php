@@ -149,27 +149,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::KEY)->insert(
                 array(
-                    'id'            =>  '1EYxuuhMWeKd3Z',
-                    'merchant_id'   =>  '10000000000000',
-                    'secret'        =>  Hash::make('thisissupersecret'),
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
-                    )
-                );
-
-            DB::table(Table::KEY)->insert(
-                array(
-                    'id'            =>  '20oUUQQgVEc8DQ',
-                    'merchant_id'   =>  '1MABTZjIwgLtRZ',
-                    'secret'        =>  Hash::make('thisissupersecret'),
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
-                    )
-                );
-
-            DB::table(Table::KEY)->insert(
-                array(
-                    'id'            =>  '229RzYXCimSVqj',
+                    'id'            =>  '0wFRWIZnH65uny',
                     'merchant_id'   =>  '1MABTZjIwgLtRZ',
                     'secret'        =>  Hash::make('thisissupersecret'),
                     'created_at'    =>  time(),
