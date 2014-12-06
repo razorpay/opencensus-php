@@ -23,6 +23,21 @@ return [
         ],
     ],
 
+    'testCreateKey' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants/1X4hRFHFx4UiXt/keys',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'key',
+                'expired_at' => null,
+            ]
+        ]
+    ],
+
     'testGetMerchant' => [
         'request' => [
             'url' => '/merchants/1X4hRFHFx4UiXt',
@@ -48,7 +63,7 @@ return [
         'response' => [
             'content' => [
                 'count' => 1,
-                'data' => [
+                'items' => [
                     '0' => [
                         'id' => 'rzp_test_1DP5mmOlF5G5ag',
                         'expired_at' => null

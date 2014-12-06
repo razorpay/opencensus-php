@@ -27,6 +27,13 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testCreateKey()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testGetMerchant()
     {
         $this->createMerchant();
