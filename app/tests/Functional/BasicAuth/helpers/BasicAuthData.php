@@ -174,7 +174,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'data' => [
+                'items' => [
                     [
                         'entity' => 'payment',
                     ],

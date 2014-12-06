@@ -94,7 +94,7 @@ class HdfcGatewayMprTest extends TestCase
                 'content' => [
                     'entity' => 'collection',
                     'count' => 1,
-                    'data' => [
+                    'items' => [
                         array(
                             'entity' => 'settlement',
                         ),
@@ -121,7 +121,7 @@ class HdfcGatewayMprTest extends TestCase
                 'content' => [
                     'entity' => 'collection',
                     'count' => $count,
-                    'data' => [],
+                    'items' => [],
                 ]
             ]
         ];
@@ -140,7 +140,7 @@ class HdfcGatewayMprTest extends TestCase
             array_push($txns, $txn);
         }
 
-        $testData['response']['data'] = $txns;
+        $testData['response']['items'] = $txns;
 
         $this->setupProxyBasicAuthParams();
 

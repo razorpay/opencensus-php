@@ -56,7 +56,7 @@ class PaymentRetrieveTest extends TestCase
         $payments = $this->retrievePaymentsDefault();
 
         //GIVEN
-        $id = $payments['data'][0]['id'];
+        $id = $payments['items'][0]['id'];
 
         //WHEN
         $request = $this->request;
@@ -72,15 +72,15 @@ class PaymentRetrieveTest extends TestCase
         $payments = $this->retrievePaymentsDefault();
 
         //GIVEN
-        $status = $payments['data'][0]['status'];
-        $id = $payments['data'][0]['id'];
+        $status = $payments['items'][0]['status'];
+        $id = $payments['items'][0]['id'];
 
         $request = $this->request;
         $request['content'] = array('count' => 1);
         //WHEN
         $payment = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($id, $payment['data'][0]['id']);
+        $this->assertEquals($id, $payment['items'][0]['id']);
     }
 
     /**
@@ -89,10 +89,10 @@ class PaymentRetrieveTest extends TestCase
     public function testRetrievePaymentsWithCreatedAt()
     {
         $payments = $this->retrievePaymentsDefault();
-        $id = $payments['data'][0]['id'];
+        $id = $payments['items'][0]['id'];
 
         //GIVEN
-        $created_at = $payments['data'][0]['created_at'];
+        $created_at = $payments['items'][0]['created_at'];
 
         //WHEN
         $response = $this->call('GET', "/v1/payments/?created=".$created_at, array(), array(), $this->auth);
@@ -102,6 +102,6 @@ class PaymentRetrieveTest extends TestCase
         $this->assertJson($content);
         $payment = json_decode($content, true);
 
-        $this->assertEquals($id, $payment['data'][0]['id']);
+        $this->assertEquals($id, $payment['items'][0]['id']);
     }
 }

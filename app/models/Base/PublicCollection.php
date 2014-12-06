@@ -18,7 +18,7 @@ class PublicCollection extends Collection
         $array['entity'] = 'collection';
         $array['count'] = count($this->items);
 
-        $array['data'] = array_map(function($value)
+        $array['items'] = array_map(function($value)
         {
             return $value->toArrayPublic();
 
