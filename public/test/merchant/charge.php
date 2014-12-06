@@ -7,10 +7,12 @@ require('../../../vendor/autoload.php');//Load API
 use Razorpay\Api\Api;
 require('config.php'); // Load API Credentials
 
-$configDev = '../config_dev.php';
+$configDev = '../config.php';
 if (file_exists($configDev))
 {
-    require('../config_dev.php');
+    require('../config.php');
+    $baseUrl = $protocol . '://' . $hostname . '/v1/';
+
     Api::$baseUrl = $baseUrl;
 }
 
