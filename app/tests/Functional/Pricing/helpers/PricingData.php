@@ -145,7 +145,7 @@ return [
             'content' => [
                 'count' => 3,
                 'entity' => 'collection',
-                'data' => array(
+                'items' => array(
                     array(
                         'name' => 'TestPlan2',
                         'entity' => 'pricing',

@@ -45,7 +45,7 @@ class Plan extends PublicCollection
         return array(
             self::COUNT => 0,
             'entity' => 'collection',
-            'data' => array());
+            'items' => array());
     }
 
     /**
@@ -68,7 +68,7 @@ class Plan extends PublicCollection
             return $plans;
         }
 
-        $data = & $plans['data'];
+        $data = & $plans['items'];
 
         $first = true;
         $plan = array(self::ID => null);
