@@ -13,7 +13,7 @@ class Slack
 
     protected $url = 'https://%s.slack.com/services/hooks/incoming-webhook?token=%s';
 
-    protected $pretend;
+    protected $mock;
 
     protected $config;
 
@@ -23,7 +23,7 @@ class Slack
     {
         $this->env = $app['env'];
 
-        $slackConfig = $app['config']->get('slack');
+        $slackConfig = $app['config']->get('applications.slack');
         $this->initSlackConfig($slackConfig);
 
         $this->initInstanceData($app);
@@ -33,7 +33,7 @@ class Slack
     {
         $this->token = $config['token'];
         $this->team = $config['team'];
-        $this->pretend = $config['pretend'];
+        $this->mock = $config['mock'];
     }
 
     protected function initInstanceData($app)
@@ -67,10 +67,12 @@ class Slack
 
         $url = sprintf($this->url, $this->team, $this->token);
 
-        if ($this->pretend === false)
+        if ($this->mock === true)
         {
-            $this->postRequest($url, $content);
+            return;
         }
+
+        $this->postRequest($url, $content);
     }
 
     protected function postRequest($url, $content)

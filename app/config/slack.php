@@ -6,5 +6,5 @@ return array(
 
     'team' => 'razorpay',
 
-    'pretend' => false,
+    'mock' => $_ENV['SLACK_MOCK'],
 );

@@ -13,9 +13,9 @@ return array(
         'hdfc',
         'atom'),
 
-    'mock_hdfc' => false,
+    'mock_hdfc' => $_ENV['HDFC_MOCK'],
 
-    'mock_atom' => false,
+    'mock_atom' => $_ENV['ATOM_MOCK'],
 
     'mockhdfc_server' => false,
 );

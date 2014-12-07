@@ -119,6 +119,6 @@ return array(
 	|
 	*/
 
-	'pretend' => false,
+	'pretend' => $_ENV['EMAIL_MOCK'],
 
 );
