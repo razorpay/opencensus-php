@@ -34,10 +34,4 @@ class ConfigTest extends \Tests\TestCase
         $this->assertEquals($config['mock_hdfc'], false);
         $this->assertEquals($config['mock_atom'], false);
     }
-
-    public function testSlackPretendTrue()
-    {
-        $config = require app_path().'/config/slack.php';
-        $this->assertEquals(false, $config['pretend']);
-    }
 }
