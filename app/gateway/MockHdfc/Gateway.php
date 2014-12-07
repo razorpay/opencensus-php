@@ -21,6 +21,8 @@ class Gateway extends Hdfc\Gateway
         $this->request = \Request::getFacadeRoot();
 
         $this->mockHdfcServer = \Config::get('gateway.mockhdfc_server');
+
+        $this->mock = true;
     }
 
     protected function sendGatewayRequest($request)

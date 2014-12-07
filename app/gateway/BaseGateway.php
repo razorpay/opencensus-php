@@ -2,6 +2,7 @@
 
 namespace Gateway;
 
+use EE\Exception;
 use Requests;
 use Trace\Trace;
 
@@ -10,6 +11,12 @@ class BaseGateway
     protected $trace;
 
     protected $input;
+
+    /**
+     * Denotes if the gateway is a mock
+     * @var boolean
+     */
+    protected $mock;
 
     public function __construct()
     {
@@ -38,6 +45,12 @@ class BaseGateway
 
     public function setMode($mode)
     {
+        if (($mode === 'live') and
+            ($this->mock === true))
+        {
+            throw new Exception\LogicException('Cannot mock a gateway in live mode');
+        }
+
         $this->mode = $mode;
     }
 

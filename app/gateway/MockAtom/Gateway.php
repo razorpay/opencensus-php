@@ -14,6 +14,13 @@ class Gateway extends Atom\Gateway
 {
     protected $url = 'http://203.114.240.183/paynetz/epi/fts';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mock = true;
+    }
+
     public function capture(array $input)
     {
         $data = parent::capture($input);
