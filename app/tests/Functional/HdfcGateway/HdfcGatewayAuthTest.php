@@ -29,136 +29,79 @@ class HdfcGatewayAuthTest extends TestCase
         $this->setupPublicBasicAuthParams();
     }
 
-    /**
-     * @group testReponseTimeOut
-     * @group testFailure
-     */
     public function testCardTimeout()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testSuccess
-     * @group testCC
-     */
     public function testCreditCardSuccess()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testFailure
-     * @group testCC
-     * @group testResponseAuthNotAvailable
-     */
     public function testCreditCardAuthNotAvailable1()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testFailure
-     * @group testCC
-     * @group testResponseAuthNotAvailable
-     */
     public function testCreditCardAuthNotAvailable2()
     {
         $this->startTest([3]);
     }
 
-    /**
-     * @group testFailure
-     * @group testDC
-     * @group testResponseSignatureFailure
-     */
     public function testSignatureFailure1()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testFailure
-     * @group testDC
-     * @group testResponseSignatureFailure
-     */
     public function testSignatureFailure2()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testSuccess
-     * @group testDC
-     */
     public function testDebitCardSuccess1()
     {
         $this->startTest([6]);
     }
 
-    /**
-     * @group testSuccess
-     * @group testDC
-     */
     public function testDebitCardSuccess2()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testSuccess
-     * @group testDC
-     */
     public function testDebitCardSuccess3()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testFailure
-     * @group testDC
-     * @group testResponseParesNotSuccess
-     */
     public function testParesNotSuccess()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testFailure
-     * @group testDC
-     * @group testResponseAuthNotAvailable
-     */
     public function testDebitCardAuthNotAvailable1()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testFailure
-     * @group testDC
-     * @group testResponseAuthNotAvailable
-     */
     public function testDebitCardAuthNotAvailable2()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testSuccess
-     * @group testDC
-     */
     public function testDebitCardSuccess4()
     {
         $this->startTest();
     }
 
-    /**
-     * @group testSuccess
-     * @group testDC
-     */
     public function testDebitCardSuccess5()
     {
+        $this->startTest();
+    }
+
+    public function testMockFailureOnLive()
+    {
+        $this->setupPublicBasicAuthParams();
         $this->startTest();
     }
 
