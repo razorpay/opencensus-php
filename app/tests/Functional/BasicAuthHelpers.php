@@ -14,7 +14,7 @@ trait BasicAuthHelpers
     {
         if ($user === null)
         {
-            $user = 'rzp_test_1DP5mmOlF5G5ag';
+            $user = 'rzp_test_TheTestAuthKey';
         }
 
         if ($pwd === null)

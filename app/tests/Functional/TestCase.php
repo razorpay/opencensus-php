@@ -104,7 +104,7 @@ class TestCase extends ParentTestCase
      */
     protected function dbMigrate()
     {
-        Artisan::call('migrate');
+        Artisan::call('migrate', array('--database' => 'live'));
         Artisan::call('migrate', array('--database' => 'test'));
     }
 
@@ -131,7 +131,7 @@ class TestCase extends ParentTestCase
         $this->setupAppBasicAuthParams($user);
     }
 
-    protected function setupPublicBasicAuthParams($user = 'rzp_test_1DP5mmOlF5G5ag')
+    protected function setupPublicBasicAuthParams($user = 'rzp_test_TheTestAuthKey')
     {
         $this->setupBasicAuthParams($user, '');
     }
@@ -140,7 +140,7 @@ class TestCase extends ParentTestCase
     {
         if ($user === null)
         {
-            $user = 'rzp_test_1DP5mmOlF5G5ag';
+            $user = 'rzp_test_TheTestAuthKey';
         }
 
         if ($pwd === null)
@@ -149,10 +149,5 @@ class TestCase extends ParentTestCase
         }
 
         $this->setupBasicAuthParams($user, $pwd);
-    }
-
-    protected function createEntity($entity, $attributes = array())
-    {
-        return $this->fixtures->createEntity($entity, $attributes);
     }
 }

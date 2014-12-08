@@ -39,18 +39,22 @@ class Fixtures
         $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl']);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
 
+        $this->connection('test');
+
         $entities = array(
             'pricing'   => $this->createDefaultPricingPlan(),
             'merchant'  => $this->createEntity('merchant', ['id' => '10000000000000']),
             'terminal'  => $this->createEntity('terminal', ['merchant_id' => '10000000000000']),
-            'key'       => $this->createEntity('key', ['merchant_id' => '10000000000000']),
             'balance'   => $this->createEntity('balance', ['id' => '10000000000000']),
             );
+
+        $this->testKey = $this->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
+        $this->liveKey = $this->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
 
         $entities['payment'] = $this->createEntity(
                                         'payment',
                                         ['merchant_id' => '10000000000000',
-                                        'terminal_id' => $entities['terminal']->getKey()]);
+                                         'terminal_id' => $entities['terminal']->getKey()]);
 
         $this->entities = $entities;
     }
@@ -146,7 +150,7 @@ class Fixtures
         return $this->createEntity('terminal', $attributes);
     }
 
-    public function createEntity($entity, $attributes = array())
+    public function createEntity($entity, $attributes = array(), $mode = 'test')
     {
         if (($entity === 'merchant') or
             ($entity === 'pricing'))
@@ -154,7 +158,7 @@ class Fixtures
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
 
-        return $this->save($entity, $attributes);
+        return $this->save($entity, $attributes, $mode);
     }
 
     protected function createEntityInTestAndLive($entity, $attributes = array())
@@ -177,13 +181,15 @@ class Fixtures
         return $entity;
     }
 
-    protected function save($entity, $attributes)
+    protected function save($entity, $attributes, $mode = 'test')
     {
+        $this->connection($mode);
+
         $this->eloquentUnguard();
 
-        $entity = self::$entityMap[$entity];
+        $entityClass = self::$entityMap[$entity];
 
-        $entity = Factory::create($entity, $attributes);
+        $entity = Factory::create($entityClass, $attributes);
 
         $this->eloquentReguard();
 
@@ -267,7 +273,14 @@ class Fixtures
         return $pricing;
     }
 
-    protected function eloquentUnguard()
+    protected function connection($mode = 'test')
+    {
+        \Config::set('database.default', $mode);
+
+        return $this;
+    }
+
+   protected function eloquentUnguard()
     {
         Eloquent::unguard();
     }

@@ -151,7 +151,7 @@ class BasicAuthTest extends TestCase
 
     protected function fetchPaymentSuccess()
     {
-        $payment = $this->createEntity('payment', ['merchant_id' => '10000000000000']);
+        $payment = $this->fixtures->createEntity('payment', ['merchant_id' => '10000000000000']);
 
         $request = array(
             'method' => 'GET',

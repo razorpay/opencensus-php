@@ -106,8 +106,9 @@ class PricingTest extends TestCase
 
     public function testMerchantGetPricingPlan()
     {
-        $this->createEntity('pricing');
-        $merchant2 = $this->createEntity(
+        $this->fixtures->createEntity('pricing');
+
+        $merchant2 = $this->fixtures->createEntity(
             'merchant',
             array(
                 'id' => '1FcXNxsHt5dOPI',

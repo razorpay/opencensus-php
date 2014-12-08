@@ -65,7 +65,7 @@ return [
                 'count' => 1,
                 'items' => [
                     '0' => [
-                        'id' => 'rzp_test_1DP5mmOlF5G5ag',
+                        'id' => 'rzp_test_TheTestAuthKey',
                         'expired_at' => null
                     ],
                 ],
@@ -77,7 +77,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
+            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -95,7 +95,7 @@ return [
             'content' => [
                 'delay_roll' => '1'
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
+            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -112,7 +112,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
+            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -132,7 +132,7 @@ return [
 
     'testNewKeyIdRandom' => [
         'request' => [
-            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
+            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
