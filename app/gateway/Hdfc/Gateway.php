@@ -81,7 +81,7 @@ class Gateway extends BaseGateway
      * @var array
      */
     protected $enrollRequest = array(
-        'url' => Hdfc\Urls::TEST_ENROLL_URL,
+        'url' => Hdfc\Urls::ENROLL_URL,
         'type' => 'enroll',
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
                           'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
@@ -111,7 +111,7 @@ class Gateway extends BaseGateway
      * @var array
      */
     protected $authEnrolledRequest = array(
-        'url' => Hdfc\Urls::TEST_AUTH_ENROLLED_URL,
+        'url' => Hdfc\Urls::AUTH_ENROLLED_URL,
         'type' => 'auth_enrolled',
         'fields' => array('paymentid', 'PaRes'),
         'header' => array('Content-Type:text/xml'),
@@ -133,7 +133,7 @@ class Gateway extends BaseGateway
      * @var array
      */
     protected $authNotEnrolledRequest = array(
-        'url' => Hdfc\Urls::TEST_AUTH_NOT_ENROLLED_URL,
+        'url' => Hdfc\Urls::AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_not_enrolled',
         'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2', 'action',
                           'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
@@ -160,7 +160,7 @@ class Gateway extends BaseGateway
      * @var array
      */
     protected $supportPaymentRequest = array(
-        'url' => Hdfc\Urls::TEST_SUPPORT_PAYMENT_URL,
+        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
         'type' => '',
         'fields' => array('action', 'amt', 'member', 'transid', 'trackid'),
         'header' => array('Content-Type:text/xml'),
@@ -332,6 +332,9 @@ class Gateway extends BaseGateway
         // Create xml from the fields
         $request['content'] = Utility::createXml($request['data']);
 
+        $domain = ($this->mode === 'live') ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+        $request['url'] = $domain . $request['url'];
+
         $this->requestVar = $request;
 
         try
@@ -452,7 +455,7 @@ class Gateway extends BaseGateway
         $request['options'] = $this->getRequestOptions();
 
         $this->response = $this->sendGatewayRequest($request);
-
+//print_r($this->response);die();
         return $this->response;
     }
 

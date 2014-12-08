@@ -99,12 +99,6 @@ class HdfcGatewayAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testMockFailureOnLive()
-    {
-        $this->setupPublicBasicAuthParams();
-        $this->startTest();
-    }
-
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

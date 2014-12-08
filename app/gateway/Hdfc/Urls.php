@@ -4,11 +4,11 @@ namespace Gateway\Hdfc;
 
 class Urls
 {
-    const TEST_ENROLL_URL = 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIVerifyEnrollmentXMLServlet';
+    const TEST_DOMAIN           = 'https://securepgtest.fssnet.co.in';
+    const LIVE_DOMAIN           = 'https://securepg.fssnet.co.in';
 
-    const TEST_AUTH_NOT_ENROLLED_URL = 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet';
-
-    const TEST_AUTH_ENROLLED_URL = 'https://securepgtest.fssnet.co.in:443/pgway/servlet/MPIPayerAuthenticationXMLServlet';
-
-    const TEST_SUPPORT_PAYMENT_URL = 'https://securepgtest.fssnet.co.in:443/pgway/servlet/TranPortalXMLServlet';
+    const ENROLL_URL            = '/pgway/servlet/MPIVerifyEnrollmentXMLServlet';
+    const AUTH_NOT_ENROLLED_URL = '/pgway/servlet/TranPortalXMLServlet';
+    const AUTH_ENROLLED_URL     = '/pgway/servlet/MPIPayerAuthenticationXMLServlet';
+    const SUPPORT_PAYMENT_URL   = '/pgway/servlet/TranPortalXMLServlet';
 }

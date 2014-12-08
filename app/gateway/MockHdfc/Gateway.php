@@ -96,9 +96,11 @@ class Gateway extends Hdfc\Gateway
         $rc = new ReflectionClass('Gateway\Hdfc\Urls');
         $urls = $rc->getConstants();
 
+        $domain = $urls['TEST_DOMAIN'];
+
         foreach ($urls as $name => $hdfcUrl)
         {
-            if ($url === $hdfcUrl)
+            if ($url === ($domain . $hdfcUrl))
             {
                 return $this->makeMockRequestUrl($name);
             }
