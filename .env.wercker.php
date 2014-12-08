@@ -17,13 +17,23 @@ return array(
     'DB_TEST_USERNAME'          => '',
     'DB_TEST_PASSWORD'          => '',
 
-    'APP_DASHBOARD_URL'     	=> 'https://dashboard.razorpay.com/',
-    'APP_DASHBOARD_SECRET'      => 'DASHBOARD_AUTH_PASS',
+    'CLOUD'                     => false,
 
     'HDFC_ID'                   => getenv('HDFC_ID'),
     'HDFC_PASSWORD'             => getenv('HDFC_PASSWORD'),
+    'HDFC_MOCK'                 => false,
+    'ATOM_MOCK'                 => false,
 
-    'CLOUD'                     => true,
+    'EMAIL_MOCK'                => true,
 
-    'SLACK_TOKEN'               => ''
+    'APP_DASHBOARD_URL'         => 'https://dashboard.razorpay.com/',
+    'APP_DASHBOARD_SECRET'      => '',
+    'APP_DASHBOARD_PRETEND'     => true,
+
+    'SLACK_TOKEN'               => '',
+    'SLACK_MOCK'                => true,
+
+    'MAILGUN_API_KEY'           => '',
+    'MAILGUN_SECRET'            => 'DASHBOARD_AUTH_PASS',
+    'MAILGUN_MOCK'              => true,
 );
