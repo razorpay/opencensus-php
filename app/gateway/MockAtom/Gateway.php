@@ -39,12 +39,13 @@ class Gateway extends Atom\Gateway
     protected function getNetBankingAtomMockUrl($query)
     {
         $url = \URL::route('mockatom_choose_bank', $query, false);
+        $mockGatewaysConfig = \Config::get('applications.mock_gateways');
+        $secret = $mockGatewaysConfig['secret'];
 
         $scheme = \Request::getScheme().'://';
         $host = \Request::getHost();
-//        $key = \BasicAuth::getPublicKey();
+
         $key = 'rzp_test';
-        $secret = 'DASHBOARD_AUTH_PASS';
 
         $redirectUrl = $scheme . $key . ':' . $secret . '@' . $host . $url;
 

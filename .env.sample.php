@@ -19,16 +19,18 @@ return array(
 
     'CLOUD'                     => false,
 
-    'APP_DASHBOARD_URL'     	=> 'http://dashboard.razorpay.com/',
-    'APP_DASHBOARD_SECRET'      => '',
-    'APP_DASHBOARD_PRETEND'     => true,
-
     'HDFC_ID'                   => 'hdfc_id',
     'HDFC_PASSWORD'             => 'hdfc_password',
+
     'HDFC_MOCK'                 => true,
     'ATOM_MOCK'                 => true,
+    'MOCK_GATEWAY_SECRET'       => 'random_password',
 
     'EMAIL_MOCK'                => true,
+
+    'APP_DASHBOARD_URL'     	=> 'http://dashboard.razorpay.com/',
+    'APP_DASHBOARD_SECRET'      => 'DASHBOARD_AUTH_PASS',
+    'APP_DASHBOARD_PRETEND'     => true,
 
     'SLACK_TOKEN'               => '',
     'SLACK_MOCK'                => true,

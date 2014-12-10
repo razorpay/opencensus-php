@@ -9,6 +9,10 @@ return array(
         'cloud'     =>  true,
     ),
 
+    'mock_gateways' => array(
+        'secret'    =>  $_ENV['MOCK_GATEWAY_SECRET'],
+    ),
+
     'settlement_cron' => array(
         'secret'    =>  'settlement_cron'
     ),
