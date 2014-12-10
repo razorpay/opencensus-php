@@ -33,7 +33,7 @@ return array(
     'SLACK_TOKEN'               => '',
     'SLACK_MOCK'                => true,
 
-    'MAILGUN_API_KEY'           => '',
+    'MAILGUN_API_KEY'           => getenv('MAILGUN_API_KEY'),
     'MAILGUN_SECRET'            => 'DASHBOARD_AUTH_PASS',
-    'MAILGUN_MOCK'              => true,
+    'MAILGUN_MOCK'              => false,
 );
