@@ -48,6 +48,9 @@ class TestCase extends ParentTestCase
         // Load test data
         $this->loadTestData();
 
+        // Instantiate auth class
+        $this->ba = new Authorization;
+
         // Enable filters
         $this->app['router']->enableFilters();
     }
