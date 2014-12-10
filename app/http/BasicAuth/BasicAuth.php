@@ -368,11 +368,13 @@ class BasicAuth
     }
 
     /**
-     * Verify the request is made by an internal app
+     * Verify the request is made by an app (internal/external)
      * @return boolean
      */
     protected function verifyInternalApp()
     {
+        // First, check that the secret matches one of
+        // the application's secrets
         if ($this->verifyInternalAppSecret() === false)
         {
             return false;
@@ -382,6 +384,11 @@ class BasicAuth
 
         $appRoutes = Route::$internalApps[$this->internalApp];
 
+        // Now that the secret matches, check whether the current
+        // route is allowed for this particular app.
+
+        // If '*' is present in the app's routes, then all routes
+        // are allowed
         if (in_array('*', $appRoutes))
         {
             return true;

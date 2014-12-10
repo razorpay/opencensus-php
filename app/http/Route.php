@@ -121,9 +121,20 @@ final class Route
 
     public static $internalApps = array(
             'dashboard' => array('*'),
+
+            'mock_gateways' => array(
+                'mockhdfc_enroll',
+                'mockhdfc_auth_enrolled',
+                'mockhdfc_payment',
+                'mockatom_choose_bank',
+                'mockatom_init_netbanking',
+                'mockatom_rzp_bank',
+                'mockatom_rzp_bank_submit'),
+
             'settlement_cron' => array(
                 'hdfc_mpr_generate',
                 'setl_initiate'),
+
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),
         );
@@ -190,25 +201,10 @@ final class Route
             // then it will go into internal app auth and will not expose the route.
             // This must not happen though.
             //
-            $router->group(array('before' => 'auth.app'), function()
-            {
-                self::addRoutes('internal');
-            });
-
-            $router->group(array('before' => 'auth.private'), function()
-            {
-                self::addRoutes('private');
-            });
-
-            $router->group(array('before' => 'auth.public'), function()
-            {
-                self::addRoutes('public');
-            });
-
-            $router->group(array('before' => 'auth.proxy'), function()
-            {
-                self::addRoutes('proxy');
-            });
+            self::addFilterOnRouteGroups($router, 'auth.app', 'internal');
+            self::addFilterOnRouteGroups($router, 'auth.private', 'private');
+            self::addFilterOnRouteGroups($router, 'auth.public', 'public');
+            self::addFilterOnRouteGroups($router, 'auth.proxy', 'proxy');
         });
 
         $router->get('/', function()
@@ -221,6 +217,14 @@ final class Route
         {
             return ApiResponse::routeNotFound();
         })->where('all', '.*');
+    }
+
+    protected static function addFilterOnRouteGroups($router, $filter, $routeGroup)
+    {
+        $router->group(array('before' => $filter), function() use ($routeGroup)
+        {
+            self::addRoutes($routeGroup);
+        });
     }
 
     public static function getApiRoutes()
