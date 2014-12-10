@@ -28,15 +28,17 @@ class RoutesTest extends Tests\TestCase
     {
         $routes = array(
             'hdfc_mpr_production_test',
-            // 'hdfc_mpr_production_live',
-            // 'hdfc_mpr_beta_test',
-            // 'hdfc_mpr_beta_live'
+            'hdfc_mpr_production_live',
+            'hdfc_mpr_beta_test',
+            'hdfc_mpr_beta_live'
         );
 
         $mgConfig = \Config::get('applications.mailgun');
 
         if ($mgConfig['mock'])
+        {
             $this->markTestSkipped('Can only run this test when mailgun is not mocked');
+        }
 
         $mg = new Mailgun($mgConfig['key']);
 
@@ -94,7 +96,7 @@ class RoutesTest extends Tests\TestCase
             }
         }
 
-        $this->assertEquals($match, true, 'No rule found to forward hdfc mpr emails to api');
-        $this->assertEquals($repeat, false, 'Multiple rules forwarding to mpr email address');
+        $this->assertEquals($match, true, 'No match found for route: ' . $route);
+        $this->assertEquals($repeat, false, 'Multiple matches found for route: ' . $route);
     }
 }
