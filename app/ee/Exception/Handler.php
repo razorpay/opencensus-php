@@ -68,6 +68,12 @@ class Handler
 
     protected function traceException(\Exception $exception)
     {
+        //
+        // @note: Always call function 'getTraceAsSring' to get stack trace
+        //        since it doesn't include function arguments.
+        //        Function arguments can contain sensitive data so should
+        //        never be logged. Never call 'getTrace' directly.
+        //
         $traceData = array(
             'class' => get_class($exception),
             'code' => $exception->getCode(),

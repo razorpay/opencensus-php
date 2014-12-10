@@ -191,6 +191,8 @@ class HdfcGatewayMprTest extends TestCase
     {
         $mimeType = 'application/vnd.ms-excel';
 
+        $this->assertFileExists($mprFile);
+
         $mprUploadedFile = new UploadedFile(
                                 $mprFile,
                                 $mprFile,
