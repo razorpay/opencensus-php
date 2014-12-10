@@ -27,7 +27,7 @@ return array(
     'EMAIL_MOCK'                => true,
 
     'APP_DASHBOARD_URL'         => 'https://dashboard.razorpay.com/',
-    'APP_DASHBOARD_SECRET'      => '',
+    'APP_DASHBOARD_SECRET'      => 'DASHBOARD_AUTH_PASS',
     'APP_DASHBOARD_PRETEND'     => true,
 
     'SLACK_TOKEN'               => '',
