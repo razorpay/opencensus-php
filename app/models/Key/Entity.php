@@ -150,12 +150,20 @@ class Entity extends Base\PublicEntity
             $secret .= $partial;
         }
 
-        $hash = Hash::make($secret);
-        $this->setAttribute(self::SECRET, $hash);
+        $this->setAttribute(self::SECRET, $secret);
 
         assert(strlen($secret) === self::SECRET_LENGTH);
 
         return $secret;
+    }
+
+    /**
+     * Hashify the secret.
+     * @param string $secret The random string for secret
+     */
+    protected function setSecretAttribute($secret)
+    {
+        $this->attributes[self::SECRET] = Hash::make($secret);
     }
 
     public static function generateUniqueId()

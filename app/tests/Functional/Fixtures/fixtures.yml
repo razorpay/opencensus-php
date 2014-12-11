@@ -31,7 +31,7 @@ Models\Key\Entity:
     id: 1DP5mmOlF5G5ag
     merchant_id:
         type: Models\Merchant\Entity
-    secret: $2y$10$UVD2ZERxHs0QyL7gaElrWOfvwAx11m.G374AGKpPnyn8VK4FN5Yry
+    secret: TheKeySecretForTests
 
 Models\Payment\Entity:
     id: $uniqueid
