@@ -433,7 +433,8 @@ class BasicAuth
 
         foreach ($internalApps as $name => $info)
         {
-            if ($info['secret'] === $secret)
+            if ((isset($info['secret'])) and
+                ($info['secret'] === $secret))
             {
                 $verify = true;
 

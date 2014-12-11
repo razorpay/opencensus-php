@@ -124,8 +124,14 @@ class TestCase extends ParentTestCase
                'PHP_AUTH_PW' => $pwd);
     }
 
-    protected function setupAppBasicAuthParams($user = 'rzp_test', $pwd = 'DASHBOARD_AUTH_PASS')
+    protected function setupAppBasicAuthParams($user = 'rzp_test', $pwd = '')
     {
+        if ($pwd === '')
+        {
+            $dashboardConfig = \Config::get('applications.dashboard');
+            $pwd = $dashboardConfig['secret'];
+        }
+
         $this->setupBasicAuthParams($user, $pwd);
     }
 
@@ -148,7 +154,7 @@ class TestCase extends ParentTestCase
 
         if ($pwd === null)
         {
-            $pwd = 'thisissupersecret';
+            $pwd = 'TheKeySecretForTests';
         }
 
         $this->setupBasicAuthParams($user, $pwd);

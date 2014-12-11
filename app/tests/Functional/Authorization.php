@@ -23,8 +23,14 @@ class Authorization
                'PHP_AUTH_PW' => $pwd);
     }
 
-    public function appAuth($user = 'rzp_test', $pwd = 'DASHBOARD_AUTH_PASS')
+    public function appAuth($user = 'rzp_test', $pwd = '')
     {
+        if ($pwd === '')
+        {
+            $dashboardConfig = \Config::get('applications.dasboard');
+            $pwd = $dashboardConfig['secret'];
+        }
+
         $this->basicAuth($user, $pwd);
 
         $this->type = 'app';
@@ -53,7 +59,7 @@ class Authorization
 
         if ($pwd === null)
         {
-            $pwd = 'thisissupersecret';
+            $pwd = 'TheKeySecretForTests';
         }
 
         $this->basicAuth($user, $pwd);

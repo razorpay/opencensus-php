@@ -71,13 +71,17 @@ class NetBankingTest extends TestCase
 
             $request = array('method' => 'GET', 'url' => $uri);
             $response = $this->makeRequestParent($request);
+            $statusCode = $response->getStatusCode();
         }
         else
         {
             $response = Requests::get($url);
             $cookie = $response->cookies['JSESSIONID']->value;
             $headers = array('Cookie' => 'JSESSIONID=' . $cookie);
+            $statusCode = $response->status_code;
         }
+
+        $this->assertEquals('200', $statusCode, 'Request failed with status code: ' . $statusCode);
 
         $atomBaseUrl = 'http://203.114.240.183:80';
 
