@@ -15,7 +15,7 @@ class MerchantTest extends TestCase
 
         parent::setUp();
 
-        $this->setupAppBasicAuthParams();
+        $this->ba->appAuth();
     }
 
     /**
@@ -38,10 +38,10 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
-        $this->setupAppBasicAuthParams('rzp_test');
+        $this->ba->appAuth('rzp_test');
         $this->startTest();
 
-        $this->setupAppBasicAuthParams('rzp_live');
+        $this->ba->appAuth('rzp_live');
         $this->startTest();
     }
 

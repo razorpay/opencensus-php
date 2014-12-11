@@ -4,11 +4,18 @@ namespace Tests\Functional;
 
 class Authorization
 {
+    protected $test;
+
     protected $auth = array();
 
     protected $type;
 
     protected $proxy = false;
+
+    public function __construct($test)
+    {
+        $this->test = $test;
+    }
 
     /**
      * Sets the key and secret created setUp call as the
@@ -18,7 +25,7 @@ class Authorization
      */
     public function basicAuth($user = null, $pwd = null)
     {
-        $this->auth = array(
+        $this->test->auth = array(
                'PHP_AUTH_USER' => $user,
                'PHP_AUTH_PW' => $pwd);
     }
@@ -27,7 +34,7 @@ class Authorization
     {
         if ($pwd === '')
         {
-            $dashboardConfig = \Config::get('applications.dasboard');
+            $dashboardConfig = \Config::get('applications.dashboard');
             $pwd = $dashboardConfig['secret'];
         }
 
@@ -38,7 +45,7 @@ class Authorization
 
     public function proxyAuth($user = 'rzp_test_10000000000000')
     {
-        $this->setupAppBasicAuthParams($user);
+        $this->appAuth($user);
 
         $this->proxy = true;
     }

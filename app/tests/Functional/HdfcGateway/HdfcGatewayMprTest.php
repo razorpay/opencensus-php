@@ -103,7 +103,7 @@ class HdfcGatewayMprTest extends TestCase
             ]
         ];
 
-        $this->setupAppBasicAuthParams();
+        $this->ba->appAuth();
 
         $content = $this->runRequestResponseFlow($testData);
     }
@@ -142,7 +142,7 @@ class HdfcGatewayMprTest extends TestCase
 
         $testData['response']['items'] = $txns;
 
-        $this->setupProxyBasicAuthParams();
+        $this->ba->proxyAuth();
 
         $content = $this->runRequestResponseFlow($testData);
 
@@ -175,7 +175,7 @@ class HdfcGatewayMprTest extends TestCase
     {
         \Config::set('mail.pretend', true);
 
-        $this->setupAppBasicAuthParams();
+        $this->ba->appAuth();
 
         $request = array(
             'method' => 'POST',
@@ -205,7 +205,7 @@ class HdfcGatewayMprTest extends TestCase
 
         $request['files']['attachment-1'] = $mprUploadedFile;
 
-        $this->setupAppBasicAuthParams();
+        $this->ba->appAuth();
 
         $this->runRequestResponseFlow($this->testData['testUploadMpr']);
 

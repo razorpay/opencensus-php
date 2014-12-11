@@ -15,7 +15,7 @@ class TerminalTest extends TestCase
 
         parent::setUp();
 
-        $this->setupAppBasicAuthParams();
+        $this->ba->appAuth();
     }
 
     public function testAssignTerminal()

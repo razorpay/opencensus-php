@@ -20,7 +20,7 @@ class BasicAuthTest extends TestCase
 
     public function testAuthWithoutKeyOrPwd()
     {
-        $this->setupBasicAuthParams('', '');
+        $this->ba->basicAuth('', '');
 
         $this->startTest();
     }
@@ -78,14 +78,14 @@ class BasicAuthTest extends TestCase
 
     public function testProxyAuthOnPrivateRouteInCloud()
     {
-        $this->setupProxyBasicAuthParams();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
 
     public function testProxyAuthOnPrivateRouteNotInCloud()
     {
-        $this->setupProxyBasicAuthParams();
+        $this->ba->proxyAuth();
 
         $this->cloud = false;
 

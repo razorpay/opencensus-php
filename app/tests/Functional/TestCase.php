@@ -19,7 +19,7 @@ class TestCase extends ParentTestCase
 
     protected $dbTransactionInProgress = false;
 
-    protected $auth = array();
+    public $auth = array();
 
     protected $testDataFilePath;
 
@@ -49,7 +49,7 @@ class TestCase extends ParentTestCase
         $this->loadTestData();
 
         // Instantiate auth class
-        $this->ba = new Authorization;
+        $this->ba = new Authorization($this);
 
         // Enable filters
         $this->app['router']->enableFilters();
@@ -122,6 +122,7 @@ class TestCase extends ParentTestCase
         $this->auth = array(
                'PHP_AUTH_USER' => $user,
                'PHP_AUTH_PW' => $pwd);
+        //sd($this->auth);
     }
 
     protected function setupAppBasicAuthParams($user = 'rzp_test', $pwd = '')

@@ -15,7 +15,7 @@ class PricingTest extends TestCase
 
         parent::setUp();
 
-        $this->setupAppBasicAuthParams();
+        $this->ba->appAuth();
     }
 
     public function testCreatePricingPlan()
@@ -48,10 +48,10 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'.$id;
         $testData['request']['method'] = 'GET';
 
-        $this->setupAppBasicAuthParams('rzp_test');
+        $this->ba->appAuth('rzp_test');
         $this->startTest($testData);
 
-        $this->setupAppBasicAuthParams('rzp_live');
+        $this->ba->appAuth('rzp_live');
         $this->startTest($testData);
     }
 
@@ -60,10 +60,10 @@ class PricingTest extends TestCase
         $this->createPricingPlan();
         $this->createPricingPlan2();
 
-        $this->setupAppBasicAuthParams('rzp_test');
+        $this->ba->appAuth('rzp_test');
         $this->startTest();
 
-        $this->setupAppBasicAuthParams('rzp_live');
+        $this->ba->appAuth('rzp_live');
         $this->startTest();
     }
 

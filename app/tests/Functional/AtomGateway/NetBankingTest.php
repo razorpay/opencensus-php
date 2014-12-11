@@ -57,7 +57,7 @@ class NetBankingTest extends TestCase
 
         if ($mock)
         {
-            $this->setupAppBasicAuthParams();
+            $this->ba->appAuth();
 
             // Extract the uri part after 'v1'.
             // This removes the basic auth user/pwd from absolute url
