@@ -146,6 +146,44 @@ final class Route
         self::$router = $router;
     }
 
+    public static function getUrl($routeName, $parameters = array(), $key = '', $secret = '')
+    {
+        $urlSegment = \URL::route($routeName, $parameters, false);
+
+        $url = self::getSchemaHostAndAuth($key, $secret) . $urlSegment;
+
+        return $url;
+    }
+
+    public static function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
+    {
+        return self::getSchemaHostAndAuth($key, $secret) . $relativeUrl;
+    }
+
+    protected static function getSchemaHostAndAuth($key = '', $secret = '')
+    {
+        $request = \Request::getFacadeRoot();
+
+        $schema = $request->getScheme().'://';
+        $host = $request->getHost();
+
+        $auth = '';
+        if ($key !== '')
+        {
+            $auth = $key;
+            if ($secret !== '')
+            {
+                $auth .= ':' . $secret;
+            }
+
+            $auth .= '@';
+        }
+
+        $url = $schema . $auth . $host;
+
+        return $url;
+    }
+
     public static function getDoNotLogURLs()
     {
         $doNotLogUrls = array(
