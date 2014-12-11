@@ -25,7 +25,7 @@ class Authorization
      */
     public function basicAuth($user = null, $pwd = null)
     {
-        $this->test->auth = array(
+        $this->auth = array(
                'PHP_AUTH_USER' => $user,
                'PHP_AUTH_PW' => $pwd);
     }

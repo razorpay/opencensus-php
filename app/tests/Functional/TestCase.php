@@ -19,7 +19,7 @@ class TestCase extends ParentTestCase
 
     protected $dbTransactionInProgress = false;
 
-    public $auth = array();
+    protected $ba;
 
     protected $testDataFilePath;
 

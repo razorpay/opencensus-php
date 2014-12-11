@@ -151,7 +151,7 @@ trait RequestResponseFlowTrait
 
     protected function makeRequest($request)
     {
-        $server = $this->auth;
+        $server = $this->ba->getCreds();
 
         // Adds '/v1' to beginning if not already there and
         // not an absolute url

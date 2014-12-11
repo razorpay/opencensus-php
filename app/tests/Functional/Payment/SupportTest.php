@@ -59,7 +59,7 @@ class SupportTest extends TestCase
     {
         // WHEN
         // call for capture of payments
-        $response = $this->call('POST', '/v1/payments/'.$id.'/capture', array('amount'=>$amount), array(), $this->auth);
+        $response = $this->call('POST', '/v1/payments/'.$id.'/capture', array('amount'=>$amount), array(), $this->ba->getCreds());
         $content = $response->getContent();
 
         // THEN
@@ -81,7 +81,7 @@ class SupportTest extends TestCase
     {
         //WHEN
         //call for refund of payments
-        $response = $this->call('POST', '/v1/payments/'.$id.'/refund',  array(), array(), $this->auth);
+        $response = $this->call('POST', '/v1/payments/'.$id.'/refund',  array(), array(), $this->ba->getCreds());
         $content = $response->getContent();
 
         //THEN

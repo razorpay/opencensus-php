@@ -168,7 +168,7 @@ trait PaymentAuthFlowTrait
 
         if ($gateway['mock_hdfc'] === true)
         {
-            $server = $this->auth;
+            $server = $this->ba->getCreds();
 
             $response = $this->call($method, $uri, $values, array(), $server);
             $content = $response->getContent();

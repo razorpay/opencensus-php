@@ -95,7 +95,7 @@ class PaymentRetrieveTest extends TestCase
         $created_at = $payments['items'][0]['created_at'];
 
         //WHEN
-        $response = $this->call('GET', "/v1/payments/?created=".$created_at, array(), array(), $this->auth);
+        $response = $this->call('GET', "/v1/payments/?created=".$created_at, array(), array(), $this->ba->getCreds());
         $content = $response->getContent();
 
         //THEN
