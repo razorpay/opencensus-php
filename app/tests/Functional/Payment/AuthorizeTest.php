@@ -23,7 +23,7 @@ class AuthorizeTest extends TestCase
 
         parent::setUp();
 
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
 
         $this->payment = $this->getDefaultPaymentArray();
     }

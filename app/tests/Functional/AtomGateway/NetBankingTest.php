@@ -25,7 +25,7 @@ class NetBankingTest extends TestCase
 
     public function testNetBankingTransaction()
     {
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
 
         $request = array(
             'content' => array(

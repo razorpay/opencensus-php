@@ -15,7 +15,7 @@ class BasicAuthTest extends TestCase
 
         parent::setUp();
 
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
     }
 
     public function testAuthWithoutKeyOrPwd()
@@ -29,49 +29,49 @@ class BasicAuthTest extends TestCase
     // public route
     public function testPrivateAuthOnPublicRoute()
     {
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
 
         $this->startTest();
     }
 
     public function testPublicAuthOnPrivateRoute()
     {
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
 
         $this->startTest();
     }
 
     public function testPublicAuthWithWrongKeyId()
     {
-        $this->setupPublicBasicAuthParams('abcdefgh820b0c06208ccd99');
+        $this->ba->publicAuth('abcdefgh820b0c06208ccd99');
 
         $this->startTest();
     }
 
     public function testPrivateAuthWithWrongKeyId()
     {
-        $this->setupPublicBasicAuthParams('abcdefgh820b0c06208ccd99');
+        $this->ba->publicAuth('abcdefgh820b0c06208ccd99');
 
         $this->startTest();
     }
 
     public function testPrivateAuthWithWrongSecret()
     {
-        $this->setupPrivateBasicAuthParams(null, 'somerandomsecre');
+        $this->ba->privateAuth(null, 'somerandomsecre');
 
         $this->startTest();
     }
 
     public function testPublicAuthOnAppRoute()
     {
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
 
         $this->startTest();
     }
 
     public function testPrivateAuthOnAppRoute()
     {
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
 
         $this->startTest();
     }
@@ -99,7 +99,7 @@ class BasicAuthTest extends TestCase
 
     public function testAppRoutesWithPrivateAuth()
     {
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
 
         $internalRoutes = \Http\Route::getApiRouteInCategory('internal');
 
@@ -114,7 +114,7 @@ class BasicAuthTest extends TestCase
 
     public function testAppRoutesWithInvalidPrivateAuth()
     {
-        $this->setupPrivateBasicAuthParams(null, '=');
+        $this->ba->privateAuth(null, '=');
 
         $internalRoutes = \Http\Route::getApiRouteInCategory('internal');
 

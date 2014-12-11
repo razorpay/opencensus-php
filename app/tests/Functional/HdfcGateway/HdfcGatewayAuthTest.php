@@ -26,7 +26,7 @@ class HdfcGatewayAuthTest extends TestCase
 
         $gateway = \Config::get('gateway.default');
 
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
     }
 
     public function testCardTimeout()

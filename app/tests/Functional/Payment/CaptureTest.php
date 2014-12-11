@@ -36,14 +36,14 @@ class CaptureTest extends TestCase
         $payment = $this->fixtures->createPaymentAuthorizedEntity();
         $this->payment = $payment->toArrayPublic();
 
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
     }
 
     public function testCapture()
     {
         $this->payment = $this->defaultAuthPayment();
 
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
 
         $this->mockDashboardRequest();
 
@@ -65,7 +65,7 @@ class CaptureTest extends TestCase
 
         $this->payment = $this->defaultAuthPayment();
 
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
 
         $this->startTest(null, $amount);
     }
@@ -107,7 +107,7 @@ class CaptureTest extends TestCase
 
         $this->payment['amount'] = 100;
 
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
 
         $this->startTest();
     }

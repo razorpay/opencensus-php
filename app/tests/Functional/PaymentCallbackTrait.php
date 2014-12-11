@@ -41,7 +41,7 @@ trait PaymentCallbackTrait
 
         $id = $this->getIdFromUri($uri);
 
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
 
         $request['method'] = 'POST';
         $request['content'] = $form->getValues();

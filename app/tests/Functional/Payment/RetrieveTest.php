@@ -22,7 +22,7 @@ class PaymentRetrieveTest extends TestCase
 
         $payment = $this->fixtures->createPaymentAuthorizedEntity();
 
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
 
         $payment = $this->fixtures->createPaymentCapturedEntity();
 

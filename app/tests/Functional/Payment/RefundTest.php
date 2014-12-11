@@ -32,7 +32,7 @@ class RefundTest extends TestCase
 
         $this->payment = $this->createCapturedPaymentEntity();
 
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
     }
 
     public function testRefund()
@@ -96,7 +96,7 @@ class RefundTest extends TestCase
     {
         $this->payment = $this->defaultAuthPayment();
 
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
 
         $this->startTest();
     }

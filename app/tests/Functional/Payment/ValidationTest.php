@@ -15,7 +15,7 @@ class PaymentValidationTest extends TestCase
 
         parent::setUp();
 
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
     }
 
     public function testShortCardNumber()

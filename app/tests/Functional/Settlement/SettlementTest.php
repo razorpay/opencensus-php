@@ -14,7 +14,7 @@ class SettlementTest extends TestCase
     {
         parent::setUp();
 
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
 
         //
         // load test data

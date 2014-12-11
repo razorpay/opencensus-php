@@ -42,7 +42,7 @@ trait PaymentAuthFlowTrait
             'url' => '/payments',
             'content' => $payment);
 
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
 
         $response = $this->makeRequest($request);
 
@@ -65,7 +65,7 @@ trait PaymentAuthFlowTrait
             'url' => "/payments/".$id.'/capture',
             'content' => array('amount' => $amount));
 
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('amount', $content);
@@ -79,7 +79,7 @@ trait PaymentAuthFlowTrait
 
     protected function refundPayment($id, $amount = null)
     {
-        $this->setupPrivateBasicAuthParams();
+        $this->ba->privateAuth();
 
         $content = array();
 

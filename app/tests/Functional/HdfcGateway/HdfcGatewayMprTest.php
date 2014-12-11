@@ -20,7 +20,7 @@ class HdfcGatewayMprTest extends TestCase
 
         parent::setUp();
 
-        $this->setupPublicBasicAuthParams();
+        $this->ba->publicAuth();
     }
 
     public function testUploadMpr()
