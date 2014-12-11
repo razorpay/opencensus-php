@@ -69,7 +69,7 @@ class Authorization
 
     public function dashboardAuth($mode = 'test')
     {
-        $this->appAuth('rzp_'.$mode, 'DASHBOARD_AUTH_PASS');
+        $this->appAuth('rzp_'.$mode, 'put dashboard pass here');
     }
 
     public function getCreds()
