@@ -109,17 +109,12 @@ class Gateway extends Hdfc\Gateway
 
     protected function makeMockRequestUrl($name)
     {
-        $url = constant('Gateway\MockHdfc\Urls::'.$name);
+        $mockGatewaysConfig = \Config::get('applications.mock_gateways');
+        $secret = $mockGatewaysConfig['secret'];
 
-        $scheme = $this->request->getScheme().'://';
-        $host = $this->request->getHost();
-        $key = 'rzp_test';
-        $secret = 'DASHBOARD_AUTH_PASS';
+        $urlSegment = constant('Gateway\MockHdfc\Urls::'.$name);
 
-        if ($host === 'localhost')
-            $host = 'rzp';
-
-        $url = $scheme . $key . ':' . $secret. '@' . $host . '/v1/' . $url;
+        $url = \Http\Route::getUrlWithAuth($urlSegment, 'rzp_test', $secret);
 
         return $url;
     }

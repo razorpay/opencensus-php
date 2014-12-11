@@ -38,18 +38,12 @@ class Gateway extends Atom\Gateway
 
     protected function getNetBankingAtomMockUrl($query)
     {
-        $url = \URL::route('mockatom_choose_bank', $query, false);
         $mockGatewaysConfig = \Config::get('applications.mock_gateways');
         $secret = $mockGatewaysConfig['secret'];
 
-        $scheme = \Request::getScheme().'://';
-        $host = \Request::getHost();
+        $url = \Http\Route::getUrl('mockatom_choose_bank', $query, 'rzp_test', $secret);
 
-        $key = 'rzp_test';
-
-        $redirectUrl = $scheme . $key . ':' . $secret . '@' . $host . $url;
-
-        return $redirectUrl;
+        return $url;
     }
 
     protected function sendGatewayRequest($request)
@@ -82,21 +76,21 @@ class Gateway extends Atom\Gateway
 
     protected function makeMockRequestUrl($url)
     {
-        $this->request = \Request::getFacadeRoot();
-        $relativeUrl = 'gateway/mockatom';
-        $scheme = $this->request->getScheme().'://';
-        $host = $this->request->getHost();
         $key = 'rzp_test';
-        $secret = 'DASHBOARD_AUTH_PASS';
 
-        $newUrl = $scheme . $key . ':' . $secret. '@' . $host . '/v1/' . $url;
+        $mockGatewaysConfig = \Config::get('applications.mock_gateways');
+        $secret = $mockGatewaysConfig['secret'];
+
+        $mockUrl = \Http\Route::getUrl('mockatom_init_netbanking', array(), 'rzp_test', $secret);
 
         $parts = parse_url($url);
 
         if (isset($parts['query']))
-            $newUrl .= '?'.$parts['query'];
+        {
+            $mockUrl .= '?' . $parts['query'];
+        }
 
-        return $newUrl;
+        return $mockUrl;
     }
 
     protected function callGatewayRequestFunctionInternally($requestVar)

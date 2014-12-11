@@ -62,34 +62,22 @@ class Server
 
     protected function getRzpBankPageUrl()
     {
-        $url = \URL::route('mockatom_rzp_bank', array(), false);
+        $mockGatewaysConfig = \Config::get('applications.mock_gateways');
+        $secret = $mockGatewaysConfig['secret'];
 
-        $scheme = \Request::getScheme().'://';
-        $host = \Request::getHost();
-        $key = \BasicAuth::getPublicKey();
+        $url = \Http\Route::getUrl('mockatom_rzp_bank', array(), 'rzp_test', $secret);
 
-        $key = 'rzp_test';
-        $secret = 'DASHBOARD_AUTH_PASS';
-
-        $rzpBankPageUrl = $scheme . $key . ':' . $secret . '@' . $host . $url;
-
-        return $rzpBankPageUrl;
+        return $url;
     }
 
     protected function getRzpBankPageSubmitUrl()
     {
-        $url = \URL::route('mockatom_rzp_bank_submit', array(), false);
+        $mockGatewaysConfig = \Config::get('applications.mock_gateways');
+        $secret = $mockGatewaysConfig['secret'];
 
-        $scheme = \Request::getScheme().'://';
-        $host = \Request::getHost();
-        $key = \BasicAuth::getPublicKey();
+        $url = \Http\Route::getUrl('mockatom_rzp_bank_submit', array(), 'rzp_test', $secret);
 
-        $key = 'rzp_test';
-        $secret = 'DASHBOARD_AUTH_PASS';
-
-        $rzpBankPageSubmitUrl = $scheme . $key . ':' . $secret . '@' . $host . $url;
-
-        return $rzpBankPageSubmitUrl;
+        return $url;
     }
 
     public function setInput($input)
