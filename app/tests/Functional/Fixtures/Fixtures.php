@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Fixtures;
 
+use Config;
 use Eloquent;
 use Tests\TestDummy\Factory;
 use Models;
@@ -30,9 +31,6 @@ class Fixtures
 
     /**
      * Seed the db with required data
-     * This creates key entity and merchant entity
-     * This key can be used by default for most use-cases
-     * but you are not required to use it.
      */
     public function setUp()
     {
@@ -275,7 +273,7 @@ class Fixtures
 
     protected function connection($mode = 'test')
     {
-        \Config::set('database.default', $mode);
+        Config::set('database.default', $mode);
 
         return $this;
     }

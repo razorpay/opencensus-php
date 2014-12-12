@@ -4,7 +4,6 @@
 
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <title>Razorpay Test Bank Choice</title>
-<link href="/paynetz/common/style.css" rel="stylesheet" type="text/css" />
 
 <script>
     function sub() {

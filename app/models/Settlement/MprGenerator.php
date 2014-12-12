@@ -47,8 +47,6 @@ class MprGenerator
         try
         {
             $data = $this->process();
-
-            $this->queueMprGenerationMail($data);
         }
         catch (\Exception $e)
         {
@@ -58,6 +56,8 @@ class MprGenerator
 
             throw $e;
         }
+
+        $this->queueMprGenerationMail($data);
 
         (new SlackNotification)->queueOperationSuccess('mpr_generation', $data['count']);
 

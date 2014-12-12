@@ -26,7 +26,7 @@
         var tempTxnId = "{{{ $data['tempTxnId'] }}}";
         var url = "{{{ $data['url'] }}}" + "?ITC=" + ITC + "&BID=" + BID + "&ClientCode=" + clientCode + "&amt=" + amt + "&Status="+status;
         url = url + "&tempTxnId="+tempTxnId;
-        alert("url : " + url);
+
         document.forms[0].action=url;
         document.forms[0].submit();
     }

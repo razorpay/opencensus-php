@@ -96,12 +96,6 @@ class BasicAuth
     protected $internalAppConfigs;
 
     /**
-     * Current route name
-     * @var string
-     */
-    protected $routeName;
-
-    /**
      * Contains valid lengths of key.
      * rzp_mode - 3 + 1 + 4
      * 3 + 1 + 4 + 1 + 24
@@ -116,7 +110,7 @@ class BasicAuth
         $this->request = $app['request'];
         $this->internalAppConfigs = $app['config']->get('applications');
         $this->cloud = $app['config']->get('app.cloud');
-        $this->routeName = $app['router']->currentRouteName();
+        $this->router = $app['router'];
     }
 
     public function setCredentials()
@@ -394,7 +388,7 @@ class BasicAuth
             return true;
         }
 
-        if (in_array($this->routeName, $appRoutes) === false)
+        if (in_array($this->getCurrentRouteName(), $appRoutes) === false)
         {
             return false;
         }
@@ -486,6 +480,11 @@ class BasicAuth
     public function getPublicKey()
     {
         return $this->creds['public_key'];
+    }
+
+    protected function getCurrentRouteName()
+    {
+        return $this->router->currentRouteName();
     }
 
 // --------------------- Getters Ends ------------------------------------------
