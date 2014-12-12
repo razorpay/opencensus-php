@@ -16,30 +16,60 @@ class NetBankingTest extends TestCase
 {
     use PaymentCallbackTrait;
 
+    protected $testDataFilePath = __DIR__.'/helpers/netbanking.php';
+
+    /**
+     * Whether atom gateway is mocked or not
+     * @var boolean
+     */
+    protected $mock;
+
     public function setUp()
     {
         parent::setUp();
 
         $this->fixtures->createTerminalEntityForAtomGateway();
+
+        $gateway = $this->app['config']->get('gateway');
+        $this->mock = $gateway['mock_atom'];
+
+        $this->payment = array(
+            'method' => 'net banking',
+            'bank' => 'SBIN',
+            'amount' => '5000',
+            'email' => 'ab@g.com',
+            'contact' => '9431495816',
+            'currency' => 'INR');
     }
 
-    public function testNetBankingTransaction()
+    public function testNetBankingTransactionSuccess()
     {
         $this->ba->publicAuth();
 
-        $request = array(
-            'content' => array(
-                'method' => 'net banking',
-                'bank' => 'SBIN',
-                'amount' => '5000',
-                'email' => 'ab@g.com',
-                'contact' => '9431495816',
-                'currency' => 'INR')
-            );
+        $this->startTest();
+    }
 
-        $payment = $this->makeRequestAndGetContent($request);
+    public function testNBTransactionFailureAtBank()
+    {
+        $this->ba->publicAuth();
 
-        $this->assertEquals('authorized', $payment['status']);
+        $this->startTest();
+    }
+
+    public function startTest()
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $func = $trace[1]['function'];
+
+        $testData = $this->testData[$func];
+
+        $this->replaceValuesRecursively($this->payment, $testData['request']['content']);
+
+        $testData['request']['content'] = $this->payment;
+
+        $this->currentTestData = $testData;
+
+        return $this->runRequestResponseFlow($testData);
     }
 
     /**
@@ -52,8 +82,7 @@ class NetBankingTest extends TestCase
 
         $headers = array();
 
-        $gateway = $this->app['config']->get('gateway');
-        $mock = $gateway['mock_atom'];
+        $mock = $this->mock;
 
         if ($mock)
         {
@@ -131,6 +160,12 @@ class NetBankingTest extends TestCase
         $cc  = getTextBetweenStrings($content, 'clientCode = "', '";');
 
         $status = 'S';
+
+        if ((isset($this->currentTestData['success'])) and
+            ($this->currentTestData['success'] === false))
+        {
+            $status = 'F';
+        }
 
         $url = ($mock) ? '/gateway/mockatom/rzp_bank/submit' : $atomBaseUrl . '/paynetz/atom';
         $url .= '?' . 'ITC='.$itc . '&BID='.$bid.'&clientCode='.$cc.'&amt='.$amt.'&Status='.$status;
