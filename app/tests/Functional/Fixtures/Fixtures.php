@@ -34,7 +34,7 @@ class Fixtures
      * This key can be used by default for most use-cases
      * but you are not required to use it.
      */
-    public function seedDbWithDefaultEntities()
+    public function setUp()
     {
         $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl']);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
