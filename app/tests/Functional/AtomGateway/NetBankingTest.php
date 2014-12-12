@@ -16,8 +16,6 @@ class NetBankingTest extends TestCase
 {
     use PaymentCallbackTrait;
 
-    protected $testDataFilePath = __DIR__.'/helpers/netbanking.php';
-
     /**
      * Whether atom gateway is mocked or not
      * @var boolean
@@ -26,6 +24,8 @@ class NetBankingTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/netbanking.php';
+
         parent::setUp();
 
         $this->fixtures->createTerminalEntityForAtomGateway();
