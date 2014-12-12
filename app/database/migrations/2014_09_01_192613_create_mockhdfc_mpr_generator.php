@@ -12,38 +12,12 @@ class CreateMockhdfcMprGenerator extends Migration
      */
     public function up()
     {
+        // This table is not being used and is waiting to be removed!
         Schema::create('mockhdfc_mpr_generator', function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->string('merchant_trackid')->primary();
-            $table->string('merchant_code');
-            $table->string('terminal_number');
-            $table->string('rfc_fmt');
-            $table->string('bat_nbr');
-            $table->string('card_type');
-            $table->string('card_number');
-            $table->string('trans_date');
-            $table->string('settle_date');
-            $table->string('approv_code');
-            $table->string('intl_amt');
-            $table->string('domestic_amt');
-            $table->string('tran_id');
-            $table->string('upvalue');
-            $table->string('msf');
-            $table->string('service_tax');
-            $table->string('edu_cess');
-            $table->string('net_amount');
-            $table->string('debitcredit_type');
-            $table->string('udf1');
-            $table->string('udf2');
-            $table->string('udf3');
-            $table->string('udf4');
-            $table->string('udf5');
-            $table->string('sequence_number');
-            $table->boolean('mpr_generated')->default(0);
-            $table->integer('created_at');
-            $table->integer('updated_at');
         });
     }
 
