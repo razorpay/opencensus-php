@@ -36,11 +36,14 @@
   </head>
 
   <body>
-    Welcome to Razorpay Bank  <br>
+    Welcome to Razorpay Bank  <br />
+    This is just a demo bank net-banking page. <br />
+    You can choose whether to make this payment successful or not from
+    following options. <br />
 
     <form  method="post" action="">
-    Atom Txn ID: {{{ $data['ITC'] }}}
-    Amt: {{{ $data['amount'] }}}
+    Bank Transaction ID: {{{ $data['ITC'] }}}
+    Amountt: {{{ $data['amount'] }}}
     <p>
         <input type="radio" name="success" checked="checked" value="S"> Success
         <input type="radio" name="success" value="F"> Failure
