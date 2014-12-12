@@ -135,9 +135,9 @@ class Gateway extends BaseGateway
         $atom->setBankName($input['bank_name']);
         $atom->saveOrFail();
 
-        if ($this->error)
+        if ($exception !== null)
         {
-            throw $this->exception;
+            throw $exception;
         }
     }
 
