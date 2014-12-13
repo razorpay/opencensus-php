@@ -34,8 +34,8 @@ if (file_exists('config.php'))
             'handler': function (transaction) {
                 alert("You have successfully purchased " + rzp1.options.description);
             },
-            'protocol': <?= $protocol ?>,
-            'hostname': <?= $hostname ?>,
+            'protocol': '<?= $protocol ?>',
+            'hostname': '<?= $hostname ?>',
             'prefill': {
                 'name': 'Harshil Mathur',
                 'email': 'harshil@razorpay.com',
