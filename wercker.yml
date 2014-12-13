@@ -61,7 +61,7 @@ deploy:
       - script:
           name: copy with rsync over ssh
           code: >
-                rsync -avz --force --delete --progress --chmod=
+                rsync -avz --force --delete --progress
                 --exclude-from=.rsyncignore
                 -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
                 ./ ubuntu@$WERCKER_DEPLOYTARGET_NAME:/home/ubuntu/api/
