@@ -3,19 +3,19 @@
 return array(
     'DB_DEFAULT_CONNECTION'     => 'live',
 
-    'DB_LIVE_DRIVER'            => 'mysql',
-    'DB_LIVE_HOST'              => getenv('WERCKER_MYSQL_HOST'),
-    'DB_LIVE_PORT'              => getenv('WERCKER_MYSQL_PORT'),
-    'DB_LIVE_DATABASE'          => getenv('WERCKER_MYSQL_DATABASE'),
-    'DB_LIVE_USERNAME'          => getenv('WERCKER_MYSQL_USERNAME'),
-    'DB_LIVE_PASSWORD'          => getenv('WERCKER_MYSQL_PASSWORD'),
+    'DB_LIVE_DRIVER'            => 'sqlite',
+    'DB_LIVE_HOST'              => '',
+    'DB_LIVE_PORT'              => '',
+    'DB_LIVE_DATABASE'          => ':memory:',
+    'DB_LIVE_USERNAME'          => '',
+    'DB_LIVE_PASSWORD'          => '',
 
-    'DB_TEST_DRIVER'            => 'sqlite',
-    'DB_TEST_HOST'              => '',
-    'DB_TEST_PORT'              => '',
-    'DB_TEST_DATABASE'          => ':memory:',
-    'DB_TEST_USERNAME'          => '',
-    'DB_TEST_PASSWORD'          => '',
+    'DB_TEST_DRIVER'            => 'mysql',
+    'DB_TEST_HOST'              => getenv('WERCKER_MYSQL_HOST'),
+    'DB_TEST_PORT'              => getenv('WERCKER_MYSQL_PORT'),
+    'DB_TEST_DATABASE'          => getenv('WERCKER_MYSQL_DATABASE'),
+    'DB_TEST_USERNAME'          => getenv('WERCKER_MYSQL_USERNAME'),
+    'DB_TEST_PASSWORD'          => getenv('WERCKER_MYSQL_PASSWORD'),
 
     'CLOUD'                     => false,
 
