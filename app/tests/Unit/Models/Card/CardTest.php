@@ -5,13 +5,6 @@ namespace Tests\Unit\Models\Card;
 use Models\Card;
 use Tests\TestCase;
 
-/**
- * Tests all cards in cards.php to ensure they return expected response,
- * Purchase payments are used, also tests if payments are automatically
- * captured on successful payments. Hold Payments are tested in support test
- * All test cases follow, GIVEN, WHEN, THEN structure
- */
-
 class ValidationTest extends TestCase
 {
     public function setUp()

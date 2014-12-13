@@ -17,8 +17,6 @@ class SupportTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/cards.php';
-
         parent::setUp();
     }
 
@@ -35,7 +33,21 @@ class SupportTest extends TestCase
         // create an auth payment using card 1
         //
         $this->ba->publicAuth();
-        $testData = $this->testData['testCreditCardSuccess'];
+        $testData = array(
+            'request' => [
+                'content' => [
+                    'card' => [
+                        'number' => '4012001038443335',
+                    ],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'status' => 'authorized',
+                ],
+            ]
+        );
+
         $this->replaceDefualtValues($testData['request']['content']);
 
         $payment = $this->runRequestResponseFlow($testData);
