@@ -70,7 +70,7 @@ deploy:
           code: >
                 ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
                 -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
-                "(cd ~/api/ && chmod 775 -R app/storage)"
+                "(cd ~/api/ && sudo chmod 775 -R app/storage)"
       - script:
           name: Perform DB migrations
           code: >
