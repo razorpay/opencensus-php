@@ -52,16 +52,16 @@ deploy:
           content: $AWS_deploykey
           overwrite: true
           hide-from-log: true
-      - script:
-          name: Put application in maintenance mode
-          code: >
-                ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
-                -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
-                "(cd ~/api/ && php artisan down)"
+      # - script:
+      #     name: Put application in maintenance mode
+      #     code: >
+      #           ssh -i $PRIVATEKEY_PATH -l ubuntu -o UserKnownHostsFile=/dev/null
+      #           -o StrictHostKeyChecking=no $WERCKER_DEPLOYTARGET_NAME
+      #           "(cd ~/api/ && php artisan down)"
       - script:
           name: copy with rsync over ssh
           code: >
-                rsync -avz --force --delete --progress
+                rsync -avz --force --delete --progress --chmod=
                 --exclude-from=.rsyncignore
                 -e "ssh -i $PRIVATEKEY_PATH -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
                 ./ ubuntu@$WERCKER_DEPLOYTARGET_NAME:/home/ubuntu/api/

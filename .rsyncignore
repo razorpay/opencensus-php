@@ -1,5 +1,6 @@
 .env.*
 /bootstrap/environment.php
+/app/storage/cache/*
 /app/storage/logs/*
 /app/storage/views/*
 /.git/*
