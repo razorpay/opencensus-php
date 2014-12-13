@@ -37,4 +37,23 @@ return [
         ],
         'success' => false,
     ],
+
+    'testMockOnLiveMode' => [
+        'request' => [
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\LogicException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+        ],
+    ]
 ];

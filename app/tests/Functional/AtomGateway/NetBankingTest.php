@@ -56,6 +56,19 @@ class NetBankingTest extends TestCase
         $this->startTest();
     }
 
+    public function testMockOnLiveMode()
+    {
+        $this->app['config']->set('gateway.mock_atom', true);
+
+        $this->ba->publicAuth('rzp_live_TheLiveAuthKey');
+
+        $this->fixtures
+            ->on('live')
+            ->createTerminalEntityForAtomGateway();
+
+        $this->startTest();
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

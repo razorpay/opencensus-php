@@ -32,6 +32,7 @@ class Reconciler
         $repo = new Hdfc\Repository;
         $hdfcPayment = $repo->findOrFail($attributes['gateway_payment_id']);
 
+s($attributes['gateway_payment_id'], $hdfcPayment['gateway_payment_id']);
         if ((string)$attributes['gateway_payment_id'] !== $hdfcPayment['gateway_payment_id'])
         {
             throw new Exception\LogicException('Hdfc mpr: Gateway payment id does not match');

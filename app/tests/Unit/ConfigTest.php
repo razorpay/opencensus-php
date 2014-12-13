@@ -19,19 +19,4 @@ class ConfigTest extends \Tests\TestCase
     {
         $this->assertEquals(30, \Gateway\Hdfc\Config::TIMEOUT);
     }
-
-    public function testGatewayConfig()
-    {
-        $this->markTestSkipped();
-        $config = require app_path().'/config/gateway.php';
-
-        $gateways = ['hdfc', 'atom'];
-
-        $configGateways = $config['available'];
-
-        $this->assertEquals(0, count(array_diff($configGateways, $gateways)));
-
-        $this->assertEquals($config['mock_hdfc'], false);
-        $this->assertEquals($config['mock_atom'], false);
-    }
 }

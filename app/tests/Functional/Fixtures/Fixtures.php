@@ -46,10 +46,10 @@ class Fixtures
             'balance'   => $this->createEntity('balance', ['id' => '10000000000000']),
             );
 
-        $this->testKey = $this->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
-        $this->liveKey = $this->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
+        $this->testKey = $this->on('test')->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
+        $this->liveKey = $this->on('live')->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
 
-        $entities['payment'] = $this->createEntity(
+        $entities['payment'] = $this->on('test')->createEntity(
                                         'payment',
                                         ['merchant_id' => '10000000000000',
                                          'terminal_id' => $entities['terminal']->getKey()]);
@@ -152,7 +152,7 @@ class Fixtures
         return $this->createEntity('terminal', $attributes);
     }
 
-    public function createEntity($entity, $attributes = array(), $mode = 'test')
+    public function createEntity($entity, $attributes = array())
     {
         if (($entity === 'merchant') or
             ($entity === 'pricing'))
@@ -160,7 +160,7 @@ class Fixtures
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
 
-        return $this->save($entity, $attributes, $mode);
+        return $this->save($entity, $attributes);
     }
 
     protected function createEntityInTestAndLive($entity, $attributes = array())
@@ -183,10 +183,8 @@ class Fixtures
         return $entity;
     }
 
-    protected function save($entity, $attributes, $mode = 'test')
+    protected function save($entity, $attributes)
     {
-        $this->connection($mode);
-
         $this->eloquentUnguard();
 
         $entityClass = self::$entityMap[$entity];
@@ -194,6 +192,8 @@ class Fixtures
         $entity = Factory::create($entityClass, $attributes);
 
         $this->eloquentReguard();
+
+//        $this->connection('test');
 
         return $entity;
     }
@@ -275,14 +275,21 @@ class Fixtures
         return $pricing;
     }
 
-    protected function connection($mode = 'test')
+    public function connection($mode = 'test')
     {
         Config::set('database.default', $mode);
 
         return $this;
     }
 
-   protected function eloquentUnguard()
+    public function on($mode)
+    {
+        $this->connection($mode);
+
+        return $this;
+    }
+
+    protected function eloquentUnguard()
     {
         Eloquent::unguard();
     }
