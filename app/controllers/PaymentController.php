@@ -123,7 +123,7 @@ class PaymentController extends BaseController
             $data = $error->toPublicArray();
             $data['http_status_code'] = $error->getHttpStatusCode();
         }
-        finally
+        //finally
         {
             if ($data !== null)
             {

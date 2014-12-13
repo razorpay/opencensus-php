@@ -196,7 +196,7 @@ class Entity extends Base\PublicEntity
 
     public function setCaptureTimestamp()
     {
-        $this->setAttribute(self::CAPTURED_AT, time('now'));
+        $this->setAttribute(self::CAPTURED_AT, time());
     }
 
 // ----------------------- Setters Ends-----------------------------------------

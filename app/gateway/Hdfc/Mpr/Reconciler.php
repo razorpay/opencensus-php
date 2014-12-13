@@ -59,10 +59,9 @@ s($attributes['gateway_payment_id'], $hdfcPayment['gateway_payment_id']);
     {
         // Remove 'pay-' from beginning of payment_id
         $row['merchant_trackid'] = substr($row['merchant_trackid'], 4);
-
         $attributes = array(
             'payment_id'                => $row['merchant_trackid'],
-            'gateway_payment_id'        => $row['tran_id'],
+            'gateway_payment_id'        => (int) $row['tran_id'],
             'gateway_merchant_id'       => $row['merchant_code'],
             'gateway_terminal_id'       => $row['terminal_number'],
             'card_network'              => $row['card_type'],
