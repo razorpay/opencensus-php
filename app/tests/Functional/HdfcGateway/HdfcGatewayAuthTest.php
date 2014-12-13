@@ -99,6 +99,17 @@ class HdfcGatewayAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testMockOnLiveMode()
+    {
+        $this->app['config']->set('gateway.mock_hdfc', true);
+
+        $this->ba->publicAuth('rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->createEntity('terminal', ['merchant_id' => '10000000000000'], 'live');
+
+        $this->startTest();
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
