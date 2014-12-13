@@ -14,7 +14,7 @@
 </head>
 
 <body onload="sub();">
-
+This page will be auto-submitted <br />
 <form id="redirect" name="redirect" onsubmit="return true;" action="{{{ $data['url'] }}}" method="post">
     <table class="wwFormTable">
         <select name="bankID" id="redirect_bankID">
