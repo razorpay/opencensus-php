@@ -34,8 +34,8 @@ if (file_exists('config.php'))
             'handler': function (transaction) {
                 alert("You have successfully purchased " + rzp1.options.description);
             },
-            'protocol': 'http',
-            'hostname': 'rzp',
+            'protocol': <?= $protocol ?>,
+            'hostname': <?= $hostname ?>,
             'prefill': {
                 'name': 'Harshil Mathur',
                 'email': 'harshil@razorpay.com',
@@ -76,7 +76,7 @@ if (file_exists('config.php'))
     <style>
 
     html {
-        background-image: url('http://www.youredm.com/wp-content/uploads/2014/03/Daft-Punk-Wallpaper-2560x1024-1.jpg');
+        background-image: url('https://i.imgur.com/zx7XGPJ.jpg');
         background-size: cover cover;
         /**background-position: center center fixed;*/
         background-repeat: no-repeat;
