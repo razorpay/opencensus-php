@@ -67,9 +67,9 @@ trait Refund
 
             $txn = (new Transaction\Core)->createFromRefund($this->refund);
 
+            $txn->save();
             $this->payment->save();
             $this->refund->save();
-            $txn->save();
         });
     }
 

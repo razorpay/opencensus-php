@@ -82,8 +82,9 @@ class Fixtures
     public function createPaymentCapturedEntity(array $attributes = array())
     {
         $defaultValues = array(
-            'status' => 'captured',
+            'status' => 'authorized',
             'terminal_id' => $this->entities['terminal']->getKey(),
+            'transaction_id' => null,
             'captured_at' => time(),
             'created_at' => time() - 10,
             'updated_at' => time() - 5);
@@ -98,20 +99,23 @@ class Fixtures
             'created_at' => $payment->created_at,
             'updated_at' => $payment->created_at);
 
+        $card = $this->createEntity('card');
+
+        $payment->card()->associate($card);
+
+        $payment->save();
+
+        $txn = (new Models\Transaction\Core)->createFromPayment($payment);
+        $txn->save();
+
+        $payment->setStatus('captured');
+        $payment->save();
+
         $hdfcPaymentAuthorized = $this->createHdfcPaymentAuthorizedEntity(
             $hdfcAttrArray);
 
         $hdfcPaymentCaptured = $this->createHdfcPaymentCapturedEntity(
             $hdfcAttrArray);
-
-        $card = $this->createEntity('card');
-
-        $payment->card()->associate($card);
-
-        $txn = (new Models\Transaction\Core)->createFromPayment($payment);
-
-        $payment->save();
-        $txn->save();
 
         return $payment;
     }

@@ -71,8 +71,8 @@ trait Capture
 
             $txn = (new Transaction\Core)->createFromPayment($this->payment);
 
-            $this->payment->save();
             $txn->save();
+            $this->payment->save();
         });
 
         //
