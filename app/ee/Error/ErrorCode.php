@@ -140,4 +140,5 @@ class ErrorCode
     const SERVER_ERROR_INVALID_ARGUMENT                                     = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                                      = 'SERVER_ERROR_DB_QUERY_FAILED';
     const SERVER_ERROR_LOGICAL_ERROR                                        = 'SERVER_ERROR_LOGICAL_ERROR';
+    const SERVER_ERROR_INTEGRATION_ERROR                                    = 'SERVER_ERROR_INTEGRATION_ERROR';
 }

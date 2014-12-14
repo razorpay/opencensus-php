@@ -131,17 +131,10 @@ class Error
                 $this->handleGatewayErrors();
                 break;
 
-            case ErrorClass::CARD:
-            case ErrorClass::FIELD:
-                $this->setPublicErrorCode($internalCode);
-                $this->setHttpStatusCode(400);
-                break;
-
             case ErrorClass::BAD_REQUEST:
                 $this->handleBadRequestErrors();
                 break;
 
-            case ErrorClass::LOGICAL:
             case ErrorClass::SERVER:
                 $this->setPublicErrorCode(PublicErrorCode::SERVER_ERROR);
                 $this->setHttpStatusCode(500);
