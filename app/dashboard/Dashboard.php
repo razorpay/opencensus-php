@@ -2,8 +2,9 @@
 
 namespace Dashboard;
 
-use Queue;
+use EE\Exception;
 use Config;
+use Queue;
 use Requests;
 
 class Dashboard
@@ -63,16 +64,40 @@ class Dashboard
                 $options
             );
 
-            //
-            // For debugging purposes,
-            // persist failed requests
-            //
-            if (is_object(json_decode($response->body) === false) or
-                json_decode($response->body)->status === FALSE)
-            {
-                (new Repository)->persistAfterFail($data['message']);
+            $body = $response->body;
 
-                return;
+            // New-line cannot be in single quotes;
+            $ix = strpos($body, "\n");
+
+            if ($ix !== false)
+            {
+                $prefix = substr($body, 0, $ix + 1);
+
+                if ($prefix === ")]}',\n")
+                {
+                    $body = substr($body, $ix + 1);
+                }
+            }
+
+            $content = json_decode($body, true);
+
+            if ($content === null)
+            {
+                $array = array(
+                    'body' => $body,
+                    'transaction' => $data['message']);
+
+                throw new Exception\IntegrationException(
+                    'Dashboard returned a non-json response',
+                    $array);
+            }
+
+            if ((isset($content['status']) === false) or
+                ($content['status'] === false))
+            {
+                throw new Exception\IntegrationException(
+                    'Dashboard returned false status in response',
+                    ['transaction' => $data['message']]);
             }
         }
 

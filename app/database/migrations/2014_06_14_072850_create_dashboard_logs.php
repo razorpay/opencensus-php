@@ -12,15 +12,11 @@ class CreateDashboardLogs extends Migration {
      */
     public function up()
     {
-        Schema::create('dashboard_logs', function(Blueprint $table){
+        Schema::create('dashboard_logs', function(Blueprint $table)
+        {
             $table->engine = 'InnoDB';
 
             $table->increments(Dashboard\Logs::ID);
-
-            $table->string(Dashboard\Logs::JSON, 1000);
-
-            $table->integer(Dashboard\Logs::CREATED_AT);
-            $table->integer(Dashboard\Logs::UPDATED_AT);
         });
     }
 
