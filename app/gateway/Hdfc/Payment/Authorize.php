@@ -50,9 +50,14 @@ trait Authorize
     {
         $enrollResponse = $this->enrollResponse;
 
-        return array(
-                'data' => $enrollResponse['data'],
-                'gateway' => 'hdfc');
+        $fields = array(
+            'paymentid',
+            'PAReq',
+            'url');
+
+        $data = array_intersect_key($this->enrollResponse['data'], array_flip($fields));
+
+        return array('data' => $data);
     }
 
 

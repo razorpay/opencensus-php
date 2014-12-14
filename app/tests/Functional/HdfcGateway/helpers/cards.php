@@ -306,5 +306,25 @@ return [
             'class' => 'EE\Exception\LogicException',
             'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ],
+    ],
+
+    'testJsonpPaymentReturnFields' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+        'jsonp' => true
     ]
+
 ];

@@ -112,6 +112,24 @@ class HdfcGatewayAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testJsonpPaymentReturnFields()
+    {
+        $fields = array(
+            'data',
+            'callbackUrl',
+            'http_status_code');
+
+        $dataFields = array(
+            'paymentid',
+            'PAReq',
+            'url');
+
+        $content = $this->startTest();
+
+        $this->assertEquals($fields, array_keys($content));
+        $this->assertEquals($dataFields, array_keys($content['data']));
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -121,6 +139,6 @@ class HdfcGatewayAuthTest extends TestCase
 
         $this->replaceDefualtValues($testData['request']['content']);
 
-        $this->runRequestResponseFlow($testData);
+        return $this->runRequestResponseFlow($testData);
     }
 }
