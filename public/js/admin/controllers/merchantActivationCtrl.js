@@ -34,7 +34,7 @@ app.controller('MerchantActivationCtrl', ['$scope', '$http', '$stateParams', 'al
           });
 
           angular.forEach(data.data.activation.data, function(value, key){
-            $scope.data[key] = value;       
+            $scope.data[key] = value;
           });
 
           angular.forEach(data.data.activation.files, function(value, key){
@@ -42,7 +42,7 @@ app.controller('MerchantActivationCtrl', ['$scope', '$http', '$stateParams', 'al
           });
 
           $scope.merchant = data.data.merchant;
-        
+
         }
         else {
           $scope.alerts.addAlert('danger');

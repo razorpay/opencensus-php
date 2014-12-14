@@ -13,7 +13,7 @@ class Service extends Base\Service
 
     public function fetchEntity($id, $mode, $entity)
     {
-        $error = (new Validator)->validateInput(array('id' => $id), 'fetch')->messages();
+        $error = (new Validator)->validateInput('fetch', array('id' => $id))->messages();
 
         if (empty($error) === false)
         {
@@ -23,18 +23,18 @@ class Service extends Base\Service
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api->payment->fetch($id)->toArray();
+            $data = $this->api->$entity->fetch($id)->toArray();
 
             $collection = array(
                 'count' => 1,
                 'entity' => 'collection',
-                'data' => array($data));
+                'items' => array($data));
 
             $this->mapKeys($collection);
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $error[] = $e->getCode();
+            $error[] = $e->getMessage();
         }
 
         return array($error, $collection);
@@ -73,10 +73,10 @@ class Service extends Base\Service
         }
         catch(\Exception $e)
         {
-            $error[] = $e->getCode();
+            $error[] = $e->getMessage();
         }
 
-        return array([], $collection);
+        return array($error, $collection);
     }
 
     protected function mapKeys(array & $collection)
@@ -89,7 +89,7 @@ class Service extends Base\Service
             return;
         }
 
-        foreach ($collection['data'] as $entity)
+        foreach ($collection['items'] as $entity)
         {
             foreach (static::$$mapVar as $apiKey => $mapKey)
             {
@@ -121,7 +121,7 @@ class Service extends Base\Service
             }
             catch(\Razorpay\Api\Errors\BadRequestError $e)
             {
-                $error[] = $e->getCode();
+                $error[] = $e->getMessage();
             }
         }
 
@@ -142,7 +142,7 @@ class Service extends Base\Service
         }
         catch(\Exception $e)
         {
-            $error[] = $e->getCode();
+            $error[] = $e->getMessage();
             return $error;
         }
 
@@ -166,7 +166,7 @@ class Service extends Base\Service
         }
         catch(\Exception $e)
         {
-            $error[] = $e->getCode();
+            $error[] = $e->getMessage();
             return $error;
         }
 

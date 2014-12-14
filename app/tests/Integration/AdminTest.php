@@ -38,7 +38,7 @@ class AdminTest extends TestCase
         catch(Exception $e)
         {
             $this->admin = $this->createEntity('admin');
-            $this->merchant = $this->createEntity('merchant', array('id'=>static::generateRandomString(24), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
+            $this->merchant = $this->createEntity('merchant', array('id'=>\Models\Merchant\Entity::generateUniqueId(), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
             $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
             $error = (new Models\Merchant\Service)->confirm($this->merchant->confirm_token);
 
@@ -212,7 +212,7 @@ class AdminTest extends TestCase
     {
         $this->browser
             ->open(URL::to('/admin#/app/merchants/'.$this->merchant->id.'/detail'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
 
         $loginAsMerchantLink = $this->browser->getAttribute('link=Login as Merchant@href');
 
@@ -265,7 +265,6 @@ class AdminTest extends TestCase
         $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
         $this->assertBodyHasText('Live transactions for merchant disabled successfully');
-
 
         $this->browser
             ->click(l::linkContaining('Enable Live Transactions'))

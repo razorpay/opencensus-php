@@ -23,6 +23,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'activated'
     );
 
+    const ID_LENGTH = 14;
+
     protected static $generators = array('id', 'confirm_token');
 
     /**
@@ -30,7 +32,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
      */
     public function generateId()
     {
-        $this->setAttribute('id', bin2hex(openssl_random_pseudo_bytes(24/2)));
+        $this->setAttribute('id', self::generateUniqueId());
     }
 
     /**
@@ -207,5 +209,55 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function setPasswordAttribute($password)
     {
         $this->attributes['password'] = \Hash::make($password);
+    }
+
+    public static function generateUniqueId()
+    {
+        // Timestmap of 1st Jan 2014!!
+        // 1388534400
+        $ts1stJan2014 = 1388534400;
+
+        // Get current nanotime from 1st Jan 1970
+        $nanotime = self::getNanotimeInteger();
+
+        // Subtract nanotime of 1st Jan 2014
+        $nanotime -= $ts1stJan2014*1000*1000*1000;
+
+        // Convert to base 62
+        $b62 = self::base62($nanotime);
+
+        // Generate 3 random bytes, convert to hex and then to dec
+        $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(3)));
+        // Convert the random decimal generated to base 62
+        $rand = self::base62($dec);
+
+        // Only 4 base 62 digits are needed, so cutoff any more.
+        if (strlen($rand) > 4)
+            $rand = substr($rand, 0, 4);
+
+        // Combine the base 62 nanotime with 4 base 62 digits
+        // and create a unique identifier
+        $id = $b62 . $rand;
+
+        return $id;
+    }
+
+    protected static function getNanotimeInteger()
+    {
+        exec('date +%s%N', $nanotime, $status);
+        return $nanotime[0];
+    }
+
+    protected static function base62($num)
+    {
+        $index = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+        $res = '';
+        do {
+            $res = $index[$num % 62] . $res;
+            $num = intval($num / 62);
+        } while ($num);
+
+        return $res;
     }
 }

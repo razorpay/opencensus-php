@@ -20,7 +20,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="key in keys.data">
+          <tr ng-repeat="key in keys.items">
             <td>{{key.id}}</td>
             <td>{{key.created_at*1000 | fromNow}} ({{key.created_at*1000 | date:'medium'}})</td>
             <td>
@@ -81,7 +81,7 @@
         </div>
       </form>
   </div>
-  <div class="modal-footer">                  
+  <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(delay_roll)">OK</button>
   </div>

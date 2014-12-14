@@ -35,7 +35,9 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl);
     }
 
-    // Enables live transactions for merchant
+    /**
+     * Enables live transactions for merchant
+     */
     public function enable()
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/live/enable';
@@ -43,7 +45,9 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl);
     }
 
-    // disable live transactions for merchant
+    /**
+     * disable live transactions for merchant
+     */
     public function disable()
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/live/disable';
@@ -65,16 +69,16 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl, $params);
     }
 
-    public function fetchTerminal()
+    public function fetchTerminals()
     {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/terminal';
+        $relativeUrl = $this->getEntityUrl().$this->id.'/terminals';
 
         return $this->request('GET', $relativeUrl);
     }
 
     public function setTerminal($params)
     {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/terminal';
+        $relativeUrl = $this->getEntityUrl().$this->id.'/terminals';
 
         return $this->request('POST', $relativeUrl, $params);
     }

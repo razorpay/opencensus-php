@@ -17,7 +17,7 @@ class CreateAggregations extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char('merchant_id', 24);
+            $table->char('merchant_id', 14);
 
             $table->integer('total_amount')
                   ->unsigned()

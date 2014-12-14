@@ -18,7 +18,7 @@ class AdminController extends BaseController
 
     public function getIndex()
     {
-        return View::make('admin.getIndexGenerated');
+        return View::make('admin.tmpgetIndex');
     }
 
     public function postSignin()
@@ -86,7 +86,7 @@ class AdminController extends BaseController
 
         $data = array(
                     'details' => $details,
-                    'terminal' => $terminal,
+                    'terminals' => $terminal,
                     'pricing_plan' => $pricing_plan
                 );
 

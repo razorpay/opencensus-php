@@ -18,7 +18,10 @@
           <span class="pull-right">{{entity.entity_type}}</span>
           Entity Type
         </a>
-        <a class="list-group-item">
+        <!-- ng if needed below to wait for it to load before creating link --> 
+        <a ng-if="entity.entity_type" 
+          ui-sref="app.{{entity.entity_type + 's'}}.detail({id:entity.entity_id})"
+          class="list-group-item">
           <span class="pull-right">{{entity.entity_id}}</span>
           Entity Id
         </a>

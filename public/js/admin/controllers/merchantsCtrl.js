@@ -6,7 +6,7 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
   $scope.merchants = {};
 
   generateTable();
-  
+
   function generateTable() {
     if($scope.pending){
       var request = $http.get("/admin/merchant/list?pending=true");
@@ -18,6 +18,7 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
     request
     .success(function(data){
       if(data.success) {
+        console.log(data);
         $scope.merchants = data.data;
       }
     });

@@ -42,7 +42,7 @@ var app = angular.module('app', [
 .config(
   [          '$stateProvider', '$urlRouterProvider', '$controllerProvider', '$compileProvider', '$filterProvider', '$provide',
     function ($stateProvider,   $urlRouterProvider,   $controllerProvider,   $compileProvider,   $filterProvider,   $provide) {
-        
+
         // lazy controller, directive and service
         app.controller = $controllerProvider.register;
         app.directive  = $compileProvider.directive;
@@ -54,8 +54,8 @@ var app = angular.module('app', [
 
         $urlRouterProvider
             .otherwise('/app/dashboard');
-        $stateProvider  
-            //Logged in routes          
+        $stateProvider
+            //Logged in routes
             .state('app', {
                 abstract: true,
                 url: '/app',
@@ -162,7 +162,7 @@ var app = angular.module('app', [
 
 }])
 .config(['$keepaliveProvider', '$idleProvider', function($keepaliveProvider, $idleProvider) {
-  $idleProvider.idleDuration(10*60);
+  $idleProvider.idleDuration(10 * 60);
   $idleProvider.warningDuration(15);
   $keepaliveProvider.interval(60);
 }]);

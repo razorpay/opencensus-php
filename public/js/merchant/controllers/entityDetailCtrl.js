@@ -26,11 +26,11 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'modeFact
         else {
           angular.forEach(data.errors, function(error, key) {
             $scope.alerts.addAlert('danger', error);
-          });      
+          });
         }
       })
       .error(function() {
         $scope.alerts.addAlert('danger', null, true);
-      }); 
+      });
     };
 }]);

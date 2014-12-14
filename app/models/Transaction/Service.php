@@ -102,8 +102,18 @@ class Service extends Base\Service
 
     public function getAggregations($merchantId, $mode)
     {
-        $array = array('merchant_id' => $merchantId, 'resource' => 'payment');
-        return Merchant\Entity::getAggregations($array, $mode);
+        $resources = array('payment', 'refund', 'settlement');
+
+        $response = array();
+
+        foreach($resources as $resource)
+        {
+            $data = array('merchant_id' => $merchantId, 'resource' => $resource);
+
+            $response[$resource] = Merchant\Entity::getAggregations($data, $mode);      
+        }
+
+        return $response;
     }
 
     public function getAnalytics($input, $mode)
@@ -152,8 +162,8 @@ class Service extends Base\Service
             }
 
             foreach ($array as $obj)
-            {
-                if ((strtotime($obj->created_at)) == $i)
+            {   
+                if ((int)($obj->created_at) == $i)
                 {
                     $data[] = $obj->toArray();
                     $flag = true;

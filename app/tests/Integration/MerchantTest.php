@@ -82,7 +82,7 @@ class MerchantTest extends TestCase
 
         $this->assertBodyHasText("Welcome to Razorpay");
 
-        $this->assertBodyHasText("Total Transactions");
+        $this->assertBodyHasText("Total Payments");
 
         $this->assertBodyHasText("Successful Transactions");
     }

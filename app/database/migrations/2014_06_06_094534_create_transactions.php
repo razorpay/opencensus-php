@@ -19,7 +19,7 @@ class CreateTransactions extends Migration
 
             $table->increments('id');
 
-            $table->char('merchant_id', 24);
+            $table->char('merchant_id', 14);
 
             $table->enum('type', array(
                                       'day',
