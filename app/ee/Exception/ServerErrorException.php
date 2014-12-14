@@ -43,4 +43,23 @@ class ServerErrorException extends BaseException
     {
         return $this->data;
     }
+
+    public function getDataAsString()
+    {
+        $data = $this->data;
+
+        if ($data === null)
+        {
+            return '';
+        }
+
+        $json = json_encode($data);
+
+        if ($json !== false)
+        {
+            return $json;
+        }
+
+        return get_var_as_string($this->data);
+    }
 }

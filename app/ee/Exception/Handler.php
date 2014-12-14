@@ -68,6 +68,13 @@ class Handler
 
     protected function traceException(\Exception $exception)
     {
+        $data = '';
+
+        if ($exception instanceof ServerErrorException)
+        {
+            $data = $exception->getDataAsString();
+        }
+
         //
         // @note: Always call function 'getTraceAsSring' to get stack trace
         //        since it doesn't include function arguments.
@@ -75,10 +82,11 @@ class Handler
         //        never be logged. Never call 'getTrace' directly.
         //
         $traceData = array(
-            'class' => get_class($exception),
-            'code' => $exception->getCode(),
-            'message' => $exception->getMessage(),
-            'stack' => $exception->getTraceAsString());
+            'class'     => get_class($exception),
+            'code'      => $exception->getCode(),
+            'message'   => $exception->getMessage(),
+            'data'      => $data,
+            'stack'     => $exception->getTraceAsString());
 
         \Trace\Trace::getInstance()->critical(
            \Trace\TraceCode::ERROR_EXCEPTION,

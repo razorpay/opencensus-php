@@ -12,7 +12,8 @@ class TraceFields
             'class',
             'message',
             'stack',
-            'code'
+            'code',
+            'data',
         ),
 
         TraceCode::PAYMENT_NEW_REQUEST => array(
