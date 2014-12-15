@@ -95,4 +95,14 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
+
+    public function getActivatedAttribute()
+    {
+        return (bool) $this->attributes[self::ACTIVATED];
+    }
+
+    public function getLiveAttribute()
+    {
+        return (bool) $this->attributes[self::LIVE];
+    }
 }

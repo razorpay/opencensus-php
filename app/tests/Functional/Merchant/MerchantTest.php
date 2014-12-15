@@ -109,12 +109,14 @@ class MerchantTest extends TestCase
 
     public function testMerchantEnableLive()
     {
-        ;
+        $this->testMerchantDisableLive();
+        $this->startTest();
     }
 
     public function testMerchantDisableLive()
     {
-        ;
+        $this->testActivateMerchant();
+        $this->startTest();
     }
 
     protected function startTest()

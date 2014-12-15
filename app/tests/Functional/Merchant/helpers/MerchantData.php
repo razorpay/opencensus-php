@@ -166,4 +166,34 @@ return [
             ],
         ],
     ],
+
+    'testMerchantEnableLive' => [
+        'request' => [
+            'content' => [],
+            'url' => '/merchants/1cXSLlUU8V9sXl/live/enable',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => true,
+                'live' => true,
+            ]
+        ]
+    ],
+
+    'testMerchantDisableLive' => [
+        'request' => [
+            'content' => [],
+            'url' => '/merchants/1cXSLlUU8V9sXl/live/disable',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => true,
+                'live' => false,
+            ]
+        ]
+    ]
 ];
