@@ -46,7 +46,7 @@ class Core
             if ($terminal->getGateway() === $existingTerminals->first()->getGateway())
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_TERMINAL_EXISTS_FOR_GATEWAY);
+                    ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
             }
         }
         else if ($count > 2)

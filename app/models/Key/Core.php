@@ -5,6 +5,7 @@ namespace Models\Key;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Key;
+use Models\Merchant;
 
 class Core
 {
@@ -60,6 +61,8 @@ class Core
     public function rollKey($keyId, array $input, $mode)
     {
         Key\Entity::verifyIdAndStripSign($keyId);
+
+        Key\Validator::checkForDemoKeys($keyId);
 
         $old = (new Key\Repository)->findOrFailPublic($keyId);
 

@@ -85,6 +85,9 @@ class PublicErrorDescription
     const BAD_REQUEST_KEY_EXPIRING_SOON =
         'Key is already set to expire soon';
 
+    CONST BAD_REQUEST_KEY_OF_DEMO_ACCOUNT =
+        'Operation failed for the key because it\'s of a demo account';
+
     const BAD_REQUEST_URL_NOT_FOUND =
         'The requested URL was not found on the server.';
 
@@ -152,7 +155,7 @@ class PublicErrorDescription
         'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
 
     const BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT =
-        'The merchant does not have pricing assigned to him';
+        'The merchant does not have pricing assigned';
 
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED =
         'The merchant has already been activated';
@@ -186,6 +189,6 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS =
         'A record with same gateway merchant id (mid) exists';
 
-    const BAD_REQUEST_TERMINAL_EXISTS_FOR_GATEWAY =
+    const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY =
         'A terminal for this gateway for this merchant already exists';
 }
