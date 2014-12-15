@@ -4,7 +4,7 @@ namespace Models\Merchant;
 
 use Models\Base;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
     const NAME              = 'name';
@@ -15,10 +15,26 @@ class Entity extends Base\UniqueIdEntity
 
     protected $table = \Constants\Table::MERCHANT;
 
+    protected $entity = 'merchant';
+
+    protected static $sign = '';
+
+    protected static $delimiter = '';
+
     protected $fillable = array(
         self::ID,
         self::NAME,
         self::EMAIL);
+
+    protected $public = array(
+        self::ID,
+        self::ENTITY,
+        self::NAME,
+        self::EMAIL,
+        self::ACTIVATED,
+        self::LIVE,
+        self::PRICING_PLAN_ID,
+        self::CREATED_AT);
 
     public function isActivated()
     {

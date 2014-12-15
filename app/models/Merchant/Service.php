@@ -37,21 +37,21 @@ class Service extends Base\Service
 
         $this->repo->updateBalance($merchantBalance);
 
-        return $merchant->toArray();
+        return $merchant->toArrayPublic();
     }
 
     public function fetch($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return array_merge($merchant->toArray(), ['entity' => 'merchant']);
+        return $merchant->toArrayPublic();
     }
 
     public function fetchMultiple($input)
     {
         $merchants = $this->repo->fetch($input);
 
-        return $merchants->toArray();
+        return $merchants->toArrayPublic();
     }
 
     public function createKey($merchantId)
@@ -83,7 +83,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return $merchant->toArray();
+        return $merchant->toArrayPublic();
     }
 
     public function assignPricingPlan($id, $input)
@@ -124,7 +124,7 @@ class Service extends Base\Service
 
         $terminal = (new Terminal\Core)->create($input, $merchant);
 
-        return $terminal->toArray();
+        return $terminal->toArrayPublic();
     }
 
     public function getTerminals($mid)
@@ -181,7 +181,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
-        return $merchant->toArray();
+        return $merchant->toArrayPublic();
     }
 
     public function liveEnable($id)
@@ -204,7 +204,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
-        return $merchant->toArray();
+        return $merchant->toArrayPublic();
     }
 
     public function liveDisable($id)
@@ -227,6 +227,6 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
-        return $merchant->toArray();
+        return $merchant->toArrayPublic();
     }
 }
