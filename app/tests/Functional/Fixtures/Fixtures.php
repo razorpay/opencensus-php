@@ -34,7 +34,7 @@ class Fixtures
      */
     public function setUp()
     {
-        $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl']);
+        $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
 
         $this->connection('test');

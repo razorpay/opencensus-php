@@ -130,6 +130,43 @@ return [
         ],
     ],
 
+    'testRollDemoKey' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_KEY_OF_DEMO_ACCOUNT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_OF_DEMO_ACCOUNT,
+        ],
+    ],
+
+    'testActivateMerchant' => [
+        'request' => [
+            'content' => [],
+            'url' => '/merchants/1cXSLlUU8V9sXl/activate',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => true,
+                'live' => true,
+            ],
+        ],
+    ],
+
     'testNewKeyIdRandom' => [
         'request' => [
             'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',

@@ -90,6 +90,23 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testRollDemoKey()
+    {
+        $this->createMerchant();
+
+        $this->fixtures->createEntity(
+            'key',
+            ['merchant_id' => '',
+             'id' => '1DP5mmOlF5G5ag']);
+
+        $this->startTest();
+    }
+
+    public function testActivateMerchant()
+    {
+        $this->startTest();
+    }
+
     /**
      * Checks that new key id generated is not
      * associated with time like other entity ids
@@ -113,7 +130,17 @@ class MerchantTest extends TestCase
         $this->assertNotEquals($str1, $str2);
     }
 
-    public function startTest()
+    public function testMerchantEnableLive()
+    {
+        ;
+    }
+
+    public function testMerchantDisableLive()
+    {
+        ;
+    }
+
+    protected function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
