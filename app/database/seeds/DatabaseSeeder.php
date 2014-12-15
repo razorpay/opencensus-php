@@ -51,6 +51,14 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  '10000000000000',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    )
+                );
+
             DB::table(Table::MERCHANT)->insert(
                 array(
                     'id'            =>  '1MABTZjIwgLtRZ',
@@ -58,6 +66,14 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'shk@razorpay.com',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  '1MABTZjIwgLtRZ',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
                     )
                 );
 
@@ -84,22 +100,6 @@ class DatabaseSeeder extends Seeder
                     'gateway_terminal_password' => Crypt::encrypt('encryptpass'),
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
-                    )
-                );
-
-            DB::table(Table::BALANCE)->insert(
-                array(
-                    'id'            =>  '10000000000000',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
-                    )
-                );
-
-            DB::table(Table::BALANCE)->insert(
-                array(
-                    'id'            =>  '1MABTZjIwgLtRZ',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
                     )
                 );
 
