@@ -211,6 +211,10 @@ class Service extends Base\Service
     {
         $error = (new Merchant\Validator)->validateInput('terminal', $input)->messages();
 
+        $data = [];
+
+        $input['gateway'] = strtolower($input['gateway']);
+
         if (empty($error))
         {
             unset($input['gateway_terminal_password_confirmation']);

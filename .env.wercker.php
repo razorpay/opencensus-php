@@ -1,5 +1,5 @@
 <?php
-    
+
     return array(
 
     /*
@@ -43,9 +43,9 @@
     | In order to communicate with an AWS service, you must provide your AWS
     | credentials including your AWS Access Key ID and your AWS Secret Key
     | Used for SQS and S3 file uploads
-    | 
+    |
     | Make them null when running on AWS using roles
-    | 
+    |
     */
     'AWS_KEY_ID'        => '', // Your AWS Access Key ID
     'AWS_KEY_SECRET'    => '', // Your AWS Secret Access Key
