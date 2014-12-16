@@ -4,19 +4,16 @@ namespace Models\Card;
 
 class Issuer
 {
-    const HDFC = 'HDFC';
+    const ALLA = 'ALLA';    // Allahabad Bank
+    const ANDB = 'ANDB';
     const AXIS = 'AXIS';
-    const SBIN = 'SBIN';
-    const ICIC = 'ICIC';
+    const BARB = 'BARB';
+    const BOFA = 'BOFA';    // Bank of America
     const CITI = 'CITI';
+    const HDFC = 'HDFC';
+    const IBKL = 'IBKL';    // IDBI Bank
+    const ICIC = 'ICIC';
+    const KKBK = 'KKBK';    // Kotak Mahindra
     const PUNB = 'PUNB';
-
-    // Allahabad Bank
-    const ALLA = 'ALLA';
-
-    // Kotak Mahindra
-    const KKBK = 'KKBK';
-
-    // IDBI Bank
-    const IBKL = 'IBKL';
+    const SBIN = 'SBIN';
 }
