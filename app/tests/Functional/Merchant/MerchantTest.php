@@ -96,7 +96,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->createEntity(
             'key',
-            ['merchant_id' => '',
+            ['merchant_id' => '1cXSLlUU8V9sXl',
              'id' => '1DP5mmOlF5G5ag']);
 
         $this->startTest();
