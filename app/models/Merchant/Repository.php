@@ -29,6 +29,18 @@ class Repository extends Base\Repository
         $balance->saveOrFail();
     }
 
+    public function updateBankAccount($ba)
+    {
+        $ba->saveOrFail();
+    }
+
+    public function getBankAccount($merchantId)
+    {
+        $repo = 'Models\Merchant\BankAccount';
+
+        return $repo::findOrFail($merchantId);
+    }
+
     public function getEscrowBalanceLockForUpdate()
     {
         $apiId = '1cXSLlUU8V9sXl';

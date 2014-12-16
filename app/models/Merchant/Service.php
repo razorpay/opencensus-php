@@ -229,4 +229,26 @@ class Service extends Base\Service
 
         return $merchant->toArrayPublic();
     }
+
+    public function addBankAccount($id, $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $ba = (new Merchant\BankAccount)->build($input);
+
+        $ba->merchant()->associate($merchant);
+
+        $this->repo->updateBankAccount($ba);
+
+        return $ba->toArray();
+    }
+
+    public function getBankAccount($id)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $ba = $this->repo->getBankAccount($id);
+
+        return $ba->toArray();
+    }
 }
