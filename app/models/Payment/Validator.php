@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         'currency'      =>  'required|max:3',
         'method'        =>  'in:card,net banking',
         'card'          =>  'sometimes',
-        'bank'          =>  'sometimes',
+        'bank'          =>  'required_if:method,net banking',
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
@@ -87,7 +87,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED);
         }
 
-        if (Payment\Bank::isValidBank($input['bank']) === false)
+        if (Payment\Processor\NetBanking::isSupportedBank($input['bank']) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,

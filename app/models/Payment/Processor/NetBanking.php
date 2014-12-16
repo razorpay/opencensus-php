@@ -47,4 +47,9 @@ class NetBanking
         IFSC::ORBC,
         IFSC::UTBI,
         IFSC::SRCB);
+
+    public static function isSupportedBank($bank)
+    {
+        return (in_array($bank, self::$enabled));
+    }
 }
