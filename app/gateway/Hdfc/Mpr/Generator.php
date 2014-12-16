@@ -143,7 +143,7 @@ class Generator
             'approv_code'       => '000000',
             'intl_amt'          => 0,
             'domestic_amt'      => $amount,
-            'tran_id'           => $hdfcPayment['gateway_payment_id'],
+            'tran_id'           => (int) $hdfcPayment['gateway_payment_id'],
             'upvalue'           => '`',
             'merchant_trackid'  => $trackid,
             'msf'               => $msf,
