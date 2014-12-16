@@ -80,6 +80,12 @@ class Entity extends Base\PublicEntity
             'Models\Merchant\Balance');
     }
 
+    public function bankAccount()
+    {
+        return $this->hasOne(
+            'Models\Merchant\BankAccount');
+    }
+
     public function terminal()
     {
         return $this->hasOne(

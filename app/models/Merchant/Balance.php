@@ -42,4 +42,9 @@ class Balance extends Base\UniqueIdEntity
     {
         return $this->getAttribute(self::BALANCE);
     }
+
+    public function merchant()
+    {
+        return $this->belongsTo('Models\Merchant\Entity');
+    }
 }
