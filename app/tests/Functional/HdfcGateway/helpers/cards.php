@@ -213,6 +213,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'amount' => 50000,
                 'status' => 'authorized',
             ],
         ],

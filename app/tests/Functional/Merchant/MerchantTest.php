@@ -119,6 +119,18 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBankAccount()
+    {
+        $this->startTest();
+    }
+
+    public function testGetBankAccount()
+    {
+        $this->testAddBankAccount();
+
+        $this->startTest();
+    }
+
     protected function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
