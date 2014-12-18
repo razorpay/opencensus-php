@@ -38,7 +38,7 @@ class Repository extends Base\Repository
     {
         $repo = 'Models\Merchant\BankAccount';
 
-        $ba = $repo::findOrFail($merchant->getId());
+        return $repo::findOrFail($merchant->getId());
     }
 
     public function getEscrowBalanceLockForUpdate()

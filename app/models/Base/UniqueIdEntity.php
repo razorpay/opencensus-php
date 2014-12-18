@@ -25,6 +25,11 @@ class UniqueIdEntity extends Entity
 
     protected $secureUid = false;
 
+    public function getId()
+    {
+        return $this->getAttribute(self::ID);
+    }
+
     public function generateId()
     {
         $this->setAttribute(self::ID, static::generateUniqueId());
