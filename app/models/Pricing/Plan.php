@@ -7,11 +7,10 @@ use Models\Base\PublicCollection;
 class Plan extends PublicCollection
 {
     const ID    = 'id';
-    const COUNT = 'count';
     const RULES = 'rules';
     const NAME  = 'name';
 
-    const ENTITY = 'pricing';
+    protected $entity = 'pricing';
 
     /**
      * Get the collection of items as a plain array.
@@ -114,11 +113,11 @@ class Plan extends PublicCollection
     protected function setPlanAttributes(& $plan, $item, $rules = array(), $count = 0)
     {
         $plan = array(
-            self::ID => $item->getPlanId(),
-            self::NAME => $item->getPlanName(),
-            'entity' => self::ENTITY,
-            self::COUNT => $count,
-            self::RULES => $rules);
+            self::ID        => $item->getPlanId(),
+            self::NAME      => $item->getPlanName(),
+            self::ENTITY    => $this->entity,
+            self::COUNT     => $count,
+            self::RULES     => $rules);
 
         return $plan;
     }

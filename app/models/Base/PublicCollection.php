@@ -23,12 +23,7 @@ class PublicCollection extends Collection
     {
         $array[static::ENTITY] = $this->entity;
         $array[static::COUNT] = count($this->items);
-
-        $array[static::ITEMS] = array_map(function($value)
-        {
-            return $value->toArrayPublic();
-
-        }, $this->items);
+        $array[static::ITEMS] = $this->itemsToArrayPublic();
 
         return $array;
     }
@@ -42,5 +37,14 @@ class PublicCollection extends Collection
         }, $this->items);
 
         return $ids;
+    }
+
+    protected function itemsToArrayPublic()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayPublic();
+
+        }, $this->items);
     }
 }
