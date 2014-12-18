@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Collection;
 
 class PublicCollection extends Collection
 {
+    const COUNT = 'count';
+    const ITEMS = 'items';
+    const ENTITY = 'entity';
+
+    protected $entity = 'collection';
+
     /**
      * Get the collection of items as a plain array.
      *
@@ -15,10 +21,10 @@ class PublicCollection extends Collection
      */
     public function toArrayPublic()
     {
-        $array['entity'] = 'collection';
-        $array['count'] = count($this->items);
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT] = count($this->items);
 
-        $array['items'] = array_map(function($value)
+        $array[static::ITEMS] = array_map(function($value)
         {
             return $value->toArrayPublic();
 
