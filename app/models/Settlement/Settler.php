@@ -79,40 +79,6 @@ class Settler
         return array($settlements, $txns);
     }
 
-    // protected function createSettlements($txns)
-    // {
-    //     $settlements = new Base\PublicCollection;
-
-        // if ($txns->count() === 0)
-        // {
-        //     return Base\PublicCollection;
-        // }
-
-    //     $merchantId = $txns->first()->getMerchantId();
-    //     $merchant = $this->merchantRepo->findOrFail($merchantId);
-    //     $setlAmount = 0;
-
-    //     foreach ($txns->all() as $txn)
-    //     {
-    //         if ($txn->getMerchantId() !== $merchantId)
-    //         {
-    //             $setl = new Settlement\Merchant($merchant, $setlAmount)->settle();
-    //             $settlements->push($setl);
-
-    //             $merchantId = $txn->getMerchantId();
-    //             $merchant = $this->merchantRepo->findOrFail($merchantId);
-    //             $setlAmount = 0;
-    //         }
-
-    //         $setlAmount += $txn->getCredit() - $txn->getDebit();
-    //     }
-
-    //     $setl = new Settlement\Merchant($merchant, $setlAmount)->settle();
-    //     $settlements->push($setl);
-
-    //     return $settlements;
-    // }
-
     protected function createSettlements($txns)
     {
         $settlements = new Base\PublicCollection;

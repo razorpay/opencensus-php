@@ -247,7 +247,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $ba = $this->repo->getBankAccount($id);
+        $ba = $this->repo->getBankAccount($merchant);
 
         return $ba->toArray();
     }
