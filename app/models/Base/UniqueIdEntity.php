@@ -28,6 +28,8 @@ class UniqueIdEntity extends Entity
     public function generateId()
     {
         $this->setAttribute(self::ID, static::generateUniqueId());
+
+        return $this;
     }
 
     /**
@@ -43,6 +45,15 @@ class UniqueIdEntity extends Entity
         $saved = parent::save($options);
 
         return $saved;
+    }
+
+    public function fillAndGenerateId($attributes)
+    {
+        $this->fill($attributes);
+
+        $this->generateId();
+
+        return $this;
     }
 
     public function validateOrGenerateUniqueId()
