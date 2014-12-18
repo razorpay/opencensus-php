@@ -72,110 +72,75 @@ class Settler
     {
         $txns = $this->fetchTransactionsToSettle($input);
 
-        $settlements = new Base\PublicCollection;
-
-        if ($txns->count() === 0)
-        {
-            return $settlements;
-        }
-
-        $merchantId = $txns->first()->getMerchantId();
-        $merchant = $this->merchantRepo->findOrFail($merchantId);
-        $amount = 0;
-
-        foreach ($txns->all() as $txn)
-        {
-            if ($txn->getMerchantId() !== $merchantId)
-            {
-                $setl = $this->createMerchantSettlement($merchant, $amount);
-                $settlements->push($setl);
-
-                $merchantId = $txn->getMerchantId();
-                $merchant = $this->merchantRepo->findOrFail($merchantId);
-                $amount = 0;
-            }
-
-            $amount += $txn->getCredit() - $txn->getDebit();
-        }
-
-        $setl = $this->createMerchantSettlement($merchant, $amount);
-        $settlements->push($setl);
+        $settlements = $this->createSettlements($txns);
 
         $this->txnRepo->settled($txns, self::$settlementTimestamp);
 
         return array($settlements, $txns);
     }
 
-    protected function createMerchantSettlement($merchant, $amount)
+    // protected function createSettlements($txns)
+    // {
+    //     $settlements = new Base\PublicCollection;
+
+        // if ($txns->count() === 0)
+        // {
+        //     return Base\PublicCollection;
+        // }
+
+    //     $merchantId = $txns->first()->getMerchantId();
+    //     $merchant = $this->merchantRepo->findOrFail($merchantId);
+    //     $setlAmount = 0;
+
+    //     foreach ($txns->all() as $txn)
+    //     {
+    //         if ($txn->getMerchantId() !== $merchantId)
+    //         {
+    //             $setl = new Settlement\Merchant($merchant, $setlAmount)->settle();
+    //             $settlements->push($setl);
+
+    //             $merchantId = $txn->getMerchantId();
+    //             $merchant = $this->merchantRepo->findOrFail($merchantId);
+    //             $setlAmount = 0;
+    //         }
+
+    //         $setlAmount += $txn->getCredit() - $txn->getDebit();
+    //     }
+
+    //     $setl = new Settlement\Merchant($merchant, $setlAmount)->settle();
+    //     $settlements->push($setl);
+
+    //     return $settlements;
+    // }
+
+    protected function createSettlements($txns)
     {
-        $setlTransaction = $this->createSettlementTransaction($merchant, $amount);
+        $settlements = new Base\PublicCollection;
 
-        $setl = $this->createSettlementEntity($merchant, $amount, $setlTransaction);
+        $i = 0;
+        $count = $txns->count();
 
-        $this->updateBalances($merchant, $setlTransaction);
+        while ($i < $count)
+        {
+            // Settlement amount
+            $setlAmount = 0;
 
-        $this->txnRepo->save($setlTransaction);
-        $this->setlRepo->save($setl);
+            // Get merchant
+            $merchantId = $txns[$i]->getMerchantId();
+            $merchant = $this->merchantRepo->findOrFail($merchantId);
 
-        return $setl;
-    }
+            while (($i < $count) and
+                   ($txns[$i]->getMerchantId() === $merchantId))
+            {
+                $setlAmount += $txns[$i]->getCredit() - $txns[$i]->getDebit();
+                $i++;
+            }
 
-    protected function updateBalances($merchant, $setlTransaction)
-    {
-        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate();
-        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate(
-                                                    $merchant->getKey());
+            $setl = (new Settlement\Merchant($merchant, $setlAmount))->settle();
+            $settlements->push($setl);
+        }
 
-        $merchantBalance->subAmount($setlTransaction['debit']);
-        $this->merchantRepo->save($merchantBalance);
-
-        $nodalBalance->subAmount($setlTransaction['debit']);
-        $this->merchantRepo->save($nodalBalance);
-
-        $attributes = array(
-            Transaction\Entity::BALANCE => $merchantBalance->getBalance(),
-            Transaction\Entity::ESCROW_BALANCE => $nodalBalance->getBalance());
-
-        $setlTransaction->fill($attributes);
-    }
-
-    protected function createSettlementEntity($merchant, $amount, $setlTransaction)
-    {
-        $attributes = array(
-            Settlement\Entity::AMOUNT           => $amount,
-            Settlement\Entity::MERCHANT_ID      => $merchant->getKey(),
-            Settlement\Entity::TRANSACTION_ID   => $setlTransaction->getKey(),
-            Settlement\Entity::STATUS           => 'abc');
-
-        $setl = (new Settlement\Entity)->fill($attributes);
-        $setl->generateId();
-
-        $setlTransaction->entity()->associate($setl);
-
-        return $setl;
-    }
-
-    protected function createSettlementTransaction($merchant, $amount)
-    {
-        $txn = new Transaction\Entity;
-
-        $values = array(
-            Transaction\Entity::MERCHANT_ID => $merchant->getKey(),
-            Transaction\Entity::DEBIT => $amount,
-            Transaction\Entity::CREDIT => 0,
-            Transaction\Entity::CURRENCY => 'INR',
-            Transaction\Entity::GATEWAY_FEE => 0,
-            Transaction\Entity::API_FEE => 0,
-            Transaction\Entity::SETTLED_AT => time(),
-            Transaction\Entity::FEE => 0,
-            Transaction\Entity::AMOUNT => $amount,
-            Transaction\Entity::TYPE => Transaction\Type::SETTLEMENT,
-        );
-
-        $txn->fill($values);
-        $txn->generateId();
-
-        return $txn;
+        return $settlements;
     }
 
     protected function createSettlementFile($settlements, $txns)

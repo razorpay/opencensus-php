@@ -92,6 +92,12 @@ class Entity extends Base\PublicEntity
             'Models\Terminal\Entity');
     }
 
+    public function transactions()
+    {
+        return $this->hasMany(
+            'Models\Transaction\Entity');
+    }
+
     public function setPricingPlan($planId)
     {
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);

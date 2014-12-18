@@ -25,6 +25,12 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TRANSACTION_ID);
 
+    protected $visible = array(
+        self::AMOUNT,
+        self::STATUS,
+        self::MERCHANT_ID,
+        self::TRANSACTION_ID);
+
     protected $public = array(
         self::ID,
         self::ENTITY,
@@ -39,5 +45,15 @@ class Entity extends Base\PublicEntity
     public function transaction()
     {
         return $this->belongsTo('Models\Transaction\Entity');
+    }
+
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setStatus($status = 'abc')
+    {
+        $this->setAttribute(self::STATUS, $status);
     }
 }
