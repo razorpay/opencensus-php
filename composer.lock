@@ -918,32 +918,34 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maatwebsite/Laravel-Excel.git",
-                "reference": "357e8f576a754a6840a6d79c2cd0c66b20dbac87"
+                "reference": "331792997e21cc37e027abd10e5d988a624f4569"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/357e8f576a754a6840a6d79c2cd0c66b20dbac87",
-                "reference": "357e8f576a754a6840a6d79c2cd0c66b20dbac87",
+                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/331792997e21cc37e027abd10e5d988a624f4569",
+                "reference": "331792997e21cc37e027abd10e5d988a624f4569",
                 "shasum": ""
             },
             "require": {
                 "illuminate/cache": "~4.0|~5.0",
                 "illuminate/config": "~4.0|~5.0",
                 "illuminate/filesystem": "~4.0|~5.0",
-                "illuminate/http": "~4.0|~5.0",
-                "illuminate/routing": "~4.0|~5.0",
                 "illuminate/support": "~4.0|~5.0",
-                "illuminate/view": "~4.0|~5.0",
                 "nesbot/carbon": "~1.0",
                 "php": ">=5.3.0",
                 "phpoffice/phpexcel": "~1.8.0",
-                "phpseclib/phpseclib": ">=0.3.7",
                 "tijsverkoyen/css-to-inline-styles": "~1.5"
             },
             "require-dev": {
                 "mockery/mockery": "~0.9",
                 "orchestra/testbench": "~2.2.0",
+                "phpseclib/phpseclib": ">=0.3.7",
                 "phpunit/phpunit": "~4.0"
+            },
+            "suggest": {
+                "illuminate/http": "~4.0|~5.0",
+                "illuminate/routing": "~4.0|~5.0",
+                "illuminate/view": "~4.0|~5.0"
             },
             "type": "library",
             "autoload": {
@@ -975,7 +977,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2014-10-08 18:59:13"
+            "time": "2014-12-16 21:01:32"
         },
         {
             "name": "mailgun/mailgun-php",
