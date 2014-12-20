@@ -41,6 +41,9 @@ class Merchant
         $this->txnRepo->saveOrFail($this->setlTransaction);
         $this->setlRepo->saveOrFail($setl);
 
+        // Get merchant bank account
+        $this->fetchMerchantBankAccount();
+
         return $setl;
     }
 
@@ -97,5 +100,23 @@ class Merchant
             Transaction\Entity::ESCROW_BALANCE => $nodalBalance->getBalance());
 
         $this->setlTransaction->fill($attributes);
+    }
+
+    protected function fetchMerchantBankAccount()
+    {
+        $mode = \BasicAuth::getMode();
+
+        if ($mode === 'test')
+        {
+            $ba = null;
+
+            $this->merchant->setRelation('bankAccount', null);
+        }
+        else
+        {
+            $ba = $this->merchantRepo->getBankAccount($this->merchant);
+        }
+
+        return $ba;
     }
 }

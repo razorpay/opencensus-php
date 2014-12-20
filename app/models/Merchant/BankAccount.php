@@ -24,6 +24,12 @@ class BankAccount extends Base\UniqueIdEntity
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER);
 
+    protected $visible = array(
+        self::MERCHANT_ID,
+        self::IFSC_CODE,
+        self::BENEFICIARY_NAME,
+        self::ACCOUNT_NUMBER);
+
     public function build(array $input = array())
     {
         (new Validator)->validateInput('addBankAccount', $input);

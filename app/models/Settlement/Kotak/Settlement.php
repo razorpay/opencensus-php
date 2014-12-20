@@ -1,13 +1,12 @@
 <?php
 
-namespace Models\Settlement;
+namespace Models\Settlement\Kotak;
 
 use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
 use Models\Merchant;
-use Models\Settlement;
 use Models\Transaction;
 
 class Settlement
@@ -65,7 +64,7 @@ class Settlement
         'Symbol',
         'Text File');
 
-    public function process($data)
+    public function generateSettlementFile($settlements, $txns)
     {
         ;
     }
