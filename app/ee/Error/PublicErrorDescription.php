@@ -22,6 +22,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED =
         'This payment has already been captured';
 
+    const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED =
+        'Invalid currency. Currently only INR is supported.';
+
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED =
         'The payment status should be captured for refund action to be taken';
 
@@ -114,9 +117,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_UDF_SHOULD_BE_ARRAY =
         'udf should be provided as a dictionary';
-
-    const BAD_REQUEST_CURRENCY_NOT_SUPPORTED =
-        'Invalid currency. Currently only INR is supported.';
 
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED =
         'Razorpay API is only available over HTTPS.';

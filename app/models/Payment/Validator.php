@@ -232,7 +232,7 @@ class Validator extends Base\Validator
         if ($currency !== "INR")
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CURRENCY_NOT_SUPPORTED,
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
                 'currency');
         }
     }

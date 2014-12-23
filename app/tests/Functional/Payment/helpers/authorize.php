@@ -152,7 +152,7 @@ return [
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CURRENCY_NOT_SUPPORTED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
         ],
     ],
 
