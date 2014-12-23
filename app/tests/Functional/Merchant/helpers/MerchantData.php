@@ -152,6 +152,27 @@ return [
         ],
     ],
 
+    'testActivateMerhantWithoutBankAccount' => [
+        'request' => [
+            'content' => [],
+            'url' => '/merchants/1cXSLlUU8V9sXl/activate',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+        ]
+    ],
+
     'testActivateMerchant' => [
         'request' => [
             'content' => [],
