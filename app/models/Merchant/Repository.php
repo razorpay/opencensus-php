@@ -38,11 +38,14 @@ class Repository extends Base\Repository
     {
         $repo = 'Models\Merchant\BankAccount';
 
-        $ba = $repo::findOrFail($merchant->getId());
+        $ba = $repo::find($merchant->getId());
 
-        $ba->merchant()->associate($merchant);
+        if ($ba !== null)
+        {
+            $ba->merchant()->associate($merchant);
 
-        $merchant->setRelation('bankAccount', $ba);
+            $merchant->setRelation('bankAccount', $ba);
+        }
 
         return $ba;
     }

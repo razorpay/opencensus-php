@@ -167,7 +167,7 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        $pricing = (new Merchant\Repository)->getPricingPlanOrFailPublic($merchant);
+        $pricing = $this->repo->getPricingPlanOrFailPublic($merchant);
 
         $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
@@ -175,6 +175,14 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
+        }
+
+        $ba = $this->repo->getBankAccount($merchant);
+
+        if ($ba === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
 
         $merchant->activate();

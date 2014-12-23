@@ -32,7 +32,7 @@ class Dashboard
 
         if ($this->config === null)
         {
-            throw new \LogicException('dashboard url not defined');
+            throw new Exception\LogicException('dashboard url not defined');
         }
     }
 

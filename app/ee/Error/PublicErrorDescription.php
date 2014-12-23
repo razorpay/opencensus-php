@@ -180,6 +180,9 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED =
         'The merchant keys have already been created';
 
+    const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND =
+        'The merchant has not yet provided his bank account details';
+
     const BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED =
         'Currently only two terminals are allowed per merchant';
 

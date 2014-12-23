@@ -7,10 +7,10 @@ use Models\Base;
 
 class BankAccount extends Base\UniqueIdEntity
 {
-    const MERCHANT_ID = 'merchant_id';
-    const IFSC_CODE = 'ifsc_code';
-    const BENEFICIARY_NAME = 'beneficiary_name';
-    const ACCOUNT_NUMBER = 'account_number';
+    const MERCHANT_ID       = 'merchant_id';
+    const IFSC_CODE         = 'ifsc_code';
+    const BENEFICIARY_NAME  = 'beneficiary_name';
+    const ACCOUNT_NUMBER    = 'account_number';
 
     const IFSC_CODE_LENGTH = 11;
 

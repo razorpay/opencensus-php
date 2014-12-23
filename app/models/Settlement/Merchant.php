@@ -4,6 +4,7 @@ namespace Models\Settlement;
 
 use Models;
 use Models\Base;
+use Models\EE\Exception;
 use Models\Transaction;
 use Models\Settlement;
 
@@ -114,6 +115,12 @@ class Merchant
         else
         {
             $ba = $this->merchantRepo->getBankAccount($this->merchant);
+
+            if ($ba === null)
+            {
+                throw new Exception\LogicException(
+                    'Merchant bank account not found');
+            }
         }
 
         return $ba;
