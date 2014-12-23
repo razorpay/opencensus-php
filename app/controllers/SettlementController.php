@@ -65,4 +65,18 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($settlements);
     }
+
+    public function postSettlementReconcile()
+    {
+        $input = Input::all();
+
+        $settlements = (new Settlement\Service)->reconcileSettlements($input);
+    }
+
+    public function postSettlementReturn()
+    {
+        $input = Input::all();
+
+        $settlements = (new Settlement\Service)->returnSettlements($input);
+    }
 }

@@ -12,7 +12,7 @@ use Models\Transaction;
 
 class Settlement
 {
-    protected static $headings = array(
+    public static $headings = array(
         'Client_Code',
         'Product_Code',
         'Payment_Type',

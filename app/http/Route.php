@@ -54,6 +54,8 @@ final class Route
         'hdfc_mpr_reconcile'                => ['post', 'gateway/mpr/reconcile',                    'SettlementController@postGatewayMprReconcile'],
         'hdfc_mpr_generate'                 => ['post', 'gateway/mpr/generate',                     'SettlementController@postGatewayMprGenerate'],
         'setl_initiate'                     => ['post', 'settlements/initiate',                     'SettlementController@postSettlementInitiate'],
+        'setl_reconcile'                    => ['post', 'settlements/reconcile',                    'SettlementController@postSettlementReconcile'],
+        'setl_return'                       => ['post', 'settlements/return',                       'SettlementController@postSettlementReturn'],
         'mockhdfc_enroll'                   => ['post', 'gateway/mockhdfc/enroll',                  'MockHdfcController@enroll'],
         'mockhdfc_payment'                  => ['post', 'gateway/mockhdfc/payment',                 'MockHdfcController@payment'],
         'mockhdfc_auth_enrolled'            => ['post', 'gateway/mockhdfc/auth_enrolled',           'MockHdfcController@authEnrolled'],
@@ -137,7 +139,9 @@ final class Route
 
             'settlement_cron' => array(
                 'hdfc_mpr_generate',
-                'setl_initiate'),
+                'setl_initiate',
+                'setl_reconcile',
+                'setl_return'),
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),

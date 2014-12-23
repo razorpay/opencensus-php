@@ -10,8 +10,6 @@ class Service extends Base\Service
 {
     public function gatewayMprReconcile($input)
     {
-        \Log::info($input);
-
         $data = (new MprParser)->process($input);
 
         $reconciler = new Reconciler;
@@ -49,5 +47,17 @@ class Service extends Base\Service
         $settlements = (new Settlement\Repository)->fetch($input, $this->merchant->getKey());
 
         return $settlements->toArrayPublic();
+    }
+
+    public function reconcileSettlements($input)
+    {
+        $data = (new Kotak\Reconciler)->process($input);
+
+        return $data;
+    }
+
+    public function returnSettlements($input)
+    {
+        ;
     }
 }
