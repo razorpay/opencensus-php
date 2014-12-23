@@ -5,13 +5,14 @@ namespace Models\Settlement\Kotak;
 use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
+use Excel;
 use Models\Base;
 use Models\Merchant;
 use Models\Transaction;
 
 class Settlement
 {
-    protected $headings = array(
+    protected static $headings = array(
         'Client_Code',
         'Product_Code',
         'Payment_Type',
@@ -60,12 +61,75 @@ class Settlement
         'Enrichment_17',
         'Enrichment_18',
         'Enrichment_19',
-        'Enrichment_20',
-        'Symbol',
-        'Text File');
+        'Enrichment_20');
+
+    public function __construct()
+    {
+        // Date format is DD/MM/YYYY in human representation
+        $this->date = Carbon::today('Asia/Kolkata')->format('d/m/y');
+    }
 
     public function generateSettlementFile($settlements, $txns)
     {
-        ;
+        $data = array();
+        array_push($data, static::$headings);
+
+        foreach ($settlements as $settlement)
+        {
+            $merchant = $settlement->merchant;
+
+            $ba = $merchant->bankAccount;
+
+            $array = array(
+                'Client_Code'           => 'NODAL',
+                'Product_Code'          => 'CMSPAY',
+                'Payment_Type'          => 'NEFT',
+                'Payment_Date'          => $this->date,
+                'Dr_Ac_No'              => '1209034',
+                'Amount'                => $settlement->getAmount() / 100,
+                'Bank_Code_Indicator'   => 'M',
+                'Beneficiary_Name'      => $ba->getBeneficiaryName(),
+                'IFSC Code'             => $ba->getIfscCode(),
+                'Beneficiary_Acc_No'    => $ba->getAccountNumber()
+                );
+
+            $values = $this->getAllValues($array);
+
+            array_push($data, $values);
+        }
+
+        // @todo: remove sys_get_temp_dir. the doc comments don't recommend it.
+        // Create a temp file name
+        $filename =  'settlement';
+
+        Excel::create($filename, function($excel) use ($data)
+        {
+            $excel->sheet('Nodal Settlement File', function($sheet) use ($data)
+                {
+                    $sheet->with($data, false, false);
+                });
+        })->store('xlsx', false, true);
+
+        return $filename;
     }
+
+    protected function getEmptyArray()
+    {
+        $count = count(static::$headings);
+
+        return array_combine(static::$headings, array_fill(0, $count, null));
+    }
+
+    protected function getAllValues($partialValues)
+    {
+        $dict = $this->getEmptyArray();
+
+        foreach ($partialValues as $key => $value)
+        {
+            $dict[$key] = $value;
+        }
+
+        return array_values($dict);
+    }
+
 }

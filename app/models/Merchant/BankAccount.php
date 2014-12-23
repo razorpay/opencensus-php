@@ -43,4 +43,19 @@ class BankAccount extends Base\UniqueIdEntity
     {
         return $this->belongsTo('Models\Merchant\Entity');
     }
+
+    public function getBeneficiaryName()
+    {
+        return $this->getAttribute(self::BENEFICIARY_NAME);
+    }
+
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getIfscCode()
+    {
+        return $this->getAttribute(self::IFSC_CODE);
+    }
 }

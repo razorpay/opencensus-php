@@ -52,7 +52,6 @@ class Merchant
         $txn = new Transaction\Entity;
 
         $values = array(
-            Transaction\Entity::MERCHANT_ID => $this->merchant->getKey(),
             Transaction\Entity::DEBIT       => $this->amount,
             Transaction\Entity::CREDIT      => 0,
             Transaction\Entity::CURRENCY    => 'INR',
@@ -65,6 +64,8 @@ class Merchant
         );
 
         $txn->fillAndGenerateId($values);
+
+        $txn->merchant()->associate($this->merchant);
 
         return $txn;
     }
@@ -108,14 +109,29 @@ class Merchant
 
         if ($mode === 'test')
         {
-            $ba = null;
-
-            $this->merchant->setRelation('bankAccount', null);
+            $ba = $this->getDefaultBank($this->merchant);
         }
         else
         {
             $ba = $this->merchantRepo->getBankAccount($this->merchant);
         }
+
+        return $ba;
+    }
+
+    protected function getDefaultBank($merchant)
+    {
+        $attributes = array(
+            'merchant_id'   => $merchant->getId(),
+            'ifsc_code'     => 'RZPB0000000',
+            'beneficiary_name' => $merchant['name'],
+            'account_number'   => '10101030103');
+
+        $ba = (new \Models\Merchant\BankAccount)->newInstance($attributes, true);
+
+        $ba->merchant()->associate($merchant);
+
+        $merchant->setRelation('bankAccount', $ba);
 
         return $ba;
     }

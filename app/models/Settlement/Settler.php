@@ -111,20 +111,7 @@ class Settler
 
     protected function createSettlementFile($settlements, $txns)
     {
-        $file = (new Kotak\Settlement)->generateSettlementFile($settlements, $txns);
-
-        // @todo: remove sys_get_temp_dir. the doc comments don't recommend it.
-        // Create a temp file name
-        $filename =  tempnam(sys_get_temp_dir(), 'settlement') . '.xlsx';
-
-        $fp = fopen($filename, 'w');
-
-        foreach ($txns as $txn)
-        {
-            fputcsv($fp, $txn->toArray());
-        }
-
-        fclose($fp);
+        $filename = (new Kotak\Settlement)->generateSettlementFile($settlements, $txns);
 
         return $filename;
     }

@@ -47,6 +47,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Transaction\Entity');
     }
 
+    public function getAmount()
+    {
+        $this->getAttribute(self::AMOUNT);
+    }
+
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
