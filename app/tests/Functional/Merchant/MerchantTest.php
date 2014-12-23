@@ -104,6 +104,11 @@ class MerchantTest extends TestCase
 
     public function testActivateMerchant()
     {
+        $this->ba->appAuthLive();
+
+        $ba = $this->fixtures->on('live')->createEntity(
+                        'bank_account', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
         $this->startTest();
     }
 

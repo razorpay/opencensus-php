@@ -43,6 +43,11 @@ class Authorization
         $this->type = 'app';
     }
 
+    public function appAuthLive($pwd = '')
+    {
+        $this->appAuth('rzp_live', $pwd);
+    }
+
     public function proxyAuth($user = 'rzp_test_10000000000000')
     {
         $this->appAuth($user);
