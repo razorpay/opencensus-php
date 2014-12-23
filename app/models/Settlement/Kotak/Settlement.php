@@ -98,17 +98,19 @@ class Settlement
             array_push($data, $values);
         }
 
-        // @todo: remove sys_get_temp_dir. the doc comments don't recommend it.
-        // Create a temp file name
-        $filename =  'settlement';
+        // @todo: Get correct format specifiers for time.
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
+        $filename =  'Kotak_Settlement_'.$time;
 
-        Excel::create($filename, function($excel) use ($data)
+        $excel = Excel::create($filename, function($excel) use ($data)
         {
             $excel->sheet('Nodal Settlement File', function($sheet) use ($data)
                 {
                     $sheet->with($data, false, false);
                 });
-        })->store('xlsx', false, true);
+        });
+
+        $excel->store('xlsx', storage_path('files/settlement'), true);
 
         return $filename;
     }
