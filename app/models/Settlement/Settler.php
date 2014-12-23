@@ -56,12 +56,12 @@ class Settler
         {
             $this->setlRepo->rollback();
 
-            (new SlackNotification)->queueOperationFailure('settlements', $e);
+            (new Mpr\SlackNotification)->queueOperationFailure('settlements', $e);
 
             throw $e;
         }
 
-        (new SlackNotification)->queueOperationSuccess('settlements', $settlements->count());
+        (new Mpr\SlackNotification)->queueOperationSuccess('settlements', $settlements->count());
 
         Dashboard::send('settlement', $settlements);
 

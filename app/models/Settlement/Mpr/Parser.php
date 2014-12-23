@@ -1,11 +1,11 @@
 <?php
 
-namespace Models\Settlement;
+namespace Models\Settlement\Mpr;
 
 use Excel;
 use EE\Exception;
 
-class MprParser
+class Parser
 {
     protected static $headings = array();
 

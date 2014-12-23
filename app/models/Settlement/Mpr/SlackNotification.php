@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Settlement;
+namespace Models\Settlement\Mpr;
 
 use Queue;
 

@@ -10,9 +10,9 @@ class Service extends Base\Service
 {
     public function gatewayMprReconcile($input)
     {
-        $data = (new MprParser)->process($input);
+        $data = (new Mpr\Parser)->process($input);
 
-        $reconciler = new Reconciler;
+        $reconciler = new Mpr\Reconciler;
 
         $txns = $reconciler->reconcile($data, 'hdfc');
 
@@ -30,7 +30,7 @@ class Service extends Base\Service
 
     public function gatewayMprGenerate($input)
     {
-        $generator = new MprGenerator($this->mode);
+        $generator = new Mpr\Generator($this->mode);
 
         return $generator->generateTestMpr($input);
     }

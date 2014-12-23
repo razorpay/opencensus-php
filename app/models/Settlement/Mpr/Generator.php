@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Settlement;
+namespace Models\Settlement\Mpr;
 
 use Carbon\Carbon;
 use EE\Exception;
@@ -11,7 +11,7 @@ use Models\Payment;
 use Models\Payment\Refund;
 use Queue;
 
-class MprGenerator
+class Generator
 {
     /**
      * It's set to yesterday's timestamp if default is null.
