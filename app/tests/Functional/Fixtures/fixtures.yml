@@ -15,6 +15,12 @@ Models\Terminal\Entity:
 Models\Merchant\Balance:
     id: $uniqueid
 
+Models\Merchant\BankAccount:
+    merchant_id: $uniqueid
+    ifsc_code: RZPB0000000
+    beneficiary_name: random_name
+    account_number: 10010101011
+
 Models\Card\Entity:
     id: $uniqueid
     name: $string
@@ -89,8 +95,6 @@ Models\Transaction\Entity:
     debit: 0
     balance: $integer
     gateway_fee: null
-
-
 
 Gateway\Hdfc\Entity:
     id: $integer

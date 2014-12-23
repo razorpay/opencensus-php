@@ -11,6 +11,7 @@ class Fixtures
 {
     protected static $entityMap = array(
         'balance'       => 'Models\Merchant\Balance',
+        'bank_account'  => 'Models\Merchant\BankAccount',
         'card'          => 'Models\Card\Entity',
         'hdfc'          => 'Gateway\Hdfc\Entity',
         'key'           => 'Models\Key\Entity',
@@ -48,6 +49,8 @@ class Fixtures
 
         $this->testKey = $this->on('test')->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
         $this->liveKey = $this->on('live')->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
+
+        $this->ba = $this->on('live')->createEntity('bank_account', ['merchant_id' => '10000000000000']);
 
         $entities['payment'] = $this->on('test')->createEntity(
                                         'payment',
