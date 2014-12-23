@@ -29,6 +29,12 @@ class CreateSettlement extends Migration {
 
             $table->string(Settlement::STATUS);
 
+            $table->string(Settlement::UTR)
+                  ->nullable();
+
+            $table->string(Settlement::FAILURE_REASON)
+                  ->nullable();
+
             $table->char(Settlement::MERCHANT_ID, Settlement::ID_LENGTH);
 
             $table->char(Settlement::TRANSACTION_ID, Settlement::ID_LENGTH)
