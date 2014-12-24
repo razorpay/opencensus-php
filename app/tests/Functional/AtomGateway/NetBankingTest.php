@@ -42,14 +42,26 @@ class NetBankingTest extends TestCase
             'currency' => 'INR');
     }
 
-    public function testNetBankingTransactionSuccess()
+    public function testNetBankingPaymentAuthorize()
     {
         $this->ba->publicAuth();
 
         $this->startTest();
     }
 
-    public function testNBTransactionFailureAtBank()
+    public function testNetBankingPaymentCapture()
+    {
+        $payment = $this->doNetBankingAuthorize();
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/'.$payment['id'].'/capture';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testNBPaymentFailureAtBank()
     {
         $this->ba->publicAuth();
 
@@ -85,12 +97,31 @@ class NetBankingTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
+    protected function doNetBankingAuthorize()
+    {
+        $request = array(
+            'content' => $this->payment);
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     /**
      * Runs payment callback flow for atom net-banking transactions
      * @param  array $response
      */
     protected function runPaymentCallbackFlow($response)
     {
+        $content = $response->getContent();
+
+        if ((json_decode($content) !== null) or
+            (get_class($response) !== 'Illuminate\Http\RedirectResponse') or
+            ($response->getStatusCode() !== 302))
+        {
+            return $response;
+        }
+
         $url = $response->getTargetUrl();
 
         $headers = array();

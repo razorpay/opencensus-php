@@ -5,7 +5,7 @@ use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
 
 return [
-    'testNetBankingTransactionSuccess' => [
+    'testNetBankingPaymentAuthorize' => [
         'request' => [
             'content' => []
         ],
@@ -19,7 +19,24 @@ return [
         ],
     ],
 
-    'testNBTransactionFailureAtBank' => [
+    'testNetBankingPaymentCapture' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [
+                'amount' => 5000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'amount' => 5000,
+                'status' => 'captured',
+                'refund_status' => null,
+            ]
+        ],
+    ],
+
+    'testNBPaymentFailureAtBank' => [
         'request' => [
             'content' => [],
         ],
