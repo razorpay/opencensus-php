@@ -211,7 +211,7 @@ return [
                     array(
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 3,
+                        'count' => 4,
                         'rules' => array(
                             array()
                             ),

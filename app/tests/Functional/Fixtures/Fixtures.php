@@ -262,6 +262,17 @@ class Fixtures
                         'percent_rate' => 3000,
                         'fixed_rate' => 0,
                     ),
+                    array(
+                        'id' => '1zD0BXpeOyaqpB',
+                        'plan_id' => '1hDYlICobzOCYt',
+                        'plan_name' => 'testDefaultPlan',
+                        'payment_mode' => 'net banking',
+                        'payment_mode_type' => null,
+                        'payment_network' => null,
+                        'payment_issuer' => null,
+                        'percent_rate' => 0,
+                        'fixed_rate' => 2500,
+                    ),
                 );
 
         $repo = new Models\Pricing\Repository;
