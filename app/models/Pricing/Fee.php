@@ -15,9 +15,37 @@ class Fee
 
     public function calculateMerchantFees($merchant, $card, $amount)
     {
+        $pricingPlanId = $this->getPricingPlanId($merchant);
+
         $networks = array($card->getNetwork(), null);
 
+        $rule = $this->getRelevantPricingRule($pricingPlanId, $networks);
+
+        $fee = $this->getFees($rule, $amount);
+
+        return array($fee, $rule->getKey());
+    }
+
+    protected function getFees($rule, $amount)
+    {
+        $percent = $rule->getAttribute(Pricing\Entity::PERCENT_RATE);
+        $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
+
+        $fee = (($amount * $percent) / 10000) + $fixed;
+        $fee = (int) ceil($fee);
+
+        $serviceTax = (int) ceil(($fee * self::SERVICE_TAX_PERCENT) / 100);
+        $educationCess = (int) ceil(($fee * self::EDUCATION_CESS_PERCENT) / 100);
+
+        $fee += $serviceTax + $educationCess;
+
+        return $fee;
+    }
+
+    protected function getPricingPlanId($merchant)
+    {
         $pricingPlanId = $merchant->getPricingPlanId();
+
         $mode = \BasicAuth::getMode();
 
         if ($pricingPlanId === null)
@@ -31,6 +59,11 @@ class Fee
             $pricingPlanId = $this->defaultPricingPlan;
         }
 
+        return $pricingPlanId;
+    }
+
+    protected function getRelevantPricingRule($pricingPlanId, $networks)
+    {
         $pricingRepo = new Pricing\Repository;
 
         $pricing = $pricingRepo->getPricingPlanByIdAndPaymentNetworks($pricingPlanId, $networks);
@@ -59,17 +92,6 @@ class Fee
                 'Failed to find a valid pricing rule for the payment');
         }
 
-        $percent = $rule->getAttribute(Pricing\Entity::PERCENT_RATE);
-        $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
-
-        $fee = (($amount * $percent) / 10000) + $fixed;
-        $fee = (int) ceil($fee);
-
-        $serviceTax = (int) ceil(($fee * self::SERVICE_TAX_PERCENT) / 100);
-        $educationCess = (int) ceil(($fee * self::EDUCATION_CESS_PERCENT) / 100);
-
-        $fee += $serviceTax + $educationCess;
-
-        return array($fee, $rule->getKey());
+        return $rule;
     }
 }

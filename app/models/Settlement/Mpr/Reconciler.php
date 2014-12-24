@@ -162,14 +162,6 @@ class Reconciler
         (new Card\Repository)->saveOrFail($card);
     }
 
-    protected function calculateMerchantFees()
-    {
-        return $this->feeCalculator->calculateMerchantFees(
-                    $this->merchant,
-                    $this->card,
-                    $this->payment->getAmount());
-    }
-
     protected function updateBalances()
     {
         $merchantRepo = new Merchant\Repository();
