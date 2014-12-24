@@ -2,10 +2,11 @@
 
 namespace Models\Merchant;
 
+use Models\Base
 use Models\Merchant;
 use Models\Pricing;
 
-class Core
+class Core extends Base\Core;
 {
     public function create($input)
     {

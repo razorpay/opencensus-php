@@ -2,24 +2,20 @@
 
 namespace Models\Payment;
 
-use EE\Exception\BaseException;
-use EE\Exception\BadRequestException;
+use EE\Exception;
+use Models\Base;
 use Models\Card;
 use Models\Transaction;
 use Models\Payment;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Core
+class Core extends Base\Core
 {
-    protected $trace;
-
     protected $paymentRepo;
 
     public function __construct()
     {
-        $this->trace = Trace::getInstance();
-
         $this->paymentRepo = (new Payment\Repository);
     }
 

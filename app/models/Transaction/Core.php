@@ -10,7 +10,7 @@ use Models\Merchant;
 use Models\Pricing;
 use Models\Payment;
 
-class Core
+class Core extends Base\Core
 {
     protected $entities = array();
 

@@ -4,9 +4,10 @@ namespace Models\Terminal;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Models\Base;
 use Models\Terminal;
 
-class Core
+class Core extends Base\Core
 {
     protected $repo = null;
 
