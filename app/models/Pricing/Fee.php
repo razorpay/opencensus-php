@@ -3,6 +3,7 @@
 namespace Models\Pricing;
 
 use EE\Exception;
+use Models\Payment;
 use Models\Pricing;
 
 class Fee
@@ -13,15 +14,13 @@ class Fee
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
-    public function calculateMerchantFees($merchant, $card, $amount)
+    public function calculateMerchantFees($payment)
     {
-        $pricingPlanId = $this->getPricingPlanId($merchant);
+        $pricingPlanId = $this->getPricingPlanId($payment->merchant);
 
-        $networks = array($card->getNetwork(), null);
+        $rule = $this->getRelevantPricingRule($pricingPlanId, $payment);
 
-        $rule = $this->getRelevantPricingRule($pricingPlanId, $networks);
-
-        $fee = $this->getFees($rule, $amount);
+        $fee = $this->getFees($rule, $payment->getAmount());
 
         return array($fee, $rule->getKey());
     }
@@ -62,11 +61,37 @@ class Fee
         return $pricingPlanId;
     }
 
-    protected function getRelevantPricingRule($pricingPlanId, $networks)
+    protected function getRelevantPricingRule($pricingPlanId, $payment)
     {
         $pricingRepo = new Pricing\Repository;
 
-        $pricing = $pricingRepo->getPricingPlanByIdAndPaymentNetworks($pricingPlanId, $networks);
+        if ($payment->getMethod() === Payment\Method::CARD)
+        {
+            $rule = $this->getRelevantPricingRuleForCard($pricingPlanId, $payment);
+        }
+        else
+        {
+            $pricing = $pricingRepo->getPricingRulesForNetBanking($pricingPlanId);
+
+            if (count($pricing) > 1)
+            {
+                throw new Exception\LogicException(
+                    'Currently only 1 net-banking pricing rule allowed. Found: ' . count($rules));
+            }
+
+            $rule = $pricing->first();
+        }
+
+        return $rule;
+    }
+
+    protected function getRelevantPricingRuleForCard($pricingPlanId, $payment)
+    {
+        $networks = array($payment->card->getNetwork(), null);
+
+        $pricingRepo = new Pricing\Repository;
+
+        $pricing = $pricingRepo->getPricingRulesForGivenCardNetworks($pricingPlanId, $networks);
 
         $rule = null;
         $rules = $pricing->all();

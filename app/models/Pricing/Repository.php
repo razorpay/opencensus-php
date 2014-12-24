@@ -3,6 +3,7 @@
 namespace Models\Pricing;
 
 use Models\Base;
+use Models\Payment;
 use Models\Pricing;
 use EE\Exception;
 use EE\Error\ErrorCode;
@@ -45,20 +46,29 @@ class Repository extends Base\Repository
         return $this->getPricingPlanById($id, true, true);
     }
 
-    public function getPricingPlanByIdAndPaymentNetworks($id, array $networks = array())
+    public function getPricingRulesForGivenCardNetworks($id, array $networks = array())
     {
         $repo = $this->repo;
 
         // cannot use laravel's whereIn here because it doesn't give correct result with 'null'
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+                    ->where(Pricing\Entity::PAYMENT_MODE, '=', Payment\Method::CARD)
                     ->where(function($query) use ($networks)
                     {
                         $query->where(Pricing\Entity::PAYMENT_NETWORK, '=', null)
                               ->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $networks[0]);
                     })
-//                    ->whereIn(Pricing\Entity::PAYMENT_NETWORK, array('AMEX'))
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
+    }
+
+    public function getPricingRulesForNetBanking($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+                    ->where(Pricing\Entity::PAYMENT_MODE, '=', Payment\Method::NET_BANKING)
+                    ->firstOrFail();
     }
 
     public function getPricingPlans()
