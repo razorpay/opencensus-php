@@ -76,7 +76,7 @@ class Merchant
         $setl = (new Settlement\Entity)->generateId();
 
         $setl->setAmount($this->amount);
-        $setl->setStatus('abc');
+        $setl->setStatus(Status::CREATED);
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);

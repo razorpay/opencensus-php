@@ -90,7 +90,9 @@ class Settlement
                 'Bank_Code_Indicator'   => 'M',
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
                 'IFSC Code'             => $ba->getIfscCode(),
-                'Beneficiary_Acc_No'    => $ba->getAccountNumber()
+                'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
+                'Payment Details 1'     => $settlement->getPublicId(),
+                'Payment Details 2'     => $merchant->getPublicId()
                 );
 
             $values = $this->getAllValues($array);
