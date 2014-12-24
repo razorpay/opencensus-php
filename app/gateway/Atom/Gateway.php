@@ -39,7 +39,7 @@ class Gateway extends BaseGateway
      * @param  array  $input
      * @return void
      */
-    public function capture(array $input)
+    public function authorize(array $input)
     {
         parent::authorize($input);
 
@@ -58,6 +58,11 @@ class Gateway extends BaseGateway
         $data = array('redirectUrl' => $url);
 
         return $data;
+    }
+
+    public function capture(array $input = array())
+    {
+        parent::capture($input);
     }
 
     /**

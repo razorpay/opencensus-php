@@ -157,6 +157,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT =
         'The merchant does not have pricing assigned';
 
+    const BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB =
+        'The field should be null for net-banking';
+
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED =
         'The merchant has already been activated';
 

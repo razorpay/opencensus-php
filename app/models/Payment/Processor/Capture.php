@@ -12,9 +12,9 @@ trait Capture
     /**
      * Capture a previous auth payment
      *
-     * @param  string              $id  Id of payment to be captured
+     * @param  string           $id  Id of payment to be captured
      *
-     * @return Payment\Entity       Payment\Entity object
+     * @return Payment\Entity   Payment\Entity object
      */
     public function capture($id, array $input = array())
     {
@@ -22,8 +22,18 @@ trait Capture
 
         (new Payment\Validator)->captureValidate($payment, $input);
 
+        $paymentArray = array();
+        if ($payment->isNetBanking())
+        {
+            $paymentArray = $payment->toArray();
+        }
+        else
+        {
+            $paymentArray = $payment->toArrayWithCard();
+        }
+
         $data = array(
-            'payment' => $payment->toArrayWithCard(),
+            'payment' => $paymentArray,
             'amount' => $input['amount']);
 
         $payment->setCaptureAmount($input['amount']);
@@ -40,7 +50,7 @@ trait Capture
             'payment'       => $payment->toArray(),
             'callbackUrl'   => $this->getCallbackUrl());
 
-        return $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+        return $this->callGatewayFunction(Payment\Action::AUTHORIZE, $data);
     }
 
     protected function captureOnGateway($data)

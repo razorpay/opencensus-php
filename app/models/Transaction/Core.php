@@ -85,10 +85,7 @@ class Core extends Base\Core
 
     protected function calculateMerchantFees($payment)
     {
-        return (new Pricing\Fee)->calculateMerchantFees(
-                    $payment->merchant,
-                    $payment->card,
-                    $payment->getAmount());
+        return (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
 }

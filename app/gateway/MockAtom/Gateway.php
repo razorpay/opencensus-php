@@ -21,9 +21,9 @@ class Gateway extends Atom\Gateway
         $this->mock = true;
     }
 
-    public function capture(array $input)
+    public function authorize(array $input)
     {
-        $data = parent::capture($input);
+        $data = parent::authorize($input);
 
         $url = $data['redirectUrl'];
 

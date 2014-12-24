@@ -256,12 +256,17 @@ class Entity extends Base\PublicEntity
 
     public function isFailed()
     {
-        return ($this->getAttribute(self::STATUS) == Status::FAILED);
+        return ($this->getAttribute(self::STATUS) === Status::FAILED);
     }
 
     protected function isStatus($status)
     {
-        return ($this->getAttribute(self::STATUS) == $status);
+        return ($this->getAttribute(self::STATUS) === $status);
+    }
+
+    public function isNetBanking()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::NET_BANKING);
     }
 
 // ----------------------- Getters ---------------------------------------------
@@ -294,6 +299,11 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getMethod()
+    {
+        return $this->getAttribute(self::METHOD);
     }
 
 // ----------------------- Getters Ends-----------------------------------------

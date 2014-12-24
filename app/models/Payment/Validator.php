@@ -250,7 +250,7 @@ class Validator extends Base\Validator
     {
         $this->failIfCaptured($payment);
 
-        $this->failIfNotAuth($payment);
+        $this->failIfNotAuthorized($payment);
 
         $this->validateInput('capture', $input);
 
@@ -259,10 +259,20 @@ class Validator extends Base\Validator
 
     public function captureAmountValidate($payment, $input)
     {
-        if ($input['amount'] > $payment->getAttribute(Payment\Entity::AMOUNT))
+        $amount = (int) $input['amount'];
+
+        if ($amount > $payment->getAmount())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_GREATER_THAN_AUTH, 'amount');
+        }
+
+        if (($payment->isNetBanking()) and
+            ($amount !== $payment->getAmount()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_NB_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
+                Payment\Entity::AMOUNT);
         }
     }
 
@@ -278,7 +288,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function failIfNotAuth($payment)
+    public function failIfNotAuthorized($payment)
     {
         if ($payment->isAuthorized() === false)
         {
