@@ -141,7 +141,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'            =>  '1DP5mmOlF5G5ag',
                     'merchant_id'   =>  '10000000000000',
-                    'secret'        =>  Hash::make('thisissupersecret'),
+                    'secret'        =>  Crypt::encrypt('thisissupersecret'),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -151,7 +151,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'            =>  '0wFRWIZnH65uny',
                     'merchant_id'   =>  '1MABTZjIwgLtRZ',
-                    'secret'        =>  Hash::make('thisissupersecret'),
+                    'secret'        =>  Crypt::encrypt('thisissupersecret'),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )

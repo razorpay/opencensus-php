@@ -5,7 +5,7 @@ namespace Http\BasicAuth;
 use Config;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Hash;
+use Crypt;
 use Http\ApiResponse;
 use Http\Route;
 use Models\Key;
@@ -320,7 +320,7 @@ class BasicAuth
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
-        if (Hash::check($secret, $keyEntity->getSecret()) === false)
+        if (Crypt::decrypt($keyEntity->getSecret()) !== $secret)
         {
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);

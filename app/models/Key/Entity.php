@@ -2,17 +2,17 @@
 
 namespace Models\Key;
 
+use Crypt;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Hash;
 use Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID = 'id';
-    const MERCHANT_ID = 'merchant_id';
-    const SECRET = 'secret';
-    const EXPIRED_AT = 'expired_at';
+    const ID            = 'id';
+    const MERCHANT_ID   = 'merchant_id';
+    const SECRET        = 'secret';
+    const EXPIRED_AT    = 'expired_at';
 
     const SECRET_HASH_LENGTH = 100;
     const SECRET_LENGTH = 24;
@@ -150,7 +150,7 @@ class Entity extends Base\PublicEntity
             $secret .= $partial;
         }
 
-        $hash = Hash::make($secret);
+        $hash = Crypt::encrypt($secret);
         $this->setAttribute(self::SECRET, $hash);
 
         assert(strlen($secret) === self::SECRET_LENGTH);
