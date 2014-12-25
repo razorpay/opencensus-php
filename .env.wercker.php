@@ -1,6 +1,8 @@
 <?php
 
 return array(
+    'ENCRYPTION_KEY'            => '4dkTd5lWhN40CkSrnyrRBuRMsSX9exXD',
+
     'DB_DEFAULT_CONNECTION'     => 'live',
 
     'DB_LIVE_DRIVER'            => 'sqlite',
