@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = array(
         Entity::GATEWAY             => 'sometimes|in:hdfc',
-        Entity::PAYMENT_MODE        => 'required|alpha|in:card,net banking',
+        Entity::PAYMENT_MODE        => 'required|alpha_space|in:card,net banking',
         Entity::PAYMENT_MODE_TYPE   => 'sometimes|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
