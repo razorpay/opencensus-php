@@ -18,6 +18,7 @@ if (file_exists('config.php'))
     <meta charset="utf-8">
     <link href="<?= $checkout ?>/v1/css/style.css" type="text/css" rel="stylesheet">
 
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="<?= $checkout ?>/v1/checkout.js" ></script>
 </head>
 <body>
@@ -32,7 +33,7 @@ if (file_exists('config.php'))
             'description': 'Tron Legacy',
             'image': 'https://i.imgur.com/3g7nmJC.png',
             'handler': function (transaction) {
-                alert("You have successfully purchased " + rzp1.options.description);
+                alert("You have successfully purchased Tron Legacy");
             },
             'protocol': '<?= $protocol ?>',
             'hostname': '<?= $hostname ?>',
@@ -46,7 +47,7 @@ if (file_exists('config.php'))
             },
             netbanking: true
         }
-        var rzp1 = new Razorpay(options);
+        var rzp1 = new Checkout(options);
 
         $('#rzp-button1').click(function(e) {
             rzp1.open();
@@ -58,14 +59,14 @@ if (file_exists('config.php'))
             description : 'Alive (2007)',
             image : 'https://i.imgur.com/GXalrU0.png',
             handler : function (transaction){
-                alert("You have successfully purchased "+rzp2.options.description);
+                alert("You have successfully purchased Alive (2007)");
             },
             udf: {
                 'shipping': "Bye World"
             }
         });
 
-        var rzp2 = new Razorpay(options);
+        var rzp2 = new Checkout(options);
 
         $('#rzp-button2').click(function(e){
             rzp2.open();
