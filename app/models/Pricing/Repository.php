@@ -82,8 +82,8 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-         // For merchant pricing plans, gateway will not be specified
-         return $repo::whereNull(Pricing\Entity::GATEWAY)
+        // For merchant pricing plans, gateway will not be specified
+        return $repo::whereNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::ID, 'desc')->take(10)->get();
     }
 

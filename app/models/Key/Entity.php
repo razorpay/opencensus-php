@@ -14,7 +14,6 @@ class Entity extends Base\PublicEntity
     const SECRET        = 'secret';
     const EXPIRED_AT    = 'expired_at';
 
-    const SECRET_HASH_LENGTH = 100;
     const SECRET_LENGTH = 24;
 
     protected $entity = 'key';
