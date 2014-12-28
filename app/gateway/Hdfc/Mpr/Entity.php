@@ -46,6 +46,8 @@ class Entity extends Base\Entity
 
     public function getAmount()
     {
-        return $this->getAttribute('international_amount') + $this->getAttribute('domestic_amount');
+        $ia = (int) $this->getAttribute('international_amount');
+        $da = (int) $this->getAttribute('domestic_amount');
+        return $ia + $da;
     }
 }

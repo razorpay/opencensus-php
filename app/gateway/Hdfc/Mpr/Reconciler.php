@@ -34,7 +34,10 @@ class Reconciler
 
         if ((string) $attributes['gateway_payment_id'] !== (string) $hdfcPayment['gateway_payment_id'])
         {
-            throw new Exception\LogicException('Hdfc mpr: Gateway payment id does not match');
+            throw new Exception\LogicException(
+                'Hdfc mpr: Gateway payment id does not match.
+                Gateway payment id: ' . $attributes['gateway_payment_id'] .
+                ' Hdfc payment id: ' . $hdfcPayment['gateway_payment_id']);
         }
 
         // Create Hdfc mpr record
@@ -135,13 +138,15 @@ class Reconciler
         if ($mpr['payment_id'] !== $paymentId)
         {
             throw new Exception\LogicException(
-                'Hdfc mpr: Payment id does not match');
+                'Hdfc mpr: Payment id does not match' .
+                'Mpr payment id: ' . $mpr['payment_id'] . ' Payment id: ' . $paymentId);
         }
 
-        if ((string) $mpr->getAmount() !== $payment['amount'])
+        if ($mpr->getAmount() !== (int) $payment['amount'])
         {
             throw new Exception\LogicException(
-                'Hdfc mpr: Payment amount does not match');
+                'Hdfc mpr: Payment amount does not match' .
+                'Mpr amount: ' . $mpr->getAmount() . ' Payment amount: ' . $payment['amount']);
         }
     }
 
@@ -150,7 +155,8 @@ class Reconciler
         if (($terminal['gateway_merchant_id'] !== $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID]) or
             ($terminal['gateway_terminal_id'] !== $terminal[Terminal\Entity::GATEWAY_TERMINAL_ID]))
         {
-            throw new Exception\LogicException('Hdfc mpr: gateway terminal id or gateway merchant id does not match');
+            throw new Exception\LogicException(
+                'Hdfc mpr: gateway terminal id or gateway merchant id does not match');
         }
     }
 
