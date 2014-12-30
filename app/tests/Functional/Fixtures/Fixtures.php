@@ -266,7 +266,7 @@ class Fixtures
                         'id' => '1zD0BXpeOyaqpB',
                         'plan_id' => '1hDYlICobzOCYt',
                         'plan_name' => 'testDefaultPlan',
-                        'payment_mode' => 'net banking',
+                        'payment_mode' => 'netbanking',
                         'payment_mode_type' => null,
                         'payment_network' => null,
                         'payment_issuer' => null,

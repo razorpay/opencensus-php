@@ -32,7 +32,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
         <td colspan="40">Select Method: </td>
         <td>
             <select name="method">
-                <option value="net banking">Net Banking</option>
+                <option value="netbanking">Net Banking</option>
                 <option value="card" selected>Card</option>
             </select>
         </td>

@@ -241,7 +241,7 @@ return [
     'testAmountLessThan50ForNetBanking' => [
         'request' => [
             'content' => [
-                'method' => 'net banking',
+                'method' => 'netbanking',
                 'amount' => '4999',
                 'bank' => 'SBIN'
             ],

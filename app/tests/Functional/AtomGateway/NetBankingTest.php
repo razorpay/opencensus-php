@@ -34,7 +34,7 @@ class NetBankingTest extends TestCase
         $this->mock = $gateway['mock_atom'];
 
         $this->payment = array(
-            'method' => 'net banking',
+            'method' => 'netbanking',
             'bank' => 'SBIN',
             'amount' => '5000',
             'email' => 'ab@g.com',

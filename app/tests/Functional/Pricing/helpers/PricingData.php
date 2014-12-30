@@ -64,7 +64,7 @@ return [
     'testAddPricingPlanNBRule' => [
         'request' => [
             'content' => [
-                'payment_mode' => 'net banking',
+                'payment_mode' => 'netbanking',
                 'percent_rate' => 1000
             ],
             'method' => 'POST'
@@ -72,7 +72,7 @@ return [
         'response' => [
             'content' => [
                 'plan_name' => 'TestPlan1',
-                'payment_mode' => 'net banking',
+                'payment_mode' => 'netbanking',
                 'payment_mode_type' => null,
                 'payment_network' => null,
                 'payment_issuer' => null,

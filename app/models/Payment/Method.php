@@ -6,5 +6,5 @@ class Method
 {
     const CARD          = 'card';
     const IMPS          = 'imps';
-    const NET_BANKING   = 'net banking';
+    const NET_BANKING   = 'netbanking';
 }
