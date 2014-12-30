@@ -31,6 +31,22 @@ return [
         ],
     ],
 
+    'testCaptureWithDifferentAmount' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH
+        ],
+    ],
+
     'testCaptureWithLessAmountThanAuth' => [
         'response' => [
             'content' => [
@@ -45,14 +61,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_GREATER_THAN_AUTH,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_GREATER_THAN_AUTH
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH
         ],
 
     ],

@@ -79,8 +79,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_ID =
         'The id provided does not exist';
 
-    const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_GREATER_THAN_AUTH =
-        'Capture amount cannot be greater than authorized amount';
+    const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH =
+        'Capture amount must be equal to the amount authorized';
 
     const BAD_REQUEST_KEY_EXPIRED =
         'Key is expired';

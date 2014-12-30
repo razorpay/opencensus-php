@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         'udf'           =>  'sometimes');
 
     protected static $captureRules = array(
-        'amount'        => 'required|numeric|max:50000000|min:100');
+        'amount'        => 'required|numeric');
 
     protected static $refundRules = array(
         'amount'        => 'sometimes|numeric');
@@ -261,17 +261,10 @@ class Validator extends Base\Validator
     {
         $amount = (int) $input['amount'];
 
-        if ($amount > $payment->getAmount())
+        if ($amount !== $payment->getAmount())
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_GREATER_THAN_AUTH, 'amount');
-        }
-
-        if (($payment->isNetBanking()) and
-            ($amount !== $payment->getAmount()))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_NB_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
                 Payment\Entity::AMOUNT);
         }
     }
