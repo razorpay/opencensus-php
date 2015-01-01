@@ -10,8 +10,8 @@ class Entity extends Base\UniqueIdEntity
     const PLAN_ID               = 'plan_id';
     const PLAN_NAME             = 'plan_name';
     const GATEWAY               = 'gateway';
-    const PAYMENT_MODE          = 'payment_mode';
-    const PAYMENT_MODE_TYPE     = 'payment_mode_type';
+    const PAYMENT_METHOD        = 'payment_method';
+    const PAYMENT_METHOD_TYPE   = 'payment_method_type';
     const PAYMENT_NETWORK       = 'payment_network';
     const PAYMENT_ISSUER        = 'payment_issuer';
     const PERCENT_RATE          = 'percent_rate';
@@ -23,8 +23,8 @@ class Entity extends Base\UniqueIdEntity
         self::PLAN_ID,
         self::PLAN_NAME,
         self::GATEWAY,
-        self::PAYMENT_MODE,
-        self::PAYMENT_MODE_TYPE,
+        self::PAYMENT_METHOD,
+        self::PAYMENT_METHOD_TYPE,
         self::PAYMENT_NETWORK,
         self::PAYMENT_ISSUER,
         self::PERCENT_RATE,
@@ -46,7 +46,7 @@ class Entity extends Base\UniqueIdEntity
 
     protected function modifyInputProvideDefaults(& $input)
     {
-        $nullables = array(self::PAYMENT_MODE_TYPE, self::PAYMENT_NETWORK, self::PAYMENT_ISSUER);
+        $nullables = array(self::PAYMENT_METHOD_TYPE, self::PAYMENT_NETWORK, self::PAYMENT_ISSUER);
 
         foreach ($nullables as $key)
         {

@@ -74,8 +74,8 @@ Models\Pricing\Entity:
     id: $uniqueid
     plan_id: 1ycviEdCgurrFI
     plan_name: testFixturePlan
-    payment_mode: card
-    payment_mode_type: credit
+    payment_method: card
+    payment_method_type: credit
     payment_network: VISA
     payment_issuer: ICIC
     percent_rate: 1000

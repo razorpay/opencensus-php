@@ -11,8 +11,8 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = array(
         Entity::GATEWAY             => 'sometimes|in:hdfc',
-        Entity::PAYMENT_MODE        => 'required|alpha_space|in:card,netbanking',
-        Entity::PAYMENT_MODE_TYPE   => 'sometimes|in:debit,credit',
+        Entity::PAYMENT_METHOD        => 'required|alpha_space|in:card,netbanking',
+        Entity::PAYMENT_METHOD_TYPE   => 'sometimes|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
         Entity::PERCENT_RATE        => 'sometimes|numeric|max:10000',
@@ -27,11 +27,11 @@ class Validator extends Base\Validator
 
     protected function validateAddPlanRuleNB($input)
     {
-        // Check that payment_mode_type is not defined when mode is net-banking
-        if ($input[Entity::PAYMENT_MODE] === Payment\Method::NET_BANKING)
+        // Check that payment_method_type is not defined when mode is net-banking
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::NET_BANKING)
         {
             $fields = array(
-                Entity::PAYMENT_MODE_TYPE,
+                Entity::PAYMENT_METHOD_TYPE,
                 Entity::PAYMENT_NETWORK,
                 Entity::PAYMENT_ISSUER);
 
@@ -118,8 +118,8 @@ class Validator extends Base\Validator
 
         foreach ($rules as $rule)
         {
-            if (($rule[Entity::PAYMENT_MODE] === $input[Entity::PAYMENT_MODE]) and
-                ($rule[Entity::PAYMENT_MODE_TYPE] === $input[Entity::PAYMENT_MODE_TYPE]) and
+            if (($rule[Entity::PAYMENT_METHOD] === $input[Entity::PAYMENT_METHOD]) and
+                ($rule[Entity::PAYMENT_METHOD_TYPE] === $input[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $input[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $input[Entity::PAYMENT_ISSUER]))
             {

@@ -154,8 +154,8 @@ class PricingTest extends TestCase
     {
         $pricingPlan = array(
             'plan_name' => 'TestPlan1',
-            'payment_mode' => 'card',
-            'payment_mode_type'  => 'credit',
+            'payment_method' => 'card',
+            'payment_method_type'  => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'HDFC',
             'percent_rate' => 1000);
@@ -177,8 +177,8 @@ class PricingTest extends TestCase
     {
         $planData = array(
             'plan_name' => 'TestPlan2',
-            'payment_mode' => 'card',
-            'payment_mode_type' => 'credit',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
             'payment_network' => 'DICL',
             'payment_issuer' => 'SBIN',
             'percent_rate' => '275');
@@ -186,20 +186,20 @@ class PricingTest extends TestCase
         $pricingData =
             array(
                 array(
-                    'payment_mode' => 'card',
-                    'payment_mode_type' => 'credit',
+                    'payment_method' => 'card',
+                    'payment_method_type' => 'credit',
                     'payment_network' => 'DICL',
                     'payment_issuer' => 'ICIC',
                     'percent_rate' => 250),
                 array(
-                    'payment_mode' => 'card',
-                    'payment_mode_type' => 'debit',
+                    'payment_method' => 'card',
+                    'payment_method_type' => 'debit',
                     'payment_network' => 'MAES',
                     'payment_issuer' => 'PUNB',
                     'percent_rate' => 250),
                 array(
-                    'payment_mode' => 'card',
-                    'payment_mode_type' => 'credit',
+                    'payment_method' => 'card',
+                    'payment_method_type' => 'credit',
                     'payment_network' => 'MC',
                     'payment_issuer' => 'AXIS',
                     'fixed_rate' => 3000)

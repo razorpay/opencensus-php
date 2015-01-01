@@ -10,8 +10,8 @@ return [
         'request' => [
             'content' => [
                 'plan_name' => 'TestPlan1',
-                'payment_mode' => 'card',
-                'payment_mode_type'  => 'credit',
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
                 'payment_network' => 'DICL',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000
@@ -27,8 +27,8 @@ return [
                 'rules' => array(
                     array(
                         'plan_name' => 'TestPlan1',
-                        'payment_mode' => 'card',
-                        'payment_mode_type'  => 'credit',
+                        'payment_method' => 'card',
+                        'payment_method_type'  => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
                         'percent_rate' => 1000
@@ -41,8 +41,8 @@ return [
     'testAddPricingPlanRule' => [
         'request' => [
             'content' => [
-                'payment_mode' => 'card',
-                'payment_mode_type'  => 'credit',
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
                 'payment_network' => 'MAES',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000
@@ -52,8 +52,8 @@ return [
         'response' => [
             'content' => [
                 'plan_name' => 'TestPlan1',
-                'payment_mode' => 'card',
-                'payment_mode_type' => 'credit',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
                 'payment_network' => 'MAES',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000
@@ -64,7 +64,7 @@ return [
     'testAddPricingPlanNBRule' => [
         'request' => [
             'content' => [
-                'payment_mode' => 'netbanking',
+                'payment_method' => 'netbanking',
                 'percent_rate' => 1000
             ],
             'method' => 'POST'
@@ -72,8 +72,8 @@ return [
         'response' => [
             'content' => [
                 'plan_name' => 'TestPlan1',
-                'payment_mode' => 'netbanking',
-                'payment_mode_type' => null,
+                'payment_method' => 'netbanking',
+                'payment_method_type' => null,
                 'payment_network' => null,
                 'payment_issuer' => null,
                 'percent_rate' => 1000
@@ -85,8 +85,8 @@ return [
         'request' => [
             'method' => 'POST',
             'content' => [
-                'payment_mode' => 'card',
-                'payment_mode_type'  => 'credit',
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
                 'payment_network' => 'DICL',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
@@ -116,8 +116,8 @@ return [
                 'rules' => array(
                     array(
                         'plan_name' => 'TestPlan2',
-                        'payment_mode' => 'card',
-                        'payment_mode_type' => 'credit',
+                        'payment_method' => 'card',
+                        'payment_method_type' => 'credit',
                         'payment_network' => 'MC',
                         'payment_issuer' => 'AXIS',
                         'percent_rate' => 0,
@@ -125,8 +125,8 @@ return [
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
-                        'payment_mode' => 'card',
-                        'payment_mode_type' => 'debit',
+                        'payment_method' => 'card',
+                        'payment_method_type' => 'debit',
                         'payment_network' => 'MAES',
                         'payment_issuer' => 'PUNB',
                         'percent_rate' => 250,
@@ -134,8 +134,8 @@ return [
                     ),
                     array(
                         'plan_name' => 'TestPlan2',
-                        'payment_mode' => 'card',
-                        'payment_mode_type' => 'credit',
+                        'payment_method' => 'card',
+                        'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'ICIC',
                         'percent_rate' => 250,
@@ -144,8 +144,8 @@ return [
                     array(
                         'plan_name' => 'TestPlan2',
                         'gateway' => NULL,
-                        'payment_mode' => 'card',
-                        'payment_mode_type' => 'credit',
+                        'payment_method' => 'card',
+                        'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'SBIN',
                         'percent_rate' => '275',
@@ -174,8 +174,8 @@ return [
                             array(
                                 'plan_name' => 'TestPlan2',
                                 'gateway' => NULL,
-                                'payment_mode' => 'card',
-                                'payment_mode_type' => 'credit',
+                                'payment_method' => 'card',
+                                'payment_method_type' => 'credit',
                                 'payment_network' => 'MC',
                                 'payment_issuer' => 'AXIS',
                                 'percent_rate' => '0',
@@ -183,8 +183,8 @@ return [
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
-                                'payment_mode' => 'card',
-                                'payment_mode_type' => 'debit',
+                                'payment_method' => 'card',
+                                'payment_method_type' => 'debit',
                                 'payment_network' => 'MAES',
                                 'payment_issuer' => 'PUNB',
                                 'percent_rate' => 250,
@@ -192,8 +192,8 @@ return [
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
-                                'payment_mode' => 'card',
-                                'payment_mode_type' => 'credit',
+                                'payment_method' => 'card',
+                                'payment_method_type' => 'credit',
                                 'payment_network' => 'DICL',
                                 'payment_issuer' => 'ICIC',
                                 'percent_rate' => 250,
@@ -201,8 +201,8 @@ return [
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
-                                'payment_mode' => 'card',
-                                'payment_mode_type' => 'credit',
+                                'payment_method' => 'card',
+                                'payment_method_type' => 'credit',
                                 'payment_network' => 'DICL',
                                 'payment_issuer' => 'SBIN',
                                 'percent_rate' => 275,
@@ -218,8 +218,8 @@ return [
                             array(
                                 'plan_name' =>  'TestPlan1',
                                 'gateway' => NULL,
-                                'payment_mode' =>  'card',
-                                'payment_mode_type' => 'credit',
+                                'payment_method' =>  'card',
+                                'payment_method_type' => 'credit',
                                 'payment_network' =>  'DICL',
                                 'payment_issuer' =>  'HDFC',
                                 'percent_rate' =>  '1000',
@@ -253,8 +253,8 @@ return [
                 'count' => 1,
                 'rules' => array(
                     array(
-                        'payment_mode' => 'card',
-                        'payment_mode_type' => 'credit',
+                        'payment_method' => 'card',
+                        'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
                         'percent_rate' => 1000
@@ -276,8 +276,8 @@ return [
                 'count' => 1,
                 'rules' => array(
                     array(
-                        'payment_mode' => 'card',
-                        'payment_mode_type' => 'credit',
+                        'payment_method' => 'card',
+                        'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
                         'percent_rate' => 1000
@@ -331,8 +331,8 @@ return [
                 'count' => 1,
                 'rules' => array(
                     array(
-                        'payment_mode' => 'card',
-                        'payment_mode_type' => 'credit',
+                        'payment_method' => 'card',
+                        'payment_method_type' => 'credit',
                         'payment_network' => 'VISA',
                         'payment_issuer' => 'ICIC',
                         'percent_rate' => 1000,
