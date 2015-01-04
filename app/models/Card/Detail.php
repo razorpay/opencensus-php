@@ -26,4 +26,9 @@ class Detail extends Base\Entity
     {
         return $this->getAttribute(self::TYPE);
     }
+
+    public function getNetwork()
+    {
+        return $this->getAttribute(self::BRAND);
+    }
 }

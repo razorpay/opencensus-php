@@ -7,40 +7,39 @@ use EE\Exception;
 
 class Network
 {
-    const MC    = 'MC';
-    const VISA  = 'VISA';
-    const DICL  = 'DICL';
-    const RUPAY = 'RUPAY';
     const AMEX  = 'AMEX';
+    const DICL  = 'DICL';
+    const DISC  = 'DISC';
     const JCB   = 'JCB';
     const MAES  = 'MAES';
-    const DISC  = 'DISC';
+    const MC    = 'MC';
+    const RUPAY = 'RUPAY';
+    const VISA  = 'VISA';
 
     // Unidentified
     const OTHER = 'OTHER';
     const UNKNOWN = 'UNKNOWN';
 
     protected $fullName = array(
-        self::MC      => 'MasterCard',
-        self::VISA    => 'Visa',
-        self::RUPAY   => 'RuPay',
-        self::MAES    => 'Maestro',
         self::AMEX    => 'American Express',
-        self::JCB     => 'JCB',
         self::DICL    => 'Diners Club',
         self::DISC    => 'Discover',
-        self::OTHER   => 'Other',
-        self::UNKNOWN => 'Unknown');
+        self::JCB     => 'JCB',
+        self::MAES    => 'Maestro',
+        self::MC      => 'MasterCard',
+        self::RUPAY   => 'RuPay',
+        self::UNKNOWN => 'Unknown',
+        self::VISA    => 'Visa');
 
    public static $networks = array(
-        self::MC,
-        self::VISA,
-        self::RUPAY,
-        self::MAES,
         self::AMEX,
-        self::JCB,
         self::DICL,
-        self::DISC);
+        self::DISC,
+        self::JCB,
+        self::MAES,
+        self::MC,
+        self::RUPAY,
+        self::VISA);
 
     public static $maestroFirstFour = array(
         '5018',
@@ -69,46 +68,46 @@ class Network
     public static $unsupportedNetworks = array(
         self::AMEX,
         self::JCB,
-        self::DISC);
+        self::DISC,
+        self::DICL);
 
     public static function detectNetwork($iin)
     {
         $cardNetwork = null;
 
+        foreach (self::$networks as $network)
+        {
+            if (self::checkNetwork($iin, $network) === true)
+            {
+                $cardNetwork = $network;
+                break;
+            }
+        }
+
+        if ($cardNetwork === null)
+        {
+            $cardNetwork = self::UNKNOWN;
+        }
+
+        return $cardNetwork;
+    }
+
+    public static function checkNetwork($iin, $network)
+    {
         foreach (self::$networkRegexes as $network => $regex)
         {
-            if ($regex === null)
+            if (self::$networkRegexes[$network] === null)
             {
                 $func = 'is'.$network;
-                if (self::{$func}($iin) === true)
-                {
-                    $cardNetwork = $network;
-                    break;
-                }
+
+                return self::{$func}($iin);
             }
             else
             {
-                $ret =  preg_match($regex, $iin);
-
-                if ($ret === 1)
-                {
-                    $cardNetwork = $network;
-                    break;
-                }
+                return (preg_match($regex, $iin) === 1);
             }
         }
 
-        if ($cardNetwork !== null)
-        {
-            if (in_array($cardNetwork, self::$unsupportedNetworks))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
-                    'number');
-            }
-        }
-
-        return self::OTHER;
     }
 
     public static function isMAES($iin)
@@ -129,9 +128,19 @@ class Network
 
     public static function checkNetworkValidity($network)
     {
-        if (in_array($network, self::$networks) === false)
+        if (self::isValidNetwork($network) === false)
         {
             throw new Exception\InvalidArgumentException('Invalid card network given');
         }
+    }
+
+    public static function isValidNetwork($network)
+    {
+        return (in_array($network, self::$networks));
+    }
+
+    public static function isUnsupportedNetwork($network)
+    {
+        return (in_array($network, self::$unsupportedNetworks));
     }
 }

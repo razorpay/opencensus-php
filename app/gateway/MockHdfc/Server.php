@@ -221,7 +221,7 @@ class Server
             return 'debit';
         }
 
-        $cardDetails = (new Card\Repository)->retrieveDetails($iin);
+        $cardDetails = (new Card\Repository)->retrieveIinDetails($iin);
         if ($cardDetails === null)
             return '';
 

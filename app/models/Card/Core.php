@@ -14,9 +14,7 @@ class Core
 
         $this->card = $card;
 
-        $this->fillNetworkDetails($input, $card);
-
-        $this->checkNetwork($card, $input['number']);
+        $this->fillNetworkDetails($card);
 
         return $card;
     }
@@ -38,24 +36,40 @@ class Core
              'cvv' => $input['cvv']]);
     }
 
-    public function fillNetworkDetails($input, $card)
+    public function fillNetworkDetails($card)
     {
-        $iin = substr($input['number'], 0, 6);
+        $network = Card\Network::detectNetwork($card->getIin());
 
-        $details = (new Card\Repository)->retrieveDetails($iin);
+        $card->setNetwork($network);
 
-        $card->fillNetworkDetails($details, $iin);
-    }
+        // Get details for this iin from card repository
+        $details = (new Card\Repository)->retrieveIinDetails($card->getIin());
 
-    public function checkNetwork($card, $number)
-    {
-        $network = $card->getNetwork();
-
-        if ($network === null)
+        if ($details)
         {
-            $iin = substr($number, 0, 6);
+            if ($network === Card\Network::UNKNOWN)
+            {
+                if ($details->getBrand() !== null)
+                {
+                    $network = $details->getBrand();
 
-            Card\Unrecognized::create(['iin' => $iin]);
+                    if (Card\Network::isValidNetwork($network))
+                    {
+                        $card->setNetwork($network);
+                    }
+                }
+            }
+
+            $arr = array(
+                self::TYPE    => $details['type'],
+                self::ISSUER  => $details['issuer'],
+                self::COUNTRY => $details['country']);
+
+            $this->fill($arr);
+        }
+        else
+        {
+            $card->setType(Type::UNKNOWN);
         }
     }
 }

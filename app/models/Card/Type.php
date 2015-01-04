@@ -4,11 +4,8 @@ namespace Models\Card;
 
 class Type
 {
-   const CREDIT = 'credit';
-
-   const DEBIT = 'debit';
-
-   const PREPAID = 'prepaid';
-
-   const UNKNOWN = 'unknown';
+   const CREDIT     = 'credit';
+   const DEBIT      = 'debit';
+   const PREPAID    = 'prepaid';
+   const UNKNOWN    = 'unknown';
 }

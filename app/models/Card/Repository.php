@@ -9,7 +9,7 @@ class Repository extends Base\Repository
 {
     protected $entity = 'Card';
 
-    public function retrieveDetails($iin)
+    public function retrieveIinDetails($iin)
     {
         if (strlen($iin) > 6)
         {
@@ -17,10 +17,8 @@ class Repository extends Base\Repository
         }
 
         //
-        // retrieve card details
+        // retrieve iin details
         //
-        $cardDetail = Card\Detail::find($iin);
-
-        return $cardDetail;
+        return Card\Detail::find($iin);
     }
 }

@@ -52,9 +52,13 @@ class Entity extends Base\UniqueIdEntity
 
     protected $guarded = array(self::ID);
 
-    protected static $modifiers = array('expiry_year', 'number');
+    protected static $modifiers = array('expiry_year', 'expiry_month', 'number');
 
-    protected static $generators = array(self::LAST4, self::ID, self::IIN, self::LENGTH);
+    protected static $generators = array(
+        self::ID,
+        self::IIN,
+        self::LAST4,
+        self::LENGTH);
 
     protected $visible = array(
         self::ID,
@@ -96,6 +100,14 @@ class Entity extends Base\UniqueIdEntity
         }
     }
 
+    public function modifyExpiryMonth(& $input)
+    {
+        if (isset($input['expiry_month']))
+        {
+            $input['expiry_month'] = ltrim($input['expiry_month'], '0');
+        }
+    }
+
     public static function modifyNumber(& $input)
     {
         $number = $input['number'];
@@ -116,51 +128,6 @@ class Entity extends Base\UniqueIdEntity
         return $this->getAttribute(self::NETWORK);
     }
 
-    public function fillNetworkDetails($details, $iin)
-    {
-        $network = Card\Network::detectNetwork($iin);
-
-        $this->setAttribute(self::NETWORK, $network);
-
-        if ($details)
-        {
-            if ($network === Card\Network::OTHER)
-            {
-                if ($details['brand'] !== null)
-                {
-                    $network = strtolower($details['brand']);
-
-                    if (Card\Network::checkNetworkValidity($network))
-
-                    $this->setAttribute(self::NETWORK, $network);
-
-                    // @todo: trace here
-                }
-                else
-                {
-                    // @todo: trace here
-                }
-            }
-
-            $arr = array(
-                self::TYPE    => $details['type'],
-                self::ISSUER  => $details['issuer'],
-                self::COUNTRY => $details['country']);
-
-            $this->fill($arr);
-
-            if ($network === null)
-            {
-                // @todo: trace
-                return;
-            }
-        }
-        else
-        {
-            $this->setAttribute(self::TYPE, Type::UNKNOWN);
-        }
-    }
-
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);
@@ -169,5 +136,25 @@ class Entity extends Base\UniqueIdEntity
     public function setNetwork($network)
     {
         $this->setAttribute(self::NETWORK, $network);
+    }
+
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function getIin()
+    {
+        return $this->getAttribute(self::IIN);
+    }
+
+    public function getExpiryMonthAttribute()
+    {
+        return (int) $this->getAttributeFromArray(self::EXPIRY_MONTH);
+    }
+
+    public function getExpiryYearAttribute()
+    {
+        return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
 }
