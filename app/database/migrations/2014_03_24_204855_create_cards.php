@@ -26,17 +26,17 @@ class CreateCards extends Migration
 
             $table->string(Card::NAME);
 
-            $table->string(Card::EXPIRY_MONTH, 2);
+            $table->char(Card::EXPIRY_MONTH, 2);
 
-            $table->string(Card::EXPIRY_YEAR, 4);
+            $table->char(Card::EXPIRY_YEAR, 4);
 
-            $table->string(Card::IIN, 6);
+            $table->char(Card::IIN, 6);
 
             $table->char(Card::LAST4, 4);
 
             $table->char(Card::LENGTH, 2);
 
-            $table->string(Card::NETWORK, 10);
+            $table->string(Card::NETWORK);
 
             $table->string(Card::TYPE, 7)
                   ->nullable();

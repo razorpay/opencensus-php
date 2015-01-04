@@ -19,11 +19,11 @@ class CreateIinsTable extends Migration {
         {
             $table->integer(Card\Detail::IIN)->primary();
 
-            $table->string(Card\Detail::CATEGORY, 26);
+            $table->string(Card\Detail::CATEGORY);
 
-            $table->string(Card\Detail::BRAND, 10);
+            $table->string(Card\Detail::BRAND);
 
-            $table->string(Card\Detail::TYPE, 6);
+            $table->string(Card\Detail::TYPE);
 
             $table->char(Card\Detail::COUNTRY, Card\Entity::COUNTRY_LENGTH);
 
