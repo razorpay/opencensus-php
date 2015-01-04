@@ -222,6 +222,11 @@ class Entity extends Base\PublicEntity
         return json_decode($udf, true);
     }
 
+    public function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()
