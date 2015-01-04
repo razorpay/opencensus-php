@@ -30,6 +30,7 @@ return [
             'field' => 'number'
         ],
     ],
+
     'testNonNumericCardNumber' => [
         'request' => [
             'content' => [
@@ -52,6 +53,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
     'testCardNumberWithSpaces' => [
         'request' => [
             'content' => [
@@ -67,6 +69,7 @@ return [
             'status_code' => 200,
         ],
     ],
+
     'testLongCardNumber' => [
         'request' => [
             'content' => [
@@ -89,6 +92,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
     'testNonLuhnCardNumber' => [
         'request' => [
             'content' => [
@@ -111,6 +115,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
     'testInvalidCardExpiryMonth' => [
         'request' => [
             'content' => [
@@ -133,6 +138,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
     'testInvalidCardExpiryYear' => [
         'request' => [
             'content' => [
@@ -155,6 +161,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
     'testInvalidCardExpiryDate' => [
         'request' => [
             'content' => [

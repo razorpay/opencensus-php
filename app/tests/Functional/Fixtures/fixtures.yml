@@ -50,7 +50,7 @@ Models\Payment\Entity:
     amount_refunded: 0
     currency: INR
     status: created
-    refund_status: none
+    refund_status: null
     contact: $integer
     udf: $emptyarray
     gateway: hdfc

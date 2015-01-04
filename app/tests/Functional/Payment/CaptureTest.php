@@ -162,7 +162,7 @@ class CaptureTest extends TestCase
 
         $this->setRequestData($testData['request'], $id, $amount);
 
-        $this->runRequestResponseFlow($testData);
+        return $this->runRequestResponseFlow($testData);
     }
 
     protected function setRequestData(& $request, $id = null, $amount = null)
