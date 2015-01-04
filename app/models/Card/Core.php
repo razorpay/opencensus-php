@@ -14,7 +14,7 @@ class Core
 
         $this->card = $card;
 
-        $this->fillNetworkDetails($card);
+        $this->fillNetworkDetails($card, $input);
 
         return $card;
     }
@@ -36,9 +36,9 @@ class Core
              'cvv' => $input['cvv']]);
     }
 
-    public function fillNetworkDetails($card)
+    public function fillNetworkDetails($card, $input)
     {
-        $network = Card\Network::detectNetwork($card->getIin());
+        $network = Card\Network::detectNetwork($input['number']);
 
         $card->setNetwork($network);
 

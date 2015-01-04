@@ -92,8 +92,9 @@ class Server
         }
         else
         {
+            // @todo: move this to iin
             $iin = substr($cardNumber, 0, 6);
-            $network = Card\Network::detectNetwork($iin);
+            $network = Card\Network::detectNetwork($cardNumber);
             $type = $this->getCardType($cardNumber, $iin);
 
             $res = array();
@@ -122,7 +123,7 @@ class Server
                     ($network === Card\Network::MAES))
                     $eci = 1;
 
-                $result['eci'] = $eci;
+                $res['eci'] = $eci;
             }
 
             $resCommon = array(

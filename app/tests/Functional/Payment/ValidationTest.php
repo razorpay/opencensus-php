@@ -61,6 +61,22 @@ class PaymentValidationTest extends TestCase
         $this->startTest();
     }
 
+    public function testUnsupportedCardNetworks()
+    {
+        $numbers = array(
+            '378282246310005',
+            '3566002020360505',
+            '6011111111111117',
+            '30569309025904',
+            '38520000023237');
+
+        foreach ($numbers as $number)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['card']['number'] = $number;
+            $this->startTest();
+        }
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

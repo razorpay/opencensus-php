@@ -71,6 +71,10 @@ class Network
         self::DISC,
         self::DICL);
 
+    /**
+     * Detects network on basis of iin.
+     * @todo : Right now it's detecting on number. Shift it to iin.
+     */
     public static function detectNetwork($iin)
     {
         $cardNetwork = null;
@@ -94,20 +98,18 @@ class Network
 
     public static function checkNetwork($iin, $network)
     {
-        foreach (self::$networkRegexes as $network => $regex)
+        $regex = self::$networkRegexes[$network];
+
+        if ($regex === null)
         {
-            if (self::$networkRegexes[$network] === null)
-            {
-                $func = 'is'.$network;
+            $func = 'is'.$network;
 
-                return self::{$func}($iin);
-            }
-            else
-            {
-                return (preg_match($regex, $iin) === 1);
-            }
+            return self::{$func}($iin);
         }
-
+        else
+        {
+            return (preg_match($regex, $iin) === 1);
+        }
     }
 
     public static function isMAES($iin)

@@ -3,6 +3,7 @@
 namespace Models\Payment\Processor;
 
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Models\Card;
 use Models\Payment;
 use Trace\Trace;
