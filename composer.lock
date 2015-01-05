@@ -1198,7 +1198,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/rzp-php.git",
-                "reference": "d6c0644c68b750e03b7474ab6aab65333dbb0094"
+                "reference": "8bb76d3e5cfe17378d896d15cc2109cafadefd89"
             },
             "require": {
                 "ext-json": "*",
@@ -1223,7 +1223,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2015-01-05 00:02:39"
+            "time": "2015-01-05 17:07:50"
         },
         {
             "name": "razorpay/spine",

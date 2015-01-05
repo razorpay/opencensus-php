@@ -124,8 +124,8 @@
               <div class="m-t list-group-item">
                 <table class="table table-striped b-light">
                   <thead>
-                        <th>Payment Mode</th>
-                        <th>Payment Mode Type</th>
+                        <th>Payment Method</th>
+                        <th>Payment Method Type</th>
                         <th>Payment Network</th>
                         <th>Payment Issuer</th>
                         <th>Percent Rate</th>
@@ -133,8 +133,8 @@
                   </thead>
                   <tbody>
                   <tr ng-repeat="rule in merchant.pricing_plan.rules">
-                        <td>{{rule.payment_mode || 'Any'}}</td>
-                        <td>{{rule.payment_mode_type || 'Any'}}</td>
+                        <td>{{rule.payment_method || 'Any'}}</td>
+                        <td>{{rule.payment_method_type || 'Any'}}</td>
                         <td>{{rule.payment_network || 'Any'}}</td>
                         <td>{{rule.payment_issuer || 'Any'}}</td>
                         <td>{{rule.percent_rate/100}} %</td>

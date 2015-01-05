@@ -25,7 +25,7 @@
         <tbody>
           <tr ng-repeat="row in pricing_plans">
             <td>{{row.id}}</td>
-            <td>{{row.name}}</td>      
+            <td>{{row.name}}</td>
             <td>{{row.count}}</td>
             <td>
               <button class="btn btn-default btn-xs btn-show-plan"  ng-click="showPlan(row.id)">Show/Hide Rules</button>
@@ -59,8 +59,8 @@
       <table class="table table-striped b-t b-light">
         <thead>
           <th>Rule Id</th>
-          <th>Payment Mode</th>
-          <th>Payment Mode Type</th>
+          <th>Payment Method</th>
+          <th>Payment Method Type</th>
           <th>Payment Network</th>
           <th>Payment Issuer</th>
           <th>Percent Rate</th>
@@ -70,8 +70,8 @@
         <tbody>
           <tr ng-repeat="rule in show_plan.rules">
             <td>{{rule.id}}</td>
-            <td>{{rule.payment_mode || 'Any'}}</td>
-            <td>{{rule.payment_mode_type || 'Any'}}</td>
+            <td>{{rule.payment_method || 'Any'}}</td>
+            <td>{{rule.payment_method_type || 'Any'}}</td>
             <td>{{rule.payment_network || 'Any'}}</td>
             <td>{{rule.payment_issuer || 'Any'}}</td>
             <td>{{rule.percent_rate/100}} %</td>
@@ -80,8 +80,8 @@
           </tr>
           <tr ng-show="new_rule.percent_rate || new_rule.fixed_rate">
             <td>Preview Rule</td>
-            <td>{{new_rule.payment_mode || 'Any'}}</td>
-            <td>{{new_rule.payment_mode_type || 'Any'}}</td>
+            <td>{{new_rule.payment_method || 'Any'}}</td>
+            <td>{{new_rule.payment_method_type || 'Any'}}</td>
             <td>{{new_rule.payment_network || 'Any'}}</td>
             <td>{{new_rul.payment_issuer || 'Any'}}</td>
             <td>{{new_rule.percent_rate/100}} %</td>
@@ -91,12 +91,12 @@
           <tr>
             <td>Add new Rule</td>
             <td>
-              <select class="form-control" name="payment_mode" ng-model="new_rule.payment_mode" required>
+              <select class="form-control" name="payment_method" ng-model="new_rule.payment_method" required>
                   <option value="card">Card</option>
               </select>
             </td>
             <td>
-              <select class="form-control" name="payment_mode_type" ng-model="new_rule.payment_mode_type">
+              <select class="form-control" name="payment_method_type" ng-model="new_rule.payment_method_type">
                   <option value="credit">Credit</option>
                   <option value="debit">Debit</option>
                   <option value="">Both</option>
@@ -140,8 +140,8 @@
     <div class="table-responsive">
       <table class="table table-striped b-t b-light">
         <thead>
-          <th>Payment Mode</th>
-          <th>Payment Mode Type</th>
+          <th>Payment Method</th>
+          <th>Payment Method Type</th>
           <th>Payment Network</th>
           <th>Payment Issuer</th>
           <th>Percent Rate</th>
@@ -149,8 +149,8 @@
         </thead>
         <tbody>
           <tr ng-show="new_plan.percent_rate || new_plan.fixed_rate" tooltip="Preview">
-            <td>{{new_plan.payment_mode || 'Any'}}</td>
-            <td>{{new_plan.payment_mode_type || 'Any'}}</td>
+            <td>{{new_plan.payment_method || 'Any'}}</td>
+            <td>{{new_plan.payment_method_type || 'Any'}}</td>
             <td>{{new_plan.payment_network || 'Any'}}</td>
             <td>{{new_plan.payment_issuer || 'Any'}}</td>
             <td>{{new_plan.percent_rate/100}} %</td>
@@ -158,12 +158,12 @@
           </tr>
           <tr>
             <td>
-              <select class="form-control" name="payment_mode" ng-model="new_plan.payment_mode" required>
+              <select class="form-control" name="payment_method" ng-model="new_plan.payment_method" required>
                   <option value="card">Card</option>
               </select>
             </td>
             <td>
-              <select class="form-control" name="payment_mode_type" ng-model="new_plan.payment_mode_type">
+              <select class="form-control" name="payment_method_type" ng-model="new_plan.payment_method_type">
                   <option value="credit">Credit</option>
                   <option value="debit">Debit</option>
                   <option value="">Both</option>

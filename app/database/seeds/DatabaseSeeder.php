@@ -275,8 +275,8 @@ class DatabaseSeeder extends Seeder
                 'superadmin' => 1
                 ),
                 array(
-                'name' => 'Abhishek Das',
-                'username' => 'das',
+                'name' => 'Abhay Rana',
+                'username' => 'nemo',
                 'password'=> Hash::make('123456'),
                 'email' => 'das@razorpay.com',
                 'superadmin' => 0
