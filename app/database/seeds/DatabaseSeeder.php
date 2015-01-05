@@ -2,7 +2,6 @@
 
 class DatabaseSeeder extends Seeder
 {
-
 	/**
      * Run the database seeds.
      *
@@ -19,8 +18,8 @@ class DatabaseSeeder extends Seeder
     {
         DB::table('merchants')->insert(array(
             'id'            =>  '10000000000000',
-            'name'          =>  'Harshil',
-            'email'         =>  'das@razorpay.com',
+            'name'          =>  'Test Merchant Account',
+            'email'         =>  'test@razorpay.com',
             'password'      =>  Hash::make('123456'),
             'created_at'    =>  time(),
             'updated_at'    =>  time()
@@ -32,12 +31,27 @@ class DatabaseSeeder extends Seeder
             )
         );
 
+        DB::table('merchants')->insert(array(
+            'id'            =>  '100DemoAccount',
+            'name'          =>  'Demo Merchant Account',
+            'email'         =>  'demo@razorpay.com',
+            'password'      =>  Hash::make('123456'),
+            'created_at'    =>  time(),
+            'updated_at'    =>  time()
+            )
+        );
+
+        DB::table('merchant_details')->insert(array(
+            'merchant_id'   =>  '100DemoAccount',
+            )
+        );
+
         $modes = array('live', 'test');
 
         foreach($modes as $mode)
         {
     		DB::table('aggregations')->insert(array(
-    			'merchant_id'	=>	'10000000000000',
+    			'merchant_id'	=>	'100DemoAccount',
     			'total_amount'	=>  239871,
     			'txn_count'		=>	21,
     			'successful_txn_count' => 13,
@@ -49,7 +63,7 @@ class DatabaseSeeder extends Seeder
     		);
 
             DB::table('aggregations')->insert(array(
-                'merchant_id'   =>  '10000000000000',
+                'merchant_id'   =>  '100DemoAccount',
                 'total_amount'  =>  12345,
                 'txn_count'     =>  3,
                 'successful_txn_count' => 3,
@@ -61,7 +75,7 @@ class DatabaseSeeder extends Seeder
             );
 
             DB::table('aggregations')->insert(array(
-                'merchant_id'   =>  '10000000000000',
+                'merchant_id'   =>  '100DemoAccount',
                 'total_amount'  =>  12345,
                 'txn_count'     =>  7,
                 'successful_txn_count' => 7,
@@ -80,7 +94,7 @@ class DatabaseSeeder extends Seeder
                 $data = array();
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  5000,
                     'count' => 13,
@@ -90,7 +104,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  4500,
                     'count' => 9,
@@ -100,7 +114,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  4200,
                     'count' => 10,
@@ -110,7 +124,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  3600,
                     'count' => 8,
@@ -120,7 +134,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  4500,
                     'count' => 6,
@@ -130,7 +144,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  2500,
                     'count' => 10,
@@ -140,7 +154,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  3300,
                     'count' => 23,
@@ -150,7 +164,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  6500,
                     'count' => 25,
@@ -160,7 +174,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  8000,
                     'count' => 29,
@@ -171,7 +185,7 @@ class DatabaseSeeder extends Seeder
 
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  7900,
                     'count' => 18,
@@ -181,7 +195,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  8200,
                     'count' => 25,
@@ -191,7 +205,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  8400,
                     'count' => 20,
@@ -201,7 +215,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  6100,
                     'count' => 16,
@@ -211,7 +225,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '10000000000000',
+                    'merchant_id'   =>  '100DemoAccount',
                     'type'  =>  $type,
                     'amount'     =>  2600,
                     'count' => 8,
