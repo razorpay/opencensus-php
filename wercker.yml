@@ -21,6 +21,9 @@ build:
           name: create report dir
           code: mkdir ./report
       - script:
+          name: Activate PHP 5.5
+          code: phpenv global 5.5
+      - script:
           name: run unit tests
           code: phpunit --debug --verbose --coverage-html ./report
       - script:
