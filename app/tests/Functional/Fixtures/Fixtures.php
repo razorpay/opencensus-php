@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Fixtures;
 
+use Models\Merchant;
 use Config;
 use Eloquent;
 use Tests\TestDummy\Factory;
@@ -35,6 +36,9 @@ class Fixtures
      */
     public function setUp()
     {
+        $apiMerchant = $this->createEntity('merchant', ['id' => Merchant\Account::NODAL_ACCOUNT]);
+        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Merchant\Account::NODAL_ACCOUNT]);
+
         $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
 

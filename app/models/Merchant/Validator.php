@@ -36,7 +36,7 @@ class Validator extends Base\Validator
 
         if ($ifsc[4] !== '0')
         {
-            $message = 'First four letters of ifsc_code must be alphabets';
+            $message = 'IFSC code fifth letter must be 0';
         }
 
         if ($message !== null)

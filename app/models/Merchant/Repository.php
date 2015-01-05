@@ -50,16 +50,9 @@ class Repository extends Base\Repository
         return $ba;
     }
 
-    public function getBankAccountOrFail($merchant)
-    {
-
-    }
-
     public function getEscrowBalanceLockForUpdate()
     {
-        $apiId = '1cXSLlUU8V9sXl';
-
-        return $this->getBalanceLockForUpdate($apiId);
+        return $this->getBalanceLockForUpdate(Merchant\Account::NODAL_ACCOUNT);
     }
 
     public function getPricingPlanOrFailPublic($merchant)
