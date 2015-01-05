@@ -85,8 +85,8 @@ class AdminTest extends TestCase
             ->click(l::linkContaining('Create New Pricing Plan'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#create-plan-panel').is(':visible')", 20000)
             ->type(l::IdOrName('plan_name'), static::generateRandomString(7))
-            ->select(l::IdOrName('payment_mode'), 'Card')
-            ->select(l::IdOrName('payment_mode_type'), 'Credit')
+            ->select(l::IdOrName('payment_method'), 'Card')
+            ->select(l::IdOrName('payment_method_type'), 'Credit')
             ->type(l::IdOrName('percent_rate'), '280')
             ->type(l::IdOrName('fixed_rate'), '200')
             ->click(l::linkContaining('Save and Add More Rules'))
@@ -97,8 +97,8 @@ class AdminTest extends TestCase
         // Tests Creation of new rule
         $this->browser
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#show-plan-panel').is(':visible')", 20000)
-            ->select(l::IdOrName('payment_mode_type'), 'Debit')
-            ->select(l::IdOrName('payment_mode'), 'Card')
+            ->select(l::IdOrName('payment_method_type'), 'Debit')
+            ->select(l::IdOrName('payment_method'), 'Card')
             ->type(l::IdOrName('percent_rate'), '280')
             ->type(l::IdOrName('fixed_rate'), '200')
             ->click(l::linkContaining('Save'))
