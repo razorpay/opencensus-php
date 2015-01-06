@@ -40,4 +40,11 @@ return array(
     'MAILGUN_API_KEY'           => '',
     'MAILGUN_SECRET'            => '',
     'MAILGUN_MOCK'              => true,
+
+    'QUEUE_DRIVER'              => 'sync',
+
+    'AWS_QUEUE_URL'             => '',
+    'AWS_KEY_ID'                => '',
+    'AWS_KEY_SECRET'            => '',
+    'AWS_REGION'                => 'us-east-1'
 );

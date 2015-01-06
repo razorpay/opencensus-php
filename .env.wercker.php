@@ -40,4 +40,11 @@ return array(
     'MAILGUN_API_KEY'           => getenv('MAILGUN_API_KEY'),
     'MAILGUN_SECRET'            => 'DASHBOARD_AUTH_PASS',
     'MAILGUN_MOCK'              => false,
+
+    'QUEUE_DRIVER'              => 'sync',
+    
+    'AWS_QUEUE_URL'             => '',
+    'AWS_KEY_ID'                => '',
+    'AWS_KEY_SECRET'            => '',
+    'AWS_REGION'                => 'us-east-1'
 );
