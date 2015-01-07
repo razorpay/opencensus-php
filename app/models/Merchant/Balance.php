@@ -45,6 +45,15 @@ class Balance extends Base\UniqueIdEntity
 
     public function merchant()
     {
-        return $this->belongsTo('Models\Merchant\Entity');
+        return $this->belongsTo('Models\Merchant\Entity', 'id');
+    }
+
+    public static function buildFromMerchant($merchant)
+    {
+        $balance = new static;
+
+        $balance->merchant()->associate($merchant);
+
+        return $balance;
     }
 }

@@ -29,11 +29,11 @@ class Service extends Base\Service
     {
         $merchant = (new Merchant\Entity)->build($input);
 
-        $merchantIdArr['id'] = $input['id'];
+        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $this->repo->saveOrFail($merchant);
 
-        $merchantBalance = new Merchant\Balance($merchantIdArr);
+        $merchantBalance = Merchant\Balance::buildFromMerchant($merchant);
 
         $this->repo->updateBalance($merchantBalance);
 

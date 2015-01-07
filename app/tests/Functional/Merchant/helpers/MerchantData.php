@@ -11,7 +11,7 @@ return [
             'content' => [
                 'id'    => '1X4hRFHFx4UiXt',
                 'name'  => 'Tester',
-                'email' => 'test@localhost.com'
+                'email' => 'test@localhost.com',
             ],
             'url' => '/merchants',
             'method' => 'POST'
@@ -19,6 +19,9 @@ return [
         'response' => [
             'content' => [
                 'id' => '1X4hRFHFx4UiXt',
+                'name' => 'Tester',
+                'email' => 'test@localhost.com',
+                'pricing_plan_id' => '1In3Yh5Mluj605',
             ],
         ],
     ],
