@@ -83,7 +83,7 @@ class MockData
                 'description'         => null,
                 'email'               => 'shk@gmail.com',
                 'contact'             => '1234567890',
-                'udf'                 => array(),
+                'notes'               => array(),
                 'error_code'          => null,
                 'error_description'   => null,
                 'created_at'          => time()
