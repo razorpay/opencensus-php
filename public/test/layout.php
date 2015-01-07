@@ -42,7 +42,7 @@ if (file_exists('config.php'))
                 'email': 'harshil@razorpay.com',
                 'contact': '9999999999'
             },
-            udf: {
+            notes: {
                 'address': 'Hello World'
             },
             netbanking: true
@@ -61,7 +61,7 @@ if (file_exists('config.php'))
             handler : function (transaction){
                 alert("You have successfully purchased Alive (2007)");
             },
-            udf: {
+            notes: {
                 'shipping': "Bye World"
             }
         });

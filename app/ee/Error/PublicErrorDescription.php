@@ -97,17 +97,17 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED =
         'Only payments which have been authorized and not yet captured can be captured';
 
-    const BAD_REQUEST_UDF_TOO_MANY_KEYS =
-        'Number of fields in udf should be less than or equal to 15';
+    const BAD_REQUEST_NOTES_TOO_MANY_KEYS =
+        'Number of fields in notes should be less than or equal to 15';
 
-    const BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY =
-        'Udf values themselves should not be an array';
+    const BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY =
+        'Notes values themselves should not be an array';
 
-    const BAD_REQUEST_UDF_KEY_TOO_LARGE =
-        'Udf key cannot be greater 255 characters';
+    const BAD_REQUEST_NOTES_KEY_TOO_LARGE =
+        'Notes key cannot be greater 255 characters';
 
-    const BAD_REQUEST_UDF_VALUE_TOO_LARGE =
-        'Udf value cannot be greater 255 characters';
+    const BAD_REQUEST_NOTES_VALUE_TOO_LARGE =
+        'Notes value cannot be greater 255 characters';
 
     const BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING =
         'Description provides should be string';
@@ -115,8 +115,8 @@ class PublicErrorDescription
     const BAD_REQUEST_DESCRIPTION_TOO_LARGE =
         'Description provides should be max 1000 characters';
 
-    const BAD_REQUEST_UDF_SHOULD_BE_ARRAY =
-        'udf should be provided as a dictionary';
+    const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY =
+        'Notes should be provided as a dictionary';
 
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED =
         'Razorpay API is only available over HTTPS.';

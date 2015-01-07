@@ -134,56 +134,56 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
-    public function testUdfMissing()
+    public function testNotesMissing()
     {
-        unset($this->payment['udf']);
+        unset($this->payment['notes']);
 
         $this->startTest();
     }
 
-    public function testUdfStringNotArray()
+    public function testNotesStringNotArray()
     {
         $this->startTest();
     }
 
-    public function testExcessValuesInUdf()
+    public function testExcessValuesInNotes()
     {
         $testData = & $this->testData[__FUNCTION__];
 
         foreach (range(1, 16, 1) as $i)
         {
-            $testData['request']['content']['udf'][$i] = 'value';
+            $testData['request']['content']['notes'][$i] = 'value';
         }
 
         $this->startTest();
     }
 
-    public function testArrayInUdfValue()
+    public function testArrayInNotesValue()
     {
         $this->startTest();
     }
 
-    public function testArrayInUdfKey()
+    public function testArrayInNotesKey()
     {
         $this->startTest();
     }
 
-    public function testUdfKeyLarge()
+    public function testNotesKeyLarge()
     {
         $testData = & $this->testData[__FUNCTION__];
 
         $largeKey = implode(',', range(1,100,1));
-        $testData['request']['content']['udf'][$largeKey] = 'value';
+        $testData['request']['content']['notes'][$largeKey] = 'value';
 
         $this->startTest();
     }
 
-    public function testUdfValueLarge()
+    public function testNotesValueLarge()
     {
         $testData = & $this->testData[__FUNCTION__];
 
         $largeValue = implode(',', range(1,100,1));
-        $testData['request']['content']['udf']['key'] = $largeValue;
+        $testData['request']['content']['notes']['key'] = $largeValue;
 
         $this->startTest();
     }

@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
     const ERROR_DESCRIPTION = 'error_description';
     const EMAIL             = 'email';
     const CONTACT           = 'contact';
-    const UDF               = 'udf';
+    const NOTES             = 'notes';
     const CARD_ID           = 'card_id';
     const TRANSACTION_ID    = 'transaction_id';
     const CAPTURED_AT       = 'captured_at';
@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
-        self::UDF);
+        self::NOTES);
 
     protected $visible = array(
         self::ID,
@@ -67,7 +67,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
-        self::UDF,
+        self::NOTES,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CAPTURED_AT,
@@ -85,7 +85,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
-        self::UDF,
+        self::NOTES,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT);
@@ -99,7 +99,7 @@ class Entity extends Base\PublicEntity
     protected static $generators = array(
         self::STATUS,
         self::ID,
-        self::UDF,
+        self::NOTES,
         self::REFUND_STATUS,
         self::AMOUNT_REFUNDED);
 
@@ -115,11 +115,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REFUND_STATUS, Refund\Status::NULL);
     }
 
-    public function generateUdf($input)
+    public function generateNotes($input)
     {
-        if (isset($input['udf']) === false)
+        if (isset($input['notes']) === false)
         {
-            $this->setAttribute(self::UDF, array());
+            $this->setAttribute(self::NOTES, array());
         }
     }
 
@@ -208,18 +208,18 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::AMOUNT] = (int) $amount;
     }
 
-    public function setUdfAttribute($udf)
+    public function setNotesAttribute($notes)
     {
-        $this->attributes[self::UDF] = json_encode($udf);
+        $this->attributes[self::NOTES] = json_encode($notes);
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
 
 // ----------------------- Accessor --------------------------------------------
 
-    public function getUdfAttribute($udf)
+    public function getNotesAttribute($notes)
     {
-        return json_decode($udf, true);
+        return json_decode($notes, true);
     }
 
     public function getAmountAttribute()

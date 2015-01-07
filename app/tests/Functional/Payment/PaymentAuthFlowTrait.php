@@ -226,7 +226,7 @@ trait PaymentAuthFlowTrait
             ),
             'email'             => 'a@b.com',
             'contact'           => '9918899029',
-            'udf'               => array(),
+            'notes'               => array(),
             'description'       => 'random description'
         ];
 

@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
-        'udf'           =>  'sometimes');
+        'notes'         =>  'sometimes');
 
     protected static $captureRules = array(
         'amount'        => 'required|numeric');
@@ -33,7 +33,7 @@ class Validator extends Base\Validator
         'currency',
         'contact',
         'description',
-        'udf');
+        'notes');
 
     protected function validateCardKey($input)
     {
@@ -162,33 +162,33 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Validates Udf
+     * Validates Notes
      *
      * @param  array $input  input array
      * @return void
      */
-    protected function validateUdf($input)
+    protected function validateNotes($input)
     {
-        if (isset($input['udf']) === false)
+        if (isset($input['notes']) === false)
             return;
 
-        $udf = $input['udf'];
+        $notes = $input['notes'];
 
         $code = null;
 
-        if (is_array($udf) === false)
+        if (is_array($notes) === false)
         {
-            $code = ErrorCode::BAD_REQUEST_UDF_SHOULD_BE_ARRAY;
+            $code = ErrorCode::BAD_REQUEST_NOTES_SHOULD_BE_ARRAY;
         }
-        else if (count($udf) > 15)
+        else if (count($notes) > 15)
         {
-            $code = ErrorCode::BAD_REQUEST_UDF_TOO_MANY_KEYS;
+            $code = ErrorCode::BAD_REQUEST_NOTES_TOO_MANY_KEYS;
         }
         else
         {
-            foreach ($udf as $key => $value)
+            foreach ($notes as $key => $value)
             {
-                $code = $this->validateUdfKeyValue($key, $value);
+                $code = $this->validateNotesKeyValue($key, $value);
 
                 if ($code !== null)
                     break;
@@ -197,25 +197,25 @@ class Validator extends Base\Validator
 
         if ($code !== null)
         {
-            throw new Exception\BadRequestException($code, 'udf');
+            throw new Exception\BadRequestException($code, 'notes');
         }
     }
 
-    protected function validateUdfKeyValue($key, $value)
+    protected function validateNotesKeyValue($key, $value)
     {
         $code = null;
 
         if (is_array($value))
         {
-            $code = ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY;
+            $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY;
         }
         else if (strlen($value) > 256)
         {
-            $code = ErrorCode::BAD_REQUEST_UDF_VALUE_TOO_LARGE;
+            $code = ErrorCode::BAD_REQUEST_NOTES_VALUE_TOO_LARGE;
         }
         else if (strlen($key) > 256)
         {
-            $code = ErrorCode::BAD_REQUEST_UDF_KEY_TOO_LARGE;
+            $code = ErrorCode::BAD_REQUEST_NOTES_KEY_TOO_LARGE;
         }
 
         return $code;

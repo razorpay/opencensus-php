@@ -52,7 +52,7 @@ Models\Payment\Entity:
     status: created
     refund_status: null
     contact: $integer
-    udf: $emptyarray
+    notes: $emptyarray
     gateway: hdfc
     email: $email
     captured_at: null

@@ -356,7 +356,7 @@ return [
         ],
     ],
 
-    'testUdfMissing' => [
+    'testNotesMissing' => [
         'request' => [
             'content' => [
             ],
@@ -364,53 +364,53 @@ return [
         'response' => [
             'content' => [
             'status' => 'authorized',
-            'udf' => array(),
+            'notes' => array(),
             ],
             'status_code' => 200,
         ],
     ],
 
-    'testUdfStringNotArray' => [
+    'testNotesStringNotArray' => [
         'request' => [
             'content' => [
-                'udf' => 'a udf string.. wooohoooooooo',
+                'notes' => 'a notes string.. wooohoooooooo',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'udf',
+                    'field' => 'notes',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_SHOULD_BE_ARRAY,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_SHOULD_BE_ARRAY,
         ],
     ],
 
-    'testExcessValuesInUdf' => [
+    'testExcessValuesInNotes' => [
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'udf',
+                    'field' => 'notes',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_TOO_MANY_KEYS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_TOO_MANY_KEYS,
         ],
     ],
 
-    'testArrayInUdfValue' => [
+    'testArrayInNotesValue' => [
         'request' => [
             'content' => [
-                'udf' => [
+                'notes' => [
                     'array' => [
                         '1' => '1',
                         '2' => '2'
@@ -422,21 +422,21 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'udf',
+                    'field' => 'notes',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY,
         ],
     ],
 
-    'testArrayInUdfKey' => [
+    'testArrayInNotesKey' => [
         'request' => [
             'content' => [
-                'udf' => [
+                'notes' => [
                     [0,1],
                 ]
             ],
@@ -445,46 +445,46 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'udf',
+                    'field' => 'notes',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY
         ],
     ],
 
-    'testUdfKeyLarge' => [
+    'testNotesKeyLarge' => [
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'udf',
+                    'field' => 'notes',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_KEY_TOO_LARGE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_KEY_TOO_LARGE,
         ],
     ],
 
-    'testUdfValueLarge' => [
+    'testNotesValueLarge' => [
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'udf',
+                    'field' => 'notes',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_UDF_VALUE_TOO_LARGE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_VALUE_TOO_LARGE,
         ],
     ],
 ];

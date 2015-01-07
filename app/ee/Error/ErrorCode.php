@@ -103,12 +103,12 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE';
 
     const BAD_REQUEST_URL_NOT_FOUND                                         = 'BAD_REQUEST_URL_NOT_FOUND';
-    const BAD_REQUEST_UDF_SHOULD_BE_ARRAY                                   = 'BAD_REQUEST_UDF_SHOULD_BE_ARRAY';
-    const BAD_REQUEST_UDF_TOO_MANY_KEYS                                     = 'BAD_REQUEST_UDF_TOO_MANY_KEYS';
-    const BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY                             = 'BAD_REQUEST_UDF_VALUE_CANNOT_BE_ARRAY';
-    const BAD_REQUEST_UDF_KEY_CANNOT_BE_ARRAY                               = 'BAD_REQUEST_UDF_KEY_CANNOT_BE_ARRAY';
-    const BAD_REQUEST_UDF_KEY_TOO_LARGE                                     = 'BAD_REQUEST_UDF_KEY_TOO_LARGE';
-    const BAD_REQUEST_UDF_VALUE_TOO_LARGE                                   = 'BAD_REQUEST_UDF_VALUE_TOO_LARGE';
+    const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                 = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';
+    const BAD_REQUEST_NOTES_TOO_MANY_KEYS                                   = 'BAD_REQUEST_NOTES_TOO_MANY_KEYS';
+    const BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY                           = 'BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY';
+    const BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY                             = 'BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY';
+    const BAD_REQUEST_NOTES_KEY_TOO_LARGE                                   = 'BAD_REQUEST_NOTES_KEY_TOO_LARGE';
+    const BAD_REQUEST_NOTES_VALUE_TOO_LARGE                                 = 'BAD_REQUEST_NOTES_VALUE_TOO_LARGE';
     const BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING                          = 'BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING';
     const BAD_REQUEST_DESCRIPTION_TOO_LARGE                                 = 'BAD_REQUEST_DESCRIPTION_TOO_LARGE';
 
