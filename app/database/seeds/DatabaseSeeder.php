@@ -2,6 +2,7 @@
 
 use Constants\Table;
 use Models\Merchant\Account;
+use Models\Pricing;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,6 +25,11 @@ class DatabaseSeeder extends Seeder
     {
         DB::transaction(function()
         {
+            $pricingSeedData = Pricing\DefaultPlan::getPricingSeedData();
+
+            DB::table(Table::PRICING)->insert(
+                $pricingSeedData);
+
             DB::table(Table::MERCHANT)->insert(
                 array(
                     'id'            =>  Account::NODAL_ACCOUNT,
@@ -47,6 +53,7 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::TEST_ACCOUNT,
                     'name'          =>  'Test Account',
                     'email'         =>  'test@razorpay.com',
+                    'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -65,6 +72,7 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::DEMO_ACCOUNT,
                     'name'          =>  'Demo Account',
                     'email'         =>  'demo@razorpay.com',
+                    'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -121,56 +129,6 @@ class DatabaseSeeder extends Seeder
                     'secret'        =>  Crypt::encrypt('thisissupersecret'),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
-                    )
-                );
-
-            DB::table(Table::PRICING)->insert(
-                array(
-                    'id'            => '1GuENK6Hl2BWGx',
-                    'plan_id'       => '1AXludj60w4pSp',
-                    'plan_name'     => 'Full Price',
-                    'payment_method'  => 'card',
-                    'percent_rate'  => '290',
-                    'fixed_rate'    => '0',
-                    'expired_at'    => null,
-                    'created_at'    => time(),
-                    'updated_at'    => time()
-                    ),
-
-                array(
-                    'id'            => '1GuENK6Xk6a8I0',
-                    'plan_id'       => '1AXludj60w4pSp',
-                    'plan_name'     => 'Full Price',
-                    'payment_method'  => 'netbanking',
-                    'percent_rate'  => '290',
-                    'fixed_rate'    => '0',
-                    'expired_at'    => null,
-                    'created_at'    => time(),
-                    'updated_at'    => time()
-                    ),
-
-                array(
-                    'id'            => '1L8dUj9MzP3Bj3',
-                    'plan_id'       => '1In3Yh5Mluj605',
-                    'plan_name'     => 'Promotional Price',
-                    'payment_method'  => 'card',
-                    'percent_rate'  => '200',
-                    'fixed_rate'    => '0',
-                    'expired_at'    => null,
-                    'created_at'    => time(),
-                    'updated_at'    => time()
-                    ),
-
-                array(
-                    'id'            => '1Nsi8IbQ3pWP7T',
-                    'plan_id'       => '1In3Yh5Mluj605',
-                    'plan_name'     => 'Promotional Price',
-                    'payment_method'  => 'netbanking',
-                    'percent_rate'  => '200',
-                    'fixed_rate'    => '0',
-                    'expired_at'    => null,
-                    'created_at'    => time(),
-                    'updated_at'    => time()
                     )
                 );
         });
