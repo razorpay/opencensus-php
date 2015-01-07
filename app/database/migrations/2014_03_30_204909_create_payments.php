@@ -66,7 +66,7 @@ class CreatePayments  extends Migration
 
             $table->string(Payment::CONTACT, 20);
 
-            $table->binary(Payment::UDF);
+            $table->string(Payment::UDF);
 
             $table->char(Payment::TRANSACTION_ID, Payment::ID_LENGTH)
                   ->nullable();
