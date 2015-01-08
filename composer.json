@@ -9,7 +9,8 @@
         "razorpay/razorpay-php": "dev-master",
         "razorpay/spine": "dev-master",
         "maatwebsite/excel": "dev-master",
-        "mailgun/mailgun-php": "~1.7.1"
+        "mailgun/mailgun-php": "~1.7.1",
+        "aws/aws-sdk-php": "2.1.*"
     },
     "repositories": [
         {
