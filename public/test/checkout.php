@@ -1,15 +1,6 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors','1');
 
-$checkout = 'https://checkout.razorpay.com';
-$protocol = 'https';
-$hostname = 'api.razorpay.com';
-
-if (file_exists('config.php'))
-{
-    require('config.php');
-}
+require('vars.php');
 
 ?>
 <!DOCTYPE html>

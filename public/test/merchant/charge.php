@@ -1,20 +1,16 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors','1');
+
+require('../vars.php');
 
 require('../../../vendor/autoload.php');//Load API
 
 use Razorpay\Api\Api;
+
 require('config.php'); // Load API Credentials
 
-$configDev = '../config.php';
-if (file_exists($configDev))
-{
-    require('../config.php');
-    $baseUrl = $protocol . '://' . $hostname . '/v1/';
+$baseUrl = $protocol . '://' . $hostname . '/v1/';
 
-    Api::$baseUrl = $baseUrl;
-}
+Api::$baseUrl = $baseUrl;
 
 $api = new Api(RZP_KEY_ID, RZP_KEY_SECRET);
 
