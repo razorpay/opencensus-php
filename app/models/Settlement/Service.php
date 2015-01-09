@@ -23,9 +23,9 @@ class Service extends Base\Service
     {
         $settler = new Settler();
 
-        $settlements = $settler->settle($input);
+        $settlementFile = $settler->settle($input);
 
-        return $settlements->toArrayPublic();
+        return ['setlFile' => $settlementFile];
     }
 
     public function gatewayMprGenerate($input)
@@ -54,6 +54,13 @@ class Service extends Base\Service
         $data = (new Kotak\Reconciler)->process($input);
 
         return $data;
+    }
+
+    public function generateSettlementReconciliation($input)
+    {
+        $filename = (new Kotak\SettlementReconciliationGenerator)->generateReconcileFile($input);
+
+        return ['setlReconciliationFile' => $filename];
     }
 
     public function returnSettlements($input)

@@ -61,16 +61,18 @@ class SettlementController extends BaseController
     {
         $input = Input::all();
 
-        $settlements = (new Settlement\Service)->getSettlements($input);
+        $data = (new Settlement\Service)->getSettlements($input);
 
-        return ApiResponse::json($settlements);
+        return ApiResponse::json($data);
     }
 
     public function postSettlementReconcile()
     {
         $input = Input::all();
 
-        $settlements = (new Settlement\Service)->reconcileSettlements($input);
+        $data = (new Settlement\Service)->reconcileSettlements($input);
+
+        return ApiResponse::json($data);
     }
 
     public function postSettlementReturn()
@@ -78,5 +80,14 @@ class SettlementController extends BaseController
         $input = Input::all();
 
         $settlements = (new Settlement\Service)->returnSettlements($input);
+    }
+
+    public function postSettlementReconcileGenerate()
+    {
+        $input = Input::all();
+
+        $data = (new Settlement\Service)->generateSettlementReconciliation($input);
+
+        return ApiResponse::json($data);
     }
 }

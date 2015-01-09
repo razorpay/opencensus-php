@@ -65,7 +65,7 @@ class Settler
 
         Dashboard::send('settlement', $settlements);
 
-        return $settlements;
+        return $file;
     }
 
     protected function process($input)

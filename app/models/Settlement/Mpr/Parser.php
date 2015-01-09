@@ -62,18 +62,9 @@ class Parser
 
     public function parseMprFile($mprFile)
     {
-        $data = $this->getDataFromMprFile($mprFile);
-
-        return $this->parseMprFileDataIntoAssocArray($data);
-    }
-
-    protected function getDataFromMprFile($mprFile)
-    {
         $filePath = $mprFile->getRealPath();
 
         $data = Excel::load($filePath)
-                      ->noHeading()
-                      ->ignoreEmpty()
                       ->formatDates(false)
                       ->toArray();
 
@@ -90,52 +81,5 @@ class Parser
         }
 
         return $data;
-    }
-
-    protected function parseMprFileDataIntoAssocArray($data)
-    {
-        $assocArray = array();
-
-        $headings = array_shift($data);
-
-        // Change headings to camelcase values
-        foreach($headings as &$attr)
-        {
-            $attr = strtolower($attr);
-            $attr = str_replace(' ', '_', $attr);
-
-            // if (in_array($this->headings, $attr) === false)
-            // {
-            //     throw new Exception\LogicException(
-            //         'Hdfc mpr: heading mis-match. Value: ' . $attr);
-            // }
-        }
-
-        $headingCount = count($headings);
-
-        $txns = array();
-
-        $r = range(1, $headingCount);
-
-        foreach ($data as $row)
-        {
-            foreach($r as $i)
-            {
-                // Some keys may have corresponding blank columns
-                // In such cases, excel does not provide a value for it.
-                // So, we manually set those keys to 'null'
-                if (isset($row[$i]) === false)
-                {
-                    $row = array_slice($row, 0, $i - 1, true) +
-                           array($i => null) +
-                           array_slice($row, $i - 1, null, true);
-                }
-            }
-
-
-            array_push($assocArray, array_combine($headings, $row));
-        }
-
-        return $assocArray;
     }
 }

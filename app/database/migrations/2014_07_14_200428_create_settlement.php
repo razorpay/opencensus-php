@@ -38,6 +38,7 @@ class CreateSettlement extends Migration {
             $table->char(Settlement::MERCHANT_ID, Settlement::ID_LENGTH);
 
             $table->char(Settlement::TRANSACTION_ID, Settlement::ID_LENGTH)
+                  ->nullable()
                   ->unique();
 
             // Adds created_at and updated_at columns to the table

@@ -4,6 +4,7 @@ namespace Gateway\Hdfc\Mpr;
 
 use Carbon\Carbon;
 use EE\Exception;
+use Excel;
 use Gateway\Hdfc;
 use Models\Base;
 use Models\Payment;
@@ -70,22 +71,23 @@ class Generator
         return $hdfcPayments;
     }
 
-    protected function generateMprFile($mprArray)
+    protected function generateMprFile($data)
     {
-        // @todo: remove sys_get_temp_dir. the doc comments don't recommend it.
-        // Create a temp file name
-        $filename =  tempnam(sys_get_temp_dir(), 'hdfc_mpr') . '.xlsx';
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
+        $filename =  'Hdfc_Mpr_'.$time;
 
-        $fp = fopen($filename, 'w');
-
-        foreach ($mprArray as $row)
+        $excel = Excel::create($filename, function($excel) use ($data)
         {
-            fputcsv($fp, $row);
-        }
+            $excel->sheet('Hdfc Mpr File', function($sheet) use ($data)
+                {
+                    $sheet->with($data, false, false);
+                });
+        });
 
-        fclose($fp);
+        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fullFileName = $fileMetadata['full'];
 
-        return $filename;
+        return $fullFileName;
     }
 
     protected function generateMprArray($input, $hdfcPayments)

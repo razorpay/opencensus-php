@@ -9,6 +9,7 @@ class Balance extends Base\UniqueIdEntity
 {
     const ID = 'id';
     const BALANCE = 'balance';
+    const ON_HOLD = 'on_hold';
 
     protected $table = \Constants\Table::BALANCE;
 

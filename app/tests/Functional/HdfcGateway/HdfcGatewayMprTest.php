@@ -43,7 +43,13 @@ class HdfcGatewayMprTest extends TestCase
         $txns = $this->matchTransactions($payments);
 
         // Generate settlements for above transactions
-        $this->generateSettlements($txns);
+        $setlFile = $this->generateSettlements($txns);
+
+        // Generate settlement reconciliation file
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
+
+        // Reconcile settlements response
+        $this->reconcileSettlements($setlReconciliationFile);
     }
 
     protected function mockSlack()
@@ -82,30 +88,79 @@ class HdfcGatewayMprTest extends TestCase
               ->with('settlement', Mockery::type('Models\\Base\\PublicCollection'));
     }
 
+    protected function reconcileSettlements($setlReconciliationFile)
+    {
+        return;
+        $this->assertFileExists($setlReconciliationFile);
+        $mimeType = 'text/plain';
+
+        $uploadedFile = new UploadedFile(
+                                $setlReconciliationFile,
+                                $setlReconciliationFile,
+                                $mimeType,
+                                filesize($setlReconciliationFile), null, true);
+
+        $request = [
+            'url' => '/settlements/reconcile',
+            'method' => 'POST',
+            'content' => [],
+            'files' => [
+                'setlReconciliationFile' => $uploadedFile
+            ],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+    }
+
     protected function generateSettlements($txns)
     {
-        $testData = [
-            'request' => [
-                'url' => '/settlements/initiate',
-                'method' => 'POST',
-                'content' => ['all' => 1],
-            ],
-            'response' => [
-                'content' => [
-                    'entity' => 'collection',
-                    'count' => 1,
-                    'items' => [
-                        array(
-                            'entity' => 'settlement',
-                        ),
-                    ]
-                ]
-            ]
+        $request = [
+            'url' => '/settlements/initiate',
+            'method' => 'POST',
+            'content' => ['all' => 1],
         ];
 
         $this->ba->appAuth();
 
-        $content = $this->runRequestResponseFlow($testData);
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('setlFile', $content);
+
+        return $content['setlFile'];
+    }
+
+    protected function generateSetlReconciliationFile($setlFile)
+    {
+        $this->assertFileExists($setlFile);
+        $mimeType = 'application/vnd.ms-excel';
+
+        $setlUploadedFile = new UploadedFile(
+                                $setlFile,
+                                $setlFile,
+                                $mimeType,
+                                filesize($setlFile), null, true);
+
+        $request = [
+            'url' => '/settlements/reconcile/generate',
+            'method' => 'POST',
+            'content' => [],
+            'files' => [
+                'setlFile' => $setlUploadedFile
+            ],
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('setlReconciliationFile', $content);
+
+        $this->assertTrue(
+            unlink($setlFile),
+            'Could not delete hdfc mpr file generated during testing');
+
+        return $content['setlReconciliationFile'];
     }
 
     protected function matchTransactions($payments)

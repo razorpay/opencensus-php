@@ -112,9 +112,9 @@ class Settlement
                 });
         });
 
-        $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
 
-        return $filename;
+        return $fileMetadata['full'];
     }
 
     protected function getEmptyArray()
