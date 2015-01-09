@@ -5,6 +5,7 @@ namespace Models\Settlement\Kotak;
 use EE\Exception;
 use Models\Merchant;
 use Models\Transaction;
+use Models\Settlement\Status;
 
 class Reconciler
 {
@@ -17,11 +18,41 @@ class Reconciler
 
     public function process($input)
     {
-        $this->validateInput($input);
+        $reconcileFile = $input['setlReconciliationFile'];
 
-        $data = $this->getData($input);
+        $data = $this->parseReconciliationFile($reconcileFile);
 
         $this->reconcile($data);
+    }
+
+    protected function parseReconciliationFile($file)
+    {
+        $filePath = $file->getRealPath();
+
+        $file = fopen($filePath, 'r');
+
+        $txt = fread($file, filesize($filePath));
+
+        $rows = explode('\n', $txt);
+
+        $data = array();
+
+        $headings = SettlementReconciliationGenerator::getHeadings();
+
+        foreach ($rows as $row)
+        {
+            if ($row === '')
+                continue;
+
+            $values = explode('~', $row);
+            unset($values[count($values) - 1]);
+
+            $values = array_combine($headings, $values);
+
+            $data[] = $values;
+        }
+
+        return $data;
     }
 
     protected function reconcile($data)
@@ -36,14 +67,14 @@ class Reconciler
 
     protected function processSettlementStatus($setl, $row)
     {
-        $status = $row[19];
+        $status = $row['Success'];
 
-        $utr = $row['utr'];
+        $utr = $row['UTR'];
         $utr = ($utr === '') ? null : $utr;
 
         $setl->setUtr($utr);
 
-        $failureReason = $row['failure'];
+        $failureReason = $row['Failure Reason'];
 
         if ($status === 'P')
         {
@@ -71,67 +102,26 @@ class Reconciler
 
     protected function loadSettlementAndRelations($row)
     {
-        $merchantId = $row['Payment Details 3'];
+        $merchantId = $row['Payment Details 2'];
         $merchant = $this->merchantRepo->findOrFail($merchantId);
 
         $setlId = $row['Payment Details 1'];
-        Settlement\Entity::verifyIdAndStripSign($setlId);
 
-        if ($merchantId !== $setlId->getMerchantId())
+        \Models\Settlement\Entity::verifyIdAndStripSign($setlId);
+
+        $setl = $this->setlRepo->findOrFail($setlId);
+
+        if ($merchantId !== $setl->getMerchantId())
         {
             throw new Exception\LogicException(
                 'Merchant id must match. ' . $merchantId . ' ' . $setlId->getMerchantId());
         }
 
-        $setl = $this->setlRepo->findOrFail($setlId);
         $txn = $this->txnRepo->findOrFail($setl->getTransactionId());
 
         $setl->merchant()->associate($merchant);
         $setl->transaction()->associate($txn);
 
         return $setl;
-    }
-
-    protected function validateInput($input)
-    {
-        ;
-    }
-
-    protected getData($input)
-    {
-        $raw = $this->getRawDataFromFile($input['file']);
-
-        $data = $this->extractTabularData($raw);
-
-        return $data;
-    }
-
-    protected function getRawDataFromFile($mprFile)
-    {
-        $filePath = $mprFile->getRealPath();
-
-        $raw = Excel::load($filePath)
-                      ->noHeading()
-                      ->ignoreEmpty()
-                      ->formatDates(false)
-                      ->toArray();
-
-        return $raw;
-    }
-
-    protected function extractTabularData($raw)
-    {
-        $headings = Settlement::$headings;
-        $headings[] = 'Symbol';
-
-        $data = array();
-
-        foreach ($raw as &$row)
-        {
-            $values = explode('~', $row);
-            $data[] = array_combine($headings, $values);
-        }
-
-        return $data;
     }
 }

@@ -90,7 +90,6 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function reconcileSettlements($setlReconciliationFile)
     {
-        return;
         $this->assertFileExists($setlReconciliationFile);
         $mimeType = 'text/plain';
 

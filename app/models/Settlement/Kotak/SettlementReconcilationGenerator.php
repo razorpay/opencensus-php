@@ -16,7 +16,7 @@ class SettlementReconciliationGenerator
 {
     protected $headings;
 
-    protected $extraHeadings = array(
+    protected static $extraHeadings = array(
         'Success',
         'UTR',
         'Failure Reason',
@@ -40,11 +40,20 @@ class SettlementReconciliationGenerator
         return $this->generateSetlReconciliationFile($txt);
     }
 
+    public static function getHeadings()
+    {
+        $headings = Settlement::$headings;
+
+        $headings = array_merge($headings, static::$extraHeadings);
+
+        return $headings;
+    }
+
     protected function addNewFields($data)
     {
         $date = Carbon::today('Asia/Kolkata')->format('d/m/Y H:i:s');
 
-        foreach ($data as $row)
+        foreach ($data as &$row)
         {
             $utr = random_integer(10);
             $newFields = array(
@@ -52,6 +61,8 @@ class SettlementReconciliationGenerator
                 'UTR'               => 'KKBKH1' . $utr,
                 'Failure Reason'    => '',
                 'Date'              => $date);
+
+            $row = array_merge($row, $newFields);
         }
 
         return $data;
