@@ -94,10 +94,14 @@ class Service extends Base\Service
 
         $merchant = \Auth::merchant();
 
-        // @todo: explain this part
-        if (($merchant->attempt($credentials + array('confirm_token' => null)) === false) and
-            ($merchant->validate($credentials)))
+        if ($merchant->validate($credentials) === false)
         {
+            // Checks credentials but doesn't login the merchant, throws error if invalid
+            $error = ['Email or password is invalid.'];
+        }
+        else if ($merchant->attempt($credentials + array('confirm_token' => null)) === false)
+        {
+            // Tries to login merchant if confirmed, throws error if merchant is not confirmed
             $error = ['not activated'];
         }
 
