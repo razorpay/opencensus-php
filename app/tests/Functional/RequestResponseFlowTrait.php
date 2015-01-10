@@ -162,29 +162,15 @@ trait RequestResponseFlowTrait
             $request['url'] = '/v1' . $request['url'];
         }
 
-        if (isset($request['method']) === false)
-        {
-            $request['method'] = 'POST';
-        }
+        $defaults = array(
+            'method' => 'POST',
+            'content' => array(),
+            'server' => $server,
+            'files' => array());
 
-        if (isset($request['content']) === false)
-        {
-            $request['content'] = array();
-        }
-        else
-        {
-            $this->convertContentToString($request['content']);
-        }
+        $request = array_merge($defaults, $request);
 
-        if (isset($request['server']) === false)
-        {
-            $request['server'] = $server;
-        }
-
-        if (isset($request['files']) === false)
-        {
-            $request['files'] = array();
-        }
+        $this->convertContentToString($request['content']);
 
         if ($this->cloud)
         {
