@@ -36,7 +36,7 @@ class HdfcGatewayMprTest extends TestCase
         $mprFile = $this->generateMpr();
 
         // Upload the generate mpr file for reconciliation
-        $this->uploadMpr($mprFile);
+        $this->reconcileMpr($mprFile);
 
         // Check the txns corresponding to above payments after
         // reconciliation
@@ -48,7 +48,7 @@ class HdfcGatewayMprTest extends TestCase
         // Generate settlement reconciliation file
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
 
-        // Reconcile settlements response
+        // Reconcile settlements
         $this->reconcileSettlements($setlReconciliationFile);
     }
 
@@ -90,19 +90,10 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function reconcileSettlements($setlReconciliationFile)
     {
-        $this->assertFileExists($setlReconciliationFile);
-        $mimeType = 'text/plain';
-
-        $uploadedFile = new UploadedFile(
-                                $setlReconciliationFile,
-                                $setlReconciliationFile,
-                                $mimeType,
-                                filesize($setlReconciliationFile), null, true);
+        $uploadedFile = $this->createUploadedFile($setlReconciliationFile, 'text/plain');
 
         $request = [
             'url' => '/settlements/reconcile',
-            'method' => 'POST',
-            'content' => [],
             'files' => [
                 'setlReconciliationFile' => $uploadedFile
             ],
@@ -110,9 +101,7 @@ class HdfcGatewayMprTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertTrue(
-            unlink($setlFile),
-            'Could not delete hdfc mpr file generated during testing');
+        $this->unlinkFile($setlReconciliationFile);
     }
 
     protected function generateSettlements($txns)
@@ -134,21 +123,12 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function generateSetlReconciliationFile($setlFile)
     {
-        $this->assertFileExists($setlFile);
-        $mimeType = 'application/vnd.ms-excel';
-
-        $setlUploadedFile = new UploadedFile(
-                                $setlFile,
-                                $setlFile,
-                                $mimeType,
-                                filesize($setlFile), null, true);
+        $uploadedFile = $this->createUploadedFile($setlFile);
 
         $request = [
             'url' => '/settlements/reconcile/generate',
-            'method' => 'POST',
-            'content' => [],
             'files' => [
-                'setlFile' => $setlUploadedFile
+                'setlFile' => $uploadedFile
             ],
         ];
 
@@ -158,9 +138,7 @@ class HdfcGatewayMprTest extends TestCase
 
         $this->assertArrayHasKey('setlReconciliationFile', $content);
 
-        $this->assertTrue(
-            unlink($setlFile),
-            'Could not delete hdfc mpr file generated during testing');
+        $this->unlinkFile($setlFile);
 
         return $content['setlReconciliationFile'];
     }
@@ -210,7 +188,7 @@ class HdfcGatewayMprTest extends TestCase
     {
         $payments = array();
 
-        $r = range(1,2);
+        $r = range(1,5);
 
         $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
         $capturedAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
@@ -235,40 +213,28 @@ class HdfcGatewayMprTest extends TestCase
         $this->ba->appAuth();
 
         $request = array(
-            'method' => 'POST',
-            'url' => '/gateway/mpr/generate',
-            'content' => array());
+            'url' => '/gateway/mpr/generate');
 
         $mprFile = $this->makeRequestAndGetContent($request);
 
         return $mprFile;
     }
 
-    protected function uploadMpr($mprFile)
+    protected function reconcileMpr($mprFile)
     {
-        $mimeType = 'application/vnd.ms-excel';
-
-        $this->assertFileExists($mprFile);
-
-        $mprUploadedFile = new UploadedFile(
-                                $mprFile,
-                                $mprFile,
-                                $mimeType,
-                                filesize($mprFile), null, true);
+        $uploadedFile = $this->createUploadedFile($mprFile);
 
         $request = &$this->testData['testUploadMpr']['request'];
         $request['content']['recipient'] = 'hdfc_mpr_testing_test@mg.razorpay.com';
         $request['content']['attachment-count'] = '1';
 
-        $request['files']['attachment-1'] = $mprUploadedFile;
+        $request['files']['attachment-1'] = $uploadedFile;
 
         $this->ba->appAuth();
 
         $this->runRequestResponseFlow($this->testData['testUploadMpr']);
 
-        $this->assertTrue(
-            unlink($mprFile),
-            'Could not delete hdfc mpr file generated during testing');
+        $this->unlinkFile($mprFile);
     }
 
     public function startTest($testDataToReplace = array())
@@ -281,5 +247,27 @@ class HdfcGatewayMprTest extends TestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function unlinkFile($file)
+    {
+         $this->assertTrue(
+            unlink($file),
+            'Could not delete file generated during testing. Filename: ' . $file);
+    }
+
+    protected function createUploadedFile($file, $mimeType = 'application/vnd.ms-excel')
+    {
+        $this->assertFileExists($file);
+
+        $uploadedFile = new UploadedFile(
+                                $file,
+                                $file,
+                                $mimeType,
+                                filesize($file),
+                                null,
+                                true);
+
+        return $uploadedFile;
     }
 }

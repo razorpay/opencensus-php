@@ -111,7 +111,7 @@ class Settler
 
     protected function createSettlementFile($settlements, $txns)
     {
-        $filename = (new Kotak\Settlement)->generateSettlementFile($settlements, $txns);
+        $filename = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
 
         return $filename;
     }

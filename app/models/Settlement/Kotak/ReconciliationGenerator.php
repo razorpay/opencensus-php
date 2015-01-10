@@ -7,12 +7,13 @@ use EE\Exception;
 use Excel;
 use Models\Merchant;
 use Models\Transaction;
+use Models\Settlement\Kotak;
 
 /**
  * This class is used to handle generation of settlement reconciliation
  * files for running tests and in test mode
  */
-class SettlementReconciliationGenerator
+class ReconciliationGenerator
 {
     protected $headings;
 
@@ -24,7 +25,7 @@ class SettlementReconciliationGenerator
 
     public function _construct()
     {
-        $this->headings = Settlement::$headings;
+        $this->headings = Kotak\NodalAccount::getHeadings();
     }
 
     public function generateReconcileFile($input)
@@ -42,7 +43,7 @@ class SettlementReconciliationGenerator
 
     public static function getHeadings()
     {
-        $headings = Settlement::$headings;
+        $headings = Kotak\NodalAccount::getHeadings();
 
         $headings = array_merge($headings, static::$extraHeadings);
 

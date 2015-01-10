@@ -10,7 +10,7 @@ use Models\Base;
 use Models\Merchant;
 use Models\Transaction;
 
-class Settlement
+class NodalAccount
 {
     public static $headings = array(
         'Client_Code',
@@ -136,4 +136,8 @@ class Settlement
         return array_values($dict);
     }
 
+    public static function getHeadings()
+    {
+        return static::$headings;
+    }
 }

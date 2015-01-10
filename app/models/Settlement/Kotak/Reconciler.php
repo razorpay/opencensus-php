@@ -5,7 +5,8 @@ namespace Models\Settlement\Kotak;
 use EE\Exception;
 use Models\Merchant;
 use Models\Transaction;
-use Models\Settlement\Status;
+use Models\Settlement;
+use Models\Settlement\Kotak;
 
 class Reconciler
 {
@@ -37,7 +38,7 @@ class Reconciler
 
         $data = array();
 
-        $headings = SettlementReconciliationGenerator::getHeadings();
+        $headings = Kotak\ReconciliationGenerator::getHeadings();
 
         foreach ($rows as $row)
         {
@@ -78,11 +79,11 @@ class Reconciler
 
         if ($status === 'P')
         {
-            $setl->setStatus(Status::TRANSFERRED);
+            $setl->setStatus(Settlement\Status::TRANSFERRED);
         }
         else
         {
-            $setl->setStatus(Status::FAILED);
+            $setl->setStatus(Settlement\Status::FAILED);
 
             if ($failureReason !== '')
             {

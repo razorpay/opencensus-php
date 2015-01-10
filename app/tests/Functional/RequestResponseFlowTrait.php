@@ -162,6 +162,11 @@ trait RequestResponseFlowTrait
             $request['url'] = '/v1' . $request['url'];
         }
 
+        if (isset($request['method']) === false)
+        {
+            $request['method'] = 'POST';
+        }
+
         if (isset($request['content']) === false)
         {
             $request['content'] = array();

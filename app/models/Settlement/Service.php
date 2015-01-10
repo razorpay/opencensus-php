@@ -58,7 +58,7 @@ class Service extends Base\Service
 
     public function generateSettlementReconciliation($input)
     {
-        $filename = (new Kotak\SettlementReconciliationGenerator)->generateReconcileFile($input);
+        $filename = (new Kotak\ReconciliationGenerator)->generateReconcileFile($input);
 
         return ['setlReconciliationFile' => $filename];
     }

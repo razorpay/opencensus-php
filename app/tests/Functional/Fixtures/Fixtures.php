@@ -24,6 +24,15 @@ class Fixtures
         'transaction'   => 'Models\Transaction\Entity'
     );
 
+    protected static $customMap = array(
+        'captured_payment',
+        'card_captured_payment',
+        'netbanking_captured_payment',
+        'authorized_payment',
+        'card_authorized_payment',
+        'netbanking_authorized_payment',
+        'atom_terminal');
+
     public function times($times)
     {
         Factory::times($times);
@@ -87,6 +96,17 @@ class Fixtures
     }
 
     public function createPaymentCapturedEntity(array $attributes = array())
+    {
+        if ((isset($attributes['method'])) and
+            ($attributes['method'] === 'card'))
+        {
+            ;
+        }
+
+        return $this->createPaymentCardCapturedEntity($attributes);
+    }
+
+    public function createPaymentCardCapturedEntity(array $attributes = array())
     {
         $defaultValues = array(
             'status' => 'authorized',
