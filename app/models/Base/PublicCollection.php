@@ -4,7 +4,6 @@ namespace Models\Base;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Illuminate\Database\Eloquent\Collection;
 
 class PublicCollection extends Collection
 {

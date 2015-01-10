@@ -5,7 +5,6 @@ namespace Models\Settlement;
 use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Illuminate\Database\Eloquent\Collection;
 use Models\Base;
 use Models\Merchant;
 use Models\Settlement;
@@ -34,8 +33,6 @@ class Settler
         $this->initRepos();
 
         $this->queue = \Queue::getFacadeRoot();
-
-        $this->settlements = new Collection;
     }
 
     public function settle($input = array())
