@@ -13,21 +13,7 @@ class Validator extends Base\Validator
         'expiry_month'      => 'required|numeric|digits_between:1,2|max:12|min:1',
         'expiry_year'       => 'required|numeric|digits:4|non_past_year',
         'cvv'               => 'required|numeric|digits_between:3,4',
-        'name'              => 'required|alpha_space|max:100',
-        'address_line1'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
-        'address_line2'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
-        'address_city'      => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
-        'address_state'     => 'regex:/[a-zA-Z,1-9. ]*/|max:100',
-        'address_country'   => 'regex:/[a-zA-Z]*/|max:50',
-        'address_zip'       => 'numeric|digits_between:0,10');
-
-    protected static $addressAttributes = array(
-        'address_line1',
-        'address_line2',
-        'address_city',
-        'address_state',
-        'address_country',
-        'address_zip');
+        'name'              => 'required|alpha_space|max:100');
 
     protected static $createValidators = array('expiry_date');
 

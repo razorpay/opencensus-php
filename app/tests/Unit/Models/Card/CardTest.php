@@ -17,12 +17,6 @@ class ValidationTest extends TestCase
             'expiry_year' => '2017',
             'cvv' => '123',
             'name' => 'Abhay',
-            'address_line1' => 105,
-            'address_line2' => 105,
-            'address_city' => 104,
-            'address_state' => 200,
-            'address_country' => 'IN',
-            'address_zip' => '244713',
         ];
 
         $this->card = new Card\Entity();
