@@ -526,7 +526,9 @@ class BasicAuth
         $mode = $this->getMode();
 
         if ($mode === 'test')
+        {
             return;
+        }
 
         if ($this->merchant->isActivated() === false)
         {

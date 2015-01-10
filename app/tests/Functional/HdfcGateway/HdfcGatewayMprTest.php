@@ -110,6 +110,9 @@ class HdfcGatewayMprTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
+        $this->assertTrue(
+            unlink($setlFile),
+            'Could not delete hdfc mpr file generated during testing');
     }
 
     protected function generateSettlements($txns)

@@ -98,6 +98,8 @@ class Reconciler
 
             // @todo: handle failure case
         }
+
+        $this->setlRepo->save($setl);
     }
 
     protected function loadSettlementAndRelations($row)
