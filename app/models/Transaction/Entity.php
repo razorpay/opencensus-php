@@ -87,12 +87,37 @@ class Entity extends Base\PublicEntity
 
     public function getCredit()
     {
-        return $this->getAttribute(self::CREDIT);
+        return (int) $this->getAttribute(self::CREDIT);
     }
 
     public function getDebit()
     {
-        return $this->getAttribute(self::DEBIT);
+        return (int) $this->getAttribute(self::DEBIT);
+    }
+
+    public function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function getFeeAttribute()
+    {
+        return (int) $this->attributes[self::FEE];
+    }
+
+    public function getApiFeeAttribute()
+    {
+        return (int) $this->attributes[self::API_FEE];
+    }
+
+    public function getBalanceAttribute()
+    {
+        return (int) $this->attributes[self::BALANCE];
+    }
+
+    public function getSettledAttribute()
+    {
+        return (bool) $this->attributes[self::SETTLED];
     }
 
     public function setReconciledAt($timestamp)
