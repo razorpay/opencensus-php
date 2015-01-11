@@ -39,6 +39,9 @@ build:
           channel: general
 deploy:
     steps:
+      - script:
+          name: Change to production mode
+          code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
