@@ -100,7 +100,6 @@ class NodalAccount
             array_push($data, $values);
         }
 
-        // @todo: Get correct format specifiers for time.
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
         $filename =  'Kotak_Settlement_'.$time;
 

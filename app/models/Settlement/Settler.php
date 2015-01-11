@@ -87,6 +87,7 @@ class Settler
         {
             // Settlement amount
             $setlAmount = 0;
+            $setlTxns = new Base\PublicCollection;
 
             // Get merchant
             $merchantId = $txns[$i]->getMerchantId();
@@ -96,10 +97,11 @@ class Settler
                    ($txns[$i]->getMerchantId() === $merchantId))
             {
                 $setlAmount += $txns[$i]->getCredit() - $txns[$i]->getDebit();
+                $setlTxns->push($txns[$i]);
                 $i++;
             }
 
-            $setl = (new Settlement\Merchant($merchant, $setlAmount))->settle();
+            $setl = (new Settlement\Merchant($merchant, $setlAmount))->settle($setlTxns);
             $settlements->push($setl);
         }
 

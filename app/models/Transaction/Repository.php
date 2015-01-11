@@ -46,8 +46,36 @@ class Repository extends Base\Repository
         $ids = $txns->getIds();
 
         $values = array(
-            Transaction\Entity::SETTLED_AT => $settledAt,
-            Transaction\Entity::SETTLED => true);
+            Transaction\Entity::SETTLED_AT  => $settledAt,
+            Transaction\Entity::SETTLED     => true);
+
+        $count = $repo::whereIn(Transaction\Entity::ID, $ids)
+                      ->update($values);
+
+        $expected = count($ids);
+
+        if ($count !== $expected)
+        {
+            throw new Exception\LogicException(
+                'Failed to update expected number of rows. \n' .
+                'Expected: ' . $expected . ' Updated: ' . $count);
+        }
+
+        return $count;
+    }
+
+    public function updateSettlementId($txns, $settlementId)
+    {
+        $repo = $this->repo;
+
+        if ($txns->count() === 0)
+        {
+            return;
+        }
+
+        $ids = $txns->getIds();
+
+        $values = [Transaction\Entity::SETTLEMENT_ID  => $settlementId];
 
         $count = $repo::whereIn(Transaction\Entity::ID, $ids)
                       ->update($values);

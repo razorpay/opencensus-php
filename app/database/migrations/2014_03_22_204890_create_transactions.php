@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
+use Models\Settlement;
 use Models\Transaction\Entity as Transaction;
 use Models\Merchant;
 use Models\Payment;
@@ -68,12 +69,23 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::SETTLED_AT)
                   ->nullable();
 
+            // This is a foreign key. The foreign key part is defined
+            // in Settlement migration file
+            $table->char(Transaction::SETTLEMENT_ID, Transaction::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Transaction::RECONCILED_AT)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Transaction::CREATED_AT);
             $table->integer(Transaction::UPDATED_AT);
+
+            $table->index(Transaction::SETTLED_AT);
+
+            $table->index(Transaction::SETTLED);
+
+            $table->index(Transaction::RECONCILED_AT);
 
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

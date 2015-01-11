@@ -11,9 +11,10 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
     const STATUS                = 'status';
+    const TRANSACTION_ID        = 'transaction_id';
     const UTR                   = 'utr';
     const FAILURE_REASON        = 'failure_reason';
-    const TRANSACTION_ID        = 'transaction_id';
+    const RETURN_UTR            = 'return_utr';
 
     protected $table = \Constants\Table::SETTLEMENT;
 
@@ -67,6 +68,11 @@ class Entity extends Base\PublicEntity
     public function setUtr($utr)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setReturnUtr($utr)
+    {
+        $this->setAttribute(self::RETURN_UTR, $utr);
     }
 
     public function getTransactionId()

@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const RECONCILED_AT     = 'reconciled_at';
     const SETTLED           = 'settled';
     const SETTLED_AT        = 'settled_at';
+    const SETTLEMENT_ID     = 'settlement_id';
 
     protected $table = \Constants\Table::TRANSACTION;
 
