@@ -1,11 +1,12 @@
 #!/bin/bash
 # Deployment Script
+BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )
 
 # Take the app down
 cd /home/ubuntu/api/ && php artisan down
 
 # Install new version
-rsync -avz --force --delete --progress --exclude-from=./.rsyncignore ./ /home/ubuntu/api/
+cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncignore ./ /home/ubuntu/api/
 
 # Fix permissions
 cd /home/ubuntu/api/ && sudo chmod 775 -R app/storage

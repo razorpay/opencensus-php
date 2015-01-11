@@ -4,5 +4,5 @@ os: linux
 hooks:
   BeforeInstall:
     - location: scripts/install.sh
-      timeout: 30
+      timeout: 300
       runas: ubuntu
