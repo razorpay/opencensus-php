@@ -10,8 +10,17 @@ use Models\Settlement\Kotak;
 
 class Reconciler
 {
+    /**
+     * All payments in the current mpr
+     * will have the same reconciledAt timestamp
+     * @var int
+     */
+    protected $reconciledAt;
+
     public function __construct()
     {
+        $this->reconciledAt = time();
+
         $this->merchantRepo = new Merchant\Repository;
         $this->setlRepo = new \Models\Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
@@ -100,7 +109,10 @@ class Reconciler
             // @todo: handle failure case
         }
 
+        $setl->txn->setReconciledAt($this->reconciledAt);
+
         $this->setlRepo->save($setl);
+        $this->txnRepo->save($txn);
     }
 
     protected function loadSettlementAndRelations($row)
@@ -110,7 +122,7 @@ class Reconciler
 
         $setlId = $row['Payment Details 1'];
 
-        \Models\Settlement\Entity::verifyIdAndStripSign($setlId);
+        Settlement\Entity::verifyIdAndStripSign($setlId);
 
         $setl = $this->setlRepo->findOrFail($setlId);
 
