@@ -21,7 +21,7 @@ class CreateIinsTable extends Migration {
 
             $table->string(Card\Detail::CATEGORY);
 
-            $table->string(Card\Detail::BRAND);
+            $table->string(Card\Detail::NETWORK);
 
             $table->string(Card\Detail::TYPE);
 

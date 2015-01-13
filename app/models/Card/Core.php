@@ -66,9 +66,10 @@ class Core
                 Entity::ISSUER  => $details['issuer'],
                 Entity::COUNTRY => $details['country']);
 
-            if ($details['card_type'] !== '')
+            if (($details['type'] !== '') and
+                ($details['type'] !== null))
             {
-                $arr[Entity::TYPE] = $details['card_type'];
+                $arr[Entity::TYPE] = $details['type'];
             }
 
             $card->fill($arr);
