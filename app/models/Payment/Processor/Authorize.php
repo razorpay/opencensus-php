@@ -139,7 +139,7 @@ trait Authorize
 
         $card = $cardCore->getCard();
 
-        if (Card\Network::isUnsupportedNetwork($card->getNetwork()))
+        if ($card->isUnsupported())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);

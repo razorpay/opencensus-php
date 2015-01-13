@@ -26,9 +26,9 @@ class Core
 
     public function createAndReturnWithSensitiveData(array $input)
     {
-        $card = $this->create($input);
-
         Card\Entity::modifyNumber($input);
+
+        $card = $this->create($input);
 
         return array_merge(
             $card->toArray(),
@@ -40,7 +40,9 @@ class Core
     {
         $network = Card\Network::detectNetwork($input['number']);
 
-        $card->setNetwork($network);
+        $networkName = Card\Network::getFullName($network);
+
+        $card->setNetwork($networkName);
 
         // Get details for this iin from card repository
         $details = (new Card\Repository)->retrieveIinDetails($card->getIin());
@@ -49,9 +51,9 @@ class Core
         {
             if ($network === Card\Network::UNKNOWN)
             {
-                if ($details->getBrand() !== null)
+                if ($details->getNetwork() !== null)
                 {
-                    $network = $details->getBrand();
+                    $network = $details->getNetwork();
 
                     if (Card\Network::isValidNetwork($network))
                     {
@@ -61,11 +63,15 @@ class Core
             }
 
             $arr = array(
-                self::TYPE    => $details['type'],
-                self::ISSUER  => $details['issuer'],
-                self::COUNTRY => $details['country']);
+                Entity::ISSUER  => $details['issuer'],
+                Entity::COUNTRY => $details['country']);
 
-            $this->fill($arr);
+            if ($details['card_type'] !== '')
+            {
+                $arr[Entity::TYPE] = $details['card_type'];
+            }
+
+            $card->fill($arr);
         }
         else
         {
