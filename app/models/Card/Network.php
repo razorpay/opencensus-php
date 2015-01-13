@@ -20,7 +20,7 @@ class Network
     const OTHER = 'OTHER';
     const UNKNOWN = 'UNKNOWN';
 
-    protected $fullName = array(
+    protected static $fullName = array(
         self::AMEX    => 'American Express',
         self::DICL    => 'Diners Club',
         self::DISC    => 'Discover',
@@ -144,5 +144,17 @@ class Network
     public static function isUnsupportedNetwork($network)
     {
         return (in_array($network, self::$unsupportedNetworks));
+    }
+
+    public static function getFullName($network)
+    {
+        return self::$fullName[$network];
+    }
+
+    public static function getCode($fullName)
+    {
+        $codes = array_flip(self::$fullName);
+
+        return $codes[$fullName];
     }
 }

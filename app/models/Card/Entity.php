@@ -157,4 +157,11 @@ class Entity extends Base\UniqueIdEntity
     {
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
+
+    public function isUnsupported()
+    {
+        $network = Card\Network::getCode($this->getNetwork());
+
+        return (Card\Network::isUnsupportedNetwork($network));
+    }
 }
