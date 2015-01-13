@@ -109,10 +109,10 @@ class Reconciler
             // @todo: handle failure case
         }
 
-        $setl->txn->setReconciledAt($this->reconciledAt);
+        $setl->transaction->setReconciledAt($this->reconciledAt);
 
         $this->setlRepo->save($setl);
-        $this->txnRepo->save($txn);
+        $this->txnRepo->save($setl->transaction);
     }
 
     protected function loadSettlementAndRelations($row)
