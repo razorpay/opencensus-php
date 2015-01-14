@@ -44,7 +44,7 @@ class RefundTest extends TestCase
 
         $refund = $this->startTest($payment['id'], (string)$payment['amount']);
 
-        $this->assertEquals(substr($refund['id'], 0, 5), 'rfnd-');
+        $this->assertEquals(substr($refund['id'], 0, 5), 'rfnd_');
 
         $this->assertGreaterThan(time() - 30, $refund['created_at']);
     }
