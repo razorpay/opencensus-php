@@ -13,7 +13,7 @@ class PublicEntity extends UniqueIdEntity
 
     protected static $sign = '';
 
-    protected static $delimiter = '-';
+    protected static $delimiter = '_';
 
     /**
      * For an entity which is being exposed outside,
