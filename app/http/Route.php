@@ -55,6 +55,7 @@ final class Route
         'hdfc_mpr_generate'                 => ['post', 'gateway/mpr/generate',                     'SettlementController@postGatewayMprGenerate'],
         'setl_initiate'                     => ['post', 'settlements/initiate',                     'SettlementController@postSettlementInitiate'],
         'setl_reconcile'                    => ['post', 'settlements/reconcile',                    'SettlementController@postSettlementReconcile'],
+        'setl_return_generate'              => ['post', 'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'],
         'setl_return'                       => ['post', 'settlements/return',                       'SettlementController@postSettlementReturn'],
         'mockhdfc_enroll'                   => ['post', 'gateway/mockhdfc/enroll',                  'MockHdfcController@enroll'],
         'mockhdfc_payment'                  => ['post', 'gateway/mockhdfc/payment',                 'MockHdfcController@payment'],
@@ -200,11 +201,11 @@ final class Route
         return $doNotLogUrls;
     }
 
-    public static function isJsonpRoute($routeName)
+    public static function isJsonpRoute($path)
     {
-        $jsonpRoute = array('payment_create_jsonp');
+        $jsonpRoute = array('v1/payments/create/jsonp');
 
-        return in_array($routeName, $jsonpRoute);
+        return in_array($path, $jsonpRoute);
     }
 
     protected static function addRoutes($type)
