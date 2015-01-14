@@ -65,7 +65,7 @@ class CreateSettlement extends Migration {
         {
             $table->foreign(Transaction\Entity::SETTLEMENT_ID)
                   ->references(Settlement::ID)
-                  ->on(Table::TRANSACTION)
+                  ->on(Table::SETTLEMENT)
                   ->on_delete('restrict');
         });
     }
