@@ -34,6 +34,13 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testUnauthorizedOnJsonpRoute()
+    {
+        $this->ba->publicAuth('rzp_test_TheTestAusdKey');
+
+        $this->startTest();
+    }
+
     public function testPublicAuthOnPrivateRoute()
     {
         $this->ba->publicAuth();
