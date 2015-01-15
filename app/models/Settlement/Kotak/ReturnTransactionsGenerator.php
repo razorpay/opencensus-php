@@ -79,11 +79,11 @@ class ReturnTransactionsGenerator
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
         $filename =  'Kotak_Return_Transaction_'.$time;
 
-        $excel = Excel::create($filename, function($excel) use ($data)
+        $excel = Excel::create($filename, function($excel) use ($excelData)
         {
-            $excel->sheet('Nodal Settlement File', function($sheet) use ($data)
+            $excel->sheet('Nodal Settlement File', function($sheet) use ($excelData)
                 {
-                    $sheet->with($data, false, true);
+                    $sheet->with($excelData, false, false);
                 });
         });
 

@@ -65,7 +65,9 @@ class Service extends Base\Service
 
     public function returnSettlements($input)
     {
-        ;
+        $data = (new Kotak\ReturnTransactions)->process($input);
+
+        return $data;
     }
 
     public function generateSettlementReturn($input)

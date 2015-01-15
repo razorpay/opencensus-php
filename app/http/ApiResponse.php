@@ -110,8 +110,6 @@ class ApiResponse
 
         $jsonp = false;
 
-        $routeName = \Route::currentRouteName();
-
         if (self::isJsonpRequired($request->path()))
         {
             $data['http_status_code'] = $status;

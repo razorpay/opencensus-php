@@ -52,7 +52,10 @@ class HdfcGatewayMprTest extends TestCase
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
         // Generate settlement return file
-        $this->generateSetlReturnFile($data);
+        $setlReturnFile = $this->generateSetlReturnFile($data);
+
+        // Reconcile settlement return file
+        $this->processSetlReturns($setlReturnFile);
     }
 
     protected function reconcileSettlements($setlReconciliationFile)
@@ -132,6 +135,28 @@ class HdfcGatewayMprTest extends TestCase
         ];
 
         $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('setlReturnFile', $content);
+
+        return $content['setlReturnFile'];
+    }
+
+    protected function processSetlReturns($setlReturnFile)
+    {
+        $uploadedFile = $this->createUploadedFile($setlReturnFile);
+
+        $request = [
+            'url' => '/settlements/return',
+            'files' => [
+                'setlReturnFile' => $uploadedFile
+            ],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->unlinkFile($setlReturnFile);
+
+        return $content;
     }
 
     protected function matchTransactions($payments)

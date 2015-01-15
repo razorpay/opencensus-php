@@ -3,6 +3,7 @@
 namespace Models\Settlement\Kotak;
 
 use EE\Exception;
+use Excel;
 use Models\Merchant;
 use Models\Transaction;
 use Models\Settlement;
@@ -40,9 +41,39 @@ class ReturnTransactions
     {
         $returnFile = $input['setlReturnFile'];
 
-        $data = $this->parseReconciliationFile($reconcileFile);
+        $data = $this->parseReturnFile($returnFile);
 
-        $this->reconcile($data);
+        $this->reconcileReturns($data);
+    }
+
+    protected function reconcileReturns($data)
+    {
+        ;
+    }
+
+    protected function parseReturnFile($file)
+    {
+        $filePath = $file->getRealPath();
+
+        $rows = Excel::load($filePath, function($reader)
+                        { $reader->noHeading(); })
+                      ->formatDates(false)
+                      ->toArray();
+
+        $count = count($rows);
+
+        $i = 2;
+
+        $data = [];
+        $headings = $rows[1];
+
+        while ($i < $count)
+        {
+            $data[] = array_combine($headings, $rows[$i]);
+            $i++;
+        }
+
+        return $data;
     }
 
     public static function getHeadings()
