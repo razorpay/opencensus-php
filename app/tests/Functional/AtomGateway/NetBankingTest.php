@@ -46,7 +46,9 @@ class NetBankingTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->startTest();
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('id', $content);
     }
 
     public function testNetBankingPaymentCapture()
