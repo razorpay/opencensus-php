@@ -49,43 +49,10 @@ class HdfcGatewayMprTest extends TestCase
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
 
         // Reconcile settlements
-        $this->reconcileSettlements($setlReconciliationFile);
-    }
+        $data = $this->reconcileSettlements($setlReconciliationFile);
 
-    protected function mockSlack()
-    {
-        $slackPretend = $this->config->get('slack.pretend');
-
-        if ($slackPretend === false)
-        {
-            return;
-        }
-
-        $slack = Mockery::mock('Services\Slack');
-
-        $this->app->instance('slack', $slack);
-
-        $slack->shouldReceive('send')
-              ->times(3)
-              ->with(Mockery::type('string'), '#settlements', 'settlements');
-    }
-
-    protected function mockDashboardRequest()
-    {
-        $config = $this->config->get('applications.dashboard');
-
-        if ($config['pretend'] === false)
-        {
-            return;
-        }
-
-        $dashboard = Mockery::mock('Dashboard\DashboardServiceProvider');
-
-        $this->app->instance('dashboard', $dashboard);
-
-        $dashboard->shouldReceive('queueRecord')
-              ->times(1)
-              ->with('settlement', Mockery::type('Models\\Base\\PublicCollection'));
+        // Generate settlement return file
+        $this->generateSetlReturnFile($data);
     }
 
     protected function reconcileSettlements($setlReconciliationFile)
@@ -102,6 +69,8 @@ class HdfcGatewayMprTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->unlinkFile($setlReconciliationFile);
+
+        return $content;
     }
 
     protected function generateSettlements($txns)
@@ -141,6 +110,28 @@ class HdfcGatewayMprTest extends TestCase
         $this->unlinkFile($setlFile);
 
         return $content['setlReconciliationFile'];
+    }
+
+    protected function generateSetlReturnFile($setlData)
+    {
+        $items = $setlData['items'];
+
+        $content = [];
+
+        foreach ($items as $item)
+        {
+            $content[] = [
+                'id' => $item['id'],
+                'refer_utr' => '1'
+            ];
+        }
+
+        $request = [
+            'url' => '/settlements/return/generate',
+            'content' => $content,
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
     }
 
     protected function matchTransactions($payments)
@@ -237,18 +228,6 @@ class HdfcGatewayMprTest extends TestCase
         $this->unlinkFile($mprFile);
     }
 
-    public function startTest($testDataToReplace = array())
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
-
-        $testData = $this->testData[$name];
-
-        $this->replaceValuesRecursively($testData, $testDataToReplace);
-
-        return $this->runRequestResponseFlow($testData);
-    }
-
     protected function unlinkFile($file)
     {
          $this->assertTrue(
@@ -269,5 +248,41 @@ class HdfcGatewayMprTest extends TestCase
                                 true);
 
         return $uploadedFile;
+    }
+
+    protected function mockSlack()
+    {
+        $slackPretend = $this->config->get('slack.pretend');
+
+        if ($slackPretend === false)
+        {
+            return;
+        }
+
+        $slack = Mockery::mock('Services\Slack');
+
+        $this->app->instance('slack', $slack);
+
+        $slack->shouldReceive('send')
+              ->times(3)
+              ->with(Mockery::type('string'), '#settlements', 'settlements');
+    }
+
+    protected function mockDashboardRequest()
+    {
+        $config = $this->config->get('applications.dashboard');
+
+        if ($config['pretend'] === false)
+        {
+            return;
+        }
+
+        $dashboard = Mockery::mock('Dashboard\DashboardServiceProvider');
+
+        $this->app->instance('dashboard', $dashboard);
+
+        $dashboard->shouldReceive('queueRecord')
+              ->times(1)
+              ->with('settlement', Mockery::type('Models\\Base\\PublicCollection'));
     }
 }
