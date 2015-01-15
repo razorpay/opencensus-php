@@ -205,4 +205,32 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
         ],
     ],
+
+    'testDescriptionMissing' => [
+        'request' => [
+            'method' => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'authorized',
+                'description' => null
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testNotesMissing' => [
+        'request' => [
+            'method' => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'authorized',
+                'notes' => array(),
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

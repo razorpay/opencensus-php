@@ -17,10 +17,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity' => 'payment',
-                'amount' => 50000,
                 'status' => 'authorized',
-                'refund_status' => null,
             ]
         ],
         'jsonp' => true
@@ -304,20 +301,6 @@ return [
         ],
     ],
 
-    'testDescriptionMissing' => [
-        'request' => [
-            'content' => [
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-                'description' => null
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
     'testDescriptionAsArray' => [
         'request' => [
             'content' => [
@@ -353,20 +336,6 @@ return [
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
-        ],
-    ],
-
-    'testNotesMissing' => [
-        'request' => [
-            'content' => [
-            ],
-        ],
-        'response' => [
-            'content' => [
-            'status' => 'authorized',
-            'notes' => array(),
-            ],
-            'status_code' => 200,
         ],
     ],
 

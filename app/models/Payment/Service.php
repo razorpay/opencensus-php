@@ -35,7 +35,13 @@ class Service extends Base\Service
         // if it's a payment model
         //
         if ($data instanceof Payment\Entity)
-            $data = $data->toArrayPublic();
+        {
+            // This is a payment instance
+            $payment = $data;
+
+            // Return array with fields after authorized
+            $data = ['id' => $payment->getPublicId(), 'status' => $payment->getStatus()];
+        }
 
         return $data;
     }

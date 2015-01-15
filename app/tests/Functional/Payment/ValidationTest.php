@@ -77,6 +77,40 @@ class PaymentValidationTest extends TestCase
         }
     }
 
+    public function testDescriptionMissing()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['description']);
+
+        $payment = $this->doAuthPayment($payment);
+
+        $id = $payment['id'];
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $id;
+
+        $this->startTest();
+    }
+
+    public function testNotesMissing()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['notes']);
+
+        $payment = $this->doAuthPayment($payment);
+
+        $id = $payment['id'];
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $id;
+
+        $this->startTest();
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

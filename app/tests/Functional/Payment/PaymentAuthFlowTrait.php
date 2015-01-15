@@ -28,11 +28,13 @@ trait PaymentAuthFlowTrait
         return $payment;
     }
 
-    protected function defaultAuthPayment()
+    protected function defaultAuthPayment(array $payment = array())
     {
-        $payment = $this->getDefaultPaymentArray();
+        $defaultPayment = $this->getDefaultPaymentArray();
 
-        return $this->doAuthPayment($payment);
+        $payment = array_merge($defaultPayment, $payment);
+
+        return array_merge($payment, $this->doAuthPayment($payment));
     }
 
     protected function doAuthPayment($payment)
@@ -50,10 +52,7 @@ trait PaymentAuthFlowTrait
 
         $content = json_decode($content, true);
 
-        $this->assertArrayHasKey('amount', $content);
-        $this->assertEquals($payment['amount'], $content['amount']);
-        $this->assertArrayHasKey('status', $content);
-        $this->assertEquals('authorized', $content['status']);
+        $this->assertArrayHasKey('id', $content);
 
         return $content;
     }

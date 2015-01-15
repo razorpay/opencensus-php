@@ -37,7 +37,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::AMOUNT,
-        self::STATUS);
+        self::STATUS,
+        self::CREATED_AT);
 
     public function merchant()
     {
