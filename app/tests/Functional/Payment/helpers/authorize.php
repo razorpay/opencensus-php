@@ -106,32 +106,6 @@ return [
         ],
     ],
 
-    'testContactWithDashAndBracket' => [
-        'request' => [
-            'content' => [
-                'contact' => '+1234-(456)-(789)',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized'
-            ],
-        ],
-    ],
-
-    'testContactWithPlusAndNumbers' => [
-        'request' => [
-            'content' => [
-                'contact' => '+1234-(456)-(789)',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized'
-            ],
-        ],
-    ],
-
     'testNonInrCurrency' => [
         'request' => [
             'content' => [

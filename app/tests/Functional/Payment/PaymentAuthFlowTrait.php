@@ -11,6 +11,41 @@ trait PaymentAuthFlowTrait
 {
     use PaymentCallbackTrait;
 
+    protected function doAuthAndGetPayment($paymentRequest, $paymentResponse = array())
+    {
+        $payment = $this->doAuthPayment($paymentRequest);
+
+        $this->assertArrayHasKey('id', $payment);
+        $id = $payment['id'];
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $func = $trace[1]['function'];
+
+        return $this->getAndMatchPayment($id, $paymentResponse);
+    }
+
+    protected function getAndMatchPayment($id, $paymentResponse = array())
+    {
+        $testData['request']['url'] = '/payments/'.$id;
+        $testData['request']['method'] = 'GET';
+
+        $defaults = array(
+            'id'                => $id,
+            'status'            => 'authorized',
+            'refund_status'     => null,
+            'amount_refunded'   => 0,
+            'error_code'        => null,
+            'error_description' => null,
+            'currency'          => 'INR',
+            'entity'            => 'payment');
+
+        $payment = array_merge($defaults, $paymentResponse);
+        $testData['response']['content'] = $payment;
+
+        $this->ba->privateAuth();
+        return $this->runRequestResponseFlow($testData);
+    }
+
     protected function createAuthorizedPaymentEntity()
     {
         $payment = $this->getDefaultPaymentEntityArray();
@@ -93,7 +128,7 @@ trait PaymentAuthFlowTrait
             'content' => $content);
 
         $refund = $this->makeRequestAndGetContent($request);
-//s($refund);
+
         $this->assertEquals('refund', $refund['entity']);
 
         if ($amount !== null)

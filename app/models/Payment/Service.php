@@ -40,7 +40,7 @@ class Service extends Base\Service
             $payment = $data;
 
             // Return array with fields after authorized
-            $data = ['id' => $payment->getPublicId(), 'status' => $payment->getStatus()];
+            $data = ['id' => $payment->getPublicId()];
         }
 
         return $data;

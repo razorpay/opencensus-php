@@ -54,22 +54,6 @@ return [
         ],
     ],
 
-    'testCardNumberWithSpaces' => [
-        'request' => [
-            'content' => [
-                'card' => [
-                    'number' => '40 1 2001 0384 43 33 5',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
     'testLongCardNumber' => [
         'request' => [
             'content' => [
@@ -203,34 +187,6 @@ return [
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
-        ],
-    ],
-
-    'testDescriptionMissing' => [
-        'request' => [
-            'method' => 'GET',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-                'description' => null
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
-    'testNotesMissing' => [
-        'request' => [
-            'method' => 'GET',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-                'notes' => array(),
-            ],
-            'status_code' => 200,
         ],
     ],
 ];

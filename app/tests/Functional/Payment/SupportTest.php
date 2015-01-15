@@ -42,9 +42,7 @@ class SupportTest extends TestCase
                 ],
             ],
             'response' => [
-                'content' => [
-                    'status' => 'authorized',
-                ],
+                'content' => [],
             ]
         );
 

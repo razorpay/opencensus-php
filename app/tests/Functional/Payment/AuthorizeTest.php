@@ -54,16 +54,6 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
-    public function testContactWithDashAndBracket()
-    {
-        $this->startTest();
-    }
-
-    public function testContactWithPlusAndNumbers()
-    {
-        $this->startTest();
-    }
-
     public function testNonInrCurrency()
     {
         $this->startTest();

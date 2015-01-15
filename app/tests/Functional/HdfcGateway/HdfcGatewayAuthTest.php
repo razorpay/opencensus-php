@@ -36,7 +36,11 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testCreditCardSuccess()
     {
-        $this->startTest();
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['notes']);
+
+        $payment = $this->doAuthAndGetPayment($payment);
     }
 
     public function testCreditCardAuthNotAvailable1()
@@ -46,7 +50,7 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testCreditCardAuthNotAvailable2()
     {
-        $this->startTest([3]);
+        $this->startTest();
     }
 
     public function testSignatureFailure1()
@@ -61,7 +65,7 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testDebitCardSuccess1()
     {
-        $this->startTest([6]);
+        $this->startTest();
     }
 
     public function testDebitCardSuccess2()
