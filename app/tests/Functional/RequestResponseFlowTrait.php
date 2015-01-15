@@ -41,18 +41,8 @@ trait RequestResponseFlowTrait
         return $this->processAndAssertResponseData($data, $response);
     }
 
-    protected function processJsonIfJsonp($data, & $content)
+    protected function processJsonp($content, $callback)
     {
-        if ((isset($data['jsonp']) === false) or
-            ($data['jsonp'] === false))
-        {
-            return;
-        }
-
-        $this->assertArrayHasKey('callback', $data['request']['content'], 'Please define callback param for jsonp');
-
-        $callback = $data['request']['content']['callback'];
-
         $start = '/**/'.$callback.'(';
         $end = ');';
 
@@ -108,7 +98,19 @@ trait RequestResponseFlowTrait
 
     protected function processAndAssertResponseData($data, $response)
     {
-        $actualContent = $this->getContentFromResponse($data, $response);
+        $callback = null;
+
+        if ((isset($data['jsonp']) === true) and
+            ($data['jsonp'] === true))
+        {
+            $this->assertArrayHasKey(
+                'callback',
+                $data['request']['content'], 'Please define callback param for jsonp');
+
+            $callback = $data['request']['content']['callback'];
+        }
+
+        $actualContent = $this->getJsonContentFromResponse($response, $callback);
 
         $expectedContent = $data['response']['content'];
 //s($actualContent);
@@ -120,15 +122,25 @@ trait RequestResponseFlowTrait
         return $actualContent;
     }
 
-    protected function getContentFromResponse($data, $response)
+    protected function getJsonContentFromResponse($response, $callback = null)
     {
         $content = $response->getContent();
 
-        $this->processJsonIfJsonp($data, $content);
+        if ($callback !== null)
+        {
+            $content = $this->processJsonp($content, $callback);
+        }
 
         $this->assertJson($content);
 
-        return json_decode($content, true);
+        $content = json_decode($content, true);
+
+        if ($callback !== null)
+        {
+            $this->assertArrayHasKey('http_status_code', $content);
+        }
+
+        return $content;
     }
 
     protected function processAndAssertStatusCode($data, $response)
@@ -187,11 +199,11 @@ trait RequestResponseFlowTrait
         return $response;
     }
 
-    protected function makeRequestAndGetContent($request)
+    protected function makeRequestAndGetContent($request, $callback = null)
     {
-        $response = $this->makeRequest($request);
+        $response = $this->makeRequest($request, $callback);
 
-        return $this->getJsonContent($response);
+        return $this->getJsonContentFromResponse($response, $callback);
     }
 
     public function getJsonContent($response)

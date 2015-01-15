@@ -17,10 +17,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity' => 'payment',
-                'amount' => 50000,
-                'status' => 'authorized',
-                'refund_status' => null,
+                'http_status_code' => 200
             ]
         ],
         'jsonp' => true
@@ -106,32 +103,6 @@ return [
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS,
-        ],
-    ],
-
-    'testContactWithDashAndBracket' => [
-        'request' => [
-            'content' => [
-                'contact' => '+1234-(456)-(789)',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized'
-            ],
-        ],
-    ],
-
-    'testContactWithPlusAndNumbers' => [
-        'request' => [
-            'content' => [
-                'contact' => '+1234-(456)-(789)',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized'
-            ],
         ],
     ],
 
@@ -304,20 +275,6 @@ return [
         ],
     ],
 
-    'testDescriptionMissing' => [
-        'request' => [
-            'content' => [
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-                'description' => null
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
     'testDescriptionAsArray' => [
         'request' => [
             'content' => [
@@ -353,20 +310,6 @@ return [
         'exception' => [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
-        ],
-    ],
-
-    'testNotesMissing' => [
-        'request' => [
-            'content' => [
-            ],
-        ],
-        'response' => [
-            'content' => [
-            'status' => 'authorized',
-            'notes' => array(),
-            ],
-            'status_code' => 200,
         ],
     ],
 

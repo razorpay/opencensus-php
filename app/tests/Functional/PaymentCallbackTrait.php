@@ -59,12 +59,7 @@ trait PaymentCallbackTrait
         return $response;
     }
 
-    protected function extractAndSubmitForm($content)
-    {
-        ;
-    }
-
-    protected function makeRequest($request)
+    protected function makeRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);
 
@@ -72,7 +67,7 @@ trait PaymentCallbackTrait
 
         $response = $this->makeRequestParent($request);
 
-        $response = $this->runPaymentCallbackFlow($response);
+        $response = $this->runPaymentCallbackFlow($response, $callback);
 
         return $response;
     }

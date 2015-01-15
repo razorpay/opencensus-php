@@ -311,6 +311,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::METHOD);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
 // ----------------------- Getters Ends-----------------------------------------
 
     public function toArrayWithCard()

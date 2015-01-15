@@ -36,6 +36,7 @@ class AuthorizeTest extends TestCase
     public function testJsonpPayment()
     {
         $content = $this->startTest();
+        $this->assertArrayHasKey('id', $content);
     }
 
     public function testEmailMissing()
@@ -50,16 +51,6 @@ class AuthorizeTest extends TestCase
     }
 
     public function testContactTooLong()
-    {
-        $this->startTest();
-    }
-
-    public function testContactWithDashAndBracket()
-    {
-        $this->startTest();
-    }
-
-    public function testContactWithPlusAndNumbers()
     {
         $this->startTest();
     }
@@ -107,13 +98,6 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
-    public function testDescriptionMissing()
-    {
-        unset($this->payment['description']);
-
-        $this->startTest();
-    }
-
     public function testDescriptionAsArray()
     {
         $testData = & $this->testData[__FUNCTION__];
@@ -130,13 +114,6 @@ class AuthorizeTest extends TestCase
         $largeText = implode(',', range(1,1000,1));
 
         $testData['request']['content']['description'] = $largeText;
-
-        $this->startTest();
-    }
-
-    public function testNotesMissing()
-    {
-        unset($this->payment['notes']);
 
         $this->startTest();
     }

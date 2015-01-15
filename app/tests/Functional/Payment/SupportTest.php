@@ -42,9 +42,7 @@ class SupportTest extends TestCase
                 ],
             ],
             'response' => [
-                'content' => [
-                    'status' => 'authorized',
-                ],
+                'content' => [],
             ]
         );
 
@@ -53,10 +51,11 @@ class SupportTest extends TestCase
         $payment = $this->runRequestResponseFlow($testData);
 
         // get its payment id
+        $this->assertArrayHasKey('id', $payment);
         $id = $payment['id'];
 
         // get amount
-        $amount = $payment['amount'];
+        $amount = '50000';
 
         $this->ba->privateAuth();
         $this->capture($id, $amount);

@@ -16,7 +16,12 @@ class HdfcGatewayAuthTest extends TestCase
 {
     use PaymentAuthFlowTrait;
 
-    protected $testData = array();
+    protected $successDebitNumbers = array(
+        '4012001037141112',
+        '4005559876540',
+        '4012001037167778',
+        '4012001037490014',
+        '4012001037141112');
 
     public function setUp()
     {
@@ -36,7 +41,11 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testCreditCardSuccess()
     {
-        $this->startTest();
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4012001038443335';
+
+        $payment = $this->doAuthAndGetPayment($payment);
     }
 
     public function testCreditCardAuthNotAvailable1()
@@ -46,7 +55,7 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testCreditCardAuthNotAvailable2()
     {
-        $this->startTest([3]);
+        $this->startTest();
     }
 
     public function testSignatureFailure1()
@@ -59,44 +68,15 @@ class HdfcGatewayAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testDebitCardSuccess1()
+    public function testDebitCardSuccess()
     {
-        $this->startTest([6]);
-    }
+        $payment = $this->getDefaultPaymentArray();
 
-    public function testDebitCardSuccess2()
-    {
-        $this->startTest();
-    }
-
-    public function testDebitCardSuccess3()
-    {
-        $this->startTest();
-    }
-
-    public function testParesNotSuccess()
-    {
-        $this->startTest();
-    }
-
-    public function testDebitCardAuthNotAvailable1()
-    {
-        $this->startTest();
-    }
-
-    public function testDebitCardAuthNotAvailable2()
-    {
-        $this->startTest();
-    }
-
-    public function testDebitCardSuccess4()
-    {
-        $this->startTest();
-    }
-
-    public function testDebitCardSuccess5()
-    {
-        $this->startTest();
+        foreach ($this->successDebitNumbers as $number)
+        {
+            $payment['card']['number'] = '4012001037141112';
+            $this->doAuthAndGetPayment($payment);
+        }
     }
 
     public function testMockOnLiveMode()

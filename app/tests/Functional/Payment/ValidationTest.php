@@ -58,7 +58,11 @@ class PaymentValidationTest extends TestCase
 
     public function testCardNumberWithSpaces()
     {
-        $this->startTest();
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '40 1 2001 0384 43 33 5';
+
+        $payment = $this->doAuthAndGetPayment($payment);
     }
 
     public function testUnsupportedCardNetworks()
@@ -75,6 +79,35 @@ class PaymentValidationTest extends TestCase
             $this->testData[__FUNCTION__]['request']['content']['card']['number'] = $number;
             $this->startTest();
         }
+    }
+
+    public function testDescriptionMissing()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['description']);
+
+        $payment = $this->doAuthAndGetPayment($payment);
+    }
+
+    public function testNotesMissing()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['notes']);
+
+        $payment = $this->doAuthAndGetPayment($payment);
+    }
+
+    public function testContactWithDashAndBracket()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['contact'] = '+1234-(456)-(789)';
+
+        $response['contact'] = '+1234456789';
+
+        $payment = $this->doAuthAndGetPayment($payment, $response);
     }
 
     public function startTest()

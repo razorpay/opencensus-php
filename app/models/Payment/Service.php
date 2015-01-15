@@ -35,7 +35,13 @@ class Service extends Base\Service
         // if it's a payment model
         //
         if ($data instanceof Payment\Entity)
-            $data = $data->toArrayPublic();
+        {
+            // This is a payment instance
+            $payment = $data;
+
+            // Return array with fields after authorized
+            $data = ['id' => $payment->getPublicId()];
+        }
 
         return $data;
     }
@@ -120,7 +126,7 @@ class Service extends Base\Service
     {
         $payment = $this->processor()->callback($id, $input);
 
-        return $payment->toArrayPublic();
+        return ['id' => $payment->getPublicId()];
     }
 
     public function retrieveMultiple(array $input)

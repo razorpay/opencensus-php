@@ -11,10 +11,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity' => 'payment',
-                'amount' => 5000,
-                'status' => 'authorized',
-                'refund_status' => null,
             ]
         ],
     ],
