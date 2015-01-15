@@ -126,7 +126,7 @@ class Service extends Base\Service
     {
         $payment = $this->processor()->callback($id, $input);
 
-        return $payment->toArrayPublic();
+        return ['id' => $payment->getPublicId()];
     }
 
     public function retrieveMultiple(array $input)

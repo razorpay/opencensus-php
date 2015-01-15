@@ -13,9 +13,8 @@ trait PaymentAuthFlowTrait
 
     protected function doAuthAndGetPayment($paymentRequest, $paymentResponse = array())
     {
-        $payment = $this->doAuthPayment($paymentRequest);
+        $payment = $this->doJsonpAuthPayment($paymentRequest);
 
-        $this->assertArrayHasKey('id', $payment);
         $id = $payment['id'];
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -51,6 +50,7 @@ trait PaymentAuthFlowTrait
         $payment = $this->getDefaultPaymentEntityArray();
         $payment = $this->fixtures->createEntity('payment', $payment);
         $payment = $payment->toArrayPublic();
+
         return $payment;
     }
 
@@ -72,6 +72,35 @@ trait PaymentAuthFlowTrait
         return array_merge($payment, $this->doAuthPayment($payment));
     }
 
+    protected function doJsonpAuthPayment($payment)
+    {
+        $content = [
+            'callback' => 'abcdefghijkl',
+            '_' => '',
+        ];
+
+        $content = array_merge($content, $payment);
+
+        $request = array(
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => $content);
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request, $content['callback']);
+
+        $this->assertArrayHasKey('id', $content);
+
+        $this->assertLessThanOrEqual(2, count($content));
+        if (count($content) === 2)
+        {
+            $this->assertEquals(200, $content['http_status_code']);
+        }
+
+        return $content;
+    }
+
     protected function doAuthPayment($payment)
     {
         $request = array(
@@ -81,13 +110,10 @@ trait PaymentAuthFlowTrait
 
         $this->ba->publicAuth();
 
-        $response = $this->makeRequest($request);
-
-        $content = $response->getContent();
-
-        $content = json_decode($content, true);
+        $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('id', $content);
+        $this->assertEquals(1, count($content));
 
         return $content;
     }
@@ -139,14 +165,20 @@ trait PaymentAuthFlowTrait
         return $refund;
     }
 
-    protected function runPaymentCallbackFlow($response)
+    protected function runPaymentCallbackFlow($response, &$callback = null)
     {
+        $tds = $this->is3dSecure($response, $callback);
+
         $content = $response->getContent();
 
-        if ((json_decode($content) === null) and
-            (get_class($response) === 'Illuminate\Http\Response') and
-            ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
-            ($response->getStatusCode() === 200))
+        if ($callback and $tds)
+        {
+            $content = $this->getJsonContentFromResponse($response, $callback);
+            $callback = null;
+            $content = $this->createHtmlFormAfterJsonpRequest($content);
+        }
+
+        if ($tds)
         {
             //
             // Card has 3d-secure enabled
@@ -159,6 +191,63 @@ trait PaymentAuthFlowTrait
         }
 
         return $response;
+    }
+
+    protected function is3dSecure($response, $callback = null)
+    {
+        $content = $response->getContent();
+
+        if ($callback === null)
+        {
+            $tds = ((json_decode($content) === null) and
+                    (get_class($response) === 'Illuminate\Http\Response') and
+                    ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
+                    ($response->getStatusCode() === 200));
+        }
+        else
+        {
+            $tds = ((json_decode($content) === null) and
+                    (get_class($response) === 'Illuminate\Http\JsonResponse') and
+                    ($response->headers->get('content-type') === 'text/javascript; charset=UTF-8') and
+                    ($response->getStatusCode() === 200));
+
+            if ($tds)
+            {
+                $content = $this->getJsonContentFromResponse($response, $callback);
+
+                $tds = ((isset($content['http_status_code'])) and
+                        ($content['http_status_code'] === 200) and
+                        (isset($content['data'])));
+            }
+        }
+
+        return $tds;
+    }
+
+    protected function createHtmlFormAfterJsonpRequest($content)
+    {
+        $data = $content['data'];
+
+        $text = '
+            <!doctype html>
+            <html lang="en">
+                <body>
+                <form name="form1" action="'.$data['url'].'" method="post">
+                    <input type="text" name="PaReq" value="'.$data['PAReq'].'">
+                    <br />
+                    <input type="text" name="MD" value="'.$data['paymentid'].'">
+                    <br />
+                    <input type="text" name="TermUrl" value="'.$content['callbackUrl'].'">
+                    <br />
+                    <input type="submit" value="Submit" >
+                </form>
+                <br>
+                Submit within 30 secs max!
+                </body>
+            </html>
+            ';
+
+        return $text;
     }
 
     protected function runDebitCardAuthFlow($content, $uri)

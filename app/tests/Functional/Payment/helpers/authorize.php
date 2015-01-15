@@ -17,7 +17,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'status' => 'authorized',
+                'http_status_code' => 200
             ]
         ],
         'jsonp' => true

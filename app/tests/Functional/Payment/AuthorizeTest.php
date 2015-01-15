@@ -36,6 +36,7 @@ class AuthorizeTest extends TestCase
     public function testJsonpPayment()
     {
         $content = $this->startTest();
+        $this->assertArrayHasKey('id', $content);
     }
 
     public function testEmailMissing()
