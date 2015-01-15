@@ -16,5 +16,4 @@ class Table
     const SETTLEMENT        = 'settlements';
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
-    const UNRECOGNIZED_CARD = 'unrecognized_cards';
 }

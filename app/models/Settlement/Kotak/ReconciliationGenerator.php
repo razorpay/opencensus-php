@@ -58,7 +58,7 @@ class ReconciliationGenerator
         {
             $utr = random_integer(10);
             $newFields = array(
-                'Success'           => 'C',
+                'Success'           => 'P',
                 'UTR'               => 'KKBKH1' . $utr,
                 'Failure Reason'    => '',
                 'Date'              => $date);

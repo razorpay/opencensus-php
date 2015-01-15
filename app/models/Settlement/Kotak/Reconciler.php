@@ -3,6 +3,7 @@
 namespace Models\Settlement\Kotak;
 
 use EE\Exception;
+use Models\Base;
 use Models\Merchant;
 use Models\Transaction;
 use Models\Settlement;
@@ -32,7 +33,7 @@ class Reconciler
 
         $data = $this->parseReconciliationFile($reconcileFile);
 
-        $this->reconcile($data);
+        return $this->reconcile($data);
     }
 
     protected function parseReconciliationFile($file)
@@ -67,12 +68,18 @@ class Reconciler
 
     protected function reconcile($data)
     {
+        $collection = new Base\PublicCollection;
+
         foreach ($data as $row)
         {
             $setl = $this->loadSettlementAndRelations($row);
 
-            $this->processSettlementStatus($setl, $row);
+            $setl = $this->processSettlementStatus($setl, $row);
+
+            $collection->push($setl);
         }
+
+        return $collection;
     }
 
     protected function processSettlementStatus($setl, $row)
@@ -113,6 +120,8 @@ class Reconciler
 
         $this->setlRepo->save($setl);
         $this->txnRepo->save($setl->transaction);
+
+        return $setl;
     }
 
     protected function loadSettlementAndRelations($row)
