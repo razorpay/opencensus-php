@@ -3,19 +3,20 @@
 namespace EE\Error;
 
 use EE\Exception\InvalidArgumentException;
+use Illuminate\Support;
 
-class Error
+class Error extends Support\Fluent
 {
-    const INTERNAL_ERROR_CODE = 'internal_error_code';
-    const INTERNAL_ERROR_DESC = 'internal_error_desc';
-    const PUBLIC_ERROR_CODE = 'code';
-    const HTTP_STATUS_CODE = 'http_status_code';
-    const DESCRIPTION = 'description';
-    const FIELD = 'field';
-    const ERROR_CLASS = 'class';
-    const DATA = 'data';
-    const GATEWAY_ERROR_CODE = 'gateway_error_code';
-    const GATEWAY_ERROR_DESC = 'gateway_error_desc';
+    const INTERNAL_ERROR_CODE   = 'internal_error_code';
+    const INTERNAL_ERROR_DESC   = 'internal_error_desc';
+    const PUBLIC_ERROR_CODE     = 'code';
+    const HTTP_STATUS_CODE      = 'http_status_code';
+    const DESCRIPTION           = 'description';
+    const FIELD                 = 'field';
+    const ERROR_CLASS           = 'class';
+    const DATA                  = 'data';
+    const GATEWAY_ERROR_CODE    = 'gateway_error_code';
+    const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
 
     protected $attributes = array();
 
@@ -158,6 +159,16 @@ class Error
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getClass()
+    {
+        return $this->getAttribute(self::ERROR_CLASS);
+    }
+
+    public function isGatewayError()
+    {
+        return ($this->getClass() === ErrorClass::GATEWAY);
     }
 
     public function getPublicErrorCode()
