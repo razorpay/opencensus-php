@@ -135,6 +135,10 @@ class ApiResponse
 
         self::setSameOriginInHeaders($response);
 
+        // This statement is needed for keeping tests functional since
+        // we are using a static var here @todo: change this!
+        self::$jsonp = null;
+
         return $response;
     }
 
