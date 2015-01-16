@@ -51,8 +51,8 @@ class SupportTest extends TestCase
         $payment = $this->runRequestResponseFlow($testData);
 
         // get its payment id
-        $this->assertArrayHasKey('id', $payment);
-        $id = $payment['id'];
+        $this->assertArrayHasKey('razorpay_payment_id', $payment);
+        $id = $payment['razorpay_payment_id'];
 
         // get amount
         $amount = '50000';

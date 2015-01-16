@@ -2,20 +2,21 @@
 
 namespace EE\Error;
 
-use EE\Exception\InvalidArgumentException;
+use EE\Exception;
+use Illuminate\Support;
 
-class Error
+class Error extends Support\Fluent
 {
-    const INTERNAL_ERROR_CODE = 'internal_error_code';
-    const INTERNAL_ERROR_DESC = 'internal_error_desc';
-    const PUBLIC_ERROR_CODE = 'code';
-    const HTTP_STATUS_CODE = 'http_status_code';
-    const DESCRIPTION = 'description';
-    const FIELD = 'field';
-    const ERROR_CLASS = 'class';
-    const DATA = 'data';
-    const GATEWAY_ERROR_CODE = 'gateway_error_code';
-    const GATEWAY_ERROR_DESC = 'gateway_error_desc';
+    const INTERNAL_ERROR_CODE   = 'internal_error_code';
+    const INTERNAL_ERROR_DESC   = 'internal_error_desc';
+    const PUBLIC_ERROR_CODE     = 'code';
+    const HTTP_STATUS_CODE      = 'http_status_code';
+    const DESCRIPTION           = 'description';
+    const FIELD                 = 'field';
+    const ERROR_CLASS           = 'class';
+    const DATA                  = 'data';
+    const GATEWAY_ERROR_CODE    = 'gateway_error_code';
+    const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
 
     protected $attributes = array();
 
@@ -79,6 +80,15 @@ class Error
 
     protected function setDesc(/* string */ $desc = null)
     {
+        //
+        // We get description in this order
+        // * From function argument
+        // * From description of internal error code
+        // * From description of public error code
+        //
+        // If all 3 above are null, then throw exception
+        //
+
         if ($desc === null)
         {
             $code = $this->getInternalErrorCode();
@@ -92,14 +102,14 @@ class Error
                 $desc = $this->getDescriptionFromErrorCode($code);
 
                 if ($desc === null)
-                    throw new InvalidArgumentException(
+                    throw new Exception\InvalidArgumentException(
                         'Description not provided for code: '. $code);
             }
         }
 
         if (! is_string($desc))
         {
-            throw new InvalidArgumentException('desc should be string');
+            throw new Exception\InvalidArgumentException('desc should be string');
         }
 
         $this->setAttribute(self::DESCRIPTION, $desc);
@@ -141,7 +151,7 @@ class Error
                 break;
 
             default:
-                throw new InvalidArgumentException('Not a valid class');
+                throw new Exception\InvalidArgumentException('Not a valid class');
         }
     }
 
@@ -158,6 +168,16 @@ class Error
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getClass()
+    {
+        return $this->getAttribute(self::ERROR_CLASS);
+    }
+
+    public function isGatewayError()
+    {
+        return ($this->getClass() === ErrorClass::GATEWAY);
     }
 
     public function getPublicErrorCode()
@@ -214,6 +234,7 @@ class Error
     {
         return $this->attributes;
     }
+
     public function toPublicArray()
     {
         $array = array(
@@ -261,11 +282,11 @@ class Error
     {
         if ($code === null)
         {
-            throw new InvalidArgumentException('null provided for errorcode');
+            throw new Exception\InvalidArgumentException('null provided for errorcode');
         }
         if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
         {
-            throw new InvalidArgumentException('ErrorCode: ' . $code . ' is not defined');
+            throw new Exception\InvalidArgumentException('ErrorCode: ' . $code . ' is not defined');
         }
     }
 
@@ -273,7 +294,7 @@ class Error
     {
         if (defined(__NAMESPACE__.'\ErrorClass::'.$class) === false)
         {
-            throw new InvalidArgumentException($class . ' is not a valid class');
+            throw new Exception\InvalidArgumentException($class . ' is not a valid class');
         }
     }
 }

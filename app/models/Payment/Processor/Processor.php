@@ -242,8 +242,15 @@ class Processor
                         $this->payment->toArrayTraceRelevant(),
                         ['error' => $error->getAttributes()]);
 
+        $level = 'info';
+
+        if ($error->isGatewayError())
+        {
+            $level = 'critical';
+        }
+
         // Tracing
-        $this->trace->error(
+        $this->trace->$level(
             $traceCode,
             $traceData);
     }

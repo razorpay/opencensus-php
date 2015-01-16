@@ -42,13 +42,14 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
     public function getServerData()
     {
+        $this->getClientIp();
         $serverData = array(
             'uri'       => $this->request->path(),
             'url'       => $this->request->fullUrl(),
             'method'    => $this->request->method(),
             'ajax'      => $this->request->ajax(),
             'origin'    => $this->request->header('origin'),
-            'client_ip' => $this->request->getClientIp(),
+            'client_ip' => $this->getClientIp(),
             'server_ip' => $this->request->server('SERVER_ADDR'));
 
         $this->unsetUrlForSensitiveUrls($serverData);
@@ -66,5 +67,19 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
                 $server['uri'],
                 $server['url']);
         }
+    }
+
+    protected function getClientIp()
+    {
+        $request = $this->request;
+
+        $clientIp = $request->headers->get('X_FORWARDED_FOR');
+
+        if ($clientIp === null)
+        {
+            $clientIp = $request->getClientIp();
+        }
+
+        return $clientIp;
     }
 }

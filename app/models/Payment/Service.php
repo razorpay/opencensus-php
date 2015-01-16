@@ -40,7 +40,7 @@ class Service extends Base\Service
             $payment = $data;
 
             // Return array with fields after authorized
-            $data = ['id' => $payment->getPublicId()];
+            $data = ['razorpay_payment_id' => $payment->getPublicId()];
         }
 
         return $data;
@@ -126,7 +126,7 @@ class Service extends Base\Service
     {
         $payment = $this->processor()->callback($id, $input);
 
-        return ['id' => $payment->getPublicId()];
+        return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
     public function retrieveMultiple(array $input)
