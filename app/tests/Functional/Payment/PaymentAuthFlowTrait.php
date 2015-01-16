@@ -15,7 +15,7 @@ trait PaymentAuthFlowTrait
     {
         $payment = $this->doJsonpAuthPayment($paymentRequest);
 
-        $id = $payment['id'];
+        $id = $payment['razorpay_payment_id'];
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];
@@ -69,7 +69,10 @@ trait PaymentAuthFlowTrait
 
         $payment = array_merge($defaultPayment, $payment);
 
-        return array_merge($payment, $this->doAuthPayment($payment));
+        $content = $this->doAuthPayment($payment);
+        $id = $content['razorpay_payment_id'];
+
+        return array_merge($payment, ['id' => $id]);
     }
 
     protected function doJsonpAuthPayment($payment)
@@ -90,7 +93,7 @@ trait PaymentAuthFlowTrait
 
         $content = $this->makeRequestAndGetContent($request, $content['callback']);
 
-        $this->assertArrayHasKey('id', $content);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         $this->assertLessThanOrEqual(2, count($content));
         if (count($content) === 2)
@@ -112,7 +115,7 @@ trait PaymentAuthFlowTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('id', $content);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
         $this->assertEquals(1, count($content));
 
         return $content;

@@ -14,13 +14,12 @@ Api::$baseUrl = $baseUrl;
 
 $api = new Api(RZP_KEY_ID, RZP_KEY_SECRET);
 
-if (isset($_POST['id']) === false)
+if (isset($_POST['razorpay_payment_id']) === false)
 {
     die("Payment id not provided");
 }
 
-$id = $_POST['id'];
-$amount = $_POST['amount'];
+$id = $_POST['razorpay_payment_id'];
 
 $payment = $api->payment->fetch($id);
 

@@ -48,17 +48,19 @@ class NetBankingTest extends TestCase
 
         $content = $this->startTest();
 
-        $this->assertArrayHasKey('id', $content);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
     }
 
     public function testNetBankingPaymentCapture()
     {
-        $payment = $this->doNetBankingAuthorize();
+        $content = $this->doNetBankingAuthorize();
+
+        $id = $content['razorpay_payment_id'];
 
         $this->ba->privateAuth();
 
         $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payments/'.$payment['id'].'/capture';
+        $testData['request']['url'] = '/payments/'.$id.'/capture';
 
         $this->runRequestResponseFlow($testData);
     }
