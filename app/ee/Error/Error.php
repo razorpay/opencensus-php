@@ -2,7 +2,7 @@
 
 namespace EE\Error;
 
-use EE\Exception\InvalidArgumentException;
+use EE\Exception;
 use Illuminate\Support;
 
 class Error extends Support\Fluent
@@ -80,6 +80,15 @@ class Error extends Support\Fluent
 
     protected function setDesc(/* string */ $desc = null)
     {
+        //
+        // We get description in this order
+        // * From function argument
+        // * From description of internal error code
+        // * From description of public error code
+        //
+        // If all 3 above are null, then throw exception
+        //
+
         if ($desc === null)
         {
             $code = $this->getInternalErrorCode();
@@ -93,14 +102,14 @@ class Error extends Support\Fluent
                 $desc = $this->getDescriptionFromErrorCode($code);
 
                 if ($desc === null)
-                    throw new InvalidArgumentException(
+                    throw new Exception\InvalidArgumentException(
                         'Description not provided for code: '. $code);
             }
         }
 
         if (! is_string($desc))
         {
-            throw new InvalidArgumentException('desc should be string');
+            throw new Exception\InvalidArgumentException('desc should be string');
         }
 
         $this->setAttribute(self::DESCRIPTION, $desc);
@@ -142,7 +151,7 @@ class Error extends Support\Fluent
                 break;
 
             default:
-                throw new InvalidArgumentException('Not a valid class');
+                throw new Exception\InvalidArgumentException('Not a valid class');
         }
     }
 
@@ -225,6 +234,7 @@ class Error extends Support\Fluent
     {
         return $this->attributes;
     }
+
     public function toPublicArray()
     {
         $array = array(
@@ -272,11 +282,11 @@ class Error extends Support\Fluent
     {
         if ($code === null)
         {
-            throw new InvalidArgumentException('null provided for errorcode');
+            throw new Exception\InvalidArgumentException('null provided for errorcode');
         }
         if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
         {
-            throw new InvalidArgumentException('ErrorCode: ' . $code . ' is not defined');
+            throw new Exception\InvalidArgumentException('ErrorCode: ' . $code . ' is not defined');
         }
     }
 
@@ -284,7 +294,7 @@ class Error extends Support\Fluent
     {
         if (defined(__NAMESPACE__.'\ErrorClass::'.$class) === false)
         {
-            throw new InvalidArgumentException($class . ' is not a valid class');
+            throw new Exception\InvalidArgumentException($class . ' is not a valid class');
         }
     }
 }
