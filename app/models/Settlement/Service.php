@@ -51,29 +51,21 @@ class Service extends Base\Service
 
     public function reconcileSettlements($input)
     {
-        $collection = (new Kotak\Reconciler)->process($input);
-
-        return $collection->toArrayPublic();
+        return (new Kotak\Service)->reconcileSettlements($input);
     }
 
     public function generateSettlementReconciliation($input)
     {
-        $filename = (new Kotak\ReconciliationGenerator)->generateReconcileFile($input);
-
-        return ['setlReconciliationFile' => $filename];
+        return (new Kotak\Service)->generateSettlementReconciliation($input);
     }
 
     public function returnSettlements($input)
     {
-        $data = (new Kotak\ReturnTransactions)->process($input);
-
-        return $data;
+        return (new Kotak\Service)->returnSettlements($input);
     }
 
     public function generateSettlementReturn($input)
     {
-        $filename = (new Kotak\ReturnTransactionsGenerator)->generate($input);
-
-        return ['setlReturnFile' => $filename];
+        return (new Kotak\Service)->generateSettlementReturn($input);
     }
 }
