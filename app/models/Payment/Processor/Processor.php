@@ -242,7 +242,7 @@ class Processor
                         $this->payment->toArrayTraceRelevant(),
                         ['error' => $error->getAttributes()]);
 
-        $level = 'error';
+        $level = 'info';
 
         if ($error->isGatewayError())
         {
