@@ -40,7 +40,7 @@ class ReturnTransactionsGenerator
 
             $data[] = array(
                 'BATCHTIME'         => $batchtime ,
-                'TXN REF NO'        => 'abc',
+                'TXN REF NO'        => $setl->getPublicId(),
                 'SND BRN IFSC'      => 'xyz',
                 'ACCT TYP1'         => '11',
                 'SEND CUST ACNO'    => '12345',

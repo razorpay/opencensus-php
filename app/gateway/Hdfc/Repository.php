@@ -212,7 +212,7 @@ class Repository extends Base\Repository
 
         $attributes = array(
             'trackid'                   => $id,
-            'gateway_payment_id'    => $requestdata['transid'],
+            'gateway_payment_id'        => $requestdata['transid'],
             'amount'                    => $requestdata['amount'],
             'error_code'                => $error['code'],
             'error_text'                => $error['result'],

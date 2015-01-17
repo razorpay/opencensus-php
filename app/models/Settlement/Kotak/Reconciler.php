@@ -103,6 +103,8 @@ class Reconciler
 
             if ($failureReason !== '')
             {
+                $failureReason = 'Reconciliation: ' . $failureReason;
+
                 $setl->setAttribute(Settlement\Entity::FAILURE_REASON, $failureReason);
             }
 
@@ -126,14 +128,12 @@ class Reconciler
 
     protected function loadSettlementAndRelations($row)
     {
-        $merchantId = $row['Payment Details 2'];
-        $merchant = $this->merchantRepo->findOrFail($merchantId);
-
-        $setlId = $row['Payment Details 1'];
-
+        $setlId = $row['Payment_Ref_No.'];
         Settlement\Entity::verifyIdAndStripSign($setlId);
-
         $setl = $this->setlRepo->findOrFail($setlId);
+
+        $merchantId = $row['Payment Details 1'];
+        $merchant = $this->merchantRepo->findOrFail($merchantId);
 
         if ($merchantId !== $setl->getMerchantId())
         {

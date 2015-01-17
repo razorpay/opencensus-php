@@ -84,6 +84,7 @@ class NodalAccount
                 'Client_Code'           => 'NODAL',
                 'Product_Code'          => 'CMSPAY',
                 'Payment_Type'          => 'NEFT',
+                'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => '1209034',
                 'Amount'                => $settlement->getAmount() / 100,
@@ -91,8 +92,7 @@ class NodalAccount
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
                 'IFSC Code'             => $ba->getIfscCode(),
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
-                'Payment Details 1'     => $settlement->getPublicId(),
-                'Payment Details 2'     => $merchant->getPublicId()
+                'Payment Details 1'     => $merchant->getPublicId()
                 );
 
             $values = $this->getAllValues($array);

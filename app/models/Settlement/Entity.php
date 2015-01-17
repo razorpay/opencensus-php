@@ -76,6 +76,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RETURN_UTR, $utr);
     }
 
+    public function setFailureReason($failureReason)
+    {
+        $this->setAttribute(self::FAILURE_REASON, $utr);
+    }
+
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
