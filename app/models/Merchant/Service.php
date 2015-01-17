@@ -40,6 +40,10 @@ class Service extends Base\Service
     {
         $merchant = \Auth::merchant()->user();
 
+        if ($merchant->id === "10000000000000") {
+            return [["Password change forbidden on demo account"], null];
+        }
+
         $error = $merchant->changePassword($input);
 
         if (empty($error))
@@ -180,6 +184,10 @@ class Service extends Base\Service
 
     public function rollKeys(array $input, $mode)
     {
+        if (\Auth::merchant()->user()->id === "10000000000000") {
+            return [["Roll key forbidden on demo account"], null];
+        }
+
         $error = (new Merchant\Validator)->validateInput('key', $input)->messages();
 
         if (empty($error) === false)

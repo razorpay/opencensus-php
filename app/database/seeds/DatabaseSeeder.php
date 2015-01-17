@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
 
         DB::table('merchant_details')->insert(array(
             'merchant_id'   =>  '10000000000000',
+            'locked'        => 1
             )
         );
 
