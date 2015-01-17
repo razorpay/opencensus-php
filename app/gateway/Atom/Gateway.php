@@ -125,7 +125,7 @@ class Gateway extends BaseGateway
             $atom->setSuccess(false);
             $error = true;
             $exception = new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
         else
         {

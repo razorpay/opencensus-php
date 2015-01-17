@@ -16,6 +16,8 @@ class ApiResponse
      */
     public static function httpAuthExpected()
     {
+        self::$jsonp = false;
+
         $response = self::generateResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
@@ -108,9 +110,10 @@ class ApiResponse
     {
         $request = \Request::getFacadeRoot();
 
-        $jsonp = false;
+        $jsonp = null;
 
-        if (self::isJsonpRequired($request->path()))
+        if ((self::$jsonp === null) and
+            (self::isJsonpRequired($request->path())))
         {
             $data['http_status_code'] = $status;
 
@@ -129,6 +132,10 @@ class ApiResponse
         self::stopBrowserCaching($response);
 
         self::setSameOriginInHeaders($response);
+
+        // This statement is needed for keeping tests functional since
+        // we are using a static var here @todo: change this!
+        self::$jsonp = null;
 
         return $response;
     }

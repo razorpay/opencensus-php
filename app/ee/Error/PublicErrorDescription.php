@@ -16,6 +16,9 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PROCESSING_DECLINED =
         'Payment failed due to processing error on gateway';
 
+    const BAD_REQUEST_PAYMENT_FAILED =
+        'Payment failed';
+
     const BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED =
         'The payment has already been processed. Did you press the back button in browser?';
 
