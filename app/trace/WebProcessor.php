@@ -35,14 +35,14 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
         {
             throw new Exception\LogicException('Server data for trace logs not present');
         }
-        $record['extra']['request'] = $this->serverData;
+
+        $record['request'] = $this->serverData;
 
         return $record;
     }
 
     public function getServerData()
     {
-        $this->getClientIp();
         $serverData = array(
             'uri'       => $this->request->path(),
             'url'       => $this->request->fullUrl(),
