@@ -28,7 +28,10 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
           $scope.openNewKey({id: data.data.id, secret:data.data.secret});
         }
         else {
-          $scope.alerts.addAlert('danger', null, true);
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       })
       .error(function(){
@@ -65,7 +68,10 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
           $scope.openNewKey({id: data.data.new.id, secret:data.data.new.secret});
         }
         else {
-          $scope.alerts.addAlert('danger', null, true);
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       })
       .error(function(){

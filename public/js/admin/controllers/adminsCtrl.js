@@ -24,7 +24,7 @@ app.controller('AdminsCtrl', ['$scope', '$http', '$modal', 'admin', 'alertsFacto
       }
       else {
         $scope.alerts.resetAlerts();
-        angular.foreach(data.errors, function(value, key){
+        angular.forEach(data.errors, function(value, key){
           $scope.alerts.addAlert('danger', value);
         });
       }

@@ -4,7 +4,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
   function($scope, $http, $stateParams, $modal, modeFactory, alertsFactory, transformRequestAsFormPost) {
     $scope.getStatusClass = function(status) {
       var mapper = {
-        open: "bg-light",
+        created: "bg-light",
         authorized: "bg-info",
         captured: "bg-success",
         refunded: "bg-warning",
