@@ -12,83 +12,139 @@ class AwsInstance
         'local-ipv4',
         'public-ipv4');
 
-    protected $data = array();
+    protected $data = null;
 
-    protected $relevantData = array();
+    protected $relevantData = null;
 
-    protected $generated = false;
+    protected $loaded = false;
 
     protected $cloud;
 
+    protected $instanceDataFile;
+
     public function __construct()
     {
-        $this->cloud = \Config::get('app.cloud');
+        $app = \App::getFacadeRoot();
 
-        $this->env = \App::environment();
+        $this->cloud = $app['config']->get('app.cloud');
+
+        $this->instanceDataFile = $app['config']->get('trace.instance_data_file');
+
+        $this->env = $app->environment();
     }
 
     public function getInstanceId()
     {
-        if ($this->cloud === false)
-            return null;
-
         return $this->getFullInstanceData()['instance-id'];
     }
 
     public function getInstanceData()
     {
-        if ($this->generated === true)
+        if ($this->relevantData !== null)
+        {
+            return $this->relevantData;
+        }
+
+        return $this->getRelevantInstanceData();
+    }
+
+    public function getFullInstanceData()
+    {
+        if ($this->data !== null)
+        {
+            return $this->data;
+        }
+
+        $data = $this->getInstanceDataFromStorage();
+
+        if ($data !== null)
+        {
+            $this->data = $data;
+            return $this->data;
+        }
+
+        if (($this->cloud === false) or
+            ($this->env !== 'production'))
+        {
+            $data = $this->generateRandomInstanceData();
+        }
+        else
+        {
+            $data = $this->getInstanceDataFromShell();
+        }
+
+        $this->saveInstanceDataToStorage($data);
+
+        $this->data = $data;
+
+        return $this->data;
+    }
+
+    protected function getInstanceDataFromShell()
+    {
+        exec('ec2metadata 2> /dev/null', $data, $status);
+
+        if ($status === 0)
+        {
+            // @todo: trace here
+            return null;
+        }
+
+        foreach ($data as $row)
+        {
+            $pair = explode(': ', $row);
+
+            $key = $pair[0];
+
+            $data[$key] = $pair[1];
+        }
+
+        return $data;
+    }
+
+    protected function saveInstanceDataToStorage($data)
+    {
+        $jsonData = json_encode($data);
+
+        $res = file_put_contents($this->instanceDataFile, $jsonData);
+
+        if ($res === false)
+        {
+            // @todo: trace here
+        }
+    }
+
+    protected function getInstanceDataFromStorage()
+    {
+        if (file_exists($this->instanceDataFile) === false)
+        {
+            return;
+        }
+
+        $jsonData = file_get_contents($this->instanceDataFile);
+
+        if ($jsonData === false)
+        {
+            // @todo: trace here;
+
+            return;
+        }
+
+        return json_decode($jsonData, true);
+    }
+
+    protected function getRelevantInstanceData()
+    {
+        if ($this->relevantData !== null)
         {
             return $this->relevantData;
         }
 
         $data = $this->getFullInstanceData();
 
-        return $this->getRelevantInstanceData($data);
-    }
+        $relevantData = array_intersect_key($data, array_flip($this->attributes));
 
-    public function getFullInstanceData()
-    {
-        if ($this->generated === true)
-        {
-            return $this->data;
-        }
-
-        if (($this->cloud === true) and
-            ($this->env === 'testing'))
-        {
-            return $this->generateRandomInstanceData();
-        }
-
-        exec('ec2metadata 2> /dev/null', $data, $status);
-
-        if ($status === 0)
-            return null;
-
-        foreach ($data as $row)
-        {
-            $pair = explode(': ', $row);
-
-            $this->data[$pair[0]] = $pair[1];
-        }
-
-        $this->generated = true;
-
-        return $this->data;
-    }
-
-    protected function getRelevantInstanceData($data)
-    {
-        if ($data === null)
-            return;
-
-        foreach ($this->attributes as $attribute)
-        {
-            if (array_key_exists($attribute, $data))
-            {
-                $this->relevantData[$attribute] = $data[$attribute];
-            }
-        }
+        $this->relevantData = $relevantData;
 
         return $this->relevantData;
     }

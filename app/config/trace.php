@@ -15,9 +15,9 @@ return array(
         'chrome' => true),
 
     /**
-     * Displays line/file/class/method from which the log call originated 
+     * Displays line/file/class/method from which the log call originated
      */
-    'introspection' => true,
+    'introspection' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -25,5 +25,7 @@ return array(
     |--------------------------------------------------------------------------
     */
 
-    'logpath' => storage_path().'/logs/trace.log'
+    'logpath' => storage_path().'/logs/trace.log',
+
+    'instance_data_file' => storage_path().'/logs/instance.json',
 );
