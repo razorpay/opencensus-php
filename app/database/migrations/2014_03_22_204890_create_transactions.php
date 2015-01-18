@@ -81,6 +81,10 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::CREATED_AT);
             $table->integer(Transaction::UPDATED_AT);
 
+            $table->index(Transaction::ENTITY_ID);
+
+            $table->index(Transaction::TYPE);
+
             $table->index(Transaction::SETTLED_AT);
 
             $table->index(Transaction::SETTLED);
