@@ -1,0 +1,21 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Add Funds
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md addfunds-wrapper" ng-controller="AddfundsCtrl">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Add Funds - {{mode | titlecase}} Mode
+    </div>
+    <div class="text-center m-t m-b">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="text-center m-t m-b">
+      <input type="text" class="form-control m-b" name="description" ng-model="options.description" placeholder="Description" tooltip-placement="right" tooltip="Description" required>
+      <input type="text" class="form-control m-b" name="contact_name" ng-model="options.amount" placeholder="Amount in Paise INR (Integer only, Re 1 as 100)"  tooltip-placement="right" tooltip="Amount in Paise INR (Integer only, Re 1 as 100)" required>
+      <button  class="btn btn-primary btn-rounded btn-add-funds" ng-click="addFunds()">Add Funds</button>
+    </div>
+  </div>
+</div>
