@@ -33,25 +33,18 @@ app.controller('AddfundsCtrl', ['$scope', '$http', 'alertsFactory','user', 'mode
 
     if(window.location.hostname == "betadashboard.razorpay.com") {
       uiLoad.loadScript("https://betacheckout.razorpay.com/v1/checkout.js");
-      $scope.options.hostname = "beta.razorpay.com";
-    }
-    else if(window.location.hostname == "dashboard.razorpay.com") {
-      uiLoad.loadScript("https://checkout.razorpay.com/v1/checkout.js");
     }
     else {
       uiLoad.loadScript("https://checkout.razorpay.com/v1/checkout.js");
-      
-      $http.get('/apihost').success(function(data){
-        var host = data.data.split( '/' );
-        $scope.options.protocol = host[0].substring(0, host[0].length - 1);
-        $scope.options.hostname = host[2];
-      });
-
     }
-    
+
+   $http.get('/apihost').success(function(data){
+      var host = data.data.split( '/' );
+      $scope.options.protocol = host[0].substring(0, host[0].length - 1);
+      $scope.options.hostname = host[2];
+    });    
 
     $scope.addFunds = function() {
-      console.log($scope.options);
       try{
         var rzp1 = new Razorpay($scope.options);
         rzp1.open();
