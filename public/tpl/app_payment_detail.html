@@ -32,7 +32,8 @@
             Status
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.refund_status | titlecase}}</span>
+            <span class="pull-right" ng-if="entity.refund_status">{{entity.refund_status | titlecase}}</span>
+            <span class="pull-right" ng-not-if="entity.refund_status">None</span>
             Refund Status
           </a>
           <a href class="list-group-item">

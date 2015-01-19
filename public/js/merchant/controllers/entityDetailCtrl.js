@@ -21,7 +21,7 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'modeFact
         $scope.alerts.resetAlerts();
 
         if(data.success) {
-          $scope.entity = data.data.data[0];
+          $scope.entity = data.data.items[0];
         }
         else {
           angular.forEach(data.errors, function(error, key) {
