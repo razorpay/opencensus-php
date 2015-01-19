@@ -39,15 +39,23 @@ class Settler
     {
         $this->input = $input;
 
-        // @todo: remove this
-        if ($channel === null)
-            $channel = 'kotak';
-
         $txns = $this->fetchTransactionsToSettle($input);
 
-        $settleForChannelVar = 'settleFor' . ucfirst($channel);
+        if ($channel === null)
+        {
+            $channels = Channel::getChannels();
+        }
+        else
+        {
+            $channels = [$channel];
+        }
 
-        $data = $this->$settleForChannelVar($txns);
+        foreach ($channels as $channel)
+        {
+            $settleForChannelVar = 'settleFor' . ucfirst($channel);
+
+            $data[$channel] = $this->$settleForChannelVar($txns);
+        }
 
         return $data;
     }
@@ -70,7 +78,31 @@ class Settler
         {
             $this->setlRepo->rollback();
 
-            (new Mpr\SlackNotification)->queueOperationFailure('settlements', $e);
+            $this->failureNotification($e);
+
+            throw $e;
+        }
+
+        $this->successNotification($settlements);
+
+        return ['setlFile' => $file];
+    }
+
+    protected function settleForAtom($input = array())
+    {
+        $this->setlRepo->beginTransaction();
+
+        try
+        {
+            list($settlements, $txns) = $this->process($txns, Channel::ATOM);
+
+            $this->setlRepo->commit();
+        }
+        catch (\Exception $e)
+        {
+            $this->setlRepo->rollback();
+
+            $this->failureNotification($e);
 
             throw $e;
         }
@@ -80,16 +112,16 @@ class Settler
         return $file;
     }
 
-    protected function settleForAtom($input = array())
-    {
-        ;
-    }
-
     protected function successNotification($settlements)
     {
         (new Mpr\SlackNotification)->queueOperationSuccess('settlements', $settlements->count());
 
         Dashboard::send('settlement', $settlements);
+    }
+
+    protected function failureNotification($exception)
+    {
+        (new Mpr\SlackNotification)->queueOperationFailure('settlements', $e);
     }
 
     protected function process($txns, $channel)

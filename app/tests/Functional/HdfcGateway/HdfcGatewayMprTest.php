@@ -88,9 +88,10 @@ class HdfcGatewayMprTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('setlFile', $content);
+        $this->assertArrayHasKey('kotak', $content);
+        $this->assertArrayHasKey('setlFile', $content['kotak']);
 
-        return $content['setlFile'];
+        return $content['kotak']['setlFile'];
     }
 
     protected function generateSetlReconciliationFile($setlFile)

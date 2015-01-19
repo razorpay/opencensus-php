@@ -23,9 +23,7 @@ class Service extends Base\Service
     {
         $settler = new Settler();
 
-        $settlementFile = $settler->settle($input, $channel);
-
-        return ['setlFile' => $settlementFile];
+        return $settler->settle($input, $channel);
     }
 
     public function gatewayMprGenerate($input)
