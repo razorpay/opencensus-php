@@ -101,6 +101,11 @@ class MerchantController extends BaseController
         fputcsv($output, array($input['id'], $input['secret']));
     }
 
+    public function getApihost()
+    {
+        return AppResponse::jsonResponse([], $_ENV['API_URL']);
+    }
+
     public function getKeys($mode)
     {
         $keys = (new Merchant\Service)->fetchKeysFromApi(Auth::merchant()->id(), $mode);

@@ -93,6 +93,19 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postAddfunds($mode)
+    {
+        $this->checkMode($mode);
+
+        $id = Input::get('razorpay_payment_id');
+
+        $amount = Input::get('amount'); 
+
+        $error = (new Api\Service)->capturePayment($id, $amount, $mode);
+
+        return AppResponse::jsonResponse($error);
+    }
+
     public function postCapturePayment($mode, $id = null)
     {
         $this->checkMode($mode);

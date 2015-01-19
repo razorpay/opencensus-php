@@ -56,6 +56,8 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/keys/csv', 'MerchantController@getCsv');
 
+    Route::get('/apihost', 'MerchantController@getApihost');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::post('/password', 'MerchantController@postPassword');
@@ -73,6 +75,8 @@ Route::group(array('before' => 'auth'), function()
         Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment');
 
         Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment');
+
+        Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
     });
 });
 
