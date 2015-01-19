@@ -79,7 +79,7 @@ class HdfcGatewayMprTest extends TestCase
     protected function generateSettlements($txns)
     {
         $request = [
-            'url' => '/settlements/initiate',
+            'url' => '/settlements/initiate/kotak',
             'method' => 'POST',
             'content' => ['all' => 1],
         ];

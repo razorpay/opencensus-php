@@ -81,6 +81,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo($class, self::ENTITY_ID);
     }
 
+    public function settlement()
+    {
+        return $this->belongsTo('Models\Settlement\Entity');
+    }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -99,6 +104,11 @@ class Entity extends Base\PublicEntity
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function getType()
+    {
+        return $this->attribute[self::TYPE];
     }
 
     public function getFeeAttribute()
@@ -121,6 +131,18 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::SETTLED];
     }
 
+    public function getGateway()
+    {
+        if ($this->isTypePayment())
+        {
+            return $this->entity->getGateway();
+        }
+        else if ($this->getType() === Type::REFUND)
+        {
+            return $this->entity->payment->getGateway();
+        }
+    }
+
     public function setReconciledAt($timestamp)
     {
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
@@ -137,5 +159,10 @@ class Entity extends Base\PublicEntity
     public function isReconciled()
     {
         return ($this->getAttribute(self::RECONCILED_AT) !== null);
+    }
+
+    public function isTypePayment()
+    {
+        return ($this->getType(Type::PAYMENT) === Type::PAYMENT);
     }
 }

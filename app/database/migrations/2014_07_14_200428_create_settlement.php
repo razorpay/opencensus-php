@@ -35,6 +35,8 @@ class CreateSettlement extends Migration {
                   ->nullable()
                   ->unique();
 
+            $table->string(Settlement::CHANNEL);
+
             $table->string(Settlement::UTR)
                   ->nullable()
                   ->unique();

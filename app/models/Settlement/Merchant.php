@@ -80,6 +80,7 @@ class Merchant
 
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
+        $setl->setChannel(Channel::KOTAK);
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);

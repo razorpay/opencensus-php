@@ -53,7 +53,7 @@ final class Route
         'setl_fetch_multiple'               => ['get',  'settlements',                              'SettlementController@getSettlements'],
         'hdfc_mpr_reconcile'                => ['post', 'gateway/mpr/reconcile',                    'SettlementController@postGatewayMprReconcile'],
         'hdfc_mpr_generate'                 => ['post', 'gateway/mpr/generate',                     'SettlementController@postGatewayMprGenerate'],
-        'setl_initiate'                     => ['post', 'settlements/initiate',                     'SettlementController@postSettlementInitiate'],
+        'setl_initiate'                     => ['post', 'settlements/initiate/{channel?}',          'SettlementController@postSettlementInitiate'],
         'setl_reconcile_generate'           => ['post', 'settlements/reconcile/generate',           'SettlementController@postSettlementReconcileGenerate'],
         'setl_reconcile'                    => ['post', 'settlements/reconcile',                    'SettlementController@postSettlementReconcile'],
         'setl_return_generate'              => ['post', 'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'],

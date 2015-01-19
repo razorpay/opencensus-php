@@ -41,11 +41,11 @@ class SettlementController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function postSettlementInitiate()
+    public function postSettlementInitiate($channel = null)
     {
         $input = Input::all();
 
-        $data = (new Settlement\Service)->initiateSettlements($input);
+        $data = (new Settlement\Service)->initiateSettlements($input, $channel);
 
         return ApiResponse::json($data);
     }

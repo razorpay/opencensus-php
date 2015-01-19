@@ -35,13 +35,30 @@ class Settler
         $this->queue = \Queue::getFacadeRoot();
     }
 
-    public function settle($input = array())
+    public function settle($input = array(), $channel = null)
+    {
+        $this->input = $input;
+
+        // @todo: remove this
+        if ($channel === null)
+            $channel = 'kotak';
+
+        $txns = $this->fetchTransactionsToSettle($input);
+
+        $settleForChannelVar = 'settleFor' . ucfirst($channel);
+
+        $data = $this->$settleForChannelVar($txns);
+
+        return $data;
+    }
+
+    protected function settleForKotak($txns)
     {
         $this->setlRepo->beginTransaction();
 
         try
         {
-            list($settlements, $txns) = $this->process($input);
+            list($settlements, $txns) = $this->process($txns, Channel::KOTAK);
 
             $file = $this->createSettlementFile($settlements, $txns);
 
@@ -58,26 +75,36 @@ class Settler
             throw $e;
         }
 
-        (new Mpr\SlackNotification)->queueOperationSuccess('settlements', $settlements->count());
-
-        Dashboard::send('settlement', $settlements);
+        $this->successNotification($settlements);
 
         return $file;
     }
 
-    protected function process($input)
+    protected function settleForAtom($input = array())
     {
-        $txns = $this->fetchTransactionsToSettle($input);
+        ;
+    }
 
-        $settlements = $this->createSettlements($txns);
+    protected function successNotification($settlements)
+    {
+        (new Mpr\SlackNotification)->queueOperationSuccess('settlements', $settlements->count());
+
+        Dashboard::send('settlement', $settlements);
+    }
+
+    protected function process($txns, $channel)
+    {
+        $settlements = $this->createSettlements($txns, $channel);
 
         $this->txnRepo->settled($txns, self::$settlementTimestamp);
 
         return array($settlements, $txns);
     }
 
-    protected function createSettlements($txns)
+    protected function createSettlements($txns, $channel)
     {
+        $gateways = Channel::getGateways($channel);
+
         $settlements = new Base\PublicCollection;
 
         $i = 0;
@@ -96,8 +123,16 @@ class Settler
             while (($i < $count) and
                    ($txns[$i]->getMerchantId() === $merchantId))
             {
-                $setlAmount += $txns[$i]->getCredit() - $txns[$i]->getDebit();
-                $setlTxns->push($txns[$i]);
+                $txn = $txns[$i];
+
+                if (in_array($txn->getGateway(), $gateways) === false)
+                {
+                    $i++;
+                    continue;
+                }
+
+                $setlAmount += $txn->getCredit() - $txn->getDebit();
+                $setlTxns->push($txn);
                 $i++;
             }
 
@@ -132,6 +167,18 @@ class Settler
         else
         {
             $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
+        }
+
+        foreach ($txns as $txn)
+        {
+            if ($txn->isTypePayment())
+            {
+                $payment = $transaction->entity();
+            }
+            else if ($txn->getType() === Transaction\Type::REFUND)
+            {
+                $payment = $transaction->entity()->payment();
+            }
         }
 
         return $txns;

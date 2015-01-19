@@ -19,11 +19,11 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
-    public function initiateSettlements($input)
+    public function initiateSettlements($input, $channel = null)
     {
         $settler = new Settler();
 
-        $settlementFile = $settler->settle($input);
+        $settlementFile = $settler->settle($input, $channel);
 
         return ['setlFile' => $settlementFile];
     }

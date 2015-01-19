@@ -3,7 +3,7 @@
 namespace Models\Settlement;
 
 use Models\Base;
-use Models\Payment;
+use Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT                = 'amount';
     const STATUS                = 'status';
     const TRANSACTION_ID        = 'transaction_id';
+    const CHANNEL               = 'channel';
     const UTR                   = 'utr';
     const FAILURE_REASON        = 'failure_reason';
     const RETURN_UTR            = 'return_utr';
@@ -32,7 +33,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::STATUS,
         self::MERCHANT_ID,
-        self::TRANSACTION_ID);
+        self::TRANSACTION_ID,
+        self::FAILURE_REASON,
+        self::CHANNEL,
+        self::UTR);
 
     protected $public = array(
         self::ID,
@@ -51,6 +55,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Transaction\Entity');
     }
 
+    public function setlTransactions()
+    {
+        return $this->hasMany('Models\Transaction\Entity');
+    }
+
     public function getAmount()
     {
         $this->getAttribute(self::AMOUNT);
@@ -64,6 +73,11 @@ class Entity extends Base\PublicEntity
     public function setStatus($status = Status::CREATED)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setChannel($channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
     }
 
     public function setUtr($utr)
