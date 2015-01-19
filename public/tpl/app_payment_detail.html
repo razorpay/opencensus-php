@@ -59,7 +59,7 @@
           <a href class="list-group-item" ng-init="isCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.udf.length != 0">Show/Hide</button>
-              <span ng-hide="entity.udf.length != 0">No UDF Fields</span>
+              <span ng-hide="entity.notes.length != 0">No UDF Fields</span>
             </span>
             UDF Fields
           </a>
@@ -95,7 +95,7 @@
                     <input type="text" placeholder="Amount to Capture (in Paisa)" class="form-control" ng-model="amount">
                   </form>
               </div>
-              <div class="modal-footer">                  
+              <div class="modal-footer">
                   <button class="btn btn-default" ng-click="cancel()">Cancel</button>
                   <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
               </div>
@@ -113,7 +113,7 @@
                     <input type="text" placeholder="Amount to Refund (in Paisa)" class="form-control" ng-model="amount">
                   </form>
               </div>
-              <div class="modal-footer">                  
+              <div class="modal-footer">
                   <button class="btn btn-default" ng-click="cancel()">Cancel</button>
                   <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
               </div>
