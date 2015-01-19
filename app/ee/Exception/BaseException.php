@@ -20,10 +20,10 @@ class BaseException extends Exception
     public function __construct(
         /* string */ $message,
         /* string */ $code = '',
-        Exception $previous = null)
+        \Exception $previous = null)
     {
-        $this->message = $message;
-        $this->previous = $previous;
+        parent::__construct($message, 0, $previous);
+
         $this->code = $code;
     }
 

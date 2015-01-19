@@ -75,6 +75,19 @@ class Handler
             $data = $exception->getDataAsString();
         }
 
+        $traceData = $this->getExceptionDetails($exception);
+
+        \Trace\Trace::getInstance()->critical(
+           \Trace\TraceCode::ERROR_EXCEPTION,
+           $traceData);
+    }
+
+    protected function getExceptionDetails(\Exception $exception)
+    {
+        $previousException = $exception->getPrevious();
+
+        $previous = ($previousException !== null) ? $this->getExceptionDetails($previousException) : null;
+
         //
         // @note: Always call function 'getTraceAsSring' to get stack trace
         //        since it doesn't include function arguments.
@@ -86,10 +99,7 @@ class Handler
             'code'      => $exception->getCode(),
             'message'   => $exception->getMessage(),
             'data'      => $data,
-            'stack'     => $exception->getTraceAsString());
-
-        \Trace\Trace::getInstance()->critical(
-           \Trace\TraceCode::ERROR_EXCEPTION,
-           $traceData);
+            'stack'     => $exception->getTraceAsString(),
+            'previous'  => $previous);
     }
 }

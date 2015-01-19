@@ -21,7 +21,7 @@ class DbQueryException extends ServerErrorException
         'attributes',
         'query');
 
-    public function __construct(array $data, Exception $previous = null)
+    public function __construct(array $data, \Exception $previous = null)
     {
         $code = ErrorCode::SERVER_ERROR_DB_QUERY_FAILED;
 
