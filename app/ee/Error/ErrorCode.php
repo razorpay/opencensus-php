@@ -144,4 +144,5 @@ class ErrorCode
     const SERVER_ERROR_DB_QUERY_FAILED                                      = 'SERVER_ERROR_DB_QUERY_FAILED';
     const SERVER_ERROR_LOGICAL_ERROR                                        = 'SERVER_ERROR_LOGICAL_ERROR';
     const SERVER_ERROR_INTEGRATION_ERROR                                    = 'SERVER_ERROR_INTEGRATION_ERROR';
+    const SERVER_ERROR_SETTLEMENTS_FAILED                                   = 'SERVER_ERROR_SETTLEMENTS_FAILED';
 }

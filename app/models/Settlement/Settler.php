@@ -78,9 +78,7 @@ class Settler
         {
             $this->setlRepo->rollback();
 
-            $this->failureNotification($e);
-
-            throw $e;
+            $this->settlementFailure('kotak', $e);
         }
 
         $this->successNotification($settlements);
@@ -102,14 +100,21 @@ class Settler
         {
             $this->setlRepo->rollback();
 
-            $this->failureNotification($e);
-
-            throw $e;
+            $this->settlementFailure('atom', $e);
         }
 
         $this->successNotification($settlements);
 
         return $file;
+    }
+
+    protected function settlementFailure($channel, $e)
+    {
+        $e = new SettlementFailureException($channel, null, $e);
+
+        $this->failureNotification($e);
+
+        throw $e;
     }
 
     protected function successNotification($settlements)
