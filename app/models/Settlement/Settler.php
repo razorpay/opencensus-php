@@ -121,7 +121,7 @@ class Settler
 
     protected function failureNotification($exception)
     {
-        (new Mpr\SlackNotification)->queueOperationFailure('settlements', $e);
+        (new Mpr\SlackNotification)->queueOperationFailure('settlements', $exception);
     }
 
     protected function process($txns, $channel)
@@ -157,7 +157,7 @@ class Settler
             {
                 $txn = $txns[$i];
 
-                if (in_array($txn->getGateway(), $gateways) === false)
+                if ($this->shouldSettle($txn, $gateways) === false)
                 {
                     $i++;
                     continue;
@@ -173,6 +173,11 @@ class Settler
         }
 
         return $settlements;
+    }
+
+    protected function shouldSettle($txn, $gateways)
+    {
+        return (in_array($txn->getGateway(), $gateways));
     }
 
     protected function createSettlementFile($settlements, $txns)
