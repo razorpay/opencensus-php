@@ -93,7 +93,7 @@ class CreatePayments  extends Migration
                   ->on_delete('restrict');
 
             $table->foreign(Payment::TRANSACTION_ID)
-                  ->references(Terminal\Entity::ID)
+                  ->references(Transaction\Entity::ID)
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
 
