@@ -58,21 +58,21 @@
           </a>
           <a href class="list-group-item" ng-init="isCollapsed = true">
             <span class="pull-right">
-              <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.udf.length != 0">Show/Hide</button>
-              <span ng-hide="entity.notes.length != 0">No UDF Fields</span>
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.notes.length != 0">Show/Hide</button>
+              <span ng-hide="entity.notes.length != 0">No Notes</span>
             </span>
-            UDF Fields
+            Notes
           </a>
           <div collapse="isCollapsed" class="panel-body">
-            <a href class="list-group-item" ng-repeat="(label,key) in entity.udf">
+            <a href class="list-group-item" ng-repeat="(label,key) in entity.notes">
               <span class="pull-right">{{key}}</span>
               {{label}}
             </a>
           </div>
           <a href class="list-group-item"  ng-init="isRefundsCollapsed = true">
             <span class="pull-right">
-              <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="entity.refund_status != 'none'">Show/Hide</button>
-              <span ng-hide="entity.refund_status != 'none'">No Refunds</span>
+              <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="entity.refund_status">Show/Hide</button>
+              <span ng-hide="entity.refund_status">No Refunds</span>
             </span>
             Refunds
           </a>
