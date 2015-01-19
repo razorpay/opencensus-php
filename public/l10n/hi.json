@@ -6,6 +6,7 @@
   },
   "aside" : {
     "nav" : {
+      "ADD_FUNDS" : "जमा करे",
       "HEADER" : "सुविधाएँ",
       "DASHBOARD" : "डैशबोर्ड",
       "PAYMENTS" : "भुगतान",

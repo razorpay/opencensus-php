@@ -6,6 +6,7 @@
   },
   "aside" : {
     "nav" : {
+      "ADD_FUNDS" : "Add Funds",
       "HEADER" : "Features",
       "DASHBOARD" : "Dashboard",
       "PAYMENTS" : "Payments",

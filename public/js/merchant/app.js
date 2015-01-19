@@ -122,6 +122,10 @@ var app = angular.module('app', [
                 url: '/:id',
                 templateUrl: 'tpl/app_transaction_detail.html'
             })
+            .state('app.addfunds', {
+                url: '/addfunds',
+                templateUrl: 'tpl/app_addfunds.html'
+            })
             .state('app.keys', {
                 url: '/keys',
                 templateUrl: 'tpl/app_keys.html'
