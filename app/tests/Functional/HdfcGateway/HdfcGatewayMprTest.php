@@ -79,7 +79,7 @@ class HdfcGatewayMprTest extends TestCase
 
         $dashboard->shouldReceive('queueRecord')
               ->times(1)
-              ->with('settlement', Mockery::type('Models\\Base\\PublicCollection'));
+              ->with('settlement', Mockery::type('Models\\Base\\PublicEntity'));
     }
 
     protected function generateSettlements($txns)
