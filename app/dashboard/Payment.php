@@ -17,7 +17,9 @@ class Payment extends Dashboard
      */
     protected static $fields = array(
         PaymentEntity::MERCHANT_ID,
+        PaymentEntity::METHOD,
         PaymentEntity::AMOUNT,
         PaymentEntity::CREATED_AT,
-        PaymentEntity::UPDATED_AT);
+        PaymentEntity::UPDATED_AT,
+        'network');
 }

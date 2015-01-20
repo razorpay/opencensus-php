@@ -18,15 +18,35 @@ class BasicAuthTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function testAuthWithoutKeyOrPwd()
+    public function testNoAuth()
     {
-        $this->ba->basicAuth('', '');
+        $this->ba->noAuth();
+
+        $this->startTest();
+
+        $this->assertEquals('Basic realm="Razorpay"', $this->response->headers->get('WWW-Authenticate'));
+    }
+
+    public function testNoAuthOnJsonpRoute()
+    {
+        $this->ba->noAuth();
+
+        $this->startTest();
+
+        $this->assertEquals('Basic realm="Razorpay"', $this->response->headers->get('WWW-Authenticate'));
+    }
+
+    public function testWrongKeyOnPublicJsonpRoute()
+    {
+        $this->ba->publicAuth('rzp_test_TheTstWrongKey');
 
         $this->startTest();
     }
 
-    // This also checks the effect of providing secret on
-    // public route
+    /**
+     * This also checks the effect of providing secret on
+     * public route
+     */
     public function testPrivateAuthOnPublicRoute()
     {
         $this->ba->privateAuth();

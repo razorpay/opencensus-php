@@ -337,6 +337,22 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    public function toArrayDashboard()
+    {
+        $data = $this->toArray();
+
+        if ($this->getAttribute(self::METHOD) === Payment\Method::CARD)
+        {
+            $card = $this->card()->firstOrFail();
+
+            $network = $card->getNetwork();
+
+            $data['network'] = $network;
+        }
+
+        return $data;
+    }
+
 // --------------- Relation to other entities ----------------------------------
 
     public function card()

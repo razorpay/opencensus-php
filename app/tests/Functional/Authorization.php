@@ -84,6 +84,11 @@ class Authorization
         $this->appAuth('rzp_'.$mode, 'put dashboard pass here');
     }
 
+    public function noAuth()
+    {
+        $this->basicAuth(null, null);
+    }
+
     public function getCreds()
     {
         return $this->auth;

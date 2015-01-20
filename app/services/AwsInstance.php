@@ -14,10 +14,6 @@ class AwsInstance
 
     protected $data = null;
 
-    protected $relevantData = null;
-
-    protected $loaded = false;
-
     protected $cloud;
 
     protected $instanceDataFile;
@@ -39,16 +35,6 @@ class AwsInstance
     }
 
     public function getInstanceData()
-    {
-        if ($this->relevantData !== null)
-        {
-            return $this->relevantData;
-        }
-
-        return $this->getRelevantInstanceData();
-    }
-
-    public function getFullInstanceData()
     {
         if ($this->data !== null)
         {
@@ -84,11 +70,13 @@ class AwsInstance
     {
         exec('ec2metadata 2> /dev/null', $data, $status);
 
-        if ($status === 0)
+        if ($status !== 0)
         {
             // @todo: trace here
             return null;
         }
+
+        $instanceData = [];
 
         foreach ($data as $row)
         {
@@ -96,10 +84,14 @@ class AwsInstance
 
             $key = $pair[0];
 
-            $data[$key] = $pair[1];
+            if ((in_array($key, $this->attributes)) and
+                (isset($pair[1])))
+            {
+                $instanceData[$key] = $pair[1];
+            }
         }
 
-        return $data;
+        return $instanceData;
     }
 
     protected function saveInstanceDataToStorage($data)
@@ -131,22 +123,6 @@ class AwsInstance
         }
 
         return json_decode($jsonData, true);
-    }
-
-    protected function getRelevantInstanceData()
-    {
-        if ($this->relevantData !== null)
-        {
-            return $this->relevantData;
-        }
-
-        $data = $this->getFullInstanceData();
-
-        $relevantData = array_intersect_key($data, array_flip($this->attributes));
-
-        $this->relevantData = $relevantData;
-
-        return $this->relevantData;
     }
 
     protected function generateRandomInstanceData()
