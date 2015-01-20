@@ -73,7 +73,6 @@ class ReturnTransactions
         {
             $returnUtr = $row['RETURN UTR NO1'];
             $setl->setAttribute(Settlement\Entity::RETURN_UTR, $returnUtr);
-
             $failureReason = 'Return reason: ' . $row['RETURN REASON'];
         }
         else
@@ -81,7 +80,7 @@ class ReturnTransactions
             $failureReason = 'Remitt info: ' . $row['REMITT INFO'];
         }
 
-        $setl->setAttribute(Settlement\Entity::FAILURE_REASON, $failureReason);
+        (new Settlement\Failure)->markFailed($setl, $failureReason);
     }
 
     protected function parseReturnFile($file)

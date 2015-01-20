@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::MERCHANT_ID,
+        self::AMOUNT,
         self::CHANNEL,
         self::AMOUNT,
         self::CURRENCY);

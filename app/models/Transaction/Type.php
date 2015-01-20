@@ -4,8 +4,9 @@ namespace Models\Transaction;
 
 class Type
 {
-    const PAYMENT       = 'payment';
     const REFUND        = 'refund';
+    const PAYMENT       = 'payment';
+    const ADJUSTMENT    = 'adjustment';
     const SETTLEMENT    = 'settlement';
 
     public static function validateType($type)

@@ -180,7 +180,7 @@ class Settler
         return $settlements;
     }
 
-    protected function shouldSettle($txn, $gateways)
+    protected function shouldSettle(Transaction\Entity $txn, $gateways)
     {
         return (in_array($txn->getGateway(), $gateways));
     }
@@ -215,11 +215,12 @@ class Settler
         {
             if ($txn->isTypePayment())
             {
-                $payment = $transaction->entity();
+                $payment = $txn->entity;
+
             }
             else if ($txn->getType() === Transaction\Type::REFUND)
             {
-                $payment = $transaction->entity()->payment();
+                $payment = $transaction->entity->payment;
             }
         }
 

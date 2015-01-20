@@ -96,17 +96,16 @@ class Reconciler
         if ($status === 'P')
         {
             $setl->setStatus(Settlement\Status::TRANSFERRED);
+            $this->setlRepo->save($setl);
         }
         else
         {
-            $setl->setStatus(Settlement\Status::FAILED);
-
             if ($failureReason !== '')
             {
                 $failureReason = 'Reconciliation: ' . $failureReason;
-
-                $setl->setAttribute(Settlement\Entity::FAILURE_REASON, $failureReason);
             }
+
+            (new Failure)->markFailed($setl, $reason);
 
             if (($status !== 'C') or
                 ($failureReason === ''))
@@ -114,13 +113,9 @@ class Reconciler
                 // Trace this
                 // @todo: Raise this issue with Kotak bank to get the actual reason
             }
-
-            // @todo: handle failure case
         }
 
         $setl->transaction->setReconciledAt($this->reconciledAt);
-
-        $this->setlRepo->save($setl);
         $this->txnRepo->save($setl->transaction);
 
         return $setl;

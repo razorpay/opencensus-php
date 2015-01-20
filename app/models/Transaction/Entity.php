@@ -108,7 +108,7 @@ class Entity extends Base\PublicEntity
 
     public function getType()
     {
-        return $this->attribute[self::TYPE];
+        return $this->getAttribute(self::TYPE);
     }
 
     public function getFeeAttribute()
@@ -135,11 +135,11 @@ class Entity extends Base\PublicEntity
     {
         if ($this->isTypePayment())
         {
-            return $this->entity->getGateway();
+            return $this->getRelation('entity')->getGateway();
         }
         else if ($this->getType() === Type::REFUND)
         {
-            return $this->entity->payment->getGateway();
+            return $this->getRelation('entity')->payment->getGateway();
         }
     }
 
@@ -163,6 +163,6 @@ class Entity extends Base\PublicEntity
 
     public function isTypePayment()
     {
-        return ($this->getType(Type::PAYMENT) === Type::PAYMENT);
+        return ($this->getType() === Type::PAYMENT);
     }
 }

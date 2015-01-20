@@ -4,6 +4,7 @@ namespace Models\Adjustment;
 
 use EE\Exception;
 use Models\Base;
+use Models\Adjustment;
 use Models\Transaction;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -15,12 +16,14 @@ class Core extends Base\Core
         $this->adjRepo = new Adjustment\Repository;
     }
 
-    public function createAdjustment($amount, $merchant)
+    public function createAdjustment($amount, $merchant, $desc)
     {
         $adj = new Entity;
 
         $adj->setAmount($amount);
         $adj->setAttribute(Entity::CURRENCY, 'INR');
+        $adj->setAttribute(Entity::DESCRIPTION, $desc);
+
         $adj->merchant()->associate($merchant);
 
         $this->adjRepo->saveOrFail($adj);

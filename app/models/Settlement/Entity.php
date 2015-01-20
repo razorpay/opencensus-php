@@ -62,7 +62,12 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        $this->getAttribute(self::AMOUNT);
+        return (int) $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
     }
 
     public function setAmount($amount)
@@ -90,9 +95,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RETURN_UTR, $utr);
     }
 
-    public function setFailureReason($failureReason)
+    public function setFailureReason($reason)
     {
-        $this->setAttribute(self::FAILURE_REASON, $utr);
+        $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
     public function getTransactionId()

@@ -20,9 +20,4 @@ class Core extends Base\Core
 
         return $payment;
     }
-
-    public function failSettlement($setl, $reason)
-    {
-        ;
-    }
 }
