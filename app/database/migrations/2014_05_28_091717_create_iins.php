@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 use Models\Card;
 
-class CreateIinsTable extends Migration {
+class CreateIins extends Migration {
 
     /**
      * Run the migrations.

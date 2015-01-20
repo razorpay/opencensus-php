@@ -8,7 +8,7 @@ use Models\Settlement\Entity as Settlement;
 use Models\Transaction;
 use Models\Merchant;
 
-class CreateSettlement extends Migration {
+class CreateSettlements extends Migration {
 
     /**
      * Run the migrations.
