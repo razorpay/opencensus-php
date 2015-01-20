@@ -65,10 +65,10 @@ class ValidationTest extends TestCase
     {
         $this->markTestSkipped();
         $supportedCards = array(
-            ['5546199799745013', 'MasterCard'],
-            ['5555 5555 5555 4444', 'MasterCard'],
-            ['42 4242 42 4242 4242', 'Visa'],
-            ['6240008631401148', 'Unknown']);
+            ['5546199799745013',        'MasterCard'],
+            ['5555 5555 5555 4444',     'MasterCard'],
+            ['42 4242 42 4242 4242',    'Visa'],
+            ['6240008631401148',        'Unknown']);
 
         foreach ($supportedCards as $card)
         {
