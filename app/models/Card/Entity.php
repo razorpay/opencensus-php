@@ -19,6 +19,7 @@ class Entity extends Base\UniqueIdEntity
     const TYPE              = 'type';
     const ISSUER            = 'issuer';
     const COUNTRY           = 'country';
+    const INTERNATIONAL     = 'international';
 
     const COUNTRY_LENGTH = 2;
 
