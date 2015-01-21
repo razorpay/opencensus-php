@@ -10,13 +10,13 @@ class Validator extends Base\Validator
         'contact_name'          => 'required|alpha_space|max:255',
         'contact_email'         => 'required|email|max:255',
         'contact_mobile'        => 'required|numeric|digits_between:8,11',
-        'contact_landline'      => 'required|numeric|digits_between:8,11'
+        'contact_landline'      => 'numeric|digits_between:8,11'
     );
 
     protected static $step2Rules = array(
         'bussiness_type'                => 'required|numeric|digits_between:1,10',
-        'bussiness_category'             => 'required|alpha_space',
-        'bussiness_subcategory'          => 'required|alpha_space',
+        'bussiness_category'            => 'required|alpha_space',
+        'bussiness_subcategory'         => 'required|alpha_space',
         'bussiness_registered_address'  => 'required|max:255',
         'bussiness_registered_state'    => 'required|alpha_space|max:255',
         'bussiness_registered_city'     => 'required|alpha_space|max:255',
