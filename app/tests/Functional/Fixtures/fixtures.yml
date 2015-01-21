@@ -96,6 +96,31 @@ Models\Transaction\Entity:
     balance: $integer
     gateway_fee: null
 
+Models\Settlement\Entity:
+    id: $uniqueid
+    merchant_id:
+        type: Models\Merchant\Entity
+    amount: $integer
+    currency: INR
+    status: created
+    transaction_id:
+        type: Models\Transaction\Entity
+    channel: kotak
+    utr: $integer
+    failure_reason: null
+    return_utr: null
+
+Models\Adjustment\Entity:
+    id: $uniqueid
+    merchant_id:
+        type: Models\Merchant\Entity
+    amount: $integer
+    currency: INR
+    channel: kotak
+    description: $string
+    transaction_id:
+        type: Models\Transaction\Entity
+
 Gateway\Hdfc\Entity:
     id: $integer
     trackid:
@@ -111,3 +136,14 @@ Gateway\Hdfc\Entity:
     ref: $hdfcRef
     avr: N
     postdate: $hdfcPostDate
+
+Gateway\Atom\Entity:
+    id: $integer
+    gateway_payment_id:
+        type: Models\Payment\Entity
+    token: $token
+    success: boolean
+    callback_data: null
+    bank_name: RZP
+    bank_transaction_id: $integer
+

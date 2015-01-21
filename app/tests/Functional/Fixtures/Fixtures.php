@@ -11,15 +11,19 @@ use Models;
 class Fixtures
 {
     protected static $entityMap = array(
+        'atom'          => 'Gateway\Atom\Entity',
+        'adjustment'    => 'Models\Adjustment\Entity',
         'balance'       => 'Models\Merchant\Balance',
         'bank_account'  => 'Models\Merchant\BankAccount',
         'card'          => 'Models\Card\Entity',
         'hdfc'          => 'Gateway\Hdfc\Entity',
+        'iin'           => 'Models\Card\Detail',
         'key'           => 'Models\Key\Entity',
         'merchant'      => 'Models\Merchant\Entity',
         'payment'       => 'Models\Payment\Entity',
         'pricing'       => 'Models\Pricing\Entity',
         'refund'        => 'Models\Payment\Refund\Entity',
+        'settlement'    => 'Models\Settlement\Entity',
         'terminal'      => 'Models\Terminal\Entity',
         'transaction'   => 'Models\Transaction\Entity'
     );
