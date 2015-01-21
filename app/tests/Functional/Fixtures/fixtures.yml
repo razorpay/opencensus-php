@@ -147,3 +147,10 @@ Gateway\Atom\Entity:
     bank_name: RZP
     bank_transaction_id: $integer
 
+Models\Card\Detail:
+    iin: 411111
+    category: null
+    network: visa
+    type: credit
+    country: IN
+    issuer: SBI
