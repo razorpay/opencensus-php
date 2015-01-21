@@ -5,7 +5,6 @@ app.controller('AddfundsCtrl', ['$scope', '$http', 'alertsFactory','user', 'mode
 
     $scope.alerts = alertsFactory.getHandler();
 
-
     $scope.options = {
         'key': '',
         'amount': '50000',
@@ -26,24 +25,6 @@ app.controller('AddfundsCtrl', ['$scope', '$http', 'alertsFactory','user', 'mode
         netbanking: true
     }
     
-    user.identity().then(function(data){
-      $scope.options.name = data.name;
-      $scope.options.prefill.email = data.email;
-    });
-
-    if(window.location.hostname == "betadashboard.razorpay.com") {
-      uiLoad.loadScript("https://betacheckout.razorpay.com/v1/checkout.js");
-    }
-    else {
-      uiLoad.loadScript("https://checkout.razorpay.com/v1/checkout.js");
-    }
-
-   $http.get('/apihost').success(function(data){
-      var host = data.data.split( '/' );
-      $scope.options.protocol = host[0].substring(0, host[0].length - 1);
-      $scope.options.hostname = host[2];
-    });    
-
     $scope.addFunds = function() {
       try{
         var rzp1 = new Razorpay($scope.options);
@@ -53,30 +34,6 @@ app.controller('AddfundsCtrl', ['$scope', '$http', 'alertsFactory','user', 'mode
       {
         $scope.alerts.addAlert("danger", "An error occured - " + e.message, true);
       }
-    }
-
-    fetchKey();
-
-    function fetchKey(){
-      var request = $http.get('/'+$scope.mode+'/keys');
-
-      request
-      .success(function(data){     
-        if(data.success) {
-          if(data.data.count > 0) {
-            $scope.options.key = data.data.items[0].id;
-          }
-          else {
-            $scope.alerts.addAlert('danger', "No valid api keys found, check Api Keys page.", true);
-          }
-        }
-        else {
-          $scope.alerts.addAlert('danger', null, true);
-        }
-      })
-      .error(function(){
-        $scope.alerts.addAlert('danger', null, true);
-      })
     }
 
     $scope.transactionHandler = function(transaction)
@@ -106,4 +63,52 @@ app.controller('AddfundsCtrl', ['$scope', '$http', 'alertsFactory','user', 'mode
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+    
+    fetchUser();
+    fetchHost();
+    fetchKey();
+   
+    function fetchUser() {
+      user.identity().then(function(data){
+        $scope.options.name = data.name;
+        $scope.options.prefill.email = data.email;
+      });
+    }
+
+    function fetchHost() {
+      if(window.location.hostname == "betadashboard.razorpay.com") {
+        uiLoad.loadScript("https://betacheckout.razorpay.com/v1/checkout.js");
+      }
+      else {
+        uiLoad.loadScript("https://checkout.razorpay.com/v1/checkout.js");
+      }
+
+      $http.get('/apihost').success(function(data){
+        var host = data.data.split( '/' );
+        $scope.options.protocol = host[0].substring(0, host[0].length - 1);
+        $scope.options.hostname = host[2];
+      });    
+    }
+
+    function fetchKey(){
+      var request = $http.get('/'+$scope.mode+'/keys');
+
+      request
+      .success(function(data){     
+        if(data.success) {
+          if(data.data.count > 0) {
+            $scope.options.key = data.data.items[0].id;
+          }
+          else {
+            $scope.alerts.addAlert('danger', "No valid api keys found, check Api Keys page.", true);
+          }
+        }
+        else {
+          $scope.alerts.addAlert('danger', null, true);
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      })
+    }
 }]);
