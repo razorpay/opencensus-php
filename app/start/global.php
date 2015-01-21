@@ -52,20 +52,14 @@ App::error(function(Exception $e, $code)
 
     if (Config::get('app.debug') === false)
     {
-        if ($code === '404')
+        if ($code === 404)
             return Redirect::to('/#/404');
         else
             return Response::json(array('success' => false, 'errors' => ['Internal Server Error']));
     }
     else
     {
-        $arr = array(
-            'message' => $e->getMessage(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile(),
-            'trace' => $e->getTraceAsString());
-
-        sd($arr);
+        sd($e);
     }
 });
 
@@ -82,7 +76,7 @@ App::error(function(Exception $e, $code)
 
 App::down(function()
 {
-	return Response::make("Be right back!", 503);
+	return Response::make("Server maintainence underway. Be right back!", 503);
 });
 
 /*
