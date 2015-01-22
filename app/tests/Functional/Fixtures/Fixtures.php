@@ -37,6 +37,13 @@ class Fixtures
         'netbanking_authorized_payment',
         'atom_terminal');
 
+    protected $links = [];
+
+    public function __construct()
+    {
+        $this->base = new Entity\Base;
+    }
+
     public function times($times)
     {
         Factory::times($times);
@@ -49,27 +56,29 @@ class Fixtures
      */
     public function setUp()
     {
-        $apiMerchant = $this->createEntity('merchant', ['id' => Merchant\Account::NODAL_ACCOUNT]);
-        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Merchant\Account::NODAL_ACCOUNT]);
+        $apiMerchant = $this->create('merchant', ['id' => Merchant\Account::NODAL_ACCOUNT]);
+        $apiBalance = $this->base->createEntityInTestAndLive('balance', ['id' => Merchant\Account::NODAL_ACCOUNT]);
 
-        $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
-        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
+        $apiMerchant = $this->create('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
+        $apiBalance = $this->base->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
 
-        $this->connection('test');
+        $this->base->connection('test');
+
+        $this->create('pricing:default_plan');
 
         $entities = array(
-            'pricing'   => $this->createDefaultPricingPlan(),
-            'merchant'  => $this->createEntity('merchant', ['id' => '10000000000000']),
-            'terminal'  => $this->createEntity('terminal', ['merchant_id' => '10000000000000']),
-            'balance'   => $this->createEntity('balance', ['id' => '10000000000000']),
+//            'pricing'   => $this->createDefaultPricingPlan(),
+            'merchant'  => $this->create('merchant', ['id' => '10000000000000']),
+            'terminal'  => $this->create('terminal', ['merchant_id' => '10000000000000']),
+            'balance'   => $this->create('balance', ['id' => '10000000000000']),
             );
 
-        $this->testKey = $this->on('test')->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
-        $this->liveKey = $this->on('live')->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
+        $this->testKey = $this->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
+        $this->liveKey = $this->on('live')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
 
-        $this->ba = $this->on('live')->createEntity('bank_account', ['merchant_id' => '10000000000000']);
+        $this->ba = $this->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
 
-        $entities['payment'] = $this->on('test')->createEntity(
+        $entities['payment'] = $this->on('test')->create(
                                         'payment',
                                         ['merchant_id' => '10000000000000',
                                          'terminal_id' => $entities['terminal']->getKey()]);
@@ -86,7 +95,7 @@ class Fixtures
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = $this->createEntity('payment', $attributes);
+        $payment = $this->create('payment', $attributes);
 
         $hdfcPayment = $this->createHdfcPaymentAuthorizedEntity(
             array(
@@ -122,7 +131,7 @@ class Fixtures
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = $this->build('payment', $attributes);
+        $payment = $this->base->build('payment', $attributes);
 
         $hdfcAttrArray = array(
             'trackid' => $payment->getKey(),
@@ -130,7 +139,7 @@ class Fixtures
             'created_at' => $payment->created_at,
             'updated_at' => $payment->created_at);
 
-        $card = $this->createEntity('card');
+        $card = $this->create('card');
 
         $payment->card()->associate($card);
 
@@ -160,7 +169,7 @@ class Fixtures
     {
         $attributes['action'] = 4;
         $attributes['status'] = 'authorized';
-        return $this->createEntity('hdfc', $attributes);
+        return $this->create('hdfc', $attributes);
     }
 
     protected function createHdfcPaymentCapturedEntity(array $attributes = array())
@@ -168,7 +177,7 @@ class Fixtures
         $attributes['action'] = 5;
         $attributes['status'] = 'captured';
 
-        return $this->createEntity('hdfc', $attributes);
+        return $this->create('hdfc', $attributes);
     }
 
     public function createTerminalEntityForAtomGateway(array $attributes = array())
@@ -180,141 +189,17 @@ class Fixtures
             'gateway_terminal_id' => 'abcde',
             'gateway_terminal_password' => 'abcdef');
 
-        return $this->createEntity('terminal', $attributes);
-    }
-
-    public function createEntity($entity, $attributes = array())
-    {
-        if (($entity === 'merchant') or
-            ($entity === 'pricing'))
-        {
-            return $this->createEntityInTestAndLive($entity, $attributes);
-        }
-
-        return $this->save($entity, $attributes);
+        return $this->create('terminal', $attributes);
     }
 
     protected function createEntityInTestAndLive($entity, $attributes = array())
     {
-        $this->eloquentUnguard();
-
-        $entity = self::$entityMap[$entity];
-
-        $entity = Factory::build($entity, $attributes);
-
-        $testEntity = clone $entity;
-        $liveEntity = clone $entity;
-
-        $testEntity->setConnection('test')->save();
-        $liveEntity->setConnection('live')->save();
-
-        $entity->exists = true;
-        $entity->setRawAttributes($liveEntity->getAttributes(), true);
-
-        return $entity;
-    }
-
-    protected function save($entity, $attributes)
-    {
-        $this->eloquentUnguard();
-
-        $entityClass = self::$entityMap[$entity];
-
-        $entity = Factory::create($entityClass, $attributes);
-
-        $this->eloquentReguard();
-
-//        $this->connection('test');
-
-        return $entity;
-    }
-
-    protected function build($entity, $attributes)
-    {
-        $this->eloquentUnguard();
-
-        $entity = self::$entityMap[$entity];
-
-        $entity = Factory::build($entity, $attributes);
-
-        $this->eloquentReguard();
-
-        return $entity;
-    }
-
-    public function createCard()
-    {
-        ;
+        return $this->base->createEntityInTestAndLive($entity, $attributes);
     }
 
     public function generateUniqueId()
     {
         return \Models\Base\UniqueIdEntity::generateUniqueId();
-    }
-
-    public function createDefaultPricingPlan()
-    {
-        $pricingPlanId = '1hDYlICobzOCYt';
-
-        $rows = array(
-                    array(
-                        'id' => '1nvp2XPMmaRLxb',
-                        'plan_id' => '1hDYlICobzOCYt',
-                        'plan_name' => 'testDefaultPlan',
-                        'payment_method' => 'card',
-                        'payment_method_type' => null,
-                        'payment_network' => null,
-                        'payment_issuer' => null,
-                        'percent_rate' => '2000',
-                        'fixed_rate' => 0,
-                    ),
-                    array(
-                        'id' => '1OwH8rTI0ejFxS',
-                        'plan_id' => '1hDYlICobzOCYt',
-                        'plan_name' => 'testDefaultPlan',
-                        'payment_method' => 'card',
-                        'payment_method_type' => null,
-                        'payment_network' => 'AMEX',
-                        'payment_issuer' => null,
-                        'percent_rate' => 3000,
-                        'fixed_rate' => 0,
-                    ),
-                    array(
-                        'id' => '1fq0OXpgeyafQq',
-                        'plan_id' => '1hDYlICobzOCYt',
-                        'plan_name' => 'testDefaultPlan',
-                        'payment_method' => 'card',
-                        'payment_method_type' => null,
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => null,
-                        'percent_rate' => 3000,
-                        'fixed_rate' => 0,
-                    ),
-                    array(
-                        'id' => '1zD0BXpeOyaqpB',
-                        'plan_id' => '1hDYlICobzOCYt',
-                        'plan_name' => 'testDefaultPlan',
-                        'payment_method' => 'netbanking',
-                        'payment_method_type' => null,
-                        'payment_network' => null,
-                        'payment_issuer' => null,
-                        'percent_rate' => 0,
-                        'fixed_rate' => 2500,
-                    ),
-                );
-
-        $repo = new Models\Pricing\Repository;
-
-        foreach ($rows as $row)
-        {
-            $pricing = new Models\Pricing\Entity;
-            $pricing->fill($row);
-            $repo->saveOrFail($pricing);
-        }
-
-        $pricing = $repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
-
-        return $pricing;
     }
 
     public function connection($mode = 'test')
@@ -334,10 +219,52 @@ class Fixtures
     protected function eloquentUnguard()
     {
         Eloquent::unguard();
+
+        return $this;
     }
 
     protected function eloquentReguard()
     {
         Eloquent::reguard();
+
+        return $this;
+    }
+
+    public function create($resource, array $attributes = array())
+    {
+        $pair = explode(':', $resource);
+
+        if (isset($pair[1]) === false)
+        {
+            $pair[1] = '';
+        }
+
+        $entity = $pair[0];
+        $method = $pair[1];
+
+        $obj = null;
+
+        $method = 'create'.studly_case(ucfirst($method));
+
+        $class = __NAMESPACE__.'\Entity\\'.ucfirst($entity);
+
+        if (class_exists($class))
+        {
+            if (isset($this->links[$entity]) === false)
+            {
+                $this->links[$entity] = new $class;
+            }
+
+            $obj = $this->links[$entity];
+
+            return $obj->$method($attributes);
+        }
+
+        $obj = $this->base;
+        $method = 'createEntity';
+
+        $data = $obj->$method($pair[0], $attributes);
+
+        return $data;
     }
 }

@@ -48,7 +48,7 @@ trait PaymentAuthFlowTrait
     protected function createAuthorizedPaymentEntity()
     {
         $payment = $this->getDefaultPaymentEntityArray();
-        $payment = $this->fixtures->createEntity('payment', $payment);
+        $payment = $this->fixtures->create('payment', $payment);
         $payment = $payment->toArrayPublic();
 
         return $payment;
@@ -58,7 +58,7 @@ trait PaymentAuthFlowTrait
     {
         $payment = $this->getDefaultPaymentEntityArray();
         $payment['status'] = 'captured';
-        $payment = $this->fixtures->createEntity('payment', $payment);
+        $payment = $this->fixtures->create('payment', $payment);
         $payment = $payment->toArrayPublic();
         return $payment;
     }

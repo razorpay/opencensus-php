@@ -87,7 +87,7 @@ class HdfcGatewayAuthTest extends TestCase
 
         $this->fixtures
              ->on('live')
-             ->createEntity('terminal', ['merchant_id' => '10000000000000']);
+             ->create('terminal', ['merchant_id' => '10000000000000']);
 
         $this->startTest();
     }

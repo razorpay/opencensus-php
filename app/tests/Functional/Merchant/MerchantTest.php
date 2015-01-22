@@ -94,7 +94,7 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
-        $this->fixtures->createEntity(
+        $this->fixtures->create(
             'key',
             ['merchant_id' => '1cXSLlUU8V9sXl',
              'id' => '1DP5mmOlF5G5ag']);
@@ -113,7 +113,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->appAuthLive();
 
-        $ba = $this->fixtures->on('live')->createEntity(
+        $ba = $this->fixtures->on('live')->create(
                         'bank_account', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
         $this->startTest();
