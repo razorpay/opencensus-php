@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'            =>  Account::ATOM_ACCOUNT,
                     'name'          =>  'Razorpay Atom Account',
-                    'email'         =>  'nodal@razorpay.com',
+                    'email'         =>  'atom@razorpay.com',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
