@@ -81,7 +81,7 @@ class Settler
             $this->settlementFailure('kotak', $e);
         }
 
-        $this->successNotification($settlements);
+        $this->successNotification($settlements, 'kotak');
 
         return ['setlFile' => $file];
     }
@@ -103,7 +103,7 @@ class Settler
             $this->settlementFailure('atom', $e);
         }
 
-        $this->successNotification($settlements);
+        $this->successNotification($settlements, 'atom');
 
         return $file;
     }
@@ -117,16 +117,20 @@ class Settler
         throw $e;
     }
 
-    protected function successNotification($settlements)
+    protected function successNotification($settlements, $channel)
     {
-        (new Mpr\SlackNotification)->queueOperationSuccess('settlements', $settlements->count());
+        $data = array(
+            'channel' => $channel,
+            'setl_count' => $settlements->count());
+
+        (new SlackNotification)->queueOperationSuccess('setl_initiate', $data);
 
         Dashboard::send('settlement', $settlements);
     }
 
     protected function failureNotification($exception)
     {
-        (new Mpr\SlackNotification)->queueOperationFailure('settlements', $exception);
+        (new SlackNotification)->queueOperationFailure('setl_initiate', $exception);
     }
 
     protected function process($txns, $channel)

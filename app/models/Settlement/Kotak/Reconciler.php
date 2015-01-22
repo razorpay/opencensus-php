@@ -8,6 +8,7 @@ use Models\Merchant;
 use Models\Transaction;
 use Models\Settlement;
 use Models\Settlement\Kotak;
+use Models\Settlement\SlackNotification;
 
 class Reconciler
 {
@@ -48,16 +49,43 @@ class Reconciler
     {
         $collection = new Base\PublicCollection;
 
-        foreach ($data as $row)
+        $this->setlRepo->beginTransaction();
+
+        try
         {
-            $setl = $this->loadSettlementAndRelations($row);
+            foreach ($data as $row)
+            {
+                $setl = $this->reconcileSetl($row);
 
-            $setl = $this->processSettlementStatus($setl, $row);
+                $collection->push($setl);
+            }
 
-            $collection->push($setl);
+            $this->setlRepo->commit();
+        }
+        catch (\Exception $e)
+        {
+            $this->setlRepo->rollback();
+
+            (new SlackNotification)->queueOperationFailure('setl_reconciliation', $e);
+
+            throw $e;
         }
 
+        $slackData = [
+            'setl_count' => $setl->count()];
+
+        (new SlackNotification)->queueOperationSuccess('setl_reconciliation', $slackData);
+
         return $collection;
+    }
+
+    protected function reconcileSetl($row)
+    {
+        $setl = $this->loadSettlementAndRelations($row);
+
+        $setl = $this->processSettlementStatus($setl, $row);
+
+        return $setl;
     }
 
     protected function processSettlementStatus($setl, $row)

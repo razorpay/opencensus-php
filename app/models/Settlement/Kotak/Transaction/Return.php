@@ -9,6 +9,7 @@ use Models\Merchant;
 use Models\Transaction;
 use Models\Settlement;
 use Models\Settlement\Kotak;
+use Models\Settlement\SlackNotification;
 
 class ReturnTransactions
 {
@@ -46,14 +47,41 @@ class ReturnTransactions
 
         $data = $this->parseTextFile($returnFile);
 
-        $this->reconcileReturns($data);
+        $this->processReturns($data);
     }
 
-    protected function reconcileReturns($data)
+    protected function processReturns($rows)
+    {
+        $this->setlRepo->beginTransaction();
+
+        try
+        {
+            $collection = $this->reconcileReturns($rows);
+
+            $this->setlRepo->commit();
+        }
+        catch (\Exception $e)
+        {
+            $this->setlRepo->rollback();
+
+            (new SlackNotification)->queueOperationFailure('setl_reconciliation', $e);
+
+            throw $e;
+        }
+
+        $slackData = [
+            'setl_failures' => $collection->count()];
+
+        (new SlackNotification)->queueOperationSuccess('setl_reconciliation', $slackData);
+
+        return $collection;
+    }
+
+    protected function reconcileReturns($rows)
     {
         $collection = new Base\PublicCollection;
 
-        foreach ($data as $row)
+        foreach ($rows as $row)
         {
             $setl = $this->loadSettlementAndRelations($row);
 

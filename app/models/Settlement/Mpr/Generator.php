@@ -9,6 +9,7 @@ use Models\Transaction;
 use Models\Merchant;
 use Models\Payment;
 use Models\Payment\Refund;
+use Models\Settlement\SlackNotification;
 use Queue;
 
 class Generator
@@ -59,7 +60,10 @@ class Generator
 
         $this->queueMprGenerationMail($data);
 
-        (new SlackNotification)->queueOperationSuccess('mpr_generation', $data['count']);
+        $slackData = [
+            'payemnts_count' => $data['count']];
+
+        (new SlackNotification)->queueOperationSuccess('mpr_generation', $slackData);
 
         return $data['file'];
     }

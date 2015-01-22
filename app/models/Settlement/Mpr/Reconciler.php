@@ -8,10 +8,11 @@ use EE\Exception;
 use Models\Base;
 use Models\Card;
 use Models\Gateway;
-use Models\Transaction;
 use Models\Merchant;
-use Models\Pricing;
 use Models\Payment;
+use Models\Pricing;
+use Models\Settlement;
+use Models\Transaction;
 
 class Reconciler
 {
@@ -65,14 +66,14 @@ class Reconciler
         {
             $this->txnRepo->rollback();
 
-            (new SlackNotification)->queueOperationFailure('mpr_reconciliation', $e);
+            (new Settlement\SlackNotification)->queueOperationFailure('mpr_reconciliation', $e);
 
             throw $e;
         }
 
-        $count = $txns->count();
+        $data = ['txn_count' => $txns->count()];
 
-        (new SlackNotification)->queueOperationSuccess('mpr_reconciliation', $count);
+        (new Settlement\SlackNotification)->queueOperationSuccess('mpr_reconciliation', $data);
 
         return $txns;
     }

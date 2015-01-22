@@ -31,7 +31,7 @@ class AwsInstance
 
     public function getInstanceId()
     {
-        return $this->getFullInstanceData()['instance-id'];
+        return $this->getInstanceData()['instance-id'];
     }
 
     public function getInstanceData()

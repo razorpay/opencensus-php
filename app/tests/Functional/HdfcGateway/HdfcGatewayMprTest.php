@@ -278,7 +278,7 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function mockSlack()
     {
-        $slackPretend = $this->config->get('slack.pretend');
+        $slackPretend = $this->config->get('slack.mock');
 
         if ($slackPretend === false)
         {
@@ -290,7 +290,7 @@ class HdfcGatewayMprTest extends TestCase
         $this->app->instance('slack', $slack);
 
         $slack->shouldReceive('send')
-              ->times(3)
+              ->times(4)
               ->with(Mockery::type('string'), '#settlements', 'settlements');
     }
 

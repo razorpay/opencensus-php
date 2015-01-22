@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Settlement\Mpr;
+namespace Models\Settlement;
 
 use Queue;
 
@@ -13,21 +13,24 @@ class SlackNotification
     protected $operations = array(
         'mpr_generation',
         'mpr_reconciliation',
-        'settlements');
+        'setl_initiate',
+        'setl_reconciled');
 
     protected $messages = array(
-        'mpr_generation' => 'Mpr file generated. Payments count: ',
-        'mpr_reconciliation' => 'Mpr file reconciled. Payments count: ',
-        'settlements' => 'Settlements sent out. Merchants count: ');
+        'mpr_generation'        => 'Mpr file generated. ',
+        'mpr_reconciliation'    => 'Mpr file reconciled. ',
+        'setl_initiate'         => 'Settlements initiated.',
+        'setl_reconciliation'   => 'Settlements reconciled. ',
+        'setl_return'           => 'Settlements returns occurred. ');
 
     public function __construct()
     {
         $this->queue = Queue::getFacadeRoot();
     }
 
-    public function queueOperationSuccess($operation, $count)
+    public function queueOperationSuccess($operation, $data)
     {
-        $message = $this->messages[$operation] . $count;
+        $message = '```'.$this->messages[$operation] . '\n ' . json_encode($data).'```';
 
         $func = __CLASS__ . '@sendSlackNotification';
 
