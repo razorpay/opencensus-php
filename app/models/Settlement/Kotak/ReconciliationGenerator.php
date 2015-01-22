@@ -15,7 +15,9 @@ use Models\Settlement\Kotak;
  */
 class ReconciliationGenerator
 {
-    protected $headings;
+    use FileHandlerTrait;
+
+    protected static $filename = 'Kotak_Settlement_Reconciliation';
 
     protected static $extraHeadings = array(
         'Success',
@@ -25,29 +27,25 @@ class ReconciliationGenerator
 
     public function _construct()
     {
-        $this->headings = Kotak\NodalAccount::getHeadings();
+        ;
     }
 
     public function generateReconcileFile($input)
     {
         $setlFile = $input['setlFile'];
 
-        $data = $this->parseSettlementFile($setlFile);
+        $data = $this->parseTextFile($setlFile);
 
         $data = $this->addNewFields($data);
 
-        $txt = $this->generateSetlReconciliationText($data);
+        $txt = $this->generateText($data);
 
-        return $this->generateSetlReconciliationFile($txt);
+        return $this->writeToTextFile($txt);
     }
 
     public static function getHeadings()
     {
-        $headings = Kotak\NodalAccount::getHeadings();
-
-        $headings = array_merge($headings, static::$extraHeadings);
-
-        return $headings;
+        return Kotak\NodalAccount::getHeadings();
     }
 
     protected function addNewFields($data)
@@ -67,47 +65,5 @@ class ReconciliationGenerator
         }
 
         return $data;
-    }
-
-    protected function parseSettlementFile($file)
-    {
-        $filePath = $file->getRealPath();
-
-        $data = Excel::load($filePath)
-                      ->formatDates(false)
-                      ->toArray();
-
-        //
-        // Excel files can have multiple sheets.
-        // We only need to get data from first sheet.
-        //
-        return $data;
-    }
-
-    protected function generateSetlReconciliationText($data)
-    {
-        $txt = '';
-
-        foreach ($data as $row)
-        {
-            $txt .= implode('~', array_values($row)) . '~\n';
-        }
-
-        return $txt;
-    }
-
-    protected function generateSetlReconciliationFile($txt)
-    {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
-        $name = 'Kotak_Settlement_Reconciliation_File_'.$time.'.txt';
-        $path = storage_path() . '/files/settlement/';
-
-        $fullpath = $path . $name;
-
-        $file = fopen($fullpath, 'w');
-        fwrite($file, $txt);
-        fclose($file);
-
-        return $fullpath;
     }
 }

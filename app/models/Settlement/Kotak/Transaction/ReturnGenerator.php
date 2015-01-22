@@ -16,6 +16,10 @@ use Models\Settlement\Kotak;
  */
 class ReturnTransactionsGenerator
 {
+    use Kotak\FileHandlerTrait;
+
+    protected static $filename = 'Kotak_Return_Transaction';
+
     protected static $accountIfsc = 'KKBK0000958';
     protected static $accountType = '11';
     protected static $accountNumber = '12345';
@@ -58,37 +62,15 @@ class ReturnTransactionsGenerator
                 'VIRTUAL APC'       => '');
         }
 
-        $filename = $this->generateFile($data);
+        $txt = $this->generateText($data);
+
+        $filename = $this->writeToTextFile($txt);
 
         return $filename;
     }
 
-    protected function generateFile($data)
+    public static function getHeadings()
     {
-        $excelData = array();
-
-        $excelData[] = ['WU NEFT Inward Report'];
-
-        $excelData[] = ReturnTransactions::getHeadings();
-
-        foreach ($data as $row)
-        {
-            $excelData[] = array_values($row);
-        }
-
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
-        $filename =  'Kotak_Return_Transaction_'.$time;
-
-        $excel = Excel::create($filename, function($excel) use ($excelData)
-        {
-            $excel->sheet('Nodal Settlement File', function($sheet) use ($excelData)
-                {
-                    $sheet->with($excelData, false, false);
-                });
-        });
-
-        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
-
-        return $fileMetadata['full'];
+        return ReturnTransactions::getHeadings();
     }
 }

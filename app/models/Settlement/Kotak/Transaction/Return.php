@@ -12,6 +12,8 @@ use Models\Settlement\Kotak;
 
 class ReturnTransactions
 {
+    use Kotak\FileHandlerTrait;
+
     protected static $headings = array(
         'BATCHTIME',
         'TXN REF NO',
@@ -42,7 +44,7 @@ class ReturnTransactions
     {
         $returnFile = $input['setlReturnFile'];
 
-        $data = $this->parseReturnFile($returnFile);
+        $data = $this->parseTextFile($returnFile);
 
         $this->reconcileReturns($data);
     }

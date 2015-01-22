@@ -60,7 +60,7 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function reconcileSettlements($setlReconciliationFile)
     {
-        $uploadedFile = $this->createUploadedFile($setlReconciliationFile, 'text/plain');
+        $uploadedFile = $this->createUploadedFile($setlReconciliationFile);
 
         $request = [
             'url' => '/settlements/reconcile',
@@ -239,7 +239,7 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function reconcileMpr($mprFile)
     {
-        $uploadedFile = $this->createUploadedFile($mprFile);
+        $uploadedFile = $this->createUploadedFile($mprFile, 'application/vnd.ms-excel');
 
         $request = &$this->testData['testUploadMpr']['request'];
         $request['content']['recipient'] = 'hdfc_mpr_testing_test@mg.razorpay.com';
@@ -261,7 +261,7 @@ class HdfcGatewayMprTest extends TestCase
             'Could not delete file generated during testing. Filename: ' . $file);
     }
 
-    protected function createUploadedFile($file, $mimeType = 'application/vnd.ms-excel')
+    protected function createUploadedFile($file, $mimeType = 'text/plain')
     {
         $this->assertFileExists($file);
 

@@ -12,6 +12,10 @@ use Models\Transaction;
 
 class NodalAccount
 {
+    use FileHandlerTrait;
+
+    protected static $filename = 'Kotak_Settlement';
+
     public static $headings = array(
         'Client_Code',
         'Product_Code',
@@ -72,7 +76,8 @@ class NodalAccount
     public function generateSettlementFile($settlements, $txns)
     {
         $data = array();
-        array_push($data, static::$headings);
+
+        $txt = '';
 
         foreach ($settlements as $settlement)
         {
@@ -100,20 +105,24 @@ class NodalAccount
             array_push($data, $values);
         }
 
+        $txt = $this->generateText($data);
+
+        return $this->writeToTextFile($txt);
+    }
+
+    protected function generateFile($txt)
+    {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
-        $filename =  'Kotak_Settlement_'.$time;
+        $name = 'Kotak_Settlement_'.$time.'.txt';
+        $path = storage_path() . '/files/settlement/';
 
-        $excel = Excel::create($filename, function($excel) use ($data)
-        {
-            $excel->sheet('Nodal Settlement File', function($sheet) use ($data)
-                {
-                    $sheet->with($data, false, false);
-                });
-        });
+        $fullpath = $path . $name;
 
-        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $file = fopen($fullpath, 'w');
+        fwrite($file, $txt);
+        fclose($file);
 
-        return $fileMetadata['full'];
+        return $fullpath;
     }
 
     protected function getEmptyArray()

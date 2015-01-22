@@ -11,12 +11,20 @@ use Models\Settlement\Kotak;
 
 class Reconciler
 {
+    use FileHandlerTrait;
+
     /**
      * All payments in the current mpr
      * will have the same reconciledAt timestamp
      * @var int
      */
     protected $reconciledAt;
+
+    protected static $extraHeadings = array(
+        'Success',
+        'UTR',
+        'Failure Reason',
+        'Date');
 
     public function __construct()
     {
@@ -31,39 +39,9 @@ class Reconciler
     {
         $reconcileFile = $input['setlReconciliationFile'];
 
-        $data = $this->parseReconciliationFile($reconcileFile);
+        $data = $this->parseTextFile($reconcileFile);
 
         return $this->reconcile($data);
-    }
-
-    protected function parseReconciliationFile($file)
-    {
-        $filePath = $file->getRealPath();
-
-        $file = fopen($filePath, 'r');
-
-        $txt = fread($file, filesize($filePath));
-
-        $rows = explode('\n', $txt);
-
-        $data = array();
-
-        $headings = Kotak\ReconciliationGenerator::getHeadings();
-
-        foreach ($rows as $row)
-        {
-            if ($row === '')
-                continue;
-
-            $values = explode('~', $row);
-            unset($values[count($values) - 1]);
-
-            $values = array_combine($headings, $values);
-
-            $data[] = $values;
-        }
-
-        return $data;
     }
 
     protected function reconcile($data)
@@ -142,5 +120,14 @@ class Reconciler
         $setl->transaction()->associate($txn);
 
         return $setl;
+    }
+
+    protected static function getHeadings()
+    {
+        $headings = Kotak\NodalAccount::getHeadings();
+
+        $headings = array_merge($headings, static::$extraHeadings);
+
+        return $headings;
     }
 }
