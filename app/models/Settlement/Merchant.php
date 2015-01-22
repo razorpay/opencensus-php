@@ -90,22 +90,7 @@ class Merchant
 
     protected function updateBalances()
     {
-        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate();
-
-        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate(
-                                                    $this->merchant->getKey());
-
-        $merchantBalance->subAmount($this->setlTransaction->getDebit());
-        $nodalBalance->subAmount($this->setlTransaction->getDebit());
-
-        $this->merchantRepo->updateBalance($nodalBalance);
-        $this->merchantRepo->updateBalance($merchantBalance);
-
-        $attributes = array(
-            Transaction\Entity::BALANCE => $merchantBalance->getBalance(),
-            Transaction\Entity::ESCROW_BALANCE => $nodalBalance->getBalance());
-
-        $this->setlTransaction->fill($attributes);
+        return (new Transaction\Core)->updateBalances($this->setlTransaction);
     }
 
     protected function fetchMerchantBankAccount()

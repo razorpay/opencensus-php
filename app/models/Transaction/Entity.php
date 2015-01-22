@@ -5,6 +5,7 @@ namespace Models\Transaction;
 use Models\Base;
 use Models\Payment;
 use Models\Transaction;
+use Models\Settlement;
 
 class Entity extends Base\PublicEntity
 {
@@ -106,6 +107,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::AMOUNT];
     }
 
+    public function getNetAmount()
+    {
+        return $this->getCredit() - $this->getDebit();
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
@@ -141,6 +147,39 @@ class Entity extends Base\PublicEntity
         {
             return $this->getRelation('entity')->payment->getGateway();
         }
+    }
+
+    public function getChannel()
+    {
+        $type = $this->getType();
+
+        $channel = null;
+        $gateway = null;
+
+        $entity = $this->getRelation('entity');
+
+        switch ($type)
+        {
+            case Type::PAYMENT:
+                $gateway = $entity->getGateway();
+                break;
+            case Type::REFUND:
+                $gateway = $entity->payment->getGateway();
+                break;
+            case Type::SETTLEMENT:
+            case Type::ADJUSTMENT:
+                $channel = $entity->getChannel();
+                break;
+            default:
+                throw new Exception\LogicException('Invalid type: ' . $type);
+        }
+
+        if ($channel === null)
+        {
+            $channel = Payment\Gateway::getChannel($gateway);
+        }
+
+        return $channel;
     }
 
     public function setReconciledAt($timestamp)

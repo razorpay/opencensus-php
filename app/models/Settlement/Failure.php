@@ -88,6 +88,13 @@ class Failure
 
         $adj->transaction()->associate($txn);
 
+        $this->updateBalances($txn);
+
         return $txn;
+    }
+
+    protected function updateBalances($txn)
+    {
+        return (new Transaction\Core)->updateBalances($txn);
     }
 }

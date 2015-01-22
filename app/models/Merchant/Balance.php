@@ -57,4 +57,17 @@ class Balance extends Base\UniqueIdEntity
 
         return $balance;
     }
+
+    public function updateBalance($txn)
+    {
+        $amount = $txn->getNetAmount();
+
+        $this->addAmount($amount);
+
+        if ($this->getBalance() < 0)
+        {
+            throw new Exception\LogicException(
+                'Something very wrong is happening! Balance is going negative');
+        }
+    }
 }

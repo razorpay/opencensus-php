@@ -143,7 +143,7 @@ class Reconciler
         $transaction->fill($txnData);
         $transaction->setReconciledAt($this->reconciledAt);
 
-        $this->updateBalances($transaction);
+//        $this->updateBalances($transaction);
 
         $this->txnRepo->save($transaction);
 
@@ -163,22 +163,9 @@ class Reconciler
         (new Card\Repository)->saveOrFail($card);
     }
 
-    protected function updateBalances()
+    protected function updateBalances($txn)
     {
-        $merchantRepo = new Merchant\Repository();
-
-        $nodalBalance = $merchantRepo->getEscrowBalanceLockForUpdate();
-        $merchantBalance = $merchantRepo->getBalanceLockForUpdate($this->merchant->getKey());
-
-        $merchantBalance->addAmount($this->transaction['credit']);
-        $merchantBalance->subAmount($this->transaction['debit']);
-        $merchantRepo->save($merchantBalance);
-
-        $nodalBalance->addAmount($this->transaction['api_fee']);
-        $merchantRepo->save($nodalBalance);
-
-        $this->transaction[Transaction\Entity::BALANCE] = $merchantBalance->getBalance();
-        $this->transaction[Transaction\Entity::ESCROW_BALANCE] = $nodalBalance->getBalance();
+        return (new Transaction\Core)->updateBalances($txn);
     }
 
     protected function loadEntities($paymentId)
