@@ -108,5 +108,7 @@ class Handler
             'data'      => $data,
             'stack'     => $exception->getTraceAsString(),
             'previous'  => $previous);
+
+        return $traceData;
     }
 }
