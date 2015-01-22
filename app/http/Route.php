@@ -201,6 +201,8 @@ final class Route
     public static function getDoNotLogURLs()
     {
         $doNotLogUrls = array(
+            'v1/payments/create/jsonp',
+            'payments/create/jsonp',
             self::$apiRoutes['payment_create_jsonp'][1]);
 
         return $doNotLogUrls;
