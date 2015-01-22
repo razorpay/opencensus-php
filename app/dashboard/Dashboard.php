@@ -6,6 +6,7 @@ use EE\Exception;
 use Config;
 use Models\Base\PublicEntity;
 use Models\Base\PublicCollection;
+use Models\Payment;
 use Queue;
 use Requests;
 
