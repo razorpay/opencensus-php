@@ -17,6 +17,12 @@ class Fixtures
     public function __construct()
     {
         $this->base = new Entity\Base;
+        Entity\Base::$fixtures = $this;
+    }
+
+    public static function getInstance()
+    {
+        return new static;
     }
 
     public function times($times)
@@ -31,8 +37,7 @@ class Fixtures
      */
     public function setUp()
     {
-        $apiMerchant = $this->create('merchant', ['id' => Merchant\Account::NODAL_ACCOUNT]);
-        $apiBalance = $this->base->createEntityInTestAndLive('balance', ['id' => Merchant\Account::NODAL_ACCOUNT]);
+        $this->create('merchant:nodal_account');
 
         $apiMerchant = $this->create('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
         $apiBalance = $this->base->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
@@ -41,21 +46,12 @@ class Fixtures
 
         $this->create('pricing:default_plan');
 
-        $entities = array(
-            'merchant'  => $this->create('merchant', ['id' => '10000000000000']),
-            'terminal'  => $this->create('terminal', ['merchant_id' => '10000000000000']),
-            'balance'   => $this->create('balance', ['id' => '10000000000000']),
-            );
+        $entities = $this->create('merchant:default_test_merchant');
 
-        $this->testKey = $this->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
-        $this->liveKey = $this->on('live')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
-
-        $this->ba = $this->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
-
-        $entities['payment'] = $this->on('test')->create(
-                                        'payment',
-                                        ['merchant_id' => '10000000000000',
-                                         'terminal_id' => $entities['terminal']->getKey()]);
+        $this->on('test')->create(
+                            'payment',
+                            ['merchant_id' => '10000000000000',
+                             'terminal_id' => '1n25f6uN5S1Z5a']);
 
         $this->entities = $entities;
     }
@@ -64,7 +60,7 @@ class Fixtures
     {
         $defaultValues = array(
             'status' => 'authorized',
-            'terminal_id' => $this->entities['terminal']->getKey(),
+            'terminal_id' => '1n25f6uN5S1Z5a',
         );
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -97,7 +93,7 @@ class Fixtures
     {
         $defaultValues = array(
             'status' => 'authorized',
-            'terminal_id' => $this->entities['terminal']->getKey(),
+            'terminal_id' => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
             'captured_at' => time(),
             'created_at' => time() - 10,

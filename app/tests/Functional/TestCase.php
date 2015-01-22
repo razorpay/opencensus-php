@@ -41,7 +41,7 @@ class TestCase extends ParentTestCase
         $this->db->setUp();
 
         // Instantiate fixture class
-        $this->fixtures = new Fixtures\Fixtures;
+        $this->fixtures = Fixtures\Fixtures::getInstance();
 
         $this->fixtures->setUp();
 

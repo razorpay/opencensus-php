@@ -26,6 +26,8 @@ class Base
         'transaction'   => 'Models\Transaction\Entity'
     );
 
+    public static $fixtures;
+
     public function create(array $attributes = array())
     {
         $entity = lcfirst(explode('\\', get_class($this))[4]);
