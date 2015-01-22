@@ -149,9 +149,11 @@ class Generator
         $message .= ' Exception Trace: ' . $e->getTraceAsString();
         $message .= ' Exception Class: ' . get_class($e);
 
-        $message .- ' Env: ' . $this->env;
+        $message .= ' Env: ' . $this->env;
 
         $data['message'] = $message;
+        $data['env'] = $this->env;
+        $data['mode'] = $this->mode;
 
         $this->queue->push($func, $data);
     }

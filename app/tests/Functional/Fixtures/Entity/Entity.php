@@ -5,9 +5,17 @@ namespace Tests\Functional\Fixtures\Entity;
 use Config;
 use Eloquent;
 use Tests\TestDummy\Factory;
+use Tests\Functional\Fixtures\Fixtures;
 
 class Base
 {
+    public static $fixturesInstance;
+
+    public function __construct()
+    {
+        $this->fixtures = self::$fixturesInstance;
+    }
+
     protected static $map = array(
         'atom'          => 'Gateway\Atom\Entity',
         'adjustment'    => 'Models\Adjustment\Entity',
@@ -26,17 +34,16 @@ class Base
         'transaction'   => 'Models\Transaction\Entity'
     );
 
-    public static $fixtures;
-
-    public function create(array $attributes = array())
+    public function createEntity(array $attributes = array())
     {
         $entity = lcfirst(explode('\\', get_class($this))[4]);
 
-        return $this->createEntity($entity, $attributes);
+        return $this->create($entity, $attributes);
     }
 
-    public function createEntity($entity, array $attributes = array())
+    public function create($entity, array $attributes = array())
     {
+
         if (($entity === 'merchant') or
             ($entity === 'pricing'))
         {
@@ -82,7 +89,7 @@ class Base
     protected function save($entity, $attributes)
     {
         $this->eloquentUnguard();
-
+//sd($entity);
         $entityClass = self::$map[$entity];
 
         $entity = Factory::create($entityClass, $attributes);

@@ -52,7 +52,7 @@ class CaptureTest extends TestCase
 
     public function testCaptureTwice()
     {
-        $payment = $this->fixtures->createPaymentCapturedEntity()->toArrayPublic();
+        $payment = $this->fixtures->create('payment:captured')->toArrayPublic();
 
         $this->payment = $payment;
 

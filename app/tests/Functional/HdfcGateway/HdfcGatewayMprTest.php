@@ -212,7 +212,7 @@ class HdfcGatewayMprTest extends TestCase
 
         foreach ($r as $i)
         {
-            $payment = $this->fixtures->createPaymentCapturedEntity(
+            $payment = $this->fixtures->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
                  'updated_at' => $createdAt + 10]);

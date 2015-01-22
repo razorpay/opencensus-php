@@ -4,6 +4,17 @@ namespace Tests\Functional\Fixtures\Entity;
 
 class Payment extends Base
 {
+    public function createCaptured(array $attributes = array())
+    {
+        if ((isset($attributes['method'])) and
+            ($attributes['method'] === 'card'))
+        {
+            ;
+        }
+
+        return $this->fixtures->create('payment:card_captured', $attributes);
+    }
+
     public function createCardCaptured(array $attributes = array())
     {
         $defaultValues = array(
@@ -19,8 +30,8 @@ class Payment extends Base
         $payment = $this->build('payment', $attributes);
 
         $hdfcAttrArray = array(
-            'trackid' => $payment->getKey(),
-            'amount' => $payment->getAmount(),
+            'trackid'    => $payment->getKey(),
+            'amount'     => $payment->getAmount(),
             'created_at' => $payment->created_at,
             'updated_at' => $payment->created_at);
 
@@ -30,17 +41,37 @@ class Payment extends Base
 
         $payment->save();
 
-        $txn = (new Models\Transaction\Core)->createFromPayment($payment);
+        $txn = (new \Models\Transaction\Core)->createFromPayment($payment);
         $txn->save();
 
         $payment->setStatus('captured');
         $payment->save();
 
-        $hdfcPaymentAuthorized = $this->createHdfcPaymentAuthorizedEntity(
-            $hdfcAttrArray);
+        $hdfcPaymentAuthorized = $this->fixtures->create('hdfc:authorized', $hdfcAttrArray);
 
-        $hdfcPaymentCaptured = $this->createHdfcPaymentCapturedEntity(
-            $hdfcAttrArray);
+        $hdfcPaymentCaptured = $this->fixtures->create('hdfc:captured', $hdfcAttrArray);
+
+        return $payment;
+    }
+
+    public function createAuthorized(array $attributes = array())
+    {
+        $defaultValues = array(
+            'status' => 'authorized',
+            'terminal_id' => '1n25f6uN5S1Z5a',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->create('payment', $attributes);
+
+        $hdfcPayment = $this->fixtures->create('hdfc:authorized',
+            array(
+                'trackid' => $payment->getKey(),
+                'amount' => $payment->getAmount(),
+                'created_at' => $payment->created_at,
+                'updated_at' => $payment->created_at,
+            ));
 
         return $payment;
     }

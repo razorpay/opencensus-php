@@ -20,11 +20,9 @@ class PaymentRetrieveTest extends TestCase
     {
         parent::setUp();
 
-        $payment = $this->fixtures->createPaymentAuthorizedEntity();
-
         $this->ba->privateAuth();
 
-        $payment = $this->fixtures->createPaymentCapturedEntity();
+        $payment = $this->fixtures->create('payment:captured');
 
         $this->request = array(
             'method' => 'GET',

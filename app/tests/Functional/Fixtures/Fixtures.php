@@ -10,6 +10,8 @@ use Models;
 
 class Fixtures
 {
+    protected static $instance = null;
+
     protected $links = [];
 
     protected $times = 0;
@@ -17,12 +19,17 @@ class Fixtures
     public function __construct()
     {
         $this->base = new Entity\Base;
-        Entity\Base::$fixtures = $this;
+        Entity\Base::$fixturesInstance = $this;
     }
 
     public static function getInstance()
     {
-        return new static;
+        if (self::$instance === null)
+        {
+            self::$instance = new static;
+        }
+
+        return self::$instance;
     }
 
     public function times($times)
@@ -58,96 +65,7 @@ class Fixtures
 
     public function createPaymentAuthorizedEntity(array $attributes = array())
     {
-        $defaultValues = array(
-            'status' => 'authorized',
-            'terminal_id' => '1n25f6uN5S1Z5a',
-        );
-
-        $attributes = array_merge($defaultValues, $attributes);
-
-        $payment = $this->create('payment', $attributes);
-
-        $hdfcPayment = $this->createHdfcPaymentAuthorizedEntity(
-            array(
-                'trackid' => $payment->getKey(),
-                'amount' => $payment->getAmount(),
-                'created_at' => $payment->created_at,
-                'updated_at' => $payment->created_at,
-            ));
-
-        return $payment;
-    }
-
-    public function createPaymentCapturedEntity(array $attributes = array())
-    {
-        if ((isset($attributes['method'])) and
-            ($attributes['method'] === 'card'))
-        {
-            ;
-        }
-
-        return $this->createPaymentCardCapturedEntity($attributes);
-    }
-
-    public function createPaymentCardCapturedEntity(array $attributes = array())
-    {
-        $defaultValues = array(
-            'status' => 'authorized',
-            'terminal_id' => '1n25f6uN5S1Z5a',
-            'transaction_id' => null,
-            'captured_at' => time(),
-            'created_at' => time() - 10,
-            'updated_at' => time() - 5);
-
-        $attributes = array_merge($defaultValues, $attributes);
-
-        $payment = $this->base->build('payment', $attributes);
-
-        $hdfcAttrArray = array(
-            'trackid' => $payment->getKey(),
-            'amount' => $payment->getAmount(),
-            'created_at' => $payment->created_at,
-            'updated_at' => $payment->created_at);
-
-        $card = $this->create('card');
-
-        $payment->card()->associate($card);
-
-        $payment->save();
-
-        $txn = (new Models\Transaction\Core)->createFromPayment($payment);
-        $txn->save();
-
-        $payment->setStatus('captured');
-        $payment->save();
-
-        $hdfcPaymentAuthorized = $this->createHdfcPaymentAuthorizedEntity(
-            $hdfcAttrArray);
-
-        $hdfcPaymentCaptured = $this->createHdfcPaymentCapturedEntity(
-            $hdfcAttrArray);
-
-        return $payment;
-    }
-
-    protected function createTransactionForPayment($payment)
-    {
-        ;
-    }
-
-    protected function createHdfcPaymentAuthorizedEntity(array $attributes = array())
-    {
-        $attributes['action'] = 4;
-        $attributes['status'] = 'authorized';
-        return $this->create('hdfc', $attributes);
-    }
-
-    protected function createHdfcPaymentCapturedEntity(array $attributes = array())
-    {
-        $attributes['action'] = 5;
-        $attributes['status'] = 'captured';
-
-        return $this->create('hdfc', $attributes);
+        return $this->create('payment:authorized');
     }
 
     public function createTerminalEntityForAtomGateway(array $attributes = array())
@@ -208,7 +126,7 @@ class Fixtures
 
         $class = __NAMESPACE__.'\Entity\\'.ucfirst($entity);
 
-        if (class_exists($class))
+        if (class_exists($class) and $method !== 'create')
         {
             if (isset($this->links[$entity]) === false)
             {
@@ -221,7 +139,7 @@ class Fixtures
         }
 
         $obj = $this->base;
-        $method = 'createEntity';
+        $method = 'create';
 
         $data = $obj->$method($entity, $attributes);
 
