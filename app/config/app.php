@@ -185,7 +185,8 @@ return array(
 		'Validator'       => 'Illuminate\Support\Facades\Validator',
 		'View'            => 'Illuminate\Support\Facades\View',
         'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
-        'BasicAuth'       => 'Http\BasicAuth\Facade'
+        'BasicAuth'       => 'Http\BasicAuth\Facade',
+        'Trace'           => 'Trace\Facade',
 	),
 
 );

@@ -290,7 +290,7 @@ class HdfcGatewayMprTest extends TestCase
         $this->app->instance('slack', $slack);
 
         $slack->shouldReceive('send')
-              ->times(4)
+              ->times(5)
               ->with(Mockery::type('string'), '#settlements', 'settlements');
     }
 

@@ -64,7 +64,7 @@ class ReturnTransactions
         {
             $this->setlRepo->rollback();
 
-            (new SlackNotification)->queueOperationFailure('setl_reconciliation', $e);
+            (new SlackNotification)->queueOperationFailure('setl_return', $e);
 
             throw $e;
         }
@@ -72,7 +72,7 @@ class ReturnTransactions
         $slackData = [
             'setl_failures' => $collection->count()];
 
-        (new SlackNotification)->queueOperationSuccess('setl_reconciliation', $slackData);
+        (new SlackNotification)->queueOperationSuccess('setl_return', $slackData);
 
         return $collection;
     }

@@ -9,6 +9,7 @@ use Models\Transaction;
 use Models\Settlement;
 use Models\Settlement\Kotak;
 use Models\Settlement\SlackNotification;
+use Trace\TraceCode;
 
 class Reconciler
 {
@@ -116,6 +117,8 @@ class Reconciler
             if (($status !== 'C') or
                 ($failureReason === ''))
             {
+                $trace = \Trace::getFacadeRoot();
+                $trace->error(TraceCode::SETTLEMENT_KOTAK_FAILURE_DATA_MISSING);
                 // Trace this
                 // @todo: Raise this issue with Kotak bank to get the actual reason
             }

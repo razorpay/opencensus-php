@@ -7,35 +7,6 @@ use Trace\TraceFields;
 
 class Trace extends TraceWriter
 {
-    /**
-     * Name of the application component
-     * eg: payment
-     *
-     * @var string $component Application component
-     */
-    protected $component;
-
-    /**
-     * Fields required for each trace
-     *
-     * @var array $compulsoryFields Compulsory fields
-     */
-    protected static $commonFields = array();
-
-    /**
-     * Values for compulsory fields
-     *
-     * @var array $compulsoryFieldValues Values for compulsory fields
-     */
-    protected $commonValues = array();
-
-    /**
-     * Values corresponding to fields
-     *
-     * @var array $values Field values
-     */
-    protected $values = array();
-
     protected static $instance = null;
 
     public function __construct()
@@ -72,54 +43,25 @@ class Trace extends TraceWriter
     }
 
     /**
-     * Set default values of fields
-     * for which developer did not provide a value
-     *
-     * @param string $code
-     * @param array $record
-     * @return array $record
-     */
-    public function setCommonValues($code, $record)
-    {
-        foreach(static::$defaults as $index => $default)
-        {
-            if (!array_key_exists($default, $record))
-            {
-                $defaults_var = 'default'.ucfirst($default);
-
-                $record[$default] = static::${$defaults_var}[$code];
-            }
-        }
-
-        return $record;
-    }
-
-    /**
      * Returns context array to be logged with trace record
      *
      * @param array $record
      */
     protected function getContext($code, $record)
     {
-        $this->commonValues = array();
-
-        $this->values = array();
+        $values = array();
 
         $fields = TraceFields::getFields($code);
 
         foreach($record as $key => $value)
         {
-            if (in_array($key, static::$commonFields))
+            if (in_array($key, $fields))
             {
-                $this->commonValues[$key] = $record[$key];
-            }
-            else if (in_array($key, $fields))
-            {
-                $this->values[$key] = $record[$key];
+                $values[$key] = $record[$key];
             }
         }
 
-        $context = array_merge($this->commonValues, $this->values);
+        $context = $values;
 
         TraceFields::checkFields($code, array_keys($context));
 

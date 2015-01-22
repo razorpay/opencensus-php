@@ -10,7 +10,8 @@ use Models\Card;
 use Models\Transaction;
 use Models\Terminal;
 use Models\Payment;
-use Trace\Trace;
+use Trace;
+use Trace\TraceCode;
 
 class Reconciler
 {
@@ -240,7 +241,7 @@ class Reconciler
         }
         else
         {
-            ; // trace here
+            Trace::error(TraceCode::MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK, ['network' => $cardNetwork]);
         }
 
         return $network;

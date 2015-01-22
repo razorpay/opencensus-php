@@ -8,7 +8,8 @@ use Excel;
 use Models\Merchant;
 use Models\Transaction;
 use Models\Settlement\Kotak;
-
+use Trace;
+use Trace\TraceCode;
 /**
  * This class is used to handle generation of settlement reconciliation
  * files for running tests and in test mode
@@ -40,7 +41,11 @@ class ReconciliationGenerator
 
         $txt = $this->generateText($data);
 
-        return $this->writeToTextFile($txt);
+        $file = $this->writeToTextFile($txt);
+
+        Trace::info(TraceCode::SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED);
+
+        return $file;
     }
 
     public static function getHeadings()

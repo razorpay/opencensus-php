@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Models\Adjustment;
 use Models\Settlement;
 use Models\Transaction;
+use Trace;
+use Trace\TraceCode;
 
 class Failure
 {
@@ -29,7 +31,7 @@ class Failure
         (new Transaction\Repository)->save($adjTxn);
         (new Adjustment\Repository)->save($adj);
 
-        // @todo: trace here.
+        \Trace::error(TraceCode::SETTLEMENT_MERCHANT_SETL_FAILED);
     }
 
     protected function newAdjustmentEntity($setl, $desc)

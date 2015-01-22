@@ -39,6 +39,25 @@ class TraceCode
     const GATEWAY_SUPPORT_ERROR                     = 'GATEWAY_SUPPORT_ERROR';
     const GATEWAY_UNKNOWN_ERROR                     = 'GATEWAY_UNKNOWN_ERROR';
 
+    const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
+    const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
+    const MPR_HDFC_PAYMENTS_FETCHED                 = 'MPR_HDFC_PAYMENTS_FETCHED';
+    const MPR_GENERATED                             = 'MPR_GENERATED';
+    const MPR_RECONCILED                            = 'MPR_RECONCILED';
+    const MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK   = 'MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK';
+    const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
+    const SETTLEMENT_RECONCILED                     = 'SETTLEMENT_RECONCILED';
+    const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
+    const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
+    const SETTLEMENT_RECONCILIATION_FAILED          = 'SETTLEMENT_RECONCILIATION_FAILED';
+    const SETTLEMENT_RETURN_FAILED                  = 'SETTLEMENT_RETURN_FAILED';
+    const SETTLEMENT_FILE_GENERATED_KOTAK           = 'SETTLEMENT_FILE_GENERATED_KOTAK';
+    const SETTLEMENT_KOTAK_FILE_TRANSFERRED         = 'SETTLEMENT_KOTAK_FILE_TRANSFERRED';
+    const SETTLEMENT_KOTAK_FAILURE_DATA_MISSING     = 'SETTLEMENT_KOTAK_FAILURE_DATA_MISSING';
+    const SETTLEMENT_ATOM_INITIATED_RECONCILED      = 'SETTLEMENT_ATOM_INITIATED_RECONCILED';
+    const SETTLEMENT_MERCHANT_SETL_FAILED           = 'SETTLEMENT_MERCHANT_SETL_FAILED';
+    const SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED = 'SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED';
+
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
 
     protected static $messages = array(
@@ -78,9 +97,10 @@ class TraceCode
      */
     public static function getMessage($code)
     {
-        if (! isset(self::$messages[$code]))
+        if (isset(self::$messages[$code]) === false)
         {
-            throw new InvalidArgumentException('Message for $code not defined');
+            // throw new InvalidArgumentException('Message for $code not defined');
+            return null;
         }
 
         return self::$messages[$code];

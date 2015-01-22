@@ -88,6 +88,13 @@ class Handler
 
         $previous = ($previousException !== null) ? $this->getExceptionDetails($previousException) : null;
 
+        $data = null;
+
+        if (method_exists($exception, 'getData'))
+        {
+            $data = $exception->getData();
+        }
+
         //
         // @note: Always call function 'getTraceAsSring' to get stack trace
         //        since it doesn't include function arguments.

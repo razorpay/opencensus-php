@@ -8,6 +8,7 @@ use Excel;
 use Gateway\Hdfc;
 use Models\Base;
 use Models\Payment;
+use Trace\TraceCode;
 
 class Generator
 {
@@ -42,8 +43,15 @@ class Generator
     const SERVICE_TAX_PERCENT = 12;
     const EDUCATION_CESS_PERCENT = 0.36;
 
+    public function __construct()
+    {
+        $this->trace = \App::getFacadeRoot()['trace'];
+    }
+
     public function generateMpr(array $input)
     {
+        $this->trace->info(TraceCode::MPR_HDFC_GEN_INITIATED);
+
         $hdfcPayments = $this->fetchHdfcPayments($input);
 
         $mprArray = $this->generateMprArray($input, $hdfcPayments);
@@ -68,6 +76,8 @@ class Generator
                 'Hdfc mpr: counts do not match: ' . $n . ' vs ' . count($hdfcPayments));
         }
 
+        $this->trace->debug(TraceCode::MPR_HDFC_PAYMENTS_FETCHED);
+
         return $hdfcPayments;
     }
 
@@ -86,6 +96,8 @@ class Generator
 
         $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
         $fullFileName = $fileMetadata['full'];
+
+        $this->trace->info(TraceCode::MPR_HDFC_FILE_GENERATED);
 
         return $fullFileName;
     }

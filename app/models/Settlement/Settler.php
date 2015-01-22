@@ -10,6 +10,7 @@ use Models\Merchant;
 use Models\Settlement;
 use Models\Transaction;
 use Dashboard\Dashboard;
+use Trace\TraceCode;
 
 class Settler
 {
@@ -31,14 +32,11 @@ class Settler
     public function __construct()
     {
         $this->initRepos();
-
-        $this->queue = \Queue::getFacadeRoot();
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     public function settle($input = array(), $channel = null)
     {
-        $this->input = $input;
-
         $txns = $this->fetchTransactionsToSettle($input);
 
         if ($channel === null)
@@ -103,6 +101,8 @@ class Settler
             $this->settlementFailure('atom', $e);
         }
 
+        $this->trace->info(TraceCode::SETTLEMENT_ATOM_INITIATED_RECONCILED);
+
         $this->successNotification($settlements, 'atom');
 
         return $file;
@@ -113,6 +113,8 @@ class Settler
         $e = new SettlementFailureException($channel, null, $e);
 
         $this->failureNotification($e);
+
+        $this->trace->critical(TraceCode::SETTLEMENT_INITIATE_FAILED);
 
         throw $e;
     }
@@ -193,12 +195,15 @@ class Settler
     {
         $filename = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
 
+        $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
+
         return $filename;
     }
 
     protected function transferFileToNodalBank($file)
     {
         ;
+        $this->trace->info(TraceCode::SETTLEMENT_KOTAK_FILE_TRANSFERRED);
     }
 
     protected function fetchTransactionsToSettle($input)
