@@ -12,7 +12,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 <!DOCTYPE HTML PUBLIC "-//W3C//Dtd HTML 4.0 transitional//EN">
 <HTML>
 <HEAD>
-    <TITLE>Testing Page-TranPortal VbyV</TITLE>
+    <TITLE>Razorpay - Testing page</TITLE>
 </HEAD>
 
 <BODY>

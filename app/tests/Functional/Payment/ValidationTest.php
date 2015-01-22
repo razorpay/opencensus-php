@@ -72,7 +72,8 @@ class PaymentValidationTest extends TestCase
             '3566002020360505',
             '6011111111111117',
             '30569309025904',
-            '38520000023237');
+            '38520000023237',
+            '62304123456789018');
 
         foreach ($numbers as $number)
         {
