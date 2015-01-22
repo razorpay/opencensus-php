@@ -10,34 +10,9 @@ use Models;
 
 class Fixtures
 {
-    protected static $entityMap = array(
-        'atom'          => 'Gateway\Atom\Entity',
-        'adjustment'    => 'Models\Adjustment\Entity',
-        'balance'       => 'Models\Merchant\Balance',
-        'bank_account'  => 'Models\Merchant\BankAccount',
-        'card'          => 'Models\Card\Entity',
-        'hdfc'          => 'Gateway\Hdfc\Entity',
-        'iin'           => 'Models\Card\Detail',
-        'key'           => 'Models\Key\Entity',
-        'merchant'      => 'Models\Merchant\Entity',
-        'payment'       => 'Models\Payment\Entity',
-        'pricing'       => 'Models\Pricing\Entity',
-        'refund'        => 'Models\Payment\Refund\Entity',
-        'settlement'    => 'Models\Settlement\Entity',
-        'terminal'      => 'Models\Terminal\Entity',
-        'transaction'   => 'Models\Transaction\Entity'
-    );
-
-    protected static $customMap = array(
-        'captured_payment',
-        'card_captured_payment',
-        'netbanking_captured_payment',
-        'authorized_payment',
-        'card_authorized_payment',
-        'netbanking_authorized_payment',
-        'atom_terminal');
-
     protected $links = [];
+
+    protected $times = 0;
 
     public function __construct()
     {
@@ -46,7 +21,7 @@ class Fixtures
 
     public function times($times)
     {
-        Factory::times($times);
+        $this->times = $times;
 
         return $this;
     }
@@ -67,7 +42,6 @@ class Fixtures
         $this->create('pricing:default_plan');
 
         $entities = array(
-//            'pricing'   => $this->createDefaultPricingPlan(),
             'merchant'  => $this->create('merchant', ['id' => '10000000000000']),
             'terminal'  => $this->create('terminal', ['merchant_id' => '10000000000000']),
             'balance'   => $this->create('balance', ['id' => '10000000000000']),
@@ -232,19 +206,9 @@ class Fixtures
 
     public function create($resource, array $attributes = array())
     {
-        $pair = explode(':', $resource);
-
-        if (isset($pair[1]) === false)
-        {
-            $pair[1] = '';
-        }
-
-        $entity = $pair[0];
-        $method = $pair[1];
+        list($entity, $method) = $this->getEntityAndMethodFromCreate($resource);
 
         $obj = null;
-
-        $method = 'create'.studly_case(ucfirst($method));
 
         $class = __NAMESPACE__.'\Entity\\'.ucfirst($entity);
 
@@ -263,8 +227,27 @@ class Fixtures
         $obj = $this->base;
         $method = 'createEntity';
 
-        $data = $obj->$method($pair[0], $attributes);
+        $data = $obj->$method($entity, $attributes);
 
         return $data;
+    }
+
+    protected function getEntityAndMethodFromCreate($resource)
+    {
+        $pair = explode(':', $resource);
+
+        if (isset($pair[1]) === false)
+        {
+            $pair[1] = '';
+        }
+
+        $entity = $pair[0];
+        $method = $pair[1];
+
+        $obj = null;
+
+        $method = 'create'.studly_case(ucfirst($method));
+
+        return [$entity, $method];
     }
 }
