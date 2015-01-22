@@ -2,6 +2,9 @@
 
 namespace Services;
 
+use Trace;
+use Trace\TraceCode;
+
 class AwsInstance
 {
     protected $attributes = array(
@@ -72,7 +75,8 @@ class AwsInstance
 
         if ($status !== 0)
         {
-            // @todo: trace here
+            Trace::critical(TraceCode::AWS_INSTANCE_DATA_RECORD_FAILURE);
+
             return null;
         }
 
@@ -102,7 +106,7 @@ class AwsInstance
 
         if ($res === false)
         {
-            // @todo: trace here
+            Trace::error(TraceCode::AWS_INSTANCE_DATA_WRITE_FAILURE);
         }
     }
 
@@ -117,7 +121,7 @@ class AwsInstance
 
         if ($jsonData === false)
         {
-            // @todo: trace here;
+            Trace::error(TraceCode::AWS_INSTANCE_DATA_READ_FAILURE);
 
             return;
         }
