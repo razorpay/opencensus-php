@@ -97,7 +97,14 @@ var XD = function() {
 var data = {{json_encode($data);}};
 // Callback data //
 
-XD.postMessage(data,'*',window.parent);
+if(window.parent === window){
+    // We are in popup mode
+    XD.postMessage(data, '*', window.opener);
+}
+else {
+    // We are in iframe mode
+    XD.postMessage(data, '*', window.parent);
+}
 
 </script>
 Your payment is currently in progress. Please wait.
