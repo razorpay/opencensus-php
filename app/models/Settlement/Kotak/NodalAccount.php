@@ -110,21 +110,6 @@ class NodalAccount
         return $this->writeToTextFile($txt);
     }
 
-    protected function generateFile($txt)
-    {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
-        $name = 'Kotak_Settlement_'.$time.'.txt';
-        $path = storage_path() . '/files/settlement/';
-
-        $fullpath = $path . $name;
-
-        $file = fopen($fullpath, 'w');
-        fwrite($file, $txt);
-        fclose($file);
-
-        return $fullpath;
-    }
-
     protected function getEmptyArray()
     {
         $count = count(static::$headings);
@@ -142,10 +127,5 @@ class NodalAccount
         }
 
         return array_values($dict);
-    }
-
-    public static function getHeadings()
-    {
-        return static::$headings;
     }
 }

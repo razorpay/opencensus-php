@@ -68,4 +68,9 @@ trait FileHandlerTrait
 
         return $data;
     }
+
+    public static function getHeadings()
+    {
+        return static::$headings;
+    }
 }

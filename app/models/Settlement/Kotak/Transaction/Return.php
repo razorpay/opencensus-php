@@ -110,11 +110,6 @@ class ReturnTransactions
         return $data;
     }
 
-    public static function getHeadings()
-    {
-        return static::$headings;
-    }
-
     protected function loadSettlementAndRelations($row)
     {
         $setlId = $row['TXN REF NO'];
