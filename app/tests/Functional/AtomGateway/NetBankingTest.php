@@ -215,7 +215,7 @@ class NetBankingTest extends TestCase
             $status = 'F';
         }
 
-        $url = ($mock) ? '/gateway/mockatom/rzp_bank/submit' : $atomBaseUrl . '/paynetz/atom';
+        $url = ($mock) ? '/gateway/mockanb/rzp_bank/submit' : $atomBaseUrl . '/paynetz/atom';
         $url .= '?' . 'ITC='.$itc . '&BID='.$bid.'&clientCode='.$cc.'&amt='.$amt.'&Status='.$status;
 
         $values = array('success' => $status);
