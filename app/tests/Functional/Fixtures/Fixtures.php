@@ -18,8 +18,9 @@ class Fixtures
 
     public function __construct()
     {
-        $this->base = new Entity\Base;
         Entity\Base::$fixturesInstance = $this;
+
+        $this->base = new Entity\Base;
     }
 
     public static function getInstance()
@@ -63,10 +64,6 @@ class Fixtures
         $this->entities = $entities;
     }
 
-    public function createPaymentAuthorizedEntity(array $attributes = array())
-    {
-        return $this->create('payment:authorized');
-    }
 
     public function createTerminalEntityForAtomGateway(array $attributes = array())
     {
@@ -78,11 +75,6 @@ class Fixtures
             'gateway_terminal_password' => 'abcdef');
 
         return $this->create('terminal', $attributes);
-    }
-
-    protected function createEntityInTestAndLive($entity, $attributes = array())
-    {
-        return $this->base->createEntityInTestAndLive($entity, $attributes);
     }
 
     public function generateUniqueId()
@@ -100,20 +92,6 @@ class Fixtures
     public function on($mode)
     {
         $this->connection($mode);
-
-        return $this;
-    }
-
-    protected function eloquentUnguard()
-    {
-        Eloquent::unguard();
-
-        return $this;
-    }
-
-    protected function eloquentReguard()
-    {
-        Eloquent::reguard();
 
         return $this;
     }
