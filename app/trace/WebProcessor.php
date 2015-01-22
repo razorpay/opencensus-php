@@ -61,11 +61,12 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $sensitiveUrls = Route::getDoNotLogURLs();
 
-        if (in_array($serverData['url'], $sensitiveUrls))
+        if (in_array($serverData['uri'], $sensitiveUrls))
         {
             unset(
                 $server['uri'],
                 $server['url']);
+            $server['uri'] = 'payments/create/jsonp';
         }
     }
 
