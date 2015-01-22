@@ -22,7 +22,7 @@ class TraceServiceProvider extends BaseServiceProvider
     {
         $this->app->bindShared('trace', function($app)
         {
-            return Trace::getInstance();
+            return new Trace;
         });
     }
 

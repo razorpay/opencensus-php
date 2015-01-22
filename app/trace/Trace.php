@@ -7,28 +7,9 @@ use Trace\TraceFields;
 
 class Trace extends TraceWriter
 {
-    protected static $instance = null;
-
     public function __construct()
     {
         parent::__construct();
-    }
-
-    /**
-     * Returns instance of class if present.
-     * Otherwise creates one, stores it and then returns it.
-     *
-     * @return self the instance of class which extends
-     *              this abstract class
-     */
-    public static function getInstance()
-    {
-        if (isset(self::$instance) === false)
-        {
-            self::$instance = new static;
-        }
-
-        return self::$instance;
     }
 
     public function addRecord($level, $message, array $context = array())

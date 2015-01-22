@@ -5,6 +5,7 @@ namespace EE\Exception;
 use App;
 use Config;
 use Http\ApiResponse;
+use Trace;
 
 class Handler
 {
@@ -42,7 +43,8 @@ class Handler
         // When running in console, throw the exception, irrespective
         // of debug config
         //
-        if ($this->app->runningInConsole())
+        if (($this->app->runningInConsole()) and
+            ($this->app->environment('testing') === false))
         {
             return;
         }
@@ -55,7 +57,7 @@ class Handler
         if ($this->debug)
         {
             // ServerError is fatal error and shoudn't be encountered
-            // Let the higher-ups handle it. This function handle
+            // Let the higher-ups handle it. This function handles
             // known/expected exceptions
             if ($exception instanceof ServerErrorException)
                 return;
@@ -77,8 +79,8 @@ class Handler
 
         $traceData = $this->getExceptionDetails($exception);
 
-        \Trace\Trace::getInstance()->critical(
-           \Trace\TraceCode::ERROR_EXCEPTION,
+        $this->app['trace']->critical(
+           Trace\TraceCode::ERROR_EXCEPTION,
            $traceData);
     }
 
