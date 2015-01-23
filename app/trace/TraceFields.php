@@ -171,6 +171,12 @@ class TraceFields
             'network'
         ),
 
+        TraceCode::DASHBOARD_INTEGRATION_ERROR => array(
+            'body',
+            'transaction',
+            'mode',
+        ),
+
     );
 
     /**

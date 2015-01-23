@@ -9,6 +9,8 @@ use Models\Base\PublicCollection;
 use Models\Payment;
 use Queue;
 use Requests;
+use Trace;
+use Trace\TraceCode;
 
 class Dashboard
 {
@@ -93,7 +95,10 @@ class Dashboard
             {
                 $array = array(
                     'body'          => $body,
-                    'transaction'   => $data['message']);
+                    'transaction'   => $data['message'],
+                    'mode'          => $data['mode']);
+
+                Trace::error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $array);
 
                 throw new Exception\IntegrationException(
                     'Dashboard returned a non-json response',
@@ -103,9 +108,16 @@ class Dashboard
             if ((isset($content['status']) === false) or
                 ($content['status'] === false))
             {
+                $array = array(
+                    'body'          => $content,
+                    'transaction'   => $data['message'],
+                    'mode'          => $data['mode']);
+
+                Trace::error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $array);
+
                 throw new Exception\IntegrationException(
                     'Dashboard returned false status in response',
-                    ['transaction' => $data['message']]);
+                    $array);
             }
         }
 

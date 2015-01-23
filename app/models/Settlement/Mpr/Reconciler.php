@@ -143,8 +143,6 @@ class Reconciler
         $transaction->fill($txnData);
         $transaction->setReconciledAt($this->reconciledAt);
 
-//        $this->updateBalances($transaction);
-
         $this->txnRepo->save($transaction);
 
         return $transaction;

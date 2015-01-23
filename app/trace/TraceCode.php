@@ -62,6 +62,9 @@ class TraceCode
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
 
+    const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
+    const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
+
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
 
     protected static $messages = array(
