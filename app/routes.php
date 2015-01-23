@@ -52,6 +52,8 @@ Route::group(array('before' => 'auth'), function()
 
     Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
 
+    Route::get('/{mode}/analytics/payment/aggregations', 'TransactionController@getPaymentAggregations');
+
     Route::get('/{mode}/keys', 'MerchantController@getKeys');
 
     Route::get('/keys/csv', 'MerchantController@getCsv');
