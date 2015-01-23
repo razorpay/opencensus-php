@@ -27,6 +27,11 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     protected static $generators = array('id', 'confirm_token');
 
+    protected static $test_merchant_ids = array(
+        '10000000000000',
+        '100DemoAccount'
+    );
+
     const AMEX  = 'AMEX';
     const DICL  = 'DICL';
     const DISC  = 'DISC';
@@ -274,6 +279,11 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     public function getReminderEmail()
     {
         return $this->email;
+    }
+
+    public function isTestAccount()
+    {
+        return in_array($this->id, static::$test_merchant_ids);
     }
 
     public function isActive()
