@@ -27,6 +27,35 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
     protected static $generators = array('id', 'confirm_token');
 
+    const AMEX  = 'AMEX';
+    const DICL  = 'DICL';
+    const DISC  = 'DISC';
+    const JCB   = 'JCB';
+    const MAES  = 'MAES';
+    const MC    = 'MC';
+    const RUPAY = 'RUPAY';
+    const VISA  = 'VISA';
+    const UNP   = 'UNP';
+    const CARD  = 'CARD';
+    const NETBANKING = 'NETBANKING';
+    const UNKNOWN = 'UNKNOWN';
+
+    protected static $api_mappings = array(
+        'American Express'  =>  self::AMEX,
+        'Diners Club'       =>  self::DICL,
+        'Discover'          =>  self::DISC,
+        'JCB'               =>  self::JCB,
+        'Maestro'           =>  self::MAES,
+        'MasterCard'        =>  self::MC,
+        'RuPay'             =>  self::RUPAY,
+        'Unknown'           =>  self::UNKNOWN,
+        'Visa'              =>  self::VISA,
+        'Union Pay'         =>  self::UNP,
+        'card'              =>  self::CARD,
+        'netbanking'        =>  self::NETBANKING,
+        'Unknown'           =>  self::UNKNOWN
+    );
+
     /**
      * Generates UUid ID
      */
@@ -72,13 +101,22 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         return $data;
     }
 
+    public static function getPaymentAggregations($data, $mode)
+    {
+        $data = \DB::table('payment_aggregations')
+                    ->where('merchant_id','=',$data['merchant_id'])
+                    ->where('mode','=',$mode)
+                    ->first();
+        return $data;
+    }
+
     public static function createAggregations($data, $mode)
     {
         $obj = array(
             'merchant_id'           =>  $data['merchant_id'],
-            'total_amount'          =>  $data['amount'],
-            'successful_txn_count'  =>  1,
-            'txn_count'             =>  1,
+            'total_amount'          =>  0,
+            'successful_txn_count'  =>  0,
+            'txn_count'             =>  0,
             'created_at'            =>  $data['updated_at'],
             'updated_at'            =>  $data['updated_at'],
             'resource'              =>  $data['resource'],
@@ -86,6 +124,22 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         );
 
         \DB::table('aggregations')->insert($obj);
+
+        return static::getAggregations($data, $mode);
+    }
+
+    public static function createPaymentAggregations($data, $mode)
+    {
+        $obj = array(
+            'merchant_id'           =>  $data['merchant_id'],
+            'created_at'            =>  $data['updated_at'],
+            'updated_at'            =>  $data['updated_at'],
+            'mode'                  =>  $mode
+        );
+
+        \DB::table('payment_aggregations')->insert($obj);
+
+        return static::getPaymentAggregations($data, $mode);
     }
 
     public static function updateAggregations($data, $merchant_details, $mode)
@@ -99,6 +153,27 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         \DB::table('aggregations')
             ->where('merchant_id','=',$data['merchant_id'])
             ->where('resource','=',$data['resource'])
+            ->where('mode', '=', $mode)
+            ->update($obj);
+    }
+
+    public static function updatePaymentAggregations($data, $merchant_details, $mode)
+    {
+        $obj = array();
+
+        $method = static::$api_mappings[$data['method']];
+
+        $obj[static::$api_mappings[$data['method']]] = $merchant_details->$method + 1;
+        
+        if(isset($data['network']))
+        {
+            $network = static::$api_mappings[$data['network']];
+
+            $obj[static::$api_mappings[$data['network']]] = $merchant_details->$network + 1;
+        }
+
+        \DB::table('payment_aggregations')
+            ->where('merchant_id','=',$data['merchant_id'])
             ->where('mode', '=', $mode)
             ->update($obj);
     }

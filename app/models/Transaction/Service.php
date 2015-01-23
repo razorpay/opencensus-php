@@ -34,6 +34,8 @@ class Service extends Base\Service
         // Only Payments analytics are stored
         if ($input['resource'] === "payment")
         {
+            $this->aggregatePayment($input, $mode);
+
             unset($input['resource']);
 
             foreach (static::$timeIntervals as $type => $interval)
@@ -84,12 +86,23 @@ class Service extends Base\Service
 
         if ($merchantDetails === null)
         {
-            Merchant\Entity::createAggregations($data, $mode);
+            $merchantDetails = Merchant\Entity::createAggregations($data, $mode);
         }
-        else
+        
+        Merchant\Entity::updateAggregations($data, $merchantDetails, $mode);
+
+    }
+
+    protected function aggregatePayment($data, $mode)
+    {
+        $merchantDetails = Merchant\Entity::getPaymentAggregations($data, $mode);
+
+        if ($merchantDetails === null)
         {
-            Merchant\Entity::updateAggregations($data, $merchantDetails, $mode);
+            $merchantDetails = Merchant\Entity::createPaymentAggregations($data, $mode);
         }
+
+        Merchant\Entity::updatePaymentAggregations($data, $merchantDetails, $mode);
     }
 
     protected function update($data, $obj)
@@ -113,6 +126,15 @@ class Service extends Base\Service
             $response[$resource] = Merchant\Entity::getAggregations($data, $mode);      
         }
 
+        return $response;
+    }
+
+    public function getPaymentAggregations($merchantId, $mode)
+    {
+        $data = array('merchant_id' => $merchantId);
+
+        $response = Merchant\Entity::getPaymentAggregations($data, $mode);      
+ 
         return $response;
     }
 

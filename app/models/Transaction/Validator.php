@@ -11,7 +11,9 @@ class Validator extends Base\Validator
         'amount'        =>  'required|numeric|max:10000',
         'created_at'    =>  'required|numeric',
         'updated_at'    =>  'required|numeric',
-        'resource'      =>  'required|in:payment,refund,settlement'
+        'resource'      =>  'required|in:payment,refund,settlement',
+        'method'        =>  'required|in:card,netbanking',
+        'network'       =>  'required_if:method,card'
     );
 
     protected static $analyticsRules = array(

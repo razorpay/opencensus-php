@@ -44,6 +44,17 @@ class TransactionController extends BaseController
         return AppResponse::jsonResponse([], $data);
     }
 
+    public function getPaymentAggregations($mode)
+    {
+        $this->checkMode($mode);
+
+        $merchant_id = Auth::merchant()->id();
+
+        $data = (new Transaction\Service)->getPaymentAggregations($merchant_id, $mode);
+
+        return AppResponse::jsonResponse([], $data);
+    }
+
     public function getTransactions($mode)
     {
         $this->checkMode($mode);
