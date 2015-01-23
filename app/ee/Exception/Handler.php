@@ -103,6 +103,8 @@ class Handler
         //        Function arguments can contain sensitive data so should
         //        never be logged. Never call 'getTrace' directly.
         //
+        // @note: Don't remove this comment.
+        //
         $traceData = array(
             'class'     => get_class($exception),
             'code'      => $exception->getCode(),
