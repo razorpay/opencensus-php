@@ -12,7 +12,7 @@ cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncign
 cd /home/ubuntu/api/ && sudo chmod 775 -R app/storage
 
 # DB Migrate
-cd /home/ubuntu/api/ && php artisan migrate -force && php artisan migrate --database=test --force
+cd /home/ubuntu/api/ && php artisan migrate --force && php artisan migrate --database=test --force
 
 # Take the app up
 cd /home/ubuntu/api/ && php artisan up
