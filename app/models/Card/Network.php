@@ -18,7 +18,6 @@ class Network
     const UNP   = 'UNP';
 
     // Unidentified
-    const OTHER = 'OTHER';
     const UNKNOWN = 'UNKNOWN';
 
     protected static $fullName = array(
