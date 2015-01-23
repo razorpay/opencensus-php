@@ -13,6 +13,10 @@ use Laracasts\TestDummy\Factory;
 
 class TestCase extends \Illuminate\Foundation\Testing\TestCase
 {
+    protected $testDataFilePath;
+
+    protected $testData = array();
+
 	/**
 	 * Creates the application.
 	 *
@@ -31,6 +35,9 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
     {
         parent::setUp();
 
+        // Load test data
+        $this->loadTestData();
+
         $this->config = $this->app['config'];
     }
 
@@ -39,5 +46,18 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         Mockery::close();
 
         parent::tearDown();
+    }
+
+    protected function loadTestData()
+    {
+        static $testData = null;
+
+        if (($this->testDataFilePath !== null) and
+            ($testData === null))
+        {
+            $testData = require($this->testDataFilePath);
+        }
+
+        $this->testData = $testData;
     }
 }
