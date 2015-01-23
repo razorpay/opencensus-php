@@ -37,6 +37,11 @@ class AnalyticsTest extends TestCase
                     'merchant_id'   => $this->merchant->id
                 );
 
+                if($resource == 'payment') {
+                    $data['method'] = 'card';
+                    $data['network'] = 'Visa';
+                }
+                
                 $response = $this->call('POST', '/test/transactions/'.$resource, $data);
 
                 $content = $response->getContent();
