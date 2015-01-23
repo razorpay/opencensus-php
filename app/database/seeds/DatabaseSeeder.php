@@ -44,49 +44,62 @@ class DatabaseSeeder extends Seeder
 
         DB::table('merchant_details')->insert(array(
             'merchant_id'   =>  '100DemoAccount',
+            'locked'        => 1
             )
         );
 
-        $modes = array('live', 'test');
+        $mids = array('100DemoAccount', '10000000000000');
 
-        foreach($modes as $mode)
-        {
+        foreach($mids as $mid){
     		DB::table('aggregations')->insert(array(
-    			'merchant_id'	=>	'100DemoAccount',
+    			'merchant_id'	=>	$mid,
     			'total_amount'	=>  239871,
     			'txn_count'		=>	21,
     			'successful_txn_count' => 13,
     			'resource'		=> 'payment',
     			'created_at'	=>	time(),
     			'updated_at'	=>	time(),
-    			'mode'			=> 	$mode
+    			'mode'			=> 	'test'
     			)
     		);
 
             DB::table('aggregations')->insert(array(
-                'merchant_id'   =>  '100DemoAccount',
+                'merchant_id'   =>  $mid,
                 'total_amount'  =>  12345,
                 'txn_count'     =>  3,
                 'successful_txn_count' => 3,
                 'resource'      => 'refund',
                 'created_at'    =>  time(),
                 'updated_at'    =>  time(),
-                'mode'          =>  $mode
+                'mode'          =>  'test'
                 )
             );
 
             DB::table('aggregations')->insert(array(
-                'merchant_id'   =>  '100DemoAccount',
+                'merchant_id'   =>  $mid,
                 'total_amount'  =>  12345,
                 'txn_count'     =>  7,
                 'successful_txn_count' => 7,
                 'resource'      => 'settlement',
                 'created_at'    =>  time(),
                 'updated_at'    =>  time(),
-                'mode'          =>  $mode
+                'mode'          =>  'test'
                 )
             );
 
+
+            DB::table('payment_aggregations')->insert(array(
+                'merchant_id'   =>  $mid,
+                'CARD'  =>  100,
+                'NETBANKING'     =>  21,
+                'VISA' => 26,
+                'MC'      => 33,
+                'MAES'    =>  30,
+                'RUPAY'   => 11,
+                'updated_at'    =>  time(),
+                'mode'          =>  'test'
+                )
+            );
 
             $types = array('day', 'week', 'month', 'year');
 
@@ -95,142 +108,142 @@ class DatabaseSeeder extends Seeder
                 $data = array();
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  5000,
                     'count' => 13,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  4500,
                     'count' => 9,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-1 ' . $type, time()),
                     'updated_at'    =>  strtotime('-1 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  4200,
                     'count' => 10,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-2 ' . $type, time()),
                     'updated_at'    =>  strtotime('-2 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  3600,
                     'count' => 8,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-3 ' . $type, time()),
                     'updated_at'    =>  strtotime('-3 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  4500,
                     'count' => 6,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-4 ' . $type, time()),
                     'updated_at'    =>  strtotime('-4 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  2500,
                     'count' => 10,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-6 ' . $type, time()),
                     'updated_at'    =>  strtotime('-6 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  3300,
                     'count' => 23,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-7 ' . $type, time()),
                     'updated_at'    =>  strtotime('-7 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  6500,
                     'count' => 25,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-8 ' . $type, time()),
                     'updated_at'    =>  strtotime('-8 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  8000,
                     'count' => 29,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-9 ' . $type, time()),
                     'updated_at'    =>  strtotime('-9 ' . $type, time())
                 );
 
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  7900,
                     'count' => 18,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-10 ' . $type, time()),
                     'updated_at'    =>  strtotime('-10 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  8200,
                     'count' => 25,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-11 ' . $type, time()),
                     'updated_at'    =>  strtotime('-11 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  8400,
                     'count' => 20,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-12 ' . $type, time()),
                     'updated_at'    =>  strtotime('-12 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  6100,
                     'count' => 16,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-13 ' . $type, time()),
                     'updated_at'    =>  strtotime('-13 ' . $type, time())
                 );
 
                 $data[] = array(
-                    'merchant_id'   =>  '100DemoAccount',
+                    'merchant_id'   =>  $mid,
                     'type'  =>  $type,
                     'amount'     =>  2600,
                     'count' => 8,
-                    'mode'      => $mode,
+                    'mode'      => 'test',
                     'created_at'    =>  strtotime('-14 ' . $type, time()),
                     'updated_at'    =>  strtotime('-14 ' . $type, time())
                 );
