@@ -112,29 +112,34 @@
           " style="height:240px" >
           </div>
         </div>
-        <div class="col wrapper-lg w-lg bg-light dk r-r">
+        <div class="col wrapper-lg w-lg bg-light dk r-r" ng-controller="DashboardPaymentAggregationsCtrl">
           <h4 class="font-thin m-t-none m-b">Transaction Types</h4>
           <div class="">
             <div class="text-center-folded">
-              <span class="pull-right">14%</span>
-              <span class="hidden-folded">MasterCard</span>
-            </div>
-            <progressbar value="14" class="progress-xs m-t-sm bg-white" animate="true" type="primary"></progressbar>
-            <div class="text-center-folded">
-              <span class="pull-right">17%</span>
+              <span class="pull-right">{{ paymentaggregations.VISA }}%</span>
               <span class="hidden-folded">Visa</span>
             </div>
-            <progressbar value="17" class="progress-xs m-t-sm bg-white" animate="true" type="info"></progressbar>
+            <progressbar value="paymentaggregations.VISA" class="progress-xs m-t-sm bg-white" animate="true" type="primary"></progressbar>
             <div class="text-center-folded">
-              <span class="pull-right">20%</span>
+              <span class="pull-right">{{paymentaggregations.MC}}%</span>
+              <span class="hidden-folded">MasterCard</span>
+            </div>
+            <progressbar value="paymentaggregations.MC" class="progress-xs m-t-sm bg-white" animate="true" type="info"></progressbar>
+            <div class="text-center-folded">
+              <span class="pull-right">{{paymentaggregations.MAES}}%</span>
               <span class="hidden-folded">Maestro</span>
             </div>
-            <progressbar value="20" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
+            <progressbar value="paymentaggregations.MAES" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
             <div class="text-center-folded">
-              <span class="pull-right">49%</span>
+              <span class="pull-right">{{paymentaggregations.NETBANKING}}%</span>
               <span class="hidden-folded">Net Banking</span>
             </div>
-            <progressbar value="49" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
+            <progressbar value="paymentaggregations.NETBANKING" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
+            <div class="text-center-folded">
+              <span class="pull-right">{{paymentaggregations.OTHER}}%</span>
+              <span class="hidden-folded">Other</span>
+            </div>
+            <progressbar value="paymentaggregations.OTHER" class="progress-xs m-t-sm bg-white" animate="true" type="warning"></progressbar>
           </div>
         </div>
       </div>

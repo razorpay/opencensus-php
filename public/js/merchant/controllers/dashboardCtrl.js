@@ -29,6 +29,41 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
   });
 }])
 
+//Payment methods aggregations
+.controller('DashboardPaymentAggregationsCtrl', ['$scope', '$http', 'modeFactory',
+  function($scope, $http, modeFactory) {
+
+  //Aggreagates
+  $scope.paymentaggregations = {
+    VISA: 0,
+    MC: 0,
+    MAES: 0,
+    NETBANKING: 0,
+    OTHER: 0
+  };
+
+  var request = $http.get("/"+modeFactory.getMode()+"/analytics/payment/aggregations");
+
+  request.success(function(result){
+
+    if (result.data) {
+        var total = parseInt(result.data.CARD) + parseInt(result.data.NETBANKING);
+
+        if(total) {
+          $scope.paymentaggregations.VISA = parseInt(parseInt(result.data.VISA) * 100 / total);
+
+          $scope.paymentaggregations.MC = parseInt(parseInt(result.data.MC) * 100 / total);
+
+          $scope.paymentaggregations.MAES = parseInt(parseInt(result.data.MAES) * 100 / total);
+
+          $scope.paymentaggregations.NETBANKING = parseInt(parseInt(result.data.NETBANKING) * 100 / total);
+
+          $scope.paymentaggregations.OTHER = 100 - $scope.paymentaggregations.VISA - $scope.paymentaggregations.MC - $scope.paymentaggregations.MAES - $scope.paymentaggregations.NETBANKING;
+        }
+    }
+  });
+}])
+
 //Dashboard graphs/date picker controller
 .controller('DashboardGraphsCtrl', ['$scope', '$http', 'modeFactory', 'dateFactory',
   function($scope, $http, modeFactory, dateFactory) {
