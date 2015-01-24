@@ -19,6 +19,8 @@ return array(
     'DB_TEST_USERNAME'          => 'user',
     'DB_TEST_PASSWORD'          => 'password',
 
+    'CONTEXT'                   => 'dev',
+
     'CLOUD'                     => false,
 
     'HDFC_ID'                   => 'hdfc_id',

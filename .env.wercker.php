@@ -19,6 +19,8 @@ return array(
     'DB_TEST_USERNAME'          => getenv('WERCKER_MYSQL_USERNAME'),
     'DB_TEST_PASSWORD'          => getenv('WERCKER_MYSQL_PASSWORD'),
 
+    'CONTEXT'                   => 'testing',
+
     'CLOUD'                     => false,
 
     'HDFC_ID'                   => getenv('HDFC_ID'),
@@ -42,7 +44,7 @@ return array(
     'MAILGUN_MOCK'              => false,
 
     'QUEUE_DRIVER'              => 'sync',
-    
+
     'AWS_QUEUE_URL'             => '',
     'AWS_KEY_ID'                => '',
     'AWS_KEY_SECRET'            => '',
