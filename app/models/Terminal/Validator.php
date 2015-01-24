@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID               => 'required|alpha_num',
         Entity::GATEWAY                   => 'required|in:hdfc,atom',
         Entity::GATEWAY_MERCHANT_ID       => 'required',
-        Entity::GATEWAY_TERMINAL_ID       => 'required_if:gateway,hdfc',
+        Entity::GATEWAY_TERMINAL_ID       => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD => 'required');
 
     protected static $createValidators = array('terminal_id');

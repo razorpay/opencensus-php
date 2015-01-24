@@ -191,7 +191,6 @@ class Gateway extends BaseGateway
 
         $request['content'] = array(
             'ttype'         =>  'NBFundTransfer',
-            'prodid'        =>  'NSE',
             'amt'           =>  $input['payment']['amount'] / 100,
             'txncurr'       =>  'INR',
             'txnscamt'      =>  '0',
@@ -235,21 +234,26 @@ class Gateway extends BaseGateway
 
         $login = $terminal['gateway_merchant_id'];
         $pwd = $terminal['gateway_terminal_password'];
+        $productId = $terminal['gateway_terminal_id'];
 
         // For 'test' mode, replace any random terminal given with
         // atom test terminal
         if ($this->mode === 'test')
         {
-            list($login, $pwd) = $this->getCredentials();
+            list($login, $pwd, $productId) = $this->getCredentials();
         }
 
         $request['content']['login'] = $login;
         $request['content']['pass'] = $pwd;
-    }
+        $request['content']['prodid'] = $productId;
+   }
 
     protected function getCredentials()
     {
-        return array(Config::TEST_LOGIN, Config::TEST_PASSWORD);
+        return array(
+            Config::TEST_LOGIN,
+            Config::TEST_PASSWORD,
+            Config::TEST_PRODUCT_ID);
     }
 
     protected function runRequestResponseFlow(array &$request, array &$response)
