@@ -7,7 +7,6 @@ require('vars.php');
 <html>
 <head lang="en">
     <meta charset="utf-8">
-    <link href="<?= $checkout ?>/v1/css/style.css" type="text/css" rel="stylesheet">
 </head>
 <body>
     <form action="merchant/charge.php" method="POST">
