@@ -63,6 +63,7 @@ return [
         ],
         'response' => [
               'content' => [
+                'gateway' => 'atom',
                 'gateway_merchant_id' => '123abcd',
                 'gateway_terminal_id' => 'product_id',
             ]

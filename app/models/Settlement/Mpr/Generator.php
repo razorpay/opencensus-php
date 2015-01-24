@@ -30,9 +30,14 @@ class Generator
 
     protected $queue;
 
-    public function __construct($mode = '')
+    public function __construct()
     {
-        $this->mode = $mode;
+        $this->mode = \App::getFacadeRoot()['rzp.mode'];
+
+        if ($this->mode !== 'test')
+        {
+            throw new Exception\LogicException('Only test mode allowed');
+        }
 
         $this->env = \App::environment();
 

@@ -25,6 +25,16 @@ class ReturnTransactionsGenerator
     protected static $accountNumber = '12345';
     protected static $accountName = 'abcd';
 
+    public function __construct()
+    {
+        $this->mode = \App::getFacadeRoot()['rzp.mode'];
+
+        if ($this->mode !== 'test')
+        {
+            throw new Exception\LogicException('Only test mode allowed');
+        }
+    }
+
     public function generate($input)
     {
         $data = array();

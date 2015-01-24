@@ -40,6 +40,8 @@ class CreateHdfcResponseXml extends Migration {
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');
             $table->integer('updated_at');
+
+            $table->index('payment_id');
         });
     }
 

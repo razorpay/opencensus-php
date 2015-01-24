@@ -37,11 +37,12 @@ class Reconciler
 
     public function __construct()
     {
+        $app = \App::getFacadeRoot();
+        $this->mode = $app['rzp.mode'];
+
         $this->reconciledAt = time();
 
         $this->feeCalculator = new Pricing\Fee;
-
-        $this->queue = \Queue::getFacadeRoot();
 
         if (self::$settledAt === null)
         {
@@ -97,7 +98,11 @@ class Reconciler
 
     protected function reconcileMprRecord($mprRecord, $gateway)
     {
-        $entityInfo = Gateway::call('hdfc', 'getPaymentOrRefundId', $mprRecord, 'test');
+        $entityInfo = Gateway::call(
+                            'hdfc',
+                            'getPaymentOrRefundId',
+                            $mprRecord,
+                            $this->mode);
 
         list($transaction, $entitiesArray) = $this->loadTransactionAndRelations($entityInfo);
 
@@ -106,7 +111,7 @@ class Reconciler
             'transactionId' => $this->transaction->getId(),
             'entities' => $entitiesArray);
 
-        $data = Gateway::call('hdfc', 'reconcile', $params, 'test');
+        $data = Gateway::call('hdfc', 'reconcile', $params, $this->mode);
 
         $transaction = $this->reconcileRecord($transaction, $data);
 

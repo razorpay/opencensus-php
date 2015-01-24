@@ -28,7 +28,12 @@ class ReconciliationGenerator
 
     public function _construct()
     {
-        ;
+        $this->mode = \App::getFacadeRoot()['rzp.mode'];
+
+        if ($this->mode !== 'test')
+        {
+            throw new Exception\LogicException('Only test mode allowed');
+        }
     }
 
     public function generateReconcileFile($input)
