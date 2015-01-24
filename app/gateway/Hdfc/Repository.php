@@ -269,6 +269,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function retrieveRefunds(array $refundIds)
+    {
+        $repo = $this->repo;
+
+        return $repo::whereIn('refund_id', $ids)
+                    ->where('status', '=', Payment\Status::REFUNDED)
+                    ->get();
+    }
+
     public function fetchBetweenTimestamps($from, $to)
     {
         $repo = $this->repo;

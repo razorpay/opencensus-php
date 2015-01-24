@@ -94,25 +94,25 @@ class Generator
                             self::$fromTimestamp,
                             self::$toTimestamp);
 
-        $count = $payments->count();
+        $count = $payments->count() + $refunds->count();
 
         if ($count === 0)
         {
             return array('file' => null, 'count' => 0);
         }
 
-        $array = $this->getRelatedEntities($payments);
+        $array = $this->getRelatedEntities($payments, $refunds);
 
         $mprFile = Gateway::call(Payment\Gateway::HDFC, 'generateMpr', $array, 'test');
 
         return array('file' => $mprFile, 'count' => $count);
     }
 
-    protected function getRelatedEntities($payments)
+    protected function getRelatedEntities($payments, $refunds)
     {
         $payments->load('merchant', 'terminal', 'card');
 
-        $array = array();
+        $array = array('payments' => [], 'refunds' => []);
 
         foreach($payments->all() as $payment)
         {
@@ -125,7 +125,24 @@ class Generator
                 'card'      => $payment->card->toArray()
             );
 
-            array_push($array, $cols);
+            array_push($array['payments'], $cols);
+        }
+
+        $refunds->load('merchant', 'payment', 'payment.terminal', 'payment.card');
+
+        foreach($refunds->all() as $payment)
+        {
+            $payment = $refund->payment;
+
+            $cols = array(
+                'refund'    => $refund->toArray(),
+                'payment'   => $payment->toArray(),
+                'merchant'  => $refund->merchant->toArray(),
+                'terminal'  => $payment->terminal->toArray(),
+                'card'      => $payment->card->toArray()
+            );
+
+            array_push($array['refunds'], $cols);
         }
 
         return $array;
