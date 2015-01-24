@@ -24,16 +24,6 @@ class Entity extends \Models\Base\Entity
 
     protected $guarded = array();
 
-    public function payment()
-    {
-        return $this->belongsTo('Payment', 'trackid', 'id');
-    }
-
-    public function getTrackId()
-    {
-        return $this->getAttribute('trackid');
-    }
-
     public function setSuccess($success)
     {
         $this->setAttribute('success', $success);

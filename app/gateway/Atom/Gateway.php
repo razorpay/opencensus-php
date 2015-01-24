@@ -152,7 +152,7 @@ class Gateway extends BaseGateway
         // params contain '%' sign which gets messed up by that function
         $queryStr = $this->buildGetQueryString($data);
 
-        $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
+        $url = Urls::getUrl($this->mode).'?'.$queryStr;
 
         // This is the url to which the customer is redirected.
         // Here, on atom's provided url, the bank choice is auto-submitted
@@ -203,7 +203,7 @@ class Gateway extends BaseGateway
             'bankid'        =>  '2001',
             );
 
-        $request['url'] = Urls::ATOM_TEST_URL;
+        $request['url'] = Urls::getUrl($this->mode);
 
         return $request;
     }
