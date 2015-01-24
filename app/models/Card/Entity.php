@@ -20,6 +20,7 @@ class Entity extends Base\UniqueIdEntity
     const ISSUER            = 'issuer';
     const COUNTRY           = 'country';
     const INTERNATIONAL     = 'international';
+    const TRIVIA            = 'trivia';
 
     const COUNTRY_LENGTH = 2;
 
@@ -120,6 +121,11 @@ class Entity extends Base\UniqueIdEntity
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);
+
+        if ($country === 'IN')
+        {
+            $this->setAttribute(self::INTERNATIONAL, 0);
+        }
     }
 
     public function setNetwork($network)
@@ -130,6 +136,16 @@ class Entity extends Base\UniqueIdEntity
     public function setType($type)
     {
         $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setInternational($flag)
+    {
+        $this->setAttribute(self::INTERNATIONAL, $flag);
+    }
+
+    public function setTrivia($trivia)
+    {
+        $this->setAttribute(self::TRIVIA, $trivia);
     }
 
     public function getIin()

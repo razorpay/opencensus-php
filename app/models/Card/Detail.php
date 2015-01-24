@@ -13,6 +13,7 @@ class Detail extends Base\Entity
     const TYPE      = 'type';
     const COUNTRY   = 'country';
     const ISSUER    = 'issuer';
+    const TRIVIA    = 'trivia';
 
     protected $table = Table::IIN;
 
