@@ -28,7 +28,7 @@ class NetBankingTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->createTerminalEntityForAtomGateway();
+        $this->fixtures->create('terminal:atom_terminal');
 
         $gateway = $this->app['config']->get('gateway');
         $this->mock = $gateway['mock_atom'];

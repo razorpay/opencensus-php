@@ -65,19 +65,6 @@ class Fixtures
         $this->entities = $entities;
     }
 
-
-    public function createTerminalEntityForAtomGateway(array $attributes = array())
-    {
-        $attributes = array(
-            'merchant_id' => '10000000000000',
-            'gateway' => 'atom',
-            'gateway_merchant_id' => 'abcd',
-            'gateway_terminal_id' => 'abcde',
-            'gateway_terminal_password' => 'abcdef');
-
-        return $this->create('terminal', $attributes);
-    }
-
     public function generateUniqueId()
     {
         return \Models\Base\UniqueIdEntity::generateUniqueId();
