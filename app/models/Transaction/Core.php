@@ -53,7 +53,7 @@ class Core extends Base\Core
         $txn->entity()->associate($payment);
         $txn->merchant()->associate($payment->merchant);
         $payment->transaction()->associate($txn);
-//sd($txn);
+
         $this->updateBalances($txn);
 
         return $txn;
