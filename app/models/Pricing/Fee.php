@@ -36,7 +36,7 @@ class Fee
         $serviceTax = (int) ceil(($fee * self::SERVICE_TAX_PERCENT) / 100);
         $educationCess = (int) ceil(($fee * self::EDUCATION_CESS_PERCENT) / 100);
 
-        $fee += $serviceTax + $educationCess;
+        $fee += ($serviceTax + $educationCess);
 
         return $fee;
     }
@@ -87,11 +87,13 @@ class Fee
 
     protected function getRelevantPricingRuleForCard($pricingPlanId, $payment)
     {
-        $networks = array($payment->card->getNetwork(), null);
+        $card = $payment->card;
+
+        $network = $card->getNetwork();
 
         $pricingRepo = new Pricing\Repository;
 
-        $pricing = $pricingRepo->getPricingRulesForGivenCardNetworks($pricingPlanId, $networks);
+        $pricing = $pricingRepo->getPricingRulesForGivenCardNetwork($pricingPlanId, $network);
 
         $rule = null;
         $rules = $pricing->all();

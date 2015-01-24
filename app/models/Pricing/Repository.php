@@ -46,17 +46,17 @@ class Repository extends Base\Repository
         return $this->getPricingPlanById($id, true, true);
     }
 
-    public function getPricingRulesForGivenCardNetworks($id, array $networks = array())
+    public function getPricingRulesForGivenCardNetwork($id, $network)
     {
         $repo = $this->repo;
 
         // cannot use laravel's whereIn here because it doesn't give correct result with 'null'
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::CARD)
-                    ->where(function($query) use ($networks)
+                    ->where(function($query) use ($network)
                     {
                         $query->where(Pricing\Entity::PAYMENT_NETWORK, '=', null)
-                              ->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $networks[0]);
+                              ->orWhere(Pricing\Entity::PAYMENT_NETWORK, '=', $network);
                     })
                     ->orderBy(Pricing\Entity::ID, 'desc')
                     ->get();
