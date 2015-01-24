@@ -62,7 +62,7 @@ class Service extends Base\Service
 
     public function retrieveRefund($id)
     {
-        $refund = $this->core->retrieveRefund($id, $this->merchant->getKey());
+        $refund = $this->core->retrieveRefundById($id, $this->merchant->getKey());
 
         return $refund->toArrayPublic();
     }

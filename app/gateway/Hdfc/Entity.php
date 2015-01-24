@@ -6,8 +6,9 @@ class Entity extends \Models\Base\Entity
 {
     protected $fields = array(
         'id',
-        'gateway_payment_id',
-        'trackid',
+        'gateway_transaction_id',
+        'payment_id',
+        'refund_id',
         'action',
         'enroll_result',
         'status',
@@ -24,17 +25,22 @@ class Entity extends \Models\Base\Entity
 
     protected $table = 'hdfc';
 
-    protected $primaryKey = 'gateway_payment_id';
+    protected $primaryKey = 'id';
 
     protected $guarded = array();
 
     public function payment()
     {
-        return $this->belongsTo('Payment', 'trackid', 'id');
+        return $this->belongsTo('Payment', 'payment_id', 'id');
     }
 
-    public function getTrackId()
+    public function getPaymentId()
     {
-        return $this->getAttribute('trackid');
+        return $this->getAttribute('payment_id');
+    }
+
+    public function getRefundId()
+    {
+        return $this->getAttribute('refund_id');
     }
 }

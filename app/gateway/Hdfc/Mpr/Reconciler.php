@@ -15,14 +15,31 @@ use Trace\TraceCode;
 
 class Reconciler
 {
-    public static function getPaymentId($input)
+    public static function getPaymentOrRefundId($input)
     {
+        $array = [];
         if (isset($input['merchant_trackid']))
         {
-            return $input['merchant_trackid'];
+            $trackId = $input['merchant_trackid'];
         }
 
-        throw new Exception\LogicException('Hdfc mpr: Payment id not found');
+        if (isset($input['rec_fmt']) === false)
+        {
+            throw new Exception\LogicException('rec_fmt not defined');
+        }
+
+        $type = $input['rec_fmt'];
+
+        $txnType = null;
+        if ($type === 'BAT')
+            $txnType = 'payment';
+        else if ($type === 'CVD')
+            $txnType = 'refund';
+
+        $array['id'] = $trackId;
+        $array['type'] = $txnType;
+
+        return $array;
     }
 
     public function reconcile($input, $transactionId, $entities)
@@ -31,14 +48,15 @@ class Reconciler
         $attributes = $this->getTranslatedAttributes($input);
 
         $repo = new Hdfc\Repository;
-        $hdfcPayment = $repo->findOrFail($attributes['gateway_payment_id']);
+        $hdfcPayment = $repo->findByGatewayTransactionIdOrFail(
+            $attributes['gateway_transaction_id']);
 
-        if ((string) $attributes['gateway_payment_id'] !== (string) $hdfcPayment['gateway_payment_id'])
+        if ((string) $attributes['gateway_transaction_id'] !== (string) $hdfcPayment['gateway_transaction_id'])
         {
             throw new Exception\LogicException(
                 'Hdfc mpr: Gateway payment id does not match.
-                Gateway payment id: ' . $attributes['gateway_payment_id'] .
-                ' Hdfc payment id: ' . $hdfcPayment['gateway_payment_id']);
+                Gateway payment id: ' . $attributes['gateway_transaction_id'] .
+                ' Hdfc payment id: ' . $hdfcPayment['gateway_transaction_id']);
         }
 
         // Create Hdfc mpr record
@@ -60,17 +78,18 @@ class Reconciler
 
     protected function getTranslatedAttributes($row)
     {
-        // Remove 'pay-' from beginning of payment_id
-        $row['merchant_trackid'] = substr($row['merchant_trackid'], 4);
+        // // Remove 'pay_' from beginning of payment_id
+        // $row['merchant_trackid'] = substr($row['merchant_trackid'], 4);
+
         $attributes = array(
-            'payment_id'                => $row['merchant_trackid'],
-            'gateway_payment_id'        => (int) $row['tran_id'],
+            'track_id'                  => $row['merchant_trackid'],
+            'gateway_transaction_id'    => (int) $row['tran_id'],
             'gateway_merchant_id'       => $row['merchant_code'],
             'gateway_terminal_id'       => $row['terminal_number'],
-            'card_network'              => $row['card_type'],
+            'card_trivia'               => $row['card_type'],
             'card_number'               => $row['card_number'],
             'card_type'                 => $row['debitcredit_type'],
-            'capture_date'              => $row['trans_date'],
+            'transaction_date'          => $row['trans_date'],
             'settlement_date'           => $row['settle_date'],
             'international_amount'      => (int) ($row['intl_amt'] * 100),
             'domestic_amount'           => (int) ($row['domestic_amt'] * 100),
@@ -78,7 +97,7 @@ class Reconciler
             'gateway_net_fee'           => (int) ($row['msf'] * 100),
             'service_tax'               => (int) ($row['service_tax'] * 100),
             'education_cess'            => (int) ($row['edu_cess'] * 100),
-            'reconciliation_format'     => $row['rfc_fmt'],
+            'rec_format'                => $row['rec_fmt'],
             'batch_number'              => $row['bat_nbr'],
             'upvalue'                   => $row['upvalue'],
             'sequence_number'           => $row['sequence_number'],
@@ -91,63 +110,58 @@ class Reconciler
 
     protected function translateAndVerifyAttributes($mpr, $entities)
     {
+        $type = $entities['transaction']['type'];
         list($amount, $indian) = $this->getAmountAndNationality($mpr);
 
         $this->verifyTerminal($mpr, $entities['terminal']);
 
-        $this->verifyCaptureTime(
-            $mpr['capture_date'],
-            $entities['payment']['captured_at']);
+        $this->verifyTransactionTime(
+            $mpr['transaction_date'],
+            $entities['transaction']['created_at']);
 
         $this->verifySettlementDate($mpr['settlement_date']);
 
-        $this->verifyPaymentAttributes(
+        $this->verifyEntityAttributes(
             $mpr,
-            $entities['payment']);
+            $entities[$type]);
 
-        $card = $entities['card'];
-
-        $this->verifyCardNumberProperties(
-                $mpr['card_number'],
-                $card);
-
-        $card = $this->translateCardAttributes($mpr, $card);
-
-        if ($indian)
+        if ($type === 'payment')
         {
-            $card[Card\Entity::COUNTRY] = 'IN';
-        }
-        else
-        {
-            $card[Card\Entity::COUNTRY] = null;
+            $card = $entities['card'];
+
+            $this->verifyCardNumberProperties(
+                    $mpr['card_number'],
+                    $card);
+
+            $card = $this->translateCardAttributes($mpr, $card);
         }
 
         $transaction = array(
             Transaction\Entity::GATEWAY_FEE   => $mpr['gateway_fee']);
 
         $apiData = array(
-            'card'        => $card,
-            'transaction'      => $transaction);
+            'transaction'      => $transaction,
+            'card'             => $card);
 
         return $apiData;
     }
 
-    protected function verifyPaymentAttributes($mpr, $payment)
+    protected function verifyEntityAttributes($mpr, $entity)
     {
-        $paymentId = $payment[Payment\Entity::ID];
+        $id = $entity['id'];
 
-        if ($mpr['payment_id'] !== $paymentId)
+        if ($mpr['track_id'] !== $id)
         {
             throw new Exception\LogicException(
-                'Hdfc mpr: Payment id does not match' .
-                'Mpr payment id: ' . $mpr['payment_id'] . ' Payment id: ' . $paymentId);
+                'Hdfc mpr: Track id does not match' .
+                'Mpr payment id: ' . $mpr['track_id'] . ' Entity id: ' . $id);
         }
 
-        if ($mpr->getAmount() !== (int) $payment['amount'])
+        if ($mpr->getAmount() !== (int) $entity['amount'])
         {
             throw new Exception\LogicException(
                 'Hdfc mpr: Payment amount does not match' .
-                'Mpr amount: ' . $mpr->getAmount() . ' Payment amount: ' . $payment['amount']);
+                'Mpr amount: ' . $mpr->getAmount() . ' Payment amount: ' . $entity['amount']);
         }
     }
 
@@ -161,10 +175,10 @@ class Reconciler
         }
     }
 
-    protected function verifyCaptureTime($captureDate, $captureTimestamp)
+    protected function verifyTransactionTime($txnDate, $transactionTimestamp)
     {
-        $mprDate = Carbon::createFromFormat('d-M-y', $captureDate);
-        $apiTimestamp = Carbon::createFromTimestampUTC($captureTimestamp);
+        $mprDate = Carbon::createFromFormat('d-M-y', $txnDate);
+        $apiTimestamp = Carbon::createFromTimestampUTC($transactionTimestamp);
 
         // @todo: finish this
         if (false)
@@ -188,9 +202,29 @@ class Reconciler
 
     protected function translateCardAttributes($mpr, $card)
     {
-        $card = array(
-            Card\Entity::TYPE    => $this->translateCardType($mpr['card_type']),
-            Card\Entity::NETWORK => $this->translateCardNetwork($mpr['card_network']));
+        $value = $mpr['card_type'];
+
+        $card = [];
+
+        $international = CardDetail::isInternational($value);
+
+        $card[Card\Entity::INTERNATIONAL] = $international;
+
+        if ($international === false)
+        {
+            $card[Card\Entity::COUNTRY] = 'IN';
+        }
+
+        if (CardDetail::isCredit($value))
+        {
+            $card[Card\Entity::TYPE] = Card\Type::CREDIT;
+        }
+        else
+        {
+            $card[Card\Entity::TYPE] = Card\Type::DEBIT;
+        }
+
+        $card[Card\Entity::TRIVIA] = $mpr['card_trivia'];
 
         return $card;
     }
@@ -222,46 +256,6 @@ class Reconciler
         {
             throw new Exception\LogicException(
                 'Hdfc mpr: card number length does not match for card id ' . $card[Card\Entity::ID]);
-        }
-    }
-
-    protected function translateCardNetwork($cardNetwork)
-    {
-        $network = null;
-
-        $networkTranslation = array(
-            'VISA LOCAL'        => Card\Network::VISA,
-            'MASTERCARD LOCAL'  => Card\Network::MC,
-            'RUPAY LOCAL'       => Card\Network::RUPAY,
-            'MAESTRO LOCAL'     => Card\Network::MAES);
-
-        if (in_array($cardNetwork, $networkTranslation))
-        {
-            $network = $networkTranslation($cardNetwork);
-        }
-        else
-        {
-            Trace::error(TraceCode::MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK, ['network' => $cardNetwork]);
-        }
-
-        return $network;
-    }
-
-    protected function translateCardType($cardType)
-    {
-        if ($cardType === 'DC')
-        {
-            return Card\Type::DEBIT;
-        }
-        else if ($cardType === 'CC')
-        {
-            return Card\Type::CREDIT;
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Unknown card type value in HDFC mpr. type: ' . $cardType);
-            ; // @todo: trace!
         }
     }
 

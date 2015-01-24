@@ -48,4 +48,15 @@ class Core extends Base\Core
 
         return $payment;
     }
+
+    public function retirevePaymentById($id)
+    {
+        return $this->paymentRepo->findOrFail($id);
+    }
+
+
+    public function retrieveRefundById($refundId)
+    {
+        return (new Refund\Repository)->findOrFail($refundId);
+    }
 }

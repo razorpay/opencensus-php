@@ -49,7 +49,7 @@ trait Support
             $this->validateSupportPaymentResponse();
         }
 
-        $this->persistAfterSupportPayment('refund');
+        $this->persistAfterSupportPayment($type, $input);
 
         if ($this->error)
         {
@@ -75,6 +75,7 @@ trait Support
         //
         switch ($result)
         {
+            // See Payment\Result for code details
             case Payment\Result::CAPTURED:
                 break;
 
@@ -148,9 +149,16 @@ trait Support
 
         $data['member'] = $card['name'];
 
-        $data['transid'] = $this->model->gateway_payment_id;
+        $data['transid'] = $this->model->gateway_transaction_id;
 
-        $data['trackid'] = $this->id;
+        if ($type === 'refund')
+        {
+            $data['trackid'] = $input['refund']['id'];
+        }
+        else if ($type === 'capture')
+        {
+            $data['trackid'] = $input['payment']['id'];
+        }
     }
 
     protected function validateSupportPaymentResponse()
@@ -179,15 +187,25 @@ trait Support
         }
     }
 
-    protected function persistAfterSupportPayment($type = 'capture')
+    protected function persistAfterSupportPayment($type, $input)
     {
+        $paymentId = $input['payment']['id'];
+        $refundId = null;
+
+        if ($type === 'refund')
+        {
+            $refundId = $input['refund']['id'];
+        }
+
         if ($this->error)
         {
+
             $this->model = $this->repo->persistAfterSupportPaymentError(
-                                $this->id,
                                 $this->supportPaymentRequest['data'],
                                 $this->supportPaymentResponse['error'],
-                                $type);
+                                $type,
+                                $paymentId,
+                                $refundId);
 
             $this->trace(
                 Trace::ERROR,
@@ -198,7 +216,9 @@ trait Support
         {
             $this->model = $this->repo->persistAfterSupportPayment(
                     $this->supportPaymentRequest['data'],
-                    $this->supportPaymentResponse['data']);
+                    $this->supportPaymentResponse['data'],
+                    $paymentId,
+                    $refundId);
 
             $this->trace(
                 Trace::INFO,

@@ -50,7 +50,7 @@ class Server
         return $input;
     }
 
-    public function gatewayPayment()
+    public function gatewayTransaction()
     {
         $action = Hdfc\Utility::getFieldFromXML($this->input, 'action');
 
@@ -145,13 +145,13 @@ class Server
     {
         $this->processInput('authEnrolled');
 
-        $paymentid = $this->data['paymentid'];
+        $txnId = $this->data['paymentid'];
 
-        $gatewayPayment = (new Hdfc\Repository)->findByGatewayPaymentId($paymentid);
+        $gatewayTransaction = (new Hdfc\Repository)->findByGatewayTransactionIdOrFail($txnId);
 
-        if ($gatewayPayment === null)
+        if ($gatewayTransaction === null)
         {
-            throw new Exception\LogicException($paymentid . ' not found');
+            throw new Exception\LogicException($txnId . ' not found');
         }
 
         $res = array(
@@ -160,10 +160,10 @@ class Server
             'ref'       => random_integer(12),
             'avr'       => 'N',
             'postdate'  => $this->getPostDateForToday(),
-            'paymentid' => $paymentid,
-            'tranid'    => $paymentid,
-            'trackid'   => $gatewayPayment['merchant_trackid'],
-            'amt'       => $gatewayPayment['amount']);
+            'paymentid' => $txnId,
+            'tranid'    => $txnId,
+            'trackid'   => $gatewayTransaction['merchant_trackid'],
+            'amt'       => $gatewayTransaction['amount']);
 
 
 //        $this->copyUdfValues($res);

@@ -123,9 +123,9 @@ Models\Adjustment\Entity:
 
 Gateway\Hdfc\Entity:
     id: $integer
-    trackid:
-        type: Models\Payment\Entity
-    gateway_payment_id: $hdfcPaymentId
+    payment_id: null
+    refund_id: null
+    gateway_transaction_id: $hdfcPaymentId
     action: 4
     amount: $integer
     enroll_result: 2

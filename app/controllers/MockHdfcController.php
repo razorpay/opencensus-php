@@ -29,7 +29,7 @@ class MockHdfcController extends BaseController
 
     public function payment()
     {
-        return $this->mockHdfcGatewayServer->gatewayPayment();
+        return $this->mockHdfcGatewayServer->gatewayTransaction();
     }
 
     public function authEnrolled()

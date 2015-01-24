@@ -112,6 +112,11 @@ class Entity extends Base\PublicEntity
         return $this->getCredit() - $this->getDebit();
     }
 
+    public function getAmount()
+    {
+        return (int) $this->getAttribute(self::AMOUNT);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);

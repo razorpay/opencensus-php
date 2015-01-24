@@ -15,7 +15,7 @@ class Generator
     protected $headings = array(
         'merchant_code',
         'terminal_number',
-        'rfc_fmt',
+        'rec_fmt',
         'bat_nbr',
         'card_type',
         'card_number',
@@ -143,12 +143,12 @@ class Generator
         $captureDate = $capturedAt->format('d-M-y');
         $setlDate = $capturedAt->addDay(1)->format('d-M-y');
 
-        $trackid = Payment\Entity::getIdPrefix() . $input['payment']['id'];
+        $trackid = $input['payment']['id'];
 
         $attributes = array(
             'merchant_code'     => $input['terminal']['gateway_merchant_id'],
             'terminal_number'   => $input['terminal']['gateway_terminal_id'],
-            'rfc_fmt'           => 'BAT',
+            'rec_fmt'           => 'BAT',
             'bat_nbr'           => 1,
             'card_type'         => $input['card']['network'] . ' ' . 'LOCAL',
             'card_number'       => $maskedCardNumber,
@@ -157,14 +157,14 @@ class Generator
             'approv_code'       => '000000',
             'intl_amt'          => 0,
             'domestic_amt'      => $amount,
-            'tran_id'           => (int) $hdfcPayment['gateway_payment_id'],
+            'tran_id'           => (int) $hdfcPayment['gateway_transaction_id'],
             'upvalue'           => '`',
             'merchant_trackid'  => $trackid,
             'msf'               => $msf,
             'service_tax'       => $serviceTax,
             'edu_cess'          => $educationCess,
             'net_amount'        => $netAmount,
-            'debitcredit_type'  => 'CC',
+            'debitcredit_type'  => 'DC',
             'udf1'              => '',
             'udf2'              => '',
             'udf3'              => '',

@@ -32,6 +32,7 @@ trait Refund
 
         $data = array(
                     'payment' => $payment->toArrayWithCard(),
+                    'refund' => $refund->toArray(),
                     'amount' => $refund->getAmount());
 
         try

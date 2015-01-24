@@ -30,7 +30,7 @@ class Payment extends Base
         $payment = $this->build('payment', $attributes);
 
         $hdfcAttrArray = array(
-            'trackid'    => $payment->getKey(),
+            'payment_id'    => $payment->getKey(),
             'amount'     => $payment->getAmount(),
             'created_at' => $payment->created_at,
             'updated_at' => $payment->created_at);
@@ -67,7 +67,7 @@ class Payment extends Base
 
         $hdfcPayment = $this->fixtures->create('hdfc:authorized',
             array(
-                'trackid' => $payment->getKey(),
+                'payment_id' => $payment->getKey(),
                 'amount' => $payment->getAmount(),
                 'created_at' => $payment->created_at,
                 'updated_at' => $payment->created_at,

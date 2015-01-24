@@ -283,14 +283,14 @@ class Gateway extends BaseGateway
 
         $this->id = $input['payment']['id'];
 
-        $this->model = $this->repo->findOrFail($input['MD']);
+        $this->model = $this->repo->findByGatewayTransactionIdOrFail($input['MD']);
 
-        $trackid = $this->model->getTrackid();
+        $paymentId = $this->model->getPaymentId();
 
-        if ($this->id !== $trackid)
+        if ($this->id !== $paymentId)
         {
             throw new Exception\LogicException(
-                'app payment '. $this->id . ' should be equal to track id . '. $trackid);
+                'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
         }
 
         $this->postAuthEnrolledRequest($input);
@@ -305,9 +305,9 @@ class Gateway extends BaseGateway
             'Hdfc gateway does not support voids');
     }
 
-    public function getPaymentId($input)
+    public function getPaymentOrRefundId($input)
     {
-        return Hdfc\Mpr\Reconciler::getPaymentId($input);
+        return Hdfc\Mpr\Reconciler::getPaymentOrRefundId($input);
     }
 
     public function reconcile($input)

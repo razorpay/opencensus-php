@@ -97,50 +97,53 @@ class Reconciler
 
     protected function reconcileMprRecord($mprRecord, $gateway)
     {
-        $paymentId = Gateway::call('hdfc', 'getPaymentId', $mprRecord, 'test');
+        $entityInfo = Gateway::call('hdfc', 'getPaymentOrRefundId', $mprRecord, 'test');
 
-        $entitiesArray = $this->loadEntities($paymentId);
+        list($transaction, $entitiesArray) = $this->loadTransactionAndRelations($entityInfo);
 
         $params = array(
             'input' => $mprRecord,
-            'transactionId' => $this->transaction->getKey(),
+            'transactionId' => $this->transaction->getId(),
             'entities' => $entitiesArray);
 
         $data = Gateway::call('hdfc', 'reconcile', $params, 'test');
 
-        $transaction = $this->reconcileRecord($data);
+        $transaction = $this->reconcileRecord($transaction, $data);
 
         return $transaction;
     }
 
-    protected function reconcileRecord($data)
+    protected function reconcileRecord($transaction, $data)
     {
-        $transaction = $this->transaction;
-
         if ($transaction->isReconciled())
         {
             // @todo: trace this
             return;
         }
 
-        $this->updateCardNetworkAndCountry(
-            $this->card,
-            $data['card']['network'],
-            $data['card']['country']);
+        $amount = $transaction->getAmount();
+        $fee = $transaction->getAttribute(Transaction\Entity::FEE);
 
-        $amount = $this->payment->getAmount();
-        $fee = $this->payment->getAttribute(Transaction\Entity::FEE);
-        $credit = $amount - $fee;
+        $txnData = [];
 
-        $gatewayFee = $data['transaction']['gateway_fee'];
-        $apiFee = $fee - $gatewayFee;
+        if ($transaction->isTypePayment())
+        {
+            $this->updateCardDetail(
+                $transaction->entity->card,
+                $data['card']);
 
-        $txnData = array(
-            Transaction\Entity::GATEWAY_FEE => $data['transaction']['gateway_fee'],
-            Transaction\Entity::API_FEE => $apiFee,
-            Transaction\Entity::SETTLED_AT => self::$settledAt);
+            $gatewayFee = $data['transaction']['gateway_fee'];
+            $apiFee = $fee - $gatewayFee;
 
+            $txnData = array(
+                Transaction\Entity::GATEWAY_FEE => $data['transaction']['gateway_fee'],
+                Transaction\Entity::API_FEE => $apiFee);
+
+        }
+
+        $txnData[Transaction\Entity::SETTLED_AT] = self::$settledAt;
         $transaction->fill($txnData);
+
         $transaction->setReconciledAt($this->reconciledAt);
 
         $this->txnRepo->save($transaction);
@@ -148,15 +151,16 @@ class Reconciler
         return $transaction;
     }
 
-    protected function updateCardNetworkAndCountry($card, $network, $country)
+    protected function updateCardDetail($card, $data)
     {
-        $card->setCountry($country);
-
-        if (($network !== null) and
-            ($network !== ''))
+        if (isset($data['country']))
         {
-            $card->setNetwork($network);
+            $card->setCountry($data['country']);
         }
+
+        $card->setInternational($data['international']);
+
+        $card->setTrivia($data['trivia']);
 
         (new Card\Repository)->saveOrFail($card);
     }
@@ -166,78 +170,70 @@ class Reconciler
         return (new Transaction\Core)->updateBalances($txn);
     }
 
-    protected function loadEntities($paymentId)
+    protected function loadTransactionAndRelations($data)
     {
-        $payment  = (new Payment\Core)->retrieveById($paymentId);
+        $array = [];
 
-        $this->merchant = $payment->merchant;
-        $this->card = $payment->card;
-        $this->terminal = $payment->merchant->terminal;
-        $this->payment = $payment;
-        $this->transaction = $payment->transaction;
+        if ($data['type'] === Transaction\Type::PAYMENT)
+        {
+            $array = $this->getPaymentAndRelations($data['id']);
+        }
+        else if ($data['type'] === Transaction\Type::REFUND)
+        {
+            $array = $this->getRefundAndRelations($data['id']);
+        }
 
-        return $entitiesArray = array(
-            'card'          => $this->card->toArray(),
-            'payment'       => $this->payment->toArray(),
-            'merchant'      => $this->merchant->toArray(),
-            'terminal'      => $this->terminal->toArray(),
-            'transaction'   => $this->transaction->toArray());
+        return [$this->transaction, $array];
+    }
+
+    protected function getPaymentAndRelations($paymentId)
+    {
+        $payment  = (new Payment\Core)->retirevePaymentById($paymentId);
+
+        $transaction = $payment->transaction;
+
+        $terminal = $payment->terminal;
+        $merchant = $transaction->merchant;
+        $card = $payment->card;
+
+        $transaction->entity()->associate($payment);
+
+        $this->transaction = $transaction;
+
+        return $array = array(
+            'card'          => $card->toArray(),
+            'payment'       => $payment->toArray(),
+            'merchant'      => $merchant->toArray(),
+            'terminal'      => $terminal->toArray(),
+            'transaction'   => $transaction->toArray());
+    }
+
+    protected function getRefundAndRelations($refundId)
+    {
+        $refund  = (new Payment\Core)->retrieveRefundById($refundId);
+
+        $transaction = $payment->transaction;
+        $payment = $refund->payment;
+
+        $terminal = $refund->payment->terminal;
+        $merchant = $transaction->merchant;
+        $card = $refund->payment->card;
+
+        $transaction->entity()->associate($refund);
+
+        $this->transaction = $transaction;
+
+        return $array = array(
+            'card'          => $card->toArray(),
+            'payment'       => $payment->toArray(),
+            'refund'        => $refund->toArray(),
+            'merchant'      => $merchant->toArray(),
+            'terminal'      => $terminal->toArray(),
+            'transaction'   => $transaction->toArray());
     }
 
     protected function initRepos()
     {
         $this->txnRepo = new Transaction\Repository;
-    }
-
-    protected function checkPreviousEntries($curr, $repo)
-    {
-        $prev = $repo->findByEntityId($curr->entity_id);
-
-        if ($prev === null)
-        {
-            return false;
-        }
-
-        $attrPrev = $prev->getAttributes();
-        $attrCurr = $curr->getAttributes();
-
-        $fields = array(
-            'created_at', 'updated_at', 'balance', 'reconciled_at', 'settled_at', 'id', 'escrow_balance', 'settled');
-
-        foreach ($fields as $field)
-        {
-            unset($attrPrev[$field]);
-            unset($attrCurr[$field]);
-        }
-
-        $diff1 = array_diff_assoc($attrPrev, $attrCurr);
-        $diff2 = array_diff_assoc($attrCurr, $attrPrev);
-
-        $diff = false;
-        $msg = '';
-
-        if (count($diff1) > 0)
-        {
-            ob_start();
-            print_r($diff1);
-            $msg .= ob_get_clean() . PHP_EOL;
-            $diff = true;
-        }
-        if (count($diff2) > 0)
-        {
-            ob_start();
-            print_r($diff2);
-            $msg .= ob_get_clean() . PHP_EOL;
-            $diff = true;
-        }
-
-        if ($diff)
-        {
-            $msg = 'Entity: Transaction row' . PHP_EOL . $msg;
-            $msg = 'Previous Transaction row do not match' . PHP_EOL . $msg;
-            throw new Exception\LogicException($msg);
-        }
-
-        return true;
     }
 }

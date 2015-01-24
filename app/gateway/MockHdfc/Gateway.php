@@ -81,7 +81,7 @@ class Gateway extends Hdfc\Gateway
             case 'auth_not_enrolled':
             case 'capture':
             case 'refund':
-                $response = $server->gatewayPayment();
+                $response = $server->gatewayTransaction();
                 break;
 
             default:
