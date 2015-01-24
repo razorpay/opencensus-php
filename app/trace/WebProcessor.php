@@ -20,6 +20,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $this->request = App::make('request');
 
+        $this->context = App::make('config')->get('app.context');
+
         $serverData = $this->getServerData();
 
         parent::__construct($serverData);
@@ -50,7 +52,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'ajax'      => $this->request->ajax(),
             'origin'    => $this->request->header('origin'),
             'client_ip' => $this->getClientIp(),
-            'server_ip' => $this->request->server('SERVER_ADDR'));
+            'server_ip' => $this->request->server('SERVER_ADDR'),
+            'context'   => $this->context);
 
         $this->unsetUrlForSensitiveUrls($serverData);
 
