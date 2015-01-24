@@ -134,7 +134,6 @@ class ErrorCode
 
     const BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED                     = 'BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                            = 'BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS';
-    const BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT                             = 'BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT';
 
     const BAD_REQUEST_KEY_EXPIRED                                           = 'BAD_REQUEST_KEY_EXPIRED';
     const BAD_REQUEST_KEY_EXPIRING_SOON                                     = 'BAD_REQUEST_KEY_EXPIRING_SOON';

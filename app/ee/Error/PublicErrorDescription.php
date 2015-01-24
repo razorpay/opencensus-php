@@ -192,9 +192,6 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED =
         'Currently only two terminals are allowed per merchant';
 
-    const BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT =
-        'For atom gateway, gateway_terminal_id should be blank. For hdfc gateway, it should have a proper value';
-
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS =
         'A record with same gateway merchant id (mid) exists';
 

@@ -15,22 +15,4 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID       => 'required',
         Entity::GATEWAY_TERMINAL_ID       => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD => 'required');
-
-    protected static $createValidators = array('terminal_id');
-
-    protected function validateTerminalId($input)
-    {
-        if (($input[Entity::GATEWAY] === Gateway::HDFC) and
-            ($input[Entity::GATEWAY_TERMINAL_ID] === ''))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT);
-        }
-        else if (($input[Entity::GATEWAY] === Gateway::ATOM) and
-                 ($input[Entity::GATEWAY_TERMINAL_ID] !== ''))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT);
-        }
-    }
 }

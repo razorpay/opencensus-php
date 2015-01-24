@@ -84,7 +84,8 @@ class AuthorizeTest extends TestCase
 
     public function testAmountLessThan50ForNetBanking()
     {
-        $this->fixtures->createTerminalEntityForAtomGateway();
+        $this->fixtures->create('terminal:atom_terminal');
+
         $this->startTest();
     }
 
