@@ -14,7 +14,7 @@ class Fixtures
 
     protected $links = [];
 
-    protected $times = 0;
+    protected $times = 1;
 
     public function __construct()
     {
@@ -86,11 +86,37 @@ class Fixtures
 
     public function create($resource, array $attributes = array())
     {
-        list($entity, $method) = $this->getEntityAndMethodFromCreate($resource);
+        list($obj, $method, $arg1, $arg2) = $this->getEntityMethodAndArgs($resource, $attributes);
+
+        $times = $this->getTimes();
+        $this->times = 1;
+
+        $entities = [];
+
+        while ($times--)
+        {
+            $entities[] = $obj->$method($arg1, $arg2);
+        }
+
+        return count($entities) > 1 ? $entities : $entities[0];
+    }
+
+    public function getTimes()
+    {
+        return $this->times;
+    }
+
+    protected function getEntityMethodAndArgs($resource, $attributes)
+    {
+        list($entity, $method) = $this->getEntityAndMethod($resource);
 
         $obj = null;
 
         $class = __NAMESPACE__.'\Entity\\'.ucfirst($entity);
+
+        $arg1 = $entity;
+        $arg2 = $attributes;
+        $obj = $this->base;
 
         if (class_exists($class) and $method !== 'create')
         {
@@ -101,18 +127,14 @@ class Fixtures
 
             $obj = $this->links[$entity];
 
-            return $obj->$method($attributes);
+            $arg1 = $attributes;
+            $arg2 = null;
         }
 
-        $obj = $this->base;
-        $method = 'create';
-
-        $data = $obj->$method($entity, $attributes);
-
-        return $data;
+        return [$obj, $method, $arg1, $arg2];
     }
 
-    protected function getEntityAndMethodFromCreate($resource)
+    protected function getEntityAndMethod($resource)
     {
         $pair = explode(':', $resource);
 
