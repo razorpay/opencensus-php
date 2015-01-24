@@ -46,6 +46,9 @@ class CreateCards extends Migration
             $table->boolean(Card::INTERNATIONAL)
                   ->nullable();
 
+            $table->string(Card::TRIVIA)
+                  ->nullable();
+
             $table->char(Card::COUNTRY, Card::COUNTRY_LENGTH)
                   ->nullable();
 

@@ -19,15 +19,23 @@ class CreateIins extends Migration {
         {
             $table->integer(Card\Detail::IIN)->primary();
 
-            $table->string(Card\Detail::CATEGORY);
+            $table->string(Card\Detail::CATEGORY)
+                  ->nullable();
 
-            $table->string(Card\Detail::NETWORK);
+            $table->string(Card\Detail::NETWORK)
+                  ->nullable();
 
-            $table->string(Card\Detail::TYPE);
+            $table->string(Card\Detail::TYPE)
+                  ->nullable();
 
-            $table->char(Card\Detail::COUNTRY, Card\Entity::COUNTRY_LENGTH);
+            $table->char(Card\Detail::COUNTRY, Card\Entity::COUNTRY_LENGTH)
+                  ->nullable();
 
-            $table->string(Card\Detail::ISSUER, 100);
+            $table->string(Card\Detail::ISSUER)
+                  ->nullable();
+
+            $table->string(Card\Detail::TRIVIA)
+                  ->nullable();
         });
     }
 

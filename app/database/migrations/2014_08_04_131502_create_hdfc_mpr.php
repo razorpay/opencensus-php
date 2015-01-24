@@ -16,31 +16,32 @@ class CreateHdfcMpr extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char('payment_id', 14)
+            $table->char('track_id', 14)
                   ->primary();
 
-            $table->string('gateway_payment_id');
+            $table->string('gateway_transaction_id');
 
             $table->string('gateway_merchant_id');
             $table->string('gateway_terminal_id');
 
-            $table->string('card_network');
+            $table->string('card_trivia');
             $table->string('card_number');
             $table->string('card_type');
-            $table->string('capture_date');
+            $table->string('transaction_date');
             $table->string('settlement_date');
 
             $table->integer('international_amount')
                   ->default(0);
             $table->integer('domestic_amount')
                   ->default(0);
+
             $table->integer('net_amount');
             $table->integer('gateway_net_fee');
             $table->integer('gateway_fee');
             $table->integer('service_tax');
             $table->integer('education_cess');
 
-            $table->string('reconciliation_format');
+            $table->string('rec_format');
             $table->string('batch_number');
             $table->string('upvalue');
             $table->string('sequence_number');
@@ -48,6 +49,8 @@ class CreateHdfcMpr extends Migration
 
             $table->integer('created_at');
             $table->integer('updated_at');
+
+            $table->index('gateway_transaction_id');
         });
     }
 
