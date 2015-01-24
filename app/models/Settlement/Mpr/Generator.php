@@ -32,7 +32,11 @@ class Generator
 
     public function __construct()
     {
-        $this->mode = \App::getFacadeRoot()['rzp.mode'];
+        $app = \App::getFacadeRoot();
+
+        $this->mode = $app['rzp.mode'];
+
+        $this->context = $app['config']->get('app.context');
 
         if ($this->mode !== 'test')
         {
@@ -143,7 +147,15 @@ class Generator
 
         $data['message'] = $message;
         $data['env'] = $this->env;
-        $data['mode'] = $this->mode;
+
+        $mode = $this->mode;
+
+        if ($mode === 'production')
+        {
+            $mode = $this->context;
+        }
+
+        $data['mode'] = $mode;
 
         $this->queue->push($func, $data);
     }
@@ -162,7 +174,15 @@ class Generator
 
         $data['message'] = $message;
         $data['env'] = $this->env;
-        $data['mode'] = $this->mode;
+
+        $mode = $this->mode;
+
+        if ($mode === 'production')
+        {
+            $mode = $this->context;
+        }
+
+        $data['mode'] = $mode;
 
         $this->queue->push($func, $data);
     }

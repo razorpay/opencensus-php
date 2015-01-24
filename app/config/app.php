@@ -189,4 +189,5 @@ return array(
         'Trace'           => 'Trace\Facade',
 	),
 
+    'context' => $_ENV['CONTEXT'],
 );
