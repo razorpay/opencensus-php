@@ -103,30 +103,34 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolled($model, $data)
     {
         $attributes = array(
-            'status'    => Payment\Status::AUTHORIZED,
-            'action'    => Payment\Action::AUTHORIZE,
-            'amount'    => $data['amt'],
-            'result'    => $data['result'],
-            'ref'       => $data['ref'],
-            'auth'      => $data['auth'],
-            'avr'       => $data['avr'],
-            'postdate'  => $data['postdate'],
+            'payment_id'    => $data['trackid'],
+            'status'        => Payment\Status::AUTHORIZED,
+            'action'        => Payment\Action::AUTHORIZE,
+            'amount'        => $data['amt'],
+            'result'        => $data['result'],
+            'ref'           => $data['ref'],
+            'auth'          => $data['auth'],
+            'avr'           => $data['avr'],
+            'postdate'      => $data['postdate'],
             'gateway_transaction_id' => $data['tranid']);
 
         $model->fill($attributes);
 
         $this->saveOrFail($model);
+
+        return $model;
     }
 
     public function persistAfterAuthEnrolled($model, $data)
     {
         $attributes = array(
-            'status'    => Payment\Status::AUTHORIZED,
-            'result'    => $data['result'],
-            'ref'       => $data['ref'],
-            'auth'      => $data['auth'],
-            'avr'       => $data['avr'],
-            'postdate'  => $data['postdate']);
+            'payment_id'    => $data['trackid'],
+            'status'        => Payment\Status::AUTHORIZED,
+            'result'        => $data['result'],
+            'ref'           => $data['ref'],
+            'auth'          => $data['auth'],
+            'avr'           => $data['avr'],
+            'postdate'      => $data['postdate']);
 
         $model->fill($attributes);
 
@@ -224,7 +228,7 @@ class Repository extends Base\Repository
             'payment_id'                => $paymentId,
             'refund_id'                 => $refundId,
             'gateway_transaction_id'    => $requestdata['transid'],
-            'amount'                    => $requestdata['amount'],
+            'amount'                    => $requestdata['amt'],
             'error_code'                => $error['code'],
             'error_text'                => $error['result'],
             'action'                    => $action,
@@ -237,7 +241,16 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where('payment_id','=',$id)->firstOrFail();
+        return $repo::where('payment_id', '=', $id)->firstOrFail();
+    }
+
+    public function retrieveByPaymentIdAndStatus($id, $status)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('payment_id', '=', $id)
+                  ->where('status', '=', $status)
+                  ->firstOrFail();
     }
 
     public function retrieveMultiplePayments(array $ids)

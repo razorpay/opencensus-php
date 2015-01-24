@@ -11,8 +11,10 @@ class ResponseXml extends Base\Entity
 
     protected $guarded = array();
 
+    public $incrementing = true;
+
     public function payment()
     {
-        return $this->belongsTo('Payment', 'trackid', 'id');
+        return $this->belongsTo('Models\Payment\Entity', 'payment_id', 'id');
     }
 }

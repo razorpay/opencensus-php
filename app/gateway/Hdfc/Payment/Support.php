@@ -22,7 +22,7 @@ trait Support
      */
     protected function supportPayment($input, $type)
     {
-        $this->getModel($input['payment']['id']);
+        $this->retrievePreviousGatewayTransaction($input, $type);
 
         //
         // Mark the type of support payment.
@@ -55,6 +55,27 @@ trait Support
         {
             $this->throwException($this->supportPaymentResponse['error']);
         }
+    }
+
+    protected function retrievePreviousGatewayTransaction($input, $type)
+    {
+        $status = null;
+
+        if ($type === 'capture')
+        {
+            $status = Status::AUTHORIZED;
+        }
+        else if ($type === 'refund')
+        {
+            $status = Status::CAPTURED;
+        }
+
+        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+            $input['payment']['id'], $status);
+
+        $this->id = $input['payment']['id'];
+
+        return $this->model;
     }
 
     protected function isSupportPaymentSuccess()

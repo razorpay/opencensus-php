@@ -27,6 +27,8 @@ class Entity extends \Models\Base\Entity
 
     protected $primaryKey = 'id';
 
+    public $incrementing = true;
+
     protected $guarded = array();
 
     public function payment()

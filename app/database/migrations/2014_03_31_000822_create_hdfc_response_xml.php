@@ -20,7 +20,7 @@ class CreateHdfcResponseXml extends Migration {
 
             $table->increments('id');
 
-            $table->string('payment_id', UniqueIdEntity::ID_LENGTH);
+            $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
 
             $table->text('enroll')
                   ->nullable();
