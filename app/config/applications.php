@@ -13,8 +13,8 @@ return array(
         'secret'    =>  $_ENV['MOCK_GATEWAY_SECRET'],
     ),
 
-    'settlement_cron' => array(
-        'secret'    =>  'settlement_cron'
+    'cron' => array(
+        'secret'    =>  $_ENV['CRON_PASSWORD'],
     ),
 
     'mailgun' => array(

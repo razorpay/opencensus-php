@@ -3,8 +3,6 @@
 return array(
     'ENCRYPTION_KEY'            => '4dkTd5lWhN40CkSrnyrRBuRMsSX9exXD',
 
-    'DB_DEFAULT_CONNECTION'     => 'live',
-
     'DB_LIVE_DRIVER'            => 'sqlite',
     'DB_LIVE_HOST'              => '',
     'DB_LIVE_PORT'              => '',
@@ -48,5 +46,7 @@ return array(
     'AWS_QUEUE_URL'             => '',
     'AWS_KEY_ID'                => '',
     'AWS_KEY_SECRET'            => '',
-    'AWS_REGION'                => 'us-east-1'
+    'AWS_REGION'                => 'us-east-1',
+
+    'CRON_PASSWORD'             => 'a923r8u98uwaf98uw9w8fu',
 );

@@ -26,7 +26,7 @@ return array(
     |
     */
 
-    'default' => $_ENV['DB_DEFAULT_CONNECTION'],
+    'default' => 'live',
 
     /*
     |--------------------------------------------------------------------------

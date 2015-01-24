@@ -147,11 +147,11 @@ final class Route
                 'mockatom_rzp_bank',
                 'mockatom_rzp_bank_submit'),
 
-            'settlement_cron' => array(
+            'cron' => array(
                 'hdfc_mpr_generate',
                 'setl_initiate',
-                'setl_reconcile',
-                'setl_return'),
+                'setl_reconcile_generate',
+                'setl_return_generate'),
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),
