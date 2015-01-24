@@ -35,6 +35,8 @@ class Service extends Base\Service
 
     public function getSettlement($id)
     {
+        Settlement\Entity::verifyIdAndStripSign($id);
+
         $setl = (new Settlement\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
 
         return $setl->toArrayPublic();
