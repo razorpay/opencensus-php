@@ -80,7 +80,7 @@ class NetBankingTest extends TestCase
 
         $this->fixtures
             ->on('live')
-            ->createTerminalEntityForAtomGateway();
+            ->create('terminal:atom_terminal');
 
         $this->startTest();
     }
