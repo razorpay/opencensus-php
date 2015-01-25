@@ -4,6 +4,7 @@ namespace Models\Settlement\Mpr;
 
 use Excel;
 use EE\Exception;
+use Carbon\Carbon;
 
 class Parser
 {
@@ -80,6 +81,26 @@ class Parser
             $data = $data[0];
         }
 
+        $this->moveFile($mprFile);
+
         return $data;
+    }
+
+    protected function moveFile($file)
+    {
+        $filename = basename($file, '.txt');
+
+        $dir = storage_path('files/settlement/reconciled');
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir, 0777);
+        }
+
+        $time = Carbon::now('Asia/Kolkata')->format('H:i:s');
+
+        $newName = $filename . '_' . $time . '.xlsx';
+
+        $file->move($dir, $newName);
     }
 }

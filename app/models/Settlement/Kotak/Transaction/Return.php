@@ -43,11 +43,18 @@ class ReturnTransactions
 
     public function process($input)
     {
-        $returnFile = $input['setlReturnFile'];
+        $returnFile = $this->getReturnFile($input);
+
+        if ($returnFile === null)
+            return [];
 
         $data = $this->parseTextFile($returnFile);
 
-        $this->processReturns($data);
+        $data = $this->processReturns($data);
+
+        $this->moveFile($returnFile);
+
+        return $data;
     }
 
     protected function processReturns($rows)
@@ -113,30 +120,6 @@ class ReturnTransactions
         (new Settlement\Failure)->markFailed($setl, $failureReason);
     }
 
-    protected function parseReturnFile($file)
-    {
-        $filePath = $file->getRealPath();
-
-        $rows = Excel::load($filePath, function($reader)
-                        { $reader->noHeading(); })
-                      ->formatDates(false)
-                      ->toArray();
-
-        $count = count($rows);
-
-        $i = 2;
-
-        $data = [];
-        $headings = $rows[1];
-
-        while ($i < $count)
-        {
-            $data[] = array_combine($headings, $rows[$i]);
-            $i++;
-        }
-
-        return $data;
-    }
 
     protected function loadSettlementAndRelations($row)
     {
@@ -151,5 +134,29 @@ class ReturnTransactions
         $setl->transaction()->associate($txn);
 
         return $setl;
+    }
+
+    protected function getReturnFile($input)
+    {
+        if (isset($input['setlReturnFile']))
+        {
+            return $input['setlReturnFile'];
+        }
+
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $path = storage_path('files/settlement');
+
+        $name = 'Kotak_Return_Transaction';
+
+        $fullpath = $path . '/' . $name.'_'.$time.'.txt';
+
+        if (file_exists($fullpath) === false)
+        {
+            // @todo: trace here
+            return null;
+        }
+
+        return $fullpath;
     }
 }

@@ -3,6 +3,7 @@
 namespace Models\Settlement\Kotak;
 
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
 {
@@ -35,14 +36,19 @@ trait FileHandlerTrait
 
     protected function getFileName()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
         return static::$filename . '_'.$time.'.txt';
     }
 
     protected function parseTextFile($file)
     {
-        $filePath = $file->getRealPath();
+        $filePath = $file;
+
+        if ($file instanceof UploadedFile)
+        {
+            $filePath = $file->getRealPath();
+        }
 
         $file = fopen($filePath, 'r');
 
@@ -72,5 +78,23 @@ trait FileHandlerTrait
     public static function getHeadings()
     {
         return static::$headings;
+    }
+
+    public function moveFile($file)
+    {
+        $filename = basename($file, '.txt');
+
+        $dir = storage_path('files/settlement/reconciled');
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir, 0777);
+        }
+
+        $time = Carbon::now('Asia/Kolkata')->format('H:i:s');
+
+        $newName = $dir . '/' . $filename . '_' . $time . '.txt';
+
+        rename($file, $newName);
     }
 }

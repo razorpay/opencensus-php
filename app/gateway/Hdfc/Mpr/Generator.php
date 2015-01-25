@@ -115,7 +115,7 @@ class Generator
 
     protected function generateMprFile($data)
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
         $filename =  'Hdfc_Mpr_'.$time;
 
         $excel = Excel::create($filename, function($excel) use ($data)

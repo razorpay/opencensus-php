@@ -2,6 +2,7 @@
 
 namespace Models\Settlement\Kotak;
 
+use Carbon\Carbon;
 use EE\Exception;
 use Models\Base;
 use Models\Merchant;
@@ -40,11 +41,18 @@ class Reconciler
 
     public function process($input)
     {
-        $reconcileFile = $input['setlReconciliationFile'];
+        $reconcileFile = $this->getSetlReconciliationFile($input);
+
+        if ($reconcileFile === null)
+            return [];
 
         $data = $this->parseTextFile($reconcileFile);
 
-        return $this->reconcile($data);
+        $data = $this->reconcile($data);
+
+        $this->moveFile($reconcileFile);
+
+        return $data;
     }
 
     protected function reconcile($data)
@@ -149,6 +157,30 @@ class Reconciler
         $setl->transaction()->associate($txn);
 
         return $setl;
+    }
+
+    protected function getSetlReconciliationFile($input)
+    {
+        // if (isset($input['setlReconciliationFile']))
+        // {
+        //     return $input['setlReconciliationFile']->;
+        // }
+
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $path = storage_path('files/settlement');
+
+        $name = 'Kotak_Settlement_Reconciliation';
+
+        $fullpath = $path . '/' . $name.'_'.$time.'.txt';
+
+        if (file_exists($fullpath) === false)
+        {
+            // @todo: trace here
+            return null;
+        }
+
+        return $fullpath;
     }
 
     protected static function getHeadings()

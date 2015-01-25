@@ -34,7 +34,7 @@ trait SettlementTrait
 
         $this->runRequestResponseFlow($this->testData['testUploadMpr']);
 
-        $this->unlinkFile($mprFile);
+        $this->assertFileNotExists($mprFile);
     }
 
     protected function initiateSettlements($txns, $channel = 'kotak')
@@ -55,7 +55,6 @@ trait SettlementTrait
         return $content['kotak']['setlFile'];
     }
 
-
     protected function generateSetlReconciliationFile($setlFile)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);
@@ -73,7 +72,7 @@ trait SettlementTrait
 
         $this->assertArrayHasKey('setlReconciliationFile', $content);
 
-        $this->unlinkFile($setlFile);
+        // $this->assertFileNotExists($setlFile);
 
         return $content['setlReconciliationFile'];
     }
@@ -91,7 +90,7 @@ trait SettlementTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->unlinkFile($setlReconciliationFile);
+        $this->assertFileNotExists($setlReconciliationFile);
 
         return $content;
     }
@@ -135,7 +134,7 @@ trait SettlementTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->unlinkFile($setlReturnFile);
+        $this->assertFileNotExists($setlReturnFile);
 
         return $content;
     }
