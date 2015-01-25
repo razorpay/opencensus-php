@@ -125,6 +125,7 @@ class Reconciler
             $mpr,
             $entities[$type]);
 
+        $card = [];
         if ($type === 'payment')
         {
             $card = $entities['card'];

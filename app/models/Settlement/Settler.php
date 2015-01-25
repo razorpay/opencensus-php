@@ -229,7 +229,7 @@ class Settler
             }
             else if ($txn->getType() === Transaction\Type::REFUND)
             {
-                $payment = $transaction->entity->payment;
+                $payment = $txn->entity->payment;
             }
         }
 

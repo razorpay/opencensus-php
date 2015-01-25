@@ -12,15 +12,21 @@ class Refund extends Base
 
         unset($attributes['payment']);
 
-        $refund = $this->create(
-            'refund',
-            ['payment_id' => $payment->getId(),
-             'merchant_id' => $payment->merchant->getId(),
-             'amount' => $payment->getAmount()]);
+        if (isset($attributes['amount']) === false)
+            $attributes['amount'] = $payment->getAmount();
+
+        $attributes['payment_id'] = $payment->getId();
+        $attributes['merchant_id'] = $payment->merchant->getId();
+
+        $refund = $this->create('refund', $attributes);
+
+        $hdfcRefund = $this->fixtures->create('hdfc:from_refund', ['refund' => $refund]);
 
         $txn = (new \Models\Transaction\Core)->createFromRefund($refund);
+        $txn->save();
 
         $refund->transaction()->associate($txn);
+        $refund->save();
 
         return $refund;
     }

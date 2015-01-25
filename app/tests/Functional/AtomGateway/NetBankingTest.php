@@ -65,6 +65,20 @@ class NetBankingTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testNetBankingPaymentRefund()
+    {
+        $content = $this->doNetBankingAuthorize();
+
+        $id = $content['razorpay_payment_id'];
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/'.$id.'/capture';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testNBPaymentFailureAtBank()
     {
         $this->ba->publicAuth();
@@ -165,6 +179,7 @@ class NetBankingTest extends TestCase
         // Atom fetches bank list and then auto-submits the form.
         // Completely unnecessary step! We skip it during testing
         // $response = \Requests::post($atomBaseUrl . '/paynetz/banklist.action', $headers);
+        // sd($response->body);
 
         $content = array('bankID' => '2001');
         if ($mock)

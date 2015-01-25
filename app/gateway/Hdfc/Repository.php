@@ -269,7 +269,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function retrieveRefunds(array $refundIds)
+    public function retrieveRefunds(array $ids)
     {
         $repo = $this->repo;
 

@@ -9,11 +9,11 @@ class Merchant extends Base
     public function createDefaultTestMerchant()
     {
         $this->create('merchant', ['id' => '10000000000000']);
-        $this->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
-        $this->create('balance', ['id' => '10000000000000', 'balance' => '1000000']);
-        $this->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
-        $this->on('live')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
-        $this->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
+        $this->fixtures->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
+        $this->fixtures->create('balance', ['id' => '10000000000000', 'balance' => '1000000']);
+        $this->fixtures->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
+        $this->fixtures->on('live')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
+        $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
     }
 
     public function createNodalAccount()
@@ -33,9 +33,9 @@ class Merchant extends Base
         $merchant = $this->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
         $merchantId = $merchant->getId();
 
-        $balance = $this->create('balance', ['id' => $merchantId]);
+        $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
 
-        $this->create('terminal', ['merchant_id' => $merchantId]);
+        $this->fixtures->create('terminal', ['merchant_id' => $merchantId]);
         $this->fixtures->create('terminal:atom_terminal', ['merchant_id' => $merchantId]);
 
         return $merchant;

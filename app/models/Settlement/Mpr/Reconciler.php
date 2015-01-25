@@ -215,9 +215,9 @@ class Reconciler
 
     protected function getRefundAndRelations($refundId)
     {
-        $refund  = (new Payment\Core)->retrieveRefundById($refundId);
+        $refund = (new Payment\Core)->retrieveRefundById($refundId);
 
-        $transaction = $payment->transaction;
+        $transaction = $refund->transaction;
         $payment = $refund->payment;
 
         $terminal = $refund->payment->terminal;

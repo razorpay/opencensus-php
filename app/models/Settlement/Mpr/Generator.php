@@ -130,7 +130,7 @@ class Generator
 
         $refunds->load('merchant', 'payment', 'payment.terminal', 'payment.card');
 
-        foreach($refunds->all() as $payment)
+        foreach($refunds->all() as $refund)
         {
             $payment = $refund->payment;
 

@@ -43,7 +43,6 @@ class Base
 
     public function create($entity, array $attributes = array())
     {
-
         if (($entity === 'merchant') or
             ($entity === 'pricing'))
         {

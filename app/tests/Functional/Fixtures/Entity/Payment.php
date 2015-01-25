@@ -35,7 +35,7 @@ class Payment extends Base
             'created_at' => $payment->created_at,
             'updated_at' => $payment->created_at);
 
-        $card = $this->create('card');
+        $card = $this->fixtures->create('card');
 
         $payment->card()->associate($card);
 

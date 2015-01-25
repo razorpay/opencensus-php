@@ -122,7 +122,7 @@ class Generator
         {
             $excel->sheet('Hdfc Mpr File', function($sheet) use ($data)
                 {
-                    $sheet->with($data, false, false);
+                    $sheet->fromArray($data, null, 'A1', true, false);
                 });
         });
 
@@ -209,7 +209,7 @@ class Generator
         $attributes = array(
             'merchant_code'     => $input['terminal']['gateway_merchant_id'],
             'terminal_number'   => $input['terminal']['gateway_terminal_id'],
-            'rec_fmt'           => 'BAT',
+            'rec_fmt'           => $recFmt,
             'bat_nbr'           => 1,
             'card_type'         => $input['card']['network'] . ' ' . 'LOCAL',
             'card_number'       => $maskedCardNumber,

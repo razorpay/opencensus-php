@@ -29,10 +29,10 @@ class HdfcGatewayMprTest extends TestCase
 
         $this->mockDashboardRequest();
 
-        // Create payments
-        $payments = $this->createPaymentEntities();
+        // Create payments and refunds
+        $prEntities = $this->createPaymentAndRefundEntities();
 
-        // Generate the mpr file for above payments
+        // Generate the mpr file for above payments and refunds
         $mprFile = $this->generateMpr();
 
         // Upload the generate mpr file for reconciliation
@@ -40,7 +40,7 @@ class HdfcGatewayMprTest extends TestCase
 
         // Check the txns corresponding to above payments after
         // reconciliation
-        $txns = $this->matchTransactions($payments);
+        $txns = $this->matchTransactions($prEntities);
 
         // Generate settlements for above transactions
         $setlFile = $this->generateSettlements($txns);
@@ -160,9 +160,9 @@ class HdfcGatewayMprTest extends TestCase
         return $content;
     }
 
-    protected function matchTransactions($payments)
+    protected function matchTransactions($prEntities)
     {
-        $count = count($payments);
+        $count = count($prEntities);
 
         $testData = [
             'request' => [
@@ -179,14 +179,14 @@ class HdfcGatewayMprTest extends TestCase
         ];
 
         $txns = array();
-        foreach ($payments as $payment)
+        foreach ($prEntities as $prEntity)
         {
             $txn = array(
                 'entity' => 'transaction',
-                'amount' => $payment->getAmount(),
+                'amount' => $prEntity->getAmount(),
                 'currency' => 'INR',
                 'debit' => 0,
-                'entity_id' => $payment->getPublicId(),
+                'entity_id' => $prEntity->getPublicId(),
                 'type' => 'payment');
 
             array_push($txns, $txn);
@@ -201,9 +201,9 @@ class HdfcGatewayMprTest extends TestCase
         return $content;
     }
 
-    protected function createPaymentEntities()
+    protected function createPaymentAndRefundEntities()
     {
-        $payments = array();
+        $prEntities = array();
 
         $r = range(1,5);
 
@@ -217,10 +217,19 @@ class HdfcGatewayMprTest extends TestCase
                  'created_at' => $createdAt,
                  'updated_at' => $createdAt + 10]);
 
-            array_push($payments, $payment);
+            $attrs = [
+                'payment' => $payment,
+                'amount' => '100000',
+                 'created_at' => $createdAt + 20,
+                 'updated_at' => $createdAt + 20];
+
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+
+            array_push($prEntities, $payment);
+            array_push($prEntities, $refund);
         }
 
-        return $payments;
+        return $prEntities;
     }
 
     protected function generateMpr()
@@ -256,9 +265,9 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function unlinkFile($file)
     {
-         $this->assertTrue(
-            unlink($file),
-            'Could not delete file generated during testing. Filename: ' . $file);
+         // $this->assertTrue(
+         //    unlink($file),
+         //    'Could not delete file generated during testing. Filename: ' . $file);
     }
 
     protected function createUploadedFile($file, $mimeType = 'text/plain')
