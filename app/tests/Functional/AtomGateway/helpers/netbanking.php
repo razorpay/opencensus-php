@@ -32,6 +32,22 @@ return [
         ],
     ],
 
+    'testNetBankingPaymentRefund' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [
+                'amount' => 5000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 5000,
+                'currency' => 'INR',
+            ]
+        ],
+    ],
+
     'testNBPaymentFailureAtBank' => [
         'request' => [
             'content' => [],

@@ -90,6 +90,11 @@ class Gateway extends BaseGateway
         $this->processPaymentResponse($input, $atom);
     }
 
+    public function refund(array $input)
+    {
+        parent::refund($input);
+    }
+
     protected function processPaymentInitiationResponse($response, $input)
     {
         // Convert xml body to array of fields

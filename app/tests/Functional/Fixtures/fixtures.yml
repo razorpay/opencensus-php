@@ -43,8 +43,7 @@ Models\Payment\Entity:
     id: $uniqueid
     merchant_id: 10000000000000
     method: card
-    card_id:
-        type: Models\Card\Entity
+    card_id: null
     amount: 1000000
     amount_authorized: 100
     amount_refunded: 0

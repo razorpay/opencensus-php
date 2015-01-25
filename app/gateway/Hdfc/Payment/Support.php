@@ -153,7 +153,7 @@ trait Support
     {
         $payment = $input['payment'];
 
-        $card = $input['payment']['card'];
+        $card = $input['card'];
 
         $data = &$this->supportPaymentRequest['data'];
 

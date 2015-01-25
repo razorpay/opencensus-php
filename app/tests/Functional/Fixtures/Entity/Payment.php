@@ -20,6 +20,7 @@ class Payment extends Base
         $defaultValues = array(
             'status' => 'authorized',
             'terminal_id' => '1n25f6uN5S1Z5a',
+            'method' => 'card',
             'transaction_id' => null,
             'captured_at' => time(),
             'created_at' => time() - 10,
@@ -50,6 +51,33 @@ class Payment extends Base
         $hdfcPaymentAuthorized = $this->fixtures->create('hdfc:authorized', $hdfcAttrArray);
 
         $hdfcPaymentCaptured = $this->fixtures->create('hdfc:captured', $hdfcAttrArray);
+
+        return $payment;
+    }
+
+    public function createNetbankingCaptured(array $attributes = array())
+    {
+        $defaultValues = array(
+            'status' => 'authorized',
+            'gateway' => 'atom',
+            'method' => 'netbanking',
+            'terminal_id' => '1n25f6uN5S1Z5a',
+            'transaction_id' => null,
+            'captured_at' => time(),
+            'created_at' => time() - 10,
+            'updated_at' => time() - 5);
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->build('payment', $attributes);
+
+        $payment->save();
+
+        $txn = (new \Models\Transaction\Core)->createFromPayment($payment);
+        $txn->save();
+
+        $payment->setStatus('captured');
+        $payment->save();
 
         return $payment;
     }

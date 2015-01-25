@@ -67,16 +67,15 @@ class NetBankingTest extends TestCase
 
     public function testNetBankingPaymentRefund()
     {
-        $content = $this->doNetBankingAuthorize();
-
-        $id = $content['razorpay_payment_id'];
-
         $this->ba->privateAuth();
 
-        $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payments/'.$id.'/capture';
+        $payment = $this->fixtures->create('payment:netbanking_captured');
+        $id = $payment->getPublicId();
 
-        $this->runRequestResponseFlow($testData);
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/'.$id.'/refund';
+
+        $refund = $this->runRequestResponseFlow($testData);
     }
 
     public function testNBPaymentFailureAtBank()

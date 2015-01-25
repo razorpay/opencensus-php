@@ -22,19 +22,14 @@ trait Capture
 
         (new Payment\Validator)->captureValidate($payment, $input);
 
-        $paymentArray = array();
-        if ($payment->isNetBanking())
-        {
-            $paymentArray = $payment->toArray();
-        }
-        else
-        {
-            $paymentArray = $payment->toArrayWithCard();
-        }
-
         $data = array(
-            'payment' => $paymentArray,
+            'payment' => $payment->toArray(),
             'amount' => $input['amount']);
+
+        if ($payment->getMethod() === Payment\Method::CARD)
+        {
+            $data['card'] = $payment->card->toArray();
+        }
 
         $payment->setCaptureAmount($input['amount']);
 
