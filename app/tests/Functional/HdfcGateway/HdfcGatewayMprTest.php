@@ -265,9 +265,9 @@ class HdfcGatewayMprTest extends TestCase
 
     protected function unlinkFile($file)
     {
-         // $this->assertTrue(
-         //    unlink($file),
-         //    'Could not delete file generated during testing. Filename: ' . $file);
+         $this->assertTrue(
+            unlink($file),
+            'Could not delete file generated during testing. Filename: ' . $file);
     }
 
     protected function createUploadedFile($file, $mimeType = 'text/plain')
