@@ -8,11 +8,13 @@ use Mockery;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Tests\Functional\Payment\PaymentAuthFlowTrait;
 use Tests\Functional\RequestResponseFlowTrait;
+use Tests\Functional\Settlement\SettlementTrait;
 use Tests\Functional\TestCase;
 
 class HdfcGatewayMprTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use SettlementTrait;
 
     public function setUp()
     {
@@ -43,7 +45,7 @@ class HdfcGatewayMprTest extends TestCase
         $txns = $this->matchTransactions($prEntities);
 
         // Generate settlements for above transactions
-        $setlFile = $this->generateSettlements($txns);
+        $setlFile = $this->initiateSettlements($txns);
 
         // Generate settlement reconciliation file
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
@@ -57,109 +59,6 @@ class HdfcGatewayMprTest extends TestCase
         // Reconcile settlement return file
         $this->processSetlReturns($setlReturnFile);
     }
-
-    protected function reconcileSettlements($setlReconciliationFile)
-    {
-        $uploadedFile = $this->createUploadedFile($setlReconciliationFile);
-
-        $request = [
-            'url' => '/settlements/reconcile',
-            'files' => [
-                'setlReconciliationFile' => $uploadedFile
-            ],
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->unlinkFile($setlReconciliationFile);
-
-        return $content;
-    }
-
-    protected function generateSettlements($txns)
-    {
-        $request = [
-            'url' => '/settlements/initiate/kotak',
-            'method' => 'POST',
-            'content' => ['all' => 1],
-        ];
-
-        $this->ba->appAuth();
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('kotak', $content);
-        $this->assertArrayHasKey('setlFile', $content['kotak']);
-
-        return $content['kotak']['setlFile'];
-    }
-
-    protected function generateSetlReconciliationFile($setlFile)
-    {
-        $uploadedFile = $this->createUploadedFile($setlFile);
-
-        $request = [
-            'url' => '/settlements/reconcile/generate',
-            'files' => [
-                'setlFile' => $uploadedFile
-            ],
-        ];
-
-        $this->ba->appAuth();
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('setlReconciliationFile', $content);
-
-        $this->unlinkFile($setlFile);
-
-        return $content['setlReconciliationFile'];
-    }
-
-    protected function generateSetlReturnFile($setlData)
-    {
-        $items = $setlData['items'];
-
-        $content = [];
-
-        foreach ($items as $item)
-        {
-            $content[] = [
-                'id' => $item['id'],
-                'refer_utr' => '1'
-            ];
-        }
-
-        $request = [
-            'url' => '/settlements/return/generate',
-            'content' => $content,
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('setlReturnFile', $content);
-
-        return $content['setlReturnFile'];
-    }
-
-    protected function processSetlReturns($setlReturnFile)
-    {
-        $uploadedFile = $this->createUploadedFile($setlReturnFile);
-
-        $request = [
-            'url' => '/settlements/return',
-            'files' => [
-                'setlReturnFile' => $uploadedFile
-            ],
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->unlinkFile($setlReturnFile);
-
-        return $content;
-    }
-
     protected function matchTransactions($prEntities)
     {
         $count = count($prEntities);
@@ -230,59 +129,6 @@ class HdfcGatewayMprTest extends TestCase
         }
 
         return $prEntities;
-    }
-
-    protected function generateMpr()
-    {
-        \Config::set('mail.pretend', true);
-
-        $this->ba->appAuth();
-
-        $request = array(
-            'url' => '/gateway/mpr/generate');
-
-        $mprFile = $this->makeRequestAndGetContent($request);
-
-        return $mprFile;
-    }
-
-    protected function reconcileMpr($mprFile)
-    {
-        $uploadedFile = $this->createUploadedFile($mprFile, 'application/vnd.ms-excel');
-
-        $request = &$this->testData['testUploadMpr']['request'];
-        $request['content']['recipient'] = 'hdfc_mpr_testing_test@mg.razorpay.com';
-        $request['content']['attachment-count'] = '1';
-
-        $request['files']['attachment-1'] = $uploadedFile;
-
-        $this->ba->appAuth();
-
-        $this->runRequestResponseFlow($this->testData['testUploadMpr']);
-
-        $this->unlinkFile($mprFile);
-    }
-
-    protected function unlinkFile($file)
-    {
-         $this->assertTrue(
-            unlink($file),
-            'Could not delete file generated during testing. Filename: ' . $file);
-    }
-
-    protected function createUploadedFile($file, $mimeType = 'text/plain')
-    {
-        $this->assertFileExists($file);
-
-        $uploadedFile = new UploadedFile(
-                                $file,
-                                $file,
-                                $mimeType,
-                                filesize($file),
-                                null,
-                                true);
-
-        return $uploadedFile;
     }
 
     protected function mockSlack()
