@@ -20,7 +20,7 @@ class CreateHdfcResponseXml extends Migration {
 
             $table->increments('id');
 
-            $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
+            $table->char('trackid', UniqueIdEntity::ID_LENGTH);
 
             $table->text('enroll')
                   ->nullable();
@@ -40,8 +40,6 @@ class CreateHdfcResponseXml extends Migration {
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');
             $table->integer('updated_at');
-
-            $table->index('payment_id');
         });
     }
 
