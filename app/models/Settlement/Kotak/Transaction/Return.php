@@ -15,6 +15,8 @@ class ReturnTransactions
 {
     use Kotak\FileHandlerTrait;
 
+    protected static $fileToReadName = 'Kotak_Return_Transaction';
+
     protected static $headings = array(
         'BATCHTIME',
         'TXN REF NO',
@@ -43,7 +45,7 @@ class ReturnTransactions
 
     public function process($input)
     {
-        $returnFile = $this->getReturnFile($input);
+        $returnFile = $this->getFileIfExists($input);
 
         if ($returnFile === null)
             return [];
@@ -119,7 +121,6 @@ class ReturnTransactions
 
         (new Settlement\Failure)->markFailed($setl, $failureReason);
     }
-
 
     protected function loadSettlementAndRelations($row)
     {

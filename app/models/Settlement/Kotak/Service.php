@@ -34,4 +34,9 @@ class Service extends Base\Service
 
         return ['setlReturnFile' => $filename];
     }
+
+    public function deleteSetlFile($setlFileType)
+    {
+        return (new FileDeleter)->deleteFileIfExists($setlFileType);
+    }
 }

@@ -14,7 +14,7 @@ class NodalAccount
 {
     use FileHandlerTrait;
 
-    protected static $filename = 'Kotak_Settlement';
+    protected static $fileToWriteName = 'Kotak_Settlement';
 
     public static $headings = array(
         'Client_Code',

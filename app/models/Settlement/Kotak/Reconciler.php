@@ -17,6 +17,8 @@ class Reconciler
 {
     use FileHandlerTrait;
 
+    protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
+
     /**
      * All payments in the current mpr
      * will have the same reconciledAt timestamp
@@ -41,10 +43,10 @@ class Reconciler
 
     public function process($input)
     {
-        $reconcileFile = $this->getSetlReconciliationFile($input);
+        $reconcileFile = $this->getFileIfExists($input);
 
         if ($reconcileFile === null)
-            return [];
+            return new Base\PublicCollection;
 
         $data = $this->parseTextFile($reconcileFile);
 

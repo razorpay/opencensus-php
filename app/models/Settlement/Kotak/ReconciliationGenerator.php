@@ -18,7 +18,9 @@ class ReconciliationGenerator
 {
     use FileHandlerTrait;
 
-    protected static $filename = 'Kotak_Settlement_Reconciliation';
+    protected static $fileToReadName = 'Kotak_Settlement';
+
+    protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
 
     protected static $extraHeadings = array(
         'Success',
@@ -38,7 +40,12 @@ class ReconciliationGenerator
 
     public function generateReconcileFile($input)
     {
-        $setlFile = $input['setlFile'];
+//        $setlFile = $input['setlFile'];
+        $setlFile = $this->getFileIfExists();
+
+        if ($setlFile === null)
+            return [];
+
 
         $data = $this->parseTextFile($setlFile);
 

@@ -18,7 +18,7 @@ class ReturnTransactionsGenerator
 {
     use Kotak\FileHandlerTrait;
 
-    protected static $filename = 'Kotak_Return_Transaction';
+    protected static $fileToWriteName = 'Kotak_Return_Transaction';
 
     protected static $accountIfsc = 'KKBK0000958';
     protected static $accountType = '11';

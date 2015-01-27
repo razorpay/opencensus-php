@@ -3,13 +3,14 @@
 namespace Models\Settlement\Kotak;
 
 use Carbon\Carbon;
+use EE\Exception;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
 {
     public function writeToTextFile($txt)
     {
-        $name = $this->getFileName();
+        $name = $this->getFileToWriteName();
 
         $path = storage_path() . '/files/settlement/';
 
@@ -34,14 +35,77 @@ trait FileHandlerTrait
         return $txt;
     }
 
-    protected function getFileName()
+    protected function getFileIfExists()
+    {
+        $name = $this->getFileToReadName();
+
+        $path = storage_path('files/settlement');
+
+        $fullpath = $path . '/' . $name;
+
+        if (file_exists($fullpath) === false)
+        {
+            // @todo: trace here
+            return null;
+        }
+
+        return $fullpath;
+    }
+
+    public function deleteFileIfExists()
+    {
+        $fullPath = $this->getFileIfExists();
+
+        if ($fullPath !== null)
+        {
+            $success = unlink($fullPath);
+
+            if ($success === false)
+            {
+                throw new Exception\RuntimeErrorException(
+                    'Failed to delete file: ' . $fullPath);
+            }
+        }
+    }
+
+    protected function getFileToReadName()
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        return static::$filename . '_'.$time.'.txt';
+        $name = static::$fileToReadName.'_'.$time.'.txt';
+
+        return $name;
+    }
+
+    protected function getFileToWriteName()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        return static::$fileToWriteName . '_'.$time.'.txt';
     }
 
     protected function parseTextFile($file)
+    {
+        $rows = $this->getFileLines($file);
+
+        $data = array();
+        $headings = $this->getHeadings();
+
+        foreach ($rows as $row)
+        {
+            // Ending row may be just empty.
+            if ($row === '')
+                continue;
+
+            $values = explode('~', $row);
+            $values = array_combine($headings, $values);
+            $data[] = $values;
+        }
+
+        return $data;
+    }
+
+    protected function getFileLines($file)
     {
         $filePath = $file;
 
@@ -51,28 +115,10 @@ trait FileHandlerTrait
         }
 
         $file = fopen($filePath, 'r');
-
         $txt = fread($file, filesize($filePath));
+        $lines = explode('\n', $txt);
 
-        $rows = explode('\n', $txt);
-
-        $data = array();
-
-        $headings = $this->getHeadings();
-
-        foreach ($rows as $row)
-        {
-            if ($row === '')
-                continue;
-
-            $values = explode('~', $row);
-
-            $values = array_combine($headings, $values);
-
-            $data[] = $values;
-        }
-
-        return $data;
+        return $lines;
     }
 
     public static function getHeadings()
