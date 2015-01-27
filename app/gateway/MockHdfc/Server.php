@@ -268,6 +268,37 @@ class Server
     {
         $this->processInput('supportPayment');
 
+        $exists = $this->checkGatewayTxnIdAndStatusExist('authorized');
+
+        if ($exists === false)
+        {
+            $res = $this->getTxnNotFoundError();
+        }
+        else
+        {
+            $res = $this->getDefaultPaymentSuccessArray();
+            $res['result'] = 'CAPTURED';
+
+            $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
+            $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
+        }
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $xml;
+    }
+
+    protected function refundPaymentOnGateway()
+    {
+        $this->processInput('supportPayment');
+
+        $exists = $this->checkGatewayTxnIdAndStatusExist('captured');
+
+        if ($exists === false)
+        {
+            $res = $this->getTxnNotFoundError();
+        }
+
         $res = $this->getDefaultPaymentSuccessArray();
         $res['result'] = 'CAPTURED';
 
@@ -279,19 +310,13 @@ class Server
         return $xml;
     }
 
-    protected function refundPaymentOnGateway()
+    protected function checkGatewayTxnIdAndStatusExist($status)
     {
-        $this->processInput('supportPayment');
+        $gatewayTxnId = $this->data['transid'];
 
-        $res = $this->getDefaultPaymentSuccessArray();
-        $res['result'] = 'CAPTURED';
+        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus($gatewayTxnId, $status);
 
-        $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
-        $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
-
-        $xml = Hdfc\Utility::createXml($res);
-
-        return $xml;
+        return ($txn !== null);
     }
 
     public function setInput($input)
@@ -342,6 +367,15 @@ class Server
             'trackid'   => $this->data['trackid'],
             'payid'     => -1,
             'amt'       => $this->data['amt']);
+
+        return $res;
+    }
+
+    protected function getTxnNotFoundError()
+    {
+        $res['error_code_tag'] = 'GW00201';
+        $res['result'] = '!ERROR!-GW00201-Transaction not found';
+        $res['error_service_tag'] = '';
 
         return $res;
     }

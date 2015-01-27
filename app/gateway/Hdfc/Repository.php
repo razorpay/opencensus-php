@@ -291,4 +291,13 @@ class Repository extends Base\Repository
 
         return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)->firstOrFail();
     }
+
+    public function findByGatewayTransactionIdAndStatus($gatewayTxnId, $status)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)
+                    ->where('status', '=', $status)
+                    ->first();
+    }
 }

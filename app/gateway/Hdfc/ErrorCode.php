@@ -186,7 +186,7 @@ class ErrorCode
 
         Hdfc\ErrorCode::GW00183   => 'Card Verification Digit Required',
 
-        Hdfc\ErrorCode::GW00201   => 'Support Error Auth not found',
+        Hdfc\ErrorCode::GW00201   => 'Transaction not found',
         Hdfc\ErrorCode::GW00205   => 'Invalid Subsequent Payment',
         Hdfc\ErrorCode::GW00258   => 'Payment Denied: Negative BIN',
         Hdfc\ErrorCode::GW00259   => 'Payment Denied: Declined Card',
