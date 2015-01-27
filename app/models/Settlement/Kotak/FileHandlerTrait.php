@@ -72,7 +72,9 @@ trait FileHandlerTrait
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        $name = static::$fileToReadName.'_'.$time.'.txt';
+        $mode = $this->getMode();
+
+        $name = static::$fileToReadName.'_'.$mode.'_'.$time.'.txt';
 
         return $name;
     }
@@ -81,7 +83,9 @@ trait FileHandlerTrait
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        return static::$fileToWriteName . '_'.$time.'.txt';
+        $mode = $this->getMode();
+
+        return static::$fileToWriteName.'_'.$mode.'_'.$time.'.txt';
     }
 
     protected function parseTextFile($file)
@@ -139,8 +143,17 @@ trait FileHandlerTrait
 
         $time = Carbon::now('Asia/Kolkata')->format('H:i:s');
 
-        $newName = $dir . '/' . $filename . '_' . $time . '.txt';
+        $mode = $this->getMode();
+
+        $newName = $dir . '/' . $filename . '_' . $mode.'_'.$time . '.txt';
 
         rename($file, $newName);
+    }
+
+    protected function getMode()
+    {
+        $mode = \BasicAuth::getMode();
+
+        return $mode;
     }
 }
