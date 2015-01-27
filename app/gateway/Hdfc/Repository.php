@@ -49,6 +49,9 @@ class Repository extends Base\Repository
                 $model = $this->createOrFail($attributes);
                 break;
 
+            case 'inquiry':
+                break;
+
             default:
                 throw new Exception\InvalidArgumentException(
                                 'Wrong responseType => '.$responseType);
@@ -299,5 +302,13 @@ class Repository extends Base\Repository
         return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)
                     ->where('status', '=', $status)
                     ->first();
+    }
+
+    public function findByPaymentId($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('payment_id', '=', $id)
+                    ->get();
     }
 }

@@ -60,6 +60,13 @@ class Service extends Base\Service
         return $refund->toArrayPublic();
     }
 
+    public function verify($id)
+    {
+        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+
+        $this->processor()->verify($id);
+    }
+
     public function retrieveRefund($id)
     {
         $refund = $this->core->retrieveRefundById($id, $this->merchant->getKey());

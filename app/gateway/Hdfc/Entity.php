@@ -10,6 +10,7 @@ class Entity extends \Models\Base\Entity
         'payment_id',
         'refund_id',
         'action',
+        'amount',
         'enroll_result',
         'status',
         'auth_result',

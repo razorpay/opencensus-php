@@ -16,6 +16,7 @@ final class Route
         'payment_callback'                  => ['post',     'payments/{id}/callback',                   'PaymentController@postCallback'                        ],
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
+        'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
         'payment_fetch_by_id'               => ['get',      'payments/{id}',                            'PaymentController@getPayment'                          ],
         'payment_fetch_multiple'            => ['get',      'payments',                                 'PaymentController@getPayments'                         ],
         'payment_fetch_refunds'             => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                ],
@@ -130,6 +131,7 @@ final class Route
         );
 
     public static $proxy = array(
+        'payment_verify',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'transaction_fetch_by_id',

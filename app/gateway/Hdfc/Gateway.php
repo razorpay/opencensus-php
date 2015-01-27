@@ -38,6 +38,7 @@ class Gateway extends BaseGateway
     use Payment\Enroll;
     use Payment\Authorize;
     use Payment\Support;
+    use Payment\Inquiry;
 
     /**
      * App payment id
@@ -176,6 +177,22 @@ class Gateway extends BaseGateway
         'data' => array(),
         'error' => null);
 
+    protected $inquiryRequest = array(
+        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
+        'fields' => array('action', 'transid'),
+        'type' => 'inquiry',
+        'xml' => '',
+        'data' => array(),
+        'error' => null);
+
+    protected $inquiryResponse = array(
+        'type' => 'inquiry',
+        'fields' => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
+                    'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+        'data' => array(),
+        'xml' => '',
+        'error' => null);
+
     /**
      * The array is used to specify fields that are not to be logged by trace class
      * they are stripped by calling stripSensitive function of this class on the request/response object
@@ -294,6 +311,13 @@ class Gateway extends BaseGateway
         }
 
         $this->postAuthEnrolledRequest($input);
+    }
+
+    public function verify(array $input)
+    {
+        $data = $this->inquire($input);
+
+        return $data;
     }
 
     /**
@@ -455,7 +479,7 @@ class Gateway extends BaseGateway
         $request['options'] = $this->getRequestOptions();
 
         $this->response = $this->sendGatewayRequest($request);
-//print_r($this->response);die();
+
         return $this->response;
     }
 

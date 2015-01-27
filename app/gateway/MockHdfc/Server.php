@@ -68,6 +68,10 @@ class Server
                 $xml = $this->refundPaymentOnGateway();
                 break;
 
+            case Action::INQUIRY:
+                $xml = $this->inquirePaymentOnGateway();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'MockHdfc: Action code not recognized. Action: ' . $this->data['action']);
@@ -304,6 +308,36 @@ class Server
 
         $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
         $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $xml;
+    }
+
+    protected function inquirePaymentOnGateway()
+    {
+        $this->processInput('inquiry');
+
+        $gatewayTxnId = $this->data['transid'];
+
+        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus(
+            $gatewayTxnId, 'authorized');
+
+        if ($txn === null)
+        {
+            $res = $this->getTxnNotFoundError();
+        }
+
+        $res = array(
+            'result'    => 'APPROVED',
+            'auth'      => $txn['auth'],
+            'ref'       => $txn['ref'],
+            'avr'       => $txn['avr'],
+            'postdate'  => $txn['postdate'],
+            'tranid'    => $txn['gateway_transaction_id'],
+            'trackid'   => $txn['payment_id'],
+            'payid'     => '-1',
+            'amt'       => $txn['amount'] / 100);
 
         $xml = Hdfc\Utility::createXml($res);
 

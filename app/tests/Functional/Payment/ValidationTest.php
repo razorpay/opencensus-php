@@ -111,6 +111,19 @@ class PaymentValidationTest extends TestCase
         $payment = $this->doAuthAndGetPayment($payment, $response);
     }
 
+    public function testPaymentInquiry()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $this->ba->proxyAuth();
+
+        $request = ['method' => 'GET', 'url' => '/payments/'.$payment['id'].'/verify'];
+        $content = $this->makeRequestAndGetContent($request);
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

@@ -249,6 +249,5 @@ return [
             ]
         ],
         'jsonp' => true
-    ]
-
+    ],
 ];

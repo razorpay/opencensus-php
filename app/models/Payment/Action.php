@@ -12,9 +12,10 @@ use Trace\Trace;
 class Action
 {
     const AUTHORIZE = 'authorize';
-    const CALLBACK = 'callback';
-    const CAPTURE = 'capture';
-    const REFUND = 'refund';
+    const CALLBACK  = 'callback';
+    const CAPTURE   = 'capture';
+    const REFUND    = 'refund';
+    const VERIFY    = 'verify';
 
     protected $merchant;
 

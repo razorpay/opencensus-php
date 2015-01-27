@@ -181,6 +181,15 @@ class Processor
         return $terminal;
     }
 
+    public function verify($id)
+    {
+        $payment = $this->retrieve($id);
+
+        $data = array('payment' => $payment->toArray());
+
+        $payment = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+    }
+
     protected function setGatewayForPayment($payment)
     {
         $gateway = '';
