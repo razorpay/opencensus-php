@@ -17,7 +17,9 @@ if ($hostname === 'beta.razorpay.com')
     $checkout = 'https://betacheckout.razorpay.com';
 }
 
-if (file_exists(__DIR__ . 'config.php'))
+$configFile = __DIR__ . '/config.php';
+
+if (file_exists($configFile))
 {
-    require(__DIR__ . 'config.php');
+    require($configFile);
 }
