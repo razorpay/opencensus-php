@@ -3,9 +3,12 @@
 namespace Tests\Functional\Settlement;
 
 use Tests\Functional\TestCase;
+use Tests\Functional\RequestResponseFlowTrait;
 
 class SettlementTest extends TestCase
 {
+    use RequestResponseFlowTrait;
+
     public function setUp()
     {
         parent::setUp();
@@ -57,6 +60,49 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(5504, $merchants[0]->balance->reload()->getBalance());
         $this->assertEquals(5504, $merchants[0]->balance->reload()->getBalance());
+    }
+
+    /**
+     * Tests the different settlement routes which are expecting to read
+     * a file. Even if there is no file to read, they should exit
+     * gracefully with no fuss!
+     */
+    public function testSetlRoutesReadingFileWithNoFile()
+    {
+        $urls = [
+            '/settlements/reconcile/generate',
+            '/settlements/reconcile',
+            '/settlements/return',
+        ];
+
+        $deleteUrls = [
+            '/settlements/file/setl_initiate',
+            '/settlements/file/reconcile',
+            '/settlements/file/return',
+        ];
+
+        $this->ba->appAuth();
+
+        // Delete setl files first in case they already exist
+        foreach ($deleteUrls as $deleteUrl)
+        {
+            $request = ['url' => $deleteUrl, 'method' => 'delete'];
+
+            $response = $this->makeRequest($request);
+
+            $this->assertResponseStatus(200);
+        }
+
+        // Verify by hitting each route that in case no file
+        // present, it returns without issues.
+        foreach ($urls as $url)
+        {
+            $request = ['url' => $url];
+
+            $response = $this->makeRequest($request);
+
+            $this->assertResponseStatus(200);
+        }
     }
 
     protected function startTest($testDataToReplace = array())

@@ -68,4 +68,9 @@ class Service extends Base\Service
     {
         return (new Kotak\Service)->generateSettlementReturn($input);
     }
+
+    public function deleteSetlFile($setlFileType)
+    {
+        return (new Kotak\Service)->deleteSetlFile($setlFileType);
+    }
 }

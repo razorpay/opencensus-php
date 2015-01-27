@@ -101,4 +101,11 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function deleteSettlementFile($setlFileType)
+    {
+        $data = (new Settlement\Service)->deleteSetlFile($setlFileType);
+
+        return ApiResponse::json($data);
+    }
 }
