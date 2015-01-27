@@ -82,6 +82,7 @@ class Server
 
         $cardNumber = $this->data['card'];
 
+        $res = [];
         if (($cardNumber === '4012001038488884') or
             ($cardNumber === '4012001036298889'))
         {
@@ -92,46 +93,7 @@ class Server
         }
         else
         {
-            // @todo: move this to iin
-            $iin = substr($cardNumber, 0, 6);
-            $network = Card\Network::detectNetwork($cardNumber);
-            $type = $this->getCardType($cardNumber, $iin);
-
-            $res = array();
-            if ($type === 'debit')
-            {
-                $res['result'] = 'ENROLLED';
-
-                $request = \Request::getFacadeRoot();
-                $scheme = $request->getScheme().'://';
-                $host = $request->getHost();
-
-                $res['url'] = $scheme . $host . '/gateway/3dsecure';
-            }
-            else if (($type === 'credit') or
-                     ($type === ''))
-            {
-                $res['result'] = 'NOT ENROLLED';
-
-                $eci = null;
-
-                if (($network === Card\Network::VISA) or
-                    ($network === Card\Network::DICL))
-                    $eci = 6;
-
-                if (($network === Card\Network::MC) or
-                    ($network === Card\Network::MAES))
-                    $eci = 1;
-
-                $res['eci'] = $eci;
-            }
-
-            $resCommon = array(
-                'paymentid' => $this->getNewPaymentId(),
-                'trackid'   => $this->data['trackid'],
-                'PAReq'     => 'abcsafsf');
-
-            $res = array_merge($res, $resCommon);
+            $res = $this->getResponseParamsForEnroll();
         }
 
         $this->copyUdfValues($res);
@@ -164,7 +126,6 @@ class Server
             'tranid'    => $txnId,
             'trackid'   => $gatewayTransaction['merchant_trackid'],
             'amt'       => $gatewayTransaction['amount']);
-
 
 //        $this->copyUdfValues($res);
 
@@ -215,6 +176,55 @@ class Server
         return $res;
     }
 
+    protected function getResponseParamsForEnroll()
+    {
+        $cardNumber = $this->data['card'];
+
+        // @todo: move this to iin
+        $iin = substr($cardNumber, 0, 6);
+        $network = Card\Network::detectNetwork($cardNumber);
+        $type = $this->getCardType($cardNumber, $iin);
+
+        $iin = substr($cardNumber, 0, 6);
+
+        $network = Card\Network::detectNetwork($cardNumber);
+        $type = $this->getCardType($cardNumber, $iin);
+
+        $res = array();
+        if ($type === 'debit')
+        {
+            $res = $this->getResponseParamsForEnrollDebit();
+        }
+        else if (($type === 'credit') or
+                 ($type === ''))
+        {
+            $res['result'] = 'NOT ENROLLED';
+            $res['eci'] = $this->getEci($network);
+        }
+
+        $resCommon = array(
+            'paymentid' => $this->getNewPaymentId(),
+            'trackid'   => $this->data['trackid'],
+            'PAReq'     => 'abcsafsf');
+
+        $res = array_merge($res, $resCommon);
+
+        return $res;
+    }
+
+    protected function getResponseParamsForEnrollDebit()
+    {
+        $res['result'] = 'ENROLLED';
+
+        $request = \Request::getFacadeRoot();
+        $scheme = $request->getScheme().'://';
+        $host = $request->getHost();
+
+        $res['url'] = $scheme . $host . '/gateway/3dsecure';
+
+        return $res;
+    }
+
     protected function getCardType($cardNumber, $iin)
     {
         if (in_array($cardNumber, $this->debitCardNumbers))
@@ -227,6 +237,21 @@ class Server
             return '';
 
         return $cardDetails->getType();
+    }
+
+    protected function getEci($network)
+    {
+        $eci = null;
+
+        if (($network === Card\Network::VISA) or
+            ($network === Card\Network::DICL))
+            $eci = 6;
+
+        if (($network === Card\Network::MC) or
+            ($network === Card\Network::MAES))
+            $eci = 1;
+
+        return $eci;
     }
 
     protected function makeResponse($xml)
