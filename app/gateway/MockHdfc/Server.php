@@ -128,7 +128,7 @@ class Server
             'postdate'  => $this->getPostDateForToday(),
             'paymentid' => $txnId,
             'tranid'    => $txnId,
-            'trackid'   => $gatewayTransaction['merchant_trackid'],
+            'trackid'   => $gatewayTransaction['payment_id'],
             'amt'       => $gatewayTransaction['amount']);
 
 //        $this->copyUdfValues($res);
