@@ -5,7 +5,6 @@ namespace Models\Terminal;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
-use Models\Payment\Gateway;
 
 class Validator extends Base\Validator
 {

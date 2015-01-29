@@ -51,6 +51,21 @@ class Core extends Base\Core
 
     public function createTerminalsInTestMode($merchant)
     {
-        ;
+        $this->createRandomTerminalInTestMode($merchant, 'hdfc');
+
+        $this->createRandomTerminalInTestMode($merchant, 'atom');
+    }
+
+    public function createRandomTerminalInTestMode($merchant, $gateway)
+    {
+        $input = [
+            'merchant_id' => $merchant->getId(),
+            'gateway' => $gateway,
+            'gateway_merchant_id' => str_random(),
+            'gateway_terminal_id' => str_random(),
+            'gateway_terminal_password' => str_random()
+        ];
+
+        $this->create($input, $merchant);
     }
 }

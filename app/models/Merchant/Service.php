@@ -39,6 +39,11 @@ class Service extends Base\Service
 
         $this->repo->updateBalance($merchantBalance);
 
+        if ($this->mode === 'test')
+        {
+            (new Terminal\Core)->createTerminalsInTestMode($merchant);
+        }
+
         return $merchant->toArrayPublic();
     }
 
