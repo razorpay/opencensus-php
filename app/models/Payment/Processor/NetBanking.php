@@ -57,4 +57,9 @@ class NetBanking
     {
         return array_diff($banks, self::$enabled);
     }
+
+    public static function getAllBanks()
+    {
+        return self::$enabled;
+    }
 }

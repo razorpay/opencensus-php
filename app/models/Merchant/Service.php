@@ -42,6 +42,8 @@ class Service extends Base\Service
         if ($this->mode === 'test')
         {
             (new Terminal\Core)->createTerminalsInTestMode($merchant);
+
+            $this->setAllPaymentBanks($merchant);
         }
 
         return $merchant->toArrayPublic();
@@ -283,6 +285,11 @@ class Service extends Base\Service
 
         $banks = $this->repo->getMerchantBanks($merchant->getId());
 
+        return $this->setPaymentBanksForMerchant($merchant, $input, $banks);
+    }
+
+    protected function setPaymentBanksForMerchant($merchant, $input, $banks = null)
+    {
         if ($banks === null)
         {
             $banks = new Merchant\Banks;
@@ -294,5 +301,16 @@ class Service extends Base\Service
         $this->repo->saveMerchantBanks($banks);
 
         return $banks->toArray();
+    }
+
+    protected function setAllPaymentBanks($merchant)
+    {
+        $input = [
+            'banks' => \Models\Payment\Processor\NetBanking::getAllBanks()
+        ];
+
+        $banks = $this->setPaymentBanksForMerchant($merchant, $input);
+
+        return $banks;
     }
 }
