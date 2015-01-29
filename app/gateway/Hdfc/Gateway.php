@@ -389,9 +389,9 @@ class Gateway extends BaseGateway
                 throw $e;
             }
         }
-echo $request['content'] . PHP_EOL;
+
         $response['xml'] = $response['response']->body;
-echo $response['xml'] . PHP_EOL;
+
         $this->repo->saveXml($this->id, $response['xml'], $response['type']);
 
         $this->checkResponseStatusCode($response);
