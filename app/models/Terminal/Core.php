@@ -33,27 +33,7 @@ class Core extends Base\Core
 
         $existingTerminals = $this->repo->getByParams($params);
 
-        $count = $existingTerminals->count();
-
-        // Right now, at max two terminals are allowed
-        if ($count === 2)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED);
-        }
-        else if ($count === 1)
-        {
-            // If 1 exists, then another should not be added for the same gateway
-            if ($terminal->getGateway() === $existingTerminals->first()->getGateway())
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
-            }
-        }
-        else if ($count > 2)
-        {
-            throw new Exception\LogicException('Terminal count should not exceed 2');
-        }
+        $terminal->getValidator()->validateExistingTerminalsCount($existingTerminals);
 
         // Check no record with same 'gateway_merchant_id' exists
         $params = array(
@@ -67,5 +47,10 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS,
                 Terminal\Entity::GATEWAY_MERCHANT_ID);
         }
+    }
+
+    public function createTerminalsInTestMode($merchant)
+    {
+        ;
     }
 }
