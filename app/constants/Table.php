@@ -17,4 +17,5 @@ class Table
     const SETTLEMENT        = 'settlements';
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
+    const MERCHANT_BANKS    = 'merchant_banks';
 }

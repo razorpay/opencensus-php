@@ -135,4 +135,20 @@ class MerchantController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getBanks()
+    {
+        $data = (new Merchant\Service)->getPaymentBanks();
+
+        return ApiResponse::json($data);
+    }
+
+    public function setBanks($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->setPaymentBanks($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

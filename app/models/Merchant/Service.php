@@ -16,6 +16,8 @@ class Service extends Base\Service
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->repo = new Merchant\Repository();
     }
 
@@ -258,5 +260,34 @@ class Service extends Base\Service
         $ba = $this->repo->getBankAccount($merchant);
 
         return $ba->toArray();
+    }
+
+    public function getPaymentBanks()
+    {
+        $banks = $this->repo->getMerchantBanks($this->merchant->getId());
+
+        if ($banks === null)
+            return [];
+
+        return $banks->toArrayWithBankNames();
+    }
+
+    public function setPaymentBanks($id, $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $banks = $this->repo->getMerchantBanks($merchant->getId());
+
+        if ($banks === null)
+        {
+            $banks = new Merchant\Banks;
+            $banks->merchant()->associate($merchant);
+        }
+
+        (new Merchant\Validator)->validateInput('addBanks', $input);
+        $banks->setBanks($input['banks']);
+        $this->repo->saveMerchantBanks($banks);
+
+        return $banks->toArray();
     }
 }
