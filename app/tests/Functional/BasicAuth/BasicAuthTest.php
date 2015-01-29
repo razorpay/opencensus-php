@@ -174,7 +174,6 @@ class BasicAuthTest extends TestCase
         $this->ba->noAuth();
 
         $content = $this->makeRequestAndGetContent($request);
-        s($content);
     }
 
     public function startTest($testDataToReplace = array())
