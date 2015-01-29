@@ -254,5 +254,39 @@ return [
                 'beneficiary_name' => 'Test beneficiary random name',
             ]
         ]
-    ]
+    ],
+
+    'testSetBanks' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/banks',
+            'method' => 'POST',
+            'content' => [
+                'banks' => [
+                    'HDFC',
+                    'ICIC',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'banks' => [
+                    'HDFC',
+                    'ICIC',
+                ]
+            ],
+        ]
+    ],
+
+    'testGetBanks' => [
+        'request' => [
+            'url' => '/merchant/banks',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'HDFC' => 'HDFC Bank',
+                'ICIC' => 'ICICI Bank',
+            ],
+        ],
+    ],
 ];

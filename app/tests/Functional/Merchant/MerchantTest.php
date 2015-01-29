@@ -143,6 +143,22 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testSetBanks()
+    {
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
+
+    public function testGetBanks()
+    {
+        $this->testSetBanks();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     protected function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

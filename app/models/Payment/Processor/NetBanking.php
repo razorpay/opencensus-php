@@ -52,4 +52,9 @@ class NetBanking
     {
         return (in_array($bank, self::$enabled));
     }
+
+    public static function findUnsupportedBanks($banks)
+    {
+        return array_diff($banks, self::$enabled);
+    }
 }
