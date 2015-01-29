@@ -164,7 +164,12 @@ trait RequestResponseFlowTrait
 
     protected function makeRequest($request)
     {
-        $server = $this->ba->getCreds();
+        $server = array();
+
+        if ($this->ba->isPublicAuth() === false)
+        {
+            $server = $this->ba->getCreds();
+        }
 
         // Adds '/v1' to beginning if not already there and
         // not an absolute url
@@ -187,6 +192,11 @@ trait RequestResponseFlowTrait
         if ($this->cloud)
         {
             $request['server']['REMOTE_ADDR'] = '10.0.123.123';
+        }
+
+        if ($this->ba->isPublicAuth())
+        {
+            $request['content']['key_id'] = $this->ba->getKey();
         }
 
         $response = $this->call(

@@ -93,4 +93,19 @@ class Authorization
     {
         return $this->auth;
     }
+
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    public function isPublicAuth()
+    {
+        return ($this->type === 'public');
+    }
+
+    public function getKey()
+    {
+        return $this->auth['PHP_AUTH_USER'];
+    }
 }

@@ -61,9 +61,9 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testPublicAuthOnPrivateRoute()
+    public function testNoSecretOnPrivateRoute()
     {
-        $this->ba->publicAuth();
+        $this->ba->privateAuth(null, '');
 
         $this->startTest();
     }
@@ -77,7 +77,7 @@ class BasicAuthTest extends TestCase
 
     public function testPrivateAuthWithWrongKeyId()
     {
-        $this->ba->publicAuth('abcdefgh820b0c06208ccd99');
+        $this->ba->privateAuth('abcdefgh820b0c06208ccd99');
 
         $this->startTest();
     }
@@ -89,9 +89,9 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testPublicAuthOnAppRoute()
+    public function testAppAuthWithNoSecret()
     {
-        $this->ba->publicAuth();
+        $this->ba->appAuth('rzp_test', null);
 
         $this->startTest();
     }
@@ -162,6 +162,19 @@ class BasicAuthTest extends TestCase
     public function testValidMerchantKeyForAppRouteAndNonExistentRoute()
     {
         ;
+    }
+
+    public function testPublicQueryAuth()
+    {
+        $request = [
+            'url' => '/payments/create/jsonp?keyid=rzp_test_TheTestAuthKey',
+            'method' => 'GET',
+        ];
+
+        $this->ba->noAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+        s($content);
     }
 
     public function startTest($testDataToReplace = array())

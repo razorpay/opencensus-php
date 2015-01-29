@@ -139,6 +139,9 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE =
         'Please do not provide your secret on public sided requests';
 
+    const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED =
+        'Please provide your Razorpay Api Key Id';
+
     const BAD_REQUEST_PRICING_ID_REQURED =
         'Pricing plan id is required';
 

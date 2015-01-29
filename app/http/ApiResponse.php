@@ -26,6 +26,14 @@ class ApiResponse
         return $response;
     }
 
+    public static function provideApiKey()
+    {
+        $response = self::generateResponse(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED);
+
+        return $response;
+    }
+
     public static function unauthorized($code)
     {
         return self::generateResponse($code);

@@ -121,7 +121,7 @@ return [
         ],
     ],
 
-    'testPublicAuthOnPrivateRoute' => [
+    'testNoSecretOnPrivateRoute' => [
         'request' => [
             'method' => 'GET',
             'url' => '/payments/1kKG3wHhnPdcg8',
@@ -140,7 +140,7 @@ return [
     'testPublicAuthWithWrongKeyId' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/payments/jsonp',
+            'url' => '/payments',
         ],
         'response' => [
             'content' => [
@@ -185,7 +185,7 @@ return [
         ],
     ],
 
-    'testPublicAuthOnAppRoute' => [
+    'testAppAuthWithNoSecret' => [
         'request' => [
             'method' => 'POST',
             'url' => '/merchants',
