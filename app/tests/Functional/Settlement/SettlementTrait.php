@@ -6,6 +6,28 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait SettlementTrait
 {
+    protected function deleteSetlFiles()
+    {
+        $deleteUrls = [
+            '/settlements/file/hdfc_mpr',
+            '/settlements/file/setl_initiate',
+            '/settlements/file/reconcile',
+            '/settlements/file/return',
+        ];
+
+        $this->ba->appAuth();
+
+        // Delete setl files first in case they already exist
+        foreach ($deleteUrls as $deleteUrl)
+        {
+            $request = ['url' => $deleteUrl, 'method' => 'delete'];
+
+            $response = $this->makeRequest($request);
+
+            $this->assertResponseStatus(200);
+        }
+    }
+
     protected function generateMpr()
     {
         \Config::set('mail.pretend', true);

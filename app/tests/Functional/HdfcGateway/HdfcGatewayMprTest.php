@@ -34,6 +34,8 @@ class HdfcGatewayMprTest extends TestCase
         // Create payments and refunds
         $prEntities = $this->createPaymentAndRefundEntities();
 
+        $this->deleteSetlFiles();
+
         // Generate the mpr file for above payments and refunds
         $mprFile = $this->generateMpr();
 

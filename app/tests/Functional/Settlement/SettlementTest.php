@@ -8,6 +8,7 @@ use Tests\Functional\RequestResponseFlowTrait;
 class SettlementTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use SettlementTrait;
 
     public function setUp()
     {
@@ -69,29 +70,15 @@ class SettlementTest extends TestCase
      */
     public function testSetlRoutesReadingFileWithNoFile()
     {
+        $this->deleteSetlFiles();
+
         $urls = [
             '/settlements/reconcile/generate',
             '/settlements/reconcile',
             '/settlements/return',
         ];
 
-        $deleteUrls = [
-            '/settlements/file/setl_initiate',
-            '/settlements/file/reconcile',
-            '/settlements/file/return',
-        ];
-
         $this->ba->appAuth();
-
-        // Delete setl files first in case they already exist
-        foreach ($deleteUrls as $deleteUrl)
-        {
-            $request = ['url' => $deleteUrl, 'method' => 'delete'];
-
-            $response = $this->makeRequest($request);
-
-            $this->assertResponseStatus(200);
-        }
 
         // Verify by hitting each route that in case no file
         // present, it returns without issues.
