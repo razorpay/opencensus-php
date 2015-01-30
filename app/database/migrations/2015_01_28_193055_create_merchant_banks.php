@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
 use Models\Merchant;
-use Models\Merchant\Banks as MerchantBanks;
+use Models\Merchant\Banks\Entity as MerchantBanks;
 
 class CreateMerchantBanks extends Migration {
 

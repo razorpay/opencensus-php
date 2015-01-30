@@ -22,35 +22,6 @@ class Validator extends Base\Validator
     protected static $addBankAccountValidators = array(
         'ifsc_code');
 
-    protected static $addBanksRules = array(
-        'banks' => 'required|array');
-
-    protected static $addBanksValidators = array(
-        'banks');
-
-    protected function validateBanks(array $input)
-    {
-        $banks = $input['banks'];
-
-        $unsupported = NetBanking::findUnsupportedBanks($banks);
-
-        if (count($unsupported) !== 0)
-        {
-            $msg = implode(', ', $unsupported) . ' are either invalid or unsupported banks';
-
-            throw new Exception\BadRequestValidationFailureException(
-                $msg, 'banks');
-        }
-
-        $uniqBanks = array_unique($banks);
-
-        if (count($banks) !== count($uniqBanks))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Some banks are repeated');
-        }
-    }
-
     protected function validateIfscCode($input)
     {
         $ifsc = $input['ifsc_code'];

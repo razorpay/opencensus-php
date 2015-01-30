@@ -42,9 +42,9 @@ class Service extends Base\Service
         if ($this->mode === 'test')
         {
             (new Terminal\Core)->createTerminalsInTestMode($merchant);
-
-            $this->setAllPaymentBanks($merchant);
         }
+
+        (new Banks\Core)->setAllPaymentBanks($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -271,7 +271,7 @@ class Service extends Base\Service
 
     public function getPaymentBanks()
     {
-        $banks = $this->repo->getMerchantBanks($this->merchant->getId());
+        $banks = (new Banks\Core)->getMerchantBanks($this->merchant);
 
         if ($banks === null)
             return [];
@@ -283,34 +283,6 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $banks = $this->repo->getMerchantBanks($merchant->getId());
-
-        return $this->setPaymentBanksForMerchant($merchant, $input, $banks);
-    }
-
-    protected function setPaymentBanksForMerchant($merchant, $input, $banks = null)
-    {
-        if ($banks === null)
-        {
-            $banks = new Merchant\Banks;
-            $banks->merchant()->associate($merchant);
-        }
-
-        (new Merchant\Validator)->validateInput('addBanks', $input);
-        $banks->setBanks($input['banks']);
-        $this->repo->saveMerchantBanks($banks);
-
-        return $banks->toArray();
-    }
-
-    protected function setAllPaymentBanks($merchant)
-    {
-        $input = [
-            'banks' => \Models\Payment\Processor\NetBanking::getAllBanks()
-        ];
-
-        $banks = $this->setPaymentBanksForMerchant($merchant, $input);
-
-        return $banks;
+        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant($merchant, $input);
     }
 }

@@ -1,11 +1,11 @@
 <?php
 
-namespace Models\Merchant;
+namespace Models\Merchant\Banks;
 
 use EE\Exception;
 use Models\Base;
 
-class Banks extends Base\UniqueIdEntity
+class Entity extends Base\UniqueIdEntity
 {
     const MERCHANT_ID       = 'merchant_id';
     const BANKS             = 'banks';

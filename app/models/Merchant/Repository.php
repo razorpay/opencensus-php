@@ -29,16 +29,6 @@ class Repository extends Base\Repository
         $balance->saveOrFail();
     }
 
-    public function getMerchantBanks($id)
-    {
-        return Merchant\Banks::find($id);
-    }
-
-    public function saveMerchantBanks($banks)
-    {
-        $banks->saveOrFail();
-    }
-
     public function updateBankAccount($ba)
     {
         $ba->saveOrFail();
