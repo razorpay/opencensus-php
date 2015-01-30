@@ -12,7 +12,7 @@ class Fixtures
 {
     protected static $instance = null;
 
-    protected $links = [];
+    public $links = [];
 
     protected $times = 1;
 
@@ -151,5 +151,17 @@ class Fixtures
         $method = 'create'.studly_case(ucfirst($method));
 
         return [$entity, $method];
+    }
+
+    public function __get($key)
+    {
+        if (isset($this->links[$key]))
+        {
+            return $this->links[$key];
+        }
+        else
+        {
+            throw new \Exception($key . ' not found');
+        }
     }
 }

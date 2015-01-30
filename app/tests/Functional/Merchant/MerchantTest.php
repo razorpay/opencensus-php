@@ -154,9 +154,15 @@ class MerchantTest extends TestCase
     {
         $this->testSetBanks();
 
-        $this->ba->publicAuth();
+        $this->ba->publicTestAuth();
 
         $this->startTest();
+
+        // $this->fixtures->links['merchant']->activate('10000000000000');
+
+        // $this->ba->publicLiveAuth();
+
+        // $this->startTest();
     }
 
     protected function startTest()

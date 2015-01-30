@@ -237,7 +237,7 @@ class BasicAuth
             }
         }
 
-        if ($this->verifyKeyExistence() === false)
+        if ($this->verifyKeyExistence() !== true)
         {
             return $this->invalidApiKey();
         }

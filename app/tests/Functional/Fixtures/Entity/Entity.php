@@ -14,6 +14,8 @@ class Base
     public function __construct()
     {
         $this->fixtures = self::$fixturesInstance;
+
+        $this->db = \DB::getFacadeRoot();
     }
 
     protected static $map = array(

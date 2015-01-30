@@ -62,6 +62,16 @@ class Authorization
         $this->type = 'public';
     }
 
+    public function publicTestAuth()
+    {
+        $this->publicAuth();
+    }
+
+    public function publicLiveAuth()
+    {
+        $this->publicAuth('rzp_live_TheLiveAuthKey');
+    }
+
     public function privateAuth($user = null, $pwd = null)
     {
         if ($user === null)

@@ -40,4 +40,10 @@ class Merchant extends Base
 
         return $merchant;
     }
+
+    public function activate($id)
+    {
+        $this->db->connection('test')->table('merchants')->where('id', $id)->update(['activated' => true]);
+        $this->db->connection('live')->table('merchants')->where('id', $id)->update([]);
+    }
 }
