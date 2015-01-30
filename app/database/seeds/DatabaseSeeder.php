@@ -3,6 +3,7 @@
 use Constants\Table;
 use Models\Merchant\Account;
 use Models\Pricing;
+use Models\Payment\Processor\NetBanking;
 
 class DatabaseSeeder extends Seeder
 {
@@ -109,8 +110,8 @@ class DatabaseSeeder extends Seeder
                     'id'                    => '1n25f6uN5S1Z5a',
                     'merchant_id'           => Account::TEST_ACCOUNT,
                     'gateway'               => 'hdfc',
-                    'gateway_merchant_id'   => 'test_account_hdfc',
-                    'gateway_terminal_id'   => 'test_account_terminal',
+                    'gateway_merchant_id'   => 'test_merchant_hdfc',
+                    'gateway_terminal_id'   => 'test_terminal_hdfc',
                     'gateway_terminal_password' => Crypt::encrypt('test_account_hdfc_terminal_pass'),
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
@@ -122,9 +123,35 @@ class DatabaseSeeder extends Seeder
                     'id'                    => '1BjhC5CJAqNF7R',
                     'merchant_id'           => Account::TEST_ACCOUNT,
                     'gateway'               => 'atom',
-                    'gateway_merchant_id'   => 'test_account_atom',
-                    'gateway_terminal_id'   => '',
+                    'gateway_merchant_id'   => 'test_merchant_atom',
+                    'gateway_terminal_id'   => 'test_terminal_atom',
                     'gateway_terminal_password' => Crypt::encrypt('test_account_atom_terminal_pass'),
+                    'created_at'            =>  time(),
+                    'updated_at'            =>  time(),
+                    )
+                );
+
+            DB::table(Table::TERMINAL)->insert(
+                array(
+                    'id'                    => '1VwJebUIU7hIhU',
+                    'merchant_id'           => Account::DEMO_ACCOUNT,
+                    'gateway'               => 'hdfc',
+                    'gateway_merchant_id'   => 'demo_merchant_hdfc',
+                    'gateway_terminal_id'   => 'demo_terminal_hdfc',
+                    'gateway_terminal_password' => Crypt::encrypt('demo_account_hdfc_terminal_pass'),
+                    'created_at'            =>  time(),
+                    'updated_at'            =>  time(),
+                    )
+                );
+
+            DB::table(Table::TERMINAL)->insert(
+                array(
+                    'id'                    => '1XwJrbxrfB0i8G',
+                    'merchant_id'           => Account::DEMO_ACCOUNT,
+                    'gateway'               => 'atom',
+                    'gateway_merchant_id'   => 'demo_merchant_atom',
+                    'gateway_terminal_id'   => 'demo_terminal_atom',
+                    'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
                     )
@@ -149,6 +176,25 @@ class DatabaseSeeder extends Seeder
                     'updated_at'    =>  time()
                     )
                 );
+
+            DB::table(Table::MERCHANT_BANKS)->insert(
+                array(
+                    'merchant_id'   => Account::DEMO_ACCOUNT,
+                    'banks'         => json_encode(NetBanking::getAllBanks()),
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                )
+            );
+
+
+            DB::table(Table::MERCHANT_BANKS)->insert(
+                array(
+                    'merchant_id'   => Account::TEST_ACCOUNT,
+                    'banks'         => json_encode(NetBanking::getAllBanks()),
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                )
+            );
         });
     }
 }
