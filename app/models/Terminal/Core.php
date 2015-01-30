@@ -60,7 +60,8 @@ class Core extends Base\Core
     {
         $input = [
             'merchant_id' => $merchant->getId(),
-            'gateway' => $gateway,
+            'gateway'     => $gateway,
+            'card'        => '1',
             'gateway_merchant_id' => str_random(),
             'gateway_terminal_id' => str_random(),
             'gateway_terminal_password' => str_random()

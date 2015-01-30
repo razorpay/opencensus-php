@@ -54,6 +54,7 @@ return [
         'request' => [
             'content' => [
                 'gateway' => 'atom',
+                'card' => 0,
                 'gateway_merchant_id' => '123abcd',
                 'gateway_terminal_id' => 'product_id',
                 'gateway_terminal_password' => '123abcdef'

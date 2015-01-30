@@ -5,6 +5,7 @@ namespace Models\Terminal;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
+use Models\Payment;
 
 class Validator extends Base\Validator
 {
@@ -13,7 +14,22 @@ class Validator extends Base\Validator
         Entity::GATEWAY                   => 'required|in:hdfc,atom',
         Entity::GATEWAY_MERCHANT_ID       => 'required',
         Entity::GATEWAY_TERMINAL_ID       => 'required',
-        Entity::GATEWAY_TERMINAL_PASSWORD => 'required');
+        Entity::GATEWAY_TERMINAL_PASSWORD => 'required',
+        Entity::CARD                      => 'required_if:gateway,atom|boolean');
+
+    protected static $createValidators = array(Entity::CARD);
+
+    protected function validateCard($input)
+    {
+        if (($input[Entity::GATEWAY] === Payment\Gateway::HDFC) and
+            (isset($input[Entity::CARD])) and
+            ($input[Entity::CARD] !== '1'))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Card field should be 1 for hdfc gateway',
+                Entity::CARD);
+        }
+    }
 
     public function validateExistingTerminalsCount($existingTerminals)
     {
