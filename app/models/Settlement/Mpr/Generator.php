@@ -67,6 +67,9 @@ class Generator
             throw $e;
         }
 
+        if ($data['count'] === 0)
+            return;
+
         $this->queueMprGenerationMail($data);
 
         $slackData = [
@@ -82,6 +85,11 @@ class Generator
         $this->checkMode();
 
         $gateway = Payment\Gateway::HDFC;
+
+        $mprFile = Gateway::call(Payment\Gateway::HDFC, 'mprFileExists', null, 'test');
+
+        if ($mprFile !== false)
+            return array('file' => null, 'count' => 0);
 
         $paymentRepo = new Payment\Repository;
         $payments = $paymentRepo->fetchCapturedForGatewayBetweenTimestamp(

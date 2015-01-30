@@ -347,6 +347,16 @@ class Gateway extends BaseGateway
         return (new Hdfc\Mpr\Generator)->generateMpr($input);
     }
 
+    public function mprFileExists()
+    {
+        return (new Hdfc\Mpr\Generator)->mprFileExists();
+    }
+
+    public function deleteMprFileIfExists()
+    {
+        return (new Hdfc\Mpr\Generator)->deleteMprFileIfExists();
+    }
+
 // ----------------------Gateway operations end --------------------------------
 
     protected function runRequestResponseFlow(array &$request, array &$response)

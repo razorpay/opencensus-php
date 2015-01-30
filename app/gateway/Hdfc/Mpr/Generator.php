@@ -12,6 +12,8 @@ use Trace\TraceCode;
 
 class Generator
 {
+    protected static $fileToWriteName = 'Hdfc_Mpr';
+
     protected $headings = array(
         'merchant_code',
         'terminal_number',
@@ -50,6 +52,13 @@ class Generator
 
     public function generateMpr(array $input)
     {
+        $mprFile = $this->mprFileExists();
+
+        if ($mprFile !== false)
+        {
+            return $mprFile;
+        }
+
         $this->trace->info(TraceCode::MPR_HDFC_GEN_INITIATED);
 
         $hdfcPayments = $this->fetchHdfcPayments($input['payments']);
@@ -115,8 +124,7 @@ class Generator
 
     protected function generateMprFile($data)
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-        $filename =  'Hdfc_Mpr_'.$time;
+        $filename = $this->getFileName();
 
         $excel = Excel::create($filename, function($excel) use ($data)
         {
@@ -129,9 +137,58 @@ class Generator
         $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
         $fullFileName = $fileMetadata['full'];
 
+        assert($fullFileName === $this->getFullFilePath());
+
         $this->trace->info(TraceCode::MPR_HDFC_FILE_GENERATED);
 
         return $fullFileName;
+    }
+
+    public function mprFileExists()
+    {
+        $file= $this->getFullFilePath();
+
+        if (file_exists($file))
+            return $file;
+
+        return false;
+    }
+
+    public function deleteMprFileIfExists()
+    {
+        $fullPath = $this->mprFileExists();
+
+        if ($fullPath !== false)
+        {
+            $success = unlink($fullPath);
+
+            if ($success === false)
+            {
+                throw new Exception\RuntimeErrorException(
+                    'Failed to delete file: ' . $fullPath);
+            }
+        }
+    }
+
+    protected function getFullFilePath()
+    {
+        return storage_path('files/settlement') . '/'.$this->getFileNameWithExt();
+    }
+
+    protected function getFileName()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $mode = $this->getMode();
+
+        $name = static::$fileToWriteName.'_'.$mode.'_'.$time;
+
+        return $name;
+    }
+
+    protected function getFileNameWithExt()
+    {
+        return $this->getFileName() . '.xlsx';
     }
 
     protected function generateMprArray($input, $hdfcTransactions)
@@ -278,5 +335,12 @@ class Generator
     protected function roundUp(& $amount)
     {
         $amount = ceil($amount * 100) / 100;
+    }
+
+    protected function getMode()
+    {
+        $mode = \BasicAuth::getMode();
+
+        return $mode;
     }
 }
