@@ -38,16 +38,6 @@ trait Capture
         return $this->payment;
     }
 
-    public function captureNetBanking($payment)
-    {
-        $payment->save();
-        $data = array(
-            'payment'       => $payment->toArray(),
-            'callbackUrl'   => $this->getCallbackUrl());
-
-        return $this->callGatewayFunction(Payment\Action::AUTHORIZE, $data);
-    }
-
     protected function captureOnGateway($data)
     {
         try

@@ -13,31 +13,38 @@ trait Authorize
 {
     public function authorize($payment, $input)
     {
-        $cardData = $this->createCardEntity($input);
+        $gatewayInput = [];
+
+        if ($payment->isMethod(Payment\Method::CARD))
+        {
+            $cardData = $this->createCardEntity($input);
+
+            (new Card\Repository)->saveOrFail($payment->card);
+
+            $gatewayInput['card'] = $cardData;
+        }
+
+        $this->repo->saveOrFail($payment);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
-
-        $this->savePaymentAndCard();
 
         //
         // Call gateway with required info
         //
-        $paymentInfo = array(
-                    'payment' => $payment->toArray(),
-                    'card' => $cardData);
+        $gatewayInput['payment'] = $payment->toArray();
 
         $gateway = $payment->getGateway();
 
         if ($gateway === Payment\Gateway::ATOM)
         {
-            $paymentInfo['callbackUrl'] = $this->getCallbackUrl();
+            $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
         }
 
-        $data = $this->callGatewayAuthorize($paymentInfo);
+        $data = $this->callGatewayAuthorize($gatewayInput);
 
-        if ($gateway === Payment\Gateway::HDFC)
+        if ($data !== null)
         {
-            if ($data !== null)
+            if ($gateway === Payment\Gateway::HDFC)
             {
                 //
                 // This case means that card is enrolled.
@@ -51,9 +58,15 @@ trait Authorize
                 //
 
                 $data['callbackUrl'] = $this->getCallbackUrl();
-
-                return $data;
             }
+
+            return $data;
+        }
+
+        // For atom gateway, authorization cannot happen in a single step
+        if ($payment->isGateway(Payment\Gateway::ATOM))
+        {
+            return $data;
         }
 
         $this->updatePaymentAuthorized();

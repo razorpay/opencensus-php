@@ -70,14 +70,7 @@ class Processor
 
         $payment = $this->createPaymentEntity($input);
 
-        if ($input['method'] === Payment\Method::CARD)
-        {
-            return $this->authorize($payment, $input);
-        }
-        else if ($input['method'] === Payment\Method::NET_BANKING)
-        {
-            return $this->captureNetBanking($payment);
-        }
+        return $this->authorize($payment, $input);
     }
 
     protected function checkMerchantPermissions()

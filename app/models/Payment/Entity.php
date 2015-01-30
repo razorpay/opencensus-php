@@ -274,6 +274,16 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::NET_BANKING);
     }
 
+    public function isGateway($gateway)
+    {
+        return ($this->getAttribute(self::GATEWAY) === $gateway);
+    }
+
+    public function isMethod($method)
+    {
+        return ($this->getAttribute(self::METHOD) === $method);
+    }
+
 // ----------------------- Getters ---------------------------------------------
 
     public function getMerchantId()
