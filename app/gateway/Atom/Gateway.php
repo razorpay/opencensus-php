@@ -12,8 +12,6 @@ use Gateway\Atom;
 
 class Gateway extends BaseGateway
 {
-    protected $url = 'http://203.114.240.183/paynetz/epi/fts';
-
     protected $paymentRequest = array(
         'type' => 'payment',
         'fields' => array('ttype', 'prodid', 'amt', 'txncurr', 'txnscamt',
@@ -47,8 +45,8 @@ class Gateway extends BaseGateway
 
         $request = $this->createTransactionRequestArray($input);
 
-        $response = array();
         // Send first request.
+        $response = [];
         $response = $this->runRequestResponseFlow($request, $response);
 
         $data = $this->processPaymentInitiationResponse($response, $input);
@@ -100,9 +98,13 @@ class Gateway extends BaseGateway
         // Convert xml body to array of fields
         $data = $this->xmlToArray($response['response']->body);
 
+        $method = $input['payment']['method'];
+
+        $ttype = Transaction::getType($method);
+
         // Fields returned from first request
         $fields = array(
-            'ttype'         => 'NBFundTransfer',
+            'ttype'         => $ttype,
             'tempTxnId'     => $data['tempTxnId'],
             'token'         => $data['token'],
             'txnStage'      => '1');
@@ -194,8 +196,12 @@ class Gateway extends BaseGateway
         // Replace space with '%20'
         // $time = str_replace(' ', '%20', $time);
 
-        $request['content'] = array(
-            'ttype'         =>  'NBFundTransfer',
+        $method = $input['payment']['method'];
+
+        $ttype = Transaction::getType($method);
+
+        $content = array(
+            'ttype'         =>  $ttype,
             'amt'           =>  $input['payment']['amount'] / 100,
             'txncurr'       =>  'INR',
             'txnscamt'      =>  '0',
@@ -204,12 +210,29 @@ class Gateway extends BaseGateway
             'ru'            =>  $input['callbackUrl'],
             'date'          =>  $time,
             'custacc'       =>  '123456789012',
-            'bankid'        =>  '2001',
-            );
+        );
+
+        if ($method === 'netbanking')
+            $content['bankid'] = '2001';
+
+        if ($method === 'card')
+        {
+            $content['mdd'] = $this->getMddField($input);
+        }
 
         $request['url'] = Urls::getUrl($this->mode);
+        $request['content'] = $content;
 
         return $request;
+    }
+
+    protected function getMddField($input)
+    {
+        $mdd = 'channelid=int';
+        $mdd .= '|carddata=' . Card::encryptCardData($input['card']);
+        $mdd .= '|cardhname=' . $input['card']['name'];
+
+        return $mdd;
     }
 
     /**

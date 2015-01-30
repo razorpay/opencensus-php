@@ -26,24 +26,34 @@ trait Authorize
                     'payment' => $payment->toArray(),
                     'card' => $cardData);
 
-        $callbackData = $this->callGatewayAuthorize($paymentInfo);
+        $gateway = $payment->getGateway();
 
-        if ($callbackData !== null)
+        if ($gateway === Payment\Gateway::ATOM)
         {
-            //
-            // This case means that card is enrolled.
-            // Now a form will be displayed and submitted
-            // to bank ACS for for customer to enter 3d-secure
-            // or OTP.
-            // The data field required for generating the
-            // form is returned by gateway.
-            // It's now returned further to wherever it
-            // will be used to display form.
-            //
+            $paymentInfo['callbackUrl'] = $this->getCallbackUrl();
+        }
 
-            $callbackData['callbackUrl'] = $this->getCallbackUrl();
+        $data = $this->callGatewayAuthorize($paymentInfo);
 
-            return $callbackData;
+        if ($gateway === Payment\Gateway::HDFC)
+        {
+            if ($data !== null)
+            {
+                //
+                // This case means that card is enrolled.
+                // Now a form will be displayed and submitted
+                // to bank ACS for for customer to enter 3d-secure
+                // or OTP.
+                // The data field required for generating the
+                // form is returned by gateway.
+                // It's now returned further to wherever it
+                // will be used to display form.
+                //
+
+                $data['callbackUrl'] = $this->getCallbackUrl();
+
+                return $data;
+            }
         }
 
         $this->updatePaymentAuthorized();
