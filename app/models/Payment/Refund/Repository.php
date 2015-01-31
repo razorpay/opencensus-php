@@ -43,6 +43,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findBetweenTimesampsForGateway($from, $to, $gateway)
+    {
+        $repo = $this->repo;
+
+        return $repo::join('payments', 'refunds.payment_id', '=', 'payments.id')
+                    ->select('refunds.*', 'payments.gateway')
+                    ->where('refunds.created_at', '>=', $from)
+                    ->where('refunds.created_at', '<=', $to)
+                    ->where('payments.gateway', '=', $gateway)
+                    ->get();
+    }
+
     public function fetchByIdPaymentIdMerchantId($id, $paymentId, $merchantId)
     {
         $repo = $this->repo;
