@@ -141,39 +141,6 @@ class Processor
         return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
     }
 
-    protected function setTerminalForPayment($payment)
-    {
-        if ($this->terminal !== null)
-        {
-            return $this->terminal;
-        }
-
-        $gateway = $payment->getGateway();
-
-        $terminal = (new Terminal\Repository)->getByMerchantIdAndGateway(
-                                                    $this->merchant->getKey(), $gateway);
-
-        if (($terminal === null) or
-            ($terminal->trashed()))
-        {
-            $method = $payment->getAttribute(Payment\Entity::METHOD);
-            if ($method === Payment\Method::NET_BANKING)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
-            }
-
-            throw new \LogicException(
-                'No terminal found for merchant: ' . $this->merchant->getKey());
-        }
-
-        $this->terminal = $terminal;
-
-        $payment->terminal()->associate($terminal);
-
-        return $terminal;
-    }
-
     public function verify($id)
     {
         $payment = $this->retrieve($id);
@@ -181,31 +148,6 @@ class Processor
         $data = array('payment' => $payment->toArray());
 
         $payment = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
-    }
-
-    protected function setGatewayForPayment($payment)
-    {
-        $gateway = '';
-
-        $method = $payment['method'];
-
-        if ($method === Payment\Method::CARD)
-        {
-            $gateway = Payment\Gateway::HDFC;
-        }
-        else if ($method === Payment\Method::NET_BANKING)
-        {
-            $gateway = Payment\Gateway::ATOM;
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Unrecognized payment method ' . $method);
-        }
-
-        $payment->setGateway($gateway);
-
-        return $gateway;
     }
 
     protected function getCallbackUrl()
@@ -229,9 +171,7 @@ class Processor
 
         $payment->merchant()->associate($this->merchant);
 
-        $this->setGatewayForPayment($payment);
-
-        $this->setTerminalForPayment($payment);
+        (new TerminalPicker)->selectTerminal($payment);
 
         $this->payment = $payment;
 

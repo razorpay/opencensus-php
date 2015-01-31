@@ -120,4 +120,14 @@ class Entity extends Base\PublicEntity
 
         return $terminal;
     }
+
+    public function isCardEnabled()
+    {
+        return ($this->getAttribute(self::CARD) == '1');
+    }
+
+    public function isGateway($gateway)
+    {
+        return ($this->getAttribute(self::GATEWAY) === $gateway);
+    }
 }
