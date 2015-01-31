@@ -213,7 +213,9 @@ class Gateway extends BaseGateway
         );
 
         if ($method === 'netbanking')
-            $content['bankid'] = '2001';
+        {
+            $content['bankid'] = $this->getBankId($input);
+        }
 
         if ($method === 'card')
         {
@@ -233,6 +235,11 @@ class Gateway extends BaseGateway
         $mdd .= '|cardhname=' . $input['card']['name'];
 
         return $mdd;
+    }
+
+    protected function getBankId($input)
+    {
+        return '2001';
     }
 
     /**
