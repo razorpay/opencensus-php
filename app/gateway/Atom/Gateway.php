@@ -52,7 +52,7 @@ class Gateway extends BaseGateway
         $data = $this->processPaymentInitiationResponse($response, $input);
 
         $url = $this->createAtomRedirectUrl($data);
-
+echo($url);
         $data = array('redirectUrl' => $url);
 
         return $data;
@@ -184,6 +184,15 @@ class Gateway extends BaseGateway
     public function postRequest($request)
     {
         $this->setTerminalInRequest($request);
+
+        // $t = '?';
+        // foreach ($request['content'] as $key => $value)
+        // {
+        //     $t .= $key . '=' . $value . '&';
+        // }
+        // $request['url'] .= $t;
+
+        // $request['content'] = [];
 
         $this->response = $this->sendGatewayRequest($request);
 
