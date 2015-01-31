@@ -17,7 +17,6 @@ class NetBanking
         IFSC::CIUB,
         IFSC::CORP,
         IFSC::DCBL,
-        IFSC::BKDN,
         IFSC::DEUT,
         IFSC::DLXB,
         IFSC::FDRL,
@@ -28,10 +27,10 @@ class NetBanking
         IFSC::IOBA,
         IFSC::INDB,
         IFSC::JAKA,
+        IFSC::KARB,
         IFSC::KVBL,
         IFSC::KKBK,
         IFSC::LAVB,
-        IFSC::ORBC,
         IFSC::SIBL,
         IFSC::SBBJ,
         IFSC::SBHY,
@@ -41,6 +40,7 @@ class NetBanking
         IFSC::KARB,
         IFSC::UCBA,
         IFSC::UBIN,
+        IFSC::VIJB,
         IFSC::YESB);
 
     protected static $processing = array(
