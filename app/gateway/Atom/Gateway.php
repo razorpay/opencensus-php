@@ -93,6 +93,11 @@ class Gateway extends BaseGateway
         parent::refund($input);
     }
 
+    public function verify(array $input)
+    {
+        ;
+    }
+
     protected function processPaymentInitiationResponse($response, $input)
     {
         // Convert xml body to array of fields
@@ -120,27 +125,27 @@ class Gateway extends BaseGateway
         // Check if the transaction succeded or failed.
         $atomFCode = (isset($input['f_code'])) ? $input['f_code'] : '';
 
-        $error = false;
         $exception = null;
 
         if ($atomFCode === 'Ok')
         {
             $atom->setSuccess(true);
         }
-        else if ($atomFCode === 'F')
-        {
-            $atom->setSuccess(false);
-            $error = true;
-            $exception = new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
         else
         {
             $atom->setSuccess(false);
             $atom->saveOrFail();
-            $this->error = true;
-            throw new Exception\LogicException(
-                'Atom f_code returned in callback has unrecognized value. Atom f_code: ' . $atomFCode);
+
+            if ($atomFCode === 'F')
+            {
+                $exception = new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Atom f_code returned in callback has unrecognized value. Atom f_code: ' . $atomFCode);
+            }
         }
 
         $atom->setBankTransactionId($input['bank_txn']);
@@ -248,7 +253,16 @@ class Gateway extends BaseGateway
 
     protected function getBankId($input)
     {
-        return '2001';
+        $ifsc = $input['payment']['bank'];
+
+        $atomBankCode = Bank::getAtomBankCode($ifsc);
+
+        if ($this->mode === 'test')
+        {
+            $atomBankCode = '2001';
+        }
+
+        return $atomBankCode;
     }
 
     /**

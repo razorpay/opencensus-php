@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const EMAIL             = 'email';
     const CONTACT           = 'contact';
     const NOTES             = 'notes';
+    const BANK              = 'bank';
     const CARD_ID           = 'card_id';
     const TRANSACTION_ID    = 'transaction_id';
     const CAPTURED_AT       = 'captured_at';
@@ -48,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::AMOUNT,
         self::METHOD,
+        self::BANK,
         self::CURRENCY,
         self::DESCRIPTION,
         self::EMAIL,
@@ -65,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::REFUND_STATUS,
         self::DESCRIPTION,
+        self::BANK,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
@@ -199,6 +202,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
+    public function setBank($bank)
+    {
+        $this->setAttribute(self::BANK, $bank);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -271,7 +279,7 @@ class Entity extends Base\PublicEntity
 
     public function isNetBanking()
     {
-        return ($this->getAttribute(self::METHOD) === Payment\Method::NET_BANKING);
+        return ($this->getAttribute(self::METHOD) === Payment\Method::NETBANKING);
     }
 
     public function isGateway($gateway)

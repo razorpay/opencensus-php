@@ -10,6 +10,7 @@ class Entity extends \Models\Base\Entity
         'token',
         'success',
         'callback_data',
+        'bank_code',
         'bank_name',
         'bank_transaction_id',
         'created_at',

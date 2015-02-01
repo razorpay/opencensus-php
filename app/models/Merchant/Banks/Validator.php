@@ -4,6 +4,8 @@ namespace Models\Merchant\Banks;
 
 use Models\Base;
 use Models\Payment\Processor\NetBanking;
+use EE\Exception;
+use EE\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -32,7 +34,8 @@ class Validator extends Base\Validator
         if (count($banks) !== count($uniqBanks))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Some banks are repeated');
+                'Some banks are repeated',
+                'banks');
         }
     }
 }
