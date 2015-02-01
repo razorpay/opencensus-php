@@ -269,6 +269,18 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    public function getBanks($id)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $banks = (new Banks\Core)->getMerchantBanks($merchant);
+
+        if ($banks === null)
+            return [];
+
+        return $banks->toArrayWithBankNames();
+    }
+
     public function getPaymentBanks()
     {
         $banks = (new Banks\Core)->getMerchantBanks($this->merchant);

@@ -24,7 +24,8 @@ final class Route
         'payment_auth_expire'               => ['post',     'payments/auth/expire',                     'PaymentController@postAuthExpire'                      ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                           ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                          ],
-        'merchant_get_banks'                => ['get',      'merchant/banks',                           'MerchantController@getBanks'                           ],
+        'merchant_public_get_banks'         => ['get',      'merchant/banks',                           'MerchantController@getBanksPublic'                     ],
+        'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],
         'merchant_set_banks'                => ['post',     'merchants/{id}/banks',                     'MerchantController@setBanks'                           ],
         'merchant_create'                   => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                 ],
         'merchant_fetch'                    => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                        ],
@@ -78,7 +79,7 @@ final class Route
         'payment_create',
         'payment_create_jsonp',
         'payment_callback',
-        'merchant_get_banks',
+        'merchant_public_get_banks',
         );
 
     public static $private = array(
@@ -107,6 +108,7 @@ final class Route
         'merchant_activate',
         'merchant_live_enable',
         'merchant_live_disable',
+        'merchant_get_banks',
         'merchant_set_banks',
         'pricing_create_plan',
         'pricing_get_plans',
