@@ -95,7 +95,17 @@ class Gateway extends BaseGateway
 
     public function verify(array $input)
     {
-        ;
+        // http://203.114.240.183/paynetz/vfts?merchantid=160&merchanttxnid=1015&amt=100.00&tdate=2012-08-11
+
+        $createdAt = $input['payment']['created_at'];
+
+        $tdate = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata')->format('Y-m-d');
+
+        $fields = array(
+            'merchantid'    => $input['terminal']['gateway_merchant_id'],
+            'merchantxnid'  => $input['payment']['public_id'],
+            'tdate'         => $tdate,
+            'amt'           => $input['payment']['amount']);
     }
 
     protected function processPaymentInitiationResponse($response, $input)
@@ -177,12 +187,21 @@ class Gateway extends BaseGateway
 
     protected function createAtomEntity($input, $data)
     {
+        $bankCode = null;
+
+        if (isset($this->request['content']['bankid']))
+        {
+            $bankCode = $this->request['content']['bankid'];
+        }
+
         $attributes = array(
-            'id' => $input['payment']['id'],
-            'token' => $data['token'],
+            'id'        => $input['payment']['id'],
+            'token'     => $data['token'],
+            'bank_code' => $bankCode,
             'gateway_payment_id' => $data['tempTxnId']);
 
         $atom = new Atom\Entity($attributes);
+
         $atom->saveOrFail();
     }
 
@@ -317,6 +336,9 @@ class Gateway extends BaseGateway
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         $request['options']['timeout'] = 30;
+
+        $this->request = $request;
+        $this->response = $response;
 
         try
         {

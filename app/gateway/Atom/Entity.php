@@ -18,6 +18,7 @@ class Entity extends \Models\Base\Entity
 
     protected $fillable = array(
         'id',
+        'bank_code',
         'gateway_payment_id',
         'token');
 

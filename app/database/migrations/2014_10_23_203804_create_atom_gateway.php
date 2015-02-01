@@ -28,6 +28,9 @@ class CreateAtomGateway extends Migration
             $table->boolean('success')
                   ->nullable();
 
+            $table->string('bank_code')
+                  ->nullable();
+
             $table->string('bank_name')
                   ->nullable();
 
