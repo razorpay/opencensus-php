@@ -38,7 +38,7 @@ class TerminalPicker
         {
             $terminal = $this->pickTerminalForCardMethod($terminals, $hdfcTerm, $atomTerm);
         }
-        else if ($method === Payment\Method::NET_BANKING)
+        else if ($method === Payment\Method::NETBANKING)
         {
             if ($atomTerm === null)
             {

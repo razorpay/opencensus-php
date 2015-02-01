@@ -5,7 +5,7 @@ namespace Gateway\Atom;
 class Transaction
 {
     const CARD = 'CCFundTransfer';
-    const NET_BANKING = 'NBFundTransfer';
+    const NETBANKING = 'NBFundTransfer';
 
     public static function getType($method)
     {
@@ -15,7 +15,7 @@ class Transaction
         }
         else if ($method === 'netbanking')
         {
-            return self::NET_BANKING;
+            return self::NETBANKING;
         }
     }
 }

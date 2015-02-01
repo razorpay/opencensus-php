@@ -58,8 +58,7 @@ class Validator extends Base\Validator
 
     protected function validateAmount($input)
     {
-        // @todo:check for atom gateway
-        if (($input['method'] === Payment\Method::NET_BANKING) and
+        if (($input['method'] === Payment\Method::NETBANKING) and
             (((int) $input['amount']) < 5000))
         {
             throw new Exception\BadRequestException(
@@ -76,7 +75,7 @@ class Validator extends Base\Validator
 
     protected function validateBank($input)
     {
-        if ($input['method'] !== Payment\Method::NET_BANKING)
+        if ($input['method'] !== Payment\Method::NETBANKING)
         {
             return;
         }
