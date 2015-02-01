@@ -145,7 +145,7 @@ class MerchantController extends BaseController
 
     public function getBanks($id)
     {
-        $data = (new Merchant\Service)->getPaymentBanks($id);
+        $data = (new Merchant\Service)->getBanks($id);
 
         return ApiResponse::json($data);
     }

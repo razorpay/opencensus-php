@@ -150,7 +150,7 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
-    public function testGetBanks()
+    public function testGetBanksByMerchantAuth()
     {
         $this->testSetBanks();
 
@@ -158,11 +158,20 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        // $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->links['merchant']->activate('10000000000000');
 
-        // $this->ba->publicLiveAuth();
+        $this->ba->publicLiveAuth();
 
-        // $this->startTest();
+        $this->startTest();
+    }
+
+    public function testGetBanksByAppAuth()
+    {
+        $this->testSetBanks();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 
     protected function startTest()

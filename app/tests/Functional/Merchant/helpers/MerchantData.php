@@ -277,9 +277,22 @@ return [
         ]
     ],
 
-    'testGetBanks' => [
+    'testGetBanksByMerchantAuth' => [
         'request' => [
             'url' => '/merchant/banks',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'HDFC' => 'HDFC Bank',
+                'ICIC' => 'ICICI Bank',
+            ],
+        ],
+    ],
+
+    'testGetBanksByAppAuth' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/banks',
             'method' => 'GET',
         ],
         'response' => [
