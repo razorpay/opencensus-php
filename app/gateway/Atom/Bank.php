@@ -38,8 +38,8 @@ class Bank
         IFSC::SBHY => 1017,     // State Bank of Hyderabad
         IFSC::SBIN => 1014,     // State Bank of India
         IFSC::SBMY => 1021,     // State Bank of Mysore
-        IFSC::SBTR => 1036,     // State Bank of Patiala
-        IFSC::KARB => 1025,     // State Bank of Travencore
+        IFSC::STBP => 1036,     // State Bank of Patiala
+        IFSC::SBTR => 1025,     // State Bank of Travencore
         IFSC::UCBA => 1016,     // UCO Bank
         IFSC::UBIN => 1039,     // Union Bank
         IFSC::VIJB => 1005,     // Vijaya Bank
