@@ -1885,7 +1885,7 @@
 "521074","STANDARD","MasterCard","debit","IN","PUNJAB NATIONAL BANK"
 "521075","STANDARD","MasterCard","debit","IN","UNION BANK OF INDIA"
 "521086","STANDARD","MasterCard","debit","IN","BANK OF BARODA"
-"521106",,"MasterCard",,"IN",
+"521106","CLASSIC","MasterCard","debit","IN","STATE BANK OF INDIA"
 "521107",,"MasterCard",,"IN",
 "521108",,"MasterCard",,"IN",
 "521109",,"MasterCard",,"IN",
