@@ -55,6 +55,8 @@ class CreateCards extends Migration
             // Adds created_at and updated_at columns to the table
             $table->integer(Card::CREATED_AT);
             $table->integer(Card::UPDATED_AT);
+
+            $table->index(Card::IIN);
         });
     }
 
