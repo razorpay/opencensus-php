@@ -41,8 +41,6 @@ class Gateway extends BaseGateway
     {
         parent::authorize($input);
 
-        $url = Urls::ATOM_TEST_URL;
-
         $request = $this->createTransactionRequestArray($input);
 
         // Send first request.
@@ -174,7 +172,7 @@ class Gateway extends BaseGateway
         // params contain '%' sign which gets messed up by that function
         $queryStr = $this->buildGetQueryString($data);
 
-        $url = Urls::getUrl($this->mode).'?'.$queryStr;
+        $url = Urls::getDomain($this->mode).Urls::PAYMENT_URL.'?'.$queryStr;
 
         // This is the url to which the customer is redirected.
         // Here, on atom's provided url, the bank choice is auto-submitted
@@ -255,8 +253,8 @@ class Gateway extends BaseGateway
             $content['mdd'] = $this->getMddField($input);
         }
 
-        $request['url'] = Urls::getUrl($this->mode);
         $request['content'] = $content;
+        $request['url'] = Urls::PAYMENT_URL;
 
         return $request;
     }
@@ -336,6 +334,8 @@ class Gateway extends BaseGateway
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         $request['options']['timeout'] = 30;
+        $domain = ($this->mode === 'live') ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+        $request['url'] = $domain . $request['url'];
 
         $this->request = $request;
         $this->response = $response;

@@ -4,16 +4,23 @@ namespace Gateway\Atom;
 
 class Urls
 {
-    const ATOM_MOCK_URL = 'http://laskjdf';
-    const ATOM_TEST_URL = 'http://203.114.240.183/paynetz/epi/fts';
-    const ATOM_LIVE_URL = 'https://payment.atomtech.in';
+    const MOCK_DOMAIN  = 'http://laskjdf';
+    const TEST_DOMAIN  = 'http://203.114.240.183';
+    const LIVE_DOMAIN  = 'https://payment.atomtech.in';
 
-    public static function getUrl($mode)
+    const PAYMENT_URL  = '/paynetz/epi/fts';
+    const VERIFY_URL   = '/paynetz/vfts';
+
+    public static function getDomain($mode)
     {
         if ($mode === 'test')
-            return self::ATOM_TEST_URL;
+        {
+            return self::TEST_DOMAIN;
+        }
         else if ($mode === 'live')
-            return self::ATOM_LIVE_URL;
+        {
+            return self::LIVE_DOMAIN;
+        }
 
         throw new \InvalidArgumentException('Not a valid mode: ' . $mode);
     }
