@@ -41,7 +41,6 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
         <td colspan="40">Select Bank (Net Banking): </td>
         <td>
             <select name="bank">
-                <option value="SBIN">State Bank of India</option>
                 <option value="HDFC">HDFC Bank</option>
             </select>
         </td>

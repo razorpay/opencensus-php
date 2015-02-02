@@ -93,8 +93,6 @@ class Gateway extends BaseGateway
 
     public function verify(array $input)
     {
-        // http://203.114.240.183/paynetz/vfts?merchantid=160&merchanttxnid=1015&amt=100.00&tdate=2012-08-11
-
         $createdAt = $input['payment']['created_at'];
 
         $tdate = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata')->format('Y-m-d');
@@ -104,6 +102,12 @@ class Gateway extends BaseGateway
             'merchantxnid'  => $input['payment']['public_id'],
             'tdate'         => $tdate,
             'amt'           => $input['payment']['amount']);
+
+        $request['url'] = URL::VERIFY_URL;
+        $request['content'] = $fields;
+
+        $response = [];
+        $response = $this->runRequestResponseFlow($request, $response);
     }
 
     protected function processPaymentInitiationResponse($response, $input)
@@ -207,14 +211,10 @@ class Gateway extends BaseGateway
     {
         $this->setTerminalInRequest($request);
 
-        // $t = '?';
-        // foreach ($request['content'] as $key => $value)
-        // {
-        //     $t .= $key . '=' . $value . '&';
-        // }
-        // $request['url'] .= $t;
-
-        // $request['content'] = [];
+        $str = $this->buildGetQueryString($request['content']);
+        $request['url'] .= '?'.$str;
+        $request['content'] = [];
+        // echo $request['url'];die();
 
         $this->response = $this->sendGatewayRequest($request);
 
@@ -225,7 +225,7 @@ class Gateway extends BaseGateway
     {
         $time = date('d/m/Y h:m:s');
         // Replace space with '%20'
-        // $time = str_replace(' ', '%20', $time);
+        $time = str_replace(' ', '%20', $time);
 
         $method = $input['payment']['method'];
 
@@ -400,15 +400,6 @@ class Gateway extends BaseGateway
         $status_code = (int) $response['response']->status_code;
 
         return ($status_code === 200);
-    }
-
-    protected function writeLog($data)
-    {
-        $fileName = date('Y-m-d').'.txt';
-        $fp = fopen('log/'.$fileName, 'a+');
-        $data = date('Y-m-d H:i:s').' - '.$data;
-        fwrite($fp,$data);
-        fclose($fp);
     }
 
     protected function xmlToArray($data)
