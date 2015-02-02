@@ -34,7 +34,13 @@ class CreateAtomGateway extends Migration
             $table->string('bank_name')
                   ->nullable();
 
-            $table->string('bank_transaction_id')
+            $table->string('bank_payment_id')
+                  ->nullable();
+
+            $table->char('method', 2)
+                  ->nullable();
+
+            $table->string('gateway_result_description')
                   ->nullable();
 
             $table->text('callback_data')

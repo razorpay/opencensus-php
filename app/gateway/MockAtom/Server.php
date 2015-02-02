@@ -132,18 +132,21 @@ class Server
         $publicId = $payment->getPublicId();
         $merchantCallbackUrl = $this->formMerchantCallbackUrl($publicId, $keyId);
 
+        $time = Carbon::now('Asia/Kolkata')->format('D M d H:i:s \G\M\T+05:30 Y');
+
         $data = array(
             'mmp_txn'       => $tempTxnId,
             'mer_txn'       => $payment->getPublicId(),
             'amt'           => $payment->getAmount() / 100 . '00',
             'prod'          => 'NSE',
-            'date'          => 'Sat Nov 29..',
+            'date'          => $time,
             'bank_txn'      => $tempTxnId.'1',
             'f_code'        => $success,
             'clientcode'    => '123',
             'bank_name'     => 'Razorpay Bank',
             'udf9'          => '',
             'discriminator' => 'NB',
+            'desc'          => 'abcdef',
             'surcharge'     => '0.0',
             'CardNumber'    => '');
 

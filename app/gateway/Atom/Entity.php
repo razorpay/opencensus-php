@@ -12,7 +12,9 @@ class Entity extends \Models\Base\Entity
         'callback_data',
         'bank_code',
         'bank_name',
-        'bank_transaction_id',
+        'bank_payment_id',
+        'gateway_result_description',
+        'method',
         'created_at',
         'updated_at');
 
@@ -20,7 +22,12 @@ class Entity extends \Models\Base\Entity
         'id',
         'bank_code',
         'gateway_payment_id',
-        'token');
+        'token',
+        'bank_code',
+        'bank_name',
+        'bank_payment_id',
+        'gateway_result_description',
+        'method');
 
     protected $table = 'atom';
 
@@ -36,9 +43,9 @@ class Entity extends \Models\Base\Entity
         $this->setAttribute('bank_name', $name);
     }
 
-    public function setBankTransactionId($bankTransactionId)
+    public function setBankPaymentId($bankPaymentId)
     {
-        $this->setAttribute('bank_transaction_id', $bankTransactionId);
+        $this->setAttribute('bank_payment_id', $bankPaymentId);
     }
 
     public function setCallbackData($data)

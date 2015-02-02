@@ -160,8 +160,22 @@ class Gateway extends BaseGateway
             }
         }
 
-        $atom->setBankTransactionId($input['bank_txn']);
-        $atom->setBankName($input['bank_name']);
+        $data = array(
+            'bank_payment_id'       => $input['bank_txn'],
+            'bank_name'             => $input['bank_name']);
+
+        if (isset($input['desc']))
+        {
+            $data['gateway_result_description'] = $input['desc'];
+        }
+
+        if (isset($input['discriminator']))
+        {
+            $data['method'] = $input['discriminator'];
+        }
+
+        $atom->fill($data);
+
         $atom->saveOrFail();
 
         if ($exception !== null)
