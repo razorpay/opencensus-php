@@ -62,7 +62,10 @@ class Core
                 }
             }
 
+            $type = Card\Type::getType($detail['type']);
+
             $arr = array(
+                Entity::TYPE    => $type,
                 Entity::ISSUER  => $details['issuer'],
                 Entity::COUNTRY => $details['country']);
 

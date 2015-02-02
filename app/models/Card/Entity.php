@@ -47,6 +47,7 @@ class Entity extends Base\UniqueIdEntity
     protected static $generators = array(
         self::ID,
         self::IIN,
+        self::TYPE,
         self::LAST4,
         self::LENGTH);
 
@@ -72,6 +73,11 @@ class Entity extends Base\UniqueIdEntity
         $iin = substr($input['number'], 0, 6);
 
         $this->setAttribute(self::IIN, $iin);
+    }
+
+    public function generateType($input)
+    {
+        $this->setAttribute(self::TYPE, Card\Type::UNKNOWN);
     }
 
     public function generateLength($input)
