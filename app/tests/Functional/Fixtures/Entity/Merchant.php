@@ -43,7 +43,10 @@ class Merchant extends Base
 
     public function activate($id)
     {
-        $this->db->connection('test')->table('merchants')->where('id', $id)->update(['activated' => true]);
-        $this->db->connection('live')->table('merchants')->where('id', $id)->update(['activated' => true]);
+        $repo = new \Models\Merchant\Repository;
+        $merchant = $repo->findOrFail($id);
+        $merchant->activated = 1;
+        $repo->saveOrFail($merchant);
+        return $merchant;
     }
 }
