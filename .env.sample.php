@@ -30,8 +30,8 @@ return array(
 
     'EMAIL_MOCK'                => true,
 
-    'APP_DASHBOARD_URL'     	=> 'http://dashboard.razorpay.com/',
-    'APP_DASHBOARD_SECRET'      => 'DASHBOARD_AUTH_PASS',
+    'APP_DASHBOARD_URL'     	=> 'http://betadashboard.razorpay.com/',
+    'APP_DASHBOARD_SECRET'      => 'RANDOM_DASH_PASSWORD',
     'APP_DASHBOARD_PRETEND'     => true,
 
     'SLACK_TOKEN'               => '',
@@ -48,5 +48,5 @@ return array(
     'AWS_KEY_SECRET'            => '',
     'AWS_REGION'                => 'us-east-1',
 
-    'CRON_PASSWORD'             => 'a923r8u98uwaf98uw9w8fu',
+    'CRON_PASSWORD'             => 'RANDOM_CRON_PASSWORD',
 );
