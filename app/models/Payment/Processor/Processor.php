@@ -70,7 +70,24 @@ class Processor
 
         $payment = $this->createPaymentEntity($input);
 
-        return $this->authorize($payment, $input);
+        $data = $this->authorize($payment, $input);
+
+        //
+        // The returned value could be either Payment
+        // model or an array containing callback data.
+        // We convert payment model to array
+        // if it's a payment model
+        //
+        if ($data instanceof Payment\Entity)
+        {
+            // This is a payment instance
+            $payment = $data;
+
+            // Return array with fields after authorized
+            $data = ['razorpay_payment_id' => $payment->getPublicId()];
+        }
+
+        return $data;
     }
 
     protected function checkMerchantPermissions()
