@@ -281,6 +281,10 @@ return [
         'request' => [
             'url' => '/merchant/banks',
             'method' => 'GET',
+            'content' => [
+                'callback' => 'abcdef',
+                '_' => 'abcdef',
+            ]
         ],
         'response' => [
             'content' => [
@@ -288,6 +292,7 @@ return [
                 'ICIC' => 'ICICI Bank',
             ],
         ],
+        'jsonp' => true
     ],
 
     'testGetBanksByAppAuth' => [

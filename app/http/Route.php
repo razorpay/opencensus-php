@@ -231,7 +231,9 @@ final class Route
 
     public static function isJsonpRoute($path)
     {
-        $jsonpRoute = array('v1/payments/create/jsonp');
+        $jsonpRoute = array(
+            'v1/payments/create/jsonp',
+            'v1/merchant/banks');
 
         return in_array($path, $jsonpRoute);
     }
