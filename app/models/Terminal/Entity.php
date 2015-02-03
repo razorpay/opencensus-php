@@ -122,8 +122,8 @@ class Entity extends Base\PublicEntity
     }
 
     public function isCardEnabled()
-    {s($this->getAttribute(self::CARD));
-        return ($this->getAttribute(self::CARD) === '1');
+    {
+        return (((int)$this->getAttribute(self::CARD)) === 1);
     }
 
     public function isGateway($gateway)
