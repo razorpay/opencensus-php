@@ -122,7 +122,7 @@ class Entity extends Base\PublicEntity
     }
 
     public function isCardEnabled()
-    {
+    {s($this->getAttribute(self::CARD));
         return ($this->getAttribute(self::CARD) === '1');
     }
 
