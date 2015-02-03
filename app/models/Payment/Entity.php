@@ -306,7 +306,7 @@ class Entity extends Base\PublicEntity
 
     public function isSigned()
     {
-        return ((bool)$this->getAttribute(self::SIGN) === true);
+        return ((bool)$this->getAttribute(self::SIGNED) === true);
     }
 
 // ----------------------- Getters ---------------------------------------------

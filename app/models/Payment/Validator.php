@@ -22,7 +22,8 @@ class Validator extends Base\Validator
         'signature'     =>  'sometimes');
 
     protected static $captureRules = array(
-        'amount'        => 'required|numeric');
+        'amount'        => 'required|numeric',
+        'currency'      => 'sometimes|in:INR');
 
     protected static $refundRules = array(
         'amount'        => 'sometimes|numeric');

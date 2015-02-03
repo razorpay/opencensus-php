@@ -22,20 +22,25 @@ trait Capture
 
         (new Payment\Validator)->captureValidate($payment, $input);
 
+        return $this->capturePayment($payment, $input['amount']);
+    }
+
+    public function capturePayment($payment, $amount)
+    {
         $data = array(
             'payment' => $payment->toArray(),
-            'amount' => $input['amount']);
+            'amount' => $amount);
 
         if ($payment->getMethod() === Payment\Method::CARD)
         {
             $data['card'] = $payment->card->toArray();
         }
 
-        $payment->setCaptureAmount($input['amount']);
+        $payment->setCaptureAmount($amount);
 
         $this->captureOnGateway($data);
 
-        return $this->payment;
+        return $payment;
     }
 
     protected function captureOnGateway($data)

@@ -111,6 +111,24 @@ class Processor
         return true;
     }
 
+    protected function captureSignedPayment($payment)
+    {
+        $amount = $payment->getAmount();
+
+        $payment = $this->capturePayment($payment, $amount);
+
+        $data = array(
+            'amount'            => $payment->getAmount(),
+            'id'                => $payment->getPublicId(),
+            'currency'          => $payment->getCurrency(),
+            'merchant_order_id' => 'merchant_order_id');
+
+        // @todo: sign the return
+        $data['signature'] = 'abracadabra';
+
+        return $data;
+    }
+
     protected function checkMerchantPermissions()
     {
         $merchant = $this->merchant;
