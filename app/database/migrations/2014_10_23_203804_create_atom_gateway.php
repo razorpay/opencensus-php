@@ -21,9 +21,9 @@ class CreateAtomGateway extends Migration
 
             $table->char('id', UniqueIdEntity::ID_LENGTH);
 
-            $table->string('gateway_payment_id');
+            $table->integer('gateway_payment_id');
 
-            $table->string('token');
+            $table->char('token', 75);
 
             $table->boolean('success')
                   ->nullable();
@@ -53,6 +53,10 @@ class CreateAtomGateway extends Migration
                   ->references('id')
                   ->on('payments')
                   ->on_delete('restrict');
+
+            $table->index('token');
+
+            $table->index('gateway_payment_id');
         });
     }
 

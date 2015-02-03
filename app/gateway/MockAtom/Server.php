@@ -13,11 +13,22 @@ class Server
     public function __construct()
     {
         $this->request = \Request::getFacadeRoot();
+
+        $this->repo = new Atom\Repository;
     }
 
     public function netBankingTransactionChooseBank($input)
     {
         $this->verifyTxn1stStageInput($input);
+
+        $atom = $this->repo->findByToken($input['token']);
+
+        $merchant = \BasicAuth::getMerchant();
+
+        $paymentId = $atom->getKey();
+
+        $paymentRepo = new \Models\Payment\Repository;
+        $payment = $paymentRepo->findByIdAndMerchantId($paymentId, $merchant->getId());
 
         $data['url'] = $this->getRzpBankPageUrl();
         $data['tempTxnId'] = $input['tempTxnId'];
@@ -27,7 +38,7 @@ class Server
 
     public function initiateNetBankingTransaction($input)
     {
-        $tempTxnId = random_integer(6);
+        $tempTxnId = random_integer(9);
         $token = $this->generateToken();
         $url = $this->getNetBankingAtomMockUrl();
 
@@ -48,34 +59,28 @@ class Server
 
     protected function getNetBankingAtomMockUrl()
     {
-        $url = \URL::route('mockatom_choose_bank', array(), false);
-        $url = str_replace('?', '', $url);
-
-        $scheme = \Request::getScheme().'://';
-        $host = \Request::getHost();
         $key = \BasicAuth::getPublicKey();
 
-        $chooseBankUrl = $scheme . $key . '@' . $host . $url;
+        $query = [];
+        $url = \Http\Route::getUrl('mockatom_choose_bank', $query, $key);
 
-        return $chooseBankUrl;
+        return $url;
     }
 
     protected function getRzpBankPageUrl()
     {
-        $mockGatewaysConfig = \Config::get('applications.mock_gateways');
-        $secret = $mockGatewaysConfig['secret'];
+        $key = \BasicAuth::getPublicKey();
 
-        $url = \Http\Route::getUrl('mockatom_rzp_bank', array(), 'rzp_test', $secret);
+        $url = \Http\Route::getUrl('mockatom_rzp_bank', array(), $key);
 
         return $url;
     }
 
     protected function getRzpBankPageSubmitUrl()
     {
-        $mockGatewaysConfig = \Config::get('applications.mock_gateways');
-        $secret = $mockGatewaysConfig['secret'];
+        $key = \BasicAuth::getPublicKey();
 
-        $url = \Http\Route::getUrl('mockatom_rzp_bank_submit', array(), 'rzp_test', $secret);
+        $url = \Http\Route::getUrl('mockatom_rzp_bank_submit', array(), $key);
 
         return $url;
     }
@@ -87,10 +92,7 @@ class Server
 
     public function capture(array $input)
     {
-        $tempTxnId = random_integer(6);
-        $token = $this->generateAtomToken();
-
-        return $this->getXmlFormattedResponse($tempTxnId, $token);
+        ;
     }
 
     public function atomRzpBankPage($input)
@@ -211,16 +213,8 @@ class Server
 
     protected function generateToken()
     {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ%';
-        $length = 45;
+        $token = \Models\Base\UniqueIdEntity::generateUniqueId();
 
-        $token = '';
-        for ($i = 0; $i < $length; $i++) {
-            $token .= $characters[rand(0, strlen($characters) - 1)];
-        }
-
-        // Seems like all atom tokens end with this for some reason!
-        $token .= '%3D';
         return $token;
     }
 }

@@ -80,6 +80,9 @@ final class Route
         'payment_create_jsonp',
         'payment_callback',
         'merchant_public_get_banks',
+        'mockatom_choose_bank',
+        'mockatom_rzp_bank',
+        'mockatom_rzp_bank_submit',
         );
 
     public static $private = array(
@@ -130,10 +133,7 @@ final class Route
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
         'mockhdfc_payment',
-        'mockatom_choose_bank',
         'mockatom_init_netbanking',
-        'mockatom_rzp_bank',
-        'mockatom_rzp_bank_submit',
         );
 
     public static $proxy = array(
@@ -152,10 +152,7 @@ final class Route
                 'mockhdfc_enroll',
                 'mockhdfc_auth_enrolled',
                 'mockhdfc_payment',
-                'mockatom_choose_bank',
-                'mockatom_init_netbanking',
-                'mockatom_rzp_bank',
-                'mockatom_rzp_bank_submit'),
+                'mockatom_init_netbanking'),
 
             'cron' => array(
                 'hdfc_mpr_generate',

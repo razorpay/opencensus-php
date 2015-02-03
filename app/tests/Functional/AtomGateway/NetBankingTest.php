@@ -53,7 +53,7 @@ class NetBankingTest extends TestCase
 
     public function testNetBankingPaymentCapture()
     {
-        $content = $this->doNetBankingAuthorize();
+        $content = $this->doAtomPaymentAuthorize();
 
         $id = $content['razorpay_payment_id'];
 
@@ -85,6 +85,34 @@ class NetBankingTest extends TestCase
         $this->startTest();
     }
 
+    public function testCardPayment()
+    {
+        $this->markTestSkipped();
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $payment = &$this->payment;
+
+        unset($this->payment['bank']);
+        $cardData = [
+            'number' => '4111111111111111',
+            'cvv' => '500',
+            'expiry_month' => '05',
+            'expiry_year' => '20', 'name' => 'shk'];
+
+        $payment['card'] = $cardData;
+        $payment['method'] = 'card';
+
+        $content = $this->doAtomPaymentAuthorize();
+
+        $id = $content['razorpay_payment_id'];
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/'.$id.'/capture';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testMockOnLiveMode()
     {
         $this->app['config']->set('gateway.mock_atom', true);
@@ -114,7 +142,7 @@ class NetBankingTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function doNetBankingAuthorize()
+    protected function doAtomPaymentAuthorize()
     {
         $request = array(
             'content' => $this->payment);
@@ -147,7 +175,7 @@ class NetBankingTest extends TestCase
 
         if ($mock)
         {
-            $this->ba->appAuth();
+            $this->ba->publicAuth();
 
             // Extract the uri part after 'v1'.
             // This removes the basic auth user/pwd from absolute url
@@ -183,6 +211,10 @@ class NetBankingTest extends TestCase
         $content = array('bankID' => '2001');
         if ($mock)
         {
+            //
+            // Now, we are going to submit the data to bank
+            // Which in this case is Razorpay bank
+            //
             $crawler = new Crawler($response->getContent(), $url);
             $form = $crawler->filter('form')->form();
             list($url, $method, $values) = $this->getDataFromForm($form);
@@ -221,7 +253,11 @@ class NetBankingTest extends TestCase
         $amt = getTextBetweenStrings($content, "amt = '", "';");
         $cc  = getTextBetweenStrings($content, 'clientCode = "', '";');
 
-        $status = 'S';
+        //
+        // Decide whether to make the transaction succeed or fail
+        //
+
+        $status = 'Ok';
 
         if ((isset($this->currentTestData['success'])) and
             ($this->currentTestData['success'] === false))
@@ -233,6 +269,9 @@ class NetBankingTest extends TestCase
         $url .= '?' . 'ITC='.$itc . '&BID='.$bid.'&clientCode='.$cc.'&amt='.$amt.'&Status='.$status;
 
         $values = array('success' => $status);
+
+        // Finally, we are on the bank page and now need to submit the bank
+        // page with the decision true or false as decided above.
 
         if ($mock)
         {
@@ -257,6 +296,14 @@ class NetBankingTest extends TestCase
 
         $crawler = new Crawler($content, 'http://ab.com');
         $form = $crawler->filter('form')->form();
+
+        //
+        // This is the final submission. Basically, atom returns a bunch of data
+        // like mmp_txn etc, which we now submit to the rzp return url
+        // provided earlier.
+        //
+        // The url to submit to is the action field of the form in this case
+        //
 
         $response = $this->submitPaymentCallbackForm($form);
 

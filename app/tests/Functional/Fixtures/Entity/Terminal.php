@@ -12,8 +12,17 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'gateway_terminal_id'   => 'abcde',
             'gateway_terminal_password' => 'abcdef',
-            'card'                  => '0');
+            'card'                  => 1);
 
         return $this->create('terminal', $attributes);
+    }
+
+    public function createDisableDefaultHdfcTerminal()
+    {
+        $term = \Models\Terminal\Entity::findOrFail('1n25f6uN5S1Z5a');
+        $term->card = false;
+        $term->saveOrFail();
+
+        return $term;
     }
 }

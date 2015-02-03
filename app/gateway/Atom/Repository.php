@@ -8,5 +8,13 @@ use Models\Base;
 
 class Repository extends Base\Repository
 {
-    $repo = 'Atom';
+    protected $entity = 'Atom';
+
+    public function findByToken($token)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('token', '=', $token)
+                    ->first();
+    }
 }

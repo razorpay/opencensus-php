@@ -48,6 +48,23 @@ return [
         ],
     ],
 
+    'testCardPayment' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [
+                'amount' => 5000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'amount' => 5000,
+                'status' => 'captured',
+                'refund_status' => null,
+            ]
+        ],
+    ],
+
     'testNBPaymentFailureAtBank' => [
         'request' => [
             'content' => [],
