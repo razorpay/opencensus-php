@@ -70,6 +70,8 @@ class Processor
 
         $payment = $this->createPaymentEntity($input);
 
+        $this->checkSignature($input, $payment);
+
         $data = $this->authorize($payment, $input);
 
         //
@@ -83,11 +85,30 @@ class Processor
             // This is a payment instance
             $payment = $data;
 
-            // Return array with fields after authorized
-            $data = ['razorpay_payment_id' => $payment->getPublicId()];
+            if ($payment->isSigned())
+            {
+                // @todo: capture this is as well
+            }
+            else
+            {
+                // Return array with fields after authorized
+                $data = ['razorpay_payment_id' => $payment->getPublicId()];
+            }
         }
 
         return $data;
+    }
+
+    protected function checkSignature($input, $payment)
+    {
+        if (isset($input['signautre']))
+        {
+            $payment->setSigned(true);
+        }
+
+        // @todo: verify signature
+
+        return true;
     }
 
     protected function checkMerchantPermissions()

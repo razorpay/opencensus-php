@@ -18,7 +18,8 @@ class Validator extends Base\Validator
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
-        'notes'         =>  'sometimes');
+        'notes'         =>  'sometimes',
+        'signature'     =>  'sometimes');
 
     protected static $captureRules = array(
         'amount'        => 'required|numeric');

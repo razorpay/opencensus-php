@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const CAPTURED_AT       = 'captured_at';
     const GATEWAY           = 'gateway';
     const TERMINAL_ID       = 'terminal_id';
+    const SIGNED            = 'signed';
 
     const CURRENCY_LENGTH   = 3;
 
@@ -103,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::ID,
         self::NOTES,
+        self::SIGNED,
         self::REFUND_STATUS,
         self::AMOUNT_REFUNDED);
 
@@ -129,6 +131,11 @@ class Entity extends Base\PublicEntity
     protected function generateAmountRefunded()
     {
         $this->setAttribute(self::AMOUNT_REFUNDED, 0);
+    }
+
+    protected function generateSigned()
+    {
+        $this->setAttribute(self::SIGNED, 0);
     }
 
 // --------------------- Generators Ends ---------------------------------------
@@ -205,6 +212,11 @@ class Entity extends Base\PublicEntity
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    public function setSigned($signed = true)
+    {
+        $this->setAttribute(self::SIGNED, $signed);
     }
 
 // ----------------------- Setters Ends-----------------------------------------
@@ -290,6 +302,11 @@ class Entity extends Base\PublicEntity
     public function isMethod($method)
     {
         return ($this->getAttribute(self::METHOD) === $method);
+    }
+
+    public function isSigned()
+    {
+        return ((bool)$this->getAttribute(self::SIGN) === true);
     }
 
 // ----------------------- Getters ---------------------------------------------
