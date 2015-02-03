@@ -5,10 +5,12 @@ namespace Models\Transaction;
 use Carbon\Carbon;
 use Models\Base;
 use Models\Card;
-use Models\Transaction;
 use Models\Merchant;
-use Models\Pricing;
 use Models\Payment;
+use Models\Payment\Refund;
+use Models\Pricing;
+use Models\Transaction;
+use Models\Adjustment;
 
 class Core extends Base\Core
 {
@@ -22,7 +24,7 @@ class Core extends Base\Core
         $this->merchantRepo = new Merchant\Repository;
     }
 
-    public function createFromPayment($payment)
+    public function createFromPayment(Payment\Entity $payment)
     {
         list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
@@ -59,7 +61,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromRefund($refund)
+    public function createFromRefund(Refund\Entity $refund)
     {
         $settledAt = Carbon::today('Asia/Kolkata')
                            ->addDays(2)
@@ -86,7 +88,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromAdjustment($adj)
+    public function createFromAdjustment(Adjustment\Entity $adj)
     {
         $txn = new Transaction\Entity;
 
@@ -129,12 +131,12 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function calculateMerchantFees($payment)
+    protected function calculateMerchantFees(Payment\Entity $payment)
     {
         return (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
-    public function updateBalances($txn)
+    public function updateBalances(Transaction\Entity $txn)
     {
         $channel = $txn->getChannel();
 

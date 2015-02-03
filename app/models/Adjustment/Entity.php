@@ -23,9 +23,8 @@ class Entity extends Base\PublicEntity
     protected $genereateIdOnCreate = true;
 
     protected $fillable = array(
-        self::MERCHANT_ID,
         self::AMOUNT,
-        self::CHANNEL,
+        self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY);
 
@@ -78,5 +77,10 @@ class Entity extends Base\PublicEntity
     public function transaction()
     {
         return $this->belongsTo('Models\Transaction\Entity');
+    }
+
+    public function setChannel($channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
     }
 }

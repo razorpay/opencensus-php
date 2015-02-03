@@ -2,8 +2,7 @@
 
 use Http\ApiResponse;
 use EE\Exception\RecoverableException;
-use Models\Settlement;
-use Models\Transaction;
+use Models\Adjustment;
 
 class AdjustmentController extends BaseController
 {
@@ -18,7 +17,16 @@ class AdjustmentController extends BaseController
     {
         $input = Input::all();
 
-        $data = (new Settlement\Service)->getSettlements($input);
+        $data = (new Adjustment\Service)->getAdjustments($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAdjustment()
+    {
+        $input = Input::all();
+
+        $data = (new Adjustment\Service)->addAdjustment($input);
 
         return ApiResponse::json($data);
     }

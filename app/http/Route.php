@@ -65,6 +65,7 @@ final class Route
         'setl_return'                       => ['post',     'settlements/return',                       'SettlementController@postSettlementReturn'             ],
         'adj_fetch_by_id'                   => ['get',      'adjustments/{id}',                         'AdjustmentController@getAdjustment'                    ],
         'adj_fetch_multiple'                => ['get',      'adjustments',                              'AdjustmentController@getAdjustments'                   ],
+        'adj_add'                           => ['post',     'adjustments',                              'AdjustmentController@postAdjustment'                   ],
         'mockhdfc_enroll'                   => ['post',     'gateway/mockhdfc/enroll',                  'MockHdfcController@enroll'                             ],
         'mockhdfc_payment'                  => ['post',     'gateway/mockhdfc/payment',                 'MockHdfcController@payment'                            ],
         'mockhdfc_auth_enrolled'            => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockHdfcController@authEnrolled'                       ],
@@ -126,8 +127,6 @@ final class Route
         'setl_return_generate',
         'setl_return',
         'setl_delete_file',
-        'adj_fetch_by_id',
-        'adj_fetch_multiple',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
@@ -143,7 +142,11 @@ final class Route
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
         'setl_fetch_by_id',
-        'setl_fetch_multiple');
+        'setl_fetch_multiple',
+        'adj_fetch_by_id',
+        'adj_fetch_multiple',
+        'adj_add',
+    );
 
     public static $internalApps = array(
             'dashboard' => array('*'),

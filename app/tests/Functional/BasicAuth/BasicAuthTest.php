@@ -166,6 +166,8 @@ class BasicAuthTest extends TestCase
 
     public function testPublicQueryAuth()
     {
+        $this->markTestIncomplete();
+
         $request = [
             'url' => '/payments/create/jsonp?keyid=rzp_test_TheTestAuthKey',
             'method' => 'GET',
