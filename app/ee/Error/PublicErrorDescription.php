@@ -192,6 +192,9 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND =
         'The merchant has not yet provided his bank account details';
 
+    const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED =
+        'The merchant already has provided a bank account';
+
     const BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED =
         'Currently only two terminals are allowed per merchant';
 

@@ -251,6 +251,14 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
+        $ba = $this->repo->getBankAccount($merchant);
+
+        if ($ba !== null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
+        }
+
         $ba = (new Merchant\BankAccount)->build($input);
 
         $ba->merchant()->associate($merchant);
