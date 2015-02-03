@@ -62,4 +62,9 @@ class NetBanking
     {
         return self::$enabled;
     }
+
+    public static function getDisabledBanks($banks)
+    {
+        return array_diff(self::$enabled, $banks);
+    }
 }

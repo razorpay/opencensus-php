@@ -5,6 +5,7 @@ namespace Models\Merchant;
 use Models\Base;
 use Models\Merchant;
 use Models\Key;
+use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
 use EE\Exception;
@@ -281,15 +282,12 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $banks = (new Banks\Core)->getMerchantBanks($merchant);
+        $banks = (new Banks\Core)->getEnabledAndDisabledBanks($merchant);
 
-        if ($banks === null)
-            return [];
-
-        return $banks->toArrayWithBankNames();
+        return $banks;
     }
 
-    public function getPaymentBanks()
+    public function getEnabledBanks()
     {
         $banks = (new Banks\Core)->getMerchantBanks($this->merchant);
 

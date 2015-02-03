@@ -297,8 +297,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'HDFC' => 'HDFC Bank',
-                'ICIC' => 'ICICI Bank',
+                'enabled' => [
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
+                ],
+                'disabled' => [
+                    'YESB' => 'Yes Bank',
+                    'VIJB' => 'Vijaya Bank',
+                ]
             ],
         ],
     ],
