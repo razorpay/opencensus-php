@@ -81,6 +81,9 @@ class CreatePayments  extends Migration
 
             $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH);
 
+            $table->boolean(Payment::SIGNED)
+                  ->default(0);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);

@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const CAPTURED_AT       = 'captured_at';
     const GATEWAY           = 'gateway';
     const TERMINAL_ID       = 'terminal_id';
+    const SIGNED            = 'signed';
 
     const CURRENCY_LENGTH   = 3;
 
