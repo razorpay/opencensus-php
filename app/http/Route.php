@@ -173,6 +173,13 @@ final class Route
 
     public static function getUrl($routeName, $parameters = array(), $key = '', $secret = '')
     {
+        if ($secret === '')
+        {
+            // It's a public auth.
+            $parameters['key_id'] = $key;
+            $key = '';
+        }
+
         $urlSegment = \URL::route($routeName, $parameters, false);
 
         $url = self::getSchemaHostAndAuth($key, $secret) . $urlSegment;

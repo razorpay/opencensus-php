@@ -24,7 +24,7 @@
         var amt = '{{{ $data['amount'] }}}';
         var clientCode = "{{{ $data['clientCode'] }}}";
         var tempTxnId = "{{{ $data['tempTxnId'] }}}";
-        var url = "{{{ $data['url'] }}}" + "?ITC=" + ITC + "&BID=" + BID + "&ClientCode=" + clientCode + "&amt=" + amt + "&Status="+status;
+        var url = "{{{ $data['url'] }}}" + "&ITC=" + ITC + "&BID=" + BID + "&ClientCode=" + clientCode + "&amt=" + amt + "&Status="+status;
         url = url + "&tempTxnId="+tempTxnId;
 
         document.forms[0].action=url;

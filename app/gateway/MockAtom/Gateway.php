@@ -40,11 +40,13 @@ class Gateway extends Atom\Gateway
         return $data;
     }
 
-    protected function getNetBankingAtomMockUrl($query)
+    protected function getNetBankingAtomMockUrl($queryStr)
     {
         $key = \BasicAuth::getPublicKey();
 
-        $url = \Http\Route::getUrl('mockatom_choose_bank', $query, $key);
+        $url = \Http\Route::getUrl('mockatom_choose_bank', array(), $key);
+
+        $url .= $queryStr;
 
         return $url;
     }
