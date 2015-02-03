@@ -161,6 +161,15 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchMerchantBanks($id)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->merchant->fetch($id)->fetchBanks()->toArray();
+
+        return $response;
+    }
+
     public function lockMerchant($id)
     {
         $error = array();
@@ -275,8 +284,16 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
+        $bankAccount = array(
+            'ifsc_code'         => $details['merchant_details']['bank_branch_ifsc'],
+            'beneficiary_name'  => $details['merchant_details']['bank_account_name'],
+            'account_number'    => $details['merchant_details']['bank_account_number']
+        );
+
         try
         {
+            $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+
             $this->api->merchant->fetch($id)->activate();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
