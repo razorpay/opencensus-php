@@ -98,9 +98,11 @@ app.controller('AddfundsCtrl', ['$scope', '$http', 'alertsFactory','user', 'mode
         if(data.success) {
           if(data.data.count > 0) {
             $scope.options.key = data.data.items[0].id;
+            $scope.disableAddFunds = false;
           }
           else {
             $scope.alerts.addAlert('danger', "No valid api keys found, check Api Keys page.", true);
+            $scope.disableAddFunds = true;
           }
         }
         else {
