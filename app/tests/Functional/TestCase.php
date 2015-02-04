@@ -58,4 +58,9 @@ class TestCase extends ParentTestCase
     {
         return static::generateRandomString()."@".static::generateRandomString().".com";
     }
+
+    protected static function generateMerchantEmail()
+    {
+        return static::generateRandomString()."@".static::generateRandomString().".com";
+    }
 }

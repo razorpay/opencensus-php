@@ -14,7 +14,7 @@ class AnalyticsTest extends TestCase
     {
         parent::setUp();
 
-        $this->merchant = $this->createEntity('merchant');
+        $this->merchant = $this->createEntity('merchant', array('id'=>\Models\Merchant\Entity::generateUniqueId(), 'email' =>static::generateMerchantEmail(), 'confirm_token' => static::generateRandomString(24)));
 
         $this->merchant_details = $this->createEntity('merchant_details', array('merchant_id'=>$this->merchant->id));
     }
