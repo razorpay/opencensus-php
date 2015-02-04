@@ -24,7 +24,8 @@ final class Route
         'payment_auth_expire'               => ['post',     'payments/auth/expire',                     'PaymentController@postAuthExpire'                      ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                           ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                          ],
-        'merchant_public_get_banks'         => ['get',      'merchant/banks',                           'MerchantController@getBanksPublic'                     ],
+        'merchant_public_get_banks'         => ['get',      'banks',                                    'MerchantController@getBanksPublic'                     ],
+        'merchant_public_get_banks2'        => ['get',      'merchant/banks',                           'MerchantController@getBanksPublic'                     ],
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],
         'merchant_set_banks'                => ['post',     'merchants/{id}/banks',                     'MerchantController@setBanks'                           ],
         'merchant_create'                   => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                 ],
@@ -81,6 +82,7 @@ final class Route
         'payment_create_jsonp',
         'payment_callback',
         'merchant_public_get_banks',
+        'merchant_public_get_banks2',
         'mockatom_choose_bank',
         'mockatom_rzp_bank',
         'mockatom_rzp_bank_submit',
@@ -233,7 +235,8 @@ final class Route
     {
         $jsonpRoute = array(
             'v1/payments/create/jsonp',
-            'v1/merchant/banks');
+            'v1/merchant/banks',
+            'v1/banks');
 
         return in_array($path, $jsonpRoute);
     }

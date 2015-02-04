@@ -279,7 +279,7 @@ return [
 
     'testGetBanksByMerchantAuth' => [
         'request' => [
-            'url' => '/merchant/banks',
+            'url' => '/banks',
             'method' => 'GET',
             'content' => [
                 'callback' => 'abcdef',
