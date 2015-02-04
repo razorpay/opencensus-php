@@ -26,24 +26,7 @@ class Service extends Base\Service
      */
     public function process(array $input)
     {
-        $data = $this->processor()->process($input);
-
-        //
-        // The returned value could be either Payment
-        // model or an array containing callback data.
-        // We convert payment model to array
-        // if it's a payment model
-        //
-        if ($data instanceof Payment\Entity)
-        {
-            // This is a payment instance
-            $payment = $data;
-
-            // Return array with fields after authorized
-            $data = ['razorpay_payment_id' => $payment->getPublicId()];
-        }
-
-        return $data;
+        return $this->processor()->process($input);
     }
 
     /**
