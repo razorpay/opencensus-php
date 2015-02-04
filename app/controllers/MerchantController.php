@@ -206,13 +206,15 @@ class MerchantController extends BaseController
             $data['fallback'] = 'New Sales Lead!\n';
             $data['fields'] = array();
             $data['color'] = 'good';
+            $data['pretext'] = '@channel';
+            $data['link_names'] = 1;
             foreach($input as $key => $value)
             {
                 $data['fallback'] .= $key . ': ' . $value . '\n';
                 $data['fields'][] = array(
                     'title' => $key,
                     'value' => $value,
-                    'short' => true
+                    'short' => false
                 );
             }
 
