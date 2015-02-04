@@ -97,7 +97,7 @@ class MerchantController extends BaseController
 
         $output = fopen('php://output', 'w');
 
-        fputcsv($output, array('rzp_id', 'rzp_secret'));
+        fputcsv($output, array('key_id', 'key_secret'));
         fputcsv($output, array($input['id'], $input['secret']));
     }
 
