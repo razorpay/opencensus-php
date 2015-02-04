@@ -346,7 +346,8 @@ trait PaymentAuthFlowTrait
             ),
             'email'             => 'a@b.com',
             'contact'           => '9918899029',
-            'notes'               => array(),
+            'notes'             => array(
+                'merchant_order_id' => 'random order id'),
             'description'       => 'random description'
         ];
 

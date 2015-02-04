@@ -70,6 +70,8 @@ class Processor
 
         $payment = $this->createPaymentEntity($input);
 
+        $this->checkSignature($input, $payment);
+
         $data = $this->authorize($payment, $input);
 
         //
@@ -83,11 +85,88 @@ class Processor
             // This is a payment instance
             $payment = $data;
 
-            // Return array with fields after authorized
-            $data = ['razorpay_payment_id' => $payment->getPublicId()];
+            if ($payment->isSigned())
+            {
+                $data = $this->captureSignedPayment($payment);
+            }
+            else
+            {
+                // Return array with fields after authorized
+                $data = ['razorpay_payment_id' => $payment->getPublicId()];
+            }
         }
 
         return $data;
+    }
+
+    protected function checkSignature($input, $payment)
+    {
+        if (isset($input['signature']) === false)
+        {
+            return;
+        }
+
+        $payment->setSigned(true);
+
+        if (isset($input['notes']['merchant_order_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'merchant_roder_id field is required',
+                'merchant_order_id');
+        }
+
+        $this->verifySignature($input, $payment);
+
+        return true;
+    }
+
+    protected function captureSignedPayment($payment)
+    {
+        $amount = $payment->getAmount();
+
+        $payment = $this->capturePayment($payment, $amount);
+
+        $data = array(
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'amount'                => $payment->getAmount(),
+            'currency'              => $payment->getCurrency(),
+            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
+        );
+
+        $sortedData = $data;
+        ksort($sortedData);
+
+        $str = implode('|', $sortedData);
+
+        $data['signature'] = $this->getSignature($str);
+
+        return $data;
+    }
+
+    protected function verifySignature($input, $payment)
+    {
+        $data = array(
+            'amount'            => $payment->getAmount(),
+            'currency'          => $payment->getCurrency(),
+            'merchant_order_id' => $payment->getNotes()['merchant_order_id'],
+        );
+
+        $str = implode('|', $data);
+
+        $signature = $this->getSignature($str);
+
+        if ($signature !== $input['signature'])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Signature does not match', 'signature');
+        }
+
+        return true;
+    }
+
+    protected function getSignature($str)
+    {
+        return \BasicAuth::sign($str);
     }
 
     protected function checkMerchantPermissions()
