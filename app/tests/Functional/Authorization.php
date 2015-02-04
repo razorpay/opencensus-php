@@ -118,4 +118,9 @@ class Authorization
     {
         return $this->auth['PHP_AUTH_USER'];
     }
+
+    public function getSecret()
+    {
+        return $this->auth['PHP_AUTH_PW'];
+    }
 }

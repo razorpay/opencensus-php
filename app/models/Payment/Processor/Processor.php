@@ -87,7 +87,7 @@ class Processor
 
             if ($payment->isSigned())
             {
-                // @todo: capture this is as well
+                $data = $this->captureSignedPayment($payment);
             }
             else
             {
@@ -101,7 +101,7 @@ class Processor
 
     protected function checkSignature($input, $payment)
     {
-        if (isset($input['signautre']) === false)
+        if (isset($input['signature']) === false)
         {
             return;
         }
@@ -127,13 +127,16 @@ class Processor
         $payment = $this->capturePayment($payment, $amount);
 
         $data = array(
+            'razorpay_payment_id'   => $payment->getPublicId(),
             'amount'                => $payment->getAmount(),
             'currency'              => $payment->getCurrency(),
             'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
-            'razorpay_payment_id'   => $payment->getPublicId(),
         );
 
-        $str = implode('|', $data);
+        $sortedData = $data;
+        ksort($sortedData);
+
+        $str = implode('|', $sortedData);
 
         $data['signature'] = $this->getSignature($str);
 
@@ -155,7 +158,7 @@ class Processor
         if ($signature !== $input['signature'])
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Signature do not match', 'signature');
+                'Signature does not match', 'signature');
         }
 
         return true;
@@ -163,9 +166,7 @@ class Processor
 
     protected function getSignature($str)
     {
-        $secret = \BasicAuth::getSecret();
-
-        return hash_hmac('sha1', $str, $secret);
+        return \BasicAuth::sign($str);
     }
 
     protected function checkMerchantPermissions()

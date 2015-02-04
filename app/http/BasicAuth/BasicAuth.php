@@ -621,4 +621,10 @@ class BasicAuth
     {
         return ($this->getKey() === '');
     }
+
+    public function sign($str)
+    {
+        $secret = Crypt::decrypt($this->key->getSecret());
+        return hash_hmac('sha1', $str, $secret);
+    }
 }

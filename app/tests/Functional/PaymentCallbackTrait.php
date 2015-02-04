@@ -14,6 +14,38 @@ trait PaymentCallbackTrait
         makeRequest as makeRequestParent;
     }
 
+    protected function signPayment(array $payment, $secret = '')
+    {
+        $data = array(
+            'amount'            => $payment['amount'],
+            'currency'          => 'INR',
+            'merchant_order_id' => $payment['notes']['merchant_order_id']);
+
+        if ($secret === '')
+        {
+            $secret = $this->ba->getSecret();
+        }
+
+        $str = implode('|', $data);
+
+        return hash_hmac('sha1', $str, $secret);
+    }
+
+    protected function assertSignatureMatches(array $content, $secret)
+    {
+        $this->assertArrayHasKey('signature', $content);
+
+        $data = array(
+            'amount' => $content['amount'],
+            'currency' => $content['currency'],
+            'merchant_order_id' => $content['merchant_order_id'],
+            'razorpay_payment_id' => $content['razorpay_payment_id']);
+
+        $str = implode('|', $data);
+
+        return hash_hmac('sha1', $str, $secret);
+    }
+
     protected function getPaymentJsonFromCallback($content)
     {
         $start = 'var data = ';

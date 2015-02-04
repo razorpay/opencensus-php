@@ -351,6 +351,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getNotes()
+    {
+        return $this->getAttribute(self::NOTES);
+    }
+
 // ----------------------- Getters Ends-----------------------------------------
 
     public function toArrayWithCard()
