@@ -86,4 +86,32 @@ class Merchant extends MockEntity
 
         return $this;
     }
+
+    public function fetchBanks()
+    {
+        $this->mock(self::$mockData['banks']);
+
+        return $this;
+    }
+
+    public function setBanks($params)
+    {
+        $this->mock(self::$mockData['banks']);
+
+        return $this;
+    }
+
+    public function fetchBankAccount()
+    {
+        $this->mock(self::$mockData['bankaccount']);
+
+        return $this;
+    }
+
+    public function setBankAccount($params)
+    {
+        $this->mock(self::$mockData['bankaccount']);
+
+        return $this;
+    }
 }

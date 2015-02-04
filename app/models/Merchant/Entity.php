@@ -318,7 +318,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
 
         // Only 4 base 62 digits are needed, so cutoff any more.
         if (strlen($rand) > 4)
-            $rand = substr($rand, 0, -4);
+            $rand = substr($rand, 0, 4);
 
         // Combine the base 62 nanotime with 4 base 62 digits
         // and create a unique identifier

@@ -123,7 +123,7 @@ Route::filter('csrf', function()
     // Angular sends X-XSRF-TOKEN header with all request because
     // XSRF-TOKEN cookie is set in after filter
     //
-	if ((Request::header('X-XSRF-TOKEN') === false) or
+	if ((Request::header('X-XSRF-TOKEN') === NULL) or
         (Session::token() !== Crypt::decrypt(Request::header('X-XSRF-TOKEN'))))
     {
 		return AppResponse::jsonResponse(

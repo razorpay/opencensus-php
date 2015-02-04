@@ -113,6 +113,12 @@ class MockData
                 'credit'            =>  '400',
                 'fee'               =>  '99'
             ),
+            'bankaccount'     => array(
+                'merchant_id'       =>  "10000000000000",
+                'ifsc_code'         =>  "HDFC0678911",
+                'beneficiary_name'  =>  "Tester",
+                'account_number'    =>  "1222222222"
+            )
         );
     }
 }
