@@ -106,7 +106,14 @@ class Processor
             $payment->setSigned(true);
         }
 
-        // @todo: verify signature
+        if (isset($input['notes']['merchant_order_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'merchant_roder_id field is required',
+                'merchant_order_id');
+        }
+
+        $this->verifySignature($input, $payment);
 
         return true;
     }
@@ -118,15 +125,45 @@ class Processor
         $payment = $this->capturePayment($payment, $amount);
 
         $data = array(
-            'amount'            => $payment->getAmount(),
-            'id'                => $payment->getPublicId(),
-            'currency'          => $payment->getCurrency(),
-            'merchant_order_id' => 'merchant_order_id');
+            'amount'                => $payment->getAmount(),
+            'currency'              => $payment->getCurrency(),
+            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
+            'razorpay_payment_id'   => $payment->getPublicId(),
+        );
 
-        // @todo: sign the return
-        $data['signature'] = 'abracadabra';
+        $str = implode('|', $data);
+
+        $data['signature'] = $this->getSignature($str);
 
         return $data;
+    }
+
+    protected function verifySignature($input, $payment)
+    {
+        $data = array(
+            'amount'            => $payment->getAmount(),
+            'currency'          => $payment->getCurrency(),
+            'merchant_order_id' => $payment->getNotes()['merchant_order_id'],
+        );
+
+        $str = implode('|', $data);
+
+        $signature = $this->getSignature($str);
+
+        if ($signature !== $input['signature'])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Signature do not match', 'signature');
+        }
+
+        return true);
+    }
+
+    protected function getSignature($str)
+    {
+        $secret = \BasicAuth::getSecret();
+
+        return hash_hmac('sha1', $str, $secret);
     }
 
     protected function checkMerchantPermissions()

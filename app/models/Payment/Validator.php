@@ -19,7 +19,8 @@ class Validator extends Base\Validator
         'email'         =>  'required|email',
         'contact'       =>  'required',
         'notes'         =>  'sometimes',
-        'signature'     =>  'sometimes');
+        'signature'     =>  'sometimes',
+        'notes'         =>  'sometimes|');
 
     protected static $captureRules = array(
         'amount'        => 'required|numeric',
@@ -170,6 +171,16 @@ class Validator extends Base\Validator
      */
     protected function validateNotes($input)
     {
+        if (isset($input['signature']))
+        {
+            if ((isset($input['notes']) === false) or
+                (isset($input['notes']['merchant_order_id']) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'merchant_order_id should be defined when signature is present');
+            }
+        }
+
         if (isset($input['notes']) === false)
             return;
 
