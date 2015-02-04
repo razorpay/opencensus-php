@@ -101,10 +101,12 @@ class Processor
 
     protected function checkSignature($input, $payment)
     {
-        if (isset($input['signautre']))
+        if (isset($input['signautre']) === false)
         {
-            $payment->setSigned(true);
+            return;
         }
+
+        $payment->setSigned(true);
 
         if (isset($input['notes']['merchant_order_id']) === false)
         {
@@ -156,7 +158,7 @@ class Processor
                 'Signature do not match', 'signature');
         }
 
-        return true);
+        return true;
     }
 
     protected function getSignature($str)
