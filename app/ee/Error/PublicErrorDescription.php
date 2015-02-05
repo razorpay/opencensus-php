@@ -79,6 +79,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE =
         'Expiry date is not valid';
 
+    const BAD_REQUEST_PAYMENT_TIMED_OUT =
+        'Paymend was not completed on time.';
+
     const BAD_REQUEST_INVALID_ID =
         'The id provided does not exist';
 

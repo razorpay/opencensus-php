@@ -175,4 +175,11 @@ class PaymentController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function postTimeout()
+    {
+        $data = $this->payment->timeoutOldPayments();
+
+        return ApiResponse::json($data);
+    }
 }

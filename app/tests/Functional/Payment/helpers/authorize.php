@@ -430,4 +430,32 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_VALUE_TOO_LARGE,
         ],
     ],
+
+    'testTimeoutOldPayment' => [
+        'request' => [
+            'content' => [],
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+                'error_code' => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                'error_description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT,
+            ],
+        ],
+    ],
+
+    'testFailTimeoutOldPayments' => [
+        'request' => [
+            'content' => [],
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'authorized',
+                'error_code' => null,
+                'error_description' => null,
+            ],
+        ]
+    ]
 ];

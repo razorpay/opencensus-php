@@ -142,6 +142,15 @@ class Service extends Base\Service
         return array('count' => $count);
     }
 
+    public function timeoutOldPayments()
+    {
+        $timestamp = time() - 10 * 60;
+
+        $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
+
+        return ['count' => $count];
+    }
+
     protected function processor()
     {
         return Payment\Processor\Processor::create($this->getBindings());

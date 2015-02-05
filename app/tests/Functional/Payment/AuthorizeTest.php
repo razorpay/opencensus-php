@@ -166,6 +166,42 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testTimeoutOldPayment()
+    {
+        $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - 60*100]);
+
+        $this->ba->appAuth();
+
+        $request = array('url' => '/payments/timeout');
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['count'], 1);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['public_id'];
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testFailTimeoutOldPayments()
+    {
+        $payment = $this->fixtures->create(
+            'payment',
+            ['created_at' => time() - 60*100, 'status' => 'authorized', 'terminal_id' => '1n25f6uN5S1Z5a']);
+
+        $this->ba->appAuth();
+
+        $request = array('url' => '/payments/timeout');
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['count'], 0);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['public_id'];
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

@@ -5,6 +5,8 @@ namespace Models\Payment;
 use EE\Exception;
 use Models\Base;
 use Models\Payment;
+use EE\Error\ErrorCode;
+use EE\Error\PublicErrorDescription;
 
 class Repository extends Base\Repository
 {
@@ -39,12 +41,26 @@ class Repository extends Base\Repository
         $repo::lockForUpdate()->findOrFail($id);
     }
 
-    public function expireAuthorizedPayments($timestmap)
+    public function expireAuthorizedPayments($timestamp)
     {
         $repo = $this->repo;
 
         return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
                     ->where(Payment\Entity::CREATED_AT, '<', $timestamp)
                     ->update(array(Payment\Entity::STATUS => 'authorization_expired'));
+    }
+
+    public function timeoutOldPayments($timestamp)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::CREATED)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->update(
+                        array(
+                            Payment\Entity::STATUS => Payment\Status::FAILED,
+                            Payment\Entity::ERROR_CODE => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                            Payment\Entity::ERROR_DESCRIPTION => PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT)
+                        );
     }
 }

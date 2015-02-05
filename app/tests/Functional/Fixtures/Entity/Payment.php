@@ -15,6 +15,24 @@ class Payment extends Base
         return $this->fixtures->create('payment:card_captured', $attributes);
     }
 
+    public function createStatusCreated(array $attributes = array())
+    {
+        $attributes['status'] = 'created';
+
+        return $this->create('payment', $attributes);
+    }
+
+    public function create($entity, array $attributes = array())
+    {
+        $defaultValues = array(
+            'terminal_id' => '1n25f6uN5S1Z5a'
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($entity, $attributes);
+    }
+
     public function createCardCaptured(array $attributes = array())
     {
         $defaultValues = array(

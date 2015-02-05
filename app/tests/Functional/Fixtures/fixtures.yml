@@ -58,6 +58,8 @@ Models\Payment\Entity:
     email: $email
     captured_at: null
     transaction_id: null
+    created_at: $timestamp
+    updated_at: $timestamp
 
 Models\Payment\Refund\Entity:
     id: $uniqueid

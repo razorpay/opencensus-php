@@ -22,6 +22,7 @@ final class Route
         'payment_fetch_refunds'             => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                ],
         'payment_fetch_refund_by_id'        => ['get',      'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'       ],
         'payment_auth_expire'               => ['post',     'payments/auth/expire',                     'PaymentController@postAuthExpire'                      ],
+        'payment_timeout'                   => ['post',     'payments/timeout',                         'PaymentController@postTimeout'                         ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                           ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                          ],
         'merchant_public_get_banks'         => ['get',      'banks',                                    'MerchantController@getBanksPublic'                     ],
@@ -129,6 +130,7 @@ final class Route
         'setl_return_generate',
         'setl_return',
         'setl_delete_file',
+        'payment_timeout',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
@@ -163,7 +165,8 @@ final class Route
                 'hdfc_mpr_generate',
                 'setl_initiate',
                 'setl_reconcile_generate',
-                'setl_return_generate'),
+                'setl_return_generate',
+                'payment_timeout'),
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),
