@@ -49,6 +49,14 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED_AT  => $settledAt,
             Transaction\Entity::PRICING_RULE_ID => $pricingRuleId);
 
+        if ($payment->getGateway() === Payment\Gateway::ATOM)
+        {
+            $txnData[Transaction\Entity::RECONCILED_AT] = time();
+            $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
+            $txnData[Transaction\Entity::API_FEE] = 0;
+            $txnData[Transaction\Entity::SETTLED_AT] = Carbon::today('Asia/Kolkata')->addDays(2)->timestamp;
+        }
+
         $txn = new Transaction\Entity($txnData);
         $txn->generateId();
 
@@ -75,6 +83,12 @@ class Core extends Base\Core
             Transaction\Entity::CREDIT      => 0,
             Transaction\Entity::CURRENCY    => 'INR',
             Transaction\Entity::SETTLED_AT  => $settledAt);
+
+        if ($refund->getGateway() === Payment\Gateway::ATOM)
+        {
+            $txnData[Transaction\Entity::RECONCILED_AT] = time();
+            $txnData[Transaction\Entity::SETTLED_AT] = Carbon::today('Asia/Kolkata')->addDays(2)->timestamp;
+        }
 
         $txn = new Transaction\Entity($txnData);
         $txn->generateId();

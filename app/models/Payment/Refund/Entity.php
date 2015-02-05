@@ -104,4 +104,9 @@ class Entity extends Base\PublicEntity
         $array[self::PAYMENT_ID] =
             Payment\Entity::getIdPrefix() . $this->getAttribute(self::PAYMENT_ID);
     }
+
+    public function getGateway()
+    {
+        return $this->relations['payment']->getGateway();
+    }
 }

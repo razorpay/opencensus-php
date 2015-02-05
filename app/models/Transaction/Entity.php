@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::BALANCE,
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
+        self::RECONCILED_AT,
         self::SETTLED_AT);
 
     protected $public = array(
