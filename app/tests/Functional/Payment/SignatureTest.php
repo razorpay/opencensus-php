@@ -23,6 +23,7 @@ class SignatureTest extends TestCase
     public function testValidSignature()
     {
         $payment = &$this->payment;
+        $payment['card']['number'] = '4012001037141112';
 
         $payment['signature'] = $this->signPayment($payment, 'TheKeySecretForTests');
 
