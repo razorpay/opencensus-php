@@ -114,9 +114,7 @@ class Service extends Base\Service
      */
     public function bankAcsCallback($id, array $input)
     {
-        $payment = $this->processor()->callback($id, $input);
-
-        return ['razorpay_payment_id' => $payment->getPublicId()];
+        return $this->processor()->callback($id, $input);
     }
 
     public function retrieveMultiple(array $input)

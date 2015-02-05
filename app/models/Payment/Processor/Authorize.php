@@ -121,7 +121,7 @@ trait Authorize
             return $this->captureSignedPayment($payment);
         }
 
-        return $payment;
+        return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
     protected function callGatewayAuthorize(array $data)
