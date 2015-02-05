@@ -219,7 +219,7 @@ class MerchantController extends BaseController
             }
 
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $_ENV['SLACK_URL']);
+            curl_setopt($ch, CURLOPT_URL, "https://hooks.slack.com/services/T0276T56F/B03J0BAGU/".$_ENV['SLACK_KEY']);
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, "payload=" . json_encode($data));
             curl_exec ($ch);
