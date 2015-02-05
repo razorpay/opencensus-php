@@ -200,6 +200,31 @@ class MerchantController extends BaseController
               ->subject('New Contact form submission');
         });
 
+        if($_ENV['SLACK_ENABLE'] === true)
+        {
+            $data = array();
+            $data['fallback'] = 'New Sales Lead!\n';
+            $data['fields'] = array();
+            $data['color'] = 'good';
+            $data['pretext'] = '@channel';
+            $data['link_names'] = 1;
+            foreach($input as $key => $value)
+            {
+                $data['fallback'] .= $key . ': ' . $value . '\n';
+                $data['fields'][] = array(
+                    'title' => $key,
+                    'value' => $value,
+                    'short' => false
+                );
+            }
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $_ENV['SLACK_URL']);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, "payload=" . json_encode($data));
+            curl_exec ($ch);
+        }
+
         return Redirect::to("https://razorpay.com/postcontact/");
     }
 }

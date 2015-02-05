@@ -54,6 +54,13 @@
     /**
      * Should mail be faked, set true in testing/development See mail.php for details
      */
-    'MAIL_PRETEND'      => true
+    'MAIL_PRETEND'      => true,
+
+    /**
+     * Should contact form submit details be sent to slack
+     * Set false in testing/development
+     */
+    'SLACK_ENABLE'      => false,
+    'SLACK_KEY'         => '' // Slack Incoming Webhook key
     );
 ?>
