@@ -24,6 +24,8 @@ class MerchantTest extends TestCase
      */
     public function testCreateMerchant()
     {
+        $this->ba->appAuthLive();
+
         $content = $this->startTest();
     }
 

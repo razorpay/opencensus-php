@@ -67,6 +67,16 @@ class Core extends Base\Core
             'gateway_terminal_password' => str_random()
         ];
 
-        $this->create($input, $merchant);
-    }
+        $input['merchant_id'] = $merchant->getKey();
+
+        $terminal = (new Terminal\Entity)->build($input);
+
+        $this->validateExistingTerminal($terminal);
+
+        $terminal->setConnection('test');
+
+        $this->repo->saveOrFail($terminal);
+
+        return $terminal;
+   }
 }

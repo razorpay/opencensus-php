@@ -40,10 +40,7 @@ class Service extends Base\Service
 
         $this->repo->updateBalance($merchantBalance);
 
-        if ($this->mode === 'test')
-        {
-            (new Terminal\Core)->createTerminalsInTestMode($merchant);
-        }
+        (new Terminal\Core)->createTerminalsInTestMode($merchant);
 
         (new Banks\Core)->setAllPaymentBanks($merchant);
 
