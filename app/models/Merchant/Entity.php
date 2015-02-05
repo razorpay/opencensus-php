@@ -36,6 +36,20 @@ class Entity extends Base\PublicEntity
         self::PRICING_PLAN_ID,
         self::CREATED_AT);
 
+    protected static $generators = array(
+        self::LIVE,
+        self::ACTIVATED);
+
+    protected function generateLive($input)
+    {
+        $this->setAttribute(self::LIVE, false);
+    }
+
+    protected function generateActivated($input)
+    {
+        $this->setAttribute(self::ACTIVATED, false);
+    }
+
     public function isActivated()
     {
         return $this->getAttribute(self::ACTIVATED);
