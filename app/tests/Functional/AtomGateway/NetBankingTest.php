@@ -193,9 +193,19 @@ class NetBankingTest extends TestCase
         }
         else
         {
+            //
+            // Txn stage 1
+            //
             $response = Requests::get($url);
+
+            //
+            // Atom cookie. Provide it in every subsequent request
+            //
             $cookie = $response->cookies['JSESSIONID']->value;
-            $headers = array('Cookie' => 'JSESSIONID=' . $cookie);
+            $headers = array(
+                'Cookie' => 'JSESSIONID=' . $cookie,
+                'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.93 Safari/537.36');
+
             $statusCode = $response->status_code;
         }
 
@@ -203,21 +213,15 @@ class NetBankingTest extends TestCase
 
         $atomBaseUrl = 'http://203.114.240.183:80';
 
-        // Atom fetches bank list and then auto-submits the form.
-        // Completely unnecessary step! We skip it during testing
-        // $response = \Requests::post($atomBaseUrl . '/paynetz/banklist.action', $headers);
-        // sd($response->body);
-
         $content = array('bankID' => '2001');
+
         if ($mock)
         {
             //
             // Now, we are going to submit the data to bank
             // Which in this case is Razorpay bank
             //
-            $crawler = new Crawler($response->getContent(), $url);
-            $form = $crawler->filter('form')->form();
-            list($url, $method, $values) = $this->getDataFromForm($form);
+            list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), $url);
 
             // See above note.
             $ix = strpos($url, '/v1/');
@@ -233,21 +237,32 @@ class NetBankingTest extends TestCase
         }
         else
         {
-            $url = $atomBaseUrl . '/paynetz/redirect.action';
-            $response = Requests::post($url, $headers, $content);
-        }
+            //
+            // Atom fetches bank list and then auto-submits the form.
+            //
+            $url = $atomBaseUrl.'/paynetz/banklist.action';
 
-        if ($mock === false)
-        {
-            $crawler = new Crawler($response->body, $url);
-            $form = $crawler->filter('form')->form();
+            $response = Requests::get($url, $headers);
+            list($url, $method, $values) = $this->getFormDataFromResponse($response->body, $url);
 
-            list($url, $method, $values) = $this->getDataFromForm($form);
+            //
+            // Making follow_redirects false is important because we have to provide the cookie for
+            // the redirect. It was returning error otherwise
+            //
+            $response = Requests::$method($url, $headers, $values, ['follow_redirects' => false]);
+
+            $url = $response->headers['location'];
+
+            $response = Requests::get($url, $headers);
+            // Somehow, the response body is not being echoed by 's' function so don't try it! Weirds me out.
+
+            list($url, $method, $values) = $this->getFormDataFromResponse($response->body, $response->url);
 
             $response = Requests::$method($url, $headers, $values);
             $content = $response->body;
         }
 
+        // Be careful of different quotes(',") or lack of it! Weird!
         $itc = getTextBetweenStrings($content, 'ITC = ', ';');
         $bid = getTextBetweenStrings($content, "BID = '", "';");
         $amt = getTextBetweenStrings($content, "amt = '", "';");
