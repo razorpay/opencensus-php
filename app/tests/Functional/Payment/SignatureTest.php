@@ -26,7 +26,7 @@ class SignatureTest extends TestCase
 
         $payment['signature'] = $this->signPayment($payment, 'TheKeySecretForTests');
 
-        $testData = $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $this->replaceValuesRecursively($this->payment, $testData['request']['content']);
 
@@ -47,7 +47,9 @@ class SignatureTest extends TestCase
 
         $id = $content['razorpay_payment_id'];
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$id.'/capture';
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$id;
 
         $this->startTest();
     }

@@ -20,24 +20,20 @@ return [
         ],
     ],
 
-    'testInvalidEmailInPayment' => [
+    'testPaymentStatusAfterSignedRequest' => [
         'request' => [
-            'content' => [
-                'email' => 'abc',
-            ],
+            'method' => 'GET',
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'email',
-                ],
+                'status' => 'captured',
+                'entity' => 'payment',
+                'amount' => 50000,
+                'currency' => 'INR',
+                'notes' => [
+                    'merchant_order_id' => 'random order id'
+                ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'EE\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 ];
