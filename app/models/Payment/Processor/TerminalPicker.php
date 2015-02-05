@@ -13,7 +13,7 @@ class TerminalPicker
     {
         $terminals = $this->getTerminals($payment);
 
-        $this->validateCount($terminals);
+        $this->validateCount($terminals, $payment->merchant);
 
         $terminal = $this->pickOneTerminal($payment, $terminals);
 
@@ -123,7 +123,7 @@ class TerminalPicker
         return [$hdfcTerm, $atomTerm];
     }
 
-    protected function validateCount($terminals)
+    protected function validateCount($terminals, $merchant)
     {
         $count = $terminals->count();
 
