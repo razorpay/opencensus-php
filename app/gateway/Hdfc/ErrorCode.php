@@ -161,7 +161,7 @@ class ErrorCode
         Hdfc\ErrorCode::FSS00002  => 'Duplicate Payment Request',
 
         Hdfc\ErrorCode::GW00150   => 'Missing required data',
-        Hdfc\ErrorCode::GW00151   => 'Invalid action type',
+        Hdfc\ErrorCode::GW00151   => 'Invalid action type. Card network not supported',
         Hdfc\ErrorCode::GW00152   => 'Invalid Payment Amount',
         Hdfc\ErrorCode::GW00153   => 'Invalid Payment ID',
         Hdfc\ErrorCode::GW00154   => 'Invalid Terminal ID',
@@ -186,7 +186,7 @@ class ErrorCode
 
         Hdfc\ErrorCode::GW00183   => 'Card Verification Digit Required',
 
-        Hdfc\ErrorCode::GW00201   => 'Support Error Auth not found',
+        Hdfc\ErrorCode::GW00201   => 'Transaction not found',
         Hdfc\ErrorCode::GW00205   => 'Invalid Subsequent Payment',
         Hdfc\ErrorCode::GW00258   => 'Payment Denied: Negative BIN',
         Hdfc\ErrorCode::GW00259   => 'Payment Denied: Declined Card',
@@ -248,7 +248,7 @@ class ErrorCode
         Hdfc\ErrorCode::FSS00002  => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
 
         Hdfc\ErrorCode::GW00150   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        Hdfc\ErrorCode::GW00151   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
+        Hdfc\ErrorCode::GW00151   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
         Hdfc\ErrorCode::GW00152   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
         Hdfc\ErrorCode::GW00153   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
         Hdfc\ErrorCode::GW00154   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
@@ -283,6 +283,8 @@ class ErrorCode
         Hdfc\ErrorCode::GV00007   => Error\ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
         Hdfc\ErrorCode::GV00008   => Error\ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
         Hdfc\ErrorCode::GV00011   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE,
+
+        Hdfc\ErrorCode::GV00100   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
 
         Hdfc\ErrorCode::PY20006   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         Hdfc\ErrorCode::PY20001   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,

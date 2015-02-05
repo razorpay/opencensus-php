@@ -14,7 +14,7 @@ class ExtraFieldsException extends RecoverableException
     public function __construct(
         $fields,
         $code = ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
-        Exception $previous = null)
+        \Exception $previous = null)
     {
         $this->fields = $fields;
 

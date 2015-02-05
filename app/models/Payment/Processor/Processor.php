@@ -70,14 +70,103 @@ class Processor
 
         $payment = $this->createPaymentEntity($input);
 
-        if ($input['method'] === Payment\Method::CARD)
+        $this->checkSignature($input, $payment);
+
+        $data = $this->authorize($payment, $input);
+
+        //
+        // The returned value could be either Payment
+        // model or an array containing callback data.
+        // We convert payment model to array
+        // if it's a payment model
+        //
+        if ($data instanceof Payment\Entity)
         {
-            return $this->authorize($payment, $input);
+            // This is a payment instance
+            $payment = $data;
+
+            if ($payment->isSigned())
+            {
+                $data = $this->captureSignedPayment($payment);
+            }
+            else
+            {
+                // Return array with fields after authorized
+                $data = ['razorpay_payment_id' => $payment->getPublicId()];
+            }
         }
-        else if ($input['method'] === Payment\Method::NET_BANKING)
+
+        return $data;
+    }
+
+    protected function checkSignature($input, $payment)
+    {
+        if (isset($input['signature']) === false)
         {
-            return $this->captureNetBanking($payment);
+            return;
         }
+
+        $payment->setSigned(true);
+
+        if (isset($input['notes']['merchant_order_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'merchant_roder_id field is required',
+                'merchant_order_id');
+        }
+
+        $this->verifySignature($input, $payment);
+
+        return true;
+    }
+
+    protected function captureSignedPayment($payment)
+    {
+        $amount = $payment->getAmount();
+
+        $payment = $this->capturePayment($payment, $amount);
+
+        $data = array(
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'amount'                => $payment->getAmount(),
+            'currency'              => $payment->getCurrency(),
+            'merchant_order_id'     => $payment->getNotes()['merchant_order_id'],
+        );
+
+        $sortedData = $data;
+        ksort($sortedData);
+
+        $str = implode('|', $sortedData);
+
+        $data['signature'] = $this->getSignature($str);
+
+        return $data;
+    }
+
+    protected function verifySignature($input, $payment)
+    {
+        $data = array(
+            'amount'            => $payment->getAmount(),
+            'currency'          => $payment->getCurrency(),
+            'merchant_order_id' => $payment->getNotes()['merchant_order_id'],
+        );
+
+        $str = implode('|', $data);
+
+        $signature = $this->getSignature($str);
+
+        if ($signature !== $input['signature'])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Signature does not match', 'signature');
+        }
+
+        return true;
+    }
+
+    protected function getSignature($str)
+    {
+        return \BasicAuth::sign($str);
     }
 
     protected function checkMerchantPermissions()
@@ -148,62 +237,13 @@ class Processor
         return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
     }
 
-    protected function setTerminalForPayment($payment)
+    public function verify($id)
     {
-        if ($this->terminal !== null)
-        {
-            return $this->terminal;
-        }
+        $payment = $this->retrieve($id);
 
-        $gateway = $payment->getGateway();
+        $data = array('payment' => $payment->toArray());
 
-        $terminal = (new Terminal\Repository)->getByMerchantIdAndGateway(
-                                                    $this->merchant->getKey(), $gateway);
-
-        if (($terminal === null) or
-            ($terminal->trashed()))
-        {
-            $method = $payment->getAttribute(Payment\Entity::METHOD);
-            if ($method === Payment\Method::NET_BANKING)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
-            }
-
-            throw new \LogicException(
-                'No terminal found for merchant: ' . $this->merchant->getKey());
-        }
-
-        $this->terminal = $terminal;
-
-        $payment->terminal()->associate($terminal);
-
-        return $terminal;
-    }
-
-    protected function setGatewayForPayment($payment)
-    {
-        $gateway = '';
-
-        $method = $payment['method'];
-
-        if ($method === Payment\Method::CARD)
-        {
-            $gateway = Payment\Gateway::HDFC;
-        }
-        else if ($method === Payment\Method::NET_BANKING)
-        {
-            $gateway = Payment\Gateway::ATOM;
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Unrecognized payment method ' . $method);
-        }
-
-        $payment->setGateway($gateway);
-
-        return $gateway;
+        $payment = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
     }
 
     protected function getCallbackUrl()
@@ -227,9 +267,7 @@ class Processor
 
         $payment->merchant()->associate($this->merchant);
 
-        $this->setGatewayForPayment($payment);
-
-        $this->setTerminalForPayment($payment);
+        (new TerminalPicker)->selectTerminal($payment);
 
         $this->payment = $payment;
 
@@ -242,8 +280,15 @@ class Processor
                         $this->payment->toArrayTraceRelevant(),
                         ['error' => $error->getAttributes()]);
 
+        $level = 'info';
+
+        if ($error->isGatewayError())
+        {
+            $level = 'critical';
+        }
+
         // Tracing
-        $this->trace->error(
+        $this->trace->$level(
             $traceCode,
             $traceData);
     }

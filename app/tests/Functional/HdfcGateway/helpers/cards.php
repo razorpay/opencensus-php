@@ -142,83 +142,6 @@ return [
 
     ],
 
-    'testDebitCardSuccess1' => [
-        'request' => [
-            'content' => [
-                'card' => [
-                    'number' => '4012001037141112',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-            ],
-        ],
-    ],
-
-    'testDebitCardSuccess2' => [
-        'request' => [
-            'content' => [
-                'card' => [
-                    'number' => '4005559876540',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-            ],
-        ],
-
-    ],
-
-    'testDebitCardSuccess3' => [
-        'request' => [
-            'content' => [
-                'card' => [
-                    'number' => '4012001037167778',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-            ],
-        ],
-    ],
-
-    'testDebitCardSuccess4' => [
-        'request' => [
-            'content' => [
-                'card' => [
-                    'number' => '4012001037490014',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-            ],
-        ],
-    ],
-
-    'testDebitCardSuccess5' => [
-        'request' => [
-            'content' => [
-                'card' => [
-                    'number' => '4012001037141112',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'amount' => 50000,
-                'status' => 'authorized',
-            ],
-        ],
-    ],
-
     'testParesNotSuccess' => [
         'request' => [
             'content' => [
@@ -326,6 +249,5 @@ return [
             ]
         ],
         'jsonp' => true
-    ]
-
+    ],
 ];

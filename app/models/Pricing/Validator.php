@@ -28,7 +28,7 @@ class Validator extends Base\Validator
     protected function validateAddPlanRuleNB($input)
     {
         // Check that payment_method_type is not defined when mode is net-banking
-        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::NET_BANKING)
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING)
         {
             $fields = array(
                 Entity::PAYMENT_METHOD_TYPE,

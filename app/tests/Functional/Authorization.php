@@ -62,6 +62,16 @@ class Authorization
         $this->type = 'public';
     }
 
+    public function publicTestAuth()
+    {
+        $this->publicAuth();
+    }
+
+    public function publicLiveAuth()
+    {
+        $this->publicAuth('rzp_live_TheLiveAuthKey');
+    }
+
     public function privateAuth($user = null, $pwd = null)
     {
         if ($user === null)
@@ -84,8 +94,33 @@ class Authorization
         $this->appAuth('rzp_'.$mode, 'put dashboard pass here');
     }
 
+    public function noAuth()
+    {
+        $this->basicAuth(null, null);
+    }
+
     public function getCreds()
     {
         return $this->auth;
+    }
+
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    public function isPublicAuth()
+    {
+        return ($this->type === 'public');
+    }
+
+    public function getKey()
+    {
+        return $this->auth['PHP_AUTH_USER'];
+    }
+
+    public function getSecret()
+    {
+        return $this->auth['PHP_AUTH_PW'];
     }
 }

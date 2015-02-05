@@ -142,29 +142,20 @@ trait MessageFormats
         return array($pair['key'], $pair['value']);
     }
 
-    protected function constructError($message, $code)
+    protected function constructError($code, $message, $field = null)
     {
+        $desc = $message;
+
         if (($message !== null) and
             ($this->messageFormat !== 'string'))
         {
             list($field, $desc) = $this->getFirstPair();
 
-            $code = $this->getErrorCode($field);
-
-            $this->error = new Error($code, $desc, $field);
-
-            parent::__construct($desc, $code, null);
         }
-        else if ($code !== 0)
-        {
-            $this->generateError($code, $message);
 
-            parent::__construct($message, $code, null);
-        }
-        else
-        {
-            throw new InvalidArgumentException('only message given, code needed!');
-        }
+        $this->error = new Error($code, $desc, $field);
+
+        parent::__construct($desc, $code, null);
     }
 
     protected function getErrorCode($field)
@@ -184,12 +175,8 @@ trait MessageFormats
             case 'BadRequestValidationFailure':
                 $code = 'BAD_REQUEST_VALIDATION_FAILURE';
                 break;
-            case 'FieldError':
-                $code = 'FIELD_ERROR_INVALID_'.strtoupper($field);
-                break;
-            case 'CardError':
-                $code = 'CARD_ERROR_INVALID_'.strtoupper($field);
-                break;
+            default:
+                throw new Exception\InvalidArgumentException('not a valid category: ' . $category);
         }
 
         Error::checkErrorCode($code);

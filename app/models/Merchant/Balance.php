@@ -9,6 +9,7 @@ class Balance extends Base\UniqueIdEntity
 {
     const ID = 'id';
     const BALANCE = 'balance';
+    const ON_HOLD = 'on_hold';
 
     protected $table = \Constants\Table::BALANCE;
 
@@ -55,5 +56,18 @@ class Balance extends Base\UniqueIdEntity
         $balance->merchant()->associate($merchant);
 
         return $balance;
+    }
+
+    public function updateBalance($txn)
+    {
+        $amount = $txn->getNetAmount();
+
+        $this->addAmount($amount);
+
+        if ($this->getBalance() < 0)
+        {
+            throw new Exception\LogicException(
+                'Something very wrong is happening! Balance is going negative');
+        }
     }
 }

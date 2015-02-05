@@ -17,7 +17,6 @@ class NetBanking
         IFSC::CIUB,
         IFSC::CORP,
         IFSC::DCBL,
-        IFSC::BKDN,
         IFSC::DEUT,
         IFSC::DLXB,
         IFSC::FDRL,
@@ -28,19 +27,20 @@ class NetBanking
         IFSC::IOBA,
         IFSC::INDB,
         IFSC::JAKA,
+        IFSC::KARB,
         IFSC::KVBL,
         IFSC::KKBK,
         IFSC::LAVB,
-        IFSC::ORBC,
         IFSC::SIBL,
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBIN,
         IFSC::SBMY,
+        IFSC::STBP,
         IFSC::SBTR,
-        IFSC::KARB,
         IFSC::UCBA,
         IFSC::UBIN,
+        IFSC::VIJB,
         IFSC::YESB);
 
     protected static $processing = array(
@@ -51,5 +51,20 @@ class NetBanking
     public static function isSupportedBank($bank)
     {
         return (in_array($bank, self::$enabled));
+    }
+
+    public static function findUnsupportedBanks($banks)
+    {
+        return array_diff($banks, self::$enabled);
+    }
+
+    public static function getAllBanks()
+    {
+        return self::$enabled;
+    }
+
+    public static function getDisabledBanks($banks)
+    {
+        return array_diff(self::$enabled, $banks);
     }
 }

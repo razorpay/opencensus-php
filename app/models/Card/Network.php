@@ -15,12 +15,12 @@ class Network
     const MC    = 'MC';
     const RUPAY = 'RUPAY';
     const VISA  = 'VISA';
+    const UNP   = 'UNP';
 
     // Unidentified
-    const OTHER = 'OTHER';
     const UNKNOWN = 'UNKNOWN';
 
-    protected $fullName = array(
+    protected static $fullName = array(
         self::AMEX    => 'American Express',
         self::DICL    => 'Diners Club',
         self::DISC    => 'Discover',
@@ -29,7 +29,8 @@ class Network
         self::MC      => 'MasterCard',
         self::RUPAY   => 'RuPay',
         self::UNKNOWN => 'Unknown',
-        self::VISA    => 'Visa');
+        self::VISA    => 'Visa',
+        self::UNP     => 'Union Pay');
 
    public static $networks = array(
         self::AMEX,
@@ -39,7 +40,8 @@ class Network
         self::MAES,
         self::MC,
         self::RUPAY,
-        self::VISA);
+        self::VISA,
+        self::UNP);
 
     public static $maestroFirstFour = array(
         '5018',
@@ -62,6 +64,7 @@ class Network
         self::JCB   => '/^(?:2131|1800|35[0-9]{3})[0-9]{3,}$/',
         self::DICL  => '/^3(?:0[0-5]|[68][0-9])[0-9]{4,}$/',
         self::DISC  => '/^6(?:011|5[0-9]{2})[0-9]{3,}$/',
+        self::UNP   => '/^62[0-9]{14,}$/',
         self::MAES  => null,
         self::RUPAY => null);
 
@@ -69,7 +72,8 @@ class Network
         self::AMEX,
         self::JCB,
         self::DISC,
-        self::DICL);
+        self::DICL,
+        self::UNP);
 
     /**
      * Detects network on basis of iin.
@@ -144,5 +148,17 @@ class Network
     public static function isUnsupportedNetwork($network)
     {
         return (in_array($network, self::$unsupportedNetworks));
+    }
+
+    public static function getFullName($network)
+    {
+        return self::$fullName[$network];
+    }
+
+    public static function getCode($fullName)
+    {
+        $codes = array_flip(self::$fullName);
+
+        return $codes[$fullName];
     }
 }

@@ -30,6 +30,8 @@ class TraceWriter extends Logger
 
         $this->debug = Config::get('app.debug');
 
+        $this->contextEnv = Config::get('app.context');
+
         $this->defineHandlers();
 
         $this->defineProcessors();
@@ -65,7 +67,9 @@ class TraceWriter extends Logger
 
         $this->pushProcessor(new TraceCodeProcessor);
 
-        if ($this->config['introspection'])
+        if (($this->debug) or
+            ($this->config['introspection']) or
+            ($this->contextEnv === 'beta'))
         {
             $this->pushIntrospectionProcessor();
         }
@@ -137,22 +141,22 @@ class TraceWriter extends Logger
             return false;
     }
 
-    public function addRecord($level, $message, array $context = array())
-    {
-        // Queue the logging the record
-        $this->queueRecord(
-            $level,
-            $message,
-            $context);
-    }
+    // public function addRecord($level, $message, array $context = array())
+    // {
+    //     // Queue the logging the record
+    //     $this->queueRecord(
+    //         $level,
+    //         $message,
+    //         $context);
+    // }
 
-    public function queueRecord($level, $message, array $context = array())
-    {
-        Queue::push(__NAMESPACE__.'\TraceWriter', array(
-            'level' => $level,
-            'message' => $message,
-            'context' => $context));
-    }
+    // public function queueRecord($level, $message, array $context = array())
+    // {
+    //     Queue::push(__NAMESPACE__.'\TraceWriter', array(
+    //         'level' => $level,
+    //         'message' => $message,
+    //         'context' => $context));
+    // }
 
     /**
      * In debug mode, this function returns all

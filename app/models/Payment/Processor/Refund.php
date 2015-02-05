@@ -31,8 +31,16 @@ trait Refund
         $this->refund = $refund;
 
         $data = array(
-                    'payment' => $payment->toArrayWithCard(),
+                    'payment' => $payment->toArray(),
+                    'refund' => $refund->toArray(),
                     'amount' => $refund->getAmount());
+
+        $method = $refund->payment->getMethod();
+
+        if ($method === Payment\Method::CARD)
+        {
+            $data['card'] = $refund->payment->card->toArray();
+        }
 
         try
         {

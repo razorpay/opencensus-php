@@ -22,9 +22,14 @@ class TraceCodeProcessor
 
         $message = TraceCode::getMessage($code);
 
+        if ($message === null)
+            $message = $code;
+
         $record['message'] = $message;
 
         $record = ['code' => $code] + $record;
+
+        $record['context']['mode'] = \BasicAuth::getMode();
 
         return $record;
     }

@@ -9,6 +9,7 @@ use Models\Transaction;
 use Models\Merchant;
 use Models\Payment;
 use Models\Payment\Refund;
+use Models\Settlement\SlackNotification;
 use Queue;
 
 class Generator
@@ -29,9 +30,18 @@ class Generator
 
     protected $queue;
 
-    public function __construct($mode = '')
+    public function __construct()
     {
-        $this->mode = $mode;
+        $app = \App::getFacadeRoot();
+
+        $this->mode = $app['rzp.mode'];
+
+        $this->context = $app['config']->get('app.context');
+
+        if ($this->mode !== 'test')
+        {
+            throw new Exception\LogicException('Only test mode allowed');
+        }
 
         $this->env = \App::environment();
 
@@ -57,9 +67,15 @@ class Generator
             throw $e;
         }
 
+        if ($data['count'] === 0)
+            return;
+
         $this->queueMprGenerationMail($data);
 
-        (new SlackNotification)->queueOperationSuccess('mpr_generation', $data['count']);
+        $slackData = [
+            'payemnts_count' => $data['count']];
+
+        (new SlackNotification)->queueOperationSuccess('mpr_generation', $slackData);
 
         return $data['file'];
     }
@@ -70,6 +86,11 @@ class Generator
 
         $gateway = Payment\Gateway::HDFC;
 
+        $mprFile = Gateway::call(Payment\Gateway::HDFC, 'mprFileExists', null, 'test');
+
+        if ($mprFile !== false)
+            return array('file' => null, 'count' => 0);
+
         $paymentRepo = new Payment\Repository;
         $payments = $paymentRepo->fetchCapturedForGatewayBetweenTimestamp(
                             self::$fromTimestamp,
@@ -77,29 +98,30 @@ class Generator
                             $gateway);
 
         $rfndRepo = new Refund\Repository;
-        $refunds = $rfndRepo->findBetweenTimestamps(
+        $refunds = $rfndRepo->findBetweenTimesampsForGateway(
                             self::$fromTimestamp,
-                            self::$toTimestamp);
+                            self::$toTimestamp,
+                            $gateway);
 
-        $count = $payments->count();
+        $count = $payments->count() + $refunds->count();
 
         if ($count === 0)
         {
             return array('file' => null, 'count' => 0);
         }
 
-        $array = $this->getRelatedEntities($payments);
+        $array = $this->getRelatedEntities($payments, $refunds);
 
         $mprFile = Gateway::call(Payment\Gateway::HDFC, 'generateMpr', $array, 'test');
 
         return array('file' => $mprFile, 'count' => $count);
     }
 
-    protected function getRelatedEntities($payments)
+    protected function getRelatedEntities($payments, $refunds)
     {
         $payments->load('merchant', 'terminal', 'card');
 
-        $array = array();
+        $array = array('payments' => [], 'refunds' => []);
 
         foreach($payments->all() as $payment)
         {
@@ -112,7 +134,24 @@ class Generator
                 'card'      => $payment->card->toArray()
             );
 
-            array_push($array, $cols);
+            array_push($array['payments'], $cols);
+        }
+
+        $refunds->load('merchant', 'payment', 'payment.terminal', 'payment.card');
+
+        foreach($refunds->all() as $refund)
+        {
+            $payment = $refund->payment;
+
+            $cols = array(
+                'refund'    => $refund->toArray(),
+                'payment'   => $payment->toArray(),
+                'merchant'  => $refund->merchant->toArray(),
+                'terminal'  => $payment->terminal->toArray(),
+                'card'      => $payment->card->toArray()
+            );
+
+            array_push($array['refunds'], $cols);
         }
 
         return $array;
@@ -134,7 +173,15 @@ class Generator
 
         $data['message'] = $message;
         $data['env'] = $this->env;
-        $data['mode'] = $this->mode;
+
+        $mode = $this->mode;
+
+        if ($mode === 'production')
+        {
+            $mode = $this->context;
+        }
+
+        $data['mode'] = $mode;
 
         $this->queue->push($func, $data);
     }
@@ -149,9 +196,19 @@ class Generator
         $message .= ' Exception Trace: ' . $e->getTraceAsString();
         $message .= ' Exception Class: ' . get_class($e);
 
-        $message .- ' Env: ' . $this->env;
+        $message .= ' Env: ' . $this->env;
 
         $data['message'] = $message;
+        $data['env'] = $this->env;
+
+        $mode = $this->mode;
+
+        if ($mode === 'production')
+        {
+            $mode = $this->context;
+        }
+
+        $data['mode'] = $mode;
 
         $this->queue->push($func, $data);
     }

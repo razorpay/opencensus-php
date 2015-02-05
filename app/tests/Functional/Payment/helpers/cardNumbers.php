@@ -54,22 +54,6 @@ return [
         ],
     ],
 
-    'testCardNumberWithSpaces' => [
-        'request' => [
-            'content' => [
-                'card' => [
-                    'number' => '40 1 2001 0384 43 33 5',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'authorized',
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
     'testLongCardNumber' => [
         'request' => [
             'content' => [

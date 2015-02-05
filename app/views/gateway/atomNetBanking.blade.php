@@ -40,10 +40,13 @@
   </head>
 
   <body>
-    Welcome to Razorpay Bank  <br>
+    Welcome to Razorpay Bank  <br />
+
+    This is only a test environment page. No actual payment is going to happen.
+    Please don't use this in production environment. <br />
 
     <form  method="post" action="">
-    Txn ID: {{{$data['transactio_id']}}}
+    Transaction ID: {{{$data['transaction_id']}}}
     Amt: 50.0000
     <p>
         <input type="radio" name="success" checked="checked" value="S"> Success

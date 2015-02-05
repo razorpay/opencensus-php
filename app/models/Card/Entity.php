@@ -19,12 +19,8 @@ class Entity extends Base\UniqueIdEntity
     const TYPE              = 'type';
     const ISSUER            = 'issuer';
     const COUNTRY           = 'country';
-    const ADDRESS_LINE1     = 'address_line1';
-    const ADDRESS_LINE2     = 'address_line2';
-    const ADDRESS_CITY      = 'address_city';
-    const ADDRESS_STATE     = 'address_state';
-    const ADDRESS_ZIP       = 'address_zip';
-    const ADDRESS_COUNTRY   = 'address_country';
+    const INTERNATIONAL     = 'international';
+    const TRIVIA            = 'trivia';
 
     const COUNTRY_LENGTH = 2;
 
@@ -42,13 +38,7 @@ class Entity extends Base\UniqueIdEntity
         self::NETWORK,
         self::COUNTRY,
         self::TYPE,
-        self::ISSUER,
-        self::ADDRESS_LINE1,
-        self::ADDRESS_LINE2,
-        self::ADDRESS_STATE,
-        self::ADDRESS_CITY,
-        self::ADDRESS_ZIP,
-        self::ADDRESS_COUNTRY);
+        self::ISSUER);
 
     protected $guarded = array(self::ID);
 
@@ -57,6 +47,7 @@ class Entity extends Base\UniqueIdEntity
     protected static $generators = array(
         self::ID,
         self::IIN,
+        self::TYPE,
         self::LAST4,
         self::LENGTH);
 
@@ -82,6 +73,11 @@ class Entity extends Base\UniqueIdEntity
         $iin = substr($input['number'], 0, 6);
 
         $this->setAttribute(self::IIN, $iin);
+    }
+
+    public function generateType($input)
+    {
+        $this->setAttribute(self::TYPE, Card\Type::UNKNOWN);
     }
 
     public function generateLength($input)
@@ -131,6 +127,11 @@ class Entity extends Base\UniqueIdEntity
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);
+
+        if ($country === 'IN')
+        {
+            $this->setAttribute(self::INTERNATIONAL, 0);
+        }
     }
 
     public function setNetwork($network)
@@ -141,6 +142,16 @@ class Entity extends Base\UniqueIdEntity
     public function setType($type)
     {
         $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setInternational($flag)
+    {
+        $this->setAttribute(self::INTERNATIONAL, $flag);
+    }
+
+    public function setTrivia($trivia)
+    {
+        $this->setAttribute(self::TRIVIA, $trivia);
     }
 
     public function getIin()
@@ -156,5 +167,12 @@ class Entity extends Base\UniqueIdEntity
     public function getExpiryYearAttribute()
     {
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
+    }
+
+    public function isUnsupported()
+    {
+        $network = Card\Network::getCode($this->getNetwork());
+
+        return (Card\Network::isUnsupportedNetwork($network));
     }
 }

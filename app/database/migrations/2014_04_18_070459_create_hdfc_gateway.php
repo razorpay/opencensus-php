@@ -22,9 +22,12 @@ class CreateHdfcGateway extends Migration
 
             $table->increments('id');
 
-            $table->char('trackid', UniqueIdEntity::ID_LENGTH);
+            $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
 
-            $table->bigInteger('gateway_payment_id')
+            $table->char('refund_id', UniqueIdEntity::ID_LENGTH)
+                  ->nullable();
+
+            $table->bigInteger('gateway_transaction_id')
                   ->unsigned()
                   ->nullable();
 
@@ -65,10 +68,13 @@ class CreateHdfcGateway extends Migration
             $table->integer('created_at');
             $table->integer('updated_at');
 
-            $table->foreign('trackid')
+            $table->foreign('payment_id')
                   ->references('id')
                   ->on('payments')
                   ->on_delete('restrict');
+
+            $table->index('refund_id');
+            $table->index('gateway_transaction_id');
         });
     }
 
@@ -81,10 +87,9 @@ class CreateHdfcGateway extends Migration
     {
         Schema::table('hdfc', function($table)
         {
-            $table->dropForeign('hdfc_trackid_foreign');
+            $table->dropForeign('hdfc_payment_id_foreign');
         });
 
         Schema::drop('hdfc');
     }
-
 }

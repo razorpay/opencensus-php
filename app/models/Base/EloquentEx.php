@@ -37,4 +37,17 @@ class EloquentEx extends \Razorpay\Spine\Entity
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_ID);
     }
+
+    public function reload()
+    {
+        $instance = new static;
+
+        $instance = $instance->newQuery()->find($this->{$this->primaryKey});
+
+        $this->attributes = $instance->attributes;
+
+        $this->original = $instance->original;
+
+        return $this;
+    }
 }

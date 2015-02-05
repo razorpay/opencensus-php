@@ -36,6 +36,7 @@ class AuthorizeTest extends TestCase
     public function testJsonpPayment()
     {
         $content = $this->startTest();
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
     }
 
     public function testEmailMissing()
@@ -50,16 +51,6 @@ class AuthorizeTest extends TestCase
     }
 
     public function testContactTooLong()
-    {
-        $this->startTest();
-    }
-
-    public function testContactWithDashAndBracket()
-    {
-        $this->startTest();
-    }
-
-    public function testContactWithPlusAndNumbers()
     {
         $this->startTest();
     }
@@ -93,7 +84,8 @@ class AuthorizeTest extends TestCase
 
     public function testAmountLessThan50ForNetBanking()
     {
-        $this->fixtures->createTerminalEntityForAtomGateway();
+        $this->fixtures->create('terminal:atom_terminal');
+
         $this->startTest();
     }
 
@@ -104,13 +96,6 @@ class AuthorizeTest extends TestCase
 
     public function testAmountMissing()
     {
-        $this->startTest();
-    }
-
-    public function testDescriptionMissing()
-    {
-        unset($this->payment['description']);
-
         $this->startTest();
     }
 
@@ -130,13 +115,6 @@ class AuthorizeTest extends TestCase
         $largeText = implode(',', range(1,1000,1));
 
         $testData['request']['content']['description'] = $largeText;
-
-        $this->startTest();
-    }
-
-    public function testNotesMissing()
-    {
-        unset($this->payment['notes']);
 
         $this->startTest();
     }

@@ -33,7 +33,7 @@ class CaptureTest extends TestCase
 
         parent::setUp();
 
-        $payment = $this->fixtures->createPaymentAuthorizedEntity();
+        $payment = $this->fixtures->create('payment:authorized');
         $this->payment = $payment->toArrayPublic();
 
         $this->ba->privateAuth();
@@ -52,7 +52,7 @@ class CaptureTest extends TestCase
 
     public function testCaptureTwice()
     {
-        $payment = $this->fixtures->createPaymentCapturedEntity()->toArrayPublic();
+        $payment = $this->fixtures->create('payment:captured')->toArrayPublic();
 
         $this->payment = $payment;
 

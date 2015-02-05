@@ -18,10 +18,13 @@ class Validator extends Base\Validator
         'description'   =>  'sometimes',
         'email'         =>  'required|email',
         'contact'       =>  'required',
-        'notes'         =>  'sometimes');
+        'notes'         =>  'sometimes',
+        'signature'     =>  'sometimes',
+        'notes'         =>  'sometimes|');
 
     protected static $captureRules = array(
-        'amount'        => 'required|numeric');
+        'amount'        => 'required|numeric',
+        'currency'      => 'sometimes|in:INR');
 
     protected static $refundRules = array(
         'amount'        => 'sometimes|numeric');
@@ -58,8 +61,7 @@ class Validator extends Base\Validator
 
     protected function validateAmount($input)
     {
-        // @todo:check for atom gateway
-        if (($input['method'] === Payment\Method::NET_BANKING) and
+        if (($input['method'] === Payment\Method::NETBANKING) and
             (((int) $input['amount']) < 5000))
         {
             throw new Exception\BadRequestException(
@@ -76,7 +78,7 @@ class Validator extends Base\Validator
 
     protected function validateBank($input)
     {
-        if ($input['method'] !== Payment\Method::NET_BANKING)
+        if ($input['method'] !== Payment\Method::NETBANKING)
         {
             return;
         }
@@ -169,6 +171,16 @@ class Validator extends Base\Validator
      */
     protected function validateNotes($input)
     {
+        if (isset($input['signature']))
+        {
+            if ((isset($input['notes']) === false) or
+                (isset($input['notes']['merchant_order_id']) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'merchant_order_id should be defined when signature is present');
+            }
+        }
+
         if (isset($input['notes']) === false)
             return;
 

@@ -3,8 +3,6 @@
 return array(
     'ENCRYPTION_KEY'            => '4dkTd5lWhN40CkSrnyrRBuRMsSX9exXD',
 
-    'DB_DEFAULT_CONNECTION'     => 'live',
-
     'DB_LIVE_DRIVER'            => 'mysql',
     'DB_LIVE_HOST'              => 'localhost',
     'DB_LIVE_PORT'              => '3306',
@@ -19,6 +17,8 @@ return array(
     'DB_TEST_USERNAME'          => 'user',
     'DB_TEST_PASSWORD'          => 'password',
 
+    'CONTEXT'                   => 'dev',
+
     'CLOUD'                     => false,
 
     'HDFC_ID'                   => 'hdfc_id',
@@ -30,8 +30,8 @@ return array(
 
     'EMAIL_MOCK'                => true,
 
-    'APP_DASHBOARD_URL'     	=> 'http://dashboard.razorpay.com/',
-    'APP_DASHBOARD_SECRET'      => 'DASHBOARD_AUTH_PASS',
+    'APP_DASHBOARD_URL'     	=> 'http://betadashboard.razorpay.com/',
+    'APP_DASHBOARD_SECRET'      => 'RANDOM_DASH_PASSWORD',
     'APP_DASHBOARD_PRETEND'     => true,
 
     'SLACK_TOKEN'               => '',
@@ -46,5 +46,7 @@ return array(
     'AWS_QUEUE_URL'             => '',
     'AWS_KEY_ID'                => '',
     'AWS_KEY_SECRET'            => '',
-    'AWS_REGION'                => 'us-east-1'
+    'AWS_REGION'                => 'us-east-1',
+
+    'CRON_PASSWORD'             => 'RANDOM_CRON_PASSWORD',
 );

@@ -22,35 +22,25 @@ trait Capture
 
         (new Payment\Validator)->captureValidate($payment, $input);
 
-        $paymentArray = array();
-        if ($payment->isNetBanking())
-        {
-            $paymentArray = $payment->toArray();
-        }
-        else
-        {
-            $paymentArray = $payment->toArrayWithCard();
-        }
+        return $this->capturePayment($payment, $input['amount']);
+    }
 
+    public function capturePayment($payment, $amount)
+    {
         $data = array(
-            'payment' => $paymentArray,
-            'amount' => $input['amount']);
+            'payment' => $payment->toArray(),
+            'amount' => $amount);
 
-        $payment->setCaptureAmount($input['amount']);
+        if ($payment->getMethod() === Payment\Method::CARD)
+        {
+            $data['card'] = $payment->card->toArray();
+        }
+
+        $payment->setCaptureAmount($amount);
 
         $this->captureOnGateway($data);
 
-        return $this->payment;
-    }
-
-    public function captureNetBanking($payment)
-    {
-        $payment->save();
-        $data = array(
-            'payment'       => $payment->toArray(),
-            'callbackUrl'   => $this->getCallbackUrl());
-
-        return $this->callGatewayFunction(Payment\Action::AUTHORIZE, $data);
+        return $payment;
     }
 
     protected function captureOnGateway($data)

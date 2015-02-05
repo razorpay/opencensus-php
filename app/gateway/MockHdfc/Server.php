@@ -50,7 +50,7 @@ class Server
         return $input;
     }
 
-    public function gatewayPayment()
+    public function gatewayTransaction()
     {
         $action = Hdfc\Utility::getFieldFromXML($this->input, 'action');
 
@@ -68,6 +68,10 @@ class Server
                 $xml = $this->refundPaymentOnGateway();
                 break;
 
+            case Action::INQUIRY:
+                $xml = $this->inquirePaymentOnGateway();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'MockHdfc: Action code not recognized. Action: ' . $this->data['action']);
@@ -82,6 +86,7 @@ class Server
 
         $cardNumber = $this->data['card'];
 
+        $res = [];
         if (($cardNumber === '4012001038488884') or
             ($cardNumber === '4012001036298889'))
         {
@@ -92,46 +97,7 @@ class Server
         }
         else
         {
-            // @todo: move this to iin
-            $iin = substr($cardNumber, 0, 6);
-            $network = Card\Network::detectNetwork($cardNumber);
-            $type = $this->getCardType($cardNumber, $iin);
-
-            $res = array();
-            if ($type === 'debit')
-            {
-                $res['result'] = 'ENROLLED';
-
-                $request = \Request::getFacadeRoot();
-                $scheme = $request->getScheme().'://';
-                $host = $request->getHost();
-
-                $res['url'] = $scheme . $host . '/gateway/3dsecure';
-            }
-            else if (($type === 'credit') or
-                     ($type === ''))
-            {
-                $res['result'] = 'NOT ENROLLED';
-
-                $eci = null;
-
-                if (($network === Card\Network::VISA) or
-                    ($network === Card\Network::DICL))
-                    $eci = 6;
-
-                if (($network === Card\Network::MC) or
-                    ($network === Card\Network::MAES))
-                    $eci = 1;
-
-                $res['eci'] = $eci;
-            }
-
-            $resCommon = array(
-                'paymentid' => $this->getNewPaymentId(),
-                'trackid'   => $this->data['trackid'],
-                'PAReq'     => 'abcsafsf');
-
-            $res = array_merge($res, $resCommon);
+            $res = $this->getResponseParamsForEnroll();
         }
 
         $this->copyUdfValues($res);
@@ -145,13 +111,13 @@ class Server
     {
         $this->processInput('authEnrolled');
 
-        $paymentid = $this->data['paymentid'];
+        $txnId = $this->data['paymentid'];
 
-        $gatewayPayment = (new Hdfc\Repository)->findByGatewayPaymentId($paymentid);
+        $gatewayTransaction = (new Hdfc\Repository)->findByGatewayTransactionIdOrFail($txnId);
 
-        if ($gatewayPayment === null)
+        if ($gatewayTransaction === null)
         {
-            throw new Exception\LogicException($paymentid . ' not found');
+            throw new Exception\LogicException($txnId . ' not found');
         }
 
         $res = array(
@@ -160,11 +126,10 @@ class Server
             'ref'       => random_integer(12),
             'avr'       => 'N',
             'postdate'  => $this->getPostDateForToday(),
-            'paymentid' => $paymentid,
-            'tranid'    => $paymentid,
-            'trackid'   => $gatewayPayment['merchant_trackid'],
-            'amt'       => $gatewayPayment['amount']);
-
+            'paymentid' => $txnId,
+            'tranid'    => $txnId,
+            'trackid'   => $gatewayTransaction['payment_id'],
+            'amt'       => $gatewayTransaction['amount']);
 
 //        $this->copyUdfValues($res);
 
@@ -215,6 +180,55 @@ class Server
         return $res;
     }
 
+    protected function getResponseParamsForEnroll()
+    {
+        $cardNumber = $this->data['card'];
+
+        // @todo: move this to iin
+        $iin = substr($cardNumber, 0, 6);
+        $network = Card\Network::detectNetwork($cardNumber);
+        $type = $this->getCardType($cardNumber, $iin);
+
+        $iin = substr($cardNumber, 0, 6);
+
+        $network = Card\Network::detectNetwork($cardNumber);
+        $type = $this->getCardType($cardNumber, $iin);
+
+        $res = array();
+        if ($type === 'debit')
+        {
+            $res = $this->getResponseParamsForEnrollDebit();
+        }
+        else if (($type === 'credit') or
+                 ($type === ''))
+        {
+            $res['result'] = 'NOT ENROLLED';
+            $res['eci'] = $this->getEci($network);
+        }
+
+        $resCommon = array(
+            'paymentid' => $this->getNewPaymentId(),
+            'trackid'   => $this->data['trackid'],
+            'PAReq'     => 'abcsafsf');
+
+        $res = array_merge($res, $resCommon);
+
+        return $res;
+    }
+
+    protected function getResponseParamsForEnrollDebit()
+    {
+        $res['result'] = 'ENROLLED';
+
+        $request = \Request::getFacadeRoot();
+        $scheme = $request->getScheme().'://';
+        $host = $request->getHost();
+
+        $res['url'] = $scheme . $host . '/gateway/3dsecure';
+
+        return $res;
+    }
+
     protected function getCardType($cardNumber, $iin)
     {
         if (in_array($cardNumber, $this->debitCardNumbers))
@@ -227,6 +241,21 @@ class Server
             return '';
 
         return $cardDetails->getType();
+    }
+
+    protected function getEci($network)
+    {
+        $eci = null;
+
+        if (($network === Card\Network::VISA) or
+            ($network === Card\Network::DICL))
+            $eci = 6;
+
+        if (($network === Card\Network::MC) or
+            ($network === Card\Network::MAES))
+            $eci = 1;
+
+        return $eci;
     }
 
     protected function makeResponse($xml)
@@ -243,6 +272,37 @@ class Server
     {
         $this->processInput('supportPayment');
 
+        $exists = $this->checkGatewayTxnIdAndStatusExist('authorized');
+
+        if ($exists === false)
+        {
+            $res = $this->getTxnNotFoundError();
+        }
+        else
+        {
+            $res = $this->getDefaultPaymentSuccessArray();
+            $res['result'] = 'CAPTURED';
+
+            $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
+            $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
+        }
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $xml;
+    }
+
+    protected function refundPaymentOnGateway()
+    {
+        $this->processInput('supportPayment');
+
+        $exists = $this->checkGatewayTxnIdAndStatusExist('captured');
+
+        if ($exists === false)
+        {
+            $res = $this->getTxnNotFoundError();
+        }
+
         $res = $this->getDefaultPaymentSuccessArray();
         $res['result'] = 'CAPTURED';
 
@@ -254,19 +314,43 @@ class Server
         return $xml;
     }
 
-    protected function refundPaymentOnGateway()
+    protected function inquirePaymentOnGateway()
     {
-        $this->processInput('supportPayment');
+        $this->processInput('inquiry');
 
-        $res = $this->getDefaultPaymentSuccessArray();
-        $res['result'] = 'CAPTURED';
+        $gatewayTxnId = $this->data['transid'];
 
-        $res['udf2'] = (isset($this->data['udf2'])) ? $this->data['udf2'] : '';
-        $res['udf5'] = (isset($this->data['udf5'])) ? $this->data['udf5'] : '';
+        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus(
+            $gatewayTxnId, 'authorized');
+
+        if ($txn === null)
+        {
+            $res = $this->getTxnNotFoundError();
+        }
+
+        $res = array(
+            'result'    => 'APPROVED',
+            'auth'      => $txn['auth'],
+            'ref'       => $txn['ref'],
+            'avr'       => $txn['avr'],
+            'postdate'  => $txn['postdate'],
+            'tranid'    => $txn['gateway_transaction_id'],
+            'trackid'   => $txn['payment_id'],
+            'payid'     => '-1',
+            'amt'       => $txn['amount'] / 100);
 
         $xml = Hdfc\Utility::createXml($res);
 
         return $xml;
+    }
+
+    protected function checkGatewayTxnIdAndStatusExist($status)
+    {
+        $gatewayTxnId = $this->data['transid'];
+
+        $txn = (new Hdfc\Repository)->findByGatewayTransactionIdAndStatus($gatewayTxnId, $status);
+
+        return ($txn !== null);
     }
 
     public function setInput($input)
@@ -317,6 +401,15 @@ class Server
             'trackid'   => $this->data['trackid'],
             'payid'     => -1,
             'amt'       => $this->data['amt']);
+
+        return $res;
+    }
+
+    protected function getTxnNotFoundError()
+    {
+        $res['error_code_tag'] = 'GW00201';
+        $res['result'] = '!ERROR!-GW00201-Transaction not found';
+        $res['error_service_tag'] = '';
 
         return $res;
     }

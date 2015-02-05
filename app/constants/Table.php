@@ -13,8 +13,9 @@ class Table
     const PAYMENT           = 'payments';
     const MERCHANT          = 'merchants';
     const TERMINAL          = 'terminals';
+    const ADJUSTMENT        = 'adjustment';
     const SETTLEMENT        = 'settlements';
     const TRANSACTION       = 'transactions';
     const BANK_ACCOUNT      = 'bank_accounts';
-    const UNRECOGNIZED_CARD = 'unrecognized_cards';
+    const MERCHANT_BANKS    = 'merchant_banks';
 }

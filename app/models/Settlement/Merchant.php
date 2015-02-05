@@ -28,7 +28,7 @@ class Merchant
         $this->setlTransaction = $this->newSettlementTransaction();
     }
 
-    public function settle()
+    public function settle($txns)
     {
         // Create settlement entity
         $setl = $this->newSettlementEntity();
@@ -41,6 +41,8 @@ class Merchant
         // Saves to db
         $this->txnRepo->saveOrFail($this->setlTransaction);
         $this->setlRepo->saveOrFail($setl);
+
+        $this->txnRepo->updateSettlementId($txns, $setl->getId());
 
         // Get merchant bank account
         $this->fetchMerchantBankAccount();
@@ -58,6 +60,7 @@ class Merchant
             Transaction\Entity::CURRENCY    => 'INR',
             Transaction\Entity::GATEWAY_FEE => 0,
             Transaction\Entity::API_FEE     => 0,
+            Transaction\Entity::SETTLED     => 1,
             Transaction\Entity::SETTLED_AT  => time(),
             Transaction\Entity::FEE         => 0,
             Transaction\Entity::AMOUNT      => $this->amount,
@@ -77,6 +80,7 @@ class Merchant
 
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
+        $setl->setChannel(Channel::KOTAK);
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
@@ -86,22 +90,7 @@ class Merchant
 
     protected function updateBalances()
     {
-        $nodalBalance = $this->merchantRepo->getEscrowBalanceLockForUpdate();
-
-        $merchantBalance = $this->merchantRepo->getBalanceLockForUpdate(
-                                                    $this->merchant->getKey());
-
-        $merchantBalance->subAmount($this->setlTransaction->getDebit());
-        $nodalBalance->subAmount($this->setlTransaction->getDebit());
-
-        $this->merchantRepo->updateBalance($nodalBalance);
-        $this->merchantRepo->updateBalance($merchantBalance);
-
-        $attributes = array(
-            Transaction\Entity::BALANCE => $merchantBalance->getBalance(),
-            Transaction\Entity::ESCROW_BALANCE => $nodalBalance->getBalance());
-
-        $this->setlTransaction->fill($attributes);
+        return (new Transaction\Core)->updateBalances($this->setlTransaction);
     }
 
     protected function fetchMerchantBankAccount()

@@ -10,8 +10,12 @@ use Models\Base;
 use Models\Merchant;
 use Models\Transaction;
 
-class Settlement
+class NodalAccount
 {
+    use FileHandlerTrait;
+
+    protected static $fileToWriteName = 'Kotak_Settlement';
+
     public static $headings = array(
         'Client_Code',
         'Product_Code',
@@ -72,7 +76,8 @@ class Settlement
     public function generateSettlementFile($settlements, $txns)
     {
         $data = array();
-        array_push($data, static::$headings);
+
+        $txt = '';
 
         foreach ($settlements as $settlement)
         {
@@ -84,6 +89,7 @@ class Settlement
                 'Client_Code'           => 'NODAL',
                 'Product_Code'          => 'CMSPAY',
                 'Payment_Type'          => 'NEFT',
+                'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => '1209034',
                 'Amount'                => $settlement->getAmount() / 100,
@@ -91,8 +97,7 @@ class Settlement
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
                 'IFSC Code'             => $ba->getIfscCode(),
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
-                'Payment Details 1'     => $settlement->getPublicId(),
-                'Payment Details 2'     => $merchant->getPublicId()
+                'Payment Details 1'     => $merchant->getPublicId()
                 );
 
             $values = $this->getAllValues($array);
@@ -100,21 +105,9 @@ class Settlement
             array_push($data, $values);
         }
 
-        // @todo: Get correct format specifiers for time.
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y_H:i:s');
-        $filename =  'Kotak_Settlement_'.$time;
+        $txt = $this->generateText($data);
 
-        $excel = Excel::create($filename, function($excel) use ($data)
-        {
-            $excel->sheet('Nodal Settlement File', function($sheet) use ($data)
-                {
-                    $sheet->with($data, false, false);
-                });
-        });
-
-        $excel->store('xlsx', storage_path('files/settlement'), true);
-
-        return $filename;
+        return $this->writeToTextFile($txt);
     }
 
     protected function getEmptyArray()
@@ -135,5 +128,4 @@ class Settlement
 
         return array_values($dict);
     }
-
 }

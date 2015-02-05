@@ -38,6 +38,7 @@ class Gateway extends BaseGateway
     use Payment\Enroll;
     use Payment\Authorize;
     use Payment\Support;
+    use Payment\Inquiry;
 
     /**
      * App payment id
@@ -176,6 +177,22 @@ class Gateway extends BaseGateway
         'data' => array(),
         'error' => null);
 
+    protected $inquiryRequest = array(
+        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
+        'fields' => array('action', 'transid'),
+        'type' => 'inquiry',
+        'xml' => '',
+        'data' => array(),
+        'error' => null);
+
+    protected $inquiryResponse = array(
+        'type' => 'inquiry',
+        'fields' => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
+                    'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+        'data' => array(),
+        'xml' => '',
+        'error' => null);
+
     /**
      * The array is used to specify fields that are not to be logged by trace class
      * they are stripped by calling stripSensitive function of this class on the request/response object
@@ -283,17 +300,24 @@ class Gateway extends BaseGateway
 
         $this->id = $input['payment']['id'];
 
-        $this->model = $this->repo->findOrFail($input['MD']);
+        $this->model = $this->repo->findByGatewayTransactionIdOrFail($input['MD']);
 
-        $trackid = $this->model->getTrackid();
+        $paymentId = $this->model->getPaymentId();
 
-        if ($this->id !== $trackid)
+        if ($this->id !== $paymentId)
         {
             throw new Exception\LogicException(
-                'app payment '. $this->id . ' should be equal to track id . '. $trackid);
+                'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
         }
 
         $this->postAuthEnrolledRequest($input);
+    }
+
+    public function verify(array $input)
+    {
+        $data = $this->inquire($input);
+
+        return $data;
     }
 
     /**
@@ -305,9 +329,9 @@ class Gateway extends BaseGateway
             'Hdfc gateway does not support voids');
     }
 
-    public function getPaymentId($input)
+    public function getPaymentOrRefundId($input)
     {
-        return Hdfc\Mpr\Reconciler::getPaymentId($input);
+        return Hdfc\Mpr\Reconciler::getPaymentOrRefundId($input);
     }
 
     public function reconcile($input)
@@ -321,6 +345,16 @@ class Gateway extends BaseGateway
     public function generateMpr($input)
     {
         return (new Hdfc\Mpr\Generator)->generateMpr($input);
+    }
+
+    public function mprFileExists()
+    {
+        return (new Hdfc\Mpr\Generator)->mprFileExists();
+    }
+
+    public function deleteMprFileIfExists()
+    {
+        return (new Hdfc\Mpr\Generator)->deleteMprFileIfExists();
     }
 
 // ----------------------Gateway operations end --------------------------------
@@ -455,7 +489,7 @@ class Gateway extends BaseGateway
         $request['options'] = $this->getRequestOptions();
 
         $this->response = $this->sendGatewayRequest($request);
-//print_r($this->response);die();
+
         return $this->response;
     }
 

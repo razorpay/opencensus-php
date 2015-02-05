@@ -19,10 +19,6 @@ class TestCase extends ParentTestCase
 
     protected $ba;
 
-    protected $testDataFilePath;
-
-    protected $testData = array();
-
     /**
      * To denote whether to simulate unit tests with
      * environment being in cloud
@@ -41,12 +37,9 @@ class TestCase extends ParentTestCase
         $this->db->setUp();
 
         // Instantiate fixture class
-        $this->fixtures = new Fixtures\Fixtures;
+        $this->fixtures = Fixtures\Fixtures::getInstance();
 
         $this->fixtures->setUp();
-
-        // Load test data
-        $this->loadTestData();
 
         // Instantiate auth class
         $this->ba = new Authorization($this);
@@ -60,13 +53,5 @@ class TestCase extends ParentTestCase
         $this->db->tearDown();
 
         parent::tearDown();
-    }
-
-    protected function loadTestData()
-    {
-        if ($this->testDataFilePath !== null)
-        {
-            $this->testData = require($this->testDataFilePath);
-        }
     }
 }

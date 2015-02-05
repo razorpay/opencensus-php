@@ -10,7 +10,7 @@ class IntegrationException extends ServerErrorException
     public function __construct(
         $message = null,
         $data = null,
-        Exception $previous = null)
+        \Exception $previous = null)
     {
         $code = ErrorCode::SERVER_ERROR_INTEGRATION_ERROR;
 

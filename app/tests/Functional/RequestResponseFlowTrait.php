@@ -17,7 +17,7 @@ trait RequestResponseFlowTrait
         try
         {
             $response = $this->makeRequest($data['request']);
-            //s($response->getContent());
+            //sd($response->getContent());
         }
         catch (BaseException $e)
         {
@@ -41,18 +41,8 @@ trait RequestResponseFlowTrait
         return $this->processAndAssertResponseData($data, $response);
     }
 
-    protected function processJsonIfJsonp($data, & $content)
+    protected function processJsonp($content, $callback)
     {
-        if ((isset($data['jsonp']) === false) or
-            ($data['jsonp'] === false))
-        {
-            return;
-        }
-
-        $this->assertArrayHasKey('callback', $data['request']['content'], 'Please define callback param for jsonp');
-
-        $callback = $data['request']['content']['callback'];
-
         $start = '/**/'.$callback.'(';
         $end = ');';
 
@@ -108,7 +98,19 @@ trait RequestResponseFlowTrait
 
     protected function processAndAssertResponseData($data, $response)
     {
-        $actualContent = $this->getContentFromResponse($data, $response);
+        $callback = null;
+
+        if ((isset($data['jsonp']) === true) and
+            ($data['jsonp'] === true))
+        {
+            $this->assertArrayHasKey(
+                'callback',
+                $data['request']['content'], 'Please define callback param for jsonp');
+
+            $callback = $data['request']['content']['callback'];
+        }
+
+        $actualContent = $this->getJsonContentFromResponse($response, $callback);
 
         $expectedContent = $data['response']['content'];
 //s($actualContent);
@@ -120,15 +122,25 @@ trait RequestResponseFlowTrait
         return $actualContent;
     }
 
-    protected function getContentFromResponse($data, $response)
+    protected function getJsonContentFromResponse($response, $callback = null)
     {
         $content = $response->getContent();
 
-        $this->processJsonIfJsonp($data, $content);
+        if ($callback !== null)
+        {
+            $content = $this->processJsonp($content, $callback);
+        }
 
         $this->assertJson($content);
 
-        return json_decode($content, true);
+        $content = json_decode($content, true);
+
+        if ($callback !== null)
+        {
+            $this->assertArrayHasKey('http_status_code', $content);
+        }
+
+        return $content;
     }
 
     protected function processAndAssertStatusCode($data, $response)
@@ -152,7 +164,12 @@ trait RequestResponseFlowTrait
 
     protected function makeRequest($request)
     {
-        $server = $this->ba->getCreds();
+        $server = array();
+
+        if ($this->ba->isPublicAuth() === false)
+        {
+            $server = $this->ba->getCreds();
+        }
 
         // Adds '/v1' to beginning if not already there and
         // not an absolute url
@@ -162,28 +179,24 @@ trait RequestResponseFlowTrait
             $request['url'] = '/v1' . $request['url'];
         }
 
-        if (isset($request['content']) === false)
-        {
-            $request['content'] = array();
-        }
-        else
-        {
-            $this->convertContentToString($request['content']);
-        }
+        $defaults = array(
+            'method' => 'POST',
+            'content' => array(),
+            'server' => $server,
+            'files' => array());
 
-        if (isset($request['server']) === false)
-        {
-            $request['server'] = $server;
-        }
+        $request = array_merge($defaults, $request);
 
-        if (isset($request['files']) === false)
-        {
-            $request['files'] = array();
-        }
+        $this->convertContentToString($request['content']);
 
         if ($this->cloud)
         {
             $request['server']['REMOTE_ADDR'] = '10.0.123.123';
+        }
+
+        if ($this->ba->isPublicAuth())
+        {
+            $request['content']['key_id'] = $this->ba->getKey();
         }
 
         $response = $this->call(
@@ -193,14 +206,16 @@ trait RequestResponseFlowTrait
             $request['files'],
             $request['server']);
 
+        $this->response = $response;
+
         return $response;
     }
 
-    protected function makeRequestAndGetContent($request)
+    protected function makeRequestAndGetContent($request, $callback = null)
     {
-        $response = $this->makeRequest($request);
+        $response = $this->makeRequest($request, $callback);
 
-        return $this->getJsonContent($response);
+        return $this->getJsonContentFromResponse($response, $callback);
     }
 
     public function getJsonContent($response)

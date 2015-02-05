@@ -1,25 +1,20 @@
 <?php
 
-namespace Tests\Functional\HdfcGateway;
+namespace Tests\Functional\Settlement;
 
-use Carbon\Carbon;
-use Config;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Tests\Functional\TestCase;
-use Tests\Functional\Payment\PaymentAuthFlowTrait;
+use Tests\Functional\RequestResponseFlowTrait;
 
 class SettlementTest extends TestCase
 {
+    use RequestResponseFlowTrait;
+    use SettlementTrait;
+
     public function setUp()
     {
         parent::setUp();
 
         $this->ba->publicAuth();
-
-        //
-        // load test data
-        //
-        // $this->testData = include(__DIR__.'/helpers/MprTestData.php');
     }
 
     public function testDummy()
@@ -29,7 +24,72 @@ class SettlementTest extends TestCase
 
     public function testSettlement()
     {
-        ;
+        $pricing = $this->fixtures->create('pricing:standard_plan');
+
+        $merchants = $this->fixtures->times(3)->create('merchant:with_balance_terminals_standard_pricing');
+
+        $merchantPayments = [];
+
+        $i = 0;
+
+        foreach ($merchants as $merchant)
+        {
+            $payments = $this->fixtures->times(2)->create(
+                'payment:captured',
+                ['merchant_id' => $merchant->getId(),
+                 'amount' => '10000']);
+
+            foreach ($payments as $payment)
+            {
+                $txn = $payment->transaction;
+
+                $this->assertEquals(2248, $txn->fee);
+                $this->assertEquals(7752, $txn->credit);
+                $this->assertEquals(0, $txn->debit);
+            }
+
+            $this->assertEquals(15504, $merchant->balance->getBalance());
+
+            $merchantPayments[] = $payments;
+        }
+
+        $attrs = ['payment' => $merchantPayments[0][0]];
+
+        $refund = $this->fixtures->create('refund:from_payment', $attrs);
+
+        $this->assertEquals(10000, $refund->transaction->debit);
+
+        $this->assertEquals(5504, $merchants[0]->balance->reload()->getBalance());
+        $this->assertEquals(5504, $merchants[0]->balance->reload()->getBalance());
+    }
+
+    /**
+     * Tests the different settlement routes which are expecting to read
+     * a file. Even if there is no file to read, they should exit
+     * gracefully with no fuss!
+     */
+    public function testSetlRoutesReadingFileWithNoFile()
+    {
+        $this->deleteSetlFiles();
+
+        $urls = [
+            '/settlements/reconcile/generate',
+            '/settlements/reconcile',
+            '/settlements/return',
+        ];
+
+        $this->ba->appAuth();
+
+        // Verify by hitting each route that in case no file
+        // present, it returns without issues.
+        foreach ($urls as $url)
+        {
+            $request = ['url' => $url];
+
+            $response = $this->makeRequest($request);
+
+            $this->assertResponseStatus(200);
+        }
     }
 
     protected function startTest($testDataToReplace = array())

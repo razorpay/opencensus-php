@@ -166,6 +166,17 @@ class TraceFields
         TraceCode::GATEWAY_UNKNOWN_ERROR => array(
             'description'
         ),
+
+        TraceCode::MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK => array(
+            'network'
+        ),
+
+        TraceCode::DASHBOARD_INTEGRATION_ERROR => array(
+            'body',
+            'transaction',
+            'mode',
+        ),
+
     );
 
     /**
@@ -173,11 +184,12 @@ class TraceFields
      *
      * @param $eventCode event code
      */
-    public static function getFields($eventCode)
+    public static function getFields($traceCode)
     {
-        $fields = self::$fields[$eventCode];
+        if (isset(self::$fields[$traceCode]) === false)
+            return [];
 
-        return $fields;
+        return self::$fields[$traceCode];
     }
 
     public static function checkFields($code, $fields)

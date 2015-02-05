@@ -5,6 +5,7 @@ namespace Models\Transaction;
 use Models\Base;
 use Models\Payment;
 use Models\Transaction;
+use Models\Settlement;
 
 class Entity extends Base\PublicEntity
 {
@@ -25,6 +26,7 @@ class Entity extends Base\PublicEntity
     const RECONCILED_AT     = 'reconciled_at';
     const SETTLED           = 'settled';
     const SETTLED_AT        = 'settled_at';
+    const SETTLEMENT_ID     = 'settlement_id';
 
     protected $table = \Constants\Table::TRANSACTION;
 
@@ -80,6 +82,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo($class, self::ENTITY_ID);
     }
 
+    public function settlement()
+    {
+        return $this->belongsTo('Models\Settlement\Entity');
+    }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -87,12 +94,97 @@ class Entity extends Base\PublicEntity
 
     public function getCredit()
     {
-        return $this->getAttribute(self::CREDIT);
+        return (int) $this->getAttribute(self::CREDIT);
     }
 
     public function getDebit()
     {
-        return $this->getAttribute(self::DEBIT);
+        return (int) $this->getAttribute(self::DEBIT);
+    }
+
+    public function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function getNetAmount()
+    {
+        return $this->getCredit() - $this->getDebit();
+    }
+
+    public function getAmount()
+    {
+        return (int) $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getFeeAttribute()
+    {
+        return (int) $this->attributes[self::FEE];
+    }
+
+    public function getApiFeeAttribute()
+    {
+        return (int) $this->attributes[self::API_FEE];
+    }
+
+    public function getBalanceAttribute()
+    {
+        return (int) $this->attributes[self::BALANCE];
+    }
+
+    public function getSettledAttribute()
+    {
+        return (bool) $this->attributes[self::SETTLED];
+    }
+
+    public function getGateway()
+    {
+        if ($this->isTypePayment())
+        {
+            return $this->getRelation('entity')->getGateway();
+        }
+        else if ($this->getType() === Type::REFUND)
+        {
+            return $this->getRelation('entity')->payment->getGateway();
+        }
+    }
+
+    public function getChannel()
+    {
+        $type = $this->getType();
+
+        $channel = null;
+        $gateway = null;
+
+        $entity = $this->getRelation('entity');
+
+        switch ($type)
+        {
+            case Type::PAYMENT:
+                $gateway = $entity->getGateway();
+                break;
+            case Type::REFUND:
+                $gateway = $entity->payment->getGateway();
+                break;
+            case Type::SETTLEMENT:
+            case Type::ADJUSTMENT:
+                $channel = $entity->getChannel();
+                break;
+            default:
+                throw new Exception\LogicException('Invalid type: ' . $type);
+        }
+
+        if ($channel === null)
+        {
+            $channel = Payment\Gateway::getChannel($gateway);
+        }
+
+        return $channel;
     }
 
     public function setReconciledAt($timestamp)
@@ -111,5 +203,10 @@ class Entity extends Base\PublicEntity
     public function isReconciled()
     {
         return ($this->getAttribute(self::RECONCILED_AT) !== null);
+    }
+
+    public function isTypePayment()
+    {
+        return ($this->getType() === Type::PAYMENT);
     }
 }

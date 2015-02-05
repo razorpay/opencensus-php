@@ -25,7 +25,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         $attributes = array(
-            'trackid' => $id,
+            'payment_id' => $id,
             $responseType => $xml);
 
         $model = null;
@@ -39,7 +39,7 @@ class Repository extends Base\Repository
             case 'auth_enrolled':
             case 'auth_not_enrolled':
                 $responseFieldXml = $responseType;
-                $model = $repo::where('trackid','=',$id)->firstOrFail();
+                $model = $repo::where('payment_id','=',$id)->firstOrFail();
                 $model->$responseFieldXml = $xml;
                 $this->save($model);
                 break;
@@ -47,6 +47,9 @@ class Repository extends Base\Repository
             case 'refund':
             case 'capture':
                 $model = $this->createOrFail($attributes);
+                break;
+
+            case 'inquiry':
                 break;
 
             default:
@@ -71,13 +74,13 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'trackid' => $request['trackid'],
-            'gateway_payment_id' => $response['paymentid'],
-            'action' => $request['action'],
-            'amount' => $request['amt'],
-            'enroll_result' => $response['enroll_result'],
-            'status' => $status,
-            'eci' => $response['eci']);
+            'payment_id'            => $request['trackid'],
+            'gateway_transaction_id'=> $response['paymentid'],
+            'action'                => $request['action'],
+            'amount'                => $request['amt'],
+            'enroll_result'         => $response['enroll_result'],
+            'status'                => $status,
+            'eci'                   => $response['eci']);
 
         $repo = $this->repo;
 
@@ -87,13 +90,13 @@ class Repository extends Base\Repository
     public function persistAfterEnrollError($id, array $error, $requestdata)
     {
         $attributes = array(
-            'trackid' => $id,
-            'action' => Payment\Action::AUTHORIZE,
-            'amount' => $requestdata['amt'],
-            'error_code' => $error['code'],
-            'error_text' => $error['text'],
-            'enroll_result' => $error['enroll_result'],
-            'status' => Payment\Status::ENROLL_FAILED);
+            'payment_id'            => $id,
+            'action'                => Payment\Action::AUTHORIZE,
+            'amount'                => $requestdata['amt'],
+            'error_code'            => $error['code'],
+            'error_text'            => $error['text'],
+            'enroll_result'         => $error['enroll_result'],
+            'status'                => Payment\Status::ENROLL_FAILED);
 
         $repo = $this->repo;
 
@@ -103,30 +106,34 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolled($model, $data)
     {
         $attributes = array(
-            'status' => Payment\Status::AUTHORIZED,
-            'action' => Payment\Action::AUTHORIZE,
-            'amount' => $data['amt'],
-            'result' => $data['result'],
-            'ref' => $data['ref'],
-            'auth' => $data['auth'],
-            'avr' => $data['avr'],
-            'gateway_payment_id' => $data['tranid'],
-            'postdate' => $data['postdate']);
+            'payment_id'    => $data['trackid'],
+            'status'        => Payment\Status::AUTHORIZED,
+            'action'        => Payment\Action::AUTHORIZE,
+            'amount'        => $data['amt'],
+            'result'        => $data['result'],
+            'ref'           => $data['ref'],
+            'auth'          => $data['auth'],
+            'avr'           => $data['avr'],
+            'postdate'      => $data['postdate'],
+            'gateway_transaction_id' => $data['tranid']);
 
         $model->fill($attributes);
 
         $this->saveOrFail($model);
+
+        return $model;
     }
 
     public function persistAfterAuthEnrolled($model, $data)
     {
         $attributes = array(
-            'status'    => Payment\Status::AUTHORIZED,
-            'result'    => $data['result'],
-            'ref'       => $data['ref'],
-            'auth'      => $data['auth'],
-            'avr'       => $data['avr'],
-            'postdate'  => $data['postdate']);
+            'payment_id'    => $data['trackid'],
+            'status'        => Payment\Status::AUTHORIZED,
+            'result'        => $data['result'],
+            'ref'           => $data['ref'],
+            'auth'          => $data['auth'],
+            'avr'           => $data['avr'],
+            'postdate'      => $data['postdate']);
 
         $model->fill($attributes);
 
@@ -136,10 +143,10 @@ class Repository extends Base\Repository
     public function persistAfterAuthNotEnrolledError($model, $error)
     {
         $attributes = array(
-            'action' => Payment\Action::AUTHORIZE,
-            'status' => Payment\Status::AUTH_NOT_ENROLL_FAILED,
-            'error_code' => $error['code'],
-            'error_text' => $error['text']);
+            'action'        => Payment\Action::AUTHORIZE,
+            'status'        => Payment\Status::AUTH_NOT_ENROLL_FAILED,
+            'error_code'    => $error['code'],
+            'error_text'    => $error['text']);
 
         $model->fill($attributes);
 
@@ -149,17 +156,21 @@ class Repository extends Base\Repository
     public function persistAfterAuthEnrolledError($model, $error)
     {
         $attributes = array(
-            'action' => Payment\Action::AUTHORIZE,
-            'status' => Payment\Status::AUTH_ENROLL_FAILED,
-            'error_code' => $error['code'],
-            'error_text' => $error['text']);
+            'action'        => Payment\Action::AUTHORIZE,
+            'status'        => Payment\Status::AUTH_ENROLL_FAILED,
+            'error_code'    => $error['code'],
+            'error_text'    => $error['text']);
 
         $model->fill($attributes);
 
         $this->saveOrFail($model);
     }
 
-    public function persistAfterSupportPayment($requestData, $responseData)
+    public function persistAfterSupportPayment(
+        $requestData,
+        $responseData,
+        $paymentId,
+        $refundId = null)
     {
         $status = '';
         $action = $requestData['action'];
@@ -179,8 +190,9 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'trackid'                => $responseData['trackid'],
-            'gateway_payment_id' => $responseData['tranid'],
+            'payment_id'             => $paymentId,
+            'refund_id'              => $refundId,
+            'gateway_transaction_id' => $responseData['tranid'],
             'amount'                 => $responseData['amt'],
             'action'                 => $requestData['action'],
             'status'                 => $status,
@@ -193,7 +205,12 @@ class Repository extends Base\Repository
         return $this->createOrFail($attributes);
     }
 
-    public function persistAfterSupportPaymentError($id, $requestdata, array $error, $type)
+    public function persistAfterSupportPaymentError(
+        $requestdata,
+        array $error,
+        $type,
+        $paymentId,
+        $refundId = null)
     {
         $action = '';
         $status = '';
@@ -211,9 +228,10 @@ class Repository extends Base\Repository
         }
 
         $attributes = array(
-            'trackid'                   => $id,
-            'gateway_payment_id'    => $requestdata['transid'],
-            'amount'                    => $requestdata['amount'],
+            'payment_id'                => $paymentId,
+            'refund_id'                 => $refundId,
+            'gateway_transaction_id'    => $requestdata['transid'],
+            'amount'                    => $requestdata['amt'],
             'error_code'                => $error['code'],
             'error_text'                => $error['result'],
             'action'                    => $action,
@@ -226,22 +244,40 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where('trackid','=',$id)->firstOrFail();
+        return $repo::where('payment_id', '=', $id)->firstOrFail();
+    }
+
+    public function retrieveByPaymentIdAndStatus($id, $status)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('payment_id', '=', $id)
+                  ->where('status', '=', $status)
+                  ->firstOrFail();
     }
 
     public function retrieveMultiplePayments(array $ids)
     {
         $repo = $this->repo;
 
-        return $repo::whereIn('trackid', $ids)->get();
+        return $repo::whereIn('payment_id', $ids)->get();
     }
 
     public function retrieveCapturedPayments(array $ids)
     {
         $repo = $this->repo;
 
-        return $repo::whereIn('trackid', $ids)
+        return $repo::whereIn('payment_id', $ids)
                     ->where('status', '=', Payment\Status::CAPTURED)
+                    ->get();
+    }
+
+    public function retrieveRefunds(array $ids)
+    {
+        $repo = $this->repo;
+
+        return $repo::whereIn('refund_id', $ids)
+                    ->where('status', '=', Payment\Status::REFUNDED)
                     ->get();
     }
 
@@ -252,10 +288,27 @@ class Repository extends Base\Repository
         return $repo::whereBetween('created_at', $from, $to);
     }
 
-    public function findByGatewayPaymentId($id)
+    public function findByGatewayTransactionIdOrFail($gatewayTxnId)
     {
         $repo = $this->repo;
 
-        return $repo::where('gateway_payment_id', '=', $id)->first();
+        return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)->firstOrFail();
+    }
+
+    public function findByGatewayTransactionIdAndStatus($gatewayTxnId, $status)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('gateway_transaction_id', '=', $gatewayTxnId)
+                    ->where('status', '=', $status)
+                    ->first();
+    }
+
+    public function findByPaymentId($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('payment_id', '=', $id)
+                    ->get();
     }
 }

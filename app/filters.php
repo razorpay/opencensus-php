@@ -29,21 +29,6 @@ App::before(function()
     return BasicAuth::verifyHttps();
 });
 
-App::before(function()
-{
-    return BasicAuth::setCredentials();
-});
-
-App::before(function() use ($app)
-{
-    $mode = BasicAuth::getMode();
-
-    $app['rzp.mode'] = $mode;
-
-    Database\DefaultConnection::set($mode);
-
-});
-
 /*
 |--------------------------------------------------------------------------
 | Authentication Filters

@@ -16,6 +16,9 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PROCESSING_DECLINED =
         'Payment failed due to processing error on gateway';
 
+    const BAD_REQUEST_PAYMENT_FAILED =
+        'Payment failed';
+
     const BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED =
         'The payment has already been processed. Did you press the back button in browser?';
 
@@ -136,6 +139,9 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE =
         'Please do not provide your secret on public sided requests';
 
+    const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED =
+        'Please provide your Razorpay Api Key Id';
+
     const BAD_REQUEST_PRICING_ID_REQURED =
         'Pricing plan id is required';
 
@@ -186,11 +192,11 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND =
         'The merchant has not yet provided his bank account details';
 
+    const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED =
+        'The merchant already has provided a bank account';
+
     const BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED =
         'Currently only two terminals are allowed per merchant';
-
-    const BAD_REQUEST_GATEWAY_TERMINAL_ID_INPUT =
-        'For atom gateway, gateway_terminal_id should be blank. For hdfc gateway, it should have a proper value';
 
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS =
         'A record with same gateway merchant id (mid) exists';

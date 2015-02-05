@@ -5,6 +5,7 @@ namespace EE\Exception;
 use App;
 use Config;
 use Http\ApiResponse;
+use Trace;
 
 class Handler
 {
@@ -42,7 +43,8 @@ class Handler
         // When running in console, throw the exception, irrespective
         // of debug config
         //
-        if ($this->app->runningInConsole())
+        if (($this->app->runningInConsole()) and
+            ($this->app->environment('testing') === false))
         {
             return;
         }
@@ -55,7 +57,7 @@ class Handler
         if ($this->debug)
         {
             // ServerError is fatal error and shoudn't be encountered
-            // Let the higher-ups handle it. This function handle
+            // Let the higher-ups handle it. This function handles
             // known/expected exceptions
             if ($exception instanceof ServerErrorException)
                 return;
@@ -75,21 +77,42 @@ class Handler
             $data = $exception->getDataAsString();
         }
 
+        $traceData = $this->getExceptionDetails($exception);
+
+        $this->app['trace']->critical(
+           Trace\TraceCode::ERROR_EXCEPTION,
+           $traceData);
+    }
+
+    protected function getExceptionDetails(\Exception $exception)
+    {
+        $previousException = $exception->getPrevious();
+
+        $previous = ($previousException !== null) ? $this->getExceptionDetails($previousException) : null;
+
+        $data = null;
+
+        if (method_exists($exception, 'getData'))
+        {
+            $data = $exception->getData();
+        }
+
         //
         // @note: Always call function 'getTraceAsSring' to get stack trace
         //        since it doesn't include function arguments.
         //        Function arguments can contain sensitive data so should
         //        never be logged. Never call 'getTrace' directly.
         //
+        // @note: Don't remove this comment.
+        //
         $traceData = array(
             'class'     => get_class($exception),
             'code'      => $exception->getCode(),
             'message'   => $exception->getMessage(),
             'data'      => $data,
-            'stack'     => $exception->getTraceAsString());
+            'stack'     => $exception->getTraceAsString(),
+            'previous'  => $previous);
 
-        \Trace\Trace::getInstance()->critical(
-           \Trace\TraceCode::ERROR_EXCEPTION,
-           $traceData);
+        return $traceData;
     }
 }

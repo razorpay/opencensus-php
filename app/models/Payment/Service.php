@@ -26,18 +26,7 @@ class Service extends Base\Service
      */
     public function process(array $input)
     {
-        $data = $this->processor()->process($input);
-
-        //
-        // The returned value could be either Payment
-        // model or an array containing callback data.
-        // We convert payment model to array
-        // if it's a payment model
-        //
-        if ($data instanceof Payment\Entity)
-            $data = $data->toArrayPublic();
-
-        return $data;
+        return $this->processor()->process($input);
     }
 
     /**
@@ -54,9 +43,16 @@ class Service extends Base\Service
         return $refund->toArrayPublic();
     }
 
+    public function verify($id)
+    {
+        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+
+        $this->processor()->verify($id);
+    }
+
     public function retrieveRefund($id)
     {
-        $refund = $this->core->retrieveRefund($id, $this->merchant->getKey());
+        $refund = $this->core->retrieveRefundById($id, $this->merchant->getKey());
 
         return $refund->toArrayPublic();
     }
@@ -120,7 +116,7 @@ class Service extends Base\Service
     {
         $payment = $this->processor()->callback($id, $input);
 
-        return $payment->toArrayPublic();
+        return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
     public function retrieveMultiple(array $input)

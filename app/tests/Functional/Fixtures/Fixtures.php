@@ -10,23 +10,32 @@ use Models;
 
 class Fixtures
 {
-    protected static $entityMap = array(
-        'balance'       => 'Models\Merchant\Balance',
-        'bank_account'  => 'Models\Merchant\BankAccount',
-        'card'          => 'Models\Card\Entity',
-        'hdfc'          => 'Gateway\Hdfc\Entity',
-        'key'           => 'Models\Key\Entity',
-        'merchant'      => 'Models\Merchant\Entity',
-        'payment'       => 'Models\Payment\Entity',
-        'pricing'       => 'Models\Pricing\Entity',
-        'refund'        => 'Models\Payment\Refund\Entity',
-        'terminal'      => 'Models\Terminal\Entity',
-        'transaction'   => 'Models\Transaction\Entity'
-    );
+    protected static $instance = null;
+
+    public $links = [];
+
+    protected $times = 1;
+
+    public function __construct()
+    {
+        Entity\Base::$fixturesInstance = $this;
+
+        $this->base = new Entity\Base;
+    }
+
+    public static function getInstance()
+    {
+        if (self::$instance === null)
+        {
+            self::$instance = new static;
+        }
+
+        return self::$instance;
+    }
 
     public function times($times)
     {
-        Factory::times($times);
+        $this->times = $times;
 
         return $this;
     }
@@ -36,261 +45,29 @@ class Fixtures
      */
     public function setUp()
     {
-        $apiMerchant = $this->createEntity('merchant', ['id' => Merchant\Account::NODAL_ACCOUNT]);
-        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Merchant\Account::NODAL_ACCOUNT]);
+        $this->create('merchant:nodal_account');
+        $this->create('merchant:atom_account');
 
-        $apiMerchant = $this->createEntity('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
-        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
+        $apiMerchant = $this->create('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
+        $apiBalance = $this->base->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
 
-        $this->connection('test');
+        $this->base->connection('test');
 
-        $entities = array(
-            'pricing'   => $this->createDefaultPricingPlan(),
-            'merchant'  => $this->createEntity('merchant', ['id' => '10000000000000']),
-            'terminal'  => $this->createEntity('terminal', ['merchant_id' => '10000000000000']),
-            'balance'   => $this->createEntity('balance', ['id' => '10000000000000']),
-            );
+        $this->create('pricing:default_plan');
 
-        $this->testKey = $this->on('test')->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
-        $this->liveKey = $this->on('live')->createEntity('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
+        $entities = $this->create('merchant:default_test_merchant');
 
-        $this->ba = $this->on('live')->createEntity('bank_account', ['merchant_id' => '10000000000000']);
-
-        $entities['payment'] = $this->on('test')->createEntity(
-                                        'payment',
-                                        ['merchant_id' => '10000000000000',
-                                         'terminal_id' => $entities['terminal']->getKey()]);
+        $this->on('test')->create(
+                            'payment',
+                            ['merchant_id' => '10000000000000',
+                             'terminal_id' => '1n25f6uN5S1Z5a']);
 
         $this->entities = $entities;
-    }
-
-    public function createPaymentAuthorizedEntity(array $attributes = array())
-    {
-        $defaultValues = array(
-            'status' => 'authorized',
-            'terminal_id' => $this->entities['terminal']->getKey(),
-        );
-
-        $attributes = array_merge($defaultValues, $attributes);
-
-        $payment = $this->createEntity('payment', $attributes);
-
-        $hdfcPayment = $this->createHdfcPaymentAuthorizedEntity(
-            array(
-                'trackid' => $payment->getKey(),
-                'amount' => $payment->getAmount(),
-                'created_at' => $payment->created_at,
-                'updated_at' => $payment->created_at,
-            ));
-
-        return $payment;
-    }
-
-    public function createPaymentCapturedEntity(array $attributes = array())
-    {
-        $defaultValues = array(
-            'status' => 'authorized',
-            'terminal_id' => $this->entities['terminal']->getKey(),
-            'transaction_id' => null,
-            'captured_at' => time(),
-            'created_at' => time() - 10,
-            'updated_at' => time() - 5);
-
-        $attributes = array_merge($defaultValues, $attributes);
-
-        $payment = $this->build('payment', $attributes);
-
-        $hdfcAttrArray = array(
-            'trackid' => $payment->getKey(),
-            'amount' => $payment->getAmount(),
-            'created_at' => $payment->created_at,
-            'updated_at' => $payment->created_at);
-
-        $card = $this->createEntity('card');
-
-        $payment->card()->associate($card);
-
-        $payment->save();
-
-        $txn = (new Models\Transaction\Core)->createFromPayment($payment);
-        $txn->save();
-
-        $payment->setStatus('captured');
-        $payment->save();
-
-        $hdfcPaymentAuthorized = $this->createHdfcPaymentAuthorizedEntity(
-            $hdfcAttrArray);
-
-        $hdfcPaymentCaptured = $this->createHdfcPaymentCapturedEntity(
-            $hdfcAttrArray);
-
-        return $payment;
-    }
-
-    protected function createTransactionForPayment($payment)
-    {
-        ;
-    }
-
-    protected function createHdfcPaymentAuthorizedEntity(array $attributes = array())
-    {
-        $attributes['action'] = 4;
-        $attributes['status'] = 'authorized';
-        return $this->createEntity('hdfc', $attributes);
-    }
-
-    protected function createHdfcPaymentCapturedEntity(array $attributes = array())
-    {
-        $attributes['action'] = 5;
-        $attributes['status'] = 'captured';
-
-        return $this->createEntity('hdfc', $attributes);
-    }
-
-    public function createTerminalEntityForAtomGateway(array $attributes = array())
-    {
-        $attributes = array(
-            'merchant_id' => '10000000000000',
-            'gateway' => 'atom',
-            'gateway_merchant_id' => 'abcd',
-            'gateway_terminal_id' => 'abcde',
-            'gateway_terminal_password' => 'abcdef');
-
-        return $this->createEntity('terminal', $attributes);
-    }
-
-    public function createEntity($entity, $attributes = array())
-    {
-        if (($entity === 'merchant') or
-            ($entity === 'pricing'))
-        {
-            return $this->createEntityInTestAndLive($entity, $attributes);
-        }
-
-        return $this->save($entity, $attributes);
-    }
-
-    protected function createEntityInTestAndLive($entity, $attributes = array())
-    {
-        $this->eloquentUnguard();
-
-        $entity = self::$entityMap[$entity];
-
-        $entity = Factory::build($entity, $attributes);
-
-        $testEntity = clone $entity;
-        $liveEntity = clone $entity;
-
-        $testEntity->setConnection('test')->save();
-        $liveEntity->setConnection('live')->save();
-
-        $entity->exists = true;
-        $entity->setRawAttributes($liveEntity->getAttributes(), true);
-
-        return $entity;
-    }
-
-    protected function save($entity, $attributes)
-    {
-        $this->eloquentUnguard();
-
-        $entityClass = self::$entityMap[$entity];
-
-        $entity = Factory::create($entityClass, $attributes);
-
-        $this->eloquentReguard();
-
-//        $this->connection('test');
-
-        return $entity;
-    }
-
-    protected function build($entity, $attributes)
-    {
-        $this->eloquentUnguard();
-
-        $entity = self::$entityMap[$entity];
-
-        $entity = Factory::build($entity, $attributes);
-
-        $this->eloquentReguard();
-
-        return $entity;
-    }
-
-    public function createCard()
-    {
-        ;
     }
 
     public function generateUniqueId()
     {
         return \Models\Base\UniqueIdEntity::generateUniqueId();
-    }
-
-    public function createDefaultPricingPlan()
-    {
-        $pricingPlanId = '1hDYlICobzOCYt';
-
-        $rows = array(
-                    array(
-                        'id' => '1nvp2XPMmaRLxb',
-                        'plan_id' => '1hDYlICobzOCYt',
-                        'plan_name' => 'testDefaultPlan',
-                        'payment_method' => 'card',
-                        'payment_method_type' => null,
-                        'payment_network' => null,
-                        'payment_issuer' => null,
-                        'percent_rate' => '2000',
-                        'fixed_rate' => 0,
-                    ),
-                    array(
-                        'id' => '1OwH8rTI0ejFxS',
-                        'plan_id' => '1hDYlICobzOCYt',
-                        'plan_name' => 'testDefaultPlan',
-                        'payment_method' => 'card',
-                        'payment_method_type' => null,
-                        'payment_network' => 'AMEX',
-                        'payment_issuer' => null,
-                        'percent_rate' => 3000,
-                        'fixed_rate' => 0,
-                    ),
-                    array(
-                        'id' => '1fq0OXpgeyafQq',
-                        'plan_id' => '1hDYlICobzOCYt',
-                        'plan_name' => 'testDefaultPlan',
-                        'payment_method' => 'card',
-                        'payment_method_type' => null,
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => null,
-                        'percent_rate' => 3000,
-                        'fixed_rate' => 0,
-                    ),
-                    array(
-                        'id' => '1zD0BXpeOyaqpB',
-                        'plan_id' => '1hDYlICobzOCYt',
-                        'plan_name' => 'testDefaultPlan',
-                        'payment_method' => 'netbanking',
-                        'payment_method_type' => null,
-                        'payment_network' => null,
-                        'payment_issuer' => null,
-                        'percent_rate' => 0,
-                        'fixed_rate' => 2500,
-                    ),
-                );
-
-        $repo = new Models\Pricing\Repository;
-
-        foreach ($rows as $row)
-        {
-            $pricing = new Models\Pricing\Entity;
-            $pricing->fill($row);
-            $repo->saveOrFail($pricing);
-        }
-
-        $pricing = $repo->getPricingPlanByIdOrFailPublic($pricingPlanId);
-
-        return $pricing;
     }
 
     public function connection($mode = 'test')
@@ -307,13 +84,84 @@ class Fixtures
         return $this;
     }
 
-    protected function eloquentUnguard()
+    public function create($resource, array $attributes = array())
     {
-        Eloquent::unguard();
+        list($obj, $method, $arg1, $arg2) = $this->getEntityMethodAndArgs($resource, $attributes);
+
+        $times = $this->getTimes();
+        $this->times = 1;
+
+        $entities = [];
+
+        while ($times--)
+        {
+            $entities[] = $obj->$method($arg1, $arg2);
+        }
+
+        return count($entities) > 1 ? $entities : $entities[0];
     }
 
-    protected function eloquentReguard()
+    public function getTimes()
     {
-        Eloquent::reguard();
+        return $this->times;
+    }
+
+    protected function getEntityMethodAndArgs($resource, $attributes)
+    {
+        list($entity, $method) = $this->getEntityAndMethod($resource);
+
+        $obj = null;
+
+        $class = __NAMESPACE__.'\Entity\\'.ucfirst($entity);
+
+        $arg1 = $entity;
+        $arg2 = $attributes;
+        $obj = $this->base;
+
+        if (class_exists($class) and $method !== 'create')
+        {
+            if (isset($this->links[$entity]) === false)
+            {
+                $this->links[$entity] = new $class;
+            }
+
+            $obj = $this->links[$entity];
+
+            $arg1 = $attributes;
+            $arg2 = null;
+        }
+
+        return [$obj, $method, $arg1, $arg2];
+    }
+
+    protected function getEntityAndMethod($resource)
+    {
+        $pair = explode(':', $resource);
+
+        if (isset($pair[1]) === false)
+        {
+            $pair[1] = '';
+        }
+
+        $entity = $pair[0];
+        $method = $pair[1];
+
+        $obj = null;
+
+        $method = 'create'.studly_case(ucfirst($method));
+
+        return [$entity, $method];
+    }
+
+    public function __get($key)
+    {
+        if (isset($this->links[$key]))
+        {
+            return $this->links[$key];
+        }
+        else
+        {
+            throw new \Exception($key . ' not found');
+        }
     }
 }

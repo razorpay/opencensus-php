@@ -11,11 +11,46 @@ trait PaymentAuthFlowTrait
 {
     use PaymentCallbackTrait;
 
+    protected function doAuthAndGetPayment($paymentRequest, $paymentResponse = array())
+    {
+        $payment = $this->doJsonpAuthPayment($paymentRequest);
+
+        $id = $payment['razorpay_payment_id'];
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $func = $trace[1]['function'];
+
+        return $this->getAndMatchPayment($id, $paymentResponse);
+    }
+
+    protected function getAndMatchPayment($id, $paymentResponse = array())
+    {
+        $testData['request']['url'] = '/payments/'.$id;
+        $testData['request']['method'] = 'GET';
+
+        $defaults = array(
+            'id'                => $id,
+            'status'            => 'authorized',
+            'refund_status'     => null,
+            'amount_refunded'   => 0,
+            'error_code'        => null,
+            'error_description' => null,
+            'currency'          => 'INR',
+            'entity'            => 'payment');
+
+        $payment = array_merge($defaults, $paymentResponse);
+        $testData['response']['content'] = $payment;
+
+        $this->ba->privateAuth();
+        return $this->runRequestResponseFlow($testData);
+    }
+
     protected function createAuthorizedPaymentEntity()
     {
         $payment = $this->getDefaultPaymentEntityArray();
-        $payment = $this->fixtures->createEntity('payment', $payment);
+        $payment = $this->fixtures->create('payment', $payment);
         $payment = $payment->toArrayPublic();
+
         return $payment;
     }
 
@@ -23,16 +58,50 @@ trait PaymentAuthFlowTrait
     {
         $payment = $this->getDefaultPaymentEntityArray();
         $payment['status'] = 'captured';
-        $payment = $this->fixtures->createEntity('payment', $payment);
+        $payment = $this->fixtures->create('payment', $payment);
         $payment = $payment->toArrayPublic();
         return $payment;
     }
 
-    protected function defaultAuthPayment()
+    protected function defaultAuthPayment(array $payment = array())
     {
-        $payment = $this->getDefaultPaymentArray();
+        $defaultPayment = $this->getDefaultPaymentArray();
 
-        return $this->doAuthPayment($payment);
+        $payment = array_merge($defaultPayment, $payment);
+
+        $content = $this->doAuthPayment($payment);
+        $id = $content['razorpay_payment_id'];
+
+        return array_merge($payment, ['id' => $id]);
+    }
+
+    protected function doJsonpAuthPayment($payment)
+    {
+        $content = [
+            'callback' => 'abcdefghijkl',
+            '_' => '',
+        ];
+
+        $content = array_merge($content, $payment);
+
+        $request = array(
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => $content);
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request, $content['callback']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertLessThanOrEqual(2, count($content));
+        if (count($content) === 2)
+        {
+            $this->assertEquals(200, $content['http_status_code']);
+        }
+
+        return $content;
     }
 
     protected function doAuthPayment($payment)
@@ -44,16 +113,10 @@ trait PaymentAuthFlowTrait
 
         $this->ba->publicAuth();
 
-        $response = $this->makeRequest($request);
+        $content = $this->makeRequestAndGetContent($request);
 
-        $content = $response->getContent();
-
-        $content = json_decode($content, true);
-
-        $this->assertArrayHasKey('amount', $content);
-        $this->assertEquals($payment['amount'], $content['amount']);
-        $this->assertArrayHasKey('status', $content);
-        $this->assertEquals('authorized', $content['status']);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $this->assertEquals(1, count($content));
 
         return $content;
     }
@@ -94,7 +157,7 @@ trait PaymentAuthFlowTrait
             'content' => $content);
 
         $refund = $this->makeRequestAndGetContent($request);
-//s($refund);
+
         $this->assertEquals('refund', $refund['entity']);
 
         if ($amount !== null)
@@ -105,14 +168,20 @@ trait PaymentAuthFlowTrait
         return $refund;
     }
 
-    protected function runPaymentCallbackFlow($response)
+    protected function runPaymentCallbackFlow($response, &$callback = null)
     {
+        $tds = $this->is3dSecure($response, $callback);
+
         $content = $response->getContent();
 
-        if ((json_decode($content) === null) and
-            (get_class($response) === 'Illuminate\Http\Response') and
-            ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
-            ($response->getStatusCode() === 200))
+        if ($callback and $tds)
+        {
+            $content = $this->getJsonContentFromResponse($response, $callback);
+            $callback = null;
+            $content = $this->createHtmlFormAfterJsonpRequest($content);
+        }
+
+        if ($tds)
         {
             //
             // Card has 3d-secure enabled
@@ -125,6 +194,63 @@ trait PaymentAuthFlowTrait
         }
 
         return $response;
+    }
+
+    protected function is3dSecure($response, $callback = null)
+    {
+        $content = $response->getContent();
+
+        if ($callback === null)
+        {
+            $tds = ((json_decode($content) === null) and
+                    (get_class($response) === 'Illuminate\Http\Response') and
+                    ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
+                    ($response->getStatusCode() === 200));
+        }
+        else
+        {
+            $tds = ((json_decode($content) === null) and
+                    (get_class($response) === 'Illuminate\Http\JsonResponse') and
+                    ($response->headers->get('content-type') === 'text/javascript; charset=UTF-8') and
+                    ($response->getStatusCode() === 200));
+
+            if ($tds)
+            {
+                $content = $this->getJsonContentFromResponse($response, $callback);
+
+                $tds = ((isset($content['http_status_code'])) and
+                        ($content['http_status_code'] === 200) and
+                        (isset($content['data'])));
+            }
+        }
+
+        return $tds;
+    }
+
+    protected function createHtmlFormAfterJsonpRequest($content)
+    {
+        $data = $content['data'];
+
+        $text = '
+            <!doctype html>
+            <html lang="en">
+                <body>
+                <form name="form1" action="'.$data['url'].'" method="post">
+                    <input type="text" name="PaReq" value="'.$data['PAReq'].'">
+                    <br />
+                    <input type="text" name="MD" value="'.$data['paymentid'].'">
+                    <br />
+                    <input type="text" name="TermUrl" value="'.$content['callbackUrl'].'">
+                    <br />
+                    <input type="submit" value="Submit" >
+                </form>
+                <br>
+                Submit within 30 secs max!
+                </body>
+            </html>
+            ';
+
+        return $text;
     }
 
     protected function runDebitCardAuthFlow($content, $uri)
@@ -217,16 +343,11 @@ trait PaymentAuthFlowTrait
                 'expiry_month'      => '12',
                 'expiry_year'       => '2015',
                 'cvv'               => '566',
-                'address_line1'     => '21, Rameshwar',
-                'address_line2'     => 'jaipurwa',
-                'address_city'      => 'jaipur',
-                'address_state'     => 'Rajasathan',
-                'address_country'   => 'India',
-                'address_zip'       => '123345',
             ),
             'email'             => 'a@b.com',
             'contact'           => '9918899029',
-            'notes'               => array(),
+            'notes'             => array(
+                'merchant_order_id' => 'random order id'),
             'description'       => 'random description'
         ];
 
@@ -243,7 +364,7 @@ trait PaymentAuthFlowTrait
         $payment['refund_status'] = 'none';
         $payment['amount_authorized'] = $payment['amount'];
         $payment['amount_refunded'] = '0';
-        $payment['terminal_id'] = $this->fixtures->entities['terminal']->getKey();
+        $payment['terminal_id'] = '1n25f6uN5S1Z5a';
 
         return $payment;
     }

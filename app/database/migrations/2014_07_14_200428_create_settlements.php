@@ -8,7 +8,7 @@ use Models\Settlement\Entity as Settlement;
 use Models\Transaction;
 use Models\Merchant;
 
-class CreateSettlement extends Migration {
+class CreateSettlements extends Migration {
 
     /**
      * Run the migrations.
@@ -24,20 +24,28 @@ class CreateSettlement extends Migration {
             $table->char(Settlement::ID, Settlement::ID_LENGTH)
                   ->primary();
 
+            $table->char(Settlement::MERCHANT_ID, Settlement::ID_LENGTH);
+
             $table->integer(Settlement::AMOUNT)
                   ->unsigned();
 
             $table->string(Settlement::STATUS);
 
+            $table->char(Settlement::TRANSACTION_ID, Settlement::ID_LENGTH)
+                  ->nullable()
+                  ->unique();
+
+            $table->string(Settlement::CHANNEL);
+
             $table->string(Settlement::UTR)
-                  ->nullable();
+                  ->nullable()
+                  ->unique();
 
             $table->string(Settlement::FAILURE_REASON)
                   ->nullable();
 
-            $table->char(Settlement::MERCHANT_ID, Settlement::ID_LENGTH);
-
-            $table->char(Settlement::TRANSACTION_ID, Settlement::ID_LENGTH)
+            $table->string(Settlement::RETURN_UTR)
+                  ->nullable()
                   ->unique();
 
             // Adds created_at and updated_at columns to the table
@@ -54,6 +62,14 @@ class CreateSettlement extends Migration {
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::TRANSACTION, function($table)
+        {
+            $table->foreign(Transaction\Entity::SETTLEMENT_ID)
+                  ->references(Settlement::ID)
+                  ->on(Table::SETTLEMENT)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -63,6 +79,12 @@ class CreateSettlement extends Migration {
      */
     public function down()
     {
+        Schema::table(Table::TRANSACTION, function($table)
+        {
+            $table->dropForeign(
+                TABLE::TRANSACTION.'_'.Transaction\Entity::SETTLEMENT_ID.'_foreign');
+        });
+
         Schema::table(Table::SETTLEMENT, function($table)
         {
             $table->dropForeign(

@@ -1,22 +1,13 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors','1');
 
-$checkout = 'https://checkout.razorpay.com';
-$protocol = 'https';
-$hostname = 'api.razorpay.com';
-
-if (file_exists('config.php'))
-{
-    require('config.php');
-}
+require('vars.php');
 
 ?>
 <!DOCTYPE html>
 <html>
 <head lang="en">
     <meta charset="utf-8">
-    <link href="<?= $checkout ?>/v1/css/style.css" type="text/css" rel="stylesheet">
+    <link href="<?= $checkout ?>/v1/css/checkout.css" type="text/css" rel="stylesheet">
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="<?= $checkout ?>/v1/checkout.js" ></script>
@@ -47,7 +38,7 @@ if (file_exists('config.php'))
             },
             netbanking: true
         }
-        var rzp1 = new Checkout(options);
+        var rzp1 = new Razorpay(options);
 
         $('#rzp-button1').click(function(e) {
             rzp1.open();
@@ -66,7 +57,7 @@ if (file_exists('config.php'))
             }
         });
 
-        var rzp2 = new Checkout(options);
+        var rzp2 = new Razorpay(options);
 
         $('#rzp-button2').click(function(e){
             rzp2.open();

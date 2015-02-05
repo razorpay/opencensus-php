@@ -77,6 +77,13 @@ class PaymentController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function getVerify($id)
+    {
+        $data = $this->payment->verify($id);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Refund a payment.
      */

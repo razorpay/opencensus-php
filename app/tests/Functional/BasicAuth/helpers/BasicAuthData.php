@@ -6,13 +6,8 @@ use EE\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
-    'testAuthWithoutKeyOrPwd' => [
+    'testNoAuth' => [
         'request' => [
-            'content' => [
-                'id'    => '1X4hRFHFx4UiXt',
-                'name'  => 'Tester',
-                'email' => 'test@localhost.com'
-            ],
             'url' => '/merchants',
             'method' => 'POST'
         ],
@@ -20,11 +15,53 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED
                 ]
             ],
             'status_code' => 401
         ],
+    ],
+
+    'testNoAuthOnJsonpRoute' => [
+        'request' => [
+            'url' => '/payments/create/jsonp',
+            'method' => 'GET',
+            'content' => [
+                'callback' => 'abdefsdf',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED
+                ]
+            ],
+            'status_code' => 401
+        ],
+    ],
+
+    'testWrongKeyOnPublicJsonpRoute' => [
+        'request' => [
+            'url' => '/payments/create/jsonp',
+            'method' => 'GET',
+            'content' => [
+                'callback' => 'abdefsdf',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
+                ],
+                'http_status_code' => 401,
+            ],
+            'status_code' => 200
+        ],
+        'jsonp' => true
     ],
 
     'testAppRoutesWithPrivateAuth' => [
@@ -67,7 +104,24 @@ return [
         ],
     ],
 
-    'testPublicAuthOnPrivateRoute' => [
+    'testUnauthorizedOnJsonpRoute' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
+                ],
+                'http_status_code' => 401,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testNoSecretOnPrivateRoute' => [
         'request' => [
             'method' => 'GET',
             'url' => '/payments/1kKG3wHhnPdcg8',
@@ -86,7 +140,7 @@ return [
     'testPublicAuthWithWrongKeyId' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/payments/jsonp',
+            'url' => '/payments',
         ],
         'response' => [
             'content' => [
@@ -131,7 +185,7 @@ return [
         ],
     ],
 
-    'testPublicAuthOnAppRoute' => [
+    'testAppAuthWithNoSecret' => [
         'request' => [
             'method' => 'POST',
             'url' => '/merchants',

@@ -4,6 +4,7 @@ namespace Models\Terminal;
 
 use Crypt;
 use Models\Base;
+use Models\Payment;
 use Illuminate\Database\Eloquent\SoftDeletingTrait;
 
 class Entity extends Base\PublicEntity
@@ -18,11 +19,13 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TERMINAL_ID       = 'gateway_terminal_id';
     const GATEWAY_TERMINAL_PASSWORD = 'gateway_terminal_password';
 
+    const CARD                      = 'card';
     const DELETED_AT                = 'deleted_at';
 
     protected $fillable = array(
         self::MERCHANT_ID,
         self::GATEWAY,
+        self::CARD,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_TERMINAL_PASSWORD);
@@ -32,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::MERCHANT_ID,
         self::GATEWAY,
+        self::CARD,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_TERMINAL_ID,
         self::CREATED_AT,
@@ -49,6 +53,17 @@ class Entity extends Base\PublicEntity
     protected static $sign = '';
 
     protected static $delimiter = '';
+
+    protected static $generators = array(self::CARD);
+
+    public function generateCard($input)
+    {
+        if ((isset($input[self::CARD]) === false) and
+            ($input[self::GATEWAY] === Payment\Gateway::HDFC))
+        {
+            $this->setAttribute(self::CARD, 1);
+        }
+    }
 
     public function incrementUsedCount()
     {
@@ -104,5 +119,15 @@ class Entity extends Base\PublicEntity
         $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $this->getGatewayTerminalPasswordAttribute();
 
         return $terminal;
+    }
+
+    public function isCardEnabled()
+    {
+        return (((int)$this->getAttribute(self::CARD)) === 1);
+    }
+
+    public function isGateway($gateway)
+    {
+        return ($this->getAttribute(self::GATEWAY) === $gateway);
     }
 }

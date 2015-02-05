@@ -16,7 +16,7 @@ class IinsTableSeeder extends Seeder
         $columns = array(
             Card\Detail::IIN,
             Card\Detail::CATEGORY,
-            Card\Detail::BRAND,
+            Card\Detail::NETWORK,
             Card\Detail::TYPE,
             Card\Detail::COUNTRY,
             Card\Detail::ISSUER);

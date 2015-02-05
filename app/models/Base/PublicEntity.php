@@ -13,7 +13,7 @@ class PublicEntity extends UniqueIdEntity
 
     protected static $sign = '';
 
-    protected static $delimiter = '-';
+    protected static $delimiter = '_';
 
     /**
      * For an entity which is being exposed outside,
@@ -97,6 +97,8 @@ class PublicEntity extends UniqueIdEntity
         static::stripSignOrFail($id);
 
         UniqueIdEntity::verifyUniqueId($id, true);
+
+        return $id;
     }
 
     protected static function stripSignOrFail(& $id)

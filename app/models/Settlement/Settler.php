@@ -5,12 +5,12 @@ namespace Models\Settlement;
 use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Illuminate\Database\Eloquent\Collection;
 use Models\Base;
 use Models\Merchant;
 use Models\Settlement;
 use Models\Transaction;
 use Dashboard\Dashboard;
+use Trace\TraceCode;
 
 class Settler
 {
@@ -32,19 +32,39 @@ class Settler
     public function __construct()
     {
         $this->initRepos();
-
-        $this->queue = \Queue::getFacadeRoot();
-
-        $this->settlements = new Collection;
+        $this->trace = \Trace::getFacadeRoot();
     }
 
-    public function settle($input = array())
+    public function settle($input = array(), $channel = null)
+    {
+        $txns = $this->fetchTransactionsToSettle($input);
+
+        if ($channel === null)
+        {
+            $channels = Channel::getChannels();
+        }
+        else
+        {
+            $channels = [$channel];
+        }
+
+        foreach ($channels as $channel)
+        {
+            $settleForChannelVar = 'settleFor' . ucfirst($channel);
+
+            $data[$channel] = $this->$settleForChannelVar($txns);
+        }
+
+        return $data;
+    }
+
+    protected function settleForKotak($txns)
     {
         $this->setlRepo->beginTransaction();
 
         try
         {
-            list($settlements, $txns) = $this->process($input);
+            list($settlements, $txns) = $this->process($txns, Channel::KOTAK);
 
             $file = $this->createSettlementFile($settlements, $txns);
 
@@ -56,31 +76,78 @@ class Settler
         {
             $this->setlRepo->rollback();
 
-            (new Mpr\SlackNotification)->queueOperationFailure('settlements', $e);
-
-            throw $e;
+            $this->settlementFailure('kotak', $e);
         }
 
-        (new Mpr\SlackNotification)->queueOperationSuccess('settlements', $settlements->count());
+        $this->successNotification($settlements, 'kotak');
 
-        Dashboard::send('settlement', $settlements);
-
-        return $settlements;
+        return ['setlFile' => $file];
     }
 
-    protected function process($input)
+    protected function settleForAtom($input = array())
     {
-        $txns = $this->fetchTransactionsToSettle($input);
+        $this->setlRepo->beginTransaction();
 
-        $settlements = $this->createSettlements($txns);
+        try
+        {
+            list($settlements, $txns) = $this->process($txns, Channel::ATOM);
+
+            $this->setlRepo->commit();
+        }
+        catch (\Exception $e)
+        {
+            $this->setlRepo->rollback();
+
+            $this->settlementFailure('atom', $e);
+        }
+
+        $this->trace->info(TraceCode::SETTLEMENT_ATOM_INITIATED_RECONCILED);
+
+        $this->successNotification($settlements, 'atom');
+
+        return $file;
+    }
+
+    protected function settlementFailure($channel, $e)
+    {
+        $e = new SettlementFailureException($channel, null, $e);
+
+        $this->failureNotification($e);
+
+        $this->trace->critical(TraceCode::SETTLEMENT_INITIATE_FAILED);
+
+        throw $e;
+    }
+
+    protected function successNotification($settlements, $channel)
+    {
+        $data = array(
+            'channel' => $channel,
+            'setl_count' => $settlements->count());
+
+        (new SlackNotification)->queueOperationSuccess('setl_initiate', $data);
+
+        Dashboard::send('settlement', $settlements);
+    }
+
+    protected function failureNotification($exception)
+    {
+        (new SlackNotification)->queueOperationFailure('setl_initiate', $exception);
+    }
+
+    protected function process($txns, $channel)
+    {
+        $settlements = $this->createSettlements($txns, $channel);
 
         $this->txnRepo->settled($txns, self::$settlementTimestamp);
 
         return array($settlements, $txns);
     }
 
-    protected function createSettlements($txns)
+    protected function createSettlements($txns, $channel)
     {
+        $gateways = Channel::getGateways($channel);
+
         $settlements = new Base\PublicCollection;
 
         $i = 0;
@@ -90,6 +157,7 @@ class Settler
         {
             // Settlement amount
             $setlAmount = 0;
+            $setlTxns = new Base\PublicCollection;
 
             // Get merchant
             $merchantId = $txns[$i]->getMerchantId();
@@ -98,20 +166,36 @@ class Settler
             while (($i < $count) and
                    ($txns[$i]->getMerchantId() === $merchantId))
             {
-                $setlAmount += $txns[$i]->getCredit() - $txns[$i]->getDebit();
+                $txn = $txns[$i];
+
+                if ($this->shouldSettle($txn, $gateways) === false)
+                {
+                    $i++;
+                    continue;
+                }
+
+                $setlAmount += $txn->getCredit() - $txn->getDebit();
+                $setlTxns->push($txn);
                 $i++;
             }
 
-            $setl = (new Settlement\Merchant($merchant, $setlAmount))->settle();
+            $setl = (new Settlement\Merchant($merchant, $setlAmount))->settle($setlTxns);
             $settlements->push($setl);
         }
 
         return $settlements;
     }
 
+    protected function shouldSettle(Transaction\Entity $txn, $gateways)
+    {
+        return (in_array($txn->getGateway(), $gateways));
+    }
+
     protected function createSettlementFile($settlements, $txns)
     {
-        $filename = (new Kotak\Settlement)->generateSettlementFile($settlements, $txns);
+        $filename = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
+
+        $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
         return $filename;
     }
@@ -119,6 +203,7 @@ class Settler
     protected function transferFileToNodalBank($file)
     {
         ;
+        $this->trace->info(TraceCode::SETTLEMENT_KOTAK_FILE_TRANSFERRED);
     }
 
     protected function fetchTransactionsToSettle($input)
@@ -133,6 +218,19 @@ class Settler
         else
         {
             $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
+        }
+
+        foreach ($txns as $txn)
+        {
+            if ($txn->isTypePayment())
+            {
+                $payment = $txn->entity;
+
+            }
+            else if ($txn->getType() === Transaction\Type::REFUND)
+            {
+                $payment = $txn->entity->payment;
+            }
         }
 
         return $txns;

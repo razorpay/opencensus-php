@@ -4,7 +4,7 @@ namespace Gateway;
 
 use EE\Exception;
 use Requests;
-use Trace\Trace;
+use Trace;
 
 class BaseGateway
 {
@@ -20,7 +20,7 @@ class BaseGateway
 
     public function __construct()
     {
-        $this->trace = Trace::getInstance();
+        $this->trace = Trace::getFacadeRoot();
     }
 
     public function authorize(array $input)

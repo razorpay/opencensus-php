@@ -20,7 +20,7 @@ class TerminalTest extends TestCase
 
     public function testAssignTerminal()
     {
-        $merchant = $this->fixtures->createEntity('merchant');
+        $merchant = $this->fixtures->create('merchant');
 
         $url = '/merchants/'.$merchant->getKey().'/terminals';
         $this->testData[__FUNCTION__]['request']['url'] = $url;

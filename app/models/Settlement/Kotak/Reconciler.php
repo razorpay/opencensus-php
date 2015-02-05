@@ -2,14 +2,40 @@
 
 namespace Models\Settlement\Kotak;
 
+use Carbon\Carbon;
 use EE\Exception;
+use Models\Base;
 use Models\Merchant;
 use Models\Transaction;
+use Models\Settlement;
+use Models\Settlement\Kotak;
+use Models\Settlement\SlackNotification;
+use Trace;
+use Trace\TraceCode;
 
 class Reconciler
 {
+    use FileHandlerTrait;
+
+    protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
+
+    /**
+     * All payments in the current mpr
+     * will have the same reconciledAt timestamp
+     * @var int
+     */
+    protected $reconciledAt;
+
+    protected static $extraHeadings = array(
+        'Success',
+        'UTR',
+        'Failure Reason',
+        'Date');
+
     public function __construct()
     {
+        $this->reconciledAt = time();
+
         $this->merchantRepo = new Merchant\Repository;
         $this->setlRepo = new \Models\Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
@@ -17,73 +43,116 @@ class Reconciler
 
     public function process($input)
     {
-        $this->validateInput($input);
+        $reconcileFile = $this->getFileIfExists($input);
 
-        $data = $this->getData($input);
+        if ($reconcileFile === null)
+            return new Base\PublicCollection;
 
-        $this->reconcile($data);
+        $data = $this->parseTextFile($reconcileFile);
+
+        $data = $this->reconcile($data);
+
+        $this->moveFile($reconcileFile);
+
+        return $data;
     }
 
     protected function reconcile($data)
     {
-        foreach ($data as $row)
-        {
-            $setl = $this->loadSettlementAndRelations($row);
+        $collection = new Base\PublicCollection;
 
-            $this->processSettlementStatus($setl, $row);
+        $this->setlRepo->beginTransaction();
+
+        try
+        {
+            foreach ($data as $row)
+            {
+                $setl = $this->reconcileSetl($row);
+
+                $collection->push($setl);
+            }
+
+            $this->setlRepo->commit();
         }
+        catch (\Exception $e)
+        {
+            $this->setlRepo->rollback();
+
+            (new SlackNotification)->queueOperationFailure('setl_reconciliation', $e);
+
+            throw $e;
+        }
+
+        $slackData = [
+            'setl_count' => $setl->count()];
+
+        (new SlackNotification)->queueOperationSuccess('setl_reconciliation', $slackData);
+
+        return $collection;
+    }
+
+    protected function reconcileSetl($row)
+    {
+        $setl = $this->loadSettlementAndRelations($row);
+
+        $setl = $this->processSettlementStatus($setl, $row);
+
+        return $setl;
     }
 
     protected function processSettlementStatus($setl, $row)
     {
-        $status = $row[19];
+        $status = $row['Success'];
 
-        $utr = $row['utr'];
+        $utr = $row['UTR'];
         $utr = ($utr === '') ? null : $utr;
 
         $setl->setUtr($utr);
 
-        $failureReason = $row['failure'];
+        $failureReason = $row['Failure Reason'];
 
         if ($status === 'P')
         {
-            $setl->setStatus(Status::TRANSFERRED);
+            $setl->setStatus(Settlement\Status::TRANSFERRED);
+            $this->setlRepo->save($setl);
         }
         else
         {
-            $setl->setStatus(Status::FAILED);
-
             if ($failureReason !== '')
             {
-                $setl->setAttribute(Settlement\Entity::FAILURE_REASON, $failureReason);
+                $failureReason = 'Reconciliation: ' . $failureReason;
             }
+
+            (new Failure)->markFailed($setl, $reason);
 
             if (($status !== 'C') or
                 ($failureReason === ''))
             {
-                // Trace this
-                // @todo: Raise this issue with Kotak bank to get the actual reason
+                Trace::error(TraceCode::SETTLEMENT_KOTAK_FAILURE_DATA_MISSING);
             }
-
-            // @todo: handle failure case
         }
+
+        $setl->transaction->setReconciledAt($this->reconciledAt);
+        $this->txnRepo->save($setl->transaction);
+
+        return $setl;
     }
 
     protected function loadSettlementAndRelations($row)
     {
-        $merchantId = $row['Payment Details 3'];
+        $setlId = $row['Payment_Ref_No.'];
+        Settlement\Entity::verifyIdAndStripSign($setlId);
+        $setl = $this->setlRepo->findOrFail($setlId);
+
+        $merchantId = $row['Payment Details 1'];
         $merchant = $this->merchantRepo->findOrFail($merchantId);
 
-        $setlId = $row['Payment Details 1'];
-        Settlement\Entity::verifyIdAndStripSign($setlId);
-
-        if ($merchantId !== $setlId->getMerchantId())
+        if ($merchantId !== $setl->getMerchantId())
         {
             throw new Exception\LogicException(
                 'Merchant id must match. ' . $merchantId . ' ' . $setlId->getMerchantId());
         }
 
-        $setl = $this->setlRepo->findOrFail($setlId);
         $txn = $this->txnRepo->findOrFail($setl->getTransactionId());
 
         $setl->merchant()->associate($merchant);
@@ -92,46 +161,36 @@ class Reconciler
         return $setl;
     }
 
-    protected function validateInput($input)
+    protected function getSetlReconciliationFile($input)
     {
-        ;
-    }
+        // if (isset($input['setlReconciliationFile']))
+        // {
+        //     return $input['setlReconciliationFile']->;
+        // }
 
-    protected getData($input)
-    {
-        $raw = $this->getRawDataFromFile($input['file']);
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        $data = $this->extractTabularData($raw);
+        $path = storage_path('files/settlement');
 
-        return $data;
-    }
+        $name = 'Kotak_Settlement_Reconciliation';
 
-    protected function getRawDataFromFile($mprFile)
-    {
-        $filePath = $mprFile->getRealPath();
+        $fullpath = $path . '/' . $name.'_'.$time.'.txt';
 
-        $raw = Excel::load($filePath)
-                      ->noHeading()
-                      ->ignoreEmpty()
-                      ->formatDates(false)
-                      ->toArray();
-
-        return $raw;
-    }
-
-    protected function extractTabularData($raw)
-    {
-        $headings = Settlement::$headings;
-        $headings[] = 'Symbol';
-
-        $data = array();
-
-        foreach ($raw as &$row)
+        if (file_exists($fullpath) === false)
         {
-            $values = explode('~', $row);
-            $data[] = array_combine($headings, $values);
+            // @todo: trace here
+            return null;
         }
 
-        return $data;
+        return $fullpath;
+    }
+
+    protected static function getHeadings()
+    {
+        $headings = Kotak\NodalAccount::getHeadings();
+
+        $headings = array_merge($headings, static::$extraHeadings);
+
+        return $headings;
     }
 }

@@ -28,7 +28,7 @@ class NetBankingTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->createTerminalEntityForAtomGateway();
+        $this->fixtures->create('terminal:atom_terminal');
 
         $gateway = $this->app['config']->get('gateway');
         $this->mock = $gateway['mock_atom'];
@@ -46,19 +46,36 @@ class NetBankingTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->startTest();
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
     }
 
     public function testNetBankingPaymentCapture()
     {
-        $payment = $this->doNetBankingAuthorize();
+        $content = $this->doAtomPaymentAuthorize();
+
+        $id = $content['razorpay_payment_id'];
 
         $this->ba->privateAuth();
 
         $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payments/'.$payment['id'].'/capture';
+        $testData['request']['url'] = '/payments/'.$id.'/capture';
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testNetBankingPaymentRefund()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->fixtures->create('payment:netbanking_captured');
+        $id = $payment->getPublicId();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/'.$id.'/refund';
+
+        $refund = $this->runRequestResponseFlow($testData);
     }
 
     public function testNBPaymentFailureAtBank()
@@ -66,6 +83,34 @@ class NetBankingTest extends TestCase
         $this->ba->publicAuth();
 
         $this->startTest();
+    }
+
+    public function testCardPayment()
+    {
+        $this->markTestSkipped();
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $payment = &$this->payment;
+
+        unset($this->payment['bank']);
+        $cardData = [
+            'number' => '4111111111111111',
+            'cvv' => '500',
+            'expiry_month' => '05',
+            'expiry_year' => '20', 'name' => 'shk'];
+
+        $payment['card'] = $cardData;
+        $payment['method'] = 'card';
+
+        $content = $this->doAtomPaymentAuthorize();
+
+        $id = $content['razorpay_payment_id'];
+
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/'.$id.'/capture';
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testMockOnLiveMode()
@@ -76,7 +121,7 @@ class NetBankingTest extends TestCase
 
         $this->fixtures
             ->on('live')
-            ->createTerminalEntityForAtomGateway();
+            ->create('terminal:atom_terminal');
 
         $this->startTest();
     }
@@ -97,7 +142,7 @@ class NetBankingTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function doNetBankingAuthorize()
+    protected function doAtomPaymentAuthorize()
     {
         $request = array(
             'content' => $this->payment);
@@ -128,9 +173,11 @@ class NetBankingTest extends TestCase
 
         $mock = $this->mock;
 
+        $atomBaseUrl = 'http://203.114.240.183:80';
+
         if ($mock)
         {
-            $this->ba->appAuth();
+            $this->ba->publicAuth();
 
             // Extract the uri part after 'v1'.
             // This removes the basic auth user/pwd from absolute url
@@ -145,29 +192,14 @@ class NetBankingTest extends TestCase
             $request = array('method' => 'GET', 'url' => $uri);
             $response = $this->makeRequestParent($request);
             $statusCode = $response->getStatusCode();
-        }
-        else
-        {
-            $response = Requests::get($url);
-            $cookie = $response->cookies['JSESSIONID']->value;
-            $headers = array('Cookie' => 'JSESSIONID=' . $cookie);
-            $statusCode = $response->status_code;
-        }
 
-        $this->assertEquals('200', $statusCode, 'Request failed with status code: ' . $statusCode);
+            $this->assertEquals('200', $statusCode, 'Request failed with status code: ' . $statusCode);
 
-        $atomBaseUrl = 'http://203.114.240.183:80';
-
-        // Atom fetches bank list and then auto-submits the form.
-        // Completely unnecessary step! We skip it during testing
-        // $response = \Requests::post($atomBaseUrl . '/paynetz/banklist.action', $headers);
-
-        $content = array('bankID' => '2001');
-        if ($mock)
-        {
-            $crawler = new Crawler($response->getContent(), $url);
-            $form = $crawler->filter('form')->form();
-            list($url, $method, $values) = $this->getDataFromForm($form);
+            //
+            // Now, we are going to submit the data to bank
+            // Which in this case is Razorpay bank
+            //
+            list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), $url);
 
             // See above note.
             $ix = strpos($url, '/v1/');
@@ -183,27 +215,48 @@ class NetBankingTest extends TestCase
         }
         else
         {
-            $url = $atomBaseUrl . '/paynetz/redirect.action';
-            $response = Requests::post($url, $headers, $content);
-        }
+            // @note: The Requests library follows through the redirects which reduces steps for us.
 
-        if ($mock === false)
-        {
-            $crawler = new Crawler($response->body, $url);
-            $form = $crawler->filter('form')->form();
+            //
+            // Txn stage 1
+            // Submits to api. Which gives 302 redirect and gets redirected.
+            // Which gives a form with bank id and other weird fields
+            //
+            // Note that Requests library follows the redirect to banklist and fetches the form
+            // so we can skip that step.
+            //
+            list($url, $method, $values, $response) = $this->makeRequestAndGetFormData($url, 'GET');
 
-            list($url, $method, $values) = $this->getDataFromForm($form);
+            //
+            // Atom cookie. Provide it in every subsequent request
+            //
+            $cookie = $response->cookies['JSESSIONID']->value;
+            $headers = array('Cookie' => 'JSESSIONID=' . $cookie);
 
+            //
+            // Once we submit the bank id to url, it gets redirected to txnStage2 url,
+            // which has another form that we got to submit.
+            //
+
+            // This is submitted at the txnStage 2 url from data received from fetching bank list url
+            list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, $headers, $values);
+
+            // This is submitted at the .jsp url from data received from txnStage 2 url.
             $response = Requests::$method($url, $headers, $values);
             $content = $response->body;
         }
 
+        // Be careful of different quotes(',") or lack of it! Weird!
         $itc = getTextBetweenStrings($content, 'ITC = ', ';');
         $bid = getTextBetweenStrings($content, "BID = '", "';");
         $amt = getTextBetweenStrings($content, "amt = '", "';");
         $cc  = getTextBetweenStrings($content, 'clientCode = "', '";');
 
-        $status = 'S';
+        //
+        // Decide whether to make the transaction succeed or fail
+        //
+
+        $status = 'Ok';
 
         if ((isset($this->currentTestData['success'])) and
             ($this->currentTestData['success'] === false))
@@ -211,10 +264,13 @@ class NetBankingTest extends TestCase
             $status = 'F';
         }
 
-        $url = ($mock) ? '/gateway/mockatom/rzp_bank/submit' : $atomBaseUrl . '/paynetz/atom';
+        $url = ($mock) ? '/gateway/mockanb/rzp_bank/submit' : $atomBaseUrl . '/paynetz/atom';
         $url .= '?' . 'ITC='.$itc . '&BID='.$bid.'&clientCode='.$cc.'&amt='.$amt.'&Status='.$status;
 
         $values = array('success' => $status);
+
+        // Finally, we are on the bank page and now need to submit the bank
+        // page with the decision true or false as decided above.
 
         if ($mock)
         {
@@ -239,6 +295,14 @@ class NetBankingTest extends TestCase
 
         $crawler = new Crawler($content, 'http://ab.com');
         $form = $crawler->filter('form')->form();
+
+        //
+        // This is the final submission. Basically, atom returns a bunch of data
+        // like mmp_txn etc, which we now submit to the rzp return url
+        // provided earlier.
+        //
+        // The url to submit to is the action field of the form in this case
+        //
 
         $response = $this->submitPaymentCallbackForm($form);
 

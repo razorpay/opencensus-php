@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Models\Card;
 
+use Mockery;
 use Models\Card;
 use Tests\TestCase;
 
@@ -17,12 +18,6 @@ class ValidationTest extends TestCase
             'expiry_year' => '2017',
             'cvv' => '123',
             'name' => 'Abhay',
-            'address_line1' => 105,
-            'address_line2' => 105,
-            'address_city' => 104,
-            'address_state' => 200,
-            'address_country' => 'IN',
-            'address_zip' => '244713',
         ];
 
         $this->card = new Card\Entity();
@@ -65,4 +60,31 @@ class ValidationTest extends TestCase
         $this->assertInternalType('int', $card['expiry_month']);
         $this->assertEquals($card['expiry_month'], 1);
     }
+
+    public function testSupportedCardNetworks()
+    {
+        $this->markTestSkipped();
+        $supportedCards = array(
+            ['5546199799745013',        'MasterCard'],
+            ['5555 5555 5555 4444',     'MasterCard'],
+            ['42 4242 42 4242 4242',    'Visa'],
+            ['6240008631401148',        'Unknown']);
+
+        foreach ($supportedCards as $card)
+        {
+            $this->input['number'] = $card[0];
+            $cardData = (new Card\Core)->createAndReturnWithSensitiveData($this->input);
+
+            $cardRepo = Mockery::mock('Models\Card\Repository[retrieveIinDetails]');
+
+//            $this->app->instance($cardRepo, $dashboard);
+
+            $cardRepo->shouldReceive('retrieveIinDetails')
+                     ->andReturn(null);
+
+            $this->assertEquals($card[1], $cardData['network']);
+        }
+    }
+
+
 }

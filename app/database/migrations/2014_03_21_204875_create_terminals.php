@@ -38,6 +38,9 @@ class CreateTerminals extends Migration
 
             $table->string(Terminal::GATEWAY_TERMINAL_PASSWORD);
 
+            $table->boolean(Terminal::CARD)
+                  ->default(0);
+
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);

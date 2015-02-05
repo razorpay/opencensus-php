@@ -41,11 +41,11 @@ class SettlementController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function postSettlementInitiate()
+    public function postSettlementInitiate($channel = null)
     {
         $input = Input::all();
 
-        $data = (new Settlement\Service)->initiateSettlements($input);
+        $data = (new Settlement\Service)->initiateSettlements($input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -61,22 +61,51 @@ class SettlementController extends BaseController
     {
         $input = Input::all();
 
-        $settlements = (new Settlement\Service)->getSettlements($input);
+        $data = (new Settlement\Service)->getSettlements($input);
 
-        return ApiResponse::json($settlements);
+        return ApiResponse::json($data);
     }
 
     public function postSettlementReconcile()
     {
         $input = Input::all();
 
-        $settlements = (new Settlement\Service)->reconcileSettlements($input);
+        $data = (new Settlement\Service)->reconcileSettlements($input);
+
+        return ApiResponse::json($data);
     }
 
     public function postSettlementReturn()
     {
         $input = Input::all();
 
-        $settlements = (new Settlement\Service)->returnSettlements($input);
+        $data = (new Settlement\Service)->returnSettlements($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementReconcileGenerate()
+    {
+        $input = Input::all();
+
+        $data = (new Settlement\Service)->generateSettlementReconciliation($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementReturnGenerate()
+    {
+        $input = Input::all();
+
+        $data = (new Settlement\Service)->generateSettlementReturn($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteSettlementFile($setlFileType)
+    {
+        $data = (new Settlement\Service)->deleteSetlFile($setlFileType);
+
+        return ApiResponse::json($data);
     }
 }

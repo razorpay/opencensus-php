@@ -8,6 +8,8 @@ use Models\Key;
 class Account
 {
     const NODAL_ACCOUNT = '10NodalAccount';
+    const ATOM_ACCOUNT  = '100AtomAccount';
+
     const DEMO_ACCOUNT  = '100DemoAccount';
     const TEST_ACCOUNT  = '10000000000000';
 

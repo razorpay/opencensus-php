@@ -14,10 +14,10 @@ class BadRequestValidationFailureException extends RecoverableException
     {
         $message = $this->constructStringMessage($message);
 
-        $this->constructError($message, null);
-
         $code = ErrorCode::BAD_REQUEST_VALIDATION_FAILURE;
 
-        parent::__construct($message, $code);
+        $this->constructError($code, $message, $field);
+
+        // parent is being called in constructError only.
     }
 }

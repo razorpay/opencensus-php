@@ -16,3 +16,5 @@ Artisan::add(new CaptureAll);
 Artisan::add(new MprGenerate);
 Artisan::add(new MprReconcile);
 Artisan::add(new SettlementGenerate);
+Artisan::add(new Uid);
+Artisan::add(new AddDbData);

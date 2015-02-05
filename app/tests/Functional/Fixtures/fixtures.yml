@@ -7,6 +7,7 @@ Models\Terminal\Entity:
     id: $uniqueid
     merchant_id:
         type: Models\Merchant\Entity
+    card: 1
     gateway: hdfc
     gateway_merchant_id: $string
     gateway_terminal_id: $string
@@ -43,8 +44,8 @@ Models\Payment\Entity:
     id: $uniqueid
     merchant_id: 10000000000000
     method: card
-    card_id:
-        type: Models\Card\Entity
+    card_id: null
+    bank: null
     amount: 1000000
     amount_authorized: 100
     amount_refunded: 0
@@ -56,19 +57,17 @@ Models\Payment\Entity:
     gateway: hdfc
     email: $email
     captured_at: null
-    transaction_id:
-        type: Models\Transaction\Entity
+    transaction_id: null
 
 Models\Payment\Refund\Entity:
     id: $uniqueid
     payment_id:
         type: Models\Payment\Entity
-    merhcant_id:
+    merchant_id:
         type: Models\Merchant\Entity
     amount: 100
     currency: INR
-    transaction_id:
-        type: Models\Transaction\Entity
+    transaction_id: null
 
 Models\Pricing\Entity:
     id: $uniqueid
@@ -96,11 +95,36 @@ Models\Transaction\Entity:
     balance: $integer
     gateway_fee: null
 
+Models\Settlement\Entity:
+    id: $uniqueid
+    merchant_id:
+        type: Models\Merchant\Entity
+    amount: $integer
+    currency: INR
+    status: created
+    transaction_id:
+        type: Models\Transaction\Entity
+    channel: kotak
+    utr: $integer
+    failure_reason: null
+    return_utr: null
+
+Models\Adjustment\Entity:
+    id: $uniqueid
+    merchant_id:
+        type: Models\Merchant\Entity
+    amount: $integer
+    currency: INR
+    channel: kotak
+    description: $string
+    transaction_id:
+        type: Models\Transaction\Entity
+
 Gateway\Hdfc\Entity:
     id: $integer
-    trackid:
-        type: Models\Payment\Entity
-    gateway_payment_id: $hdfcPaymentId
+    payment_id: null
+    refund_id: null
+    gateway_transaction_id: $hdfcPaymentId
     action: 4
     amount: $integer
     enroll_result: 2
@@ -111,3 +135,21 @@ Gateway\Hdfc\Entity:
     ref: $hdfcRef
     avr: N
     postdate: $hdfcPostDate
+
+Gateway\Atom\Entity:
+    id: $integer
+    gateway_payment_id:
+        type: Models\Payment\Entity
+    token: $token
+    success: boolean
+    callback_data: null
+    bank_name: RZP
+    bank_transaction_id: $integer
+
+Models\Card\Detail:
+    iin: 411111
+    category: null
+    network: visa
+    type: credit
+    country: IN
+    issuer: SBI

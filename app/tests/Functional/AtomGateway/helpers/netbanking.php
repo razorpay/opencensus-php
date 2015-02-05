@@ -11,15 +11,44 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity' => 'payment',
-                'amount' => 5000,
-                'status' => 'authorized',
-                'refund_status' => null,
             ]
         ],
     ],
 
     'testNetBankingPaymentCapture' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [
+                'amount' => 5000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'amount' => 5000,
+                'status' => 'captured',
+                'refund_status' => null,
+            ]
+        ],
+    ],
+
+    'testNetBankingPaymentRefund' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [
+                'amount' => 5000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 5000,
+                'currency' => 'INR',
+            ]
+        ],
+    ],
+
+    'testCardPayment' => [
         'request' => [
             'method' => 'POST',
             'content' => [
@@ -43,14 +72,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         ],
         'success' => false,
     ],

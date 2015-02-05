@@ -16,10 +16,20 @@ class ApiResponse
      */
     public static function httpAuthExpected()
     {
+        self::$jsonp = false;
+
         $response = self::generateResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
         $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
+
+        return $response;
+    }
+
+    public static function provideApiKey()
+    {
+        $response = self::generateResponse(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED);
 
         return $response;
     }
@@ -108,11 +118,10 @@ class ApiResponse
     {
         $request = \Request::getFacadeRoot();
 
-        $jsonp = false;
+        $jsonp = null;
 
-        $routeName = \Route::currentRouteName();
-
-        if (self::isJsonpRequired($routeName))
+        if ((self::$jsonp === null) and
+            (self::isJsonpRequired($request->path())))
         {
             $data['http_status_code'] = $status;
 
@@ -132,11 +141,15 @@ class ApiResponse
 
         self::setSameOriginInHeaders($response);
 
+        // This statement is needed for keeping tests functional since
+        // we are using a static var here @todo: change this!
+        self::$jsonp = null;
+
         return $response;
     }
 
-    protected static function isJsonpRequired($routeName)
+    protected static function isJsonpRequired($path)
     {
-        return Route::isJsonpRoute($routeName);
+        return Route::isJsonpRoute($path);
     }
 }

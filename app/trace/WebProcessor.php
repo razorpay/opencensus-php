@@ -20,6 +20,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $this->request = App::make('request');
 
+        $this->context = App::make('config')->get('app.context');
+
         $serverData = $this->getServerData();
 
         parent::__construct($serverData);
@@ -35,7 +37,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
         {
             throw new Exception\LogicException('Server data for trace logs not present');
         }
-        $record['extra']['request'] = $this->serverData;
+
+        $record['request'] = $this->serverData;
 
         return $record;
     }
@@ -48,8 +51,9 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'method'    => $this->request->method(),
             'ajax'      => $this->request->ajax(),
             'origin'    => $this->request->header('origin'),
-            'client_ip' => $this->request->getClientIp(),
-            'server_ip' => $this->request->server('SERVER_ADDR'));
+            'client_ip' => $this->getClientIp(),
+            'server_ip' => $this->request->server('SERVER_ADDR'),
+            'context'   => $this->context);
 
         $this->unsetUrlForSensitiveUrls($serverData);
 
@@ -60,11 +64,27 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $sensitiveUrls = Route::getDoNotLogURLs();
 
-        if (in_array($serverData['url'], $sensitiveUrls))
+        if (in_array($serverData['uri'], $sensitiveUrls))
         {
             unset(
-                $server['uri'],
-                $server['url']);
+                $serverData['uri'],
+                $serverData['url']);
+
+            $serverData['uri'] = 'payments/create/jsonp';
         }
+    }
+
+    protected function getClientIp()
+    {
+        $request = $this->request;
+
+        $clientIp = $request->headers->get('X_FORWARDED_FOR');
+
+        if ($clientIp === null)
+        {
+            $clientIp = $request->getClientIp();
+        }
+
+        return $clientIp;
     }
 }

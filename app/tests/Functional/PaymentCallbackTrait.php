@@ -14,6 +14,38 @@ trait PaymentCallbackTrait
         makeRequest as makeRequestParent;
     }
 
+    protected function signPayment(array $payment, $secret = '')
+    {
+        $data = array(
+            'amount'            => $payment['amount'],
+            'currency'          => 'INR',
+            'merchant_order_id' => $payment['notes']['merchant_order_id']);
+
+        if ($secret === '')
+        {
+            $secret = $this->ba->getSecret();
+        }
+
+        $str = implode('|', $data);
+
+        return hash_hmac('sha1', $str, $secret);
+    }
+
+    protected function assertSignatureMatches(array $content, $secret)
+    {
+        $this->assertArrayHasKey('signature', $content);
+
+        $data = array(
+            'amount'                => $content['amount'],
+            'currency'              => $content['currency'],
+            'merchant_order_id'     => $content['merchant_order_id'],
+            'razorpay_payment_id'   => $content['razorpay_payment_id']);
+
+        $str = implode('|', $data);
+
+        return hash_hmac('sha1', $str, $secret);
+    }
+
     protected function getPaymentJsonFromCallback($content)
     {
         $start = 'var data = ';
@@ -59,12 +91,7 @@ trait PaymentCallbackTrait
         return $response;
     }
 
-    protected function extractAndSubmitForm($content)
-    {
-        ;
-    }
-
-    protected function makeRequest($request)
+    protected function makeRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);
 
@@ -72,7 +99,7 @@ trait PaymentCallbackTrait
 
         $response = $this->makeRequestParent($request);
 
-        $response = $this->runPaymentCallbackFlow($response);
+        $response = $this->runPaymentCallbackFlow($response, $callback);
 
         return $response;
     }
@@ -110,6 +137,24 @@ trait PaymentCallbackTrait
         $this->replaceValuesRecursively($data, $content);
 
         $content = $data;
+    }
+
+    protected function makeRequestAndGetFormData($url, $method, $headers = [], $data = [], $options = [])
+    {
+        $response = Requests::$method($url, $headers, $data, $options);
+
+        list ($uri, $method, $values) = $this->getFormDataFromResponse($response->body, $url);
+
+        return [$uri, $method, $values, $response];
+    }
+
+    protected function getFormDataFromResponse($content, $url)
+    {
+        $crawler = new Crawler($content, $url);
+
+        $form = $crawler->filter('form')->form();
+
+        return $this->getDataFromForm($form);
     }
 
     protected function getDataFromForm($form)

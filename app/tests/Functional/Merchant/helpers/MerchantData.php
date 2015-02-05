@@ -254,5 +254,63 @@ return [
                 'beneficiary_name' => 'Test beneficiary random name',
             ]
         ]
-    ]
+    ],
+
+    'testSetBanks' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/banks',
+            'method' => 'POST',
+            'content' => [
+                'banks' => [
+                    'HDFC',
+                    'ICIC',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'banks' => [
+                    'HDFC',
+                    'ICIC',
+                ]
+            ],
+        ]
+    ],
+
+    'testGetBanksByMerchantAuth' => [
+        'request' => [
+            'url' => '/banks',
+            'method' => 'GET',
+            'content' => [
+                'callback' => 'abcdef',
+                '_' => 'abcdef',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'HDFC' => 'HDFC Bank',
+                'ICIC' => 'ICICI Bank',
+            ],
+        ],
+        'jsonp' => true
+    ],
+
+    'testGetBanksByAppAuth' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/banks',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
+                ],
+                'disabled' => [
+                    'YESB' => 'Yes Bank',
+                    'VIJB' => 'Vijaya Bank',
+                ]
+            ],
+        ],
+    ],
 ];

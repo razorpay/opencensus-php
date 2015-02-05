@@ -4,6 +4,7 @@ namespace Models\Settlement\Mpr;
 
 use Excel;
 use EE\Exception;
+use Carbon\Carbon;
 
 class Parser
 {
@@ -62,18 +63,9 @@ class Parser
 
     public function parseMprFile($mprFile)
     {
-        $data = $this->getDataFromMprFile($mprFile);
-
-        return $this->parseMprFileDataIntoAssocArray($data);
-    }
-
-    protected function getDataFromMprFile($mprFile)
-    {
         $filePath = $mprFile->getRealPath();
 
         $data = Excel::load($filePath)
-                      ->noHeading()
-                      ->ignoreEmpty()
                       ->formatDates(false)
                       ->toArray();
 
@@ -89,53 +81,26 @@ class Parser
             $data = $data[0];
         }
 
+        $this->moveFile($mprFile);
+
         return $data;
     }
 
-    protected function parseMprFileDataIntoAssocArray($data)
+    protected function moveFile($file)
     {
-        $assocArray = array();
+        $filename = basename($file, '.txt');
 
-        $headings = array_shift($data);
+        $dir = storage_path('files/settlement/reconciled');
 
-        // Change headings to camelcase values
-        foreach($headings as &$attr)
+        if (file_exists($dir) === false)
         {
-            $attr = strtolower($attr);
-            $attr = str_replace(' ', '_', $attr);
-
-            // if (in_array($this->headings, $attr) === false)
-            // {
-            //     throw new Exception\LogicException(
-            //         'Hdfc mpr: heading mis-match. Value: ' . $attr);
-            // }
+            mkdir($dir, 0777);
         }
 
-        $headingCount = count($headings);
+        $time = Carbon::now('Asia/Kolkata')->format('H:i:s');
 
-        $txns = array();
+        $newName = $filename . '_' . $time . '.xlsx';
 
-        $r = range(1, $headingCount);
-
-        foreach ($data as $row)
-        {
-            foreach($r as $i)
-            {
-                // Some keys may have corresponding blank columns
-                // In such cases, excel does not provide a value for it.
-                // So, we manually set those keys to 'null'
-                if (isset($row[$i]) === false)
-                {
-                    $row = array_slice($row, 0, $i - 1, true) +
-                           array($i => null) +
-                           array_slice($row, $i - 1, null, true);
-                }
-            }
-
-
-            array_push($assocArray, array_combine($headings, $row));
-        }
-
-        return $assocArray;
+        $file->move($dir, $newName);
     }
 }

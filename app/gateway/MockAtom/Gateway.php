@@ -23,33 +23,41 @@ class Gateway extends Atom\Gateway
 
     public function authorize(array $input)
     {
+        // Call atom gateway authorize
         $data = parent::authorize($input);
 
+        // The key thing now is to replace redirectUrl from atom's to ours!
         $url = $data['redirectUrl'];
 
         $parts = parse_url($url);
 
         $newRedirectUrl = $this->getNetBankingAtomMockUrl($parts['query']);
 
+        // Put the new redirect url back in!
         $data['redirectUrl'] = $newRedirectUrl;
 
+        // Voila
         return $data;
     }
 
-    protected function getNetBankingAtomMockUrl($query)
+    protected function getNetBankingAtomMockUrl($queryStr)
     {
-        $mockGatewaysConfig = \Config::get('applications.mock_gateways');
-        $secret = $mockGatewaysConfig['secret'];
+        $key = \BasicAuth::getPublicKey();
 
-        $url = \Http\Route::getUrl('mockatom_choose_bank', $query, 'rzp_test', $secret);
+        $url = \Http\Route::getUrl('mockatom_choose_bank', array(), $key);
+
+        $url .= $queryStr;
 
         return $url;
     }
 
     protected function sendGatewayRequest($request)
     {
+        // Although we reset the url, it's not being used currently.
         $request['url'] = $this->makeMockRequestUrl($request['url']);
 
+        // When sending the first request to atom gateway,
+        // quietly redirect it to mock atom  gateway internally!
         $serverResponse = $this->callGatewayRequestFunctionInternally($request);
 
         return $this->prepareInternalResponse($serverResponse);

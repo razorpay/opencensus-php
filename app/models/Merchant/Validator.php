@@ -3,6 +3,8 @@
 namespace Models\Merchant;
 
 use Models\Base;
+use Models\Payment\Processor\NetBanking;
+use Illuminate\Support\MessageBag;
 
 class Validator extends Base\Validator
 {

@@ -55,6 +55,9 @@ class CreatePayments  extends Migration
             $table->char(Payment::CARD_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payment::BANK, 4)
+                  ->nullable();
+
             $table->string(Payment::ERROR_CODE, 20)
                   ->nullable();
 
@@ -78,9 +81,14 @@ class CreatePayments  extends Migration
 
             $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH);
 
+            $table->boolean(Payment::SIGNED)
+                  ->default(0);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
+
+            $table->index(Payment::STATUS);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
@@ -93,7 +101,7 @@ class CreatePayments  extends Migration
                   ->on_delete('restrict');
 
             $table->foreign(Payment::TRANSACTION_ID)
-                  ->references(Terminal\Entity::ID)
+                  ->references(Transaction\Entity::ID)
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
 

@@ -50,9 +50,21 @@ class Repository extends Base\Repository
         return $ba;
     }
 
-    public function getEscrowBalanceLockForUpdate()
+    public function getEscrowBalanceLockForUpdate($channel)
+    {
+        $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';
+
+        return $this->$func();
+    }
+
+    public function getKotakBalanceLockForUpdate()
     {
         return $this->getBalanceLockForUpdate(Merchant\Account::NODAL_ACCOUNT);
+    }
+
+    public function getAtomBalanceLockForUpdate()
+    {
+        return $this->getBalanceLockForUpdate(Merchant\Account::ATOM_ACCOUNT);
     }
 
     public function getPricingPlanOrFailPublic($merchant)

@@ -8,17 +8,17 @@ class Entity extends Base\Entity
 {
     protected $table = 'hdfc_mpr';
 
-    protected $primaryKey = 'payment_id';
+    protected $primaryKey = 'track_id';
 
     protected $fillable = array(
-        'payment_id',
-        'gateway_payment_id',
+        'track_id',
+        'gateway_transaction_id',
         'gateway_merchant_id',
         'gateway_terminal_id',
-        'card_network',
+        'card_trivia',
         'card_number',
         'card_type',
-        'capture_date',
+        'transaction_date',
         'settlement_date',
         'international_amount',
         'domestic_amount',
@@ -27,21 +27,16 @@ class Entity extends Base\Entity
         'gateway_fee',
         'service_tax',
         'education_cess',
-        'reconciliation_format',
+        'rec_format',
         'batch_number',
         'upvalue',
         'sequence_number',
         'approve_code',
     );
 
-    public function payment()
-    {
-        return $this->belongsTo('Models\Payment\Entity', 'trackid', 'id');
-    }
-
     public function getTrackId()
     {
-        return $this->getAttribute('trackid');
+        return $this->getAttribute('track_id');
     }
 
     public function getAmount()

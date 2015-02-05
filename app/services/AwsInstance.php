@@ -2,6 +2,9 @@
 
 namespace Services;
 
+use Trace;
+use Trace\TraceCode;
+
 class AwsInstance
 {
     protected $attributes = array(
@@ -12,85 +15,118 @@ class AwsInstance
         'local-ipv4',
         'public-ipv4');
 
-    protected $data = array();
-
-    protected $relevantData = array();
-
-    protected $generated = false;
+    protected $data = null;
 
     protected $cloud;
 
+    protected $instanceDataFile;
+
     public function __construct()
     {
-        $this->cloud = \Config::get('app.cloud');
+        $app = \App::getFacadeRoot();
 
-        $this->env = \App::environment();
+        $this->cloud = $app['config']->get('app.cloud');
+
+        $this->instanceDataFile = $app['config']->get('trace.instance_data_file');
+
+        $this->env = $app->environment();
     }
 
     public function getInstanceId()
     {
-        if ($this->cloud === false)
-            return null;
-
-        return $this->getFullInstanceData()['instance-id'];
+        return $this->getInstanceData()['instance-id'];
     }
 
     public function getInstanceData()
     {
-        if ($this->generated === true)
-        {
-            return $this->relevantData;
-        }
-
-        $data = $this->getFullInstanceData();
-
-        return $this->getRelevantInstanceData($data);
-    }
-
-    public function getFullInstanceData()
-    {
-        if ($this->generated === true)
+        if ($this->data !== null)
         {
             return $this->data;
         }
 
-        if (($this->cloud === true) and
-            ($this->env === 'testing'))
+        $data = $this->getInstanceDataFromStorage();
+
+        if ($data !== null)
         {
-            return $this->generateRandomInstanceData();
+            $this->data = $data;
+            return $this->data;
         }
 
+        if (($this->cloud === false) or
+            ($this->env !== 'production'))
+        {
+            $data = $this->generateRandomInstanceData();
+        }
+        else
+        {
+            $data = $this->getInstanceDataFromShell();
+        }
+
+        $this->saveInstanceDataToStorage($data);
+
+        $this->data = $data;
+
+        return $this->data;
+    }
+
+    protected function getInstanceDataFromShell()
+    {
         exec('ec2metadata 2> /dev/null', $data, $status);
 
-        if ($status === 0)
+        if ($status !== 0)
+        {
+            Trace::critical(TraceCode::AWS_INSTANCE_DATA_RECORD_FAILURE);
+
             return null;
+        }
+
+        $instanceData = [];
 
         foreach ($data as $row)
         {
             $pair = explode(': ', $row);
 
-            $this->data[$pair[0]] = $pair[1];
-        }
+            $key = $pair[0];
 
-        $this->generated = true;
-
-        return $this->data;
-    }
-
-    protected function getRelevantInstanceData($data)
-    {
-        if ($data === null)
-            return;
-
-        foreach ($this->attributes as $attribute)
-        {
-            if (array_key_exists($attribute, $data))
+            if ((in_array($key, $this->attributes)) and
+                (isset($pair[1])))
             {
-                $this->relevantData[$attribute] = $data[$attribute];
+                $instanceData[$key] = $pair[1];
             }
         }
 
-        return $this->relevantData;
+        return $instanceData;
+    }
+
+    protected function saveInstanceDataToStorage($data)
+    {
+        $jsonData = json_encode($data);
+
+        $res = file_put_contents($this->instanceDataFile, $jsonData);
+
+        if ($res === false)
+        {
+            Trace::error(TraceCode::AWS_INSTANCE_DATA_WRITE_FAILURE);
+        }
+    }
+
+    protected function getInstanceDataFromStorage()
+    {
+        if (file_exists($this->instanceDataFile) === false)
+        {
+            return;
+        }
+
+        $jsonData = file_get_contents($this->instanceDataFile);
+
+        if ($jsonData === false)
+        {
+            Trace::error(TraceCode::AWS_INSTANCE_DATA_READ_FAILURE);
+
+            return;
+        }
+
+        return json_decode($jsonData, true);
     }
 
     protected function generateRandomInstanceData()

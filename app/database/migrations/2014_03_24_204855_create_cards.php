@@ -38,37 +38,25 @@ class CreateCards extends Migration
 
             $table->string(Card::NETWORK);
 
-            $table->string(Card::TYPE, 7)
-                  ->nullable();
+            $table->string(Card::TYPE, 7);
 
             $table->string(Card::ISSUER, 100)
+                  ->nullable();
+
+            $table->boolean(Card::INTERNATIONAL)
+                  ->nullable();
+
+            $table->string(Card::TRIVIA)
                   ->nullable();
 
             $table->char(Card::COUNTRY, Card::COUNTRY_LENGTH)
                   ->nullable();
 
-            $table->string(Card::ADDRESS_LINE1)
-                  ->nullable();
-
-            $table->string(Card::ADDRESS_LINE2)
-                  ->nullable();
-
-            $table->string(Card::ADDRESS_CITY)
-                  ->nullable();
-
-            $table->string(Card::ADDRESS_STATE)
-                  ->nullable();
-
-            $table->integer(Card::ADDRESS_ZIP)
-                  ->unsigned()
-                  ->nullable();
-
-            $table->string(Card::ADDRESS_COUNTRY)
-                  ->nullable();
-
             // Adds created_at and updated_at columns to the table
             $table->integer(Card::CREATED_AT);
             $table->integer(Card::UPDATED_AT);
+
+            $table->index(Card::IIN);
         });
     }
 

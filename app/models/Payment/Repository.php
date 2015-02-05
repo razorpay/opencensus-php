@@ -32,17 +32,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function reloadAndLockForUpdate($payment)
-    {
-        $repo = $this->repo;
-
-        $reloadedEntity = $repo::lockForUpdate()->findOrFail($payment->getKey());
-
-        $attributes = $reloadedEntity->getAttributes();
-
-        $payment->setRawAttributes($attributes, true);
-    }
-
     public function lockForUpdate($id)
     {
         $repo = $this->repo;

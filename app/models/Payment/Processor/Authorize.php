@@ -13,37 +13,60 @@ trait Authorize
 {
     public function authorize($payment, $input)
     {
-        $cardData = $this->createCardEntity($input);
+        $gatewayInput = [];
+
+        if ($payment->isMethod(Payment\Method::CARD))
+        {
+            $cardData = $this->createCardEntity($input);
+
+            (new Card\Repository)->saveOrFail($payment->card);
+
+            $gatewayInput['card'] = $cardData;
+        }
+
+        $this->repo->saveOrFail($payment);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
-
-        $this->savePaymentAndCard();
 
         //
         // Call gateway with required info
         //
-        $paymentInfo = array(
-                    'payment' => $payment->toArray(),
-                    'card' => $cardData);
+        $gatewayInput['payment'] = $payment->toArray();
 
-        $callbackData = $this->callGatewayAuthorize($paymentInfo);
+        $gateway = $payment->getGateway();
 
-        if ($callbackData !== null)
+        if ($gateway === Payment\Gateway::ATOM)
         {
-            //
-            // This case means that card is enrolled.
-            // Now a form will be displayed and submitted
-            // to bank ACS for for customer to enter 3d-secure
-            // or OTP.
-            // The data field required for generating the
-            // form is returned by gateway.
-            // It's now returned further to wherever it
-            // will be used to display form.
-            //
+            $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
+        }
 
-            $callbackData['callbackUrl'] = $this->getCallbackUrl();
+        $data = $this->callGatewayAuthorize($gatewayInput);
 
-            return $callbackData;
+        if ($data !== null)
+        {
+            if ($gateway === Payment\Gateway::HDFC)
+            {
+                //
+                // This case means that card is enrolled.
+                // Now a form will be displayed and submitted
+                // to bank ACS for for customer to enter 3d-secure
+                // or OTP.
+                // The data field required for generating the
+                // form is returned by gateway.
+                // It's now returned further to wherever it
+                // will be used to display form.
+                //
+
+                $data['callbackUrl'] = $this->getCallbackUrl();
+            }
+
+            return $data;
+        }
+
+        // For atom gateway, authorization cannot happen in a single step
+        if ($payment->isGateway(Payment\Gateway::ATOM))
+        {
+            return $data;
         }
 
         $this->updatePaymentAuthorized();
@@ -139,7 +162,7 @@ trait Authorize
 
         $card = $cardCore->getCard();
 
-        if (Card\Network::isUnsupportedNetwork($card->getNetwork()))
+        if ($card->isUnsupported())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);

@@ -5,6 +5,7 @@ namespace Models\Merchant;
 use Models\Base;
 use Models\Merchant;
 use Models\Key;
+use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
 use EE\Exception;
@@ -16,6 +17,8 @@ class Service extends Base\Service
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->repo = new Merchant\Repository();
     }
 
@@ -36,6 +39,13 @@ class Service extends Base\Service
         $merchantBalance = Merchant\Balance::buildFromMerchant($merchant);
 
         $this->repo->updateBalance($merchantBalance);
+
+        if ($this->mode === 'test')
+        {
+            (new Terminal\Core)->createTerminalsInTestMode($merchant);
+        }
+
+        (new Banks\Core)->setAllPaymentBanks($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -242,6 +252,14 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
+        $ba = $this->repo->getBankAccount($merchant);
+
+        if ($ba !== null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
+        }
+
         $ba = (new Merchant\BankAccount)->build($input);
 
         $ba->merchant()->associate($merchant);
@@ -258,5 +276,31 @@ class Service extends Base\Service
         $ba = $this->repo->getBankAccount($merchant);
 
         return $ba->toArray();
+    }
+
+    public function getBanks($id)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $banks = (new Banks\Core)->getEnabledAndDisabledBanks($merchant);
+
+        return $banks;
+    }
+
+    public function getEnabledBanks()
+    {
+        $banks = (new Banks\Core)->getMerchantBanks($this->merchant);
+
+        if ($banks === null)
+            return [];
+
+        return $banks->toArrayWithBankNames();
+    }
+
+    public function setPaymentBanks($id, $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant($merchant, $input);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Models\Merchant;
 
-use Models\Base
+use Models\Base;
 use Models\Merchant;
 use Models\Pricing;
 

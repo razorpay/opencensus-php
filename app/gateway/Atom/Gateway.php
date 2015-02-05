@@ -12,8 +12,6 @@ use Gateway\Atom;
 
 class Gateway extends BaseGateway
 {
-    protected $url = 'http://203.114.240.183/paynetz/epi/fts';
-
     protected $paymentRequest = array(
         'type' => 'payment',
         'fields' => array('ttype', 'prodid', 'amt', 'txncurr', 'txnscamt',
@@ -43,12 +41,10 @@ class Gateway extends BaseGateway
     {
         parent::authorize($input);
 
-        $url = Urls::ATOM_TEST_URL;
-
         $request = $this->createTransactionRequestArray($input);
 
-        $response = array();
         // Send first request.
+        $response = [];
         $response = $this->runRequestResponseFlow($request, $response);
 
         $data = $this->processPaymentInitiationResponse($response, $input);
@@ -90,14 +86,42 @@ class Gateway extends BaseGateway
         $this->processPaymentResponse($input, $atom);
     }
 
+    public function refund(array $input)
+    {
+        parent::refund($input);
+    }
+
+    public function verify(array $input)
+    {
+        $createdAt = $input['payment']['created_at'];
+
+        $tdate = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata')->format('Y-m-d');
+
+        $fields = array(
+            'merchantid'    => $input['terminal']['gateway_merchant_id'],
+            'merchantxnid'  => $input['payment']['public_id'],
+            'tdate'         => $tdate,
+            'amt'           => $input['payment']['amount']);
+
+        $request['url'] = URL::VERIFY_URL;
+        $request['content'] = $fields;
+
+        $response = [];
+        $response = $this->runRequestResponseFlow($request, $response);
+    }
+
     protected function processPaymentInitiationResponse($response, $input)
     {
         // Convert xml body to array of fields
         $data = $this->xmlToArray($response['response']->body);
 
+        $method = $input['payment']['method'];
+
+        $ttype = Transaction::getType($method);
+
         // Fields returned from first request
         $fields = array(
-            'ttype'         => 'NBFundTransfer',
+            'ttype'         => $ttype,
             'tempTxnId'     => $data['tempTxnId'],
             'token'         => $data['token'],
             'txnStage'      => '1');
@@ -113,31 +137,45 @@ class Gateway extends BaseGateway
         // Check if the transaction succeded or failed.
         $atomFCode = (isset($input['f_code'])) ? $input['f_code'] : '';
 
-        $error = false;
         $exception = null;
 
         if ($atomFCode === 'Ok')
         {
             $atom->setSuccess(true);
         }
-        else if ($atomFCode === 'F')
-        {
-            $atom->setSuccess(false);
-            $error = true;
-            $exception = new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-        }
         else
         {
             $atom->setSuccess(false);
             $atom->saveOrFail();
-            $this->error = true;
-            throw new Exception\LogicException(
-                'Atom f_code returned in callback has unrecognized value. Atom f_code: ' . $atomFCode);
+
+            if ($atomFCode === 'F')
+            {
+                $exception = new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Atom f_code returned in callback has unrecognized value. Atom f_code: ' . $atomFCode);
+            }
         }
 
-        $atom->setBankTransactionId($input['bank_txn']);
-        $atom->setBankName($input['bank_name']);
+        $data = array(
+            'bank_payment_id'       => $input['bank_txn'],
+            'bank_name'             => $input['bank_name']);
+
+        if (isset($input['desc']))
+        {
+            $data['gateway_result_description'] = $input['desc'];
+        }
+
+        if (isset($input['discriminator']))
+        {
+            $data['method'] = $input['discriminator'];
+        }
+
+        $atom->fill($data);
+
         $atom->saveOrFail();
 
         if ($exception !== null)
@@ -152,7 +190,7 @@ class Gateway extends BaseGateway
         // params contain '%' sign which gets messed up by that function
         $queryStr = $this->buildGetQueryString($data);
 
-        $url = Urls::ATOM_TEST_URL.'?'.$queryStr;
+        $url = Urls::getDomain($this->mode).Urls::PAYMENT_URL.'?'.$queryStr;
 
         // This is the url to which the customer is redirected.
         // Here, on atom's provided url, the bank choice is auto-submitted
@@ -165,18 +203,32 @@ class Gateway extends BaseGateway
 
     protected function createAtomEntity($input, $data)
     {
+        $bankCode = null;
+
+        if (isset($this->request['content']['bankid']))
+        {
+            $bankCode = $this->request['content']['bankid'];
+        }
+
         $attributes = array(
-            'id' => $input['payment']['id'],
-            'token' => $data['token'],
+            'id'        => $input['payment']['id'],
+            'token'     => $data['token'],
+            'bank_code' => $bankCode,
             'gateway_payment_id' => $data['tempTxnId']);
 
         $atom = new Atom\Entity($attributes);
+
         $atom->saveOrFail();
     }
 
     public function postRequest($request)
     {
         $this->setTerminalInRequest($request);
+
+        $str = $this->buildGetQueryString($request['content']);
+        $request['url'] .= '?'.$str;
+        $request['content'] = [];
+        // echo $request['url'];die();
 
         $this->response = $this->sendGatewayRequest($request);
 
@@ -187,11 +239,14 @@ class Gateway extends BaseGateway
     {
         $time = date('d/m/Y h:m:s');
         // Replace space with '%20'
-        // $time = str_replace(' ', '%20', $time);
+        $time = str_replace(' ', '%20', $time);
 
-        $request['content'] = array(
-            'ttype'         =>  'NBFundTransfer',
-            'prodid'        =>  'NSE',
+        $method = $input['payment']['method'];
+
+        $ttype = Transaction::getType($method);
+
+        $content = array(
+            'ttype'         =>  $ttype,
             'amt'           =>  $input['payment']['amount'] / 100,
             'txncurr'       =>  'INR',
             'txnscamt'      =>  '0',
@@ -200,12 +255,45 @@ class Gateway extends BaseGateway
             'ru'            =>  $input['callbackUrl'],
             'date'          =>  $time,
             'custacc'       =>  '123456789012',
-            'bankid'        =>  '2001',
-            );
+        );
 
-        $request['url'] = Urls::ATOM_TEST_URL;
+        if ($method === 'netbanking')
+        {
+            $content['bankid'] = $this->getBankId($input);
+        }
+
+        if ($method === 'card')
+        {
+            $content['mdd'] = $this->getMddField($input);
+        }
+
+        $request['content'] = $content;
+        $request['url'] = Urls::PAYMENT_URL;
 
         return $request;
+    }
+
+    protected function getMddField($input)
+    {
+        $mdd = 'channelid=int';
+        $mdd .= '|carddata=' . Card::encryptCardData($input['card']);
+        $mdd .= '|cardhname=' . $input['card']['name'];
+
+        return $mdd;
+    }
+
+    protected function getBankId($input)
+    {
+        $ifsc = $input['payment']['bank'];
+
+        $atomBankCode = Bank::getAtomBankCode($ifsc);
+
+        if ($this->mode === 'test')
+        {
+            $atomBankCode = '2001';
+        }
+
+        return $atomBankCode;
     }
 
     /**
@@ -235,26 +323,36 @@ class Gateway extends BaseGateway
 
         $login = $terminal['gateway_merchant_id'];
         $pwd = $terminal['gateway_terminal_password'];
+        $productId = $terminal['gateway_terminal_id'];
 
         // For 'test' mode, replace any random terminal given with
         // atom test terminal
         if ($this->mode === 'test')
         {
-            list($login, $pwd) = $this->getCredentials();
+            list($login, $pwd, $productId) = $this->getCredentials();
         }
 
         $request['content']['login'] = $login;
         $request['content']['pass'] = $pwd;
-    }
+        $request['content']['prodid'] = $productId;
+   }
 
     protected function getCredentials()
     {
-        return array(Config::TEST_LOGIN, Config::TEST_PASSWORD);
+        return array(
+            Config::TEST_LOGIN,
+            Config::TEST_PASSWORD,
+            Config::TEST_PRODUCT_ID);
     }
 
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         $request['options']['timeout'] = 30;
+        $domain = ($this->mode === 'live') ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+        $request['url'] = $domain . $request['url'];
+
+        $this->request = $request;
+        $this->response = $response;
 
         try
         {
@@ -316,15 +414,6 @@ class Gateway extends BaseGateway
         $status_code = (int) $response['response']->status_code;
 
         return ($status_code === 200);
-    }
-
-    protected function writeLog($data)
-    {
-        $fileName = date('Y-m-d').'.txt';
-        $fp = fopen('log/'.$fileName, 'a+');
-        $data = date('Y-m-d H:i:s').' - '.$data;
-        fwrite($fp,$data);
-        fclose($fp);
     }
 
     protected function xmlToArray($data)

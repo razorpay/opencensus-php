@@ -22,7 +22,7 @@ trait Support
      */
     protected function supportPayment($input, $type)
     {
-        $this->getModel($input['payment']['id']);
+        $this->retrievePreviousGatewayTransaction($input, $type);
 
         //
         // Mark the type of support payment.
@@ -49,12 +49,33 @@ trait Support
             $this->validateSupportPaymentResponse();
         }
 
-        $this->persistAfterSupportPayment('refund');
+        $this->persistAfterSupportPayment($type, $input);
 
         if ($this->error)
         {
             $this->throwException($this->supportPaymentResponse['error']);
         }
+    }
+
+    protected function retrievePreviousGatewayTransaction($input, $type)
+    {
+        $status = null;
+
+        if ($type === 'capture')
+        {
+            $status = Status::AUTHORIZED;
+        }
+        else if ($type === 'refund')
+        {
+            $status = Status::CAPTURED;
+        }
+
+        $this->model = $this->repo->retrieveByPaymentIdAndStatus(
+            $input['payment']['id'], $status);
+
+        $this->id = $input['payment']['id'];
+
+        return $this->model;
     }
 
     protected function isSupportPaymentSuccess()
@@ -75,6 +96,7 @@ trait Support
         //
         switch ($result)
         {
+            // See Payment\Result for code details
             case Payment\Result::CAPTURED:
                 break;
 
@@ -131,7 +153,7 @@ trait Support
     {
         $payment = $input['payment'];
 
-        $card = $input['payment']['card'];
+        $card = $input['card'];
 
         $data = &$this->supportPaymentRequest['data'];
 
@@ -148,9 +170,16 @@ trait Support
 
         $data['member'] = $card['name'];
 
-        $data['transid'] = $this->model->gateway_payment_id;
+        $data['transid'] = $this->model->gateway_transaction_id;
 
-        $data['trackid'] = $this->id;
+        if ($type === 'refund')
+        {
+            $data['trackid'] = $input['refund']['id'];
+        }
+        else if ($type === 'capture')
+        {
+            $data['trackid'] = $input['payment']['id'];
+        }
     }
 
     protected function validateSupportPaymentResponse()
@@ -179,15 +208,25 @@ trait Support
         }
     }
 
-    protected function persistAfterSupportPayment($type = 'capture')
+    protected function persistAfterSupportPayment($type, $input)
     {
+        $paymentId = $input['payment']['id'];
+        $refundId = null;
+
+        if ($type === 'refund')
+        {
+            $refundId = $input['refund']['id'];
+        }
+
         if ($this->error)
         {
+
             $this->model = $this->repo->persistAfterSupportPaymentError(
-                                $this->id,
                                 $this->supportPaymentRequest['data'],
                                 $this->supportPaymentResponse['error'],
-                                $type);
+                                $type,
+                                $paymentId,
+                                $refundId);
 
             $this->trace(
                 Trace::ERROR,
@@ -198,7 +237,9 @@ trait Support
         {
             $this->model = $this->repo->persistAfterSupportPayment(
                     $this->supportPaymentRequest['data'],
-                    $this->supportPaymentResponse['data']);
+                    $this->supportPaymentResponse['data'],
+                    $paymentId,
+                    $refundId);
 
             $this->trace(
                 Trace::INFO,

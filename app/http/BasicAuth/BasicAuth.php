@@ -31,6 +31,13 @@ class BasicAuth
      */
 
     /**
+     * The application instance.
+     *
+     * @var \Illuminate\Foundation\Application
+     */
+    protected $app;
+
+    /**
      * Key and secret sent by client for
      * basic auth.
      * @var array
@@ -84,6 +91,13 @@ class BasicAuth
     private $proxy;
 
     /**
+     * Denotes whether authentication happens over query params.
+     * This is only allowed for public routes.
+     * @var boolean
+     */
+    private $viaQueryParams = false;
+
+    /**
      * Laravel request class instance
      * @var Request
      */
@@ -107,6 +121,7 @@ class BasicAuth
 
     public function init($app)
     {
+        $this->app = $app;
         $this->request = $app['request'];
         $this->internalAppConfigs = $app['config']->get('applications');
         $this->cloud = $app['config']->get('app.cloud');
@@ -155,14 +170,21 @@ class BasicAuth
 
     public function privateAuth()
     {
+        $this->setType(Type::PRIVATE_AUTH);
+
+        $res = $this->setCredentials();
+
+        if ($res !== null)
+        {
+            return $res;
+        }
+
         if ($this->verifyKeyExistence())
         {
             $response = $this->verifySecret();
 
             if ($response === true)
             {
-                $this->setType(Type::PRIVATE_AUTH);
-
                 return;
             }
 
@@ -170,8 +192,6 @@ class BasicAuth
         }
         else if ($this->verifyInternalAppAsProxy() === true)
         {
-            $this->setType(Type::PRIVATE_AUTH);
-
             return;
         }
 
@@ -184,30 +204,69 @@ class BasicAuth
      */
     public function publicAuth()
     {
-        if ($this->verifyKeyExistence() === false)
+        $this->setType(Type::PUBLIC_AUTH);
+
+        $key = $this->request->input('key_id');
+
+        if ($key === null)
+        {
+            $res = $this->setCredentials();
+
+            if ($res !== null)
+                return $res;
+        }
+        else
+        {
+            if (($key === null) or
+                ($key === ''))
+            {
+               return ApiResponse::provideApiKey();
+            }
+
+            $this->viaQueryParams = true;
+
+            $this->creds['secret'] = null;
+            $this->creds['public_key'] = $key;
+
+            $this->request->query->remove('key_id');
+            $this->request->request->remove('key_id');
+
+            if ($this->checkAndSetKeyId($key) !== null)
+            {
+                return $this->invalidApiKey();
+            }
+        }
+
+        if ($this->verifyKeyExistence() !== true)
         {
             return $this->invalidApiKey();
         }
 
-        if ($this->getSecret() !== '')
+        if (($this->getSecret() !== '') and
+            ($this->getSecret() !== null))
         {
             return ApiResponse::generateResponse(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
         $this->fetchMerchantOfKey($this->key);
-
-        $this->setType(Type::PUBLIC_AUTH);
     }
 
     public function appAuth()
     {
+        $this->setType(Type::APP_AUTH);
+
+        $res = $this->setCredentials();
+
+        if ($res !== null)
+        {
+            return $res;
+        }
+
         // Check key is blank and it's an internal app
         if (($this->isKeyBlank()) and
             ($this->verifyInternalApp()))
         {
-            $this->setType(Type::APP_AUTH);
-
             return;
         }
 
@@ -218,10 +277,21 @@ class BasicAuth
 
     public function proxyAuth()
     {
+        $this->setType(Type::APP_AUTH);
+
+        $this->proxy = true;
+
+        $res = $this->setCredentials();
+
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        // The internal app is authenticated as a merchant
+        // and allowed to do ops on merchant's behalf
         if ($this->verifyInternalAppAsProxy() === true)
         {
-            $this->setType(Type::APP_AUTH);
-
             return;
         }
 
@@ -276,6 +346,10 @@ class BasicAuth
         {
             return false;
         }
+
+        $this->app['rzp.mode'] = $mode;
+
+        \Database\DefaultConnection::set($mode);
 
         return true;
     }
@@ -526,7 +600,9 @@ class BasicAuth
         $mode = $this->getMode();
 
         if ($mode === 'test')
+        {
             return;
+        }
 
         if ($this->merchant->isActivated() === false)
         {
@@ -544,5 +620,11 @@ class BasicAuth
     protected function isKeyBlank()
     {
         return ($this->getKey() === '');
+    }
+
+    public function sign($str)
+    {
+        $secret = Crypt::decrypt($this->key->getSecret());
+        return hash_hmac('sha1', $str, $secret);
     }
 }

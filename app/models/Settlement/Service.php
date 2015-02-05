@@ -19,13 +19,11 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
-    public function initiateSettlements($input)
+    public function initiateSettlements($input, $channel = null)
     {
         $settler = new Settler();
 
-        $settlements = $settler->settle($input);
-
-        return $settlements->toArrayPublic();
+        return $settler->settle($input, $channel);
     }
 
     public function gatewayMprGenerate($input)
@@ -37,6 +35,8 @@ class Service extends Base\Service
 
     public function getSettlement($id)
     {
+        Settlement\Entity::verifyIdAndStripSign($id);
+
         $setl = (new Settlement\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
 
         return $setl->toArrayPublic();
@@ -51,13 +51,29 @@ class Service extends Base\Service
 
     public function reconcileSettlements($input)
     {
-        $data = (new Kotak\Reconciler)->process($input);
+        return (new Kotak\Service)->reconcileSettlements($input);
+    }
 
-        return $data;
+    public function generateSettlementReconciliation($input)
+    {
+        return (new Kotak\Service)->generateSettlementReconciliation($input);
     }
 
     public function returnSettlements($input)
     {
-        ;
+        return (new Kotak\Service)->returnSettlements($input);
+    }
+
+    public function generateSettlementReturn($input)
+    {
+        return (new Kotak\Service)->generateSettlementReturn($input);
+    }
+
+    public function deleteSetlFile($setlFileType)
+    {
+        if ($setlFileType === 'hdfc_mpr')
+            return Gateway::call(\Models\Payment\Gateway::HDFC, 'deleteMprFileIfExists', null, 'test');
+
+        return (new Kotak\Service)->deleteSetlFile($setlFileType);
     }
 }
