@@ -43,7 +43,9 @@ trait PaymentCallbackTrait
 
         $str = implode('|', $data);
 
-        return hash_hmac('sha1', $str, $secret);
+        $signature = hash_hmac('sha1', $str, $secret);
+
+        $this->assertEquals($signature, $content['signature']);
     }
 
     protected function getPaymentJsonFromCallback($content)
