@@ -62,7 +62,7 @@ class Core
                 }
             }
 
-            $type = Card\Type::getType($detail['type']);
+            $type = Card\Type::getType($details['type']);
 
             $arr = array(
                 Entity::TYPE    => $type,
