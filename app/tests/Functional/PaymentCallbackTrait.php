@@ -36,10 +36,10 @@ trait PaymentCallbackTrait
         $this->assertArrayHasKey('signature', $content);
 
         $data = array(
-            'amount' => $content['amount'],
-            'currency' => $content['currency'],
-            'merchant_order_id' => $content['merchant_order_id'],
-            'razorpay_payment_id' => $content['razorpay_payment_id']);
+            'amount'                => $content['amount'],
+            'currency'              => $content['currency'],
+            'merchant_order_id'     => $content['merchant_order_id'],
+            'razorpay_payment_id'   => $content['razorpay_payment_id']);
 
         $str = implode('|', $data);
 
@@ -137,6 +137,15 @@ trait PaymentCallbackTrait
         $this->replaceValuesRecursively($data, $content);
 
         $content = $data;
+    }
+
+    protected function makeRequestAndGetFormData($url, $method, $headers = [], $data = [], $options = [])
+    {
+        $response = Requests::$method($url, $headers, $data, $options);
+
+        list ($uri, $method, $values) = $this->getFormDataFromResponse($response->body, $url);
+
+        return [$uri, $method, $values, $response];
     }
 
     protected function getFormDataFromResponse($content, $url)

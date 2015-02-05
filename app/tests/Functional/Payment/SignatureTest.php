@@ -26,11 +26,30 @@ class SignatureTest extends TestCase
 
         $payment['signature'] = $this->signPayment($payment, 'TheKeySecretForTests');
 
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->replaceValuesRecursively($this->payment, $testData['request']['content']);
+
+        $testData['request']['content'] = $this->payment;
+
         $content = $this->startTest();
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
+        $this->assertSignatureMatches($content, 'TheKeySecretForTests');
 
+        return $content;
+    }
+
+    public function testPaymentStatusAfterSignedRequest()
+    {
+        $content = $this->testValidSignature();
+
+        $id = $content['razorpay_payment_id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$id.'/capture';
+
+        $this->startTest();
     }
 
     public function startTest()
@@ -39,10 +58,6 @@ class SignatureTest extends TestCase
         $func = $trace[1]['function'];
 
         $testData = $this->testData[$func];
-
-        $this->replaceValuesRecursively($this->payment, $testData['request']['content']);
-
-        $testData['request']['content'] = $this->payment;
 
         return $this->runRequestResponseFlow($testData);
     }

@@ -173,6 +173,8 @@ class NetBankingTest extends TestCase
 
         $mock = $this->mock;
 
+        $atomBaseUrl = 'http://203.114.240.183:80';
+
         if ($mock)
         {
             $this->ba->publicAuth();
@@ -190,33 +192,9 @@ class NetBankingTest extends TestCase
             $request = array('method' => 'GET', 'url' => $uri);
             $response = $this->makeRequestParent($request);
             $statusCode = $response->getStatusCode();
-        }
-        else
-        {
-            //
-            // Txn stage 1
-            //
-            $response = Requests::get($url);
 
-            //
-            // Atom cookie. Provide it in every subsequent request
-            //
-            $cookie = $response->cookies['JSESSIONID']->value;
-            $headers = array(
-                'Cookie' => 'JSESSIONID=' . $cookie,
-                'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.93 Safari/537.36');
+            $this->assertEquals('200', $statusCode, 'Request failed with status code: ' . $statusCode);
 
-            $statusCode = $response->status_code;
-        }
-
-        $this->assertEquals('200', $statusCode, 'Request failed with status code: ' . $statusCode);
-
-        $atomBaseUrl = 'http://203.114.240.183:80';
-
-        $content = array('bankID' => '2001');
-
-        if ($mock)
-        {
             //
             // Now, we are going to submit the data to bank
             // Which in this case is Razorpay bank
@@ -237,27 +215,33 @@ class NetBankingTest extends TestCase
         }
         else
         {
-            //
-            // Atom fetches bank list and then auto-submits the form.
-            //
-            $url = $atomBaseUrl.'/paynetz/banklist.action';
-
-            $response = Requests::get($url, $headers);
-            list($url, $method, $values) = $this->getFormDataFromResponse($response->body, $url);
+            // @note: The Requests library follows through the redirects which reduces steps for us.
 
             //
-            // Making follow_redirects false is important because we have to provide the cookie for
-            // the redirect. It was returning error otherwise
+            // Txn stage 1
+            // Submits to api. Which gives 302 redirect and gets redirected.
+            // Which gives a form with bank id and other weird fields
             //
-            $response = Requests::$method($url, $headers, $values, ['follow_redirects' => false]);
+            // Note that Requests library follows the redirect to banklist and fetches the form
+            // so we can skip that step.
+            //
+            list($url, $method, $values, $response) = $this->makeRequestAndGetFormData($url, 'GET');
 
-            $url = $response->headers['location'];
+            //
+            // Atom cookie. Provide it in every subsequent request
+            //
+            $cookie = $response->cookies['JSESSIONID']->value;
+            $headers = array('Cookie' => 'JSESSIONID=' . $cookie);
 
-            $response = Requests::get($url, $headers);
-            // Somehow, the response body is not being echoed by 's' function so don't try it! Weirds me out.
+            //
+            // Once we submit the bank id to url, it gets redirected to txnStage2 url,
+            // which has another form that we got to submit.
+            //
 
-            list($url, $method, $values) = $this->getFormDataFromResponse($response->body, $response->url);
+            // This is submitted at the txnStage 2 url from data received from fetching bank list url
+            list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, $headers, $values);
 
+            // This is submitted at the .jsp url from data received from txnStage 2 url.
             $response = Requests::$method($url, $headers, $values);
             $content = $response->body;
         }
