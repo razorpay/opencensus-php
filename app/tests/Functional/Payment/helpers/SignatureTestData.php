@@ -36,4 +36,22 @@ return [
             ],
         ],
     ],
+
+    'testCaptureAfterSignedRequest' => [
+        'request' => [
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED
+        ],
+    ],
 ];
