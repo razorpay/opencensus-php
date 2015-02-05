@@ -116,6 +116,11 @@ trait Authorize
 
         $this->updatePaymentAuthorized();
 
+        if ($payment->isSigned())
+        {
+            return $this->captureSignedPayment($payment);
+        }
+
         return $payment;
     }
 
