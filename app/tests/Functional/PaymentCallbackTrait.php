@@ -139,6 +139,15 @@ trait PaymentCallbackTrait
         $content = $data;
     }
 
+    protected function getFormDataFromResponse($content, $url)
+    {
+        $crawler = new Crawler($content, $url);
+
+        $form = $crawler->filter('form')->form();
+
+        return $this->getDataFromForm($form);
+    }
+
     protected function getDataFromForm($form)
     {
         $uri = $form->getUri();

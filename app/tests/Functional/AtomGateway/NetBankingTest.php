@@ -202,7 +202,9 @@ class NetBankingTest extends TestCase
             // Atom cookie. Provide it in every subsequent request
             //
             $cookie = $response->cookies['JSESSIONID']->value;
-            $headers = array('Cookie' => 'JSESSIONID=' . $cookie);
+            $headers = array(
+                'Cookie' => 'JSESSIONID=' . $cookie,
+                'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.93 Safari/537.36');
 
             $statusCode = $response->status_code;
         }
@@ -219,9 +221,7 @@ class NetBankingTest extends TestCase
             // Now, we are going to submit the data to bank
             // Which in this case is Razorpay bank
             //
-            $crawler = new Crawler($response->getContent(), $url);
-            $form = $crawler->filter('form')->form();
-            list($url, $method, $values) = $this->getDataFromForm($form);
+            list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), $url);
 
             // See above note.
             $ix = strpos($url, '/v1/');
@@ -237,49 +237,32 @@ class NetBankingTest extends TestCase
         }
         else
         {
+            //
             // Atom fetches bank list and then auto-submits the form.
-            // Completely unnecessary step! We skip it during testing
-            $response = Requests::get($atomBaseUrl . '/paynetz/banklist.action', $headers);
+            //
+            $url = $atomBaseUrl.'/paynetz/banklist.action';
 
-            $crawler = new Crawler($response->body, $atomBaseUrl.'/paynetz/banklist.action');
-            $form = $crawler->filter('form')->form();
-            list($url, $method, $values) = $this->getDataFromForm($form);
+            $response = Requests::get($url, $headers);
+            list($url, $method, $values) = $this->getFormDataFromResponse($response->body, $url);
 
             //
             // Making follow_redirects false is important because we have to provide the cookie for
             // the redirect. It was returning error otherwise
             //
-            $response = Requests::post($url, $headers, $values, ['follow_redirects' => false]);
-
-            $headers2 = array(
-                // 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                // 'Accept-Language' => 'en-US,en;q=0.8,en-GB;q=0.6,hi;q=0.4',
-                // 'Cache-Control' => 'max-age=0',
-                // 'Connection' => 'keep-alive',
-                'Cookie' => $headers['Cookie'],
-                'Host' => '203.114.240.183',
-                'Referer' => $url,
-            );
+            $response = Requests::$method($url, $headers, $values, ['follow_redirects' => false]);
 
             $url = $response->headers['location'];
+
             $response = Requests::get($url, $headers);
-                // ['useragent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.93 Safari/537.36',
-                //  'follow_redirects' => true]);
-            sd($response);
+            // Somehow, the response body is not being echoed by 's' function so don't try it! Weirds me out.
 
-            // // Atom redirects to this url
-            // $url = $atomBaseUrl . '/paynetz/redirect.action';
-            // $response = Requests::post($url, $headers, $content);
+            list($url, $method, $values) = $this->getFormDataFromResponse($response->body, $response->url);
 
-            // $crawler = new Crawler($response->body, $url);
-            // $form = $crawler->filter('form')->form();
-
-            // list($url, $method, $values) = $this->getDataFromForm($form);
-
-            // $response = Requests::$method($url, $headers, $values);
-            // $content = $response->body;
+            $response = Requests::$method($url, $headers, $values);
+            $content = $response->body;
         }
 
+        // Be careful of different quotes(',") or lack of it! Weird!
         $itc = getTextBetweenStrings($content, 'ITC = ', ';');
         $bid = getTextBetweenStrings($content, "BID = '", "';");
         $amt = getTextBetweenStrings($content, "amt = '", "';");
