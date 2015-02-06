@@ -36,6 +36,19 @@ return [
         ],
     ],
 
+    'testGetBalance' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/balance',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '10000000000000',
+                'balance' => '1000000',
+            ],
+        ],
+    ],
+
     'testMerchantFetchKeys' => [
         'request' => [
             'content' => [

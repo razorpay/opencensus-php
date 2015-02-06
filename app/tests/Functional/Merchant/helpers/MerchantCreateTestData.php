@@ -65,11 +65,53 @@ return [
         ],
     ],
 
-    'testBalanceAfterCreatedMerchant' => [
+    'testBalanceInTestAfterCreatedMerchant' => [
         'request' => [
-            'url' => '/merchants//balance'
+            'url' => '/merchants/1X4hRFHFx4UiXt/balance',
+            'method' => 'GET',
         ],
         'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'balance' => 0
+            ]
         ]
-    ]
+    ],
+
+    'testBalanceInLiveAfterCreatedMerchant' => [
+        'request' => [
+            'url' => '/merchants/1X4hRFHFx4UiXt/balance',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ]
+    ],
+
+    'testGetBankAccountsAfterCreatedMerchant' => [
+        'request' => [
+            'url' => '/merchants/1X4hRFHFx4UiXt/banks',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'UTIB' => 'Axis Bank',
+                    'BKID' => 'Bank of India',
+                ],
+                'disabled' => [
+                ],
+            ]
+        ]
+    ],
 ];

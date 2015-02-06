@@ -35,6 +35,8 @@ class MerchantCreateTest extends TestCase
         $this->checkTerminals();
 
         $this->checkBalances();
+
+        $this->checkNetBankingBanks();
     }
 
     protected function createMerchant()
@@ -63,7 +65,30 @@ class MerchantCreateTest extends TestCase
     {
         $this->ba->appAuthTest();
 
-        ;
+        $this->runRequestResponseFlow($this->testData['testBalanceInTestAfterCreatedMerchant']);
+
+        $this->ba->appAuthLive();
+
+        $this->runRequestResponseFlow($this->testData['testBalanceInLiveAfterCreatedMerchant']);
+    }
+
+    protected function checkNetBankingBanks()
+    {
+        $this->checkNetBankingBanksInMode('test');
+
+        $this->checkNetBankingBanksInMode('live');
+    }
+
+    protected function checkNetBankingBanksInMode($mode)
+    {
+        $func = 'appAuth'.ucfirst($mode);
+        $this->ba->$func();
+
+        $testData = $this->testData['testGetBankAccountsAfterCreatedMerchant'];
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertSame(array(), $content['disabled']);
     }
 
     protected function startTest()

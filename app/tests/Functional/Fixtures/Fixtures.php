@@ -49,7 +49,7 @@ class Fixtures
         $this->create('merchant:atom_account');
 
         $apiMerchant = $this->create('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
-        $apiBalance = $this->base->createEntityInTestAndLive('balance', ['id' => '1cXSLlUU8V9sXl']);
+        $apiBalance = $this->base->create('balance', ['id' => '1cXSLlUU8V9sXl']);
 
         $this->base->connection('test');
 

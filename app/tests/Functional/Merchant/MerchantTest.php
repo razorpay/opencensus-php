@@ -29,10 +29,22 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
-        $this->ba->appAuth('rzp_test');
+        $this->ba->appAuthTest();
         $this->startTest();
 
-        $this->ba->appAuth('rzp_live');
+        $this->ba->appAuthLive();
+        $this->startTest();
+    }
+
+    public function testGetBalance()
+    {
+        // The merchant and balances have been created in
+        // fixtures already
+        $this->ba->appAuthTest();
+        $this->startTest();
+
+        $this->ba->appAuthLive();
+        $this->testData[__FUNCTION__]['response']['content']['balance'] = 0;
         $this->startTest();
     }
 
