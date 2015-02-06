@@ -57,3 +57,4 @@ deploy:
           channel: general
       - akelmanson/rollbar-notify:
           access-token: $ROLLBAR_ACCESS_TOKEN
+          environment: $WERCKER_DEPLOYTARGET_NAME
