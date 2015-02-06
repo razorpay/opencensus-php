@@ -6,26 +6,6 @@ use EE\Error\PublicErrorDescription;
 use Gateway\Hdfc;
 
 return [
-    'testCreateMerchant' => [
-        'request' => [
-            'content' => [
-                'id'    => '1X4hRFHFx4UiXt',
-                'name'  => 'Tester',
-                'email' => 'test@localhost.com',
-            ],
-            'url' => '/merchants',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'id' => '1X4hRFHFx4UiXt',
-                'name' => 'Tester',
-                'email' => 'test@localhost.com',
-                'pricing_plan_id' => '1In3Yh5Mluj605',
-            ],
-        ],
-    ],
-
     'testCreateKey' => [
         'request' => [
             'method' => 'POST',

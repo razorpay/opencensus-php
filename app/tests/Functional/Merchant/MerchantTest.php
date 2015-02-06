@@ -18,17 +18,6 @@ class MerchantTest extends TestCase
         $this->ba->appAuth();
     }
 
-    /**
-     * @group merchant
-     * @return array Data return from merchant creation
-     */
-    public function testCreateMerchant()
-    {
-        $this->ba->appAuthLive();
-
-        $content = $this->startTest();
-    }
-
     public function testCreateKey()
     {
         $this->createMerchant();
