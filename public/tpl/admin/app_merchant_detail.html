@@ -222,12 +222,12 @@
     <span class="text-danger"><strong>
     Warning: The terminal once assigned can not be changed.
     </strong></span>
-    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'test', card:1}">
+    <form class="form-horizontal" ng-init="terminal={gateway:'hdfc', mode:'live', card:1}">
       <div class="form-group">
         <label class="col-lg-2 control-label">Mode:</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" ng-model="terminal.mode">
-             <option value="test" selected>Test</option>
+             <option value="test">Test</option>
              <option value="live" selected>Live</option>
           </select>
         </div>

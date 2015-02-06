@@ -75,7 +75,7 @@ class Merchant extends MockEntity
 
     public function fetchTerminals()
     {
-        $this->mock(array());
+        $this->mockCollection(self::$mockData['terminal']);
 
         return $this;
     }

@@ -70,7 +70,8 @@ class MockData
                 'gateway_merchant_id'   => 'testMID',
                 'gateway_terminal_id'   => 'testTID',
                 'created_at'            => time(),
-                'updated_at'            => time()
+                'updated_at'            => time(),
+                'card'                  => 1
             ),
             'payment'       => array(
                 'id'                  => 'pay-1sm42A7OxlvJCv',
