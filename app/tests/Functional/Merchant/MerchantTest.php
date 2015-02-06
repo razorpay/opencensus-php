@@ -120,6 +120,10 @@ class MerchantTest extends TestCase
                         'bank_account', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
         $this->startTest();
+
+        $testData = $this->testData['testGetBalance'];
+        $testData['request']['url'] = '/merchants/1cXSLlUU8V9sXl/balance';
+        $testData['response']['content']['balance'] = 0;
     }
 
     public function testMerchantEnableLive()
