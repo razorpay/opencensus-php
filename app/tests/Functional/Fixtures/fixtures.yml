@@ -155,3 +155,4 @@ Models\Card\Detail:
     type: credit
     country: IN
     issuer: SBI
+    trivia: $string
