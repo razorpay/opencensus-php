@@ -18,7 +18,8 @@ var app = angular.module('app', [
     'app.controllers',
     'angularFileUpload',
     'ngIdle',
-    'ngBusy'
+    'ngBusy',
+    'noCAPTCHA'
   ])
 .run(
   [          '$rootScope', '$state', '$stateParams', 'user', 'authorization', 
@@ -212,4 +213,5 @@ var app = angular.module('app', [
   $idleProvider.idleDuration(10*60);
   $idleProvider.warningDuration(15);
   $keepaliveProvider.interval(60);
-}]);
+}])
+;   

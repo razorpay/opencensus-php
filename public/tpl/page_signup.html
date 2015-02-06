@@ -25,6 +25,12 @@
               <input type="checkbox" name="agree" ng-model="agree"><i></i> Agree the <a href="https://razorpay.com/terms/" target="_blank">terms & conditions</a> and <a href="https://razorpay.com/privacy/" target="_blank">privacy policy</a>
             </label>
           </div>
+          <div no-captcha
+              g-recaptcha-response="data.captcha"
+              theme='light'
+              control="noCaptchaControl"
+              site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
+          </div>
           <button type="submit" name="submit" class="btn btn-lg btn-primary btn-block">Sign up</button>
           <div class="text-center m-t m-b">
             <spinner></spinner>

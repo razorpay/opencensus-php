@@ -51,6 +51,7 @@ module.exports = function(grunt){
                     ],
 
                     'public/js/generated/merchant.js': [
+                        'public/js/libs/angular-recaptcha.js',
                         'public/js/merchant/**/*.js',
                         'public/js/*.js',
                         'public/js/libs/moment.min.js'

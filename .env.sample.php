@@ -61,6 +61,9 @@
      * Set false in testing/development
      */
     'SLACK_ENABLE'      => false,
-    'SLACK_KEY'         => '' // Slack Incoming Webhook key
+    'SLACK_KEY'         => '', // Slack Incoming Webhook key
+
+    //Secret for nocaptcha, not required on dev machines
+    'NOCAPTCHA_SECRET'  => ''
     );
 ?>

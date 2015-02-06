@@ -1,5 +1,6 @@
 //Registration Controller
-app.controller('RegisterCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', 
+app
+.controller('RegisterCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', 
   function($scope, $http, alertsFactory, transformRequestAsFormPost) {
     
     //Intialise alerts and scope functions
@@ -18,6 +19,11 @@ app.controller('RegisterCtrl', ['$scope', '$http', 'alertsFactory', 'transformRe
         if(!$scope.agree) {
           $scope.alerts.addAlert('danger', 'You must agree to the terms & conditions for using our service', true);     
           return true;
+        }
+
+        if(window.location.hostname !== "dashboard.razorpay.com" && window.location.hostname !== "betadashboard.razorpay.com" && !$scope.data.captcha)
+        {
+          $scope.data.captcha = "Faked";
         }
 
         $scope.alerts.resetAlerts();

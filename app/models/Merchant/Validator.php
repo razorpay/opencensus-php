@@ -10,12 +10,23 @@ class Validator extends Base\Validator
         'name'                  => 'required|alpha_space|max:200',
         'email'                 => 'required|email|unique:merchants',
         'password'              => 'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50'
+        'password_confirmation' => 'required|between:6,50',
+        'captcha'               => 'required'
+    );
+
+    protected static $createValidators = array('captcha');
+
+    protected static $unsetCreateInput = array(
+        'captcha'
     );
 
     protected static $loginRules = array(
         'email'     =>      'required|email',
         'password'  =>      'required|between:6,50',
+    );
+
+    protected static $unsetLoginInput = array(
+        'password'
     );
 
     protected static $changePasswordRules = array(
@@ -34,10 +45,6 @@ class Validator extends Base\Validator
         'gateway_terminal_password'                 => 'required|confirmed',
         'gateway_terminal_password_confirmation'    => 'required',
         'card'                                      => 'required'
-    );
-
-    protected static $unsetLoginInput = array(
-        'password'
     );
 
     protected static $api_dashboard_mappings = array(
@@ -80,6 +87,31 @@ class Validator extends Base\Validator
             {
                 throw new \Exception(
                     'Merchant data mismatch with api for '.$merchant['id'].' at '.$key);
+            }
+        }
+    }
+
+    protected function validateCaptcha($input)
+    {
+        if($_SERVER['HTTP_HOST'] === 'dashboard.razorpay.com' OR $_SERVER['HTTP_HOST'] === 'betadashboard.razorpay.com')
+        {
+            $captchaResponse = $input['captcha'];
+
+            if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && $_SERVER['HTTP_X_FORWARDED_FOR']) {
+                $clientIpAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            } else {
+                $clientIpAddress = $_SERVER['REMOTE_ADDR'];
+            }
+
+            $url = "https://www.google.com/recaptcha/api/siteverify?secret=".$_ENV['NOCAPTCHA_SECRET']."&response=".$captchaResponse."&remoteip=".$clientIpAddress;
+
+            $response = \Requests::get($url);
+
+            $output = json_decode($response->body);
+
+            if($output->success !== true)
+            {
+                $this->addError('captcha', 'Captcha Failed');
             }
         }
     }
