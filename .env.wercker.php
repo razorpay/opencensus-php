@@ -21,7 +21,7 @@
      */
     'API_URL'           => 'https://beta.razorpay.com/v1/',
     'API_AUTH_PASS'     => getenv('API_AUTH_PASS'),
-    'API_MOCK'          => true,
+    'API_MOCK'          => false,
 
     /**
      *  QUEUE System Configuration
