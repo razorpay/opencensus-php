@@ -4,6 +4,7 @@ app.controller('AdminCtrl', ['$scope', '$http', '$state', 'admin', '$modal', 'al
     
     admin.identity().then(function(data){
       $scope.admin = data;
+      Rollbar.configure({payload: {person: {id:data.id, name:data.name, email: data.email, role:"admin"}}});
     });
 
     $scope.alerts = alertsFactory.getHandler();

@@ -4,6 +4,7 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', '$modal', 'aler
     
     user.identity().then(function(data){
       $scope.user = data;
+      Rollbar.configure({payload: {person: {id:data.id, name:data.name, email: data.email, role: "merchant"}}});
     });
 
     $scope.alerts = alertsFactory.getHandler();

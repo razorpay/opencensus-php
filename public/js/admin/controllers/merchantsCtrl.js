@@ -18,7 +18,6 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
     request
     .success(function(data){
       if(data.success) {
-        console.log(data);
         $scope.merchants = data.data;
       }
     });
