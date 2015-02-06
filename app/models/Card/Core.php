@@ -51,7 +51,8 @@ class Core
         {
             if ($network === Card\Network::UNKNOWN)
             {
-                if ($details->getNetwork() !== null)
+                if (($details->getNetwork() !== null) and
+                    ($details->getNetwork() !== ''))
                 {
                     $network = $details->getNetwork();
 

@@ -63,28 +63,25 @@ class ValidationTest extends TestCase
 
     public function testSupportedCardNetworks()
     {
-        $this->markTestSkipped();
         $supportedCards = array(
             ['5546199799745013',        'MasterCard'],
             ['5555 5555 5555 4444',     'MasterCard'],
+            ['4000401234561233',        'Visa'],
             ['42 4242 42 4242 4242',    'Visa'],
-            ['6240008631401148',        'Unknown']);
+            ['6759649826438453',        'Maestro']
+        );
 
         foreach ($supportedCards as $card)
         {
             $this->input['number'] = $card[0];
-            $cardData = (new Card\Core)->createAndReturnWithSensitiveData($this->input);
+            $core = new Card\Core;
+            $cardData = $core->createAndReturnWithSensitiveData($this->input);
 
-            $cardRepo = Mockery::mock('Models\Card\Repository[retrieveIinDetails]');
-
-//            $this->app->instance($cardRepo, $dashboard);
-
-            $cardRepo->shouldReceive('retrieveIinDetails')
-                     ->andReturn(null);
+            $cardEntity = $core->getCard();
 
             $this->assertEquals($card[1], $cardData['network']);
+
+            $this->assertSame(false, $cardEntity->isUnsupported());
         }
     }
-
-
 }
