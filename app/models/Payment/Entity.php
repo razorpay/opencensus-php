@@ -252,6 +252,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::AMOUNT_AUTHORIZED];
     }
 
+    public function getAmountRefundedAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT_REFUNDED];
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()

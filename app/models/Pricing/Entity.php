@@ -42,7 +42,7 @@ class Entity extends Base\UniqueIdEntity
      */
     protected static $modifiers = array('inputRemoveBlanks', 'inputProvideDefaults');
 
-    protected static $generators = array('plan_id');
+    protected static $generators = array('plan_id', 'rates');
 
     protected function modifyInputProvideDefaults(& $input)
     {
@@ -54,6 +54,24 @@ class Entity extends Base\UniqueIdEntity
             {
                 $input[$key] = null;
             }
+        }
+    }
+
+    protected function generateRates($input)
+    {
+        //
+        // Sets the rates at 0 if not provided via input
+        // The validator should check for the case where
+        // both the rates aren't set
+        //
+        if (isset($input[self::PERCENT_RATE]) === false)
+        {
+            $this->setAttribute(self::PERCENT_RATE, 0);
+        }
+
+        if (isset($input[self::FIXED_RATE]) === false)
+        {
+            $this->setAttribute(self::FIXED_RATE, 0);
         }
     }
 
@@ -123,5 +141,15 @@ class Entity extends Base\UniqueIdEntity
         $input[self::GATEWAY] = $rule->getAttribute(self::GATEWAY);
 
         return $this->fill($input);
+    }
+
+    public function getPercentRateAttribute()
+    {
+        return (int) $this->attributes[self::PERCENT_RATE];
+    }
+
+    public function getFixedRateAttribute()
+    {
+        return (int) $this->attributes[self::FIXED_RATE];
     }
 }

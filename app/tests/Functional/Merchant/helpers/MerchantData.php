@@ -44,7 +44,7 @@ return [
         'response' => [
             'content' => [
                 'id'    => '10000000000000',
-                'balance' => '1000000',
+                'balance' => 1000000,
             ],
         ],
     ],
