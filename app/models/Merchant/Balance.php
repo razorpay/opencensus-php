@@ -16,6 +16,10 @@ class Balance extends Base\UniqueIdEntity
     protected $fillable = array(
         self::ID);
 
+    protected $visible = array(
+        self::ID,
+        self::BALANCE);
+
     public function addAmount($amount)
     {
         $this->checkNumeric($amount);

@@ -158,4 +158,11 @@ class MerchantController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getBalance($id)
+    {
+        $data = (new Merchant\Service)->fetchBalance($id);
+
+        return ApiResponse::json($data);
+    }
 }

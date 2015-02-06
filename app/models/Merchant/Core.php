@@ -5,22 +5,40 @@ namespace Models\Merchant;
 use Models\Base;
 use Models\Merchant;
 use Models\Pricing;
+use Models\Terminal;
 
-class Core extends Base\Core;
+class Core extends Base\Core
 {
+    public function __construct()
+    {
+        $this->repo = new Merchant\Repository;
+    }
+
     public function create($input)
     {
         $merchant = (new Merchant\Entity)->build($input);
 
+        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
+
+        $this->repo->saveOrFail($merchant);
+
+        $this->createBalance($merchant, 'test');
+
+        (new Terminal\Core)->createTerminalsInTestMode($merchant);
+
+        (new Banks\Core)->setAllPaymentBanks($merchant);
+
         return $merchant;
     }
 
-    public function createAndSave($input)
+    public function createBalance($merchant, $mode)
     {
-        $entity = $this->create($input);
+        $merchantBalance = Merchant\Balance::buildFromMerchant($merchant);
 
-        (new Repository)->saveOrFail($entity);
+        $merchantBalance->setConnection($mode);
 
-        return $entity;
+        $this->repo->updateBalance($merchantBalance);
+
+        return $merchantBalance;
     }
 }

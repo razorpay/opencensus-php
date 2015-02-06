@@ -30,19 +30,7 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
-        $merchant = (new Merchant\Entity)->build($input);
-
-        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
-
-        $this->repo->saveOrFail($merchant);
-
-        $merchantBalance = Merchant\Balance::buildFromMerchant($merchant);
-
-        $this->repo->updateBalance($merchantBalance);
-
-        (new Terminal\Core)->createTerminalsInTestMode($merchant);
-
-        (new Banks\Core)->setAllPaymentBanks($merchant);
+        $merchant = (new Merchant\Core)->create($input);
 
         return $merchant->toArrayPublic();
     }
@@ -59,6 +47,15 @@ class Service extends Base\Service
         $merchants = $this->repo->fetch($input);
 
         return $merchants->toArrayPublic();
+    }
+
+    public function fetchBalance($merchantId)
+    {
+        $merchant = $this->repo->findOrFailPublic($merchantId);
+
+        $balance = $this->repo->getMerchantBalance($merchant);
+
+        return $balance->toArray();
     }
 
     public function createKey($merchantId)
@@ -191,6 +188,8 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
+
+        (new Merchant\Core)->createBalance($merchant, 'live');
 
         $merchant->activate();
 

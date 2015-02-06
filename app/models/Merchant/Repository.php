@@ -24,6 +24,11 @@ class Repository extends Base\Repository
         return $this->getBalanceLockForUpdate($merchant->getKey());
     }
 
+    public function getMerchantBalance($merchant)
+    {
+        return Merchant\Balance::findOrFailPublic($merchant->getId());
+    }
+
     public function updateBalance($balance)
     {
         $balance->saveOrFail();
