@@ -7,9 +7,9 @@ class Payment extends Base
     public function createCaptured(array $attributes = array())
     {
         if ((isset($attributes['method'])) and
-            ($attributes['method'] === 'card'))
+            ($attributes['method'] === 'netbanking'))
         {
-            ;
+            return $this->fixtures->create('payment:netbanking_captured');
         }
 
         return $this->fixtures->create('payment:card_captured', $attributes);

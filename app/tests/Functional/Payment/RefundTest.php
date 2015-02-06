@@ -30,7 +30,7 @@ class RefundTest extends TestCase
 
         parent::setUp();
 
-        $this->payment = $this->createCapturedPaymentEntity();
+        $this->payment = $this->fixtures->create('payment:captured');
 
         $this->ba->privateAuth();
     }
@@ -68,7 +68,7 @@ class RefundTest extends TestCase
 
     public function testRefundWithHigherAmount()
     {
-        $this->startTest($this->payment['id'], 50001);
+        $this->startTest($this->payment['public_id'], 1000001);
     }
 
     public function testMultipleRefundsWithHigherAmount()
@@ -94,21 +94,21 @@ class RefundTest extends TestCase
 
     public function testRefundOnAuthorizedPayment()
     {
-        $this->payment = $this->defaultAuthPayment();
+        $payment = $this->defaultAuthPayment();
 
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $this->startTest($payment['id']);
     }
 
     public function testRefundWithNegativeAmount()
     {
-        $this->startTest(null, -1);
+        $this->startTest($this->payment['public_id'], -1);
     }
 
     public function testRefundWithZeroAmount()
     {
-        $this->startTest(null, 0);
+        $this->startTest($this->payment['public_id'], 0);
     }
 
     public function startTest($paymentId = null, $amount = null)
@@ -125,8 +125,6 @@ class RefundTest extends TestCase
 
     protected function setRequestData(& $request, $id = null, $amount = null)
     {
-        $this->checkAndSetId($id);
-
         if ($amount !== null)
         {
             $request['content']['amount'] = $amount;
@@ -135,14 +133,6 @@ class RefundTest extends TestCase
         $url = '/payments/'.$id.'/refund';
 
         $this->setRequestUrlAndMethod($request, $url, 'POST');
-    }
-
-    protected function checkAndSetId(& $id = null)
-    {
-        if ($id === null)
-        {
-            $id = $this->payment['id'];
-        }
     }
 
     protected function mockDashboardRequest($times = 1)

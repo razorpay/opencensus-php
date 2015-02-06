@@ -47,7 +47,7 @@ Models\Payment\Entity:
     card_id: null
     bank: null
     amount: 1000000
-    amount_authorized: 100
+    amount_authorized: 1000000
     amount_refunded: 0
     currency: INR
     status: created

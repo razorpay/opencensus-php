@@ -45,24 +45,6 @@ trait PaymentAuthFlowTrait
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function createAuthorizedPaymentEntity()
-    {
-        $payment = $this->getDefaultPaymentEntityArray();
-        $payment = $this->fixtures->create('payment', $payment);
-        $payment = $payment->toArrayPublic();
-
-        return $payment;
-    }
-
-    protected function createCapturedPaymentEntity()
-    {
-        $payment = $this->getDefaultPaymentEntityArray();
-        $payment['status'] = 'captured';
-        $payment = $this->fixtures->create('payment', $payment);
-        $payment = $payment->toArrayPublic();
-        return $payment;
-    }
-
     protected function defaultAuthPayment(array $payment = array())
     {
         $defaultPayment = $this->getDefaultPaymentArray();
