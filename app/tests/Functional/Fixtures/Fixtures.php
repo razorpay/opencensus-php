@@ -112,7 +112,9 @@ class Fixtures
 
         $obj = null;
 
-        $class = __NAMESPACE__.'\Entity\\'.ucfirst($entity);
+        $class = studly_case($entity);
+
+        $class = __NAMESPACE__.'\Entity\\'.$class;
 
         $arg1 = $entity;
         $arg2 = $attributes;
