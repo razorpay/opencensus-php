@@ -27,11 +27,13 @@ class Validator extends Base\Validator
     protected static $changePasswordValidators = array('changePassword');
 
     protected static $terminalRules = array(
+        'mode'                                      => 'required|in:test,live',
         'gateway'                                   => 'required',
         'gateway_merchant_id'                       => 'required',
         'gateway_terminal_id'                       => 'required',
         'gateway_terminal_password'                 => 'required|confirmed',
-        'gateway_terminal_password_confirmation'    => 'required'
+        'gateway_terminal_password_confirmation'    => 'required',
+        'card'                                      => 'required'
     );
 
     protected static $unsetLoginInput = array(

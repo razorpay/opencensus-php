@@ -158,7 +158,10 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .success(function(data){
         if(data.success) {
           $scope.alerts.addAlert('success', 'Terminal Assigned successfully', true);
-          $scope.merchant.terminal = data.data;
+          terminal.id = data.data.id;
+          terminal.created_at = data.data.created_at;
+          $scope.merchant.terminals.items.push(terminal);
+          $scope.merchant.terminals.count = $scope.merchant.terminals.count + 1;
         }
         else {
           $scope.alerts.resetAlerts();

@@ -211,7 +211,27 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->merchant->fetch($id)->fetchTerminals()->toArray();
+        $live_terminals = $this->api->merchant->fetch($id)->fetchTerminals()->toArray();
+
+        $this->setApiCredentials(null, 'test');
+
+        $test_terminals = $this->api->merchant->fetch($id)->fetchTerminals()->toArray();
+
+        foreach($test_terminals['items'] as &$item)
+        {
+            $item['mode'] = 'test';
+        }
+
+        foreach($live_terminals['items'] as &$item)
+        {
+            $item['mode'] = 'live';
+        }
+
+        $response = array(
+            'entity'    => 'collection',
+            'count'     => $live_terminals['count'] + $test_terminals['count'],
+            'items'     => array_merge($live_terminals['items'], $test_terminals['items'])
+        );
 
         return $response;
     }
@@ -222,13 +242,14 @@ class Service extends Base\Service
 
         $data = [];
 
-        $input['gateway'] = strtolower($input['gateway']);
+        $mode = $input['mode'];
 
         if (empty($error))
         {
             unset($input['gateway_terminal_password_confirmation']);
+            unset($input['mode']);
 
-            $this->setApiCredentials();
+            $this->setApiCredentials(null, $mode);
 
             try
             {
