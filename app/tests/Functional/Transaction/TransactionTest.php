@@ -25,7 +25,12 @@ class TransactionTest extends TestCase
 
     public function testAddAdjustment()
     {
-        $this->startTest();
+        $adj = $this->startTest();
+
+        $testData = $this->testData['testGetAdjustment'];
+        $testData['request']['url'] = '/adjustments/'.$adj['id'];
+
+        $adj = $this->runRequestResponseFlow($testData);
     }
 
     protected function startTest($testDataToReplace = array())

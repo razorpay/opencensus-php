@@ -9,7 +9,7 @@ return [
         'request' => [
             'content' => [
                 'amount' => 100,
-                'description' => 'A random adjustment passing through',
+                'description' => 'random desc',
                 'currency' => 'INR',
             ],
             'url' => '/adjustments',
@@ -17,7 +17,25 @@ return [
         ],
         'response' => [
             'content' => [
+                'amount' => 100,
+                'description' => 'random desc',
+                'channel' => 'kotak',
+                'currency' => 'INR',
             ],
         ],
+    ],
+
+    'testGetAdjustment' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'adjustment',
+                'amount' => 100,
+                'description' => 'random desc',
+                'currency' => 'INR',
+            ]
+        ]
     ],
 ];
