@@ -176,6 +176,7 @@ class AdminTest extends TestCase
             ->type(l::IdOrName('gateway_terminal_id'), static::generateRandomString(10))
             ->type(l::IdOrName('gateway_terminal_password'), 'testing')
             ->type(l::IdOrName('gateway_terminal_password_confirmation'), 'testing')
+            ->select(l::IdOrName('mode'), 'live')
             ->click(l::css('.modal-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 20000)
             ->click(l::css('.confirm-ok'))
