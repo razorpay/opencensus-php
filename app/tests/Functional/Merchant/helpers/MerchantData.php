@@ -262,10 +262,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'banks' => [
-                    'HDFC',
-                    'ICIC',
-                ]
+                'enabled' => [
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
+                ],
+                'disabled' => [],
             ],
         ]
     ],
@@ -280,7 +281,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'banks' => []
+                'enabled' => [],
+                'disabled' => [
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
+                ],
             ],
         ]
     ],
