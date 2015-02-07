@@ -3,10 +3,11 @@
 namespace Tests\Functional\Payment;
 
 use Tests\Functional\TestCase;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class CardTest extends TestCase
 {
-    use PaymentAuthFlowTrait;
+    use PaymentTrait;
 
     protected $testDataFilePath = __DIR__.'/helpers/CardTestData.php';
 
@@ -63,7 +64,7 @@ class CardTest extends TestCase
             $payment = $this->doAuthAndGetPayment($payment);
 
             $card = $this->getLastCard();
-sd($card);
+
             $this->assertArraySelectiveEquals($cardInfo, $card);
             $this->assertArrayNotHasKey('number', $card);
         }

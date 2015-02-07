@@ -3,6 +3,7 @@
 namespace Tests\Functional\Payment;
 
 use Tests\Functional\TestCase;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
  * Tests that support payments (capture/refund) are working fine.
@@ -13,7 +14,7 @@ use Tests\Functional\TestCase;
 
 class AuthorizeTest extends TestCase
 {
-    use PaymentAuthFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {

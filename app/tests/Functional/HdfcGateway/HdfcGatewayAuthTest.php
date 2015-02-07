@@ -10,11 +10,11 @@ namespace Tests\Functional\HdfcGateway;
  */
 
 use Tests\Functional\TestCase;
-use Tests\Functional\Payment\PaymentAuthFlowTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class HdfcGatewayAuthTest extends TestCase
 {
-    use PaymentAuthFlowTrait;
+    use PaymentTrait;
 
     protected $successDebitNumbers = array(
         '4012001037141112',

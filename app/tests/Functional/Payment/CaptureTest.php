@@ -5,6 +5,7 @@ namespace Tests\Functional\Payment;
 use Tests\Functional\TestCase;
 use Mockery;
 use Dashboard\Payment;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
  * Tests for capture payments
@@ -21,7 +22,7 @@ use Dashboard\Payment;
 
 class CaptureTest extends TestCase
 {
-    use PaymentAuthFlowTrait;
+    use PaymentTrait;
 
     protected $testData = null;
 

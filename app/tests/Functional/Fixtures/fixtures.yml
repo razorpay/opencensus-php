@@ -24,6 +24,7 @@ Models\Merchant\BankAccount:
 
 Models\Card\Entity:
     id: $uniqueid
+    merchant_id: 10000000000000
     name: $string
     network: MC
     expiry_month: 01

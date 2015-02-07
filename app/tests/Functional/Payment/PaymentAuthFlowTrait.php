@@ -5,11 +5,11 @@ namespace Tests\Functional\Payment;
 use EE\Exception\BaseException;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
-use Tests\Functional\PaymentCallbackTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 trait PaymentAuthFlowTrait
 {
-    use PaymentCallbackTrait;
+    use PaymentTrait;
 
     protected function doAuthAndGetPayment($paymentRequest, $paymentResponse = array())
     {
