@@ -163,7 +163,7 @@ trait Authorize
         //
         $cardCore = new Card\Core();
 
-        $cardData = $cardCore->createAndReturnWithSensitiveData($input['card']);
+        $cardData = $cardCore->createAndReturnWithSensitiveData($input['card'], $this->merchant);
 
         $card = $cardCore->getCard();
 

@@ -44,7 +44,7 @@ return [
         'response' => [
             'content' => [
                 'id'    => '10000000000000',
-                'balance' => '1000000',
+                'balance' => 1000000,
             ],
         ],
     ],
@@ -262,10 +262,30 @@ return [
         ],
         'response' => [
             'content' => [
-                'banks' => [
-                    'HDFC',
-                    'ICIC',
-                ]
+                'enabled' => [
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
+                ],
+                'disabled' => [],
+            ],
+        ]
+    ],
+
+    'testSetEmptyBanks' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/banks',
+            'method' => 'POST',
+            'content' => [
+                'banks' => []
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [],
+                'disabled' => [
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
+                ],
             ],
         ]
     ],

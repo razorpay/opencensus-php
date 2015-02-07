@@ -7,6 +7,8 @@ use Models\Card;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryFetch;
+
     protected $entity = 'Card';
 
     public function retrieveIinDetails($iin)

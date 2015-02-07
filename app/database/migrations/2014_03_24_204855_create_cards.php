@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Constants\Table;
 
 use Models\Card\Entity as Card;
+use Models\Merchant;
 
 class CreateCards extends Migration
 {
@@ -23,6 +24,8 @@ class CreateCards extends Migration
 
             $table->char(Card::ID, Card::ID_LENGTH)
                   ->primary();
+
+            $table->char(Card::MERCHANT_ID, Card::ID_LENGTH);
 
             $table->string(Card::NAME);
 
@@ -57,6 +60,12 @@ class CreateCards extends Migration
             $table->integer(Card::UPDATED_AT);
 
             $table->index(Card::IIN);
+            $table->index(Card::NETWORK);
+
+            $table->foreign(Card::MERCHANT_ID)
+                  ->references(Merchant\Entity::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
         });
     }
 
@@ -67,6 +76,12 @@ class CreateCards extends Migration
      */
     public function down()
     {
+        Schema::table(Table::CARD, function($table)
+        {
+            $table->dropForeign(
+                TABLE::CARD.'_'.Card::MERCHANT_ID.'_foreign');
+        });
+
         Schema::drop(Table::CARD);
     }
 

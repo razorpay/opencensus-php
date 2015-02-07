@@ -25,6 +25,8 @@ final class Route
         'payment_timeout'                   => ['post',     'payments/timeout',                         'PaymentController@postTimeout'                         ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                           ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                          ],
+        'card_fetch_by_id'                  => ['get',      'cards/{id}',                               'PaymentController@getCard'                             ],
+        'card_fetch_multiple'               => ['get',      'cards',                                    'PaymentController@getCards'                            ],
         'merchant_public_get_banks'         => ['get',      'banks',                                    'MerchantController@getBanksPublic'                     ],
         'merchant_public_get_banks2'        => ['get',      'merchant/banks',                           'MerchantController@getBanksPublic'                     ],
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],
@@ -152,6 +154,8 @@ final class Route
         'adj_fetch_by_id',
         'adj_fetch_multiple',
         'adj_add',
+        'card_fetch_by_id',
+        'card_fetch_multiple',
     );
 
     public static $internalApps = array(

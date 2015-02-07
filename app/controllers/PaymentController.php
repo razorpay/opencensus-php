@@ -3,6 +3,7 @@
 use Http\ApiResponse;
 use EE\Exception\RecoverableException;
 use Models\Payment;
+use Models\Card;
 
 class PaymentController extends BaseController
 {
@@ -179,6 +180,22 @@ class PaymentController extends BaseController
     public function postTimeout()
     {
         $data = $this->payment->timeoutOldPayments();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCard($id)
+    {
+        $data = (new Card\Service)->fetchById($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCards()
+    {
+        $input = Input::all();
+
+        $data = (new Card\Service)->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }

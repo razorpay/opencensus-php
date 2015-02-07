@@ -10,13 +10,18 @@ use EE\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $addBanksRules = array(
-        'banks' => 'required|array');
+        'banks' => 'sometimes|array');
 
     protected static $addBanksValidators = array(
         'banks');
 
     protected function validateBanks(array $input)
     {
+        if (is_array($input['banks']) === false)
+        {
+            throw new Exception\LogicException('Not an array');
+        }
+
         $banks = $input['banks'];
 
         $unsupported = NetBanking::findUnsupportedBanks($banks);

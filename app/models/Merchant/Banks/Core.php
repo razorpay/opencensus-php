@@ -27,23 +27,7 @@ class Core extends Base\Core
     {
         $banks = $this->repo->getMerchantBanks($merchant->getId());
 
-        $enabled = [];
-        if ($banks === null)
-        {
-            $banks = [];
-        }
-        else
-        {
-            $enabled = $banks->getBanks();
-        }
-
-        $disabled = Payment\Processor\NetBanking::getDisabledBanks($enabled);
-
-        $data = array(
-            'enabled' => $this->getBankNames($enabled),
-            'disabled' => $this->getBankNames($disabled));
-
-        return $data;
+        return $this->getEnabledDisabledBanks($banks);
     }
 
     public function getBankNames($banks)
@@ -82,6 +66,24 @@ class Core extends Base\Core
         $banks->setBanks($input['banks']);
         $this->repo->saveOrFail($banks);
 
-        return $banks->toArray();
+        return $this->getEnabledDisabledBanks($banks);
+    }
+
+    protected function getEnabledDisabledBanks($banks)
+    {
+        $enabled = [];
+
+        if ($banks !== null)
+        {
+            $enabled = $banks->getBanks();
+        }
+
+        $disabled = Payment\Processor\NetBanking::getDisabledBanks($enabled);
+
+        $data = array(
+            'enabled' => $this->getBankNames($enabled),
+            'disabled' => $this->getBankNames($disabled));
+
+        return $data;
     }
 }

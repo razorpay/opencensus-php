@@ -74,4 +74,9 @@ class Balance extends Base\UniqueIdEntity
                 'Something very wrong is happening! Balance is going negative');
         }
     }
+
+    public function getBalanceAttribute()
+    {
+        return (int) $this->attributes[self::BALANCE];
+    }
 }

@@ -16,7 +16,7 @@ class Entity extends EloquentEx
         //
         if (is_numeric($value))
         {
-            return $value;
+            return (int) $value;
         }
         else
         {

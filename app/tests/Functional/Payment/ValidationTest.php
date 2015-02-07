@@ -65,23 +65,6 @@ class PaymentValidationTest extends TestCase
         $payment = $this->doAuthAndGetPayment($payment);
     }
 
-    public function testUnsupportedCardNetworks()
-    {
-        $numbers = array(
-            '378282246310005',
-            '3566002020360505',
-            '6011111111111117',
-            '30569309025904',
-            '38520000023237',
-            '62304123456789018');
-
-        foreach ($numbers as $number)
-        {
-            $this->testData[__FUNCTION__]['request']['content']['card']['number'] = $number;
-            $this->startTest();
-        }
-    }
-
     public function testDescriptionMissing()
     {
         $payment = $this->getDefaultPaymentArray();

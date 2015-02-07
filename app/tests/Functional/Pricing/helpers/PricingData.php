@@ -148,8 +148,8 @@ return [
                         'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'SBIN',
-                        'percent_rate' => '275',
-                        'fixed_rate' => '0',
+                        'percent_rate' => 275,
+                        'fixed_rate' => 0,
                     ),
                 )
             ]
@@ -178,8 +178,8 @@ return [
                                 'payment_method_type' => 'credit',
                                 'payment_network' => 'MC',
                                 'payment_issuer' => 'AXIS',
-                                'percent_rate' => '0',
-                                'fixed_rate' => '3000',
+                                'percent_rate' => 0,
+                                'fixed_rate' => 3000,
                             ),
                             array(
                                 'plan_name' => 'TestPlan2',
@@ -222,8 +222,8 @@ return [
                                 'payment_method_type' => 'credit',
                                 'payment_network' =>  'DICL',
                                 'payment_issuer' =>  'HDFC',
-                                'percent_rate' =>  '1000',
-                                'fixed_rate' =>  '0',
+                                'percent_rate' =>  1000,
+                                'fixed_rate' =>  0,
                                 'expired_at' => NULL
                             )
                         )

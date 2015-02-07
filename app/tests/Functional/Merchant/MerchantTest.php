@@ -157,6 +157,15 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testSetEmptyBanks()
+    {
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $this->assertSame([], $content['enabled']);
+    }
+
     public function testGetBanksByMerchantAuth()
     {
         $this->testSetBanks();
