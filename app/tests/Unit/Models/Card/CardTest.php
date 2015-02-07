@@ -60,28 +60,4 @@ class ValidationTest extends TestCase
         $this->assertInternalType('int', $card['expiry_month']);
         $this->assertEquals($card['expiry_month'], 1);
     }
-
-    public function testSupportedCardNetworks()
-    {
-        $supportedCards = array(
-            ['5546199799745013',        'MasterCard'],
-            ['5555 5555 5555 4444',     'MasterCard'],
-            ['4000401234561233',        'Visa'],
-            ['42 4242 42 4242 4242',    'Visa'],
-            ['6759649826438453',        'Maestro']
-        );
-
-        foreach ($supportedCards as $card)
-        {
-            $this->input['number'] = $card[0];
-            $core = new Card\Core;
-            $cardData = $core->createAndReturnWithSensitiveData($this->input);
-
-            $cardEntity = $core->getCard();
-
-            $this->assertEquals($card[1], $cardData['network']);
-
-            $this->assertSame(false, $cardEntity->isUnsupported());
-        }
-    }
 }
