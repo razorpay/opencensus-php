@@ -287,9 +287,14 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function runPaymentCallbackFlow($response, &$callback)
+    protected function runPaymentCallbackFlow($response, &$callback = null)
     {
         $content = $response->getContent();
+
+        if ($callback)
+        {
+            $content = $this->getJsonContentFromResponse($response, $callback);
+        }
 
         if (isset($content['callbackUrl']))
         {
@@ -299,6 +304,8 @@ trait PaymentTrait
         {
             return $this->runPaymentCallbackFlowAtom($response, $callback);
         }
+
+        return $response;
     }
 
     protected function getIdFromUri($uri)

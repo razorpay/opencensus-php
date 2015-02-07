@@ -1,6 +1,7 @@
 <?php
 
 namespace Tests\Functional\Payment;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 use Tests\Functional\TestCase;
 
@@ -13,7 +14,7 @@ use Tests\Functional\TestCase;
 
 class SupportTest extends TestCase
 {
-    use PaymentAuthFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {

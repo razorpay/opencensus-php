@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Config;
 use Mockery;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Tests\Functional\Payment\PaymentAuthFlowTrait;
 use Tests\Functional\RequestResponseFlowTrait;
 use Tests\Functional\Settlement\SettlementTrait;
 use Tests\Functional\TestCase;

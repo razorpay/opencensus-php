@@ -2,8 +2,9 @@
 
 namespace Tests\Functional\Payment;
 
-use Tests\Functional\TestCase;
 use Mockery;
+use Tests\Functional\TestCase;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
  * Tests for refund payments
@@ -20,7 +21,7 @@ use Mockery;
 
 class RefundTest extends TestCase
 {
-    use PaymentAuthFlowTrait;
+    use PaymentTrait;
 
     protected $payment = null;
 

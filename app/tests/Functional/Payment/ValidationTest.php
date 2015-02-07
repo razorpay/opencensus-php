@@ -3,11 +3,11 @@
 namespace Tests\Functional\Payment;
 
 use Tests\Functional\TestCase;
-use Tests\Functional\Payment\PaymentAuthFlowTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PaymentValidationTest extends TestCase
 {
-    use PaymentAuthFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {

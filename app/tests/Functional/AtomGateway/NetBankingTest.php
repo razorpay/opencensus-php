@@ -6,15 +6,14 @@ use Carbon\Carbon;
 use Config;
 use Mockery;
 use Requests;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Tests\Functional\Payment\PaymentAuthFlowTrait;
-use Tests\Functional\PaymentCallbackTrait;
 use Tests\Functional\TestCase;
 
 class NetBankingTest extends TestCase
 {
-    use PaymentCallbackTrait;
+    use PaymentTrait;
 
     /**
      * Whether atom gateway is mocked or not

@@ -211,7 +211,7 @@ trait RequestResponseFlowTrait
         return $response;
     }
 
-    protected function makeRequestAndGetContent($request, $callback = null)
+    protected function makeRequestAndGetContent($request, &$callback = null)
     {
         $response = $this->makeRequest($request, $callback);
 
