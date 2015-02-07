@@ -296,14 +296,12 @@ trait PaymentTrait
             $content = $this->getJsonContentFromResponse($response, $callback);
         }
 
-        if (isset($content['callbackUrl']))
-        {
-            return $this->runPaymentCallbackFlowHdfc($response, $callback);
-        }
-        else if (isset($content['redirectUrl']))
+        if (isset($content['redirectUrl']))
         {
             return $this->runPaymentCallbackFlowAtom($response, $callback);
         }
+
+        return $this->runPaymentCallbackFlowHdfc($response, $callback);
 
         return $response;
     }
