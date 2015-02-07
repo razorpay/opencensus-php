@@ -15,8 +15,6 @@ class AuthorizeTest extends TestCase
 {
     use PaymentAuthFlowTrait;
 
-    protected $testData = null;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/authorize.php';

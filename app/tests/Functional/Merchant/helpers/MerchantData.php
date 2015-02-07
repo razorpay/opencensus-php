@@ -270,6 +270,21 @@ return [
         ]
     ],
 
+    'testSetEmptyBanks' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/banks',
+            'method' => 'POST',
+            'content' => [
+                'banks' => []
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'banks' => []
+            ],
+        ]
+    ],
+
     'testGetBanksByMerchantAuth' => [
         'request' => [
             'url' => '/banks',
