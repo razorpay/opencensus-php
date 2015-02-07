@@ -182,4 +182,20 @@ class PaymentController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getCard($id)
+    {
+        $data = (new Card\Service)->fetchById($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCards()
+    {
+        $input = Input::all();
+
+        $data = (new Card\Service)->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
 }

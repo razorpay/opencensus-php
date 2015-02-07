@@ -6,7 +6,7 @@ use EE\Exception;
 use Models\Card;
 use Models\Base;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
     const NAME              = 'name';
