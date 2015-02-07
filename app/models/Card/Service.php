@@ -1,11 +1,11 @@
 <?php
 
-namespace Models\Pricing;
+namespace Models\Card;
 
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
-use Models\Pricing;
+use Models\Card;
 
 class Service extends Base\Service
 {
@@ -13,6 +13,8 @@ class Service extends Base\Service
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->repo = new Card\Repository();
     }
 

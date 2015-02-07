@@ -9,6 +9,7 @@ use Models\Base;
 class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
+    const MERCHANT_ID       = 'merchant_id';
     const NAME              = 'name';
     const EXPIRY_MONTH      = 'expiry_month';
     const EXPIRY_YEAR       = 'expiry_year';
@@ -51,15 +52,30 @@ class Entity extends Base\PublicEntity
         self::LAST4,
         self::LENGTH);
 
-    protected $visible = array(
+    protected $hidden = array();
+
+    protected $public = array(
         self::ID,
+        self::MERCHANT_ID,
         self::NAME,
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
         self::IIN,
         self::LAST4,
         self::LENGTH,
-        self::NETWORK);
+        self::NETWORK,
+        self::TYPE,
+        self::ISSUER,
+        self::COUNTRY,
+        self::INTERNATIONAL,
+        self::TRIVIA,
+        self::CREATED_AT,
+        self::UPDATED_AT);
+
+    public function merchant()
+    {
+        return $this->belongsTo('Models\Merchant\Entity');
+    }
 
     public function generateLast4($input)
     {

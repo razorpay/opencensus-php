@@ -3,6 +3,7 @@
 use Http\ApiResponse;
 use EE\Exception\RecoverableException;
 use Models\Payment;
+use Models\Card;
 
 class PaymentController extends BaseController
 {

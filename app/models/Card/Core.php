@@ -8,9 +8,11 @@ class Core
 {
     protected $card = null;
 
-    public function create($input)
+    public function create($input, $merchant)
     {
         $card = (new Card\Entity)->build($input);
+
+        $card->merchant()->associate($merchant);
 
         $this->card = $card;
 
@@ -24,11 +26,11 @@ class Core
         return $this->card;
     }
 
-    public function createAndReturnWithSensitiveData(array $input)
+    public function createAndReturnWithSensitiveData(array $input, $merchant)
     {
         Card\Entity::modifyNumber($input);
 
-        $card = $this->create($input);
+        $card = $this->create($input, $merchant);
 
         return array_merge(
             $card->toArray(),
