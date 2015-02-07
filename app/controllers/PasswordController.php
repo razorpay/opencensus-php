@@ -48,7 +48,7 @@ class PasswordController extends BaseController
 
 		$response = Password::merchant()->reset($credentials, function($user, $password)
 		{
-			$user->password = Hash::make($password);
+			$user->password = $password;
 
 			$user->save();
 		});
