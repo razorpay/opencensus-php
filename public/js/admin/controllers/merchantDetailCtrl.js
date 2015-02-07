@@ -175,6 +175,38 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.assignBanks = function(bankdata){
+      var data = {banks: []};
+
+      angular.forEach(bankdata, function(i,e) {
+        if(i==true){
+          data.banks.push(e);
+        }
+      });
+
+      var request = $http({
+                    method: "post",
+                    url: "/admin/merchant/"+$scope.merchant.id+"/banks",
+                    data: angular.toJson(data)
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Banks Assigned successfully', true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || "";
 
@@ -211,6 +243,29 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
           ;
         });
     };
+
+    $scope.openAssignBanks = function () {
+      var currentId = $scope.merchant.id;
+
+      var modalInstance = $modal.open({
+        templateUrl: 'assignBanksModalContent.html',
+        controller: 'assignBanksModalCtrl',
+        resolve: {
+          current: function() {
+            return currentId;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function (bankdata) {
+          $scope.assignBanks(bankdata);
+        },
+        function () {
+          ;
+        });
+    };
+
 
     function generateMerchant() {
       var request = $http.get("/admin/merchant/"+$scope.merchant.id);
@@ -268,6 +323,43 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
   function ($scope, $modalInstance) {
       $scope.ok = function (terminal) {
         $modalInstance.close(terminal);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+.controller('assignBanksModalCtrl', ['$scope', '$modalInstance', '$http', 'current',
+  function ($scope, $modalInstance, $http, current) {
+      $scope.loading = true;
+
+      $scope.banks = [];
+      $scope.bankdata = {};
+      $scope.merchant_id = current;
+
+      $scope.selectAllChange = function(value) {
+        angular.forEach($scope.bankdata, function(i,e){
+          $scope.bankdata[e] = value;
+        });
+      };
+
+      var request = $http.get("/admin/merchant/" + current + "/banks");
+      request
+        .success(function(data){
+          if(data.success) {
+            $scope.banks = data.data;
+            angular.forEach($scope.banks.enabled, function(key, value){
+              $scope.bankdata[value] = true;
+            });
+            angular.forEach($scope.banks.disabled, function(key, value){
+              $scope.bankdata[value] = false;
+            });
+            $scope.loading = false;
+          }
+        });
+
+      $scope.ok = function (bankdata) {
+        $modalInstance.close(bankdata);
       };
 
       $scope.cancel = function () {

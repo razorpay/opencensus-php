@@ -162,6 +162,22 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse([], $data);
     }
 
+    public function getMerchantBanks($id)
+    {
+        $data = (new Admin\Service)->fetchMerchantBanks($id);
+
+        return AppResponse::jsonResponse([], $data);
+    }
+
+    public function postMerchantBanks($id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postMerchantBanks($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getPricingList()
     {
         list($error, $data) = (new Admin\Service)->fetchPricingPlans();

@@ -44,6 +44,9 @@
         <a href class="list-group-item" ng-click="openAssignTerminal()">
           Assign Terminal
         </a>
+        <a href class="list-group-item" ng-click="openAssignBanks()">
+          Assign Banks
+        </a>
       </div>
     </div>
   </div>
@@ -279,5 +282,32 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Terminal once assigned can not be changed, ensure you have checked all values" ng-click="ok(terminal)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="assignBanksModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Assign Banks</h3>
+  </div>
+  <div class="modal-body banks-modal">
+    <form class="form-horizontal">
+      <div class="form-group" ng-show="loading === false">
+        <div class="col-lg-10">
+          <label class="i-checks">
+          <input type="checkbox" name="banks" ng-model="selectall" ng-change="selectAllChange(selectall)" ><i></i> Select All/Deselect All
+          </label>
+        </div>
+        <div class="col-lg-10" ng-repeat="(key, value) in bankdata">
+          <label class="i-checks">
+          <input type="checkbox" name="banks" ng-model="bankdata[key]" selected><i></i> {{banks.enabled[key] != null ? banks.enabled[key] : banks.disabled[key] | titlecase}}
+          </label>
+        </div>
+      </div>
+      <h5 ng-if="loading">Loading Banks....</h5>
+      <h4 ng-if="loading === false && banks.length == 0">No Banks available.</h4>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned banks for the merchant will be replace with selected." ng-click="ok(bankdata)">OK</button>
   </div>
 </script>

@@ -170,6 +170,28 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function postMerchantBanks($id, $input)
+    {
+        $error = (new Merchant\Validator)->validateInput('banks', $input)->messages();
+
+        $data = [];
+
+        if (empty($error))
+        {
+            $this->setApiCredentials();
+
+            try
+            {
+                $data = $this->api->merchant->fetch($id)->setBanks($input)->toArray();
+            }
+            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            {
+                $error[] = $e->getMessage();
+            }
+        }
+
+        return array($error, $data);
+    }
     public function lockMerchant($id)
     {
         $error = array();

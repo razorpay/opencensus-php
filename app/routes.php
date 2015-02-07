@@ -114,6 +114,8 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
 
+    Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
+
     Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin');
 
     Route::get('/admin/pricing/list', 'AdminController@getPricingList');
@@ -135,6 +137,8 @@ Route::group(array('before' => 'auth_admin'), function()
         Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');
 
         Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
+
+        Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
 
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
 

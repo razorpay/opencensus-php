@@ -47,6 +47,10 @@ class Validator extends Base\Validator
         'card'                                      => 'required'
     );
 
+    protected static $banksRules = array(
+        'banks'                                      => 'required|array'
+    );
+
     protected static $api_dashboard_mappings = array(
             'id'        => 'id',
             'name'      => 'name',
