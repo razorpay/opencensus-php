@@ -17,6 +17,8 @@ trait PaymentTrait
         makeRequest as makeRequestParent;
     }
 
+    protected $gateway = 'hdfc';
+
     protected function doAuthAndGetPayment($paymentRequest, $paymentResponse = array())
     {
         $payment = $this->doJsonpAuthPayment($paymentRequest);
@@ -296,14 +298,12 @@ trait PaymentTrait
             $content = $this->getJsonContentFromResponse($response, $callback);
         }
 
-        if (isset($content['redirectUrl']))
+        if (isset($content['redirectUrl']) or $this->gateway === 'atom')
         {
             return $this->runPaymentCallbackFlowAtom($response, $callback);
         }
 
         return $this->runPaymentCallbackFlowHdfc($response, $callback);
-
-        return $response;
     }
 
     protected function getIdFromUri($uri)
