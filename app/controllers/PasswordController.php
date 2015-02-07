@@ -19,8 +19,12 @@ class PasswordController extends BaseController
 	 * @return Response
 	 */
 	public function postRemind()
-	{
-		switch ($response = Password::merchant()->remind(Input::only('email')))
+	{	
+		$response = Password::merchant()->remind(Input::only('email'), function($message){
+			$message->subject('Razorpay - Password Reset Request'); 
+		});
+
+		switch ($response)
 		{
 			case Password::INVALID_USER:
 				return Response::json(array('success' => false, 'errors' => array(Lang::get($response))));
