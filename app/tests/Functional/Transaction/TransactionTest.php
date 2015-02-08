@@ -3,11 +3,11 @@
 namespace Tests\Functional\Transaction;
 
 use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TransactionTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -31,6 +31,43 @@ class TransactionTest extends TestCase
         $testData['request']['url'] = '/adjustments/'.$adj['id'];
 
         $adj = $this->runRequestResponseFlow($testData);
+
+        $txn = $this->getLastTransaction();
+
+        $txnData = array(
+            'entity' => 'transaction',
+            'entity_id' => $adj['id'],
+            'type' => 'adjustment',
+            'amount' => 100,
+            'currency' => 'INR',
+            'debit' => 0,
+            'credit' => 100,
+            'escrow_balance' => 1000100,
+            'balance' => 1000100,
+            'gateway_fee' => 0,
+            'fee' => 0,
+            'api_fee' => 0,
+            'merchant_id' => '10000000000000',
+            'pricing_rule_id' => null,
+        );
+
+        $this->assertArraySelectiveEquals($txnData, $txn);
+    }
+
+    protected function getLastTransaction()
+    {
+        $this->ba->proxyAuth();
+
+        $request = array(
+            'method' => 'GET',
+            'url' => '/transactions?count=1');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertSame('collection', $content['entity']);
+        $this->assertSame(1, $content['count']);
+
+        return $content['items'][0];
     }
 
     protected function startTest($testDataToReplace = array())

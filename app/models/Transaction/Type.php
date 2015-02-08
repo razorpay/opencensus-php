@@ -17,4 +17,14 @@ class Type
                 'Not a valid Transaction type: ' . $type);
         }
     }
+
+    public static function getEntityClass($type)
+    {
+        $entity = 'Models\\'.ucfirst($type) . '\Entity';
+
+        if ($type === self::REFUND)
+            $entity = 'Models\\Payment\\'.ucfirst($type).'\Entity';
+
+        return $entity;
+    }
 }

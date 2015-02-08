@@ -54,13 +54,26 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::ENTITY,
-        self::AMOUNT,
-        self::CURRENCY,
+        self::ENTITY_ID,
+        self::TYPE,
+        self::MERCHANT_ID,
         self::DEBIT,
         self::CREDIT,
+        self::AMOUNT,
+        self::CURRENCY,
         self::FEE,
-        self::ENTITY_ID,
-        self::TYPE);
+        self::API_FEE,
+        self::GATEWAY_FEE,
+        self::BALANCE,
+        self::ESCROW_BALANCE,
+        self::PRICING_RULE_ID,
+        self::RECONCILED_AT,
+        self::SETTLED_AT);
+
+    protected $publicSetters = array(
+        self::ID,
+        self::ENTITY,
+        self::ENTITY_ID);
 
     public function merchant()
     {
@@ -123,6 +136,8 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+/* ----------------------------- Accessors -----------------------------------*/
+
     public function getFeeAttribute()
     {
         return (int) $this->attributes[self::FEE];
@@ -133,15 +148,37 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::API_FEE];
     }
 
+    public function getGatewayFeeAttribute()
+    {
+        return (int) $this->attributes[self::GATEWAY_FEE];
+    }
+
+    public function getDebitAttribute()
+    {
+        return (int) $this->attributes[self::DEBIT];
+    }
+
+    public function getCreditAttribute()
+    {
+        return (int) $this->attributes[self::CREDIT];
+    }
+
     public function getBalanceAttribute()
     {
         return (int) $this->attributes[self::BALANCE];
+    }
+
+    public function getEscrowBalanceAttribute()
+    {
+        return (int) $this->attributes[self::ESCROW_BALANCE];
     }
 
     public function getSettledAttribute()
     {
         return (bool) $this->attributes[self::SETTLED];
     }
+
+/* --------------------------- End Accessors ---------------------------------*/
 
     public function getGateway()
     {
@@ -195,7 +232,8 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEntityIdAttribute(array & $array)
     {
-        $entity = 'Models\\'.ucfirst($array[self::TYPE]) . '\Entity';
+        $entity = Transaction\Type::getEntityClass($array[self::TYPE]);
+
         $sign = $entity::getIdPrefix();
 
         $array[self::ENTITY_ID] = $sign . $array[self::ENTITY_ID];
