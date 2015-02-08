@@ -18,22 +18,24 @@ Models\MerchantDetails\Entity:
     contact_email: $string
     contact_mobile: $string
     contact_landline: $string
-    bussiness_type: 2
-    bussiness_category: $string
-    bussiness_subcategory: $string
-    bussiness_registered_address: $string
-    bussiness_registered_state: $string
-    bussiness_registered_city: $string
-    bussiness_registered_pin: $string
-    bussiness_operation_address: $string
-    bussiness_operation_state: $string
-    bussiness_operation_city: $string
-    bussiness_operation_pin: $string
-    bussiness_doe: $string
+    business_type: 2
+    business_name: $string
+    business_dba: $string
+    business_international: 1
+    business_paymentdetails: $string
+    business_registered_address: $string
+    business_registered_state: $string
+    business_registered_city: $string
+    business_registered_pin: $string
+    business_operation_address: $string
+    business_operation_state: $string
+    business_operation_city: $string
+    business_operation_pin: $string
+    business_doe: $string
     company_cin: $string
     company_pan: $string
     company_pan_name: $string
-    bussiness_model: $string
+    business_model: $string
     transaction_volume: 2
     transaction_value: $string
     promoter_pan: $string
@@ -44,8 +46,8 @@ Models\MerchantDetails\Entity:
     bank_account_type: $string
     bank_branch: $string
     bank_branch_ifsc: ABCD0123456
-    bussiness_proof_url: $string
-    bussiness_pan_url: $string
+    business_proof_url: $string
+    business_pan_url: $string
     promoter_pan_url: $string
     address_proof_url: $string
     steps_finished: "[1,3,5]"

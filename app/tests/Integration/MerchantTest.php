@@ -204,23 +204,25 @@ class MerchantTest extends TestCase
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step1\"] > fieldset > .alerts > .alert-danger')));
 
-        // Fill in Bussiness Details and save
+        // Fill in business Details and save
         $this->browser
             ->click(l::css('form[name="step1"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step2\"]').is(':visible')", 20000)
-            ->select(l::IdOrName('bussiness_type'), 'Partnership')
-            ->type(l::IdOrName('bussiness_category'), 'Category')   // Fill name
-            ->type(l::IdOrName('bussiness_subcategory'), 'SubCategory')   // Fill slug
-            ->type(l::IdOrName('bussiness_registered_address'), 'address 1, 2')
-            ->type(l::IdOrName('bussiness_registered_state'), 'state')
-            ->type(l::IdOrName('bussiness_registered_city'), 'city')
-            ->type(l::IdOrName('bussiness_registered_pin'), '333333')
+            ->select(l::IdOrName('business_type'), 'Partnership')
+            ->type(l::IdOrName('business_name'), 'Test Company Pvt Ltd')
+            ->type(l::IdOrName('business_dba'), 'Tester')
+            ->select(l::IdOrName('business_international'), 'Yes')
+            ->type(l::IdOrName('business_paymentdetails'), 'Details of Payment')
+            ->type(l::IdOrName('business_registered_address'), 'address 1, 2')
+            ->type(l::IdOrName('business_registered_state'), 'state')
+            ->type(l::IdOrName('business_registered_city'), 'city')
+            ->type(l::IdOrName('business_registered_pin'), '333333')
             ->click(l::IdOrName('or_same'))
-            ->type(l::IdOrName('bussiness_doe'), '02/02/1992')
+            ->type(l::IdOrName('business_doe'), '02/02/1992')
             ->type(l::IdOrName('company_cin'), 'cin123455')
             ->type(l::IdOrName('company_pan'), 'pan12345')
             ->type(l::IdOrName('company_pan_name'), 'pan name')
-            ->type(l::IdOrName('bussiness_model'), 'my model')
+            ->type(l::IdOrName('business_model'), 'my model')
             ->select(l::IdOrName('transaction_volume'), '1 to 10 lakh')
             ->type(l::IdOrName('transaction_value'), '120')
             ->click(l::css('form[name="step2"] > fieldset > .prev-next > .btn-save'))
@@ -259,9 +261,9 @@ class MerchantTest extends TestCase
         $this->browser
             ->click(l::css('form[name="step4"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"]').is(':visible')", 20000)
-            ->attachFile(l::IdOrName('bussiness_proof'), URL::to('/img/logo.png'))
+            ->attachFile(l::IdOrName('business_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 1", 20000)
-            ->attachFile(l::IdOrName('bussiness_pan_proof'), URL::to('/img/logo.png'))
+            ->attachFile(l::IdOrName('business_pan_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 2", 20000)
             ->attachFile(l::IdOrName('promoter_pan_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 3", 20000)
