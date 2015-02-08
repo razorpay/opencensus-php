@@ -70,9 +70,9 @@
           <alert ng-repeat="alert in alerts[2].getAlerts()" type="{{alert.type}}" close="alerts[2].closeAlert($index)">{{alert.msg}}</alert>
         </div>
         <div class="form-group">
-          <label for="bussiness_type" class="col-sm-3 control-label">Organisation Type</label>
+          <label for="business_type" class="col-sm-3 control-label">Organisation Type</label>
           <div class="col-sm-8">
-              <select name="bussiness_type" ng-model="data.2.bussiness_type" class="form-control" required>
+              <select name="business_type" ng-model="data.2.business_type" class="form-control" required>
                 <option value="1">Proprietership</option>
                 <option value="2">Individual</option>
                 <option value="3">Partnership</option>
@@ -87,39 +87,61 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="bussiness_category" class="col-sm-3 control-label">Business Category</label>
+          <label for="business_name" class="col-sm-3 control-label">Full Business Name</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bussiness_category" ng-model="data.2.bussiness_category" placeholder="Bussiness Category" required>
+            <input type="text" class="form-control" name="business_name" ng-model="data.2.business_name" placeholder="Full business Name" required>
           </div>
         </div>
         <div class="form-group">
-          <label for="bussiness_subcategory" class="col-sm-3 control-label">Business Subcategory</label>
+          <label for="business_dba" class="col-sm-3 control-label">Doing Business As (If Different from Above)</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bussiness_subcategory" ng-model="data.2.bussiness_subcategory" placeholder="Bussiness Subcategory" required>
+            <input type="text" class="form-control" name="business_dba" ng-model="data.2.business_dba" placeholder="Doing Business As" >
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_registered_address" class="col-sm-3 control-label">Registered Address</label>
+          <label for="business_international" class="col-sm-3 control-label">International Payments Required?</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="bussiness_registered_address" ng-model="data.2.bussiness_registered_address" placeholder="Registered Address" required></textarea>
+              <select name="business_international" ng-model="data.2.business_international" class="form-control" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_registered_state" class="col-sm-3 control-label">Registration State</label>
+          <label for="business_paymentdetails" class="col-sm-3 control-label">Payments Accepted for (Also mention B2b or B2C):</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bussiness_registered_state" ng-model="data.2.bussiness_registered_state" placeholder="Registered State" required>
+            <input type="text" class="form-control" name="business_paymentdetails" ng-model="data.2.business_paymentdetails" placeholder="Payments Accepted for" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_registered_city" class="col-sm-3 control-label">Registered City</label>
+        <label for="business_model" class="col-sm-3 control-label">Business Model</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bussiness_registered_city" ng-model="data.2.bussiness_registered_city" placeholder="Registered City" required>
+            <textarea class="form-control" name="business_model" ng-model="data.2.business_model" placeholder="business Model"></textarea>
+            <span class="help-block">Please give a brief explanation of your business model and future plans (Essential for startups)</span>
+          </div>
+        </div>s
+        <div class="form-group">
+        <label for="business_registered_address" class="col-sm-3 control-label">Registered Address</label>
+          <div class="col-sm-8">
+            <textarea class="form-control" name="business_registered_address" ng-model="data.2.business_registered_address" placeholder="Registered Address" required></textarea>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_registered_pin" class="col-sm-3 control-label">Registered PIN</label>
+        <label for="business_registered_state" class="col-sm-3 control-label">Registration State</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bussiness_registered_pin" ng-model="data.2.bussiness_registered_pin" placeholder="Registered PIN" required>
+            <input type="text" class="form-control" name="business_registered_state" ng-model="data.2.business_registered_state" placeholder="Registered State" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="business_registered_city" class="col-sm-3 control-label">Registered City</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" name="business_registered_city" ng-model="data.2.business_registered_city" placeholder="Registered City" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="business_registered_pin" class="col-sm-3 control-label">Registered PIN</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" name="business_registered_pin" ng-model="data.2.business_registered_pin" placeholder="Registered PIN" required>
           </div>
         </div>
 
@@ -133,33 +155,33 @@
         </div>
 
         <div class="form-group">
-        <label for="bussiness_operation_address" class="col-sm-3 control-label">Operation Address</label>
+        <label for="business_operation_address" class="col-sm-3 control-label">Operation Address</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="bussiness_operation_address" ng-model="data.2.bussiness_operation_address" placeholder="Operation Address" ng-disabled="or_same" required></textarea>    
+            <textarea class="form-control" name="business_operation_address" ng-model="data.2.business_operation_address" placeholder="Operation Address" ng-disabled="or_same" required></textarea>    
             </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_operation_state" class="col-sm-3 control-label">Operation State</label>
+        <label for="business_operation_state" class="col-sm-3 control-label">Operation State</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bussiness_operation_state" ng-model="data.2.bussiness_operation_state" placeholder="Operation State" ng-disabled="or_same" required>
+            <input type="text" class="form-control" name="business_operation_state" ng-model="data.2.business_operation_state" placeholder="Operation State" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_operation_city" class="col-sm-3 control-label">Operation City</label>
+        <label for="business_operation_city" class="col-sm-3 control-label">Operation City</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bussiness_operation_city" ng-model="data.2.bussiness_operation_city" placeholder="Operation City" ng-disabled="or_same" required>
+            <input type="text" class="form-control" name="business_operation_city" ng-model="data.2.business_operation_city" placeholder="Operation City" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_operation_pin" class="col-sm-3 control-label">Operation PIN</label>
+        <label for="business_operation_pin" class="col-sm-3 control-label">Operation PIN</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="bussiness_operation_pin" ng-model="data.2.bussiness_operation_pin" placeholder="Operation PIN" ng-disabled="or_same" required>
+            <input type="text" class="form-control" name="business_operation_pin" ng-model="data.2.business_operation_pin" placeholder="Operation PIN" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_doe" class="col-sm-3 control-label">Date of Establishment</label>
+        <label for="business_doe" class="col-sm-3 control-label">Date of Establishment</label>
           <div class="col-sm-8">
-            <input type="date" class="form-control" name="bussiness_doe" ng-model="data.2.bussiness_doe" placeholder="Date of Establishment (MM/DD/YYYY)" required>
+            <input type="date" class="form-control" name="business_doe" ng-model="data.2.business_doe" placeholder="Date of Establishment (MM/DD/YYYY)" required>
           </div>
         </div>
         <div class="form-group">
@@ -181,13 +203,6 @@
           <div class="col-sm-8">
             <input type="text" class="form-control" name="company_pan_name" ng-model="data.2.company_pan_name" placeholder="Name on PAN (provided above)">
             <span class="help-block">Mandatory for Companies</span>
-          </div>
-        </div>
-        <div class="form-group">
-        <label for="bussiness_model" class="col-sm-3 control-label">Business Model</label>
-          <div class="col-sm-8">
-            <textarea class="form-control" name="bussiness_model" ng-model="data.2.bussiness_model" placeholder="Bussiness Model"></textarea>
-            <span class="help-block">Please give a brief explanation of your business model and future plans (Essential for startups)</span>
           </div>
         </div>
         <div class="form-group">
@@ -314,7 +329,7 @@
           <alert ng-repeat="alert in alerts[5].getAlerts()" type="{{alert.type}}" close="alerts[5].closeAlert($index)">{{alert.msg}}</alert>
         </div>
         <div class="form-group">
-          <label for="bussiness_proof" class="col-sm-3 control-label">Business Proof </label>
+          <label for="business_proof" class="col-sm-3 control-label">Business Proof </label>
           <div class="col-sm-8">
             <span class="help-block">
                 Upload scan of following(not needed for individual):
@@ -322,19 +337,19 @@
               <li>Certificate of Incorporation (Mandatory if private limited)</li>
               <li>Trust/Society/NGO etc. registration proof</li>
             </span>
-              <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="bussiness_proof" ng-file-select="onFileSelect($files, 'bussiness_proof')">
+              <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="business_proof" ng-file-select="onFileSelect($files, 'business_proof')">
               <div class="text-center m-t m-b alerts">
-                <alert ng-repeat="alert in fileAlerts.bussiness_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.bussiness_proof.closeAlert($index)">{{alert.msg}}</alert>
+                <alert ng-repeat="alert in fileAlerts.business_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.business_proof.closeAlert($index)">{{alert.msg}}</alert>
               </div>
           </div>
         </div>
         <div class="form-group">
-          <label for="bussiness_pan_proof" class="col-sm-3 control-label">Business PAN</label>
+          <label for="business_pan_proof" class="col-sm-3 control-label">Business PAN</label>
           <div class="col-sm-8">
             <span class="help-block">Company Pan Card (Sole Proprietor can use personal PAN)</span>
-            <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="bussiness_pan_proof" ng-file-select="onFileSelect($files, 'bussiness_pan_proof')">
+            <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="business_pan_proof" ng-file-select="onFileSelect($files, 'business_pan_proof')">
             <div class="text-center m-t m-b alerts">
-              <alert ng-repeat="alert in fileAlerts.bussiness_pan_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.bussiness_pan_proof.closeAlert($index)">{{alert.msg}}</alert>
+              <alert ng-repeat="alert in fileAlerts.business_pan_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.business_pan_proof.closeAlert($index)">{{alert.msg}}</alert>
             </div>
           </div>
         </div>

@@ -88,7 +88,7 @@
     <tab active="steps.step2" select="steps.percent=20">
       <tab-heading ng-class="{'text-success': check.2 === true, 'text-danger':check.2 === false}">
         <i class="fa" ng-class="{'fa-check': check.2 === true, 'fa-times':check.2 === false}"></i>
-        Bussiness Details
+        Business Details
       </tab-heading>
       <h4>Bussiness Details </h4>
       <form name="step2" class="form-validation form-horizontal" novalidate>
@@ -98,120 +98,145 @@
       </div>
       <fieldset ng-disabled="locked">
         <div class="form-group">
-          <label for="bussiness_type" class="col-sm-3 control-label">Organisation Type</label>
+          <label for="business_type" class="col-sm-3 control-label">Organisation Type</label>
           <div class="col-sm-8">
-              <select ng-model="data.2.bussiness_type" class="form-control" required>
-                        <option value="1">Proprietership</option>
-                        <option value="2">Individual</option>
-                        <option value="3">Partnership</option>
-                        <option value="4">Private Limited</option>
-                        <option value="5">Public Limited</option>
-                        <option value="6">LLP</option>
-                        <option value="7">NGO</option>
-                        <option value="8">Educational Institutes</option>
-                        <option value="9">Trust</option>
-                        <option value="10">Society</option>
-                      </select>
+              <select name="business_type" ng-model="data.2.business_type" class="form-control" required>
+                <option value="1">Proprietership</option>
+                <option value="2">Individual</option>
+                <option value="3">Partnership</option>
+                <option value="4">Private Limited</option>
+                <option value="5">Public Limited</option>
+                <option value="6">LLP</option>
+                <option value="7">NGO</option>
+                <option value="8">Educational Institutes</option>
+                <option value="9">Trust</option>
+                <option value="10">Society</option>
+              </select>
           </div>
         </div>
         <div class="form-group">
-          <label for="bussines_category" class="col-sm-3 control-label">Bussiness Category</label>
+          <label for="business_name" class="col-sm-3 control-label">Full Business Name</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.bussiness_category" placeholder="Bussiness Category" required>
+            <input type="text" class="form-control" name="business_name" ng-model="data.2.business_name" placeholder="Full business Name" required>
           </div>
         </div>
         <div class="form-group">
-          <label for="bussines_subcategory" class="col-sm-3 control-label">Bussiness Subcategory</label>
+          <label for="business_dba" class="col-sm-3 control-label">Doing Business As (If Different from Above)</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.bussiness_subcategory" placeholder="Bussiness Subcategory" required>
+            <input type="text" class="form-control" name="business_dba" ng-model="data.2.business_dba" placeholder="Doing Business As" >
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_registered_address" class="col-sm-3 control-label">Registered Address</label>
+          <label for="business_international" class="col-sm-3 control-label">International Payments Required?</label>
           <div class="col-sm-8">
-            <textarea class="form-control" ng-model="data.2.bussiness_registered_address" placeholder="Registered Address" required></textarea>
+              <select name="business_international" ng-model="data.2.business_international" class="form-control" required>
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_registered_state" class="col-sm-3 control-label">Registration State</label>
+          <label for="business_paymentdetails" class="col-sm-3 control-label">Payments Accepted for (Also mention B2b or B2C):</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.bussiness_registered_state" placeholder="Registered State" required>
+            <input type="text" class="form-control" name="business_paymentdetails" ng-model="data.2.business_paymentdetails" placeholder="Payments Accepted for" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_registered_city" class="col-sm-3 control-label">Registered City</label>
+        <label for="business_model" class="col-sm-3 control-label">Business Model</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.bussiness_registered_city" placeholder="Registered City" required>
+            <textarea class="form-control" name="business_model" ng-model="data.2.business_model" placeholder="business Model"></textarea>
+            <span class="help-block">Please give a brief explanation of your business model and future plans (Essential for startups)</span>
+          </div>
+        </div>s
+        <div class="form-group">
+        <label for="business_registered_address" class="col-sm-3 control-label">Registered Address</label>
+          <div class="col-sm-8">
+            <textarea class="form-control" name="business_registered_address" ng-model="data.2.business_registered_address" placeholder="Registered Address" required></textarea>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_registered_pin" class="col-sm-3 control-label">Registered PIN</label>
+        <label for="business_registered_state" class="col-sm-3 control-label">Registration State</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.bussiness_registered_pin" placeholder="Registered PIN" required>
+            <input type="text" class="form-control" name="business_registered_state" ng-model="data.2.business_registered_state" placeholder="Registered State" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_operation_address" class="col-sm-3 control-label">Operation Address</label>
+        <label for="business_registered_city" class="col-sm-3 control-label">Registered City</label>
           <div class="col-sm-8">
-            <textarea class="form-control" ng-model="data.2.bussiness_operation_address" placeholder="Operation Address" ng-disabled="or_same" required></textarea>    
+            <input type="text" class="form-control" name="business_registered_city" ng-model="data.2.business_registered_city" placeholder="Registered City" required>
+          </div>
+        </div>
+        <div class="form-group">
+        <label for="business_registered_pin" class="col-sm-3 control-label">Registered PIN</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" name="business_registered_pin" ng-model="data.2.business_registered_pin" placeholder="Registered PIN" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+        <label for="or_same" class="col-sm-3 control-label">Operation Address same as Registered Address</label>
+          <div class="col-sm-8">
+              <label class="i-switch m-t-xs m-r">
+                <input type="checkbox" ng-change="genOperation(or_same)" name="or_same" ng-model="or_same"><i></i> 
+              </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+        <label for="business_operation_address" class="col-sm-3 control-label">Operation Address</label>
+          <div class="col-sm-8">
+            <textarea class="form-control" name="business_operation_address" ng-model="data.2.business_operation_address" placeholder="Operation Address" ng-disabled="or_same" required></textarea>    
             </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_operation_state" class="col-sm-3 control-label">Operation State</label>
+        <label for="business_operation_state" class="col-sm-3 control-label">Operation State</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.bussiness_operation_state" placeholder="Operation State" ng-disabled="or_same" required>
+            <input type="text" class="form-control" name="business_operation_state" ng-model="data.2.business_operation_state" placeholder="Operation State" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_operation_city" class="col-sm-3 control-label">Operation City</label>
+        <label for="business_operation_city" class="col-sm-3 control-label">Operation City</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.bussiness_operation_city" placeholder="Operation City" ng-disabled="or_same" required>
+            <input type="text" class="form-control" name="business_operation_city" ng-model="data.2.business_operation_city" placeholder="Operation City" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_operation_pin" class="col-sm-3 control-label">Operation PIN</label>
+        <label for="business_operation_pin" class="col-sm-3 control-label">Operation PIN</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.bussiness_operation_pin" placeholder="Operation PIN" ng-disabled="or_same" required>
+            <input type="text" class="form-control" name="business_operation_pin" ng-model="data.2.business_operation_pin" placeholder="Operation PIN" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="bussiness_doe" class="col-sm-3 control-label">Date of Establishment</label>
+        <label for="business_doe" class="col-sm-3 control-label">Date of Establishment</label>
           <div class="col-sm-8">
-            <input type="date" class="form-control" ng-model="data.2.bussiness_doe" placeholder="Date of Establishment (MM/DD/YYYY)" required>
+            <input type="date" class="form-control" name="business_doe" ng-model="data.2.business_doe" placeholder="Date of Establishment (MM/DD/YYYY)" required>
           </div>
         </div>
         <div class="form-group">
         <label for="company_cin" class="col-sm-3 control-label">Company CIN</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.company_cin" placeholder="Company CIN">
+            <input type="text" class="form-control" name="company_cin" ng-model="data.2.company_cin" placeholder="Company CIN">
             <span class="help-block">Mandatory for Companies</span>
           </div>
         </div>
         <div class="form-group">
         <label for="company_pan" class="col-sm-3 control-label">Company PAN</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.company_pan" placeholder="Company PAN">
+            <input type="text" class="form-control" name="company_pan" ng-model="data.2.company_pan" placeholder="Company PAN">
             <span class="help-block">Mandatory for Companies</span>
           </div>
         </div>
         <div class="form-group">
         <label for="company_pan_name" class="col-sm-3 control-label">Name on PAN Card</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.company_pan_name" placeholder="Name on PAN (provided above)">
+            <input type="text" class="form-control" name="company_pan_name" ng-model="data.2.company_pan_name" placeholder="Name on PAN (provided above)">
             <span class="help-block">Mandatory for Companies</span>
-          </div>
-        </div>
-        <div class="form-group">
-        <label for="bussiness_model" class="col-sm-3 control-label">Bussiness Model</label>
-          <div class="col-sm-8">
-            <textarea class="form-control" ng-model="data.2.bussiness_model" placeholder="Bussiness Model"></textarea>
-            <span class="help-block">Explain little about your bussiness model and future plans. Essential for startups</span>
           </div>
         </div>
         <div class="form-group">
         <label for="transaction_volume" class="col-sm-3 control-label">Expected annual transaction volume (INR)</label>
           <div class="col-sm-8">
-            <select ng-model="data.2.transaction_volume" class="form-control" required>
+            <select name="transaction_volume" ng-model="data.2.transaction_volume" class="form-control" required>
                         <option value="1">< 1 Lakh</option>
                         <option value="2">1 to 10 lakh</option>
                         <option value="3">10 Lakh to 1 Crore</option>
@@ -222,7 +247,7 @@
         <div class="form-group">
         <label for="transaction_value" class="col-sm-3 control-label">Expected average transaction value</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" ng-model="data.2.transaction_value" placeholder="E.g. Average price of the commodities you sell">
+            <input type="text" class="form-control" name="transaction_value" ng-model="data.2.transaction_value" placeholder="E.g. Average price of the commodities you sell">
           </div>
         </div>
       </fieldset>
@@ -283,7 +308,7 @@
           <label for="bank_account_name" class="col-sm-3 control-label">Account Holder Name</label>
           <div class="col-sm-8">
             <input type="text" class="form-control" ng-model="data.4.bank_account_name" placeholder="Accunt Holder Name" required>
-            <span class="help-block">Should be same as bussiness/individual name</span>
+            <span class="help-block">Should be same as business/individual name</span>
           </div>
         </div>
         <div class="form-group">
@@ -321,7 +346,7 @@
       <fieldset ng-disabled="locked">
         <alert type="info">The links to uploaded files are valid for one hour, refresh the page if they do not work.</alert>
         <div class="form-group">
-          <label for="bussiness_proof" class="col-sm-3 control-label">Bussiness Proof </label>
+          <label for="business_proof" class="col-sm-3 control-label">Bussiness Proof </label>
           <div class="col-sm-8">
             <span class="help-block">
                 Upload scan of following(not needed for individual):
@@ -330,18 +355,18 @@
               <li>Trust/Society/NGO etc. registration proof</li>
             </span>    
               <div class="m-t m-b">
-                 <a href="{{files.bussiness_proof}}" target="_blank" ng-show="files.bussiness_proof">{{files.bussiness_proof}}</a>
-                <span ng-hide="files.bussiness_proof">No file Uploaded</span>
+                 <a href="{{files.business_proof}}" target="_blank" ng-show="files.business_proof">{{files.business_proof}}</a>
+                <span ng-hide="files.business_proof">No file Uploaded</span>
               </div>
           </div>
         </div>
         <div class="form-group">
-          <label for="bussiness_pan" class="col-sm-3 control-label">Bussiness PAN</label>
+          <label for="business_pan" class="col-sm-3 control-label">Bussiness PAN</label>
           <div class="col-sm-8">
             <span class="help-block">Company Pan Card (Sole Proprietor can use personal PAN)</span>
             <div class="m-t m-b">
-                 <a href="{{files.bussiness_pan_proof}}" target="_blank" ng-show="files.bussiness_pan_proof">{{files.bussiness_pan_proof}}</a>
-                <span ng-hide="files.bussiness_pan_proof">No file Uploaded</span>
+                 <a href="{{files.business_pan_proof}}" target="_blank" ng-show="files.business_pan_proof">{{files.business_pan_proof}}</a>
+                <span ng-hide="files.business_pan_proof">No file Uploaded</span>
             </div>
           </div>
         </div>

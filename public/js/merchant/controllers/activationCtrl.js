@@ -29,8 +29,8 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
     };
 
     $scope.fileAlerts = {
-      bussiness_proof: alertsFactory.getHandler(),
-      bussiness_pan_proof: alertsFactory.getHandler(),
+      business_proof: alertsFactory.getHandler(),
+      business_pan_proof: alertsFactory.getHandler(),
       promoter_pan_proof: alertsFactory.getHandler(),
       address_proof: alertsFactory.getHandler()
     };
@@ -49,10 +49,10 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
 
     $scope.genOperation = function(flag) {
       if(flag) {
-        $scope.data[2].bussiness_operation_address = $scope.data[2].bussiness_registered_address;
-        $scope.data[2].bussiness_operation_state = $scope.data[2].bussiness_registered_state;
-        $scope.data[2].bussiness_operation_city = $scope.data[2].bussiness_registered_city;
-        $scope.data[2].bussiness_operation_pin = $scope.data[2].bussiness_registered_pin;
+        $scope.data[2].business_operation_address = $scope.data[2].business_registered_address;
+        $scope.data[2].business_operation_state = $scope.data[2].business_registered_state;
+        $scope.data[2].business_operation_city = $scope.data[2].business_registered_city;
+        $scope.data[2].business_operation_pin = $scope.data[2].business_registered_pin;
       }
     };
 
