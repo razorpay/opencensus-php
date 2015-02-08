@@ -27,29 +27,33 @@ class CreateMerchantDetails extends Migration
 
             $table->string('contact_landline')->nullable();
 
-            $table->string('bussiness_type')->nullable();
+            $table->string('business_type')->nullable();
 
-            $table->string('bussiness_category')->nullable();
+            $table->string('business_name')->nullable();
 
-            $table->string('bussiness_subcategory')->nullable();
+            $table->string('business_dba')->nullable();
 
-            $table->string('bussiness_registered_address')->nullable();
+            $table->boolean('business_international')->default(0);
 
-            $table->string('bussiness_registered_state')->nullable();
+            $table->string('business_paymentdetails')->nullable();
 
-            $table->string('bussiness_registered_city')->nullable();
+            $table->string('business_registered_address')->nullable();
 
-            $table->string('bussiness_registered_pin')->nullable();
+            $table->string('business_registered_state')->nullable();
 
-            $table->string('bussiness_operation_address')->nullable();
+            $table->string('business_registered_city')->nullable();
 
-            $table->string('bussiness_operation_state')->nullable();
+            $table->string('business_registered_pin')->nullable();
 
-            $table->string('bussiness_operation_city')->nullable();
+            $table->string('business_operation_address')->nullable();
 
-            $table->string('bussiness_operation_pin')->nullable();
+            $table->string('business_operation_state')->nullable();
 
-            $table->string('bussiness_doe')->nullable();
+            $table->string('business_operation_city')->nullable();
+
+            $table->string('business_operation_pin')->nullable();
+
+            $table->string('business_doe')->nullable();
 
             $table->string('company_cin')->nullable();
 
@@ -57,7 +61,7 @@ class CreateMerchantDetails extends Migration
 
             $table->string('company_pan_name')->nullable();
 
-            $table->string('bussiness_model')->nullable();
+            $table->string('business_model')->nullable();
 
             $table->integer('transaction_volume')->unsigned();
 
@@ -79,9 +83,9 @@ class CreateMerchantDetails extends Migration
 
             $table->string('bank_branch_ifsc')->nullable();
 
-            $table->string('bussiness_proof_url')->nullable();
+            $table->string('business_proof_url')->nullable();
 
-            $table->string('bussiness_pan_url')->nullable();
+            $table->string('business_pan_url')->nullable();
 
             $table->string('promoter_pan_url')->nullable();
 

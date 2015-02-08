@@ -14,22 +14,24 @@ class Validator extends Base\Validator
     );
 
     protected static $step2Rules = array(
-        'bussiness_type'                => 'required|numeric|digits_between:1,10',
-        'bussiness_category'            => 'required|alpha_space',
-        'bussiness_subcategory'         => 'required|alpha_space',
-        'bussiness_registered_address'  => 'required|max:255',
-        'bussiness_registered_state'    => 'required|alpha_space|max:255',
-        'bussiness_registered_city'     => 'required|alpha_space|max:255',
-        'bussiness_registered_pin'      => 'required|max:15',
-        'bussiness_operation_address'   => 'required|max:255',
-        'bussiness_operation_state'     => 'required|alpha_space|max:255',
-        'bussiness_operation_city'      => 'required|alpha_space|max:255',
-        'bussiness_operation_pin'       => 'required|max:15',
-        'bussiness_doe'                 => 'required|date',
+        'business_type'                => 'required|numeric|digits_between:1,10',
+        'business_name'                => 'required|max:255',
+        'business_dba'                 => 'required|max:255',
+        'business_international'       => 'required|in:0,1',
+        'business_paymentdetails'      => 'required|max:2000',
+        'business_registered_address'  => 'required|max:255',
+        'business_registered_state'    => 'required|alpha_space|max:255',
+        'business_registered_city'     => 'required|alpha_space|max:255',
+        'business_registered_pin'      => 'required|max:15',
+        'business_operation_address'   => 'required|max:255',
+        'business_operation_state'     => 'required|alpha_space|max:255',
+        'business_operation_city'      => 'required|alpha_space|max:255',
+        'business_operation_pin'       => 'required|max:15',
+        'business_doe'                 => 'required|date',
         'company_cin'                   => 'alpha_num|max:20',
         'company_pan'                   => 'alpha_num|max:15',
         'company_pan_name'              => 'alpha_space|max:255|required_with:company_pan',
-        'bussiness_model'               => 'required|max:2000',
+        'business_model'               => 'required|max:2000',
         'transaction_volume'            => 'required|numeric|digits_between:1,4',
         'transaction_value'             => 'required|numeric|max:10000000'
     );
@@ -49,8 +51,8 @@ class Validator extends Base\Validator
     );
 
     protected static $uploadKeys = array(
-        'bussiness_proof',
-        'bussiness_pan_proof',
+        'business_proof',
+        'business_pan_proof',
         'promoter_pan_proof',
         'address_proof'
     );
