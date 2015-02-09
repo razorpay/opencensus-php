@@ -17,11 +17,6 @@ class SettlementTest extends TestCase
         $this->ba->publicAuth();
     }
 
-    public function testDummy()
-    {
-        // apparently you need to have a test per test file!
-    }
-
     public function testSettlement()
     {
         $pricing = $this->fixtures->create('pricing:standard_plan');
