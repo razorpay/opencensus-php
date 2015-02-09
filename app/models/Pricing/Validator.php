@@ -15,8 +15,8 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD_TYPE   => 'sometimes|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
-        Entity::PERCENT_RATE        => 'sometimes|numeric|max:10000',
-        Entity::FIXED_RATE          => 'sometimes|numeric|max:100000');
+        Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
+        Entity::FIXED_RATE          => 'sometimes|integer|max:100000');
 
     protected static $addPlanRuleValidators = array(
         'addPlanRuleRate',

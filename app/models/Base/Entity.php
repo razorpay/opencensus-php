@@ -14,7 +14,8 @@ class Entity extends EloquentEx
         // it is a UNIX timestamp's value and return as it is.
         // Otherwise we will call the parent function to handle it.
         //
-        if (is_numeric($value))
+        if ((ctype_digit($value)) or
+            (is_int($value)))
         {
             return (int) $value;
         }

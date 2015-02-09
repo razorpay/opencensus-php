@@ -36,7 +36,7 @@ class Balance extends Base\UniqueIdEntity
 
     protected function checkNumeric($arg)
     {
-        if (is_numeric($arg) === false)
+        if (is_int($arg) === false)
         {
             throw new Exception\InvalidArgumentException('
                 Unsigned integer required. Supplied: '.$amount);

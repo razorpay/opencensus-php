@@ -10,7 +10,7 @@ use Models\Payment;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'        =>  'required|numeric|max:50000000',
+        'amount'        =>  'required|integer|max:50000000',
         'currency'      =>  'required|max:3',
         'method'        =>  'in:card,netbanking',
         'card'          =>  'sometimes',
@@ -23,11 +23,11 @@ class Validator extends Base\Validator
         'notes'         =>  'sometimes|');
 
     protected static $captureRules = array(
-        'amount'        => 'required|numeric',
+        'amount'        => 'required|integer',
         'currency'      => 'sometimes|in:INR');
 
     protected static $refundRules = array(
-        'amount'        => 'sometimes|numeric');
+        'amount'        => 'sometimes|integer');
 
     protected static $createValidators = array(
         'card_key',
@@ -119,7 +119,7 @@ class Validator extends Base\Validator
         if ($contact[0] === '+')
             $contact = substr($contact, 1);
 
-        if (is_numeric($contact) === false)
+        if (ctype_digit($contact) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS,

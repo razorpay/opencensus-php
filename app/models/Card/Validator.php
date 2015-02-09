@@ -10,9 +10,9 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         'number'            => 'required|numeric|luhn|digits_between:12,19',
-        'expiry_month'      => 'required|numeric|digits_between:1,2|max:12|min:1',
-        'expiry_year'       => 'required|numeric|digits:4|non_past_year',
-        'cvv'               => 'required|numeric|digits_between:3,4',
+        'expiry_month'      => 'required|integer|digits_between:1,2|max:12|min:1',
+        'expiry_year'       => 'required|integer|digits:4|non_past_year',
+        'cvv'               => 'required|integer|digits_between:3,4',
         'name'              => 'required|alpha_space|max:100');
 
     protected static $createValidators = array('expiry_date');

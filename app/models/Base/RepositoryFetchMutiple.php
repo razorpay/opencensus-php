@@ -7,11 +7,11 @@ use EE\Exception;
 trait RepositoryFetch
 {
     protected static $fetchParamRules = array(
-        'created'       => 'numeric',
-        'from'          => 'numeric',
-        'to'            => 'numeric',
-        'count'         => 'numeric|max:100',
-        'skip'          => 'numeric');
+        'created'       => 'integer',
+        'from'          => 'integer',
+        'to'            => 'integer',
+        'count'         => 'integer|max:100',
+        'skip'          => 'integer');
 
     protected $params = array();
 

@@ -10,7 +10,7 @@ use Models\Payment;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'amount'        => 'sometimes|numeric|min:1');
+        'amount'        => 'sometimes|integer|min:1');
 
     protected static $createValidators = array(
         'paymentStatus',
