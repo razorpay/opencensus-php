@@ -9,10 +9,10 @@ class CardTest extends TestCase
 {
     use PaymentTrait;
 
-    protected $testDataFilePath = __DIR__.'/helpers/CardTestData.php';
-
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/CardTestData.php';
+
         parent::setUp();
 
         $this->ba->publicAuth();

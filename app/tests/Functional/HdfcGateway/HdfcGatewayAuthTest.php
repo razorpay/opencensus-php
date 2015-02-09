@@ -29,8 +29,6 @@ class HdfcGatewayAuthTest extends TestCase
 
         parent::setUp();
 
-        $gateway = \Config::get('gateway.default');
-
         $this->ba->publicAuth();
     }
 
