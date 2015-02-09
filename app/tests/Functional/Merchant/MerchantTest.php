@@ -147,7 +147,8 @@ class MerchantTest extends TestCase
     {
         $this->testAddBankAccount();
 
-        $this->startTest();
+        $content = $this->startTest();
+        s($content);
     }
 
     public function testSetBanks()

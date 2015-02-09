@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         'beneficiary_address3'  => 'required|max:255',
         'beneficiary_address4'  => 'required|max:255',
         'beneficiary_email'     => 'required|email',
-        'beneficiary_mobile'    => 'required|integer|digits:10',
+        'beneficiary_mobile'    => 'required|digits:10',
     );
 
     protected static $addBankAccountValidators = array(
