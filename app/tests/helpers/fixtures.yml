@@ -21,6 +21,7 @@ Models\MerchantDetails\Entity:
     business_type: 2
     business_name: $string
     business_dba: $string
+    business_website: $string
     business_international: 1
     business_paymentdetails: $string
     business_registered_address: $string

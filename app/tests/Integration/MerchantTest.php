@@ -211,6 +211,7 @@ class MerchantTest extends TestCase
             ->select(l::IdOrName('business_type'), 'Partnership')
             ->type(l::IdOrName('business_name'), 'Test Company Pvt Ltd')
             ->type(l::IdOrName('business_dba'), 'Tester')
+            ->type(l::IdOrName('business_website'), 'testing.com')
             ->select(l::IdOrName('business_international'), 'Yes')
             ->type(l::IdOrName('business_paymentdetails'), 'Details of Payment')
             ->type(l::IdOrName('business_registered_address'), 'address 1, 2')

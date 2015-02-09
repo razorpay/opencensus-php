@@ -33,6 +33,8 @@ class CreateMerchantDetails extends Migration
 
             $table->string('business_dba')->nullable();
 
+            $table->string('business_website')->nullable();
+
             $table->boolean('business_international')->default(0);
 
             $table->string('business_paymentdetails')->nullable();

@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         'business_type'                => 'required|numeric|digits_between:1,10',
         'business_name'                => 'required|max:255',
         'business_dba'                 => 'required|max:255',
+        'business_website'             => 'required|max:255',
         'business_international'       => 'required|in:0,1',
         'business_paymentdetails'      => 'required|max:2000',
         'business_registered_address'  => 'required|max:255',
