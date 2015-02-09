@@ -74,7 +74,7 @@ trait PaymentAtomTrait
             // Note that Requests library follows the redirect to banklist and fetches the form
             // so we can skip that step.
             //
-            list($url, $method, $values, $response) = $this->makeRequestAndGetFormData($url, 'GET');
+            list($url, $method, $values, $response) = $this->makeRequestAndGetFormData($redirectUrl, 'GET');
 
             //
             // Atom cookie. Provide it in every subsequent request
