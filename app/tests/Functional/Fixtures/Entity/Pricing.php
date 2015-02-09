@@ -19,7 +19,7 @@ class Pricing extends Base
                         'payment_method_type' => null,
                         'payment_network' => null,
                         'payment_issuer' => null,
-                        'percent_rate' => 2000,
+                        'percent_rate' => 200,
                         'fixed_rate' => 0,
                     ),
                     array(
@@ -30,7 +30,7 @@ class Pricing extends Base
                         'payment_method_type' => null,
                         'payment_network' => 'AMEX',
                         'payment_issuer' => null,
-                        'percent_rate' => 3000,
+                        'percent_rate' => 300,
                         'fixed_rate' => 0,
                     ),
                     array(
@@ -41,7 +41,7 @@ class Pricing extends Base
                         'payment_method_type' => null,
                         'payment_network' => 'DICL',
                         'payment_issuer' => null,
-                        'percent_rate' => 3000,
+                        'percent_rate' => 300,
                         'fixed_rate' => 0,
                     ),
                     array(
@@ -52,8 +52,8 @@ class Pricing extends Base
                         'payment_method_type' => null,
                         'payment_network' => null,
                         'payment_issuer' => null,
-                        'percent_rate' => 0,
-                        'fixed_rate' => 2500,
+                        'percent_rate' => 250,
+                        'fixed_rate' => 0,
                     ),
                 );
 

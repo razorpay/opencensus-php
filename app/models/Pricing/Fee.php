@@ -31,6 +31,7 @@ class Fee
         $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
 
         $fee = (($amount * $percent) / 10000) + $fixed;
+
         $fee = (int) ceil($fee);
 
         $serviceTax = (int) ceil(($fee * self::SERVICE_TAX_PERCENT) / 100);
@@ -76,7 +77,7 @@ class Fee
             if (count($pricing) > 1)
             {
                 throw new Exception\LogicException(
-                    'Currently only 1 net-banking pricing rule allowed. Found: ' . count($rules));
+                    'Currently only 1 net-banking pricing rule allowed. Found: ' . count($pricing));
             }
 
             $rule = $pricing->first();

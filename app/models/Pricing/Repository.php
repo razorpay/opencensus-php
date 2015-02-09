@@ -68,7 +68,7 @@ class Repository extends Base\Repository
 
         return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::NETBANKING)
-                    ->firstOrFail();
+                    ->get();
     }
 
     public function getPricingPlans()
