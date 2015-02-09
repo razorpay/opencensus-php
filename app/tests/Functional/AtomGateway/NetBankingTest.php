@@ -29,9 +29,6 @@ class NetBankingTest extends TestCase
 
         $this->fixtures->create('terminal:atom_terminal');
 
-        $gateway = $this->app['config']->get('gateway');
-        $this->mock = $gateway['mock_atom'];
-
         $this->payment = array(
             'method' => 'netbanking',
             'bank' => 'SBIN',

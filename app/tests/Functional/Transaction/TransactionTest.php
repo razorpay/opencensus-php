@@ -18,11 +18,6 @@ class TransactionTest extends TestCase
         $this->ba->proxyAuth();
     }
 
-    public function testDummy()
-    {
-        ;// apparently you need to have a test per test file!
-    }
-
     public function testAddAdjustment()
     {
         $adj = $this->startTest();
@@ -34,24 +29,53 @@ class TransactionTest extends TestCase
 
         $txn = $this->getLastTransaction();
 
-        $txnData = array(
-            'entity' => 'transaction',
-            'entity_id' => $adj['id'],
-            'type' => 'adjustment',
-            'amount' => 100,
-            'currency' => 'INR',
-            'debit' => 0,
-            'credit' => 100,
-            'escrow_balance' => 1000100,
-            'balance' => 1000100,
-            'gateway_fee' => 0,
-            'fee' => 0,
-            'api_fee' => 0,
-            'merchant_id' => '10000000000000',
-            'pricing_rule_id' => null,
-        );
+        $testData = $this->testData['txnDataAfterAddingAdjustment'];
+        $testData['entity_id'] = $adj['id'];
+        $this->assertArraySelectiveEquals($testData, $txn);
+    }
 
-        $this->assertArraySelectiveEquals($txnData, $txn);
+    public function testTransactionAfterCapturingPayment()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $txn = $this->getLastTransaction();
+
+        $testData = $this->testData['txnDataAfterCapturingPayment'];
+        $testData['entity_id'] = $payment['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $payment;
+    }
+
+    public function testTransactionAfterRefund()
+    {
+        $refund = $this->doAuthCaptureAndRefundPayment();
+
+        $txn = $this->getLastTransaction();
+
+        $testData = $this->testData['txnDataAfterRefundingPayment'];
+        $testData['entity_id'] = $refund['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $refund;
+    }
+
+    public function testTransactionAfterAtomPayment()
+    {
+        $this->gateway = 'atom';
+        $this->fixtures->create('terminal:atom_terminal');
+
+        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $txn = $this->getLastTransaction();
+
+        $testData = $this->testData['txnDataAfterCapturingAtomPayment'];
+        $testData['entity_id'] = $payment['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
     }
 
     protected function getLastTransaction()

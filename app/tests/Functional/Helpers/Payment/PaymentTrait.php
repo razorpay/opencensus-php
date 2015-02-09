@@ -19,9 +19,44 @@ trait PaymentTrait
 
     protected $gateway = 'hdfc';
 
-    protected function doAuthAndGetPayment($paymentRequest, $paymentResponse = array())
+    protected function doAuthAndCapturePayment($payment = null)
     {
-        $payment = $this->doJsonpAuthPayment($paymentRequest);
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $paymentAuth = $this->doJsonpAuthPayment($payment);
+
+        $payment = $this->capturePayment(
+            $paymentAuth['razorpay_payment_id'],
+            $payment['amount']);
+
+        return $payment;
+    }
+
+    protected function doAuthCaptureAndRefundPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        return $refund;
+    }
+
+    protected function doAuthAndGetPayment($payment = null, $paymentResponse = array())
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment = $this->doJsonpAuthPayment($payment);
 
         $id = $payment['razorpay_payment_id'];
 
@@ -241,8 +276,17 @@ trait PaymentTrait
             'contact'           => '9918899029',
             'notes'             => array(
                 'merchant_order_id' => 'random order id'),
-            'description'       => 'random description'
+            'description'       => 'random description',
+            'bank'              => 'HDFC',
         ];
+
+        return $payment;
+    }
+
+    protected function getDefaultNetBankingPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'netbanking';
 
         return $payment;
     }

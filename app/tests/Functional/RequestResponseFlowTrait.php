@@ -143,6 +143,20 @@ trait RequestResponseFlowTrait
         return $content;
     }
 
+    protected function getJsonStringFromJsonp($response, $callback)
+    {
+        $content = $response->getContent();
+
+        if ($callback !== null)
+        {
+            $content = $this->processJsonp($content, $callback);
+        }
+
+        $this->assertJson($content);
+
+        return $content;
+    }
+
     protected function processAndAssertStatusCode($data, $response)
     {
         $expectedHttpStatusCode = $this->getExpectedHttpStatusCode($data);

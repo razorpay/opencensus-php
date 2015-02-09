@@ -13,40 +13,32 @@ trait PaymentAtomTrait
      * Runs payment callback flow for atom net-banking transactions
      * @param  array $response
      */
-    protected function runPaymentCallbackFlowAtom($response)
+    protected function runPaymentCallbackFlowAtom($response, &$callback = null)
     {
-        $content = $response->getContent();
+        //
+        // Figure out whether to runn atom payment flow or not
+        //
 
-        if ((json_decode($content) !== null) or
-            (get_class($response) !== 'Illuminate\Http\RedirectResponse') or
-            ($response->getStatusCode() !== 302))
+        list($runAtomFlow, $redirectUrl) = $this->isAtomFlowRequired($response, $callback);
+
+        if ($runAtomFlow === false)
         {
             return $response;
         }
 
-        $url = $response->getTargetUrl();
+        $content = $response->getContent();
+        $callback = null;
 
         $headers = array();
 
-        $mock = $this->mock;
+        $gateway = $this->app['config']->get('gateway');
+        $mock = $gateway['mock_atom'];
 
         $atomBaseUrl = 'http://203.114.240.183:80';
 
         if ($mock)
         {
-            $this->ba->publicAuth();
-
-            // Extract the uri part after 'v1'.
-            // This removes the basic auth user/pwd from absolute url
-            // which would otherwise interfere with later requests.
-            // @note: In laravel tests, later requests will take up the basic auth
-            //        parameters of previous requests if the basic auth params were
-            //        supplied via absolute url and in the process ignore the ones
-            //        provided via $server. Weird gotcha!
-            $ix = strpos($url, '/v1/');
-            $uri = substr($url, $ix + 3);
-
-            $request = array('method' => 'GET', 'url' => $uri);
+            $request = array('method' => 'GET', 'url' => $redirectUrl);
             $response = $this->makeRequestParent($request);
             $statusCode = $response->getStatusCode();
 
@@ -56,7 +48,7 @@ trait PaymentAtomTrait
             // Now, we are going to submit the data to bank
             // Which in this case is Razorpay bank
             //
-            list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), $url);
+            list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), $redirectUrl);
 
             // See above note.
             $ix = strpos($url, '/v1/');
@@ -164,5 +156,35 @@ trait PaymentAtomTrait
         $response = $this->submitPaymentCallbackForm($form);
 
         return $response;
+    }
+
+    protected function isAtomFlowRequired($response, $callback = null)
+    {
+        $content = $response->getContent();
+
+        //
+        // if it's jsonp, then $response will be of type JsonResponse
+        // otherwise of RedirectResponse
+        //
+
+        if (($callback !== null) and
+            (get_class($response) === 'Illuminate\Http\JsonResponse'))
+        {
+            $content = $this->getJsonContentFromResponse($response, $callback);
+
+            if (isset($content['redirectUrl']))
+            {
+                return array(true, $content['redirectUrl']);
+            }
+        }
+
+        if ((json_decode($content) !== null) or
+            (get_class($response) !== 'Illuminate\Http\RedirectResponse') or
+            ($response->getStatusCode() !== 302))
+        {
+            return array(false, null);
+        }
+
+        return array(true, $response->getTargetUrl());
     }
 }
