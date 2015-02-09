@@ -28,6 +28,15 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::ACCOUNT_NUMBER, 40);
 
+            $table->string(BankAccount::BENEFICIARY_ADDRESS1, 255);
+            $table->string(BankAccount::BENEFICIARY_ADDRESS2, 255);
+            $table->string(BankAccount::BENEFICIARY_ADDRESS3, 255);
+            $table->string(BankAccount::BENEFICIARY_ADDRESS4, 255);
+
+            $table->string(BankAccount::BENEFICIARY_EMAIL, 255);
+
+            $table->integer(BankAccount::BENEFICIARY_MOBILE);
+
             $table->integer(BankAccount::CREATED_AT);
             $table->integer(BankAccount::UPDATED_AT);
 

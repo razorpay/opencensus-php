@@ -220,6 +220,12 @@ return [
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '0002020000304030434',
                 'beneficiary_name' => 'Test beneficiary random name',
+                'beneficiary_address1' => 'address 1',
+                'beneficiary_address2' => 'address 2',
+                'beneficiary_address3' => 'address 3',
+                'beneficiary_address4' => 'address 4',
+                'beneficiary_email' => 'random@email.com',
+                'beneficiary_mobile' => '1234567890',
             ],
             'url' => '/merchants/10000000000000/bank_account',
             'method' => 'POST'
@@ -245,6 +251,12 @@ return [
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '0002020000304030434',
                 'beneficiary_name' => 'Test beneficiary random name',
+                'beneficiary_address1' => 'address 1',
+                'beneficiary_address2' => 'address 2',
+                'beneficiary_address3' => 'address 3',
+                'beneficiary_address4' => 'address 4',
+                'beneficiary_email' => 'random@email.com',
+                'beneficiary_mobile' => '1234567890',
             ]
         ]
     ],
