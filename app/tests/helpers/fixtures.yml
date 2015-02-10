@@ -15,8 +15,8 @@ Models\MerchantDetails\Entity:
     merchant_id:
         type: Models\Merchant\Entity
     contact_name: $string
-    contact_email: $string
-    contact_mobile: $string
+    contact_email: $string@$string.com
+    contact_mobile: 9000000000
     contact_landline: $string
     business_type: 2
     business_name: $string
