@@ -178,11 +178,17 @@ trait RequestResponseFlowTrait
 
     protected function makeRequest($request)
     {
-        $server = array();
+        $defaults = array(
+            'method' => 'POST',
+            'content' => array(),
+            'server' => array(),
+            'files' => array());
+
+        $request = array_merge($defaults, $request);
 
         if ($this->ba->isPublicAuth() === false)
         {
-            $server = $this->ba->getCreds();
+            $request['server'] = array_merge($request['server'], $this->ba->getCreds());
         }
 
         // Adds '/v1' to beginning if not already there and
@@ -192,14 +198,6 @@ trait RequestResponseFlowTrait
         {
             $request['url'] = '/v1' . $request['url'];
         }
-
-        $defaults = array(
-            'method' => 'POST',
-            'content' => array(),
-            'server' => $server,
-            'files' => array());
-
-        $request = array_merge($defaults, $request);
 
         $this->convertContentToString($request['content']);
 

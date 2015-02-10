@@ -19,6 +19,8 @@ class Server
 
     public function netBankingTransactionChooseBank($input)
     {
+        $this->checkReferer();
+
         $this->verifyTxn1stStageInput($input);
 
         $atom = $this->repo->findByToken($input['token']);
@@ -97,6 +99,8 @@ class Server
 
     public function atomRzpBankPage($input)
     {
+        $this->checkReferer();
+
         $bankTxnId = random_integer(6);
 
         $data = array(
@@ -110,14 +114,10 @@ class Server
         return $data;
     }
 
-    public function atomRzpBankSubmit($input)
-    {
-
-        ;
-    }
-
     public function atomRzpBankPageSubmit($input)
     {
+        $this->checkReferer();
+
         $tempTxnId = $input['tempTxnId'];
 
         $success = $input['success'];
@@ -199,6 +199,25 @@ class Server
             </RESPONSE></MERCHANT></MMP>';
 
         return $str;
+    }
+
+    protected function checkReferer()
+    {
+        $request = $this->request;
+
+        $referer = $request->headers->get('referer');
+
+        $schema = $request->getScheme().'://';
+        $host = $request->getHost();
+        $host = $schema.$host;
+
+        $pos = strpos($referer, $host);
+
+        if ($pos !== 0)
+        {
+            throw new Exception\LogicException(
+                'Unexpected referer value. Referer: ' . $referer);
+        }
     }
 
     protected function getBankPageUrl()

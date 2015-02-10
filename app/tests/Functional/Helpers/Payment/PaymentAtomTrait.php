@@ -38,7 +38,9 @@ trait PaymentAtomTrait
 
         if ($mock)
         {
-            $request = array('method' => 'GET', 'url' => $redirectUrl);
+            $server = array('HTTP_REFERER' => 'http://localhost');
+
+            $request = array('method' => 'GET', 'url' => $redirectUrl, 'server' => $server);
             $response = $this->makeRequestParent($request);
             $statusCode = $response->getStatusCode();
 
@@ -57,7 +59,8 @@ trait PaymentAtomTrait
             $request = array(
                 'method' => $method,
                 'url' => $uri,
-                'content' => $values);
+                'content' => $values,
+                'server' => $server);
 
             $response = $this->makeRequestParent($request);
             $content = $response->getContent();
