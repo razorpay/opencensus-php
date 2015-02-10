@@ -53,6 +53,7 @@ return [
         'escrow_balance' => 1000100,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => null,
+        'channel' => 'kotak',
     ],
 
     'txnDataAfterCapturingPayment' => [
@@ -69,6 +70,7 @@ return [
         'escrow_balance' => 1048876,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        'channel' => 'kotak',
     ],
 
     'txnDataAfterRefundingPayment' => [
@@ -85,6 +87,7 @@ return [
         'escrow_balance' => 998876,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => null,
+        'channel' => 'kotak',
     ],
 
     'txnDataAfterCapturingAtomPayment' => [
@@ -101,5 +104,23 @@ return [
         'escrow_balance' => 1048595,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => '1zD0BXpeOyaqpB',
-    ]
+        'channel' => 'atom',
+    ],
+
+    'txnDataAfterRefundingAtomPayment' => [
+        'entity' => 'transaction',
+        'type' => 'refund',
+        'amount' => 50000,
+        'currency' => 'INR',
+        'debit' => 50000,
+        'credit' => 0,
+        'fee' => 0,
+        'gateway_fee' => 0,
+        'api_fee' => 0,
+        'balance' => 998595,
+        'escrow_balance' => 998595,
+        'merchant_id' => '10000000000000',
+        'pricing_rule_id' => null,
+        'channel' => 'atom',
+    ],
 ];
