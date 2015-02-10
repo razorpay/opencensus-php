@@ -14,11 +14,12 @@ class Merchant
 
     protected $amount;
 
-    public function __construct($merchant, $amount)
+    public function __construct($merchant, $amount, $channel)
     {
         $this->merchant = $merchant;
 
         $this->amount = $amount;
+        $this->channel = $channel;
 
         $this->merchantRepo = new Models\Merchant\Repository;
         $this->txnRepo = new Transaction\Repository;
@@ -65,6 +66,7 @@ class Merchant
             Transaction\Entity::FEE         => 0,
             Transaction\Entity::AMOUNT      => $this->amount,
             Transaction\Entity::TYPE        => Transaction\Type::SETTLEMENT,
+            Transaction\Entity::CHANNEL     => $this->channel
         );
 
         $txn->fillAndGenerateId($values);
@@ -80,7 +82,7 @@ class Merchant
 
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
-        $setl->setChannel(Channel::KOTAK);
+        $setl->setChannel($this->channel);
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);

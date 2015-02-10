@@ -63,6 +63,8 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::ESCROW_BALANCE)
                   ->nullable();
 
+            $table->string(Transaction::CHANNEL, 8);
+
             $table->boolean(Transaction::SETTLED)
                   ->default(0);
 
@@ -90,6 +92,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::SETTLED);
 
             $table->index(Transaction::RECONCILED_AT);
+
+            $table->index(Transaction::CHANNEL);
 
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

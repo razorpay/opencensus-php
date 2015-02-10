@@ -35,7 +35,7 @@ class CreateSettlements extends Migration {
                   ->nullable()
                   ->unique();
 
-            $table->string(Settlement::CHANNEL);
+            $table->string(Settlement::CHANNEL, 8);
 
             $table->string(Settlement::UTR)
                   ->nullable()
@@ -51,6 +51,10 @@ class CreateSettlements extends Migration {
             // Adds created_at and updated_at columns to the table
             $table->integer(Settlement::CREATED_AT);
             $table->integer(Settlement::UPDATED_AT);
+
+            $table->index(Settlement::CHANNEL);
+
+            $table->index(Settlement::STATUS);
 
             $table->foreign(Settlement::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
