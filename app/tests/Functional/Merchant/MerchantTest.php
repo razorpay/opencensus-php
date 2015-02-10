@@ -169,8 +169,6 @@ class MerchantTest extends TestCase
 
     public function testGetBanksByMerchantAuth()
     {
-        $this->testSetBanks();
-
         $this->ba->publicTestAuth();
 
         $this->startTest();

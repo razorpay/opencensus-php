@@ -163,3 +163,7 @@ Models\Card\Detail:
     country: IN
     issuer: SBI
     trivia: $string
+
+Models\Merchant\Banks\Entity:
+    merchant_id: 10000000000000
+    banks: '[]'
