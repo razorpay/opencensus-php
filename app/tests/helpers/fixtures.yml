@@ -47,6 +47,9 @@ Models\MerchantDetails\Entity:
     bank_account_type: $string
     bank_branch: $string
     bank_branch_ifsc: ABCD0123456
+    bank_beneficiary_address1: $string
+    bank_beneficiary_address2: $string
+    bank_beneficiary_address3: $string
     business_proof_url: $string
     business_pan_url: $string
     promoter_pan_url: $string

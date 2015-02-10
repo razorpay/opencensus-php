@@ -48,7 +48,10 @@ class Validator extends Base\Validator
         'bank_account_name'     => 'required|alpha_space|max:255',
         'bank_account_type'     => 'required|alpha_space|max:20',
         'bank_branch'           => 'required|max:255',
-        'bank_branch_ifsc'      => 'required|alpha_num|max:20'
+        'bank_branch_ifsc'      => 'required|alpha_num|max:20',
+        'bank_beneficiary_address1' => 'required|max:255',
+        'bank_beneficiary_address2' => 'max:255',
+        'bank_beneficiary_address3' => 'max:255',
     );
 
     protected static $uploadKeys = array(

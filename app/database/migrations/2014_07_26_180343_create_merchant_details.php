@@ -85,6 +85,12 @@ class CreateMerchantDetails extends Migration
 
             $table->string('bank_branch_ifsc')->nullable();
 
+            $table->string('bank_beneficiary_address1')->nullable();
+
+            $table->string('bank_beneficiary_address2')->nullable();
+
+            $table->string('bank_beneficiary_address3')->nullable();
+
             $table->string('business_proof_url')->nullable();
 
             $table->string('business_pan_url')->nullable();

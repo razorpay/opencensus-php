@@ -328,9 +328,15 @@ class Service extends Base\Service
         $this->setApiCredentials();
 
         $bankAccount = array(
-            'ifsc_code'         => $details['merchant_details']['bank_branch_ifsc'],
-            'beneficiary_name'  => $details['merchant_details']['bank_account_name'],
-            'account_number'    => $details['merchant_details']['bank_account_number']
+            'ifsc_code'             => $details['merchant_details']['bank_branch_ifsc'],
+            'beneficiary_name'      => $details['merchant_details']['bank_account_name'],
+            'account_number'        => $details['merchant_details']['bank_account_number'],
+            'beneficiary_address1'  => $details['merchant_details']['bank_beneficiary_address1'],
+            'beneficiary_address2'  => $details['merchant_details']['bank_beneficiary_address2'],
+            'beneficiary_address3'  => $details['merchant_details']['bank_beneficiary_address3'],
+            'beneficiary_address4'  => '',
+            'beneficiary_email'     => $details['merchant_details']['contact_email'],
+            'beneficiary_mobile'    => $details['merchant_details']['contact_mobile']
         );
 
         try
