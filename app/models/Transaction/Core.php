@@ -9,6 +9,7 @@ use Models\Merchant;
 use Models\Payment;
 use Models\Payment\Refund;
 use Models\Pricing;
+use Models\Terminal;
 use Models\Transaction;
 use Models\Adjustment;
 
@@ -49,13 +50,27 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED_AT  => $settledAt,
             Transaction\Entity::PRICING_RULE_ID => $pricingRuleId);
 
+        $channel = Transaction\Channel::KOTAK;
+
         if ($payment->getGateway() === Payment\Gateway::ATOM)
         {
             $txnData[Transaction\Entity::RECONCILED_AT] = time();
             $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
             $txnData[Transaction\Entity::API_FEE] = 0;
-            $txnData[Transaction\Entity::SETTLED_AT] = Carbon::today('Asia/Kolkata')->addDays(2)->timestamp;
+
+            $settledAt = Carbon::today('Asia/Kolkata')->addDays(2)->timestamp;
+            $channel = Transaction\Channel::ATOM;
+
+            if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
+            {
+                $settledAt = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
+                $channel = Transaction\Channel::KOTAK;
+            }
+
+            $txnData[Transaction\Entity::SETTLED_AT] = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
         }
+
+        $txnData[Transaction\Entity::CHANNEL] = $channel;
 
         $txn = new Transaction\Entity($txnData);
         $txn->generateId();
@@ -84,11 +99,15 @@ class Core extends Base\Core
             Transaction\Entity::CURRENCY    => 'INR',
             Transaction\Entity::SETTLED_AT  => $settledAt);
 
-        if ($refund->getGateway() === Payment\Gateway::ATOM)
+        $gateway = $refund->getGateway();
+
+        if ($gateway === Payment\Gateway::ATOM)
         {
             $txnData[Transaction\Entity::RECONCILED_AT] = time();
             $txnData[Transaction\Entity::SETTLED_AT] = Carbon::today('Asia/Kolkata')->addDays(2)->timestamp;
         }
+
+        $txnData[Transaction\Entity::CHANNEL] = Payment\Gateway::getChannel($gateway);
 
         $txn = new Transaction\Entity($txnData);
         $txn->generateId();
@@ -130,6 +149,7 @@ class Core extends Base\Core
             Transaction\Entity::FEE             => 0,
             Transaction\Entity::AMOUNT          => abs($amount),
             Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
+            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
         );
 
         $txn->fillAndGenerateId($values);

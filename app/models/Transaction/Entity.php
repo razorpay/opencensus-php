@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const API_FEE           = 'api_fee';
     const ESCROW_BALANCE    = 'escrow_balance';
     const RECONCILED_AT     = 'reconciled_at';
+    const CHANNEL           = 'channel';
     const SETTLED           = 'settled';
     const SETTLED_AT        = 'settled_at';
     const SETTLEMENT_ID     = 'settlement_id';
@@ -49,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
         self::RECONCILED_AT,
+        self::CHANNEL,
         self::SETTLED_AT);
 
     protected $public = array(
@@ -68,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
         self::RECONCILED_AT,
+        self::CHANNEL,
         self::SETTLED,
         self::SETTLED_AT);
 
@@ -195,35 +198,7 @@ class Entity extends Base\PublicEntity
 
     public function getChannel()
     {
-        $type = $this->getType();
-
-        $channel = null;
-        $gateway = null;
-
-        $entity = $this->getRelation('entity');
-
-        switch ($type)
-        {
-            case Type::PAYMENT:
-                $gateway = $entity->getGateway();
-                break;
-            case Type::REFUND:
-                $gateway = $entity->payment->getGateway();
-                break;
-            case Type::SETTLEMENT:
-            case Type::ADJUSTMENT:
-                $channel = $entity->getChannel();
-                break;
-            default:
-                throw new Exception\LogicException('Invalid type: ' . $type);
-        }
-
-        if ($channel === null)
-        {
-            $channel = Payment\Gateway::getChannel($gateway);
-        }
-
-        return $channel;
+        return $this->getAttribute(self::CHANNEL);
     }
 
     public function setReconciledAt($timestamp)

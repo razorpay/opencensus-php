@@ -146,8 +146,6 @@ class Settler
 
     protected function createSettlements($txns, $channel)
     {
-        $gateways = Channel::getGateways($channel);
-
         $settlements = new Base\PublicCollection;
 
         $i = 0;
@@ -168,7 +166,7 @@ class Settler
             {
                 $txn = $txns[$i];
 
-                if ($this->shouldSettle($txn, $gateways) === false)
+                if ($this->shouldSettle($txn, $channel) === false)
                 {
                     $i++;
                     continue;
@@ -179,16 +177,16 @@ class Settler
                 $i++;
             }
 
-            $setl = (new Settlement\Merchant($merchant, $setlAmount))->settle($setlTxns);
+            $setl = (new Settlement\Merchant($merchant, $setlAmount, $channel))->settle($setlTxns);
             $settlements->push($setl);
         }
 
         return $settlements;
     }
 
-    protected function shouldSettle(Transaction\Entity $txn, $gateways)
+    protected function shouldSettle(Transaction\Entity $txn, $channel)
     {
-        return (in_array($txn->getGateway(), $gateways));
+        return ($txn->getChannel() === $channel);
     }
 
     protected function createSettlementFile($settlements, $txns)

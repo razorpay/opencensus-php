@@ -10,8 +10,9 @@ class Gateway
     const ATOM = 'atom';
 
     public static $channels = array(
-        self::HDFC => Settlement\Channel::KOTAK,
-        self::ATOM => Settlement\Channel::ATOM);
+        self::HDFC          => Settlement\Channel::KOTAK,
+        self::ATOM          => Settlement\Channel::ATOM,
+    );
 
     public static function getChannel($gateway)
     {

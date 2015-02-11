@@ -109,7 +109,7 @@ class DatabaseSeeder extends Seeder
 
             if ($name === 'test')
             {
-                $this->createTerminals();
+                $this->createTestTerminals();
             }
 
             DB::table(Table::MERCHANT_BANKS)->insert(
@@ -132,7 +132,7 @@ class DatabaseSeeder extends Seeder
         });
     }
 
-    protected function createTerminals()
+    protected function createTestTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
             array(

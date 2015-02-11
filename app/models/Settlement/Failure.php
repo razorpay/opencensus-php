@@ -26,7 +26,7 @@ class Failure
 
         $adj = $this->newAdjustmentEntity($setl, $desc);
 
-        $adjTxn = $this->newAdjustmentTransaction($adj);
+        $adjTxn = (new Transaction\Core)->createFromAdjustment($adj);
 
         (new Transaction\Repository)->save($adjTxn);
         (new Adjustment\Repository)->save($adj);
@@ -48,53 +48,5 @@ class Failure
         (new Adjustment\Repository)->saveOrFail($adj);
 
         return $adj;
-    }
-
-    protected function newAdjustmentTransaction($adj)
-    {
-        $txn = new Transaction\Entity;
-
-        $amount = $adj->getAmount();
-
-        $debit = $credit = 0;
-
-        if ($amount > 0)
-            $credit = $amount;
-
-        if ($amount < 0)
-            $debit = -1 * $amount;
-
-        $settledAt = Carbon::tomorrow('Asia/Kolkata')->timestamp;
-
-        $values = array(
-            Transaction\Entity::DEBIT           => $debit,
-            Transaction\Entity::CREDIT          => $credit,
-            Transaction\Entity::CURRENCY        => 'INR',
-            Transaction\Entity::GATEWAY_FEE     => 0,
-            Transaction\Entity::API_FEE         => 0,
-            Transaction\Entity::RECONCILED_AT   => time(),
-            Transaction\Entity::SETTLED         => 0,
-            Transaction\Entity::SETTLED_AT      => $settledAt,
-            Transaction\Entity::FEE             => 0,
-            Transaction\Entity::AMOUNT          => abs($amount),
-            Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
-        );
-
-        $txn->fillAndGenerateId($values);
-
-        $txn->merchant()->associate($adj->merchant);
-
-        $txn->entity()->associate($adj);
-
-        $adj->transaction()->associate($txn);
-
-        $this->updateBalances($txn);
-
-        return $txn;
-    }
-
-    protected function updateBalances($txn)
-    {
-        return (new Transaction\Core)->updateBalances($txn);
     }
 }

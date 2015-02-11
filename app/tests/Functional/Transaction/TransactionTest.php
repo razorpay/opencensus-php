@@ -78,6 +78,24 @@ class TransactionTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $txn);
     }
 
+    public function testTransactionAfterAtomRefund()
+    {
+        $this->gateway = 'atom';
+        $this->fixtures->create('terminal:atom_terminal');
+
+        $payment = $this->getDefaultNetBankingPaymentArray();
+        $refund = $this->doAuthCaptureAndRefundPayment($payment);
+
+        $txn = $this->getLastTransaction();
+
+        $testData = $this->testData['txnDataAfterRefundingAtomPayment'];
+        $testData['entity_id'] = $refund['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $refund;
+    }
+
     protected function getLastTransaction()
     {
         $this->ba->proxyAuth();
