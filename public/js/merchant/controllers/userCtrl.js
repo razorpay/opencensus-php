@@ -4,7 +4,23 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', '$modal', 'aler
     
     user.identity().then(function(data){
       $scope.user = data;
+
       Rollbar.configure({payload: {person: {id:data.id, name:data.name, email: data.email, role: "merchant"}}});
+
+      SupportKit.user = {
+        givenName: data.name,
+        surname:"Merchant",
+        email: data.email,
+        properties: {
+          id: data.id,
+          email: data.email,
+          name: data.name,
+          activated: data.activated,
+          locked: data.locked,
+          submitted: data.submitted
+        }
+      };
+      SupportKit._updateUser();
     });
 
     $scope.alerts = alertsFactory.getHandler();
