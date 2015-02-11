@@ -80,7 +80,16 @@
     <!-- Supportkit for help -->
     <script src="http://cdn.supportkit.io/supportkit.min.js"></script>
     <script>
-        SupportKit.init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'});
+      var list = {
+        Production: 'dashboard.razorpay.com',
+        Beta: 'betadashboard.razorpay.com'
+      }
+
+      for(var i in list){
+        if(window.location.hostname == list[i]){
+          SupportKit.init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'});
+        }
+      }
     </script>
 
     <!-- Merchant Js-->
