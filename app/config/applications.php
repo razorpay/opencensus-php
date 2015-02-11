@@ -28,5 +28,9 @@ return array(
         'team'      => 'razorpay',
         'token'     =>  $_ENV['SLACK_TOKEN'],
         'mock'      =>  $_ENV['SLACK_MOCK'],
-    )
+    ),
+
+    'hosted' => array(
+        'secret'    => 'abcdef',
+    ),
 );

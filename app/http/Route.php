@@ -28,6 +28,7 @@ final class Route
         'card_fetch_by_id'                  => ['get',      'cards/{id}',                               'PaymentController@getCard'                             ],
         'card_fetch_multiple'               => ['get',      'cards',                                    'PaymentController@getCards'                            ],
         'merchant_public_get_banks'         => ['get',      'banks',                                    'MerchantController@getBanksPublic'                     ],
+        'merchant_secret'                   => ['get',      'key/{id}/secret',                          'MerchantController@getKeySecret'                       ],
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],
         'merchant_set_banks'                => ['post',     'merchants/{id}/banks',                     'MerchantController@setBanks'                           ],
         'merchant_create'                   => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                 ],
@@ -100,6 +101,7 @@ final class Route
         );
 
     public static $internal = array(
+        'merchant_secret',
         'merchant_create',
         'merchant_fetch',
         'merchant_fetch_multiple',
@@ -174,6 +176,9 @@ final class Route
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),
+
+            'hosted' => array(
+                'merchant_secret'),
         );
 
     protected static $router;

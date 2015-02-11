@@ -189,6 +189,13 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetKeySecret()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     protected function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

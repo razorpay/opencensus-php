@@ -338,4 +338,16 @@ return [
             ],
         ],
     ],
+
+    'testGetKeySecret' => [
+        'request' => [
+            'url' => '/key/rzp_test_TheTestAuthKey/secret',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'secret' => 'TheKeySecretForTests'
+            ]
+        ]
+    ],
 ];

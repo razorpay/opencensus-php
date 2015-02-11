@@ -2,6 +2,7 @@
 
 namespace Models\Key;
 
+use Crypt;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Key;
@@ -84,5 +85,18 @@ class Core
         $keysData['new'] = $keyData;
 
         return $keysData;
+    }
+
+    public function getKeySecret($keyId)
+    {
+        Key\Entity::verifyIdAndStripSign($keyId);
+
+        Key\Validator::checkForDemoKeys($keyId);
+
+        $key = (new Key\Repository)->findOrFailPublic($keyId);
+
+        $secret = Crypt::decrypt($key->getSecret());
+
+        return ['secret' => $secret];
     }
 }
