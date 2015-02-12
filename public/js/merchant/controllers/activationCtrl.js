@@ -126,6 +126,17 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
     function saveFile($files, fieldname) {
       var file = $files[0];
 
+      var allowed_types = ["image/jpeg", "image/png", "application/pdf", "application/x-pdf"];
+
+      if(allowed_types.indexOf(file.type) <= -1) {
+        $scope.fileAlerts[fieldname].addAlert('danger', 'Invalid filetype. Only jpg, png, pdf files are allowed.', true);
+        return;
+      }
+      
+      if(file.size > 2000000){
+        $scope.fileAlerts[fieldname].addAlert('danger', 'Max file size 2 MB. Convert the file to an image before uploading if necessary.', true);
+        return;
+      }
       $scope.locked = true;
 
       $scope.fileAlerts[fieldname].addAlert('info', 'Uploading...', true);
