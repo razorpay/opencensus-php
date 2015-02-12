@@ -25,8 +25,12 @@ Models\Merchant\BankAccount:
     beneficiary_address2: address2
     beneficiary_address3: address3
     beneficiary_address4: address4
+    beneficiary_city: new delhi
+    beneficiary_state: DE
+    beneficiary_country: IN
     beneficiary_email: random@email.com
     beneficiary_mobile: 1234567890
+    beneficiary_pin: 100000
 
 Models\Card\Entity:
     id: $uniqueid

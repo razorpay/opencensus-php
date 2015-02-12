@@ -16,14 +16,18 @@ class Validator extends Base\Validator
 
     protected static $addBankAccountRules = array(
         'ifsc_code'             => 'required|alpha_num|size:11',
-        'account_number'        => 'required|numeric|digits_between:5,40',
-        'beneficiary_name'      => 'required|max:255',
-        'beneficiary_address1'  => 'required|max:255',
-        'beneficiary_address2'  => 'required|max:255',
-        'beneficiary_address3'  => 'required|max:255',
-        'beneficiary_address4'  => 'required|max:255',
+        'account_number'        => 'required|numeric|digits_between:5,20',
+        'beneficiary_name'      => 'required|max:40|alpha_space',
+        'beneficiary_address1'  => 'required|max:30',
+        'beneficiary_address2'  => 'required|max:30',
+        'beneficiary_address3'  => 'required|max:30',
+        'beneficiary_address4'  => 'required|max:30',
+        'beneficiary_city'      => 'required|max:30',
+        'beneficiary_state'     => 'required|max:2',
+        'beneficiary_pin'       => 'required|integer|digits:6',
+        'beneficiary_country'   => 'sometimes|in:IN',
         'beneficiary_email'     => 'required|email',
-        'beneficiary_mobile'    => 'required|digits:10',
+        'beneficiary_mobile'    => 'required|numeric|digits:10',
     );
 
     protected static $addBankAccountValidators = array(
