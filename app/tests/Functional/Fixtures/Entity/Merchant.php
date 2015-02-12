@@ -44,6 +44,22 @@ class Merchant extends Base
         return $merchant;
     }
 
+    public function createBankAccount($attributes)
+    {
+        $name = random_alpha_string(10);
+
+        $code = substr(strtoupper($name), 0, 4);
+
+        $defaultValues = array(
+            'beneficiary_name' => $name,
+            'beneficiary_code' => $code,
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $this->fixtures->create('bank_account', $attributes);
+    }
+
     public function activate($id)
     {
         $repo = new \Models\Merchant\Repository;

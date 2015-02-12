@@ -26,8 +26,7 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::ACCOUNT_NUMBER, 40);
 
-            $table->string(BankAccount::BENEFICIARY_CODE, 10)
-                  ->nullable()
+            $table->string(BankAccount::BENEFICIARY_CODE, 6)
                   ->unique();
 
             $table->string(BankAccount::BENEFICIARY_NAME, 40);
@@ -42,7 +41,6 @@ class CreateBankAccounts extends Migration
             $table->string(BankAccount::BENEFICIARY_COUNTRY, 2);
 
             $table->char(BankAccount::BENEFICIARY_PIN, 6);
-
 
             $table->string(BankAccount::BENEFICIARY_EMAIL, 255);
 

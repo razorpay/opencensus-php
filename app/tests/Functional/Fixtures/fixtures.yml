@@ -19,8 +19,9 @@ Models\Merchant\Balance:
 Models\Merchant\BankAccount:
     merchant_id: $uniqueid
     ifsc_code: RZPB0000000
-    beneficiary_name: random_name
     account_number: 10010101011
+    beneficiary_name: random_name
+    beneficiary_code: RAND
     beneficiary_address1: address1
     beneficiary_address2: address2
     beneficiary_address3: address3
