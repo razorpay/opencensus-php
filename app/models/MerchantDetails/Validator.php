@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         'business_operation_city'      => 'required|alpha_space|max:255',
         'business_operation_pin'       => 'required|max:15',
         'business_doe'                 => 'required|date',
-        'company_cin'                   => 'alpha_num|max:20',
+        'company_cin'                   => 'alpha_num|max:21',
         'company_pan'                   => 'alpha_num|max:15',
         'company_pan_name'              => 'alpha_space|max:255|required_with:company_pan',
         'business_model'               => 'required|max:2000',
@@ -45,13 +45,13 @@ class Validator extends Base\Validator
     protected static $step4Rules = array(
         'bank_name'             => 'required|alpha_space|max:255',
         'bank_account_number'   => 'required|numeric|digits_between:1,20',
-        'bank_account_name'     => 'required|alpha_space|max:255',
+        'bank_account_name'     => 'required|alpha_space|max:40',
         'bank_account_type'     => 'required|alpha_space|max:20',
         'bank_branch'           => 'required|max:255',
-        'bank_branch_ifsc'      => 'required|alpha_num|max:20',
-        'bank_beneficiary_address1' => 'required|max:255',
-        'bank_beneficiary_address2' => 'max:255',
-        'bank_beneficiary_address3' => 'max:255',
+        'bank_branch_ifsc'      => 'required|alpha_num|max:11',
+        'bank_beneficiary_address1' => 'required|max:30',
+        'bank_beneficiary_address2' => 'max:30',
+        'bank_beneficiary_address3' => 'max:30',
     );
 
     protected static $uploadKeys = array(
