@@ -24,18 +24,33 @@ class CreateBankAccounts extends Migration
 
             $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH);
 
-            $table->string(BankAccount::BENEFICIARY_NAME, 255);
-
             $table->string(BankAccount::ACCOUNT_NUMBER, 40);
 
-            $table->string(BankAccount::BENEFICIARY_ADDRESS1, 255);
-            $table->string(BankAccount::BENEFICIARY_ADDRESS2, 255);
-            $table->string(BankAccount::BENEFICIARY_ADDRESS3, 255);
-            $table->string(BankAccount::BENEFICIARY_ADDRESS4, 255);
+            $table->string(BankAccount::BENEFICIARY_CODE, 6)
+                  ->unique();
+
+            $table->string(BankAccount::BENEFICIARY_NAME, 40);
+
+            $table->string(BankAccount::BENEFICIARY_ADDRESS1, 30);
+            $table->string(BankAccount::BENEFICIARY_ADDRESS2, 30);
+                  ->nullable();
+
+            $table->string(BankAccount::BENEFICIARY_ADDRESS3, 30)
+                  ->nullable();
+
+            $table->string(BankAccount::BENEFICIARY_ADDRESS4, 30)
+                  ->nullable();
+
+            $table->string(BankAccount::BENEFICIARY_CITY, 30);
+            $table->string(BankAccount::BENEFICIARY_STATE, 2);
+            $table->string(BankAccount::BENEFICIARY_COUNTRY, 2);
+
+            $table->char(BankAccount::BENEFICIARY_PIN, 6);
 
             $table->string(BankAccount::BENEFICIARY_EMAIL, 255);
 
-            $table->string(BankAccount::BENEFICIARY_MOBILE);
+
+            $table->char(BankAccount::BENEFICIARY_MOBILE, 10);
 
             $table->integer(BankAccount::CREATED_AT);
             $table->integer(BankAccount::UPDATED_AT);

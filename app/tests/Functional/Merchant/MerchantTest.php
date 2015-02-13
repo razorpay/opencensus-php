@@ -116,8 +116,11 @@ class MerchantTest extends TestCase
     {
         $this->ba->appAuthLive();
 
-        $ba = $this->fixtures->on('live')->create(
-                        'bank_account', ['merchant_id' => '1cXSLlUU8V9sXl']);
+        $ba = $this->fixtures
+                   ->on('live')
+                   ->create(
+                        'merchant:bank_account',
+                        ['merchant_id' => '1cXSLlUU8V9sXl']);
 
         $this->startTest();
 
@@ -145,7 +148,7 @@ class MerchantTest extends TestCase
 
     public function testGetBankAccount()
     {
-        $this->markTestSkipped();
+//        $this->markTestSkipped();
         $this->testAddBankAccount();
 
         $content = $this->startTest();

@@ -73,6 +73,8 @@ class Base
         $entity->exists = true;
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
 
+        $this->eloquentReguard();
+
         return $entity;
     }
 
@@ -92,7 +94,7 @@ class Base
     protected function save($entity, $attributes)
     {
         $this->eloquentUnguard();
-//sd($entity);
+
         $entityClass = self::$map[$entity];
 
         $entity = Factory::create($entityClass, $attributes);

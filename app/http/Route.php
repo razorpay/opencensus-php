@@ -79,6 +79,8 @@ final class Route
         'mockatom_init_netbanking'          => ['post',     'gateway/mockanb',                          'MockHdfcController@postAtomInitNetbanking'             ],
         'mockatom_rzp_bank'                 => ['post',     'gateway/mockanb/rzp_bank',                 'MockHdfcController@postAtomRzpBankPage'                ],
         'mockatom_rzp_bank_submit'          => ['post',     'gateway/mockanb/rzp_bank/submit',          'MockHdfcController@postAtomRzpBankSubmit'              ],
+        'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
+        'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
         );
 
     public static $public = array(
@@ -141,6 +143,8 @@ final class Route
         'mockhdfc_auth_enrolled',
         'mockhdfc_payment',
         'mockatom_init_netbanking',
+        'admin_fetch_entity_multiple',
+        'admin_fetch_entity_by_id',
         );
 
     public static $proxy = array(
