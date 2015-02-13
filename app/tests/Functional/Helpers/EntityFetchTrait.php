@@ -28,7 +28,7 @@ trait EntityFetchTrait
 
         if ($admin)
         {
-            $this->appAuth();
+            $this->ba->appAuth();
 
             $url = '/admin/'.$entity;
         }

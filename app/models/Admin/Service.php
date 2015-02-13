@@ -18,7 +18,7 @@ class Service extends Base\Service
 
         $entity = (new $repo)->findOrFail($id);
 
-        return $entity->toArray();
+        return $entity->toArrayAdmin();
     }
 
     public function fetchMultipleEntities($entity, $input)
@@ -29,9 +29,9 @@ class Service extends Base\Service
 
         $repo->setMerchantIdRequiredForMultipleFetch(false);
 
-        $entity = $repo->fetch($id);
+        $entity = $repo->fetch($input);
 
-        return $entity->toArray();
+        return $entity->toArrayAdmin();
     }
 
     protected function getEntityNamespace($entity)

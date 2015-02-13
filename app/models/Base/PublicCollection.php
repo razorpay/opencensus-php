@@ -27,6 +27,17 @@ class PublicCollection extends Collection
         return $array;
     }
 
+    public function toArrayAdmin()
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT] = count($this->items);
+        $array['admin'] = true;
+
+        $array[static::ITEMS] = $this->itemsToArrayAdmin();
+
+        return $array;
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)
@@ -43,6 +54,15 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayPublic();
+
+        }, $this->items);
+    }
+
+    protected function itemsToArrayAdmin()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayAdmin();
 
         }, $this->items);
     }

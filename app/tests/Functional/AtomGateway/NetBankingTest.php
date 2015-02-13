@@ -82,7 +82,9 @@ class NetBankingTest extends TestCase
 
         $this->startTest();
 
-//        $payment = $this->
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('atom', $payment['gateway']);
     }
 
     public function testCardPayment()

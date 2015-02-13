@@ -75,6 +75,11 @@ class Entity extends Base\PublicEntity
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CAPTURED_AT,
+        self::GATEWAY,
+        self::CARD_ID,
+        self::TERMINAL_ID,
+        self::TRANSACTION_ID,
+        self::SIGNED,
         self::CREATED_AT,
         self::UPDATED_AT);
 

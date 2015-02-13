@@ -2,21 +2,22 @@
 
 use Http\ApiResponse;
 use EE\Exception\RecoverableException;
-use Models\Payment;
-use Models\Card;
+use Models\Admin;
 
 class AdminController extends BaseController
 {
     public function getEntityMultiple($type)
     {
-        $data = (new Admin\Serivce)->fetchEntityById($type, $id);
+        $input = Input::all();
+
+        $data = (new Admin\Service)->fetchMultipleEntities($type, $input);
 
         return ApiResponse::json($data);
     }
 
     public function fetchMultipleEntities($type, $id)
     {
-        $data = (new Admin\Serivce)->fetchEntityById($type, $id);
+        $data = (new Admin\Service)->fetchEntityById($type, $id);
 
         return ApiResponse::json($data);
     }
