@@ -8,7 +8,8 @@
         </button>
         <!-- brand -->
         <a href="#/" class="navbar-brand text-lt">
-          <img src="{{app.settings.asideFolded ? 'img/logo.png' : 'img/logo_full.png'}}" alt=".">
+          <img ng-show="app.settings.asideFolded" src="img/logo.png" alt=".">
+          <img ng-hide="app.settings.asideFolded" src="img/logo_full.png" alt=".">
         </a>
         <!-- / brand -->
       </div>
