@@ -32,7 +32,7 @@ class CreateBankAccounts extends Migration
             $table->string(BankAccount::BENEFICIARY_NAME, 40);
 
             $table->string(BankAccount::BENEFICIARY_ADDRESS1, 30);
-            $table->string(BankAccount::BENEFICIARY_ADDRESS2, 30);
+            $table->string(BankAccount::BENEFICIARY_ADDRESS2, 30)
                   ->nullable();
 
             $table->string(BankAccount::BENEFICIARY_ADDRESS3, 30)
