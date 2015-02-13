@@ -37,7 +37,7 @@ angular.module('app.services', [])
 						.success(function(data) {
 							_identity = data.data;
 							if(data.data.steps_finished) {
-                                _identity.activation_progress = parseInt(((data.data.steps_finished).length * 100)/ 6);
+                                _identity.activation_progress = parseInt(((data.data.steps_finished).length * 100)/ 5);
 							}
 					   		_authenticated = data.success === true;
 					   		if(_authenticated) $idle.watch();

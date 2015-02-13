@@ -277,12 +277,12 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         if(data.success) {
           $scope.merchant = data.data;
           $scope.merchant.id = data.data.details.id;
-          $scope.merchant.details.activation_progress = parseInt(($scope.merchant.details.steps_finished.length * 100)/ 6);
+          $scope.merchant.details.activation_progress = parseInt(($scope.merchant.details.steps_finished.length * 100)/ 5);
         }
         else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function(value, key){
-            $scope.alerts.addAlert('danger', key + ':' + value);
+            $scope.alerts.addAlert('danger', value);
           });
         }
       })
