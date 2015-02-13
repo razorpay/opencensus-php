@@ -50,6 +50,9 @@ Models\MerchantDetails\Entity:
     bank_beneficiary_address1: $string
     bank_beneficiary_address2: $string
     bank_beneficiary_address3: $string
+    bank_beneficiary_city: $string
+    bank_beneficiary_state: RJ
+    bank_beneficiary_pin: 123456
     business_proof_url: $string
     business_pan_url: $string
     promoter_pan_url: $string

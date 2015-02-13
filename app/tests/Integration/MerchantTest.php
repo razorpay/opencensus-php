@@ -254,7 +254,10 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('bank_branch_ifsc'), 'abc123443')   // Fill slug
             ->type(l::IdOrName('bank_beneficiary_address1'), 'abc123443')   // Fill slug
             ->type(l::IdOrName('bank_beneficiary_address2'), 'abc123443')   // Fill slug
-            ->type(l::IdOrName('bank_beneficiary_address3'), 'abc123443')   // Fill slug
+            ->type(l::IdOrName('bank_beneficiary_address3'), 'abc123443')
+            ->type(l::IdOrName('bank_beneficiary_city'), 'jaipur')
+            ->type(l::IdOrName('bank_beneficiary_state'), 'RJ')
+            ->type(l::IdOrName('bank_beneficiary_pin'), '123443')
             ->click(l::css('form[name="step4"] > fieldset > .prev-next > .btn-save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step4\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
 

@@ -52,6 +52,9 @@ class Validator extends Base\Validator
         'bank_beneficiary_address1' => 'required|max:30',
         'bank_beneficiary_address2' => 'max:30',
         'bank_beneficiary_address3' => 'max:30',
+        'bank_beneficiary_city'      => 'required|max:30',
+        'bank_beneficiary_state'     => 'required|max:2',
+        'bank_beneficiary_pin'       => 'required|integer|digits:6'
     );
 
     protected static $uploadKeys = array(

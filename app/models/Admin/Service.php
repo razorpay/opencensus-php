@@ -343,6 +343,10 @@ class Service extends Base\Service
             'beneficiary_address2'  => $details['merchant_details']['bank_beneficiary_address2'],
             'beneficiary_address3'  => $details['merchant_details']['bank_beneficiary_address3'],
             'beneficiary_address4'  => '',
+            'beneficiary_pin'       => $details['merchant_details']['bank_beneficiary_pin'],
+            'beneficiary_city'      => $details['merchant_details']['bank_beneficiary_city'],
+            'beneficiary_state'     => $details['merchant_details']['bank_beneficiary_state'],
+            'beneficiary_country'   => 'IN',
             'beneficiary_email'     => $details['merchant_details']['contact_email'],
             'beneficiary_mobile'    => $details['merchant_details']['contact_mobile']
         );
