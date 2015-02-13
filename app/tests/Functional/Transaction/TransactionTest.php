@@ -96,22 +96,6 @@ class TransactionTest extends TestCase
         return $refund;
     }
 
-    protected function getLastTransaction()
-    {
-        $this->ba->proxyAuth();
-
-        $request = array(
-            'method' => 'GET',
-            'url' => '/transactions?count=1');
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertSame('collection', $content['entity']);
-        $this->assertSame(1, $content['count']);
-
-        return $content['items'][0];
-    }
-
     protected function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

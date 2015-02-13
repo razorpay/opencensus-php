@@ -4,9 +4,12 @@ namespace Tests\Functional;
 
 use EE\Exception\BaseException;
 use Requests;
+use Tests\Functional\Helpers\EntityFetchTrait;
 
 trait RequestResponseFlowTrait
 {
+    use EntityFetchTrait;
+
     /**
      * Auths a payment & tests it is corrrectly done
      */
