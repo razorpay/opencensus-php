@@ -16,7 +16,7 @@ class PaymentController extends BaseController
 
     public function getPayment($id)
     {
-        $payment = $this->payment->retrievePayment($id);
+        $payment = $this->payment->fetch($id);
 
         return ApiResponse::json($payment);
     }
@@ -28,7 +28,7 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
-        $payments = $this->payment->retrieveMultiple($input);
+        $payments = $this->payment->fetchMultiple($input);
 
         return ApiResponse::json($payments);
     }

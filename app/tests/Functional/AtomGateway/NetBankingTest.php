@@ -81,6 +81,8 @@ class NetBankingTest extends TestCase
         $this->ba->publicAuth();
 
         $this->startTest();
+
+//        $payment = $this->
     }
 
     public function testCardPayment()

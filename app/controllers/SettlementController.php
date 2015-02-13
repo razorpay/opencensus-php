@@ -36,7 +36,7 @@ class SettlementController extends BaseController
 
     public function getSettlement($id)
     {
-        $data = (new Settlement\Service)->getSettlement($id);
+        $data = (new Settlement\Service)->fetch($id);
 
         return ApiResponse::json($data);
     }
@@ -45,7 +45,7 @@ class SettlementController extends BaseController
     {
         $input = Input::all();
 
-        $data = (new Settlement\Service)->getSettlements($input);
+        $data = (new Settlement\Service)->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }

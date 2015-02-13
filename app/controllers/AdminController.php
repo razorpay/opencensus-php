@@ -7,26 +7,17 @@ use Models\Card;
 
 class AdminController extends BaseController
 {
-    protected $payment;
-
-    public function __construct()
-    {
-        $this->payment = new Payment\Service();
-    }
-
     public function getEntityMultiple($type)
     {
-        $class = ucfirst($type).'Controller';
-        $controller = new $class;
-        $func = 'get'.ucfirst($type).'s';
+        $data = (new Admin\Serivce)->fetchEntityById($type, $id);
 
-        $input = Input::all();
-
-        return $controller->$func($input);
+        return ApiResponse::json($data);
     }
 
-    public function getEntityById($type, $id)
+    public function fetchMultipleEntities($type, $id)
     {
-        ;
+        $data = (new Admin\Serivce)->fetchEntityById($type, $id);
+
+        return ApiResponse::json($data);
     }
 }

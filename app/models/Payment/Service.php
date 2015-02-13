@@ -117,14 +117,14 @@ class Service extends Base\Service
         return $this->processor()->callback($id, $input);
     }
 
-    public function retrieveMultiple(array $input)
+    public function fetchMultiple(array $input)
     {
         $payments = (new Payment\Repository)->fetch($input, $this->merchant->getKey());
 
         return $payments->toArrayPublic();
     }
 
-    public function retrievePayment($id)
+    public function fetch($id)
     {
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
 
