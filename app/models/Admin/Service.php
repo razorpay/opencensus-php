@@ -138,14 +138,22 @@ class Service extends Base\Service
     }
 
     public function fetchMerchantDetails($id)
-    {
+    {   
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if($merchant->confirm_token !== Null)
+        {
+            return $merchant->toArray();
+        }
+
         $merchant_details = MerchantDetails\Entity::findorfail($id);
 
         $this->setApiCredentials();
 
-        $data = $this->api->merchant->fetch($id)->toArray();
-
+        $data = $this->api->merchant->fetch($id)->toArray();     
+    
         $data['merchant_details'] = $merchant_details->toArray();
+
 
         // @todo This is failing tests on wercker, fix
         // $merchant = Merchant\Entity::findorfail($id);

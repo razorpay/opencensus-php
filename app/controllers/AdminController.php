@@ -80,6 +80,10 @@ class AdminController extends BaseController
     {
         $details = (new Admin\Service)->fetchMerchantDetails($id);
 
+        if(isset($details['confirm_token'])) {
+            return AppResponse::jsonResponse(['Merchant not confirmed']);
+        }
+
         $terminal = (new Admin\Service)->fetchMerchantTerminal($id);
 
         $pricing_plan = (new Admin\Service)->fetchMerchantPricing($id);
