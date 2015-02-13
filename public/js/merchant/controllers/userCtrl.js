@@ -2,26 +2,30 @@
 app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', '$modal', 'alertsFactory', '$idle', '$keepalive',
   function($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive) {
     
-    user.identity().then(function(data){
-      $scope.user = data;
+    $scope.refreshUser = function(force){
+      user.identity(force).then(function(data){
+        $scope.user = data;
 
-      Rollbar.configure({payload: {person: {id:data.id, name:data.name, email: data.email, role: "merchant"}}});
+        Rollbar.configure({payload: {person: {id:data.id, name:data.name, email: data.email, role: "merchant"}}});
 
-      SupportKit.user = {
-        givenName: data.name,
-        surname:"Merchant",
-        email: data.email,
-        properties: {
-          id: data.id,
+        SupportKit.user = {
+          givenName: data.name,
+          surname:"Merchant",
           email: data.email,
-          name: data.name,
-          activated: data.activated,
-          locked: data.locked,
-          submitted: data.submitted
-        }
-      };
-      SupportKit._updateUser();
-    });
+          properties: {
+            id: data.id,
+            email: data.email,
+            name: data.name,
+            activated: data.activated,
+            locked: data.locked,
+            submitted: data.submitted
+          }
+        };
+        SupportKit._updateUser();
+      });
+    };
+
+    $scope.refreshUser();
 
     $scope.alerts = alertsFactory.getHandler();
 

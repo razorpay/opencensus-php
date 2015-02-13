@@ -108,6 +108,7 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
         if(data.success) {
           $scope.alerts[step].addAlert('success', 'Step Saved Successfully', true);
           $scope.check[step] = true;
+          $scope.refreshUser(true);
         }
         else {
           $scope.alerts[step].resetAlerts();
