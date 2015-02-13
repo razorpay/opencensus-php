@@ -145,6 +145,8 @@ final class Route
         'mockhdfc_auth_enrolled',
         'mockhdfc_payment',
         'mockatom_init_netbanking',
+        'admin_fetch_entity_multiple',
+        'admin_fetch_entity_by_id',
         );
 
     public static $proxy = array(

@@ -33,7 +33,7 @@ class Service extends Base\Service
         return $generator->generateTestMpr($input);
     }
 
-    public function getSettlement($id)
+    public function fetch($id)
     {
         Settlement\Entity::verifyIdAndStripSign($id);
 
@@ -42,7 +42,7 @@ class Service extends Base\Service
         return $setl->toArrayPublic();
     }
 
-    public function getSettlements($input)
+    public function fetchMultiple($input)
     {
         $settlements = (new Settlement\Repository)->fetch($input, $this->merchant->getKey());
 

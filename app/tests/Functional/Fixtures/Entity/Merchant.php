@@ -15,6 +15,7 @@ class Merchant extends Base
         $this->fixtures->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
+
         $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => '10000000000000']);
     }
 
@@ -42,6 +43,7 @@ class Merchant extends Base
 
         return $merchant;
     }
+
 
     public function createWithKeys()
     {

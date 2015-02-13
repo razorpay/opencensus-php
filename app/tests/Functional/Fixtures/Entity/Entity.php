@@ -94,7 +94,7 @@ class Base
     protected function save($entity, $attributes)
     {
         $this->eloquentUnguard();
-//sd($entity);
+
         $entityClass = self::$map[$entity];
 
         $entity = Factory::create($entityClass, $attributes);

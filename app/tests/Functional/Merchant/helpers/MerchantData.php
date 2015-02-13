@@ -244,7 +244,6 @@ return [
                 'beneficiary_address1' => 'address 1',
                 'beneficiary_address2' => 'address 2',
                 'beneficiary_address3' => 'address 3',
-                'beneficiary_address4' => 'address 4',
                 'beneficiary_city' => 'Kolkata',
                 'beneficiary_state' => 'WB',
                 'beneficiary_country' => 'IN',

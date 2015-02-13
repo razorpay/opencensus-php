@@ -39,6 +39,15 @@ class PublicEntity extends UniqueIdEntity
         return $this->arrangePublicAttributes($array);
     }
 
+    public function toArrayAdmin()
+    {
+        $array = $this->toArray();
+
+        $this->setPublicAttributes($array);
+
+        return $array;
+    }
+
     /**
      * Create a new Eloquent Collection instance.
      *

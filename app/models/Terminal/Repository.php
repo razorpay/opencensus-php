@@ -7,6 +7,8 @@ use Models\Terminal;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryFetch;
+
     protected $entity = 'Terminal';
 
     public function getByParams($params)

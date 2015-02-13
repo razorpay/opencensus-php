@@ -81,6 +81,10 @@ class NetBankingTest extends TestCase
         $this->ba->publicAuth();
 
         $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('atom', $payment['gateway']);
     }
 
     public function testNBPaymentOnSharedTerminal()
