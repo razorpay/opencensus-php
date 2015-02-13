@@ -4,6 +4,7 @@ namespace Models\Payment\Processor;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Models\Merchant\Banks;
 use Models\Card;
 use Models\Payment;
 use Trace\Trace;
@@ -22,6 +23,11 @@ trait Authorize
             (new Card\Repository)->saveOrFail($payment->card);
 
             $gatewayInput['card'] = $cardData;
+        }
+
+        if ($payment->isMethod(Payment\Method::NETBANKING))
+        {
+            $this->verifyBankEnabled($payment);
         }
 
         $this->repo->saveOrFail($payment);
@@ -75,10 +81,10 @@ trait Authorize
     }
 
     /**
-     * After card enroll, bank redirects to us
+     * After payment initiation, bank redirects to us
      * and we send it to gateway for further
      * processing (auth).
-     * Returning from this function implies 'auth' is successful.
+     * Returning from this function implies payment action has been successful.
      *
      * @param  string              $id      Payment id
      * @param  array               $input   contains fields provided
@@ -176,6 +182,26 @@ trait Authorize
         $this->payment->card()->associate($card);
 
         return $cardData;
+    }
+
+    protected function verifyBankEnabled($payment)
+    {
+        $merchant = $payment->merchant;
+
+        $banks = (new Banks\Core)->getMerchantBanks($merchant);
+
+        if ($banks === null)
+            $banks = [];
+        else
+            $banks = $banks->getBanks();
+
+        $bank = $payment->getBank();
+
+        if (in_array($bank, $banks) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
+        }
     }
 
     protected function savePaymentAndCard()

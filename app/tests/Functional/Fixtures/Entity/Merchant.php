@@ -15,6 +15,7 @@ class Merchant extends Base
         $this->fixtures->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
+        $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => '10000000000000']);
     }
 
     public function createNodalAccount()
@@ -45,12 +46,13 @@ class Merchant extends Base
     public function createWithKeys()
     {
         $merchant = $this->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
         $merchantId = $merchant->getId();
 
         $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltLiveAuthKey'], 'live');
 
-        $merchantId = $merchant->getId();
+        return $merchant;
     }
 
     public function createBankAccount($attributes)
@@ -66,7 +68,21 @@ class Merchant extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('bank_account', $attributes);
+        return $this->fixtures->create('bank_account', $attributes);
+    }
+
+    public function createAddPaymentBanks(array $attributes = array())
+    {
+        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+
+        $defaultValues = array(
+            'merchant_id' => '10000000000000',
+            'banks' => $banks,
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $this->fixtures->create('merchant_banks', $attributes);
     }
 
     public function activate($id)

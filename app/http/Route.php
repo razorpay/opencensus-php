@@ -28,7 +28,7 @@ final class Route
         'card_fetch_by_id'                  => ['get',      'cards/{id}',                               'PaymentController@getCard'                             ],
         'card_fetch_multiple'               => ['get',      'cards',                                    'PaymentController@getCards'                            ],
         'merchant_public_get_banks'         => ['get',      'banks',                                    'MerchantController@getBanksPublic'                     ],
-        'merchant_public_get_banks2'        => ['get',      'merchant/banks',                           'MerchantController@getBanksPublic'                     ],
+        'merchant_secret'                   => ['get',      'key/{id}/secret',                          'MerchantController@getKeySecret'                       ],
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],
         'merchant_set_banks'                => ['post',     'merchants/{id}/banks',                     'MerchantController@setBanks'                           ],
         'merchant_create'                   => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                 ],
@@ -56,8 +56,8 @@ final class Route
         'pricing_get_plan'                  => ['get',      'pricing/{id}',                             'PricingController@getPricingPlan'                      ],
         'pricing_get_plan_rule'             => ['get',      'pricing/{planId}/rule/{ruleId}',           'PricingController@getPricingPlanRule'                  ],
         'pricing_add_plan_rule'             => ['post',     'pricing/{id}/rule',                        'PricingController@postAddPricingPlanRule'              ],
-        'transaction_fetch_by_id'           => ['get',      'transactions/{id}',                        'SettlementController@getTransactionRecord'             ],
-        'transaction_fetch_multiple'        => ['get',      'transactions',                             'SettlementController@getTransactionRecords'            ],
+        'transaction_fetch_by_id'           => ['get',      'transactions/{id}',                        'TransactionController@getTransaction'                  ],
+        'transaction_fetch_multiple'        => ['get',      'transactions',                             'TransactionController@getTransactions'                 ],
         'setl_fetch_by_id'                  => ['get',      'settlements/{id}',                         'SettlementController@getSettlement'                    ],
         'setl_fetch_multiple'               => ['get',      'settlements',                              'SettlementController@getSettlements'                   ],
         'hdfc_mpr_reconcile'                => ['post',     'gateway/mpr/reconcile',                    'SettlementController@postGatewayMprReconcile'          ],
@@ -88,7 +88,6 @@ final class Route
         'payment_create_jsonp',
         'payment_callback',
         'merchant_public_get_banks',
-        'merchant_public_get_banks2',
         'mockatom_choose_bank',
         'mockatom_rzp_bank',
         'mockatom_rzp_bank_submit',
@@ -106,6 +105,7 @@ final class Route
     public static $internal = array(
         'admin_fetch_entity_multiple',
         'admin_fetch_entity_by_id',
+        'merchant_secret',
         'merchant_create',
         'merchant_fetch',
         'merchant_fetch_multiple',
@@ -180,6 +180,9 @@ final class Route
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),
+
+            'hosted' => array(
+                'merchant_secret'),
         );
 
     protected static $router;

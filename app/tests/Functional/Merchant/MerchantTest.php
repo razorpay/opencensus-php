@@ -172,8 +172,6 @@ class MerchantTest extends TestCase
 
     public function testGetBanksByMerchantAuth()
     {
-        $this->testSetBanks();
-
         $this->ba->publicTestAuth();
 
         $this->startTest();
@@ -189,6 +187,13 @@ class MerchantTest extends TestCase
     {
         $this->testSetBanks();
 
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetKeySecret()
+    {
         $this->ba->appAuth();
 
         $this->startTest();

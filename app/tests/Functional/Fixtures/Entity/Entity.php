@@ -28,6 +28,7 @@ class Base
         'iin'           => 'Models\Card\Detail',
         'key'           => 'Models\Key\Entity',
         'merchant'      => 'Models\Merchant\Entity',
+        'merchant_banks'=> 'Models\Merchant\Banks\Entity',
         'payment'       => 'Models\Payment\Entity',
         'pricing'       => 'Models\Pricing\Entity',
         'refund'        => 'Models\Payment\Refund\Entity',
@@ -46,7 +47,8 @@ class Base
     public function create($entity, array $attributes = array())
     {
         if (($entity === 'merchant') or
-            ($entity === 'pricing'))
+            ($entity === 'pricing') or
+            ($entity === 'merchant_banks'))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }

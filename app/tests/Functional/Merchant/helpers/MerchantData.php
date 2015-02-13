@@ -310,7 +310,7 @@ return [
             'content' => [
                 'enabled' => [],
                 'disabled' => [
-                    'HDFC' => 'HDFC Bank',
+                    'CITI' => 'Citibank India',
                     'ICIC' => 'ICICI Bank',
                 ],
             ],
@@ -328,7 +328,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'HDFC' => 'HDFC Bank',
+                'CITI' => 'Citibank India',
                 'ICIC' => 'ICICI Bank',
             ],
         ],
@@ -352,5 +352,17 @@ return [
                 ]
             ],
         ],
+    ],
+
+    'testGetKeySecret' => [
+        'request' => [
+            'url' => '/key/rzp_test_TheTestAuthKey/secret',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'secret' => 'TheKeySecretForTests'
+            ]
+        ]
     ],
 ];

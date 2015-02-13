@@ -2,6 +2,7 @@
 
 use Http\ApiResponse;
 use Models\Merchant;
+use Models\Key;
 
 class MerchantController extends BaseController
 {
@@ -40,6 +41,13 @@ class MerchantController extends BaseController
     public function getKeys($merchantId)
     {
         $data = (new Merchant\Service)->fetchKeys($merchantId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getKeySecret($keyId)
+    {
+        $data = (new Key\Core)->getKeySecret($keyId);
 
         return ApiResponse::json($data);
     }

@@ -35,6 +35,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                  = 'Expiry date is not valid';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                 = 'Paymend was not completed on time.';
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH          = 'Capture amount must be equal to the amount authorized';
+    const BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT             = 'This bank is either not valid or is not enabled for the merchant';
     const BAD_REQUEST_KEY_EXPIRED                                       = 'Key is expired';
     const BAD_REQUEST_KEY_EXPIRING_SOON                                 = 'Key is already set to expire soon';
     const BAD_REQUEST_KEY_OF_DEMO_ACCOUNT                               = 'Operation failed for the key because it\'s of a demo account';
