@@ -62,6 +62,8 @@ class Fixtures
                             ['merchant_id' => '10000000000000',
                              'terminal_id' => '1n25f6uN5S1Z5a']);
 
+        $this->create('terminal:shared_atom_terminal');
+
         $this->entities = $entities;
     }
 

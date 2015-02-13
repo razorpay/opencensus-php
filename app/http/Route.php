@@ -79,7 +79,9 @@ final class Route
         'mockatom_init_netbanking'          => ['post',     'gateway/mockanb',                          'MockHdfcController@postAtomInitNetbanking'             ],
         'mockatom_rzp_bank'                 => ['post',     'gateway/mockanb/rzp_bank',                 'MockHdfcController@postAtomRzpBankPage'                ],
         'mockatom_rzp_bank_submit'          => ['post',     'gateway/mockanb/rzp_bank/submit',          'MockHdfcController@postAtomRzpBankSubmit'              ],
-        );
+        'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
+        'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
+    );
 
     public static $public = array(
         'payment_create',
@@ -102,6 +104,8 @@ final class Route
         );
 
     public static $internal = array(
+        'admin_fetch_entity_multiple',
+        'admin_fetch_entity_by_id',
         'merchant_create',
         'merchant_fetch',
         'merchant_fetch_multiple',

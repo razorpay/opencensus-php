@@ -17,6 +17,11 @@ class TerminalPicker
 
         $terminal = $this->pickOneTerminal($payment, $terminals);
 
+        if ($terminal === null)
+        {
+            $terminal = Terminal\Shared::getSharedTerminal();
+        }
+
         $payment->terminal()->associate($terminal);
 
         $payment->setGateway($terminal->getGateway());
@@ -42,6 +47,8 @@ class TerminalPicker
         {
             if ($atomTerm === null)
             {
+                return;
+
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
             }
@@ -79,6 +86,7 @@ class TerminalPicker
 
             if ($terminal->isCardEnabled() === false)
             {
+                return;
                 throw new Exception\LogicException(
                     'Card not enabled for the merchant. Merchant Id: ' . $terminal->getMerchantId() .
                     ' Terminal Id: ' . $terminal->getId());
@@ -88,12 +96,13 @@ class TerminalPicker
         {
             if (($hdfcTerm !== null) and
                 ($hdfcTerm->isCardEnabled()))
-                $terminal = $hdfcTerm;
+                $terminal = $atomTerm;
             else if (($atomTerm !== null) and
                      ($atomTerm->isCardEnabled()))
                 $terminal = $atomTerm;
             else
             {
+                return;
                 throw new Exception\LogicException(
                     'No terminal has card transactions enabled. ' .
                     'Hdfc term id: ' . $hdfcTerm->getId(),
@@ -127,7 +136,9 @@ class TerminalPicker
     {
         $count = $terminals->count();
 
-        if (($count > 2) or ($count === 0))
+        // if (($count > 2) or
+        //     ($count === 0))
+        if ($count > 2)
         {
             throw new Exception\LogicException(
                 'Terminals count not reasonable: ' . $count .

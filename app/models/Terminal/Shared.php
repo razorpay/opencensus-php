@@ -2,9 +2,11 @@
 
 namespace Models\Terminal;
 
+use Models\Terminal;
+
 class Shared
 {
-    const ATOM_RAZORPAY_TERMINAL = '2015AtomShared';
+    const ATOM_RAZORPAY_TERMINAL = '1000AtomShared';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -22,5 +24,12 @@ class Shared
         $terminal = $payment->terminal;
 
         return self::isSharedTerminal($terminal);
+    }
+
+    public static function getSharedTerminal()
+    {
+        $terminal = (new Repository)->findOrFail(self::ATOM_RAZORPAY_TERMINAL);
+
+        return $terminal;
     }
 }

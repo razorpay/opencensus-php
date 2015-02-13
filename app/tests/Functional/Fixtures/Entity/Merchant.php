@@ -15,8 +15,6 @@ class Merchant extends Base
         $this->fixtures->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
-
-        $this->fixtures->create('terminal:shared_atom_terminal');
     }
 
     public function createNodalAccount()
@@ -42,6 +40,17 @@ class Merchant extends Base
         $this->fixtures->create('terminal:atom_terminal', ['merchant_id' => $merchantId]);
 
         return $merchant;
+    }
+
+    public function createWithKeys()
+    {
+        $merchant = $this->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltTestAuthKey'], 'test');
+        $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltLiveAuthKey'], 'live');
+
+        $merchantId = $merchant->getId();
     }
 
     public function createBankAccount($attributes)

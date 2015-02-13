@@ -83,6 +83,15 @@ class NetBankingTest extends TestCase
         $this->startTest();
     }
 
+    public function testNBPaymentOnSharedTerminal()
+    {
+        $this->fixtures->create('merchant:with_keys');
+
+        $this->ba->publicAuth('rzp_test_AltTestAuthKey');
+
+        $this->startTest();
+    }
+
     public function testCardPayment()
     {
         $this->markTestSkipped();

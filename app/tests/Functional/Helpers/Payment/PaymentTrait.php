@@ -304,8 +304,6 @@ trait PaymentTrait
 
         $id = $this->getIdFromUri($uri);
 
-        $this->ba->publicAuth();
-
         $request['method'] = 'POST';
         $request['content'] = $form->getValues();
 

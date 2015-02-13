@@ -71,6 +71,8 @@ class Base
         $entity->exists = true;
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
 
+        $this->eloquentReguard();
+
         return $entity;
     }
 

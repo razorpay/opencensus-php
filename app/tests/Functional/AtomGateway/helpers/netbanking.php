@@ -101,5 +101,15 @@ return [
             'class' => 'EE\Exception\LogicException',
             'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ],
-    ]
+    ],
+
+    'testNBPaymentOnSharedTerminal' => [
+        'request' => [
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

@@ -35,6 +35,7 @@ class Terminal extends Base
         $attributes = array(
             'id'                    => $termId,
             'merchant_id'           => $merchant['id'],
+            'gateway'               => 'atom',
             'card'                  => 1,
             'gateway_merchant_id'   => 'razorpay',
             'gateway_terminal_id'   => 'nodal account',
