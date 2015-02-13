@@ -25,22 +25,6 @@ class SettlementController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function getTransactionRecords()
-    {
-        $input = Input::all();
-
-        $data = (new Transaction\Service)->getTransactionRecords($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getTransactionRecord($id)
-    {
-        $data = (new Transaction\Service)->getTransactionRecordById($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function postSettlementInitiate($channel = null)
     {
         $input = Input::all();
