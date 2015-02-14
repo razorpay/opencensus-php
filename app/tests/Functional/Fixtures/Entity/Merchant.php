@@ -44,12 +44,13 @@ class Merchant extends Base
         return $merchant;
     }
 
-
     public function createWithKeys()
     {
-        $merchant = $this->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+        $merchant = $this->create('merchant', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $merchantId = $merchant->getId();
+
+        $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
 
         $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltLiveAuthKey'], 'live');

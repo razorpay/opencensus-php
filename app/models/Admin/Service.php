@@ -14,7 +14,7 @@ class Service extends Base\Service
 
         $id = $entityClass::verifyIdAndStripSign($entity);
 
-        $repo = $this->getEntityRepository($entity);;
+        $repo = $this->getEntityRepository($entity);
 
         $entity = (new $repo)->findOrFail($id);
 

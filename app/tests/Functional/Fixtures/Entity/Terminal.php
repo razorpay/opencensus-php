@@ -30,7 +30,7 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
 
-        $merchant = $this->fixtures->create('merchant');
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AtomRazorpay']);
 
         $attributes = array(
             'id'                    => $termId,

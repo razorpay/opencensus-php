@@ -12,6 +12,12 @@ class Authorization
 
     protected $proxy = false;
 
+    protected $key = null;
+    protected $secret = null;
+
+    protected $defaultKey = 'rzp_test_TheTestAuthKey';
+    protected $defaultSecret = 'TheKeySecretForTests';
+
     public function __construct($test)
     {
         $this->test = $test;
@@ -60,11 +66,21 @@ class Authorization
         $this->proxy = true;
     }
 
-    public function publicAuth($user = 'rzp_test_TheTestAuthKey')
+    public function publicAuth($key = null)
     {
-        $this->basicAuth($user, '');
-
         $this->type = 'public';
+
+        if ($key === null)
+        {
+            $this->key = $this->defaultKey;
+            $key = $this->defaultKey;
+        }
+        else
+        {
+            $this->key = $key;
+        }
+
+        $this->basicAuth($key, '');
     }
 
     public function publicTestAuth()
@@ -77,21 +93,28 @@ class Authorization
         $this->publicAuth('rzp_live_TheLiveAuthKey');
     }
 
-    public function privateAuth($user = null, $pwd = null)
+    public function privateAuth($key = null, $secret = null)
     {
-        if ($user === null)
-        {
-            $user = 'rzp_test_TheTestAuthKey';
-        }
-
-        if ($pwd === null)
-        {
-            $pwd = 'TheKeySecretForTests';
-        }
-
-        $this->basicAuth($user, $pwd);
-
         $this->type = 'private';
+
+        if ($key === null)
+        {
+            $key = $this->defaultKey;
+
+            $this->key = $key;
+        }
+
+        if ($secret === null)
+        {
+            $this->setSecret($this->defaultSecret);
+            $secret = $this->defaultSecret;
+        }
+        else
+        {
+            $this->setSecret($secret);
+        }
+
+        $this->basicAuth($key, $secret);
     }
 
     public function dashboardAuth($mode = 'test')
@@ -127,5 +150,43 @@ class Authorization
     public function getSecret()
     {
         return $this->auth['PHP_AUTH_PW'];
+    }
+
+    public function setKey($key)
+    {
+        $this->key = $key;
+
+        return $this;
+    }
+
+    public function setDefaultKey($key)
+    {
+        $this->defaultKey = $key;
+    }
+
+    public function setDefaultSecret($secret)
+    {
+        $this->defaultSecret = $secret;
+    }
+
+    public function setSecret($secret)
+    {
+        $this->secret = $secret;
+
+        return $this;
+    }
+
+    public function setKeyAndSecret($key, $secret)
+    {
+        $this->setKey($key);
+
+        $this->setSecret($secret);
+
+        return $this;
+    }
+
+    public function isSecretNull()
+    {
+        return ($this->secret === null);
     }
 }

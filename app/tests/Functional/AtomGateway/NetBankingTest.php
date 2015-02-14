@@ -93,9 +93,22 @@ class NetBankingTest extends TestCase
 
         $this->fixtures->create('merchant:add_payment_banks', ['merchant_id' => $merchant->getId()]);
 
-        $this->ba->publicAuth('rzp_test_AltTestAuthKey');
+        $this->ba->setDefaultKey('rzp_test_AltTestAuthKey');
 
-        $this->startTest();
+        $this->ba->publicAuth();
+
+        $content = $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('atom', $payment['gateway']);
+
+        $content = $this->capturePayment($content['razorpay_payment_id'], '5000');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('atom', $payment['gateway']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('kotak', $txn['channel']);
     }
 
     public function testCardPayment()
