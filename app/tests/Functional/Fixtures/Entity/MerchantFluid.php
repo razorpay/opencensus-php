@@ -8,6 +8,8 @@ class MerchantFluid extends Base
 {
     protected $merchant = null;
 
+    protected $repo = null;
+
     public function getMerchant($id)
     {
         $merchant = $this->getRepo()->findOrFail($id);
@@ -32,6 +34,14 @@ class MerchantFluid extends Base
 
         $this->setMerchant($merchant);
 
+        $this->fixtures->on('test')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
+        $this->fixtures->on('live')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
+
+        return $this;
+    }
+
+    public function addBalance()
+    {
         $this->fixtures->on('test')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
         $this->fixtures->on('live')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
 
@@ -122,9 +132,10 @@ class MerchantFluid extends Base
         {
             return $this->repo;
         }
-        $repo = new \Models\Merchant\Repository;
 
-        $this->repo = $repo;
+        $this->repo = new \Models\Merchant\Repository;
+
+        return $this->repo;
     }
 
     protected function getId()
@@ -137,7 +148,7 @@ class MerchantFluid extends Base
         return $this->merchant;
     }
 
-    public function instance()
+    public function createInstance()
     {
         return $this;
     }
