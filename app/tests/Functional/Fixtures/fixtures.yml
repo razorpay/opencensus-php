@@ -2,6 +2,9 @@ Models\Merchant\Entity:
     id: $uniqueid
     name: $string
     email: $email
+    activated: 0
+    live: 0
+    pricing_plan_id: null
 
 Models\Terminal\Entity:
     id: $uniqueid

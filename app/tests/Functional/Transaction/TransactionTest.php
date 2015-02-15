@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Transaction;
 
+use Carbon\Carbon;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -94,6 +95,42 @@ class TransactionTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $txn);
 
         return $refund;
+    }
+
+    public function testTransactionOnSharedTerminal()
+    {
+        $this->gateway = 'atom';
+
+        $merchant = $this->fixtures->create('merchant_fluid:entity')
+                         ->addKeys()
+                         ->addPaymentBanks()
+                         ->addBankAccount()
+                         ->get();
+
+        $this->ba->setDefaultKey('rzp_test_AltTestAuthKey');
+
+        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('atom', $payment['gateway']);
+        $this->assertEquals('1000AtomShared', $payment['terminal_id']);
+
+        $txn = $this->getLastTransaction(true);
+        $this->assertEquals('kotak', $txn['channel']);
+
+        $testData = $this->testData['txnDataAfterPaymentOnSharedTerminal'];
+        $testData['entity_id'] = $payment['id'];
+        $testData['settled_at'] = ''. Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+    }
+
+    public function testTransactionWithSharedTerminalMerchant()
+    {
+        $merchantId = '10AtomRazorpay';
+
+//        $fluid = $this->fixtures->create('merchant_fluid:instance')
     }
 
     protected function startTest($testDataToReplace = array())

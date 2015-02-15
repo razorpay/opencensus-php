@@ -42,6 +42,6 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
         );
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 }

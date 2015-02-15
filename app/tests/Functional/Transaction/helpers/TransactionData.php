@@ -123,4 +123,22 @@ return [
         'pricing_rule_id' => null,
         'channel' => 'atom',
     ],
+
+    'txnDataAfterPaymentOnSharedTerminal' => [
+        'type' => 'payment',
+        'amount' => 50000,
+        'fee' => 1405,
+        'pricing_rule_id' => '1zD0BXpeOyaqpB',
+        'debit' => 0,
+        'credit' => 48595,
+        'currency' => 'INR',
+        'balance' => 48595,
+        'gateway_fee' => 1405,
+        'api_fee' => 0,
+        'escrow_balance' => 1048595,
+        'channel' => 'kotak',
+        'settled' => FALSE,
+        'settlement_id' => null,
+        'entity' => 'transaction',
+    ],
 ];
