@@ -4,8 +4,10 @@ namespace Models\Payment\Processor;
 
 use BasicAuth;
 use EE\Exception;
+use EE\Error\ErrorCode;
 use Http\Route;
 use Models\Card;
+use Models\Merchant;
 use Models\Payment;
 use Models\Transaction;
 use Request;
@@ -27,6 +29,8 @@ trait Refund
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
         $refund->merchant()->associate($this->merchant);
+
+        $this->validateMerchantBalance($refund);
 
         $this->refund = $refund;
 
@@ -86,5 +90,18 @@ trait Refund
         $this->payment->refundAmount($this->refund->getAmount());
 
         $this->trace(TraceCode::PAYMENT_REFUND_SUCCESS);
+    }
+
+    protected function validateMerchantBalance($refund)
+    {
+        $merchant = $refund->merchant;
+
+        $balance = (new Merchant\Repository)->getMerchantBalance($merchant);
+
+        if ($balance->getBalance() < $refund->getAmount())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE);
+        }
     }
 }
