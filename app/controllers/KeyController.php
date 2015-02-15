@@ -3,7 +3,7 @@
 use Http\ApiResponse;
 use Models\Key;
 
-class MerchantController extends BaseController
+class KeyController extends BaseController
 {
     public function getKey($id)
     {
