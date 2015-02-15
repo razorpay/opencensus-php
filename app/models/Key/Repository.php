@@ -6,6 +6,8 @@ use Models\Base;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryFetch;
+
     protected $entity = 'Key';
 
     public function getKeysForMerchant($merchantId, $expired = false)
