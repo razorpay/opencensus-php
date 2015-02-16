@@ -51,7 +51,7 @@ return array(
     'AWS_REGION'                => 'us-east-1',
 
     'AWS_S3_MOCK'               => true,
-    'AWS_S3_SETTLEMENT_BUCKET'  => '';
+    'AWS_S3_SETTLEMENT_BUCKET'  => '',
 
     'CRON_PASSWORD'             => 'RANDOM_CRON_PASSWORD',
 );
