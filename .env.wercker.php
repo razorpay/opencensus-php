@@ -34,6 +34,8 @@ return array(
     'APP_DASHBOARD_SECRET'      => 'DASHBOARD_AUTH_PASS',
     'APP_DASHBOARD_PRETEND'     => true,
 
+    'APP_HOSTED_SECRET'         => 'somerandomsecret',
+
     'SLACK_TOKEN'               => '',
     'SLACK_MOCK'                => true,
 
@@ -47,6 +49,9 @@ return array(
     'AWS_KEY_ID'                => '',
     'AWS_KEY_SECRET'            => '',
     'AWS_REGION'                => 'us-east-1',
+
+    'AWS_S3_MOCK'               => true,
+    'AWS_S3_SETTLEMENT_BUCKET'  => '';
 
     'CRON_PASSWORD'             => 'a923r8u98uwaf98uw9w8fu',
 );
