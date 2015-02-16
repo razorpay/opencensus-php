@@ -4,20 +4,20 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "28befbb6612c9b20f97787b479bd39a1",
+    "hash": "64f7b6984d73c8c686b0422294e300b0",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.7.17",
+            "version": "2.7.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "eddf89846ed0f15e8e2b8cbe6d08125eaa20ad80"
+                "reference": "470ca90e2d511f64f082c569864f22f2c18fdc38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/eddf89846ed0f15e8e2b8cbe6d08125eaa20ad80",
-                "reference": "eddf89846ed0f15e8e2b8cbe6d08125eaa20ad80",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/470ca90e2d511f64f082c569864f22f2c18fdc38",
+                "reference": "470ca90e2d511f64f082c569864f22f2c18fdc38",
                 "shasum": ""
             },
             "require": {
@@ -71,7 +71,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-01-27 20:14:01"
+            "time": "2015-02-12 20:56:39"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -925,16 +925,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v4.2.16",
+            "version": "v4.2.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "31fe6a5747bbe3c2df21dc4cc8f291e75ab6144f"
+                "reference": "3359de6d6cd322e8a1b251c2f8d9dd42a3e4e232"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/31fe6a5747bbe3c2df21dc4cc8f291e75ab6144f",
-                "reference": "31fe6a5747bbe3c2df21dc4cc8f291e75ab6144f",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/3359de6d6cd322e8a1b251c2f8d9dd42a3e4e232",
+                "reference": "3359de6d6cd322e8a1b251c2f8d9dd42a3e4e232",
                 "shasum": ""
             },
             "require": {
@@ -945,7 +945,7 @@
                 "jeremeamia/superclosure": "~1.0.1",
                 "monolog/monolog": "~1.6",
                 "nesbot/carbon": "~1.0",
-                "patchwork/utf8": "1.1.*",
+                "patchwork/utf8": "~1.1",
                 "php": ">=5.4.0",
                 "phpseclib/phpseclib": "0.3.*",
                 "predis/predis": "0.8.*",
@@ -1036,20 +1036,20 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2014-12-22 20:56:10"
+            "time": "2015-02-11 20:37:15"
         },
         {
             "name": "maatwebsite/excel",
-            "version": "dev-master",
+            "version": "v1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maatwebsite/Laravel-Excel.git",
-                "reference": "b108babda9f0375b5deb9abbd2252044b84a0ddd"
+                "reference": "1d6e4e797e6260a740fa72a42aa1b224347852c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/b108babda9f0375b5deb9abbd2252044b84a0ddd",
-                "reference": "b108babda9f0375b5deb9abbd2252044b84a0ddd",
+                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/1d6e4e797e6260a740fa72a42aa1b224347852c3",
+                "reference": "1d6e4e797e6260a740fa72a42aa1b224347852c3",
                 "shasum": ""
             },
             "require": {
@@ -1103,7 +1103,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2015-01-30 15:39:03"
+            "time": "2015-02-02 16:27:23"
         },
         {
             "name": "mailgun/mailgun-php",
@@ -1219,16 +1219,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "1.13.0",
+            "version": "1.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "5cb6e71055f7b0b57956b73d324cc4de31278f42"
+                "reference": "bb87460c995d97fe55b39e65f6ffb7f64b0a941e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/5cb6e71055f7b0b57956b73d324cc4de31278f42",
-                "reference": "5cb6e71055f7b0b57956b73d324cc4de31278f42",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/bb87460c995d97fe55b39e65f6ffb7f64b0a941e",
+                "reference": "bb87460c995d97fe55b39e65f6ffb7f64b0a941e",
                 "shasum": ""
             },
             "require": {
@@ -1261,7 +1261,7 @@
                 "datetime",
                 "time"
             ],
-            "time": "2014-09-26 02:52:02"
+            "time": "2015-02-06 05:07:29"
         },
         {
             "name": "nikic/php-parser",
@@ -1310,16 +1310,16 @@
         },
         {
             "name": "patchwork/utf8",
-            "version": "v1.1.28",
+            "version": "v1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tchwork/utf8.git",
-                "reference": "ffa082111aa3cb23cf2479a17e6785ace91da982"
+                "reference": "01f0ed1628db7794e2d4e336f55a09daef4248a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tchwork/utf8/zipball/ffa082111aa3cb23cf2479a17e6785ace91da982",
-                "reference": "ffa082111aa3cb23cf2479a17e6785ace91da982",
+                "url": "https://api.github.com/repos/tchwork/utf8/zipball/01f0ed1628db7794e2d4e336f55a09daef4248a5",
+                "reference": "01f0ed1628db7794e2d4e336f55a09daef4248a5",
                 "shasum": ""
             },
             "require": {
@@ -1329,9 +1329,15 @@
             "suggest": {
                 "ext-iconv": "Use iconv for best performance",
                 "ext-intl": "Use Intl for best performance",
-                "ext-mbstring": "Use Mbstring for best performance"
+                "ext-mbstring": "Use Mbstring for best performance",
+                "ext-wfio": "Use WFIO for UTF-8 filesystem access on Windows"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
             "autoload": {
                 "psr-0": {
                     "Patchwork": "class/",
@@ -1357,7 +1363,7 @@
                 "utf-8",
                 "utf8"
             ],
-            "time": "2015-01-12 08:05:15"
+            "time": "2015-01-29 08:36:50"
         },
         {
             "name": "phpoffice/phpexcel",
@@ -1418,26 +1424,26 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "0.3.9",
+            "version": "0.3.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "c6e88ca6e81bc5a2d7161658e16a95b7ef8d6ad1"
+                "reference": "d15bba1edcc7c89e09cc74c5d961317a8b947bf4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/c6e88ca6e81bc5a2d7161658e16a95b7ef8d6ad1",
-                "reference": "c6e88ca6e81bc5a2d7161658e16a95b7ef8d6ad1",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/d15bba1edcc7c89e09cc74c5d961317a8b947bf4",
+                "reference": "d15bba1edcc7c89e09cc74c5d961317a8b947bf4",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.0.0"
             },
             "require-dev": {
-                "phing/phing": "2.7.*",
-                "phpunit/phpunit": "4.0.*",
-                "sami/sami": "1.*",
-                "squizlabs/php_codesniffer": "1.*"
+                "phing/phing": "~2.7",
+                "phpunit/phpunit": "~4.0",
+                "sami/sami": "~2.0",
+                "squizlabs/php_codesniffer": "~1.5"
             },
             "suggest": {
                 "ext-gmp": "Install the GMP (GNU Multiple Precision) extension in order to speed up arbitrary precision integer arithmetic operations.",
@@ -1512,7 +1518,7 @@
                 "x.509",
                 "x509"
             ],
-            "time": "2014-11-10 03:08:59"
+            "time": "2015-01-28 21:50:33"
         },
         {
             "name": "predis/predis",
@@ -1608,7 +1614,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/rzp-php.git",
-                "reference": "8bb76d3e5cfe17378d896d15cc2109cafadefd89"
+                "reference": "d920a731f0297a715ee30325c3a8b2d8cf85eea6"
             },
             "require": {
                 "ext-json": "*",
@@ -1633,7 +1639,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2015-01-05 17:07:50"
+            "time": "2015-02-07 02:21:10"
         },
         {
             "name": "razorpay/spine",
@@ -2090,17 +2096,17 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.6.3",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "40ff70cadea3785d83cac1c8309514b36113064e"
+                "reference": "f75989f3ab2743a82fe0b03ded2598a2b1546813"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/40ff70cadea3785d83cac1c8309514b36113064e",
-                "reference": "40ff70cadea3785d83cac1c8309514b36113064e",
+                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/f75989f3ab2743a82fe0b03ded2598a2b1546813",
+                "reference": "f75989f3ab2743a82fe0b03ded2598a2b1546813",
                 "shasum": ""
             },
             "require": {
@@ -2144,11 +2150,11 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-05 14:28:40"
+            "time": "2015-02-01 16:10:57"
         },
         {
             "name": "symfony/filesystem",
-            "version": "v2.6.3",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Filesystem",
             "source": {
                 "type": "git",
@@ -2369,17 +2375,17 @@
         },
         {
             "name": "symfony/process",
-            "version": "v2.5.9",
+            "version": "v2.5.10",
             "target-dir": "Symfony/Component/Process",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "3309098ce4d9b5e44c04e51bf4541ea466fbe343"
+                "reference": "7b6632c849f87a062301e853f03f71d726520b58"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/3309098ce4d9b5e44c04e51bf4541ea466fbe343",
-                "reference": "3309098ce4d9b5e44c04e51bf4541ea466fbe343",
+                "url": "https://api.github.com/repos/symfony/Process/zipball/7b6632c849f87a062301e853f03f71d726520b58",
+                "reference": "7b6632c849f87a062301e853f03f71d726520b58",
                 "shasum": ""
             },
             "require": {
@@ -2412,21 +2418,21 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-05 20:58:03"
+            "time": "2015-01-25 04:37:39"
         },
         {
             "name": "symfony/routing",
-            "version": "v2.5.9",
+            "version": "v2.5.10",
             "target-dir": "Symfony/Component/Routing",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Routing.git",
-                "reference": "47e350dadadabdf64c8dbab499a1132c567f9411"
+                "reference": "3a9c35ca312d8cb6a308b751f9a1cd92cd5d9277"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Routing/zipball/47e350dadadabdf64c8dbab499a1132c567f9411",
-                "reference": "47e350dadadabdf64c8dbab499a1132c567f9411",
+                "url": "https://api.github.com/repos/symfony/Routing/zipball/3a9c35ca312d8cb6a308b751f9a1cd92cd5d9277",
+                "reference": "3a9c35ca312d8cb6a308b751f9a1cd92cd5d9277",
                 "shasum": ""
             },
             "require": {
@@ -2480,21 +2486,21 @@
                 "uri",
                 "url"
             ],
-            "time": "2015-01-05 08:51:41"
+            "time": "2015-01-13 14:58:43"
         },
         {
             "name": "symfony/security-core",
-            "version": "v2.5.9",
+            "version": "v2.5.10",
             "target-dir": "Symfony/Component/Security/Core",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/security-core.git",
-                "reference": "e0d8f52dbb7d6e6a5d8df26b56bc68d829c8d519"
+                "reference": "3a27d7b34ee62cb0fdf5ad970e7777912ef4722f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/security-core/zipball/e0d8f52dbb7d6e6a5d8df26b56bc68d829c8d519",
-                "reference": "e0d8f52dbb7d6e6a5d8df26b56bc68d829c8d519",
+                "url": "https://api.github.com/repos/symfony/security-core/zipball/3a27d7b34ee62cb0fdf5ad970e7777912ef4722f",
+                "reference": "3a27d7b34ee62cb0fdf5ad970e7777912ef4722f",
                 "shasum": ""
             },
             "require": {
@@ -2543,11 +2549,11 @@
             ],
             "description": "Symfony Security Component - Core Library",
             "homepage": "http://symfony.com",
-            "time": "2015-01-05 20:58:03"
+            "time": "2015-01-25 04:37:39"
         },
         {
             "name": "symfony/translation",
-            "version": "v2.5.9",
+            "version": "v2.5.10",
             "target-dir": "Symfony/Component/Translation",
             "source": {
                 "type": "git",
@@ -2865,17 +2871,17 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.3",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "82462a90848a52c2533aa6b598b107d68076b018"
+                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/82462a90848a52c2533aa6b598b107d68076b018",
-                "reference": "82462a90848a52c2533aa6b598b107d68076b018",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/60ed7751671113cf1ee7d7778e691642c2e9acd8",
+                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8",
                 "shasum": ""
             },
             "require": {
@@ -2908,15 +2914,14 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-03 15:33:07"
+            "time": "2015-01-25 04:39:26"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
         "razorpay/razorpay-php": 20,
-        "razorpay/spine": 20,
-        "maatwebsite/excel": 20
+        "razorpay/spine": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

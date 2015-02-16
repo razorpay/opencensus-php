@@ -115,6 +115,7 @@ return array(
 		'Illuminate\View\ViewServiceProvider',
 		'Illuminate\Workbench\WorkbenchServiceProvider',
         'Maatwebsite\Excel\ExcelServiceProvider',
+        'Aws\Laravel\AwsServiceProvider',
         'Http\BasicAuth\ServiceProvider',
         'Trace\TraceServiceProvider',
         'Services\SlackServiceProvider',
@@ -126,7 +127,7 @@ return array(
 	| Service Provider Manifest
 	|--------------------------------------------------------------------------
 	|
-	| The service provider manifest is used by Laravel to lazy load service
+	| The service provider mani\fest is used by Laravel to lazy load service
 	| providers which are not needed for each request, as well to keep a
 	| list of all of the services. Here, you may set its storage spot.
 	|
