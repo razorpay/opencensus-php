@@ -7,16 +7,18 @@ use Carbon\Carbon;
 
 class Entity extends Base\PublicEntity
 {
+    const ID                = 'id';
+    const DATE              = 'date';
+    const CHANNEL           = 'channel';
+    const AMOUNT            = 'amount';
+    const URLS              = 'urls';
+    const INITIATED_AT      = 'initiated_at';
+    const RECONCILED_AT     = 'reconciled_at';
+    const RETURNED_AT       = 'returned_at';
+
     protected $table = \Constants\Table::DAILY_SETTLEMENT;
 
     protected $entity = 'daily_settlement';
-
-    protected $fillable = array(
-        'day',
-        'amount',
-        'urls',
-        'initiated_at'
-    );
 
     protected $genereateIdOnCreate = true;
 
@@ -26,7 +28,7 @@ class Entity extends Base\PublicEntity
 
     public function setTodayTimestamp()
     {
-        $this->attributes['day'] = self::getTodayTimestamp();
+        $this->attributes[self::DATE] = self::getTodayTimestamp();
     }
 
     public static function getTodayTimestamp()

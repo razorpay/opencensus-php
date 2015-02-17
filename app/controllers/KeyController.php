@@ -12,10 +12,7 @@ class KeyController extends BaseController
         return ApiResponse::json($data);
     }
 
-    /**
-     * Retrieves payment details
-     */
-    public function getPayments()
+    public function getKeys()
     {
         $input = Input::all();
 

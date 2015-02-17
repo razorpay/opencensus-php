@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
+use Models\Settlement\Daily\Entity as DailySettlement;
 
 class CreateDailySettlements extends Migration
 {
@@ -19,30 +20,30 @@ class CreateDailySettlements extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char('id', 14)
+            $table->char(DailySettlement::ID, DailySettlement::ID_LENGTH)
                   ->primary();
 
-            $table->integer('day');
+            $table->integer(DailySettlement::DATE);
 
-            $table->string('channel', 8);
+            $table->string(DailySettlement::CHANNEL, 8);
 
-            $table->integer('amount');
+            $table->integer(DailySettlement::AMOUNT);
 
-            $table->text('urls');
+            $table->text(DailySettlement::URLS);
 
-            $table->integer('initiated_at');
+            $table->integer(DailySettlement::INITIATED_AT);
 
-            $table->integer('reconciled_at')
+            $table->integer(DailySettlement::RECONCILED_AT)
                   ->nullable();
 
-            $table->integer('returned_at')
+            $table->integer(DailySettlement::RETURNED_AT)
                   ->nullable();
 
-            $table->integer('created_at');
-            $table->integer('updated_at');
+            $table->integer(DailySettlement::CREATED_AT);
+            $table->integer(DailySettlement::UPDATED_AT);
 
-            $table->index('created_at');
-            $table->index('day');
+            $table->index(DailySettlement::CREATED_AT);
+            $table->index(DailySettlement::DATE);
         });
 
     }
