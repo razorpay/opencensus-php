@@ -43,7 +43,7 @@ class Reconciler
 
     public function process($input)
     {
-        $reconcileFile = $this->getFileIfExists($input);
+        $reconcileFile = $this->getFile($input);
 
         if ($reconcileFile === null)
             return new Base\PublicCollection;
@@ -52,7 +52,7 @@ class Reconciler
 
         $data = $this->reconcile($data);
 
-        $this->moveFile($reconcileFile);
+        $this->storeReconciledFile($reconcileFile);
 
         return $data;
     }

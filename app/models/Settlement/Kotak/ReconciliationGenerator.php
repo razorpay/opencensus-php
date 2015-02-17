@@ -41,7 +41,7 @@ class ReconciliationGenerator
     public function generateReconcileFile($input)
     {
 //        $setlFile = $input['setlFile'];
-        $setlFile = $this->getFileIfExists();
+        $setlFile = $this->getFile($input);
 
         if ($setlFile === null)
             return [];

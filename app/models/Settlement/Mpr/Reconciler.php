@@ -16,6 +16,8 @@ use Models\Transaction;
 
 class Reconciler
 {
+    use Parser;
+
     /**
      * All payments in the current mpr
      * will have the same reconciledAt timestamp
@@ -39,6 +41,7 @@ class Reconciler
     {
         $app = \App::getFacadeRoot();
         $this->mode = $app['rzp.mode'];
+        $this->env = $app->environment();
 
         $this->reconciledAt = time();
 
@@ -53,13 +56,24 @@ class Reconciler
         $this->initRepos();
     }
 
-    public function reconcile($mprData, $gateway)
+    public function process($input)
+    {
+        $this->checkInput($input);
+
+        $mprFile = $input['attachment-1'];
+
+        $mprData = $this->parseMprFile($mprFile);
+
+        return $this->reconcile($mprData, 'hdfc');
+    }
+
+    protected function reconcile($mprData, $gateway)
     {
         $this->txnRepo->beginTransaction();
 
         try
         {
-            $txns = $this->process($mprData, $gateway);
+            $txns = $this->processData($mprData, $gateway);
 
             $this->txnRepo->commit();
         }
@@ -79,7 +93,7 @@ class Reconciler
         return $txns;
     }
 
-    protected function process($mprData, $gateway)
+    protected function processData($mprData, $gateway)
     {
         $txns = new Base\PublicCollection;
 

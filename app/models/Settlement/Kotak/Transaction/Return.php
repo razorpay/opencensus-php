@@ -45,7 +45,7 @@ class ReturnTransactions
 
     public function process($input)
     {
-        $returnFile = $this->getFileIfExists($input);
+        $returnFile = $this->getFile($input);
 
         if ($returnFile === null)
             return [];
@@ -54,7 +54,7 @@ class ReturnTransactions
 
         $data = $this->processReturns($data);
 
-        $this->moveFile($returnFile);
+        $this->storeReconciledFile($returnFile);
 
         return $data;
     }

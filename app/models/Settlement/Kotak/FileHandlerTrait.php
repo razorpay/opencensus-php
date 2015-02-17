@@ -12,23 +12,24 @@ trait FileHandlerTrait
     {
         $fullpath = $this->saveLocally($txt);
 
-        $this->saveToAws($fullpath, 'text/plain');
+        $url = $this->saveToAws($fullpath, 'text/plain');
 
-        return $fullpath;
+        // This will be local file path if aws is mocked
+        return $url;
     }
 
     protected function saveToAws($fullpath, $mime)
     {
-        $s3 = \App::make('aws')->get('s3');
-
-        $name = $this->getFileToWriteName();
-
         $awsS3Mock = true;
 
         if ($awsS3Mock)
         {
-            return;
+            return $fullpath;
         }
+
+        $s3 = \App::make('aws')->get('s3');
+
+        $name = $this->getFileToWriteName();
 
         try
         {
@@ -40,15 +41,18 @@ trait FileHandlerTrait
             );
 
             $result = $s3->putObject($s3Obj);
-
-            $merchantDetails->$data['field'] = $result['ObjectURL'];
-            $merchantDetails->saveOrFail();
         }
         catch(\Exception $e)
         {
             // trace here.
             throw $e;
         }
+
+        $url = $result['ObjectURL'];
+
+        $this->fileAwsUrl = $url;
+
+        return $url;
     }
 
     protected function saveLocally($txt)
@@ -76,6 +80,17 @@ trait FileHandlerTrait
         }
 
         return $txt;
+    }
+
+    protected function getFile($input)
+    {
+        if (isset($input['file']))
+        {
+            return $this->moveFile($input['file']);
+        }
+
+
+        return $this->getFileIfExists();
     }
 
     protected function getFileIfExists()
@@ -120,6 +135,22 @@ trait FileHandlerTrait
         $name = static::$fileToReadName.'_'.$mode.'_'.$time.'.txt';
 
         return $name;
+    }
+
+    protected function getFileToReadFullPath()
+    {
+        $name = $this->getFileToReadName();
+
+        return $this->getStoragePath($name);
+    }
+
+    protected function getStoragePath($path = '')
+    {
+        $folder = 'files/settlement';
+
+        $path = $folder . ($path ? '/'.$path : $path);
+
+        return storage_path($path);
     }
 
     protected function getFileToWriteName()
@@ -173,7 +204,7 @@ trait FileHandlerTrait
         return static::$headings;
     }
 
-    public function moveFile($file)
+    protected function storeReconciledFile($file)
     {
         $filename = basename($file, '.txt');
 
@@ -190,7 +221,41 @@ trait FileHandlerTrait
 
         $newName = $dir . '/' . $filename . '_' . $mode.'_'.$time . '.txt';
 
-        rename($file, $newName);
+        $res = rename($file, $newName);
+
+        if ($res === false)
+        {
+            throw Exception\RuntimeErrorException(
+                'Failed to rename file. File : ' . $file .
+                ' Renamed name: ' . $newFilepath);
+        }
+
+        return $newName;
+    }
+
+    protected function moveFile($file)
+    {
+        $uploadedFilePath = $file->getRealPath();
+
+        $newFilepath = $this->getFileToReadFullPath();
+
+        $dir = $this->getStorageDir();
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir, 0777);
+        }
+
+        $res = rename($uploadedFilePath, $newFilepath);
+
+        if ($res === false)
+        {
+            throw Exception\RuntimeErrorException(
+                'Failed to rename file. Uploaded name: ' . $uploadedFilePath .
+                ' Renamed name: ' . $newFilepath);
+        }
+
+        return $newFilepath;
     }
 
     protected function getMode()
@@ -198,5 +263,10 @@ trait FileHandlerTrait
         $mode = \BasicAuth::getMode();
 
         return $mode;
+    }
+
+    protected function getStorageDir()
+    {
+        return storage_path('files/settlement');
     }
 }

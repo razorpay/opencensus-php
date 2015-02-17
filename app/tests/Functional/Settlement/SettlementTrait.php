@@ -106,7 +106,8 @@ trait SettlementTrait
         $request = [
             'url' => '/settlements/reconcile',
             'files' => [
-                'setlReconciliationFile' => $uploadedFile
+//                'setlReconciliationFile' => $uploadedFile
+                'file' => $uploadedFile
             ],
         ];
 

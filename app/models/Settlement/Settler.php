@@ -50,6 +50,9 @@ class Settler
 
         foreach ($channels as $channel)
         {
+            $this->dailySettlement = new Settlement\Daily;
+            $this->dailySettlement->setTodayTimestamp();
+
             $settleForChannelVar = 'settleFor' . ucfirst($channel);
 
             $data[$channel] = $this->$settleForChannelVar($txns);
@@ -64,11 +67,16 @@ class Settler
 
         try
         {
-            list($settlements, $txns) = $this->process($txns, Channel::KOTAK);
+            list($settlements, $txns, $totalSetlAmount) = $this->process($txns, Channel::KOTAK);
 
-            $file = $this->createSettlementFile($settlements, $txns);
+            $url = $this->createSettlementFile($settlements, $txns);
 
-            $this->transferFileToNodalBank($file);
+            $urls = array();
+            $urls['kotak_settlement_file'] = $url;
+
+            $this->dailySettlement->setUrls($urls);
+            $this->dailySettlement->initiated_at = time();
+            $this->dailySettlement->saveOrFail();
 
             $this->setlRepo->commit();
         }
@@ -81,7 +89,7 @@ class Settler
 
         $this->successNotification($settlements, 'kotak');
 
-        return ['setlFile' => $file];
+        return ['setlFile' => $url];
     }
 
     protected function settleForAtom($input = array())
@@ -137,19 +145,22 @@ class Settler
 
     protected function process($txns, $channel)
     {
-        $settlements = $this->createSettlements($txns, $channel);
+        list($settlements, $totalSetlAmount) = $this->createSettlements($txns, $channel);
 
         $this->txnRepo->settled($txns, self::$settlementTimestamp);
 
-        return array($settlements, $txns);
+        return array($settlements, $txns, $totalSetlAmount);
     }
 
     protected function createSettlements($txns, $channel)
     {
+        $this->dailySettlement->channel = $channel;
+
         $settlements = new Base\PublicCollection;
 
         $i = 0;
         $count = $txns->count();
+        $totalSetlAmount = 0;
 
         while ($i < $count)
         {
@@ -177,11 +188,21 @@ class Settler
                 $i++;
             }
 
+            if ($setlAmount < 0)
+            {
+                $setlAmount = 0;
+                continue;
+            }
+
             $setl = (new Settlement\Merchant($merchant, $setlAmount, $channel))->settle($setlTxns);
             $settlements->push($setl);
+
+            $totalSetlAmount += $setlAmount;
         }
 
-        return $settlements;
+        $this->dailySettlement->amount = $totalSetlAmount;
+
+        return [$settlements, $totalSetlAmount];
     }
 
     protected function shouldSettle(Transaction\Entity $txn, $channel)
@@ -191,18 +212,20 @@ class Settler
 
     protected function createSettlementFile($settlements, $txns)
     {
-        $filename = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
+        $url = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
-        return $filename;
+        return $url;
     }
 
-    protected function transferFileToNodalBank($file)
+    protected function saveUrl($url)
     {
-        ;
-        $this->trace->info(TraceCode::SETTLEMENT_KOTAK_FILE_TRANSFERRED);
+        $daily = new Settlement\Daily;
+
+
     }
+
 
     protected function fetchTransactionsToSettle($input)
     {
