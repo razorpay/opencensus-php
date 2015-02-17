@@ -48,6 +48,12 @@ class Reconciler
         if ($reconcileFile === null)
             return new Base\PublicCollection;
 
+        $this->dailySettlement = $this->setlRepo->getSettlementForToday();
+
+        $url = $this->saveUploadedFileToAws($reconcileFile);
+
+        $this->dailySettlement->addUrl('reconcile_url', $url);
+
         $data = $this->parseTextFile($reconcileFile);
 
         $data = $this->reconcile($data);
@@ -60,8 +66,6 @@ class Reconciler
     protected function reconcile($data)
     {
         $collection = new Base\PublicCollection;
-
-        $this->dailySettlement = $this->setlRepo->getSettlementForToday();
 
         $this->setlRepo->beginTransaction();
 

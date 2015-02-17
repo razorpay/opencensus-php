@@ -10,15 +10,24 @@ trait FileHandlerTrait
 {
     public function writeToTextFile($txt)
     {
-        $fullpath = $this->saveLocally($txt);
+        $name = $this->getFileToWriteName();
 
-        $url = $this->saveToAws($fullpath, 'text/plain');
+        $fullpath = $this->saveLocally($name, $txt);
+
+        $url = $this->saveToAws($name, $fullpath, 'text/plain');
 
         // This will be local file path if aws is mocked
         return $url;
     }
 
-    protected function saveToAws($fullpath, $mime)
+    protected function saveUploadedFileToAws($fullpath)
+    {
+        $name = $this->getFileToReadName();
+
+        return $this->saveToAws($name, $fullpath, 'text/plain');
+    }
+
+    protected function saveToAws($name, $fullpath, $mime = 'text/plain')
     {
         $awsS3Mock = true;
 
@@ -28,8 +37,6 @@ trait FileHandlerTrait
         }
 
         $s3 = \App::make('aws')->get('s3');
-
-        $name = $this->getFileToWriteName();
 
         try
         {
@@ -55,11 +62,9 @@ trait FileHandlerTrait
         return $url;
     }
 
-    protected function saveLocally($txt)
+    protected function saveLocally($name, $txt)
     {
         $path = storage_path() . '/files/settlement/';
-
-        $name = $this->getFileToWriteName();
 
         $fullpath = $path . $name;
 

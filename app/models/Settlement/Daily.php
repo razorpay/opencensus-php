@@ -19,7 +19,7 @@ class Daily extends Base\PublicEntity
     );
 
     public function setTodayTimestamp()
-    {s(self::getTodayTimestamp());
+    {
         $this->attributes['day'] = self::getTodayTimestamp();
     }
 
@@ -53,5 +53,16 @@ class Daily extends Base\PublicEntity
     public function setUrls($urls)
     {
         return $this->setAttribute('urls', $urls);
+    }
+
+    public function addUrl($key, $url)
+    {
+        $urls = $this->getUrls();
+
+        $urls[$key] = $url;
+
+        $this->setAttribute('urls', $urls);
+
+        return $urls;
     }
 }

@@ -47,6 +47,12 @@ class ReturnTransactions
     {
         $returnFile = $this->getFile($input);
 
+        $url = $this->saveUploadedFileToAws($returnFile);
+
+        $this->dailySettlement = $this->setlRepo->getSettlementForToday();
+
+        $this->dailySettlement->addUrl('return_url', $url);
+
         if ($returnFile === null)
             return [];
 
@@ -61,8 +67,6 @@ class ReturnTransactions
 
     protected function processReturns($rows)
     {
-        $this->dailySettlement = $this->setlRepo->getSettlementForToday();
-
         $this->setlRepo->beginTransaction();
 
         try
