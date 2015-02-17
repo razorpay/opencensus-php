@@ -91,8 +91,6 @@ class Core
     {
         Key\Entity::verifyIdAndStripSign($keyId);
 
-        Key\Validator::checkForDemoKeys($keyId);
-
         $key = (new Key\Repository)->findOrFailPublic($keyId);
 
         $secret = Crypt::decrypt($key->getSecret());
