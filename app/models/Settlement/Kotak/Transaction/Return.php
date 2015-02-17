@@ -61,6 +61,8 @@ class ReturnTransactions
 
     protected function processReturns($rows)
     {
+        $this->dailySettlement = $this->setlRepo->getSettlementForToday();
+
         $this->setlRepo->beginTransaction();
 
         try
@@ -98,6 +100,9 @@ class ReturnTransactions
 
             $collection->push($setl);
         }
+
+        $this->dailySettlement->returned_at = time();
+        $this->dailySettlement->saveOrFail();
 
         return $collection;
     }

@@ -61,6 +61,8 @@ class Reconciler
     {
         $collection = new Base\PublicCollection;
 
+        $this->dailySettlement = $this->setlRepo->getSettlementForToday();
+
         $this->setlRepo->beginTransaction();
 
         try
@@ -71,6 +73,9 @@ class Reconciler
 
                 $collection->push($setl);
             }
+
+            $this->dailySettlement->reconciled_at = $this->reconciledAt;
+            $this->dailySettlement->saveOrFail();
 
             $this->setlRepo->commit();
         }

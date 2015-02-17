@@ -9,15 +9,17 @@ class Daily extends Base\PublicEntity
 {
     protected $table = \Constants\Table::DAILY_SETTLEMENT;
 
+    public $primaryKey = 'day';
+
     protected $fillable = array(
-        'daily',
+        'day',
         'amount',
         'urls',
         'initiated_at'
     );
 
     public function setTodayTimestamp()
-    {
+    {s(self::getTodayTimestamp());
         $this->attributes['day'] = self::getTodayTimestamp();
     }
 

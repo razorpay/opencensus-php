@@ -19,8 +19,7 @@ class CreateDailySettlements extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->integer('day')
-                  ->primary();
+            $table->primary('day');
 
             $table->string('channel', 8);
 

@@ -89,7 +89,6 @@ trait FileHandlerTrait
             return $this->moveFile($input['file']);
         }
 
-
         return $this->getFileIfExists();
     }
 
