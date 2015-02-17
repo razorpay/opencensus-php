@@ -19,8 +19,10 @@ class CreateDailySettlements extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->integer('day')
+            $table->char('id', 14)
                   ->primary();
+
+            $table->integer('day');
 
             $table->string('channel', 8);
 
@@ -40,6 +42,7 @@ class CreateDailySettlements extends Migration
             $table->integer('updated_at');
 
             $table->index('created_at');
+            $table->index('day');
         });
 
     }

@@ -37,8 +37,9 @@ class Reconciler
         $this->reconciledAt = time();
 
         $this->merchantRepo = new Merchant\Repository;
-        $this->setlRepo = new \Models\Settlement\Repository;
+        $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
+        $this->dailySetlRepo = new Settlement\Daily\Repository;
     }
 
     public function process($input)
@@ -48,7 +49,7 @@ class Reconciler
         if ($reconcileFile === null)
             return new Base\PublicCollection;
 
-        $this->dailySettlement = $this->setlRepo->getSettlementForToday();
+        $this->dailySettlement = $this->dailySetlRepo->getSettlementForToday();
 
         $url = $this->saveUploadedFileToAws($reconcileFile);
 

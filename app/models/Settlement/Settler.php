@@ -32,6 +32,7 @@ class Settler
     public function __construct()
     {
         $this->initRepos();
+
         $this->trace = \Trace::getFacadeRoot();
     }
 
@@ -50,7 +51,7 @@ class Settler
 
         foreach ($channels as $channel)
         {
-            $this->dailySettlement = new Settlement\Daily;
+            $this->dailySettlement = new Settlement\Daily\Entity;
             $this->dailySettlement->setTodayTimestamp();
 
             $settleForChannelVar = 'settleFor' . ucfirst($channel);

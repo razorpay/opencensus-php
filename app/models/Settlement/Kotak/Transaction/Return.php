@@ -39,22 +39,23 @@ class ReturnTransactions
     public function __construct()
     {
         $this->merchantRepo = new Merchant\Repository;
-        $this->setlRepo = new \Models\Settlement\Repository;
+        $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
+        $this->dailySetlRepo = new Settlement\Daily\Repository;
     }
 
     public function process($input)
     {
         $returnFile = $this->getFile($input);
 
-        $url = $this->saveUploadedFileToAws($returnFile);
-
-        $this->dailySettlement = $this->setlRepo->getSettlementForToday();
-
-        $this->dailySettlement->addUrl('return_url', $url);
-
         if ($returnFile === null)
             return [];
+
+        $url = $this->saveUploadedFileToAws($returnFile);
+
+        $this->dailySettlement = $this->dailySetlRepo->getSettlementForToday();
+
+        $this->dailySettlement->addUrl('return_url', $url);
 
         $data = $this->parseTextFile($returnFile);
 

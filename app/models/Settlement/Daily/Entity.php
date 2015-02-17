@@ -1,15 +1,15 @@
 <?php
 
-namespace Models\Settlement;
+namespace Models\Settlement\Daily;
 
 use Models\Base;
 use Carbon\Carbon;
 
-class Daily extends Base\PublicEntity
+class Entity extends Base\PublicEntity
 {
     protected $table = \Constants\Table::DAILY_SETTLEMENT;
 
-    public $primaryKey = 'day';
+    protected $entity = 'daily_settlement';
 
     protected $fillable = array(
         'day',
@@ -17,6 +17,12 @@ class Daily extends Base\PublicEntity
         'urls',
         'initiated_at'
     );
+
+    protected $genereateIdOnCreate = true;
+
+    protected static $delimiter = '';
+
+    protected $publicSetters = array(self::ENTITY);
 
     public function setTodayTimestamp()
     {
