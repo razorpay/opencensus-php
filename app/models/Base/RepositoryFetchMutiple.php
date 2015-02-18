@@ -82,12 +82,26 @@ trait RepositoryFetch
 
         $query->orderBy(Common::ID, 'desc');
 
+        $this->buildFetchQueryAdditional($params, $query);
+
         return $query;
+    }
+
+    protected function buildFetchQueryAdditional($params, $query)
+    {
+        return;
     }
 
     protected function validateFetchParams(array $params)
     {
         validate(self::$fetchParamRules, $params);
+
+        $this->validateAdditional($params);
+    }
+
+    protected function validateAdditional($params)
+    {
+        ;
     }
 
     public function setMerchantIdRequiredForMultipleFetch($required)

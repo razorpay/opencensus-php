@@ -25,10 +25,8 @@ class Repository extends Base\Repository
                                ->firstOrFail();
     }
 
-    protected function validateFetchParams(array $params)
+    protected function validateAdditional(array $params)
     {
-        parent::validateFetchParams($params);
-
         $this->validateDate($params);
     }
 
@@ -55,10 +53,8 @@ class Repository extends Base\Repository
         return false;
     }
 
-    protected function buildFetchQuery($params, $merchantId = null)
+    protected function buildFetchQueryAdditional($params, $query)
     {
-        $query = parent::buildFetchQuery($params);
-
         if (isset($params['date']))
         {
             $timestamp = Carbon::createFromFormat('dmY', $params['date'], 'Asia/Kolkata')->timestamp;

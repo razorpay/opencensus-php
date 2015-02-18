@@ -24,6 +24,19 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
+    protected $public = array(
+        self::ID,
+        self::DATE,
+        self::CHANNEL,
+        self::AMOUNT,
+        self::URLS,
+        self::INITIATED_AT,
+        self::RECONCILED_AT,
+        self::RETURNED_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    );
+
     protected $publicSetters = array(self::ENTITY);
 
     public function setTodayTimestamp()
