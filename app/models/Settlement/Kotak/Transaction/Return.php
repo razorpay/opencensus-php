@@ -55,9 +55,13 @@ class ReturnTransactions
 
         $this->dailySettlement = $this->dailySetlRepo->getSettlementForToday();
 
-        $this->dailySettlement->addUrl('return_url', $url);
+        $this->dailySettlement->addUrl('kotak_return_txt', $url);
 
         $data = $this->parseTextFile($returnFile);
+
+        $urlExcel = $this->writeToExcelFile($data, $this->getFileToReadNameWithoutExt());
+
+        $this->dailySettlement->addUrl('kotak_return_excel', $urlExcel);
 
         $data = $this->processReturns($data);
 

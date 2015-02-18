@@ -4,6 +4,7 @@ namespace Models\Settlement\Kotak;
 
 use Carbon\Carbon;
 use EE\Exception;
+use Excel;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
@@ -17,6 +18,24 @@ trait FileHandlerTrait
         $url = $this->saveToAws($name, $fullpath, 'text/plain');
 
         // This will be local file path if aws is mocked
+        return $url;
+    }
+
+    public function writeToExcelFile($data, $name)
+    {
+        $excel = Excel::create($name, function($excel) use ($data)
+        {
+            $excel->sheet('Sheet 1', function($sheet) use ($data)
+                {
+                    $sheet->fromArray($data, null, 'A1', true, true);
+                });
+        });
+
+        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fullpath = $fileMetadata['full'];
+
+        $url = $this->saveToAws($name, $fullpath, 'application/vnd.ms-excel');
+
         return $url;
     }
 
@@ -132,13 +151,16 @@ trait FileHandlerTrait
 
     protected function getFileToReadName()
     {
+        return $this->getFileToReadNameWithoutExt().'.txt';
+    }
+
+    protected function getFileToReadNameWithoutExt()
+    {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
         $mode = $this->getMode();
 
-        $name = static::$fileToReadName.'_'.$mode.'_'.$time.'.txt';
-
-        return $name;
+        return static::$fileToReadName.'_'.$mode.'_'.$time;
     }
 
     protected function getFileToReadFullPath()
@@ -159,11 +181,21 @@ trait FileHandlerTrait
 
     protected function getFileToWriteName()
     {
+        return $this->getFileToWriteNameWithoutExt() . '.txt';
+    }
+
+    protected function getExcelFileToWriteName()
+    {
+        return $this->getFileToWriteNameWithoutExt() . '.xlsx';
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
         $mode = $this->getMode();
 
-        return static::$fileToWriteName.'_'.$mode.'_'.$time.'.txt';
+        return static::$fileToWriteName.'_'.$mode.'_'.$time;
     }
 
     protected function parseTextFile($file)

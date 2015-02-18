@@ -47,15 +47,21 @@ class Reconciler
         $reconcileFile = $this->getFile($input);
 
         if ($reconcileFile === null)
+        {
             return new Base\PublicCollection;
+        }
 
         $this->dailySettlement = $this->dailySetlRepo->getSettlementForToday();
 
         $url = $this->saveUploadedFileToAws($reconcileFile);
 
-        $this->dailySettlement->addUrl('reconcile_url', $url);
+        $this->dailySettlement->addUrl('kotak_reconcile_txt', $url);
 
         $data = $this->parseTextFile($reconcileFile);
+
+        $urlExcel = $this->writeToExcelFile($data, $this->getFileToReadNameWithoutExt());
+
+        $this->dailySettlement->addUrl('kotak_reconcile_excel', $url);
 
         $data = $this->reconcile($data);
 

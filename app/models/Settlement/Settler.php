@@ -70,10 +70,11 @@ class Settler
         {
             list($settlements, $txns, $totalSetlAmount) = $this->process($txns, Channel::KOTAK);
 
-            $url = $this->createSettlementFile($settlements, $txns);
+            list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
 
             $urls = array();
-            $urls['kotak_settlement_file'] = $url;
+            $urls['kotak_settlement_txt'] = $urlText;
+            $urls['kotak_settlement_excel'] = $urlExcel;
 
             $this->dailySettlement->setUrls($urls);
             $this->dailySettlement->initiated_at = time();
@@ -90,7 +91,7 @@ class Settler
 
         $this->successNotification($settlements, 'kotak');
 
-        return ['setlFile' => $url];
+        return ['setlFile' => $urlText];
     }
 
     protected function settleForAtom($input = array())
@@ -213,11 +214,11 @@ class Settler
 
     protected function createSettlementFile($settlements, $txns)
     {
-        $url = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
+        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements, $txns);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
-        return $url;
+        return $urls;
     }
 
     protected function saveUrl($url)
