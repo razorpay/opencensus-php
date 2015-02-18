@@ -248,13 +248,9 @@ class Processor
 
     protected function getCallbackUrl()
     {
-        $url = \URL::route('payment_callback', ['id' => $this->payment->getPublicId()], false);
-
-        $scheme = Request::getScheme().'://';
-        $host = Request::getHost();
         $key = BasicAuth::getPublicKey();
-
-        $callbackUrl = $scheme . $key . '@' . $host . $url;
+        $params = ['id' => $this->payment->getPublicId()];
+        $callbackUrl = \Http\Route::getUrl('payment_callback', $params, $key);
 
         return $callbackUrl;
     }
