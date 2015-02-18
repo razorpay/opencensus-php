@@ -37,22 +37,35 @@ class Reconciler
         $this->reconciledAt = time();
 
         $this->merchantRepo = new Merchant\Repository;
-        $this->setlRepo = new \Models\Settlement\Repository;
+        $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
+        $this->dailySetlRepo = new Settlement\Daily\Repository;
     }
 
     public function process($input)
     {
-        $reconcileFile = $this->getFileIfExists($input);
+        $reconcileFile = $this->getFile($input);
 
         if ($reconcileFile === null)
+        {
             return new Base\PublicCollection;
+        }
+
+        $this->dailySettlement = $this->dailySetlRepo->getSettlementForToday();
+
+        $url = $this->saveUploadedFileToAws($reconcileFile);
+
+        $this->dailySettlement->addUrl('kotak_reconcile_txt', $url);
 
         $data = $this->parseTextFile($reconcileFile);
 
+        $urlExcel = $this->writeToExcelFile($data, $this->getFileToReadNameWithoutExt());
+
+        $this->dailySettlement->addUrl('kotak_reconcile_excel', $url);
+
         $data = $this->reconcile($data);
 
-        $this->moveFile($reconcileFile);
+        $this->storeReconciledFile($reconcileFile);
 
         return $data;
     }
@@ -71,6 +84,9 @@ class Reconciler
 
                 $collection->push($setl);
             }
+
+            $this->dailySettlement->reconciled_at = $this->reconciledAt;
+            $this->dailySettlement->saveOrFail();
 
             $this->setlRepo->commit();
         }

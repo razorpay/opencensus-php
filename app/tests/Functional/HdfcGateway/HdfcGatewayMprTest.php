@@ -59,6 +59,8 @@ class HdfcGatewayMprTest extends TestCase
 
         // Reconcile settlement return file
         $this->processSetlReturns($setlReturnFile);
+
+        $this->fetchAndMatchDailySettlement();
     }
 
     protected function matchTransactions($prEntities)
@@ -131,6 +133,39 @@ class HdfcGatewayMprTest extends TestCase
         }
 
         return $prEntities;
+    }
+
+    protected function fetchAndMatchDailySettlement()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/dailysettlements',
+            'method' => 'GET',
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $time = time().'';
+
+        $data = array(
+            'entity' => 'collection',
+            'count' => 1,
+            'items' => [
+                [
+                    'date' => Carbon::today('Asia/Kolkata')->timestamp .'',
+                    'channel' => 'kotak',
+                    'amount' => '4387640',
+                    'initiated_at' => $time,
+                    'reconciled_at' => $time,
+                    'returned_at' => $time,
+                ],
+            ]
+        );
+
+        $this->assertArraySelectiveEquals($data, $content);
+
+        $content = $this->getEntities('settlement', array(), true);
     }
 
     protected function mockSlack()

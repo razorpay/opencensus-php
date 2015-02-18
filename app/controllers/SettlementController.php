@@ -92,4 +92,20 @@ class SettlementController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getDailySettlement($id)
+    {
+        $data = (new Settlement\Daily\Service)->fetch($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getDailySettlements()
+    {
+        $input = Input::all();
+
+        $data = (new Settlement\Daily\Service)->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
 }

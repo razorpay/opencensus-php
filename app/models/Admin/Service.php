@@ -46,6 +46,8 @@ class Service extends Base\Service
 
     protected function getEntityRepository($entity)
     {
-        return 'Models\\'.ucfirst($entity).'\Repository';
+        $namespace = $this->getEntityNamespace($entity);
+
+        return $namespace.'\Repository';
     }
 }

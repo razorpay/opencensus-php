@@ -98,16 +98,20 @@ class NodalAccount
                 'IFSC Code'             => $ba->getIfscCode(),
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
                 'Payment Details 1'     => $merchant->getPublicId()
-                );
+            );
 
-            $values = $this->getAllValues($array);
+            $array = $this->getAllFields($array);
 
-            array_push($data, $values);
+            array_push($data, $array);
         }
+
+        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
 
         $txt = $this->generateText($data);
 
-        return $this->writeToTextFile($txt);
+        $urlText = $this->writeToTextFile($txt);
+
+        return [$urlText, $urlExcel];
     }
 
     protected function getEmptyArray()
@@ -117,7 +121,7 @@ class NodalAccount
         return array_combine(static::$headings, array_fill(0, $count, null));
     }
 
-    protected function getAllValues($partialValues)
+    protected function getAllFields($partialValues)
     {
         $dict = $this->getEmptyArray();
 
@@ -126,6 +130,6 @@ class NodalAccount
             $dict[$key] = $value;
         }
 
-        return array_values($dict);
+        return $dict;
     }
 }

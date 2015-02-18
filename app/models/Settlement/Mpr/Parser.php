@@ -5,27 +5,13 @@ namespace Models\Settlement\Mpr;
 use Excel;
 use EE\Exception;
 use Carbon\Carbon;
+use Models\Settlement\Kotak\FileHandlerTrait;
 
-class Parser
+trait Parser
 {
+    use FileHandlerTrait;
+
     protected static $headings = array();
-
-    public function __construct()
-    {
-        $app = \App::getFacadeRoot();
-
-        $this->mode = $app['rzp.mode'];
-        $this->env = $app->environment();
-    }
-
-    public function process($input)
-    {
-        $this->checkInput($input);
-
-        $mprFile = $input['attachment-1'];
-
-        return $this->parseMprFile($mprFile);
-    }
 
     protected function checkInput($input)
     {
@@ -81,26 +67,8 @@ class Parser
             $data = $data[0];
         }
 
-        $this->moveFile($mprFile);
+        $this->storeReconciledFile($mprFile);
 
         return $data;
-    }
-
-    protected function moveFile($file)
-    {
-        $filename = basename($file, '.txt');
-
-        $dir = storage_path('files/settlement/reconciled');
-
-        if (file_exists($dir) === false)
-        {
-            mkdir($dir, 0777);
-        }
-
-        $time = Carbon::now('Asia/Kolkata')->format('H:i:s');
-
-        $newName = $filename . '_' . $time . '.xlsx';
-
-        $file->move($dir, $newName);
     }
 }
