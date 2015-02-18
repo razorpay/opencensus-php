@@ -10,9 +10,52 @@ trait FileHandlerTrait
 {
     public function writeToTextFile($txt)
     {
+        $fullpath = $this->saveLocally($txt);
+
+        $this->saveToAws($fullpath, 'text/plain');
+
+        return $fullpath;
+    }
+
+    protected function saveToAws($fullpath, $mime)
+    {
+        $s3 = \App::make('aws')->get('s3');
+
         $name = $this->getFileToWriteName();
 
+        $awsS3Mock = true;
+
+        if ($awsS3Mock)
+        {
+            return;
+        }
+
+        try
+        {
+            $s3Obj = array(
+                'Bucket'        => 'bucket',
+                'Key'           => $name,
+                'ContentType'   => $mime,
+                'SourceFile'    => $fullpath,
+            );
+
+            $result = $s3->putObject($s3Obj);
+
+            $merchantDetails->$data['field'] = $result['ObjectURL'];
+            $merchantDetails->saveOrFail();
+        }
+        catch(\Exception $e)
+        {
+            // trace here.
+            throw $e;
+        }
+    }
+
+    protected function saveLocally($txt)
+    {
         $path = storage_path() . '/files/settlement/';
+
+        $name = $this->getFileToWriteName();
 
         $fullpath = $path . $name;
 

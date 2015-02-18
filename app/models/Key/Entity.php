@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CREATED_AT,
+        self::UPDATED_AT,
         self::EXPIRED_AT);
 
     /**
