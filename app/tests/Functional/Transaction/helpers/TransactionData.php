@@ -137,7 +137,7 @@ return [
         'api_fee' => 0,
         'escrow_balance' => 1048595,
         'channel' => 'kotak',
-        'settled' => FALSE,
+        'settled' => false,
         'settlement_id' => null,
         'entity' => 'transaction',
     ],

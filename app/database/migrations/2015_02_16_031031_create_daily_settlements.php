@@ -45,7 +45,6 @@ class CreateDailySettlements extends Migration
             $table->index(DailySettlement::CREATED_AT);
             $table->index(DailySettlement::DATE);
         });
-
     }
 
     /**
