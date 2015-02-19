@@ -101,6 +101,7 @@ trait Authorize
         // Kinda weird! And it's always null.
         //
         unset($input['csrf']);
+        unset($input['hash']);
 
         $input['payment'] = $payment->toArray();
 

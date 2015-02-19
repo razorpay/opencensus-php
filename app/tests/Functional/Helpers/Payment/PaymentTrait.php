@@ -299,6 +299,9 @@ trait PaymentTrait
         //
 
         $uri = $form->getUri();
+        $ix = strpos($uri, 'v1');
+
+        $uri = substr($uri, $ix+2);
 
         // Extract the payment id from absolute url
 
@@ -307,7 +310,7 @@ trait PaymentTrait
         $request['method'] = 'POST';
         $request['content'] = $form->getValues();
 
-        $request['url'] = '/payments/'.$id.'/callback';
+        $request['url'] = $uri;
 
         $response = $this->makeRequestParent($request);
 
