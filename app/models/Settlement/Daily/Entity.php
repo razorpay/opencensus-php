@@ -39,6 +39,12 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = array(self::ENTITY);
 
+    protected $dates = array(
+        self::DATE,
+        self::INITIATED_AT,
+        self::RECONCILED_AT,
+        self::RETURNED_AT);
+
     public function setTodayTimestamp()
     {
         $this->attributes[self::DATE] = self::getTodayTimestamp();
