@@ -213,6 +213,7 @@ class Gateway extends BaseGateway
         $attributes = array(
             'id'        => $input['payment']['id'],
             'token'     => $data['token'],
+            'method'    => $input['payment']['method'],
             'bank_code' => $bankCode,
             'gateway_payment_id' => $data['tempTxnId']);
 

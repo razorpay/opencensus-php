@@ -95,51 +95,66 @@ trait PaymentAtomTrait
             $content = $response->body;
         }
 
-        // Be careful of different quotes(',") or lack of it! Weird!
-        $itc = getTextBetweenStrings($content, 'ITC = ', ';');
-        $bid = getTextBetweenStrings($content, "BID = '", "';");
-        $amt = getTextBetweenStrings($content, "amt = '", "';");
-        $cc  = getTextBetweenStrings($content, 'clientCode = "', '";');
+        list($url, $method, $values) = $this->getFormDataFromResponse($content, $url);
 
-        //
-        // Decide whether to make the transaction succeed or fail
-        //
-
-        $status = 'Ok';
-
-        if ((isset($this->currentTestData['success'])) and
-            ($this->currentTestData['success'] === false))
+        if ($url === 'http://203.114.240.183/CitiWeb/cityBilling.jsp')
         {
-            $status = 'F';
-        }
+            $values['CititoMall'] .= 'Y:'.'|323232|123123|';
 
-        $url = ($mock) ? '/gateway/mockanb/rzp_bank/submit' : $atomBaseUrl . '/paynetz/atom';
-        $url .= '?' . 'ITC='.$itc . '&BID='.$bid.'&clientCode='.$cc.'&amt='.$amt.'&Status='.$status;
+            list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, $headers, $values);
 
-        $values = array('success' => $status);
+            $response = Requests::$method($url, $headers, $values);
 
-        // Finally, we are on the bank page and now need to submit the bank
-        // page with the decision true or false as decided above.
-
-        if ($mock)
-        {
-            // For testing case, we add back tempTxnId because we don't maintian it
-            // in session
-            $tempTxnId = getTextBetweenStrings($content, 'tempTxnId = "', '";');
-            $url .= '&tempTxnId='.$tempTxnId;
-
-            $request = array(
-                'method' => 'POST',
-                'url' => $url,
-                'content' => $values);
-
-            $response = $this->makeRequestParent($request);
-            $content = $response->getContent();
+            $content = $response->body;
         }
         else
         {
-            $response = Requests::post($url, $headers, $content);
-            $content = $response->body;
+            // Be careful of different quotes(',") or lack of it! Weird!
+            $itc = getTextBetweenStrings($content, 'ITC = ', ';');
+            $bid = getTextBetweenStrings($content, "BID = '", "';");
+            $amt = getTextBetweenStrings($content, "amt = '", "';");
+            $cc  = getTextBetweenStrings($content, 'clientCode = "', '";');
+
+            //
+            // Decide whether to make the transaction succeed or fail
+            //
+
+            $status = 'Ok';
+
+            if ((isset($this->currentTestData['success'])) and
+                ($this->currentTestData['success'] === false))
+            {
+                $status = 'F';
+            }
+
+            $url = ($mock) ? '/gateway/mockanb/payment/submit' : $atomBaseUrl . '/paynetz/atom';
+            $url .= '?' . 'ITC='.$itc . '&BID='.$bid.'&clientCode='.$cc.'&amt='.$amt.'&Status='.$status;
+
+            $values = array('success' => $status);
+
+            // Finally, we are on the bank page and now need to submit the bank
+            // page with the decision true or false as decided above.
+
+            if ($mock)
+            {
+                // For testing case, we add back tempTxnId because we don't maintian it
+                // in session
+                $tempTxnId = getTextBetweenStrings($content, 'tempTxnId = "', '";');
+                $url .= '&tempTxnId='.$tempTxnId;
+
+                $request = array(
+                    'method' => 'POST',
+                    'url' => $url,
+                    'content' => $values);
+
+                $response = $this->makeRequestParent($request);
+                $content = $response->getContent();
+            }
+            else
+            {
+                $response = Requests::post($url, $headers, $content);
+                $content = $response->body;
+            }
         }
 
         $crawler = new Crawler($content, 'http://ab.com');

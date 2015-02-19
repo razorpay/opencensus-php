@@ -16,12 +16,14 @@
 <body onload="sub();">
 This page will be auto-submitted <br />
 <form id="redirect" name="redirect" onsubmit="return true;" action="{{{ $data['url'] }}}" method="post">
+@if ($data['method'] === 'netbanking')
     <table class="wwFormTable">
         <select name="bankID" id="redirect_bankID">
             <option value="2001">Razorpay Test Bank</option>
         </select>
         <br /><br />
     </table>
+@endif
     <input type="hidden" name="tempTxnId" value="{{{ $data['tempTxnId'] }}}" />
     <input type="hidden" name="348901664" value="25-0-1A77AE839A367C7EF0C0D9C6CA9BD2EC" />
     <input type="submit" value="submit" />

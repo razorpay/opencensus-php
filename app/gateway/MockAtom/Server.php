@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Atom;
 use Gateway\MockAtom;
+use Http\Route;
 use Models\Payment;
 
 class Server
@@ -17,7 +18,7 @@ class Server
         $this->repo = new Atom\Repository;
     }
 
-    public function netBankingTransactionChooseBank($input)
+    public function atomPaymentChooseOrg($input)
     {
         $this->verifyTxn1stStageInput($input);
 
@@ -27,22 +28,25 @@ class Server
 
         $paymentId = $atom->getKey();
 
-        $paymentRepo = new \Models\Payment\Repository;
-        $payment = $paymentRepo->findByIdAndMerchantId($paymentId, $merchant->getId());
+        $payment = (new Payment\Repository)->findByIdAndMerchantId(
+                                            $paymentId, $merchant->getId());
 
-        $data['url'] = $this->getRzpBankPageUrl();
+        $data['url'] = $this->getRzpPaymentPageUrl();
+
         $data['tempTxnId'] = $input['tempTxnId'];
+        $data['method'] = $payment['method'];
 
         return $data;
     }
 
-    public function initiateNetBankingTransaction($input)
+    public function initiateAtomPayment($input)
     {
         $tempTxnId = random_integer(9);
         $token = $this->generateToken();
-        $url = $this->getNetBankingAtomMockUrl();
+        $ttype = $input['ttype'];
+        $url = $this->getSecondRequestUrl($ttype);
 
-        $xml = $this->formInitiateTransactionXml($tempTxnId, $token, $url);
+        $xml = $this->formInitiatePaymentXml($tempTxnId, $token, $ttype, $url);
 
         return $this->makeResponse($xml);
     }
@@ -57,30 +61,21 @@ class Server
         return $response;
     }
 
-    protected function getNetBankingAtomMockUrl()
+    protected function getSecondRequestUrl($ttype)
     {
-        $key = \BasicAuth::getPublicKey();
+        return Route::getUrlWithPublicAuth('mockatom_choose_org');
+    }
 
-        $query = [];
-        $url = \Http\Route::getUrl('mockatom_choose_bank', $query, $key);
+    protected function getRzpPaymentPageUrl()
+    {
+        $url = Route::getUrlWithPublicAuth('mockatom_rzp_payment');
 
         return $url;
     }
 
-    protected function getRzpBankPageUrl()
+    protected function getRzpPaymentPageSubmitUrl()
     {
-        $key = \BasicAuth::getPublicKey();
-
-        $url = \Http\Route::getUrl('mockatom_rzp_bank', array(), $key);
-
-        return $url;
-    }
-
-    protected function getRzpBankPageSubmitUrl()
-    {
-        $key = \BasicAuth::getPublicKey();
-
-        $url = \Http\Route::getUrl('mockatom_rzp_bank_submit', array(), $key);
+        $url = Route::getUrlWithPublicAuth('mockatom_rzp_payment_submit');
 
         return $url;
     }
@@ -95,8 +90,13 @@ class Server
         ;
     }
 
-    public function atomRzpBankPage($input)
+    public function atomRzpPayment($input)
     {
+        // For net-banking, show the bank choice auto-submit page
+        // For card show random stuff
+
+        $atom = $this->getAtomPaymentByTempTxnId($input['tempTxnId']);
+
         $bankTxnId = random_integer(6);
 
         $data = array(
@@ -104,35 +104,29 @@ class Server
             'ITC' => $bankTxnId,
             'BID' => $bankTxnId . '1',
             'amount' => '50.0000',
-            'url' => $this->getRzpBankPageSubmitUrl(),
+            'url' => $this->getRzpPaymentPageSubmitUrl(),
             'clientCode' => '007');
 
         return $data;
     }
 
-    public function atomRzpBankSubmit($input)
-    {
-
-        ;
-    }
-
-    public function atomRzpBankPageSubmit($input)
+    public function atomRzpPaymentPageSubmit($input)
     {
         $tempTxnId = $input['tempTxnId'];
 
         $success = $input['success'];
         $success = ($success === 'S') ? 'Ok' : $success;
 
-        $atom = Atom\Entity::where('gateway_payment_id', '=', $input['tempTxnId'])
-                           ->firstOrFail();
+        $atom = $this->getAtomPaymentByTempTxnId($input['tempTxnId']);
 
         $paymentId = $atom['id'];
 
         $payment = (new Payment\Repository)->findOrFail($paymentId);
-        $keyId = 'rzp_test_'.$payment->merchant->keys[0]->getKey();
+        $method = $payment['method'];
+        $card = null;
 
         $publicId = $payment->getPublicId();
-        $merchantCallbackUrl = $this->formMerchantCallbackUrl($publicId, $keyId);
+        $merchantCallbackUrl = $this->formMerchantCallbackUrl($publicId);
 
         $time = Carbon::now('Asia/Kolkata')->format('D M d H:i:s \G\M\T+05:30 Y');
 
@@ -147,10 +141,23 @@ class Server
             'clientcode'    => '123',
             'bank_name'     => 'Razorpay Bank',
             'udf9'          => '',
-            'discriminator' => 'NB',
             'desc'          => 'abcdef',
             'surcharge'     => '0.0',
             'CardNumber'    => '');
+
+        if ($method === 'netbanking')
+        {
+            $data['discriminator'] = 'NB';
+            $data['CardNumber'] = '';
+        }
+        else if ($method === 'card')
+        {
+            $data['discriminator'] = 'CC';
+            $card = $payment->card;
+
+            $xx = str_repeat('X', $card['length'] - 10);
+            $data['CardNumber'] = $card['iin'] . $xx . $card['last4'];
+        }
 
         $x = range(1,6);
         foreach ($x as $n)
@@ -161,14 +168,10 @@ class Server
         return array($merchantCallbackUrl, $data);
     }
 
-    protected function formMerchantCallbackUrl($paymentPublicId, $key)
+    protected function formMerchantCallbackUrl($paymentPublicId)
     {
-        $url = \URL::route('payment_callback', ['id' => $paymentPublicId], false);
-
-        $scheme = \Request::getScheme().'://';
-        $host = \Request::getHost();
-
-        $callbackUrl = $scheme . $key . '@' . $host . $url;
+        return Route::getUrlWithPublicAuth(
+            'payment_callback', ['id' => $paymentPublicId]);
 
         return $callbackUrl;
     }
@@ -176,6 +179,11 @@ class Server
     public function verifyTxn1stStageInput($input)
     {
         return [];
+    }
+
+    protected function getAtomPaymentByTempTxnId($tempTxnId)
+    {
+        return (new Atom\Repository)->findByGatewayPaymentId($tempTxnId);
     }
 
     protected function generateAtomToken()
@@ -186,13 +194,13 @@ class Server
         return $token;
     }
 
-    protected function formInitiateTransactionXml($tempTxnId, $token, $url)
+    protected function formInitiatePaymentXml($tempTxnId, $token, $ttype, $url)
     {
         $str = ''.
         '<?xml version="1.0" encoding="UTF-8"?>
             <MMP><MERCHANT><RESPONSE>
                 <url>'.$url.'</url>
-                <param name="ttype">NBFundTransfer</param>
+                <param name="ttype">'.$ttype.'</param>
                 <param name="tempTxnId">'.$tempTxnId.'</param>
                 <param name="token">'.$token.'</param>
                 <param name="txnStage">1</param>

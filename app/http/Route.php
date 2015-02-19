@@ -79,10 +79,10 @@ final class Route
         'mockhdfc_payment'                  => ['post',     'gateway/mockhdfc/payment',                 'MockHdfcController@payment'                            ],
         'mockhdfc_auth_enrolled'            => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockHdfcController@authEnrolled'                       ],
         'mockhdfc_3dsecure'                 => ['post',     'gateway/3dsecure',                         'MockHdfcController@post3dSecure'                       ],
-        'mockatom_choose_bank'              => ['get',      'gateway/mockanb',                          'MockHdfcController@getAtomChooseBank'                  ],
-        'mockatom_init_netbanking'          => ['post',     'gateway/mockanb',                          'MockHdfcController@postAtomInitNetbanking'             ],
-        'mockatom_rzp_bank'                 => ['post',     'gateway/mockanb/rzp_bank',                 'MockHdfcController@postAtomRzpBankPage'                ],
-        'mockatom_rzp_bank_submit'          => ['post',     'gateway/mockanb/rzp_bank/submit',          'MockHdfcController@postAtomRzpBankSubmit'              ],
+        'mockatom_init_payment'         => ['post',     'gateway/mockanb',                          'MockHdfcController@postAtomInitPayment'                ],
+        'mockatom_choose_org'               => ['get',      'gateway/mockanb',                          'MockHdfcController@getAtomChooseOrg'                   ],
+        'mockatom_rzp_payment'              => ['post',     'gateway/mockanb/payment',                  'MockHdfcController@postAtomRzpPayment'                 ],
+        'mockatom_rzp_payment_submit'       => ['post',     'gateway/mockanb/payment/submit',           'MockHdfcController@postAtomRzpPaymentSubmit'           ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
     );
@@ -92,9 +92,9 @@ final class Route
         'payment_create_jsonp',
         'payment_callback',
         'merchant_public_get_banks',
-        'mockatom_choose_bank',
-        'mockatom_rzp_bank',
-        'mockatom_rzp_bank_submit',
+        'mockatom_choose_org',
+        'mockatom_rzp_payment',
+        'mockatom_rzp_payment_submit',
         );
 
     public static $private = array(
@@ -152,7 +152,7 @@ final class Route
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
         'mockhdfc_payment',
-        'mockatom_init_netbanking',
+        'mockatom_init_payment',
         'admin_fetch_entity_multiple',
         'admin_fetch_entity_by_id',
         );
@@ -179,7 +179,7 @@ final class Route
                 'mockhdfc_enroll',
                 'mockhdfc_auth_enrolled',
                 'mockhdfc_payment',
-                'mockatom_init_netbanking'),
+                'mockatom_init_payment'),
 
             'cron' => array(
                 'hdfc_mpr_generate',
@@ -202,7 +202,7 @@ final class Route
         self::$router = $router;
     }
 
-    public static function getUrl($routeName, $parameters = array(), $key = '', $secret = '')
+    public static function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
     {
         if ($secret === '')
         {
@@ -216,6 +216,16 @@ final class Route
         $url = self::getSchemaHostAndAuth($key, $secret) . $urlSegment;
 
         return $url;
+    }
+
+    public static function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
+    {
+        if ($key === '')
+        {
+            $key = \BasicAuth::getPublicKey();
+        }
+
+        return self::getUrl($routeName, $parameters, $key);
     }
 
     public static function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
