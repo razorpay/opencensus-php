@@ -160,7 +160,7 @@ class Reconciler
         Settlement\Entity::verifyIdAndStripSign($setlId);
         $setl = $this->setlRepo->findOrFail($setlId);
 
-        $merchantId = $row['Payment Details 1'];
+        $merchantId = $row['Payment Details 2'];
         $merchant = $this->merchantRepo->findOrFail($merchantId);
 
         if ($merchantId !== $setl->getMerchantId())

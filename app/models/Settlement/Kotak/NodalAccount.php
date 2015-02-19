@@ -16,6 +16,8 @@ class NodalAccount
 
     protected static $fileToWriteName = 'Kotak_Settlement';
 
+    protected static $nodalAccountNumber = '7911547334';
+
     public static $headings = array(
         'Client_Code',
         'Product_Code',
@@ -91,13 +93,21 @@ class NodalAccount
                 'Payment_Type'          => 'NEFT',
                 'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
-                'Dr_Ac_No'              => '1209034',
+                'Dr_Ac_No'              => static::$nodalAccountNumber,
                 'Amount'                => $settlement->getAmount() / 100,
                 'Bank_Code_Indicator'   => 'M',
+                'Beneficiary_Code'      => $ba->beneficiary_code,
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
                 'IFSC Code'             => $ba->getIfscCode(),
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
-                'Payment Details 1'     => $merchant->getPublicId()
+                'Beneficiary_Address_1' => $ba->beneficiary_address1,
+                'Beneficiary_Address_2' => $ba->beneficiary_address2,
+                'Beneficiary_Address_3' => $ba->beneficiary_address3,
+                'Beneficiary_Address_4' => $ba->beneficiary_address4,
+                'Beneficiary_Email'     => $ba->beneficiary_email,
+                'Beneficiary_Mobile'    => $ba->beneficiary_mobile,
+                'Payment Details 1'     => 'RAZORPAY PAYMENT',
+                'Payment Details 2'     => $merchant->getPublicId(),
             );
 
             $array = $this->getAllFields($array);
