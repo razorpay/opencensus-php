@@ -146,14 +146,14 @@ class HdfcGatewayMprTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $time = time().'';
+        $time = time();
 
         $data = array(
             'entity' => 'collection',
             'count' => 1,
             'items' => [
                 [
-                    'date' => (string) Carbon::today('Asia/Kolkata')->timestamp,
+                    'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
                     'amount' => '4387640',
                     'initiated_at' => $time,
@@ -162,8 +162,7 @@ class HdfcGatewayMprTest extends TestCase
                 ],
             ]
         );
-s($content);
-return;
+
         $this->assertArraySelectiveEquals($data, $content);
 
         $content = $this->getEntities('settlement', array(), true);
