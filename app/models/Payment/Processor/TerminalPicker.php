@@ -16,7 +16,7 @@ class TerminalPicker
         $this->validateCount($terminals, $payment->merchant);
 
         $terminal = $this->pickOneTerminal($payment, $terminals);
-$terminal = null;
+
         if ($terminal === null)
         {
             $terminal = Terminal\Shared::getSharedTerminal();
@@ -80,6 +80,7 @@ $terminal = null;
 
         $count = $terminals->count();
 
+        $terminal = null;
         if ($count === 1)
         {
             $terminal = $terminals->first();
