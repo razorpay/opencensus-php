@@ -28,7 +28,7 @@ trait CustomAssertions
             {
                 $this->assertArrayHasKey($key, $actual);
 
-                $this->assertSame($value, $actual[$key]);
+                $this->assertSame($value, $actual[$key], 'The key is: '.$key);
             }
         }
     }
