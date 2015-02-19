@@ -109,9 +109,10 @@ class PaymentController extends BaseController
         return ApiResponse::json($payment);
     }
 
-    public function postCallback($id)
+    public function postCallback($id, $hash)
     {
         $input = Input::all();
+        $input['hash'] = $hash;
 
         $data = null;
 

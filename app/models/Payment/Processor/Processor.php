@@ -251,7 +251,7 @@ class Processor
         $key = BasicAuth::getPublicKey();
 
         $publicId = $this->payment->getPublicId();
-        $hash = \Hash::make($publicId, ['rounds' => 4]);
+        $hash = sha1(\Hash::make($publicId, ['rounds' => 4]));
 
         $params = ['id' => $publicId, 'hash' => $hash];
 

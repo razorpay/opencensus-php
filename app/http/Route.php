@@ -13,7 +13,7 @@ final class Route
     protected static $apiRoutes = array(
         'payment_create'                    => ['post',     'payments',                                 'PaymentController@postCreatePayment'                   ],
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentController@getJSONP'                            ],
-        'payment_callback'                  => ['post',     'payments/{id}/callback',                   'PaymentController@postCallback'                        ],
+        'payment_callback'                  => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],

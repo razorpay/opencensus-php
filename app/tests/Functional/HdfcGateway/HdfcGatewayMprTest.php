@@ -153,7 +153,7 @@ class HdfcGatewayMprTest extends TestCase
             'count' => 1,
             'items' => [
                 [
-//                    'date' => (string) Carbon::today('Asia/Kolkata')->timestamp,
+                    'date' => (string) Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
                     'amount' => '4387640',
                     'initiated_at' => $time,
@@ -162,7 +162,7 @@ class HdfcGatewayMprTest extends TestCase
                 ],
             ]
         );
-s($data);
+s($content);
 return;
         $this->assertArraySelectiveEquals($data, $content);
 
