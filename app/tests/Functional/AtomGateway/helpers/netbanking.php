@@ -48,7 +48,7 @@ return [
         ],
     ],
 
-    'testCardPayment' => [
+    'testAtomCardPayment' => [
         'request' => [
             'method' => 'POST',
             'content' => [

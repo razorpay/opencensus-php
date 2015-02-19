@@ -210,10 +210,12 @@ class Gateway extends BaseGateway
             $bankCode = $this->request['content']['bankid'];
         }
 
+        $method = $this->getAtomPaymentMethod($input);
+
         $attributes = array(
             'id'        => $input['payment']['id'],
             'token'     => $data['token'],
-            'method'    => $input['payment']['method'],
+            'method'    => $method,
             'bank_code' => $bankCode,
             'gateway_payment_id' => $data['tempTxnId']);
 
@@ -295,6 +297,16 @@ class Gateway extends BaseGateway
         }
 
         return $atomBankCode;
+    }
+
+    protected function getAtomPaymentMethod($input)
+    {
+        $method = $input['payment']['method'];
+
+        if ($method === 'netbanking')
+            return Method::NETBANKING;
+        else if ($method === 'card')
+            return null;
     }
 
     /**

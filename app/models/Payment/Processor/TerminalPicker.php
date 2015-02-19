@@ -97,7 +97,7 @@ class TerminalPicker
         {
             if (($hdfcTerm !== null) and
                 ($hdfcTerm->isCardEnabled()))
-                $terminal = $atomTerm;
+                $terminal = $hdfcTerm;
             else if (($atomTerm !== null) and
                      ($atomTerm->isCardEnabled()))
                 $terminal = $atomTerm;
