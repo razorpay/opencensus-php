@@ -101,6 +101,9 @@ trait Authorize
         // Kinda weird! And it's always null.
         //
         unset($input['csrf']);
+
+        $this->verifyHash($input, $payment->getPublicId());
+
         unset($input['hash']);
 
         $input['payment'] = $payment->toArray();
@@ -210,6 +213,19 @@ trait Authorize
         (new Card\Repository)->saveOrFail($this->payment->card);
 
         $this->repo->saveOrFail($this->payment);
+    }
+
+    protected function verifyHash($input, $paymentPublicId)
+    {
+        if (isset($input['hash']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Callback should have proper hash defined');
+        }
+
+        $hash = $input['hash'];
+
+        // @todo: Match hashes
     }
 
     protected function updatePaymentAuthorized()
