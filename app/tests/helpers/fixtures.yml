@@ -43,7 +43,7 @@ Models\MerchantDetails\Entity:
     promoter_pan_name: $string
     bank_name: $string
     bank_account_number: 100000000
-    bank_account_name: $string
+    bank_account_name: $string$string
     bank_account_type: $string
     bank_branch: $string
     bank_branch_ifsc: ABCD0123456
