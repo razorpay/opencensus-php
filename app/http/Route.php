@@ -13,7 +13,7 @@ final class Route
     protected static $apiRoutes = array(
         'payment_create'                    => ['post',     'payments',                                 'PaymentController@postCreatePayment'                   ],
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentController@getJSONP'                            ],
-        'payment_callback'                  => ['post',     'payments/{id}/callback',                   'PaymentController@postCallback'                        ],
+        'payment_callback'                  => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
@@ -70,6 +70,8 @@ final class Route
         'setl_reconcile'                    => ['post',     'settlements/reconcile',                    'SettlementController@postSettlementReconcile'          ],
         'setl_return_generate'              => ['post',     'settlements/return/generate',              'SettlementController@postSettlementReturnGenerate'     ],
         'setl_return'                       => ['post',     'settlements/return',                       'SettlementController@postSettlementReturn'             ],
+        'daily_setl_fetch_by_id'            => ['get',      'dailysettlements/{id}',                    'SettlementController@getDailySettlement'               ],
+        'daily_setl_fetch_multiple'         => ['get',      'dailysettlements',                         'SettlementController@getDailySettlements'              ],
         'adj_fetch_by_id'                   => ['get',      'adjustments/{id}',                         'AdjustmentController@getAdjustment'                    ],
         'adj_fetch_multiple'                => ['get',      'adjustments',                              'AdjustmentController@getAdjustments'                   ],
         'adj_add'                           => ['post',     'adjustments',                              'AdjustmentController@postAdjustment'                   ],
@@ -77,22 +79,22 @@ final class Route
         'mockhdfc_payment'                  => ['post',     'gateway/mockhdfc/payment',                 'MockHdfcController@payment'                            ],
         'mockhdfc_auth_enrolled'            => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockHdfcController@authEnrolled'                       ],
         'mockhdfc_3dsecure'                 => ['post',     'gateway/3dsecure',                         'MockHdfcController@post3dSecure'                       ],
-        'mockatom_choose_bank'              => ['get',      'gateway/mockanb',                          'MockHdfcController@getAtomChooseBank'                  ],
-        'mockatom_init_netbanking'          => ['post',     'gateway/mockanb',                          'MockHdfcController@postAtomInitNetbanking'             ],
-        'mockatom_rzp_bank'                 => ['post',     'gateway/mockanb/rzp_bank',                 'MockHdfcController@postAtomRzpBankPage'                ],
-        'mockatom_rzp_bank_submit'          => ['post',     'gateway/mockanb/rzp_bank/submit',          'MockHdfcController@postAtomRzpBankSubmit'              ],
+        'mockatom_init_payment'         => ['post',     'gateway/mockanb',                          'MockHdfcController@postAtomInitPayment'                ],
+        'mockatom_choose_org'               => ['get',      'gateway/mockanb',                          'MockHdfcController@getAtomChooseOrg'                   ],
+        'mockatom_rzp_payment'              => ['post',     'gateway/mockanb/payment',                  'MockHdfcController@postAtomRzpPayment'                 ],
+        'mockatom_rzp_payment_submit'       => ['post',     'gateway/mockanb/payment/submit',           'MockHdfcController@postAtomRzpPaymentSubmit'           ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
-        );
+    );
 
     public static $public = array(
         'payment_create',
         'payment_create_jsonp',
         'payment_callback',
         'merchant_public_get_banks',
-        'mockatom_choose_bank',
-        'mockatom_rzp_bank',
-        'mockatom_rzp_bank_submit',
+        'mockatom_choose_org',
+        'mockatom_rzp_payment',
+        'mockatom_rzp_payment_submit',
         );
 
     public static $private = array(
@@ -105,6 +107,8 @@ final class Route
         );
 
     public static $internal = array(
+        'admin_fetch_entity_multiple',
+        'admin_fetch_entity_by_id',
         'merchant_secret',
         'merchant_create',
         'merchant_fetch',
@@ -140,13 +144,15 @@ final class Route
         'setl_return_generate',
         'setl_return',
         'setl_delete_file',
+        'daily_setl_fetch_by_id',
+        'daily_setl_fetch_multiple',
         'payment_timeout',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
         'mockhdfc_payment',
-        'mockatom_init_netbanking',
+        'mockatom_init_payment',
         'admin_fetch_entity_multiple',
         'admin_fetch_entity_by_id',
         );
@@ -173,7 +179,7 @@ final class Route
                 'mockhdfc_enroll',
                 'mockhdfc_auth_enrolled',
                 'mockhdfc_payment',
-                'mockatom_init_netbanking'),
+                'mockatom_init_payment'),
 
             'cron' => array(
                 'hdfc_mpr_generate',
@@ -196,7 +202,7 @@ final class Route
         self::$router = $router;
     }
 
-    public static function getUrl($routeName, $parameters = array(), $key = '', $secret = '')
+    public static function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
     {
         if ($secret === '')
         {
@@ -210,6 +216,16 @@ final class Route
         $url = self::getSchemaHostAndAuth($key, $secret) . $urlSegment;
 
         return $url;
+    }
+
+    public static function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
+    {
+        if ($key === '')
+        {
+            $key = \BasicAuth::getPublicKey();
+        }
+
+        return self::getUrl($routeName, $parameters, $key);
     }
 
     public static function getUrlWithAuth($relativeUrl, $key = '', $secret = '')

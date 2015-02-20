@@ -6,6 +6,7 @@ use App;
 use Config;
 use Http\ApiResponse;
 use Trace;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 class Handler
 {
@@ -32,6 +33,11 @@ class Handler
         $this->app->error(function(BaseException $e, $code)
         {
             return $this->baseExceptionHandler($e, $code);
+        });
+
+        $this->app->error(function(MethodNotAllowedHttpException $e)
+        {
+            return ApiResponse::httpMethodNotAllowed();
         });
     }
 

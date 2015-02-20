@@ -77,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::CAPTURED_AT,
         self::GATEWAY,
         self::CARD_ID,
+        self::MERCHANT_ID,
         self::TERMINAL_ID,
         self::TRANSACTION_ID,
         self::SIGNED,

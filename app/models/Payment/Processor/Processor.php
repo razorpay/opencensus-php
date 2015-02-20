@@ -249,7 +249,12 @@ class Processor
     protected function getCallbackUrl()
     {
         $key = BasicAuth::getPublicKey();
-        $params = ['id' => $this->payment->getPublicId()];
+
+        $publicId = $this->payment->getPublicId();
+        $hash = sha1(\Hash::make($publicId, ['rounds' => 4]));
+
+        $params = ['id' => $publicId, 'hash' => $hash];
+
         $callbackUrl = \Http\Route::getUrl('payment_callback', $params, $key);
 
         return $callbackUrl;

@@ -4,31 +4,58 @@ namespace Models\Settlement\Kotak;
 
 use Carbon\Carbon;
 use EE\Exception;
+use Excel;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
 {
     public function writeToTextFile($txt)
     {
-        $fullpath = $this->saveLocally($txt);
-
-        $this->saveToAws($fullpath, 'text/plain');
-
-        return $fullpath;
-    }
-
-    protected function saveToAws($fullpath, $mime)
-    {
-        $s3 = \App::make('aws')->get('s3');
-
         $name = $this->getFileToWriteName();
 
+        $fullpath = $this->saveLocally($name, $txt);
+
+        $url = $this->saveToAws($name, $fullpath, 'text/plain');
+
+        // This will be local file path if aws is mocked
+        return $url;
+    }
+
+    public function writeToExcelFile($data, $name)
+    {
+        $excel = Excel::create($name, function($excel) use ($data)
+        {
+            $excel->sheet('Sheet 1', function($sheet) use ($data)
+                {
+                    $sheet->fromArray($data, null, 'A1', true, true);
+                });
+        });
+
+        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fullpath = $fileMetadata['full'];
+
+        $url = $this->saveToAws($name, $fullpath, 'application/vnd.ms-excel');
+
+        return $url;
+    }
+
+    protected function saveUploadedFileToAws($fullpath)
+    {
+        $name = $this->getFileToReadName();
+
+        return $this->saveToAws($name, $fullpath, 'text/plain');
+    }
+
+    protected function saveToAws($name, $fullpath, $mime = 'text/plain')
+    {
         $awsS3Mock = true;
 
         if ($awsS3Mock)
         {
-            return;
+            return $fullpath;
         }
+
+        $s3 = \App::make('aws')->get('s3');
 
         try
         {
@@ -40,22 +67,23 @@ trait FileHandlerTrait
             );
 
             $result = $s3->putObject($s3Obj);
-
-            $merchantDetails->$data['field'] = $result['ObjectURL'];
-            $merchantDetails->saveOrFail();
         }
         catch(\Exception $e)
         {
             // trace here.
             throw $e;
         }
+
+        $url = $result['ObjectURL'];
+
+        $this->fileAwsUrl = $url;
+
+        return $url;
     }
 
-    protected function saveLocally($txt)
+    protected function saveLocally($name, $txt)
     {
         $path = storage_path() . '/files/settlement/';
-
-        $name = $this->getFileToWriteName();
 
         $fullpath = $path . $name;
 
@@ -76,6 +104,16 @@ trait FileHandlerTrait
         }
 
         return $txt;
+    }
+
+    protected function getFile($input)
+    {
+        if (isset($input['file']))
+        {
+            return $this->moveFile($input['file']);
+        }
+
+        return $this->getFileIfExists();
     }
 
     protected function getFileIfExists()
@@ -113,22 +151,51 @@ trait FileHandlerTrait
 
     protected function getFileToReadName()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $mode = $this->getMode();
-
-        $name = static::$fileToReadName.'_'.$mode.'_'.$time.'.txt';
-
-        return $name;
+        return $this->getFileToReadNameWithoutExt().'.txt';
     }
 
-    protected function getFileToWriteName()
+    protected function getFileToReadNameWithoutExt()
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
         $mode = $this->getMode();
 
-        return static::$fileToWriteName.'_'.$mode.'_'.$time.'.txt';
+        return static::$fileToReadName.'_'.$mode.'_'.$time;
+    }
+
+    protected function getFileToReadFullPath()
+    {
+        $name = $this->getFileToReadName();
+
+        return $this->getStoragePath($name);
+    }
+
+    protected function getStoragePath($path = '')
+    {
+        $folder = 'files/settlement';
+
+        $path = $folder . ($path ? '/'.$path : $path);
+
+        return storage_path($path);
+    }
+
+    protected function getFileToWriteName()
+    {
+        return $this->getFileToWriteNameWithoutExt() . '.txt';
+    }
+
+    protected function getExcelFileToWriteName()
+    {
+        return $this->getFileToWriteNameWithoutExt() . '.xlsx';
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $mode = $this->getMode();
+
+        return static::$fileToWriteName.'_'.$mode.'_'.$time;
     }
 
     protected function parseTextFile($file)
@@ -173,7 +240,7 @@ trait FileHandlerTrait
         return static::$headings;
     }
 
-    public function moveFile($file)
+    protected function storeReconciledFile($file)
     {
         $filename = basename($file, '.txt');
 
@@ -190,7 +257,41 @@ trait FileHandlerTrait
 
         $newName = $dir . '/' . $filename . '_' . $mode.'_'.$time . '.txt';
 
-        rename($file, $newName);
+        $res = rename($file, $newName);
+
+        if ($res === false)
+        {
+            throw Exception\RuntimeErrorException(
+                'Failed to rename file. File : ' . $file .
+                ' Renamed name: ' . $newFilepath);
+        }
+
+        return $newName;
+    }
+
+    protected function moveFile($file)
+    {
+        $uploadedFilePath = $file->getRealPath();
+
+        $newFilepath = $this->getFileToReadFullPath();
+
+        $dir = $this->getStorageDir();
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir, 0777);
+        }
+
+        $res = rename($uploadedFilePath, $newFilepath);
+
+        if ($res === false)
+        {
+            throw Exception\RuntimeErrorException(
+                'Failed to rename file. Uploaded name: ' . $uploadedFilePath .
+                ' Renamed name: ' . $newFilepath);
+        }
+
+        return $newFilepath;
     }
 
     protected function getMode()
@@ -198,5 +299,10 @@ trait FileHandlerTrait
         $mode = \BasicAuth::getMode();
 
         return $mode;
+    }
+
+    protected function getStorageDir()
+    {
+        return storage_path('files/settlement');
     }
 }

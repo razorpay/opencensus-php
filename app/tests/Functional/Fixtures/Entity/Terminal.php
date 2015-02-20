@@ -30,17 +30,18 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
 
-        $merchant = $this->fixtures->create('merchant');
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AtomRazorpay']);
 
         $attributes = array(
             'id'                    => $termId,
             'merchant_id'           => $merchant['id'],
+            'gateway'               => 'atom',
             'card'                  => 1,
             'gateway_merchant_id'   => 'razorpay',
             'gateway_terminal_id'   => 'nodal account',
             'gateway_terminal_password' => 'razorpay_password',
         );
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 }

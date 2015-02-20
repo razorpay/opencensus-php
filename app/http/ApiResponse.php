@@ -44,6 +44,11 @@ class ApiResponse
         return self::generateResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
+    public static function httpMethodNotAllowed()
+    {
+        return self::generateResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
+    }
+
     public static function stopBrowserCaching($response)
     {
         //

@@ -49,7 +49,6 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::BENEFICIARY_EMAIL, 255);
 
-
             $table->char(BankAccount::BENEFICIARY_MOBILE, 10);
 
             $table->integer(BankAccount::CREATED_AT);

@@ -79,6 +79,10 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::ENTITY_ID);
 
+    protected $dates = array(
+        self::SETTLED_AT,
+        );
+
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');

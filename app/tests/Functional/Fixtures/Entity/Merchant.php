@@ -17,8 +17,6 @@ class Merchant extends Base
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
 
         $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => '10000000000000']);
-
-        $this->fixtures->create('terminal:shared_atom_terminal');
     }
 
     public function createNodalAccount()
@@ -46,18 +44,18 @@ class Merchant extends Base
         return $merchant;
     }
 
-    public function createAddPaymentBanks(array $attributes = array())
+    public function createWithKeys()
     {
-        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+        $merchant = $this->create('merchant', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
-        $defaultValues = array(
-            'merchant_id' => '10000000000000',
-            'banks' => $banks,
-        );
+        $merchantId = $merchant->getId();
 
-        $attributes = array_merge($defaultValues, $attributes);
+        $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
 
-        $this->fixtures->create('merchant_banks', $attributes);
+        $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltTestAuthKey'], 'test');
+        $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltLiveAuthKey'], 'live');
+
+        return $merchant;
     }
 
     public function createBankAccount($attributes)
@@ -73,7 +71,21 @@ class Merchant extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('bank_account', $attributes);
+        return $this->fixtures->create('bank_account', $attributes);
+    }
+
+    public function createAddPaymentBanks(array $attributes = array())
+    {
+        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+
+        $defaultValues = array(
+            'merchant_id' => '10000000000000',
+            'banks' => $banks,
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $this->fixtures->create('merchant_banks', $attributes);
     }
 
     public function activate($id)

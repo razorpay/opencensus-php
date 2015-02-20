@@ -87,9 +87,52 @@ class NetBankingTest extends TestCase
         $this->assertEquals('atom', $payment['gateway']);
     }
 
-    public function testCardPayment()
+    public function testNBPaymentOnSharedTerminal()
     {
-        $this->markTestSkipped();
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $this->fixtures->create('merchant:add_payment_banks', ['merchant_id' => $merchant->getId()]);
+
+        $this->ba->setDefaultKey('rzp_test_AltTestAuthKey');
+
+        $this->ba->publicAuth();
+
+        $content = $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('atom', $payment['gateway']);
+
+        $content = $this->capturePayment($content['razorpay_payment_id'], '5000');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('atom', $payment['gateway']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('kotak', $txn['channel']);
+    }
+
+    public function testCardPaymentOnSharedTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $this->fixtures->create('merchant:add_payment_banks', ['merchant_id' => $merchant->getId()]);
+
+        $this->ba->setDefaultKey('rzp_test_AltTestAuthKey');
+
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('atom', $payment['gateway']);
+        $this->assertEquals('card', $payment['method']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('kotak', $txn['channel']);
+    }
+
+    public function testAtomCardPayment()
+    {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $payment = &$this->payment;
 

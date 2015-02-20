@@ -50,4 +50,23 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
         return $this;
     }
+
+    public function attributesToArray()
+    {
+        $attributes = parent::attributesToArray();
+
+        foreach ($this->getDates() as $key)
+        {
+            if ( ! isset($attributes[$key])) continue;
+
+            $attributes[$key] = (int) $attributes[$key];
+        }
+
+        return $attributes;
+    }
+
+    public function freshTimestamp()
+    {
+        return time();
+    }
 }

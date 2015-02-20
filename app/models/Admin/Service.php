@@ -14,7 +14,7 @@ class Service extends Base\Service
 
         $id = $entityClass::verifyIdAndStripSign($entity);
 
-        $repo = $this->getEntityRepository($entity);;
+        $repo = $this->getEntityRepository($entity);
 
         $entity = (new $repo)->findOrFail($id);
 
@@ -46,6 +46,8 @@ class Service extends Base\Service
 
     protected function getEntityRepository($entity)
     {
-        return 'Models\\'.ucfirst($entity).'\Repository';
+        $namespace = $this->getEntityNamespace($entity);
+
+        return $namespace.'\Repository';
     }
 }

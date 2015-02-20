@@ -27,28 +27,16 @@ class Gateway extends Atom\Gateway
         $data = parent::authorize($input);
 
         // The key thing now is to replace redirectUrl from atom's to ours!
-        $url = $data['redirectUrl'];
+        $parts = parse_url($data['redirectUrl']);
 
-        $parts = parse_url($url);
-
-        $newRedirectUrl = $this->getNetBankingAtomMockUrl($parts['query']);
+        $baseUrl = \Http\Route::getUrlWithPublicAuth('mockatom_choose_org');
+        $newRedirectUrl = $baseUrl . $parts['query'];
 
         // Put the new redirect url back in!
         $data['redirectUrl'] = $newRedirectUrl;
 
         // Voila
         return $data;
-    }
-
-    protected function getNetBankingAtomMockUrl($queryStr)
-    {
-        $key = \BasicAuth::getPublicKey();
-
-        $url = \Http\Route::getUrl('mockatom_choose_bank', array(), $key);
-
-        $url .= $queryStr;
-
-        return $url;
     }
 
     protected function sendGatewayRequest($request)
@@ -89,7 +77,7 @@ class Gateway extends Atom\Gateway
         $mockGatewaysConfig = \Config::get('applications.mock_gateways');
         $secret = $mockGatewaysConfig['secret'];
 
-        $mockUrl = \Http\Route::getUrl('mockatom_init_netbanking', array(), 'rzp_test', $secret);
+        $mockUrl = \Http\Route::getUrl('mockatom_init_payment', array(), 'rzp_test', $secret);
 
         $parts = parse_url($url);
 
@@ -101,11 +89,17 @@ class Gateway extends Atom\Gateway
         return $mockUrl;
     }
 
-    protected function callGatewayRequestFunctionInternally($requestVar)
+    protected function callGatewayRequestFunctionInternally($request)
     {
         $server = new Server();
-        $server->setInput($requestVar['content']);
 
-        return $server->initiateNetBankingTransaction($requestVar['content']);
+        $url = $request['url'];
+
+        $parts = parse_url($url);
+        parse_str($parts['query'], $input);
+
+        $server->setInput($request['content']);
+
+        return $server->initiateAtomPayment($input);
     }
 }

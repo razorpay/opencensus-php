@@ -10,11 +10,9 @@ class Service extends Base\Service
 {
     public function gatewayMprReconcile($input)
     {
-        $data = (new Mpr\Parser)->process($input);
-
         $reconciler = new Mpr\Reconciler;
 
-        $txns = $reconciler->reconcile($data, 'hdfc');
+        $txns = $reconciler->process($input);
 
         return $txns->toArrayPublic();
     }

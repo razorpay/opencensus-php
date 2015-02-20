@@ -31,18 +31,23 @@ trait RepositoryFetch
 
         $this->validateFetchParams($params);
 
-        $cols = array();
-
         /*
          * Create the query.
          */
-        $repo = $this->repo;
+        $query = $this->buildFetchQuery($params, $merchantId);
 
         if (($this->isMerchantIdRequiredForFetch()) and
             ($merchantId === null))
         {
             throw new Exception\InvalidArgumentException('Merchant Id is required for fetch query');
         }
+
+        return $query->get();
+    }
+
+    protected function buildFetchQuery($params, $merchantId = null)
+    {
+        $repo = $this->repo;
 
         $query = (new $repo)->newQuery();
 
@@ -77,12 +82,26 @@ trait RepositoryFetch
 
         $query->orderBy(Common::ID, 'desc');
 
-        return $query->get();
+        $this->buildFetchQueryAdditional($params, $query);
+
+        return $query;
+    }
+
+    protected function buildFetchQueryAdditional($params, $query)
+    {
+        return;
     }
 
     protected function validateFetchParams(array $params)
     {
         validate(self::$fetchParamRules, $params);
+
+        $this->validateAdditional($params);
+    }
+
+    protected function validateAdditional($params)
+    {
+        ;
     }
 
     public function setMerchantIdRequiredForMultipleFetch($required)

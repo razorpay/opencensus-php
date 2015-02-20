@@ -17,4 +17,12 @@ class Repository extends Base\Repository
         return $repo::where('token', '=', $token)
                     ->first();
     }
+
+    public function findByGatewayPaymentId($gatewayTxnId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('gateway_payment_id', '=', $gatewayTxnId)
+                    ->first();
+    }
 }
