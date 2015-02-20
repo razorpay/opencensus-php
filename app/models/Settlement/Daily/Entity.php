@@ -92,4 +92,9 @@ class Entity extends Base\PublicEntity
 
         return $urls;
     }
+
+    public function getAmountAttribute()
+    {
+        return (int) $this->attributes[self::AMOUNT];
+    }
 }

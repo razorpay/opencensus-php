@@ -155,7 +155,7 @@ class HdfcGatewayMprTest extends TestCase
                 [
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
-                    'amount' => '4387640',
+                    'amount' => 4387640,
                     'initiated_at' => $time,
                     'reconciled_at' => $time,
                     'returned_at' => $time,
