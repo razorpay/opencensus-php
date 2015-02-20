@@ -170,8 +170,8 @@ class Server
 
     protected function formMerchantCallbackUrl($paymentPublicId)
     {
-        return Route::getUrlWithPublicAuth(
-            'payment_callback', ['id' => $paymentPublicId]);
+        $callbackUrl = Route::getUrlWithPublicAuth(
+            'payment_callback', ['id' => $paymentPublicId, 'hash' => 'randomhash']);
 
         return $callbackUrl;
     }
