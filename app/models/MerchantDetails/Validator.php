@@ -34,7 +34,7 @@ class Validator extends Base\Validator
         'company_pan_name'              => 'alpha_space|max:255|required_with:company_pan',
         'business_model'               => 'required|max:2000',
         'transaction_volume'            => 'required|numeric|digits_between:1,4',
-        'transaction_value'             => 'required|numeric|max:10000000'
+        'transaction_value'             => 'required|numeric|min:1|max:10000000'
     );
 
     protected static $step3Rules = array(
