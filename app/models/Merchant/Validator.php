@@ -2,6 +2,7 @@
 
 namespace Models\Merchant;
 
+use EE\Exception;
 use Models\Base;
 use Models\Payment\Processor\NetBanking;
 use Illuminate\Support\MessageBag;
@@ -31,7 +32,26 @@ class Validator extends Base\Validator
     );
 
     protected static $addBankAccountValidators = array(
-        'ifsc_code');
+        'ifsc_code',
+        'beneficiary_state');
+
+    protected static $beneficiaryStateCodes = array(
+        'AN', 'AP', 'AR', 'AS', 'BI', 'CH', 'CT', 'DN',
+        'DD', 'GO', 'GJ', 'HA', 'HP', 'JK', 'JH', 'KA',
+        'KE', 'MP', 'MH', 'MA', 'ME', 'MI', 'NA', 'DL',
+        'OR', 'PO', 'PB', 'RJ', 'SK', 'TN', 'TR', 'UP',
+        'UT', 'WB');
+
+    protected function validateBeneficiaryState($input)
+    {
+        $state = $input['beneficiary_state'];
+
+        if (in_array($state, self::$beneficiaryStateCodes) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid state code');
+        }
+    }
 
     protected function validateIfscCode($input)
     {
