@@ -60,6 +60,8 @@ class HdfcGatewayMprTest extends TestCase
         // Reconcile settlement return file
         $this->processSetlReturns($setlReturnFile);
 
+//        $this->matchSetlEntities();
+
         $this->fetchAndMatchDailySettlement();
     }
 
@@ -146,8 +148,6 @@ class HdfcGatewayMprTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $time = time();
-
         $data = array(
             'entity' => 'collection',
             'count' => 1,
@@ -156,16 +156,21 @@ class HdfcGatewayMprTest extends TestCase
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
                     'amount' => 4387640,
-                    'initiated_at' => $time,
-                    'reconciled_at' => $time,
-                    'returned_at' => $time,
                 ],
             ]
         );
 
         $this->assertArraySelectiveEquals($data, $content);
 
+        $time = time();
+        $item = $content['items'][0];
+        $this->assertGreaterThanOrEqual($time, $item['initiated_at']);
+        $this->assertGreaterThanOrEqual($time, $item['reconciled_at']);
+        $this->assertGreaterThanOrEqual($time, $item['returned_at']);
+
+
         $content = $this->getEntities('settlement', array(), true);
+        $this->assertArraySelectiveEquals($this->testData['testUploadMprSettlementData'], $content);
     }
 
     protected function mockSlack()
