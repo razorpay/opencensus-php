@@ -164,9 +164,9 @@ class HdfcGatewayMprTest extends TestCase
 
         $time = time();
         $item = $content['items'][0];
-        $this->assertGreaterThanOrEqual($time, $item['initiated_at']);
-        $this->assertGreaterThanOrEqual($time, $item['reconciled_at']);
-        $this->assertGreaterThanOrEqual($time, $item['returned_at']);
+        $this->assertGreaterThanOrEqual($item['initiated_at'], $time);
+        $this->assertGreaterThanOrEqual($item['reconciled_at'], $time);
+        $this->assertGreaterThanOrEqual($item['returned_at'], $time);
 
 
         $content = $this->getEntities('settlement', array(), true);
