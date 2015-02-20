@@ -75,16 +75,16 @@
         },
         {
             "name": "aws/aws-sdk-php-laravel",
-            "version": "1.1.1",
+            "version": "1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php-laravel.git",
-                "reference": "36c452e3d61163f58ad7d7ca709074cd640a8c52"
+                "reference": "a114872a916a567f2fba539b8d1709a97b582097"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php-laravel/zipball/36c452e3d61163f58ad7d7ca709074cd640a8c52",
-                "reference": "36c452e3d61163f58ad7d7ca709074cd640a8c52",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php-laravel/zipball/a114872a916a567f2fba539b8d1709a97b582097",
+                "reference": "a114872a916a567f2fba539b8d1709a97b582097",
                 "shasum": ""
             },
             "require": {
@@ -124,7 +124,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2014-05-12 23:31:32"
+            "time": "2015-02-13 19:51:35"
         },
         {
             "name": "classpreloader/classpreloader",
@@ -1040,16 +1040,16 @@
         },
         {
             "name": "maatwebsite/excel",
-            "version": "v1.3.1",
+            "version": "1.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maatwebsite/Laravel-Excel.git",
-                "reference": "1d6e4e797e6260a740fa72a42aa1b224347852c3"
+                "reference": "53ddb491c19fe88be2f30f148c1b6235e4a9126c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/1d6e4e797e6260a740fa72a42aa1b224347852c3",
-                "reference": "1d6e4e797e6260a740fa72a42aa1b224347852c3",
+                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/53ddb491c19fe88be2f30f148c1b6235e4a9126c",
+                "reference": "53ddb491c19fe88be2f30f148c1b6235e4a9126c",
                 "shasum": ""
             },
             "require": {
@@ -1103,7 +1103,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2015-02-02 16:27:23"
+            "time": "2015-02-16 11:04:47"
         },
         {
             "name": "mailgun/mailgun-php",
@@ -1647,7 +1647,7 @@
             "source": {
                 "type": "git",
                 "url": "git@bitbucket.org:razorpay/spine.git",
-                "reference": "d7ed75851f35526b5e1c8586bd549cddd84e7346"
+                "reference": "c75f1e6dca4d77f5665bec83d78128a31f64f6e9"
             },
             "require": {
                 "laravel/framework": "4.2.*",
@@ -1669,7 +1669,7 @@
                 "razorpay",
                 "spine"
             ],
-            "time": "2014-10-26 19:52:39"
+            "time": "2015-02-20 10:30:20"
         },
         {
             "name": "rmccue/requests",
