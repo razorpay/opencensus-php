@@ -38,6 +38,16 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testDeleteTerminal()
+    {
+        $merchant = $this->fixtures
+                         ->create('merchant_fluid:entity', ['id' => '10abcdefghsdfs'])
+                         ->addTerminal('atom', ['id' => 'testatomrandom'])
+                         ->get();
+
+        $content = $this->startTest();
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
