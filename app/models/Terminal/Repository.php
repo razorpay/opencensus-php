@@ -25,12 +25,12 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getByMerchantId($id)
+    public function getByMerchantId($mid)
     {
         $repo = $this->repo;
 
         return $repo::withTrashed()
-                    ->where(Terminal\Entity::MERCHANT_ID, '=', $id)
+                    ->where(Terminal\Entity::MERCHANT_ID, '=', $mid)
                     ->get();
     }
 
@@ -39,8 +39,8 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::withTrashed()
-                    ->where(Terminal\Entity::MERCHANT_ID, '=', $id)
-                    ->findOrFail($tid);
+                    ->where(Terminal\Entity::MERCHANT_ID, '=', $mid)
+                    ->findOrFailPublic($tid);
     }
 
     public function getByMerchantIdAndGateway($id, $gateway)
@@ -65,10 +65,28 @@ class Repository extends Base\Repository
         if ($entity->getUsedCount() === 0)
         {
             $entity->forceDelete();
+
+            return null;
         }
         else
         {
             $entity->deleteOrFail();
+
+            return $repo::withTrashed()
+                        ->findOrFail($entity->getId());
         }
+    }
+
+    public function restoreOrFail($terminal)
+    {
+        $restored = $terminal->restore();
+
+        if ($restored === true)
+            return $terminal;
+
+        throw new Exception\DbQueryException(
+            'restore',
+            'terminal',
+            $terminal->getAttributes());
     }
 }

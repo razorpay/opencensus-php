@@ -2,6 +2,7 @@
 
 use Http\ApiResponse;
 use Models\Merchant;
+use Models\Terminal;
 use Models\Key;
 
 class MerchantController extends BaseController
@@ -81,30 +82,39 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        $data = (new Merchant\Service)->createTerminal($id, $input);
+        $data = (new Terminal\Service)->createTerminal($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getTerminals($mid)
     {
-        $data = (new Merchant\Service)->getTerminals($mid);
+        $data = (new Terminal\Service)->getTerminals($mid);
 
         return ApiResponse::json($data);
     }
 
     public function getTerminal($mid, $tid)
     {
-        $data = (new Merchant\Service)->getTerminal($mid, $tid);
+        $data = (new Terminal\Service)->getTerminal($mid, $tid);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteTermianl($mid, $tid)
+    public function deleteTerminal($mid, $tid)
     {
-        $data = (new Merchant\Serivce)->deleteTerminal($mid, $tid);
+        $data = (new Terminal\Service)->deleteTerminal($mid, $tid);
 
-        return ApiRespones::json($data);
+        return ApiResponse::json($data);
+    }
+
+    public function putTerminal($mid, $tid)
+    {
+        $input = Input::all();
+
+        $data = (new Terminal\Service)->modifyTerminal($mid, $tid, $input);
+
+        return ApiResponse::json($data);
     }
 
     public function postActivate($id)

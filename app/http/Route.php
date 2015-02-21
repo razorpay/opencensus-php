@@ -44,7 +44,8 @@ final class Route
         'merchant_create_terminal'          => ['post',     'merchants/{id}/terminals',                 'MerchantController@postCreateTerminal'                 ],
         'merchant_get_terminals'            => ['get',      'merchants/{id}/terminals',                 'MerchantController@getTerminals'                       ],
         'merchant_get_terminal'             => ['get',      'merchants/{mid}/terminals/{tid}',          'MerchantController@getTermianl'                        ],
-        'merchant_delete_terminal'          => ['delete',   'merchants{mid}/terminals/{tid}',           'MerchantController@deleteTerminal'                     ],
+        'merchant_delete_terminal'          => ['delete',   'merchants/{mid}/terminals/{tid}',          'MerchantController@deleteTerminal'                     ],
+        'merchant_modify_terminal'          => ['put',      'merchants/{mid}/terminals/{tid}',          'MerchantController@putTerminal'                        ],
         'merchant_activate'                 => ['post',     'merchants/{id}/activate',                  'MerchantController@postActivate'                       ],
         'merchant_live_enable'              => ['post',     'merchants/{id}/live/enable',               'MerchantController@postLiveEnable'                     ],
         'merchant_live_disable'             => ['post',     'merchants/{id}/live/disable',              'MerchantController@postLiveDisable'                    ],
@@ -79,7 +80,7 @@ final class Route
         'mockhdfc_payment'                  => ['post',     'gateway/mockhdfc/payment',                 'MockHdfcController@payment'                            ],
         'mockhdfc_auth_enrolled'            => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockHdfcController@authEnrolled'                       ],
         'mockhdfc_3dsecure'                 => ['post',     'gateway/3dsecure',                         'MockHdfcController@post3dSecure'                       ],
-        'mockatom_init_payment'         => ['post',     'gateway/mockanb',                          'MockHdfcController@postAtomInitPayment'                ],
+        'mockatom_init_payment'             => ['post',     'gateway/mockanb',                          'MockHdfcController@postAtomInitPayment'                ],
         'mockatom_choose_org'               => ['get',      'gateway/mockanb',                          'MockHdfcController@getAtomChooseOrg'                   ],
         'mockatom_rzp_payment'              => ['post',     'gateway/mockanb/payment',                  'MockHdfcController@postAtomRzpPayment'                 ],
         'mockatom_rzp_payment_submit'       => ['post',     'gateway/mockanb/payment/submit',           'MockHdfcController@postAtomRzpPaymentSubmit'           ],
@@ -92,6 +93,7 @@ final class Route
         'payment_create_jsonp',
         'payment_callback',
         'merchant_public_get_banks',
+        'mockatom_init_payment',
         'mockatom_choose_org',
         'mockatom_rzp_payment',
         'mockatom_rzp_payment_submit',
@@ -152,7 +154,6 @@ final class Route
         'mockhdfc_enroll',
         'mockhdfc_auth_enrolled',
         'mockhdfc_payment',
-        'mockatom_init_payment',
         'admin_fetch_entity_multiple',
         'admin_fetch_entity_by_id',
         );
@@ -178,8 +179,7 @@ final class Route
             'mock_gateways' => array(
                 'mockhdfc_enroll',
                 'mockhdfc_auth_enrolled',
-                'mockhdfc_payment',
-                'mockatom_init_payment'),
+                'mockhdfc_payment',),
 
             'cron' => array(
                 'hdfc_mpr_generate',

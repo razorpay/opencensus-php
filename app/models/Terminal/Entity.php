@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_TERMINAL_ID,
+        self::USED_COUNT,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT);
@@ -105,6 +106,11 @@ class Entity extends Base\PublicEntity
     public function getUsedCount()
     {
         return $this->getAttribute(self::USED_COUNT);
+    }
+
+    public function getUsedCountAttribute()
+    {
+        return (int) $this->attributes[self::USED_COUNT];
     }
 
     public function merchant()
