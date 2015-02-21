@@ -55,6 +55,20 @@ class Repository extends Base\Repository
         return $ba;
     }
 
+    public function getBankAccountByBeneficiaryCode($code)
+    {
+        $repo = 'Models\Merchant\BankAccount';
+
+        return $repo::where(BankAccount::BENEFICIARY_CODE, '=', $code)->first();
+    }
+
+    public function getBeneficiaryCodeCountByPattern($code)
+    {
+        $repo = 'Models\Merchant\BankAccount';
+
+        return $repo::where(BankAccount::BENEFICIARY_CODE, 'like', $code.'%')->count();
+    }
+
     public function getEscrowBalanceLockForUpdate($channel)
     {
         $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';

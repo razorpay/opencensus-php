@@ -258,6 +258,19 @@ class Service extends Base\Service
 
         $ba = (new Merchant\BankAccount)->build($input);
 
+        $code = $ba->beneficiary_code;
+
+        $count = $this->repo->getBeneficiaryCodeCountByPattern($code);
+
+        if ($count === 0)
+            $count = '';
+        else
+            $count++;
+
+        $code .= $count;
+
+        $ba->beneficiary_code = $code;
+
         $ba->merchant()->associate($merchant);
 
         $this->repo->updateBankAccount($ba);
