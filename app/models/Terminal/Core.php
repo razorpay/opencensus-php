@@ -24,7 +24,7 @@ class Core extends Base\Core
         return $terminal;
     }
 
-    protected function validateExistingTerminal($terminal)
+    public function validateExistingTerminal($terminal)
     {
         $params = array(
             Terminal\Entity::MERCHANT_ID => $terminal->getMerchantId());

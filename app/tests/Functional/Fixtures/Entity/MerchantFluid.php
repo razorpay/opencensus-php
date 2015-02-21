@@ -37,6 +37,8 @@ class MerchantFluid extends Base
         $this->fixtures->on('test')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
         $this->fixtures->on('live')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
 
+        $this->fixtures->setDefaultConn();
+
         return $this;
     }
 
@@ -44,6 +46,8 @@ class MerchantFluid extends Base
     {
         $this->fixtures->on('test')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
         $this->fixtures->on('live')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
+
+        $this->fixtures->setDefaultConn();
 
         return $this;
     }
@@ -62,14 +66,20 @@ class MerchantFluid extends Base
         $defaultAttributes = array(
             'merchant_id'           => $this->getId(),
             'gateway'               => $gateway,
-            'gateway_merchant_id'   => 'abcd',
-            'gateway_terminal_id'   => 'abcde',
+            'gateway_merchant_id'   => 'gateway_merchant_random',
+            'gateway_terminal_id'   => 'gateway_terminal_random',
             'gateway_terminal_password' => 'abcdef',
             'card'                  => 1);
 
-        $attributes = array_merge($defaultValues, $attributes);
+        $attributes = array_merge($defaultAttributes, $attributes);
 
-        return $this->create('terminal', $attributes);
+        $terminal = $this->create('terminal', $attributes);
+
+        $terminal->merchant()->associate($this->merchant);
+
+        $this->merchant->terminals->add($terminal);
+
+        return $this;
     }
 
     public function addKeys()
@@ -78,6 +88,8 @@ class MerchantFluid extends Base
 
         $this->fixtures->on('test')->create('key', ['merchant_id' => $id, 'id' => 'AltTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => $id, 'id' => 'AltLiveAuthKey'], 'live');
+
+        $this->fixtures->setDefaultConn();
 
         return $this;
     }

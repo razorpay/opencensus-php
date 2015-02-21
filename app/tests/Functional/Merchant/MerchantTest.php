@@ -148,7 +148,6 @@ class MerchantTest extends TestCase
 
     public function testGetBankAccount()
     {
-//        $this->markTestSkipped();
         $this->testAddBankAccount();
 
         $content = $this->startTest();

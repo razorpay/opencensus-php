@@ -100,9 +100,9 @@ class Entity extends Base\PublicEntity
             'Models\Merchant\BankAccount');
     }
 
-    public function terminal()
+    public function terminals()
     {
-        return $this->hasOne(
+        return $this->hasMany(
             'Models\Terminal\Entity');
     }
 

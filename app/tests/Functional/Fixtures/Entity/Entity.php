@@ -75,6 +75,8 @@ class Base
 
         $this->eloquentReguard();
 
+        $this->fixtures->setDefaultConn();
+
         return $entity;
     }
 

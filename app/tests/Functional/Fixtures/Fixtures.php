@@ -16,6 +16,8 @@ class Fixtures
 
     protected $times = 1;
 
+    protected $defaultConn = 'test';
+
     public function __construct()
     {
         Entity\Base::$fixturesInstance = $this;
@@ -167,5 +169,15 @@ class Fixtures
         {
             throw new \Exception($key . ' not found');
         }
+    }
+
+    public function setDefaultConn($conn = '')
+    {
+        if ($conn === '')
+            $conn = $this->defaultConn;
+        else
+            $this->defaultConn = $conn;
+
+        $this->connection($this->defaultConn);
     }
 }

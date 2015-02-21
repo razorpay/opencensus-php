@@ -69,5 +69,16 @@ return [
                 'gateway_terminal_id' => 'product_id',
             ]
         ],
+    ],
+
+    'testDeleteTerminal' => [
+        'request' => [
+            'url' => '/merchants/10abcdefghsdfs/terminals/testatomrandom',
+            'method' => 'DELETE'
+        ],
+        'response' => [
+              'content' => [
+            ]
+        ],
     ]
 ];
