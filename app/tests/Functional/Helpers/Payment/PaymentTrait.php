@@ -303,10 +303,6 @@ trait PaymentTrait
 
         $uri = substr($uri, $ix+2);
 
-        // Extract the payment id from absolute url
-
-        $id = $this->getIdFromUri($uri);
-
         $request['method'] = 'POST';
         $request['content'] = $form->getValues();
 
