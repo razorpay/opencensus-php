@@ -19,7 +19,7 @@ if (! function_exists('validate'))
         {
             $messages = implode('\n', $validation->messages()->all());
 
-            throw new Exception\InvalidArgumentException($messages);
+            throw new Exception\BadRequestValidationFailureException($messages);
         }
     }
 }

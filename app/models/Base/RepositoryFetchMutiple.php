@@ -56,17 +56,17 @@ trait RepositoryFetch
             $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
         }
 
-        if (isset($params['from']))
+        if (empty($params['from']) === false)
         {
             $query = $query->where(Common::CREATED_AT, '>=', $params['from']);
         }
 
-        if (isset($params['to']))
+        if (empty($params['to']) === false)
         {
             $query = $query->where(Common::CREATED_AT, '<=', $params['to']);
         }
 
-        if (isset($params['count']))
+        if (empty($params['count']) === false)
         {
             $query->take($params['count']);
         }
@@ -75,7 +75,7 @@ trait RepositoryFetch
             $query->take(10);
         }
 
-        if (isset($params['skip']))
+        if (empty($params['skip']) === false)
         {
             $query->skip($params['skip']);
         }
