@@ -14,23 +14,24 @@ class Merchant
 
     protected $amount;
 
-    public function __construct($merchant, $amount, $channel)
+    public function __construct($merchant, $channel)
     {
         $this->merchant = $merchant;
 
-        $this->amount = $amount;
         $this->channel = $channel;
 
         $this->merchantRepo = new Models\Merchant\Repository;
         $this->txnRepo = new Transaction\Repository;
         $this->setlRepo = new Settlement\Repository;
+    }
+
+    public function settle($txns, $amount, $apiFee, $gatewayFee)
+    {
+        $this->amount = $amount;
 
         // Create settlement transaction
         $this->setlTransaction = $this->newSettlementTransaction();
-    }
 
-    public function settle($txns)
-    {
         // Create settlement entity
         $setl = $this->newSettlementEntity();
 
@@ -49,6 +50,18 @@ class Merchant
         $this->fetchMerchantBankAccount();
 
         return $setl;
+    }
+
+    public function collectApiFees($apiFee, $channel)
+    {
+        if ($channel === Settlement\Channel::KOTAK)
+        {
+            throw new Exception\LogicException(
+                'Should not have reached here guys!');
+        }
+
+        $setl = (new Settlement\Merchant($merchant, $channel))->settle(
+                                    $setlTxns, $setlAmount, $setlApiFee, $setlGatewayFee);
     }
 
     protected function newSettlementTransaction()
