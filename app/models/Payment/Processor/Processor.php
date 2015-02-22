@@ -246,20 +246,6 @@ class Processor
         $payment = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
     }
 
-    protected function getCallbackUrl()
-    {
-        $key = BasicAuth::getPublicKey();
-
-        $publicId = $this->payment->getPublicId();
-        $hash = sha1(\Hash::make($publicId, ['rounds' => 4]));
-
-        $params = ['id' => $publicId, 'hash' => $hash];
-
-        $callbackUrl = \Http\Route::getUrl('payment_callback', $params, $key);
-
-        return $callbackUrl;
-    }
-
     protected function createPaymentEntity($input)
     {
         $this->tracePaymentNewRequest($input);

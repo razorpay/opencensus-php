@@ -293,5 +293,4 @@ trait Authorize
         // It's giving next day date on 5 pm on current day.
         ;
     }
-
 }

@@ -112,13 +112,12 @@ class PaymentController extends BaseController
     public function postCallback($id, $hash)
     {
         $input = Input::all();
-        $input['hash'] = $hash;
 
         $data = null;
 
         try
         {
-            $data = $this->payment->bankAcsCallback($id, $input);
+            $data = $this->payment->callback($id, $hash, $input);
         }
         catch (RecoverableException $exception)
         {

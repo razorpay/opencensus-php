@@ -170,10 +170,19 @@ class Server
 
     protected function formMerchantCallbackUrl($paymentPublicId)
     {
+        $hash = $this->getHashOfPaymentPublicId($paymentPublicId);
+
         $callbackUrl = Route::getUrlWithPublicAuth(
-            'payment_callback', ['id' => $paymentPublicId, 'hash' => 'randomhash']);
+            'payment_callback', ['id' => $paymentPublicId, 'hash' => $hash]);
 
         return $callbackUrl;
+    }
+
+    protected function getHashOfPaymentPublicId($paymentPublicId)
+    {
+        $secret = \App::make('config')->get('app.key');
+
+        return hash_hmac('sha1', $paymentPublicId, $secret);
     }
 
     public function verifyTxn1stStageInput($input)
