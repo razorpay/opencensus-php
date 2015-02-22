@@ -110,11 +110,11 @@ class Service extends Base\Service
      * @param  array  $input Contains fields provided
      *                       by bank
      *
-     * @return Transaciton\Entity
+     * @return array
      */
-    public function bankAcsCallback($id, array $input)
+    public function callback($id, $hash, array $input)
     {
-        return $this->processor()->callback($id, $input);
+        return $this->processor()->callback($id, $hash, $input);
     }
 
     public function fetchMultiple(array $input)

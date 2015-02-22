@@ -4,6 +4,7 @@ namespace Models\Payment\Processor;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Http\Route;
 use Models\Merchant\Banks;
 use Models\Card;
 use Models\Payment;
@@ -92,7 +93,7 @@ trait Authorize
      *
      * @return Payment\Entity           Updated payment entity
      */
-    public function callback($id, array $input)
+    public function callback($id, $hash, array $input)
     {
         $payment = $this->retrieve($id);
 
@@ -102,9 +103,7 @@ trait Authorize
         //
         unset($input['csrf']);
 
-        $this->verifyHash($input, $payment->getPublicId());
-
-        unset($input['hash']);
+        $this->verifyHash($hash, $payment->getPublicId());
 
         $input['payment'] = $payment->toArray();
 
@@ -215,19 +214,6 @@ trait Authorize
         $this->repo->saveOrFail($this->payment);
     }
 
-    protected function verifyHash($input, $paymentPublicId)
-    {
-        if (isset($input['hash']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Callback should have proper hash defined');
-        }
-
-        $hash = $input['hash'];
-
-        // @todo: Match hashes
-    }
-
     protected function updatePaymentAuthorized()
     {
         $payment = $this->payment;
@@ -242,5 +228,38 @@ trait Authorize
         $payment->terminal->save();
 
         $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+    }
+
+    protected function verifyHash($hash, $paymentPublicId)
+    {
+        $expectedHash = $this->getHashOfPaymentPublicId();
+
+        if ($expectedHash !== $hash)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Callback payment hash does not match. Please notify the admin of this error.');
+        }
+    }
+
+    protected function getCallbackUrl()
+    {
+        $publicId = $this->payment->getPublicId();
+
+        $hash = $this->getHashOfPaymentPublicId();
+
+        $params = ['id' => $publicId, 'hash' => $hash];
+
+        $callbackUrl = Route::getUrlWithPublicAuth('payment_callback', $params);
+
+        return $callbackUrl;
+    }
+
+    protected function getHashOfPaymentPublicId()
+    {
+        $secret = \App::make('config')->get('app.key');
+
+        $publicId = $this->payment->getPublicId();
+
+        return hash_hmac('sha1', $publicId, $secret);
     }
 }
