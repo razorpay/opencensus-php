@@ -68,7 +68,7 @@ class Settler
 
         try
         {
-            list($settlements, $txns, $totalSetlAmount) = $this->process($txns, Channel::KOTAK);
+            list($settlements, $txns, $amounts) = $this->process($txns, Channel::KOTAK);
 
             list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
 
@@ -147,11 +147,11 @@ class Settler
 
     protected function process($txns, $channel)
     {
-        list($settlements, $totalSetlAmount) = $this->createSettlements($txns, $channel);
+        list($settlements, $amounts) = $this->createSettlements($txns, $channel);
 
         $this->txnRepo->settled($txns, self::$settlementTimestamp);
 
-        return array($settlements, $txns, $totalSetlAmount);
+        return array($settlements, $txns, $amounts);
     }
 
     protected function createSettlements($txns, $channel)
@@ -163,11 +163,13 @@ class Settler
         $i = 0;
         $count = $txns->count();
         $totalSetlAmount = 0;
+        $totalSetlGatewayFee = 0;
+        $totalSetlApiFee = 0;
 
         while ($i < $count)
         {
             // Settlement amount
-            $setlAmount = 0;
+            $setlAmount = $setlGatewayFee = $setlApiFee = 0;
             $setlTxns = new Base\PublicCollection;
 
             // Get merchant
@@ -186,6 +188,9 @@ class Settler
                 }
 
                 $setlAmount += $txn->getCredit() - $txn->getDebit();
+                $setlGatewayFee += $txn->getGatewayFee();
+                $setlApiFee += $txn->getApiFee();
+
                 $setlTxns->push($txn);
                 $i++;
             }
@@ -196,15 +201,36 @@ class Settler
                 continue;
             }
 
-            $setl = (new Settlement\Merchant($merchant, $setlAmount, $channel))->settle($setlTxns);
+            $setl = (new Settlement\Merchant($merchant, $channel))->settle(
+                                        $setlTxns, $setlAmount, $setlApiFee, $setlGatewayFee);
+
             $settlements->push($setl);
 
             $totalSetlAmount += $setlAmount;
+            $totalSetlApiFee += $setlApiFee;
+            $totalSetlGatewayFee += $setlGatewayFee;
+        }
+
+        if (($totalSetlApiFee !== 0) and
+            ($channel === Settlement\Channel::KOTAK))
+        {
+            // @todo: Add api fees
+            // $setl = $this->collectApiFees($totalSetlApiFee, $channel);
+
+            // $totalSetlAmount += $totalSetlApiFee;
         }
 
         $this->dailySettlement->amount = $totalSetlAmount;
+        $this->dailySettlement->api_fee = $totalSetlApiFee;
+        $this->dailySettlement->gateway_fee = $totalSetlGatewayFee;
 
-        return [$settlements, $totalSetlAmount];
+        $amounts = array(
+            'amount' => $totalSetlAmount,
+            'api_fee' => $totalSetlApiFee,
+            'gateway_fee' => $totalSetlGatewayFee,
+        );
+
+        return [$settlements, $amounts];
     }
 
     protected function shouldSettle(Transaction\Entity $txn, $channel)
@@ -221,11 +247,15 @@ class Settler
         return $urls;
     }
 
-    protected function saveUrl($url)
+    protected function collectApiFees($apiFee, $channel)
     {
-        $daily = new Settlement\Daily;
+        if ($channel === Settlement\Channel::KOTAK)
+        {
+            return;
+        }
 
-
+        $setl = (new Settlement\Merchant($merchant, $channel))->settle(
+                                    $setlTxns, $setlAmount, $setlApiFee, $setlGatewayFee);
     }
 
 

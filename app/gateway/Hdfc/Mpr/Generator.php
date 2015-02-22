@@ -224,7 +224,8 @@ class Generator
             $data = $this->getDataForPayment($input);
             $amount = $input['payment']['amount'] / 100;
 
-            $msf = $amount * 2 / 100;
+            $msf = $amount * 15 / 1000;
+            $this->roundUp($msf);
 
             $serviceTax = $msf * self::SERVICE_TAX_PERCENT / 100;
             $educationCess = $msf * self::EDUCATION_CESS_PERCENT / 100;

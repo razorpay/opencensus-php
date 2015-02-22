@@ -11,6 +11,8 @@ class Entity extends Base\PublicEntity
     const DATE              = 'date';
     const CHANNEL           = 'channel';
     const AMOUNT            = 'amount';
+    const API_FEE           = 'api_fee';
+    const GATEWAY_FEE       = 'gateway_fee';
     const URLS              = 'urls';
     const INITIATED_AT      = 'initiated_at';
     const RECONCILED_AT     = 'reconciled_at';
@@ -26,9 +28,12 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::DATE,
         self::CHANNEL,
         self::AMOUNT,
+        self::API_FEE,
+        self::GATEWAY_FEE,
         self::URLS,
         self::INITIATED_AT,
         self::RECONCILED_AT,
@@ -96,5 +101,15 @@ class Entity extends Base\PublicEntity
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function getApiFeeAttribute()
+    {
+        return (int) $this->attributes[self::API_FEE];
+    }
+
+    public function getGatewayFeeAttribute()
+    {
+        return (int) $this->attributes[self::GATEWAY_FEE];
     }
 }

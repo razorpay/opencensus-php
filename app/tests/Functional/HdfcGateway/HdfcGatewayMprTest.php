@@ -153,9 +153,13 @@ class HdfcGatewayMprTest extends TestCase
             'count' => 1,
             'items' => [
                 [
+                    'entity' => 'daily_settlement',
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
+//                    'amount' => 4415725,
                     'amount' => 4387640,
+                    'api_fee' => 28085,
+                    'gateway_fee' => 84275,
                 ],
             ]
         );
@@ -168,8 +172,8 @@ class HdfcGatewayMprTest extends TestCase
         $this->assertGreaterThanOrEqual($item['reconciled_at'], $time);
         $this->assertGreaterThanOrEqual($item['returned_at'], $time);
 
-
         $content = $this->getEntities('settlement', array(), true);
+
         $this->assertArraySelectiveEquals($this->testData['testUploadMprSettlementData'], $content);
     }
 
