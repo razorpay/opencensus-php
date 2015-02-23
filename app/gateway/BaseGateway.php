@@ -45,11 +45,11 @@ class BaseGateway
 
     public function setMode($mode)
     {
-        if (($mode === 'live') and
-            ($this->mock === true))
-        {
-            throw new Exception\LogicException('Cannot mock a gateway in live mode');
-        }
+        // if (($mode === 'live') and
+        //     ($this->mock === true))
+        // {
+        //     throw new Exception\LogicException('Cannot mock a gateway in live mode');
+        // }
 
         $this->mode = $mode;
     }
