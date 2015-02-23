@@ -17,7 +17,7 @@ return array(
     /**
      * Displays line/file/class/method from which the log call originated
      */
-    'introspection' => false,
+    'introspection' => true,
 
     /*
     |--------------------------------------------------------------------------
