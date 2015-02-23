@@ -38,26 +38,38 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function createDriver($driver)
     {
-        if (in_array($driver, $this->gateways) === false)
+        if (in_array($driver, $this->getGateways()) === false)
         {
             throw new Exception\LogicException($driver . ' is not an available gateway');
         }
 
-        $mock = '';
+        $mock = $this->getMock($driver);
 
-        $mode = \BasicAuth::getMode();
+        return $this->createGatewayDriver($driver, $mock);
+    }
 
-        if (($mode === Mode::TEST) and
-            (in_array($driver, $this->mocks)))
-        {
-            $mock = 'Mock';
-        }
-
+    protected function createGatewayDriver($driver, $mock)
+    {
         // Constructs gateway class name in the format
         // 'Gateway\{Mock}{GatewayName}\Gateway'
         $class = 'Gateway\\'.$mock.ucfirst($driver).'\\'.'Gateway';
 
         return new $class;
+    }
+
+    protected function getMock($driver)
+    {
+        $mock = '';
+
+        $mode = $this->getMode();
+
+        if (($mode === Mode::TEST) and
+            (in_array($driver, $this->getMockDrivers())))
+        {
+            $mock = 'Mock';
+        }
+
+        return $mock;
     }
 
     public function getDefaultDriver()
@@ -68,5 +80,20 @@ class GatewayManager extends \Illuminate\Support\Manager
     public function gateway($gateway)
     {
         return parent::driver($gateway);
+    }
+
+    protected function getMockDrivers()
+    {
+        return $this->mocks;
+    }
+
+    protected function getMode()
+    {
+        return $this->app['basicauth']->getMode();
+    }
+
+    protected function getGateways()
+    {
+        return $this->gateways;
     }
 }
