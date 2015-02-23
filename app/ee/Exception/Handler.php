@@ -60,14 +60,14 @@ class Handler
 
     public function baseExceptionHandler(BaseException $exception, $code)
     {
+        // ServerError is fatal error and shoudn't be encountered
+        // Let the higher-ups handle it. This function handles
+        // known/expected exceptions
+        if ($exception instanceof ServerErrorException)
+            return;
+
         if ($this->debug)
         {
-            // ServerError is fatal error and shoudn't be encountered
-            // Let the higher-ups handle it. This function handles
-            // known/expected exceptions
-            if ($exception instanceof ServerErrorException)
-                return;
-
             return $exception->generateDebugJsonResponse();
         }
 
