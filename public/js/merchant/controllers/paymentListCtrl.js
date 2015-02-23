@@ -1,7 +1,7 @@
 // Payment Listing Controller
 // Child of TransactionListCtrl
-app.controller('PaymentListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '$state',
-  function($scope, $http, modeFactory, alertsFactory, $state){
+app.controller('PaymentListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
+  function($scope, $http, alertsFactory, $state){
 
     $scope.getStatusClass = function(status) {
       var mapper = {

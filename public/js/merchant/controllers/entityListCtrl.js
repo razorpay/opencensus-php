@@ -1,6 +1,6 @@
 //Entities Listing Controller
-app.controller('EntityListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '$state',
-  function($scope, $http, modeFactory, alertsFactory, $state){
+app.controller('EntityListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
+  function($scope, $http, alertsFactory, $state){
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
@@ -62,9 +62,9 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'modeFactory', 'alertsFacto
         "&skip="+ $scope.entity.skip;
 
       if($scope.entity.id === '')
-        var request = $http.get("/" + modeFactory.getMode() +  "/" + $scope.entity.type + "s?" + query);
+        var request = $http.get("/" + $scope.mode +  "/" + $scope.entity.type + "s?" + query);
       else
-        var request = $http.get("/" + modeFactory.getMode() +  "/entity/" + $scope.entity.id);
+        var request = $http.get("/" + $scope.mode +  "/entity/" + $scope.entity.id);
 
       request
       .success(function(data){

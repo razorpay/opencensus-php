@@ -1,7 +1,7 @@
 //Dashboard Controllers
 //Aggregations controller
-app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
-  function($scope, $http, modeFactory) {
+app.controller('DashboardAggregationsCtrl', ['$scope', '$http',
+  function($scope, $http) {
 
   //Aggreagates
   $scope.aggregations = {};
@@ -14,7 +14,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
                       amount: 0
                   };
 
-  var request = $http.get("/"+modeFactory.getMode()+"/analytics/aggregations");
+  var request = $http.get("/"+ $scope.mode +"/analytics/aggregations");
 
   request.success(function(result){
 
@@ -30,8 +30,8 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
 }])
 
 //Payment methods aggregations
-.controller('DashboardPaymentAggregationsCtrl', ['$scope', '$http', 'modeFactory',
-  function($scope, $http, modeFactory) {
+.controller('DashboardPaymentAggregationsCtrl', ['$scope', '$http',
+  function($scope, $http) {
 
   //Aggreagates
   $scope.paymentaggregations = {
@@ -42,7 +42,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
     OTHER: 0
   };
 
-  var request = $http.get("/"+modeFactory.getMode()+"/analytics/payment/aggregations");
+  var request = $http.get("/"+$scope.mode+"/analytics/payment/aggregations");
 
   request.success(function(result){
 
@@ -65,8 +65,8 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
 }])
 
 //Dashboard graphs/date picker controller
-.controller('DashboardGraphsCtrl', ['$scope', '$http', 'modeFactory', 'dateFactory',
-  function($scope, $http, modeFactory, dateFactory) {
+.controller('DashboardGraphsCtrl', ['$scope', '$http', 'dateFactory',
+  function($scope, $http, dateFactory) {
 
 
     initialiseStatType();
@@ -144,7 +144,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http', 'modeFactory',
       var from = parseInt(($scope.date.startDate.getTime())/1000) - 1;
       var to = parseInt(($scope.date.endDate.getTime())/1000) + 1;
 
-      var request = $http.get("/" + modeFactory.getMode() + "/analytics/transactions?type="+$scope.statType+"&from=" + from + "&to="+ to);
+      var request = $http.get("/" + $scope.mode + "/analytics/transactions?type="+$scope.statType+"&from=" + from + "&to="+ to);
 
 
       request.success(function(data){

@@ -1,7 +1,7 @@
 //Single Payment Details controller
 //Child of TransactionDetailCtrl
-app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal', 'modeFactory', 'alertsFactory', 'transformRequestAsFormPost',
-  function($scope, $http, $stateParams, $modal, modeFactory, alertsFactory, transformRequestAsFormPost) {
+app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal', 'alertsFactory', 'transformRequestAsFormPost',
+  function($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost) {
     $scope.getStatusClass = function(status) {
       var mapper = {
         created: "bg-light",
@@ -70,7 +70,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
 
       var request = $http({
                     method: "post",
-                    url: "/" + modeFactory.getMode() + "/payments/"  + $scope.entity.id + "/capture",
+                    url: "/" + $scope.mode + "/payments/"  + $scope.entity.id + "/capture",
                     transformRequest: transformRequestAsFormPost,
                     data: data
                 });
@@ -109,7 +109,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
 
       var request = $http({
                     method: "post",
-                    url: "/" + modeFactory.getMode() + "/payments/"  + $scope.entity.id + "/refund",
+                    url: "/" + $scope.mode + "/payments/"  + $scope.entity.id + "/refund",
                     transformRequest: transformRequestAsFormPost,
                     data: data
                 });
@@ -143,7 +143,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
         return;
       }
 
-      var request = $http.get("/" + modeFactory.getMode() + "/payments/"  + $scope.entity.id + "/refunds");
+      var request = $http.get("/" + $scope.mode + "/payments/"  + $scope.entity.id + "/refunds");
 
       request.success(function(data){
         $scope.alerts.resetAlerts();

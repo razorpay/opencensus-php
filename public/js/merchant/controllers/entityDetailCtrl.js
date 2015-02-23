@@ -1,6 +1,6 @@
 //Single Entity Details controller
-app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'modeFactory', 'alertsFactory',
-  function($scope, $http, $stateParams, modeFactory, alertsFactory) {
+app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFactory',
+  function($scope, $http, $stateParams, alertsFactory) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
@@ -14,7 +14,7 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'modeFact
     }
 
     function fetchEntity() {
-      var request = $http.get("/" + modeFactory.getMode() +  "/" + $scope.entity.type + "s/" + $scope.entity.id);
+      var request = $http.get("/" + $scope.mode +  "/" + $scope.entity.type + "s/" + $scope.entity.id);
 
       request
       .success(function(data) {

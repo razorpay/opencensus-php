@@ -1,8 +1,6 @@
 //Add Funds Controller
-app.controller('AddfundsCtrl', ['$scope', '$http', 'alertsFactory','user', 'modeFactory', 'uiLoad', 'transformRequestAsFormPost',
-  function($scope, $http, alertsFactory, user, modeFactory, uiLoad, transformRequestAsFormPost){
-    $scope.mode = modeFactory.getMode();
-
+app.controller('AddfundsCtrl', ['$scope', '$http', 'alertsFactory','user', 'uiLoad', 'transformRequestAsFormPost',
+  function($scope, $http, alertsFactory, user, uiLoad, transformRequestAsFormPost){
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.options = {
@@ -42,7 +40,7 @@ app.controller('AddfundsCtrl', ['$scope', '$http', 'alertsFactory','user', 'mode
 
       var request = $http({
                     method: "post",
-                    url: "/" + modeFactory.getMode() + "/addfunds",
+                    url: "/" + $scope.mode + "/addfunds",
                     transformRequest: transformRequestAsFormPost,
                     data: transaction
       });

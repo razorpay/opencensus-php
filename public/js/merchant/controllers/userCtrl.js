@@ -1,7 +1,7 @@
 //User profile Controller
-app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', '$modal', 'alertsFactory', '$idle', '$keepalive',
-  function($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive) {
-    
+app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', '$modal', 'alertsFactory', '$idle', '$keepalive', 'modeFactory',
+  function($scope, $http, $state, user, $modal, alertsFactory, $idle, $keepalive, modeFactory) {
+    $scope.mode = modeFactory.getMode();
     $scope.refreshUser = function(force){
       user.identity(force).then(function(data){
         $scope.user = data;

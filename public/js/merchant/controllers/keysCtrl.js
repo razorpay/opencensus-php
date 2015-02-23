@@ -1,7 +1,6 @@
 //API keys listing and rolling controller
-app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', 'transformRequestAsFormPost', '$modal',
-  function($scope, $http, modeFactory, alertsFactory, transformRequestAsFormPost, $modal){
-    $scope.mode = modeFactory.getMode();
+app.controller('KeysCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', '$modal',
+  function($scope, $http, alertsFactory, transformRequestAsFormPost, $modal){
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
@@ -15,7 +14,7 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
     $scope.generateKey = function(){
       var request = $http({
                     method: "post",
-                    url: "/" + modeFactory.getMode() + "/key/new",
+                    url: "/" + $scope.mode + "/key/new",
                     transformRequest: transformRequestAsFormPost
       });
 
@@ -55,7 +54,7 @@ app.controller('KeysCtrl', ['$scope', '$http', 'modeFactory', 'alertsFactory', '
 
       var request = $http({
                     method: "post",
-                    url: "/" + modeFactory.getMode() + "/keys",
+                    url: "/" + $scope.mode + "/keys",
                     transformRequest: transformRequestAsFormPost,
                     data: data
                 });
