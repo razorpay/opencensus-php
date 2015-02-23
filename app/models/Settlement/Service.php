@@ -2,6 +2,7 @@
 
 namespace Models\Settlement;
 
+use Constants\Mode;
 use Models\Base;
 use Models\Gateway;
 use Models\Settlement;
@@ -70,7 +71,7 @@ class Service extends Base\Service
     public function deleteSetlFile($setlFileType)
     {
         if ($setlFileType === 'hdfc_mpr')
-            return Gateway::call(\Models\Payment\Gateway::HDFC, 'deleteMprFileIfExists', null, 'test');
+            return Gateway::call(\Models\Payment\Gateway::HDFC, 'deleteMprFileIfExists', null, Mode::TEST);
 
         return (new Kotak\Service)->deleteSetlFile($setlFileType);
     }

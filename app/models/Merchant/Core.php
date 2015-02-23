@@ -2,6 +2,7 @@
 
 namespace Models\Merchant;
 
+use Constants\Mode;
 use Models\Base;
 use Models\Merchant;
 use Models\Pricing;
@@ -22,7 +23,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
-        $this->createBalance($merchant, 'test');
+        $this->createBalance($merchant, Mode::TEST);
 
         (new Terminal\Core)->createTerminalsInTestMode($merchant);
 

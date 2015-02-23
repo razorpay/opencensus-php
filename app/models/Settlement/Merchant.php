@@ -2,6 +2,7 @@
 
 namespace Models\Settlement;
 
+use Constants\Mode;
 use Models;
 use Models\Base;
 use Models\EE\Exception;
@@ -112,7 +113,7 @@ class Merchant
     {
         $mode = \BasicAuth::getMode();
 
-        if ($mode === 'test')
+        if ($mode === Mode::TEST)
         {
             $ba = $this->getDefaultBank($this->merchant);
         }

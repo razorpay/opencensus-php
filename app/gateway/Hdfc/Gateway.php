@@ -24,6 +24,7 @@
 
 namespace Gateway\Hdfc;
 
+use Constants\Mode;
 use EE\Error;
 use EE\Exception;
 use Gateway\BaseGateway;
@@ -366,7 +367,7 @@ class Gateway extends BaseGateway
         // Create xml from the fields
         $request['content'] = Utility::createXml($request['data']);
 
-        $domain = ($this->mode === 'live') ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+        $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
         $request['url'] = $domain . $request['url'];
 
         $this->requestVar = $request;
@@ -456,9 +457,9 @@ class Gateway extends BaseGateway
         $id = $terminal['gateway_terminal_id'];
         $pwd = $terminal['gateway_terminal_password'];
 
-        // For 'test' mode, replace any random terminal given with
+        // For TEST mode, replace any random terminal given with
         // hdfc test terminal
-        if ($this->mode === 'test')
+        if ($this->mode === Mode::TEST)
         {
             list($id, $pwd) = $this->getCredentials();
         }

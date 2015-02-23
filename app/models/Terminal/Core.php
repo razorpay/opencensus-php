@@ -2,6 +2,7 @@
 
 namespace Models\Terminal;
 
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Base;
@@ -73,7 +74,7 @@ class Core extends Base\Core
 
         $this->validateExistingTerminal($terminal);
 
-        $terminal->setConnection('test');
+        $terminal->setConnection(Mode::TEST);
 
         $this->repo->saveOrFail($terminal);
 

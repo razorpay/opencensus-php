@@ -3,6 +3,7 @@
 namespace Http\BasicAuth;
 
 use Config;
+use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Crypt;
@@ -328,11 +329,11 @@ class BasicAuth
     {
         $mode = substr($key, 4, 4);
 
-        if ($mode === 'live')
+        if ($mode === Mode::LIVE)
         {
             $this->setMode(Mode::LIVE);
         }
-        else if ($mode === 'test')
+        else if ($mode === Mode::TEST)
         {
             $this->setMode(Mode::TEST);
         }
@@ -599,7 +600,7 @@ class BasicAuth
     {
         $mode = $this->getMode();
 
-        if ($mode === 'test')
+        if ($mode === Mode::TEST)
         {
             return;
         }

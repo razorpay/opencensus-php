@@ -2,6 +2,7 @@
 
 namespace Models\Payment\Processor;
 
+use Constants\Mode;
 use BasicAuth;
 use Dashboard\Dashboard;
 use EE\Exception;
@@ -175,7 +176,7 @@ class Processor
 
         $mode = $this->mode;
 
-        if ($mode === 'test')
+        if ($mode === Mode::TEST)
         {
             return;
         }

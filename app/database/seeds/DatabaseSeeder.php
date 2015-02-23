@@ -1,5 +1,6 @@
 <?php
 
+use Constants\Mode;
 use Constants\Table;
 use Models\Merchant\Account;
 use Models\Pricing;
@@ -107,7 +108,7 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
-            if ($name === 'test')
+            if ($name === Mode::TEST)
             {
                 $this->createTestTerminals();
             }

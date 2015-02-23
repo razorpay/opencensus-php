@@ -3,6 +3,7 @@
 namespace Gateway\Atom;
 
 use Carbon\Carbon;
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Trace\Trace;
@@ -291,7 +292,7 @@ class Gateway extends BaseGateway
 
         $atomBankCode = Bank::getAtomBankCode($ifsc);
 
-        if ($this->mode === 'test')
+        if ($this->mode === Mode::TEST)
         {
             $atomBankCode = '2001';
         }
@@ -338,9 +339,9 @@ class Gateway extends BaseGateway
         $pwd = $terminal['gateway_terminal_password'];
         $productId = $terminal['gateway_terminal_id'];
 
-        // For 'test' mode, replace any random terminal given with
+        // For TEST mode, replace any random terminal given with
         // atom test terminal
-        if ($this->mode === 'test')
+        if ($this->mode === MODE::TEST)
         {
             list($login, $pwd, $productId) = $this->getCredentials();
         }
@@ -361,7 +362,7 @@ class Gateway extends BaseGateway
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         $request['options']['timeout'] = 30;
-        $domain = ($this->mode === 'live') ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+        $domain = ($this->mode === MODE::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
         $request['url'] = $domain . $request['url'];
 
         $this->request = $request;

@@ -2,6 +2,9 @@
 
 namespace Gateway\Atom;
 
+use Constants\Mode;
+use EE\Exception;
+
 class Urls
 {
     const MOCK_DOMAIN  = 'http://laskjdf';
@@ -13,15 +16,15 @@ class Urls
 
     public static function getDomain($mode)
     {
-        if ($mode === 'test')
+        if ($mode === Mode::TEST)
         {
             return self::TEST_DOMAIN;
         }
-        else if ($mode === 'live')
+        else if ($mode === Mode::LIVE)
         {
             return self::LIVE_DOMAIN;
         }
 
-        throw new \InvalidArgumentException('Not a valid mode: ' . $mode);
+        throw new Exception\InvalidArgumentException('Not a valid mode: ' . $mode);
     }
 }

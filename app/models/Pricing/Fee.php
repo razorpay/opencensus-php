@@ -2,6 +2,7 @@
 
 namespace Models\Pricing;
 
+use Constants\Mode;
 use EE\Exception;
 use Models\Payment;
 use Models\Pricing;
@@ -50,7 +51,7 @@ class Fee
 
         if ($pricingPlanId === null)
         {
-            if ($mode === 'live')
+            if ($mode === Mode::LIVE)
             {
                 throw new Exception\LogicException(
                     'No pricing plan assigned for merchant id: ' . $merchant->getKey());
