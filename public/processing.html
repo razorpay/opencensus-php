@@ -187,5 +187,12 @@ XD.receiveMessage(function(message){
 <div class="rzp-loader">
 <img src="https://checkout.razorpay.com/v1/images/loader-logo.png" alt="">
 </div>
+
+<script>
+  XD.postMessage({
+    source: 'popup',
+    loaded: true
+  }, '*', window.opener);
+</script>
 </body>
 </html>
