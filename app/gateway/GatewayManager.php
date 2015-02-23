@@ -3,6 +3,7 @@
 namespace Gateway;
 
 use Config;
+use Constants\Mode;
 use EE\Exception;
 use Gateway\Hdfc;
 
@@ -44,7 +45,10 @@ class GatewayManager extends \Illuminate\Support\Manager
 
         $mock = '';
 
-        if (in_array($driver, $this->mocks))
+        $mode = \BasicAuth::getMode();
+
+        if (($mode === Mode::TEST) and
+            (in_array($driver, $this->mocks)))
         {
             $mock = 'Mock';
         }
