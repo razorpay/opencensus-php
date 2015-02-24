@@ -53,4 +53,15 @@ trait CustomAssertions
             $this->assertEquals($expected['field'], $actual['field']);
         }
     }
+
+    public function assertTestResponse($content, $key = null)
+    {
+        if ($key === null)
+        {
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+            $key = $trace[1]['function'];
+        }
+
+        $this->assertArraySelectiveEquals($this->testData[$key], $content);
+    }
 }

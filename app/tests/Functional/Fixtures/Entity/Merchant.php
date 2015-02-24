@@ -54,6 +54,7 @@ class Merchant extends Base
 
         $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltLiveAuthKey'], 'live');
+        $this->fixtures->setDefaultConn();
 
         return $merchant;
     }

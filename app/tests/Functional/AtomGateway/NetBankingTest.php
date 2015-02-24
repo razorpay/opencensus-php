@@ -2,24 +2,12 @@
 
 namespace Tests\Functional\AtomGateway;
 
-use Carbon\Carbon;
-use Config;
-use Mockery;
-use Requests;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
-use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Tests\Functional\TestCase;
 
 class NetBankingTest extends TestCase
 {
     use PaymentTrait;
-
-    /**
-     * Whether atom gateway is mocked or not
-     * @var boolean
-     */
-    protected $mock;
 
     public function setUp()
     {
@@ -51,118 +39,46 @@ class NetBankingTest extends TestCase
 
     public function testNetBankingPaymentCapture()
     {
-        $content = $this->doAtomPaymentAuthorize();
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $id = $content['razorpay_payment_id'];
-
-        $this->ba->privateAuth();
-
-        $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payments/'.$id.'/capture';
-
-        $this->runRequestResponseFlow($testData);
+        $this->assertTestResponse($payment);
     }
 
     public function testNetBankingPaymentRefund()
     {
-        $this->ba->privateAuth();
-
         $payment = $this->fixtures->create('payment:netbanking_captured');
-        $id = $payment->getPublicId();
 
-        $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payments/'.$id.'/refund';
+        $refund = $this->refundPayment($payment->getPublicId());
 
-        $refund = $this->runRequestResponseFlow($testData);
+        $this->assertTestResponse($refund);
     }
 
     public function testNBPaymentFailureAtBank()
     {
         $this->ba->publicAuth();
 
-        $this->startTest();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('atom', $payment['gateway']);
-    }
-
-    public function testNBPaymentOnSharedTerminal()
-    {
-        $merchant = $this->fixtures->create('merchant:with_keys');
-
-        $this->fixtures->create('merchant:add_payment_banks', ['merchant_id' => $merchant->getId()]);
-
-        $this->ba->setDefaultKey('rzp_test_AltTestAuthKey');
-
-        $this->ba->publicAuth();
-
         $content = $this->startTest();
 
         $payment = $this->getLastEntity('payment', true);
+        $this->assertTestResponse($payment, 'testNBPaymentFailureAtBankEntity');
+
         $this->assertEquals('atom', $payment['gateway']);
-
-        $content = $this->capturePayment($content['razorpay_payment_id'], '5000');
-
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('atom', $payment['gateway']);
-
-        $txn = $this->getLastEntity('transaction', true);
-        $this->assertEquals('kotak', $txn['channel']);
-    }
-
-    public function testCardPaymentOnSharedTerminal()
-    {
-        $merchant = $this->fixtures->create('merchant:with_keys');
-
-        $this->fixtures->create('merchant:add_payment_banks', ['merchant_id' => $merchant->getId()]);
-
-        $this->ba->setDefaultKey('rzp_test_AltTestAuthKey');
-
-        $this->ba->publicAuth();
-
-        $payment = $this->doAuthAndCapturePayment();
-
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('atom', $payment['gateway']);
-        $this->assertEquals('card', $payment['method']);
-
-        $txn = $this->getLastEntity('transaction', true);
-        $this->assertEquals('kotak', $txn['channel']);
     }
 
     public function testAtomCardPayment()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $payment = &$this->payment;
 
-        unset($this->payment['bank']);
-        $cardData = [
-            'number' => '4111111111111111',
-            'cvv' => '500',
-            'expiry_month' => '05',
-            'expiry_year' => '20', 'name' => 'shk'];
+        $payment = $this->doAuthAndCapturePayment();
 
-        $payment['card'] = $cardData;
-        $payment['method'] = 'card';
-
-        $content = $this->doAtomPaymentAuthorize();
-
-        $id = $content['razorpay_payment_id'];
-
-        $this->ba->privateAuth();
-
-        $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payments/'.$id.'/capture';
-
-        $this->runRequestResponseFlow($testData);
+        $this->assertTestResponse($payment);
     }
 
     public function testMockOnLiveMode()
     {
         $this->app['config']->set('gateway.mock_atom', true);
 
-        $this->ba->publicAuth('rzp_live_TheLiveAuthKey');
+        $this->ba->publicLiveAuth();
 
         $this->fixtures
             ->on('live')
@@ -185,15 +101,5 @@ class NetBankingTest extends TestCase
         $this->currentTestData = $testData;
 
         return $this->runRequestResponseFlow($testData);
-    }
-
-    protected function doAtomPaymentAuthorize()
-    {
-        $request = array(
-            'content' => $this->payment);
-
-        $this->ba->publicAuth();
-
-        return $this->makeRequestAndGetContent($request);
     }
 }
