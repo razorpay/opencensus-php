@@ -111,12 +111,11 @@ trait Authorize
         {
             Payment\Validator::bankAcsCallbackValidate($payment, $input);
 
-            $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
+            $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
         }
-        catch (BaseException $e)
+        catch (Exception\BaseException $e)
         {
             $this->updatePaymentFailed(
-                $payment,
                 $e->getError(),
                 TraceCode::PAYMENT_AUTH_FAILURE);
 
@@ -124,6 +123,8 @@ trait Authorize
         }
 
         $this->updatePaymentAuthorized();
+
+        $this->postCallbackProcessing($data);
 
         if ($payment->isSigned())
         {
@@ -151,6 +152,59 @@ trait Authorize
 
             throw $e;
         }
+    }
+
+    protected function postCallbackProcessing($data)
+    {
+        $payment = $this->payment;
+
+        if (($payment->isGateway(Payment\Gateway::ATOM) === false) or
+            ($payment->isMethod(Payment\Method::CARD) === false))
+        {
+            return;
+        }
+
+        $card = $payment->card;
+
+        if (isset($data['card']['type']) === false)
+        {
+            // @todo: trace here
+            $this->trace->error(TraceCode::MISC_TRACE_CODE, ['message' => 'Card type not returned from atom']);
+            return;
+        }
+
+        $type = $data['card']['type'];
+
+        if ($card->getType() === $type)
+        {
+            return;
+        }
+
+        if (($card->getType() !== Card\Type::UNKNOWN) and
+            ($type !== $card->getType()))
+        {
+            $this->trace->error(
+                TraceCode::MISC_TRACE_CODE,
+                ['message' => 'Atom card type does not match stored type',
+                'type' => $type,
+                'card_type' => $card->getType()]);
+
+            return;
+        }
+
+        if (Card\Type::isValidType($type) === false)
+        {
+            $this->trace->error(
+                TraceCode::MISC_TRACE_CODE,
+                ['message' => 'Card type returned from atom is not valid.',
+                'type' => $type,
+                'card_type' => $card->getType()]);
+
+            return;
+        }
+
+        $card->setType($type);
+        (new Card\Repository)->saveOrFail($card);
     }
 
     /**
@@ -241,6 +295,13 @@ trait Authorize
         }
     }
 
+    /**
+     * Creates the callback url for payment
+     * where the gateway can hit back to say payment
+     * is finished/authorized.
+     *
+     * @return string Callback url
+     */
     protected function getCallbackUrl()
     {
         $publicId = $this->payment->getPublicId();
@@ -254,6 +315,11 @@ trait Authorize
         return $callbackUrl;
     }
 
+    /**
+     * Returns a hash of payment public id.
+     *
+     * @return string Hash of payment public id
+     */
     protected function getHashOfPaymentPublicId()
     {
         $secret = \App::make('config')->get('app.key');
