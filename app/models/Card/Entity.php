@@ -140,6 +140,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NETWORK);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);

@@ -2,6 +2,7 @@
 
 namespace Gateway\MockAtom;
 
+use Models\Card;
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Atom;
@@ -159,7 +160,11 @@ class Server
         else if ($method === 'card')
         {
             $data['discriminator'] = 'CC';
+
             $card = $payment->card;
+
+            if ($card->getType() === Card\Type::DEBIT)
+                $data['discriminator'] = 'DC';
 
             $xx = str_repeat('X', $card['length'] - 10);
             $data['CardNumber'] = $card['iin'] . $xx . $card['last4'];
