@@ -24,7 +24,7 @@ class CardDetail extends Base
             'trivia'    => 'random',
             ),
         array(
-            'iin'       => '502165',
+            'iin'       => '502166',
             'category'  => null,
             'network'   => 'Maestro',
             'type'      => 'debit',

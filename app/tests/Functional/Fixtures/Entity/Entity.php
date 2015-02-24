@@ -25,7 +25,7 @@ class Base
         'bank_account'  => 'Models\Merchant\BankAccount',
         'card'          => 'Models\Card\Entity',
         'hdfc'          => 'Gateway\Hdfc\Entity',
-        'iin'           => 'Models\Card\Detail',
+        'card_detail'   => 'Models\Card\Detail',
         'key'           => 'Models\Key\Entity',
         'merchant'      => 'Models\Merchant\Entity',
         'merchant_banks'=> 'Models\Merchant\Banks\Entity',

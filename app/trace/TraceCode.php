@@ -66,6 +66,7 @@ class TraceCode
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
 
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
+    const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                   => 'Request for new payment received',
@@ -94,7 +95,8 @@ class TraceCode
         self::GATEWAY_SUPPORT_ERROR                 => 'Error in support',
         self::GATEWAY_UNKNOWN_ERROR                 => 'Unknown gateway error',
 
-        self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured');
+        self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
+        self::MISC_TRACE_CODE                       => 'Miscellaneous trace code');
 
     /**
      * Translate event code to message

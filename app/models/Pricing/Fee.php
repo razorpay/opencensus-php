@@ -4,6 +4,7 @@ namespace Models\Pricing;
 
 use Constants\Mode;
 use EE\Exception;
+use Models\Card;
 use Models\Payment;
 use Models\Pricing;
 
@@ -31,6 +32,13 @@ class Fee
         $percent = $rule->getAttribute(Pricing\Entity::PERCENT_RATE);
         $fixed = $rule->getAttribute(Pricing\Entity::FIXED_RATE);
 
+        $fee = $this->getFeesByPercentAndFixedRates($amount, $percent, $fixed);
+
+        return $fee;
+    }
+
+    protected function getFeesByPercentAndFixedRates($amount, $percent, $fixed)
+    {
         $fee = (($amount * $percent) / 10000) + $fixed;
 
         $fee = (int) ceil($fee);
@@ -122,5 +130,49 @@ class Fee
         }
 
         return $rule;
+    }
+
+    public function getGatewayFeeForAtomSharedTerminal($payment)
+    {
+        $amount = $payment->getAmount();
+        $method = $payment->getMethod();
+
+        $percent = 0;
+
+        if ($method === Payment\Method::NETBANKING)
+        {
+            $percent = 175;
+        }
+        else if ($method === Payment\Method::CARD)
+        {
+            $card = $payment->card;
+            $type = $card->getType();
+
+            if ($type === Card\Type::CREDIT)
+            {
+                $percent = 200;
+            }
+            else if ($type === Card\Type::DEBIT)
+            {
+                // Percent changes at Rs 2000
+                if ($amount <= 200000)
+                {
+                    $percent = 85;
+                }
+                else
+                {
+                    $percent = 110;
+                }
+            }
+        }
+
+        if ($percent === 0)
+        {
+            throw new Exception\LogicException('Percent should not be 0');
+        }
+
+        $gatewayFee = $this->getFeesByPercentAndFixedRates($amount, $percent, 0);
+
+        return $gatewayFee;
     }
 }

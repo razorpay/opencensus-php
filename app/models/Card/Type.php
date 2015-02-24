@@ -15,13 +15,21 @@ class Type
             return self::UNKNOWN;
         }
 
-        if (defined(__CLASS__.'::'.strtoupper($type)))
-        {
-            return $type;
-        }
-        else
+        self::checkType($type);
+
+        return $type;
+    }
+
+    public static function checkType($type)
+    {
+        if (self::isValidType($type) === false)
         {
             throw new \InvalidArgumentException('Not a valid type: ' . $type);
         }
+    }
+
+    public static function isValidType($type)
+    {
+        return (defined(__CLASS__.'::'.strtoupper($type)));
     }
 }

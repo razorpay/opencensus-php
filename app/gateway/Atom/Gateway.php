@@ -85,6 +85,8 @@ class Gateway extends BaseGateway
         $this->validatePaymentIdReceived($paymentId, $payment);
 
         $this->processPaymentResponse($input, $atom);
+
+        return $this->getCallbackResponse($atom);
     }
 
     public function refund(array $input)
@@ -183,6 +185,34 @@ class Gateway extends BaseGateway
         {
             throw $exception;
         }
+    }
+
+    protected function getCallbackResponse($atom)
+    {
+        $method = $atom->method;
+
+        $data = array();
+
+        if ($method === Method::NETBANKING)
+        {
+            $data['method'] = 'netbanking';
+        }
+        else if ($method === Method::DEBITCARD)
+        {
+            $data['method'] = 'card';
+            $data['card']['type'] = 'debit';
+        }
+        else if ($method === Method::CREDITCARD)
+        {
+            $data['method'] = 'card';
+            $data['card']['type'] = 'credit';
+        }
+        else
+        {
+            // @todo: trace here
+        }
+
+        return $data;
     }
 
     protected function createAtomRedirectUrl($data)

@@ -38,10 +38,11 @@ class Core extends Base\Core
                            ->addDays(2)
                            ->timestamp;
 
-        $credit = $payment->getAmount() - $fee;
+        $amount = $payment->getAmount();
+        $credit = $amount - $fee;
 
         $txnData = array(
-            Transaction\Entity::AMOUNT      => $payment->getAmount(),
+            Transaction\Entity::AMOUNT      => $amount,
             Transaction\Entity::TYPE        => Transaction\Type::PAYMENT,
             Transaction\Entity::FEE         => $fee,
             Transaction\Entity::CREDIT      => $credit,
@@ -65,6 +66,10 @@ class Core extends Base\Core
             {
                 $settledAt = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
                 $channel = Transaction\Channel::KOTAK;
+
+                $gatewayFee = (new Pricing\Fee)->getGatewayFeeForAtomSharedTerminal($payment);
+                $txnData[Transaction\Entity::GATEWAY_FEE] = $gatewayFee;
+                $txnData[Transaction\Entity::API_FEE] = $fee - $gatewayFee;
             }
 
             $txnData[Transaction\Entity::SETTLED_AT] = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
@@ -170,7 +175,7 @@ class Core extends Base\Core
         return (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
-    public function updateBalances(Transaction\Entity $txn)
+    public function updateBalances(Transaction\Entity $txn, $updateEscrowBalance = true)
     {
         $channel = $txn->getChannel();
 
@@ -180,10 +185,13 @@ class Core extends Base\Core
                                                     $txn->merchant->getKey());
 
         $merchantBalance->updateBalance($txn);
-        $nodalBalance->updateBalance($txn);
-
-        $this->merchantRepo->updateBalance($nodalBalance);
         $this->merchantRepo->updateBalance($merchantBalance);
+
+        if ($updateEscrowBalance === true)
+        {
+            $nodalBalance->updateBalance($txn);
+            $this->merchantRepo->updateBalance($nodalBalance);
+        }
 
         $attributes = array(
             Transaction\Entity::BALANCE => $merchantBalance->getBalance(),

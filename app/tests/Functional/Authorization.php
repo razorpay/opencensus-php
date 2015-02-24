@@ -162,6 +162,8 @@ class Authorization
     public function setDefaultKey($key)
     {
         $this->defaultKey = $key;
+
+        return $this;
     }
 
     public function setDefaultSecret($secret)
