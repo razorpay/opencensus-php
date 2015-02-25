@@ -141,23 +141,6 @@ class TraceWriter extends Logger
             return false;
     }
 
-    // public function addRecord($level, $message, array $context = array())
-    // {
-    //     // Queue the logging the record
-    //     $this->queueRecord(
-    //         $level,
-    //         $message,
-    //         $context);
-    // }
-
-    // public function queueRecord($level, $message, array $context = array())
-    // {
-    //     Queue::push(__NAMESPACE__.'\TraceWriter', array(
-    //         'level' => $level,
-    //         'message' => $message,
-    //         'context' => $context));
-    // }
-
     /**
      * In debug mode, this function returns all
      * the log records logged till now

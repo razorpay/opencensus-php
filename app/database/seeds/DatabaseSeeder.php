@@ -72,6 +72,25 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::MERCHANT)->insert(
                 array(
+                    'id'            =>  Account::FEE_ACCOUNT,
+                    'name'          =>  'Razorpay Fee Account',
+                    'email'         =>  'fees@razorpay.com',
+                    'lock'          =>  '1',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::BALANCE)->insert(
+                array(
+                    'id'            =>  Account::FEE_ACCOUNT,
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time()
+                    )
+                );
+
+            DB::table(Table::MERCHANT)->insert(
+                array(
                     'id'            =>  Account::TEST_ACCOUNT,
                     'name'          =>  'Test Account',
                     'email'         =>  'test@razorpay.com',

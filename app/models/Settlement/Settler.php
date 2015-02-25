@@ -22,6 +22,8 @@ class Settler
 
     protected $settlements;
 
+    protected $input;
+
     /**
      * Used for testing purposes. Default should
      * be null.
@@ -38,6 +40,15 @@ class Settler
 
     public function settle($input = array(), $channel = null)
     {
+        $this->input = $input;
+
+        $force = false;
+        if ((isset($input['force']) and
+            ($input['force'] === '1')))
+        {
+            $force = true;
+        }
+
         $txns = $this->fetchTransactionsToSettle($input);
 
         if ($channel === null)
@@ -51,10 +62,20 @@ class Settler
 
         foreach ($channels as $channel)
         {
+            $dailySettlement = $this->dailySetlRepo->getSettlementForToday('kotak');
+
+            if (($dailySettlement !== null) and
+                ($force === false))
+            {
+                return [];
+            }
+
             $this->dailySettlement = new Settlement\Daily\Entity;
             $this->dailySettlement->setTodayTimestamp();
 
             $settleForChannelVar = 'settleFor' . ucfirst($channel);
+
+            $this->traceSetlInitiated($channel);
 
             $data[$channel] = $this->$settleForChannelVar($txns);
         }
@@ -214,10 +235,10 @@ class Settler
         if (($totalSetlApiFee !== 0) and
             ($channel === Settlement\Channel::KOTAK))
         {
-            // @todo: Add api fees
-            // $setl = $this->collectApiFees($totalSetlApiFee, $channel);
+            $setl = $this->collectApiFees($totalSetlApiFee, $channel);
+            $settlements->push($setl);
 
-            // $totalSetlAmount += $totalSetlApiFee;
+            $totalSetlAmount += $totalSetlApiFee;
         }
 
         $this->dailySettlement->amount = $totalSetlAmount;
@@ -249,13 +270,16 @@ class Settler
 
     protected function collectApiFees($apiFee, $channel)
     {
-        if ($channel === Settlement\Channel::KOTAK)
+        if ($channel !== Settlement\Channel::KOTAK)
         {
-            return;
+            throw new Exception\LogicException('Not valid channel: ' . $channel);
         }
 
-        $setl = (new Settlement\Merchant($merchant, $channel))->settle(
-                                    $setlTxns, $setlAmount, $setlApiFee, $setlGatewayFee);
+        $feeAccount = $this->merchantRepo->findOrFail(Merchant\Account::API_FEE_ACCOUNT);
+
+        $setl = (new Settlement\Merchant($feeAccount, $channel))->collectApiFees($apiFee);
+
+        return $setl;
     }
 
 
@@ -294,6 +318,7 @@ class Settler
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
         $this->merchantRepo = new Merchant\Repository;
+        $this->dailySetlRepo = new Settlement\Daily\Repository;
     }
 
     protected function initSettlementTimestamp($input)
@@ -306,5 +331,18 @@ class Settler
         }
 
         return self::$settlementTimestamp;
+    }
+
+    protected function traceSetlInitiated($channel)
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_INITIATED,
+            [
+                'channel' => $channel,
+                'timestmap' => self::$settlementTimestamp,
+                'time' => $time,
+            ]);
     }
 }

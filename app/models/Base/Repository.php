@@ -19,4 +19,26 @@ class Repository extends \Razorpay\Spine\Repository
 
         return $repo::findOrFailPublic($id, $columns);
     }
+
+    protected function processDbQueryFailure($operation, $attributes = null)
+    {
+        $e = $this->getExceptionDataArray($operation, $attributes);
+
+        $this->throwException($e);
+    }
+
+    protected function getExceptionDataArray($operation, $attributes = null)
+    {
+        $e = array(
+                'model' => get_class($this),
+                'operation' => $operation,
+                'attributes' => $attributes);
+
+        return $e;
+    }
+
+    protected function throwException(array $e)
+    {
+        throw new Exception\DbQueryException($e);
+    }
 }

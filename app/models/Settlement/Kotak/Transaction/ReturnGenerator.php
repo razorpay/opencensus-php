@@ -63,7 +63,7 @@ class ReturnTransactionsGenerator
                 'BENE CUST ACTYP'   => '11',
                 'BENE CUST ACNO'    => '11111',
                 'BENE CUST ACNAME'  => 'ABC',
-                'RETURN UTR NO1'    => '',
+                'RETURN UTR NO1'    => null,
                 'REMITT INFO'       => 'some random info',
                 'AMOUNT'            => '',
                 'RETURN REASON'     => '',

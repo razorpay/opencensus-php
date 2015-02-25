@@ -6,6 +6,7 @@ use Constants\Mode;
 use Models;
 use Models\Base;
 use Models\EE\Exception;
+use Models\Adjustment;
 use Models\Transaction;
 use Models\Settlement;
 
@@ -14,6 +15,12 @@ class Merchant
     protected $merchant;
 
     protected $amount;
+
+    protected $setl;
+
+    protected $setlTransaction;
+
+    protected $txns;
 
     public function __construct($merchant, $channel)
     {
@@ -24,45 +31,59 @@ class Merchant
         $this->merchantRepo = new Models\Merchant\Repository;
         $this->txnRepo = new Transaction\Repository;
         $this->setlRepo = new Settlement\Repository;
+
+        // Get merchant bank account
+        $this->attachMerchantBankAccount();
     }
 
     public function settle($txns, $amount, $apiFee, $gatewayFee)
     {
         $this->amount = $amount;
+        $this->txns = $txns;
 
-        // Create settlement transaction
-        $this->setlTransaction = $this->newSettlementTransaction();
-
-        // Create settlement entity
-        $setl = $this->newSettlementEntity();
-
-        $this->setlTransaction->entity()->associate($setl);
+        $setl = $this->createSetlEntityAndTxn();
 
         // Updates merchant and api balance
         $this->updateBalances();
 
-        // Saves to db
-        $this->txnRepo->saveOrFail($this->setlTransaction);
-        $this->setlRepo->saveOrFail($setl);
-
-        $this->txnRepo->updateSettlementId($txns, $setl->getId());
-
-        // Get merchant bank account
-        $this->fetchMerchantBankAccount();
+        $this->saveChangesToDb();
 
         return $setl;
     }
 
-    public function collectApiFees($apiFee, $channel)
+    public function collectApiFees($apiFee)
     {
-        if ($channel === Settlement\Channel::KOTAK)
-        {
-            throw new Exception\LogicException(
-                'Should not have reached here guys!');
-        }
+        $this->amount = $apiFee;
+        $this->txns = new Base\Collection;
 
-        $setl = (new Settlement\Merchant($merchant, $channel))->settle(
-                                    $setlTxns, $setlAmount, $setlApiFee, $setlGatewayFee);
+        $setl = $this->createSetlEntityAndTxn();
+
+        $adjInput = array(
+            'description' => 'Settlement for ' . time(),
+            'amount' => $apiFee,
+            'currency' => 'INR',
+        );
+
+        (new Adjustment\Core)->createAdjustment($adjInput, $this->merchant);
+
+        (new Transaction\Core)->updateBalances($this->setlTransaction, false);
+
+        $this->saveChangesToDb();
+
+        return $setl;
+    }
+
+    protected function createSetlEntityAndTxn()
+    {
+        // Create settlement transaction
+        $setlTransaction = $this->newSettlementTransaction();
+
+        // Create settlement entity
+        $setl = $this->newSettlementEntity();
+
+        $setlTransaction->entity()->associate($setl);
+
+        return $setl;
     }
 
     protected function newSettlementTransaction()
@@ -87,6 +108,8 @@ class Merchant
 
         $txn->merchant()->associate($this->merchant);
 
+        $this->setlTransaction = $txn;
+
         return $txn;
     }
 
@@ -101,7 +124,18 @@ class Merchant
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
 
+        $this->setl = $setl;
+
         return $setl;
+    }
+
+    protected function saveChangesToDb()
+    {
+        // Saves to db
+        $this->txnRepo->saveOrFail($this->setlTransaction);
+        $this->setlRepo->saveOrFail($this->setl);
+
+        $this->txnRepo->updateSettlementId($this->txns, $this->setl->getId());
     }
 
     protected function updateBalances()
@@ -109,7 +143,10 @@ class Merchant
         return (new Transaction\Core)->updateBalances($this->setlTransaction);
     }
 
-    protected function fetchMerchantBankAccount()
+    /**
+     * Attaches bank account to merchant entity
+     */
+    protected function attachMerchantBankAccount()
     {
         $mode = \BasicAuth::getMode();
 
@@ -137,6 +174,7 @@ class Merchant
             'merchant_id'   => $merchant->getId(),
             'ifsc_code'     => 'RZPB0000000',
             'beneficiary_name' => $merchant['name'],
+            'beneficiary_code' => strtoupper(random_alpha_string(4)),
             'account_number'   => '10101030103');
 
         $ba = (new \Models\Merchant\BankAccount)->newInstance($attributes, true);

@@ -29,18 +29,7 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $adj = (new Adjustment\Entity)->build($input);
-        $adj->setChannel(Settlement\Channel::KOTAK);
-
-        $adj->merchant()->associate($merchant);
-
-        $adjRepo = new Adjustment\Repository;
-        $adjRepo->saveOrFail($adj);
-
-        $txn = (new Transaction\Core)->createFromAdjustment($adj);
-
-        (new Transaction\Repository)->saveOrFail($txn);
-        $adjRepo->saveOrFail($adj);
+        $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
 
         return $adj->toArrayPublic();
     }

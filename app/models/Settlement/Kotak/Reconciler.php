@@ -51,7 +51,7 @@ class Reconciler
             return new Base\PublicCollection;
         }
 
-        $this->dailySettlement = $this->dailySetlRepo->getSettlementForToday();
+        $this->dailySettlement = $this->dailySetlRepo->getSettlementForTodayOrFail('kotak');
 
         $url = $this->saveUploadedFileToAws($reconcileFile);
 

@@ -6,6 +6,13 @@ use Models\Merchant\Account;
 
 class Merchant extends Base
 {
+    public function setUp()
+    {
+        $this->fixtures->create('merchant:nodal_account');
+        $this->fixtures->create('merchant:atom_account');
+        $this->fixtures->create('merchant:api_fee_account');
+    }
+
     public function createDefaultTestMerchant()
     {
         $this->fixtures->create('merchant', ['id' => '10000000000000']);
@@ -29,6 +36,12 @@ class Merchant extends Base
     {
         $apiMerchant = $this->create('merchant', ['id' => Account::ATOM_ACCOUNT]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000']);
+    }
+
+    public function createApiFeeAccount()
+    {
+        $apiMerchant = $this->create('merchant', ['id' => Account::API_FEE_ACCOUNT]);
+        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::API_FEE_ACCOUNT, 'balance' => '1000000']);
     }
 
     public function createWithBalanceTerminalsStandardPricing()

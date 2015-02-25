@@ -18,12 +18,21 @@ class Repository extends Base\Repository
 
     public function getSettlementForToday($channel = 'kotak')
     {
+        return $this->getSettlementForTodayQuery($channel)->first();
+    }
+
+    public function getSettlementForTodayOrFail($channel = 'kotak')
+    {
+        return $this->getSettlementForTodayQuery($channel)->firstOrFail();
+    }
+
+    protected function getSettlementForTodayQuery($channel)
+    {
         $timestamp = Daily\Entity::getTodayTimestamp();
 
         return Daily\Entity::where(Daily\Entity::DATE, '=', $timestamp)
-                               ->where(Daily\Entity::CHANNEL, '=', $channel)
-                               ->firstOrFail();
-    }
+                           ->where(Daily\Entity::CHANNEL, '=', $channel);
+   }
 
     protected function validateAdditional(array $params)
     {

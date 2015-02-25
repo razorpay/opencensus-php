@@ -53,7 +53,7 @@ class ReturnTransactions
 
         $url = $this->saveUploadedFileToAws($returnFile);
 
-        $this->dailySettlement = $this->dailySetlRepo->getSettlementForToday();
+        $this->dailySettlement = $this->dailySetlRepo->getSettlementForTodayOrFail();
 
         $this->dailySettlement->addUrl('kotak_return_txt', $url);
 
@@ -122,9 +122,10 @@ class ReturnTransactions
 
         $failureReason = null;
 
-        if ($row['RETURN UTR NO1'] !== null)
+        if (empty($row['RETURN UTR NO1']) === false)
         {
             $returnUtr = $row['RETURN UTR NO1'];
+
             $setl->setAttribute(Settlement\Entity::RETURN_UTR, $returnUtr);
             $failureReason = 'Return reason: ' . $row['RETURN REASON'];
         }
