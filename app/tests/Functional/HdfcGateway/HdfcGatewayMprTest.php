@@ -156,8 +156,8 @@ class HdfcGatewayMprTest extends TestCase
                     'entity' => 'daily_settlement',
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
-//                    'amount' => 4415725,
-                    'amount' => 4387640,
+                    'amount' => 4415725,
+//                    'amount' => 4387640,
                     'api_fee' => 28085,
                     'gateway_fee' => 84275,
                 ],
@@ -209,7 +209,7 @@ class HdfcGatewayMprTest extends TestCase
         $this->app->instance('dashboard', $dashboard);
 
         $dashboard->shouldReceive('queueRecord')
-              ->times(1)
+              ->times(2)
               ->with('settlement', Mockery::type('Models\\Base\\PublicEntity'));
     }
 }

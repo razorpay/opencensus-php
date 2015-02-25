@@ -47,8 +47,7 @@ class Fixtures
      */
     public function setUp()
     {
-        $this->create('merchant:nodal_account');
-        $this->create('merchant:atom_account');
+        $this->merchant->setUp();
 
         $apiMerchant = $this->create('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
         $apiBalance = $this->base->create('balance', ['id' => '1cXSLlUU8V9sXl']);
@@ -126,6 +125,19 @@ class Fixtures
 
         if (class_exists($class) and $method !== 'create')
         {
+            $obj = $this->getEntityFixtureInstance($class, $entity);
+
+            $arg1 = $attributes;
+            $arg2 = null;
+        }
+
+        return [$obj, $method, $arg1, $arg2];
+    }
+
+    protected function getEntityFixtureInstance($class, $entity)
+    {
+        if (class_exists($class))
+        {
             if (isset($this->links[$entity]) === false)
             {
                 $this->links[$entity] = new $class;
@@ -133,11 +145,8 @@ class Fixtures
 
             $obj = $this->links[$entity];
 
-            $arg1 = $attributes;
-            $arg2 = null;
+            return $obj;
         }
-
-        return [$obj, $method, $arg1, $arg2];
     }
 
     protected function getEntityAndMethod($resource)
@@ -167,7 +176,14 @@ class Fixtures
         }
         else
         {
-            throw new \Exception($key . ' not found');
+            $class = __NAMESPACE__.'\Entity\\'.studly_case($key);
+
+            $obj = $this->getEntityFixtureInstance($class, $key);
+
+            if ($obj === null)
+                throw new \Exception($key . ' not found');
+
+            return $obj;
         }
     }
 

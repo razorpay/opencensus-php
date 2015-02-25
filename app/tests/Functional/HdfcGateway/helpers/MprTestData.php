@@ -22,17 +22,24 @@ return [
 
     'testUploadMprSettlementData' => [
         'entity' => 'collection',
-        'count' => 1,
+        'count' => 2,
         'admin' => true,
         'items' => [
+            [
+                'merchant_id' => '1ApiFeeAccount',
+                'amount' => 28085,
+                'status' => 'failed',
+                'channel' => 'kotak',
+                'entity' => 'settlement',
+            ],
             [
                 'merchant_id' => '10000000000000',
                 'amount' => 4387640,
                 'status' => 'failed',
                 'channel' => 'kotak',
-                'failure_reason' => 'Return reason: ',
+                'failure_reason' => 'Remitt info: some random info',
                 'entity' => 'settlement',
-            ]
+            ],
         ]
     ]
 ];
