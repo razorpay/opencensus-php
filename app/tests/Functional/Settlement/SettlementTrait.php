@@ -173,7 +173,37 @@ trait SettlementTrait
 
     protected function createUploadedFile($file, $mimeType = 'text/plain')
     {
-        $this->assertFileExists($file);
+        $defaultMime = 'text/plain';
+
+        $awsConfig = $this->app['config']->get('aws::config');
+
+        $s3mock = $awsConfig['mock'];
+
+        if (($s3mock === false) and
+            ($mimeType === $defaultMime))
+        {
+            $key = $this->getKeyForUrl($file);
+
+            $bucket = $awsConfig['settlement_bucket'];
+
+            $s3 = $this->app->make('aws')->get('s3');
+
+            $this->assertEquals(true, $s3->doesObjectExist($bucket, $key));
+
+            $file = storage_path('files/tmp/'.random_alpha_string(10));
+
+            $res = fopen($file, 'w');
+
+            $result = $s3->getObject(array(
+                'Bucket' => $bucket,
+                'Key'    => $key,
+                'SaveAs' => $res)
+            );
+        }
+        else
+        {
+            $this->assertFileExists($file);
+        }
 
         $uploadedFile = new UploadedFile(
                                 $file,
@@ -184,5 +214,14 @@ trait SettlementTrait
                                 true);
 
         return $uploadedFile;
+    }
+
+    protected function getKeyForUrl($url)
+    {
+        $ix = strrpos($url, '/');
+
+        $key = substr($url, $ix+1);
+
+        return $key;
     }
 }

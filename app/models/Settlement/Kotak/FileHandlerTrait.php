@@ -34,7 +34,7 @@ trait FileHandlerTrait
         $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
         $fullpath = $fileMetadata['full'];
 
-        $url = $this->saveToAws($name, $fullpath, 'application/vnd.ms-excel');
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, 'application/vnd.ms-excel');
 
         return $url;
     }
