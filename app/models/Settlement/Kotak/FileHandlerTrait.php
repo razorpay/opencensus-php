@@ -48,7 +48,9 @@ trait FileHandlerTrait
 
     protected function saveToAws($name, $fullpath, $mime = 'text/plain')
     {
-        $awsS3Mock = true;
+        $config =  \Config::get('aws::config');
+
+        $awsS3Mock = $config['mock'];
 
         if ($awsS3Mock)
         {
@@ -60,7 +62,7 @@ trait FileHandlerTrait
         try
         {
             $s3Obj = array(
-                'Bucket'        => 'bucket',
+                'Bucket'        => $config['settlement_bucket'],
                 'Key'           => $name,
                 'ContentType'   => $mime,
                 'SourceFile'    => $fullpath,

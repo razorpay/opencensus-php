@@ -30,8 +30,8 @@ return array(
     | http://docs.aws.amazon.com/aws-sdk-php-2/guide/latest/configuration.html
     |
     */
-    'key'    => '', // Your AWS Access Key ID
-    'secret' => '', // Your AWS Secret Access Key
+    'key'    => $_ENV['AWS_KEY_ID'], // Your AWS Access Key ID
+    'secret' => $_ENV['AWS_KEY_SECRET'], // Your AWS Secret Access Key
 
     /*
     |--------------------------------------------------------------------------
@@ -46,7 +46,7 @@ return array(
     | eu-west-1, sa-east-1, ap-northeast-1, ap-southeast-1, ap-southeast-2
     |
     */
-    'region' => 'us-east-1',
+    'region' => $_ENV['AWS_REGION'],
 
     /*
     |--------------------------------------------------------------------------
@@ -63,4 +63,7 @@ return array(
     */
     'config_file' => null,
 
+    'mock' => $_ENV['AWS_S3_MOCK'],
+
+    'settlement_bucket' => $_ENV['AWS_S3_SETTLEMENT_BUCKET'],
 );
