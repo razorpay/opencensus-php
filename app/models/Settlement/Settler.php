@@ -22,6 +22,8 @@ class Settler
 
     protected $settlements;
 
+    protected $input;
+
     /**
      * Used for testing purposes. Default should
      * be null.
@@ -38,6 +40,15 @@ class Settler
 
     public function settle($input = array(), $channel = null)
     {
+        $this->input = $input;
+
+        $force = false;
+        if ((isset($input['force']) and
+            ($input['force'] === '1')))
+        {
+            $force = true;
+        }
+
         $txns = $this->fetchTransactionsToSettle($input);
 
         if ($channel === null)
@@ -51,6 +62,14 @@ class Settler
 
         foreach ($channels as $channel)
         {
+            $dailySettlement = $this->dailySetlRepo->getSettlementForToday('kotak');
+
+            if (($dailySettlement !== null) and
+                ($force === false))
+            {
+                return [];
+            }
+
             $this->dailySettlement = new Settlement\Daily\Entity;
             $this->dailySettlement->setTodayTimestamp();
 
@@ -299,6 +318,7 @@ class Settler
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
         $this->merchantRepo = new Merchant\Repository;
+        $this->dailySetlRepo = new Settlement\Daily\Repository;
     }
 
     protected function initSettlementTimestamp($input)

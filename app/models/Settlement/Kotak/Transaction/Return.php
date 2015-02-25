@@ -53,7 +53,7 @@ class ReturnTransactions
 
         $url = $this->saveUploadedFileToAws($returnFile);
 
-        $this->dailySettlement = $this->dailySetlRepo->getSettlementForToday();
+        $this->dailySettlement = $this->dailySetlRepo->getSettlementForTodayOrFail();
 
         $this->dailySettlement->addUrl('kotak_return_txt', $url);
 
