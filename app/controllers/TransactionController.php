@@ -15,9 +15,9 @@ class TransactionController extends BaseController
 
         $input['resource'] = $resource;
 
-        $status = (new Transaction\Service)->process($input, $mode);
+        $error = (new Transaction\Service)->process($input, $mode);
 
-        return ['status' => $status];
+        return AppResponse::jsonResponse($error);
     }
 
     public function getAnalytics($mode)

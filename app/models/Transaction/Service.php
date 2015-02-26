@@ -26,7 +26,7 @@ class Service extends Base\Service
 
         if (empty($error) === false)
         {
-            return false;
+            return $error;
         }
 
         $this->aggregate($input, $mode);
@@ -54,7 +54,7 @@ class Service extends Base\Service
             }
         }
 
-        return true;
+        return array();
     }
 
     protected function create($data, $type, $mode)
