@@ -134,13 +134,13 @@ class Service extends Base\Service
 
         $pricing = $this->repo->getPricingPlanOrFailPublic($merchant);
 
-        $terminal = (new Terminal\Repository)->getByMerchantId($id);
+        // $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
-        if ($terminal === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
-        }
+        // if ($terminal === null)
+        // {
+        //     throw new Exception\BadRequestException(
+        //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
+        // }
 
         $ba = $this->repo->getBankAccount($merchant);
 
