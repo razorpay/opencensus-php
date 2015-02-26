@@ -96,7 +96,7 @@ class Settler
             $urls = array();
             $urls['kotak_settlement_txt'] = $urlText;
             $urls['kotak_settlement_excel'] = $urlExcel;
-$this->ab();
+
             $this->dailySettlement->setUrls($urls);
             $this->dailySettlement->initiated_at = time();
             $this->dailySettlement->saveOrFail();
