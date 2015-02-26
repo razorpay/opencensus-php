@@ -36,10 +36,7 @@ class Trace extends TraceWriter
 
         foreach($record as $key => $value)
         {
-            if (in_array($key, $fields))
-            {
-                $values[$key] = $record[$key];
-            }
+            $values[$key] = $record[$key];
         }
 
         $context = $values;
