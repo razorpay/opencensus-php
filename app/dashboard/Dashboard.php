@@ -105,13 +105,19 @@ class Dashboard
                     $array);
             }
 
-            if ((isset($content['status']) === false) or
-                ($content['status'] === false))
+            if ((isset($content['success']) === false) or
+                ($content['success'] === false))
             {
+                $errors = [];
+
+                if (isset($content['errors']))
+                    $errors = $content['errors'];
+
                 $array = array(
                     'body'          => $content,
                     'transaction'   => $data['message'],
-                    'mode'          => $data['mode']);
+                    'mode'          => $data['mode'],
+                    'errors'        => $errors);
 
                 Trace::error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $array);
 
