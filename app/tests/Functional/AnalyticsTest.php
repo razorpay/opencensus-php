@@ -50,7 +50,7 @@ class AnalyticsTest extends TestCase
 
                 $obj = json_decode($content);
 
-                $this->assertTrue($obj->status);
+                $this->assertTrue($obj->success);
             }
         }
     }
