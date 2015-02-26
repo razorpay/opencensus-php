@@ -146,6 +146,8 @@ class Service extends Base\Service
 
         $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
 
+        $this->trace->info(TraceCode::PAYMENT_TIMED_OUT, ['count' => $count]);
+
         return ['count' => $count];
     }
 
