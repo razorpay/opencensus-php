@@ -102,16 +102,30 @@ class ApiResponse
         if (($debug) and
             ($exception !== null))
         {
-            $exceptionArr['message'] = $exception->getMessage();
-            $exceptionArr['code'] = $exception->getCode();
-            $exceptionArr['file'] = $exception->getFile();
-            $exceptionArr['line'] = $exception->getLine();
-            $exceptionArr['trace'] = $exception->getTrace();
-
-            $publicError['exception'] = $exceptionArr;
+            $publicError['exception'] = self::getExceptionData($exception);
         }
 
         return self::json($publicError, $httpStatusCode);
+    }
+
+    protected static function getExceptionData($exception)
+    {
+        $previous = $exception->getPrevious();
+        $previousData = null;
+
+        if ($previous !== null)
+            $previousData = self::getExceptionData($previous);
+
+        $data = array(
+            'message' => $exception->getMessage(),
+            'code' => $exception->getCode(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => $exception->getTraceAsString(),
+            'previous' => $previousData,
+        );
+
+        return $data;
     }
 
     protected static function debugException($e)

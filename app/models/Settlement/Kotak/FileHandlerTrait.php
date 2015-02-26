@@ -263,7 +263,7 @@ trait FileHandlerTrait
 
         if ($res === false)
         {
-            throw Exception\RuntimeErrorException(
+            throw new Exception\RuntimeErrorException(
                 'Failed to rename file. File : ' . $file .
                 ' Renamed name: ' . $newFilepath);
         }
@@ -288,7 +288,7 @@ trait FileHandlerTrait
 
         if ($res === false)
         {
-            throw Exception\RuntimeErrorException(
+            throw new Exception\RuntimeErrorException(
                 'Failed to rename file. Uploaded name: ' . $uploadedFilePath .
                 ' Renamed name: ' . $newFilepath);
         }
