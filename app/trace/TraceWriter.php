@@ -108,11 +108,12 @@ class TraceWriter extends Logger
         $stream = new Handler\StreamHandler(
             $this->config['logpath']);
 
-        $jsonFormatter = new Formatter\JsonFormatter();
+        $jsonFormatter = new JsonFormatter;
 
         $stream->setFormatter($jsonFormatter);
 
-        $minLevel = $this->debug ? static::DEBUG : static::INFO;
+//        $minLevel = $this->debug ? static::DEBUG : static::INFO;
+        $minLevel = static::DEBUG;
 
         $filter = new Handler\FilterHandler($stream, $minLevel);
 
