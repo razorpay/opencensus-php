@@ -8,9 +8,9 @@ class Validator extends Base\Validator
 {
     protected static $processRules = array(
         'merchant_id'   =>  'required',
-        'amount'        =>  'required|numeric|max:10000',
-        'created_at'    =>  'required|numeric',
-        'updated_at'    =>  'required|numeric',
+        'amount'        =>  'required|integer',
+        'created_at'    =>  'required|integer',
+        'updated_at'    =>  'required|integer',
         'resource'      =>  'required|in:payment,refund,settlement',
         'method'        =>  'required_if:resource,payment|in:card,netbanking',
         'network'       =>  'required_if:method,card'
@@ -18,8 +18,8 @@ class Validator extends Base\Validator
 
     protected static $analyticsRules = array(
         'merchant_id'   =>  'required',
-        'from'          =>  'numeric',
-        'to'            =>  'numeric',
+        'from'          =>  'integer',
+        'to'            =>  'integer',
         'type'          =>  'in:day,week,month,year'
     );
 
