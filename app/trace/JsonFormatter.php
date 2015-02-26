@@ -15,7 +15,7 @@ class JsonFormatter extends Formatter\JsonFormatter
 {
     public function format(array $record)
     {
-        return json_encode($record, JSON_UNESCAPED_SLASHES) . ($this->appendNewline ? "\n" : '');
+        return json_encode($record) . ($this->appendNewline ? "\n" : '');
     }
 
     /**
@@ -26,6 +26,6 @@ class JsonFormatter extends Formatter\JsonFormatter
      */
     protected function formatBatchJson(array $records)
     {
-        return json_encode($records, JSON_UNESCAPED_SLASHES);
+        return json_encode($records);
     }
 }
