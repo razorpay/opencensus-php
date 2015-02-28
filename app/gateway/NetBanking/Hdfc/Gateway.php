@@ -35,7 +35,9 @@ class Gateway extends BaseGateway
         $requestData = $this->getPaymentRequestData($input);
 
         $queryStr = $this->buildQueryString($requestData);
-        $url = 'domain'.$queryStr;
+
+        $url = $this->getDomain() . Url::PAYMENT_URL;
+        $url = $url . $queryStr;
 
         $data = array('redirectUrl' => $url);
 
@@ -76,7 +78,8 @@ class Gateway extends BaseGateway
         $data['TransactionId'] = 'XTXTV01';
         $data['FigVerify'] = 'Y';
 
-        $request['url'] = 'url domain' . $this->buildQueryString($data);
+        $url = $this->getDomain() . Url::VERIFY_URL;
+        $request['url'] = $url . $this->buildQueryString($data);
 
         $request['method'] = 'GET';
 
@@ -122,5 +125,10 @@ class Gateway extends BaseGateway
         $checksum = crc32($str . 'checksum_key');
 
         return $checksum;
+    }
+
+    protected function getDomain()
+    {
+        return ($this->mode === Mode::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
     }
 }
