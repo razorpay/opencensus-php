@@ -28,6 +28,7 @@ class Entity extends Base\PublicEntity
     const BANK              = 'bank';
     const CARD_ID           = 'card_id';
     const TRANSACTION_ID    = 'transaction_id';
+    const AUTO_CAPTURED     = 'auto_captured';
     const CAPTURED_AT       = 'captured_at';
     const GATEWAY           = 'gateway';
     const TERMINAL_ID       = 'terminal_id';
@@ -112,7 +113,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::SIGNED,
         self::REFUND_STATUS,
-        self::AMOUNT_REFUNDED);
+        self::AMOUNT_REFUNDED,
+        self::AUTO_CAPTURED);
 
 // --------------------- Generators --------------------------------------------
 
@@ -142,6 +144,11 @@ class Entity extends Base\PublicEntity
     protected function generateSigned()
     {
         $this->setAttribute(self::SIGNED, 0);
+    }
+
+    protected function generateAutoCaptured()
+    {
+        $this->setAttribute(self::AUTO_CAPTURED, 0);
     }
 
 // --------------------- Generators Ends ---------------------------------------
@@ -225,6 +232,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SIGNED, $signed);
     }
 
+    public function setAutoCaptureTrue()
+    {
+        $this->setAttribute(self::AUTO_CAPTURED, true);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -261,6 +273,11 @@ class Entity extends Base\PublicEntity
     public function getAmountRefundedAttribute()
     {
         return (int) $this->attributes[self::AMOUNT_REFUNDED];
+    }
+
+    public function getAutoCapturedAttribute()
+    {
+        return (bool) $this->attributes[self::AUTO_CAPTURED];
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -491,6 +508,7 @@ class Entity extends Base\PublicEntity
             self::CARD_ID,
             self::STATUS,
             self::AMOUNT,
+            self::AUTO_CAPTURED,
             self::ERROR_CODE);
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));

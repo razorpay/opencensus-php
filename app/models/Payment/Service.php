@@ -2,7 +2,7 @@
 
 namespace Models\Payment;
 
-use EE\Exception\BadRequestException;
+use EE\Exception;
 
 use Models\Base;
 use Models\Payment;
@@ -147,6 +147,31 @@ class Service extends Base\Service
         $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
 
         $this->trace->info(TraceCode::PAYMENT_TIMED_OUT, ['count' => $count]);
+
+        return ['count' => $count];
+    }
+
+    public function autoCaptureOldAuthorizedPayments()
+    {
+        $timeLowerLimit = time() - (48 * 60 * 60);
+        $timeUpperLimit = time() - (24 * 60 * 60);
+
+        $payments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps(
+                            $timeLowerLimit, $timeUpperLimit);
+
+        $count = 0;
+
+        foreach ($payments as $payment)
+        {
+            $this->merchant = $payment->merchant;
+
+            $res = $this->processor()->autoCapturePayment($payment);
+
+            if ($res)
+            {
+                $count++;
+            }
+        }
 
         return ['count' => $count];
     }

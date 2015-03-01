@@ -109,6 +109,13 @@ class PaymentController extends BaseController
         return ApiResponse::json($payment);
     }
 
+    public function postAutoCapture()
+    {
+        $data = $this->payment->autoCaptureOldAuthorizedPayments();
+
+        return ApiResponse::json($data);
+    }
+
     public function postCallback($id, $hash)
     {
         $input = Input::all();
