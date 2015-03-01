@@ -75,6 +75,19 @@ class Payment extends Base
 
     public function createNetbankingCaptured(array $attributes = array())
     {
+        $payment = $this->createNetbankingAuthorized($attributes);
+
+        $txn = (new \Models\Transaction\Core)->createFromPayment($payment);
+        $txn->save();
+
+        $payment->setStatus('captured');
+        $payment->save();
+
+        return $payment;
+    }
+
+    public function createNetbankingAuthorized(array $attributes = array())
+    {
         $defaultValues = array(
             'status' => 'authorized',
             'gateway' => 'atom',
@@ -91,23 +104,21 @@ class Payment extends Base
 
         $payment->save();
 
-        $txn = (new \Models\Transaction\Core)->createFromPayment($payment);
-        $txn->save();
-
-        $payment->setStatus('captured');
-        $payment->save();
-
         return $payment;
     }
 
     public function createAuthorized(array $attributes = array())
     {
+        $card = $this->fixtures->create('card');
+
         $defaultValues = array(
             'status' => 'authorized',
             'terminal_id' => '1n25f6uN5S1Z5a',
+            'card_id' => $card['id'],
         );
 
         $attributes = array_merge($defaultValues, $attributes);
+
 
         $payment = $this->create('payment', $attributes);
 

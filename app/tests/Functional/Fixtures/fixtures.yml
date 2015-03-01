@@ -40,12 +40,12 @@ Models\Card\Entity:
     id: $uniqueid
     merchant_id: 10000000000000
     name: $string
-    network: MC
+    network: Visa
     expiry_month: 01
     expiry_year: 2017
-    type: VISA
+    type: debit
     country: IN
-    last4: 7890
+    last4: 6666
     iin: 401200
     length: 16
 

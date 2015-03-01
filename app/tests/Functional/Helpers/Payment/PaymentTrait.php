@@ -66,6 +66,17 @@ trait PaymentTrait
         return $this->getAndMatchPayment($id, $paymentResponse);
     }
 
+    protected function doAutoCapture()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/payments/autocapture',
+            'method' => 'post');
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function signPayment(array $payment, $secret = '')
     {
         $data = array(

@@ -154,6 +154,58 @@ class CaptureTest extends TestCase
         $this->startTest();
     }
 
+    public function testAutoCapture()
+    {
+        $created_at = time() - rand(0, 23) * 60 * 60;
+        $updated_at = $created_at;
+        $payment = $this->fixtures->create(
+            'payment:authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+        $payment = $this->fixtures->create(
+            'payment:netbanking_authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+
+        $created_at = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
+        $updated_at = $created_at;
+
+        $payment = $this->fixtures->create(
+            'payment:status_created', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+
+        $payment = $this->fixtures->create(
+            'payment:captured', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_captured', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+
+        $x = range(1,3);
+
+        foreach ($x as $i)
+        {
+            $created_at = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
+            $updated_at = $created_at;
+
+            $payment = $this->fixtures->create(
+                'payment:authorized',
+                ['created_at' => $created_at,
+                 'updated_at' => $updated_at]);
+        }
+
+        foreach ($x as $i)
+        {
+            $created_at = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
+            $updated_at = $created_at;
+
+            $payment = $this->fixtures->create(
+                'payment:netbanking_authorized',
+                ['created_at' => $created_at,
+                 'updated_at' => $updated_at]);
+        }
+
+        $payment = $this->fixtures->create('payment:netbanking_authorized');
+
+        $content = $this->doAutoCapture();
+
+        $this->assertSame(6, $content['count']);
+    }
+
     public function startTest($id = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
