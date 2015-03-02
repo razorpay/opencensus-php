@@ -40,11 +40,11 @@ class Payment extends Base
             'terminal_id' => '1n25f6uN5S1Z5a',
             'method' => 'card',
             'transaction_id' => null,
-            'captured_at' => time(),
             'created_at' => time() - 10,
             'updated_at' => time() - 5);
 
         $attributes = array_merge($defaultValues, $attributes);
+        $attributes['captured_at'] = $attributes['created_at'] + 10;
 
         $payment = $this->build('payment', $attributes);
 
@@ -76,6 +76,7 @@ class Payment extends Base
     public function createNetbankingCaptured(array $attributes = array())
     {
         $payment = $this->createNetbankingAuthorized($attributes);
+        $payment['captured_at'] = $payment['created_at'] + 10;
 
         $txn = (new \Models\Transaction\Core)->createFromPayment($payment);
         $txn->save();
@@ -94,7 +95,6 @@ class Payment extends Base
             'method' => 'netbanking',
             'terminal_id' => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
-            'captured_at' => time(),
             'created_at' => time() - 10,
             'updated_at' => time() - 5);
 
@@ -118,7 +118,6 @@ class Payment extends Base
         );
 
         $attributes = array_merge($defaultValues, $attributes);
-
 
         $payment = $this->create('payment', $attributes);
 

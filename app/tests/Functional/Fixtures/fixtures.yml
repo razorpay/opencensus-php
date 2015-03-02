@@ -85,6 +85,7 @@ Models\Payment\Refund\Entity:
     amount: 100
     currency: INR
     transaction_id: null
+    auto_captured: 1
 
 Models\Pricing\Entity:
     id: $uniqueid

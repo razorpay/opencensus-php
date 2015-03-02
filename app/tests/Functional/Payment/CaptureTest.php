@@ -2,9 +2,10 @@
 
 namespace Tests\Functional\Payment;
 
-use Tests\Functional\TestCase;
+use Carbon\Carbon;
 use Mockery;
 use Dashboard\Payment;
+use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -204,6 +205,74 @@ class CaptureTest extends TestCase
         $content = $this->doAutoCapture();
 
         $this->assertSame(6, $content['count']);
+    }
+
+    public function testAutoCaptureEmail()
+    {
+        $time = Carbon::today('Asia/Kolkata')->timestamp;
+        $created_at = $time - rand(0, 23) * 60 * 60;
+        $updated_at = $created_at;
+
+        // The following two payments have been captured but not auto-captured
+        $payment = $this->fixtures->create(
+            'payment:captured', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+        $payment = $this->fixtures->create(
+            'payment:netbanking_captured', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+
+        $created_at = $time - rand(0, 23) * 60 * 60 - rand(0, 3600);
+        $updated_at = $created_at;
+
+        $payment = $this->fixtures->create(
+            'payment:status_created', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+
+        $payment = $this->fixtures->create(
+            'payment:authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+
+        $x = range(1,3);
+
+        $merchant = $this->fixtures->create('merchantFluid:entity')->get();
+
+        // Only the following 6 payments are actually auto-captured. The above rest is just noise
+        foreach ($x as $i)
+        {
+            $created_at = $time - rand(0, 23) * 60 * 60 - rand(0, 3600);
+            $updated_at = $created_at;
+
+            $payment = $this->fixtures->create(
+                'payment:captured',
+                ['created_at' => $created_at,
+                 'updated_at' => $updated_at,
+                 'auto_captured' => 1]);
+        }
+
+        foreach ($x as $i)
+        {
+            $created_at = $time - rand(0, 23) * 60 * 60 - rand(0, 3600);
+            $updated_at = $created_at;
+
+            $payment = $this->fixtures->create(
+                'payment:netbanking_captured',
+                ['created_at' => $created_at,
+                 'updated_at' => $updated_at,
+                 'auto_captured' => 1,
+                 'merchant_id' => $merchant->getId()]);
+        }
+
+        $payment = $this->fixtures->create('payment:netbanking_authorized');
+
+        $mock = Mockery::mock('Services\Mailgun')->makePartial()->shouldAllowMockingProtectedMethods();
+        $mock->shouldReceive('sendMessage')->times(2);
+        $mock->shouldReceive('getMode')->andReturn('test');
+
+        $this->app->instance('mailgun', $mock);
+
+        $content = $this->sendAutoCaptureEmails();
+
+        $this->assertSame(6, $content['payments_count']);
+        $this->assertSame(2, $content['emails_count']);
     }
 
     public function startTest($id = null, $amount = null)
