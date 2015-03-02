@@ -67,10 +67,17 @@ class BaseGateway
             $request['header'] = array();
         }
 
-        return Requests::post(
+        // echo 'Url: ' . $request['url'] . PHP_EOL;
+        // echo $request['content'] . PHP_EOL . PHP_EOL;
+
+        $response = Requests::post(
                     $request['url'],
                     $request['header'],
                     $request['content'],
                     $request['options']);
+
+        // echo 'Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL;
+
+        return $response;
     }
 }
