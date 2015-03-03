@@ -71,6 +71,7 @@ Models\Payment\Entity:
     notes: $emptyarray
     gateway: hdfc
     email: $email
+    auto_captured: 0
     captured_at: null
     transaction_id: null
     created_at: $timestamp
@@ -85,7 +86,6 @@ Models\Payment\Refund\Entity:
     amount: 100
     currency: INR
     transaction_id: null
-    auto_captured: 1
 
 Models\Pricing\Entity:
     id: $uniqueid
