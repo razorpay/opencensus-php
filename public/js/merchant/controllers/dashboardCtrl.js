@@ -21,7 +21,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http',
     if (result.data) {
         if (result.data.payment && parseInt(result.data.payment.txn_count) !== 0)
             $scope.aggregations.data.success = parseInt(result.data.payment.successful_txn_count * 100/result.data.payment.txn_count);
-        $scope.aggregations.data.amount = result.data.payment ? result.data.payment.total_amount : 0;
+        $scope.aggregations.data.amount = result.data.payment ? result.data.payment.total_amount/100 : 0;
         $scope.aggregations.data.payments = result.data.payment ? result.data.payment.txn_count : 0;
         $scope.aggregations.data.refunds = result.data.refund ? result.data.refund.txn_count : 0;
         $scope.aggregations.data.settlements = result.data.settlement ? result.data.settlement.txn_count : 0;
@@ -160,7 +160,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http',
 
             $scope.transactions.data.push([
               parseInt(value.created_at)*1000,
-              parseInt(value.amount)
+              parseInt(value.amount)/100
             ]);
           });
 
