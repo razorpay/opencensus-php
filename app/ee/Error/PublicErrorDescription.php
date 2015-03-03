@@ -21,7 +21,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                            = 'The payment has been fully refunded already';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED       = 'The refund amount proivded is greater than amount captured';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED     = 'The refund amount provided is greater than the unrefunded amount';
-    const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT               = 'Minimum transaction amount allowed is Rs 10';
+    const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT               = 'Minimum transaction amount allowed is Rs 50';
     const BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY         = 'Minimum amount allowed for net banking transaction for the merchant is INR 50';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                         = 'Card provided is not a dictionary';
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                         = 'Payment Exception: Card not provided';
