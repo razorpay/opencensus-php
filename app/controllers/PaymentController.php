@@ -109,6 +109,13 @@ class PaymentController extends BaseController
         return ApiResponse::json($payment);
     }
 
+    public function postAutoCapture()
+    {
+        $data = $this->payment->autoCaptureOldAuthorizedPayments();
+
+        return ApiResponse::json($data);
+    }
+
     public function postCallback($id, $hash)
     {
         $input = Input::all();
@@ -196,6 +203,13 @@ class PaymentController extends BaseController
         $input = Input::all();
 
         $data = (new Card\Service)->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAutoCaptureEmail()
+    {
+        $data = $this->payment->deliverAutoCaptureEmail();
 
         return ApiResponse::json($data);
     }

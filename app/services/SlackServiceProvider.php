@@ -24,6 +24,11 @@ class SlackServiceProvider extends BaseServiceProvider
         {
             return new Slack($app);
         });
+
+        $this->app->bindShared('mailgun', function($app)
+        {
+            return new Mailgun($app);
+        });
     }
 
     /**

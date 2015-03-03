@@ -74,6 +74,9 @@ class CreatePayments  extends Migration
             $table->char(Payment::TRANSACTION_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->boolean(Payment::AUTO_CAPTURED)
+                  ->default(0);
+
             $table->integer(Payment::CAPTURED_AT)
                   ->nullable();
 
@@ -89,6 +92,8 @@ class CreatePayments  extends Migration
             $table->integer(Payment::UPDATED_AT);
 
             $table->index(Payment::STATUS);
+            $table->index(Payment::CREATED_AT);
+            $table->index(Payment::AUTO_CAPTURED);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

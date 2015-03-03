@@ -93,7 +93,7 @@ class PublicEntity extends UniqueIdEntity
 
     public function getPublicId()
     {
-        return static::$sign . static::$delimiter . $this->getKey();
+        return static::$sign . static::getDelimiter() . $this->getKey();
     }
 
     public function getPublicIdAttribute()
@@ -120,12 +120,7 @@ class PublicEntity extends UniqueIdEntity
 
     protected static function stripSign(& $id)
     {
-        $delimiter = static::$delimiter;
-
-        if (static::$sign === '')
-        {
-            $delimiter = '';
-        }
+        $delimiter = static::getDelimiter();
 
         if (strpos($id, static::$sign . $delimiter) === false)
         {
@@ -146,11 +141,14 @@ class PublicEntity extends UniqueIdEntity
 
     public static function getIdPrefix()
     {
-        return static::$sign . static::$delimiter;
+        return static::$sign . static::getDelimiter();
     }
 
     public static function getDelimiter()
     {
+        if (static::$sign === '')
+            return '';
+
         return static::$delimiter;
     }
 

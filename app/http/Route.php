@@ -23,6 +23,8 @@ final class Route
         'payment_fetch_refund_by_id'        => ['get',      'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'       ],
         'payment_auth_expire'               => ['post',     'payments/auth/expire',                     'PaymentController@postAuthExpire'                      ],
         'payment_timeout'                   => ['post',     'payments/timeout',                         'PaymentController@postTimeout'                         ],
+        'payment_auto_capture'              => ['post',     'payments/autocapture',                     'PaymentController@postAutoCapture'                     ],
+        'payment_auto_capture_email'        => ['get',      'payments/autocapture/email',               'PaymentController@getAutoCaptureEmail'                 ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                           ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                          ],
         'card_fetch_by_id'                  => ['get',      'cards/{id}',                               'PaymentController@getCard'                             ],
@@ -149,6 +151,8 @@ final class Route
         'daily_setl_fetch_by_id',
         'daily_setl_fetch_multiple',
         'payment_timeout',
+        'payment_auto_capture',
+        'payment_auto_capture_email',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
@@ -186,7 +190,8 @@ final class Route
                 'setl_initiate',
                 'setl_reconcile_generate',
                 'setl_return_generate',
-                'payment_timeout'),
+                'payment_timeout',
+                'payment_auto_capture'),
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),
