@@ -222,8 +222,9 @@
         <label for="company_cin" class="col-sm-3 control-label">Company CIN</label>
           <div class="col-sm-8">
             <input type="text" class="form-control" name="company_cin" ng-model="data.2.company_cin" placeholder="Company CIN">
-            <span class="help-block"><a href="http://www.mca.gov.in/DCAPortalWeb/dca/CompanyMaster.do?cmpnyID={{data.2.company_cin}}&taskID=9412&method=find" target="_blank">Click here to Verify this</a></span>
-            <span class="help-block"><a href="http://www.mca.gov.in/DCAPortalWeb/dca/AuthorizedSignDtls.do?method=getdtls&taskID=30056&companyCIN={{data.2.company_cin}}" target="_blank">Click here to Verify directors</a></span>
+            <span class="help-block"><a href="http://www.mca.gov.in/DCAPortalWeb/" target="_blank">1. Click here first</a></span>
+            <span class="help-block"><a href="http://www.mca.gov.in/DCAPortalWeb/dca/CompanyMaster.do?cmpnyID={{data.2.company_cin}}&taskID=9412&method=find" target="_blank">2. Click here to Verify company details</a></span>
+            <span class="help-block"><a href="http://www.mca.gov.in/DCAPortalWeb/dca/AuthorizedSignDtls.do?method=getdtls&taskID=30056&companyCIN={{data.2.company_cin}}" target="_blank">3. Click here to Verify directors</a></span>
           </div>
         </div>
         <div class="form-group">
