@@ -157,6 +157,9 @@ class CaptureTest extends TestCase
 
     public function testAutoCapture()
     {
+        $this->app['config']->set('gateway.mock_hdfc', true);
+        $this->app['config']->set('gateway.mock_atom', true);
+
         $created_at = time() - rand(0, 23) * 60 * 60;
         $updated_at = $created_at;
         $payment = $this->fixtures->create(
