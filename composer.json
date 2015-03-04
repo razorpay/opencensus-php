@@ -11,7 +11,8 @@
         "doctrine/cache": "1.*",
         "ollieread/multiauth": "dev-master",
         "barryvdh/laravel-debugbar": "1.*",
-        "razorpay/spine": "dev-master"
+        "razorpay/spine": "dev-master",
+        "maknz/slack": "1.*"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",

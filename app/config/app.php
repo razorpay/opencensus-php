@@ -120,7 +120,8 @@ return array(
 		'Illuminate\View\ViewServiceProvider',
 		'Illuminate\Workbench\WorkbenchServiceProvider',
 		'Aws\Laravel\AwsServiceProvider',
-		'Barryvdh\Debugbar\ServiceProvider'
+		'Barryvdh\Debugbar\ServiceProvider',
+		'Maknz\Slack\SlackServiceProvider',
 	),
 
 	/*
@@ -187,6 +188,7 @@ return array(
 		'Validator'       => 'Illuminate\Support\Facades\Validator',
 		'View'            => 'Illuminate\Support\Facades\View',
 		'AWS' 			  => 'Aws\Laravel\AwsFacade',
+		'Slack'			  => 'Maknz\Slack\Facades\Slack',
 	),
 
 );
