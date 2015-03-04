@@ -21,7 +21,6 @@
             <th>Email</th>
             <th>Confirmed</th>
             <th>Activated</th>
-            <th>Activation Progress</th>
             <th>Registration Date</th>
           </tr>
         </thead>
@@ -34,15 +33,12 @@
               <i class="fa" ng-class="{'fa-check text-success': row.confirm_token == null, 'fa-times text-danger':row.confirm_token != null}"></i>
             </td>
             <td>
-              <b class="badge bg-success dk">{{row.activation_progress}}%</b>
-            </td>
-            <td>
               <i class="fa" ng-class="{'fa-check text-success': row.activated == 1, 'fa-times text-danger':row.activated == 0}"></i>
             </td>
             <td>{{row.created_at*1000 | date:'medium'}}</td>         
           </tr>
           <tr ng-show="merchants.length == 0">
-            <td colspan="7">No Merchants</td>
+            <td colspan="6">No Merchants</td>
           </tr>
         </tbody>
       </table>
