@@ -13,13 +13,14 @@
       Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
     </div>
     <div>
-      <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="merchants-table table-responsive table table-striped b-t b-light">
+      <table ui-jq="footable" data-filter="#filter" class="merchants-table table-responsive table table-striped b-t b-light">
         <thead>
           <tr>
             <th>Merchant Id</th>
             <th>Name</th>
             <th>Email</th>
             <th>Confirmed</th>
+            <th>Activation Progress</th>
             <th>Activated</th>
             <th>Registration Date</th>
           </tr>
@@ -33,21 +34,17 @@
               <i class="fa" ng-class="{'fa-check text-success': row.confirm_token == null, 'fa-times text-danger':row.confirm_token != null}"></i>
             </td>
             <td>
+              <b class="badge bg-success dk">{{row.activation_progress}}%</b>
+            </td>
+            <td>
               <i class="fa" ng-class="{'fa-check text-success': row.activated == 1, 'fa-times text-danger':row.activated == 0}"></i>
             </td>
             <td>{{row.created_at*1000 | date:'medium'}}</td>         
           </tr>
           <tr ng-show="merchants.length == 0">
-            <td colspan="6">No Merchants</td>
+            <td colspan="7">No Merchants</td>
           </tr>
         </tbody>
-        <tfoot >
-          <tr>
-              <td colspan="6" class="text-center">
-                  <ul class="pagination"></ul>
-              </td>
-          </tr>
-        </tfoot>
       </table>
     </div>
   </div>

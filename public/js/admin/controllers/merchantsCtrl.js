@@ -19,6 +19,14 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
     .success(function(data){
       if(data.success) {
         $scope.merchants = data.data;
+
+        angular.forEach($scope.merchants, function(i){
+          i.activation_progress = parseInt((i.merchant_details.steps_finished.length * 100)/ 5);    
+        });
+
+        console.log($scope.merchants);
+        
+
       }
     });
   }

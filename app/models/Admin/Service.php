@@ -48,11 +48,11 @@ class Service extends Base\Service
     {
         if ($pending === false)
         {
-            return Merchant\Entity::get()->toArray();
+            return Merchant\Entity::with('merchantDetails')->get()->toArray();
         }
         else
         {
-            $merchants_inactive = Merchant\Entity::with('MerchantDetails')
+            $merchants_inactive = Merchant\Entity::with('merchantDetails')
                                               ->where('activated', '=', '0')
                                               ->get();
 
