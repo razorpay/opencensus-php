@@ -139,7 +139,6 @@ return [
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
             'gateway_error_code'  => Hdfc\ErrorCode::GV00008,
         ],
-
     ],
 
     'testParesNotSuccess' => [
@@ -189,6 +188,7 @@ return [
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
+
     'testDebitCardAuthNotAvailable2' => [
         'request' => [
             'content' => [

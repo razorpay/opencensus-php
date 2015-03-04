@@ -19,7 +19,7 @@ class Core extends Base\Core
     {
         $merchant = (new Merchant\Entity)->build($input);
 
-        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
+        $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
 
         $this->repo->saveOrFail($merchant);
 
