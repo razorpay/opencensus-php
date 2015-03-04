@@ -52,6 +52,9 @@
     'AWS_REGION'        => 'us-east-1',
 
     //Should mail be faked, set true in testing/development See mail.php for details
-    'MAIL_PRETEND'      => true
+    'MAIL_PRETEND'      => true,
+
+    'SLACK_ENABLE'      => false,
+    'SLACK_KEY'         => ''
     );
 ?>
