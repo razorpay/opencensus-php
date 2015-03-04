@@ -6,7 +6,6 @@
         "laravel/framework": "4.2.*",
         "razorpay/razorpay-php": "dev-master",
         "rmccue/requests": ">=1.0",
-        "aws/aws-sdk-php": "~2.6.2",
         "aws/aws-sdk-php-laravel": "1.*",
         "doctrine/cache": "1.*",
         "ollieread/multiauth": "dev-master",
@@ -23,7 +22,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@bitbucket.org:razorpay/rzp-php.git"
+            "url": "git@github.com:Razorpay/razorpay-php.git"
         },
         {
             "type": "vcs",
