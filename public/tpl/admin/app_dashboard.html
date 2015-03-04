@@ -19,7 +19,7 @@
             <th>Merchant Id</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Confirmed</th>
+            <th>Submitted</th>
             <th>Activated</th>
             <th>Registration Date</th>
           </tr>
@@ -30,7 +30,7 @@
             <td>{{row.name}}
             <td>{{row.email}}</td>
             <td>
-              <i class="fa" ng-class="{'fa-check text-success': row.confirm_token == null, 'fa-times text-danger':row.confirm_token != null}"></i>
+              <i class="fa" ng-class="{'fa-check text-success': row.merchant_details.submitted == 1, 'fa-times text-danger':row.merchant_details.submitted == 0}"></i>
             </td>
             <td>
               <i class="fa" ng-class="{'fa-check text-success': row.activated == 1, 'fa-times text-danger':row.activated == 0}"></i>
