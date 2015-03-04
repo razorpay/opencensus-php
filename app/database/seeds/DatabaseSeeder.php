@@ -5,6 +5,7 @@ use Constants\Table;
 use Models\Merchant\Account;
 use Models\Pricing;
 use Models\Payment\Processor\NetBanking;
+use Models\Terminal;
 
 class DatabaseSeeder extends Seeder
 {
@@ -203,6 +204,20 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_atom',
                 'gateway_terminal_id'   => 'demo_terminal_atom',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::ATOM_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'atom',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'demo_merchant_atom',
+                'gateway_terminal_id'   => 'shared_terminal_atom',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
