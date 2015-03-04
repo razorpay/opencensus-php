@@ -150,7 +150,7 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::PAYMENT_TIMED_OUT,
-            ['count' => $count
+            ['count' => $count,
              'timestamp' => time()]);
 
         return ['count' => $count];

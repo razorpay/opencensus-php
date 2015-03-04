@@ -35,6 +35,14 @@ class TransactionTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $txn);
     }
 
+    public function testAddAdjustmentWithoutUpdatingEscrowBalance()
+    {
+        $adj = $this->startTest();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertTestResponse($txn, 'txnDataAfterAddingAdjWithNoEscrowUpdate');
+    }
+
     public function testTransactionAfterCapturingPayment()
     {
         $payment = $this->doAuthAndCapturePayment();

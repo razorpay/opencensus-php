@@ -11,6 +11,21 @@ class Core extends Base\Core
 {
     public function createAdjustment($input, $merchant)
     {
+        $updateEscrow = true;
+
+        if (isset($input['update_escrow']))
+        {
+            if ($input['update_escrow'] === '1')
+                $updateEscrow = true;
+            else if ($input['update_escrow'] === '0')
+                $updateEscrow = false;
+            else
+                throw new Exception\BadRequestValidationFailureException(
+                    'update_escrow field shoudl be boolean', 'update_escrow');
+
+            unset($input['update_escrow']);
+        }
+
         $adj = (new Adjustment\Entity)->build($input);
         $adj->setChannel(Settlement\Channel::KOTAK);
 
@@ -19,7 +34,7 @@ class Core extends Base\Core
         $adjRepo = new Adjustment\Repository;
         $adjRepo->saveOrFail($adj);
 
-        $txn = (new Transaction\Core)->createFromAdjustment($adj);
+        $txn = (new Transaction\Core)->createFromAdjustment($adj, $updateEscrow);
 
         (new Transaction\Repository)->saveOrFail($txn);
         $adjRepo->saveOrFail($adj);

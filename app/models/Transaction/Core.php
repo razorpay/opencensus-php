@@ -126,7 +126,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromAdjustment(Adjustment\Entity $adj)
+    public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)
     {
         $txn = new Transaction\Entity;
 
@@ -165,7 +165,7 @@ class Core extends Base\Core
 
         $adj->transaction()->associate($txn);
 
-        $this->updateBalances($txn);
+        $this->updateBalances($txn, $updateEscrow);
 
         return $txn;
     }
