@@ -21,7 +21,7 @@ return [
                 'id' => '1X4hRFHFx4UiXt',
                 'name' => 'Tester',
                 'email' => 'test@localhost.com',
-                'pricing_plan_id' => '1In3Yh5Mluj605',
+                'pricing_plan_id' => '2atGxLIYLyHWg7',
                 'live' => false,
                 'activated' => false,
             ],
