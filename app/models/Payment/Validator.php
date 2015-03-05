@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         'contact'       =>  'required',
         'notes'         =>  'sometimes',
         'signature'     =>  'sometimes',
-        'notes'         =>  'sometimes|');
+        'notes'         =>  'sometimes');
 
     protected static $captureRules = array(
         'amount'        => 'required|integer',
@@ -62,13 +62,13 @@ class Validator extends Base\Validator
     protected function validateAmount($input)
     {
         if (($input['method'] === Payment\Method::NETBANKING) and
-            (((int) $input['amount']) < 5000))
+            (((int) $input['amount']) < 1000))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY,
                 'amount');
         }
-        else if ($input['amount'] < 100)
+        else if ($input['amount'] < 5000)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,

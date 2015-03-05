@@ -30,13 +30,16 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID);
 
     protected $visible = array(
+        self::ID,
+        self::MERCHANT_ID,
         self::AMOUNT,
         self::STATUS,
-        self::MERCHANT_ID,
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
         self::CHANNEL,
-        self::UTR);
+        self::UTR,
+        self::CREATED_AT,
+        self::UPDATED_AT);
 
     protected $public = array(
         self::ID,

@@ -63,4 +63,27 @@ class Repository extends Base\Repository
                             Payment\Entity::ERROR_DESCRIPTION => PublicErrorDescription::BAD_REQUEST_PAYMENT_TIMED_OUT)
                         );
     }
+
+    public function getAuthorizedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timeUpperLimit)
+                    ->where(Payment\Entity::CREATED_AT, '>', $timeLowerLimit)
+                    ->get();
+    }
+
+    public function getAutoCapturedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
+                    ->where(Payment\Entity::AUTO_CAPTURED, '=', true)
+                    ->where(Payment\Entity::CAPTURED_AT, '<=', $timeUpperLimit)
+                    ->where(Payment\Entity::CAPTURED_AT, '>', $timeLowerLimit)
+                    ->orderBy(Payment\Entity::MERCHANT_ID, 'desc')
+                    ->orderBy(Payment\Entity::ID, 'desc')
+                    ->get();
+    }
 }

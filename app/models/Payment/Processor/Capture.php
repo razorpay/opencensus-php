@@ -10,9 +10,10 @@ use Trace\TraceCode;
 trait Capture
 {
     /**
-     * Capture a previous auth payment
+     * Captures a previous auth payment
      *
-     * @param  string           $id  Id of payment to be captured
+     * @param  string  $id      Id of payment to be captured
+     * @param  integer $amount  Amount to capture
      *
      * @return Payment\Entity   Payment\Entity object
      */
@@ -25,7 +26,46 @@ trait Capture
         return $this->capturePayment($payment, $input['amount']);
     }
 
-    public function capturePayment($payment, $amount)
+    /**
+     * Captures a payment and sets auto-capture flag true
+     *
+     * @param  Payment\Entity $payment The payment entity to capture
+     * @return boolean
+     */
+    public function autoCapturePayment($payment)
+    {
+        $this->payment = $payment;
+
+        $amount = $payment->getAmount();
+
+        // set auto-capture 1
+        $payment->setAutoCaptureTrue();
+
+        try
+        {
+            $payment = $this->capturePayment($payment, $amount);
+        }
+        catch (Exception\RecoverableException $e)
+        {
+            $this->trace->error(
+                TraceCode::TRACE_MISC_CODE,
+                ['auto_capture' => 1,
+                'payment_id' => $payment->getPublicId()]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Captures the payment.
+     *
+     * @param  Payment\Entity   $payment
+     * @param  integer          $amount
+     * @return Payment\Entity
+     */
+    protected function capturePayment($payment, $amount)
     {
         $data = array(
             'payment' => $payment->toArray(),

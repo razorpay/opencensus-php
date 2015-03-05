@@ -83,6 +83,7 @@ class AuthorizeTest extends TestCase
 
     public function testAmountLessThan50ForNetBanking()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:atom_terminal');
 
         $this->startTest();

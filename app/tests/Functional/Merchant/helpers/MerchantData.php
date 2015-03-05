@@ -309,7 +309,7 @@ return [
             'content' => [
                 'enabled' => [],
                 'disabled' => [
-                    'CITI' => 'Citibank India',
+                    'HDFC' => 'HDFC Bank',
                     'ICIC' => 'ICICI Bank',
                 ],
             ],
@@ -327,7 +327,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'CITI' => 'Citibank India',
+                'HDFC' => 'HDFC Bank',
                 'ICIC' => 'ICICI Bank',
             ],
         ],

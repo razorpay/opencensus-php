@@ -2,9 +2,11 @@
 
 namespace Models\Payment;
 
-use EE\Exception\BadRequestException;
+use Carbon\Carbon;
+use EE\Exception;
 
 use Models\Base;
+use Models\Merchant;
 use Models\Payment;
 
 use Trace\Trace;
@@ -146,9 +148,71 @@ class Service extends Base\Service
 
         $count = (new Payment\Repository)->timeoutOldPayments($timestamp);
 
-        $this->trace->info(TraceCode::PAYMENT_TIMED_OUT, ['count' => $count]);
+        $this->trace->info(
+            TraceCode::PAYMENT_TIMED_OUT,
+            ['count' => $count,
+             'timestamp' => time()]);
 
         return ['count' => $count];
+    }
+
+    public function autoCaptureOldAuthorizedPayments()
+    {
+        $timeLowerLimit = time() - (48 * 60 * 60);
+        $timeUpperLimit = time() - (24 * 60 * 60);
+
+        $payments = (new Payment\Repository)->getAuthorizedPaymentsBetweenTimestamps(
+                            $timeLowerLimit, $timeUpperLimit);
+
+        $count = 0;
+
+        foreach ($payments as $payment)
+        {
+            $this->merchant = $payment->merchant;
+
+            $res = $this->processor()->autoCapturePayment($payment);
+
+            if ($res)
+            {
+                $count++;
+            }
+        }
+
+        return ['count' => $count];
+    }
+
+    public function deliverAutoCaptureEmail()
+    {
+        $timeLowerLimit = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $timeUpperLimit = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $payments = (new Payment\Repository)->getAutoCapturedPaymentsBetweenTimestamps(
+                                                        $timeLowerLimit, $timeUpperLimit);
+
+        $count = $payments->count();
+        $emailCount = 0;
+        $i = 0;
+
+        while ($i < $count)
+        {
+            $autoCaptured = new Base\Collection;
+            $merchantId = $payments[$i]->getMerchantId();
+            $str = 'Payments with below Ids have been auto-captured:\n';
+
+            while (($i < $count) and
+                   ($payments[$i]->getMerchantId() === $merchantId))
+            {
+                $autoCaptured->push($payments[$i]->getPublicId());
+                $str .= $payments[$i]->getPublicId() . '\n';
+                $i++;
+            }
+
+            $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+            $this->app['mailgun']->sendAutoCaptureEmail($merchant->email, $str);
+            $emailCount++;
+        }
+
+        return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
     protected function processor()

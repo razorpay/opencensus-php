@@ -13,7 +13,6 @@ class NetBanking
         IFSC::CNRB,
         IFSC::CSBK,
         IFSC::CBIN,
-        IFSC::CITI,
         IFSC::CIUB,
         IFSC::CORP,
         IFSC::DCBL,
