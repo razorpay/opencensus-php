@@ -74,15 +74,22 @@ angular.module('app.services', [])
 			    };
 			  }
 			])
-			.factory("modeFactory",['$state', '$localStorage', '$rootScope',
-			 function($state, $localStorage, $rootScope){
+			.factory("modeFactory",['$state', '$localStorage', '$rootScope', 'user',
+			 function($state, $localStorage, $rootScope, user){
 				var modes = {test: "test", live: "live"};
 
 				var currentMode = "test";
 
 
 				if(angular.isDefined($localStorage.rzp_mode) ) {
-			       currentMode = $localStorage.rzp_mode;
+			        currentMode = $localStorage.rzp_mode;
+					
+					user.identity().then(function(data){
+					  if(currentMode == "live" && parseInt(data.activated) !== 1) {
+					    currentMode = "test";
+					  }
+					});
+
 			      } else {
 			        $localStorage.rzp_mode = currentMode;
 			      }
