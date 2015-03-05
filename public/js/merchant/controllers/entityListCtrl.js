@@ -64,7 +64,7 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
       if($scope.entity.id === '')
         var request = $http.get("/" + $scope.mode +  "/" + $scope.entity.type + "s?" + query);
       else
-        var request = $http.get("/" + $scope.mode +  "/entity/" + $scope.entity.id);
+        var request = $http.get("/" + $scope.mode +  "/" + $scope.entity.type + "s/" + $scope.entity.id);
 
       request
       .success(function(data){
