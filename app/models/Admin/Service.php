@@ -48,7 +48,7 @@ class Service extends Base\Service
     {
         if ($pending === false)
         {
-            return Merchant\Entity::with('merchantDetails')->get()->toArray();
+            $data = Merchant\Entity::with('merchantDetails')->get()->toArray();
         }
         else
         {
@@ -61,8 +61,10 @@ class Service extends Base\Service
                 return ($merchant->merchant_details->submitted == 1);
             });
 
-            return $merchants_submitted_inactive->toArray();
+            $data = $merchants_submitted_inactive->toArray();
         }
+
+        return ['count'=>count($data), 'data'=>$data];
     }
 
     public function getAdmins()

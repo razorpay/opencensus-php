@@ -2,8 +2,9 @@
 app.controller('MerchantsCtrl', ['$scope', '$http',
   function($scope, $http) {
 
-  //Aggreagates
   $scope.merchants = {};
+
+  $scope.count = 0;
 
   generateTable();
 
@@ -18,14 +19,13 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
     request
     .success(function(data){
       if(data.success) {
-        $scope.merchants = data.data;
+        $scope.merchants = data.data.data;
+
+        $scope.count = data.data.count;
 
         angular.forEach($scope.merchants, function(i){
           i.activation_progress = parseInt((i.merchant_details.steps_finished.length * 100)/ 5);    
-        });
-
-        console.log($scope.merchants);
-        
+        });     
 
       }
     });

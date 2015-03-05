@@ -1,11 +1,12 @@
+<div ng-init="pending=true" ng-controller="MerchantsCtrl">
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">
-    Pending Activations
+    Pending Activations - Total {{count}}
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md" ng-init="pending=true">
-  <div class="panel panel-default" ng-controller="MerchantsCtrl">
+<div class="wrapper-md" >
+  <div class="panel panel-default">
     <div class="panel-heading">
       List of all Merchants Pending Activation
     </div>
@@ -27,7 +28,7 @@
         <tbody>
           <tr ng-repeat="row in merchants">
             <td><a ui-sref="app.merchants.detail({id:row.id})">{{row.id}}</a></td>
-            <td>{{row.name}}
+            <td>{{row.name}}</td>
             <td>{{row.email}}</td>
             <td>
               <i class="fa" ng-class="{'fa-check text-success': row.merchant_details.submitted == 1, 'fa-times text-danger':row.merchant_details.submitted == 0}"></i>
@@ -44,4 +45,5 @@
       </table>
     </div>
   </div>
+</div>
 </div>
