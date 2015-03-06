@@ -60,9 +60,9 @@ class AdminController extends BaseController
 
     public function getMerchantList()
     {
-        $pending = Input::has('pending') ? true : false;
+        $input = Input::all();
 
-        $merchants = (new Admin\Service)->listMerchants($pending);
+        $merchants = (new Admin\Service)->listMerchants($input);
 
         return AppResponse::jsonResponse([], $merchants);
     }
@@ -210,6 +210,22 @@ class AdminController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->createPricingPlan($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getMultipleEntities($mode, $entity)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, $entity, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getEntityById($mode, $entity, $id)
+    {
+        list($error, $data) = (new Admin\Service)->fetchEntityById($mode, $entity, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }

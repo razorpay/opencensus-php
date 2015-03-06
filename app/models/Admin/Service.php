@@ -44,25 +44,56 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function listMerchants($pending = false)
+    public function listMerchants($input)
     {
-        if ($pending === false)
-        {
-            return Merchant\Entity::with('merchantDetails')->get()->toArray();
-        }
-        else
-        {
-            $merchants_inactive = Merchant\Entity::with('merchantDetails')
-                                              ->where('activated', '=', '0')
-                                              ->get();
+        $data = Merchant\Entity::with('merchantDetails')->get();
 
-            $merchants_submitted_inactive = $merchants_inactive->filter(function($merchant)
-            {
-                return ($merchant->merchant_details->submitted == 1);
-            });
-
-            return $merchants_submitted_inactive->toArray();
+        if(reset($input) !== false)
+        {
+            list($key, $value) = each($input);
+            switch($key){
+                case "activated":
+                    $response = $data->filter(function($merchant) use($value)
+                    {
+                        return ($merchant->activated == $value);
+                    });
+                    break;
+                case "pending":
+                    $response = $data->filter(function($merchant)
+                    {
+                        return ($merchant->activated == 0 and $merchant->merchant_details->submitted == 1);
+                    });
+                    break;
+                case "confirmed":
+                    $response = $data->filter(function($merchant) use($value)
+                    {   
+                        if($value)
+                            return ($merchant->confirm_token == null);
+                        else
+                            return !($merchant->confirm_token == null);
+                    });
+                    break;
+                case "dead":
+                    $response = $data->filter(function($merchant) use($value)
+                    {
+                        if($value)
+                            return ($merchant->created_at < time() - 24*7*3600 and empty($merchant->merchant_details->steps_finished));
+                        else
+                            return !($merchant->created_at < time() - 24*7*3600 and empty($merchant->merchant_details->steps_finished));
+                    });
+                    break;
+                default:
+                   $response = $data;
+            }
         }
+        else 
+        {
+            $response = $data;
+        }
+
+        $response = $response->toArray();
+
+        return ['count'=>count($response), 'data'=>$response];
     }
 
     public function getAdmins()
@@ -494,6 +525,55 @@ class Service extends Base\Service
         try
         {
             $response = $this->api->pricing->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $response);
+    }
+
+    public function fetchMultipleEntities($mode, $entity, $input)
+    {
+        $error = array();
+
+        $response = array();
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $response = $this->api->admin->fetchMultipleEntities($entity, $input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        if(!empty($response['items']))
+        {
+            $response['headings'] = array_keys($response['items'][0]);
+        }
+        else 
+        {
+            $response['headings'] = array();
+        }
+
+        return array($error, $response);
+    }
+
+    public function fetchEntityById($mode, $entity, $id)
+    {
+        $error = array();
+
+        $response = array();
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $response = $this->api->admin->fetchEntityById($entity, $id)->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {

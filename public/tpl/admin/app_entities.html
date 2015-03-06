@@ -1,0 +1,95 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Entities
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md" ng-controller="EntitiesCtrl">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      List of all Entities - {{type | titlecase}}
+    </div>
+    <div class="row wrapper">
+      <div class="col-sm-3 m-b-xs">
+        Entity Type: 
+        <select class="form-control input-sm w-sm inline m-r" name="entity_type" ng-model="entity_type">
+          <option value="transaction">Transactions</option>
+          <option value="payment">Payments</option>
+          <option value="refund">Refunds</option>
+          <option value="settlement">Settlements</option>
+          <option value="dailysettlement">Daily Settlement</option>
+          <option value="key">Keys</option>
+          <option value="adjustment">Adjustment</option>
+          <option value="terminal">Terminal</option>
+          <option value="card">Card</option>
+          <option value="bankaccount">Bank Account</option>
+        </select>
+      </div>
+      <div class="col-sm-2">
+      </div>
+      <div class="col-sm-2">
+        Mode: 
+        <select class="form-control input-sm w-sm inline m-r" name="mode" ng-model="mode">
+          <option value="live">Live</option>
+          <option value="test">Test</option>
+        </select>
+      </div>
+      <div class="col-sm-2"></div>
+      <div class="col-sm-3">
+        <div class="input-group">
+          <input type="text" class="input-sm form-control" placeholder="Search Entity Id" ng-model="entity.id">
+          <span class="input-group-btn">
+            <button class="btn btn-sm btn-default" type="button" ng-click="search()" >Go!</button>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table id="merchants-table" class="table table-striped b-t b-light">
+        <thead>
+          <tr>
+            <th ng-repeat="(key, value) in headings | limitTo: 7" data-hide="{{key != 0 ? 'phone,tablet' : ''}}">{{value}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="row in entity.items">
+            <td ng-repeat="key in notSorted(row) | limitTo: 7" ng-init="value = row[key]" ng-click="showDetail(row)" style="cursor: pointer;">{{value}}</td> 
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <footer class="panel-footer">
+      <div class="row">
+        <div class="col-sm-4 hidden-xs">
+        </div>
+        <div class="col-sm-4 text-center">
+          <small class="text-muted inline m-t-sm m-b-sm">Showing {{entity.countStart}}-{{entity.countEnd}}</small>
+        </div>
+        <div class="col-sm-4 text-right text-center-xs">
+          <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
+            <li ng-click="allowPrev && prev()"><button class="btn btn-default fa fa-chevron-left" ng-disabled="!allowPrev"></button></li>
+            <li ng-click="allowNext && next()"><button class="btn btn-default  fa fa-chevron-right" ng-disabled="!allowNext"></button></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+<script type="text/ng-template" id="entityDetailModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Entity Details</h3>
+  </div>
+  <div class="modal-body">
+    <div>
+      <table class="table table-striped b-t b-light">
+        <tr ng-repeat="key in notSorted(data)" ng-init="value = data[key]">
+          <td>{{key}}</td>
+          <td>{{value}}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">                  
+      <button class="btn btn-primary" ng-click="ok()">OK</button>
+  </div>
+</script>

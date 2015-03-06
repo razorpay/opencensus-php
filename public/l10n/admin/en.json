@@ -8,6 +8,7 @@
       "DASHBOARD" : "Dashboard",
       "MERCHANTS" : "Merchants",
       "PRICING" : "Pricing Plans",
+      "ENTITIES" : "Entities",
       "settings" : {
         "SETTINGS": "Settings",
         "ADMINS": "Admins",

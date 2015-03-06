@@ -146,7 +146,11 @@ Route::group(array('before' => 'auth_admin'), function()
 
         Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
     });
+    
+    Route::get('/admin/{mode}/{entity}', 'AdminController@getMultipleEntities');
 
+    Route::get('/admin/{mode}/{entity}/{entity_id}', 'AdminController@getEntityById');
+    
     Route::group(array('before' => 'superadmin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');

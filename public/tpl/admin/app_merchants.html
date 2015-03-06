@@ -1,16 +1,34 @@
+<div ng-controller="MerchantsCtrl">
 <div class="bg-light lter b-b wrapper-md">
   <h1 class="m-n font-thin h3">
-    Merchants
+    Merchants - Total {{count}}
     <spinner class="inline"></spinner>
   </h1>
 </div>
 <div class="wrapper-md">
-  <div class="panel panel-default" ng-controller="MerchantsCtrl">
+  <div class="panel panel-default">
     <div class="panel-heading">
       List of all Merchants
     </div>
-    <div class="panel-body b-b b-light">
-      Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+    <div class="row wrapper">
+      <div class="col-sm-9 m-b-xs">
+        Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+      </div>
+      <div class="col-sm-3">
+        <div class="input-group">
+          <select class="input-sm form-control" name="merchant_type" ng-model="merchant_type">
+            <option value="1">Activated</option>
+            <option value="2">Not Activated</option>
+            <option value="3">Pending Activation</option>
+            <option value="4">Confirmed</option>
+            <option value="5">Dead</option>
+          </select>
+          <span class="input-group-btn">
+            <button class="btn btn-sm btn-default" type="button" ng-click="filter()" busy="...">Go!</button>
+            <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
+          </span>
+        </div>
+      </div>
     </div>
     <div>
       <table ui-jq="footable" data-filter="#filter" data-page="false" class="merchants-table table-responsive table table-striped b-t b-light">
@@ -20,9 +38,9 @@
             <th>Name</th>
             <th>Email</th>
             <th>Confirmed</th>
-            <th data-type="numeric">Activation Progress (%)</th>
+            <th data-hide="phone,tablet" data-type="numeric">Activation Progress (%)</th>
             <th>Activated</th>
-            <th data-type="numeric">Registration Date</th>
+            <th data-hide="phone,tablet" data-type="numeric">Registration Date</th>
           </tr>
         </thead>
         <tbody>
@@ -48,4 +66,5 @@
       </table>
     </div>
   </div>
+</div>
 </div>

@@ -5,7 +5,7 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.entity = {
-        data: {},
+        items: {},
         id: '',
         count: 0,
         countStart: 0,
@@ -64,7 +64,7 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
       if($scope.entity.id === '')
         var request = $http.get("/" + $scope.mode +  "/" + $scope.entity.type + "s?" + query);
       else
-        var request = $http.get("/" + $scope.mode +  "/entity/" + $scope.entity.id);
+        var request = $http.get("/" + $scope.mode +  "/" + $scope.entity.type + "s/" + $scope.entity.id);
 
       request
       .success(function(data){
@@ -77,13 +77,13 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
 
           $scope.entity.countStart = $scope.entity.skip + 1;
 
-          if(data.data.count === 0)
+          if(data.data.count == 0)
             $scope.entity.countEnd = $scope.entity.countStart;
 
           else
             $scope.entity.countEnd = $scope.entity.countStart + $scope.entity.count -1;
 
-          $scope.allowPrev = $scope.entity.countStart !== 1;
+          $scope.allowPrev = $scope.entity.countStart != 1;
 
           $scope.allowNext = $scope.entity.count >= 10;
         }
