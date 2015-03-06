@@ -37,9 +37,9 @@
             <th>Merchant Id</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Confirmed</th>
+            <th data-type="numeric">Confirmed</th>
             <th data-hide="phone,tablet" data-type="numeric">Activation Progress (%)</th>
-            <th>Activated</th>
+            <th data-type="numeric">Activated</th>
             <th data-hide="phone,tablet" data-type="numeric">Registration Date</th>
           </tr>
         </thead>
@@ -48,16 +48,16 @@
             <td><a ui-sref="app.merchants.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.name}}</td>
             <td>{{row.email}}</td>
-            <td>
+            <td data-value="{{row.confirm_token == null ? 1 : 0}}">
               <i class="fa" ng-class="{'fa-check text-success': row.confirm_token == null, 'fa-times text-danger':row.confirm_token != null}"></i>
             </td>
-            <td>
+            <td data-value="{{row.activation_progress}}">
               <b class="badge bg-success dk">{{row.activation_progress}}%</b>
             </td>
-            <td>
+            <td data-value="{{row.activated}}">
               <i class="fa" ng-class="{'fa-check text-success': row.activated == 1, 'fa-times text-danger':row.activated == 0}"></i>
             </td>
-            <td>{{row.created_at*1000 | date:'medium'}}</td>         
+            <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td>         
           </tr>
           <tr ng-show="merchants.length == 0">
             <td colspan="7">No Merchants</td>

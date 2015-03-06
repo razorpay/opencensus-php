@@ -21,8 +21,8 @@
             <th>Merchant Id</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Submitted</th>
-            <th>Activated</th>
+            <th data-type="numeric">Submitted</th>
+            <th data-type="numeric">Activated</th>
             <th data-type="numeric">Registration Date</th>
           </tr>
         </thead>
@@ -31,13 +31,13 @@
             <td><a ui-sref="app.merchants.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.name}}</td>
             <td>{{row.email}}</td>
-            <td>
+            <td data-value="{{row.merchant_details.submitted}}">
               <i class="fa" ng-class="{'fa-check text-success': row.merchant_details.submitted == 1, 'fa-times text-danger':row.merchant_details.submitted == 0}"></i>
             </td>
-            <td>
+            <td data-value="{{row.activated}}">
               <i class="fa" ng-class="{'fa-check text-success': row.activated == 1, 'fa-times text-danger':row.activated == 0}"></i>
             </td>
-            <td>{{row.created_at*1000 | date:'medium'}}</td>         
+            <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td>         
           </tr>
           <tr ng-show="merchants.length == 0">
             <td colspan="6">No Merchants</td>
