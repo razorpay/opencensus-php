@@ -7,7 +7,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http',
   $scope.aggregations = {};
 
   $scope.aggregations.data = {
-                      success: 0,
+                      updated_at: 0,
                       refunds: 0,
                       payments: 0,
                       settlements: 0,
@@ -20,7 +20,7 @@ app.controller('DashboardAggregationsCtrl', ['$scope', '$http',
 
     if (result.data) {
         if (result.data.payment && parseInt(result.data.payment.txn_count) !== 0)
-            $scope.aggregations.data.success = parseInt(result.data.payment.successful_txn_count * 100/result.data.payment.txn_count);
+            $scope.aggregations.data.updated_at = result.data.payment.updated_at;
         $scope.aggregations.data.amount = result.data.payment ? result.data.payment.total_amount/100 : 0;
         $scope.aggregations.data.payments = result.data.payment ? result.data.payment.txn_count : 0;
         $scope.aggregations.data.refunds = result.data.refund ? result.data.refund.txn_count : 0;

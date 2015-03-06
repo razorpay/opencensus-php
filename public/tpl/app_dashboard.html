@@ -51,14 +51,15 @@
             </div>
             <div class="col-xs-6">
               <div class="panel padder-v item">
-                <div class="font-thin h1">{{aggregations.data.payments}}</div>
-                <span class="text-muted text-xs">Total Payments</span>
+                <div class="font-thin h1" ng-if="aggregations.data.updated_at != 0">{{aggregations.data.updated_at*1000 | fromNow}}</div>
+                 <div class="font-thin h1" ng-if="aggregations.data.updated_at == 0">Never</div>
+                <span class="text-muted text-xs">Last Transaction</span>
               </div>
             </div>
             <div class="col-xs-6">
               <div class="block panel padder-v bg-success dker item">
-                <span class="text-white font-thin h1 block">{{aggregations.data.success}}%</span>
-                <span class="text-muted text-xs">Success Rate</span>
+                <span class="text-white font-thin h1 block">{{aggregations.data.payments}}</span>
+                <span class="text-muted text-xs">Total Payments</span>
               </div>
             </div>
             <div class="col-xs-6">
