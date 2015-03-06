@@ -11,8 +11,6 @@
 |
 */
 
-$app['instance'] = new Services\AwsInstance;
-
 //
 // Initialize BasicAuth with $app
 // This is put here instead of BasicAuthServiceProvider
