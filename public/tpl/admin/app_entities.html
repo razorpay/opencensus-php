@@ -7,7 +7,7 @@
 <div class="wrapper-md" ng-controller="EntitiesCtrl">
   <div class="panel panel-default">
     <div class="panel-heading">
-      List of all Entities - {{type | titlecase}}
+      List of all {{entity_type +  "s"| titlecase}} ({{mode + " mode" | titlecase}})
     </div>
     <div class="row wrapper">
       <div class="text-center m-t">
