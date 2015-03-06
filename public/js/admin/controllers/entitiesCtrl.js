@@ -17,8 +17,6 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         skip: 0
     };
 
-    generateTable();
-
     $scope.$watch('mode + entity_type', function() {
       clear('skip');
       clear('id');
@@ -70,7 +68,10 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     }
 
     function clear(field){
-      $scope.entity[field] = '';
+      if(field == 'id')
+        $scope.entity.id = '';
+      else
+        $scope.entity.skip = 0;
     }
 
     $scope.showDetail = function(data) {
@@ -92,11 +93,9 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         return;
       }
 
-      var query =
-        "count=10" +
-        "&skip="+ $scope.entity.skip;
+      var query = "count=10&skip="+ $scope.entity.skip;
 
-        var request = $http.get("/admin/" + $scope.mode +  "/" + $scope.entity_type + "?" + query);
+      var request = $http.get("/admin/" + $scope.mode +  "/" + $scope.entity_type + "?" + query);
 
       request
       .success(function(data){
@@ -105,7 +104,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         if(data.success) {
           $scope.headings = data.data.headings;
           $scope.entity.items = data.data.items;
-          $scope.entity.count = data.data.count;
+          $scope.entity.count = parseInt(data.data.count);
           
           $scope.entity.countStart = $scope.entity.skip + 1;
           
