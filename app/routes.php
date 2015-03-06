@@ -122,6 +122,10 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
 
+    Route::get('/admin/{mode}/{entity}', 'AdminController@getMultipleEntities');
+
+    Route::get('/admin/{mode}/{entity}/{entity_id}', 'AdminController@getEntityById');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');

@@ -96,6 +96,10 @@ var app = angular.module('app', [
                 url: '/pricing',
                 templateUrl: 'tpl/admin/app_pricing.html'
             })
+            .state('app.entities', {
+                url: '/entities',
+                templateUrl: 'tpl/admin/app_entities.html'
+            })
             .state('app.admins', {
                 url: '/admins',
                 templateUrl: 'tpl/admin/app_admins.html',
@@ -162,7 +166,7 @@ var app = angular.module('app', [
 
 }])
 .config(['$keepaliveProvider', '$idleProvider', function($keepaliveProvider, $idleProvider) {
-  $idleProvider.idleDuration(10 * 60);
+  $idleProvider.idleDuration(30 * 60);
   $idleProvider.warningDuration(15);
   $keepaliveProvider.interval(60);
 }]);

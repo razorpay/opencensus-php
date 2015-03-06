@@ -214,6 +214,22 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getMultipleEntities($mode, $entity)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, $entity, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getEntityById($mode, $entity, $id)
+    {
+        list($error, $data) = (new Admin\Service)->fetchEntityById($mode, $entity, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getAdmins()
     {
         $admins = (new Admin\Service)->getAdmins();

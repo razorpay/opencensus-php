@@ -533,4 +533,53 @@ class Service extends Base\Service
 
         return array($error, $response);
     }
+
+    public function fetchMultipleEntities($mode, $entity, $input)
+    {
+        $error = array();
+
+        $response = array();
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $response = $this->api->admin->fetchMultipleEntities($entity, $input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        if(!empty($response['items']))
+        {
+            $response['headings'] = array_keys($response['items'][0]);
+        }
+        else 
+        {
+            $response['headings'] = array();
+        }
+
+        return array($error, $response);
+    }
+
+    public function fetchEntityById($mode, $entity, $id)
+    {
+        $error = array();
+
+        $response = array();
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $response = $this->api->admin->fetchEntityById($entity, $id)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $response);
+    }
 }
