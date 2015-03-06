@@ -37,7 +37,7 @@ class Gateway extends BaseGateway
         $queryStr = $this->buildQueryString($requestData);
 
         $url = $this->getDomain() . Url::PAYMENT_URL;
-        $url = $url . $queryStr;
+        $url = $url . '?' . $queryStr;
 
         $data = array('redirectUrl' => $url);
 
@@ -56,16 +56,7 @@ class Gateway extends BaseGateway
      */
     public function callback(array $input)
     {
-        $checksum = $input['gateway']['checksum'];
-        unset($input['gateway']['checksum']);
-
-        $expectedChecksum = $this->getChecksum($input['gateway']);
-
-        if ($checksum !== $expectedChecksum)
-        {
-            // fail payment
-            ;
-        }
+        $this->verifyCallbackChecksum($input);
 
         $bankRefNo = $input['gateway']['BankRefNo'];
         $message = $input['gateway']['Message'];
@@ -91,15 +82,62 @@ class Gateway extends BaseGateway
         // verify and match params
     }
 
+    protected function verifyCallbackChecksum($input)
+    {
+        $paramsOrder = array(
+            'ClientCode',
+            'MerchantCode',
+            'TxnCurrency',
+            'TxnAmount',
+            'TxnScAmount',
+            'MerchantRefNo',
+            'StSucFlg',
+            'StFailFlg',
+            'Date',
+            'Ref1',
+            'Ref2',
+            'Ref3',
+            'Ref4',
+            'Ref5',
+            'Ref6',
+            'Ref7',
+            'Ref8',
+            'Ref9',
+            'Ref10',
+            'Ref11',
+            'Date1',
+            'Date2',
+            'BankRefNo',
+            'Message',
+        );
+
+        $str = '';
+
+        foreach ($paramsOrder as $param)
+        {
+            if (isset($input[$param]))
+                $str .= $input[$param];
+        }
+
+        $checksum = $input['CheckSum'];
+
+        $expectedChecksum = $this->getChecksumForString($str);
+
+        if ($checksum !== $expectedChecksum)
+        {
+            throw new Exception\BadRequestException('Failed checksum verification');
+        }
+    }
+
     protected function getPaymentRequestData($input)
     {
-        $date = Carbon::now('Asia/Kolkata')->format('D/M/y');
+        $date = Carbon::now('Asia/Kolkata')->format('d/m/y H:m:s');
 
         $data = array(
-            'ClientCode'        => $input['terminal'],
-            'MerchantCode'      => $input['terminal'],
+            'ClientCode'        => 'ab', //$input['terminal'],
+            'MerchantCode'      => 'ab', //$input['terminal'],
             'TxnCurrency'       => 'INR',
-            'TxnAmount'         => $input['payment']['amount'],
+            'TxnAmount'         => $input['payment']['amount'] / 100,
             'TxnScAmount'       => '0',
             'MerchantRefNo'     => $input['payment']['id'],
             'SuccessStaticFlag' => 'N',
@@ -108,12 +146,18 @@ class Gateway extends BaseGateway
             'DynamicUrl'        => $input['callbackUrl'],
         );
 
-        $data['CheckSum'] = $this->getChecksum($data);
+        if ($this->mode === Mode::TEST)
+        {
+            $data['MerchantCode'] = 'RAZORPAY';
+            $data['ClientCode'] = random_alpha_string(10);
+        }
+
+        $data['CheckSum'] = $this->getChecksumForData($data);
 
         return $data;
     }
 
-    protected function getChecksum($data)
+    protected function getChecksumForData($data)
     {
         $str = '';
 
@@ -122,13 +166,28 @@ class Gateway extends BaseGateway
             $str = $str.= $value;
         }
 
-        $checksum = crc32($str . 'checksum_key');
+        return $this->getChecksumForString($str);
+    }
 
-        return $checksum;
+    protected function getChecksumForString($str = '')
+    {
+        return crc32($str . '123456');
     }
 
     protected function getDomain()
     {
         return ($this->mode === Mode::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
+    }
+
+    protected function buildQueryString($data)
+    {
+        $str = '';
+
+        foreach ($data as $key => $value)
+        {
+            $str .= '&'.$key.'='.$value;
+        }
+
+        return $str;
     }
 }
