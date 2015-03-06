@@ -44,27 +44,56 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function listMerchants($pending = false)
+    public function listMerchants($input)
     {
-        if ($pending === false)
+        $data = Merchant\Entity::with('merchantDetails')->get();
+
+        if(reset($input) !== false)
         {
-            $data = Merchant\Entity::with('merchantDetails')->get()->toArray();
+            list($key, $value) = each($input);
+            switch($key){
+                case "activated":
+                    $response = $data->filter(function($merchant) use($value)
+                    {
+                        return ($merchant->activated == $value);
+                    });
+                    break;
+                case "pending":
+                    $response = $data->filter(function($merchant)
+                    {
+                        return ($merchant->activated == 0 and $merchant->merchant_details->submitted == 1);
+                    });
+                    break;
+                case "confirmed":
+                    $response = $data->filter(function($merchant) use($value)
+                    {   
+                        if($value)
+                            return ($merchant->confirm_token == null);
+                        else
+                            return !($merchant->confirm_token == null);
+                    });
+                    break;
+                case "dead":
+                    $response = $data->filter(function($merchant) use($value)
+                    {
+                        if($value)
+                            return ($merchant->created_at < time() - 24*7*3600 and empty($merchant->merchant_details->steps_finished));
+                        else
+                            return !($merchant->created_at < time() - 24*7*3600 and empty($merchant->merchant_details->steps_finished));
+                    });
+                    break;
+                default:
+                   $response = $data;
+            }
         }
-        else
+        else 
         {
-            $merchants_inactive = Merchant\Entity::with('merchantDetails')
-                                              ->where('activated', '=', '0')
-                                              ->get();
-
-            $merchants_submitted_inactive = $merchants_inactive->filter(function($merchant)
-            {
-                return ($merchant->merchant_details->submitted == 1);
-            });
-
-            $data = $merchants_submitted_inactive->toArray();
+            $response = $data;
         }
 
-        return ['count'=>count($data), 'data'=>$data];
+        $response = $response->toArray();
+
+        return ['count'=>count($response), 'data'=>$response];
     }
 
     public function getAdmins()

@@ -60,9 +60,9 @@ class AdminController extends BaseController
 
     public function getMerchantList()
     {
-        $pending = Input::has('pending') ? true : false;
+        $input = Input::all();
 
-        $merchants = (new Admin\Service)->listMerchants($pending);
+        $merchants = (new Admin\Service)->listMerchants($input);
 
         return AppResponse::jsonResponse([], $merchants);
     }
