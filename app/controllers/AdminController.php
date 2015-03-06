@@ -15,7 +15,7 @@ class AdminController extends BaseController
         return ApiResponse::json($data);
     }
 
-    public function fetchMultipleEntities($type, $id)
+    public function getEntityById($type, $id)
     {
         $data = (new Admin\Service)->fetchEntityById($type, $id);
 

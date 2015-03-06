@@ -4,7 +4,7 @@ namespace Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
-class SlackServiceProvider extends BaseServiceProvider
+class ApiServiceProvider extends BaseServiceProvider
 {
     /**
      * Indicates if loading of the provider is deferred.
@@ -29,6 +29,11 @@ class SlackServiceProvider extends BaseServiceProvider
         {
             return new Mailgun($app);
         });
+
+        $this->app->bindShared('instance', function($app)
+        {
+            return new AwsInstance($app);
+        });
     }
 
     /**
@@ -38,6 +43,6 @@ class SlackServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('slack');
+        return array('slack', 'mailgun', 'instance');
     }
 }

@@ -118,8 +118,8 @@ return array(
         'Aws\Laravel\AwsServiceProvider',
         'Http\BasicAuth\ServiceProvider',
         'Trace\TraceServiceProvider',
-        'Services\SlackServiceProvider',
         'Dashboard\DashboardServiceProvider',
+        'Services\ApiServiceProvider',
 	),
 
 	/*

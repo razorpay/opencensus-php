@@ -12,18 +12,18 @@ class Service extends Base\Service
     {
         $entityClass = $this->getEntityClass($entity);
 
-        $id = $entityClass::verifyIdAndStripSign($entity);
+        $id = $entityClass::verifyIdAndStripSign($id);
 
         $repo = $this->getEntityRepository($entity);
 
-        $entity = (new $repo)->findOrFail($id);
+        $entity = (new $repo)->findOrFailPublic($id);
 
         return $entity->toArrayAdmin();
     }
 
     public function fetchMultipleEntities($entity, $input)
     {
-        $repo = 'Models\\'.ucfirst($entity).'\Repository';
+        $repo = $this->getEntityRepository($entity);
 
         $repo = new $repo;
 
@@ -36,12 +36,28 @@ class Service extends Base\Service
 
     protected function getEntityNamespace($entity)
     {
-        return 'Models\\'.ucfirst($entity);
+        $ns = '';
+
+        switch ($entity)
+        {
+            case 'refund':
+                $ns = 'Models\Payment\Refund';
+                break;
+
+            case 'dailysettlement':
+                $ns = 'Models\Settlement\Daily';
+                break;
+
+            default:
+                $ns = 'Models\\'.ucfirst($entity);
+        }
+
+        return $ns;
     }
 
     protected function getEntityClass($entity)
     {
-        return 'Models\\'.ucfirst($entity).'\Entity';
+        return $this->getEntityNamespace() . '\Entity';
     }
 
     protected function getEntityRepository($entity)
