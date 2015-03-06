@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::MERCHANT_ID,
         self::NAME,
         self::EXPIRY_MONTH,
