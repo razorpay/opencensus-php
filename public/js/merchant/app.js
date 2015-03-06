@@ -210,7 +210,7 @@ var app = angular.module('app', [
 
 }])
 .config(['$keepaliveProvider', '$idleProvider', function($keepaliveProvider, $idleProvider) {
-  $idleProvider.idleDuration(10*60);
+  $idleProvider.idleDuration(30*60);
   $idleProvider.warningDuration(15);
   $keepaliveProvider.interval(60);
 }])
