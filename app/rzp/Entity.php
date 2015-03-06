@@ -9,6 +9,7 @@ class Entity extends Razorpay\Api\Entity
     protected static function getDefinedEntitiesArray()
     {
         return array(
+            'card',
             'collection',
             'key',
             'merchant',
@@ -17,7 +18,8 @@ class Entity extends Razorpay\Api\Entity
             'refund',
             'settlement',
             'terminal',
-            'transaction');
+            'transaction'
+        );
     }
 
     protected static function getEntityClass($name)
