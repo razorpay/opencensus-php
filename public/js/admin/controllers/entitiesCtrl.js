@@ -119,9 +119,14 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
           $scope.allowNext = $scope.entity.count >= 10;
         }
         else {
-          angular.forEach(data.errors, function(value, key){
-            $scope.alerts.addAlert('danger', value);
-          });
+          if(data.errors) {
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });            
+          }
+          else {
+            $scope.alerts.addAlert('danger', null, true);
+          }
         }
       })
       .error(function(){

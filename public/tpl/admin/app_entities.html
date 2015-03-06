@@ -10,6 +10,9 @@
       List of all Entities - {{type | titlecase}}
     </div>
     <div class="row wrapper">
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
       <div class="col-sm-3 m-b-xs">
         Entity Type: 
         <select class="form-control input-sm w-sm inline m-r" name="entity_type" ng-model="entity_type">
