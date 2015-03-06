@@ -13,7 +13,7 @@ final class Route
     protected static $apiRoutes = array(
         'payment_create'                    => ['post',     'payments',                                 'PaymentController@postCreatePayment'                   ],
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentController@getJSONP'                            ],
-        'payment_callback'                  => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
+        'payment_callback'                  => ['post',     'payments/{id}/callback/{hash}/{key?}',     'PaymentController@postCallback'                        ],
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
@@ -93,7 +93,7 @@ final class Route
     public static $public = array(
         'payment_create',
         'payment_create_jsonp',
-        'payment_callback',
+//        'payment_callback',
         'merchant_public_get_banks',
         'mockatom_init_payment',
         'mockatom_choose_org',
@@ -199,6 +199,9 @@ final class Route
             'hosted' => array(
                 'merchant_secret'),
         );
+
+    public static $noauth = array(
+        'payment_callback');
 
     protected static $router;
 
@@ -325,6 +328,7 @@ final class Route
             self::addFilterOnRouteGroups($router, 'auth.app', 'internal');
             self::addFilterOnRouteGroups($router, 'auth.private', 'private');
             self::addFilterOnRouteGroups($router, 'auth.public', 'public');
+            self::addFilterOnRouteGroups($router, 'auth.noauth', 'noauth');
             self::addFilterOnRouteGroups($router, 'auth.proxy', 'proxy');
         });
 

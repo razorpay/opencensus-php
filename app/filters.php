@@ -65,6 +65,11 @@ Route::filter('auth.proxy', function()
     return BasicAuth::proxyAuth();
 });
 
+Route::filter('auth.noauth', function()
+{
+    return BasicAuth::noAuth();
+});
+
 /*
 |--------------------------------------------------------------------------
 | CSRF Protection Filter
