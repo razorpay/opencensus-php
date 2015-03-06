@@ -12,11 +12,11 @@ class Service extends Base\Service
     {
         $entityClass = $this->getEntityClass($entity);
 
-        $id = $entityClass::verifyIdAndStripSign($entity);
+        $id = $entityClass::verifyIdAndStripSign($id);
 
         $repo = $this->getEntityRepository($entity);
 
-        $entity = (new $repo)->findOrFail($id);
+        $entity = (new $repo)->findOrFailPublic($id);
 
         return $entity->toArrayAdmin();
     }
