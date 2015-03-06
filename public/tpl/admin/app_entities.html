@@ -14,7 +14,7 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="col-sm-3 m-b-xs">
-        Entity Type: 
+        Entity Type:
         <select class="form-control input-sm w-sm inline m-r" name="entity_type" ng-model="entity_type">
           <option value="transaction">Transactions</option>
           <option value="payment">Payments</option>
@@ -25,13 +25,12 @@
           <option value="adjustment">Adjustment</option>
           <option value="terminal">Terminal</option>
           <option value="card">Card</option>
-          <option value="bankaccount">Bank Account</option>
         </select>
       </div>
       <div class="col-sm-2">
       </div>
       <div class="col-sm-2">
-        Mode: 
+        Mode:
         <select class="form-control input-sm w-sm inline m-r" name="mode" ng-model="mode">
           <option value="live">Live</option>
           <option value="test">Test</option>
@@ -56,7 +55,7 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in entity.items">
-            <td ng-repeat="key in notSorted(row) | limitTo: 7" ng-init="value = row[key]" ng-click="showDetail(row)" style="cursor: pointer;">{{value}}</td> 
+            <td ng-repeat="key in notSorted(row) | limitTo: 7" ng-init="value = row[key]" ng-click="showDetail(row)" style="cursor: pointer;">{{value}}</td>
           </tr>
         </tbody>
       </table>
@@ -92,7 +91,7 @@
       </table>
     </div>
   </div>
-  <div class="modal-footer">                  
+  <div class="modal-footer">
       <button class="btn btn-primary" ng-click="ok()">OK</button>
   </div>
 </script>
