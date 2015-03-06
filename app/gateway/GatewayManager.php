@@ -53,7 +53,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         // Constructs gateway class name in the format
         // 'Gateway\{Mock}{GatewayName}\Gateway'
         $class = 'Gateway\\'.$mock.ucfirst($driver).'\\'.'Gateway';
-
+        $class = 'Gateway\NetBanking\Hdfc\Gateway';
         return new $class;
     }
 
