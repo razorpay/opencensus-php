@@ -249,6 +249,18 @@ class Generator
             return;
         }
 
+        if ((isset($input['from'])) and
+            (ctype_digit($input['from'])))
+        {
+            self::$fromTimestamp = (int) $input['from'];
+        }
+
+        if ((isset($input['to'])) and
+            (ctype_digit($input['to'])))
+        {
+            self::$toTimestamp = (int) $input['to'];
+        }
+
         if (self::$fromTimestamp === null)
         {
             // Get the timestamp on T-1 day 12 am for IST

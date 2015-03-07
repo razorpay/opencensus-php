@@ -25,12 +25,7 @@ class Reconciler
      */
     protected $reconciledAt;
 
-    /**
-     * It's set to tomorrow's timestamp if default is null
-     * The default value can be changed during testing
-     * @var int
-     */
-    public static $settledAt = null;
+    protected $settledAt = null;
 
     protected $transaction;
     protected $merchant;
@@ -47,18 +42,14 @@ class Reconciler
 
         $this->feeCalculator = new Pricing\Fee;
 
-        if (self::$settledAt === null)
-        {
-            $timestamp = Carbon::tomorrow('Asia/Kolkata')->timestamp;
-            self::$settledAt = $timestamp;
-        }
-
         $this->initRepos();
     }
 
     public function process($input)
     {
         $this->checkInput($input);
+
+        $this->initSettledAtTimestamp($input);
 
         $mprFile = $input['attachment-1'];
 
@@ -157,10 +148,9 @@ class Reconciler
             $txnData = array(
                 Transaction\Entity::GATEWAY_FEE => $data['transaction']['gateway_fee'],
                 Transaction\Entity::API_FEE => $apiFee);
-
         }
 
-        $txnData[Transaction\Entity::SETTLED_AT] = self::$settledAt;
+        $txnData[Transaction\Entity::SETTLED_AT] = $this->settledAt;
         $transaction->fill($txnData);
 
         $transaction->setReconciledAt($this->reconciledAt);
@@ -168,6 +158,23 @@ class Reconciler
         $this->txnRepo->save($transaction);
 
         return $transaction;
+    }
+
+    protected function initSettledAtTimestamp($input)
+    {
+        if ((isset($input['settled_at'])) and
+            (ctype_digit($input['settled_at'])))
+        {
+            $settledAt = $input['settled_at'];
+
+            $this->settledAt = $settledAt;
+        }
+
+        if ($this->settledAt === null)
+        {
+            $timestamp = Carbon::tomorrow('Asia/Kolkata')->timestamp;
+            $this->settledAt = $timestamp;
+        }
     }
 
     protected function updateCardDetail($card, $data)

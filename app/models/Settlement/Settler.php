@@ -42,61 +42,17 @@ class Settler
     {
         $this->input = $input;
 
-        $force = false;
-
-        $overwrite = false;
-
-        if ((isset($input['force']) and
-            ($input['force'] === '1')))
-        {
-            $force = true;
-        }
-
-        if ((isset($input['overwrite']) and
-            ($input['overwrite'] === '1')))
-        {
-            $overwrite = true;
-        }
-
         $txns = $this->fetchTransactionsToSettle($input);
 
-        if ($channel === null)
-        {
-            $channels = Channel::getChannels();
-        }
-        else
-        {
-            $channels = [$channel];
-        }
+        $channels = $this->getArrayedChannels($channel);
 
         foreach ($channels as $channel)
         {
-            $dailySettlement = $this->dailySetlRepo->getSettlementForToday('kotak');
-
-            if ($dailySettlement !== null)
-            {
-                if ($force === false)
-                {
-                    $data[$channel] = ['message' => 'Settlement already done for today!'];
-                    continue;
-                }
-                else
-                {
-                    $this->dailySettlement = $dailySettlement;
-                }
-            }
-
-            if ($overwrite === false)
-            {
-                $this->dailySettlement = new Settlement\Daily\Entity;
-
-                $this->dailySettlement->setTodayTimestamp();
-            }
-
-            $settleForChannelVar = 'settleFor' . ucfirst($channel);
+            $dailySettlement = $this->getOrCreateDailySettlementForToday($input, $channel);
 
             $this->traceSetlInitiated($channel);
 
+            $settleForChannelVar = 'settleFor' . ucfirst($channel);
             $data[$channel] = $this->$settleForChannelVar($txns);
         }
 
@@ -107,21 +63,28 @@ class Settler
     {
         $this->setlRepo->beginTransaction();
 
+        $data = [];
+
         try
         {
             list($settlements, $txns, $amounts) = $this->process($txns, Channel::KOTAK);
 
             $urlText = '';
 
+            $data['count'] = $settlements->count();
+            $data['transaction_count'] = $txns->count();
+
             if ($settlements->count() !== 0)
             {
                 list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
 
                 $this->updateDailySettlementAttributes($urlText, $urlExcel);
+
+                $data['setlFile'] = $urlText;
             }
             else
             {
-                $urlText = 'No settlements found!';
+                $data['message'] = 'No settlements found!';
             }
 
             $this->setlRepo->commit();
@@ -135,7 +98,7 @@ class Settler
 
         $this->successNotification($settlements, 'kotak');
 
-        return ['setlFile' => $urlText];
+        return $data;
     }
 
     protected function settleForAtom($input = array())
@@ -159,7 +122,10 @@ class Settler
 
         $this->successNotification($settlements, 'atom');
 
-        return ['sfd' => 'df'];
+        $data['count'] = $settlements->count();
+        $data['transaction_count'] = $txns->count();
+
+        return $data;
     }
 
     protected function settlementFailure($channel, $e)
@@ -321,8 +287,9 @@ class Settler
     {
         $ts = $this->initSettlementTimestamp($input);
 
-        if ((isset($input['all'])) and
-            ($input['all'] === '1'))
+        $all = $this->isInputValue($input, 'all', '1');
+
+        if ($all === true)
         {
             //
             // Fetch all txns whose expected settlement
@@ -384,5 +351,59 @@ class Settler
                 'timestmap' => self::$settlementTimestamp,
                 'time' => $time,
             ]);
+    }
+
+    protected function getOrCreateDailySettlementForToday(array $input, $channel)
+    {
+        $force = $this->isInputValue($input, 'force', '1');
+
+        $overwrite = $this->isInputValue($input, 'overwrite', '1');
+
+        $dailySettlement = $this->dailySetlRepo->getSettlementForToday('kotak');
+
+        if ($dailySettlement !== null)
+        {
+            if ($force === false)
+            {
+                $data[$channel] = ['message' => 'Settlement already done for today!'];
+                continue;
+            }
+            else
+            {
+                $this->dailySettlement = $dailySettlement;
+            }
+        }
+
+        if ($overwrite === false)
+        {
+            $this->dailySettlement = Settlement\Daily\Entity::newForToday();
+        }
+
+        return $dailySettlement;
+    }
+
+    protected function isInputValue(array $input, $key, $value)
+    {
+        if ((isset($input[$key])) and
+            ($input[$key] === $value))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getArrayedChannels($channel = null)
+    {
+        if ($channel === null)
+        {
+            $channels = Channel::getChannels();
+        }
+        else
+        {
+            $channels = [$channel];
+        }
+
+        return $channels;
     }
 }

@@ -50,6 +50,15 @@ class Entity extends Base\PublicEntity
         self::RECONCILED_AT,
         self::RETURNED_AT);
 
+    public static function newForToday()
+    {
+        $entity = new static;
+
+        $entity->setTodayTimestamp();
+
+        return $entity;
+    }
+
     public function setTodayTimestamp()
     {
         $this->attributes[self::DATE] = self::getTodayTimestamp();
