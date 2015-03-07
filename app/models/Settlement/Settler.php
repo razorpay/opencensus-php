@@ -111,15 +111,18 @@ class Settler
         {
             list($settlements, $txns, $amounts) = $this->process($txns, Channel::KOTAK);
 
-            list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
+            $urlText = '';
 
-            $urls = array();
-            $urls['kotak_settlement_txt'] = $urlText;
-            $urls['kotak_settlement_excel'] = $urlExcel;
+            if ($settlements->count() !== 0)
+            {
+                list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
 
-            $this->dailySettlement->setUrls($urls);
-            $this->dailySettlement->initiated_at = time();
-            $this->dailySettlement->saveOrFail();
+                $this->updateDailySettlementAttributes($urlText, $urlExcel);
+            }
+            else
+            {
+                $urlText = 'No settlements found!';
+            }
 
             $this->setlRepo->commit();
         }
@@ -272,6 +275,17 @@ class Settler
         );
 
         return [$settlements, $amounts];
+    }
+
+    protected function updateDailySettlementAttributes($urlText, $urlExcel)
+    {
+        $urls = array();
+        $urls['kotak_settlement_txt'] = $urlText;
+        $urls['kotak_settlement_excel'] = $urlExcel;
+
+        $this->dailySettlement->setUrls($urls);
+        $this->dailySettlement->initiated_at = time();
+        $this->dailySettlement->saveOrFail();
     }
 
     protected function shouldSettle(Transaction\Entity $txn, $channel)
