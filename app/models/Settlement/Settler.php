@@ -43,10 +43,19 @@ class Settler
         $this->input = $input;
 
         $force = false;
+
+        $overwrite = false;
+
         if ((isset($input['force']) and
             ($input['force'] === '1')))
         {
             $force = true;
+        }
+
+        if ((isset($input['overwrite']) and
+            ($input['overwrite'] === '1')))
+        {
+            $overwrite = true;
         }
 
         $txns = $this->fetchTransactionsToSettle($input);
@@ -64,14 +73,25 @@ class Settler
         {
             $dailySettlement = $this->dailySetlRepo->getSettlementForToday('kotak');
 
-            if (($dailySettlement !== null) and
-                ($force === false))
+            if ($dailySettlement !== null)
             {
-                return [];
+                if ($force === false)
+                {
+                    $data[$channel] = ['message' => 'Settlement already done for today!'];
+                    continue;
+                }
+                else
+                {
+                    $this->dailySettlement = $dailySettlement;
+                }
             }
 
-            $this->dailySettlement = new Settlement\Daily\Entity;
-            $this->dailySettlement->setTodayTimestamp();
+            if ($overwrite === false)
+            {
+                $this->dailySettlement = new Settlement\Daily\Entity;
+
+                $this->dailySettlement->setTodayTimestamp();
+            }
 
             $settleForChannelVar = 'settleFor' . ucfirst($channel);
 
@@ -136,7 +156,7 @@ class Settler
 
         $this->successNotification($settlements, 'atom');
 
-        return $file;
+        return ['sfd' => 'df'];
     }
 
     protected function settlementFailure($channel, $e)
@@ -290,7 +310,13 @@ class Settler
         if ((isset($input['all'])) and
             ($input['all'] === '1'))
         {
-            $txns = $this->txnRepo->fetchUnsettledTransactions();
+            //
+            // Fetch all txns whose expected settlement
+            // time is less than now
+            //
+            $ts = time();
+
+            $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
         }
         else
         {
