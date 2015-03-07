@@ -1,7 +1,7 @@
 //Registration Controller
 app
-.controller('RegisterCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', 
-  function($scope, $http, alertsFactory, transformRequestAsFormPost) {
+.controller('RegisterCtrl', ['$scope', '$http', 'alertsFactory', 'transformRequestAsFormPost', '$analytics',
+  function($scope, $http, alertsFactory, transformRequestAsFormPost, $analytics) {
     
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
@@ -38,6 +38,7 @@ app
         request
               .success(function(data) {
                 if(data.success) {
+                  $analytics.eventTrack('signUp', {id: data.data.id, name:data.data.name, email:data.data.email});
                   $scope.alerts.addAlert('success', "Registration Successful. Please check your inbox for confirmation email from Razorpay.", true);
                 }
                 else {

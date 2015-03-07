@@ -28,14 +28,14 @@ class Service extends Base\Service
         $this->queueConfirmationMail($merchant);
 
         $slackData = [
-            'merchant_id'   => $merchant->id,
+            'id'   => $merchant->id,
             'name'          => $merchant->name,
             'email'         => $merchant->email
         ];
 
         $this->slackPost('New Registration on Dashboard!', $slackData);
 
-        return [$error, $merchant->toArray()];
+        return [$error, $slackData];
     }
 
     protected function queueConfirmationMail($merchant)

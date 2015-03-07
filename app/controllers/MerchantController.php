@@ -54,7 +54,7 @@ class MerchantController extends BaseController
 
         list($error, $data) = (new Merchant\Service)->register($input);
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postResendConfirmation()
