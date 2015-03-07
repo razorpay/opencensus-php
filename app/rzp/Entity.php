@@ -11,6 +11,7 @@ class Entity extends Razorpay\Api\Entity
         return array(
             'card',
             'collection',
+            'daily_settlement',
             'key',
             'merchant',
             'payment',
@@ -24,8 +25,14 @@ class Entity extends Razorpay\Api\Entity
 
     protected static function getEntityClass($name)
     {
-        if (class_exists(__NAMESPACE__.'\\'.ucfirst($name)))
-            return __NAMESPACE__.'\\'.ucfirst($name);
+        $name = studly_case($name);
+
+        $class = __NAMESPACE__.'\\'.$name;
+
+        if (class_exists($class))
+        {
+            return $class;
+        }
 
         return parent::getEntityClass($name);
     }
