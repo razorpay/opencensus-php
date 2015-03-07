@@ -19,7 +19,9 @@ var app = angular.module('app', [
     'angularFileUpload',
     'ngIdle',
     'ngBusy',
-    'noCAPTCHA'
+    'noCAPTCHA',
+    'angulartics',
+    'angulartics.segment.io'
   ])
 .run(
   [          '$rootScope', '$state', '$stateParams', 'user', 'authorization', 
@@ -40,8 +42,8 @@ var app = angular.module('app', [
   ]
 )
 .config(
-  [          '$stateProvider', '$urlRouterProvider', '$controllerProvider', '$compileProvider', '$filterProvider', '$provide',
-    function ($stateProvider,   $urlRouterProvider,   $controllerProvider,   $compileProvider,   $filterProvider,   $provide) {
+  [          '$stateProvider', '$urlRouterProvider', '$controllerProvider', '$compileProvider', '$filterProvider', '$provide', '$analyticsProvider',
+    function ($stateProvider,   $urlRouterProvider,   $controllerProvider,   $compileProvider,   $filterProvider,   $provide, $analyticsProvider) {
         
         // lazy controller, directive and service
         app.controller = $controllerProvider.register;
