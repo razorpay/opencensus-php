@@ -107,6 +107,9 @@ else {
 }
 
 </script>
-Your payment is currently in progress. Please wait.
+
+<pre> <?php echo json_encode($data, JSON_PRETTY_PRINT); ?> </pre>
+
+<!--Your payment is currently in progress. Please wait.-->
 </body>
 </html>

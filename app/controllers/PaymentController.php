@@ -138,12 +138,10 @@ class PaymentController extends BaseController
             $data = $error->toPublicArray();
             $data['http_status_code'] = $error->getHttpStatusCode();
         }
-        //finally
+
+        if ($data !== null)
         {
-            if ($data !== null)
-            {
-                return View::make('gateway.callback')->with('data', $data);
-            }
+            return View::make('gateway.callback')->with('data', $data);
         }
     }
 
