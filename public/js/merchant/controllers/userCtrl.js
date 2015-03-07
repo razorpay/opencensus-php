@@ -22,6 +22,14 @@ app.controller('UserCtrl', ['$scope', '$http', '$state', 'user', '$modal', 'aler
           }
         };
         SupportKit._updateUser();
+
+        analytics.identify(data.id, {
+          name: data.name,
+          email: data.email,
+          activated: data.activated,
+          submitted: data.submitted
+        });
+
       });
     };
 
