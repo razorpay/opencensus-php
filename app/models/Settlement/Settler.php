@@ -63,7 +63,7 @@ class Settler
     {
         $this->setlRepo->beginTransaction();
 
-        $data = [];
+        $data['channel'] = 'kotak';
 
         try
         {
@@ -96,7 +96,7 @@ class Settler
             $this->settlementFailure('kotak', $e);
         }
 
-        $this->successNotification($settlements, 'kotak');
+        $this->successNotification($data, $settlements);
 
         return $data;
     }
@@ -120,10 +120,11 @@ class Settler
 
         $this->trace->info(TraceCode::SETTLEMENT_ATOM_INITIATED_RECONCILED);
 
-        $this->successNotification($settlements, 'atom');
-
         $data['count'] = $settlements->count();
         $data['transaction_count'] = $txns->count();
+        $data['channel'] = 'atom';
+
+        $this->successNotification($data, $settlements);
 
         return $data;
     }
@@ -139,12 +140,8 @@ class Settler
         throw $e;
     }
 
-    protected function successNotification($settlements, $channel)
+    protected function successNotification($data, $settlements)
     {
-        $data = array(
-            'channel' => $channel,
-            'setl_count' => $settlements->count());
-
         (new SlackNotification)->queueOperationSuccess('setl_initiate', $data);
 
         Dashboard::send('settlement', $settlements);
@@ -348,7 +345,7 @@ class Settler
             TraceCode::SETTLEMENT_INITIATED,
             [
                 'channel' => $channel,
-                'timestmap' => self::$settlementTimestamp,
+                'timestamp' => self::$settlementTimestamp,
                 'time' => $time,
             ]);
     }
