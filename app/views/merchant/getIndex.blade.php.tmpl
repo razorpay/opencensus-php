@@ -85,9 +85,11 @@
         Beta: 'betadashboard.razorpay.com'
       }
 
-      for(var i in list){
-        if(window.location.hostname == list[i]){
-          SupportKit.init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'});
+      if (screen && screen.width > 480) {
+        for(var i in list){
+          if(window.location.hostname == list[i]){
+            SupportKit.init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'});
+          }
         }
       }
     </script>
