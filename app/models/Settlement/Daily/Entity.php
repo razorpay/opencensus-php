@@ -13,6 +13,8 @@ class Entity extends Base\PublicEntity
     const AMOUNT            = 'amount';
     const API_FEE           = 'api_fee';
     const GATEWAY_FEE       = 'gateway_fee';
+    const SETTLEMENT_COUNT  = 'settlement_count';
+    const TRANSACTION_COUNT = 'transaction_count';
     const URLS              = 'urls';
     const INITIATED_AT      = 'initiated_at';
     const RECONCILED_AT     = 'reconciled_at';
@@ -34,6 +36,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::API_FEE,
         self::GATEWAY_FEE,
+        self::SETTLEMENT_COUNT,
+        self::TRANSACTION_COUNT,
         self::URLS,
         self::INITIATED_AT,
         self::RECONCILED_AT,

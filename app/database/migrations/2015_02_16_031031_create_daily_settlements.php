@@ -33,6 +33,10 @@ class CreateDailySettlements extends Migration
 
             $table->integer(DailySettlement::GATEWAY_FEE);
 
+            $table->integer(DailySettlement::SETTLEMENT_COUNT);
+
+            $table->integer(DailySettlement::TRANSACTION_COUNT);
+
             $table->text(DailySettlement::URLS);
 
             $table->integer(DailySettlement::INITIATED_AT);

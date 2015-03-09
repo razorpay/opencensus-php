@@ -86,7 +86,11 @@ class Settler
             {
                 list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
 
-                $this->updateDailySettlementAttributes($urlText, $urlExcel);
+                $this->updateDailySettlementAttributes(
+                    $urlText,
+                    $urlExcel,
+                    $settlements->count(),
+                    $txns->count());
 
                 $data['setlFile'] = $urlText;
             }
@@ -250,15 +254,19 @@ class Settler
         return [$settlements, $amounts];
     }
 
-    protected function updateDailySettlementAttributes($urlText, $urlExcel)
+    protected function updateDailySettlementAttributes($urlText, $urlExcel, $setlCount, $txnCount)
     {
         $urls = array();
         $urls['kotak_settlement_txt'] = $urlText;
         $urls['kotak_settlement_excel'] = $urlExcel;
 
-        $this->dailySettlement->setUrls($urls);
-        $this->dailySettlement->initiated_at = time();
-        $this->dailySettlement->saveOrFail();
+        $dailySettlement = $this->dailySettlement;
+        $dailySettlement->setUrls($urls);
+        $dailySettlement->initiated_at = time();
+        $dailySettlement->settlement_count = $setlCount;
+        $dailySettlement->transaction_count = $txnCount;
+
+        $dailySettlement->saveOrFail();
     }
 
     protected function shouldSettle(Transaction\Entity $txn, $channel)

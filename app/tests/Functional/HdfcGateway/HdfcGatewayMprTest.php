@@ -163,6 +163,8 @@ class HdfcGatewayMprTest extends TestCase
 //                    'amount' => 4387640,
                     'api_fee' => 28085,
                     'gateway_fee' => 84275,
+                    'settlement_count' => '2',
+                    'transaction_count' => '10',
                 ],
             ]
         );
