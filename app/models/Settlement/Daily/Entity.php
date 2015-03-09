@@ -125,4 +125,14 @@ class Entity extends Base\PublicEntity
     {
         return (int) $this->attributes[self::GATEWAY_FEE];
     }
+
+    public function getSettlementCountAttribute()
+    {
+        return (int) $this->attributes[self::SETTLEMENT_COUNT];
+    }
+
+    public function getTransactionCountAttribute()
+    {
+        return (int) $this->attributes[self::TRANSACTION_COUNT];
+    }
 }
