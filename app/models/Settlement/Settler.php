@@ -46,11 +46,19 @@ class Settler
 
         $channels = $this->getArrayedChannels($channel);
 
+        $data = [];
+
         foreach ($channels as $channel)
         {
-            $dailySettlement = $this->getOrCreateDailySettlementForToday($input, $channel);
+            $res = $this->getOrCreateDailySettlementForToday($input, $channel);
 
-            $this->traceSetlInitiated($channel);
+            if ($res !== null)
+            {
+                $data[$channel] = $res;
+                continue;
+            }
+
+            $this->traceSetlInitiating($channel);
 
             $settleForChannelVar = 'settleFor' . ucfirst($channel);
             $data[$channel] = $this->$settleForChannelVar($txns);
@@ -101,7 +109,7 @@ class Settler
         return $data;
     }
 
-    protected function settleForAtom($input = array())
+    protected function settleForAtom($txns)
     {
         $this->setlRepo->beginTransaction();
 
@@ -142,6 +150,8 @@ class Settler
 
     protected function successNotification($data, $settlements)
     {
+        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
+
         (new SlackNotification)->queueOperationSuccess('setl_initiate', $data);
 
         Dashboard::send('settlement', $settlements);
@@ -337,12 +347,12 @@ class Settler
         return self::$settlementTimestamp;
     }
 
-    protected function traceSetlInitiated($channel)
+    protected function traceSetlInitiating($channel)
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
 
         $this->trace->info(
-            TraceCode::SETTLEMENT_INITIATED,
+            TraceCode::SETTLEMENT_INITIATING,
             [
                 'channel' => $channel,
                 'timestamp' => self::$settlementTimestamp,
@@ -362,8 +372,11 @@ class Settler
         {
             if ($force === false)
             {
-                $data[$channel] = ['message' => 'Settlement already done for today!'];
-                continue;
+                $data['message'] = 'Settlement already done for today!';
+
+                $dailySettlement = null;
+
+                return $data;
             }
             else
             {
@@ -375,8 +388,6 @@ class Settler
         {
             $this->dailySettlement = Settlement\Daily\Entity::newForToday();
         }
-
-        return $dailySettlement;
     }
 
     protected function isInputValue(array $input, $key, $value)

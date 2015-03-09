@@ -46,6 +46,7 @@ class TraceCode
     const MPR_GENERATED                             = 'MPR_GENERATED';
     const MPR_RECONCILED                            = 'MPR_RECONCILED';
     const MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK   = 'MPR_RECONCILE_UNRECOGNIZED_CARD_NETWORK';
+    const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
     const SETTLEMENT_RECONCILED                     = 'SETTLEMENT_RECONCILED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
