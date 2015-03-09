@@ -30,7 +30,10 @@ class SlackNotification
 
     public function queueOperationSuccess($operation, $data)
     {
-        $message = '```'.$this->messages[$operation] . '\n ' . json_encode($data).'```';
+        $data = ['message' => $this->messages[$operation]] + $data;
+
+        $str = json_encode($data, JSON_PRETTY_PRINT);
+        $message = '```' . $str . '```';
 
         $func = __CLASS__ . '@sendSlackNotification';
 

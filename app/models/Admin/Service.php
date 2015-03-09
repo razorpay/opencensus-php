@@ -57,7 +57,7 @@ class Service extends Base\Service
 
     protected function getEntityClass($entity)
     {
-        return $this->getEntityNamespace() . '\Entity';
+        return $this->getEntityNamespace($entity) . '\Entity';
     }
 
     protected function getEntityRepository($entity)

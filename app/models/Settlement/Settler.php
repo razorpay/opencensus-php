@@ -42,41 +42,25 @@ class Settler
     {
         $this->input = $input;
 
-        $force = false;
-        if ((isset($input['force']) and
-            ($input['force'] === '1')))
-        {
-            $force = true;
-        }
-
         $txns = $this->fetchTransactionsToSettle($input);
 
-        if ($channel === null)
-        {
-            $channels = Channel::getChannels();
-        }
-        else
-        {
-            $channels = [$channel];
-        }
+        $channels = $this->getArrayedChannels($channel);
+
+        $data = [];
 
         foreach ($channels as $channel)
         {
-            $dailySettlement = $this->dailySetlRepo->getSettlementForToday('kotak');
+            $res = $this->getOrCreateDailySettlementForToday($input, $channel);
 
-            if (($dailySettlement !== null) and
-                ($force === false))
+            if ($res !== null)
             {
-                return [];
+                $data[$channel] = $res;
+                continue;
             }
 
-            $this->dailySettlement = new Settlement\Daily\Entity;
-            $this->dailySettlement->setTodayTimestamp();
+            $this->traceSetlInitiating($channel);
 
             $settleForChannelVar = 'settleFor' . ucfirst($channel);
-
-            $this->traceSetlInitiated($channel);
-
             $data[$channel] = $this->$settleForChannelVar($txns);
         }
 
@@ -87,19 +71,33 @@ class Settler
     {
         $this->setlRepo->beginTransaction();
 
+        $data['channel'] = 'kotak';
+
         try
         {
             list($settlements, $txns, $amounts) = $this->process($txns, Channel::KOTAK);
 
-            list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
+            $urlText = '';
 
-            $urls = array();
-            $urls['kotak_settlement_txt'] = $urlText;
-            $urls['kotak_settlement_excel'] = $urlExcel;
+            $data['count'] = $settlements->count();
+            $data['transaction_count'] = $txns->count();
 
-            $this->dailySettlement->setUrls($urls);
-            $this->dailySettlement->initiated_at = time();
-            $this->dailySettlement->saveOrFail();
+            if ($settlements->count() !== 0)
+            {
+                list($urlText, $urlExcel) = $this->createSettlementFile($settlements, $txns);
+
+                $this->updateDailySettlementAttributes(
+                    $urlText,
+                    $urlExcel,
+                    $settlements->count(),
+                    $txns->count());
+
+                $data['setlFile'] = $urlText;
+            }
+            else
+            {
+                $data['message'] = 'No settlements found!';
+            }
 
             $this->setlRepo->commit();
         }
@@ -110,12 +108,12 @@ class Settler
             $this->settlementFailure('kotak', $e);
         }
 
-        $this->successNotification($settlements, 'kotak');
+        $this->successNotification($data, $settlements);
 
-        return ['setlFile' => $urlText];
+        return $data;
     }
 
-    protected function settleForAtom($input = array())
+    protected function settleForAtom($txns)
     {
         $this->setlRepo->beginTransaction();
 
@@ -134,9 +132,13 @@ class Settler
 
         $this->trace->info(TraceCode::SETTLEMENT_ATOM_INITIATED_RECONCILED);
 
-        $this->successNotification($settlements, 'atom');
+        $data['count'] = $settlements->count();
+        $data['transaction_count'] = $txns->count();
+        $data['channel'] = 'atom';
 
-        return $file;
+        $this->successNotification($data, $settlements);
+
+        return $data;
     }
 
     protected function settlementFailure($channel, $e)
@@ -150,11 +152,9 @@ class Settler
         throw $e;
     }
 
-    protected function successNotification($settlements, $channel)
+    protected function successNotification($data, $settlements)
     {
-        $data = array(
-            'channel' => $channel,
-            'setl_count' => $settlements->count());
+        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
         (new SlackNotification)->queueOperationSuccess('setl_initiate', $data);
 
@@ -254,6 +254,21 @@ class Settler
         return [$settlements, $amounts];
     }
 
+    protected function updateDailySettlementAttributes($urlText, $urlExcel, $setlCount, $txnCount)
+    {
+        $urls = array();
+        $urls['kotak_settlement_txt'] = $urlText;
+        $urls['kotak_settlement_excel'] = $urlExcel;
+
+        $dailySettlement = $this->dailySettlement;
+        $dailySettlement->setUrls($urls);
+        $dailySettlement->initiated_at = time();
+        $dailySettlement->settlement_count = $setlCount;
+        $dailySettlement->transaction_count = $txnCount;
+
+        $dailySettlement->saveOrFail();
+    }
+
     protected function shouldSettle(Transaction\Entity $txn, $channel)
     {
         return ($txn->getChannel() === $channel);
@@ -287,10 +302,17 @@ class Settler
     {
         $ts = $this->initSettlementTimestamp($input);
 
-        if ((isset($input['all'])) and
-            ($input['all'] === '1'))
+        $all = $this->isInputValue($input, 'all', '1');
+
+        if ($all === true)
         {
-            $txns = $this->txnRepo->fetchUnsettledTransactions();
+            //
+            // Fetch all txns whose expected settlement
+            // time is less than now
+            //
+            $ts = time();
+
+            $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
         }
         else
         {
@@ -333,16 +355,71 @@ class Settler
         return self::$settlementTimestamp;
     }
 
-    protected function traceSetlInitiated($channel)
+    protected function traceSetlInitiating($channel)
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
 
         $this->trace->info(
-            TraceCode::SETTLEMENT_INITIATED,
+            TraceCode::SETTLEMENT_INITIATING,
             [
                 'channel' => $channel,
-                'timestmap' => self::$settlementTimestamp,
+                'timestamp' => self::$settlementTimestamp,
                 'time' => $time,
             ]);
+    }
+
+    protected function getOrCreateDailySettlementForToday(array $input, $channel)
+    {
+        $force = $this->isInputValue($input, 'force', '1');
+
+        $overwrite = $this->isInputValue($input, 'overwrite', '1');
+
+        $dailySettlement = $this->dailySetlRepo->getSettlementForToday('kotak');
+
+        if ($dailySettlement !== null)
+        {
+            if ($force === false)
+            {
+                $data['message'] = 'Settlement already done for today!';
+
+                $dailySettlement = null;
+
+                return $data;
+            }
+            else
+            {
+                $this->dailySettlement = $dailySettlement;
+            }
+        }
+
+        if ($overwrite === false)
+        {
+            $this->dailySettlement = Settlement\Daily\Entity::newForToday();
+        }
+    }
+
+    protected function isInputValue(array $input, $key, $value)
+    {
+        if ((isset($input[$key])) and
+            ($input[$key] === $value))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getArrayedChannels($channel = null)
+    {
+        if ($channel === null)
+        {
+            $channels = Channel::getChannels();
+        }
+        else
+        {
+            $channels = [$channel];
+        }
+
+        return $channels;
     }
 }

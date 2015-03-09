@@ -23,11 +23,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchUnsettledTransactions()
+    public function fetchUnsettledTransactions($timestamp)
     {
         $repo = $this->repo;
 
-        return $repo::where(Transaction\Entity::SETTLED, '=', 0)
+        return $repo::where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
+                    ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->whereNotNull(Transaction\Entity::RECONCILED_AT)
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)
