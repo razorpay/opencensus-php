@@ -292,6 +292,9 @@ class Processor
 
     protected function tracePaymentNewRequest($input)
     {
+        // @note: please keep this line here. It unsets card input in case
+        // it's present
+        unset($input['card']);
         $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $input);
     }
 
