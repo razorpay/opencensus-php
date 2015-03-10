@@ -46,6 +46,20 @@ trait EntityFetchTrait
         return $content;
     }
 
+    protected function getEntityById($entity, $id)
+    {
+        $this->ba->proxyAuth();
+
+        $url = '/'.$entity.'s/'.$id;
+        $request = array(
+            'url' => $url,
+            'method' => 'GET');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function getLastTransaction($admin = false)
     {
         return $this->getLastEntity('transaction', $admin);
