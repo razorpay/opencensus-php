@@ -112,6 +112,24 @@ class RefundTest extends TestCase
         $this->startTest($this->payment['public_id'], 0);
     }
 
+    public function testFetchRefundById()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+        $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
+
+        $refund = $this->getEntityById('refund', $rfnd['public_id']);
+        $this->assertArraySelectiveEquals($rfnd->toArrayPublic(), $refund);
+
+        $refunds = $this->getEntities('refund');
+        $rfnds = ['entity' => 'collection', 'count' => 1, 'items' => [$rfnd->toArrayPublic()]];
+        $this->assertArraySelectiveEquals($rfnds, $refunds);
+    }
+
+    public function testFetchRefunds()
+    {
+        ;
+    }
+
     public function startTest($paymentId = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
