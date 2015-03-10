@@ -51,6 +51,7 @@ class Gateway extends BaseGateway
         $data = $this->processPaymentInitiationResponse($response, $input);
 
         $url = $this->createAtomRedirectUrl($data);
+        // \Log::info($url);
 
         $data = array('redirectUrl' => $url);
 
@@ -69,6 +70,8 @@ class Gateway extends BaseGateway
      */
     public function callback(array $input)
     {
+        // \Log::info(json_encode($input, JSON_PRETTY_PRINT));
+
         // Get payment-id of the transaction
         $paymentId = $input['mer_txn'];
 
@@ -286,7 +289,6 @@ class Gateway extends BaseGateway
             'txnscamt'      =>  '0',
             'clientcode'    =>  urlencode(base64_encode('123')),
             'txnid'         =>  $input['payment']['public_id'],
-            'ru'            =>  $input['callbackUrl'],
             'date'          =>  $time,
             'custacc'       =>  '123456789012',
         );
@@ -301,6 +303,8 @@ class Gateway extends BaseGateway
             $content['mdd'] = $this->getMddField($input);
         }
 
+        $content['ru'] = $input['callbackUrl'];
+
         $request['content'] = $content;
         $request['url'] = Urls::PAYMENT_URL;
 
@@ -309,7 +313,7 @@ class Gateway extends BaseGateway
 
     protected function getMddField($input)
     {
-        $mdd = 'channelid=int';
+        $mdd = 'channelid=INT';
         $mdd .= '|carddata=' . Card::encryptCardData($input['card']);
         $mdd .= '|cardhname=' . $input['card']['name'];
 
@@ -324,7 +328,7 @@ class Gateway extends BaseGateway
 
         if ($this->mode === Mode::TEST)
         {
-            $atomBankCode = '2001';
+            // $atomBankCode = '2001';
         }
 
         return $atomBankCode;

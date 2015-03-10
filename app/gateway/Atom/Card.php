@@ -6,10 +6,17 @@ class Card
 {
     public static function encryptCardData($card)
     {
+        $expiryMonth = (string) $card['expiry_month'];
+
+        if (strlen($expiryMonth) === 1)
+        {
+            $expiryMonth = '0'.$expiryMonth;
+        }
+
         $str =  $card['number']         . '|' .
                 $card['cvv']            . '|' .
                 $card['expiry_year']    . '|' .
-                $card['expiry_month'];
+                $expiryMonth;
 
         return self::encode($str);
     }

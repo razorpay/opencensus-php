@@ -69,6 +69,8 @@ class BaseGateway
 
         // echo 'Url: ' . $request['url'] . PHP_EOL;
         // echo $request['content'] . PHP_EOL . PHP_EOL;
+        // \Log::info( 'Url: ' . $request['url'] . PHP_EOL);
+        // \Log::info( json_encode($request['content'], JSON_PRETTY_PRINT) . PHP_EOL . PHP_EOL);
 
         $response = Requests::post(
                     $request['url'],
@@ -77,6 +79,7 @@ class BaseGateway
                     $request['options']);
 
         // echo 'Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL;
+        // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
 
         return $response;
     }
