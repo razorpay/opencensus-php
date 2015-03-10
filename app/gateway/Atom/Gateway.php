@@ -316,6 +316,7 @@ class Gateway extends BaseGateway
         $mdd = 'channelid=int';
         $mdd .= '|carddata=' . Card::encryptCardData($input['card']);
         $mdd .= '|cardhname=' . $input['card']['name'];
+        $mdd .= '|cardtype=' . 'DC';
 
         return $mdd;
     }
