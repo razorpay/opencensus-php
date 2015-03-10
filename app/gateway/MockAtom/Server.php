@@ -159,12 +159,12 @@ class Server
         }
         else if ($method === 'card')
         {
-            $data['discriminator'] = 'CC';
+            $data['discriminator'] = 'DC';
 
             $card = $payment->card;
 
-            if ($card->getType() === Card\Type::DEBIT)
-                $data['discriminator'] = 'DC';
+            if ($card->getType() === Card\Type::CREDIT)
+                $data['discriminator'] = 'CC';
 
             $xx = str_repeat('X', $card['length'] - 10);
             $data['CardNumber'] = $card['iin'] . $xx . $card['last4'];
