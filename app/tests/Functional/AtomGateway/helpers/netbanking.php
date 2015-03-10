@@ -106,6 +106,7 @@ return [
         'entity' => 'transaction',
     ],
 
+
     'testDebitCardPaymentOnSharedTerminal' => [
         'entity' => 'transaction',
         'type' => 'payment',
