@@ -61,6 +61,6 @@ class Repository extends Base\Repository
 
         return $repo::where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->find($id);
+                    ->findOrFailPublic($id);
     }
 }

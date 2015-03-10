@@ -52,20 +52,6 @@ class Service extends Base\Service
         $this->processor()->verify($id);
     }
 
-    public function retrieveRefund($id)
-    {
-        $refund = $this->core->retrieveRefundById($id, $this->merchant->getKey());
-
-        return $refund->toArrayPublic();
-    }
-
-    public function retrieveMultipleRefunds($input)
-    {
-        $refunds = (new Refund\Repository)->fetch($input, $this->merchant->getKey());
-
-        return $refunds->toArrayPublic();
-    }
-
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
         Payment\Entity::verifyIdAndStripSign($paymentId);
