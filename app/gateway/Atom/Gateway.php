@@ -313,7 +313,7 @@ class Gateway extends BaseGateway
 
     protected function getMddField($input)
     {
-        $mdd = 'channelid=INT';
+        $mdd = 'channelid=int';
         $mdd .= '|carddata=' . Card::encryptCardData($input['card']);
         $mdd .= '|cardhname=' . $input['card']['name'];
 
@@ -328,7 +328,7 @@ class Gateway extends BaseGateway
 
         if ($this->mode === Mode::TEST)
         {
-            // $atomBankCode = '2001';
+            $atomBankCode = '2001';
         }
 
         return $atomBankCode;
