@@ -53,13 +53,13 @@ class Fee
 
     protected function getFeesByPercentAndFixedRatesForAtom($amount, $percent, $fixed)
     {
-        $fee = $this->getUnroundedFees($amount, $percent, $fixed);
+        $fee = (float) $this->getUnroundedFees($amount, $percent, $fixed);
 
-        $fee = round($fee);
-
-        $serviceTax = (int) floor($fee * (self::SERVICE_TAX_PERCENT + self::EDUCATION_CESS_PERCENT) / 100);
+        $serviceTax = $fee * (self::SERVICE_TAX_PERCENT + self::EDUCATION_CESS_PERCENT) / 100;
 
         $fee += $serviceTax;
+
+        $fee = (int) round($fee);
 
         return $fee;
     }
