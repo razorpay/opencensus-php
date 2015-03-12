@@ -72,7 +72,7 @@ class NodalAccount
     public function __construct()
     {
         // Date format is DD/MM/YYYY in human representation
-        $this->date = Carbon::today('Asia/Kolkata')->format('d/m/y');
+        $this->date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
     }
 
     public function generateSettlementFile($settlements, $txns)

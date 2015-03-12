@@ -103,7 +103,7 @@ trait FileHandlerTrait
 
         foreach ($data as $row)
         {
-            $txt .= implode('~', array_values($row)) . '\n';
+            $txt .= implode('~', array_values($row)) . "\r\n";
         }
 
         return $txt;
@@ -233,7 +233,7 @@ trait FileHandlerTrait
 
         $file = fopen($filePath, 'r');
         $txt = fread($file, filesize($filePath));
-        $lines = explode('\n', $txt);
+        $lines = explode("\r\n", $txt);
 
         return $lines;
     }
