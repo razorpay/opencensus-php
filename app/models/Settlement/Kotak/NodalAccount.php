@@ -87,10 +87,18 @@ class NodalAccount
 
             $ba = $merchant->bankAccount;
 
+            $type = 'NEFT';
+            $ifsc = $ba->getIfscCode();
+
+            if (substr($ifsc, 0, 4) === 'KKBK')
+            {
+                $type = 'IFT';
+            }
+
             $array = array(
                 'Client_Code'           => 'NODAL',
                 'Product_Code'          => 'CMSPAY',
-                'Payment_Type'          => 'NEFT',
+                'Payment_Type'          => $type,
                 'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
@@ -98,7 +106,7 @@ class NodalAccount
                 'Bank_Code_Indicator'   => 'M',
                 'Beneficiary_Code'      => $ba->beneficiary_code,
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
-                'IFSC Code'             => $ba->getIfscCode(),
+                'IFSC Code'             => $ifsc,
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
                 'Payment Details 2'     => $merchant->getPublicId(),
