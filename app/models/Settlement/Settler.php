@@ -235,8 +235,9 @@ class Settler
         if (($totalSetlApiFee !== 0) and
             ($channel === Settlement\Channel::KOTAK))
         {
-            $setl = $this->collectApiFees($totalSetlApiFee, $channel);
+            list($setl, $adjTxn) = $this->collectApiFees($totalSetlApiFee, $channel);
             $settlements->push($setl);
+            $txns->push($adjTxn);
 
             $totalSetlAmount += $totalSetlApiFee;
         }
@@ -292,9 +293,9 @@ class Settler
 
         $feeAccount = $this->merchantRepo->findOrFail(Merchant\Account::API_FEE_ACCOUNT);
 
-        $setl = (new Settlement\Merchant($feeAccount, $channel))->collectApiFees($apiFee);
+        list($setl, $adjTxn) = (new Settlement\Merchant($feeAccount, $channel))->collectApiFees($apiFee);
 
-        return $setl;
+        return [$setl, $adjTxn];
     }
 
 
