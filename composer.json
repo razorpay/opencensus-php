@@ -4,7 +4,7 @@
     "keywords": ["dashboard", "razorpay"],
     "require": {
         "laravel/framework": "4.2.*",
-        "razorpay/razorpay-php": "dev-master",
+        "razorpay/razorpay": "dev-master",
         "rmccue/requests": ">=1.0",
         "aws/aws-sdk-php-laravel": "1.*",
         "doctrine/cache": "1.*",
@@ -20,10 +20,6 @@
         "mockery/mockery": "dev-master@dev"
     },
     "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:Razorpay/razorpay-php.git"
-        },
         {
             "type": "vcs",
             "url": "git@bitbucket.org:razorpay/spine.git"
