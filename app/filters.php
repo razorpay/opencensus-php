@@ -44,7 +44,7 @@ App::after(function($request, $response)
 |
 */
 
-Route::filter('auth', function()
+Route::filter('auth.merchant', function()
 {
 	if (Auth::merchant()->guest())
     {
@@ -52,7 +52,7 @@ Route::filter('auth', function()
     }
 });
 
-Route::filter('auth_admin', function()
+Route::filter('auth.admin', function()
 {
 	if (Auth::admin()->guest())
     {
@@ -60,7 +60,7 @@ Route::filter('auth_admin', function()
     }
 });
 
-Route::filter('superadmin', function()
+Route::filter('auth.superadmin', function()
 {
     if (Auth::admin()->user()->isSuperAdmin() === false)
     {
@@ -88,7 +88,7 @@ Route::filter('auth.internal', function() use ($app)
 |
 */
 
-Route::filter('guest', function()
+Route::filter('guest.merchant', function()
 {
 	if (Auth::merchant()->check())
     {
@@ -97,7 +97,7 @@ Route::filter('guest', function()
     }
 });
 
-Route::filter('guest_admin', function()
+Route::filter('guest.admin', function()
 {
 	if (Auth::admin()->check())
     {

@@ -20,7 +20,7 @@ Route::get('/admin', 'AdminController@getIndex');
 
 Route::post('/contact', 'MerchantController@postContact');
 
-Route::group(array('before' => 'auth'), function()
+Route::group(array('before' => 'auth.merchant'), function()
 {
     Route::get('/user', 'MerchantController@getMerchant');
 
@@ -82,7 +82,7 @@ Route::group(array('before' => 'auth'), function()
     });
 });
 
-Route::group(array('before' => 'guest'), function()
+Route::group(array('before' => 'guest.merchant'), function()
 {
     Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
 
@@ -100,7 +100,7 @@ Route::group(array('before' => 'guest'), function()
     });
 });
 
-Route::group(array('before' => 'auth_admin'), function()
+Route::group(array('before' => 'auth.admin'), function()
 {
     Route::get('/admin/user', 'AdminController@getAdmin');
 
@@ -151,7 +151,7 @@ Route::group(array('before' => 'auth_admin'), function()
 
     Route::get('/admin/{mode}/{entity}/{entity_id}', 'AdminController@getEntityById');
     
-    Route::group(array('before' => 'superadmin'), function()
+    Route::group(array('before' => 'auth.superadmin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');
 
@@ -162,7 +162,7 @@ Route::group(array('before' => 'auth_admin'), function()
     });
 });
 
-Route::group(array('before' => 'guest_admin'), function()
+Route::group(array('before' => 'guest.admin'), function()
 {
     Route::post('/admin/signin', array('before' => 'csrf','uses'=> 'AdminController@postSignin'));
 });
