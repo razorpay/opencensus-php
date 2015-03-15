@@ -55,6 +55,8 @@
     'MAIL_PRETEND'      => true,
 
     'SLACK_ENABLE'      => false,
-    'SLACK_KEY'         => ''
+    'SLACK_KEY'         => '',
+
+    'CONTEXT'           => 'testing'
     );
 ?>

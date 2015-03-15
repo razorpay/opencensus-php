@@ -64,6 +64,8 @@
     'SLACK_KEY'         => '', // Slack Incoming Webhook key
 
     //Secret for nocaptcha, not required on dev machines
-    'NOCAPTCHA_SECRET'  => ''
+    'NOCAPTCHA_SECRET'  => '',
+
+    'CONTEXT'           => 'dev'
     );
 ?>
