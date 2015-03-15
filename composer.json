@@ -38,7 +38,9 @@
             "app/database/seeds",
             "app/http",
             "app/tests",
-            "app/rzp"
+            "app/rzp",
+            "app/exception",
+            "app/trace"
         ]
     },
     "scripts": {

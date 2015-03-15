@@ -122,6 +122,7 @@ return array(
 		'Aws\Laravel\AwsServiceProvider',
 		'Barryvdh\Debugbar\ServiceProvider',
 		'Maknz\Slack\SlackServiceProvider',
+		'Trace\TraceServiceProvider',
 	),
 
 	/*
@@ -189,6 +190,8 @@ return array(
 		'View'            => 'Illuminate\Support\Facades\View',
 		'AWS' 			  => 'Aws\Laravel\AwsFacade',
 		'Slack'			  => 'Maknz\Slack\Facades\Slack',
+		'Trace'           => 'Trace\Facade',
 	),
-
+	
+	'context' => $_ENV['CONTEXT'],
 );
