@@ -42,7 +42,7 @@ class Gateway extends Atom\Gateway
     protected function sendGatewayRequest($request)
     {
         // Although we reset the url, it's not being used currently.
-        $request['url'] = $this->makeMockRequestUrl($request['url']);
+        $request['url'] = $this->makeMockRequestUrl($request);
 
         // When sending the first request to atom gateway,
         // quietly redirect it to mock atom  gateway internally!
@@ -70,23 +70,32 @@ class Gateway extends Atom\Gateway
         return $response;
     }
 
-    protected function makeMockRequestUrl($url)
+    protected function makeMockRequestUrl($request)
     {
-        $key = 'rzp_test';
+        $url = $request['url'];
 
-        $mockGatewaysConfig = \Config::get('applications.mock_gateways');
-        $secret = $mockGatewaysConfig['secret'];
-
-        $mockUrl = \Http\Route::getUrl('mockatom_init_payment', array(), 'rzp_test', $secret);
-
-        $parts = parse_url($url);
-
-        if (isset($parts['query']))
+        if ($request['action'] === 'authorize')
         {
-            $mockUrl .= '?' . $parts['query'];
-        }
+            $key = 'rzp_test';
 
-        return $mockUrl;
+            $mockGatewaysConfig = \Config::get('applications.mock_gateways');
+            $secret = $mockGatewaysConfig['secret'];
+
+            $mockUrl = \Http\Route::getUrl('mockatom_init_payment', array(), 'rzp_test', $secret);
+
+            $parts = parse_url($url);
+
+            if (isset($parts['query']))
+            {
+                $mockUrl .= '?' . $parts['query'];
+            }
+
+            return $mockUrl;
+        }
+        else if ($request['action'] === 'verify')
+        {
+            return $url;
+        }
     }
 
     protected function callGatewayRequestFunctionInternally($request)
@@ -100,6 +109,17 @@ class Gateway extends Atom\Gateway
 
         $server->setInput($request['content']);
 
-        return $server->initiateAtomPayment($input);
+        $response = null;
+
+        if ($request['action'] === 'authorize')
+        {
+            $response = $server->initiateAtomPayment($input);
+        }
+        else if ($request['action'] === 'verify')
+        {
+            $response = $server->verifyPayment($input);
+        }
+
+        return $response;
     }
 }

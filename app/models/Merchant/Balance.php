@@ -70,8 +70,15 @@ class Balance extends Base\UniqueIdEntity
 
         if ($this->getBalance() < 0)
         {
+            $data = [
+                'balance' => $this->toArray(),
+                'transaction' => $txn->toArray(),
+                'amount' => $amount
+            ];
+
             throw new Exception\LogicException(
-                'Something very wrong is happening! Balance is going negative');
+                'Something very wrong is happening! Balance is going negative',
+                $data);
         }
     }
 

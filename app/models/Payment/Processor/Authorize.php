@@ -188,8 +188,6 @@ trait Authorize
                 ['message' => 'Atom card type does not match stored type',
                 'type' => $type,
                 'card_type' => $card->getType()]);
-
-            return;
         }
 
         if (Card\Type::isValidType($type) === false)

@@ -72,7 +72,7 @@ class Merchant
 
         $this->saveChangesToDb();
 
-        return $setl;
+        return [$setl, $adj->transaction];
     }
 
     protected function createSetlEntityAndTxn()
