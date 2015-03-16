@@ -242,9 +242,13 @@ class Processor
     {
         $payment = $this->retrieve($id);
 
-        $data = array('payment' => $payment->toArray());
+        $data = array(
+            'payment' => $payment->toArray(),
+            'terminal' => $payment->terminal);
 
-        $payment = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+        $data = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+
+        return $data;
     }
 
     protected function createPaymentEntity($input)

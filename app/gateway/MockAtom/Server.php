@@ -179,6 +179,41 @@ class Server
         return array($merchantCallbackUrl, $data);
     }
 
+    public function verifyPayment($input)
+    {
+        $id = $input['merchantxnid'];
+        $merchantId = $input['merchantid'];
+        $amt = $input['amt'];
+
+        $publicId = $id;
+
+        $id = Atom\Entity::verifyIdAndStripSign($id);
+        $payment = (new Atom\Repository)->find($id);
+
+        $status = (bool) $payment['success'];
+        $verified = ($status) ? 'SUCCESS' : 'FAILED';
+
+        $bid = null;
+        if ($status)
+        {
+            $bid = $payment['bank_payment_id'];
+        }
+
+        $xml = '
+        <?xml version="1.0" encoding="UTF-8" ?>
+            <VerifyOutput
+                MerchantID="'.$merchantId.'"
+                MerchantTxnID="'.$publicId.'"
+                AMT="'.$amt.'"
+                VERIFIED="'.$verified.'"
+                BID="'.$bid.'"
+                bankname="'.$payment['bank_name'].'"
+                atomtxnId="'.$payment['gateway_payment_id'].'"
+            />';
+
+        return $this->makeResponse($xml);
+    }
+
     protected function formMerchantCallbackUrl($paymentPublicId)
     {
         $hash = $this->getHashOfPaymentPublicId($paymentPublicId);
