@@ -29,7 +29,8 @@ class Core extends Base\Core
     {
         list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
-        $settledAt = $this->getSettledAtTimestamp($payment, 2);
+        $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
+        $settledAt = $this->getSettledAtTimestamp($capturedAt, 2);
 
         $amount = $payment->getAmount();
         $credit = $amount - $fee;
@@ -63,7 +64,7 @@ class Core extends Base\Core
                 $txnData[Transaction\Entity::API_FEE] = $fee - $gatewayFee;
             }
 
-            $settledAt = $this->getSettledAtTimestamp($payment, 3);
+            $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
 
             $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
         }
@@ -195,20 +196,14 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function getSettledAtTimestamp($payment, $addDays)
+    protected function getSettledAtTimestamp($capturedAt, $addDays)
     {
-        $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
-
         $capturedAt = Carbon::createFromTimestamp($capturedAt, 'Asia/Kolkata');
         $day = (int) $capturedAt->format('w');
 
         // if payment is on Sunday, add 1 extra
         if ($day === 0)
             $addDays += 1;
-
-        // if payment is on Sunday, add 1 extra
-        if ($day === 6)
-            $addDay += 2;
 
         $day = $day + $addDays;
 
