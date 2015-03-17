@@ -87,9 +87,9 @@ class Core extends Base\Core
     {
         $payment = $refund->payment;
 
-        $settledAt = Carbon::today('Asia/Kolkata')
-                           ->addDays(2)
-                           ->timestamp;
+        $createdAt = $refund->getAttribute(Refund\Entity::CREATED_AT);
+
+        $settledAt = $this->getSettledAtTimestamp($createdAt, 2);
 
         $txnData = array(
             Transaction\Entity::AMOUNT      => $refund->getAmount(),
@@ -109,7 +109,7 @@ class Core extends Base\Core
 
             if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
             {
-                $settledAt = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
+                $settledAt = $this->getSettledAtTimestamp($createdAt, 3);
             }
         }
 
@@ -205,10 +205,10 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function getSettledAtTimestamp($capturedAt, $addDays)
+    protected function getSettledAtTimestamp($timestamp, $addDays)
     {
-        $capturedAt = Carbon::createFromTimestamp($capturedAt, 'Asia/Kolkata');
-        $day = (int) $capturedAt->format('w');
+        $timestamp = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+        $day = (int) $timestamp->format('w');
 
         // if payment is on Sunday, add 1 extra
         if ($day === 0)
@@ -221,7 +221,7 @@ class Core extends Base\Core
             $addDays += 2;
         }
 
-        $settledAt = $capturedAt->startOfDay()
+        $settledAt = $timestamp->startOfDay()
                                 ->addDays($addDays)
                                 ->timestamp;
 
