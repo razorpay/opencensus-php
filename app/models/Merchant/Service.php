@@ -5,7 +5,6 @@ namespace Models\Merchant;
 use Models\Base;
 use Models\Merchant;
 use Models\MerchantDetails;
-use Slack;
 
 class Service extends Base\Service
 {
@@ -235,27 +234,4 @@ class Service extends Base\Service
         return array($error, $key_data);
     }
 
-    public function slackPost($headline, $postdata)
-    {
-        if($_ENV['SLACK_ENABLE'] === true)
-        {
-            $data = array();
-            $data['fallback'] = $headline.'\n';
-            $data['fields'] = array();
-            $data['color'] = 'good';
-            $data['pretext'] = '@channel';
-            $data['link_names'] = 1;
-            foreach($postdata as $key => $value)
-            {   
-                $data['fallback'] .= $key . ': ' . $value . '\n';
-                $data['fields'][] = array(
-                    'title' => $key,
-                    'value' => $value,
-                    'short' => false
-                );
-            }
-
-            Slack::attach($data)->send($headline);
-        }
-    }
 }

@@ -4,6 +4,7 @@ namespace Models\Base;
 
 use Config;
 use RZP\Api;
+use Slack;
 
 class Service
 {
@@ -21,5 +22,29 @@ class Service
         $secret = Config::get('api.auth_pass');
 
         $this->api = new Api($id, $secret);
+    }
+
+    public function slackPost($headline, $postdata, $channel, $pretext = '')
+    {
+        if($_ENV['SLACK_ENABLE'] === true)
+        {
+            $data = array();
+            $data['fallback'] = $headline.'\n';
+            $data['fields'] = array();
+            $data['color'] = 'good';
+            $data['pretext'] = $pretext;
+            $data['link_names'] = 1;
+            foreach($postdata as $key => $value)
+            {   
+                $data['fallback'] .= $key . ': ' . $value . '\n';
+                $data['fields'][] = array(
+                    'title' => $key,
+                    'value' => $value,
+                    'short' => false
+                );
+            }
+
+            Slack::to($channel)->attach($data)->send($headline);
+        }
     }
 }
