@@ -29,14 +29,8 @@ class Core extends Base\Core
     {
         list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
-        //
-        // Gets settled_at timestamp from captured_at which is T+2
-        //
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
-        $settledAt = Carbon::createFromTimestamp($capturedAt, 'Asia/Kolkata')
-                           ->startOfDay()
-                           ->addDays(2)
-                           ->timestamp;
+        $settledAt = $this->getSettledAtTimestamp($capturedAt, 2);
 
         $amount = $payment->getAmount();
         $credit = $amount - $fee;
@@ -59,12 +53,10 @@ class Core extends Base\Core
             $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
             $txnData[Transaction\Entity::API_FEE] = 0;
 
-            $settledAt = Carbon::today('Asia/Kolkata')->addDays(2)->timestamp;
             $channel = Transaction\Channel::ATOM;
 
             if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
             {
-                $settledAt = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
                 $channel = Transaction\Channel::KOTAK;
 
                 $gatewayFee = (new Pricing\Fee)->getGatewayFeeForAtomSharedTerminal($payment);
@@ -72,7 +64,9 @@ class Core extends Base\Core
                 $txnData[Transaction\Entity::API_FEE] = $fee - $gatewayFee;
             }
 
-            $txnData[Transaction\Entity::SETTLED_AT] = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
+            $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
+
+            $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
         }
 
         $txnData[Transaction\Entity::CHANNEL] = $channel;
@@ -209,5 +203,28 @@ class Core extends Base\Core
         $txn->fill($attributes);
 
         return $txn;
+    }
+
+    protected function getSettledAtTimestamp($capturedAt, $addDays)
+    {
+        $capturedAt = Carbon::createFromTimestamp($capturedAt, 'Asia/Kolkata');
+        $day = (int) $capturedAt->format('w');
+
+        // if payment is on Sunday, add 1 extra
+        if ($day === 0)
+            $addDays += 1;
+
+        $day = $day + $addDays;
+
+        if ($day >= 6)
+        {
+            $addDays += 2;
+        }
+
+        $settledAt = $capturedAt->startOfDay()
+                                ->addDays($addDays)
+                                ->timestamp;
+
+        return $settledAt;
     }
 }
