@@ -31,6 +31,6 @@ return array(
     ),
 
     'hosted' => array(
-        'secret'    => 'abcdef',
+        'secret'    => $_ENV['APP_HOSTED_SECRET'],
     ),
 );
