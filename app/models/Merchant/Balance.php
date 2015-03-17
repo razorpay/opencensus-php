@@ -20,14 +20,18 @@ class Balance extends Base\UniqueIdEntity
         self::ID,
         self::BALANCE);
 
-    public function addAmount($amount)
+    protected function addAmount($amount)
     {
         $this->checkNumeric($amount);
 
-        $this->attributes[self::BALANCE] += (int) $amount;
+        $balance = $this->getBalance();
+
+        $balance += $amount;
+
+        $this->setAttribute(self::BALANCE, $balance);
     }
 
-    public function subAmount($amount)
+    protected function subAmount($amount)
     {
         $this->checkNumeric($amount);
 

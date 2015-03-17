@@ -91,6 +91,8 @@ class Core extends Base\Core
 
     public function createFromRefund(Refund\Entity $refund)
     {
+        $payment = $refund->payment;
+
         $settledAt = Carbon::today('Asia/Kolkata')
                            ->addDays(2)
                            ->timestamp;
@@ -110,9 +112,16 @@ class Core extends Base\Core
         {
             $txnData[Transaction\Entity::RECONCILED_AT] = time();
             $txnData[Transaction\Entity::SETTLED_AT] = Carbon::today('Asia/Kolkata')->addDays(2)->timestamp;
+
+            if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
+            {
+                $settledAt = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
+            }
         }
 
-        $txnData[Transaction\Entity::CHANNEL] = Payment\Gateway::getChannel($gateway);
+        $channel = $payment->transaction->getChannel();
+
+        $txnData[Transaction\Entity::CHANNEL] = $channel;
 
         $txn = new Transaction\Entity($txnData);
         $txn->generateId();
