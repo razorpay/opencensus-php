@@ -66,11 +66,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
         if (in_array($serverData['uri'], $sensitiveUrls))
         {
-            unset(
-                $serverData['uri'],
-                $serverData['url']);
-
-            $serverData['uri'] = 'payments/create/jsonp';
+            unset($serverData['url']);
         }
     }
 
