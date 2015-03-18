@@ -16,6 +16,7 @@ class Payment extends Dashboard
      * @var array
      */
     protected static $fields = array(
+        PaymentEntity::ID,
         PaymentEntity::MERCHANT_ID,
         PaymentEntity::METHOD,
         PaymentEntity::AMOUNT,

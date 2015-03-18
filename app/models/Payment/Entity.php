@@ -419,6 +419,8 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
+        $data['id'] = $this->getPublicId();
+        
         if ($this->getAttribute(self::METHOD) === Payment\Method::CARD)
         {
             $card = $this->card()->firstOrFail();
