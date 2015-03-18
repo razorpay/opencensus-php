@@ -242,9 +242,13 @@ class Processor
     {
         $payment = $this->retrieve($id);
 
-        $data = array('payment' => $payment->toArray());
+        $data = array(
+            'payment' => $payment->toArray(),
+            'terminal' => $payment->terminal);
 
-        $payment = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+        $data = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+
+        return $data;
     }
 
     protected function createPaymentEntity($input)
@@ -292,6 +296,9 @@ class Processor
 
     protected function tracePaymentNewRequest($input)
     {
+        // @note: please keep this line here. It unsets card input in case
+        // it's present
+        unset($input['card']);
         $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $input);
     }
 

@@ -54,7 +54,7 @@ class Merchant
     public function collectApiFees($apiFee)
     {
         $this->amount = $apiFee;
-        $this->txns = new Base\Collection;
+        $this->txns = new Base\PublicCollection;
 
         $setl = $this->createSetlEntityAndTxn();
 
@@ -64,13 +64,15 @@ class Merchant
             'currency' => 'INR',
         );
 
-        (new Adjustment\Core)->createAdjustment($adjInput, $this->merchant);
+        $adj = (new Adjustment\Core)->createAdjustment($adjInput, $this->merchant);
+
+        $this->txns->push($adj->transaction);
 
         (new Transaction\Core)->updateBalances($this->setlTransaction, false);
 
         $this->saveChangesToDb();
 
-        return $setl;
+        return [$setl, $adj->transaction];
     }
 
     protected function createSetlEntityAndTxn()

@@ -90,9 +90,22 @@ var XD = function() {
     };
 }();
 
+function autosubmit(data){
+  document.querySelectorAll('input[name="PaReq"]')[0].setAttribute('value', data.PAReq);
+  document.querySelectorAll('input[name="MD"]')[0].setAttribute('value', data.paymentid);
+  document.querySelectorAll('input[name="TermUrl"]')[0].setAttribute('value', data.callbackUrl);
+  document.querySelectorAll('#rzp-dcform')[0].setAttribute('action', data.url);
+  document.getElementById('rzp-dcform').submit();
+}
+
 XD.receiveMessage(function(message){
-  if(typeof message.data.rzp !== 'undefined' && message.data.location !== 'undefined'){
-    window.location = message.data.location;
+  if(typeof message.data.rzp !== 'undefined'){
+    if(typeof message.data.location !== 'undefined'){
+      window.location = message.data.location;
+    }
+    else if(typeof message.data.autosubmit !== 'undefined'){
+      autosubmit(message.data.autosubmit);
+    }
   }
 });
 
@@ -186,6 +199,15 @@ XD.receiveMessage(function(message){
 </style>
 <div class="rzp-loader">
 <img src="https://checkout.razorpay.com/v1/images/loader-logo.png" alt="">
+</div>
+
+<div class="autosubmit">
+  <form method = "POST" action = "{{=it.data.url}}" id = "rzp-dcform">
+    <input type = "hidden" name = "PaReq" value = "{{=it.data.PAReq}}">
+    <input type = "hidden" name = "MD" value = "{{=it.data.paymentid}}">
+    <input type = "hidden" name = "TermUrl" value = "{{=it.callbackUrl}}">
+    <input style = "display:none" type = "submit" value = "Submit">
+  </form>
 </div>
 
 <script>

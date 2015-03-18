@@ -28,21 +28,28 @@ trait SettlementTrait
         }
     }
 
-    protected function generateMpr()
+    protected function generateMpr($from = null, $to = null)
     {
-        \Config::set('mail.pretend', true);
+        $this->app['config']->set('mail.pretend', true);
 
         $this->ba->appAuth();
 
+        $data = [];
+        if ($from !== null)
+            $data['from'] = $from;
+        if ($to !== null)
+            $data['to'] = $to;
+
         $request = array(
-            'url' => '/gateway/mpr/generate');
+            'url' => '/gateway/mpr/generate',
+            'content' => $data);
 
         $mprFile = $this->makeRequestAndGetContent($request);
 
         return $mprFile;
     }
 
-    protected function reconcileMpr($mprFile)
+    protected function reconcileMpr($mprFile, $settledAt = null)
     {
         $uploadedFile = $this->createUploadedFile($mprFile, 'application/vnd.ms-excel');
 
@@ -51,6 +58,11 @@ trait SettlementTrait
         $request['content']['attachment-count'] = '1';
 
         $request['files']['attachment-1'] = $uploadedFile;
+
+        if ($settledAt !== null)
+        {
+            $request['content']['settled_at'] = $settledAt;
+        }
 
         $this->ba->appAuth();
 

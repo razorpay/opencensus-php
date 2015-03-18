@@ -72,7 +72,7 @@ class NodalAccount
     public function __construct()
     {
         // Date format is DD/MM/YYYY in human representation
-        $this->date = Carbon::today('Asia/Kolkata')->format('d/m/y');
+        $this->date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
     }
 
     public function generateSettlementFile($settlements, $txns)
@@ -87,10 +87,18 @@ class NodalAccount
 
             $ba = $merchant->bankAccount;
 
+            $type = 'NEFT';
+            $ifsc = $ba->getIfscCode();
+
+            if (substr($ifsc, 0, 4) === 'KKBK')
+            {
+                $type = 'IFT';
+            }
+
             $array = array(
                 'Client_Code'           => 'NODAL',
                 'Product_Code'          => 'CMSPAY',
-                'Payment_Type'          => 'NEFT',
+                'Payment_Type'          => $type,
                 'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
@@ -98,14 +106,8 @@ class NodalAccount
                 'Bank_Code_Indicator'   => 'M',
                 'Beneficiary_Code'      => $ba->beneficiary_code,
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
-                'IFSC Code'             => $ba->getIfscCode(),
+                'IFSC Code'             => $ifsc,
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
-                'Beneficiary_Address_1' => $ba->beneficiary_address1,
-                'Beneficiary_Address_2' => $ba->beneficiary_address2,
-                'Beneficiary_Address_3' => $ba->beneficiary_address3,
-                'Beneficiary_Address_4' => $ba->beneficiary_address4,
-                'Beneficiary_Email'     => $ba->beneficiary_email,
-                'Beneficiary_Mobile'    => $ba->beneficiary_mobile,
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
                 'Payment Details 2'     => $merchant->getPublicId(),
             );

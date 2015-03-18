@@ -92,6 +92,7 @@ trait FileHandlerTrait
         $file = fopen($fullpath, 'w');
         fwrite($file, $txt);
         fclose($file);
+        chmod($fullpath, 0777);  // keep it 0777. This step is important.
 
         return $fullpath;
     }
@@ -102,7 +103,7 @@ trait FileHandlerTrait
 
         foreach ($data as $row)
         {
-            $txt .= implode('~', array_values($row)) . '\n';
+            $txt .= implode('~', array_values($row)) . "\r\n";
         }
 
         return $txt;
@@ -232,7 +233,7 @@ trait FileHandlerTrait
 
         $file = fopen($filePath, 'r');
         $txt = fread($file, filesize($filePath));
-        $lines = explode('\n', $txt);
+        $lines = explode("\r\n", $txt);
 
         return $lines;
     }

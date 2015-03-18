@@ -87,6 +87,17 @@ class NetBankingTest extends TestCase
         $this->startTest();
     }
 
+    public function testAtomVerifyPayment()
+    {
+        $this->markTestSkipped();
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $id = $payment['id'];
+
+        $this->verifyPayment($id);
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

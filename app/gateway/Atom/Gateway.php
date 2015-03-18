@@ -42,7 +42,7 @@ class Gateway extends BaseGateway
     {
         parent::authorize($input);
 
-        $request = $this->createTransactionRequestArray($input);
+        $request = $this->createPaymentRequestArray($input);
 
         // Send first request.
         $response = [];
@@ -51,6 +51,7 @@ class Gateway extends BaseGateway
         $data = $this->processPaymentInitiationResponse($response, $input);
 
         $url = $this->createAtomRedirectUrl($data);
+        // \Log::info($url);
 
         $data = array('redirectUrl' => $url);
 
@@ -69,6 +70,8 @@ class Gateway extends BaseGateway
      */
     public function callback(array $input)
     {
+        // \Log::info(json_encode($input, JSON_PRETTY_PRINT));
+
         // Get payment-id of the transaction
         $paymentId = $input['mer_txn'];
 
@@ -106,11 +109,34 @@ class Gateway extends BaseGateway
             'tdate'         => $tdate,
             'amt'           => $input['payment']['amount']);
 
-        $request['url'] = URL::VERIFY_URL;
+        $request['url'] = Urls::VERIFY_URL;
         $request['content'] = $fields;
+        $request['action'] = 'verify';
 
         $response = [];
         $response = $this->runRequestResponseFlow($request, $response);
+
+        // Convert xml body to array of fields
+        $data = $this->verifiedXmlToArray($response['response']->body);
+
+        $values = [];
+
+        $vStatus = ($data['VERIFIED'] === 'SUCCESS');
+
+        $id = $input['payment']['id'];
+        $payment = (new Atom\Repository)->find($id);
+
+        $status = (bool) $payment['success'];
+
+        $data = ['match' => true];
+
+        if ($status !== $vStatus)
+        {
+            $data['match'] = false;
+            $data['status'] = ['rzp' => $status, 'gateway' => $vStatus];
+        }
+
+        return $data;
     }
 
     protected function processPaymentInitiationResponse($response, $input)
@@ -269,7 +295,7 @@ class Gateway extends BaseGateway
         return $this->response;
     }
 
-    protected function createTransactionRequestArray($input)
+    protected function createPaymentRequestArray($input)
     {
         $time = date('d/m/Y h:m:s');
         // Replace space with '%20'
@@ -286,7 +312,6 @@ class Gateway extends BaseGateway
             'txnscamt'      =>  '0',
             'clientcode'    =>  urlencode(base64_encode('123')),
             'txnid'         =>  $input['payment']['public_id'],
-            'ru'            =>  $input['callbackUrl'],
             'date'          =>  $time,
             'custacc'       =>  '123456789012',
         );
@@ -301,8 +326,11 @@ class Gateway extends BaseGateway
             $content['mdd'] = $this->getMddField($input);
         }
 
+        $content['ru'] = $input['callbackUrl'];
+
         $request['content'] = $content;
         $request['url'] = Urls::PAYMENT_URL;
+        $request['action'] = 'authorize';
 
         return $request;
     }
@@ -312,6 +340,7 @@ class Gateway extends BaseGateway
         $mdd = 'channelid=int';
         $mdd .= '|carddata=' . Card::encryptCardData($input['card']);
         $mdd .= '|cardhname=' . $input['card']['name'];
+        $mdd .= '|cardtype=' . 'DC';
 
         return $mdd;
     }
@@ -357,6 +386,9 @@ class Gateway extends BaseGateway
 
     protected function setTerminalInRequest(array & $request)
     {
+        if ($request['action'] !== 'authorize')
+            return;
+
         $terminal = $this->terminal;
 
         if ($terminal['gateway'] !== 'atom')
@@ -475,6 +507,18 @@ class Gateway extends BaseGateway
         $returnArray['token'] = $xml_values[6]['value'];
 
         return $returnArray;
+    }
+
+    protected function verifiedXmlToArray($data)
+    {
+        $parser = xml_parser_create('');
+        xml_parser_set_option($parser, XML_OPTION_TARGET_ENCODING, 'UTF-8');
+        xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
+        xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
+        xml_parse_into_struct($parser, trim($data), $xmlValues);
+        xml_parser_free($parser);
+
+        return $xmlValues[0]['attributes'];
     }
 
     protected function buildGetQueryString($data)

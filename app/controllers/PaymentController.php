@@ -138,12 +138,10 @@ class PaymentController extends BaseController
             $data = $error->toPublicArray();
             $data['http_status_code'] = $error->getHttpStatusCode();
         }
-        //finally
+
+        if ($data !== null)
         {
-            if ($data !== null)
-            {
-                return View::make('gateway.callback')->with('data', $data);
-            }
+            return View::make('gateway.callback')->with('data', $data);
         }
     }
 
@@ -156,7 +154,7 @@ class PaymentController extends BaseController
 
     public function getRefund($id)
     {
-        $refunds = $this->payment->retrieveRefund($id);
+        $refunds = (new Payment\Refund\Service)->fetch($id);
 
         return ApiResponse::json($refunds);
     }
@@ -165,7 +163,7 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
-        $refunds = $this->payment->retrieveMultipleRefunds($input);
+        $refunds = (new Payment\Refund\Service)->fetchMultiple($input);
 
         return ApiResponse::json($refunds);
     }

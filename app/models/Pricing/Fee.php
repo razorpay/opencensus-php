@@ -39,7 +39,7 @@ class Fee
 
     protected function getFeesByPercentAndFixedRates($amount, $percent, $fixed)
     {
-        $fee = (($amount * $percent) / 10000) + $fixed;
+        $fee = $this->getUnroundedFees($amount, $percent, $fixed);
 
         $fee = (int) ceil($fee);
 
@@ -49,6 +49,24 @@ class Fee
         $fee += ($serviceTax + $educationCess);
 
         return $fee;
+    }
+
+    protected function getFeesByPercentAndFixedRatesForAtom($amount, $percent, $fixed)
+    {
+        $fee = (float) $this->getUnroundedFees($amount, $percent, $fixed);
+
+        $serviceTax = $fee * (self::SERVICE_TAX_PERCENT + self::EDUCATION_CESS_PERCENT) / 100;
+
+        $fee += $serviceTax;
+
+        $fee = (int) round($fee);
+
+        return $fee;
+    }
+
+    protected function getUnroundedFees($amount, $percent, $fixed)
+    {
+        return (($amount * $percent) / 10000) + $fixed;
     }
 
     protected function getPricingPlanId($merchant)
@@ -171,7 +189,7 @@ class Fee
             throw new Exception\LogicException('Percent should not be 0');
         }
 
-        $gatewayFee = $this->getFeesByPercentAndFixedRates($amount, $percent, 0);
+        $gatewayFee = $this->getFeesByPercentAndFixedRatesForAtom($amount, $percent, 0);
 
         return $gatewayFee;
     }

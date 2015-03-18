@@ -30,16 +30,19 @@ class HdfcGatewayMprTest extends TestCase
 
         $this->mockDashboardRequest();
 
-        // Create payments and refunds
+        // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
         $this->deleteSetlFiles();
 
         // Generate the mpr file for above payments and refunds
-        $mprFile = $this->generateMpr();
+        $from = Carbon::yesterday('Asia/Kolkata')->subDay(1)->timestamp;
+        $to = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $mprFile = $this->generateMpr($from, $to);
 
         // Upload the generate mpr file for reconciliation
-        $this->reconcileMpr($mprFile);
+        $settledAt = Carbon::today('Asia/Kolkata')->timestamp;
+        $this->reconcileMpr($mprFile, $settledAt);
 
         // Check the txns corresponding to above payments after
         // reconciliation
@@ -112,8 +115,8 @@ class HdfcGatewayMprTest extends TestCase
 
         $r = range(1,5);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
-        $capturedAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp + 10;
 
         foreach ($r as $i)
         {
@@ -160,6 +163,8 @@ class HdfcGatewayMprTest extends TestCase
 //                    'amount' => 4387640,
                     'api_fee' => 28085,
                     'gateway_fee' => 84275,
+                    'settlement_count' => 2,
+                    'transaction_count' => 11,
                 ],
             ]
         );
