@@ -205,7 +205,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function getSettledAtTimestamp($timestamp, $addDays)
+    public function getSettledAtTimestamp($timestamp, $addDays)
     {
         $timestamp = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
         $day = (int) $timestamp->format('w');

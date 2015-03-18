@@ -119,7 +119,7 @@ class Settler
 
         try
         {
-            list($settlements, $txns) = $this->process($txns, Channel::ATOM);
+            list($settlements, $txns, $amounts) = $this->process($txns, Channel::ATOM);
 
             $this->setlRepo->commit();
         }
@@ -168,11 +168,11 @@ class Settler
 
     protected function process($txns, $channel)
     {
-        list($settlements, $amounts) = $this->createSettlements($txns, $channel);
+        list($settlements, $txnsSettled, $amounts) = $this->createSettlements($txns, $channel);
 
-        $this->txnRepo->settled($txns, self::$settlementTimestamp);
+        $this->txnRepo->settled($txnsSettled, self::$settlementTimestamp);
 
-        return array($settlements, $txns, $amounts);
+        return array($settlements, $txnsSettled, $amounts);
     }
 
     protected function createSettlements($txns, $channel)
@@ -180,6 +180,7 @@ class Settler
         $this->dailySettlement->channel = $channel;
 
         $settlements = new Base\PublicCollection;
+        $txnsSettled = new Base\PublicCollection;
 
         $i = 0;
         $count = $txns->count();
@@ -226,6 +227,7 @@ class Settler
                                         $setlTxns, $setlAmount, $setlApiFee, $setlGatewayFee);
 
             $settlements->push($setl);
+            $txnsSettled = $txnsSettled->merge($setlTxns);
 
             $totalSetlAmount += $setlAmount;
             $totalSetlApiFee += $setlApiFee;
@@ -236,8 +238,10 @@ class Settler
             ($channel === Settlement\Channel::KOTAK))
         {
             list($setl, $adjTxn) = $this->collectApiFees($totalSetlApiFee, $channel);
+
             $settlements->push($setl);
             $txns->push($adjTxn);
+            $txnsSettled->push($adjTxn);
 
             $totalSetlAmount += $totalSetlApiFee;
         }
@@ -252,7 +256,7 @@ class Settler
             'gateway_fee' => $totalSetlGatewayFee,
         );
 
-        return [$settlements, $amounts];
+        return [$settlements, $txnsSettled, $amounts];
     }
 
     protected function updateDailySettlementAttributes($urlText, $urlExcel, $setlCount, $txnCount)

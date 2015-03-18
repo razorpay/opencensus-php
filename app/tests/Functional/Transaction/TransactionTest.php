@@ -129,7 +129,7 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData['txnDataAfterPaymentOnSharedTerminal'];
         $testData['entity_id'] = $payment['id'];
-        $testData['settled_at'] = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
+        $testData['settled_at'] = (new \Models\Transaction\Core)->getSettledAtTimestamp(time(), 3);
 
         $this->assertArraySelectiveEquals($testData, $txn);
     }
@@ -156,7 +156,7 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData['txnDataAfterPaymentOnSharedTerminal'];
         $testData['entity_id'] = $payment['id'];
-        $testData['settled_at'] = Carbon::today('Asia/Kolkata')->addDays(3)->timestamp;
+        $testData['settled_at'] = (new \Models\Transaction\Core)->getSettledAtTimestamp(time(), 3);
 
         $this->assertArraySelectiveEquals($testData, $txn);
     }
