@@ -89,7 +89,7 @@ class Core extends Base\Core
 
         $createdAt = $refund->getAttribute(Refund\Entity::CREATED_AT);
 
-        $settledAt = $this->getSettledAtTimestamp($createdAt, 2);
+        $settledAt = $createdAt + 1;
 
         $txnData = array(
             Transaction\Entity::AMOUNT      => $refund->getAmount(),
@@ -97,24 +97,18 @@ class Core extends Base\Core
             Transaction\Entity::FEE         => 0,
             Transaction\Entity::DEBIT       => $refund->getAmount(),
             Transaction\Entity::CREDIT      => 0,
-            Transaction\Entity::CURRENCY    => 'INR',
-            Transaction\Entity::SETTLED_AT  => $settledAt);
+            Transaction\Entity::CURRENCY    => 'INR');
 
         $gateway = $refund->getGateway();
 
         if ($gateway === Payment\Gateway::ATOM)
         {
             $txnData[Transaction\Entity::RECONCILED_AT] = time();
-            $txnData[Transaction\Entity::SETTLED_AT] = Carbon::today('Asia/Kolkata')->addDays(2)->timestamp;
-
-            if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
-            {
-                $settledAt = $this->getSettledAtTimestamp($createdAt, 3);
-            }
         }
 
         $channel = $payment->transaction->getChannel();
 
+        $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
         $txnData[Transaction\Entity::CHANNEL] = $channel;
 
         $txn = new Transaction\Entity($txnData);
