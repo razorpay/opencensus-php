@@ -5,6 +5,7 @@ namespace Models\Transaction;
 use Models\Base;
 use Models\Transaction;
 use Models\Merchant;
+use Mail;
 
 class Service extends Base\Service
 {
@@ -31,12 +32,21 @@ class Service extends Base\Service
 
         $this->aggregate($input, $mode);
 
+        if($input['resource'] === "refund")
+        {
+            $this->slackPost('New Refund', $input, '#transactions', '@channel');
+        }
+
         // Only Payments analytics are stored
         if ($input['resource'] === "payment")
         {
+            $this->slackPost('New Payment', $input, '#transactions', null);
+
+            $this->sendMail($input);
+
             $this->aggregatePayment($input, $mode);
 
-            unset($input['resource']);
+            unset($input['resource'], $input['id']);
 
             foreach (static::$timeIntervals as $type => $interval)
             {
@@ -197,5 +207,22 @@ class Service extends Base\Service
                 $data[] = ['amount' => '0', 'count' => '0', 'created_at' => "$i"];
         }
         return $data;
+    }
+
+    protected function sendMail($input)
+    {
+        if($_ENV['CONTEXT'] === 'production')
+        {
+            $merchant = Merchant\Entity::findorfail($input['merchant_id']);
+            
+            $input['email'] = $merchant->email;
+            $input['name'] = $merchant->name;
+
+            Mail::send('emails.payment',compact('input'), function($m) use($input)
+            {
+                $m->to($input['email'], $input['name'])
+                  ->subject('Razorpay - New Payment');
+            });  
+        }
     }
 }

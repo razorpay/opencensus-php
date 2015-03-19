@@ -13,7 +13,8 @@ class Validator extends Base\Validator
         'updated_at'    =>  'required|integer',
         'resource'      =>  'required|in:payment,refund,settlement',
         'method'        =>  'required_if:resource,payment|in:card,netbanking',
-        'network'       =>  'required_if:method,card'
+        'network'       =>  'required_if:method,card',
+        'id'            =>  'required_if:resource,payment'
     );
 
     protected static $analyticsRules = array(
