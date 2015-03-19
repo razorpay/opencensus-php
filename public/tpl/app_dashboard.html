@@ -51,8 +51,8 @@
             </div>
             <div class="col-xs-6">
               <div class="panel padder-v item">
-                <div class="font-thin h1" ng-if="aggregations.data.updated_at != 0">{{aggregations.data.updated_at*1000 | fromNow}}</div>
-                 <div class="font-thin h1" ng-if="aggregations.data.updated_at == 0">Never</div>
+                <div class="font-thin h1" ng-show="aggregations.data.updated_at != 0">{{aggregations.data.updated_at*1000 | fromNow}}</div>
+                 <div class="font-thin h1" ng-show="aggregations.data.updated_at == 0">Never</div>
                 <span class="text-muted text-xs">Last Transaction</span>
               </div>
             </div>
