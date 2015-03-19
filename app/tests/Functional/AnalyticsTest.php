@@ -40,6 +40,7 @@ class AnalyticsTest extends TestCase
                 if($resource == 'payment') {
                     $data['method'] = 'card';
                     $data['network'] = 'Visa';
+                    $data['id'] = 'pay_123456';
                 }
                 
                 $response = $this->call('POST', '/test/transactions/'.$resource, $data);
