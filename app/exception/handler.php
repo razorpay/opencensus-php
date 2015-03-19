@@ -49,7 +49,7 @@ class Handler
             }
             else
             {
-                return;
+                sd($exception);
             }
         }
 
