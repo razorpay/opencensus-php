@@ -57,6 +57,7 @@
     'SLACK_ENABLE'      => false,
     'SLACK_KEY'         => '',
 
+    'NOCAPTCHA_SECRET'  => '',
     'CONTEXT'           => 'testing'
     );
 ?>

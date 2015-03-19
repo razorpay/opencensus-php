@@ -32,7 +32,7 @@ class Service extends Base\Service
             'email'         => $merchant->email
         ];
 
-        $this->slackPost('New Registration on Dashboard!', $slackData);
+        $this->slackPost('New Registration on Dashboard!', $slackData, '#sales', '@channel');
 
         return [$error, $slackData];
     }
