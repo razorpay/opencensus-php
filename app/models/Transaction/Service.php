@@ -46,8 +46,6 @@ class Service extends Base\Service
 
             $this->aggregatePayment($input, $mode);
 
-            unset($input['resource'], $input['id']);
-
             foreach (static::$timeIntervals as $type => $interval)
             {
                 $obj = Transaction\Entity::retrieveLastByType($input['merchant_id'], $type, $mode);

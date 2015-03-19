@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         'resource'      =>  'required|in:payment,refund,settlement',
         'method'        =>  'required_if:resource,payment|in:card,netbanking',
         'network'       =>  'required_if:method,card',
-        'id'            =>  'required_if:resource,payment'
+        'id'            =>  'sometimes|required_if:resource,payment'
     );
 
     protected static $analyticsRules = array(
