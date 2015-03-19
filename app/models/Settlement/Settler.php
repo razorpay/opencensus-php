@@ -302,14 +302,13 @@ class Settler
         return [$setl, $adjTxn];
     }
 
-
     protected function fetchTransactionsToSettle($input)
     {
         $ts = $this->initSettlementTimestamp($input);
 
-        $all = $this->isInputValue($input, 'all', '1');
+//        $all = $this->isInputValue($input, 'all', '1');
 
-        if ($all === true)
+//        if ($all === true)
         {
             //
             // Fetch all txns whose expected settlement
@@ -319,17 +318,16 @@ class Settler
 
             $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
         }
-        else
-        {
-            $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
-        }
+        // else
+        // {
+        //     $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
+        // }
 
         foreach ($txns as $txn)
         {
             if ($txn->isTypePayment())
             {
                 $payment = $txn->entity;
-
             }
             else if ($txn->getType() === Transaction\Type::REFUND)
             {

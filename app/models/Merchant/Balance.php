@@ -66,6 +66,14 @@ class Balance extends Base\UniqueIdEntity
         return $balance;
     }
 
+    /**
+     * Only this method should be public
+     * for updating balance.
+     * We need to check for balance going negative
+     * whenever we update balance
+     *
+     * @param  Transaction\Entity $txn
+     */
     public function updateBalance($txn)
     {
         $amount = $txn->getNetAmount();

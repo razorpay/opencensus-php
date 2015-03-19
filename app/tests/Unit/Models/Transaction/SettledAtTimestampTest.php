@@ -12,15 +12,10 @@ class SettledAtTimestampTest extends TestCase
 {
     public function testSettledAtTimestampForTxn()
     {
-        $class = new ReflectionClass('Models\Transaction\Core');
-        $method = $class->getMethod('getSettledAtTimestamp');
-        $method->setAccessible(true);
-
-        $core = new Transaction\Core;
-
         // Mapping of Payment day to Settlement day
         // Number refers to day of week
-        $map = [
+
+        $map3 = [
             0 => 4,
             1 => 4,
             2 => 5,
@@ -30,14 +25,35 @@ class SettledAtTimestampTest extends TestCase
             6 => 4,
         ];
 
+        $map1 = [
+            0 => 2,
+            1 => 2,
+            2 => 3,
+            3 => 4,
+            4 => 5,
+            5 => 1,
+            6 => 1,
+        ];
+
+        $this->runSettledAtFunc($map3, 3);
+//        $this->runSettledAtFunc($map1, 1);
+    }
+
+    protected function runSettledAtFunc($map, $addDays)
+    {
+        $class = new ReflectionClass('Models\Transaction\Core');
+        $method = $class->getMethod('getSettledAtTimestamp');
+        $method->setAccessible(true);
+
+        $core = new Transaction\Core;
+
         foreach ($map as $key => $value)
         {
             $capturedAt = Carbon::today('Asia/Kolkata');
             $day = (int) $capturedAt->format('w');
-            $addDays = $key - $day;
-            $capturedAt->addDays($addDays);
+            $capturedAddDays = $key - $day;
+            $capturedAt->addDays($capturedAddDays);
 
-            $addDays = 3;
             $day = (int) $capturedAt->format('w');
 
             $settledAt = $method->invokeArgs($core, array($capturedAt->timestamp, $addDays));
