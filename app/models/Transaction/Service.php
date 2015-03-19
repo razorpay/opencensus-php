@@ -32,7 +32,7 @@ class Service extends Base\Service
 
         $this->aggregate($input, $mode);
 
-        if($input['resource'] === "refund")
+        if($input['resource'] === "refund" and $mode === 'live')
         {
             $this->slackPost('New Refund', $input, '#transactions', '@channel');
         }

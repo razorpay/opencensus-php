@@ -170,7 +170,7 @@ class Service extends Base\Service
             return $error;
         }
 
-        if ($data['entity'] !== "refund" or $data['amount'] !== $amount)
+        if ($data['entity'] !== "refund" or $data['amount'] !== (int)$amount)
         {
             $error[] = "Refund Failed";
         }
