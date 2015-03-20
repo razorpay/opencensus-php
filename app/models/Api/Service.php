@@ -71,7 +71,7 @@ class Service extends Base\Service
 
             $this->mapKeys($collection);
         }
-        catch(\Exception $e)
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
@@ -140,7 +140,7 @@ class Service extends Base\Service
                                 ->capture(array('amount' => $amount))
                                 ->toArray();
         }
-        catch(\Exception $e)
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
             return $error;
@@ -164,7 +164,7 @@ class Service extends Base\Service
                               ->refund(array('amount' => $amount))
                               ->toArray();
         }
-        catch(\Exception $e)
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
             return $error;
