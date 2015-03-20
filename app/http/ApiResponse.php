@@ -103,6 +103,7 @@ class ApiResponse
             ($exception !== null))
         {
             $publicError['exception'] = self::getExceptionData($exception);
+            $publicError['data'] = $exception->getData();
         }
 
         return self::json($publicError, $httpStatusCode);

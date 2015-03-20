@@ -76,13 +76,6 @@ class Handler
 
     protected function traceException(\Exception $exception)
     {
-        $data = '';
-
-        if ($exception instanceof ServerErrorException)
-        {
-            $data = $exception->getDataAsString();
-        }
-
         $traceData = $this->getExceptionDetails($exception);
 
         $this->app['trace']->critical(
