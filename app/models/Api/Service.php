@@ -117,7 +117,7 @@ class Service extends Base\Service
                                         ->all()
                                         ->toArray();
 
-                $data = $collection['data'];
+                $data = $collection['items'];
             }
             catch(\Razorpay\Api\Errors\BadRequestError $e)
             {
