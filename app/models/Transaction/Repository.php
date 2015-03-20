@@ -109,4 +109,12 @@ class Repository extends Base\Repository
 
         return $txn;
     }
+
+    public function fetchBySettlementId($setlId)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
+                    ->get();
+    }
 }
