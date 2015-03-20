@@ -28,8 +28,6 @@ class AwsInstance
         $this->cloud = $this->checkCloud($app['config']->get('app.context'));
 
         $this->instanceDataFile = $app['config']->get('trace.instance_data_file');
-
-        $this->env = $app->environment();
     }
 
     public function getInstanceId()
@@ -52,8 +50,7 @@ class AwsInstance
             return $this->data;
         }
 
-        if (($this->cloud === false) or
-            ($this->env !== 'production'))
+        if ($this->cloud === false)
         {
             $data = $this->generateRandomInstanceData();
         }
