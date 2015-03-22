@@ -110,4 +110,11 @@ class Merchant extends Entity
 
         return $this->request('POST', $relativeUrl, $params);
     }
+
+    public function fetchBalance()
+    {
+        $relativeUrl = $this->getEntityUrl().$this->id.'/balance';
+
+        return $this->request('GET', $relativeUrl);
+    }
 }

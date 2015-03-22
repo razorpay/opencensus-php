@@ -19,7 +19,8 @@ class Entity extends Razorpay\Api\Entity
             'refund',
             'settlement',
             'terminal',
-            'transaction'
+            'transaction',
+            'adjustment'
         );
     }
 

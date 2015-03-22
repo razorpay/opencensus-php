@@ -166,6 +166,13 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse([], $data);
     }
 
+    public function getMerchantBalance($id)
+    {
+        $data = (new Admin\Service)->fetchMerchantBalance($id);
+
+        return AppResponse::jsonResponse([], $data);
+    }
+
     public function getMerchantBanks($id)
     {
         $data = (new Admin\Service)->fetchMerchantBanks($id);
@@ -178,6 +185,15 @@ class AdminController extends BaseController
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postMerchantBanks($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postAddAdjustment($id)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postAddAdjustment($id, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }

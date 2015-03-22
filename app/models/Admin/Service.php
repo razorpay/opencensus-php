@@ -200,6 +200,15 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchMerchantBalance($id)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->merchant->fetch($id)->fetchBalance()->toArray();
+
+        return $response;
+    }
+
     public function fetchMerchantBanks($id)
     {
         $this->setApiCredentials();
@@ -231,6 +240,26 @@ class Service extends Base\Service
 
         return array($error, $data);
     }
+
+    public function postAddAdjustment($id, $input)
+    {
+        $data = [];
+        $error = [];
+
+        $this->setApiCredentials($id);
+
+        try
+        {
+            $data = $this->api->adjustment->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
     public function lockMerchant($id)
     {
         $error = array();
