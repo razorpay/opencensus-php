@@ -129,21 +129,21 @@ XD.receiveMessage(function(message){
 
 var csData = {};
 
-delete localStorage['rzp-receive'];
+// delete localStorage['rzp-receive'];
 var intervalID = setInterval(function(){
   receive_cookie = readCookie('rzp-receive')
   if(receive_cookie){
     handleMessage(JSON.parse(receive_cookie));
     createCookie('rzo-receive', '', -1)
   }
-  else if(typeof localStorage['rzp-receive'] !== 'undefined'){
-    handleMessage(JSON.parse(localStorage['rzp-receive']));
-  }
+  // else if(typeof localStorage['rzp-receive'] !== 'undefined'){
+  //   handleMessage(JSON.parse(localStorage['rzp-receive']));
+  // }
   else{
     return
   }
   clearInterval(intervalID);
-}, 500)
+}, 300)
 
 function handleMessage(data){
   if(typeof data.rzp !== 'undefined'){
@@ -258,17 +258,13 @@ function handleMessage(data){
 </div>
 
 <script>
-  XD.postMessage({
+  msg = JSON.stringify({
     source: 'popup',
     loaded: true
-  }, '*', window.opener);
-  localStorage['rzp'] = JSON.stringify({
-    value: {
-      time: new Date().toTimeString(),
-      source: 'popup',
-      ready: true
-    }
   })
+  XD.postMessage(msg, '*', window.opener);
+  // localStorage['rzp'] = msg;
+  document.cookie = "rzp="+msg+"; path=/";
 </script>
 </body>
 </html>
