@@ -103,7 +103,7 @@
 		function post_message(){
 			var msg = readCookie('rzp')
 			if(msg){
-				XD.postMessage(msg, '*', parent)
+				XD.postMessage(JSON.parse(msg), '*', parent)
 				createCookie('rzp', '', -1)
 			}
 		}
