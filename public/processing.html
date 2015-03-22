@@ -4,6 +4,31 @@
 </head>
 <body>
 <script>
+function createCookie(name, value, days){
+  if (days) {
+    var date = new Date();
+    date.setTime(date.getTime()+(days*24*60*60*1000));
+    var expires = "; expires="+date.toGMTString();
+  }
+  else var expires = "";
+  document.cookie = name+"="+value+expires+"; path=/";
+}
+
+function readCookie(name){
+  var nameEQ = name + "=";
+  var ca = document.cookie.split(';');
+  for(var i=0;i < ca.length;i++){
+    var c = ca[i];
+    while (c.charAt(0)==' ') c = c.substring(1,c.length);
+    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+  }
+  return null;
+}
+
+// remove cookie
+    // TODO cookie with unique keys, so that one tab doesn't interfere another
+if(readCookie('rzp-receive'))
+  createCookie('rzp-receive', '', -1)
 //
 // everything is wrapped in the XD function to reduce namespace collisions
 //
@@ -90,11 +115,46 @@ var XD = function() {
     };
 }();
 
+function autosubmit(data){
+  document.querySelectorAll('input[name="PaReq"]')[0].setAttribute('value', data.PAReq);
+  document.querySelectorAll('input[name="MD"]')[0].setAttribute('value', data.paymentid);
+  document.querySelectorAll('input[name="TermUrl"]')[0].setAttribute('value', data.callbackUrl);
+  document.querySelectorAll('#rzp-dcform')[0].setAttribute('action', data.url);
+  document.getElementById('rzp-dcform').submit();
+}
+
 XD.receiveMessage(function(message){
-  if(typeof message.data.rzp !== 'undefined' && message.data.location !== 'undefined'){
-    window.location = message.data.location;
-  }
+  handleMessage(message.data);
 });
+
+var csData = {};
+
+delete localStorage['rzp-receive'];
+var intervalID = setInterval(function(){
+  receive_cookie = readCookie('rzp-receive')
+  if(receive_cookie){
+    handleMessage(JSON.parse(receive_cookie));
+    createCookie('rzo-receive', '', -1)
+  }
+  else if(typeof localStorage['rzp-receive'] !== 'undefined'){
+    handleMessage(JSON.parse(localStorage['rzp-receive']));
+  }
+  else{
+    return
+  }
+  clearInterval(intervalID);
+}, 500)
+
+function handleMessage(data){
+  if(typeof data.rzp !== 'undefined'){
+    if(typeof data.location !== 'undefined'){
+      window.location = data.location;
+    }
+    else if(typeof data.autosubmit !== 'undefined'){
+      autosubmit(data.autosubmit);
+    }
+  }
+}
 
 </script>
 <style>
@@ -188,11 +248,27 @@ XD.receiveMessage(function(message){
 <img src="https://checkout.razorpay.com/v1/images/loader-logo.png" alt="">
 </div>
 
+<div class="autosubmit">
+  <form method = "POST" action = "{{=it.data.url}}" id = "rzp-dcform">
+    <input type = "hidden" name = "PaReq" value = "{{=it.data.PAReq}}">
+    <input type = "hidden" name = "MD" value = "{{=it.data.paymentid}}">
+    <input type = "hidden" name = "TermUrl" value = "{{=it.callbackUrl}}">
+    <input style = "display:none" type = "submit" value = "Submit">
+  </form>
+</div>
+
 <script>
   XD.postMessage({
     source: 'popup',
     loaded: true
   }, '*', window.opener);
+  localStorage['rzp'] = JSON.stringify({
+    value: {
+      time: new Date().toTimeString(),
+      source: 'popup',
+      ready: true
+    }
+  })
 </script>
 </body>
 </html>
