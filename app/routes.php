@@ -112,6 +112,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
 
+    Route::get('/admin/merchant/{id}/balance', 'AdminController@getMerchantBalance');
+
     Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
 
     Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
@@ -140,6 +142,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
 
+        Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');
+
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
 
         Route::get('/admin/merchant/{id}/live/enable', 'AdminController@getMerchantLiveEnable');
@@ -147,9 +151,9 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
     });
     
-    Route::get('/admin/{mode}/{entity}', 'AdminController@getMultipleEntities');
+    Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
 
-    Route::get('/admin/{mode}/{entity}/{entity_id}', 'AdminController@getEntityById');
+    Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
     
     Route::group(array('before' => 'auth.superadmin'), function()
     {

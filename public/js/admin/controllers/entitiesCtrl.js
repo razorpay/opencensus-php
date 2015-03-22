@@ -47,7 +47,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     $scope.search= function() {
       clear('skip');
       
-      var request = $http.get("/admin/" + $scope.mode +  "/" + $scope.entity_type + "/" + $scope.entity.id);
+      var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity_type + "/" + $scope.entity.id);
 
       request
       .success(function(data){
@@ -78,6 +78,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       var modalInstance = $modal.open({
         templateUrl: 'entityDetailModalContent.html',
         controller: 'entityDetailModalCtrl',
+        size: 'lg',
         resolve: {
           data: function() {
             return data;
@@ -95,7 +96,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
       var query = "count=10&skip="+ $scope.entity.skip;
 
-      var request = $http.get("/admin/" + $scope.mode +  "/" + $scope.entity_type + "?" + query);
+      var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity_type + "?" + query);
 
       request
       .success(function(data){
