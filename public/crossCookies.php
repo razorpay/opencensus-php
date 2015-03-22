@@ -1,3 +1,6 @@
+<?php
+header('P3P: CP="We dont have any P3P Policy"');
+?>
 <!doctype html>
 <html>
 	<head>
@@ -93,11 +96,6 @@
 			}
 			return null;
 		}
-
-		// remove cookie
-		// TODO cookie with unique keys, so that one tab doesn't interfere another
-		if(readCookie('rzp'))
-			createCookie('rzp', '', -1)
 
 		// post message based on cookie polling
 		function post_message(){

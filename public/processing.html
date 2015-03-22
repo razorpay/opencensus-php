@@ -125,8 +125,6 @@ function readCookie(name){
 
 // remove cookie
     // TODO cookie with unique keys, so that one tab doesn't interfere another
-if(readCookie('rzp-receive'))
-  createCookie('rzp-receive', '', -1)
 
 var csData = {};
 
@@ -135,15 +133,15 @@ var intervalID = setInterval(function(){
   receive_cookie = readCookie('rzp-receive')
   if(receive_cookie){
     handleMessage(JSON.parse(receive_cookie));
-    createCookie('rzo-receive', '', -1)
+    createCookie('rzp-receive', '', -1)
   }
-  else if(typeof localStorage['rzp-receive'] !== 'undefined'){
-    handleMessage(JSON.parse(localStorage['rzp-receive']).value);
-  }
-  else{
-    return
-  }
-  clearInterval(intervalID);
+  // else if(typeof localStorage['rzp-receive'] !== 'undefined'){
+  //   handleMessage(JSON.parse(localStorage['rzp-receive']).value);
+  // }
+  // else{
+  //   return
+  // }
+  // clearInterval(intervalID);
 }, 500)
 
 function handleMessage(data){
