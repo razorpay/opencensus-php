@@ -47,6 +47,9 @@
         <a href class="list-group-item" ng-click="openAssignBanks()">
           Assign Banks
         </a>
+        <a href class="list-group-item" ng-click="openAddAdjustment()">
+          Add Adjustment
+        </a>
       </div>
     </div>
   </div>
@@ -59,6 +62,10 @@
     </div>
     <div class="row wrapper">
       <div class="list-group">
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.balance/100 | currency:'INR ' }}</span>
+          Balance
+        </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>
           Name
@@ -309,5 +316,39 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned banks for the merchant will be replace with selected." ng-click="ok(bankdata)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="addAdjustmentModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Add Adjustment</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <span class="text-danger"><strong>
+    Warning: The adjustment once assigned can not be changed.
+    </strong></span>
+    <form class="form-horizontal" ng-init="adjustment={currency:'INR'}">
+      <div class="form-group">
+        <label for="amount" class="col-lg-2 control-label">Amount (in Paise) :</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="amount" ng-model="adjustment.amount" placeholder="Amount in Paise (INR 1 as 100)"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="currency" class="col-lg-2 control-label">Currency:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="currency" ng-model="adjustment.currency" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="description" class="col-lg-2 control-label">Description:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="description" ng-model="adjustment.description" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Adjustment once assigned can not be changed, ensure you have checked all values" ng-click="ok(adjustment)">OK</button>
   </div>
 </script>

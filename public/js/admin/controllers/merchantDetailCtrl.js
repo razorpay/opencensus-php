@@ -4,7 +4,8 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.merchant = {
-      id: $stateParams.id
+      id: $stateParams.id,
+      balance: 0
     };
 
     generateMerchant();
@@ -207,6 +208,31 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.addAdjustment = function(adjustment){
+      var request = $http({
+                    method: "post",
+                    url: "/admin/merchant/"+$scope.merchant.id+"/addadjustment",
+                    data: angular.toJson(adjustment)
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Adjustment added successfully', true);
+          fetchBalance();
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || "";
 
@@ -266,6 +292,21 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         });
     };
 
+    $scope.openAddAdjustment = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'addAdjustmentModalContent.html',
+        controller: 'addAdjustmentModalCtrl'
+      });
+
+      modalInstance.result.then(
+        function (adjustment) {
+          $scope.addAdjustment(adjustment);
+        },
+        function () {
+          ;
+        });
+    };
+
 
     function generateMerchant() {
       var request = $http.get("/admin/merchant/"+$scope.merchant.id);
@@ -278,6 +319,8 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
           $scope.merchant = data.data;
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = parseInt(($scope.merchant.details.steps_finished.length * 100)/ 5);
+
+          fetchBalance();
         }
         else {
           $scope.alerts.resetAlerts(true);
@@ -291,6 +334,27 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         $scope.alerts.addAlert('danger', null);
       });
     }
+
+    function fetchBalance(){
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/balance");
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.merchant.balance = data.data.balance;
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
 }])
 .controller('assignPricingModalCtrl', ['$scope', '$modalInstance', '$http', 'current',
   function ($scope, $modalInstance, $http, current) {
@@ -360,6 +424,16 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       $scope.ok = function (bankdata) {
         $modalInstance.close(bankdata);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+.controller('addAdjustmentModalCtrl', ['$scope', '$modalInstance',
+  function ($scope, $modalInstance) {
+      $scope.ok = function (adjustment) {
+        $modalInstance.close(adjustment);
       };
 
       $scope.cancel = function () {
