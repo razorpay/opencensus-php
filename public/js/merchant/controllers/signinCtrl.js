@@ -34,7 +34,7 @@
                 else {
                   $scope.alerts.resetAlerts();
                   
-                  if(data.errors[0] == "notactivated") {
+                  if(data.errors[0] == "not activated") {
                     $scope.notactivated = true;
                   }
                   else {
