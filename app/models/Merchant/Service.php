@@ -5,6 +5,7 @@ namespace Models\Merchant;
 use Models\Base;
 use Models\Merchant;
 use Models\MerchantDetails;
+use Mail;
 
 class Service extends Base\Service
 {
@@ -135,6 +136,7 @@ class Service extends Base\Service
             );
 
             $merchant = \Auth::merchant();
+
             if ($merchant->once($credentials))
             {
                 $merchant = \Auth::merchant()->get();
@@ -147,7 +149,7 @@ class Service extends Base\Service
 
                 $this->queueConfirmationMail($merchant);
 
-                return [[], $data];
+                return [[], []];
             }
         }
 
