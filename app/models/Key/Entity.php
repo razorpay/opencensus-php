@@ -138,7 +138,7 @@ class Entity extends Base\PublicEntity
         $len = self::ID_LENGTH;
 
         $secret = '';
-        $x = range(1,6);
+        $x = range(1,8);
         foreach ($x as $n)
         {
             $hex = bin2hex(openssl_random_pseudo_bytes(4));
@@ -148,6 +148,11 @@ class Entity extends Base\PublicEntity
             $partial = self::base62($dec);
             $partial = substr($partial, -4);
             $secret .= $partial;
+        }
+
+        if (strlen($secret) > self::SECRET_LENGTH)
+        {
+            $secret = substr($secret, 0, self::SECRET_LENGTH);
         }
 
         $hash = Crypt::encrypt($secret);
