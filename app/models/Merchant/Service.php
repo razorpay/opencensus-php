@@ -153,7 +153,7 @@ class Service extends Base\Service
             }
         }
 
-        return [['Email or password is invalid.'], $data];
+        return [['Email or password is invalid.'], []];
     }
 
     public function fetch($merchant_id)
