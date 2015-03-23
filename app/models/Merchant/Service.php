@@ -6,6 +6,7 @@ use Models\Base;
 use Models\Merchant;
 use Models\MerchantDetails;
 use Mail;
+use Mailgun;
 
 class Service extends Base\Service
 {
@@ -42,7 +43,7 @@ class Service extends Base\Service
     {
         $merchant = $merchant->generateEmailData();
 
-        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
+        Mailgun::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
         {
             $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
         });
@@ -200,7 +201,7 @@ class Service extends Base\Service
     }
 
     public function rollKeys(array $input, $mode)
-    {   
+    {
         if (\Auth::merchant()->user()->isTestAccount()) {
             return [["Roll key forbidden on this account"], null];
         }

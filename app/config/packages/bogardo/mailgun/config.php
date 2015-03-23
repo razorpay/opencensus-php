@@ -9,8 +9,8 @@ return array(
 	 *
 	 */
 	'from' => array(
-		'address' => '',
-		'name' => ''
+		'address' => 'no-reply@razorpay.com',
+		'name' => 'Razorpay Team'
 	),
 
 
@@ -18,26 +18,26 @@ return array(
 	 * Global reply-to e-mail address
 	 *
 	 */
-	'reply_to' => '',
+	'reply_to' => 'support@razorpay.com',
 
 
 	/**
 	 * Mailgun (private) API key
 	 *
 	 */
-	'api_key' => '',
+	'api_key' => 'key-7231363487a56ca70808987512475881',
 
 	/**
 	 * Mailgun public API key
 	 *
 	 */
-	'public_api_key' => '',
+	'public_api_key' => 'pubkey-69fd2327dc8d9680275d619cc5ff90fe',
 
 	/**
 	 * Domain name registered with Mailgun
 	 *
 	 */
-	'domain' => '',
+	'domain' => 'razorpay.com',
 
 	/**
 	 * Force the from address
