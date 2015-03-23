@@ -20,6 +20,8 @@ class Service extends Base\Service
             return [$error, null];
         }
 
+        $collection = [];
+        
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
