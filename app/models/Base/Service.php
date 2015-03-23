@@ -24,14 +24,14 @@ class Service
         $this->api = new Api($id, $secret);
     }
 
-    public function slackPost($headline, $postdata, $channel, $pretext = '')
+    public function slackPost($headline, $postdata, $channel, $pretext = '', $color = 'good')
     {
         if($_ENV['SLACK_ENABLE'] === true)
         {
             $data = array();
             $data['fallback'] = $headline.'\n';
             $data['fields'] = array();
-            $data['color'] = 'good';
+            $data['color'] = $color;
             $data['pretext'] = $pretext;
             $data['link_names'] = 1;
             foreach($postdata as $key => $value)

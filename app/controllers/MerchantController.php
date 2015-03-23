@@ -200,7 +200,7 @@ class MerchantController extends BaseController
               ->subject('New Contact form submission');
         });
 
-        (new Merchant\Service)->slackPost('New Sales Lead!', $input, '#sales', '@channel');
+        (new Merchant\Service)->slackPost('New Sales Lead!', $input, '#sales', '@channel', 'warning');
 
         return Redirect::to("https://razorpay.com/postcontact/");
     }
