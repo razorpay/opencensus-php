@@ -123,6 +123,7 @@ return array(
 		'Barryvdh\Debugbar\ServiceProvider',
 		'Maknz\Slack\SlackServiceProvider',
 		'Trace\TraceServiceProvider',
+        'Bogardo\Mailgun\MailgunServiceProvider',
 	),
 
 	/*
@@ -192,6 +193,6 @@ return array(
 		'Slack'			  => 'Maknz\Slack\Facades\Slack',
 		'Trace'           => 'Trace\Facade',
 	),
-	
+
 	'context' => $_ENV['CONTEXT'],
 );

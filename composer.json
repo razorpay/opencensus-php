@@ -11,7 +11,8 @@
         "ollieread/multiauth": "dev-master",
         "barryvdh/laravel-debugbar": "1.*",
         "razorpay/spine": "dev-master",
-        "maknz/slack": "1.*"
+        "maknz/slack": "1.*",
+        "bogardo/mailgun": "3.1.*"
     },
     "require-dev": {
         "raveren/kint": ">=0.9",
