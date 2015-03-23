@@ -183,7 +183,7 @@
         <label for="or_same" class="col-sm-3 control-label">Operation Address same as Registered Address</label>
           <div class="col-sm-8">
               <label class="i-switch m-t-xs m-r">
-                <input type="checkbox" ng-change="genOperation(or_same)" name="or_same" ng-model="or_same"><i></i> 
+                <input type="checkbox" ng-change="genOperation(or_same)" name="or_same" ng-model="or_same"><i></i>
               </label>
           </div>
         </div>
@@ -191,7 +191,7 @@
         <div class="form-group">
         <label for="business_operation_address" class="col-sm-3 control-label">Operation Address</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="business_operation_address" ng-model="data.2.business_operation_address" placeholder="Operation Address" ng-disabled="or_same" required></textarea>    
+            <textarea class="form-control" name="business_operation_address" ng-model="data.2.business_operation_address" placeholder="Operation Address" ng-disabled="or_same" required></textarea>
             </div>
         </div>
         <div class="form-group">
@@ -400,7 +400,7 @@
         <div class="form-group">
           <label for="bank_branch_address" class="col-sm-3 control-label">Branch Address</label>
           <div class="col-sm-8">
-            <textarea class="form-control" ng-model="data.4.bank_branch" placeholder="Name of Bank" required></textarea>
+            <textarea class="form-control" ng-model="data.4.bank_branch" placeholder="Branch Address" required></textarea>
           </div>
         </div>
         <div class="form-group">
@@ -433,7 +433,7 @@
               <li>Partnership Agreement (Mandatory, if partnership firm)</li>
               <li>Certificate of Incorporation (Mandatory if private limited)</li>
               <li>Trust/Society/NGO etc. registration proof</li>
-            </span>    
+            </span>
               <div class="m-t m-b">
                  <a href="{{files.business_proof}}" target="_blank" ng-show="files.business_proof">{{files.business_proof}}</a>
                 <span ng-hide="files.business_proof">No file Uploaded</span>
