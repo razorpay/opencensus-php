@@ -39,9 +39,12 @@ class Service extends Base\Service
 
     protected function queueConfirmationMail($merchant)
     {
-        \Queue::push(
-            'MerchantController@sendConfirmationMail',
-            array('merchant' => $merchant->generateEmailData()));
+        $merchant = $merchant->generateEmailData();
+
+        Mail::send('emails.confirmation', compact('merchant'), function($m) use ($merchant)
+        {
+            $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
+        });
     }
 
     public function changePassword(array $input)
