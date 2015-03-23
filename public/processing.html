@@ -99,15 +99,29 @@ function autosubmit(data){
 }
 
 XD.receiveMessage(function(message){
-  if(typeof message.data.rzp !== 'undefined'){
-    if(typeof message.data.location !== 'undefined'){
-      window.location = message.data.location;
+  handleMessage(message.data);
+});
+
+var csData = {};
+
+delete localStorage['rzp-receive'];
+var intervalID = setInterval(function(){
+  if(typeof localStorage['rzp-receive'] !== 'undefined'){
+    clearInterval(intervalID);
+    handleMessage(JSON.parse(localStorage['rzp-receive']).value);
+  }
+}, 500)
+
+function handleMessage(data){
+  if(typeof data.rzp !== 'undefined'){
+    if(typeof data.location !== 'undefined'){
+      window.location = data.location;
     }
-    else if(typeof message.data.autosubmit !== 'undefined'){
-      autosubmit(message.data.autosubmit);
+    else if(typeof data.autosubmit !== 'undefined'){
+      autosubmit(data.autosubmit);
     }
   }
-});
+}
 
 </script>
 <style>
@@ -215,6 +229,13 @@ XD.receiveMessage(function(message){
     source: 'popup',
     loaded: true
   }, '*', window.opener);
+  localStorage['rzp'] = JSON.stringify({
+    value: {
+      time: new Date().toTimeString(),
+      source: 'popup',
+      ready: true
+    }
+  })
 </script>
 </body>
 </html>
