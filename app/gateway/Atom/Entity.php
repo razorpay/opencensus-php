@@ -2,7 +2,9 @@
 
 namespace Gateway\Atom;
 
-class Entity extends \Models\Base\Entity
+use Models\Base;
+
+class Entity extends Base\PublicEntity
 {
     protected $fields = array(
         'id',
@@ -32,6 +34,10 @@ class Entity extends \Models\Base\Entity
     protected $table = 'atom';
 
     protected $guarded = array();
+
+    protected static $sign = 'pay';
+
+    protected $entity = 'atom';
 
     public function setSuccess($success)
     {

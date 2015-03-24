@@ -20,14 +20,18 @@ class Balance extends Base\UniqueIdEntity
         self::ID,
         self::BALANCE);
 
-    public function addAmount($amount)
+    protected function addAmount($amount)
     {
         $this->checkNumeric($amount);
 
-        $this->attributes[self::BALANCE] += (int) $amount;
+        $balance = $this->getBalance();
+
+        $balance += $amount;
+
+        $this->setAttribute(self::BALANCE, $balance);
     }
 
-    public function subAmount($amount)
+    protected function subAmount($amount)
     {
         $this->checkNumeric($amount);
 
@@ -62,6 +66,14 @@ class Balance extends Base\UniqueIdEntity
         return $balance;
     }
 
+    /**
+     * Only this method should be public
+     * for updating balance.
+     * We need to check for balance going negative
+     * whenever we update balance
+     *
+     * @param  Transaction\Entity $txn
+     */
     public function updateBalance($txn)
     {
         $amount = $txn->getNetAmount();
@@ -70,8 +82,15 @@ class Balance extends Base\UniqueIdEntity
 
         if ($this->getBalance() < 0)
         {
+            $data = [
+                'balance' => $this->toArray(),
+                'transaction' => $txn->toArray(),
+                'amount' => $amount
+            ];
+
             throw new Exception\LogicException(
-                'Something very wrong is happening! Balance is going negative');
+                'Something very wrong is happening! Balance is going negative',
+                $data);
         }
     }
 

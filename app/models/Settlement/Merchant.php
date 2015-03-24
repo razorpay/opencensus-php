@@ -56,8 +56,6 @@ class Merchant
         $this->amount = $apiFee;
         $this->txns = new Base\PublicCollection;
 
-        $setl = $this->createSetlEntityAndTxn();
-
         $adjInput = array(
             'description' => 'Settlement for ' . time(),
             'amount' => $apiFee,
@@ -68,11 +66,13 @@ class Merchant
 
         $this->txns->push($adj->transaction);
 
+        $setl = $this->createSetlEntityAndTxn();
+
         (new Transaction\Core)->updateBalances($this->setlTransaction, false);
 
         $this->saveChangesToDb();
 
-        return $setl;
+        return [$setl, $adj->transaction];
     }
 
     protected function createSetlEntityAndTxn()

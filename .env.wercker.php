@@ -24,7 +24,7 @@ return array(
     'HDFC_ID'                   => getenv('HDFC_ID'),
     'HDFC_PASSWORD'             => getenv('HDFC_PASSWORD'),
 
-    'HDFC_MOCK'                 => false,
+    'HDFC_MOCK'                 => true,
     'ATOM_MOCK'                 => false,
     'MOCK_GATEWAY_SECRET'       => 'wercker_random_password',
 

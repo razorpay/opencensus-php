@@ -5,6 +5,7 @@ namespace Models\Settlement;
 use Constants\Mode;
 use Models\Base;
 use Models\Gateway;
+use Models\Transaction;
 use Models\Settlement;
 
 class Service extends Base\Service
@@ -46,6 +47,17 @@ class Service extends Base\Service
         $settlements = (new Settlement\Repository)->fetch($input, $this->merchant->getKey());
 
         return $settlements->toArrayPublic();
+    }
+
+    public function getSettlementTransactions($id)
+    {
+        Settlement\Entity::verifyIdAndStripSign($id);
+
+        $setl = (new Settlement\Repository)->findByIdAndMerchantId($id, $this->merchant->getKey());
+
+        $txns = (new Transaction\Repository)->fetchBySettlementId($id);
+
+        return $txns->toArrayPublic();
     }
 
     public function reconcileSettlements($input)

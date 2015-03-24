@@ -119,7 +119,7 @@ class Settler
 
         try
         {
-            list($settlements, $txns) = $this->process($txns, Channel::ATOM);
+            list($settlements, $txns, $amounts) = $this->process($txns, Channel::ATOM);
 
             $this->setlRepo->commit();
         }
@@ -168,11 +168,11 @@ class Settler
 
     protected function process($txns, $channel)
     {
-        list($settlements, $amounts) = $this->createSettlements($txns, $channel);
+        list($settlements, $txnsSettled, $amounts) = $this->createSettlements($txns, $channel);
 
-        $this->txnRepo->settled($txns, self::$settlementTimestamp);
+        $this->txnRepo->settled($txnsSettled, self::$settlementTimestamp);
 
-        return array($settlements, $txns, $amounts);
+        return array($settlements, $txnsSettled, $amounts);
     }
 
     protected function createSettlements($txns, $channel)
@@ -180,6 +180,7 @@ class Settler
         $this->dailySettlement->channel = $channel;
 
         $settlements = new Base\PublicCollection;
+        $txnsSettled = new Base\PublicCollection;
 
         $i = 0;
         $count = $txns->count();
@@ -226,6 +227,7 @@ class Settler
                                         $setlTxns, $setlAmount, $setlApiFee, $setlGatewayFee);
 
             $settlements->push($setl);
+            $txnsSettled = $txnsSettled->merge($setlTxns);
 
             $totalSetlAmount += $setlAmount;
             $totalSetlApiFee += $setlApiFee;
@@ -235,8 +237,11 @@ class Settler
         if (($totalSetlApiFee !== 0) and
             ($channel === Settlement\Channel::KOTAK))
         {
-            $setl = $this->collectApiFees($totalSetlApiFee, $channel);
+            list($setl, $adjTxn) = $this->collectApiFees($totalSetlApiFee, $channel);
+
             $settlements->push($setl);
+            $txns->push($adjTxn);
+            $txnsSettled->push($adjTxn);
 
             $totalSetlAmount += $totalSetlApiFee;
         }
@@ -251,7 +256,7 @@ class Settler
             'gateway_fee' => $totalSetlGatewayFee,
         );
 
-        return [$settlements, $amounts];
+        return [$settlements, $txnsSettled, $amounts];
     }
 
     protected function updateDailySettlementAttributes($urlText, $urlExcel, $setlCount, $txnCount)
@@ -292,19 +297,18 @@ class Settler
 
         $feeAccount = $this->merchantRepo->findOrFail(Merchant\Account::API_FEE_ACCOUNT);
 
-        $setl = (new Settlement\Merchant($feeAccount, $channel))->collectApiFees($apiFee);
+        list($setl, $adjTxn) = (new Settlement\Merchant($feeAccount, $channel))->collectApiFees($apiFee);
 
-        return $setl;
+        return [$setl, $adjTxn];
     }
-
 
     protected function fetchTransactionsToSettle($input)
     {
         $ts = $this->initSettlementTimestamp($input);
 
-        $all = $this->isInputValue($input, 'all', '1');
+//        $all = $this->isInputValue($input, 'all', '1');
 
-        if ($all === true)
+//        if ($all === true)
         {
             //
             // Fetch all txns whose expected settlement
@@ -314,17 +318,16 @@ class Settler
 
             $txns = $this->txnRepo->fetchUnsettledTransactions($ts);
         }
-        else
-        {
-            $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
-        }
+        // else
+        // {
+        //     $txns = $this->txnRepo->fetchTxnsExpectedToSettle($ts);
+        // }
 
         foreach ($txns as $txn)
         {
             if ($txn->isTypePayment())
             {
                 $payment = $txn->entity;
-
             }
             else if ($txn->getType() === Transaction\Type::REFUND)
             {

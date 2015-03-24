@@ -48,6 +48,10 @@ class Service extends Base\Service
                 $ns = 'Models\Settlement\Daily';
                 break;
 
+            case 'atom':
+                $ns = 'Gateway\Atom';
+                break;
+
             default:
                 $ns = 'Models\\'.ucfirst($entity);
         }

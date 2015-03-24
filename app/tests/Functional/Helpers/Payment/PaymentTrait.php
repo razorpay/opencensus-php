@@ -213,6 +213,19 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function verifyPayment($id)
+    {
+        $request = array(
+            'url' => '/payments/'.$id.'/verify',
+            'method' => 'GET');
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function refundPayment($id, $amount = null)
     {
         $this->ba->privateAuth();
@@ -262,6 +275,16 @@ trait PaymentTrait
 
         $this->ba->privateAuth();
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function fetchRefundsForPayment($paymentId)
+    {
+        $request['url'] = '/payments/'.$paymentId.'/refunds';
+        $request['method'] = 'GET';
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function getDefaultPaymentEntityArray()

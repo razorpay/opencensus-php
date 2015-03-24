@@ -107,6 +107,11 @@ else {
     XD.postMessage(data, '*', window.parent);
 }
 
+data.time = new Date().toTimeString();
+localStorage['rzp'] = JSON.stringify({
+    value: data
+})
+
 </script>
 
 <pre> <?php echo json_encode($data, JSON_PRETTY_PRINT); ?> </pre>
