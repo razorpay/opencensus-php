@@ -320,7 +320,10 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = parseInt(($scope.merchant.details.steps_finished.length * 100)/ 5);
 
-          fetchBalance();
+          if ($scope.merchant.details.activated == 1)
+            fetchBalance();
+          else
+            $scope.merchant.balance = 0;
         }
         else {
           $scope.alerts.resetAlerts(true);
