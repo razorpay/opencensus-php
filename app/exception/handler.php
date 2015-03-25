@@ -7,6 +7,7 @@ use Config;
 use Trace;
 use Redirect;
 use Response;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 class Handler
 {
@@ -29,12 +30,15 @@ class Handler
         {
             return $this->genericExceptionHandler($e, $code);
         });
+
+        $this->app->error(function(MethodNotAllowedHttpException $e)
+        {
+            return Response::json(array('success' => false, 'errors' => ['Method not allowed']));
+        });
     }
 
     public function genericExceptionHandler(\Exception $exception, $code)
-    {   
-        
-
+    {
         if ($code === 404)
         {
             return Redirect::to('/#/404');
@@ -52,7 +56,6 @@ class Handler
                 sd($exception);
             }
         }
-
     }
 
     protected function traceException(\Exception $exception)
