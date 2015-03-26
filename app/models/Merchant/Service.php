@@ -145,7 +145,7 @@ class Service extends Base\Service
                 if ($merchant->confirm_token === null)
                 {
                     return [['Merchant already confirmed. You can login ' .
-                             '<a href="'.\URL::to('#/access/signin').'">here</a>'], $data];
+                             '<a href="'.\URL::to('#/access/signin').'">here</a>'], []];
                 }
 
                 $this->queueConfirmationMail($merchant);
