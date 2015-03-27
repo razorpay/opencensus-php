@@ -89,7 +89,7 @@ class NetBankingTest extends TestCase
 
     public function testAtomVerifyPayment()
     {
-        $this->markTestSkipped();
+//        $this->markTestSkipped();
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
