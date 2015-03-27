@@ -100,6 +100,7 @@ var data = {{json_encode($data);}};
 if(window.parent === window){
     // We are in popup mode
     XD.postMessage(data, '*', window.opener);
+    document.cookie = "rzp="+JSON.stringify(data)+"; path=/";
 }
 else {
     // We are in iframe mode
