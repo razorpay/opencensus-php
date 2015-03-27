@@ -106,12 +106,13 @@ class Gateway extends BaseGateway
         $fields = array(
             'merchantid'    => $input['terminal']['gateway_merchant_id'],
             'merchantxnid'  => $input['payment']['public_id'],
-            'tdate'         => $tdate,
-            'amt'           => $input['payment']['amount']);
+            'amt'           => $input['payment']['amount'] / 100,
+            'tdate'         => $tdate);
 
         $request['url'] = Urls::VERIFY_URL;
         $request['content'] = $fields;
         $request['action'] = 'verify';
+        $request['method'] = 'get';
 
         $response = [];
         $response = $this->runRequestResponseFlow($request, $response);
@@ -288,7 +289,8 @@ class Gateway extends BaseGateway
         $str = $this->buildGetQueryString($request['content']);
         $request['url'] .= '?'.$str;
         $request['content'] = [];
-        // echo $request['url'];die();
+        s($request);
+        //echo $request['url'];//die();
 
         $this->response = $this->sendGatewayRequest($request);
 
@@ -386,9 +388,6 @@ class Gateway extends BaseGateway
 
     protected function setTerminalInRequest(array & $request)
     {
-        if ($request['action'] !== 'authorize')
-            return;
-
         $terminal = $this->terminal;
 
         if ($terminal['gateway'] !== 'atom')
@@ -408,9 +407,17 @@ class Gateway extends BaseGateway
             list($login, $pwd, $productId) = $this->getCredentials();
         }
 
-        $request['content']['login'] = $login;
-        $request['content']['pass'] = $pwd;
-        $request['content']['prodid'] = $productId;
+        if ($request['action'] === 'authorize')
+        {
+            $request['content']['login'] = $login;
+            $request['content']['pass'] = $pwd;
+            $request['content']['prodid'] = $productId;
+        }
+
+        if ($request['action'] === 'verify')
+        {
+            $request['content']['merchantid'] = $login;
+        }
    }
 
     protected function getCredentials()

@@ -67,12 +67,19 @@ class BaseGateway
             $request['header'] = array();
         }
 
+        $method = 'post';
+
+        if (isset($request['method']))
+        {
+            $method = $request['method'];
+        }
+
         // echo 'Url: ' . $request['url'] . PHP_EOL;
         // echo $request['content'] . PHP_EOL . PHP_EOL;
         // \Log::info( 'Url: ' . $request['url'] . PHP_EOL);
         // \Log::info( json_encode($request['content'], JSON_PRETTY_PRINT) . PHP_EOL . PHP_EOL);
 
-        $response = Requests::post(
+        $response = Requests::$method(
                     $request['url'],
                     $request['header'],
                     $request['content'],
