@@ -58,8 +58,8 @@ class Gateway extends BaseGateway
     {
         $this->verifyCallbackChecksum($input);
 
-        $bankRefNo = $input['gateway']['BankRefNo'];
-        $message = $input['gateway']['Message'];
+        $bankRefNo = $input['BankRefNo'];
+        $message = $input['Message'];
     }
 
     public function verify(array $input)
@@ -90,7 +90,7 @@ class Gateway extends BaseGateway
             'TxnCurrency',
             'TxnAmount',
             'TxnScAmount',
-            'MerchantRefNo',
+            'MerchRefNo',
             'StSucFlg',
             'StFailFlg',
             'Date',
@@ -113,14 +113,20 @@ class Gateway extends BaseGateway
 
         $str = '';
 
+        $data = [];
+
         foreach ($paramsOrder as $param)
         {
             if (isset($input[$param]))
+            {
+                $data[$param] = $input[$param];
                 $str .= $input[$param];
+            }
         }
 
         $checksum = $input['CheckSum'];
 
+        // s($input, $data, $str);
         $expectedChecksum = $this->getChecksumForString($str);
 
         if ($checksum !== $expectedChecksum)
@@ -171,7 +177,7 @@ class Gateway extends BaseGateway
 
     protected function getChecksumForString($str = '')
     {
-        return crc32($str . '123456');
+        return (string) crc32($str . '123456');
     }
 
     protected function getDomain()
