@@ -105,7 +105,7 @@ class Gateway extends BaseGateway
 
         $fields = array(
             'merchantid'    => $input['terminal']['gateway_merchant_id'],
-            'merchantxnid'  => $input['payment']['public_id'],
+            'merchanttxnid'  => $input['payment']['public_id'],
             'amt'           => $input['payment']['amount'] / 100,
             'tdate'         => $tdate);
 
@@ -289,7 +289,7 @@ class Gateway extends BaseGateway
         $str = $this->buildGetQueryString($request['content']);
         $request['url'] .= '?'.$str;
         $request['content'] = [];
-        //echo $request['url'];//die();
+        // echo $request['url'];die();
 
         $this->response = $this->sendGatewayRequest($request);
 
@@ -535,6 +535,8 @@ class Gateway extends BaseGateway
         {
             $str .= '&'.$key.'='.$value;
         }
+
+        $str = substr($str, 1);
 
         return $str;
     }

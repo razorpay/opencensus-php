@@ -181,7 +181,7 @@ class Server
 
     public function verifyPayment($input)
     {
-        $id = $input['merchantxnid'];
+        $id = $input['merchanttxnid'];
         $merchantId = $input['merchantid'];
         $amt = $input['amt'];
 
