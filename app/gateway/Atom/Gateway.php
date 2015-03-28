@@ -104,10 +104,10 @@ class Gateway extends BaseGateway
         $tdate = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata')->format('Y-m-d');
 
         $fields = array(
-            'merchantid'    => $input['terminal']['gateway_merchant_id'],
-            'merchanttxnid'  => $input['payment']['public_id'],
-            'amt'           => $input['payment']['amount'] / 100,
-            'tdate'         => $tdate);
+            'merchantid'        => $input['terminal']['gateway_merchant_id'],
+            'merchanttxnid'     => $input['payment']['public_id'],
+            'amt'               => $input['payment']['amount'] / 100,
+            'tdate'             => $tdate);
 
         $request['url'] = Urls::VERIFY_URL;
         $request['content'] = $fields;
@@ -122,22 +122,32 @@ class Gateway extends BaseGateway
 
         $values = [];
 
-        $vStatus = ($data['VERIFIED'] === 'SUCCESS');
+        $atomStatus = ($data['VERIFIED'] === 'SUCCESS');
 
         $id = $input['payment']['id'];
         $payment = (new Atom\Repository)->find($id);
 
         $status = (bool) $payment['success'];
 
-        $data = ['match' => true];
+        $res = ['match' => true];
 
-        if ($status !== $vStatus)
+        if (($status !== $atomStatus) or
+            ($data['BID'] !== $payment['bank_payment_id']))
         {
-            $data['match'] = false;
-            $data['status'] = ['rzp' => $status, 'gateway' => $vStatus];
+            $res['match'] = false;
+            $res['status'] = ['rzp' => $status, 'gateway' => $atomStatus];
+            $res['gateway_data'] = $data;
+            $res['payment'] = $payment->toArray();
+            $res['payment_id'] = $input['payment']['id'];
+            $res['gateway'] = $input['payment']['gateway'];
         }
 
-        return $data;
+        if ($res['match'] === false)
+        {
+            throw new Exception\PaymentVerificationException($res);
+        }
+
+        return $res;
     }
 
     protected function processPaymentInitiationResponse($response, $input)

@@ -146,6 +146,8 @@ class ErrorCode
     const BAD_REQUEST_KEY_EXPIRING_SOON                                     = 'BAD_REQUEST_KEY_EXPIRING_SOON';
     const BAD_REQUEST_KEY_OF_DEMO_ACCOUNT                                   = 'BAD_REQUEST_KEY_OF_DEMO_ACCOUNT';
 
+    const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                           = 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED';
+
     const SERVER_ERROR_INVALID_ARGUMENT                                     = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                                      = 'SERVER_ERROR_DB_QUERY_FAILED';
     const SERVER_ERROR_LOGICAL_ERROR                                        = 'SERVER_ERROR_LOGICAL_ERROR';
