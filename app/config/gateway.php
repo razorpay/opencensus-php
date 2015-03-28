@@ -11,11 +11,14 @@ return array(
 
     'available' => array(
         'hdfc',
-        'atom'),
+        'atom',
+        'axis'),
 
     'mock_hdfc' => $_ENV['HDFC_MOCK'],
 
     'mock_atom' => $_ENV['ATOM_MOCK'],
+
+    'mock_axis' => 'false',
 
     'mockhdfc_server' => false,
 );
