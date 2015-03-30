@@ -194,9 +194,10 @@ class MerchantController extends BaseController
     {
         $input = Input::all();
 
-        Mail::send('emails.contact',compact('input'), function($m)
+        Mail::send('emails.contact',compact('input'), function($m) use($input)
         {
-            $m->to('contact@razorpay.com', 'Razorpay Contact')
+            $m->from($input['email'], $input['name'])
+              ->to('contact@razorpay.com', 'Razorpay Contact')
               ->subject('New Contact form submission');
         });
 
