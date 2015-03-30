@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY           = 'gateway';
     const TERMINAL_ID       = 'terminal_id';
     const SIGNED            = 'signed';
+    const VERIFIED          = 'verified';
 
     const CURRENCY_LENGTH   = 3;
 
@@ -82,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID,
         self::TRANSACTION_ID,
         self::SIGNED,
+        self::VERIFIED,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -114,7 +116,8 @@ class Entity extends Base\PublicEntity
         self::SIGNED,
         self::REFUND_STATUS,
         self::AMOUNT_REFUNDED,
-        self::AUTO_CAPTURED);
+        self::AUTO_CAPTURED,
+        self::VERIFIED);
 
 // --------------------- Generators --------------------------------------------
 
@@ -149,6 +152,11 @@ class Entity extends Base\PublicEntity
     protected function generateAutoCaptured()
     {
         $this->setAttribute(self::AUTO_CAPTURED, 0);
+    }
+
+    protected function generateVerified()
+    {
+        $this->setAttribute(self::VERIFIED, null);
     }
 
 // --------------------- Generators Ends ---------------------------------------
@@ -235,6 +243,11 @@ class Entity extends Base\PublicEntity
     public function setAutoCaptureTrue()
     {
         $this->setAttribute(self::AUTO_CAPTURED, true);
+    }
+
+    public function setVerified($verified)
+    {
+        $this->setAttribute(self::VERIFIED, $verified);
     }
 
 // ----------------------- Setters Ends-----------------------------------------
@@ -420,7 +433,7 @@ class Entity extends Base\PublicEntity
         $data = $this->toArray();
 
         $data['id'] = $this->getPublicId();
-        
+
         if ($this->getAttribute(self::METHOD) === Payment\Method::CARD)
         {
             $card = $this->card()->firstOrFail();
