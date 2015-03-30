@@ -22,6 +22,7 @@ class Processor
     use Capture;
     use Callback;
     use Refund;
+    use Verify;
 
     protected $merchant;
 
@@ -236,19 +237,6 @@ class Processor
         $gateway = $this->payment->getGateway();
 
         return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
-    }
-
-    public function verify($id)
-    {
-        $payment = $this->retrieve($id);
-
-        $data = array(
-            'payment' => $payment->toArray(),
-            'terminal' => $payment->terminal);
-
-        $data = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
-
-        return $data;
     }
 
     protected function createPaymentEntity($input)
