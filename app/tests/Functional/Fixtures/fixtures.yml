@@ -19,7 +19,7 @@ Models\Terminal\Entity:
 Models\Merchant\Balance:
     id: $uniqueid
 
-Models\Merchant\BankAccount:
+Models\Merchant\BankAccount\Entity:
     merchant_id: $uniqueid
     ifsc_code: RZPB0000000
     account_number: 10010101011

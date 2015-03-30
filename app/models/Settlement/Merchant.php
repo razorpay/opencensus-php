@@ -179,7 +179,7 @@ class Merchant
             'beneficiary_code' => strtoupper(random_alpha_string(4)),
             'account_number'   => '10101030103');
 
-        $ba = (new \Models\Merchant\BankAccount)->newInstance($attributes, true);
+        $ba = (new \Models\Merchant\BankAccount\Entity)->newInstance($attributes, true);
 
         $ba->merchant()->associate($merchant);
 
