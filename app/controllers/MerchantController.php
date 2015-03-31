@@ -198,7 +198,7 @@ class MerchantController extends BaseController
         {
             $m->from($input['email'], $input['name'])
               ->to('contact@razorpay.com', 'Razorpay Contact')
-              ->subject('New Contact form submission');
+              ->subject('New Contact form submission - '.$input['name']);
         });
 
         (new Merchant\Service)->slackPost('New Sales Lead!', $input, '#sales', '@channel', 'warning');
