@@ -5,11 +5,10 @@ use Illuminate\Database\Migrations\Migration;
 
 use Constants\Table;
 use Models\Merchant;
-use Models\Merchant\BankAccount;
+use Models\Merchant\BankAccount\Entity as BankAccount;
 
 class CreateBankAccounts extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -75,5 +74,4 @@ class CreateBankAccounts extends Migration
 
         Schema::drop(Table::BANK_ACCOUNT);
     }
-
 }
