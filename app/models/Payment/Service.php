@@ -201,6 +201,27 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
+    public function verifyAllPayments()
+    {
+        $ts = time() - 60 * 60;
+
+        $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $this->merchant = $payment->merchant;
+
+                $res = $this->processor()->autoCapturePayment($payment);
+            }
+            catch (Exception\PaymentVerificationException $e)
+            {
+                ; // just continue
+            }
+        }
+    }
+
     protected function processor()
     {
         return Payment\Processor\Processor::create($this->getBindings());
