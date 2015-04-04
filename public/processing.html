@@ -72,12 +72,12 @@ function handleMessage(data){
 <style>
   .rzp-loader {
     display: block;
-    position: relative;
+    position: absolute;
     left: 50%;
     top: 50%;
-    width: 160px;
-    height: 160px;
-    margin: 75px 0 0 -75px;
+    width: 140px;
+    height: 140px;
+    margin: -70px 0 0 -70px;
     border-radius: 50%;
     border: 5px solid transparent;
     border-top-color: #29b7d6;
@@ -111,54 +111,64 @@ function handleMessage(data){
     animation: spin 1.5s linear infinite;
   }
 
-  .rzp-loader img {
-    width: 80px;
+  .rzp-logo {
+    display: block;
     position: absolute;
-    top: 40px;
-    left: 40px;
-    -webkit-animation: antispin 2s linear infinite;
-    animation: antispin 2s linear infinite;
+    left: 50%;
+    top: 50%;
+    width: 80px;
+    height: 80px;
+    margin-top: -40px;
+    margin-left: -40px;
   }
 
   @-webkit-keyframes spin {
     0%{
-      -webkit-transform: rotate(0deg);  /* Chrome, Opera 15+, Safari 3.1+ */
-      -ms-transform: rotate(0deg);  /* IE 9 */
-      transform: rotate(0deg);  /* Firefox 16+, IE 10+, Opera */
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
     }
     100% {
-      -webkit-transform: rotate(360deg);  /* Chrome, Opera 15+, Safari 3.1+ */
-      -ms-transform: rotate(360deg);  /* IE 9 */
-      transform: rotate(360deg);  /* Firefox 16+, IE 10+, Opera */
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
     }
   }
-  @-webkit-keyframes antispin {
+  @-ms-keyframes spin {
     0%{
-      -webkit-transform: rotate(360deg);  /* Chrome, Opera 15+, Safari 3.1+ */
-      -ms-transform: rotate(360deg);  /* IE 9 */
-      transform: rotate(360deg);  /* Firefox 16+, IE 10+, Opera */
+      -ms-transform: rotate(0deg);
+      transform: rotate(0deg);
     }
     100% {
-      -webkit-transform: rotate(0deg);  /* Chrome, Opera 15+, Safari 3.1+ */
-      -ms-transform: rotate(0deg);  /* IE 9 */
-      transform: rotate(0deg);  /* Firefox 16+, IE 10+, Opera */
+      -ms-transform: rotate(360deg);
+      transform: rotate(360deg);
     }
+  }
+  @-moz-keyframes spin {
+    0%{
+      -moz-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -moz-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
   @keyframes spin {
     0%{
-      -webkit-transform: rotate(0deg);  /* Chrome, Opera 15+, Safari 3.1+ */
-      -ms-transform: rotate(0deg);  /* IE 9 */
-      transform: rotate(0deg);  /* Firefox 16+, IE 10+, Opera */
+      -webkit-transform: rotate(0deg);
+      -moz-transform: rotate(0deg);
+      -ms-transform: rotate(0deg);
+      transform: rotate(0deg);
     }
     100%{
-      -webkit-transform: rotate(360deg);  /* Chrome, Opera 15+, Safari 3.1+ */
-      -ms-transform: rotate(360deg);  /* IE 9 */
-      transform: rotate(360deg);  /* Firefox 16+, IE 10+, Opera */
+      -webkit-transform: rotate(360deg);
+      -moz-transform: rotate(360deg);
+      -ms-transform: rotate(360deg);
+      transform: rotate(360deg);
     }
   }
 </style>
-<div class="rzp-loader">
-<img src="https://checkout.razorpay.com/v1/images/loader-logo.png" alt="">
-</div>
+<img class="rzp-logo" src="https://checkout.razorpay.com/v1/images/loader-logo.png" alt="">
+<div class="rzp-loader"></div>
 
 <div class="autosubmit">
   <form method = "POST" action = "{{=it.data.url}}" id = "rzp-dcform">
