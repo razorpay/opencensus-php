@@ -92,7 +92,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::whereNull(Payment\Entity::VERIFIED)
-                    ->where(Payment\Entity::STATUS, '=', Payment\STATUS::FAILED)
+                    ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
                     ->get();
     }
