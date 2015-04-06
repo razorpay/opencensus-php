@@ -7,8 +7,6 @@ use EE\Error\ErrorCode;
 
 class PaymentVerificationException extends RecoverableException
 {
-    protected $data = array();
-
     public function __construct(
         $data = [],
         \Exception $previous = null)
@@ -16,6 +14,8 @@ class PaymentVerificationException extends RecoverableException
         $code = ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED;
 
         $this->error = new Error($code, null, null, $data);
+
+        $this->data = $data;
 
         $message = json_encode($data);
 
