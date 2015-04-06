@@ -107,6 +107,26 @@ class Payment extends Base
         return $payment;
     }
 
+    public function createNetbankingFailed(array $attributes = array())
+    {
+        $defaultValues = array(
+            'status' => 'failed',
+            'gateway' => 'atom',
+            'method' => 'netbanking',
+            'terminal_id' => '1n25f6uN5S1Z5a',
+            'transaction_id' => null,
+            'created_at' => time() - 10,
+            'updated_at' => time() - 5);
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->build('payment', $attributes);
+
+        $payment->save();
+
+        return $payment;
+    }
+
     public function createAuthorized(array $attributes = array())
     {
         $card = $this->fixtures->create('card');

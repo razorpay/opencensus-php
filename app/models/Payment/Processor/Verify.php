@@ -28,15 +28,20 @@ trait Verify
 
             $this->repo->saveOrFail($payment);
 
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_FAILED,
+                $e->getData());
+
             $this->notifyInSlack($payment);
 
             throw $e;
         }
 
         $payment->setVerified(true);
+
         $this->repo->saveOrFail($payment);
 
-        return $data;
+        return $payment;
     }
 
     protected function notifyInSlack($payment)
@@ -44,9 +49,9 @@ trait Verify
         $channel = '#transactions';
         $username = 'transactions';
 
-        $id = $payment->getPublicId();
-
-        $message = '@harhsil @shk Payment verification failed for payment id - ' . $id;
+        $message = '@harhsil @shk Payment verification failed for ' .
+                    'payment id - ' . $payment->getPublicId() . ', ' .
+                    'amount - ' . $payment->getAmount();
 
         $app = \App::getFacadeRoot();
         $app['slack']->send($message, $channel, $username);

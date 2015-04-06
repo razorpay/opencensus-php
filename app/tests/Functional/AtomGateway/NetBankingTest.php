@@ -95,13 +95,36 @@ class NetBankingTest extends TestCase
         // Their doc states that we can only verify after 15 mins, whic is kinda weird.
         // So, for testing purposes, we need to keep the mock as true.
         //
-        $this->app['config']->set('gateway.mock_atom',true);
+        $this->app['config']->set('gateway.mock_atom', true);
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $id = $payment['id'];
 
-        $this->verifyPayment($id);
+        $payment = $this->verifyPayment($id);
+
+        $this->assertEquals($payment['verified'], true);
+    }
+
+    public function testAtomVerifyFailedPayment()
+    {
+        $this->markTestIncomplete();
+
+        //
+        // Just after a payment, on verification atom sends false response
+        // irrespective of the result.
+        // Their doc states that we can only verify after 15 mins, whic is kinda weird.
+        // So, for testing purposes, we need to keep the mock as true.
+        //
+        $this->app['config']->set('gateway.mock_atom', true);
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $id = $payment['id'];
+
+        $payment = $this->verifyPayment($id);
+
+        $this->assertEquals($payment['verified'], true);
     }
 
     public function startTest()
