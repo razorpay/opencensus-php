@@ -49,7 +49,9 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
 
-        $this->processor()->verify($id);
+        $payment = $this->processor()->verify($id);
+
+        return $payment->toArrayAdmin();
     }
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
@@ -207,19 +209,26 @@ class Service extends Base\Service
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
+        $success = 0; $failed = 0;
+
         foreach ($payments as $payment)
         {
             try
             {
                 $this->merchant = $payment->merchant;
 
-                $res = $this->processor()->autoCapturePayment($payment);
+                $res = $this->processor()->verify($payment->getPublicId());
+
+                $success++;
             }
             catch (Exception\PaymentVerificationException $e)
             {
-                ; // just continue
+                $failed++;
+                // just continue
             }
         }
+
+        return ['success' => $success, 'failed' => $failed];
     }
 
     protected function processor()

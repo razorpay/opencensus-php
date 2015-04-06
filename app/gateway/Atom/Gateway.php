@@ -118,28 +118,55 @@ class Gateway extends BaseGateway
         $response = $this->runRequestResponseFlow($request, $response);
 
         // Convert xml body to array of fields
-        $data = $this->verifiedXmlToArray($response['response']->body);
+        $content = $this->verifiedXmlToArray($response['response']->body);
 
         $values = [];
 
-        $atomStatus = ($data['VERIFIED'] === 'SUCCESS');
+        $atomStatus = ($content['VERIFIED'] === 'SUCCESS');
 
         $id = $input['payment']['id'];
         $payment = (new Atom\Repository)->find($id);
 
-        $status = (bool) $payment['success'];
-
         $res = ['match' => true];
 
-        if (($status !== $atomStatus) or
-            ($data['BID'] !== $payment['bank_payment_id']))
+        if ($payment === null)
         {
-            $res['match'] = false;
-            $res['status'] = ['rzp' => $status, 'gateway' => $atomStatus];
-            $res['gateway_data'] = $data;
-            $res['payment'] = $payment->toArray();
-            $res['payment_id'] = $input['payment']['id'];
-            $res['gateway'] = $input['payment']['gateway'];
+            if ($content['VERIFIED'] === 'NODATA')
+            {
+                return $res;
+            }
+            else
+            {
+                $res['match'] = false;
+            }
+        }
+        else
+        {
+            $status = ($payment['success'] === '1') ? true : false;
+
+            if (($status === false) and
+                ($atomStatus === false))
+            {
+                ;
+            }
+            else
+            {
+                if (($status === true) and
+                    ($atomStatus === true) and
+                    ($content['BID'] === $payment['bank_payment_id']))
+                {
+                    ;
+                }
+                else
+                {
+                    $res['match'] = false;
+                    $res['status'] = ['rzp' => $status, 'gateway' => $atomStatus];
+                    $res['gateway_data'] = $content;
+                    $res['payment'] = $payment->toArray();
+                    $res['payment_id'] = $input['payment']['id'];
+                    $res['gateway'] = $input['payment']['gateway'];
+                }
+            }
         }
 
         if ($res['match'] === false)
@@ -411,7 +438,7 @@ class Gateway extends BaseGateway
 
         // For TEST mode, replace any random terminal given with
         // atom test terminal
-        if ($this->mode === MODE::TEST)
+        if ($this->mode === Mode::TEST)
         {
             list($login, $pwd, $productId) = $this->getCredentials();
         }
