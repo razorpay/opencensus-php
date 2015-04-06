@@ -7,6 +7,7 @@ use Models;
 use Models\Base;
 use Models\EE\Exception;
 use Models\Adjustment;
+use Models\Merchant\BankAccount;
 use Models\Transaction;
 use Models\Settlement;
 
@@ -158,7 +159,7 @@ class Merchant
         }
         else
         {
-            $ba = $this->merchantRepo->getBankAccount($this->merchant);
+            $ba = (new BankAccount\Repository)->getBankAccount($this->merchant);
 
             if ($ba === null)
             {
@@ -179,7 +180,7 @@ class Merchant
             'beneficiary_code' => strtoupper(random_alpha_string(4)),
             'account_number'   => '10101030103');
 
-        $ba = (new \Models\Merchant\BankAccount\Entity)->newInstance($attributes, true);
+        $ba = (new BankAccount\Entity)->newInstance($attributes, true);
 
         $ba->merchant()->associate($merchant);
 
