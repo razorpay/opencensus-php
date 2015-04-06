@@ -130,6 +130,9 @@ class ApiResponse
             'previous' => $previousData,
         );
 
+        $data['trace'] = str_replace('/', "\\", $data['trace']);
+        $data['file'] = str_replace('/', "\\", $data['file']);
+
         return $data;
     }
 
