@@ -73,7 +73,7 @@ class Service extends Base\Service
 
         if ($merchant === null)
         {
-            return array('Invalid Confirmation Token');
+            return array('Invalid confirmation token or the merchant is already confirmed.');
         }
 
         $merchant_api_data = $merchant->generateApiData();
