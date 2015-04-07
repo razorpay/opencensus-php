@@ -20,6 +20,7 @@ class TraceCode
     const PAYMENT_CAPTURE_SUCCESS                   = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_TIMED_OUT                         = 'PAYMENT_TIMED_OUT';
+    const PAYMENT_VERIFY_FAILED                     = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
 
     /*
@@ -82,6 +83,7 @@ class TraceCode
         self::PAYMENT_CAPTURE_SUCCESS               => 'Payment captured successfully',
         self::PAYMENT_CAPTURE_FAILURE               => 'Payment capture failed',
         self::PAYMENT_FAILED                        => 'Payment failed',
+        self::PAYMENT_VERIFY_FAILED                 => 'Payment verification with gateway failed',
 
         self::GATEWAY_ENROLL_REQUEST                => 'Request for enrollment sent',
         self::GATEWAY_ENROLL_RESPONSE               => 'Enrollment response received',

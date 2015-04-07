@@ -22,6 +22,7 @@ class Slack
     public function __construct($app)
     {
         $this->env = $app['env'];
+        $this->context = $app['config']->get('app.context');
 
         $slackConfig = $app['config']->get('applications.slack');
         $this->initSlackConfig($slackConfig);
@@ -88,7 +89,7 @@ class Slack
 
     protected function getGenericMessage()
     {
-        $message = ' Env: ' . $this->env . PHP_EOL;
+        $message = ' Env: ' . $this->env . PHP_EOL . ' Context: ' . $this->context . PHP_EOL;
 
         $cloud = ($this->cloud) ? 'true' : 'false';
         $message .= ' Cloud: ' .  $cloud . ', ';

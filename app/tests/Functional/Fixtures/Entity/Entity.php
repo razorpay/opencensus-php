@@ -22,7 +22,7 @@ class Base
         'atom'          => 'Gateway\Atom\Entity',
         'adjustment'    => 'Models\Adjustment\Entity',
         'balance'       => 'Models\Merchant\Balance',
-        'bank_account'  => 'Models\Merchant\BankAccount',
+        'bank_account'  => 'Models\Merchant\BankAccount\Entity',
         'card'          => 'Models\Card\Entity',
         'hdfc'          => 'Gateway\Hdfc\Entity',
         'card_detail'   => 'Models\Card\Detail',

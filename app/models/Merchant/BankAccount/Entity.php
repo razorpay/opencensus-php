@@ -1,11 +1,11 @@
 <?php
 
-namespace Models\Merchant;
+namespace Models\Merchant\BankAccount;
 
 use EE\Exception;
 use Models\Base;
 
-class BankAccount extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID           = 'merchant_id';
     const BENEFICIARY_CODE      = 'beneficiary_code';
@@ -29,9 +29,10 @@ class BankAccount extends Base\UniqueIdEntity
 
     protected $table = \Constants\Table::BANK_ACCOUNT;
 
+    protected $entity = 'bank_account';
+
     protected $fillable = array(
         self::MERCHANT_ID,
-        self::BENEFICIARY_CODE,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
@@ -43,7 +44,6 @@ class BankAccount extends Base\UniqueIdEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_CITY,
         self::BENEFICIARY_STATE,
-        self::BENEFICIARY_COUNTRY,
         self::BENEFICIARY_PIN,
     );
 
@@ -63,6 +63,27 @@ class BankAccount extends Base\UniqueIdEntity
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_COUNTRY,
         self::BENEFICIARY_PIN,
+    );
+
+    protected $public = array(
+        self::MERCHANT_ID,
+        self::ENTITY,
+        self::BENEFICIARY_CODE,
+        self::IFSC_CODE,
+        self::BENEFICIARY_NAME,
+        self::ACCOUNT_NUMBER,
+        self::BENEFICIARY_ADDRESS1,
+        self::BENEFICIARY_ADDRESS2,
+        self::BENEFICIARY_ADDRESS3,
+        self::BENEFICIARY_ADDRESS4,
+        self::BENEFICIARY_EMAIL,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_CITY,
+        self::BENEFICIARY_STATE,
+        self::BENEFICIARY_COUNTRY,
+        self::BENEFICIARY_PIN,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     );
 
     protected static $generators = array(

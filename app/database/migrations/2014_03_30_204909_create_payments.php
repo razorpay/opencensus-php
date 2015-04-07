@@ -87,6 +87,9 @@ class CreatePayments  extends Migration
             $table->boolean(Payment::SIGNED)
                   ->default(0);
 
+            $table->boolean(Payment::VERIFIED)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
@@ -94,6 +97,7 @@ class CreatePayments  extends Migration
             $table->index(Payment::STATUS);
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
+            $table->index(Payment::VERIFIED);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

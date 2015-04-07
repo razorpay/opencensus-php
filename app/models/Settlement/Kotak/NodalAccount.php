@@ -77,9 +77,12 @@ class NodalAccount
 
     public function generateSettlementFile($settlements, $txns)
     {
-        $data = array();
+        $textData = array();
+        $excelData = array();
 
         $txt = '';
+
+        $row = 2; // row number
 
         foreach ($settlements as $settlement)
         {
@@ -104,22 +107,28 @@ class NodalAccount
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
                 'Amount'                => $settlement->getAmount() / 100,
                 'Bank_Code_Indicator'   => 'M',
-                'Beneficiary_Code'      => $ba->beneficiary_code,
+//                'Beneficiary_Code'      => $ba->beneficiary_code,
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
                 'IFSC Code'             => $ifsc,
                 'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
-                'Payment Details 2'     => $merchant->getPublicId(),
-            );
+                'Payment Details 2'     => $merchant->getPublicId());
 
             $array = $this->getAllFields($array);
 
-            array_push($data, $array);
+            array_push($textData, $array);
+
+            // Excel file has couple extra fields for calculating text data of that row.
+            $array['Symbol'] = '~';
+            $array['Text File'] = $this->getExcelTextFieldFormula($row);
+            $row++;
+
+            array_push($excelData, $array);
         }
 
-        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
+        $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
 
-        $txt = $this->generateText($data);
+        $txt = $this->generateText($textData);
 
         $urlText = $this->writeToTextFile($txt);
 
@@ -143,5 +152,13 @@ class NodalAccount
         }
 
         return $dict;
+    }
+
+    protected function getExcelTextFieldFormula($i)
+    {
+        $str = "=+A2&AX2&B2&AX2&C2&AX2&D2&AX2&E2&AX2&F2&AX2&G2&AX2&H2&AX2&I2&AX2&J2&AX2&K2&AX2&L2&AX2&M2&AX2&N2&AX2&O2&AX2&P2&AX2&Q2&AX2&R2&AX2&S2&AX2&T2&AX2&U2&AX2&V2&AX2&W2&AX2&X2&AX2&Y2&AX2&Z2&AX2&AA2";
+        $str = str_replace('2', $i, $str);
+
+        return $str;
     }
 }
