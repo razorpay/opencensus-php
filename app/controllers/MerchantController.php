@@ -183,4 +183,11 @@ class MerchantController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function getMerchantBeneficiaryFile()
+    {
+        $data = (new Merchant\BankAccount\Service)->getMerchantBeneficiaryFile();
+
+        return ApiResponse::json($data);
+    }
 }
