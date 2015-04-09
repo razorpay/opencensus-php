@@ -169,7 +169,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $method = static::$api_mappings[$data['method']];
 
         $obj[static::$api_mappings[$data['method']]] = $merchant_details->$method + 1;
-        
+
         if(isset($data['network']))
         {
             $network = static::$api_mappings[$data['network']];
@@ -312,7 +312,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         $b62 = self::base62($nanotime);
 
         // Generate 3 random bytes, convert to hex and then to dec
-        $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(3)));
+        $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(5)));
+
         // Convert the random decimal generated to base 62
         $rand = self::base62($dec);
 
@@ -323,6 +324,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         // Combine the base 62 nanotime with 4 base 62 digits
         // and create a unique identifier
         $id = $b62 . $rand;
+
+        assert(strlen($id) === 14);
 
         return $id;
     }
