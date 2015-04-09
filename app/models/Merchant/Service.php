@@ -277,8 +277,8 @@ class Service extends Base\Service
 
     public function getMerchantBeneficiaryFile()
     {
-        $data = (new BankAccount\BeneficiaryFile)->generate();
+        $file = (new BankAccount\BeneficiaryFile)->generate();
 
-        return $data;
+        return $file;
     }
 }

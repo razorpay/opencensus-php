@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Merchant\BankAccount;
+use Models\Settlement\Kotak\FileHandlerTrait;
 
 class BeneficiaryFile
 {
@@ -36,47 +37,48 @@ class BeneficiaryFile
 
     public function generate()
     {
-        $list = BankAccount\Repository::getAll();
+        $list = (new BankAccount\Repository)->getAll();
 
         $data = array();
 
         foreach ($list as $ba)
         {
-            $agreementDate = $ba->getAttribute(BankAccount::CREATED_AT);
+            $agreementDate = $ba->getAttribute(BankAccount\Entity::CREATED_AT);
             $agreementDate = (new Carbon('Asia/Kolkata'))->setTimestamp($agreementDate);
-            $agreementDateText = $agreementDate->format('dMy');
-            $agreementExpiryDateText = $agreementDate->addYear()->format('dMy');
+            $agreementDateText = $agreementDate->format('dmY');
+            $agreementExpiryDateText = $agreementDate->addYear()->format('dmY');
 
             $array = array(
-                'Client_Code'           => $ba->getAttribute(BankAccount::BENEFICIARY_CODE),
+                'Client_Code'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_CODE),
                 'Merchant_Code'         => '',
-                'Merchant_Name'         => $ba->getAttribute(BankAccount::BENEFICIARY_NAME),
-                'Merchant_Add_1'        => $ba->getAttribute(BankAccount::BENEFICIARY_ADDRESS1),
-                'Merchant_Add_2'        => $ba->getAttribute(BankAccount::BENEFICIARY_ADDRESS2),
-                'Merchant_Add_3'        => $ba->getAttribute(BankAccount::BENEFICIARY_ADDRESS3),
-                'Merchant_Add_4'        => $ba->getAttribute(BankAccount::BENEFICIARY_ADDRESS4),
+                'Merchant_Name'         => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
+                'Merchant_Add_1'        => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS1),
+                'Merchant_Add_2'        => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS2),
+                'Merchant_Add_3'        => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS3),
+                'Merchant_Add_4'        => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS4),
                 'Agreement date'        => $agreementDateText,
-                'Bene_City'             => $ba->getAttribute(BankAccount::BENEFICIARY_CITY),
-                'Bene_Pin'              => $ba->getAttribute(BankAccount::BENEFICIARY_PIN),
-                'State'                 => $ba->getAttribute(BankAccount::BENEFICIARY_STATE),
-                'Country'               => $ba->getAttribute(BankAccount::BENEFICIARY_COUNTRY),
-                'Bene_Email'            => $ba->getAttribute(BankAccount::BENEFICIARY_EMAIL),
-                'Bene_Mobile'           => $ba->getAttribute(BankAccount::BENEFICIARY_MOBILE),
+                'Bene_City'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_CITY),
+                'Bene_Pin'              => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_PIN),
+                'State'                 => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_STATE),
+                'Country'               => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_COUNTRY),
+                'Bene_Email'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_EMAIL),
+                'Bene_Mobile'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_MOBILE),
                 'Agreement expiry date' => $agreementExpiryDateText,
                 'Agreed rates with Merchant/participating bank' => '30000000',
-                'IFSC'                  => $ba->getAttribute(BankAccount::IFSC_CODE),
-                'Bene_A/c No.'          => $ba->getAttribute(BankAccount::ACCOUNT_NUMBER),
+                'IFSC'                  => $ba->getAttribute(BankAccount\Entity::IFSC_CODE),
+                'Bene_A/c No.'          => $ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
             );
 
             array_push($data, $array);
         }
 
-        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
+        // $this->saveToAws = false;
 
-        $txt = $this->generateText($textData);
+        // $filePath = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
 
-        $urlText = $this->writeToTextFile($txt);
+        $name = $this->getFileToWriteNameWithoutExt();
+        $excel = $this->createExcelObject($data, $name);
 
-        return [$urlText, $urlExcel];
+        return $excel;
     }
 }
