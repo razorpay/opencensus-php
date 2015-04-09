@@ -47,5 +47,12 @@ class Repository extends Base\Repository
 
         return $repo::where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')->count();
     }
+
+    public function getAll()
+    {
+        $repo = $this->repo;
+
+        return $repo::all();
+    }
 }
 

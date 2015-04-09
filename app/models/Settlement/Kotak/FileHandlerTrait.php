@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
 {
+    protected $saveToAws = true;
+
     public function writeToTextFile($txt)
     {
         $name = $this->getFileToWriteName();
