@@ -2,5 +2,5 @@
 
 Validator::extend('alpha_space', function($attribute, $value, $parameters)
 {
-    return preg_match('/^[\pL ]+$/u', $value);
+    return preg_match('/(^[A-Za-z0-9 ]+$)+/', $value);
 });
