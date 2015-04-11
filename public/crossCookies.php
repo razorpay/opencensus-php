@@ -36,7 +36,7 @@ header('P3P: CP="We dont have any P3P Policy"');
 		function post_message(){
 			var msg = readCookie('rzp')
 			if(msg){
-				parent.postMessage(JSON.parse(msg), '*')
+				parent.postMessage(msg, '*')
 				createCookie('rzp', '', -1)
 			}
 		}
