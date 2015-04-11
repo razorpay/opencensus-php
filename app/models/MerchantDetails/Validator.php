@@ -87,7 +87,7 @@ class Validator extends Base\Validator
         $file = current($input);
 
         $extension = $file->getClientOriginalExtension();
-        if ((in_array($extension, static::$allowed_extensions) === false) or
+        if ((in_array(strtolower($extension), static::$allowed_extensions) === false) or
             (in_array($file->getMimeType(), static::$allowed_mimes) === false))
         {
             $error[] = 'Invalid File format. Only pdf, png and jpg is allowed.';
