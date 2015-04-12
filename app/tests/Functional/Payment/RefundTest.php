@@ -127,7 +127,22 @@ class RefundTest extends TestCase
 
     public function testFetchRefunds()
     {
-        ;
+        $payment = $this->fixtures->create('payment:captured');
+        $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
+
+        $paymentId = $payment['public_id'];
+
+        $content = $this->fetchRefundsForPayment($paymentId);
+        $testData = [
+            'entity' => 'collection',
+            'count' => 1,
+            'items' => [
+                [
+                    'entity' => 'refund',
+                    'currency' => 'INR',
+                ]
+            ]
+        ];
     }
 
     public function startTest($paymentId = null, $amount = null)

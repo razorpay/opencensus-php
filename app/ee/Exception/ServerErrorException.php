@@ -16,8 +16,6 @@ class ServerErrorException extends BaseException
      */
     protected $fields = array();
 
-    protected $data = null;
-
     protected $code = null;
 
     public function __construct(
@@ -33,29 +31,5 @@ class ServerErrorException extends BaseException
         $this->error = $error;
 
         parent::__construct($message, $code, $previous);
-    }
-
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    public function getDataAsString()
-    {
-        $data = $this->data;
-
-        if ($data === null)
-        {
-            return '';
-        }
-
-        $json = json_encode($data);
-
-        if ($json !== false)
-        {
-            return $json;
-        }
-
-        return get_var_as_string($this->data);
     }
 }

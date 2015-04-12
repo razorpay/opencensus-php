@@ -104,39 +104,77 @@ class Gateway extends BaseGateway
         $tdate = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata')->format('Y-m-d');
 
         $fields = array(
-            'merchantid'    => $input['terminal']['gateway_merchant_id'],
-            'merchantxnid'  => $input['payment']['public_id'],
-            'tdate'         => $tdate,
-            'amt'           => $input['payment']['amount']);
+            'merchantid'        => $input['terminal']['gateway_merchant_id'],
+            'merchanttxnid'     => $input['payment']['public_id'],
+            'amt'               => $input['payment']['amount'] / 100,
+            'tdate'             => $tdate);
 
         $request['url'] = Urls::VERIFY_URL;
         $request['content'] = $fields;
         $request['action'] = 'verify';
+        $request['method'] = 'get';
 
         $response = [];
         $response = $this->runRequestResponseFlow($request, $response);
 
         // Convert xml body to array of fields
-        $data = $this->verifiedXmlToArray($response['response']->body);
+        $content = $this->verifiedXmlToArray($response['response']->body);
 
         $values = [];
 
-        $vStatus = ($data['VERIFIED'] === 'SUCCESS');
+        $atomStatus = ($content['VERIFIED'] === 'SUCCESS');
 
         $id = $input['payment']['id'];
         $payment = (new Atom\Repository)->find($id);
 
-        $status = (bool) $payment['success'];
+        $res = ['match' => true];
 
-        $data = ['match' => true];
-
-        if ($status !== $vStatus)
+        if ($payment === null)
         {
-            $data['match'] = false;
-            $data['status'] = ['rzp' => $status, 'gateway' => $vStatus];
+            if ($content['VERIFIED'] === 'NODATA')
+            {
+                return $res;
+            }
+            else
+            {
+                $res['match'] = false;
+            }
+        }
+        else
+        {
+            $status = ($payment['success'] === '1') ? true : false;
+
+            if (($status === false) and
+                ($atomStatus === false))
+            {
+                ;
+            }
+            else
+            {
+                if (($status === true) and
+                    ($atomStatus === true) and
+                    ($content['BID'] === $payment['bank_payment_id']))
+                {
+                    ;
+                }
+                else
+                {
+                    $res['match'] = false;
+                    $res['status'] = ['rzp' => $status, 'gateway' => $atomStatus];
+                    $res['gateway_data'] = $content;
+                    $res['payment'] = $payment->toArray();
+                    $res['payment_id'] = $input['payment']['id'];
+                    $res['gateway'] = $input['payment']['gateway'];
+                }
+            }
         }
 
-        return $data;
+        if ($res['match'] === false)
+        {
+            throw new Exception\PaymentVerificationException($res);
+        }
+
+        return $res;
     }
 
     protected function processPaymentInitiationResponse($response, $input)
@@ -386,9 +424,6 @@ class Gateway extends BaseGateway
 
     protected function setTerminalInRequest(array & $request)
     {
-        if ($request['action'] !== 'authorize')
-            return;
-
         $terminal = $this->terminal;
 
         if ($terminal['gateway'] !== 'atom')
@@ -403,14 +438,22 @@ class Gateway extends BaseGateway
 
         // For TEST mode, replace any random terminal given with
         // atom test terminal
-        if ($this->mode === MODE::TEST)
+        if ($this->mode === Mode::TEST)
         {
             list($login, $pwd, $productId) = $this->getCredentials();
         }
 
-        $request['content']['login'] = $login;
-        $request['content']['pass'] = $pwd;
-        $request['content']['prodid'] = $productId;
+        if ($request['action'] === 'authorize')
+        {
+            $request['content']['login'] = $login;
+            $request['content']['pass'] = $pwd;
+            $request['content']['prodid'] = $productId;
+        }
+
+        if ($request['action'] === 'verify')
+        {
+            $request['content']['merchantid'] = $login;
+        }
    }
 
     protected function getCredentials()
@@ -529,6 +572,8 @@ class Gateway extends BaseGateway
         {
             $str .= '&'.$key.'='.$value;
         }
+
+        $str = substr($str, 1);
 
         return $str;
     }

@@ -74,4 +74,6 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED            = 'The merchant already has provided a bank account';
     const BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED                 = 'Currently only two terminals are allowed per merchant';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                        = 'A record with same gateway merchant id (mid) exists';
-    const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY              = 'A terminal for this gateway for this merchant already exists'; }
+    const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY              = 'A terminal for this gateway for this merchant already exists';
+    const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                       = 'Payment verification with gateway failed';
+}

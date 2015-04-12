@@ -277,6 +277,16 @@ trait PaymentTrait
         return $this->runRequestResponseFlow($testData);
     }
 
+    protected function fetchRefundsForPayment($paymentId)
+    {
+        $request['url'] = '/payments/'.$paymentId.'/refunds';
+        $request['method'] = 'GET';
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getDefaultPaymentEntityArray()
     {
         $payment = $this->getDefaultPaymentArray();

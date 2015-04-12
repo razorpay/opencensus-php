@@ -34,41 +34,6 @@ class Repository extends Base\Repository
         $balance->saveOrFail();
     }
 
-    public function updateBankAccount($ba)
-    {
-        $ba->saveOrFail();
-    }
-
-    public function getBankAccount($merchant)
-    {
-        $repo = 'Models\Merchant\BankAccount';
-
-        $ba = $repo::find($merchant->getId());
-
-        if ($ba !== null)
-        {
-            $ba->merchant()->associate($merchant);
-
-            $merchant->setRelation('bankAccount', $ba);
-        }
-
-        return $ba;
-    }
-
-    public function getBankAccountByBeneficiaryCode($code)
-    {
-        $repo = 'Models\Merchant\BankAccount';
-
-        return $repo::where(BankAccount::BENEFICIARY_CODE, '=', $code)->first();
-    }
-
-    public function getBeneficiaryCodeCountByPattern($code)
-    {
-        $repo = 'Models\Merchant\BankAccount';
-
-        return $repo::where(BankAccount::BENEFICIARY_CODE, 'like', $code.'%')->count();
-    }
-
     public function getEscrowBalanceLockForUpdate($channel)
     {
         $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';

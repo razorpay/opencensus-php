@@ -137,7 +137,7 @@ class Core extends Base\Core
         if ($amount < 0)
             $debit = -1 * $amount;
 
-        $settledAt = Carbon::tomorrow('Asia/Kolkata')->timestamp;
+        $settledAt = time();
 
         $values = array(
             Transaction\Entity::DEBIT           => $debit,

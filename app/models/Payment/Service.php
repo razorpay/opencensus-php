@@ -49,7 +49,9 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
 
-        $this->processor()->verify($id);
+        $payment = $this->processor()->verify($id);
+
+        return $payment->toArrayAdmin();
     }
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
@@ -199,6 +201,34 @@ class Service extends Base\Service
         }
 
         return ['payments_count' => $count, 'emails_count' => $emailCount];
+    }
+
+    public function verifyAllPayments()
+    {
+        $ts = time() - 60 * 60;
+
+        $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
+
+        $success = 0; $failed = 0;
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $this->merchant = $payment->merchant;
+
+                $res = $this->processor()->verify($payment->getPublicId());
+
+                $success++;
+            }
+            catch (Exception\PaymentVerificationException $e)
+            {
+                $failed++;
+                // just continue
+            }
+        }
+
+        return ['success' => $success, 'failed' => $failed];
     }
 
     protected function processor()

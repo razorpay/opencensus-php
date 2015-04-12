@@ -142,7 +142,7 @@ class Service extends Base\Service
         //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         // }
 
-        $ba = $this->repo->getBankAccount($merchant);
+        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
 
         if ($ba === null)
         {
@@ -209,7 +209,8 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $ba = $this->repo->getBankAccount($merchant);
+        $bankAccountRepo = new BankAccount\Repository;
+        $ba = $bankAccountRepo->getBankAccount($merchant);
 
         if ($ba !== null)
         {
@@ -217,11 +218,11 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
         }
 
-        $ba = (new Merchant\BankAccount)->build($input);
+        $ba = (new BankAccount\Entity)->build($input);
 
         $code = $ba->beneficiary_code;
 
-        $count = $this->repo->getBeneficiaryCodeCountByPattern($code);
+        $count = $bankAccountRepo->getBeneficiaryCodeCountByPattern($code);
 
         if ($count === 0)
             $count = '';
@@ -234,7 +235,7 @@ class Service extends Base\Service
 
         $ba->merchant()->associate($merchant);
 
-        $this->repo->updateBankAccount($ba);
+        $bankAccountRepo->saveOrFail($ba);
 
         return $ba->toArray();
     }
@@ -243,7 +244,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $ba = $this->repo->getBankAccount($merchant);
+        $ba = (new BankAccount\Repository)->getBankAccount($merchant);
 
         return $ba->toArray();
     }
@@ -272,5 +273,12 @@ class Service extends Base\Service
         $merchant = $this->repo->findOrFailPublic($id);
 
         return (new Merchant\Banks\Core)->setPaymentBanksForMerchant($merchant, $input);
+    }
+
+    public function getMerchantBeneficiaryFile()
+    {
+        $file = (new BankAccount\BeneficiaryFile)->generate();
+
+        return $file;
     }
 }

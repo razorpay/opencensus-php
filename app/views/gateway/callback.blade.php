@@ -100,15 +100,23 @@ var data = {{json_encode($data);}};
 if(window.parent === window){
     // We are in popup mode
     XD.postMessage(data, '*', window.opener);
+    document.cookie = "rzp="+JSON.stringify(data)+"; path=/";
 }
 else {
     // We are in iframe mode
     XD.postMessage(data, '*', window.parent);
 }
 
+data.time = new Date().toTimeString();
+localStorage['rzp'] = JSON.stringify({
+    value: data
+})
+
 </script>
 
-<pre> <?php echo json_encode($data, JSON_PRETTY_PRINT); ?> </pre>
+<pre>
+<?php echo json_encode($data, JSON_PRETTY_PRINT); ?>
+</pre>
 
 <!--Your payment is currently in progress. Please wait.-->
 </body>

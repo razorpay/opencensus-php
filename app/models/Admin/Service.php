@@ -29,9 +29,9 @@ class Service extends Base\Service
 
         $repo->setMerchantIdRequiredForMultipleFetch(false);
 
-        $entity = $repo->fetch($input);
+        $entities = $repo->fetch($input);
 
-        return $entity->toArrayAdmin();
+        return $entities->toArrayAdmin();
     }
 
     protected function getEntityNamespace($entity)
@@ -50,6 +50,10 @@ class Service extends Base\Service
 
             case 'atom':
                 $ns = 'Gateway\Atom';
+                break;
+
+            case 'bank_account':
+                $ns = 'Models\Merchant\BankAccount';
                 break;
 
             default:

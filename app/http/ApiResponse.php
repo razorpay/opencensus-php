@@ -103,6 +103,11 @@ class ApiResponse
             ($exception !== null))
         {
             $publicError['exception'] = self::getExceptionData($exception);
+
+            if (method_exists($exception, 'getData'))
+            {
+                $publicError['data'] = $exception->getData();
+            }
         }
 
         return self::json($publicError, $httpStatusCode);
@@ -124,6 +129,9 @@ class ApiResponse
             'trace' => $exception->getTraceAsString(),
             'previous' => $previousData,
         );
+
+        $data['trace'] = str_replace('/', "\\", $data['trace']);
+        $data['file'] = str_replace('/', "\\", $data['file']);
 
         return $data;
     }

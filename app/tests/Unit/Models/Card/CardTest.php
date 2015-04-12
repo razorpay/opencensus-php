@@ -41,6 +41,13 @@ class ValidationTest extends TestCase
         $this->card->build($this->input);
     }
 
+    public function test0PrefixedCVV()
+    {
+        $this->input['cvv'] = '0234';
+
+        $this->card->build($this->input);
+    }
+
     public function testTwoLetterExpiryYear()
     {
         $this->input['expiry_year'] = '17';

@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
 {
+    protected $saveToAws = true;
+
     public function writeToTextFile($txt)
     {
         $name = $this->getFileToWriteName();
@@ -23,6 +25,20 @@ trait FileHandlerTrait
 
     public function writeToExcelFile($data, $name)
     {
+        \Config::set('excel::export.calculate', true);
+
+        $excel = $this->createExcelObject($data, $name);
+
+        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
+        $fullpath = $fileMetadata['full'];
+
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, 'application/vnd.ms-excel');
+
+        return $url;
+    }
+
+    protected function createExcelObject($data, $name)
+    {
         $excel = Excel::create($name, function($excel) use ($data)
         {
             $excel->sheet('Sheet 1', function($sheet) use ($data)
@@ -31,12 +47,9 @@ trait FileHandlerTrait
                 });
         });
 
-        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
-        $fullpath = $fileMetadata['full'];
+        $excel->getDefaultStyle()->getFont()->setName('Ubuntu Mono')->setSize(14);
 
-        $url = $this->saveToAws($name.'.xlsx', $fullpath, 'application/vnd.ms-excel');
-
-        return $url;
+        return $excel;
     }
 
     protected function saveUploadedFileToAws($fullpath)

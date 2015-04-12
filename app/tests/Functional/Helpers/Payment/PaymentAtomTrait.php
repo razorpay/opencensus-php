@@ -91,7 +91,13 @@ trait PaymentAtomTrait
             //
 
             // This is submitted at the txnStage 2 url from data received from fetching bank list url
-            list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, $headers, $values);
+            list($url, $method, $values, $response) = $this->makeRequestAndGetFormData($url, $method, $headers, $values);
+
+            if (isset($response->cookies['JSESSIONID']))
+            {
+                $cookie = $response->cookies['JSESSIONID']->value;
+                $headers = array('Cookie' => 'JSESSIONID=' . $cookie);
+            }
 
             // This is submitted at the .jsp url from data received from txnStage 2 url.
             $response = Requests::$method($url, $headers, $values);
@@ -100,9 +106,10 @@ trait PaymentAtomTrait
 
         list($url, $method, $values) = $this->getFormDataFromResponse($content, $url);
 
-        if ($url === 'http://203.114.240.183/CitiWeb/cityBilling.jsp')
+        if ($url === 'https://paynetzuat.atomtech.in/CitiWeb/cityBilling.jsp')
         {
             $values['CititoMall'] .= 'Y:'.'|323232|123123|';
+            $values['submit'] = 'Simulate Transaction';
 
             list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, $headers, $values);
 

@@ -58,49 +58,35 @@ class SupportTest extends TestCase
         // get amount
         $amount = '50000';
 
-        $this->ba->privateAuth();
-        $this->capture($id, $amount);
+        $this->capturePayment($id, $amount);
 
-        $this->refund($id);
+        $this->refundPayment($id);
     }
 
-    /**
-     * Tests capture payments, attempts to capture all past payments & ensures that the payment specified by id is captured.
-     */
-    private function capture($id, $amount)
+    public function testVerifyAllPayments()
     {
-        // WHEN
-        // call for capture of payments
-        $response = $this->call('POST', '/v1/payments/'.$id.'/capture', array('amount'=>$amount), array(), $this->ba->getCreds());
-        $content = $response->getContent();
+        $this->app['config']->set('gateway.mock_atom', true);
 
-        // THEN
-        // ensure output is json
-        $this->assertJson($content);
-        $capture = json_decode($content, true);
+        $this->fixtures->create('terminal:atom_terminal');
 
-        // Check if payment id matches, and captured sucessfully
-        $this->assertArrayHasKey('id', $capture);
-        $this->assertEquals($id, $capture['id']);
-        $this->assertArrayHasKey('status', $capture);
-        $this->assertEquals('captured', $capture['status']);
-    }
+        $this->gateway = 'atom';
 
-    /**
-     * Tests refund payments, attempts to refund payment specified by the id & ensures that it is refunded.
-     */
-    private function refund($id)
-    {
-        //WHEN
-        //call for refund of payments
-        $response = $this->call('POST', '/v1/payments/'.$id.'/refund',  array(), array(), $this->ba->getCreds());
-        $content = $response->getContent();
+        $this->fixtures->create('payment:netbanking_failed');
 
-        //THEN
-        //ensure output is json
-        $this->assertJson($content);
-        $refund = json_decode($content, true);
+        $request = array(
+            'url' => '/payments/verify/all',
+            'method' => 'get'
+        );
 
-        $this->assertEquals('refund', $refund['entity']);
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(
+            $content,
+            [
+                'success' => 0,
+                'failed' => 0,
+            ]);
     }
 }

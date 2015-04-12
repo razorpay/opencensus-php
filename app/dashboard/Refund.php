@@ -16,6 +16,7 @@ class Refund extends Dashboard
      * @var array
      */
     protected static $fields = array(
+        RefundEntity::ID,
         RefundEntity::MERCHANT_ID,
         RefundEntity::AMOUNT,
         RefundEntity::CREATED_AT,

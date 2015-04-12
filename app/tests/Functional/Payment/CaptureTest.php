@@ -162,8 +162,10 @@ class CaptureTest extends TestCase
 
         $created_at = time() - rand(0, 23) * 60 * 60;
         $updated_at = $created_at;
+
         $payment = $this->fixtures->create(
             'payment:authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
+
         $payment = $this->fixtures->create(
             'payment:netbanking_authorized', ['created_at' => $created_at, 'updated_at' => $updated_at]);
 
