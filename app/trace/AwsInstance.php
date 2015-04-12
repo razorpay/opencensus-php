@@ -2,7 +2,6 @@
 
 namespace Trace;
 
-use Trace;
 use Trace\TraceCode;
 
 class AwsInstance
@@ -21,6 +20,8 @@ class AwsInstance
 
     protected $instanceDataFile;
 
+    protected $trace;
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -28,6 +29,8 @@ class AwsInstance
         $this->cloud = $this->checkCloud($app['config']->get('app.context'));
 
         $this->instanceDataFile = $app['config']->get('trace.instance_data_file');
+
+        $this->trace = $app['trace'];
     }
 
     public function getInstanceId()
@@ -72,7 +75,7 @@ class AwsInstance
 
         if ($status !== 0)
         {
-            Trace::critical(TraceCode::AWS_INSTANCE_DATA_RECORD_FAILURE);
+            $this->trace->critical(TraceCode::AWS_INSTANCE_DATA_RECORD_FAILURE);
 
             return null;
         }
@@ -103,7 +106,7 @@ class AwsInstance
 
         if ($res === false)
         {
-            Trace::error(TraceCode::AWS_INSTANCE_DATA_WRITE_FAILURE);
+            $this->trace->error(TraceCode::AWS_INSTANCE_DATA_WRITE_FAILURE);
         }
     }
 
@@ -118,7 +121,7 @@ class AwsInstance
 
         if ($jsonData === false)
         {
-            Trace::error(TraceCode::AWS_INSTANCE_DATA_READ_FAILURE);
+            $this->trace->error(TraceCode::AWS_INSTANCE_DATA_READ_FAILURE);
 
             return;
         }
