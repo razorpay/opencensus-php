@@ -34,7 +34,7 @@ build:
       - williamli/slack-notify-no-owner-info:
           subdomain: razorpay
           token: $SLACK_TOKEN
-          channel: general
+          channel: tech
       - script: 
           name: copy screenshot
           code: cp app/storage/selenium.png $WERCKER_REPORT_ARTIFACTS_DIR/selenium.png
@@ -54,7 +54,7 @@ deploy:
       - williamli/slack-notify-no-owner-info:
           subdomain: razorpay
           token: $SLACK_TOKEN
-          channel: general
+          channel: tech
       - akelmanson/rollbar-notify:
           access-token: $ROLLBAR_ACCESS_TOKEN
           environment: $WERCKER_DEPLOYTARGET_NAME
