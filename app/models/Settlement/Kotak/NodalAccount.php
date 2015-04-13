@@ -105,7 +105,7 @@ class NodalAccount
                 'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
-                'Amount'                => $settlement->getAmount() / 100,
+                'Amount'                => (string) $settlement->getAmount() / 100,
                 'Bank_Code_Indicator'   => 'M',
 //                'Beneficiary_Code'      => $ba->beneficiary_code,
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
