@@ -204,9 +204,8 @@ function handleMessage(data){
     source: 'popup',
     loaded: true
   }
+  createCookie('rzp', JSON.stringify(msg));
   window.opener.postMessage(msg, '*');
-  // localStorage['rzp'] = msg;
-  document.cookie = "rzp="+JSON.stringify(msg)+"; path=/";
 </script>
 </body>
 </html>
