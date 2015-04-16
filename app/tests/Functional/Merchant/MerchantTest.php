@@ -212,7 +212,7 @@ class MerchantTest extends TestCase
     {
         $merchant = array(
                 'id'    => '1X4hRFHFx4UiXt',
-                'name'  => 'Tester',
+                'name'  => 'Tester 2',
                 'email' => 'liveAndTest@localhost.com'
             );
 
