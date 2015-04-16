@@ -484,7 +484,7 @@ class Entity extends Base\PublicEntity
     {
         if (ctype_digit($amount) === false)
         {
-            throw new Exception\InvalidArgumentException('amount should only have digits.');
+            throw new Exception\InvalidArgumentException('amount should only have digits. ' . $amount);
         }
 
         $amount = (int) $amount;

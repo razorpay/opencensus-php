@@ -53,6 +53,13 @@ class Validator extends Base\Validator
 
         $amountToRefund = $input['amount'];
 
+        if (empty($amountToRefund) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount cannot be blank',
+                'amount');
+        }
+
         $amountCaptured = $payment->getAmount();
 
         // Although both these checks could be combined,
