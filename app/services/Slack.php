@@ -56,7 +56,8 @@ class Slack
         $payload = array(
             'text' => $message,
             'channel' => $channel,
-            'username' => $username);
+            'username' => $username,
+            'link_names' => 1);
 
         $content = array('payload' => json_encode($payload));
 
