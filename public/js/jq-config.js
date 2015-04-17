@@ -13,7 +13,6 @@ app.constant('JQ_CONFIG', {
                         'js/jquery/charts/flot/jquery.flot.spline.js',
                         'js/jquery/charts/flot/jquery.flot.orderBars.js',
                         '//cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.pie.min.js'],
-    niceScroll:     ['//cdnjs.cloudflare.com/ajax/libs/nicescroll/3.5.4/jquery.nicescroll.min.js'],
     sortable:       ['//cdnjs.cloudflare.com/ajax/libs/html5sortable/0.1.1/html.sortable.min.js'],
     nestable:       ['js/jquery/nestable/jquery.nestable.js',
                         'js/jquery/nestable/nestable.css'],
