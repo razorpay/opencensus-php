@@ -21,6 +21,7 @@ final class Route
         'payment_fetch_multiple'            => ['get',      'payments',                                 'PaymentController@getPayments'                         ],
         'payment_fetch_refunds'             => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                ],
         'payment_fetch_refund_by_id'        => ['get',      'payments/{paymentId}/refunds/{rfndId}',    'PaymentController@getRefundByRefundAndPaymentId'       ],
+        'payment_auth_notify'               => ['get',      'payments/auth/notify',                     'PaymentController@getAuthNotify',                      ],
         'payment_auth_expire'               => ['post',     'payments/auth/expire',                     'PaymentController@postAuthExpire'                      ],
         'payment_timeout'                   => ['post',     'payments/timeout',                         'PaymentController@postTimeout'                         ],
         'payment_auto_capture'              => ['post',     'payments/autocapture',                     'PaymentController@postAutoCapture'                     ],
@@ -155,6 +156,7 @@ final class Route
         'daily_setl_fetch_by_id',
         'daily_setl_fetch_multiple',
         'payment_timeout',
+        'payment_auth_notify',
         'payment_auto_capture',
         'payment_auto_capture_email',
         'payment_verify_all',
@@ -196,6 +198,7 @@ final class Route
                 'setl_initiate',
                 'setl_reconcile_generate',
                 'setl_return_generate',
+                'payment_auth_notify',
                 'payment_timeout',
                 'payment_auto_capture'),
 

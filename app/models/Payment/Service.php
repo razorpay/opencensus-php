@@ -130,6 +130,35 @@ class Service extends Base\Service
         return array('count' => $count);
     }
 
+    public function notifyAuthorizedPayments()
+    {
+        $date = Carbon::yesterday('Asia/Kolkata');
+        $timestamp = $date->timestamp;
+
+        $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp(
+                            $timestamp);
+
+        $paymentIds = $payments->getIds();
+
+        $channel = '#transactions';
+        $username = 'transactions';
+
+        $date->subDay(1);
+
+        $message = '@harshil @shk Payment authorizations till ' . $date->format('d-m-y');
+
+        foreach ($payments as $payment)
+        {
+            $message .= ' \n ' . $payment->getPublicId();
+        }
+
+        $this->app['slack']->send($message, $channel, $username);
+
+        $count = $payments->count();
+
+        return ['count' => $count];
+    }
+
     public function timeoutOldPayments()
     {
         $timestamp = time() - 10 * 60;
