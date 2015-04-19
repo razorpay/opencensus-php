@@ -32,6 +32,8 @@ return [
                 'entity' => 'merchant',
                 'name'  => 'Tester 2',
                 'email' => 'liveAndTest@localhost.com',
+                'activated' => false,
+                'activated_at' => null,
             ],
         ],
     ],

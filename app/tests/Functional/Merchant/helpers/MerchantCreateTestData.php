@@ -24,6 +24,7 @@ return [
                 'pricing_plan_id' => '2atGxLIYLyHWg7',
                 'live' => false,
                 'activated' => false,
+                'activated_at' => null,
             ],
         ],
     ],
