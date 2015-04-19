@@ -67,6 +67,7 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ACTIVATED, true);
         $this->setAttribute(self::LIVE, true);
+        $this->setAttribute(self::ACTIVATED_AT, time());
     }
 
     public function liveEnable()
