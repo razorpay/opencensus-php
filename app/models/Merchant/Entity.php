@@ -10,6 +10,7 @@ class Entity extends Base\PublicEntity
     const NAME              = 'name';
     const EMAIL             = 'email';
     const ACTIVATED         = 'activated';
+    const ACTIVATED_AT      = 'activated_at';
     const LIVE              = 'live';
     const PRICING_PLAN_ID   = 'pricing_plan_id';
 
@@ -32,6 +33,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::ACTIVATED,
+        self::ACTIVATED_AT,
         self::LIVE,
         self::PRICING_PLAN_ID,
         self::CREATED_AT);
@@ -48,6 +50,7 @@ class Entity extends Base\PublicEntity
     protected function generateActivated($input)
     {
         $this->setAttribute(self::ACTIVATED, false);
+        $this->setAttribute(self::ACTIVATED_AT, null);
     }
 
     public function isActivated()
