@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
     protected $entity = 'settlement';
 
     protected $fillable = array(
-        self::AMOUNT,
+//        self::AMOUNT,
         self::STATUS,
         self::MERCHANT_ID,
         self::TRANSACTION_ID);
@@ -80,6 +80,15 @@ class Entity extends Base\PublicEntity
 
     public function setAmount($amount)
     {
+        if (($amount <= 0) or
+            (is_int($amount) === false))
+        {
+            throw new Exception\LogicException(
+                'Something very wrong is happening! ' .
+                'Settlement amount should not be 0 or -ve',
+                ['amount' => $amount]);
+        }
+
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
@@ -111,5 +120,23 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function save(array $options = array())
+    {
+        $this->validateAmount();
+
+        return parent::save($options);
+    }
+
+    protected function validateAmount()
+    {
+        if ($this->getAmount() <= 0)
+        {
+            throw new Exception\LogicException(
+                'Something very wrong is happening! ' .
+                'Settlement amount should not be 0 or -ve',
+                $this->toArray());
+        }
     }
 }

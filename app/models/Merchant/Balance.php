@@ -62,6 +62,7 @@ class Balance extends Base\UniqueIdEntity
         $balance = new static;
 
         $balance->merchant()->associate($merchant);
+        $balance->setAttribute(self::BALANCE, 0);
 
         return $balance;
     }
@@ -97,5 +98,22 @@ class Balance extends Base\UniqueIdEntity
     public function getBalanceAttribute()
     {
         return (int) $this->attributes[self::BALANCE];
+    }
+
+    public function save(array $options = array())
+    {
+        $this->validateBalance();
+
+        return parent::save($options);
+    }
+
+    protected function validateBalance()
+    {
+        if ($this->getBalance() < 0)
+        {
+            throw new Exception\LogicException(
+                'Something very wrong is happening! Balance is going negative',
+                $this->toArray());
+        }
     }
 }
