@@ -125,7 +125,7 @@ class MerchantTest extends TestCase
         $activated_at = time();
 
         $content = $this->startTest();
-        $this->assertLessThanOrEqual($activated_at, $content['activated_at']);
+        $this->assertLessThanOrEqual($content['activated_at'], $activated_at);
 
         $testData = $this->testData['testGetBalance'];
         $testData['request']['url'] = '/merchants/1cXSLlUU8V9sXl/balance';
