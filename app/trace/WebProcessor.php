@@ -22,6 +22,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
         $this->context = App::make('config')->get('app.context');
 
+        $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
+
         $serverData = $this->getServerData();
 
         parent::__construct($serverData);
@@ -46,14 +48,17 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     public function getServerData()
     {
         $serverData = array(
-            'uri'       => $this->request->path(),
-            'url'       => $this->request->fullUrl(),
-            'method'    => $this->request->method(),
-            'ajax'      => $this->request->ajax(),
-            'origin'    => $this->request->header('origin'),
-            'client_ip' => $this->getClientIp(),
-            'server_ip' => $this->request->server('SERVER_ADDR'),
-            'context'   => $this->context);
+            'request_id'    => $this->requestId,
+            'uri'           => $this->request->path(),
+            'url'           => $this->request->fullUrl(),
+            'method'        => $this->request->method(),
+            'ajax'          => $this->request->ajax(),
+            'origin'        => $this->request->header('origin'),
+            'client_ip'     => $this->getClientIp(),
+            'server_ip'     => $this->request->server('SERVER_ADDR'),
+            'referer'       => $this->request->headers->get('referer'),
+            'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
+            'context'       => $this->context);
 
         $this->unsetUrlForSensitiveUrls($serverData);
 

@@ -18,6 +18,7 @@ Models\Terminal\Entity:
 
 Models\Merchant\Balance:
     id: $uniqueid
+    balance: 0
 
 Models\Merchant\BankAccount\Entity:
     merchant_id: $uniqueid
