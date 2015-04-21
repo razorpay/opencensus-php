@@ -64,6 +64,15 @@ class Repository extends Base\Repository
                         );
     }
 
+    public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->get();
+    }
+
     public function getAuthorizedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
         $repo = $this->repo;
