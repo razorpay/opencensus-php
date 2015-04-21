@@ -52,7 +52,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::orderyBy(BankAccount\Entity::CREATED_AT)->all();
+        return $repo::query()->orderBy(BankAccount\Entity::CREATED_AT)->get();
     }
 }
 
