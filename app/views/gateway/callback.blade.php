@@ -23,7 +23,9 @@ var data = {{json_encode($data);}};
 // Callback data //
 
 createCookie('rzp', JSON.stringify(data));
-window.opener.postMessage(data, '*');
+if(window.opener && typeof window.opener.postMessage == 'function'){
+	window.opener.postMessage(data, '*');
+}
 </script>
 
 <pre>

@@ -205,7 +205,9 @@ function handleMessage(data){
     loaded: true
   }
   createCookie('rzp', JSON.stringify(msg));
-  window.opener.postMessage(msg, '*');
+  if(window.opener && typeof window.opener.postMessage == 'function'){
+    window.opener.postMessage(msg, '*');
+  }
 </script>
 </body>
 </html>
