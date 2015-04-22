@@ -66,7 +66,7 @@ class Service extends Base\Service
                     break;
                 case "confirmed":
                     $response = $data->filter(function($merchant) use($value)
-                    {   
+                    {
                         if($value)
                             return ($merchant->confirm_token == null);
                         else
@@ -86,7 +86,7 @@ class Service extends Base\Service
                    $response = $data;
             }
         }
-        else 
+        else
         {
             $response = $data;
         }
@@ -169,7 +169,7 @@ class Service extends Base\Service
     }
 
     public function fetchMerchantDetails($id)
-    {   
+    {
         $merchant = Merchant\Entity::findorfail($id);
 
         if($merchant->confirm_token !== Null)
@@ -181,8 +181,8 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        $data = $this->api->merchant->fetch($id)->toArray();     
-    
+        $data = $this->api->merchant->fetch($id)->toArray();
+
         $data['merchant_details'] = $merchant_details->toArray();
 
 
@@ -571,6 +571,8 @@ class Service extends Base\Service
 
         $this->setApiCredentials(null, $mode);
 
+        $input['count'] = 20;
+
         try
         {
             $response = $this->api->admin->fetchMultipleEntities($entity, $input)->toArray();
@@ -584,7 +586,7 @@ class Service extends Base\Service
         {
             $response['headings'] = array_keys($response['items'][0]);
         }
-        else 
+        else
         {
             $response['headings'] = array();
         }

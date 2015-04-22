@@ -3,7 +3,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
   function($scope, $http, alertsFactory, $state, $modal){
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
-    $scope.entity_type = "transaction";
+    $scope.entity_type = "payment";
     $scope.mode = "live";
     $scope.headings =[];
     $scope.refreshTable = true;
@@ -34,19 +34,19 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
     $scope.next= function() {
       clear('id');
-      $scope.entity.skip += 10;
+      $scope.entity.skip += 20;
       generateTable();
     }
 
     $scope.prev= function() {
       clear('id');
-      $scope.entity.skip -= 10;
+      $scope.entity.skip -= 20;
       generateTable();
     }
 
     $scope.search= function() {
       clear('skip');
-      
+
       var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity_type + "/" + $scope.entity.id);
 
       request
@@ -94,7 +94,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         return;
       }
 
-      var query = "count=10&skip="+ $scope.entity.skip;
+      var query = "count=20&skip="+ $scope.entity.skip;
 
       var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity_type + "?" + query);
 
@@ -106,9 +106,9 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
           $scope.headings = data.data.headings;
           $scope.entity.items = data.data.items;
           $scope.entity.count = parseInt(data.data.count);
-          
+
           $scope.entity.countStart = $scope.entity.skip + 1;
-          
+
           if(data.data.count == 0)
             $scope.entity.countEnd = $scope.entity.countStart;
           else
@@ -122,7 +122,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
           if(data.errors) {
             angular.forEach(data.errors, function(value, key){
               $scope.alerts.addAlert('danger', value);
-            });            
+            });
           }
           else {
             $scope.alerts.addAlert('danger', null, true);
