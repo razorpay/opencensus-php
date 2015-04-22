@@ -137,7 +137,7 @@ class Gateway extends BaseGateway
 
     protected function getPaymentRequestData($input)
     {
-        $date = Carbon::now('Asia/Kolkata')->format('d/m/y H:m:s');
+        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
 
         $data = array(
             'ClientCode'        => 'ab', //$input['terminal'],
