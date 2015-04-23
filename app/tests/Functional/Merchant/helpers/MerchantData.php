@@ -30,8 +30,10 @@ return [
             'content' => [
                 'id'    => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
-                'name'  => 'Tester',
+                'name'  => 'Tester 2',
                 'email' => 'liveAndTest@localhost.com',
+                'activated' => false,
+                'activated_at' => null,
             ],
         ],
     ],

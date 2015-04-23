@@ -1,5 +1,9 @@
 <?php
 header('P3P: CP="We dont have any P3P Policy"');
+header('Expires: Sat, 01 Jan 2000 00:00:00 GMT');
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', FALSE);
+header('Pragma: no-cache');
 ?>
 <!doctype html>
 <html>
@@ -36,7 +40,7 @@ header('P3P: CP="We dont have any P3P Policy"');
 		function post_message(){
 			var msg = readCookie('rzp')
 			if(msg){
-				parent.postMessage(JSON.parse(msg), '*')
+				parent.postMessage(msg, '*')
 				createCookie('rzp', '', -1)
 			}
 		}
@@ -45,7 +49,8 @@ header('P3P: CP="We dont have any P3P Policy"');
 		var listener = function(e){
 			if(e.data){
 				post_message()
-				createCookie('rzp-receive', JSON.stringify(e.data))
+				var msg = (typeof e.data == 'string') ? e.data : JSON.stringify(e.data);
+				createCookie('rzp-receive', msg)
 			}
 		}
     if (window.addEventListener) {

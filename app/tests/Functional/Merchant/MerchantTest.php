@@ -122,11 +122,17 @@ class MerchantTest extends TestCase
                         'merchant:bank_account',
                         ['merchant_id' => '1cXSLlUU8V9sXl']);
 
-        $this->startTest();
+        $activated_at = time();
+
+        $content = $this->startTest();
+        $this->assertLessThanOrEqual($content['activated_at'], $activated_at);
 
         $testData = $this->testData['testGetBalance'];
         $testData['request']['url'] = '/merchants/1cXSLlUU8V9sXl/balance';
+        $testData['response']['content']['id'] = '1cXSLlUU8V9sXl';
         $testData['response']['content']['balance'] = 0;
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testMerchantEnableLive()
@@ -212,7 +218,7 @@ class MerchantTest extends TestCase
     {
         $merchant = array(
                 'id'    => '1X4hRFHFx4UiXt',
-                'name'  => 'Tester',
+                'name'  => 'Tester 2',
                 'email' => 'liveAndTest@localhost.com'
             );
 

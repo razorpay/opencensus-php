@@ -47,5 +47,12 @@ class Repository extends Base\Repository
 
         return $repo::where(BankAccount\Entity::BENEFICIARY_CODE, 'like', $code.'%')->count();
     }
+
+    public function getAllOrderedByCreatedAt()
+    {
+        $repo = $this->repo;
+
+        return $repo::query()->orderBy(BankAccount\Entity::CREATED_AT)->get();
+    }
 }
 

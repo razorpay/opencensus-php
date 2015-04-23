@@ -154,7 +154,7 @@ class UniqueIdEntity extends Entity
         // Generate 3 random bytes, convert to hex and then to dec
         // @note: do not use bindec i.e. convert directly to dec
         //        because it overflows!
-        $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(3)));
+        $dec = hexdec(bin2hex(openssl_random_pseudo_bytes(5)));
 
         // Convert the random decimal generated to base 62
         $rand = self::base62($dec);
@@ -166,6 +166,8 @@ class UniqueIdEntity extends Entity
         // Combine the base 62 nanotime with 4 base 62 digits
         // and create a unique identifier
         $id = $b62 . $rand;
+
+        assert(strlen($id) === 14);
 
         return $id;
     }
