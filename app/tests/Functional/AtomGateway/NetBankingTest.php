@@ -92,7 +92,7 @@ class NetBankingTest extends TestCase
 
     public function testAtomVerifyPayment()
     {
-        $this->markTestIncomplete();
+//        $this->markTestIncomplete();
 
         //
         // Just after a payment, on verification atom sends false response
