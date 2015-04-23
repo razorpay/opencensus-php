@@ -65,7 +65,7 @@ class Gateway extends BaseGateway
     {
         $md5HashData = $this->config['test_hash_secret'];
 
-        $content = ksort($content);
+        ksort($content);
 
         foreach($content as $key => $value)
         {
