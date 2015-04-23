@@ -101,7 +101,8 @@ class TerminalPicker
             {
                 $terminal = $gatewayTerms[Payment\Gateway::AXIS];
             }
-            else if (isset($gatewayTerms[Payment\Gateway::HDFC]) === true)
+            else if ((isset($gatewayTerms[Payment\Gateway::HDFC]) === true) and
+                     ($gatewayTerms[Payment\Gateway::HDFC]->isCardEnabled()))
             {
                 $terminal = $gatewayTerms[Payment\Gateway::HDFC];
             }

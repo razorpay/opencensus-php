@@ -58,8 +58,6 @@ class Fixtures
 
         $entities = $this->create('merchant:default_test_merchant');
 
-        $this->sharedTerminal = $this->create('terminal:shared_atom_terminal');
-
         $this->entities = $entities;
     }
 

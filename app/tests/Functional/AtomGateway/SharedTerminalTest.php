@@ -21,6 +21,8 @@ class SharedTerminalTest extends TestCase
         $this->fixtures->create('card_detail:default_iins');
 
         $this->ba->setDefaultKey('rzp_test_AltTestAuthKey')->publicAuth();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
     }
 
 

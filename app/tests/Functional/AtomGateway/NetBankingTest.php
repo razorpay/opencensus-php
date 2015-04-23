@@ -26,6 +26,8 @@ class NetBankingTest extends TestCase
             'currency' => 'INR');
 
         $this->gateway = 'atom';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
     }
 
     public function testNetBankingPaymentAuthorize()
