@@ -59,7 +59,7 @@ trait PaymentHdfcTrait
 
                 $tds = ((isset($content['http_status_code'])) and
                         ($content['http_status_code'] === 200) and
-                        (isset($content['data'])));
+                        (isset($content['request'])));
             }
         }
 
@@ -68,19 +68,20 @@ trait PaymentHdfcTrait
 
     protected function createHtmlFormAfterJsonpRequest($content)
     {
-        $data = $content['data'];
-
         $text = '
             <!doctype html>
             <html lang="en">
                 <body>
-                <form name="form1" action="'.$data['url'].'" method="post">
-                    <input type="text" name="PaReq" value="'.$data['PAReq'].'">
-                    <br />
-                    <input type="text" name="MD" value="'.$data['paymentid'].'">
-                    <br />
-                    <input type="text" name="TermUrl" value="'.$content['callbackUrl'].'">
-                    <br />
+                <form name="form1" action="'.$content['request']['url'].'" method="post">';
+
+        foreach ($content['request']['content'] as $key => $value)
+        {
+            $text .= '
+                    <input type="text" name="'.$key.'" value="'.$value.'">
+                    <br />';
+        }
+
+        $text .= '
                     <input type="submit" value="Submit" >
                 </form>
                 <br>

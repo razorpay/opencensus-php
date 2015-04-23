@@ -197,9 +197,10 @@ trait PaymentAtomTrait
         {
             $content = $this->getJsonContentFromResponse($response, $callback);
 
-            if (isset($content['redirectUrl']))
+            if ((isset($content['request']['url'])) and
+                ($content['request']['method'] === 'get'))
             {
-                return array(true, $content['redirectUrl']);
+                return array(true, $content['request']['url']);
             }
         }
 

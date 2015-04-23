@@ -53,9 +53,10 @@ class Gateway extends BaseGateway
         $url = $this->createAtomRedirectUrl($data);
         // \Log::info($url);
 
-        $data = array('redirectUrl' => $url);
+        $retRequest['method'] = 'get';
+        $retRequest['url'] = $url;
 
-        return $data;
+        return $retRequest;
     }
 
     public function capture(array $input = array())
