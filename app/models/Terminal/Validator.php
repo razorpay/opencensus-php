@@ -58,7 +58,7 @@ class Validator extends Base\Validator
     protected function matchGatewayForNewTerminal($new, $existing)
     {
         // If 1 exists, then another should not be added for the same gateway
-        if ($this->new->getGateway() === $existing->getGateway())
+        if ($new->getGateway() === $existing->getGateway())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);

@@ -37,15 +37,15 @@ class TerminalPicker
 
         $method = $payment->getMethod();
 
-        list($hdfcTerm, $atomTerm) = $this->getHdfcAndAtomTerm($terminals);
+        $gatewayTerms = $this->getGatewayTerminals($terminals);
 
         if ($method === Payment\Method::CARD)
         {
-            $terminal = $this->pickTerminalForCardMethod($terminals, $hdfcTerm, $atomTerm);
+            $terminal = $this->pickTerminalForCardMethod($terminals, $gatewayTerms);
         }
         else if ($method === Payment\Method::NETBANKING)
         {
-            if ($atomTerm === null)
+            if (isset($gatewayTerms[Payment\Gateway::ATOM]) === false)
             {
                 return;
 
@@ -53,7 +53,7 @@ class TerminalPicker
                     ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
             }
 
-            $terminal = $atomTerm;
+            $terminal = $gatewayTerms[Payment\Gateway::ATOM];
         }
         else
         {
@@ -65,7 +65,7 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function pickTerminalForCardMethod($terminals, $hdfcTerm, $atomTerm)
+    protected function pickTerminalForCardMethod($terminals, $gatewayTerms)
     {
         //
         // For card, terminal deduction is as follows:
@@ -81,6 +81,7 @@ class TerminalPicker
         $count = $terminals->count();
 
         $terminal = null;
+
         if ($count === 1)
         {
             $terminal = $terminals->first();
@@ -88,19 +89,27 @@ class TerminalPicker
             if ($terminal->isCardEnabled() === false)
             {
                 return;
+
                 throw new Exception\LogicException(
                     'Card not enabled for the merchant. Merchant Id: ' . $terminal->getMerchantId() .
                     ' Terminal Id: ' . $terminal->getId());
             }
         }
-        else if ($count === 2)
+        else if ($count >= 2)
         {
-            if (($hdfcTerm !== null) and
-                ($hdfcTerm->isCardEnabled()))
-                $terminal = $hdfcTerm;
-            else if (($atomTerm !== null) and
-                     ($atomTerm->isCardEnabled()))
-                $terminal = $atomTerm;
+            if (isset($gatewayTerms[Payment\Gateway::AXIS]) === true)
+            {
+                $terminal = $gatewayTerms[Payment\Gateway::AXIS];
+            }
+            else if (isset($gatewayTerms[Payment\Gateway::HDFC]) === true)
+            {
+                $terminal = $gatewayTerms[Payment\Gateway::HDFC];
+            }
+            else if ((isset($gatewayTerms[Payment\Gateway::ATOM]) === true) and
+                     ($gatewayTerms[Payment\Gateway::ATOM]->isCardEnabled()))
+            {
+                $terminal = $gatewayTerms[Payment\Gateway::ATOM];
+            }
             else
             {
                 return;
@@ -114,32 +123,28 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function getHdfcAndAtomTerm($terminals)
+    protected function getGatewayTerminals($terminals)
     {
+        $gatewayTerms = [];
         $hdfcTerm = $atomTerm = null;
 
         foreach ($terminals->all() as $term)
         {
-            if ($term->isGateway(Payment\Gateway::HDFC))
-                $hdfcTerm = $term;
-            else if ($term->isGateway(Payment\Gateway::ATOM))
-                $atomTerm = $term;
-            else
-                throw new Exception\LogicException(
-                    'Unknown gateway. Terminal Id: ' . $terminal->getId() .
-                    ' Gateway: ' . $terminal->getGateway());
+            $gateway = $term->getGateway();
+            Payment\Gateway::validateGateway($gateway);
+
+            $gatewayTerms[$gateway] = $term;
         }
 
-        return [$hdfcTerm, $atomTerm];
+        return $gatewayTerms;
     }
 
     protected function validateCount($terminals, $merchant)
     {
         $count = $terminals->count();
 
-        // if (($count > 2) or
-        //     ($count === 0))
-        if ($count > 2)
+        // Max count can be 3 currently.
+        if ($count > 3)
         {
             throw new Exception\LogicException(
                 'Terminals count not reasonable: ' . $count .
