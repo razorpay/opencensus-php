@@ -7,9 +7,11 @@ use Models\Terminal;
 class Shared
 {
     const ATOM_RAZORPAY_TERMINAL = '1000AtomShared';
+    const AXIS_RAZORPAY_TERMINAL = '1000AxisShared';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
+        self::AXIS_RAZORPAY_TERMINAL,
     );
 
     public static function isSharedTerminal($terminal)
