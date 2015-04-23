@@ -93,19 +93,20 @@ class HdfcGatewayAuthTest extends TestCase
     public function testJsonpPaymentReturnFields()
     {
         $fields = array(
-            'data',
-            'callbackUrl',
+            'request',
+            'version',
+            'payment_id',
             'http_status_code');
 
         $dataFields = array(
-            'paymentid',
-            'PAReq',
-            'url');
+            'TermUrl',
+            'MD',
+            'PaReq');
 
         $content = $this->startTest();
 
         $this->assertEquals($fields, array_keys($content));
-        $this->assertEquals($dataFields, array_keys($content['data']));
+        $this->assertEquals($dataFields, array_keys($content['request']['content']));
     }
 
     public function startTest()

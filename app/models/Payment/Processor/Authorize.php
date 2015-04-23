@@ -40,39 +40,20 @@ trait Authorize
         //
         $gatewayInput['payment'] = $payment->toArray();
 
-        $gateway = $payment->getGateway();
+        $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
-        if ($gateway === Payment\Gateway::ATOM)
+        $request = $this->callGatewayAuthorize($gatewayInput);
+
+        //
+        // If $request is not null, then payment is two-step process
+        // where client needs to provide additional info via his browser.
+        //
+        if ($request !== null)
         {
-            $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
-        }
+            $data['request'] = $request;
+            $data['version'] = 1;
+            $data['payment_id'] = $payment->getPublicId();
 
-        $data = $this->callGatewayAuthorize($gatewayInput);
-
-        if ($data !== null)
-        {
-            if ($gateway === Payment\Gateway::HDFC)
-            {
-                //
-                // This case means that card is enrolled.
-                // Now a form will be displayed and submitted
-                // to bank ACS for for customer to enter 3d-secure
-                // or OTP.
-                // The data field required for generating the
-                // form is returned by gateway.
-                // It's now returned further to wherever it
-                // will be used to display form.
-                //
-
-                $data['callbackUrl'] = $this->getCallbackUrl();
-            }
-
-            return $data;
-        }
-
-        // For atom gateway, authorization cannot happen in a single step
-        if ($payment->isGateway(Payment\Gateway::ATOM))
-        {
             return $data;
         }
 

@@ -45,15 +45,17 @@ class PaymentController extends BaseController
         //
         // Check for call from API
         //
-        if (isset($data['callbackUrl']))
+        if (isset($data['request']))
         {
-        	return View::make('hdfc.enrollResponse')
-                ->with('data', $data['data'])
-                ->with('callbackUrl',$data['callbackUrl']);
-        }
-        else if (isset($data['redirectUrl']))
-        {
-            return Redirect::away($data['redirectUrl']);
+            if ($data['request']['method'] === 'post')
+            {
+            	return View::make('gateway.gatewayPostForm')
+                    ->with('data', $data);
+            }
+            else if ($data['request']['method'] === 'get')
+            {
+                return Redirect::away($data['request']['url']);
+            }
         }
         else
         {

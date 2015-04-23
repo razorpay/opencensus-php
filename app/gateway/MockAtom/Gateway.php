@@ -27,13 +27,13 @@ class Gateway extends Atom\Gateway
         $data = parent::authorize($input);
 
         // The key thing now is to replace redirectUrl from atom's to ours!
-        $parts = parse_url($data['redirectUrl']);
+        $parts = parse_url($data['url']);
 
         $baseUrl = \Http\Route::getUrlWithPublicAuth('mockatom_choose_org');
         $newRedirectUrl = $baseUrl . '&' .$parts['query'];
 
         // Put the new redirect url back in!
-        $data['redirectUrl'] = $newRedirectUrl;
+        $data['url'] = $newRedirectUrl;
 
         // Voila
         return $data;

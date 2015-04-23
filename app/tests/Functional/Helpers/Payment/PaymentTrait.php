@@ -384,7 +384,9 @@ trait PaymentTrait
             $content = $this->getJsonContentFromResponse($response, $callback);
         }
 
-        if (isset($content['redirectUrl']) or $this->gateway === 'atom')
+        if (((isset($content['request']['method'])) and
+             ($content['request']['method'] === 'get')) or
+            ($this->gateway === 'atom'))
         {
             return $this->runPaymentCallbackFlowAtom($response, $callback);
         }
