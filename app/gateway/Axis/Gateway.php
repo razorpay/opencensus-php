@@ -25,7 +25,8 @@ class Gateway extends BaseGateway
     {
         parent::authorize($input);
 
-        $cardExp = $input['card']['expiry_year'] . $input['card']['expiry_month'];
+        $cardExp = substr($input['card']['expiry_year'], 2,2) .
+                    $input['card']['expiry_month'];
 
         $content = array(
             'vpc_Version'               => '1',
@@ -40,20 +41,24 @@ class Gateway extends BaseGateway
             'vpc_CardNum'               => $input['card']['number'],
             'vpc_CardExp'               => $cardExp,
             'vpc_CardSecurityCode'      => $input['card']['cvv'],
+            'vpc_Card'                  => 'Visa',
         );
 
         if ($this->mode === Mode::TEST)
         {
             $content['vpc_Merchant'] = $this->config['test_merchant_id'];
             $content['vpc_AccessCode'] = $this->config['test_access_code'];
+            $content['vpc_CardNum'] = '5123456789012346';
+            $content['vpc_Card'] = 'Mastercard';
         }
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
-        $data['callbackUrl'] = 'https://migs.mastercard.com.au/vpcpay';
-        $data['content'] = $content;
+        $request['url'] = 'https://migs.mastercard.com.au/vpcpay';
+        $request['content'] = $content;
+        $request['method'] = 'post';
 
-        return $data;
+        return $request;
     }
 
     public function refund(array $input)
