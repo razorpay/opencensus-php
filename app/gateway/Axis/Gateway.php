@@ -40,18 +40,23 @@ class Gateway extends BaseGateway
 
         $payment->saveOrFail();
 
+        $expiry_month = $input['card']['expiry_month'];
+
+        if ($expiry_month < 10) $expiry_month = '0' . $expiry_month;
+
         $cardExp = substr($input['card']['expiry_year'], 2,2) .
-                    $input['card']['expiry_month'];
+                    $expiry_month;
 
         $content = array(
             'vpc_Version'               => '1',
             'vpc_ReturnURL'             => $input['callbackUrl'],
             'vpc_Locale'                => 'en',
-            'vpc_gateway'               => 'threeDSecure',
+            'vpc_gateway'               => 'ssl',
             'vpc_CardNum'               => $input['card']['number'],
             'vpc_CardExp'               => $cardExp,
             'vpc_CardSecurityCode'      => $input['card']['cvv'],
-            'vpc_Card'                  => 'Visa',
+            'vpc_Card'                  => $input['card']['network'],
+            'vpc_OrderInfo'             => 'test info',
         );
 
         $content = array_merge($attributes, $content);
@@ -60,8 +65,10 @@ class Gateway extends BaseGateway
         {
             $content['vpc_Merchant'] = $this->config['test_merchant_id'];
             $content['vpc_AccessCode'] = $this->config['test_access_code'];
+            $content['vpc_Card'] = 'MasterCard';
             $content['vpc_CardNum'] = '5123456789012346';
-            $content['vpc_Card'] = 'Mastercard';
+            $content['vpc_CardExp'] = $cardExp,
+            $content['vpc_CardSecurityCode'] = $input['card']['cvv'],
         }
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
@@ -75,6 +82,7 @@ class Gateway extends BaseGateway
 
     public function callback(array $input)
     {
+        s($input);
         $payment = (new Axis\Repository)->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
 
         $this->verifySecretHash($input);
@@ -136,7 +144,7 @@ class Gateway extends BaseGateway
 
         if ($generatedHash !== $hash)
         {
-            ; // throw exception
+            throw new Exception\BadRequestException('Failed checksum verification');
         }
     }
 }

@@ -32,7 +32,10 @@ class CreateAxisGateway extends Migration
             $table->char('vpc_3DSXID', 28)->nullable();
             $table->char('vpc_3DSenrolled',1)->nullable();
             $table->char('vpc_3DSstatus',1)->nullable();
+            $table->char('vpc_AuthorizeId', 6)->nullable();
             $table->char('vpc_BatchNo', 8)->nullable();
+            $table->char('vpc_Card', 2)->nullable();
+            $table->char('vpc_ReceiptNo', 12)->nullable();
             $table->char('vpc_TransactionNo', 19)->nullable();
             $table->char('vpc_TxnResponseCode', 1)->nullable();
             $table->char('vpc_VerToken', 28)->nullable();
