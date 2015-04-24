@@ -13,7 +13,8 @@ final class Route
     protected static $apiRoutes = array(
         'payment_create'                    => ['post',     'payments',                                 'PaymentController@postCreatePayment'                   ],
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentController@getJSONP'                            ],
-        'payment_callback'                  => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
+        'payment_callback_post'             => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
+        'payment_callback_get'              => ['get',      'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
@@ -97,7 +98,8 @@ final class Route
     public static $public = array(
         'payment_create',
         'payment_create_jsonp',
-        'payment_callback',
+        'payment_callback_post',
+        'payment_callback_get',
         'merchant_public_get_banks',
         'mockatom_init_payment',
         'mockatom_choose_org',
