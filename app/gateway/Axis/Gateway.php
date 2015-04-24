@@ -52,10 +52,10 @@ class Gateway extends BaseGateway
             'vpc_ReturnURL'             => $input['callbackUrl'],
             'vpc_Locale'                => 'en',
             'vpc_gateway'               => 'ssl',
+            'vpc_Card'                  => $input['card']['network'],
             'vpc_CardNum'               => $input['card']['number'],
             'vpc_CardExp'               => $cardExp,
             'vpc_CardSecurityCode'      => $input['card']['cvv'],
-            'vpc_Card'                  => $input['card']['network'],
             'vpc_OrderInfo'             => 'test info',
         );
 
@@ -70,10 +70,15 @@ class Gateway extends BaseGateway
             $content['vpc_CardExp'] = $cardExp,
             $content['vpc_CardSecurityCode'] = $input['card']['cvv'],
         }
+        else
+        {
+            $content['vpc_Merchant'] = $input['terminal']['gateway_merchant_id'];
+            $content['vpc_AccessCode'] = $input['terminal']['gateway_terminal_password'];
+        }
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
-        $request['url'] = 'https://migs.mastercard.com.au/vpcpay';
+        $request['url'] = $this->getUrl();
         $request['content'] = $content;
         $request['method'] = 'post';
 
@@ -146,5 +151,16 @@ class Gateway extends BaseGateway
         {
             throw new Exception\BadRequestException('Failed checksum verification');
         }
+    }
+
+    protected function getUrl($type)
+    {
+        $test = 'https://migs.mastercard.com.au/vpcpay';;
+
+        $live = '';
+
+        $url = ($this->mode === MODE::LIVE) ? $live : $test;
+
+        return $url;
     }
 }
