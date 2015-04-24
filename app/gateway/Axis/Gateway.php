@@ -25,16 +25,26 @@ class Gateway extends BaseGateway
     {
         parent::authorize($input);
 
+        $payment = new Axis\Entity;
+
+        $payment->setPaymentId($input['payment']['id']);
+
+        $attributes = array(
+            'vpc_Command'               => Command::PAY,
+            'vpc_Amount'                => $input['payment']['amount'],
+            'vpc_Currency'              => 'INR',
+            'vpc_MerchTxnRef'           => $input['payment']['id'],
+        );
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
         $cardExp = substr($input['card']['expiry_year'], 2,2) .
                     $input['card']['expiry_month'];
 
         $content = array(
             'vpc_Version'               => '1',
-            'vpc_Command'               => 'pay',
-            'vpc_MerchTxnRef'           => $input['payment']['public_id'],
-            // 'vpc_OrderInfo'             => $input['payment'][''],
-            'vpc_Amount'                => $input['payment']['amount'],
-            'vpc_Currency'              => 'INR',
             'vpc_ReturnURL'             => $input['callbackUrl'],
             'vpc_Locale'                => 'en',
             'vpc_gateway'               => 'threeDSecure',
@@ -43,6 +53,8 @@ class Gateway extends BaseGateway
             'vpc_CardSecurityCode'      => $input['card']['cvv'],
             'vpc_Card'                  => 'Visa',
         );
+
+        $content = array_merge($attributes, $content);
 
         if ($this->mode === Mode::TEST)
         {
@@ -60,6 +72,17 @@ class Gateway extends BaseGateway
 
         return $request;
     }
+
+    public function callback(array $input)
+    {
+        $payment = (new Axis\Repository)->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
+
+        $payment->fill($input);
+        $payment->saveOrFail();
+
+        return;
+    }
+
 
     public function refund(array $input)
     {
