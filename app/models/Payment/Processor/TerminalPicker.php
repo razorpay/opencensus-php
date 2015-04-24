@@ -19,7 +19,7 @@ class TerminalPicker
 
         if ($terminal === null)
         {
-            $terminal = Terminal\Shared::getSharedTerminal();
+            $terminal = Terminal\Shared::getSharedTerminal($payment->getMethod());
         }
 
         $payment->terminal()->associate($terminal);

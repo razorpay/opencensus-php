@@ -28,9 +28,21 @@ class Shared
         return self::isSharedTerminal($terminal);
     }
 
-    public static function getSharedTerminal()
+    public static function getSharedTerminal($method)
     {
-        $terminal = (new Repository)->findOrFail(self::ATOM_RAZORPAY_TERMINAL);
+        if ($method === 'card')
+        {
+            $terminal = (new Repository)->find(self::AXIS_RAZORPAY_TERMINAL);
+
+            if ($terminal !== null)
+            {
+                return;
+            }
+        }
+
+        {
+            $terminal = (new Repository)->findOrFail(self::ATOM_RAZORPAY_TERMINAL);
+        }
 
         return $terminal;
     }
