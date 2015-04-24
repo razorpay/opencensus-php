@@ -77,6 +77,8 @@ class Gateway extends BaseGateway
     {
         $payment = (new Axis\Repository)->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
 
+        $this->verifySecretHash($input);
+
         $payment->fill($input);
         $payment->saveOrFail();
 
@@ -87,6 +89,20 @@ class Gateway extends BaseGateway
     public function refund(array $input)
     {
         parent::refund($input);
+
+        $attributes = array(
+            'vpc_Command' => Axis\Command::REFUND,
+            'vpc_Amount' => $input['refund']['amount'],
+            'vpc_Currency' => $input['refund']['currency'],
+        );
+
+        $content = array(
+            'vpc_Version' => '1',
+        );
+
+        $content = array_merge($attributes, $content);
+
+
     }
 
     protected function generateHash($content)
@@ -108,5 +124,19 @@ class Gateway extends BaseGateway
         }
 
         return strtoupper(md5($md5HashData));
+    }
+
+    protected function verifySecretHash($input)
+    {
+        unset($input['payment']);
+        $hash = $input['vpc_SecureHash'];
+        unset($input['vpc_SecureHash']);
+
+        $generatedHash = $this->generateHash($input);
+
+        if ($generatedHash !== $hash)
+        {
+            ; // throw exception
+        }
     }
 }
