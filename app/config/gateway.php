@@ -18,7 +18,7 @@ return array(
 
     'mock_atom' => $_ENV['ATOM_MOCK'],
 
-    'mock_axis' => 'false',
+    'mock_axis' => $_ENV['AXIS_MOCK'],
 
     'mockhdfc_server' => false,
 

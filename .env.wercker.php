@@ -24,13 +24,15 @@ return array(
     'HDFC_ID'                           => getenv('HDFC_ID'),
     'HDFC_PASSWORD'                     => getenv('HDFC_PASSWORD'),
 
-    'HDFC_MOCK'                         => true,
-    'ATOM_MOCK'                         => false,
-    'MOCK_GATEWAY_SECRET'               => 'wercker_random_password',
-
     'AXIS_GATEWAY_TEST_HASH_SECRET'     => getenv('AXIS_GATEWAY_TEST_HASH_SECRET'),
     'AXIS_GATEWAY_TEST_MERCHANT_ID'     => getenv('AXIS_GATEWAY_TEST_MERCHANT_ID'),
     'AXIS_GATEWAY_TEST_ACCESS_CODE'     => getenv('AXIS_GATEWAY_TEST_ACCESS_CODE'),
+
+    'MOCK_GATEWAY_SECRET'               => 'wercker_random_password',
+
+    'HDFC_MOCK'                         => true,
+    'ATOM_MOCK'                         => false,
+    'AXIS_MOCK'                         => false,
 
     'EMAIL_MOCK'                        => true,
 
