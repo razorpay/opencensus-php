@@ -15,13 +15,17 @@ class AxisGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'axis';
     }
 
-    public function testDummy()
+    public function testPayment()
     {
-        ;
+        $payment = $this->doAuthAndCapturePayment();
+
+        $payment = $this->getLastEntity('payment', true);
     }
 }
