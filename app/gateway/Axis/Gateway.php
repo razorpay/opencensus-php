@@ -56,7 +56,7 @@ class Gateway extends BaseGateway
             'vpc_CardNum'               => $input['card']['number'],
             'vpc_CardExp'               => $cardExp,
             'vpc_CardSecurityCode'      => $input['card']['cvv'],
-            'vpc_OrderInfo'             => 'test info',
+            'vpc_OrderInfo'             => 'testinfo',
         );
 
         $content = array_merge($attributes, $content);
@@ -67,8 +67,8 @@ class Gateway extends BaseGateway
             $content['vpc_AccessCode'] = $this->config['test_access_code'];
             $content['vpc_Card'] = 'MasterCard';
             $content['vpc_CardNum'] = '5123456789012346';
-            $content['vpc_CardExp'] = $cardExp,
-            $content['vpc_CardSecurityCode'] = $input['card']['cvv'],
+            $content['vpc_CardExp'] = '1507';
+            $content['vpc_CardSecurityCode'] = '333';
         }
         else
         {
@@ -78,7 +78,7 @@ class Gateway extends BaseGateway
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
-        $request['url'] = $this->getUrl();
+        $request['url'] = $this->getUrl(Command::PAY);
         $request['content'] = $content;
         $request['method'] = 'post';
 
@@ -87,7 +87,6 @@ class Gateway extends BaseGateway
 
     public function callback(array $input)
     {
-        s($input);
         $payment = (new Axis\Repository)->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
 
         $this->verifySecretHash($input);
@@ -114,11 +113,9 @@ class Gateway extends BaseGateway
         );
 
         $content = array_merge($attributes, $content);
-
-
     }
 
-    protected function generateHash($content)
+    public function generateHash($content)
     {
         $md5HashData = $this->config['test_hash_secret'];
 
@@ -149,7 +146,7 @@ class Gateway extends BaseGateway
 
         if ($generatedHash !== $hash)
         {
-            throw new Exception\BadRequestException('Failed checksum verification');
+            throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
         }
     }
 

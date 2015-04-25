@@ -91,6 +91,7 @@ final class Route
         'mockatom_choose_org'               => ['get',      'gateway/mockanb',                          'MockHdfcController@getAtomChooseOrg'                   ],
         'mockatom_rzp_payment'              => ['post',     'gateway/mockanb/payment',                  'MockHdfcController@postAtomRzpPayment'                 ],
         'mockatom_rzp_payment_submit'       => ['post',     'gateway/mockanb/payment/submit',           'MockHdfcController@postAtomRzpPaymentSubmit'           ],
+        'mockaxis_payment'                  => ['post',     'gateway/mockaxis/payment',                 'MockHdfcController@postAxisPayment'                    ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
     );
@@ -105,7 +106,8 @@ final class Route
         'mockatom_choose_org',
         'mockatom_rzp_payment',
         'mockatom_rzp_payment_submit',
-        );
+        'mockaxis_payment',
+    );
 
     public static $private = array(
         'payment_refund',

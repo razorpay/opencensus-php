@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\MockAxis;
+namespace Gateway\MockAxis;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
@@ -27,3 +27,4 @@ class Validator extends Base\Validator
         'vpc_SecureHash'            => 'required|alpha_num|size:32',
         'vpc_OrderInfo'             => 'sometimes|alpha_num|max:34',
     );
+}

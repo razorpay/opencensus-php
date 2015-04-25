@@ -82,4 +82,15 @@ class MockHdfcController extends BaseController
                    ->with('url', $url)
                    ->with('data', $data);
     }
+
+    public function postAxisPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\MockAxis\Server;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
 }
