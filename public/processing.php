@@ -10,6 +10,7 @@ header('Pragma: no-cache');
     <meta charset="UTF-8">
 </head>
 <body>
+<form id="postform" style="display: none" method="post"></form>
 <script>
 
 function autosubmit(data){
@@ -20,14 +21,8 @@ function autosubmit(data){
   document.getElementById('rzp-dcform').submit();
 }
 
-if (window.addEventListener) {
-  var callback = function(message){
-    handleMessage(message.data);
-  }
-  window.addEventListener('message', callback, false);
-}
-else {
-  window.attachEvent('onmessage', callback);
+window.onmessage = function(message){
+  handleMessage(message.data);
 }
 
 function createCookie(name, value, days){
@@ -54,23 +49,35 @@ function readCookie(name){
 // remove cookie
 // TODO cookie with unique keys, so that one tab doesn't interfere another
 
-var csData = {};
-
-var intervalID = setInterval(function(){
+setInterval(function(){
   receive_cookie = readCookie('rzp-receive')
   if(receive_cookie){
     handleMessage(JSON.parse(receive_cookie));
-    createCookie('rzp-receive', '', -1)
+    createCookie('rzp-receive', '', -1);
   }
-}, 500)
+}, 400)
 
 function handleMessage(data){
   if(typeof data == 'string'){
     data = JSON.parse(data);
   }
-  if(typeof data.rzp !== 'undefined'){
+  if(data.url){
+    if(data.method != 'post' || typeof data.content == 'object'){
+      location.href = data.url;
+    } else {
+      var postForm = document.getElementById('postform');
+      var html = '';
+
+      for(var i in data.content){
+        html += '<input type="hidden" name="' + i + '" value="' + data.content[i] + '">'
+      }
+      postForm.innerHTML = html;
+      postForm.action = data.url;
+      postForm.submit();
+    }
+  } else {
     if(typeof data.location !== 'undefined'){
-      window.location = data.location;
+      location.href = data.location;
     }
     else if(typeof data.autosubmit !== 'undefined'){
       autosubmit(data.autosubmit);
