@@ -94,6 +94,8 @@ class Gateway extends BaseGateway
         $payment->fill($input);
         $payment->saveOrFail();
 
+        $this->verifyPaymentResponse($input);
+
         return;
     }
 
@@ -148,6 +150,21 @@ class Gateway extends BaseGateway
         {
             throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
         }
+    }
+
+    protected function verifyPaymentResponse($input)
+    {
+        if ((isset($input['vpc_TxnResponseCode']) === true) or
+            ($input['vpc_TxnResponseCode'] === '0'))
+        {
+            return; // Payment succeeds
+        }
+
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    null,
+                    $input['Message']);
     }
 
     protected function getUrl($type)
