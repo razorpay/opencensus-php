@@ -36,7 +36,7 @@ class Shared
 
             if ($terminal !== null)
             {
-                return;
+                return $terminal;
             }
         }
 
