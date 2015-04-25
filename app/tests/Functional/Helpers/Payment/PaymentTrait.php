@@ -9,8 +9,9 @@ use Tests\Functional\RequestResponseFlowTrait;
 
 trait PaymentTrait
 {
-    use PaymentHdfcTrait;
+    use PaymentAxisTrait;
     use PaymentAtomTrait;
+    use PaymentHdfcTrait;
 
     use RequestResponseFlowTrait
     {
@@ -353,6 +354,19 @@ trait PaymentTrait
 
         $request['url'] = $uri;
 
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackRedirect($url)
+    {
+        $request['method'] = 'GET';
+        $request['url'] = $url;
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackRequest($request)
+    {
         $response = $this->makeRequestParent($request);
 
         $content = $response->getContent();
@@ -384,11 +398,21 @@ trait PaymentTrait
             $content = $this->getJsonContentFromResponse($response, $callback);
         }
 
+        if (isset($content['gateway']) === false)
+        {
+            return $response;
+        }
+
         if (((isset($content['request']['method'])) and
              ($content['request']['method'] === 'get')) or
             ($this->gateway === 'atom'))
         {
             return $this->runPaymentCallbackFlowAtom($response, $callback);
+        }
+
+        if ($this->gateway === 'axis')
+        {
+            return $this->runPaymentCallbackFlowAxis($response, $callback);
         }
 
         return $this->runPaymentCallbackFlowHdfc($response, $callback);
