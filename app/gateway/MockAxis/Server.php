@@ -27,6 +27,9 @@ class Server
 
         $validator->validateInput('auth', $input);
 
+        // Format - YYYYMMDD
+        $date = Carbon::today('Asia/Kolkata')->format('Ymd');
+
         $content = array(
             'vpc_3DSECI'            => '01',
             'vpc_3DSXID'            => '6NQZ/DZVL/LgcawFYz7cMP0vpMo=',
@@ -38,7 +41,7 @@ class Server
             'vpc_AcqCSCRespCode'    => 'Unsupported',
             'vpc_AcqResponseCode'   => '14',
             'vpc_Amount'            => $input['vpc_Amount'],
-            'vpc_BatchNo'           => '20150424',
+            'vpc_BatchNo'           => $date,
             'vpc_CSCResultCode'     => 'Unsupported',
             'vpc_Card'              => 'MC',
             'vpc_Command'           => 'pay',
@@ -46,11 +49,11 @@ class Server
             'vpc_Locale'            => $input['vpc_Locale'],
             'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
             'vpc_Merchant'          => $input['vpc_Merchant'],
-            'vpc_Message'           => 'Declined',
+            'vpc_Message'           => 'Approved',
             'vpc_ReceiptNo'         => '511415585968',
             'vpc_RiskOverallResult' => 'ACC',
-            'vpc_TransactionNo'     => '1100000003',
-            'vpc_TxnResponseCode'   => '2',
+            'vpc_TransactionNo'     => '11000' . random_integer(5),
+            'vpc_TxnResponseCode'   => '0',
             'vpc_VerSecurityLevel'  => '06',
             'vpc_VerStatus'         => 'M',
             'vpc_VerToken'          => 'huMdTSBYZwAbYwAAAHhpApYAAAA=',

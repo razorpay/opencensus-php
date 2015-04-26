@@ -3,7 +3,7 @@
 namespace Gateway\Axis;
 
 use Constants\Mode;
-use EE\Error;
+use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\BaseGateway;
 use Gateway\Axis;
@@ -56,7 +56,7 @@ class Gateway extends BaseGateway
             'vpc_CardNum'               => $input['card']['number'],
             'vpc_CardExp'               => $cardExp,
             'vpc_CardSecurityCode'      => $input['card']['cvv'],
-            'vpc_OrderInfo'             => 'testinfo',
+//            'vpc_OrderInfo'             => 'testinfo',
         );
 
         $content = array_merge($attributes, $content);
@@ -67,7 +67,7 @@ class Gateway extends BaseGateway
             $content['vpc_AccessCode'] = $this->config['test_access_code'];
             $content['vpc_Card'] = 'MasterCard';
             $content['vpc_CardNum'] = '5123456789012346';
-            $content['vpc_CardExp'] = '1507';
+            $content['vpc_CardExp'] = '1705';
             $content['vpc_CardSecurityCode'] = '333';
         }
         else
@@ -99,22 +99,75 @@ class Gateway extends BaseGateway
         return;
     }
 
+    public function capture(array $input)
+    {
+        return;
+
+        $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
+
+        $content = array(
+            'vpc_Version'       => 1,
+            'vpc_Command'       => Command::CAPTURE,
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
+            'vpc_Amount'        => $input['amount']
+        );
+
+        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
+
+        $content['vpc_User'] = '';
+        $content['vpc_Password'] = '';
+
+        $content['vpc_SecureHash'] = $this->generateHash($content);
+
+        // $url = $this->getUrl() . '?' . http_build_query($content);
+
+        $request = array(
+            'url' => $this->getUrl(),
+            'content' => $content,
+            'method' => 'post');
+
+        // send the request and get response
+        $response = $this->postRequest($request);
+    }
 
     public function refund(array $input)
     {
         parent::refund($input);
 
+        $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
+
         $attributes = array(
-            'vpc_Command' => Axis\Command::REFUND,
-            'vpc_Amount' => $input['refund']['amount'],
-            'vpc_Currency' => $input['refund']['currency'],
+            'vpc_Version'       => 1,
+            'vpc_Command'       => Axis\Command::REFUND,
+            'vpc_Amount'        => $input['refund']['amount'],
+            'vpc_Currency'      => $input['refund']['currency'],
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
 
-        $content = array(
-            'vpc_Version' => '1',
-        );
+        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
-        $content = array_merge($attributes, $content);
+        $content['vpc_SecureHash'] = $this->generateHash($content);
+
+        // $url = $this->getUrl() . '?' . http_build_query($content);
+
+        $request = array(
+            'url' => $this->getUrl(),
+            'content' => $content,
+            'method' => 'post');
+
+        // send the request and get response
+        $response = $this->postRequest($request);
+    }
+
+    public function postRequest($request)
+    {
+//        $request['options'] = $this->getRequestOptions();
+
+        $this->response = $this->sendGatewayRequest($request);
+
+        return $this->response;
     }
 
     public function generateHash($content)
@@ -152,9 +205,23 @@ class Gateway extends BaseGateway
         }
     }
 
+    protected function addMerchantIdAndAccessCode(array & $content, $terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $content['vpc_Merchant'] = $this->config['test_merchant_id'];
+            $content['vpc_AccessCode'] = $this->config['test_access_code'];
+        }
+        else
+        {
+            $content['vpc_Merchant'] = $input['terminal']['gateway_merchant_id'];
+            $content['vpc_AccessCode'] = $input['terminal']['gateway_terminal_password'];
+        }
+    }
+
     protected function verifyPaymentResponse($input)
     {
-        if ((isset($input['vpc_TxnResponseCode']) === true) or
+        if ((isset($input['vpc_TxnResponseCode']) === true) and
             ($input['vpc_TxnResponseCode'] === '0'))
         {
             return; // Payment succeeds
@@ -164,12 +231,12 @@ class Gateway extends BaseGateway
         throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     null,
-                    $input['Message']);
+                    $input['vpc_Message']);
     }
 
-    protected function getUrl($type)
+    protected function getUrl()
     {
-        $test = 'https://migs.mastercard.com.au/vpcpay';;
+        $test = 'https://migs.mastercard.com.au/vpcpay';
 
         $live = '';
 
