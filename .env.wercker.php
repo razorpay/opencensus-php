@@ -32,7 +32,7 @@ return array(
 
     'HDFC_MOCK'                         => true,
     'ATOM_MOCK'                         => false,
-    'AXIS_MOCK'                         => false,
+    'AXIS_MOCK'                         => true,
 
     'EMAIL_MOCK'                        => true,
 
