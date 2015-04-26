@@ -62,9 +62,9 @@ function handleMessage(data){
     data = JSON.parse(data);
   }
   if(data.url){
-    if(data.method != 'post' || typeof data.content == 'object'){
+    if(data.method == 'get'){
       location.href = data.url;
-    } else {
+    } else if (data.method == 'post' && typeof data.content == 'object'){
       var postForm = document.getElementById('postform');
       var html = '';
 
@@ -74,6 +74,17 @@ function handleMessage(data){
       postForm.innerHTML = html;
       postForm.action = data.url;
       postForm.submit();
+    } else {
+      var errorData = {
+        error: {
+          description: 'Server Error'
+        }
+      };
+      var errorString = JSON.stringify(errorData);
+      createCookie('rzp', errorString);
+      if(window.opener && typeof window.opener.postMessage == 'function'){
+        window.opener.postMessage(errorString, '*');
+      }
     }
   } else {
     if(typeof data.location !== 'undefined'){
@@ -207,13 +218,14 @@ function handleMessage(data){
 </div>
 
 <script>
-  msg = {
+  var msgObj = {
     source: 'popup',
     loaded: true
   }
-  createCookie('rzp', JSON.stringify(msg));
+  var msgString = JSON.stringify(msgObj)
+  createCookie('rzp', msgString);
   if(window.opener && typeof window.opener.postMessage == 'function'){
-    window.opener.postMessage(msg, '*');
+    window.opener.postMessage(msgString, '*');
   }
 </script>
 </body>
