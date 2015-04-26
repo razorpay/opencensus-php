@@ -28,4 +28,14 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
     }
+
+    public function testFailPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4111111111111111';
+
+        $content = $this->doAuthPayment($payment);
+
+        sd($content);
+    }
 }

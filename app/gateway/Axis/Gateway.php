@@ -65,10 +65,8 @@ class Gateway extends BaseGateway
         {
             $content['vpc_Merchant'] = $this->config['test_merchant_id'];
             $content['vpc_AccessCode'] = $this->config['test_access_code'];
-            $content['vpc_Card'] = 'MasterCard';
-            $content['vpc_CardNum'] = '5123456789012346';
-            $content['vpc_CardExp'] = '1705';
-            $content['vpc_CardSecurityCode'] = '333';
+
+            $this->addTestCardDetailsInTestMode($content, $input);
         }
         else
         {
@@ -232,6 +230,21 @@ class Gateway extends BaseGateway
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     null,
                     $input['vpc_Message']);
+    }
+
+    protected function addTestCardDetailsInTestMode(array & $content)
+    {
+        assert ($this->mode === Mode::TEST);
+
+        if ($content['vpc_CardNum'] === '4111111111111111')
+        {
+            return;
+        }
+
+        $content['vpc_Card'] = 'MasterCard';
+        $content['vpc_CardNum'] = '5123456789012346';
+        $content['vpc_CardExp'] = '1705';
+        $content['vpc_CardSecurityCode'] = '333';
     }
 
     protected function getUrl()

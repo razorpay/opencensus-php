@@ -61,6 +61,8 @@ class Server
             'vpc_Version'           => '1',
         );
 
+        $this->addMessageAndResponseCode($content, $input);
+
         $content['vpc_SecureHash'] = (new Axis\Gateway)->generateHash($content);
 
         $url = $input['vpc_ReturnURL'];
@@ -90,6 +92,18 @@ class Server
         {
             throw new Exception\LogicException(
                 'Unexpected referer value. Referer: ' . $referer);
+        }
+    }
+
+    protected function addMessageAndResponseCode(array & $content, array $input)
+    {
+        $content['vpc_Message'] = 'Accepted';
+        $content['vpc_TxnResponseCode'] = '0';
+
+        if ($input['vpc_CardNum'] === '4111111111111111')
+        {
+            $content['vpc_Message'] = 'Declined';
+            $content['vpc_TxnResponseCode'] = '2';
         }
     }
 

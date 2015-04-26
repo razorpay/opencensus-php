@@ -25,12 +25,26 @@ trait PaymentAxisTrait
 
         if ($mock)
         {
+            if ($callback)
+            {
+                $content = $this->getJsonContentFromResponse($response, $callback);
+                $callback = null;
+
+                $request = $content['request'];
+            }
+            else
+            {
+               list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), 'https://localhost');
+
+               $request = array(
+                   'url' => $url,
+                   'method' => $method,
+                   'content' => $values);
+            }
+
             $server = array('HTTP_REFERER' => 'http://localhost');
 
-            $content = $this->getJsonContentFromResponse($response, $callback);
-            $callback = null;
-
-            $response = $this->makeRequestParent($content['request']);
+            $response = $this->makeRequestParent($request);
 
             $statusCode = $response->getStatusCode();
 
