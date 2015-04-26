@@ -219,7 +219,7 @@ class Server
         $hash = $this->getHashOfPaymentPublicId($paymentPublicId);
 
         $callbackUrl = Route::getUrlWithPublicAuth(
-            'payment_callback', ['id' => $paymentPublicId, 'hash' => $hash]);
+            'payment_callback_post', ['id' => $paymentPublicId, 'hash' => $hash]);
 
         return $callbackUrl;
     }

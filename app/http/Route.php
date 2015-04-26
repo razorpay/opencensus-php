@@ -13,7 +13,8 @@ final class Route
     protected static $apiRoutes = array(
         'payment_create'                    => ['post',     'payments',                                 'PaymentController@postCreatePayment'                   ],
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentController@getJSONP'                            ],
-        'payment_callback'                  => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
+        'payment_callback_post'             => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
+        'payment_callback_get'              => ['get',      'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
@@ -90,6 +91,7 @@ final class Route
         'mockatom_choose_org'               => ['get',      'gateway/mockanb',                          'MockHdfcController@getAtomChooseOrg'                   ],
         'mockatom_rzp_payment'              => ['post',     'gateway/mockanb/payment',                  'MockHdfcController@postAtomRzpPayment'                 ],
         'mockatom_rzp_payment_submit'       => ['post',     'gateway/mockanb/payment/submit',           'MockHdfcController@postAtomRzpPaymentSubmit'           ],
+        'mockaxis_payment'                  => ['post',     'gateway/mockaxis/payment',                 'MockHdfcController@postAxisPayment'                    ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
     );
@@ -97,13 +99,15 @@ final class Route
     public static $public = array(
         'payment_create',
         'payment_create_jsonp',
-        'payment_callback',
+        'payment_callback_post',
+        'payment_callback_get',
         'merchant_public_get_banks',
         'mockatom_init_payment',
         'mockatom_choose_org',
         'mockatom_rzp_payment',
         'mockatom_rzp_payment_submit',
-        );
+        'mockaxis_payment',
+    );
 
     public static $private = array(
         'payment_refund',

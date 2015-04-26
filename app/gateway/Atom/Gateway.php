@@ -143,7 +143,7 @@ class Gateway extends BaseGateway
         }
         else
         {
-            $status = ($payment['success'] === '1') ? true : false;
+            $status = ((int) $payment['success'] === 1) ? true : false;
 
             if (($status === false) and
                 ($atomStatus === false))
@@ -154,7 +154,7 @@ class Gateway extends BaseGateway
             {
                 if (($status === true) and
                     ($atomStatus === true) and
-                    ($content['BID'] === $payment['bank_payment_id']))
+                    ($content['BID'] === (string) $payment['bank_payment_id']))
                 {
                     ;
                 }

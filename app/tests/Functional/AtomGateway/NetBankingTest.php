@@ -26,6 +26,8 @@ class NetBankingTest extends TestCase
             'currency' => 'INR');
 
         $this->gateway = 'atom';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
     }
 
     public function testNetBankingPaymentAuthorize()
@@ -90,8 +92,6 @@ class NetBankingTest extends TestCase
 
     public function testAtomVerifyPayment()
     {
-        $this->markTestIncomplete();
-
         //
         // Just after a payment, on verification atom sends false response
         // irrespective of the result.

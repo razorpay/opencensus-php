@@ -58,13 +58,6 @@ class Fixtures
 
         $entities = $this->create('merchant:default_test_merchant');
 
-        $this->on('test')->create(
-                            'payment',
-                            ['merchant_id' => '10000000000000',
-                             'terminal_id' => '1n25f6uN5S1Z5a']);
-
-        $this->sharedTerminal = $this->create('terminal:shared_atom_terminal');
-
         $this->entities = $entities;
     }
 

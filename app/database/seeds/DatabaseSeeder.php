@@ -184,6 +184,20 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                    => '1pnP3sEf2tQsm8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'axis',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'test_merchant_axis',
+                'gateway_terminal_id'   => 'test_terminal_axis',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_axis_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => '1VwJebUIU7hIhU',
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => 'hdfc',
@@ -219,6 +233,20 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_atom',
                 'gateway_terminal_id'   => 'shared_terminal_atom',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::AXIS_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'axis',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'demo_merchant_atom',
+                'gateway_terminal_id'   => 'shared_terminal_axis',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_axis_terminal_pass'),
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )

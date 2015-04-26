@@ -24,8 +24,14 @@ return array(
     'HDFC_ID'                   => 'hdfc_id',
     'HDFC_PASSWORD'             => 'hdfc_password',
 
+    'AXIS_GATEWAY_TEST_HASH_SECRET'         => 'random',
+    'AXIS_GATEWAY_TEST_MERCHANT_ID'         => 'random',
+    'AXIS_GATEWAY_TEST_ACCESS_CODE'         => 'random',
+
     'HDFC_MOCK'                 => true,
     'ATOM_MOCK'                 => true,
+    'AXIS_MOCK'                 => true,
+
     'MOCK_GATEWAY_SECRET'       => 'random_password',
 
     'EMAIL_MOCK'                => true,

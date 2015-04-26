@@ -122,6 +122,7 @@ class ApiResponse
             $previousData = self::getExceptionData($previous);
 
         $data = array(
+            'type' => get_class($exception),
             'message' => $exception->getMessage(),
             'code' => $exception->getCode(),
             'file' => $exception->getFile(),

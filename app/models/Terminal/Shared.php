@@ -7,9 +7,11 @@ use Models\Terminal;
 class Shared
 {
     const ATOM_RAZORPAY_TERMINAL = '1000AtomShared';
+    const AXIS_RAZORPAY_TERMINAL = '1000AxisShared';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
+        self::AXIS_RAZORPAY_TERMINAL,
     );
 
     public static function isSharedTerminal($terminal)
@@ -26,9 +28,21 @@ class Shared
         return self::isSharedTerminal($terminal);
     }
 
-    public static function getSharedTerminal()
+    public static function getSharedTerminal($method)
     {
-        $terminal = (new Repository)->findOrFail(self::ATOM_RAZORPAY_TERMINAL);
+        if ($method === 'card')
+        {
+            $terminal = (new Repository)->find(self::AXIS_RAZORPAY_TERMINAL);
+
+            if ($terminal !== null)
+            {
+                return $terminal;
+            }
+        }
+
+        {
+            $terminal = (new Repository)->findOrFail(self::ATOM_RAZORPAY_TERMINAL);
+        }
 
         return $terminal;
     }

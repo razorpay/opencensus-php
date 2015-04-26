@@ -53,6 +53,7 @@ trait Authorize
             $data['request'] = $request;
             $data['version'] = 1;
             $data['payment_id'] = $payment->getPublicId();
+            $data['gateway'] = \Crypt::encrypt($payment->getGateway());
 
             return $data;
         }
@@ -289,7 +290,7 @@ trait Authorize
 
         $params = ['id' => $publicId, 'hash' => $hash];
 
-        $callbackUrl = Route::getUrlWithPublicAuth('payment_callback', $params);
+        $callbackUrl = Route::getUrlWithPublicAuth('payment_callback_post', $params);
 
         return $callbackUrl;
     }

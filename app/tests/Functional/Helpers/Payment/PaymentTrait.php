@@ -9,8 +9,9 @@ use Tests\Functional\RequestResponseFlowTrait;
 
 trait PaymentTrait
 {
-    use PaymentHdfcTrait;
+    use PaymentAxisTrait;
     use PaymentAtomTrait;
+    use PaymentHdfcTrait;
 
     use RequestResponseFlowTrait
     {
@@ -353,6 +354,19 @@ trait PaymentTrait
 
         $request['url'] = $uri;
 
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackRedirect($url)
+    {
+        $request['method'] = 'GET';
+        $request['url'] = $url;
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackRequest($request)
+    {
         $response = $this->makeRequestParent($request);
 
         $content = $response->getContent();
@@ -382,6 +396,30 @@ trait PaymentTrait
         if ($callback)
         {
             $content = $this->getJsonContentFromResponse($response, $callback);
+
+            if (isset($content['gateway']) === false)
+            {
+                return $response;
+            }
+        }
+        else
+        {
+            // Has to be either redirect or a gateway form post.
+            // First check for normal html form post.
+            $ret = ((json_decode($content) === null) and
+                    (get_class($response) === 'Illuminate\Http\Response') and
+                    ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
+                    ($response->getStatusCode() === 200));
+
+            if ($ret === false)
+            {
+                // Now check for redirect
+                $ret = ((get_class($response) === 'Illuminate\Http\RedirectResponse') and
+                        ($response->getStatusCode() === 302));
+
+                if ($ret === false)
+                    return $response;
+            }
         }
 
         if (((isset($content['request']['method'])) and
@@ -389,6 +427,11 @@ trait PaymentTrait
             ($this->gateway === 'atom'))
         {
             return $this->runPaymentCallbackFlowAtom($response, $callback);
+        }
+
+        if ($this->gateway === 'axis')
+        {
+            return $this->runPaymentCallbackFlowAxis($response, $callback);
         }
 
         return $this->runPaymentCallbackFlowHdfc($response, $callback);
