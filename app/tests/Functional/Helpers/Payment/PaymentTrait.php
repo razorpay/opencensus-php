@@ -396,11 +396,30 @@ trait PaymentTrait
         if ($callback)
         {
             $content = $this->getJsonContentFromResponse($response, $callback);
-        }
 
-        if (isset($content['gateway']) === false)
+            if (isset($content['gateway']) === false)
+            {
+                return $response;
+            }
+        }
+        else
         {
-            return $response;
+            // Has to be either redirect or a gateway form post.
+            // First check for normal html form post.
+            $ret = ((json_decode($content) === null) and
+                    (get_class($response) === 'Illuminate\Http\Response') and
+                    ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
+                    ($response->getStatusCode() === 200));
+
+            if ($ret === false)
+            {
+                // Now check for redirect
+                $ret = ((get_class($response) === 'Illuminate\Http\RedirectResponse') and
+                        ($response->getStatusCode() === 302));
+
+                if ($ret === false)
+                    return $response;
+            }
         }
 
         if (((isset($content['request']['method'])) and
