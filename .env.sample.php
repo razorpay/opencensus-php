@@ -26,7 +26,7 @@ return array(
 
     'AXIS_GATEWAY_TEST_HASH_SECRET'         => 'random',
     'AXIS_GATEWAY_TEST_MERCHANT_ID'         => 'random',
-    'AXIS_GATEWAY_TEST_ACCESS_CODE'         => 'random',
+    'AXIS_GATEWAY_TEST_ACCESS_CODE'         => 'randompwd',
 
     'HDFC_MOCK'                 => true,
     'ATOM_MOCK'                 => true,
