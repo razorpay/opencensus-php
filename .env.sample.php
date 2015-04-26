@@ -30,7 +30,7 @@ return array(
 
     'HDFC_MOCK'                 => true,
     'ATOM_MOCK'                 => true,
-    'AXIS_MOCK'                 => false,
+    'AXIS_MOCK'                 => true,
 
     'MOCK_GATEWAY_SECRET'       => 'random_password',
 
