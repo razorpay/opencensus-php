@@ -189,9 +189,6 @@ trait PaymentTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('razorpay_payment_id', $content);
-        $this->assertEquals(1, count($content));
-
         return $content;
     }
 
