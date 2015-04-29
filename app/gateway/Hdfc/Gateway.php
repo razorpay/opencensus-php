@@ -206,8 +206,7 @@ class Gateway extends BaseGateway
 
     protected $bankAcsResponseRules = array(
         'PaRes'     => 'required',
-        'MD'        => 'required|numeric|digits_between:1,19',
-        'payment'       => 'required|array');
+        'MD'        => 'required|numeric|digits_between:1,19');
 
     /**
      * Either ENROLLED or NOT_ENROLLED
@@ -297,11 +296,12 @@ class Gateway extends BaseGateway
      */
     public function callback(array $input)
     {
-        validate($this->bankAcsResponseRules, $input);
+        validate($this->bankAcsResponseRules, $input['gateway']);
 
         $this->id = $input['payment']['id'];
 
-        $this->model = $this->repo->findByGatewayTransactionIdOrFail($input['MD']);
+        $this->model = $this->repo->findByGatewayTransactionIdOrFail(
+            $input['gateway']['MD']);
 
         $paymentId = $this->model->getPaymentId();
 

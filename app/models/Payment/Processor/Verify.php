@@ -15,8 +15,7 @@ trait Verify
         $payment = $this->retrieve($id);
 
         $data = array(
-            'payment' => $payment->toArray(),
-            'terminal' => $payment->terminal);
+            'payment' => $payment->toArray());
 
         try
         {
