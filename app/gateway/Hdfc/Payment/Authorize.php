@@ -281,9 +281,9 @@ trait Authorize
 
     protected function createAuthEnrolledRequestFields($input)
     {
-        $this->authEnrolledRequest['data']['paymentid'] = $input['MD'];
+        $this->authEnrolledRequest['data']['paymentid'] = $input['gateway']['MD'];
 
-        $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
+        $this->authEnrolledRequest['data']['PaRes'] = $input['gateway']['PaRes'];
     }
 
     protected function validateAuthNotEnrolledResponse()

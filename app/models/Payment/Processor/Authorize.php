@@ -75,7 +75,7 @@ trait Authorize
      *
      * @return Payment\Entity           Updated payment entity
      */
-    public function callback($id, $hash, array $input)
+    public function callback($id, $hash, array $gatewayInput)
     {
         $payment = $this->retrieve($id);
 
@@ -83,11 +83,12 @@ trait Authorize
         // This field is received back from bank acs.
         // Kinda weird! And it's always null.
         //
-        unset($input['csrf']);
+        unset($gatewayInput['csrf']);
 
         $this->verifyHash($hash, $payment->getPublicId());
 
         $input['payment'] = $payment->toArray();
+        $input['gateway'] = $gatewayInput;
 
         try
         {

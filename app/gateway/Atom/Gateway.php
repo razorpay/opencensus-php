@@ -74,7 +74,7 @@ class Gateway extends BaseGateway
         // \Log::info(json_encode($input, JSON_PRETTY_PRINT));
 
         // Get payment-id of the transaction
-        $paymentId = $input['mer_txn'];
+        $paymentId = $input['gateway']['mer_txn'];
 
         $payment = $input['payment'];
 
@@ -84,11 +84,11 @@ class Gateway extends BaseGateway
         $atom = Atom\Entity::findOrFail($payment['id']);
 
         // Set the data received from atom on atom payment entity
-        $atom->setCallbackData($input);
+        $atom->setCallbackData($input['gateway']);
 
         $this->validatePaymentIdReceived($paymentId, $payment);
 
-        $this->processPaymentResponse($input, $atom);
+        $this->processPaymentResponse($input['gateway'], $atom);
 
         return $this->getCallbackResponse($atom);
     }
