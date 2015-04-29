@@ -104,29 +104,13 @@ class Gateway extends BaseGateway
         $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
 
         $content = array(
-            'vpc_Version'       => 1,
             'vpc_Command'       => Command::CAPTURE,
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
             'vpc_Amount'        => $input['amount']
         );
 
-        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
-
-        $content['vpc_User'] = '';
-        $content['vpc_Password'] = '';
-
-        $content['vpc_SecureHash'] = $this->generateHash($content);
-
-        // $url = $this->getUrl() . '?' . http_build_query($content);
-
-        $request = array(
-            'url' => $this->getUrl(),
-            'content' => $content,
-            'method' => 'post');
-
-        // send the request and get response
-        $response = $this->postRequest($request);
+        $response = $this->postAmaTransactionRequest($content);
     }
 
     public function refund(array $input)
@@ -136,7 +120,6 @@ class Gateway extends BaseGateway
         $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
 
         $attributes = array(
-            'vpc_Version'       => 1,
             'vpc_Command'       => Axis\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
             'vpc_Currency'      => $input['refund']['currency'],
@@ -144,19 +127,58 @@ class Gateway extends BaseGateway
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
 
+        $response = $this->postAmaTransactionRequest($content);
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
+
+        $attributes = array(
+            'vpc_Command'       => Axis\Command::QUERY,
+            'vpc_Amount'        => $input['refund']['amount'],
+            'vpc_Currency'      => $input['refund']['currency'],
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
+        );
+
+        $response = $this->postAmaTransactionRequest($content);
+    }
+
+    protected function addAmaTransactionFields(array & $content)
+    {
+        $content['vpc_Version'] = 1;
+
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
+        $content['vpc_User'] = '';
+        $content['vpc_Password'] = '';
+
         $content['vpc_SecureHash'] = $this->generateHash($content);
+    }
 
-        // $url = $this->getUrl() . '?' . http_build_query($content);
-
+    protected function getAmaRequestArray()
+    {
         $request = array(
-            'url' => $this->getUrl(),
-            'content' => $content,
-            'method' => 'post');
+            'url'       => $this->getUrl(),
+            'content'   => $content,
+            'method'    => 'post');
+
+        return $request;
+    }
+
+    protected function postAmaTransactionRequest(array & $content)
+    {
+        $this->addAmaTransactionFields($content);
+
+        $request = $this->getAmaRequestArray();
 
         // send the request and get response
         $response = $this->postRequest($request);
+
+        return $response;
     }
 
     public function postRequest($request)
@@ -247,13 +269,16 @@ class Gateway extends BaseGateway
         $content['vpc_CardSecurityCode'] = '333';
     }
 
-    protected function getUrl()
+    protected function getUrl($type)
     {
-        $test = 'https://migs.mastercard.com.au/vpcpay';
+        $test = Url::DOMAIN;
 
-        $live = '';
+        $live = Url::DOMAIN;
 
         $url = ($this->mode === MODE::LIVE) ? $live : $test;
+
+        $type = strtoupper($type);
+        $url .= constant(__NAMESPACE__.'\Url::'.$type);
 
         return $url;
     }
