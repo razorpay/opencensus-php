@@ -47,6 +47,8 @@ class Gateway extends Base\Gateway
 
         $content = array_merge($attributes, $content);
 
+        $this->addTestCardDetailsInTestMode($content);
+
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
