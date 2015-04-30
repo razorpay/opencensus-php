@@ -24,18 +24,18 @@ return array(
     'HDFC_ID'                               => 'hdfc_id',
     'HDFC_PASSWORD'                         => 'hdfc_password',
 
-    'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'         => 'random',
-    'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'         => 'random',
-    'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'         => 'randompwd',
+    'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'    => 'random',
+    'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'    => 'random',
+    'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'    => 'randompwd',
 
-    'AXIS_GENIUS_GATEWAY_TEST_HASH_SECRET'       => 'random',
-    'AXIS_GENIUS_GATEWAY_TEST_MERCHANT_ID'       => 'random',
-    'AXIS_GENIUS_GATEWAY_TEST_ACCESS_CODE'       => 'randompwd',
+    'AXIS_GENIUS_GATEWAY_TEST_HASH_SECRET'  => 'random',
+    'AXIS_GENIUS_GATEWAY_TEST_MERCHANT_ID'  => 'random',
+    'AXIS_GENIUS_GATEWAY_TEST_ACCESS_CODE'  => 'randompwd',
 
     'HDFC_MOCK'                             => true,
     'ATOM_MOCK'                             => true,
-    'AXIS_MIGS_MOCK'                             => true,
-    'AXIS_GENIUS_MOCK'                           => true,
+    'AXIS_MIGS_MOCK'                        => true,
+    'AXIS_GENIUS_MOCK'                      => true,
 
     'MOCK_GATEWAY_SECRET'                   => 'random_password',
 

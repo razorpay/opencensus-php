@@ -148,8 +148,7 @@ class Gateway extends Base\Gateway
 
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
-        $content['vpc_User'] = '';
-        $content['vpc_Password'] = '';
+        $this->addAmaUserAndPassword($content, $input['terminal']);
     }
 
     protected function getAuthRequestArray($content)
@@ -254,6 +253,20 @@ class Gateway extends Base\Gateway
         {
             $content['vpc_Merchant'] = $input['terminal']['gateway_merchant_id'];
             $content['vpc_AccessCode'] = $input['terminal']['gateway_terminal_password'];
+        }
+    }
+
+    protected function addAmaUserAndPassword(array & $content, $terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $content['vpc_User'] = $this->config['test_ama_user'];
+            $content['vpc_Password'] = $this->config['test_ama_password'];
+        }
+        else
+        {
+            $content['vpc_User'] = $input['terminal']['gateway_merchant_id'];
+            $content['vpc_Password'] = $input['terminal']['gateway_terminal_password'];
         }
     }
 
