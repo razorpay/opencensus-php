@@ -87,7 +87,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\MockAxis\Server;
+        $server = new Gateway\Axis\Mock\Server;
 
         $url = $server->authorize($input);
 

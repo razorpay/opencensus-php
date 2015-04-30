@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\MockAxis;
+namespace Gateway\Axis\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;

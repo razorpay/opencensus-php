@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\MockAxis;
+namespace Gateway\Axis\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
