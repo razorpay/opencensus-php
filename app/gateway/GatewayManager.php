@@ -52,9 +52,12 @@ class GatewayManager extends \Illuminate\Support\Manager
     {
         $driver = ucfirst(studly_case($driver));
 
+        if ($mock !== '')
+            $driver = $driver . '\\' . $mock;
+
         // Constructs gateway class name in the format
         // 'Gateway\{Mock}{GatewayName}\Gateway'
-        $class = 'Gateway\\'.$mock.$driver.'\\'.'Gateway';
+        $class = 'Gateway\\'.$driver.'\\'.'Gateway';
 
         return new $class;
     }

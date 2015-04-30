@@ -1,12 +1,11 @@
 <?php
 
-namespace Gateway\MockHdfc;
+namespace Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Action;
-use Gateway\MockHdfc;
 use Models\Card;
 use ReflectionClass;
 use Requests;
@@ -113,7 +112,7 @@ class Gateway extends Hdfc\Gateway
         $mockGatewaysConfig = \Config::get('applications.mock_gateways');
         $secret = $mockGatewaysConfig['secret'];
 
-        $urlSegment = constant('Gateway\MockHdfc\Urls::'.$name);
+        $urlSegment = constant('Gateway\Hdfc\Mock\Urls::'.$name);
 
         $url = \Http\Route::getUrlWithAuth($urlSegment, 'rzp_test', $secret);
 

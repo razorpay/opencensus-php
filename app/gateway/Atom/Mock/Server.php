@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\MockAtom;
+namespace Gateway\Atom\Mock;
 
 use Models\Card;
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Atom;
-use Gateway\MockAtom;
+use Gateway\Atom\Mock;
 use Http\Route;
 use Models\Payment;
 

@@ -1,13 +1,11 @@
 <?php
 
-namespace Gateway\MockAxis;
+namespace Gateway\Axis\Mock;
 
 use Models\Card;
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Axis;
-use Gateway\MockAxis;
-use Http\Route;
 use Models\Payment;
 
 class Server

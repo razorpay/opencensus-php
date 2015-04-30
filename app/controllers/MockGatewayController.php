@@ -6,7 +6,7 @@ class MockGatewayController extends BaseController
     {
         parent::__construct();
 
-        $this->mockHdfcGatewayServer = new Gateway\MockHdfc\Server;
+        $this->mockHdfcGatewayServer = new Gateway\Hdfc\Mock\Server;
 
         $input = file_get_contents('php://input');
 
@@ -39,7 +39,7 @@ class MockGatewayController extends BaseController
 
     public function getAtomChooseOrg()
     {
-        $server = new Gateway\MockAtom\Server;
+        $server = new Gateway\Atom\Mock\Server;
 
         $input = Input::all();
 
@@ -51,7 +51,7 @@ class MockGatewayController extends BaseController
 
     public function postAtomInitPayment()
     {
-        $server = new Gateway\MockAtom\Server;
+        $server = new Gateway\Atom\Mock\Server;
 
         $input = Input::all();
 
@@ -60,7 +60,7 @@ class MockGatewayController extends BaseController
 
     public function postAtomRzpPayment()
     {
-        $server = new Gateway\MockAtom\Server;
+        $server = new Gateway\Atom\Mock\Server;
 
         $input = Input::all();
 
@@ -74,7 +74,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\MockAtom\Server;
+        $server = new Gateway\Atom\Mock\Server;
 
         list($url, $data) = $server->atomRzpPaymentPageSubmit($input);
 
@@ -87,7 +87,7 @@ class MockGatewayController extends BaseController
     {
         $input = Input::all();
 
-        $server = new Gateway\MockAxis\Server;
+        $server = new Gateway\Axis\Mock\Server;
 
         $url = $server->authorize($input);
 

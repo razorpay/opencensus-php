@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\MockHdfc;
+namespace Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment\Action;
-use Gateway\MockHdfc;
+use Gateway\Hdfc\Mock;
 use Models\Card;
 
 class Server
@@ -74,7 +74,7 @@ class Server
 
             default:
                 throw new Exception\LogicException(
-                    'MockHdfc: Action code not recognized. Action: ' . $this->data['action']);
+                    'Hdfc\Mock: Action code not recognized. Action: ' . $this->data['action']);
         }
 
         return $this->makeResponse($xml);

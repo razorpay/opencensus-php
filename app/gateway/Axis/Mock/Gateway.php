@@ -1,11 +1,10 @@
 <?php
 
-namespace Gateway\MockAxis;
+namespace Gateway\Axis\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\BaseGateway;
 use Gateway\Axis;
 use Models\Card;
 use Requests_Response;
