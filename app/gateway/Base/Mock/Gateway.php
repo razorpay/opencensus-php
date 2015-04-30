@@ -2,9 +2,9 @@
 
 namespace Gateway\Mock;
 
-use Gateway\BaseGateway;
+use Gateway\Base;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
     public function authorize(array $input)
     {

@@ -5,7 +5,6 @@ namespace Gateway\Atom\Mock;
 use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\BaseGateway;
 use Gateway\Atom;
 use Models\Card;
 use Requests_Response;
