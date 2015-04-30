@@ -1,6 +1,6 @@
 <?php
 
-$checkout = 'http://localhost:9000/dist';
+$checkout = 'https://checkout.razorpay.com';
 
 $protocol = 'http';
 
