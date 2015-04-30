@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Gateway\Axis;
+use Gateway\AxisMigs;
 use Models\Base\UniqueIdEntity;
 
 class CreateAxisGateway extends Migration

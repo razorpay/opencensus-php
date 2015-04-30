@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Axis\Mock;
+namespace Gateway\AxisMigs\Mock;
 
 use Models\Card;
 use Carbon\Carbon;
 use EE\Exception;
-use Gateway\Axis;
+use Gateway\AxisMigs;
 use Models\Payment;
 
 class Server
@@ -16,7 +16,7 @@ class Server
     {
         $this->request = \Request::getFacadeRoot();
 
-        $this->repo = new Axis\Repository;
+        $this->repo = new AxisMigs\Repository;
     }
 
     public function authorize($input)
@@ -61,7 +61,7 @@ class Server
 
         $this->addMessageAndResponseCode($content, $input);
 
-        $content['vpc_SecureHash'] = (new Axis\Gateway)->generateHash($content);
+        $content['vpc_SecureHash'] = (new AxisMigs\Gateway)->generateHash($content);
 
         $url = $input['vpc_ReturnURL'];
         $url .= '&' . http_build_query($content);

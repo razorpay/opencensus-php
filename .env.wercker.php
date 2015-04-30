@@ -24,20 +24,20 @@ return array(
     'HDFC_ID'                           => getenv('HDFC_ID'),
     'HDFC_PASSWORD'                     => getenv('HDFC_PASSWORD'),
 
-    'AXIS_GATEWAY_TEST_HASH_SECRET'     => getenv('AXIS_GATEWAY_TEST_HASH_SECRET'),
-    'AXIS_GATEWAY_TEST_MERCHANT_ID'     => getenv('AXIS_GATEWAY_TEST_MERCHANT_ID'),
-    'AXIS_GATEWAY_TEST_ACCESS_CODE'     => getenv('AXIS_GATEWAY_TEST_ACCESS_CODE'),
+    'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'     => getenv('AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'),
+    'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'     => getenv('AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'),
+    'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'     => getenv('AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'),
 
-    'GENIUS_GATEWAY_TEST_HASH_SECRET'   => 'random',
-    'GENIUS_GATEWAY_TEST_MERCHANT_ID'   => 'random',
-    'GENIUS_GATEWAY_TEST_ACCESS_CODE'   => 'randompwd',
+    'AXIS_GENIUS_GATEWAY_TEST_HASH_SECRET'   => 'random',
+    'AXIS_GENIUS_GATEWAY_TEST_MERCHANT_ID'   => 'random',
+    'AXIS_GENIUS_GATEWAY_TEST_ACCESS_CODE'   => 'randompwd',
 
     'MOCK_GATEWAY_SECRET'               => 'wercker_random_password',
 
     'HDFC_MOCK'                         => true,
     'ATOM_MOCK'                         => false,
-    'AXIS_MOCK'                         => true,
-    'GENIUS_MOCK'                       => true,
+    'AXIS_MIGS_MOCK'                         => true,
+    'AXIS_GENIUS_MOCK'                       => true,
 
     'EMAIL_MOCK'                        => true,
 

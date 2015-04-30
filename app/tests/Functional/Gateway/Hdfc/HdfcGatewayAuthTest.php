@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\HdfcGateway;
+namespace Tests\Functional\Gateway\Hdfc;
 
 /**
  * Tests all cards in cards.php to ensure they return expected response,

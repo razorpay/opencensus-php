@@ -97,18 +97,18 @@ class TerminalPicker
         }
         else if ($count >= 2)
         {
-            if (isset($gatewayTerms[Payment\Gateway::AXIS]) === true)
+            if (isset($gatewayTerms[Payment\Gateway::AXIS_MIGS]) === true)
             {
-                $terminal = $gatewayTerms[Payment\Gateway::AXIS];
+                $terminal = $gatewayTerms[Payment\Gateway::AXIS_MIGS];
             }
             else if ((isset($gatewayTerms[Payment\Gateway::HDFC]) === true) and
                      ($gatewayTerms[Payment\Gateway::HDFC]->isCardEnabled()))
             {
                 $terminal = $gatewayTerms[Payment\Gateway::HDFC];
             }
-            if (isset($gatewayTerms[Payment\Gateway::GENIUS]) === true)
+            if (isset($gatewayTerms[Payment\Gateway::AXIS_GENIUS]) === true)
             {
-                $terminal = $gatewayTerms[Payment\Gateway::GENIUS];
+                $terminal = $gatewayTerms[Payment\Gateway::AXIS_GENIUS];
             }
             else if ((isset($gatewayTerms[Payment\Gateway::ATOM]) === true) and
                      ($gatewayTerms[Payment\Gateway::ATOM]->isCardEnabled()))

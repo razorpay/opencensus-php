@@ -6,12 +6,12 @@ use Models\Terminal;
 
 class Shared
 {
-    const ATOM_RAZORPAY_TERMINAL = '1000AtomShared';
-    const AXIS_RAZORPAY_TERMINAL = '1000AxisShared';
+    const ATOM_RAZORPAY_TERMINAL        = '1000AtomShared';
+    const AXIS_MIGS_RAZORPAY_TERMINAL   = '1000AxisMigsTl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
-        self::AXIS_RAZORPAY_TERMINAL,
+        self::AXIS_MIGS_RAZORPAY_TERMINAL,
     );
 
     public static function isSharedTerminal($terminal)
@@ -32,7 +32,7 @@ class Shared
     {
         if ($method === 'card')
         {
-            $terminal = (new Repository)->find(self::AXIS_RAZORPAY_TERMINAL);
+            $terminal = (new Repository)->find(self::AXIS_MIGS_RAZORPAY_TERMINAL);
 
             if ($terminal !== null)
             {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Axis;
+namespace Gateway\AxisMigs;
 
 class Command
 {

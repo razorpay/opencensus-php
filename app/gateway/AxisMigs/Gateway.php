@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\Axis;
+namespace Gateway\AxisMigs;
 
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
-use Gateway\Axis;
+use Gateway\AxisMigs;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -58,7 +58,7 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $payment = (new Axis\Repository)->findByMerchantTxnRef(
+        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef(
             $input['gateway']['vpc_MerchTxnRef']);
 
         $this->verifySecretHash($input);
@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
     {
         return;
 
-        $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
+        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef($input['payment']['id']);
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
@@ -86,7 +86,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
+        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef($input['payment']['id']);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
 
@@ -97,7 +97,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
+        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef($input['payment']['id']);
 
         $content = $this->getPaymentVerifyRequestContent($input, $payment);
 
@@ -119,7 +119,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
         $content = array(
-            'vpc_Command'       => Axis\Command::QUERY,
+            'vpc_Command'       => AxisMigs\Command::QUERY,
             'vpc_Amount'        => $input['payment']['amount'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
@@ -131,7 +131,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentRefundRequestContent($input, $payment)
     {
         $content = array(
-            'vpc_Command'       => Axis\Command::REFUND,
+            'vpc_Command'       => AxisMigs\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
@@ -182,7 +182,7 @@ class Gateway extends Base\Gateway
 
     protected function getNewGatewayPaymentEntity()
     {
-        return new Axis\Entity;
+        return new AxisMigs\Entity;
     }
 
     protected function postAmaTransactionRequest(array & $content)
@@ -302,7 +302,7 @@ class Gateway extends Base\Gateway
     protected function loadGatewayConfig()
     {
         $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get('gateway.axis');
+        $this->config = $app['config']->get('gateway.axis_migs');
     }
 
     protected function getFormattedCardExpiryDate($input)

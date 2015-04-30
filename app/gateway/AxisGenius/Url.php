@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Genius;
+namespace Gateway\AxisGenius;
 
 class Url
 {

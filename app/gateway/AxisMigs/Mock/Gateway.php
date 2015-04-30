@@ -1,15 +1,15 @@
 <?php
 
-namespace Gateway\Axis\Mock;
+namespace Gateway\AxisMigs\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\Axis;
+use Gateway\AxisMigs;
 use Models\Card;
 use Requests_Response;
 
-class Gateway extends Axis\Gateway
+class Gateway extends AxisMigs\Gateway
 {
     public function authorize(array $input)
     {

@@ -12,25 +12,25 @@ return array(
     'available' => array(
         'hdfc',
         'atom',
-        'axis',
-        'genius'),
+        'axis_migs',
+        'axis_genius'),
 
-    'mock_hdfc'     => $_ENV['HDFC_MOCK'],
-    'mock_atom'     => $_ENV['ATOM_MOCK'],
-    'mock_axis'     => $_ENV['AXIS_MOCK'],
-    'mock_genius'   => $_ENV['GENIUS_MOCK'],
+    'mock_hdfc'             => $_ENV['HDFC_MOCK'],
+    'mock_atom'             => $_ENV['ATOM_MOCK'],
+    'mock_axis_migs'        => $_ENV['AXIS_MIGS_MOCK'],
+    'mock_axis_genius'      => $_ENV['AXIS_GENIUS_MOCK'],
 
     'mockhdfc_server' => false,
 
-    'axis' => array(
-        'test_hash_secret' => $_ENV['AXIS_GATEWAY_TEST_HASH_SECRET'],
-        'test_merchant_id' => $_ENV['AXIS_GATEWAY_TEST_MERCHANT_ID'],
-        'test_access_code' => $_ENV['AXIS_GATEWAY_TEST_ACCESS_CODE'],
+    'axis_migs' => array(
+        'test_hash_secret' => $_ENV['AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'],
+        'test_merchant_id' => $_ENV['AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'],
+        'test_access_code' => $_ENV['AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'],
     ),
 
-    'genius' => array(
-        'test_hash_secret' => $_ENV['GENIUS_GATEWAY_TEST_HASH_SECRET'],
-        'test_merchant_id' => $_ENV['GENIUS_GATEWAY_TEST_MERCHANT_ID'],
-        'test_access_code' => $_ENV['GENIUS_GATEWAY_TEST_ACCESS_CODE'],
+    'axis_genius' => array(
+        'test_hash_secret' => $_ENV['AXIS_GENIUS_GATEWAY_TEST_HASH_SECRET'],
+        'test_merchant_id' => $_ENV['AXIS_GENIUS_GATEWAY_TEST_MERCHANT_ID'],
+        'test_access_code' => $_ENV['AXIS_GENIUS_GATEWAY_TEST_ACCESS_CODE'],
     ),
 );
