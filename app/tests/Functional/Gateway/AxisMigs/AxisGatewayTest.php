@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\AxisGateway;
+namespace Tests\Functional\Gateway\AxisMigs;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;

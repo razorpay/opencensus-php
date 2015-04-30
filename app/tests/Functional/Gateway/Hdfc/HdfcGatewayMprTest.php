@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\HdfcGateway;
+namespace Tests\Functional\Gateway\Hdfc;
 
 use Carbon\Carbon;
 use Config;
