@@ -106,6 +106,10 @@ class TerminalPicker
             {
                 $terminal = $gatewayTerms[Payment\Gateway::HDFC];
             }
+            if (isset($gatewayTerms[Payment\Gateway::GENIUS]) === true)
+            {
+                $terminal = $gatewayTerms[Payment\Gateway::GENIUS];
+            }
             else if ((isset($gatewayTerms[Payment\Gateway::ATOM]) === true) and
                      ($gatewayTerms[Payment\Gateway::ATOM]->isCardEnabled()))
             {
@@ -145,7 +149,7 @@ class TerminalPicker
         $count = $terminals->count();
 
         // Max count can be 3 currently.
-        if ($count > 3)
+        if ($count > 4)
         {
             throw new Exception\LogicException(
                 'Terminals count not reasonable: ' . $count .

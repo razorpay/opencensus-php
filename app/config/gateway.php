@@ -12,13 +12,13 @@ return array(
     'available' => array(
         'hdfc',
         'atom',
-        'axis'),
+        'axis',
+        'genius'),
 
-    'mock_hdfc' => $_ENV['HDFC_MOCK'],
-
-    'mock_atom' => $_ENV['ATOM_MOCK'],
-
-    'mock_axis' => $_ENV['AXIS_MOCK'],
+    'mock_hdfc'     => $_ENV['HDFC_MOCK'],
+    'mock_atom'     => $_ENV['ATOM_MOCK'],
+    'mock_axis'     => $_ENV['AXIS_MOCK'],
+    'mock_genius'   => 'false',
 
     'mockhdfc_server' => false,
 

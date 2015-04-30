@@ -5,13 +5,13 @@ namespace Gateway\Axis;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\BaseGateway;
+use Gateway\Base;
 use Gateway\Axis;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
     public function __construct()
     {
@@ -78,12 +78,7 @@ class Gateway extends BaseGateway
 
         $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
 
-        $content = array(
-            'vpc_Command'       => Command::CAPTURE,
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
-            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
-            'vpc_Amount'        => $input['amount']
-        );
+        $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
         $response = $this->postAmaTransactionRequest($content);
     }
@@ -94,13 +89,7 @@ class Gateway extends BaseGateway
 
         $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
 
-        $attributes = array(
-            'vpc_Command'       => Axis\Command::REFUND,
-            'vpc_Amount'        => $input['refund']['amount'],
-            'vpc_Currency'      => $input['refund']['currency'],
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
-            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
-        );
+        $content = $this->getPaymentRefundRequestContent($input, $payment);
 
         $response = $this->postAmaTransactionRequest($content);
     }
@@ -111,15 +100,45 @@ class Gateway extends BaseGateway
 
         $payment = (new Axis\Repository)->findByMerchantTxnRef($input['payment']['id']);
 
-        $attributes = array(
+        $content = $this->getPaymentVerifyRequestContent($input, $payment);
+
+        $response = $this->postAmaTransactionRequest($content);
+    }
+
+    protected function getPaymentCaptureRequestContent($input, $payment)
+    {
+        $content = array(
+            'vpc_Command'       => Command::CAPTURE,
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
+            'vpc_Amount'        => $input['amount']
+        );
+
+        return $content;
+    }
+
+    protected function getPaymentVerifyRequestContent($input, $payment)
+    {
+        $content = array(
             'vpc_Command'       => Axis\Command::QUERY,
-            'vpc_Amount'        => $input['refund']['amount'],
-            'vpc_Currency'      => $input['refund']['currency'],
+            'vpc_Amount'        => $input['payment']['amount'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
 
-        $response = $this->postAmaTransactionRequest($content);
+        return $content;
+    }
+
+    protected function getPaymentRefundRequestContent($input, $payment)
+    {
+        $content = array(
+            'vpc_Command'       => Axis\Command::REFUND,
+            'vpc_Amount'        => $input['refund']['amount'],
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
+        );
+
+        return $content;
     }
 
     protected function addAmaTransactionFields(array & $content)
@@ -130,8 +149,6 @@ class Gateway extends BaseGateway
 
         $content['vpc_User'] = '';
         $content['vpc_Password'] = '';
-
-        $content['vpc_SecureHash'] = $this->generateHash($content);
     }
 
     protected function getAuthRequestArray($content)
@@ -147,7 +164,7 @@ class Gateway extends BaseGateway
     protected function getAmaRequestArray()
     {
         $request = array(
-            'url'       => $this->getUrl(),
+            'url'       => $this->getUrl('ama'),
             'content'   => $content,
             'method'    => 'post');
 
@@ -278,7 +295,7 @@ class Gateway extends BaseGateway
         $url = ($this->mode === MODE::LIVE) ? $live : $test;
 
         $type = strtoupper($type);
-        $url .= constant(__NAMESPACE__.'\Url::'.$type);
+        $url .= $this->getRelativeUrl($type);
 
         return $url;
     }
@@ -292,5 +309,10 @@ class Gateway extends BaseGateway
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 
         return $cardExp;
+    }
+
+    protected function getRelativeUrl($type)
+    {
+        return constant(__NAMESPACE__.'\Url::'.$type);
     }
 }

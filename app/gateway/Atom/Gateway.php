@@ -8,10 +8,10 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Trace\Trace;
 use Trace\TraceCode;
-use Gateway\BaseGateway;
+use Gateway\Base;
 use Gateway\Atom;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
     protected $paymentRequest = array(
         'type' => 'payment',
