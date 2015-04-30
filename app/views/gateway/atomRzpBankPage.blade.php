@@ -2,11 +2,13 @@
 <html>
   <head>
     <title>Razorpay Bank</title>
+    <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="cache-control" content="no-cache">
     <meta http-equiv="expires" content="0">
     <style>
+        img{max-width: 100%; height: auto;}
         body{font-family: sans; font-size: 14px; text-align: center; color: #414141; padding-top: 40px; line-height: 24px;}
         label{position: absolute; top: 0; left: 0; right: 0; height: 100%; line-height: 32px; padding-left: 30px;}
         input[type=button]{font-family: inherit; padding: 12px 20px; text-decoration: none; border-radius: 2px; border: 0; width: 124px; background: none; margin: 0 5px; color: #fff; cursor: pointer;}
