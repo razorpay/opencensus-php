@@ -50,9 +50,14 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function createGatewayDriver($driver, $mock)
     {
+        $driver = ucfirst(studly_case($driver));
+
+        if ($mock !== '')
+            $driver = $driver . '\\' . $mock;
+
         // Constructs gateway class name in the format
         // 'Gateway\{Mock}{GatewayName}\Gateway'
-        $class = 'Gateway\\'.$mock.ucfirst($driver).'\\'.'Gateway';
+        $class = 'Gateway\\'.$driver.'\\'.'Gateway';
 
         return new $class;
     }

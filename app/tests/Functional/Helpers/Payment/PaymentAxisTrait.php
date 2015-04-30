@@ -21,7 +21,7 @@ trait PaymentAxisTrait
 
         $gateway = $this->app['config']->get('gateway');
 
-        $mock = $gateway['mock_axis'];
+        $mock = $gateway['mock_axis_migs'];
 
         if ($mock)
         {
