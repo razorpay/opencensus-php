@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Axis\Mock;
+namespace Gateway\AxisMigs\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;

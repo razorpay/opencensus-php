@@ -1,9 +1,9 @@
 <?php
 
-namespace Gateway\Axis;
+namespace Gateway\AxisMigs;
 
 use EE\Error;
-use Gateway\Axis;
+use Gateway\AxisMigs;
 
 class Error
 {

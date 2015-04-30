@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Axis;
+namespace Gateway\AxisMigs;
 
 use Models\Base;
 
@@ -57,7 +57,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'pay';
 
-    protected $entity = 'axis';
+    protected $entity = 'axis_migs';
 
     public function setPaymentId($paymentId)
     {

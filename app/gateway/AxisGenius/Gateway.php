@@ -1,18 +1,18 @@
 <?php
 
-namespace Gateway\Genius;
+namespace Gateway\AxisGenius;
 
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Axis;
+use Gateway\AxisMigs;
 use Gateway\Base;
-use Gateway\Genius;
+use Gateway\AxisGenius;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Gateway extends Axis\Gateway
+class Gateway extends AxisMigs\Gateway
 {
     protected function getPaymentCaptureRequestContent($input, $payment)
     {
@@ -27,7 +27,7 @@ class Gateway extends Axis\Gateway
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
         $content = array(
-            'vpc_Command'       => Axis\Command::QUERY,
+            'vpc_Command'       => AxisMigs\Command::QUERY,
             'vpc_MerchTxnRef'   => $input['payment']['id'],
         );
 
@@ -75,6 +75,6 @@ class Gateway extends Axis\Gateway
     protected function loadGatewayConfig()
     {
         $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get('gateway.genius');
+        $this->config = $app['config']->get('gateway.axis_genius');
     }
 }

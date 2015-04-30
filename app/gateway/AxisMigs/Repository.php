@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Axis;
+namespace Gateway\AxisMigs;
 
 use EE\Exception;
 use Gateway\Atom;
