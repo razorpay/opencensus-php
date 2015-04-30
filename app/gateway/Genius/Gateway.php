@@ -23,78 +23,13 @@ class Gateway extends BaseGateway
 
     public function authorize(array $input)
     {
-        parent::authorize($input);
-
-        $payment = new Axis\Entity;
-
-        $payment->setPaymentId($input['payment']['id']);
-
-        $attributes = array(
-            'vpc_Command'               => Command::PAY,
-            'vpc_Amount'                => $input['payment']['amount'],
-            'vpc_Currency'              => 'INR',
-            'vpc_MerchTxnRef'           => $input['payment']['id'],
-        );
-
-        $payment->fill($attributes);
-
-        $payment->saveOrFail();
-
-        $expiry_month = $input['card']['expiry_month'];
-
-        if ($expiry_month < 10) $expiry_month = '0' . $expiry_month;
-
-        $cardExp = substr($input['card']['expiry_year'], 2,2) .
-                    $expiry_month;
-
-        $content = array(
-            'vpc_Version'               => '1',
-            'vpc_ReturnURL'             => $input['callbackUrl'],
-            'vpc_Locale'                => 'en',
-            'vpc_gateway'               => 'ssl',
-            'vpc_Card'                  => $input['card']['network'],
-            'vpc_CardNum'               => $input['card']['number'],
-            'vpc_CardExp'               => $cardExp,
-            'vpc_CardSecurityCode'      => $input['card']['cvv'],
-//            'vpc_OrderInfo'             => 'testinfo',
-        );
-
-        $content = array_merge($attributes, $content);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $content['vpc_Merchant'] = $this->config['test_merchant_id'];
-            $content['vpc_AccessCode'] = $this->config['test_access_code'];
-
-            $this->addTestCardDetailsInTestMode($content, $input);
-        }
-        else
-        {
-            $content['vpc_Merchant'] = $input['terminal']['gateway_merchant_id'];
-            $content['vpc_AccessCode'] = $input['terminal']['gateway_terminal_password'];
-        }
-
-        $content['vpc_SecureHash'] = $this->generateHash($content);
-
-        $request['url'] = $this->getUrl(Command::PAY);
-        $request['content'] = $content;
-        $request['method'] = 'post';
-
-        return $request;
+        return parent::authorize($input);
     }
 
     public function callback(array $input)
     {
-        $payment = (new Axis\Repository)->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
+        parent::callback($input);
 
-        $this->verifySecretHash($input);
-
-        $payment->fill($input);
-        $payment->saveOrFail();
-
-        $this->verifyPaymentResponse($input);
-
-        return;
     }
 
     public function capture(array $input)
@@ -106,11 +41,13 @@ class Gateway extends BaseGateway
         $content = array(
             'vpc_Command'       => Command::CAPTURE,
             'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_ReceiptNo'     => $payment['vpc_ReceiptNo'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
             'vpc_Amount'        => $input['amount']
         );
 
         $response = $this->postAmaTransactionRequest($content);
+        sd($response->getContent());
     }
 
     public function refund(array $input)
@@ -123,6 +60,7 @@ class Gateway extends BaseGateway
             'vpc_Command'       => Axis\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
             'vpc_Currency'      => $input['refund']['currency'],
+            'vpc_ReceiptNo'     => $payment['vpc_ReceiptNo'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
@@ -140,6 +78,7 @@ class Gateway extends BaseGateway
             'vpc_Command'       => Axis\Command::QUERY,
             'vpc_Amount'        => $input['refund']['amount'],
             'vpc_Currency'      => $input['refund']['currency'],
+            'vpc_ReceiptNo'     => $payment['vpc_ReceiptNo'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
@@ -149,12 +88,7 @@ class Gateway extends BaseGateway
 
     protected function addAmaTransactionFields(array & $content)
     {
-        $content['vpc_Version'] = 1;
-
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
-
-        $content['vpc_User'] = '';
-        $content['vpc_Password'] = '';
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
     }
@@ -271,9 +205,9 @@ class Gateway extends BaseGateway
 
     protected function getUrl($type)
     {
-        $test = Url::DOMAIN;
+        $test = Url::TEST_DOMAIN;
 
-        $live = Url::DOMAIN;
+        $live = Url::LIVE_DOMAIN;
 
         $url = ($this->mode === MODE::LIVE) ? $live : $test;
 

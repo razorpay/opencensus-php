@@ -13,6 +13,7 @@ class Channel
         self::KOTAK => array(
             Payment\Gateway::HDFC,
             Payment\Gateway::AXIS,
+            Payment\Gateway::GENIUS,
         ),
 
         self::ATOM => array(
