@@ -13,6 +13,8 @@ class BaseGateway
 
     protected $input;
 
+    protected $action;
+
     /**
      * Denotes if the gateway is a mock
      * @var boolean
@@ -27,16 +29,25 @@ class BaseGateway
     public function authorize(array $input)
     {
         $this->input = $input;
+        $this->action = Action::AUTHORIZE;
     }
 
     public function capture(array $input)
     {
         $this->input = $input;
+        $this->action = Action::CAPTURE;
     }
 
     public function refund(array $input)
     {
         $this->input = $input;
+        $this->action = Action::REFUND;
+    }
+
+    public function verify(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::VERIFY;
     }
 
     public function setTerminal($terminal)
