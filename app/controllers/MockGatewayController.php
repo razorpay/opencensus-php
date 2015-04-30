@@ -1,6 +1,6 @@
 <?php
 
-class MockHdfcController extends BaseController
+class MockGatewayController extends BaseController
 {
     public function __construct()
     {
