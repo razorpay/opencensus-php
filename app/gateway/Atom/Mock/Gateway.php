@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\MockAtom;
+namespace Gateway\Atom\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
