@@ -5,13 +5,13 @@ namespace Gateway\Genius;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\BaseGateway;
+use Gateway\Base;
 use Gateway\Genius;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
     public function __construct()
     {

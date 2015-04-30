@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway;
+namespace Gateway\Base;
 
 class Action
 {

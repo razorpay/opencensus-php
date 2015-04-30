@@ -5,13 +5,13 @@ namespace Gateway\Axis;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\BaseGateway;
+use Gateway\Base;
 use Gateway\Axis;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
     public function __construct()
     {

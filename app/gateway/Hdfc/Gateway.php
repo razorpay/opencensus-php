@@ -27,14 +27,14 @@ namespace Gateway\Hdfc;
 use Constants\Mode;
 use EE\Error;
 use EE\Exception;
-use Gateway\BaseGateway;
+use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
     use Payment\Enroll;
     use Payment\Authorize;

@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway;
+namespace Gateway\Base;
 
 use Constants\Mode;
 use EE\Exception;
 use Requests;
 use Trace;
 
-class BaseGateway
+class Gateway
 {
     protected $trace;
 
