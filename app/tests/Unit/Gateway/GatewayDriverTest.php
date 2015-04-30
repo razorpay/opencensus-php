@@ -11,7 +11,7 @@ class GatewayDriverTest extends TestCase
     public function testGatewayDriverCreation()
     {
         $class = $this->mockGatewayManagerFunctions(true, 'test', 'hdfc');
-        $this->assertEquals('Gateway\MockHdfc\Gateway', $class);
+        $this->assertEquals('Gateway\Hdfc\Mock\Gateway', $class);
 
         $class = $this->mockGatewayManagerFunctions(true, 'live', 'hdfc');
         $this->assertEquals('Gateway\Hdfc\Gateway', $class);

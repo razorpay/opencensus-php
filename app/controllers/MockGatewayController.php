@@ -6,7 +6,7 @@ class MockGatewayController extends BaseController
     {
         parent::__construct();
 
-        $this->mockHdfcGatewayServer = new Gateway\MockHdfc\Server;
+        $this->mockHdfcGatewayServer = new Gateway\Hdfc\Mock\Server;
 
         $input = file_get_contents('php://input');
 
