@@ -28,11 +28,16 @@ return array(
     'AXIS_GATEWAY_TEST_MERCHANT_ID'     => getenv('AXIS_GATEWAY_TEST_MERCHANT_ID'),
     'AXIS_GATEWAY_TEST_ACCESS_CODE'     => getenv('AXIS_GATEWAY_TEST_ACCESS_CODE'),
 
+    'GENIUS_GATEWAY_TEST_HASH_SECRET'   => 'random',
+    'GENIUS_GATEWAY_TEST_MERCHANT_ID'   => 'random',
+    'GENIUS_GATEWAY_TEST_ACCESS_CODE'   => 'randompwd',
+
     'MOCK_GATEWAY_SECRET'               => 'wercker_random_password',
 
     'HDFC_MOCK'                         => true,
     'ATOM_MOCK'                         => false,
     'AXIS_MOCK'                         => true,
+    'GENIUS_MOCK'                       => true,
 
     'EMAIL_MOCK'                        => true,
 

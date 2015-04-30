@@ -17,8 +17,7 @@ class Gateway extends Base\Gateway
     {
         parent::__construct();
 
-        $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get('gateway.axis');
+        $this->loadGatewayConfig();
     }
 
     public function authorize(array $input)
@@ -298,6 +297,12 @@ class Gateway extends Base\Gateway
         $url .= $this->getRelativeUrl($type);
 
         return $url;
+    }
+
+    protected function loadGatewayConfig()
+    {
+        $app = \App::getFacadeRoot();
+        $this->config = $app['config']->get('gateway.axis');
     }
 
     protected function getFormattedCardExpiryDate($input)

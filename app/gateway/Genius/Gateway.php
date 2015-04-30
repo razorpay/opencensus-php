@@ -14,14 +14,6 @@ use Trace\TraceCode;
 
 class Gateway extends Axis\Gateway
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get('gateway.axis');
-    }
-
     protected function getPaymentCaptureRequestContent($input, $payment)
     {
         $content = parent::getPaymentCaptureRequestContent($input, $payment);
@@ -78,5 +70,11 @@ class Gateway extends Axis\Gateway
         }
 
         return constant(__NAMESPACE__.'\Url::'.$type);
+    }
+
+    protected function loadGatewayConfig()
+    {
+        $app = \App::getFacadeRoot();
+        $this->config = $app['config']->get('gateway.genius');
     }
 }
