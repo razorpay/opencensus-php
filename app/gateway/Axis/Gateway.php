@@ -97,7 +97,6 @@ class Gateway extends BaseGateway
         $attributes = array(
             'vpc_Command'       => Axis\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
-            'vpc_Currency'      => $input['refund']['currency'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
@@ -113,8 +112,7 @@ class Gateway extends BaseGateway
 
         $attributes = array(
             'vpc_Command'       => Axis\Command::QUERY,
-            'vpc_Amount'        => $input['refund']['amount'],
-            'vpc_Currency'      => $input['refund']['currency'],
+            'vpc_Amount'        => $input['payment']['amount'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
