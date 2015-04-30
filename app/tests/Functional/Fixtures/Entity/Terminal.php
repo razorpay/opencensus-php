@@ -47,7 +47,7 @@ class Terminal extends Base
 
     public function createSharedAxisTerminal()
     {
-        $termId = \Models\Terminal\Shared::AXIS_RAZORPAY_TERMINAL;
+        $termId = \Models\Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
 
         $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 

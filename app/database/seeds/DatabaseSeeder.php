@@ -240,7 +240,7 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => Terminal\Shared::AXIS_RAZORPAY_TERMINAL,
+                'id'                    => Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => 'axis',
                 'card'                  => '1',
