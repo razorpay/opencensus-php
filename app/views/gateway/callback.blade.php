@@ -5,7 +5,7 @@
 <body>
 <script>
 
-function createCookie(name, value, days){
+function c(name, value, days){
   if (days) {
     var date = new Date();
     date.setTime(date.getTime()+(days*24*60*60*1000));
@@ -24,10 +24,10 @@ var data = {{json_encode($data);}};
 
 if(window.CheckoutBridge){
 	if(typeof CheckoutBridge.oncomplete == 'function'){
-		CheckoutBridge.oncomplete(data);
+		CheckoutBridge.oncomplete(JSON.stringify(data));
 	}
 } else {
-	createCookie('rzp', JSON.stringify(data));
+	c('rzp', JSON.stringify(data));
 	if(window.opener && typeof window.opener.postMessage == 'function'){
 		window.opener.postMessage(data, '*');
 	}

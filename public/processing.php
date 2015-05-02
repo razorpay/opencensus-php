@@ -20,7 +20,7 @@ function autosubmit(data){
   document.getElementById('rzp-dcform').submit();
 }
 
-function createCookie(name, value, days){
+function c(name, value, days){
   if (days) {
     var date = new Date();
     date.setTime(date.getTime()+(days*24*60*60*1000));
@@ -55,7 +55,7 @@ if(!window.CheckoutBridge){
     receive_cookie = readCookie('rzp-receive')
     if(receive_cookie){
       handleMessage(JSON.parse(receive_cookie));
-      createCookie('rzp-receive', '', -1)
+      c('rzp-receive', '', -1)
     }
   }, 500)
 }
@@ -201,7 +201,7 @@ if(!window.CheckoutBridge){
     source: 'popup',
     loaded: true
   }
-  createCookie('rzp', JSON.stringify(msg));
+  c('rzp', JSON.stringify(msg));
   if(window.opener && typeof window.opener.postMessage == 'function'){
     window.opener.postMessage(msg, '*');
   }
