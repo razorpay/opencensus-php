@@ -276,11 +276,21 @@ class Server
 
         $pos = strpos($referer, $host);
 
-        if ($pos !== 0)
+        if ($pos === 0)
         {
-            throw new Exception\LogicException(
-                'Unexpected referer value. Referer: ' . $referer);
+            return;
         }
+
+        $urlParts = parse_url($referer);
+        $baseUrl = $urlParts['host'];
+
+        if (strpos($baseUrl, 'razorpay.com') !== false)
+        {
+            return;
+        }
+
+        throw new Exception\LogicException(
+            'Unexpected referer value. Referer: ' . $referer);
     }
 
     protected function getBankPageUrl()
