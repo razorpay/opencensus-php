@@ -22,9 +22,15 @@ function createCookie(name, value, days){
 var data = {{json_encode($data);}};
 // Callback data //
 
-createCookie('rzp', JSON.stringify(data));
-if(window.opener && typeof window.opener.postMessage == 'function'){
-	window.opener.postMessage(data, '*');
+if(window.CheckoutBridge){
+	if(typeof CheckoutBridge.oncomplete == 'function'){
+		CheckoutBridge.oncomplete(data);
+	}
+} else {
+	createCookie('rzp', JSON.stringify(data));
+	if(window.opener && typeof window.opener.postMessage == 'function'){
+		window.opener.postMessage(data, '*');
+	}
 }
 </script>
 
