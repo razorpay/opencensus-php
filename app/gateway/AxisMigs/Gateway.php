@@ -60,39 +60,51 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef(
-            $input['gateway']['vpc_MerchTxnRef']);
+        $payment = (new AxisMigs\Repository)->findByMerchantTxnRefAndCommand(
+            $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
         $this->verifySecretHash($input);
 
-        $payment->fill($input);
+        $payment->fill($input['gateway']);
         $payment->saveOrFail();
 
-        $this->verifyPaymentResponse($input);
-
-        return;
+        $this->verifyPaymentCallbackResponse($input);
     }
 
     public function capture(array $input)
     {
-        return;
-
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef($input['payment']['id']);
+        $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
+                                                $input['payment']['id']);
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
-        $response = $this->postAmaTransactionRequest($content);
+        $response = $this->postAmaTransactionRequest($content, $input);
+
+        parse_str($response->body, $content);
+
+        $payment = $this->createGatewayPaymentEntity($content);
+
+        $this->verifyAmaTransactionResponse($content);
     }
 
     public function refund(array $input)
     {
         parent::refund($input);
 
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef($input['payment']['id']);
+        $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
+                                                $input['payment']['id']);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
 
-        $response = $this->postAmaTransactionRequest($content);
+        $response = $this->postAmaTransactionRequest($content, $input);
+
+        parse_str($response->body, $content);
+
+        $content['refund_id'] = $input['refund']['amount'];
+
+        $payment = $this->createGatewayPaymentEntity($content);
+
+        $this->verifyAmaTransactionResponse($content);
     }
 
     public function verify(array $input)
@@ -103,7 +115,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentVerifyRequestContent($input, $payment);
 
-        $response = $this->postAmaTransactionRequest($content);
+        $response = $this->postAmaTransactionRequest($content, $input);
     }
 
     protected function getPaymentCaptureRequestContent($input, $payment)
@@ -142,7 +154,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function addAmaTransactionFields(array & $content)
+    protected function addAmaTransactionFields(array & $content, $input)
     {
         $content['vpc_Version'] = 1;
 
@@ -161,7 +173,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getAmaRequestArray()
+    protected function getAmaRequestArray($content)
     {
         $request = array(
             'url'       => $this->getUrl('ama'),
@@ -179,6 +191,8 @@ class Gateway extends Base\Gateway
         $payment->fill($attributes);
 
         $payment->saveOrFail();
+
+        return $payment;
     }
 
     protected function getNewGatewayPaymentEntity()
@@ -186,11 +200,11 @@ class Gateway extends Base\Gateway
         return new AxisMigs\Entity;
     }
 
-    protected function postAmaTransactionRequest(array & $content)
+    protected function postAmaTransactionRequest(array & $content, $input)
     {
-        $this->addAmaTransactionFields($content);
+        $this->addAmaTransactionFields($content, $input);
 
-        $request = $this->getAmaRequestArray();
+        $request = $this->getAmaRequestArray($content);
 
         // send the request and get response
         $response = $this->postRequest($request);
@@ -270,12 +284,27 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifyPaymentResponse($input)
+    protected function verifyPaymentCallbackResponse($input)
     {
         if ((isset($input['gateway']['vpc_TxnResponseCode']) === true) and
             ($input['gateway']['vpc_TxnResponseCode'] === '0'))
         {
             return; // Payment succeeds
+        }
+
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    null,
+                    $input['gateway']['vpc_Message']);
+    }
+
+    protected function verifyAmaTransactionResponse($content)
+    {
+        if ((isset($content['vpc_TxnResponseCode']) === true) and
+            ($input['vpc_TxnResponseCode'] === '0'))
+        {
+            return;
         }
 
         // Payment fails, throw exception
