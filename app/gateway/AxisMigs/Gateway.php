@@ -226,7 +226,7 @@ class Gateway extends Base\Gateway
 
     public function generateHash($content)
     {
-        $md5HashData = $this->config['test_hash_secret'];
+        $hashString = $this->config['test_hash_secret'];
 
         ksort($content);
 
@@ -238,16 +238,20 @@ class Gateway extends Base\Gateway
             //
             if (strlen($value) > 0)
             {
-                $md5HashData .= $value;
+                $hashString .= $value;
             }
         }
 
-        return strtoupper(md5($md5HashData));
+        return $this->getHashOfString($hashString);
+    }
+
+    protected function getHashOfString($str)
+    {
+        return strtoupper(md5($str));
     }
 
     protected function verifySecretHash($input)
     {
-        unset($input['payment']);
         $hash = $input['gateway']['vpc_SecureHash'];
         unset($input['gateway']['vpc_SecureHash']);
 
@@ -338,7 +342,7 @@ class Gateway extends Base\Gateway
 
         $live = Url::DOMAIN;
 
-        $url = ($this->mode === MODE::LIVE) ? $live : $test;
+        $url = $this->getUrlDomain();
 
         $type = strtoupper($type);
         $url .= $this->getRelativeUrl($type);
@@ -361,6 +365,11 @@ class Gateway extends Base\Gateway
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 
         return $cardExp;
+    }
+
+    protected function getUrlDomain()
+    {
+        return ($this->mode === MODE::LIVE) ? $live : $test;
     }
 
     protected function getRelativeUrl($type)

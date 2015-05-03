@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\AxisMigs\Mock;
+namespace Gateway\AxisGenius\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
-use Gateway\AxisMigs;
+use Gateway\AxisGenius;
 use Requests_Response;
 
-class Gateway extends AxisMigs\Gateway
+class Gateway extends AxisGenius\Gateway
 {
     public function authorize(array $input)
     {

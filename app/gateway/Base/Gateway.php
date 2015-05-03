@@ -101,4 +101,9 @@ class Gateway
 
         return $response;
     }
+
+    protected function getNamespace()
+    {
+        return substr(get_called_class(), 0, strrpos(get_called_class(), "\\"));
+    }
 }

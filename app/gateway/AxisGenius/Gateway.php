@@ -44,7 +44,7 @@ class Gateway extends AxisMigs\Gateway
         return $content;
     }
 
-    protected function addAmaTransactionFields(array & $content)
+    protected function addAmaTransactionFields(array & $content, $input)
     {
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
@@ -55,11 +55,16 @@ class Gateway extends AxisMigs\Gateway
     {
         parent::addMerchantIdAndAccessCode($content, $terminal);
 
-        if ($this->action === Base\Gateway\Action::PAY)
+        if ($this->action === Base\Action::AUTHORIZE)
         {
             $content['vpc_MerchantId'] = $content['vpc_Merchant'];
             unset($content['vpc_Merchant']);
         }
+    }
+
+    protected function getUrlDomain()
+    {
+        return ($this->mode === MODE::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
     }
 
     protected function getRelativeUrl($type)
@@ -76,5 +81,10 @@ class Gateway extends AxisMigs\Gateway
     {
         $app = \App::getFacadeRoot();
         $this->config = $app['config']->get('gateway.axis_genius');
+    }
+
+    protected function getHashOfString($str)
+    {
+        return strtoupper(hash('sha256', $str, false));
     }
 }
