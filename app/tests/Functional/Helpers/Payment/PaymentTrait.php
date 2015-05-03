@@ -463,6 +463,9 @@ trait PaymentTrait
 
     protected function makeRequestAndGetFormData($url, $method, $headers = [], $data = [], $options = [])
     {
+        if (isset($options['timeout']) === false)
+            $options['timeout'] = 30;
+
         $response = Requests::$method($url, $headers, $data, $options);
 
         list ($uri, $method, $values) = $this->getFormDataFromResponse($response->body, $url);

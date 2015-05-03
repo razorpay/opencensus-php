@@ -34,8 +34,7 @@ class Gateway
         if (self::isValidGateway($gateway) === false)
         {
             throw new Exception\LogicException(
-                'Unknown gateway. Terminal Id: ' . $terminal->getId() .
-                ' Gateway: ' . $terminal->getGateway());
+                'Unknown gateway. Gateway: ' . $gateway);
         }
     }
 }

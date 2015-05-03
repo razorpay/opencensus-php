@@ -47,6 +47,8 @@ class Gateway extends Base\Gateway
 
         $content = array_merge($attributes, $content);
 
+        $this->addTestCardDetailsInTestMode($content);
+
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
@@ -58,39 +60,53 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef(
-            $input['gateway']['vpc_MerchTxnRef']);
+        $payment = (new AxisMigs\Repository)->findByMerchantTxnRefAndCommand(
+            $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
         $this->verifySecretHash($input);
 
-        $payment->fill($input);
+        $payment->fill($input['gateway']);
         $payment->saveOrFail();
 
-        $this->verifyPaymentResponse($input);
-
-        return;
+        $this->verifyPaymentCallbackResponse($input);
     }
 
     public function capture(array $input)
     {
-        return;
+        parent::capture($input);
 
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef($input['payment']['id']);
+        $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
+            $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
-        $response = $this->postAmaTransactionRequest($content);
+        $response = $this->postAmaTransactionRequest($content, $input);
+
+        parse_str($response->body, $content);
+
+        $payment = $this->createGatewayPaymentEntity($content);
+
+        $this->verifyAmaTransactionResponse($content);
     }
 
     public function refund(array $input)
     {
         parent::refund($input);
 
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef($input['payment']['id']);
+        $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
+                                $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
 
-        $response = $this->postAmaTransactionRequest($content);
+        $response = $this->postAmaTransactionRequest($content, $input);
+
+        parse_str($response->body, $content);
+
+        $content['refund_id'] = $input['refund']['amount'];
+
+        $payment = $this->createGatewayPaymentEntity($content);
+
+        $this->verifyAmaTransactionResponse($content);
     }
 
     public function verify(array $input)
@@ -101,7 +117,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentVerifyRequestContent($input, $payment);
 
-        $response = $this->postAmaTransactionRequest($content);
+        $response = $this->postAmaTransactionRequest($content, $input);
     }
 
     protected function getPaymentCaptureRequestContent($input, $payment)
@@ -140,14 +156,13 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function addAmaTransactionFields(array & $content)
+    protected function addAmaTransactionFields(array & $content, $input)
     {
         $content['vpc_Version'] = 1;
 
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
-        $content['vpc_User'] = '';
-        $content['vpc_Password'] = '';
+        $this->addAmaUserAndPassword($content, $input['terminal']);
     }
 
     protected function getAuthRequestArray($content)
@@ -160,9 +175,10 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getAmaRequestArray()
+    protected function getAmaRequestArray($content)
     {
         $request = array(
+            'action'    => $this->action,
             'url'       => $this->getUrl('ama'),
             'content'   => $content,
             'method'    => 'post');
@@ -178,6 +194,8 @@ class Gateway extends Base\Gateway
         $payment->fill($attributes);
 
         $payment->saveOrFail();
+
+        return $payment;
     }
 
     protected function getNewGatewayPaymentEntity()
@@ -185,11 +203,11 @@ class Gateway extends Base\Gateway
         return new AxisMigs\Entity;
     }
 
-    protected function postAmaTransactionRequest(array & $content)
+    protected function postAmaTransactionRequest(array & $content, $input)
     {
-        $this->addAmaTransactionFields($content);
+        $this->addAmaTransactionFields($content, $input);
 
-        $request = $this->getAmaRequestArray();
+        $request = $this->getAmaRequestArray($content);
 
         // send the request and get response
         $response = $this->postRequest($request);
@@ -255,7 +273,21 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifyPaymentResponse($input)
+    protected function addAmaUserAndPassword(array & $content, $terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $content['vpc_User'] = $this->config['test_ama_user'];
+            $content['vpc_Password'] = $this->config['test_ama_password'];
+        }
+        else
+        {
+            $content['vpc_User'] = $input['terminal']['gateway_merchant_id'];
+            $content['vpc_Password'] = $input['terminal']['gateway_terminal_password'];
+        }
+    }
+
+    protected function verifyPaymentCallbackResponse($input)
     {
         if ((isset($input['gateway']['vpc_TxnResponseCode']) === true) and
             ($input['gateway']['vpc_TxnResponseCode'] === '0'))
@@ -268,6 +300,21 @@ class Gateway extends Base\Gateway
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     null,
                     $input['gateway']['vpc_Message']);
+    }
+
+    protected function verifyAmaTransactionResponse($content)
+    {
+        if ((isset($content['vpc_TxnResponseCode']) === true) and
+            ($content['vpc_TxnResponseCode'] === '0'))
+        {
+            return;
+        }
+
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    null,
+                    $content['vpc_Message']);
     }
 
     protected function addTestCardDetailsInTestMode(array & $content)
