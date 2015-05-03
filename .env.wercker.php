@@ -35,7 +35,7 @@ return array(
     'MOCK_GATEWAY_SECRET'                   => 'wercker_random_password',
 
     'HDFC_MOCK'                             => true,
-    'ATOM_MOCK'                             => false,
+    'ATOM_MOCK'                             => true,
     'AXIS_MIGS_MOCK'                        => true,
     'AXIS_GENIUS_MOCK'                      => true,
 
