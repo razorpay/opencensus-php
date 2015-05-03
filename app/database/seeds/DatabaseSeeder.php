@@ -246,7 +246,21 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_axis_migs',
                 'gateway_terminal_id'   => 'shared_terminal_axis_migs',
-                'gateway_terminal_password' => Crypt::encrypt('demo_account_axis__migs_terminal_pass'),
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_axis_migs_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'axis_genius',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'demo_merchant_axis_genius',
+                'gateway_terminal_id'   => 'shared_terminal_axis_genius',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_axis_genius_terminal_pass'),
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
