@@ -27,6 +27,8 @@ return array(
     'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'    => 'random',
     'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'    => 'random',
     'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'    => 'randompwd',
+    'AXIS_MIGS_GATEWAY_TEST_AMA_USER'       => 'RAZORANDOM',
+    'AXIS_MIGS_GATEWAY_TEST_AMA_PASSWORD'   => 'randompwd',
 
     'AXIS_GENIUS_GATEWAY_TEST_HASH_SECRET'  => 'random',
     'AXIS_GENIUS_GATEWAY_TEST_MERCHANT_ID'  => 'random',
