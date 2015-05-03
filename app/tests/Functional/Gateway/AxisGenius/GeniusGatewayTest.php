@@ -15,16 +15,16 @@ class GeniusGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_axis_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_axis_genius_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->gateway = 'genius';
+        $this->gateway = 'axis';
     }
 
     public function testPayment()
     {
-        $this->markTestIncomplete();
+//        $this->markTestIncomplete();
         $payment = $this->doAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
