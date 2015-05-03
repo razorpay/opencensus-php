@@ -50,7 +50,7 @@ class Server
             'vpc_Message'           => 'Approved',
             'vpc_ReceiptNo'         => '511415585968',
             'vpc_RiskOverallResult' => 'ACC',
-            'vpc_TransactionNo'     => '11000' . random_integer(5),
+            'vpc_TransactionNo'     => $this->generateTransactionNo(),
             'vpc_TxnResponseCode'   => '0',
             'vpc_VerSecurityLevel'  => '06',
             'vpc_VerStatus'         => 'M',
@@ -71,7 +71,56 @@ class Server
 
     public function capture(array $input)
     {
-        ;
+        $payment = $this->getGatewayPaymentEntity($input);
+
+        $content = array(
+            'vpc_AcqResponseCode'   => '00',
+            'vpc_Amount'            => $input['vpc_Amount'],
+            'vpc_AuthorisedAmount'  => $input['vpc_Amount'],
+            'vpc_BatchNo'           => '20150503',
+            'vpc_CapturedAmount'    => $input['vpc_Amount'],
+            'vpc_Card'              => 'MC',
+            'vpc_Command'           => 'capture',
+            'vpc_Locale'            => 'en_US',
+            'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
+            'vpc_Merchant'          => $input['vpc_Merchant'],
+            'vpc_Message'           => 'Approved',
+            'vpc_ReceiptNo'         => $payment['vpc_ReceiptNo'],
+            'vpc_RefundedAmount'    => '0',
+            'vpc_ShopTransactionNo' => $input['vpc_TransNo'],
+            'vpc_TransactionNo'     => $this->generateTransactionNo(),
+            'vpc_TxnResponseCode'   => '0',
+            'vpc_Version'           => '1',
+        );
+
+        return $this->prepareResponse($content);
+    }
+
+    public function refund($input)
+    {
+        $payment = $this->getGatewayPaymentEntity($input);
+
+        $content = array(
+            'vpc_AcqResponseCode'   => '00',
+            'vpc_Amount'            => $input['vpc_Amount'],
+            'vpc_AuthorisedAmount'  => $input['vpc_Amount'],
+            'vpc_BatchNo'           => '20150503',
+            'vpc_CapturedAmount'    => $input['vpc_Amount'],
+            'vpc_Card'              => 'MC',
+            'vpc_Command'           => 'capture',
+            'vpc_Locale'            => 'en_US',
+            'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
+            'vpc_Merchant'          => $input['vpc_Merchant'],
+            'vpc_Message'           => 'Approved',
+            'vpc_ReceiptNo'         => $input['vpc_ReceiptNo'],
+            'vpc_RefundedAmount'    => '0',
+            'vpc_ShopTransactionNo' => $input['vpc_TransNo'],
+            'vpc_TransactionNo'     => $this->generateTransactionNo(),
+            'vpc_TxnResponseCode'   => '0',
+            'vpc_Version'           => '1',
+        );
+
+        return $this->prepareResponse($content);
     }
 
     protected function checkReferer()
@@ -93,6 +142,11 @@ class Server
         }
     }
 
+    protected function getGatewayPaymentEntity($input)
+    {
+        return (new AxisMigs\Repository)->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
+    }
+
     protected function addMessageAndResponseCode(array & $content, array $input)
     {
         $content['vpc_Message'] = 'Accepted';
@@ -105,16 +159,16 @@ class Server
         }
     }
 
-    protected function getBankPageUrl()
+    protected function prepareResponse($content)
     {
-        ;
-    }
+        $body = http_build_query($content);
+        $response = \Response::make($body);
 
-    protected function generateToken()
-    {
-        $token = \Models\Base\UniqueIdEntity::generateUniqueId();
+        $response->headers->set('Content-Type', 'text/plain;charset=iso-8859-1');
+        $response->headers->set('Cache-Control', 'no-cache');
+        $response->headers->set('Pragma', 'no-cache');
 
-        return $token;
+        return $response;
     }
 
     public function setInput($input)
@@ -130,5 +184,10 @@ class Server
         }
 
         return $this->validator;
+    }
+
+    protected function generateTransactionNo()
+    {
+        return '11000' . random_integer(5);
     }
 }

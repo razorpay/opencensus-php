@@ -73,6 +73,8 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
+        parent::capture($input);
+
         $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
             $input['payment']['id'], Command::PAY);
 
@@ -176,6 +178,7 @@ class Gateway extends Base\Gateway
     protected function getAmaRequestArray($content)
     {
         $request = array(
+            'action'    => $this->action,
             'url'       => $this->getUrl('ama'),
             'content'   => $content,
             'method'    => 'post');
