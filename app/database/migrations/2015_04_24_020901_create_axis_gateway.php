@@ -23,10 +23,10 @@ class CreateAxisGateway extends Migration
             $table->increments('id');
 
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
-            $table->string('vpc_Command', 10);
             $table->integer('vpc_Amount');
-            $table->char('vpc_Currency', 3);
-
+            $table->char('vpc_AcqResponseCode', 3)->nullable();
+            $table->char('vpc_Command', 7);
+            $table->char('vpc_Currency', 3)->nullable();
             $table->char('vpc_MerchTxnRef', 14)->nullable();
             $table->char('vpc_3DSECI', 2)->nullable();
             $table->char('vpc_3DSXID', 28)->nullable();
@@ -36,6 +36,7 @@ class CreateAxisGateway extends Migration
             $table->char('vpc_BatchNo', 8)->nullable();
             $table->char('vpc_Card', 2)->nullable();
             $table->char('vpc_ReceiptNo', 12)->nullable();
+            $table->char('vpc_ShopTransactionNo', 19)->nullable();
             $table->char('vpc_TransactionNo', 19)->nullable();
             $table->char('vpc_TxnResponseCode', 1)->nullable();
             $table->char('vpc_VerToken', 28)->nullable();

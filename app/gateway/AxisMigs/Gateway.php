@@ -74,7 +74,7 @@ class Gateway extends Base\Gateway
     public function capture(array $input)
     {
         $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
-                                                $input['payment']['id']);
+            $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
@@ -302,7 +302,7 @@ class Gateway extends Base\Gateway
     protected function verifyAmaTransactionResponse($content)
     {
         if ((isset($content['vpc_TxnResponseCode']) === true) and
-            ($input['vpc_TxnResponseCode'] === '0'))
+            ($content['vpc_TxnResponseCode'] === '0'))
         {
             return;
         }
@@ -311,7 +311,7 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     null,
-                    $input['gateway']['vpc_Message']);
+                    $content['vpc_Message']);
     }
 
     protected function addTestCardDetailsInTestMode(array & $content)
