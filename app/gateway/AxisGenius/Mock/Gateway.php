@@ -13,7 +13,7 @@ class Gateway extends AxisGenius\Gateway
     {
         $request = parent::authorize($input);
 
-        $url = \Http\Route::getUrlWithPublicAuth('mockaxis_payment');
+        $url = \Http\Route::getUrlWithPublicAuth('mock_axis_genius_payment');
         $request['url'] = $url;
 
         return $request;

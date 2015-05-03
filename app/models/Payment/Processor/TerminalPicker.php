@@ -16,7 +16,7 @@ class TerminalPicker
         $this->validateCount($terminals, $payment->merchant);
 
         $terminal = $this->pickOneTerminal($payment, $terminals);
-
+//$terminal = null;
         if ($terminal === null)
         {
             $terminal = Terminal\Shared::getSharedTerminal($payment->getMethod());

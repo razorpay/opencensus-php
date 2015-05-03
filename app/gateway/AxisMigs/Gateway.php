@@ -252,7 +252,7 @@ class Gateway extends Base\Gateway
 
     protected function verifySecretHash($input)
     {
-        $hash = $input['gateway']['vpc_SecureHash'];
+        $hash = strtoupper($input['gateway']['vpc_SecureHash']);
         unset($input['gateway']['vpc_SecureHash']);
 
         $generatedHash = $this->generateHash($input['gateway']);
@@ -369,7 +369,7 @@ class Gateway extends Base\Gateway
 
     protected function getUrlDomain()
     {
-        return ($this->mode === MODE::LIVE) ? $live : $test;
+        return Url::DOMAIN;
     }
 
     protected function getRelativeUrl($type)

@@ -92,6 +92,7 @@ final class Route
         'mockatom_rzp_payment'              => ['post',     'gateway/mockanb/payment',                  'MockGatewayController@postAtomRzpPayment'              ],
         'mockatom_rzp_payment_submit'       => ['post',     'gateway/mockanb/payment/submit',           'MockGatewayController@postAtomRzpPaymentSubmit'        ],
         'mockaxis_payment'                  => ['post',     'gateway/mockaxis/payment',                 'MockGatewayController@postAxisPayment'                 ],
+        'mock_axis_genius_payment'          => ['post',     'gateway/mockaxisgenius/payment',           'MockGatewayController@postAxisGeniusPayment'           ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
     );
@@ -107,6 +108,7 @@ final class Route
         'mockatom_rzp_payment',
         'mockatom_rzp_payment_submit',
         'mockaxis_payment',
+        'mock_axis_genius_payment',
     );
 
     public static $private = array(

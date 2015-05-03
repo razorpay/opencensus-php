@@ -93,4 +93,15 @@ class MockGatewayController extends BaseController
 
         return Redirect::to($url);
     }
+
+    public function postAxisGeniusPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\AxisGenius\Mock\Server;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
 }

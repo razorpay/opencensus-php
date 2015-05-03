@@ -21,9 +21,7 @@ class Server
 
     public function authorize($input)
     {
-        $validator = $this->getValidator();
-
-        $validator->validateInput('auth', $input);
+        $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
         $date = Carbon::today('Asia/Kolkata')->format('Ymd');
@@ -46,7 +44,6 @@ class Server
             'vpc_Currency'          => $input['vpc_Currency'],
             'vpc_Locale'            => $input['vpc_Locale'],
             'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
-            'vpc_Merchant'          => $input['vpc_Merchant'],
             'vpc_Message'           => 'Approved',
             'vpc_ReceiptNo'         => '511415585968',
             'vpc_RiskOverallResult' => 'ACC',
@@ -59,9 +56,11 @@ class Server
             'vpc_Version'           => '1',
         );
 
+        $this->addVpcMerchant($content, $input);
+
         $this->addMessageAndResponseCode($content, $input);
 
-        $content['vpc_SecureHash'] = (new AxisMigs\Gateway)->generateHash($content);
+        $content['vpc_SecureHash'] = $this->generateHash($content);
 
         $url = $input['vpc_ReturnURL'];
         $url .= '&' . http_build_query($content);
@@ -83,11 +82,11 @@ class Server
             'vpc_Command'           => 'capture',
             'vpc_Locale'            => 'en_US',
             'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
-            'vpc_Merchant'          => $input['vpc_Merchant'],
             'vpc_Message'           => 'Approved',
+            'vpc_Merchant'          => $input['vpc_Merchant'],
             'vpc_ReceiptNo'         => $payment['vpc_ReceiptNo'],
             'vpc_RefundedAmount'    => '0',
-            'vpc_ShopTransactionNo' => $input['vpc_TransNo'],
+            'vpc_ShopTransactionNo' => $payment['vpc_TransactionNo'],
             'vpc_TransactionNo'     => $this->generateTransactionNo(),
             'vpc_TxnResponseCode'   => '0',
             'vpc_Version'           => '1',
@@ -171,12 +170,24 @@ class Server
         return $response;
     }
 
+    protected function addVpcMerchant(array & $content, $input)
+    {
+        $content['vpc_Merchant'] = $input['vpc_Merchant'];
+    }
+
+    protected function validateAuthorizeInput($input)
+    {
+        $validator = $this->getValidator();
+
+        $validator->validateInput('auth', $input);
+    }
+
     public function setInput($input)
     {
         $this->input = $input;
     }
 
-    public function getValidator()
+    protected function getValidator()
     {
         if ($this->validator === null)
         {
@@ -184,6 +195,11 @@ class Server
         }
 
         return $this->validator;
+    }
+
+    protected function generateHash($content)
+    {
+        return (new AxisMigs\Gateway)->generateHash($content);
     }
 
     protected function generateTransactionNo()
