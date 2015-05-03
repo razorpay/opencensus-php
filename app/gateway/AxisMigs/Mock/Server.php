@@ -112,7 +112,7 @@ class Server
             'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
             'vpc_Merchant'          => $input['vpc_Merchant'],
             'vpc_Message'           => 'Approved',
-            'vpc_ReceiptNo'         => $input['vpc_ReceiptNo'],
+            'vpc_ReceiptNo'         => $payment['vpc_ReceiptNo'],
             'vpc_RefundedAmount'    => '0',
             'vpc_ShopTransactionNo' => $input['vpc_TransNo'],
             'vpc_TransactionNo'     => $this->generateTransactionNo(),

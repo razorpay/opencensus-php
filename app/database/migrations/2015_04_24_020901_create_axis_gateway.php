@@ -45,6 +45,7 @@ class CreateAxisGateway extends Migration
             $table->char('vpc_VerStatus', 1)->nullable();
             $table->string('vpc_Message')->nullable();
 
+            $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');

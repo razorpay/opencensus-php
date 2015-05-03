@@ -94,7 +94,7 @@ class Gateway extends Base\Gateway
         parent::refund($input);
 
         $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
-                                                $input['payment']['id']);
+                                $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
 
