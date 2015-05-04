@@ -112,6 +112,11 @@ class RefundTest extends TestCase
         $this->startTest($this->payment['public_id'], 0);
     }
 
+    public function testRefundWithSpacedAmount()
+    {
+        $this->startTest($this->payment['public_id'], ' 100');
+    }
+
     public function testFetchRefundById()
     {
         $payment = $this->fixtures->create('payment:captured');
