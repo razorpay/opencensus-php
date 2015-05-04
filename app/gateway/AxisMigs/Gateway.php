@@ -82,7 +82,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->postAmaTransactionRequest($content, $input);
 
-        parse_str($response->body, $content);
+        $content = $this->getAmaTxnResponseContent($response, $input);
 
         $payment = $this->createGatewayPaymentEntity($content);
 
@@ -100,7 +100,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->postAmaTransactionRequest($content, $input);
 
-        parse_str($response->body, $content);
+        $content = $this->getAmaTxnResponseContent($response, $input);
 
         $content['refund_id'] = $input['refund']['amount'];
 
@@ -222,6 +222,13 @@ class Gateway extends Base\Gateway
         $this->response = $this->sendGatewayRequest($request);
 
         return $this->response;
+    }
+
+    protected function getAmaTxnResponseContent($response)
+    {
+        parse_str($response->body, $content);
+
+        return $content;
     }
 
     public function generateHash($content)

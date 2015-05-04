@@ -48,7 +48,7 @@ class Gateway extends AxisMigs\Gateway
     {
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
-        $content['vpc_SecureHash'] = $this->generateHash($content);
+        $content['SecureHash'] = $this->generateHash($content);
     }
 
     protected function addMerchantIdAndAccessCode(array & $content, $terminal)
@@ -86,5 +86,24 @@ class Gateway extends AxisMigs\Gateway
     protected function getHashOfString($str)
     {
         return strtoupper(hash('sha256', $str, false));
+    }
+
+    protected function getAmaTxnResponseContent($response)
+    {
+        $content = parent::getAmaTxnResponseContent($response);
+
+        $content['vpc_Command'] = $this->getAmaTransactionCommand();
+
+        return $content;
+    }
+
+    protected function getAmaTransactionCommand()
+    {
+        $command = $this->action;
+
+        if ($command === Base\Action::VERIFY)
+            $command = AxisMigs\Command::QUERYDR;
+
+        return $command;
     }
 }
