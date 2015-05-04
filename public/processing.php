@@ -20,17 +20,7 @@ function autosubmit(data){
   document.getElementById('rzp-dcform').submit();
 }
 
-if (window.addEventListener) {
-  var callback = function(message){
-    handleMessage(message.data);
-  }
-  window.addEventListener('message', callback, false);
-}
-else {
-  window.attachEvent('onmessage', callback);
-}
-
-function createCookie(name, value, days){
+function c(name, value, days){
   if (days) {
     var date = new Date();
     date.setTime(date.getTime()+(days*24*60*60*1000));
@@ -51,18 +41,24 @@ function readCookie(name){
   return null;
 }
 
-// remove cookie
-// TODO cookie with unique keys, so that one tab doesn't interfere another
-
-var csData = {};
-
-var intervalID = setInterval(function(){
-  receive_cookie = readCookie('rzp-receive')
-  if(receive_cookie){
-    handleMessage(JSON.parse(receive_cookie));
-    createCookie('rzp-receive', '', -1)
+if(!window.CheckoutBridge){
+  if (window.addEventListener) {
+    var callback = function(message){
+      handleMessage(message.data);
+    }
+    window.addEventListener('message', callback, false);
   }
-}, 500)
+  else {
+    window.attachEvent('onmessage', callback);
+  }
+  var intervalID = setInterval(function(){
+    receive_cookie = readCookie('rzp-receive')
+    if(receive_cookie){
+      handleMessage(JSON.parse(receive_cookie));
+      c('rzp-receive', '', -1)
+    }
+  }, 500)
+}
 
 function handleMessage(data){
   if(typeof data == 'string'){
@@ -200,14 +196,16 @@ function handleMessage(data){
 </div>
 
 <script>
-  msg = {
+if(!window.CheckoutBridge){
+  var msg = {
     source: 'popup',
     loaded: true
   }
-  createCookie('rzp', JSON.stringify(msg));
+  c('rzp', JSON.stringify(msg));
   if(window.opener && typeof window.opener.postMessage == 'function'){
     window.opener.postMessage(msg, '*');
   }
+}
 </script>
 </body>
 </html>
