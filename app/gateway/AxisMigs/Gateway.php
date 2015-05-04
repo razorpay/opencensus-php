@@ -217,7 +217,8 @@ class Gateway extends Base\Gateway
 
     public function postRequest($request)
     {
-//        $request['options'] = $this->getRequestOptions();
+        $options['timeout'] = 30;
+        $request['options'] = $options;
 
         $this->response = $this->sendGatewayRequest($request);
 
