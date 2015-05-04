@@ -327,6 +327,7 @@ class Gateway extends Base\Gateway
         $str = $this->buildGetQueryString($request['content']);
         $request['url'] .= '?'.$str;
         $request['content'] = [];
+        $request['method'] = 'get';
         // echo $request['url'];die();
 
         $this->response = $this->sendGatewayRequest($request);

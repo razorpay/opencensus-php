@@ -55,7 +55,7 @@ class MockGatewayController extends BaseController
 
         $input = Input::all();
 
-        return $server->initiateAtomPayment($input);
+        return $server->authorize($input);
     }
 
     public function postAtomRzpPayment()

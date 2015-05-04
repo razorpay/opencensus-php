@@ -57,12 +57,6 @@ class Gateway
 
     public function setMode($mode)
     {
-        // if (($mode === Mode::LIVE) and
-        //     ($this->mock === true))
-        // {
-        //     throw new Exception\LogicException('Cannot mock a gateway in live mode');
-        // }
-
         $this->mode = $mode;
     }
 

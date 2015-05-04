@@ -1,38 +1,64 @@
 <?php
 
-namespace Gateway\Mock;
+namespace Gateway\Base\Mock;
 
-use Gateway\Base;
+use Requests_Response;
 
-class Gateway extends Base\Gateway
+trait GatewayTrait
 {
-    public function authorize(array $input)
+    protected function sendGatewayRequest($request)
     {
-        ;
+        // Although we reset the url, it's not being used currently.
+        // $request['url'] = $this->makeMockRequestUrl($request);
+
+        // Redirect the request internally
+        $serverResponse = $this->callGatewayRequestFunctionInternally($request);
+
+        return $this->prepareInternalResponse($serverResponse);
     }
 
-    public function refund(array $input)
+    protected function callGatewayRequestFunctionInternally($request)
     {
-        ;
+        $ns = $this->getNamespace();
+        $class = $ns.'\Server';
+        $server = new $class;
+
+        if ($request['method'] === 'post')
+        {
+            $input = $request['content'];
+        }
+        else if ($request['method'] === 'get')
+        {
+            $url = $request['url'];
+            $parts = parse_url($url);
+
+            parse_str($parts['query'], $input);
+        }
+
+        $server->setInput($request['content']);
+
+        $action = $request['action'];
+        $response = $server->$action($input);
+
+        return $response;
     }
 
-    public function capture(array $input)
+    protected function prepareInternalResponse($serverResponse)
     {
-        ;
-    }
+        $response = new Requests_Response();
 
-    public function auth(array $input)
-    {
-        ;
-    }
+        $response->headers = $serverResponse->headers->all();
 
-    public function setTerminal($terminal)
-    {
-        ;
-    }
+        foreach ($response->headers as $key => &$value)
+        {
+            $value = implode(';', $value);
+        }
 
-    public function setMode($mode)
-    {
-        ;
+        $response->body = $serverResponse->getContent();
+        $response->status_code = $serverResponse->getStatusCode();
+        $response->success = true;
+        // @todo: add url to response var
+
+        return $response;
     }
 }

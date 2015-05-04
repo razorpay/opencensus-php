@@ -42,7 +42,7 @@ class Server
         return $data;
     }
 
-    public function initiateAtomPayment($input)
+    public function authorize($input)
     {
         $tempTxnId = random_integer(9);
         $token = $this->generateToken();
@@ -179,7 +179,7 @@ class Server
         return array($merchantCallbackUrl, $data);
     }
 
-    public function verifyPayment($input)
+    public function verify($input)
     {
         $id = $input['merchanttxnid'];
         $merchantId = $input['merchantid'];

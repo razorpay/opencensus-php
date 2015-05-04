@@ -4,15 +4,15 @@ namespace Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
 use EE\Exception;
+use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Action;
-use Models\Card;
 use ReflectionClass;
-use Requests;
-use Requests_Response;
 
 class Gateway extends Hdfc\Gateway
 {
+    use Base\Mock\GatewayTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -38,25 +38,6 @@ class Gateway extends Hdfc\Gateway
 
             return $this->prepareInternalResponse($serverResponse);
         }
-    }
-
-    protected function prepareInternalResponse($serverResponse)
-    {
-        $response = new Requests_Response();
-
-        $response->headers = $serverResponse->headers->all();
-
-        foreach ($response->headers as $key => &$value)
-        {
-            $value = implode(';', $value);
-        }
-
-        $response->body = $serverResponse->getContent();
-        $response->status_code = $serverResponse->getStatusCode();
-        $response->success = true;
-        // @todo: add url to response var
-
-        return $response;
     }
 
     protected function callGatewayRequestFunctionInternally($requestVar)
