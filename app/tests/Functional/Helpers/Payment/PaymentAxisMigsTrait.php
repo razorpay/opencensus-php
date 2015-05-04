@@ -7,13 +7,9 @@ use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use Tests\Functional\TestCase;
 
-trait PaymentAxisTrait
+trait PaymentAxisMigsTrait
 {
-    /**
-     * Runs payment callback flow for atom net-banking transactions
-     * @param  array $response
-     */
-    protected function runPaymentCallbackFlowAxis($response, &$callback = null)
+    protected function runPaymentCallbackFlowAxisMigs($response, &$callback = null)
     {
         $content = $response->getContent();
 

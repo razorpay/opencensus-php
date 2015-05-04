@@ -19,12 +19,12 @@ class GeniusGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->gateway = 'axis';
+        $this->gateway = 'axis_genius';
     }
 
     public function testPayment()
     {
-//        $this->markTestIncomplete();
+        $this->markTestIncomplete();
         $payment = $this->doAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);

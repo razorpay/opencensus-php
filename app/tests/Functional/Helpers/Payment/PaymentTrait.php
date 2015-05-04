@@ -9,7 +9,7 @@ use Tests\Functional\RequestResponseFlowTrait;
 
 trait PaymentTrait
 {
-    use PaymentAxisTrait;
+    use PaymentAxisMigsTrait;
     use PaymentAtomTrait;
     use PaymentHdfcTrait;
 
@@ -18,7 +18,7 @@ trait PaymentTrait
         makeRequest as makeRequestParent;
     }
 
-    protected $gateway = 'hdfc';
+    protected $gateway = null;
 
     protected function doAuthAndCapturePayment($payment = null)
     {
@@ -390,6 +390,8 @@ trait PaymentTrait
     {
         $content = $response->getContent();
 
+        $gateway = null;
+
         if ($callback)
         {
             $content = $this->getJsonContentFromResponse($response, $callback);
@@ -398,6 +400,8 @@ trait PaymentTrait
             {
                 return $response;
             }
+
+            $gateway = \Crypt::decrypt($content['gateway']);
         }
         else
         {
@@ -419,19 +423,24 @@ trait PaymentTrait
             }
         }
 
-        if (((isset($content['request']['method'])) and
-             ($content['request']['method'] === 'get')) or
-            ($this->gateway === 'atom'))
+        return $this->runPaymentCallbackFlowForGateway($response, $callback, $gateway);
+    }
+
+    protected function runPaymentCallbackFlowForGateway($response, &$callback = null, $gateway = null)
+    {
+        if ($gateway === null)
         {
-            return $this->runPaymentCallbackFlowAtom($response, $callback);
+            $gateway = $this->gateway;
         }
 
-        if ($this->gateway === 'axis')
+        if ($gateway === null)
         {
-            return $this->runPaymentCallbackFlowAxis($response, $callback);
+            $gateway = 'hdfc';
         }
 
-        return $this->runPaymentCallbackFlowHdfc($response, $callback);
+        $func = 'runPaymentCallbackFlow'.studly_case($gateway);
+
+        return $this->$func($response, $callback);
     }
 
     protected function getIdFromUri($uri)
