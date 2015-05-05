@@ -76,6 +76,9 @@ function handleMessage(data){
 
 </script>
 <style>
+  body{
+    background: #fff;
+  }
   .rzp-loader {
     display: block;
     position: absolute;
