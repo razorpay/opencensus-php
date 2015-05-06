@@ -12,8 +12,9 @@ class Channel
     public static $gateways = array(
         self::KOTAK => array(
             Payment\Gateway::HDFC,
-            Payment\Gateway::AXIS,
-            Payment\Gateway::GENIUS,
+            Payment\Gateway::AXIS_MIGS,
+            Payment\Gateway::AXIS_GENIUS,
+            Payment\Gateway::KOTAK
         ),
 
         self::ATOM => array(
