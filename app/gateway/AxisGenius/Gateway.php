@@ -111,4 +111,9 @@ class Gateway extends AxisMigs\Gateway
     {
         return new AxisGenius\Entity;
     }
+
+    protected function getRepo()
+    {
+        return new AxisGenius\Repository;
+    }
 }

@@ -60,7 +60,7 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRefAndCommand(
+        $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
         $this->verifySecretHash($input);
@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
             $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
@@ -93,7 +93,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
                                 $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
@@ -113,7 +113,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef($input['payment']['id']);
+        $payment = $this->getRepo()->findByMerchantTxnRef($input['payment']['id']);
 
         $content = $this->getPaymentVerifyRequestContent($input, $payment);
 
@@ -201,6 +201,11 @@ class Gateway extends Base\Gateway
     protected function getNewGatewayPaymentEntity()
     {
         return new AxisMigs\Entity;
+    }
+
+    protected function getRepo()
+    {
+        return new AxisMigs\Repository;
     }
 
     protected function postAmaTransactionRequest(array & $content, $input)
