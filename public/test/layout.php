@@ -26,7 +26,7 @@ require('vars.php');
             'handler': function (transaction) {
                 alert("You have successfully purchased Tron Legacy");
             },
-            'protocol': 'https',
+            'protocol': '<?= $protocol ?>',
             'hostname': '<?= $hostname ?>',
             'prefill': {
                 'name': 'Harshil Mathur',
