@@ -27,6 +27,8 @@ class AxisGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
     }
 
     public function testFailPayment()

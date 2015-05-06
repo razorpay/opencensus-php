@@ -24,10 +24,11 @@ class GeniusGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $this->markTestIncomplete();
         $payment = $this->doAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
     }
 
     public function testFailPayment()
