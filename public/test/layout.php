@@ -26,7 +26,7 @@ require('vars.php');
             'handler': function (transaction) {
                 alert("You have successfully purchased Tron Legacy \n transaction id: " + transaction.razorpay_payment_id);
             },
-            'protocol': 'https',
+            'protocol': '<?= $protocol ?>',
             'hostname': '<?= $hostname ?>',
             'prefill': {
                 'name': 'Harshil Mathur',

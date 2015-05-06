@@ -120,6 +120,11 @@ class PublicEntity extends UniqueIdEntity
 
     protected static function stripSign(& $id)
     {
+        if (static::getSign() === '')
+        {
+            return true;
+        }
+
         $delimiter = static::getDelimiter();
 
         if (strpos($id, static::$sign . $delimiter) === false)

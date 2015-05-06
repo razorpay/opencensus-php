@@ -56,6 +56,10 @@ class Service extends Base\Service
                 $ns = 'Models\Merchant\BankAccount';
                 break;
 
+            case 'iin':
+                $ns = 'Models\Card\IIN';
+                break;
+
             default:
                 $ns = 'Models\\'.ucfirst($entity);
         }
