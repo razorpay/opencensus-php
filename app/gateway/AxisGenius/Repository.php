@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\AxisMigs;
+namespace Gateway\AxisGenius;
 
 use EE\Exception;
 use Gateway\Atom;
@@ -10,7 +10,7 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'AxisMigs';
+    protected $entity = 'AxisGenius';
 
     public function findByMerchantTxnRef($merchantTxnRef)
     {
