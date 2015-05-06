@@ -26,7 +26,7 @@ return [
         ],
         'gateway' => 'axis_migs',
         'terminal_id' => '1000AxisMigsTl',
-        'signed' => '0',
+        'signed' => false,
         'verified' => NULL,
         'entity' => 'payment',
     ],

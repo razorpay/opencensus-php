@@ -26,7 +26,7 @@ return [
         ],
         'gateway' => 'axis_genius',
         'terminal_id' => '1000AxisGenius',
-        'signed' => '0',
+        'signed' => false,
         'verified' => NULL,
         'entity' => 'payment',
     ],

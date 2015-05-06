@@ -302,6 +302,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::AUTO_CAPTURED];
     }
 
+    public function getSignedAttribute()
+    {
+        return (bool) $this->attributes[self::SIGNED];
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()
