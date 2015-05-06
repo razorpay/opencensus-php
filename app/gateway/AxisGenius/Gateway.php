@@ -106,4 +106,9 @@ class Gateway extends AxisMigs\Gateway
 
         return $command;
     }
+
+    protected function getNewGatewayPaymentEntity()
+    {
+        return new AxisGenius\Entity;
+    }
 }
