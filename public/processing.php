@@ -52,7 +52,7 @@ if(!window.CheckoutBridge){
     window.attachEvent('onmessage', callback);
   }
   var intervalID = setInterval(function(){
-    receive_cookie = readCookie('rzp-receive')
+    receive_cookie = readCookie('rzp-receive');
     if(receive_cookie){
       handleMessage(JSON.parse(receive_cookie));
       c('rzp-receive', '', -1)
