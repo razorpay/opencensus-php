@@ -115,6 +115,11 @@ class TerminalPicker
             {
                 $terminal = $gatewayTerms[Payment\Gateway::ATOM];
             }
+            else if ((isset($gatewayTerms[Payment\Gateway::KOTAK]) === true) and
+                     ($gatewayTerms[Payment\Gateway::KOTAK]->isCardEnabled()))
+            {
+                $terminal = $gatewayTerms[Payment\Gateway::ATOM];
+            }
             else
             {
                 return;

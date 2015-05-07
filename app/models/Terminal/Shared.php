@@ -9,11 +9,13 @@ class Shared
     const ATOM_RAZORPAY_TERMINAL        = '1000AtomShared';
     const AXIS_MIGS_RAZORPAY_TERMINAL   = '1000AxisMigsTl';
     const AXIS_GENIUS_RAZORPAY_TERMINAL = '1000AxisGenius';
+    const KOTAK_RAZORPAY_TERMINAL       = '1000KotakTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
         self::AXIS_MIGS_RAZORPAY_TERMINAL,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL,
+        self::KOTAK_RAZORPAY_TERMINAL,
     );
 
     public static function isSharedTerminal($terminal)
@@ -34,16 +36,25 @@ class Shared
     {
         $terminal = null;
 
+        $repo = new Repository;
+
         if ($method === 'card')
         {
-            $terminal = (new Repository)->find(self::AXIS_MIGS_RAZORPAY_TERMINAL);
+            $terminal = $repo->find(self::AXIS_MIGS_RAZORPAY_TERMINAL);
 
             if ($terminal !== null)
             {
                 return $terminal;
             }
 
-            $terminal = (new Repository)->find(self::AXIS_GENIUS_RAZORPAY_TERMINAL);
+            $terminal = $repo->find(self::AXIS_GENIUS_RAZORPAY_TERMINAL);
+
+            if ($terminal !== null)
+            {
+                return $terminal;
+            }
+
+            $terminal = $repo->find(self::KOTAK_RAZORPAY_TERMINAL);
 
             if ($terminal !== null)
             {
@@ -52,7 +63,7 @@ class Shared
         }
 
         {
-            $terminal = (new Repository)->findOrFail(self::ATOM_RAZORPAY_TERMINAL);
+            $terminal = $repo->findOrFail(self::ATOM_RAZORPAY_TERMINAL);
         }
 
         return $terminal;
