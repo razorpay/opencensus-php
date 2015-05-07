@@ -41,6 +41,8 @@ class Gateway extends Base\Gateway
     use Payment\Support;
     use Payment\Inquiry;
 
+    protected $gateway = 'hdfc';
+
     /**
      * App payment id
      * @var string

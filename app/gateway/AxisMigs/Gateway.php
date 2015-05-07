@@ -13,12 +13,7 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->loadGatewayConfig();
-    }
+    protected $gateway = 'axis_migs';
 
     public function authorize(array $input)
     {
@@ -237,27 +232,6 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    public function generateHash($content)
-    {
-        $hashString = $this->config['test_hash_secret'];
-
-        ksort($content);
-
-        foreach($content as $key => $value)
-        {
-            //
-            // create the md5 input and URL leaving
-            // out any fields that have no value
-            //
-            if (strlen($value) > 0)
-            {
-                $hashString .= $value;
-            }
-        }
-
-        return $this->getHashOfString($hashString);
-    }
-
     protected function getHashOfString($str)
     {
         return strtoupper(md5($str));
@@ -351,22 +325,12 @@ class Gateway extends Base\Gateway
 
     protected function getUrl($type)
     {
-        $test = Url::DOMAIN;
-
-        $live = Url::DOMAIN;
-
         $url = $this->getUrlDomain();
 
         $type = strtoupper($type);
         $url .= $this->getRelativeUrl($type);
 
         return $url;
-    }
-
-    protected function loadGatewayConfig()
-    {
-        $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get('gateway.axis_migs');
     }
 
     protected function getFormattedCardExpiryDate($input)

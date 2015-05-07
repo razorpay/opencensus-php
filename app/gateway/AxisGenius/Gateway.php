@@ -14,6 +14,8 @@ use Trace\TraceCode;
 
 class Gateway extends AxisMigs\Gateway
 {
+    protected $gateway = 'axis_genius';
+
     protected function getPaymentCaptureRequestContent($input, $payment)
     {
         $content = parent::getPaymentCaptureRequestContent($input, $payment);
@@ -75,12 +77,6 @@ class Gateway extends AxisMigs\Gateway
         }
 
         return constant(__NAMESPACE__.'\Url::'.$type);
-    }
-
-    protected function loadGatewayConfig()
-    {
-        $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get('gateway.axis_genius');
     }
 
     protected function getHashOfString($str)

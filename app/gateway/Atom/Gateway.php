@@ -13,6 +13,8 @@ use Gateway\Atom;
 
 class Gateway extends Base\Gateway
 {
+    protected $gateway = 'atom';
+
     protected $paymentRequest = array(
         'type' => 'payment',
         'fields' => array('ttype', 'prodid', 'amt', 'txncurr', 'txnscamt',
