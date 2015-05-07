@@ -23,6 +23,9 @@ class CreateAxisGateway extends Migration
             $table->increments('id');
 
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
+
+            $table->boolean('genius')->default(0);
+
             $table->integer('vpc_Amount');
             $table->char('vpc_AcqResponseCode', 3)->nullable();
             $table->char('vpc_Command', 7);
@@ -50,6 +53,8 @@ class CreateAxisGateway extends Migration
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');
             $table->integer('updated_at');
+
+            $table->index('genius');
 
             $table->foreign('payment_id')
                   ->references('id')

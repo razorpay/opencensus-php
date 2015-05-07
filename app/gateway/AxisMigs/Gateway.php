@@ -13,12 +13,7 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->loadGatewayConfig();
-    }
+    protected $gateway = 'axis_migs';
 
     public function authorize(array $input)
     {
@@ -60,7 +55,7 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRefAndCommand(
+        $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
         $this->verifySecretHash($input);
@@ -75,14 +70,14 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
             $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
         $response = $this->postAmaTransactionRequest($content, $input);
 
-        parse_str($response->body, $content);
+        $content = $this->getAmaTxnResponseContent($response, $input);
 
         $payment = $this->createGatewayPaymentEntity($content);
 
@@ -93,14 +88,14 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = (new AxisMigs\Repository)->findByPaymentIdAndCommand(
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
                                 $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
 
         $response = $this->postAmaTransactionRequest($content, $input);
 
-        parse_str($response->body, $content);
+        $content = $this->getAmaTxnResponseContent($response, $input);
 
         $content['refund_id'] = $input['refund']['amount'];
 
@@ -113,7 +108,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $payment = (new AxisMigs\Repository)->findByMerchantTxnRef($input['payment']['id']);
+        $payment = $this->getRepo()->findByMerchantTxnRef($input['payment']['id']);
 
         $content = $this->getPaymentVerifyRequestContent($input, $payment);
 
@@ -203,6 +198,11 @@ class Gateway extends Base\Gateway
         return new AxisMigs\Entity;
     }
 
+    protected function getRepo()
+    {
+        return new AxisMigs\Repository;
+    }
+
     protected function postAmaTransactionRequest(array & $content, $input)
     {
         $this->addAmaTransactionFields($content, $input);
@@ -217,38 +217,29 @@ class Gateway extends Base\Gateway
 
     public function postRequest($request)
     {
-//        $request['options'] = $this->getRequestOptions();
+        $options['timeout'] = 30;
+        $request['options'] = $options;
 
         $this->response = $this->sendGatewayRequest($request);
 
         return $this->response;
     }
 
-    public function generateHash($content)
+    protected function getAmaTxnResponseContent($response)
     {
-        $md5HashData = $this->config['test_hash_secret'];
+        parse_str($response->body, $content);
 
-        ksort($content);
+        return $content;
+    }
 
-        foreach($content as $key => $value)
-        {
-            //
-            // create the md5 input and URL leaving
-            // out any fields that have no value
-            //
-            if (strlen($value) > 0)
-            {
-                $md5HashData .= $value;
-            }
-        }
-
-        return strtoupper(md5($md5HashData));
+    protected function getHashOfString($str)
+    {
+        return strtoupper(md5($str));
     }
 
     protected function verifySecretHash($input)
     {
-        unset($input['payment']);
-        $hash = $input['gateway']['vpc_SecureHash'];
+        $hash = strtoupper($input['gateway']['vpc_SecureHash']);
         unset($input['gateway']['vpc_SecureHash']);
 
         $generatedHash = $this->generateHash($input['gateway']);
@@ -334,22 +325,12 @@ class Gateway extends Base\Gateway
 
     protected function getUrl($type)
     {
-        $test = Url::DOMAIN;
-
-        $live = Url::DOMAIN;
-
-        $url = ($this->mode === MODE::LIVE) ? $live : $test;
+        $url = $this->getUrlDomain();
 
         $type = strtoupper($type);
         $url .= $this->getRelativeUrl($type);
 
         return $url;
-    }
-
-    protected function loadGatewayConfig()
-    {
-        $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get('gateway.axis_migs');
     }
 
     protected function getFormattedCardExpiryDate($input)
@@ -361,6 +342,11 @@ class Gateway extends Base\Gateway
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 
         return $cardExp;
+    }
+
+    protected function getUrlDomain()
+    {
+        return Url::DOMAIN;
     }
 
     protected function getRelativeUrl($type)

@@ -138,6 +138,7 @@ class TransactionTest extends TestCase
 
     public function testTransactionOnAtomSharedTerminalMerchant()
     {
+        $this->gateway = 'atom';
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
 
         $this->fixtures->create('merchant_fluid:instance')

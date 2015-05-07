@@ -15,18 +15,20 @@ trait PaymentAtomTrait
      */
     protected function runPaymentCallbackFlowAtom($response, &$callback = null)
     {
-        //
-        // Figure out whether to runn atom payment flow or not
-        //
+        $content = $response->getContent();
 
-        list($runAtomFlow, $redirectUrl) = $this->isAtomFlowRequired($response, $callback);
-
-        if ($runAtomFlow === false)
+        if ($callback)
         {
-            return $response;
+            $content = $this->getJsonContentFromResponse($response, $callback);
+            $callback = null;
+
+            $redirectUrl = $content['request']['url'];
+        }
+        else
+        {
+           $redirectUrl = $response->getTargetUrl();
         }
 
-        $content = $response->getContent();
         $callback = null;
 
         $headers = array();

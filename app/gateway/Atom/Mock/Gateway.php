@@ -6,11 +6,13 @@ use Carbon\Carbon;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Gateway\Atom;
+use Gateway\Base;
 use Models\Card;
-use Requests_Response;
 
 class Gateway extends Atom\Gateway
 {
+    use Base\Mock\GatewayTrait;
+
     protected $url = 'http://203.114.240.183/paynetz/epi/fts';
 
     public function __construct()
@@ -36,37 +38,6 @@ class Gateway extends Atom\Gateway
 
         // Voila
         return $data;
-    }
-
-    protected function sendGatewayRequest($request)
-    {
-        // Although we reset the url, it's not being used currently.
-        $request['url'] = $this->makeMockRequestUrl($request);
-
-        // When sending the first request to atom gateway,
-        // quietly redirect it to mock atom  gateway internally!
-        $serverResponse = $this->callGatewayRequestFunctionInternally($request);
-
-        return $this->prepareInternalResponse($serverResponse);
-    }
-
-    protected function prepareInternalResponse($serverResponse)
-    {
-        $response = new Requests_Response();
-
-        $response->headers = $serverResponse->headers->all();
-
-        foreach ($response->headers as $key => &$value)
-        {
-            $value = implode(';', $value);
-        }
-
-        $response->body = $serverResponse->getContent();
-        $response->status_code = $serverResponse->getStatusCode();
-        $response->success = true;
-        // @todo: add url to response var
-
-        return $response;
     }
 
     protected function makeMockRequestUrl($request)
@@ -95,30 +66,5 @@ class Gateway extends Atom\Gateway
         {
             return $url;
         }
-    }
-
-    protected function callGatewayRequestFunctionInternally($request)
-    {
-        $server = new Server();
-
-        $url = $request['url'];
-
-        $parts = parse_url($url);
-        parse_str($parts['query'], $input);
-
-        $server->setInput($request['content']);
-
-        $response = null;
-
-        if ($request['action'] === 'authorize')
-        {
-            $response = $server->initiateAtomPayment($input);
-        }
-        else if ($request['action'] === 'verify')
-        {
-            $response = $server->verifyPayment($input);
-        }
-
-        return $response;
     }
 }

@@ -14,6 +14,8 @@ use Trace\TraceCode;
 
 class Gateway extends AxisMigs\Gateway
 {
+    protected $gateway = 'axis_genius';
+
     protected function getPaymentCaptureRequestContent($input, $payment)
     {
         $content = parent::getPaymentCaptureRequestContent($input, $payment);
@@ -44,22 +46,27 @@ class Gateway extends AxisMigs\Gateway
         return $content;
     }
 
-    protected function addAmaTransactionFields(array & $content)
+    protected function addAmaTransactionFields(array & $content, $input)
     {
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
-        $content['vpc_SecureHash'] = $this->generateHash($content);
+        $content['SecureHash'] = $this->generateHash($content);
     }
 
     protected function addMerchantIdAndAccessCode(array & $content, $terminal)
     {
         parent::addMerchantIdAndAccessCode($content, $terminal);
 
-        if ($this->action === Base\Gateway\Action::PAY)
+        if ($this->action === Base\Action::AUTHORIZE)
         {
             $content['vpc_MerchantId'] = $content['vpc_Merchant'];
             unset($content['vpc_Merchant']);
         }
+    }
+
+    protected function getUrlDomain()
+    {
+        return ($this->mode === MODE::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
     }
 
     protected function getRelativeUrl($type)
@@ -72,9 +79,37 @@ class Gateway extends AxisMigs\Gateway
         return constant(__NAMESPACE__.'\Url::'.$type);
     }
 
-    protected function loadGatewayConfig()
+    protected function getHashOfString($str)
     {
-        $app = \App::getFacadeRoot();
-        $this->config = $app['config']->get('gateway.axis_genius');
+        return strtoupper(hash('sha256', $str, false));
+    }
+
+    protected function getAmaTxnResponseContent($response)
+    {
+        $content = parent::getAmaTxnResponseContent($response);
+
+        $content['vpc_Command'] = $this->getAmaTransactionCommand();
+
+        return $content;
+    }
+
+    protected function getAmaTransactionCommand()
+    {
+        $command = $this->action;
+
+        if ($command === Base\Action::VERIFY)
+            $command = AxisMigs\Command::QUERYDR;
+
+        return $command;
+    }
+
+    protected function getNewGatewayPaymentEntity()
+    {
+        return new AxisGenius\Entity;
+    }
+
+    protected function getRepo()
+    {
+        return new AxisGenius\Repository;
     }
 }

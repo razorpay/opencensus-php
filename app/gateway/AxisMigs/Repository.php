@@ -3,14 +3,13 @@
 namespace Gateway\AxisMigs;
 
 use EE\Exception;
-use Gateway\Atom;
 use Models\Base;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
-    protected $entity = 'Axis';
+    protected $entity = 'AxisMigs';
 
     public function findByMerchantTxnRef($merchantTxnRef)
     {

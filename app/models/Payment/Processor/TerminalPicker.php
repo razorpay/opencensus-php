@@ -16,7 +16,7 @@ class TerminalPicker
         $this->validateCount($terminals, $payment->merchant);
 
         $terminal = $this->pickOneTerminal($payment, $terminals);
-
+//$terminal = null;
         if ($terminal === null)
         {
             $terminal = Terminal\Shared::getSharedTerminal($payment->getMethod());
@@ -112,6 +112,11 @@ class TerminalPicker
             }
             else if ((isset($gatewayTerms[Payment\Gateway::ATOM]) === true) and
                      ($gatewayTerms[Payment\Gateway::ATOM]->isCardEnabled()))
+            {
+                $terminal = $gatewayTerms[Payment\Gateway::ATOM];
+            }
+            else if ((isset($gatewayTerms[Payment\Gateway::KOTAK]) === true) and
+                     ($gatewayTerms[Payment\Gateway::KOTAK]->isCardEnabled()))
             {
                 $terminal = $gatewayTerms[Payment\Gateway::ATOM];
             }

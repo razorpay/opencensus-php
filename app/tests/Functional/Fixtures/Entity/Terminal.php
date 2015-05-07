@@ -63,4 +63,42 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createSharedAxisGeniusTerminal()
+    {
+        $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => $merchant['id'],
+            'gateway'                   => 'axis_genius',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay axis_genius',
+            'gateway_terminal_id'       => 'nodal account axis_genius',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedKotakTerminal()
+    {
+        $termId = \Models\Terminal\Shared::KOTAK_RAZORPAY_TERMINAL;
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => $merchant['id'],
+            'gateway'                   => 'kotak',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay kotak',
+            'gateway_terminal_id'       => 'nodal account kotak',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

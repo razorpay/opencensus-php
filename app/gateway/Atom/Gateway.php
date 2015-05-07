@@ -13,6 +13,8 @@ use Gateway\Atom;
 
 class Gateway extends Base\Gateway
 {
+    protected $gateway = 'atom';
+
     protected $paymentRequest = array(
         'type' => 'payment',
         'fields' => array('ttype', 'prodid', 'amt', 'txncurr', 'txnscamt',
@@ -327,6 +329,7 @@ class Gateway extends Base\Gateway
         $str = $this->buildGetQueryString($request['content']);
         $request['url'] .= '?'.$str;
         $request['content'] = [];
+        $request['method'] = 'get';
         // echo $request['url'];die();
 
         $this->response = $this->sendGatewayRequest($request);

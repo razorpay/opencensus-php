@@ -107,7 +107,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array(self::PUBLIC_ID);
 
-    protected static $modifiers = array(self::CONTACT);
+    protected static $modifiers = array(self::CONTACT, self::BANK);
 
     protected static $generators = array(
         self::STATUS,
@@ -181,6 +181,15 @@ class Entity extends Base\PublicEntity
         $contact = str_replace(')', '', $contact);
 
         return $contact;
+    }
+
+    protected function modifyBank(& $input)
+    {
+        if ((isset($input['method'])) and
+            ($input['method'] === 'card'))
+        {
+            $input['bank'] = null;
+        }
     }
 
 // --------------------- Modifiers Ends ----------------------------------------
@@ -291,6 +300,11 @@ class Entity extends Base\PublicEntity
     public function getAutoCapturedAttribute()
     {
         return (bool) $this->attributes[self::AUTO_CAPTURED];
+    }
+
+    public function getSignedAttribute()
+    {
+        return (bool) $this->attributes[self::SIGNED];
     }
 
 // ----------------------- Accessor Ends ---------------------------------------

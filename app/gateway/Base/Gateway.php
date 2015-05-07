@@ -24,6 +24,8 @@ class Gateway
     public function __construct()
     {
         $this->trace = Trace::getFacadeRoot();
+
+        $this->loadGatewayConfig();
     }
 
     public function authorize(array $input)
@@ -57,12 +59,6 @@ class Gateway
 
     public function setMode($mode)
     {
-        // if (($mode === Mode::LIVE) and
-        //     ($this->mock === true))
-        // {
-        //     throw new Exception\LogicException('Cannot mock a gateway in live mode');
-        // }
-
         $this->mode = $mode;
     }
 
@@ -100,5 +96,44 @@ class Gateway
         // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
 
         return $response;
+    }
+
+    protected function getNamespace()
+    {
+        return substr(get_called_class(), 0, strrpos(get_called_class(), "\\"));
+    }
+
+    public function generateHash($content)
+    {
+        $hashString = $this->config['test_hash_secret'];
+
+        ksort($content);
+
+        foreach($content as $key => $value)
+        {
+            //
+            // create the md5 input and URL leaving
+            // out any fields that have no value
+            //
+            if (strlen($value) > 0)
+            {
+                $hashString .= $value;
+            }
+        }
+
+        return $this->getHashOfString($hashString);
+    }
+
+    protected function getHashOfString($str)
+    {
+        return $str;
+    }
+
+    protected function loadGatewayConfig()
+    {
+        $configGatewayStr = 'gateway.'.$this->gateway;
+
+        $app = \App::getFacadeRoot();
+        $this->config = $app['config']->get($configGatewayStr);
     }
 }

@@ -55,7 +55,7 @@ class MockGatewayController extends BaseController
 
         $input = Input::all();
 
-        return $server->initiateAtomPayment($input);
+        return $server->authorize($input);
     }
 
     public function postAtomRzpPayment()
@@ -88,6 +88,17 @@ class MockGatewayController extends BaseController
         $input = Input::all();
 
         $server = new Gateway\AxisMigs\Mock\Server;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
+
+    public function postAxisGeniusPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\AxisGenius\Mock\Server;
 
         $url = $server->authorize($input);
 

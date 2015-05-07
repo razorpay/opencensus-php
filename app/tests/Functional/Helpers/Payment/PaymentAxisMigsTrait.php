@@ -7,13 +7,9 @@ use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use Tests\Functional\TestCase;
 
-trait PaymentAxisTrait
+trait PaymentAxisMigsTrait
 {
-    /**
-     * Runs payment callback flow for atom net-banking transactions
-     * @param  array $response
-     */
-    protected function runPaymentCallbackFlowAxis($response, &$callback = null)
+    protected function runPaymentCallbackFlowAxisMigs($response, &$callback = null)
     {
         $content = $response->getContent();
 
@@ -52,8 +48,17 @@ trait PaymentAxisTrait
         }
         else
         {
+            $url = $this->runAxisMigsGatewayAutomation($url, $method, $values);
+        }
+
+        return $this->submitPaymentCallbackRedirect($url);
+    }
+
+    protected function runAxisMigsGatewayAutomation($url, $method, $values)
+    {
             $options = ['follow_redirects' => false];
-            $response = Requests::$method($url, [], $values, $options);
+            $method = strtoupper($method);
+            $response = Requests::request($url, [], $values, $method, $options);
 
             $url = $response->headers['location'];
 
@@ -83,9 +88,8 @@ trait PaymentAxisTrait
 
             $response = Requests::$method($url, $headers, $values, $options);
             $url = $response->headers['location'];
-        }
 
-        return $this->submitPaymentCallbackRedirect($url);
+            return $url;
     }
 
     protected function mapCookiesArrayToString($cookies)
