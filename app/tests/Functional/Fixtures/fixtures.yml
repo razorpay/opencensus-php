@@ -15,6 +15,8 @@ Models\Terminal\Entity:
     gateway_merchant_id: $string
     gateway_terminal_id: $string
     gateway_terminal_password: encryptpass
+    gateway_access_code: RANDOMCODE
+    gateway_secure_secret: SECURESECRET
 
 Models\Merchant\Balance:
     id: $uniqueid
