@@ -22,8 +22,6 @@ class Gateway extends Base\Gateway
         $attributes = array(
             'TxnType'           => Type::PURCHASE,
             'TxnRefNo'          => $input['payment']['id'],
-            'MerchantId'        => '',
-            'PassCode'          => '',
             'OrderInfo'         => $input['payment']['id'],
             'Amount'            => $input['payment']['amount'],
             'Currency'          => 356,
