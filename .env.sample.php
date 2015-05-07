@@ -32,6 +32,11 @@ return array(
     'AXIS_GENIUS_GATEWAY_TEST_MERCHANT_ID'  => 'random',
     'AXIS_GENIUS_GATEWAY_TEST_ACCESS_CODE'  => 'randompwd',
 
+    'KOTAK_GATEWAY_TEST_HASH_SECRET'        => 'random',
+    'KOTAK_GATEWAY_TEST_MERCHANT_ID'        => 'random',
+    'KOTAK_GATEWAY_TEST_ACCESS_CODE'        => 'randompwd',
+    'KOTAK_GATEWAY_TEST_TERMINAL_ID'        => 'randomid',
+
     'HDFC_MOCK'                             => true,
     'ATOM_MOCK'                             => true,
     'AXIS_MIGS_MOCK'                        => true,
