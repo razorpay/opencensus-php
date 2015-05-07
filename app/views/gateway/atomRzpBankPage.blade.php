@@ -56,7 +56,7 @@
         <input type="hidden" name="success" id="success">
     </p>
     <p>
-    
+
     </p>
     <p class="grey">
         Transaction ID: {{{ $data['ITC'] }}}<br>
