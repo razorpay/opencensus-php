@@ -34,6 +34,11 @@ class Gateway
         $this->action = Action::AUTHORIZE;
     }
 
+    public function callback(array $input)
+    {
+        $this->input = $input;
+    }
+
     public function capture(array $input)
     {
         $this->input = $input;
@@ -105,7 +110,16 @@ class Gateway
 
     public function generateHash($content)
     {
-        $hashString = $this->config['test_hash_secret'];
+        if ($this->mode === Mode::TEST)
+        {
+            $secret = $this->config['test_hash_secret'];
+        }
+        else
+        {
+            $secret = $this->input['terminal']['gateway_secure_secret'];
+        }
+
+        $hashString = $secret;
 
         ksort($content);
 

@@ -73,6 +73,8 @@ class Gateway extends Base\Gateway
      */
     public function callback(array $input)
     {
+        parent::callback($input);
+
         // \Log::info(json_encode($input, JSON_PRETTY_PRINT));
 
         // Get payment-id of the transaction

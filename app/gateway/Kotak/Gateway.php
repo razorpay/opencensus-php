@@ -56,17 +56,19 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
+        parent::callback($input);
+
         sd($input);
     }
 
     public function capture(array $input)
     {
-        ;
+        parent::capture($input);
     }
 
     public function refund(array $input)
     {
-        ;
+        parent::refund($input);
     }
 
     protected function addMerchantAndTerminalDetails(array & $content, $input)

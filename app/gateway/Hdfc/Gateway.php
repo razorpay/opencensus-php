@@ -298,6 +298,8 @@ class Gateway extends Base\Gateway
      */
     public function callback(array $input)
     {
+        parent::callback($input);
+
         validate($this->bankAcsResponseRules, $input['gateway']);
 
         $this->id = $input['payment']['id'];

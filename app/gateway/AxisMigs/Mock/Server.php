@@ -2,13 +2,15 @@
 
 namespace Gateway\AxisMigs\Mock;
 
-use Models\Card;
 use Carbon\Carbon;
+use Constants\Mode;
 use EE\Exception;
 use Gateway\AxisMigs;
+use Gateway\Base;
+use Models\Card;
 use Models\Payment;
 
-class Server
+class Server extends Base\Mock\Server
 {
     protected $validator = null;
 
@@ -195,11 +197,6 @@ class Server
         }
 
         return $this->validator;
-    }
-
-    protected function generateHash($content)
-    {
-        return (new AxisMigs\Gateway)->generateHash($content);
     }
 
     protected function generateTransactionNo()

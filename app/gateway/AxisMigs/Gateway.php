@@ -55,6 +55,8 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
+        parent::callback($input);
+
         $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 

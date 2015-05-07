@@ -21,9 +21,4 @@ class Server extends AxisMigs\Mock\Server
     {
         $content['vpc_Merchant'] = $input['vpc_MerchantId'];
     }
-
-    protected function generateHash($content)
-    {
-        return (new AxisGenius\Gateway)->generateHash($content);
-    }
 }
