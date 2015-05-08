@@ -24,6 +24,9 @@ return array(
     'HDFC_ID'                               => 'hdfc_id',
     'HDFC_PASSWORD'                         => 'hdfc_password',
 
+    'HDFC_GATEWAY_TEST_TERMINAL_ID'         => 'hdfc_id',
+    'HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'   => 'hdfc_password',
+
     'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'    => 'random',
     'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'    => 'random',
     'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'    => 'randompwd',

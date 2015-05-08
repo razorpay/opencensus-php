@@ -39,16 +39,24 @@ class Gateway extends Base\Gateway
 
         $this->addMerchantAndTerminalDetails($attributes, $input);
 
+        $url = '';
+
+        foreach ($attributes as $key => $value)
+        {
+            $attributes[$key] = urlencode($value);
+            $url .= '&'.urlencode($key).'='.urlencode($value);
+        }
+
         $attributes['SecureHash'] = $this->generateHash($attributes);
 
         $url = $this->getUrl(Base\Action::PURCHASE);
-        $url .= '?'.http_build_query($attributes);
+        $url .= '?'.$url;
 
         $request = array(
             'url' => $url,
             'method' => 'get'
         );
-
+//\Log::info($request['url']);
         return $request;
     }
 
