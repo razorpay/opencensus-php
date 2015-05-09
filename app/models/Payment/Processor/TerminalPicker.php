@@ -4,14 +4,25 @@ namespace Models\Payment\Processor;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Models\Card;
+use Models\Card\Network;
 use Models\Payment;
+use Models\Payment\Gateway;
 use Models\Terminal;
 use Models\Terminal\Shared;
 
 class TerminalPicker
 {
+    /**
+     * Payment for which terminal has to be picked
+     * @var Models\Payment\Entity
+     */
+    protected $payment;
+
     public function selectTerminal($payment)
     {
+        $this->payment = $payment;
+
         $terminals = $this->getTerminals($payment);
 
         $this->validateCount($terminals, $payment->merchant);
@@ -70,67 +81,38 @@ class TerminalPicker
 
     protected function pickTerminalForCardMethod($terminals, $gatewayTerms)
     {
-        //
-        // For card, terminal deduction is as follows:
-        // * Get all terminals for merchant
-        // * If 1 terminal, then check card enabled and then off to the races!
-        // * If 2 terminals, then check for card enabled for both
-        // * If card is enabled for both, then select HDFC and.. off to the races!
-        // * Otherwise select for whichever is card enabled.. and off to the races!
-        //
-        // Note: At the moment, cannot have more than 2 terminals
-        //
-
-        $count = $terminals->count();
-
         $terminal = null;
 
-        if ($count === 1)
+        $payment = $this->payment;
+
+        if ($payment->card->getNetwork() === Card\Network::RUPAY)
         {
-            $terminal = $terminals->first();
-
-            if ($terminal->isCardEnabled() === false)
+            if (isset($gatewayTerms[Gateway::KOTAK]))
             {
-                return;
+                $terminal = $gatewayTerms[Gateway::KOTAK];
+            }
 
-                throw new Exception\LogicException(
-                    'Card not enabled for the merchant. Merchant Id: ' . $terminal->getMerchantId() .
-                    ' Terminal Id: ' . $terminal->getId());
+            return $terminal;
+        }
+
+        $international = $payment->merchant->isInternational();
+
+        if ($international)
+        {
+            if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
+            {
+                return $gatewayTerms[Gateway::AXIS_GENIUS];
             }
         }
-        else if ($count >= 2)
+
+        if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
         {
-            if (isset($gatewayTerms[Payment\Gateway::AXIS_MIGS]) === true)
-            {
-                $terminal = $gatewayTerms[Payment\Gateway::AXIS_MIGS];
-            }
-            else if ((isset($gatewayTerms[Payment\Gateway::HDFC]) === true) and
-                     ($gatewayTerms[Payment\Gateway::HDFC]->isCardEnabled()))
-            {
-                $terminal = $gatewayTerms[Payment\Gateway::HDFC];
-            }
-            if (isset($gatewayTerms[Payment\Gateway::AXIS_GENIUS]) === true)
-            {
-                $terminal = $gatewayTerms[Payment\Gateway::AXIS_GENIUS];
-            }
-            else if ((isset($gatewayTerms[Payment\Gateway::ATOM]) === true) and
-                     ($gatewayTerms[Payment\Gateway::ATOM]->isCardEnabled()))
-            {
-                $terminal = $gatewayTerms[Payment\Gateway::ATOM];
-            }
-            else if ((isset($gatewayTerms[Payment\Gateway::KOTAK]) === true) and
-                     ($gatewayTerms[Payment\Gateway::KOTAK]->isCardEnabled()))
-            {
-                $terminal = $gatewayTerms[Payment\Gateway::ATOM];
-            }
-            else
-            {
-                return;
-                throw new Exception\LogicException(
-                    'No terminal has card transactions enabled. ' .
-                    'Hdfc term id: ' . $hdfcTerm->getId(),
-                    'Atom Term id: ' . $atomTerm->getId());
-            }
+            return $gatewayTerms[Gateway::AXIS_MIGS];
+        }
+
+        if (isset($gatewayTerms[Gateway::HDFC]))
+        {
+            return $gatewayTerms[Gateway::HDFC];
         }
 
         return $terminal;
@@ -171,16 +153,14 @@ class TerminalPicker
             }
         }
 
-            $terminal = $repo->find(Shared::PAYTM_RAZORPAY_TERMINAL);
+        $terminal = $repo->find(Shared::PAYTM_RAZORPAY_TERMINAL);
 
-            if ($terminal !== null)
-            {
-                return $terminal;
-            }
-
+        if ($terminal !== null)
         {
-            $terminal = $repo->findOrFail(Shared::ATOM_RAZORPAY_TERMINAL);
+            return $terminal;
         }
+
+        $terminal = $repo->findOrFail(Shared::ATOM_RAZORPAY_TERMINAL);
 
         return $terminal;
     }
@@ -188,7 +168,6 @@ class TerminalPicker
     protected function getGatewayTerminals($terminals)
     {
         $gatewayTerms = [];
-        $hdfcTerm = $atomTerm = null;
 
         foreach ($terminals->all() as $term)
         {

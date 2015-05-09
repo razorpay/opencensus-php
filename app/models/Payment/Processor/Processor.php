@@ -250,8 +250,6 @@ class Processor
 
         $payment->merchant()->associate($this->merchant);
 
-        (new TerminalPicker)->selectTerminal($payment);
-
         $this->payment = $payment;
 
         return $payment;

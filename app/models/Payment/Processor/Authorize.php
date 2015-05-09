@@ -31,6 +31,8 @@ trait Authorize
             $this->verifyBankEnabled($payment);
         }
 
+        (new TerminalPicker)->selectTerminal($payment);
+
         $this->repo->saveOrFail($payment);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);

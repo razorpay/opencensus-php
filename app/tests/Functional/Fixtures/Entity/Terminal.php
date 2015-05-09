@@ -20,8 +20,7 @@ class Terminal extends Base
     public function createDisableDefaultHdfcTerminal()
     {
         $term = \Models\Terminal\Entity::findOrFail('1n25f6uN5S1Z5a');
-        $term->card = false;
-        $term->saveOrFail();
+        $term->forceDelete();
 
         return $term;
     }

@@ -61,6 +61,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATED);
     }
 
+    public function isInternational()
+    {
+        return (boolean) $this->getAttribute(self::INTERNATIONAL);
+    }
+
     public function isLive()
     {
         return $this->getAttribute(self::LIVE);

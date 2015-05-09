@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         'id'                => 'required|alpha_num|size:14',
         'name'              => 'required|alpha_space_num|max:200',
-        'email'             => 'required|email|unique:merchants'
+        'email'             => 'required|email|unique:merchants',
         'international'     => 'sometimes|boolean',
         'website'           => 'sometimes',
         'cateogry'          => 'sometimes|size:4',
