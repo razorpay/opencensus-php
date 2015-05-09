@@ -33,48 +33,4 @@ class Shared
 
         return self::isSharedTerminal($terminal);
     }
-
-    public static function getSharedTerminal($method)
-    {
-        $terminal = null;
-
-        $repo = new Repository;
-
-        if ($method === 'card')
-        {
-            $terminal = $repo->find(self::AXIS_MIGS_RAZORPAY_TERMINAL);
-
-            if ($terminal !== null)
-            {
-                return $terminal;
-            }
-
-            $terminal = $repo->find(self::AXIS_GENIUS_RAZORPAY_TERMINAL);
-
-            if ($terminal !== null)
-            {
-                return $terminal;
-            }
-
-            $terminal = $repo->find(self::KOTAK_RAZORPAY_TERMINAL);
-
-            if ($terminal !== null)
-            {
-                return $terminal;
-            }
-        }
-
-            $terminal = $repo->find(self::PAYTM_RAZORPAY_TERMINAL);
-
-            if ($terminal !== null)
-            {
-                return $terminal;
-            }
-
-        {
-            $terminal = $repo->findOrFail(self::ATOM_RAZORPAY_TERMINAL);
-        }
-
-        return $terminal;
-    }
 }

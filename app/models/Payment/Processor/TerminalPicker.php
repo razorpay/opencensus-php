@@ -6,6 +6,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Payment;
 use Models\Terminal;
+use Models\Terminal\Shared;
 
 class TerminalPicker
 {
@@ -19,7 +20,7 @@ class TerminalPicker
 //$terminal = null;
         if ($terminal === null)
         {
-            $terminal = Terminal\Shared::getSharedTerminal($payment->getMethod());
+            $terminal = $this->getSharedTerminal($payment);
         }
 
         $payment->terminal()->associate($terminal);
@@ -45,15 +46,17 @@ class TerminalPicker
         }
         else if ($method === Payment\Method::NETBANKING)
         {
-            if (isset($gatewayTerms[Payment\Gateway::ATOM]) === false)
+            if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
             {
-                return;
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
+                $terminal = $gatewayTerms[Payment\Gateway::PAYTM];
             }
+            else if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
+            {
+                $terminal = $gatewayTerms[Payment\Gateway::ATOM];
 
-            $terminal = $gatewayTerms[Payment\Gateway::ATOM];
+                // throw new Exception\BadRequestException(
+                //     ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
+            }
         }
         else
         {
@@ -128,6 +131,55 @@ class TerminalPicker
                     'Hdfc term id: ' . $hdfcTerm->getId(),
                     'Atom Term id: ' . $atomTerm->getId());
             }
+        }
+
+        return $terminal;
+    }
+
+    protected function getSharedTerminal($payment)
+    {
+        $terminal = null;
+
+        $repo = new Terminal\Repository;
+
+        $method = $payment->getMethod();
+
+        if ($method === Payment\Method::CARD)
+        {
+            if ($payment->card->getNetwork() === Card\Network::RUPAY)
+            {
+                $terminal = $repo->find(Shared::KOTAK_RAZORPAY_TERMINAL);
+
+                if ($terminal !== null)
+                {
+                    return $terminal;
+                }
+            }
+
+            $terminal = $repo->find(Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
+
+            if ($terminal !== null)
+            {
+                return $terminal;
+            }
+
+            $terminal = $repo->find(Shared::AXIS_GENIUS_RAZORPAY_TERMINAL);
+
+            if ($terminal !== null)
+            {
+                return $terminal;
+            }
+        }
+
+            $terminal = $repo->find(Shared::PAYTM_RAZORPAY_TERMINAL);
+
+            if ($terminal !== null)
+            {
+                return $terminal;
+            }
+
+        {
+            $terminal = $repo->findOrFail(Shared::ATOM_RAZORPAY_TERMINAL);
         }
 
         return $terminal;
