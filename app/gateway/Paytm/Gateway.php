@@ -30,8 +30,8 @@ class Gateway extends Base\Gateway
   //          'MOBILE_NO'                 => $input['payment']['contact'],
             'BANK_CODE'                 => $this->getBankCode($input),
             'PAYMENT_TYPE_ID'           => 'NB',
-  //          'INDUSTRY_TYPE_ID'          => 'Retail',
-            'WEBSITE'                   => 'razorpay.com',
+            'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
+            'WEBSITE'                   => $input['merchant']['website'],
             'CALLBACK_URL'              => $input['callbackUrl'],
             'PAYMENT_MODE_ONLY'         => 'Yes',
             'AUTH_MODE'                 => 'USERPWD',
@@ -70,12 +70,6 @@ class Gateway extends Base\Gateway
             $content['MID'] = $this->config['test_merchant_id'];
             $content['WEBSITE'] = 'Razorweb';
             $content['INDUSTRY_TYPE_ID'] = 'Retail';
-        }
-        else
-        {
-            $content['MID'] = $terminal['gateway_merchant_id'];
-            $content['INDUSTRY_TYPE_ID'] = 'Retail';
-            $content['WEBSITE'] = 'https://api.razorpay.com';
         }
     }
 

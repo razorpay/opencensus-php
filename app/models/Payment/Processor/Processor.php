@@ -237,6 +237,7 @@ class Processor
         $gateway = $this->payment->getGateway();
 
         $input['terminal'] = $terminal;
+        $input['merchant'] = $terminal->merchant;
 
         return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
     }
