@@ -10,8 +10,10 @@ use Illuminate\Support\MessageBag;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-    	'id'    =>  'required|alpha_num|size:14',
-        'name'  =>	'required|alpha_space_num|max:200',
-        'email' =>	'required|email|unique:merchants'
+        'id'                => 'required|alpha_num|size:14',
+        'name'              => 'required|alpha_space_num|max:200',
+        'email'             => 'required|email|unique:merchants'
+        'international'     => 'sometimes|boolean',
+        'website'           => 'sometimes',
     );
 }

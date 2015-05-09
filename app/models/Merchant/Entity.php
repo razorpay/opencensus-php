@@ -13,6 +13,8 @@ class Entity extends Base\PublicEntity
     const ACTIVATED_AT      = 'activated_at';
     const LIVE              = 'live';
     const PRICING_PLAN_ID   = 'pricing_plan_id';
+    const INTERNATIONAL     = 'international';
+    const WEBSITE           = 'website';
 
     protected $table = \Constants\Table::MERCHANT;
 

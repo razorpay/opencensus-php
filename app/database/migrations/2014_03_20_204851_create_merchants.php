@@ -41,6 +41,12 @@ class CreateMerchants extends Migration
             $table->char(Merchant::PRICING_PLAN_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
+            $table->boolean(Merchant::INTERNATIONAL)
+                  ->default(0);
+
+            $table->string(Merchant::WEBSITE)
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
 

@@ -5,6 +5,8 @@ Models\Merchant\Entity:
     activated: 0
     live: 0
     pricing_plan_id: null
+    international: 0
+    website: razorpay.com
 
 Models\Terminal\Entity:
     id: $uniqueid
