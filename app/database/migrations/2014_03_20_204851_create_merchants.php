@@ -47,6 +47,9 @@ class CreateMerchants extends Migration
             $table->string(Merchant::WEBSITE)
                   ->nullable();
 
+            $table->char(Merchant::CATEGORY, 4)
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
 

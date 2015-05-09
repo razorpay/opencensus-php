@@ -7,6 +7,7 @@ Models\Merchant\Entity:
     pricing_plan_id: null
     international: 0
     website: razorpay.com
+    category: 1100
 
 Models\Terminal\Entity:
     id: $uniqueid

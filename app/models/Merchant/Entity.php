@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const PRICING_PLAN_ID   = 'pricing_plan_id';
     const INTERNATIONAL     = 'international';
     const WEBSITE           = 'website';
+    const CATEGORY          = 'category';
 
     protected $table = \Constants\Table::MERCHANT;
 

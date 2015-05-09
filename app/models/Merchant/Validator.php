@@ -15,5 +15,6 @@ class Validator extends Base\Validator
         'email'             => 'required|email|unique:merchants'
         'international'     => 'sometimes|boolean',
         'website'           => 'sometimes',
+        'cateogry'          => 'sometimes|size:4',
     );
 }
