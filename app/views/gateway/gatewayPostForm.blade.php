@@ -4,7 +4,7 @@
     <form name="form1" action="{{$data['request']['url']}}" method="post">
 
 @foreach ($data['request']['content'] as $key => $value)
-        <input type="text" name="{{$key}}" value="{{$value}}">
+        {{$key}}: <input type="text" name="{{$key}}" value="{{$value}}">
         <br />
 @endforeach
         <input type="submit" value="Submit" >

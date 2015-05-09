@@ -14,7 +14,8 @@ return array(
         'atom',
         'axis_migs',
         'axis_genius',
-        'kotak'),
+        'kotak',
+        'paytm'),
 
     'mock_hdfc'             => $_ENV['HDFC_MOCK'],
     'mock_atom'             => $_ENV['ATOM_MOCK'],
@@ -48,5 +49,10 @@ return array(
         'test_merchant_id'  => $_ENV['KOTAK_GATEWAY_TEST_MERCHANT_ID'],
         'test_access_code'  => $_ENV['KOTAK_GATEWAY_TEST_ACCESS_CODE'],
         'test_terminal_id'  => $_ENV['KOTAK_GATEWAY_TEST_TERMINAL_ID'],
+    ),
+
+    'paytm' => array(
+        'test_merchant_id'  => $_ENV['PAYTM_GATEWAY_TEST_MERCHANT_ID'],
+        'test_hash_secret'  => $_ENV['PAYTM_GATEWAY_TEST_HASH_SECRET'],
     ),
 );
