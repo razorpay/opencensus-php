@@ -42,6 +42,9 @@ return array(
     'KOTAK_GATEWAY_TEST_ACCESS_CODE'        => 'randompwd',
     'KOTAK_GATEWAY_TEST_TERMINAL_ID'        => 'randomid',
 
+    'PAYTM_GATEWAY_TEST_MERCHANT_ID'        => 'randomid',
+    'PAYTM_GATEWAY_TEST_HASH_SECRET'        => 'randomsecret',
+
     'HDFC_MOCK'                             => true,
     'ATOM_MOCK'                             => true,
     'AXIS_MIGS_MOCK'                        => true,
