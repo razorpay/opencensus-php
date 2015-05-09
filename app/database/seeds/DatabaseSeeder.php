@@ -280,6 +280,20 @@ class DatabaseSeeder extends Seeder
                 )
             );
 
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::PAYTM_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'paytm',
+                'card'                  => '0',
+                'gateway_merchant_id'   => 'demo_merchant_paytm',
+                'gateway_terminal_id'   => 'shared_terminal_paytm',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_paytm_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
         DB::table(Table::KEY)->insert(
             array(
                 'id'            =>  Account::TEST_ACCOUNT_KEY_ID,

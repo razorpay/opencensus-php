@@ -39,6 +39,9 @@ return array(
     'KOTAK_GATEWAY_TEST_ACCESS_CODE'        => getenv('KOTAK_GATEWAY_TEST_ACCESS_CODE'),
     'KOTAK_GATEWAY_TEST_TERMINAL_ID'        => getenv('KOTAK_GATEWAY_TEST_TERMINAL_ID'),
 
+    'PAYTM_GATEWAY_TEST_MERCHANT_ID'        => getenv('PAYTM_GATEWAY_TEST_MERCHANT_ID'),
+    'PAYTM_GATEWAY_TEST_HASH_SECRET'        => getenv('PAYTM_GATEWAY_TEST_HASH_SECRET'),
+
     'MOCK_GATEWAY_SECRET'                   => 'wercker_random_password',
 
     'HDFC_MOCK'                             => true,

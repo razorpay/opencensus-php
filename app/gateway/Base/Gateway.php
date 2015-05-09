@@ -119,9 +119,23 @@ class Gateway
             $secret = $this->input['terminal']['gateway_secure_secret'];
         }
 
+        return $this->getHashOfArray($content, $secret);
+    }
+
+    protected function getHashOfArray($content, $secret)
+    {
+        ksort($content);
+
         $hashString = $secret;
 
-        ksort($content);
+        $hashString .= $this->getStringToHash($content);
+
+        return $this->getHashOfString($hashString);
+    }
+
+    protected function getStringToHash($content)
+    {
+        $hashString = '';
 
         foreach($content as $key => $value)
         {
@@ -135,7 +149,7 @@ class Gateway
             }
         }
 
-        return $this->getHashOfString($hashString);
+        return $hashString;
     }
 
     protected function getHashOfString($str)
