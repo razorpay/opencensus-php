@@ -135,6 +135,8 @@ class Gateway
 
     protected function getStringToHash($content)
     {
+        $hashString = '';
+
         foreach($content as $key => $value)
         {
             //
@@ -146,6 +148,8 @@ class Gateway
                 $hashString .= $value;
             }
         }
+
+        return $hashString;
     }
 
     protected function getHashOfString($str)
