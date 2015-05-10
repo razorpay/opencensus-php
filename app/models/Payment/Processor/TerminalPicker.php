@@ -85,7 +85,7 @@ class TerminalPicker
 
         $payment = $this->payment;
 
-        if ($payment->card->getNetwork() === Card\Network::RUPAY)
+        if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
         {
             if (isset($gatewayTerms[Gateway::KOTAK]))
             {
@@ -184,8 +184,8 @@ class TerminalPicker
     {
         $count = $terminals->count();
 
-        // Max count can be 3 currently.
-        if ($count > 4)
+        // Max count can be 6 currently.
+        if ($count > 6)
         {
             throw new Exception\LogicException(
                 'Terminals count not reasonable: ' . $count .

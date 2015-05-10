@@ -22,35 +22,29 @@ class Gateway extends Base\Gateway
         $attributes = array(
             'TxnType'           => Type::PURCHASE,
             'TxnRefNo'          => $input['payment']['id'],
-            'OrderInfo'         => $input['payment']['id'],
             'Amount'            => $input['payment']['amount'],
             'Currency'          => 356,
-            'ReturnUrl'         => $input['callbackUrl'],
+            'ReturnURL'         => $input['callbackUrl'],
             'CardNumber'        => $input['card']['number'],
             'ExpiryDate'        => $this->getFormattedCardExpiryDate($input),
             'CardSecurityCode'  => $input['card']['cvv'],
             'MCC'               => '4799',
-            'MerchantName'      => 'Name',
+            'MerchantName'      => 'Business',
             'MerchantCity'      => 'Mumbai',
             'MerchantState'     => 'MH',
-            'MerchPostalCode'   => 40069,
-            'MerchPhone'        => '022241234000',
+            'MerchPostalCode'   => 110002,
+            'MerchPhone'        => '9494994949',
         );
 
         $this->addMerchantAndTerminalDetails($attributes, $input);
 
         $url = '';
 
-        foreach ($attributes as $key => $value)
-        {
-            $attributes[$key] = urlencode($value);
-            $url .= '&'.urlencode($key).'='.urlencode($value);
-        }
-
         $attributes['SecureHash'] = $this->generateHash($attributes);
 
-        $url = $this->getUrl(Base\Action::PURCHASE);
-        $url .= '?'.$url;
+        $baseUrl = $this->getUrl(Base\Action::PURCHASE);
+
+        $url = $baseUrl.'?'.http_build_query($attributes);
 
         $request = array(
             'url' => $url,
@@ -104,7 +98,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        return strtoupper(hash('sha256', $str, false));
+        return hash('sha256', $str, false);
     }
 
     protected function getUrl($type)
