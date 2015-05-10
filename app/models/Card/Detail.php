@@ -30,6 +30,6 @@ class Detail extends Base\Entity
 
     public function getNetwork()
     {
-        return $this->getAttribute(self::BRAND);
+        return $this->getAttribute(self::NETWORK);
     }
 }

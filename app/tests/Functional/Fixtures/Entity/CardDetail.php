@@ -41,6 +41,15 @@ class CardDetail extends Base
             'issuer'    => 'PUNJAB NATIONAL BANK',
             'trivia'    => 'random trivia'
             ),
+        array(
+            'iin'       => '607002',
+            'category'  => 'STANDARD',
+            'network'   => 'Rupay',
+            'type'      => 'debit',
+            'country'   => 'IN',
+            'issuer'    => 'PUNJAB NATIONAL BANK',
+            'trivia'    => 'random trivia'
+            ),
         );
 
     public function createDefaultIins()
