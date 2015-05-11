@@ -293,7 +293,7 @@ trait Authorize
 
         $params = ['id' => $publicId, 'hash' => $hash];
 
-        $callbackUrl = Route::getUrlWithPublicAuth('payment_callback_post', $params);
+        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
     }

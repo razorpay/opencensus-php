@@ -83,6 +83,13 @@ class Authorization
         $this->basicAuth($key, '');
     }
 
+    public function publicCallbackAuth()
+    {
+        $this->noAuth();
+
+        $this->type = 'public_callback';
+    }
+
     public function publicTestAuth()
     {
         $this->publicAuth();
@@ -124,6 +131,8 @@ class Authorization
 
     public function noAuth()
     {
+        $this->type = '';
+
         $this->basicAuth(null, null);
     }
 

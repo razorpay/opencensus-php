@@ -15,6 +15,8 @@ final class Route
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentController@getJSONP'                            ],
         'payment_callback_post'             => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
         'payment_callback_get'              => ['get',      'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
+        'payment_callback_with_key_post'    => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentController@postCallback'                        ],
+        'payment_callback_with_key_get'     => ['get',      'payments/{id}/callback/{hash}/{key}',      'PaymentController@postCallback'                        ],
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
@@ -109,6 +111,11 @@ final class Route
         'mockatom_rzp_payment_submit',
         'mockaxis_payment',
         'mock_axis_genius_payment',
+    );
+
+    public static $publicCallback = array(
+        'payment_callback_with_key_post',
+        'payment_callback_with_key_get',
     );
 
     public static $private = array(
@@ -248,6 +255,13 @@ final class Route
         return self::getUrl($routeName, $parameters, $key);
     }
 
+    public static function getUrlWithPublicCallbackAuth(array $parameters = array())
+    {
+        $key = \BasicAuth::getPublicKey();
+
+        return self::getUrl('payment_callback_with_key_post', $parameters, $key);
+    }
+
     public static function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
     {
         return self::getSchemaHostAndAuth($key, $secret) . $relativeUrl;
@@ -340,6 +354,7 @@ final class Route
             self::addFilterOnRouteGroups($router, 'auth.app', 'internal');
             self::addFilterOnRouteGroups($router, 'auth.private', 'private');
             self::addFilterOnRouteGroups($router, 'auth.public', 'public');
+            self::addFilterOnRouteGroups($router, 'auth.public_callback', 'publicCallback');
             self::addFilterOnRouteGroups($router, 'auth.proxy', 'proxy');
         });
 

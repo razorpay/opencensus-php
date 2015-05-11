@@ -365,7 +365,11 @@ trait PaymentTrait
 
     protected function submitPaymentCallbackRequest($request)
     {
+        $this->ba->publicCallbackAuth();
+
         $response = $this->makeRequestParent($request);
+
+        $this->ba->publicAuth();
 
         $content = $response->getContent();
 
