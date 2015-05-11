@@ -65,7 +65,7 @@ class Server extends Base\Mock\Server
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
         $url = $input['vpc_ReturnURL'];
-        $url .= '&' . http_build_query($content);
+        $url .= '?' . http_build_query($content);
 
         return $url;
     }
