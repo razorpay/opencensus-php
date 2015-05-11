@@ -110,14 +110,7 @@ class Gateway
 
     public function generateHash($content)
     {
-        if ($this->mode === Mode::TEST)
-        {
-            $secret = $this->config['test_hash_secret'];
-        }
-        else
-        {
-            $secret = $this->input['terminal']['gateway_secure_secret'];
-        }
+        $secret = $this->getSecret();
 
         return $this->getHashOfArray($content, $secret);
     }
@@ -131,6 +124,18 @@ class Gateway
         $hashString .= $this->getStringToHash($content);
 
         return $this->getHashOfString($hashString);
+    }
+
+    protected function getSecret()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_hash_secret'];
+        }
+        else
+        {
+            return $this->input['terminal']['gateway_secure_secret'];
+        }
     }
 
     protected function getStringToHash($content)
