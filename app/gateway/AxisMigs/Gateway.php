@@ -60,7 +60,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
-        $this->verifySecretHash($input);
+        $this->verifySecureHash($input);
 
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
@@ -239,7 +239,7 @@ class Gateway extends Base\Gateway
         return strtoupper(md5($str));
     }
 
-    protected function verifySecretHash($input)
+    protected function verifySecureHash($input)
     {
         $hash = strtoupper($input['gateway']['vpc_SecureHash']);
         unset($input['gateway']['vpc_SecureHash']);

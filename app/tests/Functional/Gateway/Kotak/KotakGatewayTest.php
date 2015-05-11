@@ -11,7 +11,7 @@ class KotakGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/AxisGatewayTestData.php';
+        $this->testDataFilePath = __DIR__.'/KotakGatewayTestData.php';
 
         parent::setUp();
 
