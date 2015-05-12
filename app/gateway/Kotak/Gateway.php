@@ -40,8 +40,6 @@ class Gateway extends Base\Gateway
 
         $this->addMerchantAndTerminalDetails($attributes, $input);
 
-        $url = '';
-
         $attributes['SecureHash'] = $this->generateHash($attributes);
 
         $baseUrl = $this->getUrl(Base\Action::PURCHASE);
@@ -60,13 +58,13 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->verifySecureHash($input);
+
         $payment = $this->getRepo()->findByTxnRefAndType(
             $input['gateway']['TxnRefNo'], Type::PURCHASE);
 
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
-
-        $this->verifySecureHash($input);
 
         $this->verifyPaymentCallbackResponse($input);
     }
@@ -79,6 +77,44 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+
+        $payment = $this->getRepo()->findByPaymentIdAndType(
+                                $input['payment']['id'], Type::PURCHASE);
+
+        $content = array(
+            'TxnRefNo' => $payment['TxnRefNo'],
+            'TxnType' => Type::REFUND,
+            'Amount' => $payment['amount'],
+            'ResponseCode' => '00',
+            'BatchNo' => $payment['BatchNo'],
+            'RetRefNo' => $payment['RetRefNo'],
+            'AuthCode' => $payment['AuthCode'],
+            'RefundAmount' => $input['refund']['amount'],
+        );
+
+        $this->addMerchantAndTerminalDetails($content, $input);
+
+        $attributes['SecureHash'] = $this->generateHash($attributes);
+
+        $baseUrl = $this->getUrl(Base\Action::REFUND);
+
+        $url = $baseUrl.'?'.http_build_query($attributes);
+
+        $request = array(
+            'url' => $url,
+            'method' => 'get',
+        );
+
+        $response = $this->postRequest($request);
+
+        parse_str($response->body, $content);
+
+        $content['payment_id'] = $input['payment']['id'];
+        $content['refund_id'] = $input['refund']['id'];
+
+        $payment = $this->createGatewayPaymentEntity($content);
+
+        $this->verifySecureHash($input);
     }
 
     protected function createGatewayPaymentEntity($attributes)

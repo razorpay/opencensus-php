@@ -105,6 +105,11 @@ class TerminalPicker
             }
         }
 
+            if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+            {
+                return $gatewayTerms[Payment\Gateway::PAYTM];
+            }
+
         if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
         {
             return $gatewayTerms[Gateway::AXIS_MIGS];

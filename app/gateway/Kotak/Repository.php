@@ -25,7 +25,7 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         return $repo::where('payment_id', '=', $paymentId)
-                    ->where('vpc_Command', '=', $command)
+                    ->where('TxnType', '=', $command)
                     ->firstOrFail();
     }
 }
