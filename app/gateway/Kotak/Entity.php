@@ -13,16 +13,14 @@ class Entity extends Base\PublicEntity
         'OrderInfo',
         'Amount',
         'Currency',
-        'MCC',
         'AuthCode',
         'CardType',
         'ResponseCode',
+        'Message',
+        'MaskedCardNum',
+        'BatchNo',
         'RetRefNo',
-        'MerchantName',
-        'MerchantCity',
-        'MerchantState',
-        'MerchPostalCode',
-        'MerchPhone',
+        'CaptureAmount',
     );
 
     protected $fillable = array(
@@ -32,16 +30,14 @@ class Entity extends Base\PublicEntity
         'OrderInfo',
         'Amount',
         'Currency',
-        'MCC',
         'AuthCode',
         'CardType',
         'ResponseCode',
+        'Message',
+        'MaskedCardNum',
+        'BatchNo',
         'RetRefNo',
-        'MerchantName',
-        'MerchantCity',
-        'MerchantState',
-        'MerchPostalCode',
-        'MerchPhone',
+        'CaptureAmount',
     );
 
     protected $table = 'kotak';

@@ -36,6 +36,8 @@ class Gateway extends Base\Gateway
             'MerchPhone'        => '9494994949',
         );
 
+        $this->createGatewayPaymentEntity($attributes);
+
         $this->addMerchantAndTerminalDetails($attributes, $input);
 
         $url = '';
@@ -58,9 +60,18 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $payment = $this->getRepo()->findByTxnRefAndType(
+            $input['gateway']['TxnRefNo'], Type::PURCHASE);
+
+        $payment->fill($input['gateway']);
+        $payment->saveOrFail();
+
         $this->verifySecureHash($input);
 
-        sd($input);
+//        $this->verifyPaymentCallbackResponse($input);
+
+        s($input['gateway']);
+        sd($payment);
     }
 
     public function capture(array $input)
@@ -71,6 +82,18 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+    }
+
+    protected function createGatewayPaymentEntity($attributes)
+    {
+        $payment = $this->getNewGatewayPaymentEntity();
+        $payment->setPaymentId($attributes['TxnRefNo']);
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
+        return $payment;
     }
 
     protected function addMerchantAndTerminalDetails(array & $content, $input)
@@ -109,6 +132,16 @@ class Gateway extends Base\Gateway
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 
         return $cardExp;
+    }
+
+    protected function getNewGatewayPaymentEntity()
+    {
+        return new Kotak\Entity;
+    }
+
+    protected function getRepo()
+    {
+        return new Kotak\Repository;
     }
 
     protected function getHashOfString($str)
