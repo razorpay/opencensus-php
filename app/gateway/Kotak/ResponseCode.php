@@ -5,7 +5,7 @@ namespace Gateway\Kotak;
 class ResponseCode
 {
     protected $code = array(
-        '00'    => 'Success Successful Transaction',
+        '00'    => 'Successful Transaction',
         'VER'   => 'Validation Error Occurs if field data is incorrect',
         'HNM'   => 'Hash Not Match Occurs if the data is tampered',
         'STO'   => 'Session Timeout If user session is timed out',

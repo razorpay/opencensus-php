@@ -68,10 +68,7 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input);
 
-//        $this->verifyPaymentCallbackResponse($input);
-
-        s($input['gateway']);
-        sd($payment);
+        $this->verifyPaymentCallbackResponse($input);
     }
 
     public function capture(array $input)
@@ -120,6 +117,20 @@ class Gateway extends Base\Gateway
         if ($generatedHash !== $hash)
         {
             throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
+        }
+    }
+
+    protected function verifyPaymentCallbackResponse($input)
+    {
+        $content = $input['gateway'];
+
+        if ($content['ResponseCode'] !== '00')
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    null,
+                    $input['gateway']['Message']);
         }
     }
 
