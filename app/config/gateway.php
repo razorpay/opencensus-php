@@ -21,7 +21,7 @@ return array(
     'mock_atom'             => $_ENV['ATOM_MOCK'],
     'mock_axis_migs'        => $_ENV['AXIS_MIGS_MOCK'],
     'mock_axis_genius'      => $_ENV['AXIS_GENIUS_MOCK'],
-    'mock_kotak'            => false,
+    'mock_kotak'            => $_ENV['KOTAK_MOCK'],
 
     'mockhdfc_server' => false,
 

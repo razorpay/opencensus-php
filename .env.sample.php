@@ -49,6 +49,8 @@ return array(
     'ATOM_MOCK'                             => true,
     'AXIS_MIGS_MOCK'                        => true,
     'AXIS_GENIUS_MOCK'                      => true,
+    'KOTAK_MOCK'                            => true,
+    'PAYTM_MOCK'                            => true,
 
     'MOCK_GATEWAY_SECRET'                   => 'random_password',
 
