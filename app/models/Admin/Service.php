@@ -38,7 +38,7 @@ class Service extends Base\Service
     {
         $map = array(
             'refund'            => 'Models\Payment\Refund',
-            'dailysettlement'   => 'Models\Settlement\Daily';
+            'dailysettlement'   => 'Models\Settlement\Daily',
             'atom'              => 'Gateway\Atom',
             'bank_account'      => 'Models\Merchant\BankAccount',
             'kotak'             => 'Gateway\Kotak',
@@ -47,9 +47,9 @@ class Service extends Base\Service
             'paytm'             => 'Gateway\Paytm',
         );
 
-        if (array_key_exists($ns, $map))
+        if (array_key_exists($entity, $map))
         {
-            return $map[$ns];
+            return $map[$entity];
         }
 
         return 'Models\\'.ucfirst($entity);
