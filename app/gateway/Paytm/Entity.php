@@ -15,11 +15,9 @@ class Entity extends Base\PublicEntity
         'bank_code',
         'payment_type_id',
         'industry_type_id',
-        'website',
-        'bank_code',
         'orderid',
+        'txn_amount',
         'txnamount',
-        'currency',
         'txnid',
         'banktxnid',
         'status',
@@ -32,6 +30,7 @@ class Entity extends Base\PublicEntity
     );
 
     protected $fillable = array(
+        'action',
         'request_type',
         'cust_id',
         'channel_id',
@@ -40,11 +39,9 @@ class Entity extends Base\PublicEntity
         'bank_code',
         'payment_type_id',
         'industry_type_id',
-        'website',
-        'bank_code',
         'orderid',
+        'txn_amount',
         'txnamount',
-        'currency',
         'txnid',
         'banktxnid',
         'status',
@@ -67,5 +64,10 @@ class Entity extends Base\PublicEntity
     public function setPaymentId($paymentId)
     {
         $this->attributes['payment_id'] = $paymentId;
+    }
+
+    public function setAction($action)
+    {
+        $this->setAttribute('action', $action);
     }
 }

@@ -83,7 +83,7 @@ class Checksum
         return $myvalue;
     }
 
-    public static function getChecksumFromArray($arrayList, $key, $sort=1)
+    public static function getChecksumFromArray($arrayList, $key, $sort = 1)
     {
         if ($sort != 0)
         {
@@ -149,7 +149,7 @@ class Checksum
         $checksum = self::encrypt_e($hashString, $key);
     }
 
-    function removeCheckSumParam($arrayList)
+    protected static function removeCheckSumParam($arrayList)
     {
         if (isset($arrayList["CHECKSUMHASH"]))
         {

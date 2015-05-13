@@ -6,6 +6,7 @@ use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
+use Gateway\Base\Action;
 use Gateway\Paytm;
 use Requests;
 use Trace\Trace;
@@ -52,7 +53,7 @@ class Gateway extends Base\Gateway
                 '|' . $expiryDate;
             $content['PAYMENT_DETAILS'] = $this->getHashOfString($cardDetails);
             $content['AUTH_MODE'] = '3D';
-            $content['PAYMENT_TYPE_ID'] = Type::DC;
+            $content['PAYMENT_TYPE_ID'] = Type::CC;
         }
         else
         {
@@ -61,6 +62,8 @@ class Gateway extends Base\Gateway
         }
 
         $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
+
+        $this->createGatewayPaymentEntity($content);
 
         $content['CHECKSUMHASH'] = $this->generateHash($content);
 
@@ -75,16 +78,22 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-return;
+s($input['gateway']);
+
         $this->verifySecureHash($input);
 
-        $payment = $this->getRepo()->findByTxnRefAndType(
-            $input['gateway']['TxnRefNo'], Type::PURCHASE);
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['gateway']['ORDERID'], Action::AUTHORIZE);
 
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
 
         $this->verifyPaymentCallbackResponse($input);
+    }
+
+    protected function getRepo()
+    {
+        return new Paytm\Repository;
     }
 
     protected function getBankCode($input)
@@ -94,6 +103,31 @@ return;
 
         return $codes[$bank];
         return constant(__NAMESPACE__.'::BankCodes::'.$input['payment']['bank']);
+    }
+
+    protected function createGatewayPaymentEntity($attributes)
+    {
+        $attr = [];
+
+        foreach ($attributes as $key => $value)
+        {
+            $attr[strtolower($key)] = $value;
+        }
+
+        $payment = $this->getNewGatewayPaymentEntity();
+        $payment->setPaymentId($attr['order_id']);
+        $payment->setAction($this->action);
+
+        $payment->fill($attr);
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+    protected function getNewGatewayPaymentEntity()
+    {
+        return new Paytm\Entity;
     }
 
     protected function addMerchantIdAndOtherDetails(array & $content, $terminal)
@@ -108,12 +142,14 @@ return;
 
     protected function verifySecureHash($input)
     {
-        $hash = $input['gateway']['SecureHash'];
-        unset($input['gateway']['SecureHash']);
+        $checksum = $input['gateway']['CHECKSUMHASH'];
+        unset($input['gateway']['CHECKSUMHASH']);
 
-        $generatedHash = $this->generateHash($input['gateway']);
+        $secret = $this->getSecret();
 
-        if ($generatedHash !== $hash)
+        $res = Checksum::verifychecksum_e($input['gateway'], $secret, $checksum);
+
+        if ($res === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
@@ -124,7 +160,7 @@ return;
     {
         $content = $input['gateway'];
 
-        if ($content['RESPCODE'] !== '1')
+        if ($content['RESPCODE'] !== '01')
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
