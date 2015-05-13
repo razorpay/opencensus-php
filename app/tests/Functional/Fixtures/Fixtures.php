@@ -58,6 +58,8 @@ class Fixtures
 
         $entities = $this->create('merchant:default_test_merchant');
 
+        $this->create('card_detail:default_iins');
+
         $this->entities = $entities;
     }
 

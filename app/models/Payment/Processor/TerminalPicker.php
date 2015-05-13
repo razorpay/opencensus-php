@@ -133,7 +133,7 @@ class TerminalPicker
 
         if ($method === Payment\Method::CARD)
         {
-            if ($payment->card->getNetwork() === Card\Network::RUPAY)
+            if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
             {
                 $terminal = $repo->find(Shared::KOTAK_RAZORPAY_TERMINAL);
 

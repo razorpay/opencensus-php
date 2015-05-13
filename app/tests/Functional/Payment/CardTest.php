@@ -54,7 +54,7 @@ class CardTest extends TestCase
                 'last4' => substr($number, -4, 4),
                 'network' => $cardData[1],
                 'international' => NULL,
-                'type' => 'unknown',
+//                'type' => 'unknown',
             ];
 
             $payment = $this->getDefaultPaymentArray();

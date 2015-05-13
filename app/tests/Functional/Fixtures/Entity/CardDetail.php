@@ -44,7 +44,16 @@ class CardDetail extends Base
         array(
             'iin'       => '607002',
             'category'  => 'STANDARD',
-            'network'   => 'Rupay',
+            'network'   => 'RuPay',
+            'type'      => 'debit',
+            'country'   => 'IN',
+            'issuer'    => 'PUNJAB NATIONAL BANK',
+            'trivia'    => 'random trivia'
+            ),
+        array(
+            'iin'       => '607500',
+            'category'  => 'STANDARD',
+            'network'   => 'RuPay',
             'type'      => 'debit',
             'country'   => 'IN',
             'issuer'    => 'PUNJAB NATIONAL BANK',

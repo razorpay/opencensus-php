@@ -18,7 +18,6 @@ class SharedTerminalTest extends TestCase
         $this->gateway = 'atom';
 
         $this->merchant = $this->fixtures->create('merchant:with_keys');
-        $this->fixtures->create('card_detail:default_iins');
 
         $this->ba->setDefaultKey('rzp_test_AltTestAuthKey')->publicAuth();
 
