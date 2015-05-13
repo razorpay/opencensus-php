@@ -30,7 +30,7 @@ class Server extends Base\Mock\Server
             'BatchNo'       => $date,
             'RetRefNo'      => random_integer(12),
             'AuthCode'      => random_integer(6),
-            'CardType'      => 'RuPay',
+            'CardType'      => 'N/A',
             'MaskedCardNo'  => $card,
         );
 
