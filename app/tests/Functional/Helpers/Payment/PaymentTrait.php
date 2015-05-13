@@ -13,6 +13,7 @@ trait PaymentTrait
     use PaymentAxisGeniusTrait;
     use PaymentAxisMigsTrait;
     use PaymentHdfcTrait;
+    use PaymentKotakTrait;
 
     use RequestResponseFlowTrait
     {
@@ -66,6 +67,26 @@ trait PaymentTrait
         $func = $trace[1]['function'];
 
         return $this->getAndMatchPayment($id, $paymentResponse);
+    }
+
+    protected function runTestForAuthPayment($payment = null)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $func = $trace[1]['function'];
+
+        $testData = $this->testData[$func];
+
+        if ($payment !== null)
+            $testData['request']['content'] = $payment;
+
+        $this->replaceDefualtValues($testData['request']['content']);
+
+        $testData['request']['method'] = 'POST';
+        $testData['request']['url'] = '/payments';
+
+        $this->ba->publicAuth();
+
+        return $this->runRequestResponseFlow($testData);
     }
 
     protected function doAutoCapture()

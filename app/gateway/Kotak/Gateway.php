@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
             'Amount'            => $input['payment']['amount'],
             'Currency'          => 356,
             'ReturnURL'         => $input['callbackUrl'],
-            'CardNumber'        => '6075000000000015',//$input['card']['number'],
+            'CardNumber'        => $input['card']['number'],
             'ExpiryDate'        => $this->getFormattedCardExpiryDate($input),
             'CardSecurityCode'  => $input['card']['cvv'],
             'MCC'               => '4799',

@@ -30,4 +30,30 @@ return [
         'verified' => NULL,
         'entity' => 'payment',
     ],
+
+    'testTransactionDeclinedPayment' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '6075000000000015',
+                    'expiry_month' => '05',
+                    'expiry_year' => '2017',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'gateway_error_code'  => null
+        ],
+    ],
 ];
