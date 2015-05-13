@@ -12,11 +12,9 @@ use Models\Payment;
 
 class Server extends Base\Mock\Server
 {
-    protected $validator = null;
-
     public function __construct()
     {
-        $this->request = \Request::getFacadeRoot();
+        parent::__construct();
 
         $this->repo = new AxisMigs\Repository;
     }
@@ -124,28 +122,9 @@ class Server extends Base\Mock\Server
         return $this->prepareResponse($content);
     }
 
-    protected function checkReferer()
-    {
-        $request = $this->request;
-
-        $referer = $request->headers->get('referer');
-
-        $schema = $request->getScheme().'://';
-        $host = $request->getHost();
-        $host = $schema.$host;
-
-        $pos = strpos($referer, $host);
-
-        if ($pos !== 0)
-        {
-            throw new Exception\LogicException(
-                'Unexpected referer value. Referer: ' . $referer);
-        }
-    }
-
     protected function getGatewayPaymentEntity($input)
     {
-        return (new AxisMigs\Repository)->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
+        return $this->repo->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
     }
 
     protected function addMessageAndResponseCode(array & $content, array $input)
@@ -175,28 +154,6 @@ class Server extends Base\Mock\Server
     protected function addVpcMerchant(array & $content, $input)
     {
         $content['vpc_Merchant'] = $input['vpc_Merchant'];
-    }
-
-    protected function validateAuthorizeInput($input)
-    {
-        $validator = $this->getValidator();
-
-        $validator->validateInput('auth', $input);
-    }
-
-    public function setInput($input)
-    {
-        $this->input = $input;
-    }
-
-    protected function getValidator()
-    {
-        if ($this->validator === null)
-        {
-            $this->validator = new Validator;
-        }
-
-        return $this->validator;
     }
 
     protected function generateTransactionNo()

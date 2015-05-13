@@ -7,14 +7,15 @@ use Carbon\Carbon;
 use EE\Exception;
 use Gateway\Atom;
 use Gateway\Atom\Mock;
+use Gateway\Base;
 use Http\Route;
 use Models\Payment;
 
-class Server
+class Server extends Base\Mock\Server
 {
     public function __construct()
     {
-        $this->request = \Request::getFacadeRoot();
+        parent::__construct();
 
         $this->repo = new Atom\Repository;
     }
@@ -262,45 +263,6 @@ class Server
             </RESPONSE></MERCHANT></MMP>';
 
         return $str;
-    }
-
-    protected function checkReferer()
-    {
-        $request = $this->request;
-
-        $referer = $request->headers->get('referer');
-
-        $schema = $request->getScheme().'://';
-        $host = $request->getHost();
-        $host = $schema.$host;
-
-        $pos = strpos($referer, $host);
-
-        if ($pos === 0)
-        {
-            return;
-        }
-
-        $urlParts = parse_url($referer);
-        $baseUrl = $urlParts['host'];
-
-        if (strpos($baseUrl, 'razorpay.com') !== false)
-        {
-            return;
-        }
-
-        throw new Exception\LogicException(
-            'Unexpected referer value. Referer: ' . $referer);
-    }
-
-    protected function getBankPageUrl()
-    {
-        ;
-    }
-
-    public function netBankingPage()
-    {
-        ;
     }
 
     protected function generateToken()

@@ -15,7 +15,7 @@ class Gateway extends AxisMigs\Gateway
     {
         $request = parent::authorize($input);
 
-        $url = \Http\Route::getUrlWithPublicAuth('mockaxis_payment');
+        $url = \Http\Route::getUrlWithPublicAuth('mock_axis_migs_payment');
         $request['url'] = $url;
 
         return $request;
