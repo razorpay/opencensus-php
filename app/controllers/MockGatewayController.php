@@ -104,4 +104,15 @@ class MockGatewayController extends BaseController
 
         return Redirect::to($url);
     }
+
+    public function getKotakPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Kotak\Mock\Server;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
 }
