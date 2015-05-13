@@ -59,11 +59,11 @@ class Gateway extends Base\Gateway
             $content['BANK_CODE'] = $this->getBankCode($input);
             $content['PAYMENT_TYPE_ID'] = Type::NB;
         }
-//sd($content);
+
         $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
 
         $content['CHECKSUMHASH'] = $this->generateHash($content);
-//print_r($content);die();
+
         $request = array(
             'url' => $this->getUrl('pay'),
             'content' => $content,
@@ -74,7 +74,17 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        sd($input);
+        parent::callback($input);
+return;
+        $this->verifySecureHash($input);
+
+        $payment = $this->getRepo()->findByTxnRefAndType(
+            $input['gateway']['TxnRefNo'], Type::PURCHASE);
+
+        $payment->fill($input['gateway']);
+        $payment->saveOrFail();
+
+        $this->verifyPaymentCallbackResponse($input);
     }
 
     protected function getBankCode($input)
@@ -93,6 +103,34 @@ class Gateway extends Base\Gateway
             $content['MID'] = $this->config['test_merchant_id'];
             $content['WEBSITE'] = 'Razorweb';
             $content['INDUSTRY_TYPE_ID'] = 'Retail';
+        }
+    }
+
+    protected function verifySecureHash($input)
+    {
+        $hash = $input['gateway']['SecureHash'];
+        unset($input['gateway']['SecureHash']);
+
+        $generatedHash = $this->generateHash($input['gateway']);
+
+        if ($generatedHash !== $hash)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed checksum verification');
+        }
+    }
+
+    protected function verifyPaymentCallbackResponse($input)
+    {
+        $content = $input['gateway'];
+
+        if ($content['RESPCODE'] !== '1')
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    null,
+                    $input['gateway']['RESPMSG']);
         }
     }
 
