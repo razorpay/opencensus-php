@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
             'Amount'            => $input['payment']['amount'],
             'Currency'          => 356,
             'ReturnURL'         => $input['callbackUrl'],
-            'CardNumber'        => $input['card']['number'],
+            'CardNumber'        => '6075000000000015',//$input['card']['number'],
             'ExpiryDate'        => $this->getFormattedCardExpiryDate($input),
             'CardSecurityCode'  => $input['card']['cvv'],
             'MCC'               => '4799',
@@ -45,7 +45,7 @@ class Gateway extends Base\Gateway
         $baseUrl = $this->getUrl(Base\Action::PURCHASE);
 
         $url = $baseUrl.'?'.http_build_query($attributes);
-
+//sd($url);
         $request = array(
             'url' => $url,
             'method' => 'get'
@@ -82,14 +82,14 @@ class Gateway extends Base\Gateway
                                 $input['payment']['id'], Type::PURCHASE);
 
         $content = array(
-            'TxnRefNo' => $payment['TxnRefNo'],
-            'TxnType' => Type::REFUND,
-            'Amount' => $payment['amount'],
-            'ResponseCode' => '00',
-            'BatchNo' => $payment['BatchNo'],
-            'RetRefNo' => $payment['RetRefNo'],
-            'AuthCode' => $payment['AuthCode'],
-            'RefundAmount' => $input['refund']['amount'],
+            'TxnRefNo'      => $payment['TxnRefNo'],
+            'TxnType'       => Type::REFUND,
+            'Amount'        => $payment['amount'],
+            'ResponseCode'  => '00',
+            'BatchNo'       => $payment['BatchNo'],
+            'RetRefNo'      => $payment['RetRefNo'],
+            'AuthCode'      => $payment['AuthCode'],
+            'RefundAmount'  => $input['refund']['amount'],
         );
 
         $this->addMerchantAndTerminalDetails($content, $input);
