@@ -14,6 +14,7 @@ trait PaymentTrait
     use PaymentAxisMigsTrait;
     use PaymentHdfcTrait;
     use PaymentKotakTrait;
+    use PaymentPaytmTrait;
 
     use RequestResponseFlowTrait
     {

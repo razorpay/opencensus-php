@@ -100,4 +100,23 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createSharedPaytmTerminal()
+    {
+        $termId = \Models\Terminal\Shared::PAYTM_RAZORPAY_TERMINAL;
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => $merchant['id'],
+            'gateway'                   => 'paytm',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay paytm',
+            'gateway_terminal_id'       => 'nodal account paytm',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }
