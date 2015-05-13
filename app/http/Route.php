@@ -93,9 +93,10 @@ final class Route
         'mockatom_choose_org'               => ['get',      'gateway/mockanb',                          'MockGatewayController@getAtomChooseOrg'                ],
         'mockatom_rzp_payment'              => ['post',     'gateway/mockanb/payment',                  'MockGatewayController@postAtomRzpPayment'              ],
         'mockatom_rzp_payment_submit'       => ['post',     'gateway/mockanb/payment/submit',           'MockGatewayController@postAtomRzpPaymentSubmit'        ],
-        'mock_axis_migs_payment'            => ['post',     'gateway/mockaxis/payment',                 'MockGatewayController@postAxisPayment'                 ],
+        'mock_axis_migs_payment'            => ['post',     'gateway/mockaxismigs/payment',             'MockGatewayController@postAxisPayment'                 ],
         'mock_axis_genius_payment'          => ['post',     'gateway/mockaxisgenius/payment',           'MockGatewayController@postAxisGeniusPayment'           ],
         'mock_kotak_payment'                => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                 ],
+        'mock_paytm_payment'                => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
     );
@@ -113,6 +114,7 @@ final class Route
         'mock_axis_migs_payment',
         'mock_axis_genius_payment',
         'mock_kotak_payment',
+        'mock_paytm_payment',
     );
 
     public static $publicCallback = array(

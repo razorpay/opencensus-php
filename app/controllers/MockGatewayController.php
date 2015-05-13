@@ -115,4 +115,15 @@ class MockGatewayController extends BaseController
 
         return Redirect::to($url);
     }
+
+    public function postPaytmPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Paytm\Mock\Server;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
 }

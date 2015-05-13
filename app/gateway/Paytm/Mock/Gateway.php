@@ -15,7 +15,7 @@ class Gateway extends Paytm\Gateway
     {
         $request = parent::authorize($input);
 
-        $url = \Http\Route::getUrlWithPublicAuth('mock_axis_genius_payment');
+        $url = \Http\Route::getUrlWithPublicAuth('mock_paytm_payment');
         $request['url'] = $url;
 
         return $request;

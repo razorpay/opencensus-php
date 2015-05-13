@@ -42,7 +42,6 @@ class Gateway extends Base\Gateway
             'WEBSITE'                   => $input['merchant']['website'],
             'CALLBACK_URL'              => $input['callbackUrl'],
             'PAYMENT_MODE_ONLY'         => 'Yes',
-            'AUTH_MODE'                 => 'USERPWD',
         );
 
         if ($method === 'card')
@@ -55,10 +54,11 @@ class Gateway extends Base\Gateway
             $content['AUTH_MODE'] = '3D';
             $content['PAYMENT_TYPE_ID'] = Type::CC;
         }
-        else
+        else if ($method === 'netbanking')
         {
             $content['BANK_CODE'] = $this->getBankCode($input);
             $content['PAYMENT_TYPE_ID'] = Type::NB;
+            $content['AUTH_MODE'] = 'USERPWD';
         }
 
         $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
@@ -78,7 +78,6 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-s($input['gateway']);
 
         $this->verifySecureHash($input);
 
