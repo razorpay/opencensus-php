@@ -67,6 +67,14 @@ class Server extends Base\Mock\Server
             $respCode = 'VER';
             $message = 'Transaction declined';
         }
+        else if ($input['CardNumber'] === '6070020000000026')
+        {
+            $respCode = 'VER';
+            $message = 'Transaction could not be processed by Acquiring System';
+            $content['AuthCode'] = 'N/A';
+            $content['RetRefNo'] = 'N/A';
+            $content['CardType'] = 'N/A';
+        }
         else
         {
             $respCode = '00';

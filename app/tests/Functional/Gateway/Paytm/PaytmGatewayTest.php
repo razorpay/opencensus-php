@@ -24,29 +24,12 @@ class PaytmGatewayTest extends TestCase
 
     public function testPayment()
     {
+        $this->markTestIncomplete();
         $payment = $this->getDefaultPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
-    }
-
-    public function testTransactionDeclinedPayment()
-    {
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->runTestForAuthPayment();
-    }
-
-    public function testFailPayment()
-    {
-        $this->markTestIncomplete();
-        $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '4111111111111111';
-
-        $content = $this->doAuthPayment($payment);
-
-        sd($content);
     }
 }

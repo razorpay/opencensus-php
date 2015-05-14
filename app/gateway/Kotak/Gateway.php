@@ -45,12 +45,12 @@ class Gateway extends Base\Gateway
         $baseUrl = $this->getUrl(Base\Action::PURCHASE);
 
         $url = $baseUrl.'?'.http_build_query($attributes);
-//sd($url);
+
         $request = array(
             'url' => $url,
             'method' => 'get'
         );
-//\Log::info($request['url']);
+
         return $request;
     }
 

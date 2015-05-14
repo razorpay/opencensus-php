@@ -47,7 +47,19 @@ trait PaymentKotakTrait
         }
         else
         {
-            list($url, $method, $values, $response) = $this->makeRequestAndGetFormData($url, 'GET');
+            $options = ['follow_redirects' => false, 'verify' => false];
+            $response = Requests::get($url, [], $options);
+
+            $this->assertEquals($response->status_code, 302);
+            $url = $response->headers['location'];
+
+            $response = Requests::get($url, [], $options);
+            $this->assertEquals($response->status_code, 302);
+            $url = $response->headers['location'];
+
+            $response = Requests::get($url, [], $options);
+            $this->assertEquals($response->status_code, 302);
+            $url = $response->headers['location'];
         }
 
         return $this->submitPaymentCallbackRedirect($url);

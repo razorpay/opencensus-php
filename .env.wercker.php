@@ -49,6 +49,7 @@ return array(
     'AXIS_MIGS_MOCK'                        => true,
     'AXIS_GENIUS_MOCK'                      => true,
     'KOTAK_MOCK'                            => true,
+    'PAYTM_MOCK'                            => true,
 
     'EMAIL_MOCK'                            => true,
 
