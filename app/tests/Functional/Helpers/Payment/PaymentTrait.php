@@ -385,6 +385,15 @@ trait PaymentTrait
         return $this->submitPaymentCallbackRequest($request);
     }
 
+    protected function submitPaymentCallbackData($url, $method, $values)
+    {
+        $request['method'] = 'POST';
+        $request['url'] = $url;
+        $request['content'] = $values;
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
     protected function submitPaymentCallbackRequest($request)
     {
         $this->ba->publicCallbackAuth();
@@ -507,6 +516,13 @@ trait PaymentTrait
         list ($uri, $method, $values) = $this->getFormDataFromResponse($response->body, $url);
 
         return [$uri, $method, $values, $response];
+    }
+
+    protected function getFormRequestFromResponse($content, $url)
+    {
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, $url);
+
+        return compact('url', 'method', 'content');
     }
 
     protected function getFormDataFromResponse($content, $url)

@@ -169,8 +169,10 @@ trait PaymentAtomTrait
             }
         }
 
-        $crawler = new Crawler($content, 'http://ab.com');
-        $form = $crawler->filter('form')->form();
+        $request = $this->getFormRequestFromResponse($content, 'http://ab.com');
+
+        // $crawler = new Crawler($content, 'http://ab.com');
+        // $form = $crawler->filter('form')->form();
 
         //
         // This is the final submission. Basically, atom returns a bunch of data
@@ -180,9 +182,7 @@ trait PaymentAtomTrait
         // The url to submit to is the action field of the form in this case
         //
 
-        $response = $this->submitPaymentCallbackForm($form);
-
-        return $response;
+        return $this->submitPaymentCallbackRequest($request);
     }
 
     protected function isAtomFlowRequired($response, $callback = null)
