@@ -155,16 +155,9 @@ class AdminController extends BaseController
 
     public function getMerchantDetails($id)
     {
-        $details = (new Admin\Service)->fetchMerchantDetails($id);
+        list($error, $data) = (new Admin\Service)->fetchMerchantActivationDetails($id);
 
-        $activation_details = (new Admin\Service)->fetchMerchantActivationDetails($id);
-
-        $data = array(
-            'activation' => $activation_details,
-            'merchant'   => $details
-        );
-
-        return AppResponse::jsonResponse([], $data);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getMerchantBalance($id)

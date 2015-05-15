@@ -168,11 +168,30 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchMerchantAndActivationDetails($id)
+    {
+        if ($id === null)
+        {
+            return [['id' => 'Merchant id cannot be null'], []];
+        }
+
+        $details = (new Admin\Service)->fetchMerchantDetails($id);
+
+        $activation_details = (new Admin\Service)->fetchMerchantActivationDetails($id);
+
+        $data = array(
+            'activation' => $activation_details,
+            'merchant'   => $details
+        );
+
+        return [[], $data];
+    }
+
     public function fetchMerchantDetails($id)
     {
         $merchant = Merchant\Entity::findorfail($id);
 
-        if($merchant->confirm_token !== Null)
+        if ($merchant->confirm_token !== null)
         {
             return $merchant->toArray();
         }
