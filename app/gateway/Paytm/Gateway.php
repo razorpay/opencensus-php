@@ -36,12 +36,12 @@ class Gateway extends Base\Gateway
             'TXN_AMOUNT'                => $input['payment']['amount'] / 100,
             'CUST_ID'                   => $input['payment']['email'],
             'CHANNEL_ID'                => 'WEB',
-//            'EMAIL'                     => $input['payment']['email'],
-  //          'MOBILE_NO'                 => $input['payment']['contact'],
             'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
             'WEBSITE'                   => $input['merchant']['website'],
             'CALLBACK_URL'              => $input['callbackUrl'],
             'PAYMENT_MODE_ONLY'         => 'Yes',
+//            'MOBILE_NO'                 => $input['payment']['contact'],
+//            'EMAIL'                     => $input['payment']['email'],
         );
 
         if ($method === 'card')
@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
     }
 
     public function callback(array $input)
-    {
+    {//s($input['gateway']);
         parent::callback($input);
 
         $this->verifySecureHash($input);
@@ -159,12 +159,12 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        if ($content['RESPCODE'] !== '01')
+        if ($content['STATUS'] !== Status::SUCCESS)
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                    null,
+                    (int) $input['gateway']['RESPCODE'],
                     $input['gateway']['RESPMSG']);
         }
     }

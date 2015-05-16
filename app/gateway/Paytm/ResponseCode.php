@@ -274,4 +274,20 @@ class ResponseCode
 		922     => 'User authentication failed.',
 		923     => 'Invalid parameters',
     );
+
+    protected static $success = array(
+        1, 8,
+    );
+
+    public static function getResponseMessage($code)
+    {
+        $codes = self::$codes;
+
+        return $codes[(int) $code];
+    }
+
+    public static function getStatus($code)
+    {
+        ; // @todo
+    }
 }
