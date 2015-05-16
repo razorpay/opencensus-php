@@ -45,6 +45,8 @@ trait PaymentPaytmTrait
             $this->assertEquals($statusCode, '302');
 
             $url = $response->getTargetUrl();
+
+            return $this->submitPaymentCallbackRedirect($url);
         }
         else
         {
@@ -55,7 +57,5 @@ trait PaymentPaytmTrait
 
             return $this->submitPaymentCallbackData($url, $method, $values);
         }
-
-        return $this->submitPaymentCallbackRedirect($url);
     }
 }

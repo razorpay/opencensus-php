@@ -77,6 +77,12 @@ trait PaymentTrait
 
         $testData = $this->testData[$func];
 
+        if (isset($testData['request']) === false)
+            $testData['request'] = [];
+
+        if (isset($testData['request']['content']) === false)
+            $testData['request']['content'] = [];
+
         if ($payment !== null)
             $testData['request']['content'] = $payment;
 

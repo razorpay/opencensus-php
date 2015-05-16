@@ -30,4 +30,28 @@ return [
         'verified' => NULL,
         'entity' => 'payment',
     ],
+
+    'testPayment3dsecureFailed' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '4012001036275556',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'gateway_error_code'  => null
+        ],
+    ],
 ];
