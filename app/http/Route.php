@@ -36,6 +36,7 @@ final class Route
         'card_fetch_multiple'               => ['get',      'cards',                                    'PaymentController@getCards'                            ],
         'iin_fetch_by_iin'                  => ['get',      'iins/{id}',                                'CardController@getIin'                                 ],
         'iin_fetch_multiple'                => ['get',      'iins',                                     'CardController@getIins'                                ],
+        'iin_add'                           => ['post',     'iins',                                     'CardController@postIin'                                ],
         'merchant_public_get_banks'         => ['get',      'banks',                                    'MerchantController@getBanksPublic'                     ],
         'merchant_secret'                   => ['get',      'keys/{id}/secret',                         'MerchantController@getKeySecret'                       ],
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],
@@ -186,6 +187,9 @@ final class Route
         'mockhdfc_payment',
         'admin_fetch_entity_multiple',
         'admin_fetch_entity_by_id',
+        'iin_fetch_by_iin',
+        'iin_fetch_multiple',
+        'iin_add',
         );
 
     public static $proxy = array(

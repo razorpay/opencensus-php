@@ -31,4 +31,9 @@ class Service extends Base\Service
 
         return $iins->toArrayPublic();
     }
+
+    public function addIin($input)
+    {
+        ;
+    }
 }
