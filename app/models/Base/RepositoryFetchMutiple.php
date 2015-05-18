@@ -80,7 +80,7 @@ trait RepositoryFetch
             $query->skip($params['skip']);
         }
 
-        $query->orderBy(Common::ID, 'desc');
+        $this->addQueryOrder($query);
 
         $this->buildFetchQueryAdditional($params, $query);
 
@@ -90,6 +90,11 @@ trait RepositoryFetch
     protected function buildFetchQueryAdditional($params, $query)
     {
         return;
+    }
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Common::ID, 'desc');
     }
 
     protected function validateFetchParams(array $params)

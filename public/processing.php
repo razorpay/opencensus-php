@@ -98,6 +98,9 @@ function handleMessage(data){
 
 </script>
 <style>
+  body{
+    background: #fff;
+  }
   .rzp-loader {
     display: block;
     position: absolute;
@@ -224,9 +227,11 @@ function handleMessage(data){
   }
   var msgString = JSON.stringify(msgObj)
   createCookie('rzp', msgString);
-  if(window.opener && typeof window.opener.postMessage == 'function'){
+
+  if (window.opener && typeof window.opener.postMessage == 'function'){
     window.opener.postMessage(msgString, '*');
   }
+}
 </script>
 </body>
 </html>

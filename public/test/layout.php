@@ -24,7 +24,7 @@ require('vars.php');
             'description': 'Tron Legacy',
             'image': 'https://i.imgur.com/3g7nmJC.png',
             'handler': function (transaction) {
-                alert("You have successfully purchased Tron Legacy");
+                alert("You have successfully purchased Tron Legacy \n transaction id: " + transaction.razorpay_payment_id);
             },
             'protocol': '<?= $protocol ?>',
             'hostname': '<?= $hostname ?>',

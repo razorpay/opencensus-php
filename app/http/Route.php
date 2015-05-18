@@ -34,6 +34,8 @@ final class Route
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                          ],
         'card_fetch_by_id'                  => ['get',      'cards/{id}',                               'PaymentController@getCard'                             ],
         'card_fetch_multiple'               => ['get',      'cards',                                    'PaymentController@getCards'                            ],
+        'iin_fetch_by_iin'                  => ['get',      'iins/{id}',                                'CardController@getIin'                                 ],
+        'iin_fetch_multiple'                => ['get',      'iins',                                     'CardController@getIins'                                ],
         'merchant_public_get_banks'         => ['get',      'banks',                                    'MerchantController@getBanksPublic'                     ],
         'merchant_secret'                   => ['get',      'keys/{id}/secret',                         'MerchantController@getKeySecret'                       ],
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],

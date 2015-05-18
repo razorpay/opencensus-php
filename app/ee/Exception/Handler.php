@@ -7,6 +7,7 @@ use Config;
 use Http\ApiResponse;
 use Trace;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
 class Handler
 {
@@ -38,6 +39,11 @@ class Handler
         $this->app->error(function(MethodNotAllowedHttpException $e)
         {
             return ApiResponse::httpMethodNotAllowed();
+        });
+
+        $this->app->error(function(ProcessTimedOutException $e)
+        {
+            return ApiResponse::json(['erorr' => 'Process timed out']);
         });
     }
 

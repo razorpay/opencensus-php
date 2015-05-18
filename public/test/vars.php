@@ -2,13 +2,7 @@
 
 $checkout = 'https://checkout.razorpay.com';
 
-$protocol = 'http';
-
-if ((isset($_SERVER['HTTPS'])) and
-    ($_SERVER['HTTPS'] === 'on'))
-{
-    $protocol = 'https';
-}
+$protocol = 'https';
 
 $hostname = $_SERVER['HTTP_HOST'];
 

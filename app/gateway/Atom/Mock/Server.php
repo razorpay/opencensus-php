@@ -103,13 +103,19 @@ class Server extends Base\Mock\Server
 
         $atom = $this->getAtomPaymentByTempTxnId($input['tempTxnId']);
 
+        $payment = (new \Models\Payment\Repository)->findOrFail($atom['id']);
+
         $bankTxnId = random_integer(6);
+
+        $amount = $payment['amount'] / 100;
+        if (is_int($amount))
+            $amount .= '.00';
 
         $data = array(
             'tempTxnId' => $input['tempTxnId'],
             'ITC' => $bankTxnId,
             'BID' => $bankTxnId . '1',
-            'amount' => '50.0000',
+            'amount' => $amount,
             'url' => $this->getRzpPaymentPageSubmitUrl(),
             'clientCode' => '007');
 
