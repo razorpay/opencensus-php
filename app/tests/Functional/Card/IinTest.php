@@ -20,8 +20,16 @@ class IinTest extends TestCase
 
     public function testAddIin()
     {
-        $this->ba->appAuth();
+        $this->startTest();
+    }
 
+    public function testGetIin()
+    {
+        $this->startTest();
+    }
+
+    public function testGetIins()
+    {
         $this->startTest();
     }
 

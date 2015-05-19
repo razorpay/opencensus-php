@@ -18,9 +18,9 @@ class Service extends Base\Service
         $this->repo = new IIN\Repository();
     }
 
-    public function fetchIinDetails($id)
+    public function fetchIin($iin)
     {
-        $iin = $this->repo->findOrFail($id);
+        $iin = $this->repo->findOrFail($iin);
 
         return $iin->toArrayPublic();
     }
