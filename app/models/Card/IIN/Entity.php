@@ -25,7 +25,24 @@ class Entity extends Base\PublicEntity
 
     public $timestamps = false;
 
-    protected $guarded = array('*');
+    protected $fillable = array(
+        self::IIN,
+        self::CATEGORY,
+        self::NETWORK,
+        self::TYPE,
+        self::COUNTRY,
+        self::ISSUER,
+        self::TRIVIA);
+
+    protected $public = array(
+        self::IIN,
+        self::CATEGORY,
+        self::NETWORK,
+        self::TYPE,
+        self::COUNTRY,
+        self::ISSUER,
+        self::TRIVIA,
+    );
 
     public function getType()
     {

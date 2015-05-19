@@ -34,6 +34,8 @@ class Service extends Base\Service
 
     public function addIin($input)
     {
-        ;
+        $iin = (new Entity)->build($input);
+
+        return $iin->toArrayPublic();
     }
 }

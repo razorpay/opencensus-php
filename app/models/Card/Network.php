@@ -146,6 +146,11 @@ class Network
                 (in_array($network, array_values(self::$fullName))));
     }
 
+    public static function isValidNetworkName($network)
+    {
+        return (array_search($network, self::$fullName) !== false);
+    }
+
     public static function isUnsupportedNetwork($network)
     {
         return (in_array($network, self::$unsupportedNetworks));
