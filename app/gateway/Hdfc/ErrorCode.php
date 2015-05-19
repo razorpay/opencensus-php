@@ -196,6 +196,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00456   => 'Invalid TranPortal Id',
         Hdfc\ErrorCode::GW00458   => 'Invalid Payment Attempt',
         Hdfc\ErrorCode::GW00850   => 'Missing Required data',
+        Hdfc\ErrorCode::GW00856   => 'Invalid cvv',
 
         Hdfc\ErrorCode::GV00001   => 'Unknown VPAS version',
         Hdfc\ErrorCode::GV00002   => 'Cardholder not enrolled',
