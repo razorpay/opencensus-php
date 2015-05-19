@@ -229,9 +229,6 @@ return [
             'content' => [
                 'entity' => 'collection',
                 'items' => [
-                    [
-                        'entity' => 'payment',
-                    ],
                 ],
             ]
         ],

@@ -236,6 +236,9 @@ class Processor
 
         $gateway = $this->payment->getGateway();
 
+        $input['terminal'] = $terminal;
+        $input['merchant'] = $terminal->merchant;
+
         return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
     }
 
@@ -246,8 +249,6 @@ class Processor
         $payment = (new Payment\Entity)->build($input);
 
         $payment->merchant()->associate($this->merchant);
-
-        (new TerminalPicker)->selectTerminal($payment);
 
         $this->payment = $payment;
 

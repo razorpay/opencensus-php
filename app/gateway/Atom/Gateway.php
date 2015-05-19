@@ -8,11 +8,13 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Trace\Trace;
 use Trace\TraceCode;
-use Gateway\BaseGateway;
+use Gateway\Base;
 use Gateway\Atom;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
+    protected $gateway = 'atom';
+
     protected $paymentRequest = array(
         'type' => 'payment',
         'fields' => array('ttype', 'prodid', 'amt', 'txncurr', 'txnscamt',
@@ -53,9 +55,10 @@ class Gateway extends BaseGateway
         $url = $this->createAtomRedirectUrl($data);
         // \Log::info($url);
 
-        $data = array('redirectUrl' => $url);
+        $retRequest['method'] = 'get';
+        $retRequest['url'] = $url;
 
-        return $data;
+        return $retRequest;
     }
 
     public function capture(array $input = array())
@@ -70,10 +73,12 @@ class Gateway extends BaseGateway
      */
     public function callback(array $input)
     {
+        parent::callback($input);
+
         // \Log::info(json_encode($input, JSON_PRETTY_PRINT));
 
         // Get payment-id of the transaction
-        $paymentId = $input['mer_txn'];
+        $paymentId = $input['gateway']['mer_txn'];
 
         $payment = $input['payment'];
 
@@ -83,11 +88,11 @@ class Gateway extends BaseGateway
         $atom = Atom\Entity::findOrFail($payment['id']);
 
         // Set the data received from atom on atom payment entity
-        $atom->setCallbackData($input);
+        $atom->setCallbackData($input['gateway']);
 
         $this->validatePaymentIdReceived($paymentId, $payment);
 
-        $this->processPaymentResponse($input, $atom);
+        $this->processPaymentResponse($input['gateway'], $atom);
 
         return $this->getCallbackResponse($atom);
     }
@@ -142,7 +147,7 @@ class Gateway extends BaseGateway
         }
         else
         {
-            $status = ($payment['success'] === '1') ? true : false;
+            $status = ((int) $payment['success'] === 1) ? true : false;
 
             if (($status === false) and
                 ($atomStatus === false))
@@ -153,7 +158,7 @@ class Gateway extends BaseGateway
             {
                 if (($status === true) and
                     ($atomStatus === true) and
-                    ($content['BID'] === $payment['bank_payment_id']))
+                    ($content['BID'] === (string) $payment['bank_payment_id']))
                 {
                     ;
                 }
@@ -326,6 +331,7 @@ class Gateway extends BaseGateway
         $str = $this->buildGetQueryString($request['content']);
         $request['url'] .= '?'.$str;
         $request['content'] = [];
+        $request['method'] = 'get';
         // echo $request['url'];die();
 
         $this->response = $this->sendGatewayRequest($request);

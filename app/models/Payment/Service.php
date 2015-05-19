@@ -138,23 +138,26 @@ class Service extends Base\Service
         $payments = (new Payment\Repository)->getAuthorizedPaymentsBeforeTimestamp(
                             $timestamp);
 
-        $paymentIds = $payments->getIds();
-
-        $channel = '#transactions';
-        $username = 'transactions';
-
-        $date->subDay(1);
-
-        $message = '@harshil @shk Payment authorizations till ' . $date->format('d-m-y');
-
-        foreach ($payments as $payment)
-        {
-            $message .= ' \n ' . $payment->getPublicId();
-        }
-
-        $this->app['slack']->send($message, $channel, $username);
-
         $count = $payments->count();
+
+        if ($count !== 0)
+        {
+            $paymentIds = $payments->getIds();
+
+            $channel = '#transactions';
+            $username = 'transactions';
+
+            $date->subDay(1);
+
+            $message = '@harshil @shk Payment authorizations till ' . $date->format('d-m-y');
+
+            foreach ($payments as $payment)
+            {
+                $message .= ' \n ' . $payment->getPublicId();
+            }
+
+            $this->app['slack']->send($message, $channel, $username);
+        }
 
         return ['count' => $count];
     }

@@ -10,8 +10,12 @@ class Entity extends Base\PublicEntity
     const NAME              = 'name';
     const EMAIL             = 'email';
     const ACTIVATED         = 'activated';
+    const ACTIVATED_AT      = 'activated_at';
     const LIVE              = 'live';
     const PRICING_PLAN_ID   = 'pricing_plan_id';
+    const INTERNATIONAL     = 'international';
+    const WEBSITE           = 'website';
+    const CATEGORY          = 'category';
 
     protected $table = \Constants\Table::MERCHANT;
 
@@ -32,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::ACTIVATED,
+        self::ACTIVATED_AT,
         self::LIVE,
         self::PRICING_PLAN_ID,
         self::CREATED_AT);
@@ -48,11 +53,17 @@ class Entity extends Base\PublicEntity
     protected function generateActivated($input)
     {
         $this->setAttribute(self::ACTIVATED, false);
+        $this->setAttribute(self::ACTIVATED_AT, null);
     }
 
     public function isActivated()
     {
         return $this->getAttribute(self::ACTIVATED);
+    }
+
+    public function isInternational()
+    {
+        return (boolean) $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isLive()
@@ -64,6 +75,7 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ACTIVATED, true);
         $this->setAttribute(self::LIVE, true);
+        $this->setAttribute(self::ACTIVATED_AT, time());
     }
 
     public function liveEnable()

@@ -197,4 +197,9 @@ class Entity extends Base\PublicEntity
 
         return (Card\Network::isUnsupportedNetwork($network));
     }
+
+    public function isInternational()
+    {
+        return (boolean) $this->getAttribute(self::INTERNATIONAL);
+    }
 }

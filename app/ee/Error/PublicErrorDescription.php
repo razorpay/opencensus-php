@@ -25,6 +25,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY         = 'Minimum amount allowed for net banking transaction for the merchant is INR 50';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                         = 'Card provided is not a dictionary';
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                         = 'Payment Exception: Card not provided';
+    const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                          = 'Invalid cvv';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                   = 'Net banking is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                         = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                         = 'Bank code provided for net banking payment is invalid';
@@ -72,7 +73,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                      = 'The merchant keys have already been created';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                    = 'The merchant has not yet provided his bank account details';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED            = 'The merchant already has provided a bank account';
-    const BAD_REQUEST_GATEWAY_TERMINAL_ONLY_TWO_ALLOWED                 = 'Currently only two terminals are allowed per merchant';
+    const BAD_REQUEST_GATEWAY_TERMINAL_ONLY_FOUR_ALLOWED                = 'Currently only max four terminals are allowed per merchant';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                        = 'A record with same gateway merchant id (mid) exists';
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY              = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                       = 'Payment verification with gateway failed';

@@ -55,9 +55,15 @@ trait Authorize
             'PAReq',
             'url');
 
-        $data = array_intersect_key($this->enrollResponse['data'], array_flip($fields));
+        $content['TermUrl'] = $this->callbackUrl;
+        $content['MD'] = $this->enrollResponse['data']['paymentid'];
+        $content['PaReq'] = $this->enrollResponse['data']['PAReq'];
 
-        return array('data' => $data);
+        $request['content'] = $content;
+        $request['url'] = $this->enrollResponse['data']['url'];
+        $request['method'] = 'post';
+
+        return $request;
     }
 
 
@@ -275,9 +281,9 @@ trait Authorize
 
     protected function createAuthEnrolledRequestFields($input)
     {
-        $this->authEnrolledRequest['data']['paymentid'] = $input['MD'];
+        $this->authEnrolledRequest['data']['paymentid'] = $input['gateway']['MD'];
 
-        $this->authEnrolledRequest['data']['PaRes'] = $input['PaRes'];
+        $this->authEnrolledRequest['data']['PaRes'] = $input['gateway']['PaRes'];
     }
 
     protected function validateAuthNotEnrolledResponse()

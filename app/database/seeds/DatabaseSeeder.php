@@ -184,6 +184,62 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                    => '1pnP3sEf2tQsm8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'axis_migs',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'test_merchant_axis_migs',
+                'gateway_terminal_id'   => 'test_terminal_axis_migs',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_axis_migs_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '1xnP3sEf2tQsm8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'axis_genius',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'test_merchant_axis_genius',
+                'gateway_terminal_id'   => 'test_terminal_axis_genius',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_axis_genius_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '1ynP3sEf2tQsm8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'kotak',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'test_merchant_kotak',
+                'gateway_terminal_id'   => 'test_terminal_kotak',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_kotak_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '1znP3sEf2tQsm8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'paytm',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'test_merchant_paytm',
+                'gateway_terminal_id'   => 'test_terminal_paytm',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_paytm_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => '1VwJebUIU7hIhU',
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => 'hdfc',
@@ -219,6 +275,62 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_atom',
                 'gateway_terminal_id'   => 'shared_terminal_atom',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'axis_migs',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'demo_merchant_axis_migs',
+                'gateway_terminal_id'   => 'shared_terminal_axis_migs',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_axis_migs_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'axis_genius',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'demo_merchant_axis_genius',
+                'gateway_terminal_id'   => 'shared_terminal_axis_genius',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_axis_genius_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::KOTAK_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'kotak',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'demo_merchant_kotak',
+                'gateway_terminal_id'   => 'shared_terminal_kotak',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_kotak_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::PAYTM_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'paytm',
+                'card'                  => '0',
+                'gateway_merchant_id'   => 'demo_merchant_paytm',
+                'gateway_terminal_id'   => 'shared_terminal_paytm',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_paytm_terminal_pass'),
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )

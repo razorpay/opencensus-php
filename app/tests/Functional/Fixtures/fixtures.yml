@@ -5,6 +5,9 @@ Models\Merchant\Entity:
     activated: 0
     live: 0
     pricing_plan_id: null
+    international: 0
+    website: razorpay.com
+    category: 1100
 
 Models\Terminal\Entity:
     id: $uniqueid
@@ -15,9 +18,12 @@ Models\Terminal\Entity:
     gateway_merchant_id: $string
     gateway_terminal_id: $string
     gateway_terminal_password: encryptpass
+    gateway_access_code: RANDOMCODE
+    gateway_secure_secret: SECURESECRET
 
 Models\Merchant\Balance:
     id: $uniqueid
+    balance: 0
 
 Models\Merchant\BankAccount\Entity:
     merchant_id: $uniqueid

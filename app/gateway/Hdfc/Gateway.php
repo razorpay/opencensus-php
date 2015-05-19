@@ -27,19 +27,21 @@ namespace Gateway\Hdfc;
 use Constants\Mode;
 use EE\Error;
 use EE\Exception;
-use Gateway\BaseGateway;
+use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
     use Payment\Enroll;
     use Payment\Authorize;
     use Payment\Support;
     use Payment\Inquiry;
+
+    protected $gateway = 'hdfc';
 
     /**
      * App payment id
@@ -206,8 +208,7 @@ class Gateway extends BaseGateway
 
     protected $bankAcsResponseRules = array(
         'PaRes'     => 'required',
-        'MD'        => 'required|numeric|digits_between:1,19',
-        'payment'       => 'required|array');
+        'MD'        => 'required|numeric|digits_between:1,19');
 
     /**
      * Either ENROLLED or NOT_ENROLLED
@@ -297,11 +298,14 @@ class Gateway extends BaseGateway
      */
     public function callback(array $input)
     {
-        validate($this->bankAcsResponseRules, $input);
+        parent::callback($input);
+
+        validate($this->bankAcsResponseRules, $input['gateway']);
 
         $this->id = $input['payment']['id'];
 
-        $this->model = $this->repo->findByGatewayTransactionIdOrFail($input['MD']);
+        $this->model = $this->repo->findByGatewayTransactionIdOrFail(
+            $input['gateway']['MD']);
 
         $paymentId = $this->model->getPaymentId();
 

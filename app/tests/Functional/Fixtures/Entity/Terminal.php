@@ -20,8 +20,7 @@ class Terminal extends Base
     public function createDisableDefaultHdfcTerminal()
     {
         $term = \Models\Terminal\Entity::findOrFail('1n25f6uN5S1Z5a');
-        $term->card = false;
-        $term->saveOrFail();
+        $term->forceDelete();
 
         return $term;
     }
@@ -39,6 +38,82 @@ class Terminal extends Base
             'card'                  => 1,
             'gateway_merchant_id'   => 'razorpay',
             'gateway_terminal_id'   => 'nodal account',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedAxisTerminal()
+    {
+        $termId = \Models\Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => $merchant['id'],
+            'gateway'                   => 'axis_migs',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay axis_migs',
+            'gateway_terminal_id'       => 'nodal account axis_migs',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedAxisGeniusTerminal()
+    {
+        $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => $merchant['id'],
+            'gateway'                   => 'axis_genius',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay axis_genius',
+            'gateway_terminal_id'       => 'nodal account axis_genius',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedKotakTerminal()
+    {
+        $termId = \Models\Terminal\Shared::KOTAK_RAZORPAY_TERMINAL;
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => $merchant['id'],
+            'gateway'                   => 'kotak',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay kotak',
+            'gateway_terminal_id'       => 'nodal account kotak',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedPaytmTerminal()
+    {
+        $termId = \Models\Terminal\Shared::PAYTM_RAZORPAY_TERMINAL;
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => $merchant['id'],
+            'gateway'                   => 'paytm',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay paytm',
+            'gateway_terminal_id'       => 'nodal account paytm',
             'gateway_terminal_password' => 'razorpay_password',
         );
 

@@ -53,14 +53,14 @@ class Core
         {
             if ($network === Card\Network::UNKNOWN)
             {
-                if (($details->getNetwork() !== null) and
-                    ($details->getNetwork() !== ''))
-                {
-                    $network = $details->getNetwork();
+                $recordedNetwork = $details->getNetwork();
 
-                    if (Card\Network::isValidNetwork($network))
+                if (($recordedNetwork !== null) and
+                    ($recordedNetwork !== ''))
+                {
+                    if (Card\Network::isValidNetwork($recordedNetwork))
                     {
-                        $card->setNetwork($network);
+                        $card->setNetwork($recordedNetwork);
                     }
                 }
             }
@@ -84,5 +84,7 @@ class Core
         {
             $card->setType(Type::UNKNOWN);
         }
+
+        $card->saveOrFail();
     }
 }

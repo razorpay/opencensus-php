@@ -63,9 +63,9 @@ Route::filter('auth.proxy', function()
     return BasicAuth::proxyAuth();
 });
 
-Route::filter('auth.noauth', function()
+Route::filter('auth.public_callback', function()
 {
-    return BasicAuth::noAuth();
+    return BasicAuth::publicCallbackAuth();
 });
 
 /*
