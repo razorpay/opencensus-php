@@ -57,6 +57,7 @@ class ErrorCode
     const GW00456   = 'GW00456';
     const GW00458   = 'GW00458';
     const GW00850   = 'GW00850';
+    const GW00856   = 'GW00856';
 
     /**
      * All codes in GV000** series
@@ -276,6 +277,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00259   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
 
         Hdfc\ErrorCode::GW00456   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+        Hdfc\ErrorCode::GW00856   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
 
         Hdfc\ErrorCode::GV00004   => Error\ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
         Hdfc\ErrorCode::GV00005   => Error\ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
