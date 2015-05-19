@@ -11,14 +11,14 @@ return [
             'url' => '/iins',
             'method' => 'post',
             'content' => [
-                'iin' => '112333',
+                'iin' => 112333,
                 'network' => 'RuPay',
                 'type' => 'debit',
             ],
         ],
         'response' => [
             'content' => [
-                'iin' => '112333',
+                'iin' => 112333,
                 'network' => 'RuPay',
                 'type' => 'debit',
             ],
@@ -32,7 +32,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => '607500',
+                'iin'       => 607500,
                 'category'  => 'STANDARD',
                 'network'   => 'RuPay',
                 'type'      => 'debit',

@@ -53,4 +53,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::BRAND);
     }
+
+    public function getIinAttribute()
+    {
+        return (int) $this->attributes[self::IIN];
+    }
 }
