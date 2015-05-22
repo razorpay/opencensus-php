@@ -19,9 +19,15 @@ class TerminalPicker
      */
     protected $payment;
 
+    protected $merchant;
+
+    protected $terminals;
+
     public function selectTerminal($payment)
     {
         $this->payment = $payment;
+
+        $this->merchant = $payment->merchant;
 
         $terminals = $this->getTerminals($payment);
 
@@ -57,17 +63,7 @@ class TerminalPicker
         }
         else if ($method === Payment\Method::NETBANKING)
         {
-            if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
-            {
-                $terminal = $gatewayTerms[Payment\Gateway::PAYTM];
-            }
-            else if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
-            {
-                $terminal = $gatewayTerms[Payment\Gateway::ATOM];
-
-                // throw new Exception\BadRequestException(
-                //     ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
-            }
+            $terminal = $this->pickTerminalForNetbankingMethod($terminals, $gatewayTerms);
         }
         else
         {
@@ -118,6 +114,37 @@ class TerminalPicker
         if (isset($gatewayTerms[Gateway::HDFC]))
         {
             return $gatewayTerms[Gateway::HDFC];
+        }
+
+        return $terminal;
+    }
+
+    protected function pickTerminalForNetbankingMethod($terminals, $gatewayTerms)
+    {
+        $terminal = null;
+
+        $bank = $this->payment->getBank();
+
+        if ($bank === 'HDFC')
+        {
+            $gateway = 'netbanking_hdfc';
+
+            if (isset($gatewayTerms[Payment\Gateway::NETBANKING_HDFC]) === true)
+            {
+                return $gatewayTerms[Payment\Gateway::NETBANKING_HDFC];
+            }
+        }
+
+        if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+        {
+            $terminal = $gatewayTerms[Payment\Gateway::PAYTM];
+        }
+        else if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
+        {
+            $terminal = $gatewayTerms[Payment\Gateway::ATOM];
+
+            // throw new Exception\BadRequestException(
+            //     ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
         }
 
         return $terminal;
@@ -189,8 +216,7 @@ class TerminalPicker
     {
         $count = $terminals->count();
 
-        // Max count can be 6 currently.
-        if ($count > 6)
+        if ($count > Terminal\Entity::MAX_TERMINALS_COUNT)
         {
             throw new Exception\LogicException(
                 'Terminals count not reasonable: ' . $count .
@@ -202,8 +228,16 @@ class TerminalPicker
     {
         $termRepo = new Terminal\Repository;
 
-        $terminals = $termRepo->getByMerchantId($payment->merchant->getId());
+        $this->terminals = $termRepo->getByMerchantId($payment->merchant->getId());
 
-        return $terminals;
+        return $this->terminals;
+    }
+
+    protected function filterTerminalsByMethod($terminals, $method)
+    {
+        $terminals->filter(function($item)
+        {
+            return ($item[$method] === '1');
+        });
     }
 }
