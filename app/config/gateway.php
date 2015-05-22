@@ -15,7 +15,8 @@ return array(
         'axis_migs',
         'axis_genius',
         'kotak',
-        'paytm'),
+        'paytm',
+        'netbanking_hdfc'),
 
     'mock_hdfc'             => $_ENV['HDFC_MOCK'],
     'mock_atom'             => $_ENV['ATOM_MOCK'],
