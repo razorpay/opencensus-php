@@ -100,6 +100,7 @@ final class Route
         'mock_axis_genius_payment'          => ['post',     'gateway/mockaxisgenius/payment',           'MockGatewayController@postAxisGeniusPayment'           ],
         'mock_kotak_payment'                => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                 ],
         'mock_paytm_payment'                => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                ],
+        'mock_netbanking_payment'           => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'           ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
     );
@@ -118,6 +119,7 @@ final class Route
         'mock_axis_genius_payment',
         'mock_kotak_payment',
         'mock_paytm_payment',
+        'mock_netbanking_payment',
     );
 
     public static $publicCallback = array(
@@ -367,11 +369,7 @@ final class Route
             self::addFilterOnRouteGroups($router, 'auth.app', 'internal');
             self::addFilterOnRouteGroups($router, 'auth.private', 'private');
             self::addFilterOnRouteGroups($router, 'auth.public', 'public');
-<<<<<<< HEAD
-            self::addFilterOnRouteGroups($router, 'auth.noauth', 'noauth');
-=======
             self::addFilterOnRouteGroups($router, 'auth.public_callback', 'publicCallback');
->>>>>>> new_gateways
             self::addFilterOnRouteGroups($router, 'auth.proxy', 'proxy');
         });
 
