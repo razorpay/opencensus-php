@@ -17,10 +17,24 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
-        Entity::CARD                        => 'required_if:gateway,atom|boolean',
+        Entity::CARD                        => 'sometimes|boolean',
+        Entity::NETBANKING                  => 'sometimes|boolean',
+        Entity::SHARED                      => 'sometimes|boolean',
     );
 
-    protected static $createValidators = array(Entity::CARD);
+    protected static $createValidators = array(
+        Entity::CARD,
+        Entity::GATEWAY);
+
+    protected function validateGateway($input)
+    {
+        if (Payment\Gateway::isValidGateway($input['gateway']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid gateway: ' . $input['gateway'],
+                Entity::GATEWAY);
+        }
+    }
 
     protected function validateCard($input)
     {
@@ -39,14 +53,15 @@ class Validator extends Base\Validator
         $count = $existingTerminals->count();
 
         // Right now, at max 4 terminals are allowed
-        if ($count > 4)
+        if ($count > Entity::MAX_TERMINALS_COUNT)
         {
-            throw new Exception\LogicException('Terminal count should not exceed 4');
+            throw new Exception\LogicException(
+                'Terminal count should not exceed 4');
         }
-        else if ($count === 4)
+        else if ($count === Entity::MAX_TERMINALS_COUNT)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_ONLY_FOUR_ALLOWED);
+                ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED);
         }
         else if ($count >= 1)
         {

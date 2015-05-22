@@ -138,6 +138,15 @@ class Gateway
         }
     }
 
+    protected function getNewGatewayPaymentEntity()
+    {
+        $ns = $this->getNamespace();
+
+        $class = $ns . '\\Entity';
+
+        return new $class;
+    }
+
     protected function getStringToHash($content)
     {
         $hashString = '';

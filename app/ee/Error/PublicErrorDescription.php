@@ -73,7 +73,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                      = 'The merchant keys have already been created';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                    = 'The merchant has not yet provided his bank account details';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED            = 'The merchant already has provided a bank account';
-    const BAD_REQUEST_GATEWAY_TERMINAL_ONLY_FOUR_ALLOWED                = 'Currently only max four terminals are allowed per merchant';
+    const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                = 'Max terminal count limit reached for this merchant';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                        = 'A record with same gateway merchant id (mid) exists';
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY              = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                       = 'Payment verification with gateway failed';

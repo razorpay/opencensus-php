@@ -239,6 +239,22 @@ class BasicAuth
         $this->fetchMerchantOfKey($this->key);
     }
 
+    public function noAuth()
+    {
+        $key = $this->request->input('key_id');
+
+        if (empty($key) === false)
+        {
+            return $this->publicAuth();
+        }
+
+        $key = \Route::current()->getParameter('key');
+
+        $this->request->query->add(['key_id' => $key]);
+
+        return $this->publicAuth();
+    }
+
     public function appAuth()
     {
         $this->setType(Type::APP_AUTH);

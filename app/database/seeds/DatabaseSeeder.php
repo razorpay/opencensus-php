@@ -355,5 +355,40 @@ class DatabaseSeeder extends Seeder
                 'updated_at'    =>  time()
                 )
             );
+
+        $this->createNetbankingHdfcTerminals();
+    }
+
+    protected function createNetbankingHdfcTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '22nP3sEf2tQsm8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'netbanking_hdfc',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_hdfc',
+                'gateway_terminal_id'   => 'test_terminal_netbanking_hdfc',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_hdfc_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '23vP3sEf2tQsm8',
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => 'netbanking_hdfc',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_hdfc',
+                'gateway_terminal_id'   => 'demo_terminal_netbanking_hdfc',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_hdfc_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
     }
 }
