@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::NODAL_ACCOUNT,
                     'name'          =>  'Razorpay Nodal Account',
                     'email'         =>  'nodal@razorpay.com',
+                    'category'      =>  '1234',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -58,6 +59,7 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::ATOM_ACCOUNT,
                     'name'          =>  'Razorpay Atom Account',
                     'email'         =>  'atom@razorpay.com',
+                    'category'      =>  '1234',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -76,6 +78,7 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::API_FEE_ACCOUNT,
                     'name'          =>  'Razorpay Fee Account',
                     'email'         =>  'fees@razorpay.com',
+                    'category'      =>  '1234',
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                     )
@@ -94,6 +97,7 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::TEST_ACCOUNT,
                     'name'          =>  'Test Account',
                     'email'         =>  'test@razorpay.com',
+                    'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
@@ -113,6 +117,7 @@ class DatabaseSeeder extends Seeder
                     'id'            =>  Account::DEMO_ACCOUNT,
                     'name'          =>  'Demo Account',
                     'email'         =>  'demo@razorpay.com',
+                    'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()

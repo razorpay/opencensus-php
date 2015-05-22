@@ -38,6 +38,8 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED,
         self::ACTIVATED_AT,
         self::LIVE,
+        self::CATEGORY,
+        self::WEBSITE,
         self::PRICING_PLAN_ID,
         self::CREATED_AT);
 
