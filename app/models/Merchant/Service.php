@@ -35,6 +35,15 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function edit($id, array $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $merchant = (new Merchant\Core)->edit($merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
     public function fetch($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);
