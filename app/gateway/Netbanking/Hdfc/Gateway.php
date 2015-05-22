@@ -1,17 +1,19 @@
 <?php
 
-namespace Gateway\NetBanking\Hdfc;
+namespace Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\BaseGateway;
+use Gateway\Netbanking\Base;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
+    protected $gateway = 'netbanking_hdfc';
+
     protected $fields = array(
         'ClientCode',
         'MerchantCode',
@@ -24,6 +26,14 @@ class Gateway extends BaseGateway
         'Date',
     );
 
+    protected $map = array(
+        'ClientCode'    => 'client_code',
+        'MerchantCode'  => 'merchant_code',
+        'TxnAmount'     => 'amount',
+        'Message'       => 'error_message',
+        'BankRefNo'     => 'bank_payment_id'
+    );
+
     /**
      * @param  array  $input
      * @return void
@@ -32,16 +42,18 @@ class Gateway extends BaseGateway
     {
         parent::authorize($input);
 
-        $requestData = $this->getPaymentRequestData($input);
+        $content = $this->getPaymentRequestData($input);
 
-        $queryStr = $this->buildQueryString($requestData);
+        $this->createGatewayPaymentEntity($content);
 
-        $url = $this->getDomain() . Url::PAYMENT_URL;
-        $url = $url . '?' . $queryStr;
+        $queryStr = $this->buildQueryString($content);
 
-        $data = array('redirectUrl' => $url);
+        $request = array(
+            'url' => $this->getUrl('pay'),// . '?' . $queryStr,
+            'method' => 'post',
+            'content' => $content);
 
-        return $data;
+        return $request;
     }
 
     public function capture(array $input = array())
@@ -50,8 +62,9 @@ class Gateway extends BaseGateway
     }
 
     /**
-     * We recieve callback from atom after bank net-banking transaction
-     * is complete
+     * We recieve callback from atom after bank net-banking
+     * transaction is complete
+     *
      * @param  array    $input
      */
     public function callback(array $input)
@@ -139,9 +152,11 @@ class Gateway extends BaseGateway
     {
         $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
 
+        $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
+
         $data = array(
-            'ClientCode'        => 'ab', //$input['terminal'],
-            'MerchantCode'      => 'ab', //$input['terminal'],
+            'ClientCode'        => $input['payment']['email'],//$clientCode,
+            'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
             'TxnCurrency'       => 'INR',
             'TxnAmount'         => $input['payment']['amount'] / 100,
             'TxnScAmount'       => '0',
@@ -155,7 +170,7 @@ class Gateway extends BaseGateway
         if ($this->mode === Mode::TEST)
         {
             $data['MerchantCode'] = 'RAZORPAY';
-            $data['ClientCode'] = random_alpha_string(10);
+//            $data['ClientCode'] = random_alpha_string(10);
         }
 
         $data['CheckSum'] = $this->getChecksumForData($data);
@@ -189,11 +204,41 @@ class Gateway extends BaseGateway
     {
         $str = '';
 
+        $amp = '';
+
         foreach ($data as $key => $value)
         {
-            $str .= '&'.$key.'='.$value;
+            $str .= $amp .$key.'='.$value;
+
+            if ($amp === '')
+                $amp = '&';
         }
 
         return $str;
+    }
+
+    protected function stripEmailSpecialChars($email)
+    {
+        return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
+    }
+
+    protected function getUrl($type)
+    {
+        $url = $this->getUrlDomain();
+
+        $type = strtoupper($type);
+        $url .= $this->getRelativeUrl($type);
+
+        return $url;
+    }
+
+    protected function getUrlDomain()
+    {
+        return ($this->mode === MODE::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
+    }
+
+    protected function getRelativeUrl($type)
+    {
+        return constant(__NAMESPACE__.'\Url::'.$type);
     }
 }
