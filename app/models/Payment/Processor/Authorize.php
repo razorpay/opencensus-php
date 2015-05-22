@@ -56,7 +56,7 @@ trait Authorize
             $data['version'] = 1;
             $data['payment_id'] = $payment->getPublicId();
 
-            $data['gateway'] = \Crypt::encrypt($payment->getGateway() . '_' . time());
+            $data['gateway'] = \Crypt::encrypt($payment->getGateway() . '__' . time());
 
             return $data;
         }

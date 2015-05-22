@@ -443,7 +443,7 @@ trait PaymentTrait
                 return $response;
             }
 
-            list($gateway, ) = explode('_', \Crypt::decrypt($content['gateway'], 2));
+            list($gateway, ) = explode('__', \Crypt::decrypt($content['gateway'], 2));
         }
         else
         {
