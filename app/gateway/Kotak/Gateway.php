@@ -28,7 +28,7 @@ class Gateway extends Base\Gateway
             'CardNumber'        => $input['card']['number'],
             'ExpiryDate'        => $this->getFormattedCardExpiryDate($input),
             'CardSecurityCode'  => $input['card']['cvv'],
-            'MCC'               => '4799',
+            'MCC'               => $input['merchant']['category'],
             'MerchantName'      => 'Business',
             'MerchantCity'      => 'Mumbai',
             'MerchantState'     => 'MH',
@@ -57,6 +57,8 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        // s($input['gateway']);
 
         $this->verifySecureHash($input);
 
@@ -177,6 +179,7 @@ class Gateway extends Base\Gateway
         if ($expiryMonth < 10) $expiryMonth = '0' . $expiryMonth;
 
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
+        $cardExp = $expiryMonth . substr($input['card']['expiry_year'], 2,2);
 
         return $cardExp;
     }
