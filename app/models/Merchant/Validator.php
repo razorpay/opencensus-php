@@ -14,7 +14,11 @@ class Validator extends Base\Validator
         'name'              => 'required|alpha_space_num|max:200',
         'email'             => 'required|email|unique:merchants',
         'international'     => 'sometimes|boolean',
-        'website'           => 'sometimes',
-        'cateogry'          => 'sometimes|size:4',
+        'website'           => 'sometimes|url',
+        'cateogry'          => 'sometimes|numeric|digits:4',
     );
+
+    protected static $editRules = array(
+        'website'           => 'sometimes|url',
+        'category'          => 'sometimes|numeric|digits:4')
 }

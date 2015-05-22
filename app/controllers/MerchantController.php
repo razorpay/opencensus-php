@@ -16,6 +16,13 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function putMerchant($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->edit($id, $input);
+    }
+
     public function getMerchant($id)
     {
         $data = (new Merchant\Service)->fetch($id);
