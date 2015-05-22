@@ -20,5 +20,6 @@ class Validator extends Base\Validator
 
     protected static $editRules = array(
         'website'           => 'sometimes|url',
-        'category'          => 'sometimes|numeric|digits:4')
+        'category'          => 'sometimes|numeric|digits:4',
+    );
 }
