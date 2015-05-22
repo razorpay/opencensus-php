@@ -13,13 +13,11 @@ class Validator extends Base\Validator
         'id'                => 'required|alpha_num|size:14',
         'name'              => 'required|alpha_space_num|max:200',
         'email'             => 'required|email|unique:merchants',
-        'international'     => 'sometimes|boolean',
-        'website'           => 'sometimes|url',
-        'cateogry'          => 'sometimes|numeric|digits:4',
     );
 
     protected static $editRules = array(
         'website'           => 'sometimes|url',
         'category'          => 'sometimes|numeric|digits:4',
+        'international'     => 'sometimes|boolean',
     );
 }
