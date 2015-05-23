@@ -62,7 +62,7 @@ class Server extends Base\Mock\Server
             $message = 'Validation Error Occurs if field data is incorrect';
         }
         else if (($input['CardNumber'] === '6075000000000015') and
-                 ($input['ExpiryDate'] === '1705'))
+                 ($input['ExpiryDate'] === '0517'))
         {
             $respCode = 'VER';
             $message = 'Transaction declined';
