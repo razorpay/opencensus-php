@@ -72,12 +72,7 @@ class Gateway extends Base\Gateway
      */
     protected $terminal;
 
-    /**
-     * The state in which the api is operating
-     * that is live/test
-     * @var string
-     */
-    protected $mode;
+    const TIMEOUT = 30;
 
     /**
      * Parameters required to construct request
@@ -241,13 +236,6 @@ class Gateway extends Base\Gateway
         parent::__construct();
 
         $this->repo = new Hdfc\Repository();
-    }
-
-    public function getCredentials()
-    {
-        $creds = Hdfc\Config::getCreds();
-
-        return $creds;
     }
 
 // ---------------------------Gateway operations -------------------------------
@@ -458,18 +446,16 @@ class Gateway extends Base\Gateway
                 'hdfc gateway: wrong terminal supplied. Gateway: ' . $terminal['gateway']);
         }
 
-        $id = $terminal['gateway_terminal_id'];
-        $pwd = $terminal['gateway_terminal_password'];
+        $request['data']['id'] = $terminal['gateway_terminal_id'];
+        $request['data']['password'] = $terminal['gateway_terminal_password'];
 
         // For TEST mode, replace any random terminal given with
         // hdfc test terminal
         if ($this->mode === Mode::TEST)
         {
-            list($id, $pwd) = $this->getCredentials();
+            $request['data']['id'] = $this->config['test_terminal_id'];
+            $request['data']['password'] = $this->config['test_terminal_pwd'];
         }
-
-        $request['data']['id'] = $id;
-        $request['data']['password'] = $pwd;
     }
 
     protected function checkResponseErrorCode($response)
@@ -508,7 +494,7 @@ class Gateway extends Base\Gateway
 
     protected function getTimeout()
     {
-        return Hdfc\Config::TIMEOUT;
+        return static::TIMEOUT;
     }
 
     protected function getModel($id)

@@ -28,8 +28,9 @@ return array(
     'mockhdfc_server' => false,
 
     'hdfc' => array(
-        'test_merchant_id'  => $_ENV['HDFC_ID'],
-        'test_merchant_pwd' => $_ENV['HDFC_PASSWORD'],
+        'test_terminal_id'  => $_ENV['HDFC_ID'],
+        'test_terminal_pwd' => $_ENV['HDFC_PASSWORD'],
+        'mock_server'       => false,
     ),
 
     'axis_migs' => array(

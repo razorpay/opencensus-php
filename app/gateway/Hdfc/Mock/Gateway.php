@@ -19,7 +19,7 @@ class Gateway extends Hdfc\Gateway
 
         $this->request = \Request::getFacadeRoot();
 
-        $this->mockHdfcServer = \Config::get('gateway.mockhdfc_server');
+        $this->mockHdfcServer = $this->config['mock_server'];
 
         $this->mock = true;
     }
@@ -117,7 +117,7 @@ class Gateway extends Hdfc\Gateway
         {
             throw new \Requests_Exception(
                 'cURL error 28: Operation timed out after ' .
-                '10 ' . Hdfc\Config::TIMEOUT . '001 milliseconds with 0 bytes received', 'curlerror');
+                '10 ' . static::TIMEOUT . '001 milliseconds with 0 bytes received', 'curlerror');
 
         }
     }

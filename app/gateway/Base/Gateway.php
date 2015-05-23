@@ -16,6 +16,13 @@ class Gateway
     protected $action;
 
     /**
+     * The state in which the api is operating
+     * that is live/test
+     * @var string
+     */
+    protected $mode;
+
+    /**
      * Denotes if the gateway is a mock
      * @var boolean
      */

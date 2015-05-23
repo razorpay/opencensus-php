@@ -17,6 +17,6 @@ class ConfigTest extends \Tests\TestCase
 
     public function testHdfcConfigTimeout()
     {
-        $this->assertEquals(30, \Gateway\Hdfc\Config::TIMEOUT);
+        $this->assertEquals(30, \Gateway\Hdfc\Gateway::TIMEOUT);
     }
 }
