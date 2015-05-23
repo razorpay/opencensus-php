@@ -29,11 +29,11 @@ class Gateway extends Base\Gateway
             'ExpiryDate'        => $this->getFormattedCardExpiryDate($input),
             'CardSecurityCode'  => $input['card']['cvv'],
             'MCC'               => $input['merchant']['category'],
-            'MerchantName'      => 'Business',
-            'MerchantCity'      => 'Mumbai',
-            'MerchantState'     => 'MH',
-            'MerchPostalCode'   => 110002,
-            'MerchPhone'        => '9494994949',
+            'MerchantName'      => $input['merchant']['name'],
+            'MerchantCity'      => $input['bank_account']['beneficiary_city'],
+            'MerchantState'     => $input['bank_account']['beneficiary_state'],
+            'MerchPostalCode'   => $input['bank_account']['beneficiary_pin'],
+            'MerchPhone'        => $input['bank_account']['beneficiary_mobile'],
         );
 
         $this->createGatewayPaymentEntity($attributes);

@@ -111,7 +111,7 @@ class Entity extends Base\PublicEntity
     public function bankAccount()
     {
         return $this->hasOne(
-            'Models\Merchant\BankAccount');
+            'Models\Merchant\BankAccount\Entity');
     }
 
     public function terminals()
