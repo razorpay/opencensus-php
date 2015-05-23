@@ -31,7 +31,7 @@ trait Authorize
             $this->verifyBankEnabled($payment);
         }
 
-        (new TerminalPicker)->selectTerminal($payment);
+        (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
         $this->repo->saveOrFail($payment);
 

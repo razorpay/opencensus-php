@@ -454,7 +454,7 @@ class Gateway extends Base\Gateway
 
         if ($terminal['gateway'] !== 'hdfc')
         {
-            throw new \InvalidArgumentException(
+            throw new Exception\InvalidArgumentException(
                 'hdfc gateway: wrong terminal supplied. Gateway: ' . $terminal['gateway']);
         }
 
@@ -589,7 +589,6 @@ class Gateway extends Base\Gateway
         {
             $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
         }
-
 
         $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
 

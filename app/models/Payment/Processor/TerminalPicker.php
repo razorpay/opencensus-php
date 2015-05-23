@@ -2,6 +2,7 @@
 
 namespace Models\Payment\Processor;
 
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Models\Card;
@@ -13,6 +14,8 @@ use Models\Terminal\Shared;
 
 class TerminalPicker
 {
+    protected $mode;
+
     /**
      * Payment for which terminal has to be picked
      * @var Models\Payment\Entity
@@ -23,11 +26,11 @@ class TerminalPicker
 
     protected $terminals;
 
-    public function selectTerminal($payment)
+    public function selectTerminal($payment, $mode)
     {
         $this->payment = $payment;
-
         $this->merchant = $payment->merchant;
+        $this->mode = $mode;
 
         $terminals = $this->getTerminals($payment);
 
@@ -101,11 +104,6 @@ class TerminalPicker
             }
         }
 
-            if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
-            {
-                return $gatewayTerms[Payment\Gateway::PAYTM];
-            }
-
         if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
         {
             return $gatewayTerms[Gateway::AXIS_MIGS];
@@ -114,6 +112,16 @@ class TerminalPicker
         if (isset($gatewayTerms[Gateway::HDFC]))
         {
             return $gatewayTerms[Gateway::HDFC];
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            // In test mode paytm supports only cards
+            // but in live only netbanking.
+            if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+            {
+                return $gatewayTerms[Payment\Gateway::PAYTM];
+            }
         }
 
         return $terminal;
