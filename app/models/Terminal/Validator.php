@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
-        Entity::GATEWAY                     => 'required|in:hdfc,atom,axis_migs,axis_genius',
+        Entity::GATEWAY                     => 'required',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
@@ -23,7 +23,6 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        Entity::CARD,
         Entity::GATEWAY);
 
     protected function validateGateway($input)
@@ -33,18 +32,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid gateway: ' . $input['gateway'],
                 Entity::GATEWAY);
-        }
-    }
-
-    protected function validateCard($input)
-    {
-        if (($input[Entity::GATEWAY] !== Payment\Gateway::ATOM) and
-            (isset($input[Entity::CARD])) and
-            ($input[Entity::CARD] !== '1'))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Card field should be 1 for all gateways except atom',
-                Entity::CARD);
         }
     }
 

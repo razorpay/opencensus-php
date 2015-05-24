@@ -70,14 +70,23 @@ class Entity extends Base\PublicEntity
 
     public function generateMethod($input)
     {
-        if ($input[self::GATEWAY] === Payment\Gateway::NETBANKING_HDFC)
+        $gateway = $input[self::GATEWAY];
+
+        if (Payment\Gateway::isMethodSupported('card', $gateway))
+        {
+            $this->setAttribute(self::CARD, 1);
+        }
+        else
         {
             $this->setAttribute(self::CARD, 0);
+        }
+
+        if (Payment\Gateway::isMethodSupported('netbanking', $gateway))
+        {
             $this->setAttribute(self::NETBANKING, 1);
         }
         else
         {
-            $this->setAttribute(self::CARD, 1);
             $this->setAttribute(self::NETBANKING, 0);
         }
     }

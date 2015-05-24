@@ -25,6 +25,22 @@ class Gateway
         self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
     );
 
+    public static $methodMap = array(
+        Method::CARD => array(
+            self::HDFC,
+            self::ATOM,
+            self::AXIS_MIGS,
+            self::AXIS_GENIUS,
+            self::KOTAK,
+            self::PAYTM,
+        ),
+
+        Method::NETBANKING => array(
+            self::PAYTM,
+            self::NETBANKING_HDFC,
+        ),
+    );
+
     public static function getChannel($gateway)
     {
         return self::$channels[$gateway];
@@ -42,5 +58,10 @@ class Gateway
             throw new Exception\LogicException(
                 'Unknown gateway. Gateway: ' . $gateway);
         }
+    }
+
+    public static function isMethodSupported($method, $gateway)
+    {
+        return (in_array($gateway, self::$methodMap[$method]));
     }
 }
