@@ -16,7 +16,7 @@ class Validator extends Base\Validator
     );
 
     protected static $editRules = array(
-        'website'           => 'sometimes|url',
+        'website'           => 'sometimes|url|max:255',
         'category'          => 'sometimes|numeric|digits:4',
         'international'     => 'sometimes|boolean',
     );
