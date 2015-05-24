@@ -51,6 +51,7 @@ return array(
     'AXIS_GENIUS_MOCK'                      => true,
     'KOTAK_MOCK'                            => true,
     'PAYTM_MOCK'                            => true,
+    'NETBANKING_HDFC_MOCK'                  => true,
 
     'MOCK_GATEWAY_SECRET'                   => 'random_password',
 

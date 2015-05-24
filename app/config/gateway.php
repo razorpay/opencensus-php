@@ -24,6 +24,7 @@ return array(
     'mock_axis_genius'      => $_ENV['AXIS_GENIUS_MOCK'],
     'mock_kotak'            => $_ENV['KOTAK_MOCK'],
     'mock_paytm'            => $_ENV['PAYTM_MOCK'],
+    'mock_netbanking_hdfc'  => $_ENV['NETBANKING_HDFC_MOCK'],
 
     'mockhdfc_server' => false,
 

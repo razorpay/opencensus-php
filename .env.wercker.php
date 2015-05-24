@@ -50,6 +50,7 @@ return array(
     'AXIS_GENIUS_MOCK'                      => true,
     'KOTAK_MOCK'                            => true,
     'PAYTM_MOCK'                            => true,
+    'NETBANKING_HDFC_MOCK'                  => true,
 
     'EMAIL_MOCK'                            => true,
 
