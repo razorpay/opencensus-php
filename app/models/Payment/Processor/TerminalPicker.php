@@ -178,6 +178,13 @@ class TerminalPicker
                 }
             }
 
+            $terminal = $repo->find(Shared::HDFC_RAZORPAY_TERMINAL);
+
+            if ($terminal !== null)
+            {
+                return $terminal;
+            }
+
             $terminal = $repo->find(Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
 
             if ($terminal !== null)

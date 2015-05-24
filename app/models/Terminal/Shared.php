@@ -9,6 +9,7 @@ class Shared
     const ATOM_RAZORPAY_TERMINAL        = '1000AtomShared';
     const AXIS_MIGS_RAZORPAY_TERMINAL   = '1000AxisMigsTl';
     const AXIS_GENIUS_RAZORPAY_TERMINAL = '1000AxisGenius';
+    const HDFC_RAZORPAY_TERMINAL        = '1000HdfcShared';
     const KOTAK_RAZORPAY_TERMINAL       = '1000KotakTrmnl';
     const PAYTM_RAZORPAY_TERMINAL       = '1000PaytmTrmnl';
 
@@ -16,6 +17,7 @@ class Shared
         self::ATOM_RAZORPAY_TERMINAL,
         self::AXIS_MIGS_RAZORPAY_TERMINAL,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL,
+        self::HDFC_RAZORPAY_TERMINAL,
         self::KOTAK_RAZORPAY_TERMINAL,
         self::PAYTM_RAZORPAY_TERMINAL,
     );
