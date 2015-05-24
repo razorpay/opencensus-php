@@ -1,7 +1,7 @@
 {
-    "name": "shashankkumar/rzp-sms",
-    "description": "The Razorpay school management system",
-    "keywords": ["app", "razorpay"],
+    "name": "razorpay/api",
+    "description": "The Razorpay API Backend",
+    "keywords": ["api", "razorpay"],
     "require": {
         "rmccue/requests": ">=1.0",
         "laravel/framework": "4.2.*",
