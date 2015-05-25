@@ -162,7 +162,8 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        if ($content['ResponseCode'] !== '00')
+        if (($content['ResponseCode'] !== '00') and
+            ($content['ResponseCode'] !== '0'))
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
