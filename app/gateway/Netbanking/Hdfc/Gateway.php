@@ -14,6 +14,8 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'netbanking_hdfc';
 
+    protected $sortRequestContent = false;
+
     protected $fields = array(
         'ClientCode',
         'MerchantCode',
@@ -46,10 +48,8 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($content);
 
-        $queryStr = $this->buildQueryString($content);
-
         $request = array(
-            'url' => $this->getUrl('pay'),// . '?' . $queryStr,
+            'url' => $this->getUrl('pay'),
             'method' => 'post',
             'content' => $content);
 
@@ -69,6 +69,8 @@ class Gateway extends Base\Gateway
      */
     public function callback(array $input)
     {
+        parent::callback($input);
+
         $this->verifyCallbackChecksum($input);
 
         $bankRefNo = $input['BankRefNo'];
@@ -77,6 +79,8 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
+        parent::verify($input);
+
         $data = ''; // Get the parameters required from db or elsewhere
 
         $data['TransactionId'] = 'XTXTV01';
@@ -137,10 +141,10 @@ class Gateway extends Base\Gateway
             }
         }
 
-        $checksum = $input['CheckSum'];
+        $checksum = $input['gateway']['CheckSum'];
 
         // s($input, $data, $str);
-        $expectedChecksum = $this->getChecksumForString($str);
+        $expectedChecksum = $this->getHashOfString($str);
 
         if ($checksum !== $expectedChecksum)
         {
@@ -173,31 +177,30 @@ class Gateway extends Base\Gateway
 //            $data['ClientCode'] = random_alpha_string(10);
         }
 
-        $data['CheckSum'] = $this->getChecksumForData($data);
+        $data['CheckSum'] = $this->generateHash($data);
 
         return $data;
     }
 
-    protected function getChecksumForData($data)
+    protected function getHashOfString($str)
     {
-        $str = '';
+        $secret = $this->getSecret();
 
-        foreach ($data as $key => $value)
-        {
-            $str = $str.= $value;
-        }
-
-        return $this->getChecksumForString($str);
+        return (string) crc32($str . $secret);
     }
 
-    protected function getChecksumForString($str = '')
+    protected function getTestSecret()
     {
-        return (string) crc32($str . '123456');
+        assert ($this->mode === Mode::TEST);
+
+        return '123456';
     }
 
-    protected function getDomain()
+    protected function getLiveSecret()
     {
-        return ($this->mode === Mode::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
+        assert ($this->mode === Mode::LIVE);
+
+        return $this->config['live_hash_secret'];
     }
 
     protected function buildQueryString($data)
@@ -220,25 +223,5 @@ class Gateway extends Base\Gateway
     protected function stripEmailSpecialChars($email)
     {
         return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
-    }
-
-    protected function getUrl($type)
-    {
-        $url = $this->getUrlDomain();
-
-        $type = strtoupper($type);
-        $url .= $this->getRelativeUrl($type);
-
-        return $url;
-    }
-
-    protected function getUrlDomain()
-    {
-        return ($this->mode === MODE::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
-    }
-
-    protected function getRelativeUrl($type)
-    {
-        return constant(__NAMESPACE__.'\Url::'.$type);
     }
 }
