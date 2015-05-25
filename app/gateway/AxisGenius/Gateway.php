@@ -64,11 +64,6 @@ class Gateway extends AxisMigs\Gateway
         }
     }
 
-    protected function getUrlDomain()
-    {
-        return ($this->mode === MODE::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
-    }
-
     protected function getRelativeUrl($type)
     {
         if ($this->action === Base\Action::VERIFY)
@@ -76,11 +71,13 @@ class Gateway extends AxisMigs\Gateway
             $type = 'QUERY';
         }
 
-        return constant(__NAMESPACE__.'\Url::'.$type);
+        return parent::getRelativeUrl($type);
     }
 
     protected function getHashOfString($str)
     {
+        $str = $this->getSecret() . $str;
+
         return strtoupper(hash('sha256', $str, false));
     }
 
@@ -101,15 +98,5 @@ class Gateway extends AxisMigs\Gateway
             $command = AxisMigs\Command::QUERYDR;
 
         return $command;
-    }
-
-    protected function getNewGatewayPaymentEntity()
-    {
-        return new AxisGenius\Entity;
-    }
-
-    protected function getRepo()
-    {
-        return new AxisGenius\Repository;
     }
 }

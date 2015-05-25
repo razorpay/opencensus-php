@@ -237,6 +237,8 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
+        $str = $this->getSecret() . $str;
+
         return strtoupper(md5($str));
     }
 
@@ -326,16 +328,6 @@ class Gateway extends Base\Gateway
         $content['vpc_CardSecurityCode'] = '333';
     }
 
-    protected function getUrl($type)
-    {
-        $url = $this->getUrlDomain();
-
-        $type = strtoupper($type);
-        $url .= $this->getRelativeUrl($type);
-
-        return $url;
-    }
-
     protected function getFormattedCardExpiryDate($input)
     {
         $expiryMonth = $input['card']['expiry_month'];
@@ -345,15 +337,5 @@ class Gateway extends Base\Gateway
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 
         return $cardExp;
-    }
-
-    protected function getUrlDomain()
-    {
-        return Url::DOMAIN;
-    }
-
-    protected function getRelativeUrl($type)
-    {
-        return constant(__NAMESPACE__.'\Url::'.$type);
     }
 }

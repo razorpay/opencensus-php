@@ -169,8 +169,10 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getHashOfArray($content, $secret)
+    protected function getHashOfArray($content)
     {
+        $secret = $this->getSecret();
+
         return Checksum::getChecksumFromArray($content, $secret);
     }
 
@@ -178,27 +180,6 @@ class Gateway extends Base\Gateway
     {
         return Checksum::encrypt_e($str, $this->getSecret());
     }
-
-    protected function getUrl($type)
-    {
-        $url = $this->getUrlDomain();
-
-        $type = strtoupper($type);
-        $url .= $this->getRelativeUrl($type);
-
-        return $url;
-    }
-
-    protected function getUrlDomain()
-    {
-        return ($this->mode === MODE::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
-    }
-
-    protected function getRelativeUrl($type)
-    {
-        return constant(__NAMESPACE__.'\Url::'.$type);
-    }
-
 
     protected function getFormattedCardExpiryDate($input)
     {

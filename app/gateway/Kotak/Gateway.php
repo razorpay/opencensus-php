@@ -178,44 +178,15 @@ class Gateway extends Base\Gateway
 
         if ($expiryMonth < 10) $expiryMonth = '0' . $expiryMonth;
 
-        $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
         $cardExp = $expiryMonth . substr($input['card']['expiry_year'], 2,2);
 
         return $cardExp;
     }
 
-    protected function getNewGatewayPaymentEntity()
-    {
-        return new Kotak\Entity;
-    }
-
-    protected function getRepo()
-    {
-        return new Kotak\Repository;
-    }
-
     protected function getHashOfString($str)
     {
+        $str = $this->getSecret() . $str;
+
         return hash('sha256', $str, false);
-    }
-
-    protected function getUrl($type)
-    {
-        $url = $this->getUrlDomain();
-
-        $type = strtoupper($type);
-        $url .= $this->getRelativeUrl($type);
-
-        return $url;
-    }
-
-    protected function getUrlDomain()
-    {
-        return ($this->mode === MODE::LIVE) ? Url::LIVE_DOMAIN : Url::TEST_DOMAIN;
-    }
-
-    protected function getRelativeUrl($type)
-    {
-        return constant(__NAMESPACE__.'\Url::'.$type);
     }
 }

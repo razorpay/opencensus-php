@@ -28,6 +28,8 @@ class Gateway
      */
     protected $mock;
 
+    protected $sortRequestContent = true;
+
     public function __construct()
     {
         $this->trace = Trace::getFacadeRoot();
@@ -112,23 +114,41 @@ class Gateway
 
     protected function getNamespace()
     {
-        return substr(get_called_class(), 0, strrpos(get_called_class(), "\\"));
+        return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));
+    }
+
+    protected function getNamespaceWithoutMock()
+    {
+        $ns = $this->getNamespace();
+
+        $pos = strrpos($ns, '\Mock');
+
+        if ($pos !== false)
+        {
+            $ns = substr($ns, 0, $pos);
+        }
+
+        return $ns;
+    }
+
+    protected function getGatewayNamespace()
+    {
+        return $this->getNamespaceWithoutMock();
     }
 
     public function generateHash($content)
     {
-        $secret = $this->getSecret();
-
-        return $this->getHashOfArray($content, $secret);
+        return $this->getHashOfArray($content);
     }
 
-    protected function getHashOfArray($content, $secret)
+    protected function getHashOfArray($content)
     {
-        ksort($content);
+        if ($this->sortRequestContent)
+        {
+            ksort($content);
+        }
 
-        $hashString = $secret;
-
-        $hashString .= $this->getStringToHash($content);
+        $hashString = $this->getStringToHash($content);
 
         return $this->getHashOfString($hashString);
     }
@@ -137,19 +157,36 @@ class Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->config['test_hash_secret'];
+            return $this->getTestSecret();
         }
         else
         {
-            return $this->input['terminal']['gateway_secure_secret'];
+            return $this->getLiveSecret();
         }
+    }
+
+    protected function getTestSecret()
+    {
+        assert ($this->mode === Mode::TEST);
+
+        return $this->config['test_hash_secret'];
+    }
+
+    protected function getLiveSecret()
+    {
+        return $this->input['terminal']['gateway_secure_secret'];
     }
 
     protected function getNewGatewayPaymentEntity()
     {
-        $ns = $this->getNamespace();
+        $class = $this->getGatewayNamespace() . '\Entity';
 
-        $class = $ns . '\\Entity';
+        return new $class;
+    }
+
+    protected function getRepo()
+    {
+        $class = $this->getGatewayNamespace() . '\Repository';
 
         return new $class;
     }
@@ -176,6 +213,34 @@ class Gateway
     protected function getHashOfString($str)
     {
         return $str;
+    }
+
+    protected function getUrlDomain()
+    {
+        $urlClass = $this->getGatewayNamespace() . '\Url';
+
+        $live = constant($urlClass . '::LIVE_DOMAIN');
+
+        $test = constant($urlClass . '::TEST_DOMAIN');
+
+        return ($this->mode === Mode::LIVE) ? $live : $test;
+    }
+
+    protected function getRelativeUrl($type)
+    {
+        $ns = $this->getGatewayNamespace();
+
+        return constant($ns.'\Url::'.$type);
+    }
+
+    protected function getUrl($type)
+    {
+        $url = $this->getUrlDomain();
+
+        $type = strtoupper($type);
+        $url .= $this->getRelativeUrl($type);
+
+        return $url;
     }
 
     protected function loadGatewayConfig()
