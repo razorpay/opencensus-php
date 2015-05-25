@@ -28,7 +28,7 @@ class CreateKotak extends Migration
             $table->string('OrderInfo', 34)->nullable();
             $table->integer('Amount');
             $table->char('Currency', 4);
-            $table->char('ResponseCode', 3)->nullable();
+            $table->string('ResponseCode', 7)->nullable();
             $table->string('Message')->nullable();
             $table->char('CardType', 3)->nullable();
             $table->string('MaskedCardNum', 19)->nullable();
