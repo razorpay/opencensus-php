@@ -59,4 +59,8 @@ return array(
         'test_merchant_id'  => $_ENV['PAYTM_GATEWAY_TEST_MERCHANT_ID'],
         'test_hash_secret'  => $_ENV['PAYTM_GATEWAY_TEST_HASH_SECRET'],
     ),
+
+    'netbanking_hdfc' => array(
+        'live_hash_secret'  => $_ENV['NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'],
+    ),
 );

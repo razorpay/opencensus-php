@@ -42,6 +42,8 @@ return array(
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'        => getenv('PAYTM_GATEWAY_TEST_MERCHANT_ID'),
     'PAYTM_GATEWAY_TEST_HASH_SECRET'        => getenv('PAYTM_GATEWAY_TEST_HASH_SECRET'),
 
+    'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET' => '000000',
+
     'MOCK_GATEWAY_SECRET'                   => 'wercker_random_password',
 
     'HDFC_MOCK'                             => true,
