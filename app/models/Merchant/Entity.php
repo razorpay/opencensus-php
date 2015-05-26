@@ -28,7 +28,10 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::NAME,
-        self::EMAIL);
+        self::EMAIL,
+        self::CATEGORY,
+        self::WEBSITE,
+        self::INTERNATIONAL);
 
     protected $public = array(
         self::ID,
@@ -40,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::LIVE,
         self::CATEGORY,
         self::WEBSITE,
+        self::INTERNATIONAL,
         self::PRICING_PLAN_ID,
         self::CREATED_AT);
 
