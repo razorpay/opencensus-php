@@ -229,14 +229,14 @@ class ErrorCode
         Hdfc\ErrorCode::CM90004   => 'Duplicate records found',
         Hdfc\ErrorCode::CM90005   => 'Timestamp mismatch error',
 
-        Hdfc\ErrorCode::RP00001   => 'Invalid Error Code',
-        Hdfc\ErrorCode::RP00002   => 'Invalid Result Code',
-        Hdfc\ErrorCode::RP00003   => 'Gateway request timeout',
-        Hdfc\ErrorCode::RP00004   => 'Gateway request timeout',
-        Hdfc\ErrorCode::RP00005   => 'Denied by risk',
-        Hdfc\ErrorCode::RP00006   => 'Authorization not approved',
-        Hdfc\ErrorCode::RP00007   => 'Capture/Refund not done',
-        Hdfc\ErrorCode::RP00008   => 'Gateway error. Wrong response status_code.',
+        Hdfc\ErrorCode::RP00001   => 'Invalid Error Code. The error code returned is not recognized',
+        Hdfc\ErrorCode::RP00002   => 'Invalid Result Code. The result code returned is not recognized',
+        Hdfc\ErrorCode::RP00003   => 'Gateway request timeout. Request actually timed out with no result returned.',
+        Hdfc\ErrorCode::RP00004   => 'Gateway request timeout. Response returned but response result code is "HOST TIMEOUT"',
+        Hdfc\ErrorCode::RP00005   => 'Denied by risk. Response result code is "DENIED BY RISK"',
+        Hdfc\ErrorCode::RP00006   => 'Authorization not approved. Response result code is "NOT APPROVED"',
+        Hdfc\ErrorCode::RP00007   => 'Capture/Refund not done. Response result code is "NOT CAPTURED"',
+        Hdfc\ErrorCode::RP00008   => 'Gateway error. Wrong response http status_code. Response status_code is greater than 500 signifying gateway server error',
         Hdfc\ErrorCode::RP00009   => 'Wrong resposne content-type, not application/xml',
     );
 
