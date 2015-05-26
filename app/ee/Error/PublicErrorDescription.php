@@ -78,4 +78,5 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY              = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                       = 'Payment verification with gateway failed';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL               = 'Payment declined by gateway. Most probably due to customer clicking the cancel button on 3dSecure page';
+    const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                       = 'Transaction declined';
 }
