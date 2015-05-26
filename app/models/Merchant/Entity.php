@@ -45,7 +45,8 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::INTERNATIONAL,
         self::PRICING_PLAN_ID,
-        self::CREATED_AT);
+        self::CREATED_AT,
+        self::UPDATED_AT);
 
     protected static $generators = array(
         self::LIVE,
