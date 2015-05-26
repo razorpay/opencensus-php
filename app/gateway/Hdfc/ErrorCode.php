@@ -280,7 +280,7 @@ class ErrorCode
         Hdfc\ErrorCode::GW00456   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
         Hdfc\ErrorCode::GW00856   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
 
-        Hdfc\ErrorCode::GV00004   => Error\ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESFUL,
+        Hdfc\ErrorCode::GV00004   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL,
         Hdfc\ErrorCode::GV00005   => Error\ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
         Hdfc\ErrorCode::GV00006   => Error\ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
         Hdfc\ErrorCode::GV00007   => Error\ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
