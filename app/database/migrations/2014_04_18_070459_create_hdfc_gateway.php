@@ -61,7 +61,7 @@ class CreateHdfcGateway extends Migration
             $table->string('error_code', Hdfc\Constants::ERROR_CODE_LENGTH)
                   ->nullable();
 
-            $table->text('error_text', Hdfc\Constants::ERROR_TEXT_LENGTH)
+            $table->string('error_text', Hdfc\Constants::ERROR_TEXT_LENGTH)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
