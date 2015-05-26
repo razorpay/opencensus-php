@@ -213,7 +213,6 @@ class Service extends Base\Service
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
-            'live'              => $data['live']
         ) + $data;
 
         return $response;
@@ -235,6 +234,29 @@ class Service extends Base\Service
         $response = $this->api->merchant->fetch($id)->fetchBanks()->toArray();
 
         return $response;
+    }
+
+    public function postEditMerchant($id, $input)
+    {
+        $error = (new Merchant\Validator)->validateInput('edit', $input)->messages();
+
+        $data = [];
+
+        if (empty($error))
+        {
+            $this->setApiCredentials();
+
+            try
+            {
+                $data = $this->api->merchant->fetch($id)->edit($input)->toArray();
+            }
+            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            {
+                $error[] = $e->getMessage();
+            }
+        }
+
+        return array($error, $data);
     }
 
     public function postMerchantBanks($id, $input)

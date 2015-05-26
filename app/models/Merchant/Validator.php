@@ -51,6 +51,12 @@ class Validator extends Base\Validator
         'banks'                                      => 'required|array'
     );
 
+    protected static $editRules = array(
+        'website'           => 'sometimes',
+        'category'          => 'sometimes|numeric|digits:4',
+        'international'     => 'sometimes|boolean',
+    );
+
     protected static $api_dashboard_mappings = array(
             'id'        => 'id',
             'name'      => 'name',

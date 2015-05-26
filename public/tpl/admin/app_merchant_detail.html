@@ -50,6 +50,9 @@
         <a href class="list-group-item" ng-click="openAddAdjustment()">
           Add Adjustment
         </a>
+        <a href class="list-group-item" ng-click="openEditMerchant()">
+          Edit Merchant MCC, Website & International
+        </a>
       </div>
     </div>
   </div>
@@ -73,6 +76,26 @@
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.email}}</span>
           Email
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
+          Registration Date
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.details.website}}</span>
+          Website
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.details.category}}</span>
+          MCC
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.details.international}}</span>
+          International
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
+          Registration Date
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
@@ -351,5 +374,39 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Adjustment once assigned can not be changed, ensure you have checked all values" ng-click="ok(adjustment)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="editMerchantModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Merchant</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website}">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">International:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" ng-model="merchant.international">
+             <option value="1">Yes</option>
+             <option value="0" selected>No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="category" class="col-lg-2 control-label">MCC:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="category" ng-model="merchant.category" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="website" class="col-lg-2 control-label">Website:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="website" ng-model="merchant.website" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(merchant)">OK</button>
   </div>
 </script>

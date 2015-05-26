@@ -55,6 +55,13 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl);
     }
 
+    public function edit($params)
+    {
+        $relativeUrl = $this->getEntityUrl().$this->id;
+
+        return $this->request('PUT', $relativeUrl, $params);
+    }
+
     public function fetchPricing()
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/pricing';

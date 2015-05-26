@@ -233,6 +233,31 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.editMerchant = function(merchant){
+      var request = $http({
+                    method: "post",
+                    url: "/admin/merchant/"+$scope.merchant.id+"/edit",
+                    data: angular.toJson(merchant)
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Merchant edited successfully', true);
+          generateMerchant();
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || "";
 
@@ -264,6 +289,26 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       modalInstance.result.then(
         function (terminal) {
           $scope.assignTerminal(terminal);
+        },
+        function () {
+          ;
+        });
+    };
+
+    $scope.openEditMerchant = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'editMerchantModalContent.html',
+        controller: 'editMerchantModalCtrl',
+        resolve: {
+          current: function() {
+            return $scope.merchant.details;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function (merchant) {
+          $scope.editMerchant(merchant);
         },
         function () {
           ;
@@ -442,4 +487,18 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       $scope.cancel = function () {
         $modalInstance.dismiss('cancel');
       };
-}]);
+}])
+.controller('editMerchantModalCtrl', ['$scope', '$modalInstance', 'current',
+  function ($scope, $modalInstance, current) {
+
+      $scope.current = current;
+
+      $scope.ok = function (merchant) {
+        $modalInstance.close(merchant);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+;
