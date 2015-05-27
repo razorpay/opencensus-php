@@ -18,6 +18,13 @@ class Merchant extends MockEntity
         return $this;
     }
 
+    public function edit($params)
+    {
+        $this->mock(self::$mockData['merchant'], array('id' => $id));
+
+        return $this;
+    }
+    
     public function all($options = array())
     {
         $this->mockCollection(self::$mockData['merchant']);
