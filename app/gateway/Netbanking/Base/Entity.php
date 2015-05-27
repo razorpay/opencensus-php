@@ -8,6 +8,8 @@ class Entity extends Base\Entity
 {
     protected $table = 'netbanking';
 
+    protected $entity = 'netbanking';
+
     protected $fields = array(
         'id',
         'payment_id',

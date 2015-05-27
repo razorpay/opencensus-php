@@ -29,4 +29,15 @@ return [
         'verified' => null,
         'entity' => 'payment',
     ],
+
+    'testPaymentNetbankingEntity' => [
+        'action' => 'authorize',
+        'amount' => 'amount',
+        'bank' => 'HDFC',
+        'client_code' => 'client_code',
+        'merchant_code' => 'merchant_code',
+        'bank_payment_id' => null,
+        'error_message' => null,
+        'entity' => 'netbanking',
+    ],
 ];

@@ -32,5 +32,10 @@ class NetbankingHdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $payment);
     }
 }

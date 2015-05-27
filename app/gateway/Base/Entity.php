@@ -2,7 +2,7 @@
 
 namespace Gateway\Base;
 
-class Entity extends \Models\Base\Entity
+class Entity extends \Models\Base\PublicEntity
 {
     public function setPaymentId($paymentId)
     {
