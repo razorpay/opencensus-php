@@ -15,6 +15,7 @@ trait PaymentTrait
     use PaymentHdfcTrait;
     use PaymentKotakTrait;
     use PaymentPaytmTrait;
+    use PaymentNetbankingTrait;
 
     use RequestResponseFlowTrait
     {
@@ -480,6 +481,9 @@ trait PaymentTrait
             $gateway = 'hdfc';
         }
 
+        if (strpos($gateway, 'netbanking') !== false)
+            $gateway = 'netbanking';
+
         $func = 'runPaymentCallbackFlow'.studly_case($gateway);
 
         return $this->$func($response, $callback);
@@ -548,5 +552,75 @@ trait PaymentTrait
         $values = $form->getValues();
 
         return array($uri, $method, $values);
+    }
+
+    protected function setMockGatewayTrue()
+    {
+        $var = 'gateway.mock_'.$this->gateway;
+
+        $this->config['gateway.mock_netbanking_hdfc'] = true;
+    }
+
+    protected function isGatewayMocked()
+    {
+        $gateway = $this->app['config']->get('gateway');
+
+        if ($this->gateway === null)
+            $this->gateway = 'hdfc';
+
+        return $gateway['mock_' . $this->gateway];
+    }
+
+    protected function getDataForGatewayRequest($response, &$callback = null)
+    {
+        $url = $values = $method = null;
+
+        if ($callback)
+        {
+            $content = $this->getJsonContentFromResponse($response, $callback);
+            $callback = null;
+
+            $request = $content['request'];
+            $url = $content['request']['url'];
+
+            $values = array();
+            $method = $request['method'];
+
+            if ($method === 'post')
+            {
+                $values = $request['content'];
+            }
+        }
+        else
+        {
+            if ($response->getStatusCode() === 302)
+            {
+                $url = $response->getTargetUrl();
+                $method = $values = null;
+            }
+            else
+            {
+                list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), 'https://localhost');
+            }
+        }
+
+        return array($url, $method, $values);
+    }
+
+    protected function makeFirstGatewayPaymentMockRequest($url, $method = 'get', $content = array())
+    {
+        $request = array(
+           'url' => $url,
+           'method' => strtoupper($method),
+           'content' => $content);
+
+        $response = $this->makeRequestParent($request);
+
+        $statusCode = $response->getStatusCode();
+        $this->assertEquals($statusCode, '302');
+
+        $url = $response->getTargetUrl();
+
+        return $url;
     }
 }

@@ -13,38 +13,13 @@ trait PaymentAxisGeniusTrait
 
     protected function runPaymentCallbackFlowAxisGenius($response, &$callback = null)
     {
-        $content = $response->getContent();
+        $mock = $this->isGatewayMocked();
 
-        $gateway = $this->app['config']->get('gateway');
-
-        $mock = $gateway['mock_axis_genius'];
-
-        if ($callback)
-        {
-            $content = $this->getJsonContentFromResponse($response, $callback);
-            $callback = null;
-
-            $request = $content['request'];
-            list($url, $method, $values) = [$request['url'], $request['method'], $request['content']];
-        }
-        else
-        {
-           list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), 'https://localhost');
-        }
+        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
 
         if ($mock)
         {
-            $request = array(
-               'url' => $url,
-               'method' => $method,
-               'content' => $values);
-
-            $response = $this->makeRequestParent($request);
-
-            $statusCode = $response->getStatusCode();
-            $this->assertEquals($statusCode, '302');
-
-            $url = $response->getTargetUrl();
+            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
         }
         else
         {

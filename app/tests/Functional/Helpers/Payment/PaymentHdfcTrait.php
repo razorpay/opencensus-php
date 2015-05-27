@@ -23,21 +23,9 @@ trait PaymentHdfcTrait
 
     protected function run3dSecureFlow($response, &$callback = null)
     {
-        if ($callback)
-        {
-            $content = $this->getJsonContentFromResponse($response, $callback);
-            $callback = null;
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
-            $request = $content['request'];
-            list($url, $method, $content) = [$request['url'], $request['method'], $request['content']];
-        }
-        else
-        {
-           list($url, $method, $content) = $this->getFormDataFromResponse(
-                                    $response->getContent(), 'https://localhost');
-        }
-
-        $mock = $this->app['config']->get('gateway.mock_hdfc');
+        $mock = $this->isGatewayMocked();
 
         //
         // Card has 3d-secure enabled
