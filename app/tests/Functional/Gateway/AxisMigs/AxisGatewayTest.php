@@ -29,6 +29,11 @@ class AxisGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('axis_migs', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentAxisMigsEntity'], $payment);
     }
 
     public function testFailPayment()

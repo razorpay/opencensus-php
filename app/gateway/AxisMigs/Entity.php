@@ -64,8 +64,6 @@ class Entity extends Base\PublicEntity
 
     protected $guarded = array();
 
-    protected static $sign = 'pay';
-
     protected $entity = 'axis_migs';
 
     public function setPaymentId($paymentId)
