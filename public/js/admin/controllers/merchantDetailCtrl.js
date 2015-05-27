@@ -491,6 +491,10 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 .controller('editMerchantModalCtrl', ['$scope', '$modalInstance', 'current',
   function ($scope, $modalInstance, current) {
 
+      if(!current.international) current.international = current.merchant_details.business_international;
+
+      if(!current.website) current.website = current.merchant_details.business_website;
+
       $scope.current = current;
 
       $scope.ok = function (merchant) {
