@@ -49,6 +49,8 @@ class Service extends Base\Service
 
                 // Updating the model
                 $merchantDetails->saveOrFail();
+
+                $merchantDetails->sendMails();
             }
             else
             {
