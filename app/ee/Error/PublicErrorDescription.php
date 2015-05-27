@@ -79,4 +79,5 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                       = 'Payment verification with gateway failed';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL               = 'Payment declined by gateway. Most probably due to customer clicking the cancel button on 3dSecure page';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                       = 'Transaction declined';
+    const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER              = 'Netbanking payment cancelled by user by clicking cancel on bank transfer page';
 }

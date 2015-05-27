@@ -77,6 +77,18 @@ class Gateway extends Base\Gateway
 
         $bankRefNo = $input['gateway']['BankRefNo'];
         $message = $input['gateway']['Message'];
+
+        $content = $input['gateway'];
+
+        if (($bankRefNo === '') or
+            ($message !== ''))
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
+                    '',
+                    $message);
+        }
     }
 
     public function verify(array $input)
