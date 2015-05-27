@@ -17,6 +17,7 @@ class Entity extends Base\Entity
         'merchant_code',
         'bank_payment_id',
         'error_message',
+        'reference1',
     );
 
     protected $fillable = array(
@@ -26,6 +27,7 @@ class Entity extends Base\Entity
         'merchant_code',
         'bank_payment_id',
         'error_message',
+        'reference1',
     );
 
     public function setBank($bank)

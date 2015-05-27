@@ -35,7 +35,8 @@ class Gateway extends Base\Gateway
         'MerchantCode'  => 'merchant_code',
         'TxnAmount'     => 'amount',
         'Message'       => 'error_message',
-        'BankRefNo'     => 'bank_payment_id'
+        'BankRefNo'     => 'bank_payment_id',
+        'fldSessionNbr' => 'reference1',
     );
 
     /**
