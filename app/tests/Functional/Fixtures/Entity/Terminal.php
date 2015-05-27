@@ -119,4 +119,17 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createNetbankingHdfcTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'netbanking_hdfc',
+            'gateway_merchant_id'   => 'abcd',
+            'gateway_terminal_id'   => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                  => 1);
+
+        return $this->create('terminal', $attributes);
+    }
 }
