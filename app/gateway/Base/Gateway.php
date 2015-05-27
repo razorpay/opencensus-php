@@ -44,7 +44,7 @@ class Gateway
     }
 
     public function callback(array $input)
-    {
+    {//s($input['gateway']);
         $this->input = $input;
     }
 

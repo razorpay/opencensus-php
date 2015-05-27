@@ -54,10 +54,9 @@ class Server
     protected function getGatewayInstance()
     {
         $class = get_class($this);
-        $parts = explode('\\', $class);
-        $gateway = 'Gateway\\'.$parts[1].'\\Gateway';
+        $class = substr($class, 0, strpos($class, '\Mock')) . '\Gateway';
 
-        $gateway = new $gateway;
+        $gateway = new $class;
         $gateway->setMode(Mode::TEST);
 
         return $gateway;

@@ -14,6 +14,8 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'netbanking_hdfc';
 
+    protected $bank = 'hdfc';
+
     protected $sortRequestContent = false;
 
     protected $fields = array(
@@ -73,8 +75,8 @@ class Gateway extends Base\Gateway
 
         $this->verifyCallbackChecksum($input);
 
-        $bankRefNo = $input['BankRefNo'];
-        $message = $input['Message'];
+        $bankRefNo = $input['gateway']['BankRefNo'];
+        $message = $input['gateway']['Message'];
     }
 
     public function verify(array $input)
@@ -100,6 +102,48 @@ class Gateway extends Base\Gateway
     }
 
     protected function verifyCallbackChecksum($input)
+    {
+        $expectedChecksum = $this->getCallbackChecksum($input['gateway']);
+
+        $checksum = $input['gateway']['CheckSum'];
+
+        if ($checksum !== $expectedChecksum)
+        {
+            throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
+        }
+    }
+
+    protected function getPaymentRequestData($input)
+    {
+        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
+
+        $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
+
+        $data = array(
+            'ClientCode'        => $input['payment']['email'],//$clientCode,
+            'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
+            'TxnCurrency'       => 'INR',
+            'TxnAmount'         => $input['payment']['amount'] / 100,
+            'TxnScAmount'       => '0',
+            'MerchantRefNo'     => $input['payment']['id'],
+            'SuccessStaticFlag' => 'N',
+            'FailureStaticFlag' => 'N',
+            'Date'              => $date,
+            'DynamicUrl'        => $input['callbackUrl'],
+        );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $data['MerchantCode'] = 'RAZORPAY';
+//            $data['ClientCode'] = random_alpha_string(10);
+        }
+
+        $data['CheckSum'] = $this->generateHash($data);
+
+        return $data;
+    }
+
+    protected function getCallbackChecksum($input)
     {
         $paramsOrder = array(
             'ClientCode',
@@ -141,45 +185,7 @@ class Gateway extends Base\Gateway
             }
         }
 
-        $checksum = $input['gateway']['CheckSum'];
-
-        // s($input, $data, $str);
-        $expectedChecksum = $this->getHashOfString($str);
-
-        if ($checksum !== $expectedChecksum)
-        {
-            throw new Exception\BadRequestException('Failed checksum verification');
-        }
-    }
-
-    protected function getPaymentRequestData($input)
-    {
-        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
-
-        $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
-
-        $data = array(
-            'ClientCode'        => $input['payment']['email'],//$clientCode,
-            'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
-            'TxnCurrency'       => 'INR',
-            'TxnAmount'         => $input['payment']['amount'] / 100,
-            'TxnScAmount'       => '0',
-            'MerchantRefNo'     => $input['payment']['id'],
-            'SuccessStaticFlag' => 'N',
-            'FailureStaticFlag' => 'N',
-            'Date'              => $date,
-            'DynamicUrl'        => $input['callbackUrl'],
-        );
-
-        if ($this->mode === Mode::TEST)
-        {
-            $data['MerchantCode'] = 'RAZORPAY';
-//            $data['ClientCode'] = random_alpha_string(10);
-        }
-
-        $data['CheckSum'] = $this->generateHash($data);
-
-        return $data;
+        return $this->getHashOfString($str);
     }
 
     protected function getHashOfString($str)

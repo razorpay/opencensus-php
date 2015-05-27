@@ -126,4 +126,16 @@ class MockGatewayController extends BaseController
 
         return Redirect::to($url);
     }
+
+    public function postNetbankingPayment($bank)
+    {
+        $input = Input::all();
+
+        $class = 'Gateway\Netbanking\\'.ucfirst($bank).'\Mock\Server';
+        $server = new $class;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
 }
