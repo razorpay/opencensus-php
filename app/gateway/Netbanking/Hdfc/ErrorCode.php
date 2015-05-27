@@ -3,16 +3,15 @@
 namespace Gateway\Netbanking\Hdfc;
 
 use EE\Error;
-use EE\Error\ErrorCode;
 
 class ErrorCode
 {
     const TRANSFER_TERMINATED_BY_USER;
 
     protected static $messages = array(
-         => 'Funds transfer terminated by user',
+        self::TRANSFER_TERMINATED_BY_USER => 'Funds transfer terminated by user',
     );
 
     protected static $errorMap = array(
-        self::TRANSFER_TERMINATED_BY_USER)
+        self::TRANSFER_TERMINATED_BY_USER => Error\ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER);
 }
