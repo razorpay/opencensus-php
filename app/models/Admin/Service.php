@@ -46,6 +46,7 @@ class Service extends Base\Service
             'axis_genius'       => 'Gateway\AxisGenius',
             'paytm'             => 'Gateway\Paytm',
             'netbanking'        => 'Gateway\Netbanking',
+            'billdesk'          => 'Gateway\Billdesk',
         );
 
         if (array_key_exists($entity, $map))
