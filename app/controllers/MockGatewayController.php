@@ -127,6 +127,17 @@ class MockGatewayController extends BaseController
         return Redirect::to($url);
     }
 
+    public function postBilldeskPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Billdesk\Mock\Server;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
+
     public function postNetbankingPayment($bank)
     {
         $input = Input::all();

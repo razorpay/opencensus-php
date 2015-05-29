@@ -20,12 +20,14 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+
         $content = array(
             'MerchantId'                => $input['terminal']['gateway_merchant_id'],
             'CustomerID'                => $input['payment']['id'],
             'Unknown1'                  => 'NA',
             'TxnAmount'                 => $input['payment']['amount'] / 100,
-            'BankID'                    => 'IDB',
+            'BankID'                    => $bankId,
             'Unknown1'                  => 'NA',
             'Unknown2'                  => 'NA',
             'CurrencyType'              => 'INR',
@@ -67,14 +69,21 @@ class Gateway extends Base\Gateway
 
         $payment = []; // Fetch billdesk payment
 
+        // Format YYYYMMDD
+        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
+        $date = $date->format('Ymd');
+
+        // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
+        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His')
+
         $content = array(
             'RequestType'       => '0400',
             'MerchantID'        => $input['terminal']['gateway_merchant_id'],
             'TxnReferenceNo'    => $payment['gateway_payment_id'],
-            'TxnDate'           => '',
+            'TxnDate'           => $date,
             'CusotmerID'        => $input['payment']['id'],
             'RefAmount'         => $input['refund']['amount'],
-            'RefDateTime'       => '',
+            'RefDateTime'       => $now,
             'MerchantRefNo'     => $input['refund']['id'],
             'Filler1'           => 'NA',
             'Filler2'           => 'NA',
@@ -94,14 +103,14 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        // format - 'yyyymmdd24hhmmss'
-        $time = date('Ymd24his');
+        // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
+        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His')
 
         $content = array(
             'RequestType'   => '0122',
             'Merchant ID'   => $input['terminal']['gateway_merchant_id'],
             'Customer ID'   => $input['payment']['id'],
-            'Current Date/ Timestamp' => $time,
+            'Current Date/ Timestamp' => $now,
         );
 
         $msg = $this->getRequestMessageString($content);
@@ -147,7 +156,7 @@ class Gateway extends Base\Gateway
     protected function verifySecureHash($content)
     {
         $hash = $content['Checksum'];
-        unset($content['CheckSum']);
+        unset($content['Checksum']);
 
         $generatedHash = $this->generateHash($content);
 
