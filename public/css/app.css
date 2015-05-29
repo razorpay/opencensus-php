@@ -496,6 +496,15 @@ pre {
   left: 50%;
   top: 50%;
 }
+.modal-print .modal-dialog{
+  width: 860px;
+}
+.pull-left{
+  float: left;
+}
+.pull-right{
+  float: right;
+}
 html,
 body {
   width: 100%;
@@ -3756,6 +3765,7 @@ a.text-black:hover {
   -moz-animation: movingbar 0.75s infinite;
   animation: movingbar 0.75s infinite;
 }
+
 @-webkit-keyframes movingbar {
   0% {
     left: 50%;

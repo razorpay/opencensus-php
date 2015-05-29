@@ -349,8 +349,24 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         },
         function () {
           ;
-        });
+        }
+      );
     };
+
+    $scope.openAutofillForms = function() {
+      var merchant = $scope.merchant;
+
+      var modalInstance = $modal.open({
+        templateUrl: 'openAutofillForms.html',
+        controller: 'openAutofillForms',
+        windowClass: 'modal-print',
+        resolve: {
+          current: function(){
+            return merchant.details;
+          }
+        }
+      });
+    }
 
 
     function generateMerchant() {
@@ -499,10 +515,148 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       $scope.ok = function (merchant) {
         $modalInstance.close(merchant);
+      }
+}])
+.controller('openAutofillForms', ['$scope', '$modalInstance', 'current',
+  function ($scope, $modalInstance, current) {
+      var merchant_details = current && current.merchant_details || {};
+      var html = "";
+      $scope.ok = function () {
+        if(html){
+          var w = window.open();
+          w.document.body.innerHTML = html;
+        }
       };
 
       $scope.cancel = function () {
         $modalInstance.dismiss('cancel');
       };
+
+      $scope.select = function(bank){
+        $.ajax({
+          url: 'http://dashboard.razorpay.dev/axis-form.html',
+          success: function(resp){
+            var template = doT.template(resp, {strip: false});
+            var now = new Date();
+            var reg_addr = merchant_details.business_registered_address;
+            if(reg_addr)
+              reg_addr += ', ';
+            if(merchant_details.business_registered_city){
+              reg_addr += merchant_details.business_registered_city;
+              if(merchant_details.business_registered_pin)
+                reg_addr += '-' + merchant_details.business_registered_pin;
+              reg_addr += ', ';
+            }
+            reg_addr += merchant_details.business_registered_state;
+
+            var ops_addr = merchant_details.business_operation_address;
+            if(ops_addr)
+              ops_addr += ', ';
+            if(merchant_details.business_operation_city){
+              ops_addr += merchant_details.business_operation_city;
+              if(merchant_details.business_operation_pin)
+                ops_addr += '-' + merchant_details.business_operation_pin;
+              ops_addr += ', ';
+            }
+            ops_addr += merchant_details.business_operation_state;
+            
+            html = template({
+              reqdate: ("0"+now.getDate()).slice(-2) + ("0"+now.getMonth()).slice(-2) + (now.getYear()+1900),
+              reqby: "Harshil Mathur",
+              reqsign: "",
+              contract_merchant: "",
+              contract_corporate: "",
+              contract_business: "",
+              contract_software: "",
+              contract_govt: "",
+              contract_other: "Y",
+              contract_specify: merchant_details.bussiness_model || "",
+              mercreg_company: merchant_details.business_name || "",
+              mercreg_contact: merchant_details.contact_name || "",
+              mercreg_tel_business: merchant_details.contact_mobile || "",
+              mercreg_tel_after: merchant_details.contact_mobile || "",
+              mercreg_fax: "",
+              mercreg_email: merchant_details.contact_email || "",
+              mercreg_addr: reg_addr || "",
+              mercreg_country: "India",
+              mercreg_tz: "GMT + 5:30 (IST)",
+              mercop_company: merchant_details.business_name || "",
+              mercop_contact: merchant_details.contact_name || "",
+              mercop_tel_business: merchant_details.contact_mobile || "",
+              mercop_tel_after: merchant_details.contact_mobile || "",
+              mercop_fax: "",
+              mercop_email: merchant_details.contact_email || "",
+              mercop_addr: ops_addr || "",
+              cpv_head: "",
+              cpv_op: "",
+              merctech_contact: "Razorpay Software Private Limited",
+              merctech_pos: "Director",
+              merctech_tel_business: "+91-8003393912",
+              merctech_tel_after: "+91-8003393912",
+              merctech_fax: "",
+              merctech_email: "harshil@razorpay.com",
+              merctech_addr: "35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan",
+              merctech_web_addr: "",
+              merctech_return_url: "https://api.razorpay.com",
+              mercsetup_auth: "Y",
+              mercsetup_purc: "",
+              mercsetup_catcode: "",
+              mercsetup_3: "",
+              mercsetup_6: "",
+              mercsetup_9: "",
+              mercsetup_12: "",
+              mercsetup_master: "Y",
+              mercsetup_visa: "Y",
+              mercsetup_maestro: "Y",
+              mercsetup_dmid: "",
+              mercsetup_smid: "Y",
+              techpro_company: "",
+              techpro_contact: "",
+              techpro_pos: "",
+              techpro_tel_business: "",
+              techpro_tel_after: "",
+              techpro_fax: "",
+              techpro_email: "",
+              techpro_addr: "",
+              paycli_merc: "",
+              paycli_third: "Y",
+              paycli_hosting: "",
+              paycli_tel: "",
+              paycli_win: "",
+              paycli_winver: "",
+              paycli_unix: "",
+              paycli_unixver: "",
+              paycli_linux: "Y",
+              paycli_linuxver: "14.04",
+              paycli_other: "",
+              paycli_specify: "",
+              payapp_custbool: "",
+              payapp_cust: "",
+              payapp_thirdbool: "",
+              payapp_third: "",
+              payapp_otherbool: "Y",
+              payapp_specify: "Self developed by Razorpay",
+              payapp_langasp: "",
+              payapp_langaspx: "",
+              payapp_langjsock: "",
+              payapp_langjava: "",
+              payapp_langperl: "",
+              payapp_langoth: "",
+              payapp_langspecify: "",
+              payapp_sslbool: "Y",
+              payapp_4card: "",
+              payapp_6card: "",
+              payapp_dndcard: "",
+              payapp_secyes: "Y",
+              payapp_secno: "",
+              payapp_uid: "",
+              payapp_vbvyes: "Y",
+              payapp_vbvno: "",
+              payapp_mscyes: "Y",
+              payapp_mscno: ""
+            });
+          }
+        })
+      };
 }])
-;
+

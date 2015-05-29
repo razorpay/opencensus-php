@@ -1,0 +1,302 @@
+<meta charset="utf-8">
+<style>
+input{
+  font: inherit;
+}
+pre{
+  margin: 0;
+}
+.actform-container{
+  font-family: serif;
+  padding: 0 15px;
+  width: 7in;
+  margin: 0 auto;
+}
+.axis-block-title{
+  font-weight: bold;
+  border: 1.4px solid #000;
+  margin-bottom:-0.4px;
+  line-height: 30px;
+  text-align: center;
+  display: inline-block;
+  padding: 0 20px;
+}
+.axis-block{
+  font-size: 11px;
+  margin: 20px;
+  text-align: center;
+}
+.axis-block pre:not(.axis-block-body){
+  background: none;
+  border-radius: 0;
+  font: inherit;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+.axis-block-body{
+  background: none;
+  border-radius: 0;
+  font: inherit;
+  text-align: left;
+  border: 1.4px solid #000;
+  padding: 5px 10px 10px;
+  line-height: 20px;
+}
+.input-sq{
+  display: inline-block;
+  vertical-align: top;
+  width: 14px;
+  height: 14px;
+  border: 1.4px solid #000;
+  margin-left: -1.4px;
+  line-height: 14px;
+  text-align: center;
+}
+.input-u{
+  line-height: 16px;
+  width: 150px;
+  border: none;
+  border-bottom: 1.4px solid #000;
+}
+.input-u.sm{
+  width: 60px;
+}
+.input-u.lg{
+  width: 240px;
+}
+.gap-sq{
+  vertical-align: middle;
+  width: 10px;
+  height: 14px;
+  display: inline-block;
+}
+.div-ib{
+  display: inline-block;
+  vertical-align: middle;
+}
+.actform-container a{
+  color: blue;
+  text-decoration: underline;
+}
+.gap{
+  width: 100px;
+  display: inline-block;
+}
+</style>
+<div class="actform-container">
+<div style="margin: 10px 30px 10px 50px; clear: both">
+<img width="200" src="data:image/png;base64,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">
+<strong class="pull-right" style="text-align: center; font-size: 16px">Merchant<br>Enablement Form<br>For Payment Gateway</strong>
+<div>&nbsp;</div>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">AXIS Bank Credit Card Gateway Merchant Enablement form</div>
+  <pre class="axis-block-body">Completed forms can be:<span class="gap"></span>Enablement Request Date :<span class="gap"></span><input class="input-sq" value="{{=it.reqdate[0]}}"><input class="input-sq" value="{{=it.reqdate[1]}}"><span class="gap-sq"></span><input class="input-sq" value="{{=it.reqdate[2]}}"><input class="input-sq" value="{{=it.reqdate[3]}}"><span class="gap-sq"></span><input class="input-sq" value="{{=it.reqdate[4]}}"><input class="input-sq" value="{{=it.reqdate[5]}}"><input class="input-sq" value="{{=it.reqdate[6]}}"><input class="input-sq" value="{{=it.reqdate[7]}}">
+1. Emailed to : <a href="mailto:ipgoperations@axisbank.com">ipgoperations@axisbank.com</a><span class="gap"></span>Enablement Requested by : <input class="input-u" style="width: 120px" value="{{=it.reqby}}">
+2. Axis Bank Ltd, 3rd Floor, Building no. 1,
+Gigaplex, Plot no. I.T.5, MIDC, Airoli Knowledge Park,
+Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <input class="input-u" value="{{=it.reqsign}}"></pre>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">Contract Details</div>
+  <div class="axis-block-body">
+    <div class="row">
+      <div class="col-xs-2">Type of Business :</div>
+      <div class="col-xs-10">
+        <input class="input-sq" value="{{=it.contract_merchant}}"> Merchant Customer&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.contract_corporate}}"> Corporate&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.contract_business}}"> Business Partner&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.contract_software}}"> Software Trial&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.contract_govt}}"> Govt./Govt. subsidiary<br>
+        <input class="input-sq" value="{{=it.contract_other}}"> Others &nbsp;&nbsp;&nbsp;Please Specify <input class="input-u" style="width: 400px" value="{{=it.contract_specify}}">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-2">Date of Contract :</div>
+      <div class="col-xs-10">
+        <input class="input-sq" value="{{=it.reqdate[0]}}"><input class="input-sq" value="{{=it.reqdate[1]}}"><span class="gap-sq"></span><input class="input-sq" value="{{=it.reqdate[2]}}"><input class="input-sq" value="{{=it.reqdate[3]}}"><span class="gap-sq"></span><input class="input-sq" value="{{=it.reqdate[4]}}"><input class="input-sq" value="{{=it.reqdate[5]}}"><input class="input-sq" value="{{=it.reqdate[6]}}"><input class="input-sq" value="{{=it.reqdate[7]}}">
+        <br><pre> MM      DD          YY</pre>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">Merchant Details – Head Office & Registered Office</div>
+  <pre class="axis-block-body">
+  Company Name: <input class="input-u lg" style="width: 560px" value="{{=it.mercreg_company}}">
+  Contact Name:   <input class="input-u lg" style="width: 560px"  value="{{=it.mercreg_contact}}">
+  Telephone: <input class="input-u" value="{{=it.mercreg_tel_business}}">         <input class="input-u lg" value="{{=it.mercreg_tel_after}}">
+  <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
+  Fax: <input class="input-u" value="{{=it.mercreg_fax}}"> Email Address: <input class="input-u" style="width: 380px" value="{{=it.mercreg_email}}">
+  Poastal Address: <input class="input-u" style="width: 600px" value="{{=it.mercreg_addr}}">
+  Country: <input class="input-u" style="width: 377px" value="{{=it.mercreg_country}}"> Time Zone: <input class="input-u" value="{{=it.mercreg_tz}}"></pre>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">Merchant Details – Operation</div>
+  <pre class="axis-block-body">
+  Company Name: <input class="input-u lg" style="width: 560px" value="{{=it.mercop_company}}">
+  <br>Contact Name:   <input class="input-u lg" style="width: 560px"  value="{{=it.mercop_contact}}">
+  <br>Telephone: <input class="input-u" value="{{=it.mercop_tel_business}}">         <input class="input-u lg" value="{{=it.mercop_tel_after}}">
+  <br><div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
+  <br>Fax: <input class="input-u" value="{{=it.mercop_fax}}"> Email Address: <input class="input-u" style="width: 380px" value="{{=it.mercop_email}}">
+  <br>Poastal Address: <input class="input-u" style="width: 600px" value="{{=it.mercop_addr}}"></pre>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">CPV</div>
+  <div class="axis-block-body">
+    <div class="row">
+      <div class="col-xs-3">CPV to be conducted at:</div>
+      <div class="col-xs-9">
+        <input class="input-sq" value="{{=it.cpv_head}}"> Head Office &nbsp;&nbsp; <input class="input-sq" value="{{=it.cpv_op}}"> Operational Address
+      </div>
+    </div>
+  </div>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">Merchant Details – Technical</div>
+  <pre class="axis-block-body">
+  Contact Name:    <input class="input-u lg" value="{{=it.merctech_contact}}"> Position: <input class="input-u" value="{{=it.merctech_pos}}">
+  Telephone: <input class="input-u" value="{{=it.merctech_tel_business}}">         <input class="input-u lg" value="{{=it.merctech_tel_after}}">
+  <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
+  Fax: <input class="input-u" value="{{=it.merctech_fax}}"> Email Address: <input class="input-u" style="width: 380px" value="{{=it.merctech_email}}">
+  Poastal Address: <input class="input-u" style="width: 600px" value="{{=it.merctech_addr}}">
+  Payment Website Address: <input class="input-u" style="width: 523px" value="{{=it.merctech_web_addr}}">
+  Return URL: <input class="input-u" style="width: 586px" value="{{=it.merctech_return_url}}"></pre>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">Merchant Setup Details</div>
+  <div class="axis-block-body">
+    <div class="row">
+      <div class="col-xs-4">Transaction Mode (Tick one only) :</div>
+      <div class="col-xs-8">
+        <input class="input-sq" value="{{=it.mercsetup_auth}}"> Authorisation / Capture
+        <input class="input-sq" value="{{=it.mercsetup_purc}}"> Purchase
+      </div>
+      <div class="col-xs-12">Merchant Category Code :<input class="input-u" style="width: 500px" value="{{=it.mercsetup_catcode}}"></div>
+      <div class="col-xs-12" style="text-align: center">(To be provided by AXIS Bank)</div>
+      <div class="col-xs-4">EMI Option:</div>
+      <div class="col-xs-8">
+        <span style="display: inline-block; width: 80px"><input class="input-sq" value="{{=it.mercsetup_3}}"> 3 EMI</span>
+        <span style="display: inline-block; width: 80px"><input class="input-sq" value="{{=it.mercsetup_6}}"> 6 EMI</span>
+        <span style="display: inline-block; width: 80px"><input class="input-sq" value="{{=it.mercsetup_9}}"> 9 EMI</span>
+        <input class="input-sq" value="{{=it.mercsetup_12}}"> 12 EMI
+      </div>
+      <div class="col-xs-4">Card to be Processed (tick all that apply) :</div>
+      <div class="col-xs-8">
+        <span style="display: inline-block; width: 80px"><input class="input-sq" value="{{=it.mercsetup_master}}"> Mastercard</span>
+        <span style="display: inline-block; width: 80px"><input class="input-sq" value="{{=it.mercsetup_visa}}"> VISA</span>
+        <input class="input-sq" value="{{=it.mercsetup_maestro}}"> Maestro
+      </div>
+      <div class="col-xs-4">MID required:</div>
+      <div class="col-xs-8">
+        <span style="display: inline-block; width: 80px"><input class="input-sq" value="{{=it.mercsetup_dmid}}"> DCC MID</span>
+        <input class="input-sq" value="{{=it.mercsetup_smid}}"> Standard MID
+      </div>
+    </div>
+  </div>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">3rd Party Technology Provider / Partner Details (if applicable)</div>
+  <pre class="axis-block-body">
+  Company Name: <input class="input-u" style="width: 525px" value="{{=it.techpro_company}}">
+  Contact Name:    <input class="input-u lg" value="{{=it.techpro_contact}}"> Position: <input class="input-u" value="{{=it.techpro_pos}}">
+  Telephone: <input class="input-u" value="{{=it.techpro_tel_business}}">         <input class="input-u lg" value="{{=it.techpro_tel_after}}">
+  <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
+  Fax: <input class="input-u" value="{{=it.techpro_fax}}"> Email Address: <input class="input-u" style="width: 380px" value="{{=it.techpro_email}}">
+  Poastal Address: <input class="input-u" style="width: 600px;" value="{{=it.techpro_addr}}">
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">Payment Client / Website Hosting Details</div>
+  <div class="axis-block-body">
+    <div class="row">
+      <div class="col-xs-3">Hosting  (tick one only) :</div>
+      <div class="col-xs-4"><input class="input-sq" value="{{=it.paycli_merc}}"> Merchant Hosted</div>
+      <div class="col-xs-5"><input class="input-sq" value="{{=it.paycli_third}}"> Third Party Hosted</div>
+    </div>
+    <div class="row">
+      <div class="col-xs-7">Hosting Company Name<input class="input-u" value="{{=it.paycli_hosting}}"></div>
+      <div class="col-xs-5">Telephone <input class="input-u" value="{{=it.paycli_tel}}"></div>
+    </div>
+    <div class="row" style="margin-top: 10px">
+      <div class="col-xs-3" style="line-height: 16px">Operating System</div>
+      <div class="col-xs-4"><input class="input-sq" value="{{=it.paycli_win}}"> Windows, Version Type <input class="input-u sm" value="{{=it.paycli_winver}}"></div>
+      <div class="col-xs-5"><input class="input-sq" value="{{=it.paycli_unix}}"> Unix, Version Type <input class="input-u sm" value="{{=it.paycli_unixver}}"></div>
+    </div>
+    <div class="row">
+      <div class="col-xs-3" style="position: relative; top: -10px">(Tick one only)</div>
+      <div class="col-xs-4"><input class="input-sq" value="{{=it.paycli_linux}}"> Linux, Version Type<input class="input-u sm" style="margin-left: 20px" value="{{=it.paycli_linuxver}}"></div>
+      <div class="col-xs-5"><input class="input-sq" value="{{=it.paycli_other}}"> Other (Specify)<input class="input-u sm" style="margin-left: 22px" value="{{=it.paycli_specify}}"></div>
+    </div>
+  </div>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">Payment Application Details</div>
+  <div class="axis-block-body">
+    <div class="row">
+      <div class="col-xs-3">Payment application :</div>
+      <div class="col-xs-9"><input class="input-sq" value="{{=it.payapp_custbool}}"> Customer Developed<input class="input-u" value="{{=it.payapp_cust}}"></div>
+    </div>
+    <div class="row">
+      <div class="col-xs-3" style="position: relative; top: -6px">(Click one only and provide</div>
+      <div class="col-xs-9"><input class="input-sq" value="{{=it.payapp_thirdbool}}"> 3<sup>rd</sup> party Application i.e. Shop and Buy<input value="{{=it.payapp_third}}" class="input-u"></div>
+    </div>
+    <div class="row">
+      <div class="col-xs-3" style="position: relative; top: -14px">details where necessary)</div>
+      <div class="col-xs-9"><input class="input-sq" value="{{=it.payapp_otherbool}}"> Other Please specify<input class="input-u" value="{{=it.payapp_specify}}"></div>
+    </div>
+    <div class="row" style="margin-top: 8px;">
+      <div class="col-xs-3">Interface Language</div>
+      <div class="col-xs-9">
+        <input class="input-sq" value="{{=it.payapp_langasp}}"> ASP&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_langaspx}}"> ASPX&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_langjsock}}"> Java Sockets&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_langjava}}"> Java&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_langperl}}"> PERL&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_langoth}}"> Other <input class="input-u sm" value="{{=it.payapp_langspecify}}">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-3">Transaction types:</div>
+      <div class="col-xs-9"><input class="input-sq" value="{{=it.payapp_sslbool}}"> SSL +</div>
+    </div>
+    <div class="row">
+      <div class="col-xs-3">Display Card Number</div>
+      <div class="col-xs-9">
+        <input class="input-sq" value="{{=it.payapp_4card}}"> 0.4 Format&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_6card}}"> 6.3 Format&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_dndcard}}"> Do not display
+      </div>
+    </div>
+    <div class="row" style="margin-top: 8px">
+      <div class="col-xs-3">Enable Card Security Code (CVC2/CW2)</div>
+      <div class="col-xs-9">
+        <input class="input-sq" value="{{=it.payapp_secyes}}"> Yes&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_secno}}"> No
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">User ID required for Web access:<input class="input-u lg" value="{{=it.payapp_uid}}"></div>
+    </div>
+    <div class="row" style="margin-top: 8px">
+      <div class="col-xs-3">Enablement for Verified by Visa</div>
+      <div class="col-xs-9">
+        <input class="input-sq" value="{{=it.payapp_vbvyes}}"> Yes&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_vbvno}}"> No&nbsp;&nbsp;
+        Enablement for MasterCard Secure Code&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_mscyes}}"> Yes&nbsp;&nbsp;
+        <input class="input-sq" value="{{=it.payapp_mscno}}"> No
+      </div>
+    </div>
+  </div>
+</div>
+<div class="axis-block">
+  <div class="axis-block-title">Processing Details - Bank's Use Only</div>
+  <div class="axis-block-body">
+  Form Received Date <input class="input-u sm"> &nbsp;&nbsp; Form Received From <input class="input-u lg"><br>
+  <div style="margin-top: 6px">Form Received via <input class="input-sq"> &nbsp;&nbsp; Email, from <input class="input-u"> &nbsp;&nbsp; <input class="input-sq"> &nbsp;&nbsp; Fax (No) <input class="input-u"></div>
+  Form Processed Date <input class="input-u">&nbsp;&nbsp;Form Processed by <input class="input-u"><br>
+  Merchant AXIS Bank Payment A/c No- <input class="input-u lg">
+  </div>
+</div>
+</div>
