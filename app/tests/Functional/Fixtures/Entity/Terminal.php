@@ -132,4 +132,20 @@ class Terminal extends Base
 
         return $this->create('terminal', $attributes);
     }
+
+    public function createSharedBilldeskTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                    => $termId,
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'billdesk',
+            'gateway_merchant_id'   => 'abcd',
+            'gateway_terminal_id'   => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                  => 1);
+
+        return $this->create('terminal', $attributes);
+    }
 }
