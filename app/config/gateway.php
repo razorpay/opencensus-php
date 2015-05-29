@@ -10,13 +10,15 @@ return array(
     */
 
     'available' => array(
-        'hdfc',
         'atom',
-        'axis_migs',
         'axis_genius',
+        'axis_migs',
+        'billdesk',
+        'hdfc',
         'kotak',
         'paytm',
-        'netbanking_hdfc'),
+        'netbanking_hdfc',
+    ),
 
     'mock_hdfc'             => $_ENV['HDFC_MOCK'],
     'mock_atom'             => $_ENV['ATOM_MOCK'],
@@ -25,8 +27,7 @@ return array(
     'mock_kotak'            => $_ENV['KOTAK_MOCK'],
     'mock_paytm'            => $_ENV['PAYTM_MOCK'],
     'mock_netbanking_hdfc'  => $_ENV['NETBANKING_HDFC_MOCK'],
-
-    'mockhdfc_server' => false,
+    'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
 
     'hdfc' => array(
         'test_terminal_id'  => $_ENV['HDFC_ID'],

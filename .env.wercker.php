@@ -46,10 +46,11 @@ return array(
 
     'MOCK_GATEWAY_SECRET'                   => 'wercker_random_password',
 
-    'HDFC_MOCK'                             => true,
     'ATOM_MOCK'                             => true,
     'AXIS_MIGS_MOCK'                        => true,
     'AXIS_GENIUS_MOCK'                      => true,
+    'BILLDESK_MOCK'                         => true,
+    'HDFC_MOCK'                             => true,
     'KOTAK_MOCK'                            => true,
     'PAYTM_MOCK'                            => true,
     'NETBANKING_HDFC_MOCK'                  => true,
