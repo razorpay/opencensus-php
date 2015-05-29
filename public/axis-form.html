@@ -2,6 +2,7 @@
 <style>
 input{
   font: inherit;
+  outline: none;
 }
 pre{
   margin: 0;
@@ -83,11 +84,48 @@ pre{
   width: 100px;
   display: inline-block;
 }
+.col-xs-2{
+  width: 16.66%;
+  float: left;
+}
+.col-xs-3{
+  width: 25%;
+  float: left;
+}
+.col-xs-4{
+  width: 33.33%;
+  float: left;
+}
+.col-xs-5{
+  width: 41.66%;
+  float: left;
+}
+.col-xs-7{
+  width: 58.33%;
+  float: left;
+}
+.col-xs-8{
+  width: 66.66%;
+  float: left;
+}
+.col-xs-9{
+  width: 75%;
+  float: left;
+}
+.col-xs-10{
+  width: 83.33%;
+  float: left;
+}
+.row:after{
+  clear:both;
+  display: block;
+  content: '';
+}
 </style>
 <div class="actform-container">
 <div style="margin: 10px 30px 10px 50px; clear: both">
 <img width="200" src="data:image/png;base64,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">
-<strong class="pull-right" style="text-align: center; font-size: 16px">Merchant<br>Enablement Form<br>For Payment Gateway</strong>
+<strong style="text-align: center; float: right; font-size: 16px">Merchant<br>Enablement Form<br>For Payment Gateway</strong>
 <div>&nbsp;</div>
 </div>
 <div class="axis-block">
@@ -124,23 +162,23 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
 <div class="axis-block">
   <div class="axis-block-title">Merchant Details – Head Office & Registered Office</div>
   <pre class="axis-block-body">
-  Company Name: <input class="input-u lg" style="width: 560px" value="{{=it.mercreg_company}}">
-  Contact Name:   <input class="input-u lg" style="width: 560px"  value="{{=it.mercreg_contact}}">
+  Company Name: <input class="input-u lg" style="width: 510px" value="{{=it.mercreg_company}}">
+  Contact Name:   <input class="input-u lg" style="width: 510px"  value="{{=it.mercreg_contact}}">
   Telephone: <input class="input-u" value="{{=it.mercreg_tel_business}}">         <input class="input-u lg" value="{{=it.mercreg_tel_after}}">
   <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
-  Fax: <input class="input-u" value="{{=it.mercreg_fax}}"> Email Address: <input class="input-u" style="width: 380px" value="{{=it.mercreg_email}}">
-  Poastal Address: <input class="input-u" style="width: 600px" value="{{=it.mercreg_addr}}">
+  Fax: <input class="input-u" value="{{=it.mercreg_fax}}"> Email Address: <input class="input-u" style="width: 330px" value="{{=it.mercreg_email}}">
+  Poastal Address: <input class="input-u" style="width: 500px" value="{{=it.mercreg_addr}}">
   Country: <input class="input-u" style="width: 377px" value="{{=it.mercreg_country}}"> Time Zone: <input class="input-u" value="{{=it.mercreg_tz}}"></pre>
 </div>
 <div class="axis-block">
   <div class="axis-block-title">Merchant Details – Operation</div>
   <pre class="axis-block-body">
-  Company Name: <input class="input-u lg" style="width: 560px" value="{{=it.mercop_company}}">
-  <br>Contact Name:   <input class="input-u lg" style="width: 560px"  value="{{=it.mercop_contact}}">
-  <br>Telephone: <input class="input-u" value="{{=it.mercop_tel_business}}">         <input class="input-u lg" value="{{=it.mercop_tel_after}}">
-  <br><div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
-  <br>Fax: <input class="input-u" value="{{=it.mercop_fax}}"> Email Address: <input class="input-u" style="width: 380px" value="{{=it.mercop_email}}">
-  <br>Poastal Address: <input class="input-u" style="width: 600px" value="{{=it.mercop_addr}}"></pre>
+  Company Name: <input class="input-u lg" style="width: 510px" value="{{=it.mercop_company}}">
+  Contact Name:   <input class="input-u lg" style="width: 510px"  value="{{=it.mercop_contact}}">
+  Telephone: <input class="input-u" value="{{=it.mercop_tel_business}}">         <input class="input-u lg" value="{{=it.mercop_tel_after}}">
+  <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
+  Fax: <input class="input-u" value="{{=it.mercop_fax}}"> Email Address: <input class="input-u" style="width: 330px" value="{{=it.mercop_email}}">
+  Poastal Address: <input class="input-u" style="width: 500px" value="{{=it.mercop_addr}}"></pre>
 </div>
 <div class="axis-block">
   <div class="axis-block-title">CPV</div>
@@ -159,9 +197,9 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
   Contact Name:    <input class="input-u lg" value="{{=it.merctech_contact}}"> Position: <input class="input-u" value="{{=it.merctech_pos}}">
   Telephone: <input class="input-u" value="{{=it.merctech_tel_business}}">         <input class="input-u lg" value="{{=it.merctech_tel_after}}">
   <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
-  Fax: <input class="input-u" value="{{=it.merctech_fax}}"> Email Address: <input class="input-u" style="width: 380px" value="{{=it.merctech_email}}">
-  Poastal Address: <input class="input-u" style="width: 600px" value="{{=it.merctech_addr}}">
-  Payment Website Address: <input class="input-u" style="width: 523px" value="{{=it.merctech_web_addr}}">
+  Fax: <input class="input-u" value="{{=it.merctech_fax}}"> Email Address: <input class="input-u" style="width: 330px" value="{{=it.merctech_email}}">
+  Poastal Address: <input class="input-u" style="width: 500px" value="{{=it.merctech_addr}}">
+  Payment Website Address: <input class="input-u" style="width: 470px" value="{{=it.merctech_web_addr}}">
   Return URL: <input class="input-u" style="width: 586px" value="{{=it.merctech_return_url}}"></pre>
 </div>
 <div class="axis-block">
@@ -203,8 +241,8 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
   Contact Name:    <input class="input-u lg" value="{{=it.techpro_contact}}"> Position: <input class="input-u" value="{{=it.techpro_pos}}">
   Telephone: <input class="input-u" value="{{=it.techpro_tel_business}}">         <input class="input-u lg" value="{{=it.techpro_tel_after}}">
   <div style="text-align: left; margin: -12px 0 -12px 120px;">(Business Hours)<span class="gap"></span><span class="gap"></span>(After Hours)</span></div>
-  Fax: <input class="input-u" value="{{=it.techpro_fax}}"> Email Address: <input class="input-u" style="width: 380px" value="{{=it.techpro_email}}">
-  Poastal Address: <input class="input-u" style="width: 600px;" value="{{=it.techpro_addr}}">
+  Fax: <input class="input-u" value="{{=it.techpro_fax}}"> Email Address: <input class="input-u" style="width: 330px" value="{{=it.techpro_email}}">
+  Poastal Address: <input class="input-u" style="width: 500px;" value="{{=it.techpro_addr}}">
 </div>
 <div class="axis-block">
   <div class="axis-block-title">Payment Client / Website Hosting Details</div>
