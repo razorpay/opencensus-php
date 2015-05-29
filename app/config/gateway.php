@@ -30,8 +30,8 @@ return array(
     'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
 
     'hdfc' => array(
-        'test_terminal_id'  => $_ENV['HDFC_ID'],
-        'test_terminal_pwd' => $_ENV['HDFC_PASSWORD'],
+        'test_terminal_id'  => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_ID'],
+        'test_terminal_pwd' => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'],
         'mock_server'       => false,
     ),
 
