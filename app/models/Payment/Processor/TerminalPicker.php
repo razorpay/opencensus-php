@@ -17,6 +17,18 @@ class TerminalPicker
     protected $mode;
 
     /**
+     * Terminal selected for the transaction
+     * @var Terminal\Entity
+     */
+    protected $terminal;
+
+    /**
+     * Terminal repository
+     * @var Terminal\Repository
+     */
+    protected $repo;
+
+    /**
      * Payment for which terminal has to be picked
      * @var Models\Payment\Entity
      */
@@ -24,13 +36,12 @@ class TerminalPicker
 
     protected $merchant;
 
-    protected $terminals;
-
     public function selectTerminal($payment, $mode)
     {
         $this->payment = $payment;
         $this->merchant = $payment->merchant;
         $this->mode = $mode;
+        $this->repo = new Terminal\Repository;
 
         $terminals = $this->getTerminals($payment);
 
@@ -162,52 +173,50 @@ class TerminalPicker
     {
         $terminal = null;
 
-        $repo = new Terminal\Repository;
-
         $method = $payment->getMethod();
 
         if ($method === Payment\Method::CARD)
         {
             if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
             {
-                $terminal = $repo->find(Shared::KOTAK_RAZORPAY_TERMINAL);
-
-                if ($terminal !== null)
+                if ($this->terminalExists(Shared::KOTAK_RAZORPAY_TERMINAL))
                 {
-                    return $terminal;
+                    return $this->terminal;
                 }
             }
 
-            $terminal = $repo->find(Shared::HDFC_RAZORPAY_TERMINAL);
-
-            if ($terminal !== null)
+            if ($this->terminalExists(Shared::HDFC_RAZORPAY_TERMINAL))
             {
-                return $terminal;
+                return $this->terminal;
             }
 
-            $terminal = $repo->find(Shared::AXIS_MIGS_RAZORPAY_TERMINAL);
-
-            if ($terminal !== null)
+            if ($this->terminalExists(Shared::AXIS_MIGS_RAZORPAY_TERMINAL))
             {
-                return $terminal;
+                return $this->terminal;
             }
 
-            $terminal = $repo->find(Shared::AXIS_GENIUS_RAZORPAY_TERMINAL);
-
-            if ($terminal !== null)
+            if ($this->terminalExists(Shared::AXIS_GENIUS_RAZORPAY_TERMINAL))
             {
-                return $terminal;
+                return $this->terminal;
             }
         }
-
-        $terminal = $repo->find(Shared::PAYTM_RAZORPAY_TERMINAL);
-
-        if ($terminal !== null)
+        else if ($method === Payment\Method::NETBANKING)
         {
-            return $terminal;
+            if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
         }
 
-        $terminal = $repo->findOrFail(Shared::ATOM_RAZORPAY_TERMINAL);
+        if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
+        {
+            return $this->terminal;
+        }
+
+        if ($this->terminalExists(Shared::ATOM_RAZORPAY_TERMINAL))
+        {
+            return $this->terminal;
+        }
 
         return $terminal;
     }
@@ -241,11 +250,7 @@ class TerminalPicker
 
     protected function getTerminals($payment)
     {
-        $termRepo = new Terminal\Repository;
-
-        $this->terminals = $termRepo->getByMerchantId($payment->merchant->getId());
-
-        return $this->terminals;
+        return $this->repo->getByMerchantId($payment->merchant->getId());
     }
 
     protected function filterTerminalsByMethod($terminals, $method)
@@ -254,5 +259,12 @@ class TerminalPicker
         {
             return ($item[$method] === '1');
         });
+    }
+
+    protected function terminalExists($terminal)
+    {
+        $this->terminal = $this->repo->find($terminal);
+
+        return $this->terminal;
     }
 }
