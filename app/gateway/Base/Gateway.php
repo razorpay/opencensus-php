@@ -191,23 +191,9 @@ class Gateway
         return new $class;
     }
 
-    protected function getStringToHash($content)
+    protected function getStringToHash($content, $glue = '')
     {
-        $hashString = '';
-
-        foreach($content as $key => $value)
-        {
-            //
-            // create the md5 input and URL leaving
-            // out any fields that have no value
-            //
-            if (strlen($value) > 0)
-            {
-                $hashString .= $value;
-            }
-        }
-
-        return $hashString;
+        return implode($glue, $content);
     }
 
     protected function getHashOfString($str)

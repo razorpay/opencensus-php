@@ -6,6 +6,35 @@ use Requests_Response;
 
 trait GatewayTrait
 {
+    public function authorizeMock(array $input)
+    {
+        $request = parent::authorize($input);
+
+        $this->putMockPaymentGatewayUrl($request);
+
+        return $request;
+    }
+
+    protected function putMockPaymentGatewayUrl(array & $request)
+    {
+        $gateway = $this->gateway;
+        $route = 'mock_'.$gateway.'_payment';
+
+        $url = \Http\Route::getUrlWithPublicAuth($route);
+
+        if ($request['method'] === 'get')
+        {
+            // The key thing now is to replace redirectUrl from kotak's to ours!
+            $parts = parse_url($request['url']);
+
+            $url = $url . '&' .$parts['query'];
+
+            $request['url'] = $url;
+        }
+
+        $request['url'] = $url;
+    }
+
     protected function sendGatewayRequest($request)
     {
         // Although we reset the url, it's not being used currently.

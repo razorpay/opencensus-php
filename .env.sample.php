@@ -45,10 +45,11 @@ return array(
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'        => 'randomid',
     'PAYTM_GATEWAY_TEST_HASH_SECRET'        => 'randomsecret',
 
-    'HDFC_MOCK'                             => true,
     'ATOM_MOCK'                             => true,
-    'AXIS_MIGS_MOCK'                        => true,
     'AXIS_GENIUS_MOCK'                      => true,
+    'AXIS_MIGS_MOCK'                        => true,
+    'BILLDESK_MOCK'                         => true,
+    'HDFC_MOCK'                             => true,
     'KOTAK_MOCK'                            => true,
     'PAYTM_MOCK'                            => true,
     'NETBANKING_HDFC_MOCK'                  => true,
