@@ -70,4 +70,9 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes['payment_id'] = $paymentId;
     }
+
+    public function getGeniusAttribute()
+    {
+        return (bool) $this->attributes['genius'];
+    }
 }

@@ -34,7 +34,7 @@ return [
     'testPaymentAxisMigsEntity' => [
 //        'id' => 'pay_53',
 //        'payment_id' => '3GZ95U9Rss628z',
-        'genius' => '0',
+        'genius' => false,
         'vpc_Amount' => '50000',
         'vpc_AcqResponseCode' => '00',
         'vpc_Command' => 'capture',
