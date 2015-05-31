@@ -4,10 +4,10 @@
         <meta charset="utf-8">
     </head>
     <body>
-        <h2>New Activation Form submission - {{{$customer['id']}}}</h2>
+        <h2>New Activation Form submission - {{{$id}}}</h2>
 
         <div>
-            <p>Activation form has been submitted by merchant id: {{{$customer['id']}}}</p>
+            <p>Activation form has been submitted by merchant id: {{{$id}}}</p>
 
             <p>Please verify the details and communicate with the merchant as necessary.</p>
         </div>
@@ -24,4 +24,3 @@
         </div>
     </body>
 </html>
-<?php die(); ?>

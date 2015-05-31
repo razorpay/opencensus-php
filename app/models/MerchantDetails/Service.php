@@ -178,14 +178,14 @@ class Service extends Base\Service
 
         $salesEmail = 'sales@razorpay.com';
 
-        Mailgun::send('emails.submission', compact($customer), function($mail) use ($customer)
+        Mailgun::send('emails.submission', $customer, function($mail) use ($customer)
         {
 
             $mail->to($customer['email'], $customer['name'])
                  ->subject('Your Razorpay acount is pending approval');
         });
 
-        Mailgun::send('emails.admin_notify', compact($customer), function($mail) use ($customer, $salesEmail)
+        Mailgun::send('emails.admin_notify', $customer, function($mail) use ($customer, $salesEmail)
         {
             $mail->to($salesEmail, 'Razorpay Sales Team')
                  ->subject('New activation form submitted - '.$customer['id']);
