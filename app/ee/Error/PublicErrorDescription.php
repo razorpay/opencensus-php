@@ -33,7 +33,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CONTACT_MIN_TEN_DIGITS                    = 'Contact number should be at least 10 digits';
     const BAD_REQUEST_PAYMENT_CONTACT_MAX_TWELVE_DIGITS                 = 'Contact number should not be greater than 12 digits, including country code';
     const BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED                = 'Card network not supported curently';
-    const BAD_REQUEST_PAYMENT_CARD_DECLINED                             = 'Card decline by bank';
+    const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                 = 'Payment declined due to insufficient balance';
+    const BAD_REQUEST_PAYMENT_CARD_DECLINED                             = 'Card declined by bank';
+    const BAD_REQUEST_PAYMENT_CARD_EXPIRED                              = 'Card is expired';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                  = 'Expiry date is not valid';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                 = 'Paymend was not completed on time.';
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH          = 'Capture amount must be equal to the amount authorized';
@@ -78,6 +80,13 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY              = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                       = 'Payment verification with gateway failed';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL               = 'Payment declined by gateway. Most probably due to customer clicking the cancel button on 3dSecure page';
-    const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                       = 'Transaction declined';
+    const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                       = 'Payment declined';
+    const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK                          = 'Payment declined by bank';
+    const BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK            = 'Payment declined due to not receiving timely response from bank';
+    const BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR                         = 'Payment failed due to error in the bank system';
+    const BAD_REQUEST_PAYMENT_FAILED_MAYBE_DUE_TO_INVALID_INPUT         = 'Payment processing failed most probably due to invalid card input';
+    const BAD_REQUEST_PAYMENT_CANCELLED                                 = 'Payment processing cancelled';
+    const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK             = 'Payment declined. Please contact your card issuing bank';
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER              = 'Netbanking payment cancelled by user by clicking cancel on bank transfer page';
+    const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED             = 'Payment processing failed due to 3dsecure authentication faliure';
 }

@@ -291,10 +291,29 @@ class Gateway extends Base\Gateway
             return; // Payment succeeds
         }
 
+        $gatewayErrorCode = $input['gateway']['vpc_TxnResponseCode'];
+
+        $apiErrorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        if (isset(ErrorCode::$errorMap[$gatewayErrorCode]))
+        {
+            $apiErrorCode = ErrorCode::$errorMap[$gatewayErrorCode];
+        }
+        else
+        {
+            $this->trace->error(
+                TraceCode::GATEWAY_UNKNOWN_ERROR,
+                ['payment_id' => $input['payment']['id'],
+                'action' => $this->action,
+                'gateway_error_code' => $gatewayErrorCode,
+                'gateway' => $this->gateway,
+                'time' => time()]);
+        }
+
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                    null,
+                    $gatewayErrorCode,
                     $input['gateway']['vpc_Message']);
     }
 

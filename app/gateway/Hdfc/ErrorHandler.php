@@ -23,11 +23,16 @@ class ErrorHandler
         return Hdfc\ErrorCode::$errorMessages[$code];
     }
 
+    public static function isValidErrorCode($code)
+    {
+        return (defined(__NAMESPACE__.'\ErrorCode::'.$code));
+    }
+
     public static function getMappedError($code)
     {
         $appErrorCode = null;
 
-        if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
+        if (self::isValidErrorCode($code) === false)
         {
             throw new Exception\InvalidArgumentException(
                 'should not reach here for now' . $code);

@@ -568,13 +568,31 @@ class Gateway extends Base\Gateway
 
         $gatewayErrorDesc = $error['text'];
 
-        /**
-         * For error codes returned by gateway, the error messages are in a format
-         * which we don't parse. So get the standard messages for those from here.
-         */
-        $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
+        if (Hdfc\ErrorHandler::isValidErrorCode($gatewayErrorCode))
+        {
+            $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
 
-        $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
+            /**
+             * For error codes returned by gateway, the error messages are in a format
+             * which we don't parse. So get the standard messages for those from here.
+             */
+            $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
+        }
+        else
+        {
+            $apiErrorCode = Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
+
+            $this->trace->error(
+                TraceCode::GATEWAY_UNKNOWN_ERROR,
+                [
+                    'action' => $this->action,
+                    'gateway_error_code' => $gatewayErrorCode,
+                    'gateway_error_description' => $gatewayErrorDesc,
+                    'gateway' => $this->gateway,
+                    'time' => time()
+                ]);
+        }
+
 
         $exception = null;
 

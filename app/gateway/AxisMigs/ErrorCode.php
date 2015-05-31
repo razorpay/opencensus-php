@@ -35,4 +35,31 @@ class Error
     );
 
 //    'default' => 'Unable to be determined',
+    public static $errorMap = array(
+        '1' => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        '2' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,
+        '3' => Error\ErrorCode::BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK,
+        '4' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
+        '5' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
+        '6' => Error\ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        '7' => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MAYBE_DUE_TO_INVALID_INPUT,
+        '8' => Error\ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        '9' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,
+        'A' => Error\ErrorCode::SERVER_ERROR_PAYMENT_ABORTED,
+        // 'B' => '',
+        'C' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED,
+        'E' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,
+        'F' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+        'I' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
+        'L' => Error\ErrorCode::SERVER_ERROR,
+        // 'N' => '',
+        // 'P' => '',
+        // 'R' => '',
+        // 'S' => '',
+        // 'T' => '',
+        'U' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
+        'V' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
+        '?' => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+    );
+
 }
