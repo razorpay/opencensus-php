@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Paytm;
+namespace Gateway\Billdesk;
 
 class Url
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\Paytm\Mock;
+namespace Gateway\Billdesk\Mock;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Gateway\Base;
-use Gateway\Paytm;
+use Gateway\Billdesk;
 
-class Gateway extends Paytm\Gateway
+class Gateway extends Billdesk\Gateway
 {
     use Base\Mock\GatewayTrait;
 
