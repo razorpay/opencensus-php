@@ -50,7 +50,7 @@ class Service extends Base\Service
                 // Updating the model
                 $merchantDetails->saveOrFail();
 
-                $merchantDetails->sendMails();
+                $this->sendActivationFormSubmissionMails($merchantDetails);
             }
             else
             {
@@ -161,6 +161,33 @@ class Service extends Base\Service
         }
 
         return $error;
+    }
+
+    /**
+     * On submission of activation form by user, send email
+     * to the customer and sales team notifying them about the activity
+     */
+    protected function sendActivationFormSubmissionMails($merchantDetails)
+    {
+        $customer = array(
+            'id' => $merchantDetails->getAttribute('merchant_id'),
+            'name' => $merchantDetails->getAttribute('contact_name'),
+            'email' => $merchantDetails->getAttribute('contact_email')
+        );
+
+        $salesEmail = 'sales@razorpay.com';
+
+        Mailgun::send('emails.submission', $customer, function($mail) use ($customer)
+        {
+            $mail->to($customer['email'], $customer['name'])
+                 ->subject('Your Razorpay acount is pending approval');
+        });
+
+        Mailgun::send('emails.admin_notify', $customer, function($mail) use ($customer, $salesEmail)
+        {
+            $mail->to($salesEmail, 'Razorpay Sales Team')
+                 ->subject('New activation form submitted - '.$customer['id']);
+        });
     }
 
     protected function isLockedError()

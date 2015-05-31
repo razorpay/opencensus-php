@@ -275,25 +275,4 @@ class Entity extends Base\Entity
 
         return $error;
     }
-
-    public function sendMails()
-    {
-        $customer = array(
-            'id' => $this->getAttribute('merchant_id'),
-            'name' => $this->getAttribute('contact_name'),
-            'email' => $this->getAttribute('contact_email')
-        );
-
-        $sales_email = 'sales@razorpay.com';
-
-        Mailgun::send('emails.submission', compact('customer'), function($m) use ($customer)
-        {
-            $m->to($customer['email'], $customer['name'])->subject('Your Razorpay acount is pending approval');
-        });
-
-        Mailgun::send('emails.admin_notify', compact('customer'), function($m) use ($customer, $sales_email)
-        {
-            $m->to($sales_email, 'Razorpay Sales Team')->subject('New activation form submitted - '.$customer['id']);
-        });
-    }
 }
