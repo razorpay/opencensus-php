@@ -3,9 +3,6 @@ services:
     - wercker/mysql
 build:
     steps:
-      - script:
-          name: display firefox version
-          code: firefox -v
       - add-ssh-key:
           keyname: RZP_API
       - script:
