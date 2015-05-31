@@ -3,7 +3,6 @@
 namespace Models\MerchantDetails;
 
 use Models\Base;
-use Mailgun;
 
 class Entity extends Base\Entity
 {
