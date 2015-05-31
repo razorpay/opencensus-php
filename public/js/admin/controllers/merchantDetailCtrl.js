@@ -534,7 +534,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       $scope.select = function(bank){
         $.ajax({
-          url: 'http://dashboard.razorpay.dev/axis-form.html',
+          url: 'axis-form.html',
           success: function(resp){
             var template = doT.template(resp, {strip: false});
             var now = new Date();
@@ -559,7 +559,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
               ops_addr += ', ';
             }
             ops_addr += merchant_details.business_operation_state;
-            
+
             html = template({
               reqdate: ("0"+now.getDate()).slice(-2) + ("0"+now.getMonth()).slice(-2) + (now.getYear()+1900),
               reqby: "Harshil Mathur",
