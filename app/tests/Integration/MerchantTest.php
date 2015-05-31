@@ -285,10 +285,12 @@ class MerchantTest extends TestCase
         $this->browser
             ->click(l::css('form[name="step5"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step6\"]').is(':visible')", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000)
             ->click(l::IdOrName('agree_terms'))
-            ->click(l::css('.btn-submit'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step6\"] > fieldset > .alerts > .alert-success').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper > .alerts > .alert-info').length > 0", 20000);
+            ->click(l::css('.btn-submit'));
+
+            // ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step6\"] > fieldset > .alerts > .alert-success').length > 0", 20000)
+            // ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.activation-wrapper > .alerts > .alert-info').length > 0", 20000);
 
         $this->assertFalse($this->browser->isElementPresent(l::css('form[name=\"step6\"] > fieldset > .alerts > .alert-danger')));
     }
