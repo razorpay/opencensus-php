@@ -19,8 +19,8 @@
         }
     ],
     "require-dev": {
-        "raveren/kint": ">=0.9",
-        "laracasts/testdummy": "1.*",
+        "raveren/kint": "1.*",
+        "laracasts/testdummy": "2.*",
         "mockery/mockery": "*"
     },
     "autoload": {
