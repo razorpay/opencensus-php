@@ -1553,7 +1553,7 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "git@bitbucket.org:razorpay/spine.git",
+                "url": "git@github.com:razorpay/spine.git",
                 "reference": "c75f1e6dca4d77f5665bec83d78128a31f64f6e9"
             },
             "require": {

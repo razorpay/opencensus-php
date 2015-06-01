@@ -23,7 +23,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@bitbucket.org:razorpay/spine.git"
+            "url": "git@github.com:razorpay/spine.git"
         }
     ],
     "autoload": {
