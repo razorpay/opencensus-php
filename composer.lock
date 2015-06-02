@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "75005087e987e7153726239134d50bc1",
+    "hash": "32f39249b61c52e416e1c36b2a120c16",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1033,16 +1033,16 @@
         },
         {
             "name": "maatwebsite/excel",
-            "version": "v1.3.5",
+            "version": "v1.3.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maatwebsite/Laravel-Excel.git",
-                "reference": "c3fbdc9d7f8a02138b4cf05d34a2a0a2d8abfc93"
+                "reference": "5f65a59a28d766546c8b9e17a84cf3383b448616"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/c3fbdc9d7f8a02138b4cf05d34a2a0a2d8abfc93",
-                "reference": "c3fbdc9d7f8a02138b4cf05d34a2a0a2d8abfc93",
+                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/5f65a59a28d766546c8b9e17a84cf3383b448616",
+                "reference": "5f65a59a28d766546c8b9e17a84cf3383b448616",
                 "shasum": ""
             },
             "require": {
@@ -1096,7 +1096,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2015-05-02 18:59:31"
+            "time": "2015-06-01 14:19:25"
         },
         {
             "name": "mailgun/mailgun-php",
