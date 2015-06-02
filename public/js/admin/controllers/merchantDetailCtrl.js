@@ -536,7 +536,8 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         $.ajax({
           url: 'axis-form.html',
           success: function(resp){
-            var template = doT.template(resp, {strip: false});
+            doT.templateSettings.strip = false;
+            var template = doT.template(resp);
             var now = new Date();
             var reg_addr = merchant_details.business_registered_address;
             if(reg_addr)
