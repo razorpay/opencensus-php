@@ -1,4 +1,5 @@
 <?php
+use Laracasts\TestDummy\Factory;
 
 class TestCase extends Illuminate\Foundation\Testing\TestCase
 {
@@ -22,5 +23,7 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
         parent::setUp();
 
         $this->app['config']->set('mailgun::testmode', true);
+
+        Factory::$factoriesPath = 'app/tests/factories';
     }
 }
