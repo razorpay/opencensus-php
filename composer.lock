@@ -1668,8 +1668,14 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "git@bitbucket.org:razorpay/spine.git",
-                "reference": "abf05190273dbe4c321f623b788d6c1c6e086e5d"
+                "url": "git@github.com:razorpay/spine.git",
+                "reference": "516b01c7a7334eeacdc86164a0d0cbfdb9644497"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/516b01c7a7334eeacdc86164a0d0cbfdb9644497",
+                "reference": "516b01c7a7334eeacdc86164a0d0cbfdb9644497",
+                "shasum": ""
             },
             "require": {
                 "laravel/framework": "4.2.*",
