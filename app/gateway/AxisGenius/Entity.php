@@ -7,6 +7,8 @@ use Gateway\AxisMigs;
 
 class Entity extends AxisMigs\Entity
 {
+    protected $entity = 'axis_genius';
+
     public function __construct(array $attributes = array())
     {
         parent::__construct($attributes);
