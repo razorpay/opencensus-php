@@ -89,4 +89,5 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK             = 'Payment declined. Please contact your card issuing bank';
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER              = 'Netbanking payment cancelled by user by clicking cancel on bank transfer page';
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED             = 'Payment processing failed due to 3dsecure authentication faliure';
+    const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK              = 'Payment processing failed by bank due to risk';
 }

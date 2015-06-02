@@ -304,7 +304,7 @@ class ErrorCode
         Hdfc\ErrorCode::RP00002   => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         Hdfc\ErrorCode::RP00003   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         Hdfc\ErrorCode::RP00004   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        Hdfc\ErrorCode::RP00005   => Error\ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK,
+        Hdfc\ErrorCode::RP00005   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
         Hdfc\ErrorCode::RP00006   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
         Hdfc\ErrorCode::RP00007   => Error\ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
         Hdfc\ErrorCode::RP00008   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
