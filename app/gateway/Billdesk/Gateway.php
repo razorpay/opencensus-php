@@ -135,7 +135,7 @@ class Gateway extends Base\Gateway
         $fields = $this->getFieldsForAction($this->action);
 
         $content = explode('|', $content);
-        $content = array_join(self::$verifyResponseFields, $content);
+        $content = array_join($fields, $content);
 
         $this->verifySecureHash($content);
 
