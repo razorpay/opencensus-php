@@ -10,7 +10,7 @@ class Entity extends Base\PublicEntity
         'payment_id',
         'refund_id',
         'action',
-        'MerchantId',
+        'MerchantID',
         'CustomerID',
         'TxnAmount',
         'BankID',
@@ -40,7 +40,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         'action',
-        'MerchantId',
+        'MerchantID',
         'CustomerID',
         'TxnAmount',
         'BankID',
