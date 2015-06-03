@@ -7,7 +7,7 @@ use Models\Bank\IFSC;
 class BankCodes
 {
     public static $bankCodeMap = array(
-        IFSC::ICIC => 'ICICI',
+        IFSC::ICIC => 'ICI',
         IFSC::SBIN => 'SBI',
         IFSC::HDFC => 'HDFC',
         IFSC::CITI => 'CITI',

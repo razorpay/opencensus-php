@@ -23,36 +23,43 @@ class Gateway extends Base\Gateway
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
 
         $content = array(
-            'MerchantId'                => $input['terminal']['gateway_merchant_id'],
+            'MerchantID'                => $input['terminal']['gateway_merchant_id'],
             'CustomerID'                => $input['payment']['id'],
             'Unknown1'                  => 'NA',
             'TxnAmount'                 => $input['payment']['amount'] / 100,
             'BankID'                    => $bankId,
-            'Unknown1'                  => 'NA',
             'Unknown2'                  => 'NA',
+            'Unknown3'                  => 'NA',
             'CurrencyType'              => 'INR',
             'ItemCode'                  => 'DIRECT',
             'TypeField1'                => 'R',
-            'SecurityID'                => 'NG_NA',
-            'Unknown3'                  => 'NA',
+            'SecurityID'                => 'NG-NA',
             'Unknown4'                  => 'NA',
+            'Unknown5'                  => 'NA',
             'TypeField2'                => 'F',
             'AdditionalInfo1'           => $input['payment']['id'],
-            'Unknown5'                  => 'NA',
             'Unknown6'                  => 'NA',
             'Unknown7'                  => 'NA',
             'Unknown8'                  => 'NA',
             'Unknown9'                  => 'NA',
-            'Unknown10'                 => 'NA',
+            'Unknown10'                  => 'NA',
+            'Unknown11'                 => 'NA',
             'RU'                        => $input['callbackUrl'],
         );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $content['MerchantID'] = $this->getTestMerchantId();
+            $content['SecurityID'] = $this->getTestAccessCode();
+            $content['TxnAmount'] = '5.00';
+        }
 
         $this->createGatewayPaymentEntity($content);
 
         return $this->getRequestArray($content);
     }
 
-    protected function callback($input)
+    public function callback(array $input)
     {
         parent::callback($input);
 
@@ -63,7 +70,7 @@ class Gateway extends Base\Gateway
         sd($content);
     }
 
-    protected function refund($input)
+    public function refund(array $input)
     {
         parent::refund($input);
 
@@ -74,7 +81,7 @@ class Gateway extends Base\Gateway
         $date = $date->format('Ymd');
 
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His')
+        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
 
         $content = array(
             'RequestType'       => '0400',
@@ -99,12 +106,12 @@ class Gateway extends Base\Gateway
         $content = $this->getContentAfterChecksumVerification($str);
     }
 
-    protected function verify($input)
+    public function verify(array $input)
     {
         parent::verify($input);
 
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His')
+        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
 
         $content = array(
             'RequestType'   => '0122',
@@ -113,13 +120,7 @@ class Gateway extends Base\Gateway
             'Current Date/ Timestamp' => $now,
         );
 
-        $msg = $this->getRequestMessageString($content);
-
-        $request = array(
-            'url' => $this->getUrl(),
-            'method' => 'post',
-            'content' => ['msg' => $msg],
-        );
+        $request = $this->getRequestArray($content);
 
         $response = $this->postRequest($request);
 
@@ -147,7 +148,7 @@ class Gateway extends Base\Gateway
         $payment->setPaymentId($attributes['CustomerID']);
 
         $payment->fill($attributes);
-
+        $payment->setAction($this->action);
         $payment->saveOrFail();
 
         return $payment;
@@ -178,15 +179,15 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        return 'random';
+        return strtoupper(hash_hmac('sha256', $str, $secret, false));
     }
 
-    protected function getRequestArray($msg)
+    protected function getRequestArray($content)
     {
         $msg = $this->getRequestMessageString($content);
-
+//s($content, $msg);
         $request = array(
-            'url' => $this->getUrl(),
+            'url' => $this->getUrl($this->action),
             'method' => 'post',
             'content' => ['msg' => $msg],
         );

@@ -236,4 +236,28 @@ class Gateway
         $app = \App::getFacadeRoot();
         $this->config = $app['config']->get($configGatewayStr);
     }
+
+    protected function getTestAccessCode()
+    {
+        $code = null;
+
+        if (isset($this->config['test_access_code']))
+        {
+            $code = $this->config['test_access_code'];
+        }
+
+        return $code;
+    }
+
+    protected function getTestMerchantId()
+    {
+        $code = null;
+
+        if (isset($this->config['test_merchant_id']))
+        {
+            $code = $this->config['test_merchant_id'];
+        }
+
+        return $code;
+    }
 }
