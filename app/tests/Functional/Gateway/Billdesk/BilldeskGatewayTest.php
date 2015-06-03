@@ -5,7 +5,7 @@ namespace Tests\Functional\Gateway\Billdesk;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
-class PaytmGatewayTest extends TestCase
+class BilldeskGatewayTest extends TestCase
 {
     use PaymentTrait;
 
@@ -24,14 +24,20 @@ class PaytmGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $this->markTestIncomplete();
         $this->config['gateway.mock_billdesk'] = true;
 
-        $payment = $this->getDefaultPaymentArray();
+        $this->setMockGatewayTrue();
+
+        $payment = $this->getDefaultNetBankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('billdesk', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentBilldeskEntity'], $payment);
     }
 }

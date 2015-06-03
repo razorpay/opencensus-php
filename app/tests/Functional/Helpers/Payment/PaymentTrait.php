@@ -16,6 +16,7 @@ trait PaymentTrait
     use PaymentKotakTrait;
     use PaymentPaytmTrait;
     use PaymentNetbankingTrait;
+    use PaymentBilldeskTrait;
 
     use RequestResponseFlowTrait
     {

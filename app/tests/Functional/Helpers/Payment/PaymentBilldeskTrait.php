@@ -9,21 +9,25 @@ use Tests\Functional\TestCase;
 
 trait PaymentBilldeskTrait
 {
-    protected function runPaymentCallbackFlowPaytm($response, &$callback = null)
+    protected function runPaymentCallbackFlowBilldesk($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 
-        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
         if ($mock)
         {
-            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+            $request = compact('url', 'method', 'content');
+            $response = $this->makeRequestParent($request);
 
-            return $this->submitPaymentCallbackRedirect($url);
+            list($url, $method, $content) = $this->getFormDataFromResponse(
+                                    $response->getContent(), 'https://localhost');
         }
         else
         {
             ;
         }
+
+        return $this->submitPaymentCallbackData($url, $method, $content);
     }
 }
