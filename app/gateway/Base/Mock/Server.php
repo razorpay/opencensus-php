@@ -17,6 +17,13 @@ class Server
         $this->request = Request::getFacadeRoot();
     }
 
+    protected function authorize($input)
+    {
+        $this->action = 'authorize';
+
+        $this->input = $input;
+    }
+
     protected function generateHash($content)
     {
         return $this->getGatewayInstance()->generateHash($content);
@@ -89,5 +96,35 @@ class Server
     public function setInput($input)
     {
         $this->input = $input;
+    }
+
+    protected function makePostResponse($request)
+    {
+        $content = '
+            <!doctype html>
+            <html lang="en">
+                <body>
+                <form name="form1" action="'.$request['url'].'" method="post">';
+
+        foreach ($request['content'] as $key => $value)
+        {
+            $content .= $key . '<input type="text" name="'.$key.'" value="'.$value.'"><br />';
+        }
+
+        $content .= '
+                    <input type="submit" value="Submit" >
+                </form>
+                <br>
+                Submit within 30 secs max!
+                </body>
+            </html>
+        ';
+
+        $response = \Response::make($content);
+
+        $response->headers->set('Content-Type', 'application/html; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 }

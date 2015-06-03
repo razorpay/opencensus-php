@@ -9,4 +9,5 @@ class Action
     const CAPTURE   = 'capture';
     const REFUND    = 'refund';
     const VERIFY    = 'verify';
+    const CALLBACK  = 'callback';
 }

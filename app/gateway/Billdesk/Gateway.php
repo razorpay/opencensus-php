@@ -14,6 +14,8 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use ResponseFieldsTrait;
+
     protected $gateway = 'billdesk';
 
     public function authorize(array $input)
@@ -42,7 +44,7 @@ class Gateway extends Base\Gateway
             'Unknown7'                  => 'NA',
             'Unknown8'                  => 'NA',
             'Unknown9'                  => 'NA',
-            'Unknown10'                  => 'NA',
+            'Unknown10'                 => 'NA',
             'Unknown11'                 => 'NA',
             'RU'                        => $input['callbackUrl'],
         );
@@ -67,7 +69,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getContentAfterChecksumVerification($msg);
 
-        sd($content);
+//        sd($content);
     }
 
     public function refund(array $input)
@@ -127,15 +129,15 @@ class Gateway extends Base\Gateway
         sd($response->body);
 
         $content = explode('|', $content);
-        $content = array_join(self::$verifyResponseFields, $content);
+        $content = array_combine(self::$verifyResponseFields, $content);
     }
 
     protected function getContentAfterChecksumVerification($msg)
     {
         $fields = $this->getFieldsForAction($this->action);
 
-        $content = explode('|', $content);
-        $content = array_join($fields, $content);
+        $content = explode('|', $msg);
+        $content = array_combine($fields, $content);
 
         $this->verifySecureHash($content);
 
@@ -159,7 +161,7 @@ class Gateway extends Base\Gateway
         $hash = $content['Checksum'];
         unset($content['Checksum']);
 
-        $generatedHash = $this->generateHash($content);
+        $generatedHash = $this->getHashOfArray($content);
 
         if ($generatedHash !== $hash)
         {
@@ -168,11 +170,18 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getRequestMessageString($content)
+    public function getMessageStringWithHash($content)
     {
         $str = $this->getStringToHash($content, '|');
 
         return $str . '|' . $this->getHashOfString($str);
+    }
+
+    protected function getHashOfArray($content)
+    {
+        $str = $this->getStringToHash($content, '|');
+
+        return $this->getHashOfString($str);
     }
 
     protected function getHashOfString($str)
@@ -184,8 +193,8 @@ class Gateway extends Base\Gateway
 
     protected function getRequestArray($content)
     {
-        $msg = $this->getRequestMessageString($content);
-//s($content, $msg);
+        $msg = $this->getMessageStringWithHash($content);
+
         $request = array(
             'url' => $this->getUrl($this->action),
             'method' => 'post',
