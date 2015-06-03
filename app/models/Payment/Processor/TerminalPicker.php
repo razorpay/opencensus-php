@@ -161,16 +161,17 @@ class TerminalPicker
             }
         }
 
-        if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+        if (isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true)
+        {
+            $terminal = $gatewayTerms[Payment\Gateway::BILLDESK];
+        }
+        else if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
         {
             $terminal = $gatewayTerms[Payment\Gateway::PAYTM];
         }
         else if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
         {
             $terminal = $gatewayTerms[Payment\Gateway::ATOM];
-
-            // throw new Exception\BadRequestException(
-            //     ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
         }
 
         return $terminal;
@@ -213,6 +214,11 @@ class TerminalPicker
             {
                 return $this->terminal;
             }
+        }
+
+        if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+        {
+            return $this->terminal;
         }
 
         if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
