@@ -54,6 +54,13 @@ class TerminalPicker
             $terminal = $this->getSharedTerminal($payment);
         }
 
+        if ($terminal === null)
+        {
+            throw new Exception\RuntimeException(
+                'Terminal should not be null',
+                ['payment' => $payment->toArrayAdmin()]);
+        }
+
         $payment->terminal()->associate($terminal);
 
         $payment->setGateway($terminal->getGateway());
