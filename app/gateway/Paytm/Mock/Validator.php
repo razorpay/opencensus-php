@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         'WEBSITE'               => 'required|',
         'CALLBACK_URL'          => 'required|url',
         'PAYMENT_MODE_ONLY'     => 'required|in:Yes',
-        'AUTH_MODE'             => 'required|in:3D,USERPWD',
+        'AUTH_MODE'             => 'required|in:3D,USRPWD',
         'PAYMENT_DETAILS'       => 'required|',
         'PAYMENT_TYPE_ID'       => 'required|in:DC,CC',
         'CHECKSUMHASH'          => 'required|',

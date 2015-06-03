@@ -40,8 +40,8 @@ class Gateway extends Base\Gateway
             'WEBSITE'                   => $input['merchant']['website'],
             'CALLBACK_URL'              => $input['callbackUrl'],
             'PAYMENT_MODE_ONLY'         => 'Yes',
-//            'MOBILE_NO'                 => $input['payment']['contact'],
-//            'EMAIL'                     => $input['payment']['email'],
+            'MOBILE_NO'                 => $input['payment']['contact'],
+            'EMAIL'                     => $input['payment']['email'],
         );
 
         if ($method === 'card')
@@ -58,7 +58,7 @@ class Gateway extends Base\Gateway
         {
             $content['BANK_CODE'] = $this->getBankCode($input);
             $content['PAYMENT_TYPE_ID'] = Type::NB;
-            $content['AUTH_MODE'] = 'USERPWD';
+            $content['AUTH_MODE'] = 'USRPWD';
         }
 
         $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
@@ -101,7 +101,6 @@ class Gateway extends Base\Gateway
         $bank = $input['payment']['bank'];
 
         return $codes[$bank];
-        return constant(__NAMESPACE__.'::BankCodes::'.$input['payment']['bank']);
     }
 
     protected function createGatewayPaymentEntity($attributes)
@@ -178,7 +177,9 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        return Checksum::encrypt_e($str, $this->getSecret());
+        $secret = $this->getSecret();
+
+        return Checksum::encrypt_e($str, $secret);
     }
 
     protected function getFormattedCardExpiryDate($input)
