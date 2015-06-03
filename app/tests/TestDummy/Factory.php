@@ -63,7 +63,7 @@ class Factory extends Base\Factory
      * @param  IsPersistable $provider
      * @return void
      */
-    public static function setDatabaseProvider($provider = null)
+    protected function setDatabaseProvider($provider = null)
     {
         if ( ! static::$databaseProvider) {
             static::$databaseProvider = $provider ?: new Base\EloquentModel;
