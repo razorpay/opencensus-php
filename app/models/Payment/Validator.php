@@ -68,7 +68,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY,
                 'amount');
         }
-        else if ($input['amount'] < 5000)
+        else if ($input['amount'] < 100)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
