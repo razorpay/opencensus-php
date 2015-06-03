@@ -66,6 +66,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'axis_migs';
 
+    protected $appends = array('vpc_amount');
+
     public function setPaymentId($paymentId)
     {
         $this->attributes['payment_id'] = $paymentId;
@@ -74,5 +76,10 @@ class Entity extends Base\PublicEntity
     public function getGeniusAttribute()
     {
         return (bool) $this->attributes['genius'];
+    }
+
+    public function getVpcAmountAttribute()
+    {
+        return (int) $this->attributes['vpc_Amount'];
     }
 }

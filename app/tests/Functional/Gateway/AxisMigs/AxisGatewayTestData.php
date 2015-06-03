@@ -35,7 +35,7 @@ return [
 //        'id' => 'pay_53',
 //        'payment_id' => '3GZ95U9Rss628z',
         'genius' => false,
-        'vpc_Amount' => '50000',
+        'vpc_amount' => 50000,
         'vpc_AcqResponseCode' => '00',
         'vpc_Command' => 'capture',
         'vpc_Currency' => null,
