@@ -383,7 +383,7 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => '23vP3sEf2tQsm8',
+                'id'                    => Terminal\Shared::NETBANKING_HDFC_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => 'netbanking_hdfc',
                 'card'                  => '0',
