@@ -14,6 +14,7 @@ class NetBanking
         IFSC::CSBK,
         IFSC::CBIN,
         IFSC::CIUB,
+        IFSC::CITI,
         IFSC::CORP,
         IFSC::DCBL,
         IFSC::DEUT,
