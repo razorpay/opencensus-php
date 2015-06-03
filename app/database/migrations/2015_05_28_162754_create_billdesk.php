@@ -23,7 +23,7 @@ class CreateBilldesk extends Migration {
 
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action');
-            $table->string('MerchantId');
+            $table->string('MerchantID');
             $table->string('CustomerID');
             $table->string('TxnAmount');
             $table->string('BankID')->nullable();
@@ -32,7 +32,7 @@ class CreateBilldesk extends Migration {
             $table->string('TypeField1')->nullable();
             $table->string('TypeField2')->nullable();
             $table->string('AdditionalInfo1')->nullable();
-            $table->string('TxnReferenceNo');
+            $table->string('TxnReferenceNo')->nullable();
             $table->string('BankReferenceNo')->nullable();
             $table->string('BankMerchantID')->nullable();
             $table->string('SecurityType')->nullable();

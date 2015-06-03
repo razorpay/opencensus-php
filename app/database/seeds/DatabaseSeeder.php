@@ -361,6 +361,7 @@ class DatabaseSeeder extends Seeder
                 )
             );
 
+        $this->createBilldeskGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
     }
 
@@ -397,11 +398,11 @@ class DatabaseSeeder extends Seeder
             );
     }
 
-    protected function createNetbankingHdfcTerminals()
+    protected function createBilldeskGatewayTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL,
+                'id'                    => '2byKhdVKZ9iJgA',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => 'billdesk',
                 'card'                  => '0',
