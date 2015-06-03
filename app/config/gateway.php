@@ -49,6 +49,12 @@ return array(
         'test_access_code'  => $_ENV['AXIS_GENIUS_GATEWAY_TEST_ACCESS_CODE'],
     ),
 
+    'billdesk' => array(
+        'test_hash_secret'  => $_ENV['BILLDESK_GATEWAY_TEST_HASH_SECRET'],
+        'test_merchant_id'  => $_ENV['BILLDESK_GATEWAY_TEST_MERCHANT_ID'],
+        'test_access_code'  => $_ENV['BILLDESK_GATEWAY_TEST_ACCESS_CODE'],
+    ),
+
     'kotak' => array(
         'test_hash_secret'  => $_ENV['KOTAK_GATEWAY_TEST_HASH_SECRET'],
         'test_merchant_id'  => $_ENV['KOTAK_GATEWAY_TEST_MERCHANT_ID'],
