@@ -1033,16 +1033,16 @@
         },
         {
             "name": "maatwebsite/excel",
-            "version": "v1.3.6",
+            "version": "v1.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maatwebsite/Laravel-Excel.git",
-                "reference": "5f65a59a28d766546c8b9e17a84cf3383b448616"
+                "reference": "a89a3c381931a9904c21f0c5826728c971f7399c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/5f65a59a28d766546c8b9e17a84cf3383b448616",
-                "reference": "5f65a59a28d766546c8b9e17a84cf3383b448616",
+                "url": "https://api.github.com/repos/Maatwebsite/Laravel-Excel/zipball/a89a3c381931a9904c21f0c5826728c971f7399c",
+                "reference": "a89a3c381931a9904c21f0c5826728c971f7399c",
                 "shasum": ""
             },
             "require": {
@@ -1096,7 +1096,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2015-06-01 14:19:25"
+            "time": "2015-06-04 15:28:19"
         },
         {
             "name": "mailgun/mailgun-php",
@@ -2901,16 +2901,16 @@
         },
         {
             "name": "raveren/kint",
-            "version": "1.0.0",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/raveren/kint.git",
-                "reference": "7f7d055a8d429f296ec5084029a33d1e4d644e5e"
+                "reference": "cc15a0be3fb4de4683fcc15cd68d1027378f86c5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/raveren/kint/zipball/7f7d055a8d429f296ec5084029a33d1e4d644e5e",
-                "reference": "7f7d055a8d429f296ec5084029a33d1e4d644e5e",
+                "url": "https://api.github.com/repos/raveren/kint/zipball/cc15a0be3fb4de4683fcc15cd68d1027378f86c5",
+                "reference": "cc15a0be3fb4de4683fcc15cd68d1027378f86c5",
                 "shasum": ""
             },
             "require": {
@@ -2948,7 +2948,7 @@
                 "kint",
                 "php"
             ],
-            "time": "2015-05-21 11:54:05"
+            "time": "2015-06-03 14:54:00"
         }
     ],
     "aliases": [],
