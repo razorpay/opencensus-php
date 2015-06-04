@@ -79,7 +79,7 @@ $factory('Models\Payment\Entity', [
     'currency' => 'INR',
     'status' => 'created',
     'refund_status' => null,
-    'contact' => $faker->randomNumber,
+    'contact' => $faker->randomNumber(6),
     'notes' => $faker->emptyarray,
     'gateway' => 'hdfc',
     'email' => $faker->email,
@@ -134,7 +134,7 @@ $factory('Models\Settlement\Entity', [
     'status' => 'created',
     'transaction_id' => 'factory:Models\Transaction\Entity',
     'channel' => 'kotak',
-    'utr' => $faker->randomNumber,
+    'utr' => $faker->randomNumber(10),
     'failure_reason' => null,
     'return_utr' => null,
 ]);
@@ -150,12 +150,12 @@ $factory('Models\Adjustment\Entity', [
 ]);
 
 $factory('Gateway\Hdfc\Entity', [
-    'id' => $faker->randomNumber,
+    'id' => $faker->randomNumber(6),
     'payment_id' => null,
     'refund_id' => null,
     'gateway_transaction_id' => $faker->hdfcPaymentId,
     'action' => 4,
-    'amount' => $faker->randomNumber,
+    'amount' => $faker->randomNumber(2),
     'enroll_result' => 2,
     'status' => 'authorized',
     'result' => 'APPROVED',
@@ -167,13 +167,13 @@ $factory('Gateway\Hdfc\Entity', [
 ]);
 
 $factory('Gateway\Atom\Entity', [
-    'id' => $faker->randomNumber,
+    'id' => $faker->randomNumber(6),
     'gateway_payment_id' => 'factory:Models\Payment\Entity',
     'token' => $faker->token,
     'success' => $faker->boolean,
     'callback_data' => null,
     'bank_name' => 'RZP',
-    'bank_transaction_id' => $faker->randomNumber,
+    'bank_transaction_id' => $faker->randomNumber(6),
 ]);
 
 $factory('Models\Card\Detail', [
