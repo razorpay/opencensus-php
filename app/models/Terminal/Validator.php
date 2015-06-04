@@ -39,7 +39,7 @@ class Validator extends Base\Validator
     {
         $count = $existingTerminals->count();
 
-        // Right now, at max 4 terminals are allowed
+        // Check count does not exceed max terminals count
         if ($count > Entity::MAX_TERMINALS_COUNT)
         {
             throw new Exception\LogicException(
