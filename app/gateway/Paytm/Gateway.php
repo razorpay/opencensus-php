@@ -37,7 +37,7 @@ class Gateway extends Base\Gateway
             'CUST_ID'                   => $input['payment']['email'],
             'CHANNEL_ID'                => 'WEB',
             'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
-            'WEBSITE'                   => $input['merchant']['website'],
+            'WEBSITE'                   => $input['terminal']['gateway_access_code'],
             'CALLBACK_URL'              => $input['callbackUrl'],
             'PAYMENT_MODE_ONLY'         => 'Yes',
             'MOBILE_NO'                 => $input['payment']['contact'],
