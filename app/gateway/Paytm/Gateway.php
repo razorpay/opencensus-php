@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
     }
 
     public function callback(array $input)
-    {//s($input['gateway']);
+    {
         parent::callback($input);
 
         $this->verifySecureHash($input);
@@ -163,7 +163,7 @@ class Gateway extends Base\Gateway
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                    (int) $input['gateway']['RESPCODE'],
+                    $input['gateway']['RESPCODE'],
                     $input['gateway']['RESPMSG']);
         }
     }
