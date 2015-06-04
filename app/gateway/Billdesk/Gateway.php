@@ -2,6 +2,7 @@
 
 namespace Gateway\Billdesk;
 
+use Carbon\Carbon;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
@@ -69,14 +70,30 @@ class Gateway extends Base\Gateway
 
         $content = $this->getContentAfterChecksumVerification($msg);
 
-//        sd($content);
+        assert($content['CustomerID'] === $input['payment']['id']);
+
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                        $content['CustomerID'], Action::AUTHORIZE);
+
+        $payment->fill($content);
+        $payment->saveOrFail();
+
+        if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $content['AuthStatus'],
+                    '');
+        }
     }
 
     public function refund(array $input)
     {
         parent::refund($input);
 
-        $payment = []; // Fetch billdesk payment
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                                $input['payment']['id'], Action::AUTHORIZE);
 
         // Format YYYYMMDD
         $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
@@ -103,9 +120,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->postRequest($request);
 
-        sd($response->body);
-
         $content = $this->getContentAfterChecksumVerification($str);
+        sd($response->body);
     }
 
     public function verify(array $input)
