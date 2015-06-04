@@ -1,4 +1,4 @@
-I<?php
+<?php
 
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorCode;
