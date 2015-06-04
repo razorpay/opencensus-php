@@ -21,7 +21,7 @@ class CreateMerchantBanks extends Migration {
             $table->char(MerchantBanks::MERCHANT_ID, MerchantBanks::ID_LENGTH)
                   ->primary();
 
-            $table->string(MerchantBanks::BANKS);
+            $table->text(MerchantBanks::BANKS);
 
             $table->integer(MerchantBanks::CREATED_AT);
 
