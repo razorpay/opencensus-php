@@ -216,11 +216,6 @@ class TerminalPicker
             }
         }
 
-        if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
-        }
-
         if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
         {
             return $this->terminal;
