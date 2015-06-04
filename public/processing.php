@@ -221,6 +221,7 @@ function handleMessage(data){
 </div>
 
 <script>
+if (!window.CheckoutBridge){
   var msgObj = {
     source: 'popup',
     loaded: true
