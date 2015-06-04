@@ -273,8 +273,13 @@
         <div class="col-lg-10" >
           <select class="form-control m-b" ng-model="terminal.gateway">
              <option value="hdfc" selected>HDFC</option>
-             <option value="axis" selected>Axis</option>
              <option value="atom">Atom</option>
+             <option value="axis_migs" >Axis MIGS</option>
+             <option value="axis_genius" >Axis Genius</option>
+             <option value="paytm" >PayTm</option>
+             <option value="billdesk" >Axis Genius</option>
+             <option value="kotak" >Axis Genius</option>
+             <option value="netbanking_hdfc" selected>Axis Genius</option>
           </select>
         </div>
       </div>
@@ -300,6 +305,18 @@
         <label for="gateway_terminal_password_confirmation" class="col-lg-2 control-label">Confirm Gateway Terminal Password:</label>
         <div class="col-lg-10" >
           <input type="password" class="form-control m-b" name="gateway_terminal_password_confirmation" ng-model="terminal.gateway_terminal_password_confirmation" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_access_code" class="col-lg-2 control-label">Gateway Access Code:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="gateway_access_code" ng-model="terminal.gateway_access_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_secure_secret" class="col-lg-2 control-label">Gateway Secure Secret:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="gateway_secure_secret" ng-model="terminal.gateway_secure_secret" />
         </div>
       </div>
       <div class="form-group">

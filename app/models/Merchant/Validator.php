@@ -44,6 +44,8 @@ class Validator extends Base\Validator
         'gateway_terminal_id'                       => 'required',
         'gateway_terminal_password'                 => 'required|confirmed',
         'gateway_terminal_password_confirmation'    => 'required',
+        'gateway_access_code'                       => 'required',
+        'gateway_secure_secret'                     => 'required',
         'card'                                      => 'required'
     );
 
