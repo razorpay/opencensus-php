@@ -68,7 +68,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
         <td><input type="text" name="card[expiry_year]" value="2015"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="5000"></td>
+            <td><input type="text" name="amount" size="25" value="500"></td>
         </tr>
         <tr>
             <td colspan='40'>CardHolder/Member Name:</td>
