@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<!-- Version 2.0 -->
+
+<!-- ------------ Disclaimer ---------------------------------------------------
+
+Copyright © 2004 Dialect Solutions Holdings.  All rights reserved.
+
+This document is provided by Dialect Solutions Holdings on the basis that you
+will treat it as confidential.
+
+No part of this document may be reproduced or copied in any form by any means
+without the written permission of Dialect Solutions Holdings.  Unless otherwise
+expressly agreed in writing, the information contained in this document is
+subject to change without notice and Dialect Solutions Holdings assumes no
+responsibility for any alteration to, or any error or other deficiency, in this
+document.
+
+All intellectual property rights in the Document and in all extracts and things
+derived from any part of the Document are owned by Dialect and will be assigned
+to Dialect on their creation. You will protect all the intellectual property
+rights relating to the Document in a manner that is equal to the protection you
+provide your own intellectual property.  You will notify Dialect immediately,
+and in writing where you become aware of a breach of Dialect's intellectual
+property rights in relation to the Document.
+
+The names "Dialect", "QSI Payments" and all similar words are trademarks of
+Dialect Solutions Holdings and you must not use that name or any similar name.
+
+Dialect may at its sole discretion terminate the rights granted in this document
+with immediate effect by notifying you in writing and you will thereupon return
+(or destroy and certify that destruction to Dialect) all copies and extracts of
+the Document in its possession or control.
+
+Dialect does not warrant the accuracy or completeness of the Document or its
+content or its usefulness to you or your merchant customers. To the extent
+permitted by law, all conditions and warranties implied by law (whether as to
+fitness for any particular purpose or otherwise) are excluded.  Where the
+exclusion is not effective, Dialect limits its liability to AU$100 or the
+resupply of the Document (at Dialect's option).
+
+Data used in examples and sample data files are intended to be fictional and any
+resemblance to real persons or companies is entirely coincidental.
+
+Dialect does not indemnify you or any third party in relation to the content or
+any use of the content as contemplated in these terms and conditions.
+
+Mention of any product not owned by Dialect does not constitute an endorsement
+of that product.
+
+This document is governed by the laws of New South Wales, Australia and is
+intended to be legally binding.
+
+--------------------------------------------------------------------------------
+
+@author Dialect Payment Solutions Pty Ltd Group
+
+------------------------------------------------------------------------------->
+
+<head><title>ASP Refund Example</title>
+<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>
+<style type='text/css'>
+    <!--
+    h1       { font-family:Arial,sans-serif; font-size:24pt; color:#08185A; font-weight:100}
+    h2       { font-family:Arial,sans-serif; font-size:20pt; color:#08185A; font-weight:600}
+    h2.co    { font-family:Arial,sans-serif; font-size:24pt; color:#08185A; margin-top:0.1em; margin-bottom:0.1em; font-weight:100}
+    h3.co    { font-family:Arial,sans-serif; font-size:16pt; color:#000000; margin-top:0.1em; margin-bottom:0.1em; font-weight:100}
+    body     { font-family:Verdana,Arial,sans-serif; font-size:10pt; color:#08185A background-color:#FFFFFF }
+    p        { font-family:Verdana,Arial,sans-serif; font-size:10pt; color:#FFFFFF }
+    p.bl     { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#08185A }
+    P.red    { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#FF0066 }
+    li       { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#FF0066 }
+    a:link   { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#08185A }
+    a:visited{ font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#08185A }
+    a:hover  { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#FF0000 }
+    a:active { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#FF0000 }
+    td       { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#08185A }
+    th       { font-family:Verdana,Arial,sans-serif; font-size:10pt; color:#08185A; font-weight:bold; background-color:#E1E1E1; padding-top:0.5em; padding-bottom:0.5em}
+    input    { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#08185A; background-color:#E1E1E1; font-weight:bold }
+    select   { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#08185A; background-color:#E1E1E1; font-weight:bold }
+    textarea { font-family:Verdana,Arial,sans-serif; font-size:8pt; color:#08185A; background-color:#E1E1E1; font-weight:normal; scrollbar-arrow-color:#08185A; scrollbar-base-color:#E1E1E1 }
+    -->
+</style></head>
+<body>
+
+    <!-- branding table -->
+    <table width='100%' border='2' cellpadding='2' bgcolor='#C1C1C1'><tr><td bgcolor='#E1E1E1' width='90%'><h2 class='co'>&nbsp;Virtual Payment Client - Version 1</h2></td><td bgcolor='#C1C1C1' align='center'><h3 class='co'>MIGS</h3></td></tr></table>
+
+<center><H2><br/>PHP VPC Refund Example</H2></center>
+
+<!-- The "Pay Now!" button submits the form, transferring control to page detailed below -->
+<form action="./vpc_php_ama_refund.php" method="post">
+<input type="hidden" name="Title" value="PHP VPC Refund">
+
+    <!-- get user input -->
+    <table width="80%" align="center" border="0" cellpadding='0' cellspacing='0'>
+
+
+    <tr bgcolor="#E1E1E1">
+        <td width="1%">&nbsp;</td>
+        <td width="40%" align="right"><b><i>Virtual Payment Client URL:&nbsp;</i></b></td>
+        <td width="59%"><input type="text" name="virtualPaymentClientURL" size="63" value="https://migs.mastercard.com.au/vpcdps" maxlength="250"></td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;<hr width="75%">&nbsp;</td>
+    </tr>
+    <tr bgcolor="#C1C1C1">
+        <td colspan="3" height="25"><p><b>&nbsp;Basic Refund Transaction Fields</b></p></td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td align="right"><b><i> VPC Version: </i></b></td>
+        <td><input type="text" name="vpc_Version" value="1" maxlength="8"></td>
+    </tr>
+    <tr bgcolor="#E1E1E1">
+        <td>&nbsp;</td>
+        <td align="right"><b><i>Command Type: </i></b></td>
+        <td><input type="text" name="vpc_Command" value="refund" maxlength="16"></td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td align="right"><b><i>Merchant AccessCode: </i></b></td>
+        <td><input type="text" name="vpc_AccessCode" value="" maxlength="8"></td>
+    </tr>
+    <tr bgcolor="#E1E1E1">
+        <td>&nbsp;</td>
+        <td align="right"><b><i>Merchant Transaction Reference: </i></b></td>
+        <td><input type="text" name="vpc_MerchTxnRef" value="" maxlength="40"></td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td align="right"><b><i>MerchantID: </i></b></td>
+        <td><input type="text" name="vpc_Merchant" value="" maxlength="16"></td>
+    </tr>
+    <tr bgcolor="#E1E1E1">
+        <td>&nbsp;</td>
+        <td align="right"><b><i>Shopping Transaction Number: </i></b></td>
+        <td><input type="text" name="vpc_TransNo" value="" maxlength="19"></td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td align="right"><b><i>Refund Amount: </i></b></td>
+        <td><input type="text" name="vpc_Amount" value="100" maxlength="10"></td>
+    </tr>
+    <tr bgcolor="#E1E1E1">
+        <td>&nbsp;</td>
+        <td align="right"><b><i> User: </i></b></td>
+        <td><input type="text" name="vpc_User" value="" maxlength="20"></td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td align="right"><b><i> Password: </i></b></td>
+        <td><input type="password" name="vpc_Password" value="" maxlength="25"></td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+
+    <tr>
+        <td colspan="2">&nbsp;</td>
+        <td><input type="submit" name="SubButL" value="Refund!"></td>
+    </tr>
+
+    </table>
+  </form>
+</body>
+</html>
