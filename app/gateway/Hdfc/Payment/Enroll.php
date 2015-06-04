@@ -35,6 +35,8 @@ trait Enroll
     {
         $this->setId($input['payment']['id']);
 
+        $this->callbackUrl = $input['callbackUrl'];
+
         //
         // Fields to be sent to HDFC gateway for card-enrollment
         //

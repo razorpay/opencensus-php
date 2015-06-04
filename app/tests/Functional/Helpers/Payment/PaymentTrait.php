@@ -9,15 +9,21 @@ use Tests\Functional\RequestResponseFlowTrait;
 
 trait PaymentTrait
 {
-    use PaymentHdfcTrait;
     use PaymentAtomTrait;
+    use PaymentAxisGeniusTrait;
+    use PaymentAxisMigsTrait;
+    use PaymentHdfcTrait;
+    use PaymentKotakTrait;
+    use PaymentPaytmTrait;
+    use PaymentNetbankingTrait;
+    use PaymentBilldeskTrait;
 
     use RequestResponseFlowTrait
     {
         makeRequest as makeRequestParent;
     }
 
-    protected $gateway = 'hdfc';
+    protected $gateway = null;
 
     protected function doAuthAndCapturePayment($payment = null)
     {
@@ -64,6 +70,32 @@ trait PaymentTrait
         $func = $trace[1]['function'];
 
         return $this->getAndMatchPayment($id, $paymentResponse);
+    }
+
+    protected function runTestForAuthPayment($payment = null)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $func = $trace[1]['function'];
+
+        $testData = $this->testData[$func];
+
+        if (isset($testData['request']) === false)
+            $testData['request'] = [];
+
+        if (isset($testData['request']['content']) === false)
+            $testData['request']['content'] = [];
+
+        if ($payment !== null)
+            $testData['request']['content'] = $payment;
+
+        $this->replaceDefualtValues($testData['request']['content']);
+
+        $testData['request']['method'] = 'POST';
+        $testData['request']['url'] = '/payments';
+
+        $this->ba->publicAuth();
+
+        return $this->runRequestResponseFlow($testData);
     }
 
     protected function doAutoCapture()
@@ -187,9 +219,6 @@ trait PaymentTrait
         $this->ba->publicAuth();
 
         $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('razorpay_payment_id', $content);
-        $this->assertEquals(1, count($content));
 
         return $content;
     }
@@ -353,7 +382,33 @@ trait PaymentTrait
 
         $request['url'] = $uri;
 
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackRedirect($url)
+    {
+        $request['method'] = 'GET';
+        $request['url'] = $url;
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackData($url, $method, $values)
+    {
+        $request['method'] = 'POST';
+        $request['url'] = $url;
+        $request['content'] = $values;
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function submitPaymentCallbackRequest($request)
+    {
+        $this->ba->publicCallbackAuth();
+
         $response = $this->makeRequestParent($request);
+
+        $this->ba->publicAuth();
 
         $content = $response->getContent();
 
@@ -379,17 +434,60 @@ trait PaymentTrait
     {
         $content = $response->getContent();
 
+        $gateway = null;
+
         if ($callback)
         {
             $content = $this->getJsonContentFromResponse($response, $callback);
-        }
 
-        if (isset($content['redirectUrl']) or $this->gateway === 'atom')
+            if (isset($content['gateway']) === false)
+            {
+                return $response;
+            }
+
+            list($gateway, ) = explode('__', \Crypt::decrypt($content['gateway'], 2));
+        }
+        else
         {
-            return $this->runPaymentCallbackFlowAtom($response, $callback);
+            // Has to be either redirect or a gateway form post.
+            // First check for normal html form post.
+            $ret = ((json_decode($content) === null) and
+                    (get_class($response) === 'Illuminate\Http\Response') and
+                    ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
+                    ($response->getStatusCode() === 200));
+
+            if ($ret === false)
+            {
+                // Now check for redirect
+                $ret = ((get_class($response) === 'Illuminate\Http\RedirectResponse') and
+                        ($response->getStatusCode() === 302));
+
+                if ($ret === false)
+                    return $response;
+            }
         }
 
-        return $this->runPaymentCallbackFlowHdfc($response, $callback);
+        return $this->runPaymentCallbackFlowForGateway($response, $callback, $gateway);
+    }
+
+    protected function runPaymentCallbackFlowForGateway($response, &$callback = null, $gateway = null)
+    {
+        if ($gateway === null)
+        {
+            $gateway = $this->gateway;
+        }
+
+        if ($gateway === null)
+        {
+            $gateway = 'hdfc';
+        }
+
+        if (strpos($gateway, 'netbanking') !== false)
+            $gateway = 'netbanking';
+
+        $func = 'runPaymentCallbackFlow'.studly_case($gateway);
+
+        return $this->$func($response, $callback);
     }
 
     protected function getIdFromUri($uri)
@@ -421,11 +519,21 @@ trait PaymentTrait
 
     protected function makeRequestAndGetFormData($url, $method, $headers = [], $data = [], $options = [])
     {
+        if (isset($options['timeout']) === false)
+            $options['timeout'] = 30;
+
         $response = Requests::$method($url, $headers, $data, $options);
 
         list ($uri, $method, $values) = $this->getFormDataFromResponse($response->body, $url);
 
         return [$uri, $method, $values, $response];
+    }
+
+    protected function getFormRequestFromResponse($content, $url)
+    {
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, $url);
+
+        return compact('url', 'method', 'content');
     }
 
     protected function getFormDataFromResponse($content, $url)
@@ -445,5 +553,75 @@ trait PaymentTrait
         $values = $form->getValues();
 
         return array($uri, $method, $values);
+    }
+
+    protected function setMockGatewayTrue()
+    {
+        $var = 'gateway.mock_'.$this->gateway;
+
+        $this->config['gateway.mock_netbanking_hdfc'] = true;
+    }
+
+    protected function isGatewayMocked()
+    {
+        $gateway = $this->app['config']->get('gateway');
+
+        if ($this->gateway === null)
+            $this->gateway = 'hdfc';
+
+        return $gateway['mock_' . $this->gateway];
+    }
+
+    protected function getDataForGatewayRequest($response, &$callback = null)
+    {
+        $url = $values = $method = null;
+
+        if ($callback)
+        {
+            $content = $this->getJsonContentFromResponse($response, $callback);
+            $callback = null;
+
+            $request = $content['request'];
+            $url = $content['request']['url'];
+
+            $values = array();
+            $method = $request['method'];
+
+            if ($method === 'post')
+            {
+                $values = $request['content'];
+            }
+        }
+        else
+        {
+            if ($response->getStatusCode() === 302)
+            {
+                $url = $response->getTargetUrl();
+                $method = $values = null;
+            }
+            else
+            {
+                list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), 'https://localhost');
+            }
+        }
+
+        return array($url, $method, $values);
+    }
+
+    protected function makeFirstGatewayPaymentMockRequest($url, $method = 'get', $content = array())
+    {
+        $request = array(
+           'url' => $url,
+           'method' => strtoupper($method),
+           'content' => $content);
+
+        $response = $this->makeRequestParent($request);
+
+        $statusCode = $response->getStatusCode();
+        $this->assertEquals($statusCode, '302');
+
+        $url = $response->getTargetUrl();
+
+        return $url;
     }
 }

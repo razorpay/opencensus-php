@@ -25,7 +25,7 @@ class CardController extends BaseController
 
     public function getIin($id)
     {
-        $data = (new Card\IIN\Service)->fetchById($id);
+        $data = (new Card\IIN\Service)->fetchIin($id);
 
         return ApiResponse::json($data);
     }
@@ -35,6 +35,15 @@ class CardController extends BaseController
         $input = Input::all();
 
         $data = (new Card\IIN\Service)->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postIin()
+    {
+        $input = Input::all();
+
+        $data = (new Card\IIN\Service)->addIin($input);
 
         return ApiResponse::json($data);
     }

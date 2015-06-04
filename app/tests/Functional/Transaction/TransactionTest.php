@@ -105,9 +105,11 @@ class TransactionTest extends TestCase
         return $refund;
     }
 
-    public function testTransactionOnSharedTerminal()
+    public function testTransactionOnAtomSharedTerminal()
     {
         $this->gateway = 'atom';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
 
         $merchant = $this->fixtures->create('merchant_fluid:entity')
                          ->addKeys()
@@ -134,8 +136,11 @@ class TransactionTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $txn);
     }
 
-    public function testTransactionWithSharedTerminalMerchant()
+    public function testTransactionOnAtomSharedTerminalMerchant()
     {
+        $this->gateway = 'atom';
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
         $this->fixtures->create('merchant_fluid:instance')
                        ->getMerchant('10AtomRazorpay')
                        ->addBalance()

@@ -45,7 +45,7 @@ trait CustomAssertions
 
             $gatewayErrorDesc = \Gateway\Hdfc\ErrorCode::$errorMessages[$actual['gateway_error_code']];
 
-            $this->assertEquals($gatewayErrorDesc, $actual['gateway_error_desc']);
+            $this->assertEquals($gatewayErrorDesc, $actual['gateway_error_desc'], 'key: gateway_error_desc');
         }
 
         if (isset($expected['field']))

@@ -1,0 +1,360 @@
+<?php
+
+namespace Gateway\AxisMigs;
+
+use Constants\Mode;
+use EE\Error\ErrorCode;
+use EE\Exception;
+use Gateway\Base;
+use Gateway\AxisMigs;
+use Requests;
+use Trace\Trace;
+use Trace\TraceCode;
+
+class Gateway extends Base\Gateway
+{
+    protected $gateway = 'axis_migs';
+
+    public function authorize(array $input)
+    {
+        parent::authorize($input);
+
+        $attributes = array(
+            'vpc_Command'               => Command::PAY,
+            'vpc_Amount'                => $input['payment']['amount'],
+            'vpc_Currency'              => $input['payment']['currency'],
+            'vpc_MerchTxnRef'           => $input['payment']['id'],
+        );
+
+        $this->createGatewayPaymentEntity($attributes);
+
+        $content = array(
+            'vpc_Version'           => '1',
+            'vpc_ReturnURL'         => $input['callbackUrl'],
+            'vpc_Locale'            => 'en',
+            'vpc_gateway'           => 'ssl',
+            'vpc_Card'              => $input['card']['network'],
+            'vpc_CardNum'           => $input['card']['number'],
+            'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
+            'vpc_CardSecurityCode'  => $input['card']['cvv'],
+//            'vpc_OrderInfo'             => 'testinfo',
+        );
+
+        $content = array_merge($attributes, $content);
+
+        $this->addTestCardDetailsInTestMode($content);
+
+        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
+
+        $content['vpc_SecureHash'] = $this->generateHash($content);
+
+        $request = $this->getAuthRequestArray($content);
+
+        return $request;
+    }
+
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
+            $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
+
+        $this->verifySecureHash($input);
+
+        $payment->fill($input['gateway']);
+        $payment->saveOrFail();
+
+        $this->verifyPaymentCallbackResponse($input);
+    }
+
+    public function capture(array $input)
+    {
+        parent::capture($input);
+
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
+            $input['payment']['id'], Command::PAY);
+
+        $content = $this->getPaymentCaptureRequestContent($input, $payment);
+
+        $response = $this->postAmaTransactionRequest($content, $input);
+
+        $content = $this->getAmaTxnResponseContent($response, $input);
+
+        $payment = $this->createGatewayPaymentEntity($content);
+
+        $this->verifyAmaTransactionResponse($content);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $payment = $this->getRepo()->findByPaymentIdAndCommand(
+                                $input['payment']['id'], Command::PAY);
+
+        $content = $this->getPaymentRefundRequestContent($input, $payment);
+
+        $response = $this->postAmaTransactionRequest($content, $input);
+
+        $content = $this->getAmaTxnResponseContent($response, $input);
+
+        $content['payment_id'] = $input['payment']['id'];
+        $content['refund_id'] = $input['refund']['amount'];
+
+        $payment = $this->createGatewayPaymentEntity($content);
+
+        $this->verifyAmaTransactionResponse($content);
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $payment = $this->getRepo()->findByMerchantTxnRef($input['payment']['id']);
+
+        $content = $this->getPaymentVerifyRequestContent($input, $payment);
+
+        $response = $this->postAmaTransactionRequest($content, $input);
+    }
+
+    protected function getPaymentCaptureRequestContent($input, $payment)
+    {
+        $content = array(
+            'vpc_Command'       => Command::CAPTURE,
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
+            'vpc_Amount'        => $input['amount']
+        );
+
+        return $content;
+    }
+
+    protected function getPaymentVerifyRequestContent($input, $payment)
+    {
+        $content = array(
+            'vpc_Command'       => AxisMigs\Command::QUERY,
+            'vpc_Amount'        => $input['payment']['amount'],
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
+        );
+
+        return $content;
+    }
+
+    protected function getPaymentRefundRequestContent($input, $payment)
+    {
+        $content = array(
+            'vpc_Command'       => AxisMigs\Command::REFUND,
+            'vpc_Amount'        => $input['refund']['amount'],
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
+        );
+
+        return $content;
+    }
+
+    protected function addAmaTransactionFields(array & $content, $input)
+    {
+        $content['vpc_Version'] = 1;
+
+        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
+
+        $this->addAmaUserAndPassword($content, $input['terminal']);
+    }
+
+    protected function getAuthRequestArray($content)
+    {
+        $request = array(
+            'url'       => $this->getUrl(Command::PAY),
+            'content'   => $content,
+            'method'    => 'post');
+
+        return $request;
+    }
+
+    protected function getAmaRequestArray($content)
+    {
+        $request = array(
+            'action'    => $this->action,
+            'url'       => $this->getUrl('ama'),
+            'content'   => $content,
+            'method'    => 'post');
+
+        return $request;
+    }
+
+    protected function createGatewayPaymentEntity($attributes)
+    {
+        $payment = $this->getNewGatewayPaymentEntity();
+        $payment->setPaymentId($attributes['vpc_MerchTxnRef']);
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+    protected function getNewGatewayPaymentEntity()
+    {
+        return new AxisMigs\Entity;
+    }
+
+    protected function getRepo()
+    {
+        return new AxisMigs\Repository;
+    }
+
+    protected function postAmaTransactionRequest(array & $content, $input)
+    {
+        $this->addAmaTransactionFields($content, $input);
+
+        $request = $this->getAmaRequestArray($content);
+
+        // send the request and get response
+        $response = $this->postRequest($request);
+
+        return $response;
+    }
+
+    public function postRequest($request)
+    {
+        $options['timeout'] = 30;
+        $request['options'] = $options;
+
+        $this->response = $this->sendGatewayRequest($request);
+
+        return $this->response;
+    }
+
+    protected function getAmaTxnResponseContent($response)
+    {
+        parse_str($response->body, $content);
+
+        return $content;
+    }
+
+    protected function getHashOfString($str)
+    {
+        $str = $this->getSecret() . $str;
+
+        return strtoupper(md5($str));
+    }
+
+    protected function verifySecureHash($input)
+    {
+        $hash = strtoupper($input['gateway']['vpc_SecureHash']);
+        unset($input['gateway']['vpc_SecureHash']);
+
+        $generatedHash = $this->generateHash($input['gateway']);
+
+        if ($generatedHash !== $hash)
+        {
+            throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
+        }
+    }
+
+    protected function addMerchantIdAndAccessCode(array & $content, $terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $content['vpc_Merchant'] = $this->config['test_merchant_id'];
+            $content['vpc_AccessCode'] = $this->config['test_access_code'];
+        }
+        else
+        {
+            $content['vpc_Merchant'] = $input['terminal']['gateway_merchant_id'];
+            $content['vpc_AccessCode'] = $input['terminal']['gateway_access_code'];
+        }
+    }
+
+    protected function addAmaUserAndPassword(array & $content, $terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $content['vpc_User'] = $this->config['test_ama_user'];
+            $content['vpc_Password'] = $this->config['test_ama_password'];
+        }
+        else
+        {
+            $content['vpc_User'] = $input['terminal']['gateway_terminal_id'];
+            $content['vpc_Password'] = $input['terminal']['gateway_terminal_password'];
+        }
+    }
+
+    protected function verifyPaymentCallbackResponse($input)
+    {
+        if ((isset($input['gateway']['vpc_TxnResponseCode']) === true) and
+            ($input['gateway']['vpc_TxnResponseCode'] === '0'))
+        {
+            return; // Payment succeeds
+        }
+
+        $gatewayErrorCode = $input['gateway']['vpc_TxnResponseCode'];
+
+        $apiErrorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        if (isset(ErrorCode::$errorMap[$gatewayErrorCode]))
+        {
+            $apiErrorCode = ErrorCode::$errorMap[$gatewayErrorCode];
+        }
+        else
+        {
+            $this->trace->error(
+                TraceCode::GATEWAY_UNKNOWN_ERROR,
+                ['payment_id' => $input['payment']['id'],
+                'action' => $this->action,
+                'gateway_error_code' => $gatewayErrorCode,
+                'gateway' => $this->gateway,
+                'time' => time()]);
+        }
+
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $gatewayErrorCode,
+                    $input['gateway']['vpc_Message']);
+    }
+
+    protected function verifyAmaTransactionResponse($content)
+    {
+        if ((isset($content['vpc_TxnResponseCode']) === true) and
+            ($content['vpc_TxnResponseCode'] === '0'))
+        {
+            return;
+        }
+
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    null,
+                    $content['vpc_Message']);
+    }
+
+    protected function addTestCardDetailsInTestMode(array & $content)
+    {
+        assert ($this->mode === Mode::TEST);
+
+        if ($content['vpc_CardNum'] === '4111111111111111')
+        {
+            return;
+        }
+
+        $content['vpc_Card'] = 'MasterCard';
+        $content['vpc_CardNum'] = '5123456789012346';
+        $content['vpc_CardExp'] = '1705';
+        $content['vpc_CardSecurityCode'] = '333';
+    }
+
+    protected function getFormattedCardExpiryDate($input)
+    {
+        $expiryMonth = $input['card']['expiry_month'];
+
+        if ($expiryMonth < 10) $expiryMonth = '0' . $expiryMonth;
+
+        $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
+
+        return $cardExp;
+    }
+}

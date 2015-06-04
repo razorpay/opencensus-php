@@ -2,20 +2,71 @@
 
 namespace Tests\TestDummy;
 
-use Laracasts\TestDummy\Factory as BaseFactory;
+use Laracasts\TestDummy as Base;
 
-class Factory extends BaseFactory
+class Factory extends Base\Factory
 {
+    /**
+     * The path to the factories directory.
+     *
+     * @var string
+     */
+    public static $factoriesPath = 'app/tests/Functional/Fixtures/Factory';
+
+    /**
+     * The user registered factories.
+     *
+     * @var array
+     */
+    protected static $factories;
+
+    /**
+     * Create a new factory instance.
+     *
+     * @param string        $factoriesPath
+     * @param IsPersistable $databaseProvider
+     */
+    public function __construct($factoriesPath = null, IsPersistable $databaseProvider = null)
+    {
+        $this->loadFactories($factoriesPath);
+        $this->setDatabaseProvider($databaseProvider);
+    }
+
     /**
      * Create a new Builder instance.
      *
      * @return Builder
      */
-    protected static function getInstance()
+    public function getBuilder()
     {
-        if ( ! static::$fixtures) static::setFixtures();
-        if ( ! static::$databaseProvider) static::setDatabaseProvider();
+        return new Base\Builder($this->databaseProvider(), $this->factories());
+    }
 
-        return new Builder(static::$databaseProvider, static::$fixtures);
+    /**
+     * Load the user provided factories.
+     *
+     * @param  string $factoriesPath
+     * @return void
+     */
+    private function loadFactories($factoriesPath)
+    {
+        $factoriesPath = $factoriesPath ?: static::$factoriesPath;
+
+        if ( ! static::$factories) {
+            static::$factories = (new FactoriesLoader)->load($factoriesPath);
+        }
+    }
+
+    /**
+     * Set the database provider for the data generation.
+     *
+     * @param  IsPersistable $provider
+     * @return void
+     */
+    protected function setDatabaseProvider($provider = null)
+    {
+        if ( ! static::$databaseProvider) {
+            static::$databaseProvider = $provider ?: new Base\EloquentModel;
+        }
     }
 }

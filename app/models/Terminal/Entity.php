@@ -11,16 +11,24 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletingTrait;
 
-    const ID                        = 'id';
-    const MERCHANT_ID               = 'merchant_id';
-    const USED_COUNT                = 'used_count';
-    const GATEWAY                   = 'gateway';
-    const GATEWAY_MERCHANT_ID       = 'gateway_merchant_id';
-    const GATEWAY_TERMINAL_ID       = 'gateway_terminal_id';
-    const GATEWAY_TERMINAL_PASSWORD = 'gateway_terminal_password';
+    const ID                            = 'id';
+    const MERCHANT_ID                   = 'merchant_id';
+    const USED_COUNT                    = 'used_count';
+    const GATEWAY                       = 'gateway';
+    const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
+    const GATEWAY_TERMINAL_ID           = 'gateway_terminal_id';
+    const GATEWAY_TERMINAL_PASSWORD     = 'gateway_terminal_password';
+    const GATEWAY_ACCESS_CODE           = 'gateway_access_code';
+    const GATEWAY_SECURE_SECRET         = 'gateway_secure_secret';
 
-    const CARD                      = 'card';
-    const DELETED_AT                = 'deleted_at';
+    const CARD                          = 'card';
+    const NETBANKING                    = 'netbanking';
+
+    const SHARED                        = 'shared';
+
+    const DELETED_AT                    = 'deleted_at';
+
+    const MAX_TERMINALS_COUNT           = 8;
 
     protected $fillable = array(
         self::MERCHANT_ID,
@@ -28,6 +36,8 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_TERMINAL_ID,
+        self::GATEWAY_ACCESS_CODE,
+        self::GATEWAY_SECURE_SECRET,
         self::GATEWAY_TERMINAL_PASSWORD);
 
     protected $public = array(
@@ -55,14 +65,29 @@ class Entity extends Base\PublicEntity
 
     protected static $delimiter = '';
 
-    protected static $generators = array(self::CARD);
+    protected static $generators = array(
+        'method');
 
-    public function generateCard($input)
+    public function generateMethod($input)
     {
-        if ((isset($input[self::CARD]) === false) and
-            ($input[self::GATEWAY] === Payment\Gateway::HDFC))
+        $gateway = $input[self::GATEWAY];
+
+        if (Payment\Gateway::isMethodSupported('card', $gateway))
         {
             $this->setAttribute(self::CARD, 1);
+        }
+        else
+        {
+            $this->setAttribute(self::CARD, 0);
+        }
+
+        if (Payment\Gateway::isMethodSupported('netbanking', $gateway))
+        {
+            $this->setAttribute(self::NETBANKING, 1);
+        }
+        else
+        {
+            $this->setAttribute(self::NETBANKING, 0);
         }
     }
 
@@ -85,12 +110,40 @@ class Entity extends Base\PublicEntity
 
     protected function setGatewayTerminalPasswordAttribute($password)
     {
+        if ($password === null)
+            $password = '';
+
         $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password);
     }
 
-    public function getGatewayTerminalPasswordAttribute()
+    protected function setGatewaySecureSecretAttribute($secret)
     {
-        return Crypt::decrypt($this->attributes[self::GATEWAY_TERMINAL_PASSWORD]);
+        if ($secret === null)
+        {
+            $secret = '';
+        }
+
+        $this->attributes[self::GATEWAY_SECURE_SECRET] = Crypt::encrypt($secret);
+    }
+
+    protected function getGatewayTerminalPasswordAttribute()
+    {
+        $pwd = $this->attributes[self::GATEWAY_TERMINAL_PASSWORD];
+
+        if ($pwd === null)
+            return $pwd;
+
+        return Crypt::decrypt($pwd);
+    }
+
+    protected function getGatewaySecureSecretAttribute()
+    {
+        $secret = $this->attributes[self::GATEWAY_SECURE_SECRET];
+
+        if ($secret === null)
+            return $secret;
+
+        return Crypt::decrypt($secret);
     }
 
     public function getGatewayTerminalId()
@@ -130,6 +183,11 @@ class Entity extends Base\PublicEntity
     public function isCardEnabled()
     {
         return (((int)$this->getAttribute(self::CARD)) === 1);
+    }
+
+    public function isNetBankingEnabled()
+    {
+        return (((int)$this->getAttribute(self::NETBANKING)) === 1);
     }
 
     public function isGateway($gateway)

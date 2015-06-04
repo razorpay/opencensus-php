@@ -10,6 +10,7 @@ use EE\Error\ErrorCode;
 use Http\Route;
 use Models\Gateway;
 use Models\Merchant;
+use Models\Merchant\BankAccount;
 use Models\Terminal;
 use Models\Payment;
 use Request;
@@ -236,6 +237,14 @@ class Processor
 
         $gateway = $this->payment->getGateway();
 
+        $input['terminal'] = $terminal;
+        $input['merchant'] = $terminal->merchant;
+
+        if ($gateway === Payment\Gateway::KOTAK)
+        {
+            $input['bank_account'] = $this->getMerchantBankAccount($terminal->merchant);
+        }
+
         return Gateway::call($gateway, $action, $input, $this->mode, $terminal);
     }
 
@@ -246,8 +255,6 @@ class Processor
         $payment = (new Payment\Entity)->build($input);
 
         $payment->merchant()->associate($this->merchant);
-
-        (new TerminalPicker)->selectTerminal($payment);
 
         $this->payment = $payment;
 
@@ -293,5 +300,38 @@ class Processor
     protected function notifyDashboard($type, $entity)
     {
         Dashboard::send($type, $entity);
+    }
+
+    protected function getMerchantBankAccount($merchant)
+    {
+        $ba = $merchant->bankAccount;
+
+        if ($ba !== null)
+        {
+            return $ba;
+        }
+
+        assert ($this->mode === Mode::TEST);
+
+        $attributes = array(
+            'merchant_id'           => $merchant->getId(),
+            'ifsc_code'             => 'RZPB0000000',
+            'beneficiary_name'      => $merchant->getAttribute('name'),
+            'beneficiary_code'      => strtoupper(random_alpha_string(4)),
+            'account_number'        => random_integer(11),
+            'beneficiary_city'      => 'Mumbai',
+            'beneficiary_state'     => 'MH',
+            'beneficiary_country'   => 'IN',
+            'beneficiary_pin'       => '400069',
+            'beneficiary_mobile'    => '9393993939',
+        );
+
+        $ba = (new BankAccount\Entity)->newInstance($attributes, true);
+
+        $ba->merchant()->associate($merchant);
+
+        $merchant->setRelation('bankAccount', $ba);
+
+        return $ba;
     }
 }

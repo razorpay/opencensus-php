@@ -18,9 +18,9 @@ class Service extends Base\Service
         $this->repo = new IIN\Repository();
     }
 
-    public function fetchIinDetails($id)
+    public function fetchIin($iin)
     {
-        $iin = $this->repo->findOrFail($id);
+        $iin = $this->repo->findOrFail($iin);
 
         return $iin->toArrayPublic();
     }
@@ -30,5 +30,12 @@ class Service extends Base\Service
         $iins = $this->repo->fetch($input);
 
         return $iins->toArrayPublic();
+    }
+
+    public function addIin($input)
+    {
+        $iin = (new Entity)->build($input);
+
+        return $iin->toArrayPublic();
     }
 }

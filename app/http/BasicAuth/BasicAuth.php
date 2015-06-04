@@ -218,24 +218,10 @@ class BasicAuth
         }
         else
         {
-            if (($key === null) or
-                ($key === ''))
-            {
-               return ApiResponse::provideApiKey();
-            }
+            $res = $this->setKeyFromQueryParams();
 
-            $this->viaQueryParams = true;
-
-            $this->creds['secret'] = null;
-            $this->creds['public_key'] = $key;
-
-            $this->request->query->remove('key_id');
-            $this->request->request->remove('key_id');
-
-            if ($this->checkAndSetKeyId($key) !== null)
-            {
-                return $this->invalidApiKey();
-            }
+            if ($res !== null)
+                return $res;
         }
 
         if ($this->verifyKeyExistence() !== true)
@@ -251,6 +237,22 @@ class BasicAuth
         }
 
         $this->fetchMerchantOfKey($this->key);
+    }
+
+    public function noAuth()
+    {
+        $key = $this->request->input('key_id');
+
+        if (empty($key) === false)
+        {
+            return $this->publicAuth();
+        }
+
+        $key = \Route::current()->getParameter('key');
+
+        $this->request->query->add(['key_id' => $key]);
+
+        return $this->publicAuth();
     }
 
     public function appAuth()
@@ -297,6 +299,48 @@ class BasicAuth
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    /**
+     * Allows requests with public keys to get through.
+     * Also allows private key based requests too
+     */
+    public function publicCallbackAuth()
+    {
+        $this->setType(Type::PUBLIC_AUTH);
+
+        $key = $this->router->current()->getParameter('key');
+
+        if ($key === null)
+        {
+            $res = $this->setCredentials();
+
+            if ($res !== null)
+                return $res;
+        }
+
+        $this->creds['secret'] = null;
+        $this->creds['public_key'] = $key;
+
+        // If key is wrong in formatting or something, send error back
+        if ($this->checkAndSetKeyId($key) !== null)
+        {
+            return $this->invalidApiKey();
+        }
+
+        if ($this->verifyKeyExistence() !== true)
+        {
+            return $this->invalidApiKey();
+        }
+
+        if (($this->getSecret() !== '') and
+            ($this->getSecret() !== null))
+        {
+            return ApiResponse::generateResponse(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
+        }
+
+        $this->fetchMerchantOfKey($this->key);
     }
 
 // --------------------- Basic Auths Ends --------------------------------------
@@ -577,6 +621,34 @@ class BasicAuth
     }
 
 // --------------------- Setters Ends ------------------------------------------
+
+    protected function setKeyFromQueryParams()
+    {
+        // Get key from input params
+        $key = $this->request->input('key_id');
+
+        // If not provided, then send error asking for it
+        if (($key === null) or
+            ($key === ''))
+        {
+           return ApiResponse::provideApiKey();
+        }
+
+        $this->viaQueryParams = true;
+
+        $this->creds['secret'] = null;
+        $this->creds['public_key'] = $key;
+
+        // Remove 'key_id' from query params
+        $this->request->query->remove('key_id');
+        $this->request->request->remove('key_id');
+
+        // If key is wrong in formatting or something, send error back
+        if ($this->checkAndSetKeyId($key) !== null)
+        {
+            return $this->invalidApiKey();
+        }
+    }
 
     protected function fetchKey($keyId)
     {

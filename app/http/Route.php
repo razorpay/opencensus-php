@@ -13,7 +13,10 @@ final class Route
     protected static $apiRoutes = array(
         'payment_create'                    => ['post',     'payments',                                 'PaymentController@postCreatePayment'                   ],
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentController@getJSONP'                            ],
-        'payment_callback'                  => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
+        'payment_callback_post'             => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
+        'payment_callback_get'              => ['get',      'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
+        'payment_callback_with_key_post'    => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentController@postCallback'                        ],
+        'payment_callback_with_key_get'     => ['get',      'payments/{id}/callback/{hash}/{key}',      'PaymentController@postCallback'                        ],
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
@@ -33,6 +36,7 @@ final class Route
         'card_fetch_multiple'               => ['get',      'cards',                                    'PaymentController@getCards'                            ],
         'iin_fetch_by_iin'                  => ['get',      'iins/{id}',                                'CardController@getIin'                                 ],
         'iin_fetch_multiple'                => ['get',      'iins',                                     'CardController@getIins'                                ],
+        'iin_add'                           => ['post',     'iins',                                     'CardController@postIin'                                ],
         'merchant_public_get_banks'         => ['get',      'banks',                                    'MerchantController@getBanksPublic'                     ],
         'merchant_secret'                   => ['get',      'keys/{id}/secret',                         'MerchantController@getKeySecret'                       ],
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],
@@ -85,14 +89,20 @@ final class Route
         'adj_fetch_by_id'                   => ['get',      'adjustments/{id}',                         'AdjustmentController@getAdjustment'                    ],
         'adj_fetch_multiple'                => ['get',      'adjustments',                              'AdjustmentController@getAdjustments'                   ],
         'adj_add'                           => ['post',     'adjustments',                              'AdjustmentController@postAdjustment'                   ],
-        'mockhdfc_enroll'                   => ['post',     'gateway/mockhdfc/enroll',                  'MockHdfcController@enroll'                             ],
-        'mockhdfc_payment'                  => ['post',     'gateway/mockhdfc/payment',                 'MockHdfcController@payment'                            ],
-        'mockhdfc_auth_enrolled'            => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockHdfcController@authEnrolled'                       ],
-        'mockhdfc_3dsecure'                 => ['post',     'gateway/3dsecure',                         'MockHdfcController@post3dSecure'                       ],
-        'mockatom_init_payment'             => ['post',     'gateway/mockanb',                          'MockHdfcController@postAtomInitPayment'                ],
-        'mockatom_choose_org'               => ['get',      'gateway/mockanb',                          'MockHdfcController@getAtomChooseOrg'                   ],
-        'mockatom_rzp_payment'              => ['post',     'gateway/mockanb/payment',                  'MockHdfcController@postAtomRzpPayment'                 ],
-        'mockatom_rzp_payment_submit'       => ['post',     'gateway/mockanb/payment/submit',           'MockHdfcController@postAtomRzpPaymentSubmit'           ],
+        'mockhdfc_enroll'                   => ['post',     'gateway/mockhdfc/enroll',                  'MockGatewayController@enroll'                          ],
+        'mockhdfc_payment'                  => ['post',     'gateway/mockhdfc/payment',                 'MockGatewayController@payment'                         ],
+        'mockhdfc_auth_enrolled'            => ['post',     'gateway/mockhdfc/auth_enrolled',           'MockGatewayController@authEnrolled'                    ],
+        'mockhdfc_3dsecure'                 => ['post',     'gateway/3dsecure',                         'MockGatewayController@post3dSecure'                    ],
+        'mockatom_init_payment'             => ['post',     'gateway/mockanb',                          'MockGatewayController@postAtomInitPayment'             ],
+        'mockatom_choose_org'               => ['get',      'gateway/mockanb',                          'MockGatewayController@getAtomChooseOrg'                ],
+        'mockatom_rzp_payment'              => ['post',     'gateway/mockanb/payment',                  'MockGatewayController@postAtomRzpPayment'              ],
+        'mockatom_rzp_payment_submit'       => ['post',     'gateway/mockanb/payment/submit',           'MockGatewayController@postAtomRzpPaymentSubmit'        ],
+        'mock_axis_migs_payment'            => ['post',     'gateway/mockaxismigs/payment',             'MockGatewayController@postAxisPayment'                 ],
+        'mock_axis_genius_payment'          => ['post',     'gateway/mockaxisgenius/payment',           'MockGatewayController@postAxisGeniusPayment'           ],
+        'mock_kotak_payment'                => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                 ],
+        'mock_paytm_payment'                => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                ],
+        'mock_billdesk_payment'             => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'             ],
+        'mock_netbanking_payment'           => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'           ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
     );
@@ -100,13 +110,25 @@ final class Route
     public static $public = array(
         'payment_create',
         'payment_create_jsonp',
-        'payment_callback',
+        'payment_callback_post',
+        'payment_callback_get',
         'merchant_public_get_banks',
         'mockatom_init_payment',
         'mockatom_choose_org',
         'mockatom_rzp_payment',
         'mockatom_rzp_payment_submit',
-        );
+        'mock_axis_migs_payment',
+        'mock_axis_genius_payment',
+        'mock_kotak_payment',
+        'mock_paytm_payment',
+        'mock_netbanking_payment',
+        'mock_billdesk_payment',
+    );
+
+    public static $publicCallback = array(
+        'payment_callback_with_key_post',
+        'payment_callback_with_key_get',
+    );
 
     public static $private = array(
         'payment_refund',
@@ -171,6 +193,9 @@ final class Route
         'mockhdfc_payment',
         'admin_fetch_entity_multiple',
         'admin_fetch_entity_by_id',
+        'iin_fetch_by_iin',
+        'iin_fetch_multiple',
+        'iin_add',
         );
 
     public static $proxy = array(
@@ -213,6 +238,9 @@ final class Route
                 'merchant_secret'),
         );
 
+    public static $noauth = array(
+        'payment_callback');
+
     protected static $router;
 
     public static function setRouter($router)
@@ -244,6 +272,13 @@ final class Route
         }
 
         return self::getUrl($routeName, $parameters, $key);
+    }
+
+    public static function getUrlWithPublicCallbackAuth(array $parameters = array())
+    {
+        $key = \BasicAuth::getPublicKey();
+
+        return self::getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
     public static function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
@@ -338,6 +373,7 @@ final class Route
             self::addFilterOnRouteGroups($router, 'auth.app', 'internal');
             self::addFilterOnRouteGroups($router, 'auth.private', 'private');
             self::addFilterOnRouteGroups($router, 'auth.public', 'public');
+            self::addFilterOnRouteGroups($router, 'auth.public_callback', 'publicCallback');
             self::addFilterOnRouteGroups($router, 'auth.proxy', 'proxy');
         });
 

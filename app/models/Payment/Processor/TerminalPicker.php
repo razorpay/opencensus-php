@@ -2,24 +2,63 @@
 
 namespace Models\Payment\Processor;
 
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Models\Card;
+use Models\Card\Network;
 use Models\Payment;
+use Models\Payment\Gateway;
 use Models\Terminal;
+use Models\Terminal\Shared;
 
 class TerminalPicker
 {
-    public function selectTerminal($payment)
+    protected $mode;
+
+    /**
+     * Terminal selected for the transaction
+     * @var Terminal\Entity
+     */
+    protected $terminal;
+
+    /**
+     * Terminal repository
+     * @var Terminal\Repository
+     */
+    protected $repo;
+
+    /**
+     * Payment for which terminal has to be picked
+     * @var Models\Payment\Entity
+     */
+    protected $payment;
+
+    protected $merchant;
+
+    public function selectTerminal($payment, $mode)
     {
+        $this->payment = $payment;
+        $this->merchant = $payment->merchant;
+        $this->mode = $mode;
+        $this->repo = new Terminal\Repository;
+
         $terminals = $this->getTerminals($payment);
 
         $this->validateCount($terminals, $payment->merchant);
 
         $terminal = $this->pickOneTerminal($payment, $terminals);
+//$terminal = null;
+        if ($terminal === null)
+        {
+            $terminal = $this->getSharedTerminal($payment);
+        }
 
         if ($terminal === null)
         {
-            $terminal = Terminal\Shared::getSharedTerminal();
+            throw new Exception\RuntimeException(
+                'Terminal should not be null',
+                ['payment' => $payment->toArrayAdmin()]);
         }
 
         $payment->terminal()->associate($terminal);
@@ -37,23 +76,15 @@ class TerminalPicker
 
         $method = $payment->getMethod();
 
-        list($hdfcTerm, $atomTerm) = $this->getHdfcAndAtomTerm($terminals);
+        $gatewayTerms = $this->getGatewayTerminals($terminals);
 
         if ($method === Payment\Method::CARD)
         {
-            $terminal = $this->pickTerminalForCardMethod($terminals, $hdfcTerm, $atomTerm);
+            $terminal = $this->pickTerminalForCardMethod($terminals, $gatewayTerms);
         }
         else if ($method === Payment\Method::NETBANKING)
         {
-            if ($atomTerm === null)
-            {
-                return;
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED);
-            }
-
-            $terminal = $atomTerm;
+            $terminal = $this->pickTerminalForNetbankingMethod($terminals, $gatewayTerms);
         }
         else
         {
@@ -65,81 +96,159 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function pickTerminalForCardMethod($terminals, $hdfcTerm, $atomTerm)
+    protected function pickTerminalForCardMethod($terminals, $gatewayTerms)
     {
-        //
-        // For card, terminal deduction is as follows:
-        // * Get all terminals for merchant
-        // * If 1 terminal, then check card enabled and then off to the races!
-        // * If 2 terminals, then check for card enabled for both
-        // * If card is enabled for both, then select HDFC and.. off to the races!
-        // * Otherwise select for whichever is card enabled.. and off to the races!
-        //
-        // Note: At the moment, cannot have more than 2 terminals
-        //
-
-        $count = $terminals->count();
-
         $terminal = null;
-        if ($count === 1)
-        {
-            $terminal = $terminals->first();
 
-            if ($terminal->isCardEnabled() === false)
+        $payment = $this->payment;
+
+        if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
+        {
+            if (isset($gatewayTerms[Gateway::KOTAK]))
             {
-                return;
-                throw new Exception\LogicException(
-                    'Card not enabled for the merchant. Merchant Id: ' . $terminal->getMerchantId() .
-                    ' Terminal Id: ' . $terminal->getId());
+                $terminal = $gatewayTerms[Gateway::KOTAK];
+            }
+
+            return $terminal;
+        }
+
+        $international = $payment->merchant->isInternational();
+
+        if ($international)
+        {
+            if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
+            {
+                return $gatewayTerms[Gateway::AXIS_GENIUS];
             }
         }
-        else if ($count === 2)
+
+        if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
         {
-            if (($hdfcTerm !== null) and
-                ($hdfcTerm->isCardEnabled()))
-                $terminal = $hdfcTerm;
-            else if (($atomTerm !== null) and
-                     ($atomTerm->isCardEnabled()))
-                $terminal = $atomTerm;
-            else
+            return $gatewayTerms[Gateway::AXIS_MIGS];
+        }
+
+        if (isset($gatewayTerms[Gateway::HDFC]))
+        {
+            return $gatewayTerms[Gateway::HDFC];
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            // In test mode paytm supports only cards
+            // but in live only netbanking.
+            if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
             {
-                return;
-                throw new Exception\LogicException(
-                    'No terminal has card transactions enabled. ' .
-                    'Hdfc term id: ' . $hdfcTerm->getId(),
-                    'Atom Term id: ' . $atomTerm->getId());
+                return $gatewayTerms[Payment\Gateway::PAYTM];
             }
         }
 
         return $terminal;
     }
 
-    protected function getHdfcAndAtomTerm($terminals)
+    protected function pickTerminalForNetbankingMethod($terminals, $gatewayTerms)
     {
-        $hdfcTerm = $atomTerm = null;
+        $terminal = null;
+
+        $bank = $this->payment->getBank();
+
+        if ($bank === 'HDFC')
+        {
+            $gateway = 'netbanking_hdfc';
+
+            if (isset($gatewayTerms[Payment\Gateway::NETBANKING_HDFC]) === true)
+            {
+                return $gatewayTerms[Payment\Gateway::NETBANKING_HDFC];
+            }
+        }
+
+        if (isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true)
+        {
+            $terminal = $gatewayTerms[Payment\Gateway::BILLDESK];
+        }
+        else if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+        {
+            $terminal = $gatewayTerms[Payment\Gateway::PAYTM];
+        }
+        else if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
+        {
+            $terminal = $gatewayTerms[Payment\Gateway::ATOM];
+        }
+
+        return $terminal;
+    }
+
+    protected function getSharedTerminal($payment)
+    {
+        $terminal = null;
+
+        $method = $payment->getMethod();
+
+        if ($method === Payment\Method::CARD)
+        {
+            if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
+            {
+                if ($this->terminalExists(Shared::KOTAK_RAZORPAY_TERMINAL))
+                {
+                    return $this->terminal;
+                }
+            }
+
+            if ($this->terminalExists(Shared::HDFC_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
+
+            if ($this->terminalExists(Shared::AXIS_MIGS_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
+
+            if ($this->terminalExists(Shared::AXIS_GENIUS_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
+        }
+        else if ($method === Payment\Method::NETBANKING)
+        {
+            if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
+        }
+
+        if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
+        {
+            return $this->terminal;
+        }
+
+        if ($this->terminalExists(Shared::ATOM_RAZORPAY_TERMINAL))
+        {
+            return $this->terminal;
+        }
+
+        return $terminal;
+    }
+
+    protected function getGatewayTerminals($terminals)
+    {
+        $gatewayTerms = [];
 
         foreach ($terminals->all() as $term)
         {
-            if ($term->isGateway(Payment\Gateway::HDFC))
-                $hdfcTerm = $term;
-            else if ($term->isGateway(Payment\Gateway::ATOM))
-                $atomTerm = $term;
-            else
-                throw new Exception\LogicException(
-                    'Unknown gateway. Terminal Id: ' . $terminal->getId() .
-                    ' Gateway: ' . $terminal->getGateway());
+            $gateway = $term->getGateway();
+            Payment\Gateway::validateGateway($gateway);
+
+            $gatewayTerms[$gateway] = $term;
         }
 
-        return [$hdfcTerm, $atomTerm];
+        return $gatewayTerms;
     }
 
     protected function validateCount($terminals, $merchant)
     {
         $count = $terminals->count();
 
-        // if (($count > 2) or
-        //     ($count === 0))
-        if ($count > 2)
+        if ($count > Terminal\Entity::MAX_TERMINALS_COUNT)
         {
             throw new Exception\LogicException(
                 'Terminals count not reasonable: ' . $count .
@@ -149,10 +258,21 @@ class TerminalPicker
 
     protected function getTerminals($payment)
     {
-        $termRepo = new Terminal\Repository;
+        return $this->repo->getByMerchantId($payment->merchant->getId());
+    }
 
-        $terminals = $termRepo->getByMerchantId($payment->merchant->getId());
+    protected function filterTerminalsByMethod($terminals, $method)
+    {
+        $terminals->filter(function($item)
+        {
+            return ($item[$method] === '1');
+        });
+    }
 
-        return $terminals;
+    protected function terminalExists($terminal)
+    {
+        $this->terminal = $this->repo->find($terminal);
+
+        return $this->terminal;
     }
 }

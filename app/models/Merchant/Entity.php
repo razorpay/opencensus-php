@@ -13,6 +13,9 @@ class Entity extends Base\PublicEntity
     const ACTIVATED_AT      = 'activated_at';
     const LIVE              = 'live';
     const PRICING_PLAN_ID   = 'pricing_plan_id';
+    const INTERNATIONAL     = 'international';
+    const WEBSITE           = 'website';
+    const CATEGORY          = 'category';
 
     protected $table = \Constants\Table::MERCHANT;
 
@@ -25,7 +28,10 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         self::ID,
         self::NAME,
-        self::EMAIL);
+        self::EMAIL,
+        self::CATEGORY,
+        self::WEBSITE,
+        self::INTERNATIONAL);
 
     protected $public = array(
         self::ID,
@@ -35,8 +41,12 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED,
         self::ACTIVATED_AT,
         self::LIVE,
+        self::CATEGORY,
+        self::WEBSITE,
+        self::INTERNATIONAL,
         self::PRICING_PLAN_ID,
-        self::CREATED_AT);
+        self::CREATED_AT,
+        self::UPDATED_AT);
 
     protected static $generators = array(
         self::LIVE,
@@ -56,6 +66,11 @@ class Entity extends Base\PublicEntity
     public function isActivated()
     {
         return $this->getAttribute(self::ACTIVATED);
+    }
+
+    public function isInternational()
+    {
+        return (boolean) $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isLive()
@@ -101,7 +116,7 @@ class Entity extends Base\PublicEntity
     public function bankAccount()
     {
         return $this->hasOne(
-            'Models\Merchant\BankAccount');
+            'Models\Merchant\BankAccount\Entity');
     }
 
     public function terminals()

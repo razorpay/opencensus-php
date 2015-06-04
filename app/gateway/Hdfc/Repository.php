@@ -9,6 +9,10 @@ use Models\Base;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryFetch;
+
+    protected $entity = 'Hdfc';
+
     public function __construct()
     {
         $this->repo = __NAMESPACE__.'\Entity';

@@ -174,11 +174,11 @@ class Merchant
     protected function getDefaultBank($merchant)
     {
         $attributes = array(
-            'merchant_id'   => $merchant->getId(),
-            'ifsc_code'     => 'RZPB0000000',
-            'beneficiary_name' => $merchant['name'],
-            'beneficiary_code' => strtoupper(random_alpha_string(4)),
-            'account_number'   => '10101030103');
+            'merchant_id'       => $merchant->getId(),
+            'ifsc_code'         => 'RZPB0000000',
+            'beneficiary_name'  => $merchant['name'],
+            'beneficiary_code'  => strtoupper(random_alpha_string(4)),
+            'account_number'    => '10101030103');
 
         $ba = (new BankAccount\Entity)->newInstance($attributes, true);
 

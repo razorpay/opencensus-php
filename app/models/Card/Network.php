@@ -20,7 +20,7 @@ class Network
     // Unidentified
     const UNKNOWN = 'UNKNOWN';
 
-    protected static $fullName = array(
+    public static $fullName = array(
         self::AMEX    => 'American Express',
         self::DICL    => 'Diners Club',
         self::DISC    => 'Discover',
@@ -142,7 +142,13 @@ class Network
 
     public static function isValidNetwork($network)
     {
-        return (in_array($network, self::$networks));
+        return ((in_array($network, self::$networks)) or
+                (in_array($network, array_values(self::$fullName))));
+    }
+
+    public static function isValidNetworkName($network)
+    {
+        return (array_search($network, self::$fullName) !== false);
     }
 
     public static function isUnsupportedNetwork($network)

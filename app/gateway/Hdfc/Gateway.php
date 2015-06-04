@@ -27,19 +27,21 @@ namespace Gateway\Hdfc;
 use Constants\Mode;
 use EE\Error;
 use EE\Exception;
-use Gateway\BaseGateway;
+use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
-class Gateway extends BaseGateway
+class Gateway extends Base\Gateway
 {
     use Payment\Enroll;
     use Payment\Authorize;
     use Payment\Support;
     use Payment\Inquiry;
+
+    protected $gateway = 'hdfc';
 
     /**
      * App payment id
@@ -70,12 +72,7 @@ class Gateway extends BaseGateway
      */
     protected $terminal;
 
-    /**
-     * The state in which the api is operating
-     * that is live/test
-     * @var string
-     */
-    protected $mode;
+    const TIMEOUT = 30;
 
     /**
      * Parameters required to construct request
@@ -207,7 +204,7 @@ class Gateway extends BaseGateway
     protected $bankAcsResponseRules = array(
         'PaRes'     => 'required',
         'MD'        => 'required|numeric|digits_between:1,19',
-        'payment'       => 'required|array');
+        'PaReq'     => 'sometimes');
 
     /**
      * Either ENROLLED or NOT_ENROLLED
@@ -240,13 +237,6 @@ class Gateway extends BaseGateway
         parent::__construct();
 
         $this->repo = new Hdfc\Repository();
-    }
-
-    public function getCredentials()
-    {
-        $creds = Hdfc\Config::getCreds();
-
-        return $creds;
     }
 
 // ---------------------------Gateway operations -------------------------------
@@ -297,11 +287,14 @@ class Gateway extends BaseGateway
      */
     public function callback(array $input)
     {
-        validate($this->bankAcsResponseRules, $input);
+        parent::callback($input);
+
+        validate($this->bankAcsResponseRules, $input['gateway']);
 
         $this->id = $input['payment']['id'];
 
-        $this->model = $this->repo->findByGatewayTransactionIdOrFail($input['MD']);
+        $this->model = $this->repo->findByGatewayTransactionIdOrFail(
+            $input['gateway']['MD']);
 
         $paymentId = $this->model->getPaymentId();
 
@@ -450,22 +443,20 @@ class Gateway extends BaseGateway
 
         if ($terminal['gateway'] !== 'hdfc')
         {
-            throw new \InvalidArgumentException(
+            throw new Exception\InvalidArgumentException(
                 'hdfc gateway: wrong terminal supplied. Gateway: ' . $terminal['gateway']);
         }
 
-        $id = $terminal['gateway_terminal_id'];
-        $pwd = $terminal['gateway_terminal_password'];
+        $request['data']['id'] = $terminal['gateway_terminal_id'];
+        $request['data']['password'] = $terminal['gateway_terminal_password'];
 
         // For TEST mode, replace any random terminal given with
         // hdfc test terminal
         if ($this->mode === Mode::TEST)
         {
-            list($id, $pwd) = $this->getCredentials();
+            $request['data']['id'] = $this->config['test_terminal_id'];
+            $request['data']['password'] = $this->config['test_terminal_pwd'];
         }
-
-        $request['data']['id'] = $id;
-        $request['data']['password'] = $pwd;
     }
 
     protected function checkResponseErrorCode($response)
@@ -504,7 +495,7 @@ class Gateway extends BaseGateway
 
     protected function getTimeout()
     {
-        return Hdfc\Config::TIMEOUT;
+        return static::TIMEOUT;
     }
 
     protected function getModel($id)
@@ -577,17 +568,31 @@ class Gateway extends BaseGateway
 
         $gatewayErrorDesc = $error['text'];
 
-        /**
-         * For error codes returned by gateway, the error messages are in a format
-         * which we don't parse. So get the standard messages for those from here.
-         */
-        if (strpos($gatewayErrorCode, 'RP') === false)
+        if (Hdfc\ErrorHandler::isValidErrorCode($gatewayErrorCode))
         {
+            $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
+
+            /**
+             * For error codes returned by gateway, the error messages are in a format
+             * which we don't parse. So get the standard messages for those from here.
+             */
             $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
         }
+        else
+        {
+            $apiErrorCode = Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
 
+            $this->trace->error(
+                TraceCode::GATEWAY_UNKNOWN_ERROR,
+                [
+                    'action' => $this->action,
+                    'gateway_error_code' => $gatewayErrorCode,
+                    'gateway_error_description' => $gatewayErrorDesc,
+                    'gateway' => $this->gateway,
+                    'time' => time()
+                ]);
+        }
 
-        $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
 
         $exception = null;
 

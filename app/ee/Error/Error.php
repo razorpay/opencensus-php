@@ -107,7 +107,7 @@ class Error extends Support\Fluent
             }
         }
 
-        if (! is_string($desc))
+        if (is_string($desc) === false)
         {
             throw new Exception\InvalidArgumentException('desc should be string');
         }

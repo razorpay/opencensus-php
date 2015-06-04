@@ -13,26 +13,42 @@ trait PaymentHdfcTrait
 
         $content = $response->getContent();
 
-        if ($callback and $tds)
-        {
-            $content = $this->getJsonContentFromResponse($response, $callback);
-            $callback = null;
-            $content = $this->createHtmlFormAfterJsonpRequest($content);
-        }
-
         if ($tds)
         {
-            //
-            // Card has 3d-secure enabled
-            // In which case, run card 3dsecure flow
-            //
-
-            $uri = $this->client->getRequest()->getUri();
-
-            $response = $this->runDebitCardAuthFlow($content, $uri);
+            return $this->run3dSecureFlow($response, $callback);
         }
 
         return $response;
+    }
+
+    protected function run3dSecureFlow($response, &$callback = null)
+    {
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $mock = $this->isGatewayMocked();
+
+        //
+        // Card has 3d-secure enabled
+        // In which case, run card 3dsecure flow
+        //
+
+        if ($mock === false)
+        {
+            $options = ['follow_redirects' => false];
+
+            list($url, $method, $content) = $this->makeRequestAndGetFormData(
+                                            $url, $method, [], $content, $options);
+        }
+        else
+        {
+            $request = compact('url', 'method', 'content');
+            $response = $this->makeRequestParent($request);
+
+            list($url, $method, $content) = $this->getFormDataFromResponse(
+                                    $response->getContent(), 'https://localhost');
+        }
+
+        return $this->submitPaymentCallbackData($url, $method, $content);
     }
 
     protected function is3dSecure($response, $callback = null)
@@ -59,131 +75,10 @@ trait PaymentHdfcTrait
 
                 $tds = ((isset($content['http_status_code'])) and
                         ($content['http_status_code'] === 200) and
-                        (isset($content['data'])));
+                        (isset($content['request'])));
             }
         }
 
         return $tds;
-    }
-
-    protected function createHtmlFormAfterJsonpRequest($content)
-    {
-        $data = $content['data'];
-
-        $text = '
-            <!doctype html>
-            <html lang="en">
-                <body>
-                <form name="form1" action="'.$data['url'].'" method="post">
-                    <input type="text" name="PaReq" value="'.$data['PAReq'].'">
-                    <br />
-                    <input type="text" name="MD" value="'.$data['paymentid'].'">
-                    <br />
-                    <input type="text" name="TermUrl" value="'.$content['callbackUrl'].'">
-                    <br />
-                    <input type="submit" value="Submit" >
-                </form>
-                <br>
-                Submit within 30 secs max!
-                </body>
-            </html>
-            ';
-
-        return $text;
-    }
-
-    protected function runDebitCardAuthFlow($content, $uri)
-    {
-        $crawler = new Crawler($content, $uri);
-
-        $form = $this->dcPaymentSubmitToAcsUrl($crawler);
-
-        return $this->submitPaymentCallbackForm($form);
-    }
-
-    protected function dcPaymentSubmitToAcsUrl($crawler)
-    {
-        //
-        // get the form
-        //
-        try
-        {
-            $form = $crawler->selectButton('Submit')->form();
-        }
-        catch(Exception $e)
-        {
-            if (strpos($e->getMessage(), 'node list is empty') !== false)
-            {
-                $this->fail('Payment Timed out');
-            }
-            else
-            {
-                throw $e;
-            }
-        }
-
-        //
-        // second request
-        // submit to acs url
-        //
-
-        list($uri, $method, $values) = $this->getDataFromForm($form);
-
-        $gateway = $this->app['config']->get('gateway');
-
-        if ($gateway['mock_hdfc'] === true)
-        {
-            $server = $this->ba->getCreds();
-
-            $response = $this->call($method, $uri, $values, array(), $server);
-            $content = $response->getContent();
-        }
-        else
-        {
-            try
-            {
-                $response = Requests::post($uri, array(), $values);
-                $content = $response->body;
-            }
-            catch(\Requests_Exception $e)
-            {
-                echo '3d secure failed';
-                throw $e;
-            }
-        }
-
-        $form = $this->dcPaymentGetCallbackForm($content, $uri);
-
-        return $form;
-    }
-
-    protected function dcPaymentGetCallbackForm($content, $uri)
-    {
-        //
-        // crawl the repsonse to get callback form
-        //
-
-        $crawler = new Crawler($content, $uri);
-
-        return $crawler->selectButton('Submit')->form();
-    }
-
-    protected function getDefaultHdfcEntityArray()
-    {
-        $hdfcPayment = array(
-            'action'        =>  4,
-            'enroll_result' =>  2,
-            'status'        =>  'not_enrolled',
-            'result'        =>  'APPROVED',
-            'eci'           =>  '6',
-            'auth'          =>  '999999',
-            'ref'           =>  random_integer(12),
-            'avr'           =>  'N',
-            'postdate'      =>  (new Carbon('now', 'Asia/Kolkata'))->format('md'),
-            'tranid'        =>  random_integer(15),
-            'payid'         =>  -1,
-            'amt'           =>  500);
-
-        return $hdfcPayment;
     }
 }

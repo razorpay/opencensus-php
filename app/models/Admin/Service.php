@@ -36,35 +36,26 @@ class Service extends Base\Service
 
     protected function getEntityNamespace($entity)
     {
-        $ns = '';
+        $map = array(
+            'refund'            => 'Models\Payment\Refund',
+            'dailysettlement'   => 'Models\Settlement\Daily',
+            'atom'              => 'Gateway\Atom',
+            'bank_account'      => 'Models\Merchant\BankAccount',
+            'kotak'             => 'Gateway\Kotak',
+            'axis_migs'         => 'Gateway\AxisMigs',
+            'axis_genius'       => 'Gateway\AxisGenius',
+            'paytm'             => 'Gateway\Paytm',
+            'netbanking'        => 'Gateway\Netbanking',
+            'billdesk'          => 'Gateway\Billdesk',
+            'hdfc'              => 'Gateway\Hdfc',
+        );
 
-        switch ($entity)
+        if (array_key_exists($entity, $map))
         {
-            case 'refund':
-                $ns = 'Models\Payment\Refund';
-                break;
-
-            case 'dailysettlement':
-                $ns = 'Models\Settlement\Daily';
-                break;
-
-            case 'atom':
-                $ns = 'Gateway\Atom';
-                break;
-
-            case 'bank_account':
-                $ns = 'Models\Merchant\BankAccount';
-                break;
-
-            case 'iin':
-                $ns = 'Models\Card\IIN';
-                break;
-
-            default:
-                $ns = 'Models\\'.ucfirst($entity);
+            return $map[$entity];
         }
 
-        return $ns;
+        return 'Models\\'.ucfirst($entity);
     }
 
     protected function getEntityClass($entity)

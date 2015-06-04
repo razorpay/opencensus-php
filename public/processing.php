@@ -10,6 +10,7 @@ header('Pragma: no-cache');
     <meta charset="UTF-8">
 </head>
 <body>
+<form id="postform" style="display: none" method="post"></form>
 <script>
 
 function autosubmit(data){
@@ -20,7 +21,11 @@ function autosubmit(data){
   document.getElementById('rzp-dcform').submit();
 }
 
-function c(name, value, days){
+window.onmessage = function(message){
+  handleMessage(message.data);
+}
+
+function createCookie(name, value, days){
   if (days) {
     var date = new Date();
     date.setTime(date.getTime()+(days*24*60*60*1000));
@@ -41,32 +46,49 @@ function readCookie(name){
   return null;
 }
 
-if(!window.CheckoutBridge){
-  if (window.addEventListener) {
-    var callback = function(message){
-      handleMessage(message.data);
-    }
-    window.addEventListener('message', callback, false);
+// remove cookie
+// TODO cookie with unique keys, so that one tab doesn't interfere another
+
+setInterval(function(){
+  receive_cookie = readCookie('rzp-receive')
+  if(receive_cookie){
+    handleMessage(JSON.parse(receive_cookie));
+    createCookie('rzp-receive', '', -1);
   }
-  else {
-    window.attachEvent('onmessage', callback);
-  }
-  var intervalID = setInterval(function(){
-    receive_cookie = readCookie('rzp-receive');
-    if(receive_cookie){
-      handleMessage(JSON.parse(receive_cookie));
-      c('rzp-receive', '', -1)
-    }
-  }, 500)
-}
+}, 400)
 
 function handleMessage(data){
   if(typeof data == 'string'){
     data = JSON.parse(data);
   }
-  if(typeof data.rzp !== 'undefined'){
+  if(data.url){
+    if(data.method == 'get'){
+      location.href = data.url;
+    } else if (data.method == 'post' && typeof data.content == 'object'){
+      var postForm = document.getElementById('postform');
+      var html = '';
+
+      for(var i in data.content){
+        html += '<input type="hidden" name="' + i + '" value="' + data.content[i] + '">'
+      }
+      postForm.innerHTML = html;
+      postForm.action = data.url;
+      postForm.submit();
+    } else {
+      var errorData = {
+        error: {
+          description: 'Server Error'
+        }
+      };
+      var errorString = JSON.stringify(errorData);
+      createCookie('rzp', errorString);
+      if(window.opener && typeof window.opener.postMessage == 'function'){
+        window.opener.postMessage(errorString, '*');
+      }
+    }
+  } else {
     if(typeof data.location !== 'undefined'){
-      window.location = data.location;
+      location.href = data.location;
     }
     else if(typeof data.autosubmit !== 'undefined'){
       autosubmit(data.autosubmit);
@@ -199,14 +221,16 @@ function handleMessage(data){
 </div>
 
 <script>
-if(!window.CheckoutBridge){
-  var msg = {
+if (!window.CheckoutBridge){
+  var msgObj = {
     source: 'popup',
     loaded: true
   }
-  c('rzp', JSON.stringify(msg));
-  if(window.opener && typeof window.opener.postMessage == 'function'){
-    window.opener.postMessage(msg, '*');
+  var msgString = JSON.stringify(msgObj)
+  createCookie('rzp', msgString);
+
+  if (window.opener && typeof window.opener.postMessage == 'function'){
+    window.opener.postMessage(msgString, '*');
   }
 }
 </script>

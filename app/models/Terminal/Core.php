@@ -34,8 +34,17 @@ class Core extends Base\Core
 
         $existingTerminals = $this->repo->getByParams($params);
 
+        //
+        // Checks that existing terminals don't
+        // have same gateway field as the new one
+        //
         $terminal->getValidator()->validateExistingTerminalsCount($existingTerminals);
 
+        $this->validateExistingTerminalGatewayMerchantId($terminal);
+    }
+
+    protected function validateExistingTerminalGatewayMerchantId($terminal)
+    {
         // Check no record with same 'gateway_merchant_id' exists
         $params = array(
             Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId());

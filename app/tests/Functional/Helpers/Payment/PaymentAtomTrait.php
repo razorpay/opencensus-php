@@ -15,18 +15,20 @@ trait PaymentAtomTrait
      */
     protected function runPaymentCallbackFlowAtom($response, &$callback = null)
     {
-        //
-        // Figure out whether to runn atom payment flow or not
-        //
+        $content = $response->getContent();
 
-        list($runAtomFlow, $redirectUrl) = $this->isAtomFlowRequired($response, $callback);
-
-        if ($runAtomFlow === false)
+        if ($callback)
         {
-            return $response;
+            $content = $this->getJsonContentFromResponse($response, $callback);
+            $callback = null;
+
+            $redirectUrl = $content['request']['url'];
+        }
+        else
+        {
+           $redirectUrl = $response->getTargetUrl();
         }
 
-        $content = $response->getContent();
         $callback = null;
 
         $headers = array();
@@ -167,8 +169,10 @@ trait PaymentAtomTrait
             }
         }
 
-        $crawler = new Crawler($content, 'http://ab.com');
-        $form = $crawler->filter('form')->form();
+        $request = $this->getFormRequestFromResponse($content, 'http://ab.com');
+
+        // $crawler = new Crawler($content, 'http://ab.com');
+        // $form = $crawler->filter('form')->form();
 
         //
         // This is the final submission. Basically, atom returns a bunch of data
@@ -178,9 +182,7 @@ trait PaymentAtomTrait
         // The url to submit to is the action field of the form in this case
         //
 
-        $response = $this->submitPaymentCallbackForm($form);
-
-        return $response;
+        return $this->submitPaymentCallbackRequest($request);
     }
 
     protected function isAtomFlowRequired($response, $callback = null)
@@ -197,9 +199,10 @@ trait PaymentAtomTrait
         {
             $content = $this->getJsonContentFromResponse($response, $callback);
 
-            if (isset($content['redirectUrl']))
+            if ((isset($content['request']['url'])) and
+                ($content['request']['method'] === 'get'))
             {
-                return array(true, $content['redirectUrl']);
+                return array(true, $content['request']['url']);
             }
         }
 

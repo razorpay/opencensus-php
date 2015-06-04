@@ -2,20 +2,69 @@
 
 namespace Models\Payment;
 
+use EE\Exception;
 use Models\Settlement;
 
 class Gateway
 {
-    const HDFC = 'hdfc';
-    const ATOM = 'atom';
+    const ATOM              = 'atom';
+    const AXIS_GENIUS       = 'axis_genius';
+    const AXIS_MIGS         = 'axis_migs';
+    const BILLDESK          = 'billdesk';
+    const HDFC              = 'hdfc';
+    const KOTAK             = 'kotak';
+    const PAYTM             = 'paytm';
+    const NETBANKING_HDFC   = 'netbanking_hdfc';
 
     public static $channels = array(
-        self::HDFC          => Settlement\Channel::KOTAK,
-        self::ATOM          => Settlement\Channel::ATOM,
+        self::ATOM              => Settlement\Channel::ATOM,
+        self::AXIS_GENIUS       => Settlement\Channel::KOTAK,
+        self::AXIS_MIGS         => Settlement\Channel::KOTAK,
+        self::BILLDESK          => Settlement\Channel::KOTAK,
+        self::HDFC              => Settlement\Channel::KOTAK,
+        self::KOTAK             => Settlement\Channel::KOTAK,
+        self::PAYTM             => Settlement\Channel::KOTAK,
+        self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
+    );
+
+    public static $methodMap = array(
+        Method::CARD => array(
+            self::HDFC,
+            self::ATOM,
+            self::AXIS_MIGS,
+            self::AXIS_GENIUS,
+            self::KOTAK,
+            self::PAYTM,
+        ),
+
+        Method::NETBANKING => array(
+            self::PAYTM,
+            self::BILLDESK,
+            self::NETBANKING_HDFC,
+        ),
     );
 
     public static function getChannel($gateway)
     {
         return self::$channels[$gateway];
+    }
+
+    public static function isValidGateway($gateway)
+    {
+        return (defined(__CLASS__.'::'.strtoupper($gateway)));
+    }
+
+    public static function validateGateway($gateway)
+    {
+        if (self::isValidGateway($gateway) === false)
+        {
+            throw new Exception\LogicException(
+                'Unknown gateway. Gateway: ' . $gateway);
+        }
+    }
+
+    public static function isMethodSupported($method, $gateway)
+    {
+        return (in_array($gateway, self::$methodMap[$method]));
     }
 }

@@ -31,6 +31,8 @@ trait Authorize
             $this->verifyBankEnabled($payment);
         }
 
+        (new TerminalPicker)->selectTerminal($payment, $this->mode);
+
         $this->repo->saveOrFail($payment);
 
         $this->trace(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
@@ -40,39 +42,22 @@ trait Authorize
         //
         $gatewayInput['payment'] = $payment->toArray();
 
-        $gateway = $payment->getGateway();
+        $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
-        if ($gateway === Payment\Gateway::ATOM)
+        $request = $this->callGatewayAuthorize($gatewayInput);
+
+        //
+        // If $request is not null, then payment is two-step process
+        // where client needs to provide additional info via his browser.
+        //
+        if ($request !== null)
         {
-            $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
-        }
+            $data['request'] = $request;
+            $data['version'] = 1;
+            $data['payment_id'] = $payment->getPublicId();
 
-        $data = $this->callGatewayAuthorize($gatewayInput);
+            $data['gateway'] = \Crypt::encrypt($payment->getGateway() . '__' . time());
 
-        if ($data !== null)
-        {
-            if ($gateway === Payment\Gateway::HDFC)
-            {
-                //
-                // This case means that card is enrolled.
-                // Now a form will be displayed and submitted
-                // to bank ACS for for customer to enter 3d-secure
-                // or OTP.
-                // The data field required for generating the
-                // form is returned by gateway.
-                // It's now returned further to wherever it
-                // will be used to display form.
-                //
-
-                $data['callbackUrl'] = $this->getCallbackUrl();
-            }
-
-            return $data;
-        }
-
-        // For atom gateway, authorization cannot happen in a single step
-        if ($payment->isGateway(Payment\Gateway::ATOM))
-        {
             return $data;
         }
 
@@ -93,7 +78,7 @@ trait Authorize
      *
      * @return Payment\Entity           Updated payment entity
      */
-    public function callback($id, $hash, array $input)
+    public function callback($id, $hash, array $gatewayInput)
     {
         $payment = $this->retrieve($id);
 
@@ -101,11 +86,12 @@ trait Authorize
         // This field is received back from bank acs.
         // Kinda weird! And it's always null.
         //
-        unset($input['csrf']);
+        unset($gatewayInput['csrf']);
 
         $this->verifyHash($hash, $payment->getPublicId());
 
         $input['payment'] = $payment->toArray();
+        $input['gateway'] = $gatewayInput;
 
         try
         {
@@ -308,7 +294,7 @@ trait Authorize
 
         $params = ['id' => $publicId, 'hash' => $hash];
 
-        $callbackUrl = Route::getUrlWithPublicAuth('payment_callback', $params);
+        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
     }
