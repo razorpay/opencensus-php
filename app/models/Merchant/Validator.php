@@ -39,11 +39,11 @@ class Validator extends Base\Validator
 
     protected static $terminalRules = array(
         'mode'                                      => 'required|in:test,live',
-        'gateway'                                   => 'required',
-        'gateway_merchant_id'                       => 'required',
-        'gateway_terminal_id'                       => 'required',
-        'gateway_terminal_password'                 => 'required|confirmed',
-        'gateway_terminal_password_confirmation'    => 'required',
+        'gateway'                                   => '',
+        'gateway_merchant_id'                       => '',
+        'gateway_terminal_id'                       => '',
+        'gateway_terminal_password'                 => 'confirmed',
+        'gateway_terminal_password_confirmation'    => '',
         'gateway_access_code'                       => '',
         'gateway_secure_secret'                     => '',
         'card'                                      => 'required'
