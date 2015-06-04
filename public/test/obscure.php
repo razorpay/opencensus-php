@@ -48,9 +48,12 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
                 <option value="UTIB">Axis Bank</option>
                 <option value="YESB">Yes Bank</option>
                 <option value="KKBK">Kotak Bank</option>
-                <option value="VJYA">Vijaya Bank</option>
+                <option value="VIJB">Vijaya Bank</option>
                 <option value="PUNB">Punjab Bank</option>
                 <option value="SBTR">State Bank of Travancore</option>
+                <option value="SBBJ">State Bank of Bikaner and Jaipur</option>
+                <option value="UBIN">United Bank</option>
+                <option value="BARB">Bank of Baroda</option>
             </select>
         </td>
     </tr>
