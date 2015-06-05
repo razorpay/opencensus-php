@@ -150,6 +150,27 @@ return [
         ],
     ],
 
+    'testEditMerchant' => [
+        'request' => [
+            'content' => [
+                'international' => '1',
+                'website' => 'http://abc.com',
+                'category' => '1111',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'international' => true,
+                'category' => '1111',
+                'website' => 'http://abc.com',
+            ]
+        ]
+    ],
+
     'testActivateMerhantWithoutBankAccount' => [
         'request' => [
             'content' => [],

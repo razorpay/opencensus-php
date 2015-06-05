@@ -105,6 +105,13 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchant()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
     public function testActivateMerhantWithoutBankAccount()
     {
         $this->ba->appAuthLive();

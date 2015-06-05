@@ -150,4 +150,9 @@ class Entity extends Base\PublicEntity
     {
         return (bool) $this->attributes[self::LIVE];
     }
+
+    public function getInternationalAttribute()
+    {
+        return (bool) $this->attributes[self::INTERNATIONAL];
+    }
 }
