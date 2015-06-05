@@ -211,7 +211,6 @@ class MerchantTest extends TestCase
             ->select(l::IdOrName('business_type'), 'Partnership')
             ->type(l::IdOrName('business_name'), 'Test Company Pvt Ltd')
             ->type(l::IdOrName('business_dba'), 'Tester')
-            ->type(l::IdOrName('business_website'), 'testing.com')
             ->select(l::IdOrName('business_international'), 'Yes')
             ->type(l::IdOrName('business_paymentdetails'), 'Details of Payment')
             ->type(l::IdOrName('business_registered_address'), 'address 1, 2')
@@ -226,6 +225,8 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('business_model'), 'my model')
             ->select(l::IdOrName('transaction_volume'), '1 to 10 lakh')
             ->type(l::IdOrName('transaction_value'), '120')
+            ->type(l::IdOrName('promoter_pan'), 'PAE123')   // Fill name
+            ->type(l::IdOrName('promoter_pan_name'), 'Promoter')   // Fill slug
             ->click(l::css('form[name="step2"] > fieldset > .prev-next > .btn-save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step2\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
 
@@ -235,8 +236,14 @@ class MerchantTest extends TestCase
         $this->browser
             ->click(l::css('form[name="step2"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"]').is(':visible')", 20000)
-            ->type(l::IdOrName('promoter_pan'), 'PAE123')   // Fill name
-            ->type(l::IdOrName('promoter_pan_name'), 'Promoter')   // Fill slug
+            ->type(l::IdOrName('business_website'), 'testing.com')
+            ->type(l::IdOrName('website_about'), 'testing.com')
+            ->type(l::IdOrName('website_contact'), 'testing.com')
+            ->type(l::IdOrName('website_privacy'), 'testing.com')
+            ->type(l::IdOrName('website_terms'), 'testing.com')
+            ->type(l::IdOrName('website_refund'), 'testing.com')
+            ->type(l::IdOrName('website_pricing'), 'testing.com')
+            ->type(l::IdOrName('website_login'), 'testing.com')
             ->click(l::css('form[name="step3"] > fieldset > .prev-next > .btn-save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
 
@@ -270,12 +277,18 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"]').is(':visible')", 20000)
             ->attachFile(l::IdOrName('business_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 1", 20000)
-            ->attachFile(l::IdOrName('business_pan_proof'), URL::to('/img/logo.png'))
+            ->attachFile(l::IdOrName('business_operation_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 2", 20000)
-            ->attachFile(l::IdOrName('promoter_pan_proof'), URL::to('/img/logo.png'))
+            ->attachFile(l::IdOrName('business_pan_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 3", 20000)
             ->attachFile(l::IdOrName('address_proof'), URL::to('/img/logo.png'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 4", 20000)
+            ->attachFile(l::IdOrName('promoter_proof'), URL::to('/img/logo.png'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 5", 20000)
+            ->attachFile(l::IdOrName('promoter_pan_proof'), URL::to('/img/logo.png'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 6", 20000)
+             ->attachFile(l::IdOrName('promoter_address_proof'), URL::to('/img/logo.png'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > div > div > .alerts > .alert-success').length == 7", 20000)
             ->click(l::css('form[name="step5"] > fieldset > .prev-next > .btn-save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step5\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
 
