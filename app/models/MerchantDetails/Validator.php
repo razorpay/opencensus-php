@@ -17,7 +17,6 @@ class Validator extends Base\Validator
         'business_type'                => 'required|numeric|digits_between:1,10',
         'business_name'                => 'required|max:255',
         'business_dba'                 => 'required|max:255',
-        'business_website'             => 'required|max:255',
         'business_international'       => 'required|in:0,1',
         'business_paymentdetails'      => 'required|max:2000',
         'business_registered_address'  => 'required|max:255',
@@ -34,12 +33,20 @@ class Validator extends Base\Validator
         'company_pan_name'              => 'alpha_space|max:255|required_with:company_pan',
         'business_model'               => 'required|max:2000',
         'transaction_volume'            => 'required|numeric|digits_between:1,4',
-        'transaction_value'             => 'required|numeric|min:1|max:10000000'
+        'transaction_value'             => 'required|numeric|min:1|max:10000000',
+        'promoter_pan'          => 'required|alpha_num|max:15',
+        'promoter_pan_name'     => 'required|alpha_space|max:255'
     );
 
     protected static $step3Rules = array(
-        'promoter_pan'          => 'required|alpha_num|max:15',
-        'promoter_pan_name'     => 'required|alpha_space|max:255'
+        'business_website'             => 'required|max:255',
+        'website_about'                => 'required|max:255',
+        'website_contact'              => 'required|max:255',
+        'website_privacy'              => 'required|max:255',
+        'website_terms'                => 'required|max:255',
+        'website_refund'               => 'required|max:255',
+        'website_pricing'              => 'required|max:255',
+        'website_login'                => 'required|max:255'        
     );
 
     protected static $step4Rules = array(
@@ -59,9 +66,12 @@ class Validator extends Base\Validator
 
     protected static $uploadKeys = array(
         'business_proof',
+        'business_operation_proof',
         'business_pan_proof',
+        'address_proof',
+        'promoter_proof',
         'promoter_pan_proof',
-        'address_proof'
+        'promoter_address_proof',
     );
 
     protected static $allowed_extensions = array(

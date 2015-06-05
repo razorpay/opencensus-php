@@ -19,7 +19,6 @@ class Entity extends Base\Entity
         'business_type',
         'business_name',
         'business_dba',
-        'business_website',
         'business_international',
         'business_paymentdetails',
         'business_registered_address',
@@ -30,6 +29,8 @@ class Entity extends Base\Entity
         'business_operation_state',
         'business_operation_city',
         'business_operation_pin',
+        'promoter_pan',
+        'promoter_pan_name',
         'business_doe',
         'company_cin',
         'company_pan',
@@ -37,8 +38,14 @@ class Entity extends Base\Entity
         'business_model',
         'transaction_volume',
         'transaction_value',
-        'promoter_pan',
-        'promoter_pan_name',
+        'business_website',
+        'website_about',
+        'website_contact',
+        'website_privacy',
+        'website_terms',
+        'website_refund',
+        'website_pricing',
+        'website_login',
         'bank_name',
         'bank_account_number',
         'bank_account_name',
@@ -52,9 +59,12 @@ class Entity extends Base\Entity
         'bank_beneficiary_state',
         'bank_beneficiary_pin',
         'business_proof_url',
+        'business_operation_proof_url',
         'business_pan_url',
-        'promoter_pan_url',
         'address_proof_url',
+        'promoter_proof_url',
+        'promoter_pan_url',
+        'promoter_address_url',
         'steps_finished',
         'submitted',
         'locked'
@@ -79,6 +89,8 @@ class Entity extends Base\Entity
         'business_operation_state',
         'business_operation_city',
         'business_operation_pin',
+        'promoter_pan',
+        'promoter_pan_name',
         'business_doe',
         'company_cin',
         'company_pan',
@@ -86,8 +98,14 @@ class Entity extends Base\Entity
         'business_model',
         'transaction_volume',
         'transaction_value',
-        'promoter_pan',
-        'promoter_pan_name',
+        'business_website',
+        'website_about',
+        'website_contact',
+        'website_privacy',
+        'website_terms',
+        'website_refund',
+        'website_pricing',
+        'website_login',
         'bank_name',
         'bank_account_number',
         'bank_account_name',
@@ -101,9 +119,12 @@ class Entity extends Base\Entity
         'bank_beneficiary_state',
         'bank_beneficiary_pin',
         'business_proof_url',
+        'business_operation_proof_url',
         'business_pan_url',
-        'promoter_pan_url',
         'address_proof_url',
+        'promoter_proof_url',
+        'promoter_pan_url',
+        'promoter_address_url',
         'steps_finished',
         'submitted',
         'locked'
@@ -111,16 +132,22 @@ class Entity extends Base\Entity
 
     protected static $uploadKeys = array(
         'business_proof'           => 'business_proof_url',
+        'business_operation_proof' => 'business_operation_proof_url',
         'business_pan_proof'       => 'business_pan_url',
+        'address_proof'             => 'address_proof_url',
+        'promoter_proof'            => 'promoter_proof_url',
         'promoter_pan_proof'        => 'promoter_pan_url',
-        'address_proof'             => 'address_proof_url'
+        'promoter_address_proof'    => 'promoter_address_url'
+
     );
 
     protected static $uploadDocuments = array(
-        'business_proof_url' => "Please upload business proof document.",
+        'business_operation_proof_url' => "Please upload business operation proof document.",
         'business_pan_url'   => "Please upload business pan card scan.",
-        'promoter_pan_url'    => "Please upload promoter pan card",
-        'address_proof_url'   => "Please upload address proof."
+        'address_proof_url'   => "Please upload address proof.",
+        'promoter_proof_url'   => "Please upload proof of authorised signatory",
+        'promoter_pan_url'    => "Please upload authorised signatory pan card",
+        'promoter_address_url'  => "Please upload authorised signatory address  proof."
     );
 
     public function merchant()
