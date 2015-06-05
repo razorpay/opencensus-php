@@ -30,9 +30,12 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
 
     $scope.fileAlerts = {
       business_proof: alertsFactory.getHandler(),
+      business_operation_proof: alertsFactory.getHandler(),
       business_pan_proof: alertsFactory.getHandler(),
+      address_proof: alertsFactory.getHandler(),
+      promoter_proof: alertsFactory.getHandler(),
       promoter_pan_proof: alertsFactory.getHandler(),
-      address_proof: alertsFactory.getHandler()
+      promoter_address_proof: alertsFactory.getHandler()
     };
 
 
