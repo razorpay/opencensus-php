@@ -9,7 +9,7 @@
         <div>
             <p>Activation form has been submitted by merchant id: {{{$id}}}</p>
 
-            <p>Please verify the details and communicate with the merchant as necessary.</p>
+            <p>Please verify the details <a href="{{ URL::to('/admin#/app/merchants/'.$id.'/detail') }}" target="_blank">here</a> and communicate with the merchant as necessary.</p>
         </div>
 
         <div>
