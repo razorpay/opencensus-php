@@ -130,7 +130,7 @@ class Validator extends Base\Validator
         'promoter_address_proof'        => 'Authorised Signatory Address Proof'
     );
     protected static $allowed_extensions = array(
-        'pdf', 'png', 'jpg'
+        'pdf', 'png', 'jpg', 'jpeg'
     );
 
     protected static $allowed_mimes = array(
