@@ -20,6 +20,10 @@ class Core extends Base\Core
     {
         $banks = $this->repo->getMerchantBanks($merchant->getId());
 
+        $enabledBanks = Payment\Processor\NetBanking::getEnabledBanks();
+
+        $banks->setBanks($enabledBanks);
+
         return $banks;
     }
 
