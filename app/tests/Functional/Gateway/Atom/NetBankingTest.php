@@ -19,7 +19,7 @@ class NetBankingTest extends TestCase
 
         $this->payment = array(
             'method' => 'netbanking',
-            'bank' => 'SBIN',
+            'bank' => 'HDFC',
             'amount' => '5000',
             'email' => 'ab@g.com',
             'contact' => '9431495816',
@@ -79,7 +79,7 @@ class NetBankingTest extends TestCase
 
     public function testMockOnLiveMode()
     {
-        $this->app['config']->set('gateway.mock_atom', true);
+        $this->setMockGatewayTrue();
 
         $this->ba->publicLiveAuth();
 
@@ -98,7 +98,7 @@ class NetBankingTest extends TestCase
         // Their doc states that we can only verify after 15 mins, whic is kinda weird.
         // So, for testing purposes, we need to keep the mock as true.
         //
-        $this->app['config']->set('gateway.mock_atom', true);
+        $this->setMockGatewayTrue();
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
@@ -119,7 +119,7 @@ class NetBankingTest extends TestCase
         // Their doc states that we can only verify after 15 mins, whic is kinda weird.
         // So, for testing purposes, we need to keep the mock as true.
         //
-        $this->app['config']->set('gateway.mock_atom', true);
+        $this->setMockGatewayTrue();
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
 

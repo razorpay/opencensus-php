@@ -107,8 +107,8 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
+                    'HDFC' => 'HDFC Bank',
                     'UTIB' => 'Axis Bank',
-                    'BKID' => 'Bank of India',
                 ],
                 'disabled' => [
                 ],
