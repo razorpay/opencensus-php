@@ -284,6 +284,12 @@ class Service extends Base\Service
         return (new Merchant\Banks\Core)->setPaymentBanksForMerchant($merchant, $input);
     }
 
+    public function setBanksForAllMerchants($input)
+    {
+        // @todo: finish this.
+        // return (new Merchant\Banks\Core)->setPaymentBanksForAllMerchants($input);
+    }
+
     public function getMerchantBeneficiaryFile()
     {
         $file = (new BankAccount\BeneficiaryFile)->generate();
