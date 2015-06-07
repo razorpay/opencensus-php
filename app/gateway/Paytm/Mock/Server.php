@@ -5,6 +5,7 @@ namespace Gateway\Paytm\Mock;
 use Carbon\Carbon;
 use Gateway\Paytm;
 use Gateway\Base;
+use Gateway\Base\Action;
 
 class Server extends Base\Mock\Server
 {
@@ -49,6 +50,51 @@ class Server extends Base\Mock\Server
         $url .= '?' . http_build_query($content);
 
         return $url;
+    }
+
+    public function verify($input)
+    {
+        $id = $input['ORDERID'];
+        $merchantId = $input['MID'];
+
+        $payment = (new Paytm\Repository)->findByPaymentIdAndAction(
+                                                    $id, Action::AUTHORIZE);
+
+        $fields = array(
+            'txnid',
+            'banktxnid',
+            'orderid',
+            'txnamount',
+            'status',
+            'txntype',
+            'gatewayname',
+            'respcode',
+            'respmsg',
+            'bankname',
+            'mid',
+            'paymentmode',
+            'refundamt',
+            'txndate',
+        );
+
+        $content = [];
+
+        foreach ($fields as $field)
+        {
+            $content[strtoupper($field)] = $payment[$field];
+        }
+
+        return $this->makeResponse(json_encode($content));
+    }
+
+    protected function makeResponse($json)
+    {
+        $response = \Response::make($json);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 
     protected function getStatusAndResponseDetails(array & $content, $input)

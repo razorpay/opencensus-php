@@ -66,7 +66,8 @@ trait GatewayTrait
 
         $server->setInput($request['content']);
 
-        $action = $request['action'];
+        $action = $this->action;
+
         $response = $server->$action($input);
 
         return $response;

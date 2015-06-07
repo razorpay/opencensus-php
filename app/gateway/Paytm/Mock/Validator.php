@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         'TXN_AMOUNT'            => 'required|numeric',
         'CUST_ID'               => 'required|email',
         'CHANNEL_ID'            => 'required|in:WEB',
-        'INDUSTRY_TYPE_ID'      => 'required|alpha',
+        'INDUSTRY_TYPE_ID'      => 'required|alpha_num',
         'WEBSITE'               => 'required|',
         'CALLBACK_URL'          => 'required|url',
         'PAYMENT_MODE_ONLY'     => 'required|in:Yes',

@@ -32,6 +32,11 @@ class PaytmGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('paytm', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentPaytmEntity'], $payment);
     }
 
     public function testPayment3dsecureFailed()
@@ -39,5 +44,20 @@ class PaytmGatewayTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $payment = $this->runTestForAuthPayment();
+    }
+
+    public function testVerifyPayment()
+    {
+        $this->markTestIncomplete();
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $id = $payment['id'];
+
+        $payment = $this->verifyPayment($id);
+
+        $this->assertEquals($payment['verified'], true);
     }
 }

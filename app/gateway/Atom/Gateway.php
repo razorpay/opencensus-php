@@ -104,6 +104,8 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
+        parent::verify($input);
+
         $createdAt = $input['payment']['created_at'];
 
         $tdate = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata')->format('Y-m-d');

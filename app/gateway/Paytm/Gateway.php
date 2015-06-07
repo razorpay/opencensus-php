@@ -84,15 +84,81 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input['gateway']['ORDERID'], Action::AUTHORIZE);
 
-        $payment->fill($input['gateway']);
+        $values = $this->lowerArrayKeys($input['gateway']);
+        $values['txntype'] = 'SALE';
+
+        $payment->fill($values);
         $payment->saveOrFail();
 
         $this->verifyPaymentCallbackResponse($input);
     }
 
-    protected function getRepo()
+    public function verify(array $input)
     {
-        return new Paytm\Repository;
+        parent::verify($input);
+
+        $data = array(
+            'MID'       => $input['terminal']['gateway_terminal_id'],
+            'ORDERID'  => $input['payment']['id']);
+
+        $data['MID'] = 'razorp24347633019930';
+
+        $content = 'JsonData='.urlencode(json_encode($data));
+
+        $request = array(
+            'url' => $this->getUrl('verify'),
+            'content' => $content,
+            'method' => 'post');
+
+        // send the request and get response
+        $response = $this->runRequestResponseFlow($request);
+        $content = json_decode($response->body, true);
+
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        if ($payment['status'] !== $content['STATUS'])
+        {
+            $res['match'] = false;
+            $res['payment'] = [$payment->toArray()];
+            $res['gateway_data'] = $content;
+            $res['payment_id'] = $input['payment']['id'];
+            $res['gateway'] = $input['payment']['gateway'];
+
+            if ($res['match'] === false)
+            {
+                throw new Exception\PaymentVerificationException($res);
+            }
+        }
+    }
+
+    protected function runRequestResponseFlow(array $request)
+    {
+        $request['options']['timeout'] = 30;
+
+        try
+        {
+            // send the request and get response
+            return $this->sendGatewayRequest($request);
+        }
+        catch(\Requests_Exception $e)
+        {
+            $this->exception = $e;
+
+            //
+            // Some error occurred.
+            // Check that whether the gateway response timed out.
+            // Mostly it should be gateway timeout only
+            //
+            if (\Gateway\Utility::checkTimeout($e))
+            {
+                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
     }
 
     protected function getBankCode($input)
@@ -105,12 +171,7 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayPaymentEntity($attributes)
     {
-        $attr = [];
-
-        foreach ($attributes as $key => $value)
-        {
-            $attr[strtolower($key)] = $value;
-        }
+        $attr = $this->lowerArrayKeys($attributes);
 
         $payment = $this->getNewGatewayPaymentEntity();
         $payment->setPaymentId($attr['order_id']);
@@ -123,9 +184,16 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-    protected function getNewGatewayPaymentEntity()
+    protected function lowerArrayKeys(array $array)
     {
-        return new Paytm\Entity;
+        $ar = array();
+
+        foreach ($array as $key => $value)
+        {
+            $ar[strtolower($key)] = $value;
+        }
+
+        return $ar;
     }
 
     protected function addMerchantIdAndOtherDetails(array & $content, $terminal)
@@ -140,6 +208,11 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash($input)
     {
+        if (isset($input['gateway']['CHECKSUMHASH']) === false)
+        {
+            $this->trace->error(TraceCode::MISC_TRACE_CODE, $input['gateway']);
+        }
+
         $checksum = $input['gateway']['CHECKSUMHASH'];
         unset($input['gateway']['CHECKSUMHASH']);
 

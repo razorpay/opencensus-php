@@ -39,7 +39,7 @@ class CreatePaytm extends Migration
             $table->string('orderid', 25)->nullable();
             $table->string('status', 15)->nullable();
             $table->string('respcode', 4)->nullable();
-            $table->string('respmessage')->nullable();
+            $table->string('respmsg')->nullable();
             $table->string('bankname')->nullable();
             $table->string('paymentmode')->nullable();
             $table->string('refundamt')->nullable();
