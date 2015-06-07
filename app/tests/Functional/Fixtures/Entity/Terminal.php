@@ -2,6 +2,8 @@
 
 namespace Tests\Functional\Fixtures\Entity;
 
+use Models\Terminal\Shared;
+
 class Terminal extends Base
 {
     public function createAtomTerminal(array $attributes = array())
@@ -129,6 +131,18 @@ class Terminal extends Base
             'gateway_terminal_id'   => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'card'                  => 1);
+
+        return $this->create('terminal', $attributes);
+    }
+
+    public function createSharedNetbankingHdfcTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'id'                    => Shared::NETBANKING_HDFC_TERMINAL,
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'netbanking_hdfc',
+            'gateway_merchant_id'   => 'abcd',
+            'gateway_terminal_id'   => 'abcde');
 
         return $this->create('terminal', $attributes);
     }

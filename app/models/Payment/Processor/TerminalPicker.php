@@ -153,8 +153,6 @@ class TerminalPicker
 
         if ($bank === 'HDFC')
         {
-            $gateway = 'netbanking_hdfc';
-
             if (isset($gatewayTerms[Payment\Gateway::NETBANKING_HDFC]) === true)
             {
                 return $gatewayTerms[Payment\Gateway::NETBANKING_HDFC];
@@ -163,15 +161,17 @@ class TerminalPicker
 
         if (isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true)
         {
-            $terminal = $gatewayTerms[Payment\Gateway::BILLDESK];
+            return $gatewayTerms[Payment\Gateway::BILLDESK];
         }
-        else if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+
+        if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
         {
-            $terminal = $gatewayTerms[Payment\Gateway::PAYTM];
+            return $gatewayTerms[Payment\Gateway::PAYTM];
         }
-        else if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
+
+        if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
         {
-            $terminal = $gatewayTerms[Payment\Gateway::ATOM];
+            return $gatewayTerms[Payment\Gateway::ATOM];
         }
 
         return $terminal;
@@ -182,6 +182,8 @@ class TerminalPicker
         $terminal = null;
 
         $method = $payment->getMethod();
+
+        $bank = $this->payment->getBank();
 
         if ($method === Payment\Method::CARD)
         {
@@ -210,6 +212,14 @@ class TerminalPicker
         }
         else if ($method === Payment\Method::NETBANKING)
         {
+            if ($bank === 'HDFC')
+            {
+                if ($this->terminalExists(Shared::NETBANKING_HDFC_TERMINAL))
+                {
+                    return $this->terminal;
+                }
+            }
+
             if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
