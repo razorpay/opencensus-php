@@ -151,6 +151,19 @@ class MerchantTest extends TestCase
     public function testMerchantDisableLive()
     {
         $this->testActivateMerchant();
+
+        $this->startTest();
+    }
+
+    public function testAttemptPaymentOnNonLiveMerchant()
+    {
+        $this->testMerchantDisableLive();
+
+        $key = $this->fixtures->create('key', ['merchant_id' => '1cXSLlUU8V9sXl']);
+        $key = $key->getKey();
+
+        $this->ba->publicAuth('rzp_live_'.$key);
+
         $this->startTest();
     }
 

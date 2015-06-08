@@ -134,4 +134,17 @@ class Base
         return $this;
     }
 
+    public function onLive()
+    {
+        $this->on('live');
+
+        return $this;
+    }
+
+    public function onTest()
+    {
+        $this->on('test');
+
+        return $this;
+    }
 }

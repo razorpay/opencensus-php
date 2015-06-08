@@ -171,6 +171,29 @@ return [
         ]
     ],
 
+    'testAttemptPaymentOnNonLiveMerchant' => [
+        'request' => [
+            'content' => [
+                'amount' => '500',
+            ],
+            'url' => '/payments',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,
+        ],
+    ],
+
     'testActivateMerhantWithoutBankAccount' => [
         'request' => [
             'content' => [],
