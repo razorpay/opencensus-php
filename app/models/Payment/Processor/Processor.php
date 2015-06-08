@@ -193,7 +193,8 @@ class Processor
         $this->trace->info(
             TraceCode::MISC_TRACE_CODE,
             ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive()]);
+             'live' => $merchant->isLive(),
+             'reach' => true]);
 
         // On live request, ensure that merchant isn't blocked temporarily
         if ($merchant->isLive() === false)
@@ -201,6 +202,12 @@ class Processor
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
+
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            ['merchant_id' => $merchant->getId(),
+             'live' => $merchant->isLive(),
+             'reach' => false]);
     }
 
     protected function trace($traceCode, $level = Trace::INFO)
