@@ -209,6 +209,16 @@ class TerminalPicker
             {
                 return $this->terminal;
             }
+
+            if ($this->mode === Mode::TEST)
+            {
+                // In test mode paytm supports only cards
+                // but in live only netbanking.
+                if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
+                {
+                    return $this->terminal;
+                }
+            }
         }
         else if ($method === Payment\Method::NETBANKING)
         {
@@ -224,11 +234,11 @@ class TerminalPicker
             {
                 return $this->terminal;
             }
-        }
 
-        if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
-        {
-            return $this->terminal;
+            if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
         }
 
         if ($this->terminalExists(Shared::ATOM_RAZORPAY_TERMINAL))
