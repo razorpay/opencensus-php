@@ -190,6 +190,11 @@ class Processor
                 'A non-activated merchant is making live request. Blasphemy!');
         }
 
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            ['merchant_id' => $merchant->getId(),
+             'live' => $merchant->isLive()]);
+
         // On live request, ensure that merchant isn't blocked temporarily
         if ($merchant->isLive() === false)
         {

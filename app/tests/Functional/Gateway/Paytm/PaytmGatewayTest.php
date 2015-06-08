@@ -24,7 +24,7 @@ class PaytmGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $this->config['gateway.mock_paytm'] = true;
+        $this->setMockGatewayTrue();
 
         $payment = $this->getDefaultPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
@@ -37,6 +37,11 @@ class PaytmGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentPaytmEntity'], $payment);
+    }
+
+    public function testFailedPayment()
+    {
+        $this->markTestIncomplete();
     }
 
     public function testPayment3dsecureFailed()
