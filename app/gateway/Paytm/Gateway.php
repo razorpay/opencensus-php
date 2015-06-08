@@ -208,17 +208,26 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash($input)
     {
+        $res = false;
+
         if (isset($input['gateway']['CHECKSUMHASH']) === false)
         {
             $this->trace->error(TraceCode::MISC_TRACE_CODE, $input['gateway']);
+
+            if ($input['gateway']['STATUS'] === Status::FAILURE)
+            {
+                return;
+            }
         }
+        else
+        {
+            $checksum = $input['gateway']['CHECKSUMHASH'];
+            unset($input['gateway']['CHECKSUMHASH']);
 
-        $checksum = $input['gateway']['CHECKSUMHASH'];
-        unset($input['gateway']['CHECKSUMHASH']);
+            $secret = $this->getSecret();
 
-        $secret = $this->getSecret();
-
-        $res = Checksum::verifychecksum_e($input['gateway'], $secret, $checksum);
+            $res = Checksum::verifychecksum_e($input['gateway'], $secret, $checksum);
+        }
 
         if ($res === false)
         {
