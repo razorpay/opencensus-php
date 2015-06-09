@@ -41,7 +41,7 @@ class CreateAxisGateway extends Migration
             $table->char('vpc_ReceiptNo', 12)->nullable();
             $table->char('vpc_ShopTransactionNo', 19)->nullable();
             $table->char('vpc_TransactionNo', 19)->nullable();
-            $table->char('vpc_TxnResponseCode', 1)->nullable();
+            $table->string('vpc_TxnResponseCode')->nullable();
             $table->char('vpc_VerToken', 28)->nullable();
             $table->char('vpc_VerType', 3)->nullable();
             $table->char('vpc_VerSecurityLevel', 2)->nullable();

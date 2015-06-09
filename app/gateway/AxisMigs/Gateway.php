@@ -3,7 +3,7 @@
 namespace Gateway\AxisMigs;
 
 use Constants\Mode;
-use EE\Error\ErrorCode;
+use EE\Error;
 use EE\Exception;
 use Gateway\Base;
 use Gateway\AxisMigs;
@@ -60,7 +60,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
-        $this->verifySecureHash($input);
+        $this->verifySecureHash($input['gateway']);
 
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
@@ -116,6 +116,67 @@ class Gateway extends Base\Gateway
         $content = $this->getPaymentVerifyRequestContent($input, $payment);
 
         $response = $this->postAmaTransactionRequest($content, $input);
+
+        $content = $this->parseQueryResponse($response);
+
+        if (isset($content['vpc_SecureHash']))
+        {
+            $this->verifySecureHash($content);
+
+            $key = 'vpc_TxnResponseCode';
+
+        $match = ($payment[$key] === $content[$key]);
+
+        if ($match == true)
+        {
+            $razorpayPaymentStatus = $this->isRazorpayPaymentStatusSuccess(
+                                                    $input['payment']);
+
+            $migsPaymentStatus = ($content[$key] === '0');
+
+            $match = ($razorpayPaymentStatus === $migsPaymentStatus);
+        }
+
+        if ($match === false)
+        {
+            $res['match'] = false;
+            $res['payment'] = [$payment->toArray()];
+            $res['payment_id'] = $input['payment']['id'];
+            $res['gateway'] = $input['payment']['gateway'];
+            $res['razorpay_payment'] = $input['payment'];
+
+            if ($res['match'] === false)
+            {
+                throw new Exception\PaymentVerificationException($res);
+            }
+
+            throw new Exception\PaymentVerificationException($res);
+        }
+
+            if ($payment['vpc_TxnResponseCode'] !== $content['vpc_TxnResponseCode'])
+            {
+                $res = array(
+                    'match' => false,
+                    'gateway_data' => $content,
+                    'rzp_payment' => $payment->toArray(),
+                    'payment_id' => $input['payment']['id'],
+                    'gateway' => $this->gateway,
+                );
+
+                throw new Exception\PaymentVerificationException($res);
+            }
+        }
+        else
+        {
+            ;
+        }
+    }
+
+    protected function parseQueryResponse($response)
+    {
+        parse_str($response->body, $content);
+
+        return $content;
     }
 
     protected function getPaymentCaptureRequestContent($input, $payment)
@@ -244,10 +305,10 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash($input)
     {
-        $hash = strtoupper($input['gateway']['vpc_SecureHash']);
-        unset($input['gateway']['vpc_SecureHash']);
+        $hash = strtoupper($input['vpc_SecureHash']);
+        unset($input['vpc_SecureHash']);
 
-        $generatedHash = $this->generateHash($input['gateway']);
+        $generatedHash = $this->generateHash($input);
 
         if ($generatedHash !== $hash)
         {
@@ -293,11 +354,11 @@ class Gateway extends Base\Gateway
 
         $gatewayErrorCode = $input['gateway']['vpc_TxnResponseCode'];
 
-        $apiErrorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
-        if (isset(ErrorCode::$errorMap[$gatewayErrorCode]))
+        if (isset(AxisMigs\ErrorCode::$errorMap[$gatewayErrorCode]))
         {
-            $apiErrorCode = ErrorCode::$errorMap[$gatewayErrorCode];
+            $apiErrorCode = AxisMigs\ErrorCode::$errorMap[$gatewayErrorCode];
         }
         else
         {
@@ -312,7 +373,7 @@ class Gateway extends Base\Gateway
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     $gatewayErrorCode,
                     $input['gateway']['vpc_Message']);
     }
@@ -327,7 +388,7 @@ class Gateway extends Base\Gateway
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     null,
                     $content['vpc_Message']);
     }
@@ -341,10 +402,10 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $content['vpc_Card'] = 'MasterCard';
-        $content['vpc_CardNum'] = '5123456789012346';
-        $content['vpc_CardExp'] = '1705';
-        $content['vpc_CardSecurityCode'] = '333';
+        // $content['vpc_Card'] = 'MasterCard';
+        // $content['vpc_CardNum'] = '5123456789012346';
+        // $content['vpc_CardExp'] = '1705';
+        // $content['vpc_CardSecurityCode'] = '333';
     }
 
     protected function getFormattedCardExpiryDate($input)

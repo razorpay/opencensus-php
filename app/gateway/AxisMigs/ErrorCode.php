@@ -5,7 +5,7 @@ namespace Gateway\AxisMigs;
 use EE\Error;
 use Gateway\AxisMigs;
 
-class Error
+class ErrorCode
 {
     public static $errorMessages = array(
         '0' => 'Transaction Successful',
@@ -32,6 +32,8 @@ class Error
         'U' => 'Card Security Code Failed',
         'V' => 'Address Verification and Card Security Code Failed',
         '?' => 'Transaction status is unknown',
+
+        'Aborted' => 'Transaction Aborted',
     );
 
 //    'default' => 'Unable to be determined',
@@ -60,6 +62,8 @@ class Error
         'U' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         'V' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         '?' => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+
+        'Aborted' => Error\ErrorCode::SERVER_ERROR_PAYMENT_ABORTED,
     );
 
 }

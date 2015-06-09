@@ -26,10 +26,23 @@ class Gateway extends AxisMigs\Gateway
         return $content;
     }
 
+    protected function parseQueryResponse($response)
+    {
+        $content = parent::parseQueryResponse($response);
+
+        if (isset($content['SecureHash']))
+        {
+            $content['vpc_SecureHash'] = $content['SecureHash'];
+            unset($content['SecureHash']);
+        }
+
+        return $content;
+    }
+
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
         $content = array(
-            'vpc_Command'       => AxisMigs\Command::QUERY,
+            'vpc_Command'       => AxisMigs\Command::QUERYDR,
             'vpc_MerchTxnRef'   => $input['payment']['id'],
         );
 
