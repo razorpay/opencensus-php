@@ -127,6 +127,11 @@ class TerminalPicker
             return $gatewayTerms[Gateway::AXIS_MIGS];
         }
 
+        if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
+        {
+            return $gatewayTerms[Gateway::AXIS_GENIUS];
+        }
+
         if (isset($gatewayTerms[Gateway::HDFC]))
         {
             return $gatewayTerms[Gateway::HDFC];

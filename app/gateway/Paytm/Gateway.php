@@ -117,6 +117,11 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
+       $this->matchPaymentData($payment, $content, $input);
+    }
+
+    protected function matchPaymentData($payment, $content, $input)
+    {
         if ($payment['status'] !== $content['STATUS'])
         {
             $res['match'] = false;
