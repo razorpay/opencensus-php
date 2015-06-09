@@ -36,7 +36,10 @@ require('vars.php');
             notes: {
                 'address': 'Hello World'
             },
-            netbanking: true
+            method: {
+                card: true,
+                netbanking: true
+            }
         }
         var rzp1 = new Razorpay(options);
 
