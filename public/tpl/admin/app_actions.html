@@ -1,0 +1,166 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Admin Actions
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md merchant-wrapper" ng-controller="ActionsCtrl">
+  <div class="panel panel-default" >
+    <div class="panel-heading m-t m-b">
+      Actions
+    </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="row wrapper actions-wrapper">
+      <div class="list-group">
+        <a href class="list-group-item" ng-click="openInitiateSetl()">
+          Initiate Settlement
+        </a>
+        <a href class="list-group-item" ng-click="openAddIIN()">
+          Add IIN Rule
+        </a>
+        <a href class="list-group-item" ng-click="openVerifyPayment()">
+          Verify Payment
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/ng-template" id="initiateSetlModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Initiate Settlement</h3>
+  </div>
+  <div class="modal-body settlement-modal">
+    <form class="form-horizontal" ng-init="channel='kotak'">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Channel</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="channel" ng-model="channel">
+            <option value="kotak">Kotak</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(channel)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="addIINModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Add IIN</h3>
+  </div>
+  <div class="modal-body iin-modal">
+    <form class="form-horizontal" ng-init="iin={}">
+      <div class="form-group">
+        <label for="iin" class="col-lg-2 control-label">IIN (6 digit):</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="iin" ng-model="iin.iin" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="network" class="col-lg-2 control-label">Network:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="network" ng-model="iin.network">
+            <option value="American Express">American Express</option>
+            <option value="Diners Club">Diners Club</option>
+            <option value="Discover">Discover</option>
+            <option value="JCB">JCB</option>
+            <option value="Maestro">Maestro</option>
+            <option value="MasterCard">MasterCard</option>
+            <option value="RuPay">RuPay</option>
+            <option value="Visa">Visa</option>
+            <option value="Union Pay">Union Pay</option>
+            <option value="Unknown">Unknown</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="type" class="col-lg-2 control-label">Type:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="type" ng-model="iin.type">
+            <option value="credit">Credit</option>
+            <option value="debit">Debit</option>
+            <option value="unkown">Unknown</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="country" class="col-lg-2 control-label">Country (2 character):</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="country" length="2" ng-model="iin.country" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="category" class="col-lg-2 control-label">Category:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="category" ng-model="iin.category" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="issuer" class="col-lg-2 control-label">Issuer:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="issuer" ng-model="iin.issuer" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="trivia" class="col-lg-2 control-label">Trivia:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="trivia" ng-model="iin.trivia" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(iin)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="assignBanksModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Assign Banks</h3>
+  </div>
+  <div class="modal-body banks-modal">
+    <form class="form-horizontal">
+      <div class="form-group" ng-show="loading === false">
+        <div class="col-lg-10">
+          <label class="i-checks">
+          <input type="checkbox" name="banks" ng-model="selectall" ng-change="selectAllChange(selectall)" ><i></i> Select All/Deselect All
+          </label>
+        </div>
+        <div class="col-lg-10" ng-repeat="(key, value) in bankdata">
+          <label class="i-checks">
+          <input type="checkbox" name="banks" ng-model="bankdata[key]" selected><i></i> {{banks.enabled[key] != null ? banks.enabled[key] : banks.disabled[key] | titlecase}}
+          </label>
+        </div>
+      </div>
+      <h5 ng-if="loading">Loading Banks....</h5>
+      <h4 ng-if="loading === false && banks.length == 0">No Banks available.</h4>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Any previously assigned banks for the merchant will be replace with selected." ng-click="ok(bankdata)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="verifyPaymentModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Verify Payment</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal" ng-init="id=''">
+      <div class="form-group">
+        <label for="payment-id" class="col-lg-2 control-label">Payment Id: </label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="payment" ng-model="id" placeholder="Payment Id"/>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(id)">OK</button>
+  </div>
+</script>

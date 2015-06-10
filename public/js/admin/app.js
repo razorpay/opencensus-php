@@ -102,6 +102,10 @@ var app = angular.module('app', [
                 url: '/entities',
                 templateUrl: 'tpl/admin/app_entities.html'
             })
+            .state('app.actions', {
+                url: '/actions',
+                templateUrl: 'tpl/admin/app_actions.html'
+            })
             .state('app.admins', {
                 url: '/admins',
                 templateUrl: 'tpl/admin/app_admins.html',
