@@ -601,7 +601,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
               merctech_return_url: "https://api.razorpay.com",
               mercsetup_auth: "Y",
               mercsetup_purc: "",
-              mercsetup_catcode: current.mcc || "",
+              mercsetup_catcode: current.category || "",
               mercsetup_3: "",
               mercsetup_6: "",
               mercsetup_9: "",
