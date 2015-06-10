@@ -10,9 +10,7 @@ use Models\Pricing;
 
 class Fee
 {
-    const SERVICE_TAX_PERCENT = 12;
-
-    const EDUCATION_CESS_PERCENT = 0.36;
+    const SERVICE_TAX_PERCENT = 14;
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
@@ -44,9 +42,8 @@ class Fee
         $fee = (int) ceil($fee);
 
         $serviceTax = (int) ceil(($fee * self::SERVICE_TAX_PERCENT) / 100);
-        $educationCess = (int) ceil(($fee * self::EDUCATION_CESS_PERCENT) / 100);
 
-        $fee += ($serviceTax + $educationCess);
+        $fee += $serviceTax;
 
         return $fee;
     }
@@ -55,7 +52,7 @@ class Fee
     {
         $fee = (float) $this->getUnroundedFees($amount, $percent, $fixed);
 
-        $serviceTax = $fee * (self::SERVICE_TAX_PERCENT + self::EDUCATION_CESS_PERCENT) / 100;
+        $serviceTax = $fee * self::SERVICE_TAX_PERCENT / 100;
 
         $fee += $serviceTax;
 
