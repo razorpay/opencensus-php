@@ -42,8 +42,7 @@ class Generator
         'sequence_number',
     );
 
-    const SERVICE_TAX_PERCENT = 12;
-    const EDUCATION_CESS_PERCENT = 0.36;
+    const SERVICE_TAX_PERCENT = 14;
 
     public function __construct()
     {
@@ -228,13 +227,11 @@ class Generator
             $this->roundUp($msf);
 
             $serviceTax = $msf * self::SERVICE_TAX_PERCENT / 100;
-            $educationCess = $msf * self::EDUCATION_CESS_PERCENT / 100;
 
             $this->roundUp($msf);
             $this->roundUp($serviceTax);
-            $this->roundUp($educationCess);
 
-            $netAmount = $amount - ($msf + $serviceTax + $educationCess);
+            $netAmount = $amount - ($msf + $serviceTax);
 
             $transactedAt = $input['payment']['captured_at'];
 
@@ -302,13 +299,11 @@ class Generator
         $msf = $amount * 2 / 100;
 
         $serviceTax = $msf * self::SERVICE_TAX_PERCENT / 100;
-        $educationCess = $msf * self::EDUCATION_CESS_PERCENT / 100;
 
         $this->roundUp($msf);
         $this->roundUp($serviceTax);
-        $this->roundUp($educationCess);
 
-        $netAmount = $amount - ($msf + $serviceTax + $educationCess);
+        $netAmount = $amount - ($msf + $serviceTax);
 
         $transactedAt = $input['payment']['captured_at'];
 
