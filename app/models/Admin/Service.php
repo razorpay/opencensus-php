@@ -301,6 +301,63 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    public function postInitiateSetl($channel)
+    {
+        $data = [];
+        $error = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->settlement->initiate($channel)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
+    public function postAddIIN($input)
+    {
+        $data = [];
+        $error = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->IIN->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
+    public function getVerifyPayment($id)
+    {
+        $data = [];
+        $error = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->payment->fetch($id)->verify()->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
     public function lockMerchant($id)
     {
         $error = array();
