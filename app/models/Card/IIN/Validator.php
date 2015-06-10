@@ -21,7 +21,8 @@ class Validator extends Base\Validator
     );
 
     protected static $createValidators = array(
-        'network');
+        'network',
+        'type');
 
     protected function validateNetwork($input)
     {
@@ -42,11 +43,14 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Card network given does not match the regex one: ' . $fullName);
         }
+    }
 
+    protected function validateType($input)
+    {
         if (Card\Type::isValidType($input['type']) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid network name: ' . $input['type']);
+                'Not a valid type name: ' . $input['type']);
         }
     }
 }
