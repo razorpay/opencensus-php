@@ -3,6 +3,7 @@
 namespace Gateway\Base\Mock;
 
 use Constants\Mode;
+use EE\Exception;
 use Request;
 use Requests_Response;
 
