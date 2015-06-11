@@ -25,7 +25,6 @@ class AuthorizeTest extends TestCase
         $this->ba->publicAuth();
 
         $this->payment = $this->getDefaultPaymentArray();
-        $this->markTestSkipped();
     }
 
     public function testInvalidEmailInPayment()

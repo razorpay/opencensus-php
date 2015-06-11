@@ -33,6 +33,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     public function setUp()
     {
+        $this->markTestSkippedForWercker();
         parent::setUp();
 
         // Load test data
@@ -59,5 +60,13 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
         }
 
         $this->testData = $testData;
+    }
+
+    protected function markTestSkippedForWercker()
+    {
+        if (getenv('WERCKER') === "true")
+        {
+            $this->markTestSkipped();
+        }
     }
 }

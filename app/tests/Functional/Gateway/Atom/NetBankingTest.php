@@ -28,8 +28,6 @@ class NetBankingTest extends TestCase
         $this->gateway = 'atom';
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
-
-        $this->markTestSkipped();
     }
 
     public function testNetBankingPaymentAuthorize()
