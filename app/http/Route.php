@@ -332,7 +332,8 @@ final class Route
         $jsonpRoute = array(
             'v1/payments/create/jsonp',
             'v1/merchant/banks',
-            'v1/banks');
+            'v1/banks',
+            'v1/methods');
 
         return in_array($path, $jsonpRoute);
     }
