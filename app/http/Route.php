@@ -245,8 +245,11 @@ final class Route
                 'merchant_secret'),
         );
 
-    public static $noauth = array(
-        'payment_callback');
+    protected static $jsonpRoutes = array(
+        'payment_create_jsonp',
+        'merchant_public_get_banks',
+        'merchant_methods',
+    );
 
     protected static $router;
 
@@ -331,7 +334,6 @@ final class Route
     {
         $jsonpRoute = array(
             'v1/payments/create/jsonp',
-            'v1/merchant/banks',
             'v1/banks',
             'v1/methods');
 
