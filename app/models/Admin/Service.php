@@ -38,6 +38,7 @@ class Service extends Base\Service
     {
         $map = array(
             'refund'            => 'Models\Payment\Refund',
+            'iin'               => 'Models\Card\IIN',
             'dailysettlement'   => 'Models\Settlement\Daily',
             'atom'              => 'Gateway\Atom',
             'bank_account'      => 'Models\Merchant\BankAccount',
