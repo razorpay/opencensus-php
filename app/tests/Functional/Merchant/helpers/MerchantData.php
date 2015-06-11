@@ -399,6 +399,24 @@ return [
         ],
     ],
 
+    'testGetPaymentMethodsRoute' => [
+        'request' => [
+            'url' => '/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'version' => 1,
+                'card' => false,
+                'netbanking' => [
+                    'UTIB' => 'Axis Bank',
+                    'BARB' => 'Bank of Baroda',
+                    'YESB' => 'Yes Bank',
+                ]
+            ],
+        ],
+    ],
+
     'testGetKeySecret' => [
         'request' => [
             'url' => '/keys/rzp_test_TheTestAuthKey/secret',

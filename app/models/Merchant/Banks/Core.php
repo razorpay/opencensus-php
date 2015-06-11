@@ -27,6 +27,16 @@ class Core extends Base\Core
         return $banks;
     }
 
+    public function getMerchantBanksArray($merchant)
+    {
+        $banks = (new Banks\Core)->getMerchantBanks($merchant);
+
+        if ($banks === null)
+            return [];
+
+        return $banks->toArrayWithBankNames();
+    }
+
     public function getEnabledAndDisabledBanks($merchant)
     {
         $banks = $this->repo->getMerchantBanks($merchant->getId());

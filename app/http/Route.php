@@ -11,6 +11,7 @@ final class Route
      */
 
     protected static $apiRoutes = array(
+        'merchant_methods'                  => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                  ],
         'payment_create'                    => ['post',     'payments',                                 'PaymentController@postCreatePayment'                   ],
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentController@getJSONP'                            ],
         'payment_callback_post'             => ['post',     'payments/{id}/callback/{hash}',            'PaymentController@postCallback'                        ],
@@ -117,6 +118,7 @@ final class Route
         'payment_callback_post',
         'payment_callback_get',
         'merchant_public_get_banks',
+        'merchant_methods',
         'mockatom_init_payment',
         'mockatom_choose_org',
         'mockatom_rzp_payment',
@@ -141,7 +143,7 @@ final class Route
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
-        );
+    );
 
     public static $internal = array(
         'admin_fetch_entity_multiple',

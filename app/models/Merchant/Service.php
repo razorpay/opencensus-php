@@ -290,6 +290,22 @@ class Service extends Base\Service
         // return (new Merchant\Banks\Core)->setPaymentBanksForAllMerchants($input);
     }
 
+    public function getPaymentMethods()
+    {
+        $picker = new Payment\Processor\TerminalPicker;
+
+        $hasCardTerminal = $picker->hasCardTerminal($this->merchant);
+
+        $data['version'] = 1;
+
+        $data['card'] = $hasCardTerminal;
+
+        $data['netbanking'] = (new Merchant\Banks\Core)->getMerchantBanksArray(
+                                                            $this->merchant);
+
+        return $data;
+    }
+
     public function getMerchantBeneficiaryFile()
     {
         $file = (new BankAccount\BeneficiaryFile)->generate();

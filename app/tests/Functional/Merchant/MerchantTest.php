@@ -217,6 +217,13 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetPaymentMethodsRoute()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testGetKeySecret()
     {
         $this->ba->appAuth();

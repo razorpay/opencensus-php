@@ -36,14 +36,18 @@ class TerminalPicker
 
     protected $merchant;
 
+    public function __construct()
+    {
+        $this->repo = new Terminal\Repository;
+    }
+
     public function selectTerminal($payment, $mode)
     {
         $this->payment = $payment;
         $this->merchant = $payment->merchant;
         $this->mode = $mode;
-        $this->repo = new Terminal\Repository;
 
-        $terminals = $this->getTerminals($payment);
+        $terminals = $this->getTerminals($payment->merchant);
 
         $this->validateCount($terminals, $payment->merchant);
 
@@ -68,6 +72,31 @@ class TerminalPicker
         return $terminal;
     }
 
+    public function hasCardTerminal($merchant)
+    {
+        $this->merchant = $merchant;
+
+        $terminals = $this->getTerminals($merchant);
+
+        $this->validateCount($terminals, $merchant);
+
+        $gatewayTerms = $this->getGatewayTerminals($terminals);
+
+        $card = false;
+
+        foreach ($gatewayTerms as $gateway)
+        {
+            $card = (Payment\Gateway::isMethodSupported('card', $gateway));
+
+            if ($card === true)
+            {
+                break;
+            }
+        }
+
+        return $card;
+    }
+
     protected function pickOneTerminal($payment, $terminals)
     {
         $terminal = null;
@@ -80,11 +109,11 @@ class TerminalPicker
 
         if ($method === Payment\Method::CARD)
         {
-            $terminal = $this->pickTerminalForCardMethod($terminals, $gatewayTerms);
+            $terminal = $this->pickTerminalForCardMethod($gatewayTerms);
         }
         else if ($method === Payment\Method::NETBANKING)
         {
-            $terminal = $this->pickTerminalForNetbankingMethod($terminals, $gatewayTerms);
+            $terminal = $this->pickTerminalForNetbankingMethod($gatewayTerms);
         }
         else
         {
@@ -96,7 +125,7 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function pickTerminalForCardMethod($terminals, $gatewayTerms)
+    protected function pickTerminalForCardMethod($gatewayTerms)
     {
         $terminal = null;
 
@@ -150,7 +179,7 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function pickTerminalForNetbankingMethod($terminals, $gatewayTerms)
+    protected function pickTerminalForNetbankingMethod($gatewayTerms)
     {
         $terminal = null;
 
@@ -281,9 +310,9 @@ class TerminalPicker
         }
     }
 
-    protected function getTerminals($payment)
+    protected function getTerminals($merchant)
     {
-        return $this->repo->getByMerchantId($payment->merchant->getId());
+        return $this->repo->getByMerchantId($merchant->getId());
     }
 
     protected function filterTerminalsByMethod($terminals, $method)
