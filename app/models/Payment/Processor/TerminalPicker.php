@@ -280,6 +280,11 @@ class TerminalPicker
             return $this->terminal;
         }
 
+        if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
+        {
+            return $this->terminal;
+        }
+
         return $terminal;
     }
 

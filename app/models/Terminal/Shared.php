@@ -14,6 +14,7 @@ class Shared
     const KOTAK_RAZORPAY_TERMINAL       = '1000KotakTrmnl';
     const PAYTM_RAZORPAY_TERMINAL       = '1000PaytmTrmnl';
     const NETBANKING_HDFC_TERMINAL      = '100NbHdfcTrmnl';
+    const SHARP_RAZORPAY_TERMINAL       = '1000SharpTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -24,6 +25,7 @@ class Shared
         self::KOTAK_RAZORPAY_TERMINAL,
         self::PAYTM_RAZORPAY_TERMINAL,
         self::NETBANKING_HDFC_TERMINAL,
+        self::SHARP_RAZORPAY_TERMINAL,
     );
 
     public static function isSharedTerminal($terminal)
