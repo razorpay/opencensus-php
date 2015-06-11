@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="<?= $checkout ?>/v1/css/checkout.css">
  </head>
   <body>
-    <div id="loading"><div></div>
+    <div id="loading"><div></div><div></div><div></div></div>
   </body>
   <script>
     var payment_methods = <?= $methods ?>;
