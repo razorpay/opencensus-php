@@ -219,9 +219,22 @@ class MerchantTest extends TestCase
 
     public function testGetPaymentMethodsRoute()
     {
-        $this->ba->publicAuth();
+        $this->ba->publicLiveAuth();
 
-        $this->startTest();
+        $this->fixtures->links['merchant']->activate('10000000000000');
+
+        $attributes = array(
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'axis_genius',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay axis_genius',
+            'gateway_terminal_id'       => 'nodal account axis_genius',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        $terminal = $this->fixtures->on('live')->create('terminal', $attributes);
+
+        $content = $this->startTest();
     }
 
     public function testGetKeySecret()

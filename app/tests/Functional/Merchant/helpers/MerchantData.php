@@ -407,7 +407,7 @@ return [
         'response' => [
             'content' => [
                 'version' => 1,
-                'card' => false,
+                'card' => true,
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
                     'BARB' => 'Bank of Baroda',

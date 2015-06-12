@@ -84,7 +84,7 @@ class TerminalPicker
 
         $card = false;
 
-        foreach ($gatewayTerms as $gateway)
+        foreach ($gatewayTerms as $gateway => $terminal)
         {
             $card = (Payment\Gateway::isMethodSupported('card', $gateway));
 
