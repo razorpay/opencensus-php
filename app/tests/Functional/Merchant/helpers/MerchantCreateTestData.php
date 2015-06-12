@@ -36,7 +36,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 2,
+                'count' => 0,
                 'entity' => 'collection',
                 'items' => [
                     [

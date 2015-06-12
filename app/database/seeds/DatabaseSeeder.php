@@ -436,7 +436,7 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => '2byKhdVKZ9iJgA',
+                'id'                    => '2czHdeTG32rFhB',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => 'sharp',
                 'card'                  => '0',

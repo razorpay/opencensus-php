@@ -15,6 +15,7 @@ class Gateway
     const KOTAK             = 'kotak';
     const PAYTM             = 'paytm';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
+    const SHARP             = 'sharp';
 
     public static $channels = array(
         self::ATOM              => Settlement\Channel::ATOM,
@@ -25,6 +26,7 @@ class Gateway
         self::KOTAK             => Settlement\Channel::KOTAK,
         self::PAYTM             => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
+        self::SHARP             => Settlement\Channel::KOTAK,
     );
 
     public static $methodMap = array(
