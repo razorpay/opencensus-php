@@ -282,6 +282,12 @@ class TerminalPicker
 
         if ($this->terminalExists(Shared::SHARP_RAZORPAY_TERMINAL))
         {
+            if ($this->mode !== Mode::TEST)
+            {
+                throw new Exception\LogicException(
+                    'Sharp gateway terminal can only be selected in test mode');
+            }
+
             return $this->terminal;
         }
 

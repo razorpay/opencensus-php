@@ -39,14 +39,6 @@ return [
                 'count' => 0,
                 'entity' => 'collection',
                 'items' => [
-                    [
-                        'entity' => 'terminal',
-                        'gateway' => 'hdfc',
-                    ],
-                    [
-                        'entity' => 'terminal',
-                        'gateway' => 'atom',
-                    ]
                 ]
             ]
         ],

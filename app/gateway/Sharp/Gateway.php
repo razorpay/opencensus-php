@@ -55,4 +55,11 @@ class Gateway extends Base\Gateway
 
         return $payment;
     }
+
+    public function setMode($mode)
+    {
+        assert ($mode === Mode::TEST);
+
+        parent::setMode($mode);
+    }
 }
