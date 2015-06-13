@@ -107,22 +107,9 @@ class TerminalPicker
 
         $gatewayTerms = $this->getGatewayTerminals($terminals);
 
-        if ($method === Payment\Method::CARD)
-        {
-            $terminal = $this->pickTerminalForCardMethod($gatewayTerms);
-        }
-        else if ($method === Payment\Method::NETBANKING)
-        {
-            $terminal = $this->pickTerminalForNetbankingMethod($gatewayTerms);
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Unrecognized payment method ' . $method .
-                ' Merchant Id: ' . $merchant->getId());
-        }
+        $func = 'pickTerminalFor'.ucfirst($method).'Method';
 
-        return $terminal;
+        return $this->$func($gatewayTerms);
     }
 
     protected function pickTerminalForCardMethod($gatewayTerms)
@@ -211,6 +198,14 @@ class TerminalPicker
         return $terminal;
     }
 
+    protected function pickTerminalForWalletMethod($gatewayTerms)
+    {
+        if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+        {
+            return $gatewayTerms[Payment\Gateway::PAYTM];
+        }
+    }
+
     protected function getSharedTerminal($payment)
     {
         $terminal = null;
@@ -269,6 +264,13 @@ class TerminalPicker
                 return $this->terminal;
             }
 
+            if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
+            {
+                return $this->terminal;
+            }
+        }
+        else if ($method === Payment\Method::WALLET)
+        {
             if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
