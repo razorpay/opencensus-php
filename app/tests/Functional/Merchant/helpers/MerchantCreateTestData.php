@@ -36,17 +36,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 2,
+                'count' => 0,
                 'entity' => 'collection',
                 'items' => [
-                    [
-                        'entity' => 'terminal',
-                        'gateway' => 'hdfc',
-                    ],
-                    [
-                        'entity' => 'terminal',
-                        'gateway' => 'atom',
-                    ]
                 ]
             ]
         ],
