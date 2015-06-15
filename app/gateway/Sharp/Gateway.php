@@ -6,7 +6,6 @@ use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
-use Gateway\Kotak;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -19,7 +18,17 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        return;
+        $baseUrl = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment');
+
+        $content = array(
+            'action' => 'authorize',
+            'amount' => $input['payment']['amount'],
+            'method' => $input['payment']['method'],
+            'payment_id' => $input['payment']['id'],
+            'callback_url' => $input['callbackUrl'],
+        );
+
+        $url = $baseUrl . '&' . http_build_query($content);
 
         $request = array(
             'url' => $url,

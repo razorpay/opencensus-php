@@ -104,6 +104,8 @@ final class Route
         'mock_kotak_payment'                => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                 ],
         'mock_paytm_payment'                => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                ],
         'mock_billdesk_payment'             => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'             ],
+        'mock_sharp_payment'                => ['get',      'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                 ],
+        'mock_sharp_payment_submit'         => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@postSharpPayment'                ],
         'mock_netbanking_payment'           => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'           ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
@@ -129,6 +131,8 @@ final class Route
         'mock_paytm_payment',
         'mock_netbanking_payment',
         'mock_billdesk_payment',
+        'mock_sharp_payment',
+        'mock_sharp_payment_submit',
     );
 
     public static $publicCallback = array(

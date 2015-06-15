@@ -136,6 +136,37 @@ class MockGatewayController extends BaseController
         return $server->authorize($input);
     }
 
+    public function getSharpPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Sharp\Server;
+
+        list($data, $error) = $server->action($input);
+
+        if ($error !== null)
+        {
+            return ApiResponse::json($error);
+        }
+
+        if ($data['action'] === 'authorize')
+        {
+            return View::make('gateway.sharpBankPage')
+                       ->with($data);
+        }
+    }
+
+    public function postSharpPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Sharp\Server;
+
+        $url = $server->authSubmit($input);
+
+        return Redirect::to($url);
+    }
+
     public function postNetbankingPayment($bank)
     {
         $input = Input::all();
