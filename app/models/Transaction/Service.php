@@ -36,7 +36,7 @@ class Service extends Base\Service
 
         if($input['resource'] === "refund" and $mode === 'live')
         {
-            $this->slackPost('New Refund', $input, '#transactions', '@channel');
+            $this->slackPost('New Refund', $input + array('name' => $merchant->name), '#transactions', '@channel');
         }
 
         // Only Payments analytics are stored
