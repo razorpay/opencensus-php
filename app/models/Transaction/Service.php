@@ -32,6 +32,8 @@ class Service extends Base\Service
 
         $this->aggregate($input, $mode);
 
+        $merchant = Merchant\Entity::find($input['merchant_id']);
+
         if($input['resource'] === "refund" and $mode === 'live')
         {
             $this->slackPost('New Refund', $input, '#transactions', '@channel');
@@ -41,7 +43,7 @@ class Service extends Base\Service
         if ($input['resource'] === "payment")
         {
             if($mode === 'live') {
-                $this->slackPost('New Payment', $input, '#transactions', null);
+                $this->slackPost('New Payment', $input + array('name' => $merchant->name), '#transactions', null);
     
                 $this->sendMail($input);
             }
