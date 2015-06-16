@@ -395,12 +395,12 @@ class Gateway extends Base\Gateway
 
     protected function addTestCardDetailsInTestMode(array & $content)
     {
-        assert ($this->mode === Mode::TEST);
+        // assert ($this->mode === Mode::TEST);
 
-        if ($content['vpc_CardNum'] === '4111111111111111')
-        {
-            return;
-        }
+        // if ($content['vpc_CardNum'] === '4111111111111111')
+        // {
+        //     return;
+        // }
 
         // $content['vpc_Card'] = 'MasterCard';
         // $content['vpc_CardNum'] = '5123456789012346';
