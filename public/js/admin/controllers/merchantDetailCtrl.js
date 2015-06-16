@@ -538,7 +538,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
           success: function(resp){
             doT.templateSettings.strip = false;
             var template = doT.template(resp);
-            var now = new Date();
             var reg_addr = merchant_details.business_registered_address;
             if(reg_addr)
               reg_addr += ', ';
@@ -561,8 +560,13 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
             }
             ops_addr += merchant_details.business_operation_state;
 
+            var now = new Date();
+            var nowdate = ("0"+now.getDate()).slice(-2);
+            var nowmonth = ("0"+now.getMonth()).slice(-2);
+            var nowyear = now.getYear()+1900;
             html = template({
-              reqdate: ("0"+now.getDate()).slice(-2) + ("0"+now.getMonth()).slice(-2) + (now.getYear()+1900),
+              date: nowdate + '/' + nowmonth + '/' + nowyear,
+              reqdate: nowdate + nowmonth + nowyear,
               reqby: "Harshil Mathur",
               reqsign: "",
               contract_merchant: "",
