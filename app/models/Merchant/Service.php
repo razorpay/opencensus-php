@@ -313,6 +313,13 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function setPaymentMethods($id, $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        return (new Merchant\Banks\Core)->setPaymentMethods($merchant, $Input);
+    }
+
     public function getMerchantBeneficiaryFile()
     {
         $file = (new BankAccount\BeneficiaryFile)->generate();

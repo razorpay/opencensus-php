@@ -186,6 +186,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function putMethods($id)
+    {
+        $Input = Input::all();
+
+        $data = (new Merchant\Service)->setPaymentMethods($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putBanksForAllMerchants()
     {
         $input = Input::all();
