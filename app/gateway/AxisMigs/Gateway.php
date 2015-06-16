@@ -260,16 +260,6 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-    protected function getNewGatewayPaymentEntity()
-    {
-        return new AxisMigs\Entity;
-    }
-
-    protected function getRepo()
-    {
-        return new AxisMigs\Repository;
-    }
-
     protected function postAmaTransactionRequest(array & $content, $input)
     {
         $this->addAmaTransactionFields($content, $input);
