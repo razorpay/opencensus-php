@@ -308,6 +308,7 @@ class Service extends Base\Service
 
         $data['netbanking'] = (new Merchant\Banks\Core)->getMerchantBanksArray(
                                                             $this->merchant);
+        $data['wallet']['paytm'] = false;
 
         return $data;
     }
