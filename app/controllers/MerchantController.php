@@ -223,4 +223,27 @@ class MerchantController extends BaseController
         // return Response::download($file);
         // return ApiResponse::json($data);
     }
+
+    public function getCheckout()
+    {
+        $methods = (new Merchant\Service)->getPaymentMethods();
+
+        $app = \App::getFacadeRoot();
+
+        $context = $app['config']->get('app.context');
+
+        if ($context === 'production')
+            $url = 'https://checkout.razorpay.com';
+        else if ($context === 'beta')
+            $url = 'https://betacheckout.razorpay.com';
+        else
+            $url = $app['config']->get('app.checkout');
+
+        $data['checkout'] = $url;
+
+        $data['methods'] = json_encode($methods);
+
+        return View::make('checkout.checkout')
+                   ->with($data);
+    }
 }

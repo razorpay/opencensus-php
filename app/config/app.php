@@ -191,4 +191,6 @@ return array(
 	),
 
     'context' => $_ENV['CONTEXT'],
+
+    'checkout' => 'https://checkout.razorpay.com',
 );

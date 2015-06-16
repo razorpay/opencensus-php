@@ -11,6 +11,7 @@ final class Route
      */
 
     protected static $apiRoutes = array(
+        'checkout'                          => ['get',      'checkout',                                 'MerchantController@getCheckout'                        ],
         'merchant_methods'                  => ['get',      'methods',                                  'MerchantController@getPaymentMethods'                  ],
         'payment_create'                    => ['post',     'payments',                                 'PaymentController@postCreatePayment'                   ],
         'payment_create_jsonp'              => ['get',      'payments/create/jsonp',                    'PaymentController@getJSONP'                            ],
@@ -115,6 +116,7 @@ final class Route
     );
 
     public static $public = array(
+        'checkout',
         'payment_create',
         'payment_create_jsonp',
         'payment_callback_post',
@@ -250,6 +252,7 @@ final class Route
         );
 
     protected static $jsonpRoutes = array(
+        'checkout',
         'payment_create_jsonp',
         'merchant_public_get_banks',
         'merchant_methods',
@@ -339,7 +342,9 @@ final class Route
         $jsonpRoute = array(
             'v1/payments/create/jsonp',
             'v1/banks',
-            'v1/methods');
+            'v1/methods',
+            'v1/checkout',
+        );
 
         return in_array($path, $jsonpRoute);
     }

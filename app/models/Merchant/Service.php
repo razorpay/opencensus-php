@@ -2,6 +2,7 @@
 
 namespace Models\Merchant;
 
+use Constants\Mode;
 use Models\Base;
 use Models\Merchant;
 use Models\Key;
@@ -297,6 +298,11 @@ class Service extends Base\Service
         $hasCardTerminal = $picker->hasCardTerminal($this->merchant);
 
         $data['version'] = 1;
+
+        if ($this->mode === Mode::TEST)
+        {
+            $hasCardTerminal = true;
+        }
 
         $data['card'] = $hasCardTerminal;
 
