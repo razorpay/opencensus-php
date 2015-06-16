@@ -49,6 +49,8 @@ return array(
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'        => 'randomid',
     'PAYTM_GATEWAY_TEST_HASH_SECRET'        => 'randomsecret',
 
+    'NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'=> '000000',
+
     'ATOM_MOCK'                             => true,
     'AXIS_GENIUS_MOCK'                      => true,
     'AXIS_MIGS_MOCK'                        => true,
