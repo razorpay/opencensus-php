@@ -188,7 +188,7 @@ class MerchantController extends BaseController
 
     public function putMethods($id)
     {
-        $Input = Input::all();
+        $input = Input::all();
 
         $data = (new Merchant\Service)->setPaymentMethods($id, $input);
 

@@ -26,6 +26,7 @@ class Core extends Base\Core
              ($input['paytm'] === '1')))
         {
             $banks->setPaytm($input['paytm']);
+            $banks->saveOrFail();
         }
         else
         {

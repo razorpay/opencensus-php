@@ -21,6 +21,7 @@ class Entity extends Base\UniqueIdEntity
         self::PAYTM);
 
     protected $visible = array(
+        self::MERCHANT_ID,
         self::BANKS,
         self::PAYTM);
 
@@ -46,7 +47,7 @@ class Entity extends Base\UniqueIdEntity
 
     public function getPaytmAttribute()
     {
-        return (bool) $this->getAttribute(self::PAYTM);
+        return (bool) $this->attributes[self::PAYTM];
     }
 
     public function getBanksAttribute()

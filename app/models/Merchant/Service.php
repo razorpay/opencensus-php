@@ -317,7 +317,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentMethods($merchant, $Input);
+        return (new Merchant\Banks\Core)->setPaymentMethods($merchant, $input);
     }
 
     public function getMerchantBeneficiaryFile()
