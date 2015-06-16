@@ -42,7 +42,10 @@ class Gateway extends Base\Gateway
 
         $content = array_merge($attributes, $content);
 
-        $this->addTestCardDetailsInTestMode($content);
+        if ($this->mode === Mode::TEST)
+        {
+            $this->addTestCardDetailsInTestMode($content);
+        }
 
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
@@ -325,8 +328,8 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $content['vpc_Merchant'] = $input['terminal']['gateway_merchant_id'];
-            $content['vpc_AccessCode'] = $input['terminal']['gateway_access_code'];
+            $content['vpc_Merchant'] = $input['gateway_merchant_id'];
+            $content['vpc_AccessCode'] = $input['gateway_access_code'];
         }
     }
 
@@ -339,8 +342,8 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $content['vpc_User'] = $input['terminal']['gateway_terminal_id'];
-            $content['vpc_Password'] = $input['terminal']['gateway_terminal_password'];
+            $content['vpc_User'] = $input['gateway_terminal_id'];
+            $content['vpc_Password'] = $input['gateway_terminal_password'];
         }
     }
 
@@ -395,17 +398,17 @@ class Gateway extends Base\Gateway
 
     protected function addTestCardDetailsInTestMode(array & $content)
     {
-        // assert ($this->mode === Mode::TEST);
+        assert ($this->mode === Mode::TEST);
 
-        // if ($content['vpc_CardNum'] === '4111111111111111')
-        // {
-        //     return;
-        // }
+        if ($content['vpc_CardNum'] === '4111111111111111')
+        {
+            return;
+        }
 
-        // $content['vpc_Card'] = 'MasterCard';
-        // $content['vpc_CardNum'] = '5123456789012346';
-        // $content['vpc_CardExp'] = '1705';
-        // $content['vpc_CardSecurityCode'] = '333';
+        $content['vpc_Card'] = 'MasterCard';
+        $content['vpc_CardNum'] = '5123456789012346';
+        $content['vpc_CardExp'] = '1705';
+        $content['vpc_CardSecurityCode'] = '333';
     }
 
     protected function getFormattedCardExpiryDate($input)
