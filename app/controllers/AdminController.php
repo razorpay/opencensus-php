@@ -201,6 +201,29 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postInitiateSetl($channel)
+    {
+        list($error, $data) = (new Admin\Service)->postInitiateSetl($channel);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postAddIIN()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postAddIIN($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getVerifyPayment($id)
+    {
+        list($error, $data) = (new Admin\Service)->getVerifyPayment($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getPricingList()
     {
         list($error, $data) = (new Admin\Service)->fetchPricingPlans();

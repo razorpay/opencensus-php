@@ -191,35 +191,33 @@
           </span>
           Terminal
         </a>
-          <div collapse="isTerminalCollapsed" class="panel-body" ng-repeat="terminal in merchant.terminals.items">
-            <a href class="list-group-item">
-              <span class="pull-right">{{terminal.mode}}</span>
-              Mode
-            </a>
-            <a href class="list-group-item">
-              <span class="pull-right">{{terminal.id}}</span>
-              Terminal Id
-            </a>
-            <a href class="list-group-item">
-              <span class="pull-right">{{terminal.gateway}}</span>
-              Gateway
-            </a>
-            <a href class="list-group-item">
-              <span class="pull-right">{{terminal.gateway_merchant_id}}</span>
-              Gateway Merchant ID
-            </a>
-            <a href class="list-group-item">
-              <span class="pull-right">{{terminal.gateway_terminal_id}}</span>
-              Gateway Terminal ID
-            </a>
-            <a href class="list-group-item">
-              <span class="pull-right">{{terminal.card}}</span>
-              Card Allowed
-            </a>
-            <a href class="list-group-item">
-              <span class="pull-right">{{terminal.created_at*1000 | date:'medium'}}</span>
-              Created At
-            </a>
+          <div collapse="isTerminalCollapsed" class="panel-body">
+            <div class="list-group-item">
+              <div class="m-t list-group-item">
+                <table class="table table-striped b-light">
+                  <thead>
+                    <th>Terminal Id</th>
+                    <th>Mode</th>
+                    <th>Gateway</th>
+                    <th>Merchant Id</th>
+                    <th>Terminal Id</th>
+                    <th>Card Allowed</th>
+                    <th>Created At</th>
+                  </thead>
+                  <tbody>
+                  <tr ng-repeat="terminal in merchant.terminals.items">
+                    <td>{{terminal.id}}</td>
+                    <td>{{terminal.mode}}</td>
+                    <td>{{terminal.gateway}}</td>
+                    <td>{{terminal.gateway_merchant_id}}</td>
+                    <td>{{terminal.gateway_terminal_id}}</td>
+                    <td>{{terminal.card}}</td>
+                    <td>{{terminal.created_at*1000 | date:'short'}}</td>
+                  </tr>
+                </tbody>
+                </table>
+              </div>
+            </div>
           </div>
       </div>
     </div>

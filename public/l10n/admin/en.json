@@ -9,6 +9,7 @@
       "MERCHANTS" : "Merchants",
       "PRICING" : "Pricing Plans",
       "ENTITIES" : "Entities",
+      "ACTIONS" : "Actions",
       "settings" : {
         "SETTINGS": "Settings",
         "ADMINS": "Admins",

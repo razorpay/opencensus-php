@@ -151,6 +151,12 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::get('/admin/merchant/{id}/live/enable', 'AdminController@getMerchantLiveEnable');
 
         Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
+
+        Route::post('/admin/settlement/initiate/{channel}', 'AdminController@postInitiateSetl');
+
+        Route::post('/admin/iin/add', 'AdminController@postAddIIN');
+
+        Route::get('/admin/payment/{id}/verify', 'AdminController@getVerifyPayment');
     });
     
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
