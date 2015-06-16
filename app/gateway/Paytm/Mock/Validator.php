@@ -18,10 +18,11 @@ class Validator extends Base\Validator
         'CALLBACK_URL'          => 'required|url',
         'PAYMENT_MODE_ONLY'     => 'required|in:Yes',
         'AUTH_MODE'             => 'required|in:3D,USRPWD',
-        'PAYMENT_DETAILS'       => 'required|',
-        'PAYMENT_TYPE_ID'       => 'required|in:DC,CC',
+        'PAYMENT_DETAILS'       => 'required_if:AUTH_MODE,3D',
+        'PAYMENT_TYPE_ID'       => 'required_with:AUTH_MODE|in:DC,CC,NB',
         'CHECKSUMHASH'          => 'required|',
         'EMAIL'                 => 'sometimes|email',
         'MOBILE_NO'             => 'sometimes|numeric',
+        'BANK_CODE'             => 'required_if:AUTH_MODE,USRPWD',
     );
 }
