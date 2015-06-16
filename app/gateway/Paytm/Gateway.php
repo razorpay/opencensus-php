@@ -186,6 +186,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getNewGatewayPaymentEntity();
         $payment->setPaymentId($attr['order_id']);
         $payment->setAction($this->action);
+        $payment->setMethod($this->input['payment']['method']);
 
         $payment->fill($attr);
 
