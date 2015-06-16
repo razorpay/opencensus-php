@@ -328,8 +328,8 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $content['vpc_Merchant'] = $input['gateway_merchant_id'];
-            $content['vpc_AccessCode'] = $input['gateway_access_code'];
+            $content['vpc_Merchant'] = $terminal['gateway_merchant_id'];
+            $content['vpc_AccessCode'] = $terminal['gateway_access_code'];
         }
     }
 
@@ -342,8 +342,8 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $content['vpc_User'] = $input['gateway_terminal_id'];
-            $content['vpc_Password'] = $input['gateway_terminal_password'];
+            $content['vpc_User'] = $terminal['gateway_terminal_id'];
+            $content['vpc_Password'] = $terminal['gateway_terminal_password'];
         }
     }
 
