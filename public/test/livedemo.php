@@ -1,3 +1,8 @@
+<?php
+
+require('vars.php');
+
+?>
 <!doctype html>
 <html>
 <head>
