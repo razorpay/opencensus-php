@@ -237,6 +237,13 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testPutPaytmMethod()
+    {
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
+
     public function testGetKeySecret()
     {
         $this->ba->appAuth();

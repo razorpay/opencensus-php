@@ -60,6 +60,7 @@ final class Route
         'merchant_get_terminal'             => ['get',      'merchants/{mid}/terminals/{tid}',          'MerchantController@getTermianl'                        ],
         'merchant_delete_terminal'          => ['delete',   'merchants/{mid}/terminals/{tid}',          'MerchantController@deleteTerminal'                     ],
         'merchant_modify_terminal'          => ['put',      'merchants/{mid}/terminals/{tid}',          'MerchantController@putTerminal'                        ],
+        'merchant_put_payment_methods'      => ['put',      'merchants/{mid}/methods',                  'MerchantController@putMethods'                         ],
         'merchant_activate'                 => ['post',     'merchants/{id}/activate',                  'MerchantController@postActivate'                       ],
         'merchant_live_enable'              => ['post',     'merchants/{id}/live/enable',               'MerchantController@postLiveEnable'                     ],
         'merchant_live_disable'             => ['post',     'merchants/{id}/live/disable',              'MerchantController@postLiveDisable'                    ],
@@ -105,6 +106,8 @@ final class Route
         'mock_kotak_payment'                => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                 ],
         'mock_paytm_payment'                => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                ],
         'mock_billdesk_payment'             => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'             ],
+        'mock_sharp_payment'                => ['get',      'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                 ],
+        'mock_sharp_payment_submit'         => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@postSharpPayment'                ],
         'mock_netbanking_payment'           => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'           ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                     ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                         ],
@@ -131,6 +134,8 @@ final class Route
         'mock_paytm_payment',
         'mock_netbanking_payment',
         'mock_billdesk_payment',
+        'mock_sharp_payment',
+        'mock_sharp_payment_submit',
     );
 
     public static $publicCallback = array(
@@ -168,6 +173,7 @@ final class Route
         'merchant_activate',
         'merchant_live_enable',
         'merchant_live_disable',
+        'merchant_put_payment_methods',
         'merchant_get_banks',
         'merchant_set_banks',
         'merchant_set_all_banks',

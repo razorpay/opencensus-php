@@ -39,7 +39,6 @@ class Gateway extends Base\Gateway
             'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
             'WEBSITE'                   => $input['terminal']['gateway_access_code'],
             'CALLBACK_URL'              => $input['callbackUrl'],
-            'PAYMENT_MODE_ONLY'         => 'Yes',
             'MOBILE_NO'                 => $input['payment']['contact'],
             'EMAIL'                     => $input['payment']['email'],
         );
@@ -53,12 +52,18 @@ class Gateway extends Base\Gateway
             $content['PAYMENT_DETAILS'] = $this->getHashOfString($cardDetails);
             $content['AUTH_MODE'] = '3D';
             $content['PAYMENT_TYPE_ID'] = Type::CC;
+            $content['PAYMENT_MODE_ONLY'] = 'Yes';
         }
         else if ($method === 'netbanking')
         {
             $content['BANK_CODE'] = $this->getBankCode($input);
             $content['PAYMENT_TYPE_ID'] = Type::NB;
             $content['AUTH_MODE'] = 'USRPWD';
+            $content['PAYMENT_MODE_ONLY'] = 'Yes';
+        }
+        else if ($method === 'wallet')
+        {
+            ;
         }
 
         $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
@@ -181,6 +186,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getNewGatewayPaymentEntity();
         $payment->setPaymentId($attr['order_id']);
         $payment->setAction($this->action);
+        $payment->setMethod($this->input['payment']['method']);
 
         $payment->fill($attr);
 

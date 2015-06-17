@@ -3,6 +3,7 @@
 namespace Models\Merchant\Banks;
 
 use Models\Base;
+use EE\Exception;
 use Models\Payment;
 use Models\Merchant;
 use Models\Merchant\Banks;
@@ -14,6 +15,26 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->repo = new Repository;
+    }
+
+    public function setPaymentMethods($merchant, $input)
+    {
+        $banks = $this->repo->getMerchantBanks($merchant->getId());
+
+        if ((isset($input['paytm'])) and
+            (($input['paytm'] === '0') or
+             ($input['paytm'] === '1')))
+        {
+            $banks->setPaytm($input['paytm']);
+            $banks->saveOrFail();
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Input not proper');
+        }
+
+        return $banks->toArray();
     }
 
     public function getMerchantBanks($merchant)

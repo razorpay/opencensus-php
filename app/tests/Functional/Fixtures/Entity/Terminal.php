@@ -181,4 +181,20 @@ class Terminal extends Base
 
         return $this->create('terminal', $attributes);
     }
+
+    public function createSharedSharpTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                    => $termId,
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'sharp',
+            'gateway_merchant_id'   => 'abcd',
+            'gateway_terminal_id'   => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                  => 1);
+
+        return $this->create('terminal', $attributes);
+    }
 }

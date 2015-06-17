@@ -412,9 +412,31 @@ return [
                     'UTIB' => 'Axis Bank',
                     'BARB' => 'Bank of Baroda',
                     'YESB' => 'Yes Bank',
-                ]
+                ],
+                'wallet' => [
+                    'paytm' => false,
+                ],
             ],
         ],
+    ],
+
+    'testPutPaytmMethod' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'paytm' => true,
+                'banks' => [
+                    'UTIB',
+                    'PUNB',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                //''
+            ]
+        ]
     ],
 
     'testGetKeySecret' => [

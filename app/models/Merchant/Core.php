@@ -25,8 +25,6 @@ class Core extends Base\Core
 
         $this->createBalance($merchant, Mode::TEST);
 
-        (new Terminal\Core)->createTerminalsInTestMode($merchant);
-
         (new Banks\Core)->setAllPaymentBanks($merchant);
 
         return $merchant;

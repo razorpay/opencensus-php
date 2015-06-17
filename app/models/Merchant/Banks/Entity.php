@@ -9,6 +9,7 @@ class Entity extends Base\UniqueIdEntity
 {
     const MERCHANT_ID       = 'merchant_id';
     const BANKS             = 'banks';
+    const PAYTM             = 'paytm';
 
     protected $primaryKey = self::MERCHANT_ID;
 
@@ -16,10 +17,13 @@ class Entity extends Base\UniqueIdEntity
 
     protected $fillable = array(
         self::MERCHANT_ID,
-        self::BANKS);
+        self::BANKS,
+        self::PAYTM);
 
     protected $visible = array(
-        self::BANKS);
+        self::MERCHANT_ID,
+        self::BANKS,
+        self::PAYTM);
 
     public function merchant()
     {
@@ -34,6 +38,16 @@ class Entity extends Base\UniqueIdEntity
     public function setBanks(array $banks)
     {
         $this->setAttribute(self::BANKS, $banks);
+    }
+
+    public function setPaytm($paytm)
+    {
+        $this->setAttribute(self::PAYTM, $paytm);
+    }
+
+    public function getPaytmAttribute()
+    {
+        return (bool) $this->attributes[self::PAYTM];
     }
 
     public function getBanksAttribute()

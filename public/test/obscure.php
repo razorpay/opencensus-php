@@ -34,6 +34,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
             <select name="method">
                 <option value="netbanking">Net Banking</option>
                 <option value="card" selected>Card</option>
+                <option value="wallet">Wallet</option>
             </select>
         </td>
     </tr>
@@ -54,6 +55,14 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
                 <option value="SBBJ">State Bank of Bikaner and Jaipur</option>
                 <option value="UBIN">United Bank</option>
                 <option value="BARB">Bank of Baroda</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="40">Select Wallet </td>
+        <td>
+            <select name="wallet">
+                <option value="paytm">Paytm</option>
             </select>
         </td>
     </tr>

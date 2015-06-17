@@ -72,4 +72,9 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute('action', $action);
     }
+
+    public function setMethod($method)
+    {
+        $this->setAttribute('method', $method);
+    }
 }

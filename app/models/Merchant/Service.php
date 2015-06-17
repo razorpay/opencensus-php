@@ -308,8 +308,16 @@ class Service extends Base\Service
 
         $data['netbanking'] = (new Merchant\Banks\Core)->getMerchantBanksArray(
                                                             $this->merchant);
+        $data['wallet']['paytm'] = false;
 
         return $data;
+    }
+
+    public function setPaymentMethods($id, $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        return (new Merchant\Banks\Core)->setPaymentMethods($merchant, $input);
     }
 
     public function getMerchantBeneficiaryFile()

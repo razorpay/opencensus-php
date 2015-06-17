@@ -34,6 +34,7 @@ return [
     'testPaymentPaytmEntity' => [
         'action' => 'authorize',
         'request_type' => 'SEAMLESS',
+        'method' => 'card',
         'txn_amount' => '500',
         'cust_id' => 'a@b.com',
         'channel_id' => 'WEB',

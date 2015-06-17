@@ -18,6 +18,7 @@ return array(
         'kotak',
         'paytm',
         'netbanking_hdfc',
+        'sharp',
     ),
 
     'mock_hdfc'             => $_ENV['HDFC_MOCK'],
@@ -69,5 +70,8 @@ return array(
 
     'netbanking_hdfc' => array(
         'live_hash_secret'  => $_ENV['NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'],
+    ),
+
+    'sharp' => array(
     ),
 );
