@@ -84,6 +84,21 @@ class Gateway extends Base\Gateway
 
         $content = $this->getAmaTxnResponseContent($response, $input);
 
+        if (isset($content['vpc_TxnResponseCode']) === false)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CAPTURE_FAILURE,
+                [
+                    'payment_id' => $input['payment']['id'],
+                    'gateway' => $this->gateway,
+                    'vpc_TxnResponseCode' => null,
+                ]
+            );
+
+            $content['vpc_TxnResponseCode'] = '?';
+            $content['vpc_MerchTxnRef'] = $input['payment']['id'];
+        }
+
         $payment = $this->createGatewayPaymentEntity($content);
 
         $this->verifyAmaTransactionResponse($content);
