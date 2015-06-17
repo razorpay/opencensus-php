@@ -21,6 +21,28 @@ return [
         ]
     ],
 
+    'testCreateKeyForNonActivatedMerchant' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants/1X4hRFHFx4UiXt/keys',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'EE\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED,
+        ],
+    ],
+
     'testGetMerchant' => [
         'request' => [
             'url' => '/merchants/1X4hRFHFx4UiXt',

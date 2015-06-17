@@ -72,7 +72,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
-        $keyData = (new Key\Core)->createFirstKey($merchantId, $this->mode);
+        $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
 
         return $keyData;
     }
