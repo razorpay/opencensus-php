@@ -49,6 +49,8 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
+        $methods = $merchant->methods;
+
         return $merchant->toArrayPublic();
     }
 

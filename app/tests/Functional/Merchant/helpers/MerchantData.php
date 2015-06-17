@@ -56,6 +56,11 @@ return [
                 'email' => 'liveAndTest@localhost.com',
                 'activated' => false,
                 'activated_at' => null,
+                'methods' => [
+                    'merchant_id' => '1X4hRFHFx4UiXt',
+                    'paytm' => false,
+                    'banks' => [],
+                ]
             ],
         ],
     ],

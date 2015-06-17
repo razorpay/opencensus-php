@@ -17,6 +17,8 @@ class Entity extends Base\PublicEntity
     const WEBSITE           = 'website';
     const CATEGORY          = 'category';
 
+    const METHODS           = 'methods'; // Refers to methods relation and not a property;
+
     protected $table = \Constants\Table::MERCHANT;
 
     protected $entity = 'merchant';
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::INTERNATIONAL,
         self::PRICING_PLAN_ID,
+        self::METHODS,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -117,6 +120,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'Models\Merchant\BankAccount\Entity');
+    }
+
+    public function methods()
+    {
+        return $this->hasOne(
+            'Models\Merchant\Banks\Entity');
     }
 
     public function terminals()
