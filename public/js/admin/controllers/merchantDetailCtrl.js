@@ -116,6 +116,48 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.enablePaytm = function() {
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/paytm/enable");
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Paytm transactions for merchant enabled successfully', true);
+          $scope.merchant.details.methods.paytm = true;
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.disablePaytm = function() {
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/paytm/disable");
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Paytm transactions for merchant disabled successfully', true);
+          $scope.merchant.details.methods.paytm = false;
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.assignPricing = function(plan_id){
       var data = {
         pricing_plan_id: plan_id

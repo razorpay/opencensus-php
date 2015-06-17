@@ -579,6 +579,46 @@ class Service extends Base\Service
         return array();
     }
 
+    public function paytmEnableMerchant($id)
+    {
+        $error = array();
+
+        $merchant = Merchant\Entity::findorfail($id);
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $this->api->merchant->fetch($id)->editMethods(['paytm' => 1]);
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return array($e->getMessage());
+        }
+
+        return array();
+    }
+
+    public function paytmDisableMerchant($id)
+    {
+        $error = array();
+
+        $merchant = Merchant\Entity::findorfail($id);
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $this->api->merchant->fetch($id)->editMethods(['paytm' => 0]);
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return array($e->getMessage());
+        }
+
+        return array();
+    }
+
     public function fetchPricingPlans()
     {
         $errors = array();

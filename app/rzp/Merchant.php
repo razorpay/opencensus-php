@@ -55,6 +55,16 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl);
     }
 
+    /**
+     * Changes Payment methods for merchant
+     */
+    public function editMethods($params)
+    {
+        $relativeUrl = $this->getEntityUrl().$this->id.'/methods';
+
+        return $this->request('PUT', $relativeUrl, $params);
+    }
+
     public function edit($params)
     {
         $relativeUrl = $this->getEntityUrl().$this->id;

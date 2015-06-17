@@ -38,6 +38,13 @@
         >
           Disable Live Transactions
         </a>
+        <a href class="list-group-item" ng-show="merchant.details.methods.paytm == false" ng-click="enablePaytm()">
+          Enable Paytm
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.methods.paytm == true "ng-click="disablePaytm()"
+        >
+          Disable Paytm
+        </a>
         <a href class="list-group-item" ng-click="openAssignPricing()">
           Assign Pricing
         </a>
@@ -135,6 +142,10 @@
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.live == 1 ? 'Live' : 'Not Live'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.live == 1, 'fa-times text-danger':merchant.details.live == 0}"></i></span>
           Live
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
+          Paytm
         </a>
         <div href class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">
