@@ -26,13 +26,13 @@ return array(
 
     'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'    => 'random',
     'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'    => 'random',
-    'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'    => 'randompwd',
+    'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'    => 'password',
     'AXIS_MIGS_GATEWAY_TEST_AMA_USER'       => 'RAZORANDOM',
-    'AXIS_MIGS_GATEWAY_TEST_AMA_PASSWORD'   => 'randompwd',
+    'AXIS_MIGS_GATEWAY_TEST_AMA_PASSWORD'   => 'password',
 
     'AXIS_GENIUS_GATEWAY_TEST_HASH_SECRET'  => 'random',
     'AXIS_GENIUS_GATEWAY_TEST_MERCHANT_ID'  => 'random',
-    'AXIS_GENIUS_GATEWAY_TEST_ACCESS_CODE'  => 'randompwd',
+    'AXIS_GENIUS_GATEWAY_TEST_ACCESS_CODE'  => 'password',
 
     'BILLDESK_GATEWAY_TEST_MERCHANT_ID'     => 'random',
     'BILLDESK_GATEWAY_TEST_ACCESS_CODE'     => 'random',
@@ -43,7 +43,7 @@ return array(
 
     'KOTAK_GATEWAY_TEST_HASH_SECRET'        => 'random',
     'KOTAK_GATEWAY_TEST_MERCHANT_ID'        => 'random',
-    'KOTAK_GATEWAY_TEST_ACCESS_CODE'        => 'randompwd',
+    'KOTAK_GATEWAY_TEST_ACCESS_CODE'        => 'password',
     'KOTAK_GATEWAY_TEST_TERMINAL_ID'        => 'randomid',
 
     'PAYTM_GATEWAY_TEST_MERCHANT_ID'        => 'randomid',
