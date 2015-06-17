@@ -299,18 +299,26 @@ class Service extends Base\Service
 
         $hasCardTerminal = $picker->hasCardTerminal($this->merchant);
 
-        $data['version'] = 1;
-
         if ($this->mode === Mode::TEST)
         {
             $hasCardTerminal = true;
         }
 
-        $data['card'] = $hasCardTerminal;
+        $data = array(
+            'version' => 1,
+            'card' => $hasCardTerminal,
+            'netbanking' => [],
+            'wallet' => [
+                'paytm' => false,
+            ]);
 
-        $data['netbanking'] = (new Merchant\Banks\Core)->getMerchantBanksArray(
-                                                            $this->merchant);
-        $data['wallet']['paytm'] = false;
+        $methods = (new Merchant\Banks\Core)->getMerchantBanks($this->merchant);
+
+        if ($methods !== null)
+        {
+            $data['netbanking'] = $methods->toArrayWithBankNames();
+            $data['wallet']['paytm'] = $methods->isPaytmEnabled();
+        }
 
         return $data;
     }

@@ -50,6 +50,11 @@ class Entity extends Base\UniqueIdEntity
         return (bool) $this->attributes[self::PAYTM];
     }
 
+    public function isPaytmEnabled()
+    {
+        return $this->getPaytmAttribute();
+    }
+
     public function getBanksAttribute()
     {
         return json_decode($this->attributes[self::BANKS], true);
