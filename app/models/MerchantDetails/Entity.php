@@ -67,7 +67,8 @@ class Entity extends Base\Entity
         'promoter_address_url',
         'steps_finished',
         'submitted',
-        'locked'
+        'locked',
+        'comment'
     );
 
     protected static $ajaxFields = array(

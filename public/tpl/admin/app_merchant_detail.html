@@ -63,6 +63,9 @@
         <a href class="list-group-item" ng-click="openAutofillForms()">
           Autofill Activation Form
         </a>
+        <a href class="list-group-item" ng-click="openEditComment()">
+          Edit Comment
+        </a>
       </div>
     </div>
   </div>
@@ -437,6 +440,26 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(merchant)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="editCommentModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Comment</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <form class="form-horizontal" ng-init="comment=current">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Comment:</label>
+        <div class="col-lg-10" >
+          <textarea class="form-control m-b" ng-model="comment">
+          </textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(comment)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="openAutofillForms.html">

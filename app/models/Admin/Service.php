@@ -259,6 +259,18 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    public function postEditMerchantComment($id, $comment)
+    {
+        $error = array();
+
+        $merchant_details = MerchantDetails\Entity::findorfail($id);
+
+        $merchant_details->comment = $comment;
+        $merchant_details->save();
+
+        return array($error, $comment);
+    }
+
     public function postMerchantBanks($id, $input)
     {
         $error = (new Merchant\Validator)->validateInput('banks', $input)->messages();

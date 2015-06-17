@@ -300,6 +300,33 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.editComment = function(new_comment){
+      var data = {comment: new_comment};
+
+      var request = $http({
+                    method: "post",
+                    url: "/admin/merchant/"+$scope.merchant.id+"/comment/edit",
+                    data: angular.toJson(data)
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Merchant comment edited successfully', true);
+          $scope.merchant.details.merchant_details.comment = data.data;
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || "";
 
@@ -351,6 +378,26 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       modalInstance.result.then(
         function (merchant) {
           $scope.editMerchant(merchant);
+        },
+        function () {
+          ;
+        });
+    };
+
+    $scope.openEditComment = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'editCommentModalContent.html',
+        controller: 'editCommentModalCtrl',
+        resolve: {
+          current: function() {
+            return $scope.merchant.details.merchant_details.comment;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function (merchant) {
+          $scope.editComment(merchant);
         },
         function () {
           ;
@@ -557,7 +604,23 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       $scope.ok = function (merchant) {
         $modalInstance.close(merchant);
-      }
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+.controller('editCommentModalCtrl', ['$scope', '$modalInstance', 'current',
+  function ($scope, $modalInstance, current) {
+      $scope.current = current;
+
+      $scope.ok = function (merchant) {
+        $modalInstance.close(merchant);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
 }])
 .controller('openAutofillForms', ['$scope', '$modalInstance', 'current',
   function ($scope, $modalInstance, current) {
