@@ -11,6 +11,7 @@ require('vars.php');
   <title>Razorpay - Automatic Checkout</title>
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+  <script src="<?= $checkout ?>/v1/checkout.js" type="text/javascript"></script>
 </head>
 <body>
   <div class="all-container">
@@ -45,23 +46,29 @@ require('vars.php');
             <h3>Fine Tshirt</h3>
               <div class="rating"><img src="images/rating.png"></div>
               <p class="review">5 Reviews</p>
-            <div class="price"><img src="images/price.png"></div>
+            <div class="price">₹5</div>
+
             <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc fermentum tincidunt libero nec imperdiet. Etiam sed malesuada dolor. Integer id ante ut urna pretium aliquet et et quam. Fusce tempor ultricies velit non finibus. Nullam lacus nulla, vehicula vitae pharetra nec, vestibulum id odio. Nunc quis sapien vestibulum, vulputate ipsum nec, consequat erat. Nunc interdum pharetra commodo. Nullam blandit id neque id ultrices. Proin quis efficitur mauris.</p>
             <p class="wishlist"><img src="images/wishlist.png"></p>
-            <form class="pay" action="/purchase" method="POST">
-              <!-- <input placeholder="Email*" required type="email">
-              <input placeholder="Shipping Address" pattern=".{3,}"> -->
-              <script
-                src="https://checkout.razorpay.com/v1/checkout.js"
-                data-key="rzp_live_ILgsfZCZoFIKMb"
-                data-amount="500"
-                data-name="Merchant Name"
-                data-description="Purchase Description"
-                data-image="https://i.imgur.com/3g7nmJC.png"
-                data-prefill.name="Harshil Mathur"
-                data-prefill.email="harshil@razorpay.com"
-              ></script>
-            </form>
+            <div class="pay">
+              <input type="button" value="" class="razorpay-payment-button" id="paybtn">
+              <script>
+              document.getElementById('paybtn').onclick = function(){
+                new Razorpay({
+                  key: 'rzp_live_ILgsfZCZoFIKMb',
+                  amount: '500',
+                  name: 'Merchant Name',
+                  description: 'Purchase Description',
+                  image: 'https://i.imgur.com/3g7nmJC.png',
+                  prefill: {
+                    name: 'Harshil Mathur',
+                    email: 'harshil@razorpay.com',
+                    contact: '9999999999'
+                  }
+                }).open()
+              }
+              </script>
+            </div>
           </div>
         </div>
         <div class="clear"></div>
