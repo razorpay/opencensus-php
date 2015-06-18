@@ -70,8 +70,6 @@ class Gateway extends Base\Gateway
 
         $content = $this->getContentAfterChecksumVerification($msg);
 
-        assert($content['CustomerID'] === $input['payment']['id']);
-
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $content['CustomerID'], Action::AUTHORIZE);
 
@@ -86,6 +84,8 @@ class Gateway extends Base\Gateway
                     $content['AuthStatus'],
                     '');
         }
+
+        assert($content['CustomerID'] === $input['payment']['id']);
     }
 
     public function refund(array $input)

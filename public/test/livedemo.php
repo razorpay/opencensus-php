@@ -56,6 +56,8 @@ require('vars.php');
               document.getElementById('paybtn').onclick = function(){
                 new Razorpay({
                   key: 'rzp_live_ILgsfZCZoFIKMb',
+                  protocol: '<?= $protocol ?>',
+                  hostname: '<?= $hostname ?>',
                   amount: '500',
                   name: 'Merchant Name',
                   description: 'Purchase Description',
