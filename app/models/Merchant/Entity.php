@@ -43,6 +43,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
     const UNP   = 'UNP';
     const CARD  = 'CARD';
     const NETBANKING = 'NETBANKING';
+    const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
 
     protected static $api_mappings = array(
@@ -58,6 +59,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'Union Pay'         =>  self::UNP,
         'card'              =>  self::CARD,
         'netbanking'        =>  self::NETBANKING,
+        'wallet'              =>  self::WALLET,
         'Unknown'           =>  self::UNKNOWN
     );
 
