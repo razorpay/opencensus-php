@@ -502,9 +502,9 @@ class Entity extends Base\PublicEntity
 
     public function refundAmount($amount)
     {
-        if (ctype_digit($amount) === false)
+        if (is_int($amount) === false)
         {
-            throw new Exception\InvalidArgumentException('amount should only have digits. ' . $amount);
+            throw new Exception\InvalidArgumentException('amount should be an integer ' . $amount);
         }
 
         $amount = (int) $amount;

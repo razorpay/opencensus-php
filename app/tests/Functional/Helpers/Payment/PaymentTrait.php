@@ -242,6 +242,18 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function cancelPayment($id)
+    {
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/cancel');
+
+        $this->ba->publicAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['success'], true);
+    }
+
     protected function verifyPayment($id)
     {
         $request = array(

@@ -54,6 +54,13 @@ class Service extends Base\Service
         return $payment->toArrayAdmin();
     }
 
+    public function cancel($id)
+    {
+        $this->processor()->cancel($id);
+
+        return ['success' => true];
+    }
+
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
         Payment\Entity::verifyIdAndStripSign($paymentId);

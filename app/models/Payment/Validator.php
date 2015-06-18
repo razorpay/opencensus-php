@@ -263,6 +263,11 @@ class Validator extends Base\Validator
         $this->captureAmountValidate($payment, $input);
     }
 
+    public function cancelValidate($payment)
+    {
+        $this->failIfNotCreated($payment);
+    }
+
     public function captureAmountValidate($payment, $input)
     {
         $amount = (int) $input['amount'];
@@ -275,7 +280,16 @@ class Validator extends Base\Validator
         }
     }
 
-    public function failIfCaptured($payment)
+    protected function failIfNotCreated($payment)
+    {
+        if ($payment->isCreated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED);
+        }
+    }
+
+    protected function failIfCaptured($payment)
     {
         //
         // Don't continue if already captured
@@ -287,7 +301,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function failIfNotAuthorized($payment)
+    protected function failIfNotAuthorized($payment)
     {
         if ($payment->isAuthorized() === false)
         {

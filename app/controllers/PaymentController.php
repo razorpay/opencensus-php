@@ -111,6 +111,15 @@ class PaymentController extends BaseController
         return ApiResponse::json($payment);
     }
 
+    public function postCancel($id)
+    {
+        $input = Input::all();
+
+        $data = $this->payment->cancel($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();

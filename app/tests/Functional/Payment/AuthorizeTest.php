@@ -202,6 +202,15 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testCancelPayment()
+    {
+        $payment = $this->fixtures->create(
+            'payment',
+            ['created_at' => time() - 60*100, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
+
+        $this->cancelPayment($payment->getPublicId());
+    }
+
     public function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

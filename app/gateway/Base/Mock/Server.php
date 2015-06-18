@@ -36,6 +36,11 @@ class Server
 
         $referer = $request->headers->get('referer');
 
+        if ($referer === null)
+        {
+            return;
+        }
+
         $schema = $request->getScheme().'://';
         $host = $request->getHost();
         $host = $schema.$host;

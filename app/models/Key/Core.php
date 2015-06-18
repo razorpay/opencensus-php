@@ -2,6 +2,7 @@
 
 namespace Models\Key;
 
+use Constants\Mode;
 use Crypt;
 use EE\Exception;
 use EE\Error\ErrorCode;
@@ -10,11 +11,11 @@ use Models\Merchant;
 
 class Core
 {
-    public function createFirstKey($merchantId, $mode)
+    public function createFirstKey($merchant, $mode)
     {
         $repo = new Key\Repository;
 
-        $keys = $repo->getKeysForMerchant($merchantId);
+        $keys = $repo->getKeysForMerchant($merchant->getId());
 
         if (count($keys) > 0)
         {
@@ -22,7 +23,7 @@ class Core
                 ErrorCode::BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED);
         }
 
-        return $this->createAndReturnWithSecret($merchantId, $mode);
+        return $this->createAndReturnWithSecret($merchant, $mode);
     }
 
     /**
@@ -33,13 +34,21 @@ class Core
      * @param  int    $merchantId
      * @return array
      */
-    public function createAndReturnWithSecret($merchantId, $mode)
+    public function createAndReturnWithSecret($merchant, $mode)
     {
         $repo = new Key\Repository;
 
         $key = new Key\Entity();
 
-        $key->setMerchantId($merchantId);
+        if (($mode === Mode::LIVE) and
+            ($merchant->isActivated() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED);
+
+        }
+
+        $key->setMerchantId($merchant->getId());
 
         // Generate secret which will be returned to merchant
         $secret = $key->generateSecret();
@@ -78,7 +87,7 @@ class Core
 
         $this->expireKey($old, $delay);
 
-        $keyData = $this->createAndReturnWithSecret($old->getMerchantId(), $mode);
+        $keyData = $this->createAndReturnWithSecret($old->merchant, $mode);
 
         $keysData['old'] = $old->toArrayPublic();
 

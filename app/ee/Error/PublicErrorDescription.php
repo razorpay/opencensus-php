@@ -14,6 +14,7 @@ class PublicErrorDescription
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                           = 'The current http method is not supported';
     const BAD_REQUEST_INVALID_ID                                        = 'The id provided does not exist';
     const BAD_REQUEST_PAYMENT_FAILED                                    = 'Payment failed';
+    const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                         = 'Payment cancelled by user';
     const BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED                        = 'The payment has already been processed. Did you press the back button in browser?';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                          = 'This payment has already been captured';
     const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                    = 'Invalid currency. Currently only INR is supported.';
@@ -47,6 +48,7 @@ class PublicErrorDescription
     const BAD_REQUEST_KEY_EXPIRING_SOON                                 = 'Key is already set to expire soon';
     const BAD_REQUEST_KEY_OF_DEMO_ACCOUNT                               = 'Operation failed for the key because it\'s of a demo account';
     const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED                   = 'Only payments which have been authorized and not yet captured can be captured';
+    const BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED                       = 'Only payments which are just created can be cancelled';
     const BAD_REQUEST_NOTES_TOO_MANY_KEYS                               = 'Number of fields in notes should be less than or equal to 15';
     const BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY                       = 'Notes values themselves should not be an array';
     const BAD_REQUEST_NOTES_KEY_TOO_LARGE                               = 'Notes key cannot be greater 255 characters';
@@ -75,6 +77,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED                   = 'There is a temporary block placed on the account currently because of which new payment operations are put on hold. If you are seeing this message unexpectedly, please drop a mail to contact@razorpay.com with your email-id and we will look into the issue immediately.';
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED                     = 'The merchant has no pricing assigned';
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                      = 'The merchant keys have already been created';
+    const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED          = 'The merchant keys cannot be created since account is not activated yet.';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                    = 'The merchant has not yet provided his bank account details';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED            = 'The merchant already has provided a bank account';
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                = 'Max terminal count limit reached for this merchant';

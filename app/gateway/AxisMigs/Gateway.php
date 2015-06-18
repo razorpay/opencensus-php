@@ -42,7 +42,10 @@ class Gateway extends Base\Gateway
 
         $content = array_merge($attributes, $content);
 
-        $this->addTestCardDetailsInTestMode($content);
+        if ($this->mode === Mode::TEST)
+        {
+            $this->addTestCardDetailsInTestMode($content);
+        }
 
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
@@ -80,6 +83,21 @@ class Gateway extends Base\Gateway
         $response = $this->postAmaTransactionRequest($content, $input);
 
         $content = $this->getAmaTxnResponseContent($response, $input);
+
+        if (isset($content['vpc_TxnResponseCode']) === false)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CAPTURE_FAILURE,
+                [
+                    'payment_id' => $input['payment']['id'],
+                    'gateway' => $this->gateway,
+                    'vpc_TxnResponseCode' => null,
+                ]
+            );
+
+            $content['vpc_TxnResponseCode'] = '?';
+            $content['vpc_MerchTxnRef'] = $input['payment']['id'];
+        }
 
         $payment = $this->createGatewayPaymentEntity($content);
 
@@ -257,16 +275,6 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-    protected function getNewGatewayPaymentEntity()
-    {
-        return new AxisMigs\Entity;
-    }
-
-    protected function getRepo()
-    {
-        return new AxisMigs\Repository;
-    }
-
     protected function postAmaTransactionRequest(array & $content, $input)
     {
         $this->addAmaTransactionFields($content, $input);
@@ -325,8 +333,8 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $content['vpc_Merchant'] = $input['terminal']['gateway_merchant_id'];
-            $content['vpc_AccessCode'] = $input['terminal']['gateway_access_code'];
+            $content['vpc_Merchant'] = $terminal['gateway_merchant_id'];
+            $content['vpc_AccessCode'] = $terminal['gateway_access_code'];
         }
     }
 
@@ -339,8 +347,8 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $content['vpc_User'] = $input['terminal']['gateway_terminal_id'];
-            $content['vpc_Password'] = $input['terminal']['gateway_terminal_password'];
+            $content['vpc_User'] = $terminal['gateway_terminal_id'];
+            $content['vpc_Password'] = $terminal['gateway_terminal_password'];
         }
     }
 
@@ -402,10 +410,10 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        // $content['vpc_Card'] = 'MasterCard';
-        // $content['vpc_CardNum'] = '5123456789012346';
-        // $content['vpc_CardExp'] = '1705';
-        // $content['vpc_CardSecurityCode'] = '333';
+        $content['vpc_Card'] = 'MasterCard';
+        $content['vpc_CardNum'] = '5123456789012346';
+        $content['vpc_CardExp'] = '1705';
+        $content['vpc_CardSecurityCode'] = '333';
     }
 
     protected function getFormattedCardExpiryDate($input)

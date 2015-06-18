@@ -210,6 +210,33 @@ class Processor
              'reach' => false]);
     }
 
+    /**
+     * Cancels a previously created payment
+     *
+     * @param  string  $id      Id of payment to be captured
+     * @param  integer $amount  Amount to capture
+     *
+     * @return Payment\Entity   Payment\Entity object
+     */
+    public function cancel($id)
+    {
+        $payment = $this->retrieve($id);
+
+        (new Payment\Validator)->cancelValidate($payment);
+
+        return $this->cancelPayment($payment);
+    }
+
+    protected function cancelPayment($payment)
+    {
+        $e = new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER);
+
+        $this->updatePaymentFailed($e->getError(), TraceCode::PAYMENT_CANCELLED);
+
+        return [];
+    }
+
     protected function trace($traceCode, $level = Trace::INFO)
     {
         $data = $this->payment->toArrayTraceRelevant();

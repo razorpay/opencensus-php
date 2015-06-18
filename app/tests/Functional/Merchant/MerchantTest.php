@@ -25,6 +25,14 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateKeyForNonActivatedMerchant()
+    {
+        $this->createMerchant();
+
+        $this->ba->appAuthLive();
+        $this->startTest();
+    }
+
     public function testGetMerchant()
     {
         $this->createMerchant();
