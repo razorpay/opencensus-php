@@ -123,6 +123,7 @@ class ErrorCode
 
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                  = 'BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER';
 
+    const BAD_REQUEST_REFUND_FAILED                                         = 'BAD_REQUEST_REFUND_FAILED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                             = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
 
     const BAD_REQUEST_URL_NOT_FOUND                                         = 'BAD_REQUEST_URL_NOT_FOUND';
