@@ -40,6 +40,11 @@ class Entity extends Base\UniqueIdEntity
         $this->setAttribute(self::BANKS, $banks);
     }
 
+    public function getPaytm()
+    {
+        return $this->getAttribute(self::PAYTM);
+    }
+
     public function setPaytm($paytm)
     {
         $this->setAttribute(self::PAYTM, $paytm);

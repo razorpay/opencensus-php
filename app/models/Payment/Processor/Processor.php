@@ -46,6 +46,7 @@ class Processor
         $mode)
     {
         $this->merchant = $merchant;
+        $this->methods = $merchant->methods;
         $this->core = $core;
         $this->trace = $trace;
         $this->mode = $mode;
