@@ -102,6 +102,24 @@ class Merchant extends Base
         $this->fixtures->create('merchant_banks', $attributes);
     }
 
+    public function enablePaytm($id = '10000000000000')
+    {
+        $repo = new \Models\Merchant\Banks\Repository;
+        $methods = $repo->findOrFail($id);
+        $methods->setPaytm(true);
+        $repo->saveOrFail($methods);
+        return $methods;
+    }
+
+    public function disablePaytm($id = '10000000000000')
+    {
+        $repo = new \Models\Merchant\Banks\Repository;
+        $methods = $repo->findOrFail($id);
+        $methods->setPaytm(false);
+        $repo->saveOrFail($methods);
+        return $methods;
+    }
+
     public function activate($id)
     {
         $repo = new \Models\Merchant\Repository;
@@ -110,4 +128,5 @@ class Merchant extends Base
         $repo->saveOrFail($merchant);
         return $merchant;
     }
+
 }

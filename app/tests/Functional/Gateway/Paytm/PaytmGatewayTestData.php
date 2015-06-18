@@ -58,6 +58,46 @@ return [
         'entity' => 'paytm',
     ],
 
+    'testPaytmWallet' => [
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'method' => 'wallet',
+        'wallet' => 'paytm',
+        'status' => 'captured',
+        'gateway' => 'paytm',
+        'terminal_id' => '1000PaytmTrmnl',
+        'signed' => false,
+        'verified' => null,
+        'entity' => 'payment',
+    ],
+
+    'testPaytmWalletEntity' => [
+        'action' => 'authorize',
+        'request_type' => 'DEFAULT',
+        'method' => 'wallet',
+        'txn_amount' => '500',
+        'cust_id' => 'a@b.com',
+        'channel_id' => 'WEB',
+        'payment_mode_only' => null,
+        'auth_mode' => null,
+        'bank_code' => null,
+        'payment_type_id' => null,
+        'txnamount' => '500',
+        //'banktxnid' => '201506080000004',
+        //'orderid' => '3KvJj9YNa60mBt',
+        'status' => 'TXN_SUCCESS',
+        'respcode' => '01',
+        'respmsg' => 'Txn Success',
+        //'bankname' => 'Axis Bank',
+        'paymentmode' => null,
+        'refundamt' => null,
+        'gatewayname' => 'ICICI',
+        //'txndate' => '2015-06-08 03-28-34.0',
+        'txntype' => 'SALE',
+        'refund_id' => null,
+        'entity' => 'paytm',
+    ],
+
     'testPayment3dsecureFailed' => [
         'request' => [
             'content' => [

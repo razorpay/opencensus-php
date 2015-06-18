@@ -10,7 +10,7 @@ class MerchantFluid extends Base
 
     protected $repo = null;
 
-    public function getMerchant($id)
+    public function getMerchant($id = '10000000000000')
     {
         $merchant = $this->getRepo()->findOrFail($id);
 
@@ -110,6 +110,34 @@ class MerchantFluid extends Base
         $defaultValues = array(
             'merchant_id' => $this->getId(),
             'banks' => $banks,
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $this->fixtures->create('merchant_banks', $attributes);
+
+        return $this;
+    }
+
+    public function enablePaytm()
+    {
+        $methods = \Models\Merchant\Banks\Repository::find($this->getId());
+
+        $methods->setPaytm(true);
+
+        $methods->saveOrFail();
+
+        return $this;
+    }
+
+    public function disablePaytm()
+    {
+        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+
+        $defaultValues = array(
+            'merchant_id' => $this->getId(),
+            'banks' => $banks,
+            'paytm' => '0',
         );
 
         $attributes = array_merge($defaultValues, $attributes);

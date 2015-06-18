@@ -28,6 +28,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                         = 'Payment Exception: Card not provided';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                          = 'Invalid cvv';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                   = 'Net banking is not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT           = 'Paytm wallet is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                         = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                         = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS                        = 'Contact number can only contain digits and + symbol';
