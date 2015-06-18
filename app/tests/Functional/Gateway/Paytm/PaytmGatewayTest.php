@@ -39,6 +39,28 @@ class PaytmGatewayTest extends TestCase
             $this->testData['testPaymentPaytmEntity'], $payment);
     }
 
+    public function testPaytmWallet()
+    {
+        $this->fixtures->links['merchant']->enablePaytm('10000000000000');
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = 'paytm';
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('paytm', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaytmWalletEntity'], $payment);
+    }
+
     public function testFailedPayment()
     {
         $this->markTestIncomplete();
@@ -64,5 +86,18 @@ class PaytmGatewayTest extends TestCase
         $payment = $this->verifyPayment($id);
 
         $this->assertEquals($payment['verified'], true);
+    }
+
+    public function testPaytmWhenNotEnabled()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = 'paytm';
+
+        $testData['request']['content'] = $payment;
+
+        $content = $this->startTest($testData);
     }
 }

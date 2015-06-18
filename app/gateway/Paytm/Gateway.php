@@ -90,12 +90,42 @@ class Gateway extends Base\Gateway
             $input['gateway']['ORDERID'], Action::AUTHORIZE);
 
         $values = $this->lowerArrayKeys($input['gateway']);
-        $values['txntype'] = 'SALE';
+        $values['txntype'] = Type::SALE;
 
         $payment->fill($values);
         $payment->saveOrFail();
 
         $this->verifyPaymentCallbackResponse($input);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $content = array(
+            'MID'           => $input['terminal']['gateway_merchant_id'],
+            'TXNID'         => $payment['txnid'],
+            'REFID'         => $input['refund']['id'],
+            'ORDERID'       => $input['payment']['id'],
+            'TXNTYPE'       => Type::REFUND,
+            'REFUNDAMOUNT'  => $input['refund']['amount'] / 100,
+        );
+
+        $content['CHECKSUM'] = $this->generateHash($content);
+
+        $content = $this->postRequestToPaytm($content);
+
+        if ($content['STATUS'] !== Status::SUCCESS)
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                    $input['gateway']['RESPCODE'],
+                    $input['gateway']['RESPMSG']);
+        }
     }
 
     public function verify(array $input)
@@ -106,23 +136,27 @@ class Gateway extends Base\Gateway
             'MID'       => $input['terminal']['gateway_terminal_id'],
             'ORDERID'  => $input['payment']['id']);
 
-        $data['MID'] = 'razorp24347633019930';
-
-        $content = 'JsonData='.urlencode(json_encode($data));
-
-        $request = array(
-            'url' => $this->getUrl('verify'),
-            'content' => $content,
-            'method' => 'post');
-
-        // send the request and get response
-        $response = $this->runRequestResponseFlow($request);
-        $content = json_decode($response->body, true);
+        $content = $this->postRequestToPaytm($data);
 
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
        $this->matchPaymentData($payment, $content, $input);
+    }
+
+    protected function postRequestToPaytm($content)
+    {
+        $content = 'JsonData='.json_encode($content);
+
+        $request = array(
+            'url' => $this->getUrl($this->action),
+            'content' => $content,
+            'method' => 'post');
+
+        $response = $this->runRequestResponseFlow($request);
+        $content = json_decode($response->body, true);
+
+        return $content;
     }
 
     protected function matchPaymentData($payment, $content, $input)

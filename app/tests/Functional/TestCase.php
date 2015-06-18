@@ -54,4 +54,20 @@ class TestCase extends ParentTestCase
 
         parent::tearDown();
     }
+
+    protected function startTest($testDataToReplace = array())
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+
+        $testData = [];
+        if (isset($this->testData[$name]))
+        {
+            $testData = $this->testData[$name];
+        }
+
+        $this->replaceValuesRecursively($testData, $testDataToReplace);
+
+        return $this->runRequestResponseFlow($testData);
+    }
 }

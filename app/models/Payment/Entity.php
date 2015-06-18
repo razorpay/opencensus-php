@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const NOTES             = 'notes';
     const BANK              = 'bank';
     const CARD_ID           = 'card_id';
+    const WALLET            = 'wallet';
     const TRANSACTION_ID    = 'transaction_id';
     const AUTO_CAPTURED     = 'auto_captured';
     const CAPTURED_AT       = 'captured_at';
@@ -53,6 +54,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::METHOD,
         self::BANK,
+        self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
         self::EMAIL,
@@ -71,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::REFUND_STATUS,
         self::DESCRIPTION,
         self::BANK,
+        self::WALLET,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,

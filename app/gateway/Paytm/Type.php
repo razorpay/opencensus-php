@@ -9,4 +9,9 @@ class Type
     const NB = 'NB';
     const TELCO = 'TELCO';
     const PPI = 'PPI';
+
+
+    const SALE   = 'SALE';
+    const REFUND = 'REFUND';
+    const CANCEL = 'CANCEL';
 }

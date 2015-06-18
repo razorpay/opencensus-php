@@ -28,6 +28,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                         = 'Payment Exception: Card not provided';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                          = 'Invalid cvv';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                   = 'Net banking is not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT           = 'Paytm wallet is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                         = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                         = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_CONTACT_NOT_DIGITS                        = 'Contact number can only contain digits and + symbol';
@@ -42,6 +43,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                 = 'Paymend was not completed on time.';
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH          = 'Capture amount must be equal to the amount authorized';
     const BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT             = 'This bank is either not valid or is not enabled for the merchant';
+    const BAD_REQUEST_REFUND_FAILED                                     = 'Refund failed';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                         = 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_KEY_EXPIRED                                       = 'Key is expired';
     const BAD_REQUEST_KEY_EXPIRING_SOON                                 = 'Key is already set to expire soon';

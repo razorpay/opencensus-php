@@ -36,12 +36,15 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::IIN,
+        self::ENTITY,
         self::CATEGORY,
         self::NETWORK,
         self::TYPE,
         self::COUNTRY,
         self::ISSUER,
         self::TRIVIA,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     );
 
     public function getType()

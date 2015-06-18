@@ -31,6 +31,11 @@ trait Authorize
             $this->verifyBankEnabled($payment);
         }
 
+        if ($payment->isMethod(Payment\Method::WALLET))
+        {
+            $this->verifyWalletEnabled($payment);
+        }
+
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
 
         $this->repo->saveOrFail($payment);
@@ -242,6 +247,18 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyWalletEnabled($payment)
+    {
+        $methods = $this->methods;
+
+        if (($methods === null) or
+            ($methods->getPaytm() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT);
         }
     }
 
