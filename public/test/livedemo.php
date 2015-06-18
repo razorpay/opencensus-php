@@ -78,6 +78,7 @@ require('vars.php');
         background-position: -300px 0px;
     }
     .btn {
+        cursor: pointer;
         width: 20px;
         background-color: #28B3D2;
         color: white;
