@@ -10,7 +10,7 @@ require('vars.php');
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Razorpay - Automatic Checkout</title>
   <link rel="stylesheet" type="text/css" href="css/style.css">
-  <link href='http://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+  <link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
 </head>
 <body>
   <div class="all-container">
@@ -31,7 +31,7 @@ require('vars.php');
         <div class="tab">
           <div class="leftcontent">
             <div class="product"></div>
-            <div class="thumbnails"> 
+            <div class="thumbnails">
               <div class="thumbnail"></div>
               <div class="thumbnail"></div>
               <div class="thumbnail"></div>
@@ -42,7 +42,7 @@ require('vars.php');
         </div>
         <div class="tab">
           <div class="rightcontent">
-            <h3>Fine Tshirt</h3>        
+            <h3>Fine Tshirt</h3>
               <div class="rating"><img src="images/rating.png"></div>
               <p class="review">5 Reviews</p>
             <div class="price"><img src="images/price.png"></div>
@@ -54,7 +54,7 @@ require('vars.php');
               <script
                 src="https://checkout.razorpay.com/v1/checkout.js"
                 data-key="rzp_live_ILgsfZCZoFIKMb"
-                data-amount="54900"
+                data-amount="500"
                 data-name="Merchant Name"
                 data-description="Purchase Description"
                 data-image="https://i.imgur.com/3g7nmJC.png"
