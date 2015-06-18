@@ -120,7 +120,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->postRequest($request);
 
-        $content = $this->getContentAfterChecksumVerification($str);
+        $content = $this->getContentAfterChecksumVerification($response->body);
         sd($response->body);
     }
 
@@ -138,14 +138,36 @@ class Gateway extends Base\Gateway
             'Current Date/ Timestamp' => $now,
         );
 
+        if ($this->mode === Mode::TEST)
+        {
+            $content['Merchant ID'] = $this->getTestMerchantId();
+        }
+
         $request = $this->getRequestArray($content);
 
-        $response = $this->postRequest($request);
+        $response = $this->sendGatewayRequest($request);
 
-        sd($response->body);
+        $content = $this->getContentAfterChecksumVerification($response->body);
 
-        $content = explode('|', $content);
-        $content = array_combine(self::$verifyResponseFields, $content);
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                        $input['payment']['id'], Action::AUTHORIZE);
+
+        $amountRefunded = (int) ($content['TotalRefundAmount'] * 100);
+
+        if ((($content['AuthStatus'] === '03000') and
+             ($payment['AuthStatus'] !== '0300')) or
+            ($amountRefunded !== $input['payment']['amount_refunded']))
+        {
+            $res = array(
+                'match' => false,
+                'payment' => [$payment->toArray()],
+                'gateway_data' => $content,
+                'payment_id' => $input['payment']['id'],
+                'gateway' => $input['payment']['gateway'],
+            );
+
+            throw new Exception\PaymentVerificationException($res);
+        }
     }
 
     protected function getContentAfterChecksumVerification($msg)
