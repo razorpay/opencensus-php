@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddPaytmToPaymentAggregations extends Migration {
+class AddWalletToPaymentAggregations extends Migration {
 
 	/**
 	 * Run the migrations.

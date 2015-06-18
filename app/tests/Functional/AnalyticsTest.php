@@ -45,7 +45,7 @@ class AnalyticsTest extends TestCase
                 );
 
                 if($resource == 'payment') {
-                    $data['method'] = 'card';
+                    $data['method'] = 'wallet';
                     $data['network'] = 'Visa';
                     $data['id'] = 'pay_123456';
                 }
