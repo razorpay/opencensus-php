@@ -33,10 +33,14 @@ class Server extends Base\Mock\Server
             'RESPMSG'       => 'Txn Successful.',
             'GATEWAYNAME'   => 'ICICI',
             'BANKNAME'      => 'Axis Bank',
-            'PAYMENTMODE'   => $input['PAYMENT_TYPE_ID'],
         );
 
         $this->getStatusAndResponseDetails($content, $input);
+
+        if (isset($input['PAYMENT_TYPE_ID']))
+        {
+            $content['PAYMENTMODE'] = $input['PAYMENT_TYPE_ID'];
+        }
 
         if ($content['STATUS'] !== Paytm\Status::SUCCESS)
             $content['BANKTXNID'] = '';
