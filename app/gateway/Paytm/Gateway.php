@@ -246,8 +246,8 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $content['MID'] = $this->config['test_merchant_id'];
-            $content['WEBSITE'] = 'Razorpayweb';
-            $content['INDUSTRY_TYPE_ID'] = 'Retail103';
+            $content['WEBSITE'] = 'Razorweb';
+            $content['INDUSTRY_TYPE_ID'] = 'Retail';
         }
     }
 

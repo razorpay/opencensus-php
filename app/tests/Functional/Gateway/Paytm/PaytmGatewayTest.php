@@ -90,10 +90,14 @@ class PaytmGatewayTest extends TestCase
 
     public function testPaytmWhenNotEnabled()
     {
+        $this->ba->publicAuth();
+
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'wallet';
         $payment['wallet'] = 'paytm';
 
-        $this->startTest();
+        $testData['request']['content'] = $payment;
+
+        $content = $this->startTest($testData);
     }
 }

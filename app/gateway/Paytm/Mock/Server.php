@@ -11,7 +11,19 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        $method = null;
+
         $this->validateAuthorizeInput($input);
+
+        if (isset($input['PAYMENT_TYPE_ID']))
+        {
+            if ($input['PAYMENT_TYPE_ID'] === 'NB')
+                $method = 'netbanking';
+            else
+                $method = 'card';
+        }
+        else
+            $method = 'wallet';
 
         // Format - YYYY-MM-DD HH:MM:SS.U
         $date = Carbon::now('Asia/Kolkata')->format('Y-m-d H-i-s.0');
@@ -35,6 +47,13 @@ class Server extends Base\Mock\Server
             'BANKNAME'      => 'Axis Bank',
         );
 
+        if ($method === 'wallet')
+        {
+            $content['GATEWAYNAME'] = 'WALLET';
+            $content['BANKNAME'] = '';
+            $content['PAYMENTMODE'] = 'PPI';
+        }
+
         $this->getStatusAndResponseDetails($content, $input);
 
         if (isset($input['PAYMENT_TYPE_ID']))
@@ -43,7 +62,9 @@ class Server extends Base\Mock\Server
         }
 
         if ($content['STATUS'] !== Paytm\Status::SUCCESS)
+        {
             $content['BANKTXNID'] = '';
+        }
 
         $code = $content['RESPCODE'];
         $content['RESPMSG'] = Paytm\ResponseCode::getResponseMessage($code);
