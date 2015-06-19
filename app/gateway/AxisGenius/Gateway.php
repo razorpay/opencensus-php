@@ -16,6 +16,11 @@ class Gateway extends AxisMigs\Gateway
 {
     protected $gateway = 'axis_genius';
 
+    public function capture(array $input)
+    {
+        ; // Don't do anything here, nothing to capture.
+    }
+
     protected function getPaymentCaptureRequestContent($input, $payment)
     {
         $content = parent::getPaymentCaptureRequestContent($input, $payment);

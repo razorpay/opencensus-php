@@ -7,6 +7,7 @@ use EE\Exception;
 use EE\Error\ErrorCode;
 use Gateway\Billdesk;
 use Gateway\Base;
+use Gateway\Base\Action;
 use Models\Card;
 
 class Server extends Base\Mock\Server
@@ -25,7 +26,7 @@ class Server extends Base\Mock\Server
         $content = array(
             'MerchantID'        => $input['MerchantID'],
             'CustomerID'        => $input['CustomerID'],
-            'TxnReferenceNo'    => 'NA',
+            'TxnReferenceNo'    => random_alpha_string(10),
             'BankReferenceNo'   => 'NA',
             'TxnAmount'         => $input['TxnAmount'],
             'BankID'            => $input['BankID'],
@@ -59,6 +60,101 @@ class Server extends Base\Mock\Server
         );
 
         return $this->makePostResponse($request);;
+    }
+
+    public function verify($input)
+    {
+        $input = $this->getContentFromInput($input);
+
+        parent::verify($input);
+
+        $this->validateActionInput($input, 'verify');
+
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+                        $input['Customer ID'], Action::AUTHORIZE);
+
+        $fields = $this->getGatewayInstance()->getFieldsForAction('verify');
+
+        $content = array_combine($fields, array_fill(0, count($fields), 'NA'));
+
+        $payment = $payment->toArray();
+
+        foreach ($content as $key => $value)
+        {
+            if (isset($payment[$key]) === true)
+                $content[$key] = $payment[$key];
+        }
+
+        $refunds = $this->getRepo()->findRefunds($input['Customer ID']);
+
+        $refundAmount = 0.00;
+
+        foreach ($refunds as $refund)
+        {
+            $refundAmount += (double) $refunds['RefAmount'];
+
+            $content['TotalRefundAmount'] = $refundAmount;
+            $content['LastRefundDate'] = $refunds['RefDateTime'];
+            $content['LastRefundRefNo'] = $refunds['RefundId'];
+            $content['RefundStatus'] = $refunds['RefStatus]'];
+        }
+
+        $content['QueryStatus'] = 'Y';
+
+        unset($content['Checksum']);
+        $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
+
+        return $this->makeResponse($msg);
+    }
+
+    public function refund($input)
+    {
+        $input = $this->getContentFromInput($input);
+
+        parent::verify($input);
+
+        $this->validateActionInput($input, 'refund');
+
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+                        $input['CustomerID'], Action::AUTHORIZE);
+
+        $fields = $this->getGatewayInstance()->getFieldsForAction('refund');
+
+        $content = array_combine($fields, array_fill(0, count($fields), 'NA'));
+
+        // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss,
+        // hh is in 24 hrs
+        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
+
+        $content = array(
+            'RequestType'   => '0410',
+            'MerchantID'    => $payment['MerchantID'],
+            'TxnReferenceNo' => $payment['TxnReferenceNo'],
+            'TxnDate'       => $payment['TxnDate'],
+            'CustomerID'    => $payment['CustomerID'],
+            'TxnAmount'     => $payment['TxnAmount'],
+            'RefAmount'     => $input['RefAmount'],
+            'RefDateTime'   => $now,
+            'RefStatus'     => '0799',
+            'RefundId'      => random_alpha_string(15),
+            'ErrorCode'     => 'NA',
+            'ErrorReason'   => 'NA',
+            'ProcessStatus' => 'Y',
+        );
+
+        $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
+
+        return $this->makeResponse($msg);
+    }
+
+    protected function makeResponse($msg)
+    {
+        $response = \Response::make($msg);
+
+        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 
     protected function getContentFromInput($input)

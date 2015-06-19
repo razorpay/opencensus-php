@@ -39,7 +39,9 @@ class Entity extends Base\PublicEntity
     );
 
     protected $fillable = array(
+        'payment_id',
         'action',
+        'refund_id',
         'MerchantID',
         'CustomerID',
         'TxnAmount',

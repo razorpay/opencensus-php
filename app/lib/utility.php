@@ -167,3 +167,17 @@ if (! function_exists('get_var_in_string'))
         return ob_get_clean();
     }
 }
+
+if (! function_exists('array_replace_intersect'))
+{
+    function array_replace_intersect($array1, $array2)
+    {
+        foreach ($array1 as $key => $value)
+        {
+            if (isset($array2[$key]) === true)
+                $array1[$key] = $array2[$key];
+        }
+
+        return $array1;
+    }
+}

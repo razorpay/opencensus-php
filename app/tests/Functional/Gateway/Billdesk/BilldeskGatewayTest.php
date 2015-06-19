@@ -20,14 +20,12 @@ class BilldeskGatewayTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'billdesk';
+
+        $this->setMockGatewayTrue();
     }
 
     public function testPayment()
     {
-        $this->config['gateway.mock_billdesk'] = true;
-
-        $this->setMockGatewayTrue();
-
         $payment = $this->getDefaultNetBankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
@@ -39,5 +37,24 @@ class BilldeskGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentBilldeskEntity'], $payment);
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->verifyPayment($payment['id']);
+    }
+
+    public function testPaymentRefund()
+    {
+        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('billdesk', true);
+        $this->assertTestResponse($refund);
     }
 }

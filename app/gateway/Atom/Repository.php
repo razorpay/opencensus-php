@@ -4,12 +4,10 @@ namespace Gateway\Atom;
 
 use EE\Exception;
 use Gateway\Atom;
-use Models\Base;
+use Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Atom';
 
     public function findByToken($token)
