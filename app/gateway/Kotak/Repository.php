@@ -3,12 +3,10 @@
 namespace Gateway\Kotak;
 
 use EE\Exception;
-use Models\Base;
+use Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Kotak';
 
     public function findByTxnRefAndType($txnRef, $type)
