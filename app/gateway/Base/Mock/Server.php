@@ -25,6 +25,20 @@ class Server
         $this->input = $input;
     }
 
+    protected function refund($input)
+    {
+        $this->action = 'refund';
+
+        $this->input = $input;
+    }
+
+    protected function verify($input)
+    {
+        $this->action = 'verify';
+
+        $this->input = $input;
+    }
+
     protected function generateHash($content)
     {
         return $this->getGatewayInstance()->generateHash($content);
@@ -75,6 +89,13 @@ class Server
         return $gateway;
     }
 
+    protected function getGatewayNamespace()
+    {
+        $class = get_called_class();
+
+        return substr($class, 0, strpos($class, 'Mock\Server') - 1 );
+    }
+
     protected function getNamespace()
     {
         return substr(get_called_class(), 0, strrpos(get_called_class(), "\\"));
@@ -92,11 +113,23 @@ class Server
         return $this->validator;
     }
 
+    protected function getRepo()
+    {
+        $class = $this->getGatewayNamespace() . '\Repository';
+
+        return new $class;
+    }
+
     protected function validateAuthorizeInput($input)
+    {
+        $this->validateActionInput($input, 'auth');
+    }
+
+    protected function validateActionInput($input, $action)
     {
         $validator = $this->getValidator();
 
-        $validator->validateInput('auth', $input);
+        $validator->validateInput($action, $input);
     }
 
     public function setInput($input)

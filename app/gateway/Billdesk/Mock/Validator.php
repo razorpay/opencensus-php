@@ -31,4 +31,28 @@ class Validator extends Base\Validator
         'RU'                => 'required|url',
         'Checksum'          => 'required|alpha_num',
     );
+
+    protected static $verifyRules = array(
+        'RequestType'               => 'required|in:0122',
+        'Merchant ID'               => 'required|alpha_num',
+        'Customer ID'               => 'required|alpha_num|size:14',
+        'Current Date/ Timestamp'   => 'required|alpha_num',
+        'Checksum'                  => 'required|alpha_num',
+    );
+
+    protected static $refundRules = array(
+        'RequestType'               => 'required|in:0400',
+        'MerchantID'                => 'required|alpha_num',
+        'TxnReferenceNo'            => 'required|',
+        'TxnDate'                   => 'required|',
+        'CustomerID'                => 'required|alpha_num|size:14',
+        'TxnAmount'                 => 'required|numeric',
+        'RefAmount'                 => 'required|numeric',
+        'RefDateTime'               => 'required|',
+        'MerchantRefNo'             => 'required|alpha_num|size:14',
+        'Filler1'                   => 'required|in:NA',
+        'Filler2'                   => 'required|in:NA',
+        'Filler3'                   => 'required|in:NA',
+        'Checksum'                  => 'required|alpha_num',
+    );
 }

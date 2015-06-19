@@ -69,6 +69,22 @@ trait ResponseFieldsTrait
         'Checksum',
     );
 
+    protected static $refundRequestFields = array(
+        'RequestType',
+        'MerchantID',
+        'TxnReferenceNo',
+        'TxnDate',
+        'CustomerID',
+        'TxnAmount',
+        'RefAmount',
+        'RefDateTime',
+        'MerchantRefNo',
+        'Filler1',
+        'Filler2',
+        'Filler3',
+        'Checksum',
+    );
+
     protected static $refundResponseFields = array(
         'RequestType',
         'MerchantID',
@@ -86,9 +102,17 @@ trait ResponseFieldsTrait
         'Checksum',
     );
 
+    protected static $verifyRequestFields = array(
+        'RequestType',
+        'Merchant ID',
+        'Customer ID',
+        'Current Date/ Timestamp',
+        'Checksum',
+    );
+
     protected static $verifyResponseFields = array(
         'RequestType',
-        'MercantID',
+        'MerchantID',
         'CustomerID',
         'TxnReferenceNo',
         'BankReferenceNo',

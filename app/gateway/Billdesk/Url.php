@@ -8,6 +8,6 @@ class Url
     const LIVE_DOMAIN   = 'https://secure.paytm.in';
 
     const AUTHORIZE     = '/pgidsk/pgmerc/RZRPYRedirect.jsp';
-    const Refund        = '/pgidsk/PGIRefundController';
+    const REFUND        = '/pgidsk/PGIRefundController';
     const VERIFY        = '/pgidsk/PGIQueryController';
 }
