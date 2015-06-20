@@ -24,6 +24,8 @@ class TraceCode
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
     const PAYMENT_CANCELLED                         = 'PAYMENT_CANCELLED';
 
+    const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
+
     /*
      * Gateway component error messages
      */
@@ -85,6 +87,8 @@ class TraceCode
         self::PAYMENT_CAPTURE_SUCCESS               => 'Payment captured successfully',
         self::PAYMENT_CAPTURE_FAILURE               => 'Payment capture failed',
         self::PAYMENT_VERIFY_FAILED                 => 'Payment verification with gateway failed',
+
+        self::BAD_REQUEST_INVALID_API_KEY           => 'The api key provided is invalid',
 
         self::GATEWAY_ENROLL_REQUEST                => 'Request for enrollment sent',
         self::GATEWAY_ENROLL_RESPONSE               => 'Enrollment response received',

@@ -11,6 +11,7 @@ use Http\ApiResponse;
 use Http\Route;
 use Models\Key;
 use Models\Merchant;
+use Trace\TraceCode;
 
 class BasicAuth
 {
@@ -111,6 +112,12 @@ class BasicAuth
     protected $internalAppConfigs;
 
     /**
+     * Trace instance used for tracing
+     * @var Trace\Trace
+     */
+    protected $trace;
+
+    /**
      * Contains valid lengths of key.
      * rzp_mode - 3 + 1 + 4
      * 3 + 1 + 4 + 1 + 24
@@ -127,6 +134,7 @@ class BasicAuth
         $this->internalAppConfigs = $app['config']->get('applications');
         $this->cloud = $app['config']->get('app.cloud');
         $this->router = $app['router'];
+        $this->trace = $this->app['trace'];
     }
 
     public function setCredentials()
@@ -415,7 +423,15 @@ class BasicAuth
         //
         $key = $this->fetchKey($keyId);
 
-        return ($key !== null);
+        $exists = ($key !== null);
+
+        if ($exists === false)
+        {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_INVALID_API_KEY);
+        }
+
+        return $exists;
     }
 
     /**
