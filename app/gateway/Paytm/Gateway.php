@@ -51,7 +51,15 @@ class Gateway extends Base\Gateway
                 '|' . $expiryDate;
             $content['PAYMENT_DETAILS'] = $this->getHashOfString($cardDetails);
             $content['AUTH_MODE'] = '3D';
-            $content['PAYMENT_TYPE_ID'] = Type::CC;
+            $type = $input['card']['type'];
+
+            $cardType = Type::CC;
+            if ($type === 'debit')
+            {
+                $type = Type::DC;
+            }
+
+            $content['PAYMENT_TYPE_ID'] = $type;
             $content['PAYMENT_MODE_ONLY'] = 'Yes';
         }
         else if ($method === 'netbanking')
