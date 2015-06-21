@@ -115,8 +115,6 @@ trait Authorize
 
         $this->updatePaymentAuthorized();
 
-        $this->postCallbackProcessing($data);
-
         if ($payment->isSigned())
         {
             return $this->captureSignedPayment($payment);
@@ -143,57 +141,6 @@ trait Authorize
 
             throw $e;
         }
-    }
-
-    protected function postCallbackProcessing($data)
-    {
-        $payment = $this->payment;
-
-        if (($payment->isGateway(Payment\Gateway::ATOM) === false) or
-            ($payment->isMethod(Payment\Method::CARD) === false))
-        {
-            return;
-        }
-
-        $card = $payment->card;
-
-        if (isset($data['card']['type']) === false)
-        {
-            // @todo: trace here
-            $this->trace->error(TraceCode::MISC_TRACE_CODE, ['message' => 'Card type not returned from atom']);
-            return;
-        }
-
-        $type = $data['card']['type'];
-
-        if ($card->getType() === $type)
-        {
-            return;
-        }
-
-        if (($card->getType() !== Card\Type::UNKNOWN) and
-            ($type !== $card->getType()))
-        {
-            $this->trace->error(
-                TraceCode::MISC_TRACE_CODE,
-                ['message' => 'Atom card type does not match stored type',
-                'type' => $type,
-                'card_type' => $card->getType()]);
-        }
-
-        if (Card\Type::isValidType($type) === false)
-        {
-            $this->trace->error(
-                TraceCode::MISC_TRACE_CODE,
-                ['message' => 'Card type returned from atom is not valid.',
-                'type' => $type,
-                'card_type' => $card->getType()]);
-
-            return;
-        }
-
-        $card->setType($type);
-        (new Card\Repository)->saveOrFail($card);
     }
 
     /**
