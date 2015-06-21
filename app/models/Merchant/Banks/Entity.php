@@ -5,7 +5,7 @@ namespace Models\Merchant\Banks;
 use EE\Exception;
 use Models\Base;
 
-class Entity extends Base\UniqueIdEntity
+class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID       = 'merchant_id';
     const BANKS             = 'banks';
@@ -14,6 +14,10 @@ class Entity extends Base\UniqueIdEntity
     protected $primaryKey = self::MERCHANT_ID;
 
     protected $table = \Constants\Table::MERCHANT_BANKS;
+
+    protected $entity = 'methods';
+
+    protected static $sign = '';
 
     protected $fillable = array(
         self::MERCHANT_ID,
@@ -24,6 +28,10 @@ class Entity extends Base\UniqueIdEntity
         self::MERCHANT_ID,
         self::BANKS,
         self::PAYTM);
+
+    protected $public = array(
+        self::ENTITY,
+        'methods');
 
     public function merchant()
     {
@@ -77,5 +85,10 @@ class Entity extends Base\UniqueIdEntity
         $names = \Models\Bank\Name::getNames($banks);
 
         return $names;
+    }
+
+    public function getWalletAttribute()
+    {
+        return array('paytm' => $this->getPaytmAttribute());
     }
 }

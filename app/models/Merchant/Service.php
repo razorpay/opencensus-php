@@ -305,11 +305,11 @@ class Service extends Base\Service
         }
 
         $data = array(
-            'version' => 1,
-            'card' => $hasCardTerminal,
-            'netbanking' => [],
-            'wallet' => [
-                'paytm' => false,
+            'entity'        => 'methods',
+            'card'          => $hasCardTerminal,
+            'netbanking'    => [],
+            'wallet'        => [
+                'paytm'     => false,
             ]);
 
         $methods = (new Merchant\Banks\Core)->getMerchantBanks($this->merchant);

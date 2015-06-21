@@ -433,7 +433,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'version' => 1,
+                'entity' => 'methods',
                 'card' => true,
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
