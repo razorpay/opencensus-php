@@ -122,6 +122,17 @@ trait Authorize
             return $this->captureSignedPayment($payment);
         }
 
+        if ($payment->getReturnUrl() !== null)
+        {
+            $data = array(
+                'type' => 'redirect',
+                'url' => $payment->getReturnUrl(),
+                'content' => array(
+                    'razorpay_payment_id' => $payment->getPublicId(),
+                )
+            );
+        }
+
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 

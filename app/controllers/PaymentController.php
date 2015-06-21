@@ -50,7 +50,7 @@ class PaymentController extends BaseController
             if ($data['request']['method'] === 'post')
             {
             	return View::make('gateway.gatewayPostForm')
-                    ->with('data', $data);
+                           ->with('data', $data);
             }
             else if ($data['request']['method'] === 'get')
             {
@@ -150,10 +150,16 @@ class PaymentController extends BaseController
             $data['http_status_code'] = $error->getHttpStatusCode();
         }
 
-        if ($data !== null)
+        $type = $data['type'];
+
+        if ($type === 'redirect')
         {
-            return View::make('gateway.callback')->with('data', $data);
+            return View::make('gateway.callbackReturnUrl')->with('data', $data);
         }
+
+        assert ($data !== null);
+
+        return View::make('gateway.callback')->with('data', $data);
     }
 
     public function getRefundsForPayment($paymentId)
