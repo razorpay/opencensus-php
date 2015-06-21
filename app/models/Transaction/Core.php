@@ -49,24 +49,7 @@ class Core extends Base\Core
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
         {
-            $txnData[Transaction\Entity::RECONCILED_AT] = time();
-            $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
-            $txnData[Transaction\Entity::API_FEE] = 0;
-
-            $channel = Transaction\Channel::ATOM;
-
-            if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
-            {
-                $channel = Transaction\Channel::KOTAK;
-
-                $gatewayFee = (new Pricing\Fee)->getGatewayFeeForAtomSharedTerminal($payment);
-                $txnData[Transaction\Entity::GATEWAY_FEE] = $gatewayFee;
-                $txnData[Transaction\Entity::API_FEE] = $fee - $gatewayFee;
-            }
-
-            $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
-
-            $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+            $this->paymentOnAtomGateway($txnData, $payment);
         }
 
         $txnData[Transaction\Entity::CHANNEL] = $channel;
@@ -81,6 +64,28 @@ class Core extends Base\Core
         $this->updateBalances($txn);
 
         return $txn;
+    }
+
+    protected function paymentOnAtomGateway(array & $txnData, $payment)
+    {
+        $txnData[Transaction\Entity::RECONCILED_AT] = time();
+        $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
+        $txnData[Transaction\Entity::API_FEE] = 0;
+
+        $channel = Transaction\Channel::ATOM;
+
+        if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
+        {
+            $channel = Transaction\Channel::KOTAK;
+
+            $gatewayFee = (new Pricing\Fee)->getGatewayFeeForAtomSharedTerminal($payment);
+            $txnData[Transaction\Entity::GATEWAY_FEE] = $gatewayFee;
+            $txnData[Transaction\Entity::API_FEE] = $fee - $gatewayFee;
+        }
+
+        $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
+
+        $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
     }
 
     public function createFromRefund(Refund\Entity $refund)
