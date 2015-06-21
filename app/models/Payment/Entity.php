@@ -358,9 +358,14 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === $status);
     }
 
-    public function isNetBanking()
+    public function isNetbanking()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::NETBANKING);
+    }
+
+    public function isWallet()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
     }
 
     public function isGateway($gateway)

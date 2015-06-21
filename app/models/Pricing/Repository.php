@@ -71,6 +71,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getPricingRulesForWallet($id)
+    {
+        $repo = $this->repo;
+
+        return $repo::where(Pricing\Entity::PLAN_ID, '=', $id)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', Payment\Method::WALLET)
+                    ->get();
+    }
+
     public function getPricingPlans()
     {
         $repo = $this->repo;

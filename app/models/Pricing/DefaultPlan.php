@@ -46,6 +46,18 @@ class DefaultPlan
                     ),
 
                 array(
+                    'id'            => '1HvFLd6436r9L1',
+                    'plan_id'       => '1AXludj60w4pSp',
+                    'plan_name'     => 'Full Price',
+                    'payment_method'  => 'wallet',
+                    'percent_rate'  => '290',
+                    'fixed_rate'    => '0',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    ),
+
+                array(
                     'id'            => '1L8dUj9MzP3Bj3',
                     'plan_id'       => '1In3Yh5Mluj605',
                     'plan_name'     => 'Promotional Price',
@@ -67,7 +79,19 @@ class DefaultPlan
                     'expired_at'    => null,
                     'created_at'    => time(),
                     'updated_at'    => time()
-                    )
+                    ),
+
+                array(
+                    'id'            => '1Otj9JcY5qYB9Z',
+                    'plan_id'       => '1In3Yh5Mluj605',
+                    'plan_name'     => 'Promotional Price',
+                    'payment_method'  => 'wallet',
+                    'percent_rate'  => '200',
+                    'fixed_rate'    => '0',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                    ),
                 );
     }
 
@@ -91,6 +115,18 @@ class DefaultPlan
                     'plan_id'       => '2atGxLIYLyHWg7',
                     'plan_name'     => 'Startup Plan',
                     'payment_method'  => 'netbanking',
+                    'percent_rate'  => '250',
+                    'fixed_rate'    => '0',
+                    'expired_at'    => null,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ),
+
+                array(
+                    'id'            => '1b03fh9jXGH34f',
+                    'plan_id'       => '2atGxLIYLyHWg7',
+                    'plan_name'     => 'Startup Plan',
+                    'payment_method'  => 'wallet',
                     'percent_rate'  => '250',
                     'fixed_rate'    => '0',
                     'expired_at'    => null,

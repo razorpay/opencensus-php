@@ -437,7 +437,7 @@ return [
                 'card' => true,
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
-                    'BARB' => 'Bank of Baroda',
+//                    'BARB' => 'Bank of Baroda',
                     'YESB' => 'Yes Bank',
                 ],
                 'wallet' => [

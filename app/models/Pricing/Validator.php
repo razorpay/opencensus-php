@@ -10,17 +10,18 @@ use Models\Payment;
 class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = array(
-        Entity::GATEWAY             => 'sometimes|in:hdfc',
-        Entity::PAYMENT_METHOD        => 'required|alpha_space|in:card,netbanking',
-        Entity::PAYMENT_METHOD_TYPE   => 'sometimes|in:debit,credit',
-        Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES',
+        Entity::GATEWAY             => 'sometimes|',
+        Entity::PAYMENT_METHOD      => 'required|alpha_space|in:card,netbanking,wallet',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes|in:debit,credit',
+        Entity::PAYMENT_NETWORK     => 'required_if:payment_method,card|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000');
 
     protected static $addPlanRuleValidators = array(
         'addPlanRuleRate',
-        'addPlanRuleNB');
+        'addPlanRuleNB',
+        'addPlanRulePaymentNetwork');
 
     protected static $createPlanRules = array(
         Entity::PLAN_NAME => 'required|alpha_num|max:20');
@@ -45,6 +46,21 @@ class Validator extends Base\Validator
                         $field);
                 }
             }
+        }
+    }
+
+    protected function validateAddPlanRulePaymentNetwork($input)
+    {
+        if ((isset($input[Entity::PAYMENT_NETWORK]) === false) or
+            ($input[Entity::PAYMENT_NETWORK] === null))
+        {
+            return;
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment network only needs to be passed when payment method is card');
         }
     }
 
