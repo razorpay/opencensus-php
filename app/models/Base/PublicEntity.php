@@ -11,6 +11,8 @@ class PublicEntity extends UniqueIdEntity
 
     const PUBLIC_ID = 'public_id';
 
+    const ADMIN = 'admin';
+
     protected static $sign = '';
 
     protected static $delimiter = '_';
@@ -44,6 +46,8 @@ class PublicEntity extends UniqueIdEntity
         $array = $this->toArray();
 
         $this->setPublicAttributes($array);
+
+        $array[static::ADMIN] = true;
 
         return $array;
     }

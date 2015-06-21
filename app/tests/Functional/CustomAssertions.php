@@ -2,6 +2,8 @@
 
 namespace Tests\Functional;
 
+use Validator;
+
 trait CustomAssertions
 {
     public function assertExceptionClass($e, $class)
@@ -16,6 +18,12 @@ trait CustomAssertions
 
     public function assertArraySelectiveEquals(array $expected, array $actual)
     {//sd($expected, $actual);
+
+        if (isset($actual['entity']))
+        {
+            $this->validateEntity($actual);
+        }
+
         foreach ($expected as $key => $value)
         {
             if (is_array($value))
@@ -31,6 +39,26 @@ trait CustomAssertions
                 $this->assertSame($value, $actual[$key], 'The key is: '.$key);
             }
         }
+    }
+
+    public function validateEntity($attributes)
+    {
+        $entity = $attributes['entity'];
+        $class = 'Tests\Functional\Assertion\Validator\\'.ucfirst($entity);
+
+        if (class_exists($class) === false)
+        {
+            return;
+        }
+
+        $validator = new $class;
+
+        if (isset($attributes['admin']))
+        {
+            $validator->setStrictFalse();
+        }
+
+        $validator->validateInput('entity', $attributes);
     }
 
     public function assertErrorDataEquals(array $expected, array $actual)
