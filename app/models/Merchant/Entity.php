@@ -59,7 +59,7 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'Union Pay'         =>  self::UNP,
         'card'              =>  self::CARD,
         'netbanking'        =>  self::NETBANKING,
-        'wallet'              =>  self::WALLET,
+        'wallet'            =>  self::WALLET,
         'Unknown'           =>  self::UNKNOWN
     );
 
