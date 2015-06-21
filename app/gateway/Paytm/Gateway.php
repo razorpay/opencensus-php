@@ -56,10 +56,10 @@ class Gateway extends Base\Gateway
             $cardType = Type::CC;
             if ($type === 'debit')
             {
-                $type = Type::DC;
+                $cardType = Type::DC;
             }
 
-            $content['PAYMENT_TYPE_ID'] = $type;
+            $content['PAYMENT_TYPE_ID'] = $cardType;
             $content['PAYMENT_MODE_ONLY'] = 'Yes';
         }
         else if ($method === 'netbanking')

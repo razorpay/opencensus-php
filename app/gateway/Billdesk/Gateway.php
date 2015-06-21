@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
             'TxnDate'           => $date,
             'CustomerID'        => $input['payment']['id'],
             'TxnAmount'         => (float) $payment['TxnAmount'],
-            'RefAmount'         => '4.00',//$input['refund']['amount'] / 100 . '.00',
+            'RefAmount'         => $input['refund']['amount'] / 100,
             'RefDateTime'       => $now,
             'MerchantRefNo'     => $input['refund']['id'],
             'Filler1'           => 'NA',
