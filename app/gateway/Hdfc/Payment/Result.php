@@ -10,9 +10,11 @@ final class Result
      * Result codes received in response for card enrollment
      */
 
-    const ENROLLED = 1;
+    const ENROLLED      = 1;
 
-    const NOT_ENROLLED = 2;
+    const NOT_ENROLLED  = 2;
+
+    const INITIALIZED   = 3;
 
     /**
      * This is special case as in,
@@ -86,6 +88,9 @@ final class Result
                 break;
             case 'NOT ENROLLED':
                 $result = self::NOT_ENROLLED;
+                break;
+            case 'INITIALIZED':
+                $result = self::INITIALIZED;
                 break;
             case 'FSS0001-Authentication Not Available':
                 $result = self::FSS0001_ENROLLED;

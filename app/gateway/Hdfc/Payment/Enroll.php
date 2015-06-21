@@ -55,7 +55,7 @@ trait Enroll
         $this->runRequestResponseFlow(
             $this->enrollRequest,
             $this->enrollResponse);
-
+s($this->enrollResponse);
         //
         // If there is an error then just return
         //

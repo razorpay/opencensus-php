@@ -30,6 +30,9 @@ trait Authorize
             case Payment\Result::NOT_ENROLLED:
                 return $this->postAuthNotEnrolledRequestToBank();
 
+            case Payment\Result::INITIALIZED:
+                return $this->getFieldsForFormSubmitForRupay();
+
             default:
                 throw new Exception\LogicException('Should not have reached here');
         }
@@ -66,6 +69,23 @@ trait Authorize
         return $request;
     }
 
+    protected function getFieldsForFormSubmitForRupay()
+    {
+        $enrollResponse = $this->enrollResponse;
+
+        $fields = array(
+            'PaymentID');
+
+        $content['PaymentID'] = $this->enrollResponse['data']['paymentid'];
+//        $content['TermUrl'] = $this->callbackUrl;
+
+        $request['content'] = $content;
+        $request['url'] = $this->enrollResponse['data']['url'];
+        $request['method'] = 'post';
+
+        return $request;
+    }
+
 
     public function postAuthEnrolledRequest($input)
     {
@@ -76,7 +96,7 @@ trait Authorize
         // Throw exception otherwise.
         //
 
-        Assert((int) $this->model->enroll_result === Payment\Result::ENROLLED);
+        assert((int) $this->model->enroll_result === Payment\Result::ENROLLED);
 
         if ($this->model->status !== Status::ENROLLED)
         {

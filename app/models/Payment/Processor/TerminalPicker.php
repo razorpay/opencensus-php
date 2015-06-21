@@ -118,35 +118,35 @@ class TerminalPicker
 
         $payment = $this->payment;
 
-        if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
-        {
-            if (isset($gatewayTerms[Gateway::KOTAK]))
-            {
-                $terminal = $gatewayTerms[Gateway::KOTAK];
-            }
+        // if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
+        // {
+        //     if (isset($gatewayTerms[Gateway::KOTAK]))
+        //     {
+        //         $terminal = $gatewayTerms[Gateway::KOTAK];
+        //     }
 
-            return $terminal;
-        }
+        //     return $terminal;
+        // }
 
-        $international = $payment->merchant->isInternational();
+        // $international = $payment->merchant->isInternational();
 
-        if ($international)
-        {
-            if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
-            {
-                return $gatewayTerms[Gateway::AXIS_GENIUS];
-            }
-        }
+        // if ($international)
+        // {
+        //     if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
+        //     {
+        //         return $gatewayTerms[Gateway::AXIS_GENIUS];
+        //     }
+        // }
 
-        if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
-        {
-            return $gatewayTerms[Gateway::AXIS_MIGS];
-        }
+        // if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
+        // {
+        //     return $gatewayTerms[Gateway::AXIS_MIGS];
+        // }
 
-        if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
-        {
-            return $gatewayTerms[Gateway::AXIS_GENIUS];
-        }
+        // if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
+        // {
+        //     return $gatewayTerms[Gateway::AXIS_GENIUS];
+        // }
 
         if (isset($gatewayTerms[Gateway::HDFC]))
         {
