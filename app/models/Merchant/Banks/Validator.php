@@ -15,6 +15,24 @@ class Validator extends Base\Validator
     protected static $addBanksValidators = array(
         'banks');
 
+    protected static $setMethodsRules = array(
+        'paytm' => 'sometimes|boolean',
+        'card'  => 'sometimes|boolean',
+        'banks' => 'sometimes|array');
+
+    protected static $setMethodsValidators = array(
+        'methodBanks');
+
+    protected function validateMethodBanks(array $input)
+    {
+        if (isset($input['banks']) === false)
+        {
+            return;
+        }
+
+        $this->validateBanks($input);
+    }
+
     protected function validateBanks(array $input)
     {
         if (is_array($input['banks']) === false)

@@ -21,6 +21,9 @@ class CreateMerchantBanks extends Migration {
             $table->char(MerchantBanks::MERCHANT_ID, MerchantBanks::ID_LENGTH)
                   ->primary();
 
+            $table->boolean(MerchantBanks::CARD)
+                  ->default(1);
+
             $table->text(MerchantBanks::BANKS);
 
             $table->boolean(MerchantBanks::PAYTM)
