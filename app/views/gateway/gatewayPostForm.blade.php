@@ -1,15 +1,20 @@
 <!doctype html>
 <html lang="en">
-    <body>
-    <form name="form1" action="{{$data['request']['url']}}" method="post">
+    <script>
+        function sub() {
+            document.form1.submit();
+        }
+    </script>
+
+    <body onload="sub();">
+    <form id="form1" name="form1" action="{{$data['request']['url']}}" method="post" onsubmit="return true;">
 
 @foreach ($data['request']['content'] as $key => $value)
-        {{$key}}: <input type="text" name="{{$key}}" value="{{$value}}">
+        <!-- {{$key}}: --> <input type="hidden" name="{{$key}}" value="{{$value}}">
         <br />
 @endforeach
-        <input type="submit" value="Submit" >
-    </form>
+<!--         <input type="submit" value="Submit" >
+ -->    </form>
     <br>
-    Submit within 30 secs max!
     </body>
 </html>
