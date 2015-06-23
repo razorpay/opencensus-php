@@ -297,16 +297,9 @@ class Service extends Base\Service
     {
         $picker = new Payment\Processor\TerminalPicker;
 
-        $hasCardTerminal = $picker->hasCardTerminal($this->merchant);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $hasCardTerminal = true;
-        }
-
         $data = array(
             'entity'        => 'methods',
-            'card'          => $hasCardTerminal,
+            'card'          => true,
             'netbanking'    => [],
             'wallet'        => [
                 'paytm'     => false,
@@ -316,8 +309,14 @@ class Service extends Base\Service
 
         if ($methods !== null)
         {
+            $data['card'] = $methods->isCardEnabled();
             $data['netbanking'] = $methods->toArrayWithBankNames();
             $data['wallet']['paytm'] = $methods->isPaytmEnabled();
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            $data['card'] = true;
         }
 
         return $data;

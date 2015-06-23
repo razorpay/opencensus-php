@@ -231,11 +231,11 @@ return [
                     array(
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 4,
+                        'count' => 5,
                         'rules' => array(
-                            array()
-                            ),
+                            array(),
                         ),
+                    ),
                 )
             ]
         ]

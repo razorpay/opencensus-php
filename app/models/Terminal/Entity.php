@@ -185,7 +185,7 @@ class Entity extends Base\PublicEntity
         return (((int)$this->getAttribute(self::CARD)) === 1);
     }
 
-    public function isNetBankingEnabled()
+    public function isNetbankingEnabled()
     {
         return (((int)$this->getAttribute(self::NETBANKING)) === 1);
     }

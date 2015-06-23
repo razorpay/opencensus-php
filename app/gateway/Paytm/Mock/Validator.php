@@ -25,4 +25,13 @@ class Validator extends Base\Validator
         'MOBILE_NO'             => 'sometimes|numeric',
         'BANK_CODE'             => 'required_if:AUTH_MODE,USRPWD',
     );
+
+    protected static $refundRules = array(
+        'MID'           => 'required|alpha_num',
+        'TXNID'         => 'required|',
+        'ORDERID'       => 'required|size:14|alpha_num',
+        'TXNTYPE'       => 'required|in:REFUND',
+        'REFUNDAMOUNT'  => 'required|numeric',
+        'CHECKSUM'      => 'required|',
+    );
 }

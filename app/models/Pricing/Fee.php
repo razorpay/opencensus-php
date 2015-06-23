@@ -94,9 +94,9 @@ class Fee
         {
             $rule = $this->getRelevantPricingRuleForCard($pricingPlanId, $payment);
         }
-        else
+        else if ($payment->isNetbanking())
         {
-            $pricing = $pricingRepo->getPricingRulesForNetBanking($pricingPlanId);
+            $pricing = $pricingRepo->getPricingRulesForNetbanking($pricingPlanId);
 
             if (count($pricing) > 1)
             {
@@ -105,6 +105,27 @@ class Fee
             }
 
             $rule = $pricing->first();
+        }
+        else if ($payment->isWallet())
+        {
+            $pricing = $pricingRepo->getPricingRulesForWallet($pricingPlanId);
+
+            if (count($pricing) > 1)
+            {
+                throw new Exception\LogicException(
+                    'Currently only 1 net-banking pricing rule allowed. Found: ' . count($pricing));
+            }
+
+            $rule = $pricing->first();
+        }
+        else
+        {
+            throw new Exception\InvalidArgumentException('Argument - Method: ' . $payment->getMethod());
+        }
+
+        if ($rule === null)
+        {
+            throw new Exception\LogicException('No appropriate pricing rule found', ['payment' => $payment->toArray()]);
         }
 
         return $rule;
@@ -162,6 +183,8 @@ class Fee
         {
             $card = $payment->card;
             $type = $card->getType();
+
+            $type = Card\Type::DEBIT;
 
             if ($type === Card\Type::CREDIT)
             {

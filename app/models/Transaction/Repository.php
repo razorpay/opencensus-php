@@ -17,7 +17,7 @@ class Repository extends Base\Repository
 
         return $repo::where(Transaction\Entity::SETTLED_AT, '=', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
-                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
+//                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)
@@ -30,7 +30,7 @@ class Repository extends Base\Repository
 
         return $repo::where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
-                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
+//                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)

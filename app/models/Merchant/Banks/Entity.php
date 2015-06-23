@@ -8,6 +8,7 @@ use Models\Base;
 class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID       = 'merchant_id';
+    const CARD              = 'card';
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
 
@@ -21,11 +22,13 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = array(
         self::MERCHANT_ID,
+        self::CARD,
         self::BANKS,
         self::PAYTM);
 
     protected $visible = array(
         self::MERCHANT_ID,
+        self::CARD,
         self::BANKS,
         self::PAYTM);
 
@@ -33,9 +36,24 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         'methods');
 
+    public function setMethods(array $input = array())
+    {
+        $this->edit($input, 'set_methods');
+    }
+
     public function merchant()
     {
         return $this->belongsTo('Models\Merchant\Entity');
+    }
+
+    public function isPaytmEnabled()
+    {
+        return $this->getPaytmAttribute();
+    }
+
+    public function isCardEnabled()
+    {
+        return $this->getCardAttribute();
     }
 
     public function getBanks()
@@ -63,9 +81,14 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::PAYTM];
     }
 
-    public function isPaytmEnabled()
+    public function setCard($card)
     {
-        return $this->getPaytmAttribute();
+        $this->setAttribute(self::CARD, $card);
+    }
+
+    public function getCardAttribute()
+    {
+        return (bool) $this->attributes[self::CARD];
     }
 
     public function getBanksAttribute()

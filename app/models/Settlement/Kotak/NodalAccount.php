@@ -98,6 +98,13 @@ class NodalAccount
                 $type = 'IFT';
             }
 
+            //
+            // @note: Convert the amount to string otherwise sometimes float
+            //        becomes recurring decimal in text file.
+            //
+
+            $amount = (string) ($settlement->getAmount() / 100);
+
             $array = array(
                 'Client_Code'           => 'NODAL',
                 'Product_Code'          => 'CMSPAY',
@@ -105,7 +112,7 @@ class NodalAccount
                 'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
-                'Amount'                => (string) $settlement->getAmount() / 100,
+                'Amount'                => $amount,
                 'Bank_Code_Indicator'   => 'M',
 //                'Beneficiary_Code'      => $ba->beneficiary_code,
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),

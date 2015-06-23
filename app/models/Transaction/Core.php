@@ -30,46 +30,26 @@ class Core extends Base\Core
         list($fee, $pricingRuleId) = $this->calculateMerchantFees($payment);
 
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
-        $settledAt = $this->getSettledAtTimestamp($capturedAt, 2);
+        $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
 
         $amount = $payment->getAmount();
         $credit = $amount - $fee;
 
         $txnData = array(
-            Transaction\Entity::AMOUNT      => $amount,
-            Transaction\Entity::TYPE        => Transaction\Type::PAYMENT,
-            Transaction\Entity::FEE         => $fee,
-            Transaction\Entity::CREDIT      => $credit,
-            Transaction\Entity::DEBIT       => 0,
-            Transaction\Entity::CURRENCY    => 'INR',
-            Transaction\Entity::SETTLED_AT  => $settledAt,
+            Transaction\Entity::AMOUNT          => $amount,
+            Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
+            Transaction\Entity::FEE             => $fee,
+            Transaction\Entity::CREDIT          => $credit,
+            Transaction\Entity::DEBIT           => 0,
+            Transaction\Entity::CURRENCY        => 'INR',
+            Transaction\Entity::SETTLED_AT      => $settledAt,
+            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
             Transaction\Entity::PRICING_RULE_ID => $pricingRuleId);
-
-        $channel = Transaction\Channel::KOTAK;
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
         {
-            $txnData[Transaction\Entity::RECONCILED_AT] = time();
-            $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
-            $txnData[Transaction\Entity::API_FEE] = 0;
-
-            $channel = Transaction\Channel::ATOM;
-
-            if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
-            {
-                $channel = Transaction\Channel::KOTAK;
-
-                $gatewayFee = (new Pricing\Fee)->getGatewayFeeForAtomSharedTerminal($payment);
-                $txnData[Transaction\Entity::GATEWAY_FEE] = $gatewayFee;
-                $txnData[Transaction\Entity::API_FEE] = $fee - $gatewayFee;
-            }
-
-            $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
-
-            $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+            $this->paymentOnAtomGateway($txnData, $payment, $fee);
         }
-
-        $txnData[Transaction\Entity::CHANNEL] = $channel;
 
         $txn = new Transaction\Entity($txnData);
         $txn->generateId();
@@ -81,6 +61,26 @@ class Core extends Base\Core
         $this->updateBalances($txn);
 
         return $txn;
+    }
+
+    protected function paymentOnAtomGateway(array & $txnData, $payment, $fee)
+    {
+        $txnData[Transaction\Entity::RECONCILED_AT] = time();
+        $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
+        $txnData[Transaction\Entity::API_FEE] = 0;
+
+        $channel = Transaction\Channel::ATOM;
+
+        if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
+        {
+            $channel = Transaction\Channel::KOTAK;
+
+            $gatewayFee = (new Pricing\Fee)->getGatewayFeeForAtomSharedTerminal($payment);
+            $txnData[Transaction\Entity::GATEWAY_FEE] = $gatewayFee;
+            $txnData[Transaction\Entity::API_FEE] = $fee - $gatewayFee;
+        }
+
+        $txnData[Transaction\Entity::CHANNEL] = $channel;
     }
 
     public function createFromRefund(Refund\Entity $refund)

@@ -7,7 +7,7 @@ use Models\Bank\IFSC;
 class NetBanking
 {
     protected static $enabled = array(
-        IFSC::BARB,
+//        IFSC::BARB,
         IFSC::CITI,
         IFSC::CIUB,
         IFSC::CSBK,

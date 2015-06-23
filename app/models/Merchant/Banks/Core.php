@@ -19,22 +19,13 @@ class Core extends Base\Core
 
     public function setPaymentMethods($merchant, $input)
     {
-        $banks = $this->repo->getMerchantBanks($merchant->getId());
+        $methods = $this->repo->getMerchantBanks($merchant->getId());
 
-        if ((isset($input['paytm'])) and
-            (($input['paytm'] === '0') or
-             ($input['paytm'] === '1')))
-        {
-            $banks->setPaytm($input['paytm']);
-            $banks->saveOrFail();
-        }
-        else
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Input not proper');
-        }
+        $methods->setMethods($input);
 
-        return $banks->toArray();
+        $this->repo->saveOrFail($methods);
+
+        return $methods->toArray();
     }
 
     public function getMerchantBanks($merchant)

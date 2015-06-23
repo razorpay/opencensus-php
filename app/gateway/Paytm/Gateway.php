@@ -53,10 +53,11 @@ class Gateway extends Base\Gateway
             $content['AUTH_MODE'] = '3D';
             $type = $input['card']['type'];
 
-            $cardType = Type::CC;
-            if ($type === 'debit')
+            $cardType = Type::DC;
+
+            if ($type === 'credit')
             {
-                $cardType = Type::DC;
+                $cardType = Type::CC;
             }
 
             $content['PAYMENT_TYPE_ID'] = $cardType;
@@ -116,23 +117,37 @@ class Gateway extends Base\Gateway
         $content = array(
             'MID'           => $input['terminal']['gateway_merchant_id'],
             'TXNID'         => $payment['txnid'],
-            'REFID'         => $input['refund']['id'],
             'ORDERID'       => $input['payment']['id'],
             'TXNTYPE'       => Type::REFUND,
-            'REFUNDAMOUNT'  => $input['refund']['amount'] / 100,
+            'REFUNDAMOUNT'  => (string) ($input['refund']['amount'] / 100),
         );
+
+        $this->addTestMerchantIdIfTestMode($content);
 
         $content['CHECKSUM'] = $this->generateHash($content);
 
         $content = $this->postRequestToPaytm($content);
+// !d($content);
+        if ($content['ORDERID'])
+        {
+            $content['CUST_ID'] = $payment['cust_id'];
+            $content['CHANNEL_ID'] = $payment['channel_id'];
+            $content['INDUSTRY_TYPE_ID'] = $payment['industry_type_id'];
+            $content['REQUEST_TYPE'] = RequestType::THEDEFAULT;
+            $content['TXN_AMOUNT'] = $payment['txn_amount'];
+            $content['ORDER_ID'] = $content['ORDERID'];
+            unset($content['ORDERID']);
+        }
+
+        $refund = $this->createGatewayPaymentEntity($content);
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                    $input['gateway']['RESPCODE'],
-                    $input['gateway']['RESPMSG']);
+                    $content['RESPCODE'],
+                    $content['RESPMSG']);
         }
     }
 
@@ -143,6 +158,8 @@ class Gateway extends Base\Gateway
         $data = array(
             'MID'       => $input['terminal']['gateway_terminal_id'],
             'ORDERID'  => $input['payment']['id']);
+
+        $this->addTestMerchantIdIfTestMode($content);
 
         $content = $this->postRequestToPaytm($data);
 
@@ -157,10 +174,10 @@ class Gateway extends Base\Gateway
         $content = 'JsonData='.json_encode($content);
 
         $request = array(
-            'url' => $this->getUrl($this->action),
-            'content' => $content,
-            'method' => 'post');
-
+            'url' => $this->getUrl($this->action).'?'.$content,
+            'content' => [],
+            'method' => 'get');
+//!d($request);
         $response = $this->runRequestResponseFlow($request);
         $content = json_decode($response->body, true);
 
@@ -256,6 +273,14 @@ class Gateway extends Base\Gateway
             $content['MID'] = $this->config['test_merchant_id'];
             $content['WEBSITE'] = 'Razorweb';
             $content['INDUSTRY_TYPE_ID'] = 'Retail';
+        }
+    }
+
+    protected function addTestMerchantIdIfTestMode(array & $content)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $content['MID'] = $this->config['test_merchant_id'];
         }
     }
 
