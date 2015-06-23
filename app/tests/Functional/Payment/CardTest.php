@@ -70,6 +70,19 @@ class CardTest extends TestCase
         }
     }
 
+    public function testCardWhenNotEnabled()
+    {
+        $this->fixtures->links['merchant']->disableCard('10000000000000');
+
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $testData['request']['content'] = $payment;
+
+        $content = $this->startTest($testData);
+    }
+
     protected function getLastCard()
     {
         $this->ba->proxyAuth();

@@ -188,6 +188,7 @@ $factory('Models\Card\Detail', [
 
 $factory('Models\Merchant\Banks\Entity', [
     'merchant_id' => 10000000000000,
+    'card'  => '1',
     'banks' => '[]',
     'paytm' => '0',
 ]);
