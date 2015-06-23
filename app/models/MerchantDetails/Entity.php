@@ -146,7 +146,6 @@ class Entity extends Base\Entity
         'business_operation_proof_url' => "Please upload business operation proof document.",
         'business_pan_url'   => "Please upload business pan card scan.",
         'address_proof_url'   => "Please upload address proof.",
-        'promoter_proof_url'   => "Please upload proof of authorised signatory",
         'promoter_pan_url'    => "Please upload authorised signatory pan card",
         'promoter_address_url'  => "Please upload authorised signatory address  proof."
     );
