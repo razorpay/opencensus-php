@@ -139,17 +139,17 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function getMerchantPaytmEnable($id)
+    public function getMerchantMethodEnable($id, $method)
     {
 
-        $error = (new Admin\Service)->paytmEnableMerchant($id);
+        $error = (new Admin\Service)->enableMerchantMethod($id, $method);
 
         return AppResponse::jsonResponse($error);
     }
 
-    public function getMerchantPaytmDisable($id)
+    public function getMerchantMethodDisable($id, $method)
     {
-        $error = (new Admin\Service)->paytmDisableMerchant($id);
+        $error = (new Admin\Service)->disableMerchantMethod($id, $method);
 
         return AppResponse::jsonResponse($error);
     }

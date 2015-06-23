@@ -154,9 +154,9 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
 
-        Route::get('/admin/merchant/{id}/paytm/enable', 'AdminController@getMerchantPaytmEnable');
+        Route::get('/admin/merchant/{id}/methods/{method}/enable', 'AdminController@getMerchantMethodEnable');
 
-        Route::get('/admin/merchant/{id}/paytm/disable', 'AdminController@getMerchantPaytmDisable');
+        Route::get('/admin/merchant/{id}/methods/{method}/disable', 'AdminController@getMerchantMethodDisable');
 
         Route::post('/admin/settlement/initiate/{channel}', 'AdminController@postInitiateSetl');
 

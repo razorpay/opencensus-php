@@ -116,14 +116,14 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
-    $scope.enablePaytm = function() {
-      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/paytm/enable");
+    $scope.enableMethod = function(method) {
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/methods/"+method+"/enable");
 
       request
       .success(function(data){
         if(data.success) {
-          $scope.alerts.addAlert('success', 'Paytm transactions for merchant enabled successfully', true);
-          $scope.merchant.details.methods.paytm = true;
+          $scope.alerts.addAlert('success', method + ' transactions for merchant enabled successfully', true);
+          $scope.merchant.details.methods[method] = true;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -137,14 +137,14 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
-    $scope.disablePaytm = function() {
-      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/paytm/disable");
+    $scope.disableMethod = function(method) {
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/methods/"+method+"/disable");
 
       request
       .success(function(data){
         if(data.success) {
-          $scope.alerts.addAlert('success', 'Paytm transactions for merchant disabled successfully', true);
-          $scope.merchant.details.methods.paytm = false;
+          $scope.alerts.addAlert('success', method + ' transactions for merchant disabled successfully', true);
+          $scope.merchant.details.methods[method] = false;
         }
         else {
           $scope.alerts.resetAlerts();

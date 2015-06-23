@@ -591,7 +591,7 @@ class Service extends Base\Service
         return array();
     }
 
-    public function paytmEnableMerchant($id)
+    public function enableMerchantMethod($id, $method)
     {
         $error = array();
 
@@ -601,7 +601,7 @@ class Service extends Base\Service
 
         try
         {
-            $this->api->merchant->fetch($id)->editMethods(['paytm' => 1]);
+            $this->api->merchant->fetch($id)->editMethods([$method => 1]);
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -611,7 +611,7 @@ class Service extends Base\Service
         return array();
     }
 
-    public function paytmDisableMerchant($id)
+    public function disableMerchantMethod($id, $method)
     {
         $error = array();
 
@@ -621,7 +621,7 @@ class Service extends Base\Service
 
         try
         {
-            $this->api->merchant->fetch($id)->editMethods(['paytm' => 0]);
+            $this->api->merchant->fetch($id)->editMethods([$method => 0]);
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
