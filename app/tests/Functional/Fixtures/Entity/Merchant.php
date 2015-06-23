@@ -120,6 +120,25 @@ class Merchant extends Base
         return $methods;
     }
 
+    public function enableCard($id = '10000000000000')
+    {
+        $repo = new \Models\Merchant\Banks\Repository;
+        $methods = $repo->findOrFail($id);
+        $methods->setCard(true);
+        $repo->saveOrFail($methods);
+
+        return $methods;
+    }
+
+    public function disableCard($id = '10000000000000')
+    {
+        $repo = new \Models\Merchant\Banks\Repository;
+        $methods = $repo->findOrFail($id);
+        $methods->setCard(false);
+        $repo->saveOrFail($methods);
+        return $methods;
+    }
+
     public function activate($id)
     {
         $repo = new \Models\Merchant\Repository;
