@@ -19,6 +19,8 @@ trait Authorize
 
         if ($payment->isMethod(Payment\Method::CARD))
         {
+            $this->verifyCardEnabled($payment);
+
             $cardData = $this->createCardEntity($input);
 
             (new Card\Repository)->saveOrFail($payment->card);
@@ -206,6 +208,18 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyCardEnabled($payment)
+    {
+        $methods = $this->methods;
+
+        if (($methods === null) or
+            ($methods->isCardEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
         }
     }
 
