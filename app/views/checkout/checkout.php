@@ -16,5 +16,4 @@
     var payment_methods = <?= $methods ?>;
   </script>
   <script src="<?= $checkout ?>/v1/checkout-frame.js"></script>
-  <link href='//fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 </html>
