@@ -65,6 +65,8 @@ class Merchant extends Base
 
         $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
 
+        $this->createAddPaymentBanks(['merchant_id' => $merchantId]);
+
         $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltLiveAuthKey'], 'live');
         $this->fixtures->setDefaultConn();
