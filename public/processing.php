@@ -114,6 +114,7 @@ function handleMessage(data){
   #order{display: none; max-width: 600px; margin: 0 auto;}
   .amount{font-size: 50px; line-height: 60px; color: #29b3d2;}
 @media (max-device-height: 450px),(max-device-width: 450px){
+  .heading{font-size: 28px; line-height: 36px;}
   .powered-by{font-size: 32px; line-height: 40px;}
 }
 </style>
