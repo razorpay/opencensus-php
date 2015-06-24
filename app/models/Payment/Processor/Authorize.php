@@ -112,17 +112,25 @@ trait Authorize
 
     protected function getReturnRequestDataForMerchant($payment)
     {
-        assert ($payment->getReturnUrl() !== null);
+        assert ($payment->getCallbackUrl() !== null);
 
         $data = array(
             'type' => 'return',
-            'url' => $payment->getReturnUrl(),
-            'content' => array(
-                'razorpay_payment_id' => $payment->getPublicId(),
-            )
+            'request' => [
+                'url' => $payment->getCallbackUrl(),
+                'method' => 'post',
+                'content' => array(
+                    'razorpay_payment_id' => $payment->getPublicId(),
+                ),
+            ],
         );
 
         return $data;
+    }
+
+    protected function getMerchantCallbackUrl($payment)
+    {
+        return $this->payment->getCallbackUrl();
     }
 
     protected function getPaymentGatewayRequestData($request, $payment)
@@ -152,7 +160,7 @@ trait Authorize
             return $this->captureSignedPayment($payment);
         }
 
-        if ($payment->getReturnUrl())
+        if ($payment->getCallbackUrl())
         {
             return $this->getReturnRequestDataForMerchant($payment);
         }
