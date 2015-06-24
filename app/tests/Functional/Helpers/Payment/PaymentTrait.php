@@ -457,7 +457,14 @@ trait PaymentTrait
                 return $response;
             }
 
-            list($gateway, ) = explode('__', \Crypt::decrypt($content['gateway'], 2));
+            $gateway = $content['gateway'];
+
+            if (isset($content['type']) === 'return')
+            {
+                $request = $content;
+
+                $response = $this->makeRequestParent($request);
+            }
         }
         else
         {
@@ -474,9 +481,31 @@ trait PaymentTrait
                 $ret = ((get_class($response) === 'Illuminate\Http\RedirectResponse') and
                         ($response->getStatusCode() === 302));
 
-                if ($ret === false)
+                if ($ret === true)
+                {
+                    $headers = $response->headers;
+                    $gateway = $headers->get('X-gateway');
+                }
+                else
+                {
                     return $response;
+                }
             }
+            else
+            {
+                $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+                if ((isset($content['type'])) and
+                    ($content['type'] === 'first'))
+                {
+                    $gateway = $content['gateway'];
+                }
+            }
+        }
+
+        if ($gateway !== null)
+        {
+            $gateway = $this->decryptGatewayText($gateway);
         }
 
         return $this->runPaymentCallbackFlowForGateway($response, $callback, $gateway);
@@ -489,17 +518,19 @@ trait PaymentTrait
             $gateway = $this->gateway;
         }
 
-        if ($gateway === null)
-        {
-            $gateway = 'hdfc';
-        }
-
         if (strpos($gateway, 'netbanking') !== false)
             $gateway = 'netbanking';
 
         $func = 'runPaymentCallbackFlow'.studly_case($gateway);
 
         return $this->$func($response, $callback);
+    }
+
+    protected function decryptGatewayText($gateway)
+    {
+        list($gateway, ) = explode('__', \Crypt::decrypt($gateway, 2));
+
+        return $gateway;
     }
 
     protected function getIdFromUri($uri)
@@ -555,6 +586,19 @@ trait PaymentTrait
         $form = $crawler->filter('form')->form();
 
         return $this->getDataFromForm($form);
+    }
+
+    protected function getSecondFormDataFromResponse($content)
+    {
+        $url = 'http://localhost';
+
+        $crawler = new Crawler($content, $url);
+
+        $form = $crawler->filter('form')->last()->form();
+
+        list(, , $content) = $this->getDataFromForm($form);
+
+        return $content;
     }
 
     protected function getDataFromForm($form)
@@ -635,5 +679,10 @@ trait PaymentTrait
         $url = $response->getTargetUrl();
 
         return $url;
+    }
+
+    public function getLocalMerchantCallbackUrl()
+    {
+        return \Http\Route::getUrlWithPublicAuth('dummy_return_callback', [], $this->ba->getKey());
     }
 }

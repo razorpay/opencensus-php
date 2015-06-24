@@ -4,8 +4,8 @@
     <style>body{background:#fff;}</style>
 </head>
 
-<form action="<?= $url ?>" method="post">
-    @foreach ($content as $key => $value)
+<form action="<?= $data['request']['url'] ?>" method="post">
+    @foreach ($data['request']['content'] as $key => $value)
         <input type="hidden" name="{{{ $key }}}" value="{{{ $value }}}" />
     @endforeach
     <input type="submit" />
