@@ -93,6 +93,7 @@ class HdfcGatewayAuthTest extends TestCase
     public function testJsonpPaymentReturnFields()
     {
         $fields = array(
+            'type',
             'request',
             'version',
             'payment_id',

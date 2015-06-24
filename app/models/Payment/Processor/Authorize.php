@@ -59,18 +59,10 @@ trait Authorize
         //
         if ($request !== null)
         {
-            $data['request'] = $request;
-            $data['version'] = 1;
-            $data['payment_id'] = $payment->getPublicId();
-
-            $data['gateway'] = \Crypt::encrypt($payment->getGateway() . '__' . time());
-
-            return $data;
+            return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        $this->updatePaymentAuthorized();
-
-        return $payment;
+        return $this->postPaymentAuthorizeProcessing($payment);
     }
 
     /**
@@ -115,22 +107,54 @@ trait Authorize
             throw $e;
         }
 
+        return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function getReturnRequestDataForMerchant($payment)
+    {
+        assert ($payment->getReturnUrl() !== null);
+
+        $data = array(
+            'type' => 'return',
+            'url' => $payment->getReturnUrl(),
+            'content' => array(
+                'razorpay_payment_id' => $payment->getPublicId(),
+            )
+        );
+
+        return $data;
+    }
+
+    protected function getPaymentGatewayRequestData($request, $payment)
+    {
+        $data['type'] = 'first';
+        $data['request'] = $request;
+        $data['version'] = 1;
+        $data['payment_id'] = $payment->getPublicId();
+
+        $data['gateway'] = \Crypt::encrypt($payment->getGateway() . '__' . time());
+
+        return $data;
+    }
+
+    protected function postPaymentAuthorizeProcessing($payment)
+    {
         $this->updatePaymentAuthorized();
 
+        //
+        // The returned value could be either Payment
+        // model or an array containing callback data.
+        // We convert payment model to array
+        // if it's a payment model
+        //
         if ($payment->isSigned())
         {
             return $this->captureSignedPayment($payment);
         }
 
-        if ($payment->getReturnUrl() !== null)
+        if ($payment->getReturnUrl())
         {
-            $data = array(
-                'type' => 'redirect',
-                'url' => $payment->getReturnUrl(),
-                'content' => array(
-                    'razorpay_payment_id' => $payment->getPublicId(),
-                )
-            );
+            return $this->getReturnRequestDataForMerchant($payment);
         }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
