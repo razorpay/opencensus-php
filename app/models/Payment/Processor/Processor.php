@@ -76,31 +76,7 @@ class Processor
 
         $this->checkSignature($input, $payment);
 
-        $data = $this->authorize($payment, $input);
-
-        //
-        // The returned value could be either Payment
-        // model or an array containing callback data.
-        // We convert payment model to array
-        // if it's a payment model
-        //
-        if ($data instanceof Payment\Entity)
-        {
-            // This is a payment instance
-            $payment = $data;
-
-            if ($payment->isSigned())
-            {
-                $data = $this->captureSignedPayment($payment);
-            }
-            else
-            {
-                // Return array with fields after authorized
-                $data = ['razorpay_payment_id' => $payment->getPublicId()];
-            }
-        }
-
-        return $data;
+        return $this->authorize($payment, $input);
     }
 
     protected function checkSignature($input, $payment)

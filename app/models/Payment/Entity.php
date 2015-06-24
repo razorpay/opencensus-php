@@ -35,6 +35,7 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID       = 'terminal_id';
     const SIGNED            = 'signed';
     const VERIFIED          = 'verified';
+    const RETURN_URL        = 'return_url';
 
     const CURRENCY_LENGTH   = 3;
 
@@ -433,6 +434,11 @@ class Entity extends Base\PublicEntity
     public function getBank()
     {
         return $this->getAttribute(self::BANK);
+    }
+
+    public function getReturnUrl()
+    {
+        return $this->getAttribute(self::RETURN_URL);
     }
 
 // ----------------------- Getters Ends-----------------------------------------

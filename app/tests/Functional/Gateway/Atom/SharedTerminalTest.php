@@ -27,10 +27,6 @@ class SharedTerminalTest extends TestCase
 
     public function testNBPaymentOnSharedTerminal()
     {
-        $this->fixtures->create(
-            'merchant:add_payment_banks',
-            ['merchant_id' => $this->merchant->getId()]);
-
         $payment = $this->getDefaultNetBankingPaymentArray();
         $this->assertPaymentFields($payment);
 
