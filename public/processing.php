@@ -55,6 +55,7 @@ setInterval(function(){
 }, 400)
 
 function setOrderData(data){
+  data.date = new Date().toDateString();
   for(var i in data) g(i).innerHTML = data[i];
   g('order').style.display = 'block';
 }
@@ -102,17 +103,16 @@ function handleMessage(data){
   body{ text-align: center; color: #444; font-family: 'lato', sans-serif; font-size: 16px; line-height: 30px; white-space: nowrap;}
   .middlechild,.container{display: inline-block; vertical-align: middle; white-space: normal;}
   .middlechild{width: 1px; height: 90%;}
-  .container{width: 80%; max-width: 900px; margin: 0 auto;}
+  .container{width: 80%; max-width: 900px; margin: 150px auto;}
   #logo{padding-bottom: 20px;}
   #top{position: absolute; top: 20px; text-align: center; border-bottom: 2px solid #ddd; width: 80%; left: 10%;}
   .heading{text-transform: uppercase; font-size: 36px; letter-spacing: 1px}
   #pro{border-radius: 6px; margin-top: 20px;}
   .powered-by{font-size: 50px;text-decoration: none; color: #999; margin-top: 10px; display: block; line-height: 60px}
-  .powered-by:hover{color: #333;}
   img{max-width: 100%; display: block; margin: 10px auto;}
-  #description{clear:both; padding: 40px 0 10px; font-size: 22px; }
+  #description{clear:both; padding: 40px 0 10px; font-size: 22px; font-weight: bold;}
   #order{display: none; max-width: 600px; margin: 0 auto;}
-  #amount{font-size: 50px; line-height: 60px; color: #29b3d2;}
+  .amount{font-size: 50px; line-height: 60px; color: #29b3d2;}
 </style>
 <div class="middlechild"></div>
 <div id="top"><img src="/logo.gif" width="200" height="52" id="logo"></div>
@@ -123,10 +123,10 @@ function handleMessage(data){
     <div id="name" style="float:left;"></div>
     <div id="date" style="float:right;"></div>
     <div id="description"></div>
-    <div class="heading">&#xe600;<span id="amount"></span></div>
+    <div class="heading amount">&#xe600;<span id="amount"></span></div>
   </div>
   <div style="margin-top: 30px">Redirecting to bank page...</div>
-  <a class="powered-by" href="https://razorpay.com" target="_blank">&#xe608;</a>
+  <div class="powered-by">&#xe608;</div>
 <div class="autosubmit">
   <form method="POST" action="{{=it.data.url}}" id="rzp-dcform">
     <input type="hidden" id="PaReq" name="PaReq" value="{{=it.data.PAReq}}">
