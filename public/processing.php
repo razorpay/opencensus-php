@@ -117,7 +117,6 @@ function handleMessage(data){
   .powered-by{font-size: 32px; line-height: 40px;}
 }
 </style>
-<div class="middlechild"></div>
 <div id="top"><img src="/logo.gif" width="200" height="52" id="logo"></div>
 <div class="container">
   <div class="heading">Processing Payment</div>
@@ -138,7 +137,7 @@ function handleMessage(data){
   </form>
 </div>
 </div>
-
+<div class="middlechild"></div>
 <script>
 if (!window.CheckoutBridge){
   var msgObj = {
