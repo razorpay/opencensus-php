@@ -22,7 +22,7 @@ class Validator extends Base\Validator
         'notes'         =>  'sometimes',
         'signature'     =>  'sometimes',
         'notes'         =>  'sometimes',
-        'return_url'    =>  'sometimes|url');
+        'callback_url'  =>  'sometimes|url');
 
     protected static $captureRules = array(
         'amount'        => 'required|integer',
