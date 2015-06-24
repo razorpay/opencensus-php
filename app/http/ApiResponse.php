@@ -18,7 +18,7 @@ class ApiResponse
     {
         self::$jsonp = false;
 
-        $response = self::generateResponse(
+        $response = self::generateErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
         $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
@@ -28,7 +28,7 @@ class ApiResponse
 
     public static function provideApiKey()
     {
-        $response = self::generateResponse(
+        $response = self::generateErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED);
 
         return $response;
@@ -36,17 +36,17 @@ class ApiResponse
 
     public static function unauthorized($code)
     {
-        return self::generateResponse($code);
+        return self::generateErrorResponse($code);
     }
 
     public static function routeNotFound()
     {
-        return self::generateResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        return self::generateErrorResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
     public static function httpMethodNotAllowed()
     {
-        return self::generateResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
+        return self::generateErrorResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
     }
 
     public static function stopBrowserCaching($response)
@@ -76,7 +76,7 @@ class ApiResponse
         $response->setCallback($callback);
     }
 
-    public static function generateResponse($code)
+    public static function generateErrorResponse($code)
     {
         list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
 
@@ -139,7 +139,7 @@ class ApiResponse
 
     protected static function debugException($e)
     {
-        return self::generateResponse(ErrorCode::SERVER_ERROR);
+        return self::generateErrorResponse(ErrorCode::SERVER_ERROR);
     }
 
     public static function json($data = array(), $status = 200)
