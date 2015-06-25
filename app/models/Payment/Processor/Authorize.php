@@ -82,7 +82,7 @@ trait Authorize
         $payment = $this->retrieve($id);
 
         // For redirect flow
-        $this->checkForMerchantCallbackUrl();
+        $this->checkForMerchantCallbackUrl($payment);
 
         //
         // This field is received back from bank acs.
