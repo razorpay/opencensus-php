@@ -29,6 +29,8 @@ class Gateway extends Base\Gateway
             $type = RequestType::SEAMLESS;
         }
 
+        $mobileNo = $this->getMobileNumber($input['payment']['contact']);
+
         $content = array(
             'REQUEST_TYPE'              => $type,
             'MID'                       => $input['terminal']['gateway_merchant_id'],
@@ -39,7 +41,7 @@ class Gateway extends Base\Gateway
             'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
             'WEBSITE'                   => $input['terminal']['gateway_access_code'],
             'CALLBACK_URL'              => $input['callbackUrl'],
-            'MOBILE_NO'                 => $input['payment']['contact'],
+            'MOBILE_NO'                 => $mobileNo,
             'EMAIL'                     => $input['payment']['email'],
         );
 
@@ -351,5 +353,11 @@ class Gateway extends Base\Gateway
         $cardExp = $expiryMonth . $input['card']['expiry_year'];
 
         return $cardExp;
+    }
+
+    protected function getMobileNumber($contact)
+    {
+        $chars = ['+', '(', ')'];
+        return str_replace($chars, '', $contact);
     }
 }
