@@ -80,7 +80,7 @@ class ApiResponse
     {
         list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
 
-        return self::json($publicError, $httpStatusCode);
+        return self::generateResponse($publicError, $httpStatusCode);
     }
 
     public static function getErrorResponseFields($code)
@@ -110,7 +110,7 @@ class ApiResponse
             }
         }
 
-        return self::json($publicError, $httpStatusCode);
+        return self::generateResponse($publicError, $httpStatusCode);
     }
 
     protected static function getExceptionData($exception)
@@ -140,6 +140,40 @@ class ApiResponse
     protected static function debugException($e)
     {
         return self::generateErrorResponse(ErrorCode::SERVER_ERROR);
+    }
+
+    protected static function generateResponse($data = array(), $status = 200)
+    {
+        $app = \App::getFacadeRoot();
+
+        $key = 'rzp.merchant_callback_url';
+
+        $router = $app['router'];
+
+        if ((isset($app[$key])) and
+            ($app[$key] !== null))
+        {
+            $route = $router->currentRouteName();
+
+            if (self::isMerchantCallbackRoute($route))
+            {
+                $data = self::flattenArrayForPost($data);
+
+                $callbackArray = array(
+                    'type' => 'return',
+                    'request' => [
+                        'url' => $app[$key],
+                        'method' => 'post',
+                        'content' => $data,
+                    ],
+                );
+
+                return \View::make('gateway.callbackReturnUrl')
+                           ->with('data', $callbackArray);
+            }
+        }
+
+        return self::json($data, $status);
     }
 
     public static function json($data = array(), $status = 200)
@@ -179,5 +213,31 @@ class ApiResponse
     protected static function isJsonpRequired($path)
     {
         return Route::isJsonpRoute($path);
+    }
+
+    protected static function isMerchantCallbackRoute($route)
+    {
+        $callbackRoutes = array(
+            'payment_create',
+            'payment_callback_with_key_post',
+            'payment_callback_with_key_get',
+        );
+
+        return (in_array($route, $callbackRoutes));
+    }
+
+    protected static function flattenArrayForPost($data)
+    {
+        $data = flatten_array($data, '][');
+
+        $array = [];
+
+        foreach ($data as $key => $value)
+        {
+            $key = preg_replace('/\]\[/', '[', $key, 1) . ']';
+            $array[$key] = $value;
+        }
+
+        return $array;
     }
 }

@@ -40,6 +40,12 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
+        if (isset($input['callback_url']))
+        {
+            $app = App::getFacadeRoot();
+            $app['rzp.merchant_callback_url'] = $input['callback_url'];
+        }
+
         $data = $this->payment->process($input);
 
         //

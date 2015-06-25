@@ -81,6 +81,9 @@ trait Authorize
     {
         $payment = $this->retrieve($id);
 
+        // For redirect flow
+        $this->checkForMerchantCallbackUrl();
+
         //
         // This field is received back from bank acs.
         // Kinda weird! And it's always null.
@@ -263,6 +266,15 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function checkForMerchantCallbackUrl($payment)
+    {
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $app = \App::getFacadeRoot();
+            $app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
     }
 

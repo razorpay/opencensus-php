@@ -464,11 +464,12 @@ trait PaymentTrait
                 $request = $content;
 
                 $response = $this->makeRequestParent($request);
+//                    sd($response->getContent());
             }
         }
         else
         {
-            // Has to be either redirect or a gateway form post.
+            // Has to be either redirect or a html form post.
             // First check for normal html form post.
             $ret = ((json_decode($content) === null) and
                     (get_class($response) === 'Illuminate\Http\Response') and
@@ -499,6 +500,13 @@ trait PaymentTrait
                     ($content['type'] === 'first'))
                 {
                     $gateway = $content['gateway'];
+                }
+                else if ($content['type'] === 'return')
+                {
+                    $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
+
+                    $response = $this->makeRequestParent($request);
+//                    sd($response->getContent());
                 }
             }
         }
@@ -683,6 +691,10 @@ trait PaymentTrait
 
     public function getLocalMerchantCallbackUrl()
     {
-        return \Http\Route::getUrlWithPublicAuth('dummy_return_callback', [], $this->ba->getKey());
+        $params = ['key_id' => $this->ba->getKey()];
+        $url = \URL::route('dummy_return_callback', $params, false);
+        $url = 'http://localhost'.$url;
+
+        return $url;
     }
 }
