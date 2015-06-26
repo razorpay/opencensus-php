@@ -161,11 +161,11 @@ class ApiResponse
 
         $router = $app['router'];
 
+        $route = $router->currentRouteName();
+
         if ((isset($app[$key])) and
             ($app[$key] !== null))
         {
-            $route = $router->currentRouteName();
-
             if (self::isMerchantCallbackRoute($route))
             {
                 $data = self::flattenArrayForPost($data);
@@ -180,8 +180,14 @@ class ApiResponse
                 );
 
                 return \View::make('gateway.callbackReturnUrl')
-                                 ->with('data', $callbackArray);
+                            ->with('data', $callbackArray);
             }
+        }
+        else if (self::isCallbackRoute($route))
+        {
+            $data['http_status_code'] = $status;
+
+            return \View::make('gateway.callback')->with('data', $data);
         }
 
         return self::json($data, $status);
@@ -230,6 +236,16 @@ class ApiResponse
     {
         $callbackRoutes = array(
             'payment_create',
+            'payment_callback_with_key_post',
+            'payment_callback_with_key_get',
+        );
+
+        return (in_array($route, $callbackRoutes));
+    }
+
+    protected static function isCallbackRoute($route)
+    {
+        $callbackRoutes = array(
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
         );

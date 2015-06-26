@@ -149,22 +149,7 @@ class PaymentController extends BaseController
 
         $data = null;
 
-        try
-        {
-            $data = $this->payment->callback($id, $hash, $input);
-        }
-        catch (RecoverableException $exception)
-        {
-            if (App::runningUnitTests())
-            {
-                throw $exception;
-            }
-
-            $error = $exception->getError();
-
-            $data = $error->toPublicArray();
-            $data['http_status_code'] = $error->getHttpStatusCode();
-        }
+        $data = $this->payment->callback($id, $hash, $input);
 
         if (isset($data['type']))
         {
