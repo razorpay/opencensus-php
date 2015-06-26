@@ -27,6 +27,8 @@ trait PaymentTrait
 
     protected $merchantCallbackUrl = null;
 
+    protected $merchantCallbackFlow = false;
+
     protected function doAuthAndCapturePayment($payment = null)
     {
         if ($payment === null)
@@ -426,7 +428,13 @@ trait PaymentTrait
 
         if ($this->isResponse('http', $response))
         {
-            return $this->processMerchantReturnCallbackForm($response);
+            $formData = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+            if ((isset($formData['type'])) and
+                ($formData['type'] === 'return'))
+            {
+                return $this->processMerchantReturnCallbackForm($response);
+            }
         }
 
         $this->ba->publicAuth();
@@ -545,6 +553,8 @@ trait PaymentTrait
 
         if ($content['type'] === 'return')
         {
+            $this->merchantCallbackFlow = true;
+
             $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
 
             $this->assertEquals($request['url'], $this->getLocalMerchantCallbackUrl());
@@ -625,7 +635,12 @@ trait PaymentTrait
 
         $crawler = new Crawler($content, $url);
 
-        $form = $crawler->filter('form')->last()->form();
+        $last = $crawler->filter('form')->last();
+
+        if (count($last) === 0)
+            return false;
+
+        $form = $last->form();
 
         list(, , $content) = $this->getDataFromForm($form);
 

@@ -18,12 +18,10 @@ class ReturnTest extends TestCase
 
     public function testReturnUrlWith3dSecure()
     {
-        $callbackUrl = $this->getLocalMerchantCallbackUrl();
-
         $testData = array(
             'request' => [
                 'content' => [
-                    'callback_url' => $callbackUrl,
+                    'callback_url' => $this->getLocalMerchantCallbackUrl(),
                     'card' => ['number' => '4012001037141112'],
                 ],
             ],
@@ -39,17 +37,17 @@ class ReturnTest extends TestCase
         // get its payment id
         $this->assertArrayHasKey('razorpay_payment_id', $payment);
         $id = $payment['razorpay_payment_id'];
+
+        $this->assertTrue($this->merchantCallbackFlow);
     }
 
     public function testReturnUrlWithout3dSecure()
     {
-        $callbackUrl = $this->getLocalMerchantCallbackUrl();
-
         $testData = array(
             'request' => [
                 'content' => [
                     'card' => ['number' => '4111111111111111'],
-                    'callback_url' => $callbackUrl,
+                    'callback_url' => $this->getLocalMerchantCallbackUrl(),
                 ],
             ],
             'response' => [
@@ -64,5 +62,65 @@ class ReturnTest extends TestCase
         // get its payment id
         $this->assertArrayHasKey('razorpay_payment_id', $payment);
         $id = $payment['razorpay_payment_id'];
+
+        $this->assertTrue($this->merchantCallbackFlow);
+    }
+
+    public function testReturnUrlWithout3dSecureFailure()
+    {
+        $this->app['env'] = 'dev';
+        $this->app['config']->set('app.debug', false);
+
+        $testData = array(
+            'request' => [
+                'content' => [
+                    'card' => ['number' => '411111111111111'],
+                    'callback_url' => $this->getLocalMerchantCallbackUrl(),
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'error[code]' => 'BAD_REQUEST_ERROR',
+                    'error[description]' => 'The number is invalid.',
+                    'error[field]' => 'number',
+                ],
+            ]
+        );
+
+        $this->replaceDefualtValues($testData['request']['content']);
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($this->merchantCallbackFlow);
+    }
+
+    public function testReturnUrlWith3dSecureFailure()
+    {
+        $this->markTestSkipped();
+
+        $this->app['env'] = 'dev';
+        $this->app['config']->set('app.debug', false);
+
+        $testData = array(
+            'request' => [
+                'content' => [
+                    'card' => ['number' => '411111111111111'],
+                    'callback_url' => $this->getLocalMerchantCallbackUrl(),
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'error[code]' => 'BAD_REQUEST_ERROR',
+                    'error[description]' => 'The number is invalid.',
+                    'error[field]' => 'number',
+                ],
+            ]
+        );
+
+        $this->replaceDefualtValues($testData['request']['content']);
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($this->merchantCallbackFlow);
     }
 }

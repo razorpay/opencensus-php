@@ -113,6 +113,17 @@ class ApiResponse
         return self::generateResponse($publicError, $httpStatusCode);
     }
 
+    public static function recoverableError($debug, $exception = null)
+    {
+        $error = $exception->getError();
+
+        $httpStatusCode = $error->getHttpStatusCode();
+
+        $data = $debug ? $error->toDebugArray() : $error->toPublicArray();
+
+        return self::generateResponse($data, $httpStatusCode);
+    }
+
     protected static function getExceptionData($exception)
     {
         $previous = $exception->getPrevious();
@@ -169,7 +180,7 @@ class ApiResponse
                 );
 
                 return \View::make('gateway.callbackReturnUrl')
-                           ->with('data', $callbackArray);
+                                 ->with('data', $callbackArray);
             }
         }
 
