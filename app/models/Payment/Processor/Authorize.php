@@ -118,6 +118,7 @@ trait Authorize
         assert ($payment->getCallbackUrl() !== null);
 
         $data = array(
+            'version' => 1,
             'type' => 'return',
             'request' => [
                 'url' => $payment->getCallbackUrl(),
