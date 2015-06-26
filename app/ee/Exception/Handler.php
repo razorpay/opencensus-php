@@ -13,13 +13,9 @@ class Handler
 {
     protected $app;
 
-    protected $debug;
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
-
-        $this->debug = Config::get('app.debug');
 
         $this->registerExceptionHandlers();
     }
@@ -61,7 +57,7 @@ class Handler
             return;
         }
 
-        return ApiResponse::serverError($this->debug, $exception);
+        return ApiResponse::serverError($this->isDebug(), $exception);
     }
 
     public function baseExceptionHandler(BaseException $exception, $code)
@@ -72,12 +68,7 @@ class Handler
         if ($exception instanceof ServerErrorException)
             return;
 
-        if ($this->debug)
-        {
-            return $exception->generateDebugJsonResponse();
-        }
-
-        return $exception->generatePublicJsonResponse();
+        return ApiResponse::recoverableError($this->isDebug(), $exception);
     }
 
     protected function traceException(\Exception $exception)
@@ -119,5 +110,10 @@ class Handler
             'previous'  => $previous);
 
         return $traceData;
+    }
+
+    protected function isDebug()
+    {
+        return $this->app['config']->get('app.debug');
     }
 }

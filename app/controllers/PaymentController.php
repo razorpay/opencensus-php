@@ -40,6 +40,12 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
+        if (isset($input['callback_url']))
+        {
+            $app = App::getFacadeRoot();
+            $app['rzp.merchant_callback_url'] = $input['callback_url'];
+        }
+
         $data = $this->payment->process($input);
 
         //
@@ -56,7 +62,9 @@ class PaymentController extends BaseController
                 }
                 else if ($data['request']['method'] === 'get')
                 {
-                    return Redirect::away($data['request']['url']);
+                    $response = Redirect::away($data['request']['url']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+                    return $response;
                 }
             }
             else if ($data['type'] === 'return')
@@ -252,5 +260,12 @@ class PaymentController extends BaseController
         $data = $this->payment->verifyAllPayments();
 
         return ApiResponse::json($data);
+    }
+
+    public function postDummyReturnCallback()
+    {
+        $input = Input::all();
+
+        return ApiResponse::json($input);
     }
 }

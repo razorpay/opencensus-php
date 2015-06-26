@@ -81,6 +81,9 @@ trait Authorize
     {
         $payment = $this->retrieve($id);
 
+        // For redirect flow
+        $this->checkForMerchantCallbackUrl($payment);
+
         //
         // This field is received back from bank acs.
         // Kinda weird! And it's always null.
@@ -112,17 +115,25 @@ trait Authorize
 
     protected function getReturnRequestDataForMerchant($payment)
     {
-        assert ($payment->getReturnUrl() !== null);
+        assert ($payment->getCallbackUrl() !== null);
 
         $data = array(
             'type' => 'return',
-            'url' => $payment->getReturnUrl(),
-            'content' => array(
-                'razorpay_payment_id' => $payment->getPublicId(),
-            )
+            'request' => [
+                'url' => $payment->getCallbackUrl(),
+                'method' => 'post',
+                'content' => array(
+                    'razorpay_payment_id' => $payment->getPublicId(),
+                ),
+            ],
         );
 
         return $data;
+    }
+
+    protected function getMerchantCallbackUrl($payment)
+    {
+        return $this->payment->getCallbackUrl();
     }
 
     protected function getPaymentGatewayRequestData($request, $payment)
@@ -152,7 +163,7 @@ trait Authorize
             return $this->captureSignedPayment($payment);
         }
 
-        if ($payment->getReturnUrl())
+        if ($payment->getCallbackUrl())
         {
             return $this->getReturnRequestDataForMerchant($payment);
         }
@@ -255,6 +266,15 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function checkForMerchantCallbackUrl($payment)
+    {
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $app = \App::getFacadeRoot();
+            $app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
     }
 

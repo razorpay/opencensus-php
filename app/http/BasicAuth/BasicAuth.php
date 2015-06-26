@@ -240,7 +240,7 @@ class BasicAuth
         if (($this->getSecret() !== '') and
             ($this->getSecret() !== null))
         {
-            return ApiResponse::generateResponse(
+            return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
@@ -344,7 +344,7 @@ class BasicAuth
         if (($this->getSecret() !== '') and
             ($this->getSecret() !== null))
         {
-            return ApiResponse::generateResponse(
+            return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
@@ -360,7 +360,7 @@ class BasicAuth
         if (($this->request->getHttpHost() === 'api.razorpay.com') and
             ($this->request->secure() === false))
         {
-            return ApiResponse::generateResponse(
+            return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
         }
     }

@@ -16,5 +16,10 @@
 <!--         <input type="submit" value="Submit" >
  -->    </form>
     <br>
+    <form id="form2" name="form2">
+        <input type="hidden" name="type" value="{{$data['type']}}">
+        <input type="hidden" name="gateway" value="{{$data['gateway']}}">
+    </form>
+
     </body>
 </html>

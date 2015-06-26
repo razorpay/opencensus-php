@@ -18,7 +18,7 @@ class ApiResponse
     {
         self::$jsonp = false;
 
-        $response = self::generateResponse(
+        $response = self::generateErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
         $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
@@ -28,7 +28,7 @@ class ApiResponse
 
     public static function provideApiKey()
     {
-        $response = self::generateResponse(
+        $response = self::generateErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED);
 
         return $response;
@@ -36,17 +36,17 @@ class ApiResponse
 
     public static function unauthorized($code)
     {
-        return self::generateResponse($code);
+        return self::generateErrorResponse($code);
     }
 
     public static function routeNotFound()
     {
-        return self::generateResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        return self::generateErrorResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
     public static function httpMethodNotAllowed()
     {
-        return self::generateResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
+        return self::generateErrorResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
     }
 
     public static function stopBrowserCaching($response)
@@ -76,11 +76,11 @@ class ApiResponse
         $response->setCallback($callback);
     }
 
-    public static function generateResponse($code)
+    public static function generateErrorResponse($code)
     {
         list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
 
-        return self::json($publicError, $httpStatusCode);
+        return self::generateResponse($publicError, $httpStatusCode);
     }
 
     public static function getErrorResponseFields($code)
@@ -110,7 +110,18 @@ class ApiResponse
             }
         }
 
-        return self::json($publicError, $httpStatusCode);
+        return self::generateResponse($publicError, $httpStatusCode);
+    }
+
+    public static function recoverableError($debug, $exception = null)
+    {
+        $error = $exception->getError();
+
+        $httpStatusCode = $error->getHttpStatusCode();
+
+        $data = $debug ? $error->toDebugArray() : $error->toPublicArray();
+
+        return self::generateResponse($data, $httpStatusCode);
     }
 
     protected static function getExceptionData($exception)
@@ -139,7 +150,41 @@ class ApiResponse
 
     protected static function debugException($e)
     {
-        return self::generateResponse(ErrorCode::SERVER_ERROR);
+        return self::generateErrorResponse(ErrorCode::SERVER_ERROR);
+    }
+
+    protected static function generateResponse($data = array(), $status = 200)
+    {
+        $app = \App::getFacadeRoot();
+
+        $key = 'rzp.merchant_callback_url';
+
+        $router = $app['router'];
+
+        if ((isset($app[$key])) and
+            ($app[$key] !== null))
+        {
+            $route = $router->currentRouteName();
+
+            if (self::isMerchantCallbackRoute($route))
+            {
+                $data = self::flattenArrayForPost($data);
+
+                $callbackArray = array(
+                    'type' => 'return',
+                    'request' => [
+                        'url' => $app[$key],
+                        'method' => 'post',
+                        'content' => $data,
+                    ],
+                );
+
+                return \View::make('gateway.callbackReturnUrl')
+                                 ->with('data', $callbackArray);
+            }
+        }
+
+        return self::json($data, $status);
     }
 
     public static function json($data = array(), $status = 200)
@@ -179,5 +224,31 @@ class ApiResponse
     protected static function isJsonpRequired($path)
     {
         return Route::isJsonpRoute($path);
+    }
+
+    protected static function isMerchantCallbackRoute($route)
+    {
+        $callbackRoutes = array(
+            'payment_create',
+            'payment_callback_with_key_post',
+            'payment_callback_with_key_get',
+        );
+
+        return (in_array($route, $callbackRoutes));
+    }
+
+    protected static function flattenArrayForPost($data)
+    {
+        $data = flatten_array($data, '][');
+
+        $array = [];
+
+        foreach ($data as $key => $value)
+        {
+            $key = preg_replace('/\]\[/', '[', $key, 1) . ']';
+            $array[$key] = $value;
+        }
+
+        return $array;
     }
 }
