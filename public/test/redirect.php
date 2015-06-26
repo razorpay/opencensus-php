@@ -41,7 +41,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             <label>CVV</label><input required id="card_cvv" value="300">
         </div>
         <div style="clear: both"></div>
-        <input type="submit" value="Purchase" class="pure-button pure-button-primary">
+        <input id="submit" type="submit" value="Purchase" class="pure-button pure-button-primary">
     </form>
     <script>
         Razorpay.configure({
@@ -62,6 +62,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         }
         gel('container').onsubmit = function(e){
             e.preventDefault();
+            gel('submit').setAttribute('disabled', 'disabled'); // add loading animation here
             Razorpay.payment.authorize({
                 data: {
                     amount: val('amount').replace(/[^0-9]+/,'')*100,
@@ -76,7 +77,8 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                     'card[cvv]': val('card_cvv')
                 },
                 error: function(response){
-                    alert(JSON.stringify(response));
+                    alert(JSON.stringify(response)); // focus invalid inputs using returned 'field';
+                    gel('submit').removeAttribute('disabled'); // re-enable pay button
                 }
             })
         }
