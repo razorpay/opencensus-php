@@ -12,18 +12,43 @@ class ReturnTest extends TestCase
     public function setUp()
     {
         parent::setUp();
+
+        $this->ba->publicAuth();
     }
 
-    public function testReturnUrl()
+    public function testReturnUrlWith3dSecure()
     {
-$this->markTestSkipped();
-        $this->ba->publicAuth();
-
         $callbackUrl = $this->getLocalMerchantCallbackUrl();
 
         $testData = array(
             'request' => [
                 'content' => [
+                    'callback_url' => $callbackUrl,
+                    'card' => ['number' => '4012001037141112'],
+                ],
+            ],
+            'response' => [
+                'content' => [],
+            ]
+        );
+
+        $this->replaceDefualtValues($testData['request']['content']);
+
+        $payment = $this->runRequestResponseFlow($testData);
+
+        // get its payment id
+        $this->assertArrayHasKey('razorpay_payment_id', $payment);
+        $id = $payment['razorpay_payment_id'];
+    }
+
+    public function testReturnUrlWithout3dSecure()
+    {
+        $callbackUrl = $this->getLocalMerchantCallbackUrl();
+
+        $testData = array(
+            'request' => [
+                'content' => [
+                    'card' => ['number' => '4111111111111111'],
                     'callback_url' => $callbackUrl,
                 ],
             ],
@@ -35,17 +60,9 @@ $this->markTestSkipped();
         $this->replaceDefualtValues($testData['request']['content']);
 
         $payment = $this->runRequestResponseFlow($testData);
-sd($payment);
+
         // get its payment id
         $this->assertArrayHasKey('razorpay_payment_id', $payment);
         $id = $payment['razorpay_payment_id'];
-
-        // get amount
-        $amount = '50000';
-
-        $this->capturePayment($id, $amount);
-
-        $this->refundPayment($id);
-
     }
 }

@@ -25,6 +25,8 @@ trait PaymentTrait
 
     protected $gateway = null;
 
+    protected $merchantCallbackUrl = null;
+
     protected function doAuthAndCapturePayment($payment = null)
     {
         if ($payment === null)
@@ -420,9 +422,14 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $this->ba->publicAuth();
-
         $content = $response->getContent();
+
+        if ($this->isResponse('http', $response))
+        {
+            return $this->processMerchantReturnCallbackForm($response);
+        }
+
+        $this->ba->publicAuth();
 
         $content = $this->getPaymentJsonFromCallback($content);
 
@@ -464,7 +471,6 @@ trait PaymentTrait
                 $request = $content;
 
                 $response = $this->makeRequestParent($request);
-//                    sd($response->getContent());
             }
         }
         else
@@ -472,14 +478,14 @@ trait PaymentTrait
             // Has to be either redirect or a html form post.
             // First check for normal html form post.
             $ret = ((json_decode($content) === null) and
-                    (get_class($response) === 'Illuminate\Http\Response') and
+                    ($this->isResponse('http', $response)) and
                     ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
                     ($response->getStatusCode() === 200));
 
             if ($ret === false)
             {
                 // Now check for redirect
-                $ret = ((get_class($response) === 'Illuminate\Http\RedirectResponse') and
+                $ret = (($this->isResponse('redirect', $response)) and
                         ($response->getStatusCode() === 302));
 
                 if ($ret === true)
@@ -503,10 +509,7 @@ trait PaymentTrait
                 }
                 else if ($content['type'] === 'return')
                 {
-                    $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
-
-                    $response = $this->makeRequestParent($request);
-//                    sd($response->getContent());
+                    return $this->processMerchantReturnCallbackForm($response);
                 }
             }
         }
@@ -532,6 +535,26 @@ trait PaymentTrait
         $func = 'runPaymentCallbackFlow'.studly_case($gateway);
 
         return $this->$func($response, $callback);
+    }
+
+    protected function processMerchantReturnCallbackForm($response)
+    {
+        $content = $response->getContent();
+
+        $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+        if ($content['type'] === 'return')
+        {
+            $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
+
+            $this->assertEquals($request['url'], $this->getLocalMerchantCallbackUrl());
+
+            $response = $this->makeRequestParent($request);
+
+            $this->assertResponse('json', $response);
+
+            return $response;
+        }
     }
 
     protected function decryptGatewayText($gateway)
@@ -691,10 +714,36 @@ trait PaymentTrait
 
     public function getLocalMerchantCallbackUrl()
     {
+        if ($this->merchantCallbackUrl !== null)
+        {
+            return $this->merchantCallbackUrl;
+        }
+
         $params = ['key_id' => $this->ba->getKey()];
         $url = \URL::route('dummy_return_callback', $params, false);
         $url = 'http://localhost'.$url;
 
+        $this->merchantCallbackUrl = $url;
+
         return $url;
+    }
+
+    protected function isResponse($type = 'json', $response)
+    {
+        $match = 'Response';
+
+        if ($type !== 'http')
+            $match = ucfirst($type) . $match;
+
+        $match = 'Illuminate\Http\\'.$match;
+
+        $class = get_class($response);
+
+        return ($match === $class);
+    }
+
+    protected function assertResponse($type, $response)
+    {
+        $this->assertTrue($this->isResponse($type, $response));
     }
 }
