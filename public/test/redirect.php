@@ -74,6 +74,9 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                     'card[expiry_month]': val('card_month'),
                     'card[expiry_year]': val('card_year'),
                     'card[cvv]': val('card_cvv')
+                },
+                error: function(response){
+                    alert(JSON.stringify(response));
                 }
             })
         }
