@@ -24,19 +24,33 @@ build:
           name: Activate PHP 5.5
           code: phpenv global 5.5
       - script:
-          name: run unit tests
-          code: phpunit --debug --verbose --coverage-html ./report
+          name: Run unit tests
+          code: phpunit --debug --verbose --coverage-clover /tmp/clover.xml
       - script:
-          name: Generate coverage zip for upload
-          code: (cd ./report && tar zcvf /tmp/$WERCKER_GIT_BRANCH.tar.gz .)
-      - script:
-          name: Upload Coverage to cc.razorpay.com
-          code: curl -F "coverage=@/tmp/$WERCKER_GIT_BRANCH.tar.gz" https://cc.razorpay.com/$WERCKER_GIT_REPOSITORY/upload/?token=$COVERAGE_TOKEN
+          name: Upload coverage to codacy
+          code: vendor/bin/codacycoverage clover /tmp/clover.xml
     after-steps:
-      - williamli/slack-notify-no-owner-info:
-          subdomain: razorpay
-          token: $SLACK_TOKEN
+      - script:
+          name: Download apigen
+          cwd: $WERCKER_ROOT
+          code: curl -L https://github.com/ApiGen/ApiGen/releases/download/v4.1.0/apigen-4.1.0.phar -o apigen && chmod +x apigen
+      - script:
+          name: Generate docs
+          code: ./apigen generate -d ./docs
+      - script:
+          name: Archive docs
+          # This is on the old stack
+          code: (cd ./docs && tar zcvf /tmp/docs.tar.gz .)
+      - script:
+          name: Upload docs
+          code: >
+              curl -F "coverage=@/tmp/docs.tar.gz"
+              https://cc.razorpay.com/api/upload/?token=$COVERAGE_TOKEN
+      - slack-notifier:
+          url: $SLACK_URL
           channel: tech_bots
+          username: wercker
+          icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
 deploy:
     steps:
       - script:
@@ -50,7 +64,8 @@ deploy:
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: rzp-codedeploy
     after-steps:
-      - williamli/slack-notify-no-owner-info:
-          subdomain: razorpay
-          token: $SLACK_TOKEN
+      - slack-notifier:
+          url: $SLACK_URL
           channel: tech_bots
+          username: wercker
+          icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
