@@ -622,6 +622,11 @@ class BasicAuth
         return $this->router->currentRouteName();
     }
 
+    public function getAuthType()
+    {
+        return $this->type;
+    }
+
 // --------------------- Getters Ends ------------------------------------------
 
 // --------------------- Setters -----------------------------------------------

@@ -86,6 +86,8 @@ class PaymentRetrieveTest extends TestCase
      */
     public function testRetrievePaymentsWithCreatedAt()
     {
+        $this->markTestSkipped();
+
         $payments = $this->retrievePaymentsDefault();
         $id = $payments['items'][0]['id'];
 
