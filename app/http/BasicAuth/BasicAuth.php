@@ -201,6 +201,8 @@ class BasicAuth
         }
         else if ($this->verifyInternalAppAsProxy() === true)
         {
+            $this->setType((Type::APP_AUTH));
+
             return;
         }
 
