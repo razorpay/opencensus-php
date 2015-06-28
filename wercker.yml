@@ -1,56 +1,53 @@
-box: wercker/php
-services:
-    - wercker/mysql
+box: php:5.6
+dev:
+  steps:
+    - internal/shell:
+      code: echo "Welcome to Razorpay\\Api"
 build:
+    services:
+      - id: mysql
+        tag: latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: root
+          MYSQL_ROOT_PASSWORD: root
     # The steps that will be executed on build
     steps:
       # A custom script step, name value is used in the UI
       # and the code value contains the command that get executed
       - script:
+          name: Install php extensions dependencies
+          code: apt-get update && apt-get install -y libmcrypt-dev libssl-dev git-core libsqlite3-dev libmysqlclient18
+      - script:
+          name: Install php extensions
+          code: docker-php-ext-install mcrypt mbstring zip pcntl pdo_sqlite pdo_mysql
+      - script:
           name: copy env file
           code: cp .env.wercker.php .env.testing.php
       - script:
           name: set composer to use github oauth token
-          code: composer config -g github-oauth.github.com $github_token
+          code: php composer.phar config -g github-oauth.github.com $github_token
       - add-ssh-key:
           keyname: RZP_API
       - script:
           name: install dependencies
-          code: composer install --no-interaction
+          code: php composer.phar install --no-interaction
       - script:
           name: create report dir
           code: mkdir ./report
       - script:
-          name: Activate PHP 5.5
-          code: phpenv global 5.5
-      - script:
           name: Run unit tests
-          code: phpunit --debug --verbose --coverage-clover /tmp/clover.xml
-      - script:
-          name: Upload coverage to codacy
-          code: vendor/bin/codacycoverage clover /tmp/clover.xml
+          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose # --coverage-clover /tmp/clover.xml
     after-steps:
-      - script:
-          name: Download apigen
-          cwd: $WERCKER_ROOT
-          code: curl -L https://github.com/ApiGen/ApiGen/releases/download/v4.1.0/apigen-4.1.0.phar -o apigen && chmod +x apigen
-      - script:
-          name: Generate docs
-          code: ./apigen generate -d ./docs
-      - script:
-          name: Archive docs
-          # This is on the old stack
-          code: (cd ./docs && tar zcvf /tmp/docs.tar.gz .)
-      - script:
-          name: Upload docs
-          code: >
-              curl -F "coverage=@/tmp/docs.tar.gz"
-              https://cc.razorpay.com/api/upload/?token=$COVERAGE_TOKEN
       - slack-notifier:
           url: $SLACK_URL
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - script:
+          name: Upload coverage to codacy
+          code: vendor/bin/codacycoverage clover /tmp/clover.xml
+
 deploy:
     steps:
       - script:
