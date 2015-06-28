@@ -12,7 +12,7 @@ trait RepositoryFetch
         'count'         => 'integer|max:100|min:1',
         'skip'          => 'integer');
 
-    protected $appFetchParamRules = array();
+//    protected $appFetchParamRules = array();
 
     protected $params = array();
 
@@ -43,6 +43,8 @@ trait RepositoryFetch
             $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
         }
 
+        $params = $this->unsetEmptyParams($params);
+
         $this->addDefaultParams($params);
 
         $this->validateFetchParams($params);
@@ -57,9 +59,9 @@ trait RepositoryFetch
 
     protected function buildFetchQuery($query, $params)
     {
-        foreach ($this->fetchParamRules as $key => $value)
+        foreach ($params as $key => $value)
         {
-            $func = 'addQueryParam'.$key;
+            $func = 'addQueryParam'.studly_case($key);
 
             $this->$func($query, $params);
         }
@@ -83,7 +85,8 @@ trait RepositoryFetch
 
     protected function validateFetchParams(array $params)
     {
-        if ($this->isAppAuth())
+        if (($this->isAppAuth()) and
+            (isset($this->appFetchParamRules)))
         {
             $this->fetchParamRules = array_merge($this->fetchParamRules, $this->appFetchParamRules);
         }
@@ -91,6 +94,19 @@ trait RepositoryFetch
         validate($this->fetchParamRules, $params);
 
         $this->validateAdditional($params);
+    }
+
+    protected function unsetEmptyParams(array $params)
+    {
+        $newParams = [];
+
+        foreach ($params as $key => $value)
+        {
+            if (($params[$key]) !== '')
+                $newParams[$key] = $value;
+        }
+
+        return $newParams;
     }
 
     protected function validateAdditional($params)
@@ -122,18 +138,12 @@ trait RepositoryFetch
 
     protected function addQueryParamFrom($query, $params)
     {
-        if (empty($params['from']) === false)
-        {
-            $query = $query->where(Common::CREATED_AT, '>=', $params['from']);
-        }
+        $query = $query->where(Common::CREATED_AT, '>=', $params['from']);
     }
 
     protected function addQueryParamTo($query, $params)
     {
-        if (empty($params['to']) === false)
-        {
-            $query = $query->where(Common::CREATED_AT, '<=', $params['to']);
-        }
+        $query = $query->where(Common::CREATED_AT, '<=', $params['to']);
     }
 
     protected function addQueryParamCount($query, $params)
@@ -143,20 +153,16 @@ trait RepositoryFetch
 
     protected function addQueryParamSkip($query, $params)
     {
-        if (empty($params['skip']) === false)
-        {
-            $query->skip($params['skip']);
-        }
+        $query->skip($params['skip']);
     }
 
     protected function addDefaultParams(array & $params)
     {
-        if (empty($params['count']) === true)
+        if (isset($params['count']) === false)
         {
             $params['count'] = 10;
         }
     }
-
 
     public function isAppAuth()
     {
