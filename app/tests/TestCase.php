@@ -17,6 +17,8 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected $testData = array();
 
+    protected static $t = 1;
+
 	/**
 	 * Creates the application.
 	 *
@@ -33,7 +35,7 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     public function setUp()
     {
-        $this->markTestSkippedForWercker();
+        //     $this->markTestSkippedForWercker();
         parent::setUp();
 
         // Load test data

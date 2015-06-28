@@ -6,6 +6,8 @@
  * @author   Taylor Otwell <taylorotwell@gmail.com>
  */
 
+ini_set('memory_limit', '1024M');
+
 /*
 |--------------------------------------------------------------------------
 | Register The Auto Loader
