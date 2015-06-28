@@ -64,4 +64,20 @@ trait EntityFetchTrait
     {
         return $this->getLastEntity('transaction', $admin);
     }
+
+    protected function getPublicEntity($entity, array $input = array())
+    {
+        $this->ba->privateAuth();
+
+        $url = '/'. $entity . 's';
+
+        $request = array(
+            'url' => $url,
+            'method' => 'GET',
+            'content' => $input);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
 }
