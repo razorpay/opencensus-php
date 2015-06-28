@@ -3,8 +3,6 @@ dev:
   steps:
     - internal/shell:
       code: echo "Welcome to Razorpay\\Api"
-services:
-    - wercker/mysql
 build:
     # The steps that will be executed on build
     steps:
@@ -12,39 +10,40 @@ build:
       # and the code value contains the command that get executed
       - script:
           name: Install mcrypt dependencies
-          code: apt-get update && apt-get install -y libmcrypt-dev libssl-dev git-core
+          code: apt-get update && apt-get install -y libmcrypt-dev libssl-dev git-core php5-xdebug
       - script:
           name: Install mcrypt and phar extensions
           # openssl and phar is already installed
           # https://registry.hub.docker.com/_/php/
           # mbstring is required by apigen
-          code: docker-php-ext-install mcrypt mbstring zip
+          code: docker-php-ext-install mcrypt mbstring zip pcntl
       - script:
           name: copy env file
           code: cp .env.wercker.php .env.testing.php
       - script:
           name: set composer to use github oauth token
-          code: composer config -g github-oauth.github.com $github_token
+          code: php composer.phar config -g github-oauth.github.com $github_token
       - add-ssh-key:
           keyname: RZP_API
       - script:
           name: install dependencies
-          code: composer install --no-interaction
+          code: php composer.phar install --no-interaction
       - script:
           name: create report dir
           code: mkdir ./report
       - script:
           name: Run unit tests
-          code: phpunit --debug --verbose --coverage-clover /tmp/clover.xml
-      - script:
-          name: Upload coverage to codacy
-          code: vendor/bin/codacycoverage clover /tmp/clover.xml
+          code: php vendor/phpunit/phpunit/phpunit --debug --verbose --coverage-clover /tmp/clover.xml
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - script:
+          name: Upload coverage to codacy
+          code: vendor/bin/codacycoverage clover /tmp/clover.xml
+
 deploy:
     steps:
       - script:
