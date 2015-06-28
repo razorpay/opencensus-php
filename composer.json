@@ -22,7 +22,8 @@
     "require-dev": {
         "raveren/kint": "1.*",
         "laracasts/testdummy": "2.*",
-        "mockery/mockery": "*"
+        "mockery/mockery": "*",
+        "codacy/coverage": "dev-master"
     },
     "autoload": {
         "classmap": [
