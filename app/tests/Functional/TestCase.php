@@ -50,7 +50,8 @@ class TestCase extends ParentTestCase
 
     public function tearDown()
     {
-//        $this->db->tearDown();
+        if ($this->db !== null)
+            $this->db->tearDown();
 
         parent::tearDown();
     }
