@@ -4,10 +4,11 @@
         <meta charset="utf-8">
     </head>
     <body>
-        <h2>New Activation Form submission - {{{$id}}}</h2>
+        <h2>New Activation Form submission - {{{$name}}}</h2>
 
         <div>
-            <p>Activation form has been submitted by merchant id: {{{$id}}}</p>
+            <p>Activation form has been submitted by {{{$name}}}</p>
+            <p>The merchant id is {{{$id}}}</p>
 
             <p>Please verify the details <a href="{{ URL::to('/admin#/app/merchants/'.$id.'/detail') }}" target="_blank">here</a> and communicate with the merchant as necessary.</p>
         </div>
