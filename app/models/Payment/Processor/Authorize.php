@@ -59,18 +59,10 @@ trait Authorize
         //
         if ($request !== null)
         {
-            $data['request'] = $request;
-            $data['version'] = 1;
-            $data['payment_id'] = $payment->getPublicId();
-
-            $data['gateway'] = \Crypt::encrypt($payment->getGateway() . '__' . time());
-
-            return $data;
+            return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        $this->updatePaymentAuthorized();
-
-        return $payment;
+        return $this->postPaymentAuthorizeProcessing($payment);
     }
 
     /**
@@ -88,6 +80,9 @@ trait Authorize
     public function callback($id, $hash, array $gatewayInput)
     {
         $payment = $this->retrieve($id);
+
+        // For redirect flow
+        $this->checkForMerchantCallbackUrl($payment);
 
         //
         // This field is received back from bank acs.
@@ -115,11 +110,63 @@ trait Authorize
             throw $e;
         }
 
+        return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function getReturnRequestDataForMerchant($payment)
+    {
+        assert ($payment->getCallbackUrl() !== null);
+
+        $data = array(
+            'version' => 1,
+            'type' => 'return',
+            'request' => [
+                'url' => $payment->getCallbackUrl(),
+                'method' => 'post',
+                'content' => array(
+                    'razorpay_payment_id' => $payment->getPublicId(),
+                ),
+            ],
+        );
+
+        return $data;
+    }
+
+    protected function getMerchantCallbackUrl($payment)
+    {
+        return $this->payment->getCallbackUrl();
+    }
+
+    protected function getPaymentGatewayRequestData($request, $payment)
+    {
+        $data['type'] = 'first';
+        $data['request'] = $request;
+        $data['version'] = 1;
+        $data['payment_id'] = $payment->getPublicId();
+
+        $data['gateway'] = \Crypt::encrypt($payment->getGateway() . '__' . time());
+
+        return $data;
+    }
+
+    protected function postPaymentAuthorizeProcessing($payment)
+    {
         $this->updatePaymentAuthorized();
 
+        //
+        // The returned value could be either Payment
+        // model or an array containing callback data.
+        // We convert payment model to array
+        // if it's a payment model
+        //
         if ($payment->isSigned())
         {
             return $this->captureSignedPayment($payment);
+        }
+
+        if ($payment->getCallbackUrl())
+        {
+            return $this->getReturnRequestDataForMerchant($payment);
         }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
@@ -220,6 +267,15 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENALBED_FOR_MERCHANT);
+        }
+    }
+
+    protected function checkForMerchantCallbackUrl($payment)
+    {
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $app = \App::getFacadeRoot();
+            $app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
     }
 

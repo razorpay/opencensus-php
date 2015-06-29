@@ -29,10 +29,6 @@ class SupportTest extends TestCase
      */
     public function testSupport()
     {
-        //
-        // GIVEN
-        // create an auth payment using card 1
-        //
         $this->ba->publicAuth();
         $testData = array(
             'request' => [

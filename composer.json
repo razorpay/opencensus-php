@@ -21,8 +21,10 @@
     ],
     "require-dev": {
         "raveren/kint": "1.*",
+        "phpunit/phpunit": "^4.7",
         "laracasts/testdummy": "2.*",
-        "mockery/mockery": "*"
+        "mockery/mockery": "*",
+        "codacy/coverage": "dev-master"
     },
     "autoload": {
         "classmap": [

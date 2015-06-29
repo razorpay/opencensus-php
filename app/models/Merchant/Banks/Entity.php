@@ -38,7 +38,7 @@ class Entity extends Base\PublicEntity
 
     public function setMethods(array $input = array())
     {
-        $this->edit($input, 'set_methods');
+        $this->edit($input, 'setMethods');
     }
 
     public function merchant()

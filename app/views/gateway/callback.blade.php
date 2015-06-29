@@ -1,7 +1,7 @@
 <!doctype html>
 <head>
     <title>Razorpay - Payment in progress</title>
-    <style>body{background:#fff;}</style>
+    <style>body{background:#fff; font-family: sans-serif;}</style>
 </head>
 <body>
 <script>

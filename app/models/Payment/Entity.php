@@ -35,6 +35,7 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID       = 'terminal_id';
     const SIGNED            = 'signed';
     const VERIFIED          = 'verified';
+    const CALLBACK_URL      = 'callback_url';
 
     const CURRENCY_LENGTH   = 3;
 
@@ -59,7 +60,8 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
-        self::NOTES);
+        self::NOTES,
+        self::CALLBACK_URL);
 
     protected $visible = array(
         self::ID,
@@ -87,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::SIGNED,
         self::VERIFIED,
+        self::CALLBACK_URL,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -433,6 +436,11 @@ class Entity extends Base\PublicEntity
     public function getBank()
     {
         return $this->getAttribute(self::BANK);
+    }
+
+    public function getCallbackUrl()
+    {
+        return $this->getAttribute(self::CALLBACK_URL);
     }
 
 // ----------------------- Getters Ends-----------------------------------------

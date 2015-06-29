@@ -6,7 +6,7 @@ if (! function_exists('validate'))
 {
     function validate($rules, $data)
     {
-        $invalid_keys = array_diff_key($data, $rules);
+        $invalid_keys = array_keys(array_diff_key($data, $rules));
 
         if (count($invalid_keys) !== 0)
         {

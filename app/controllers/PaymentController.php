@@ -40,6 +40,12 @@ class PaymentController extends BaseController
     {
         $input = Input::all();
 
+        if (isset($input['callback_url']))
+        {
+            $app = App::getFacadeRoot();
+            $app['rzp.merchant_callback_url'] = $input['callback_url'];
+        }
+
         $data = $this->payment->process($input);
 
         //
@@ -47,14 +53,24 @@ class PaymentController extends BaseController
         //
         if (isset($data['request']))
         {
-            if ($data['request']['method'] === 'post')
+            if ($data['type'] === 'first')
             {
-            	return View::make('gateway.gatewayPostForm')
-                    ->with('data', $data);
+                if ($data['request']['method'] === 'post')
+                {
+                    return View::make('gateway.gatewayPostForm')
+                               ->with('data', $data);
+                }
+                else if ($data['request']['method'] === 'get')
+                {
+                    $response = Redirect::away($data['request']['url']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+                    return $response;
+                }
             }
-            else if ($data['request']['method'] === 'get')
+            else if ($data['type'] === 'return')
             {
-                return Redirect::away($data['request']['url']);
+                return View::make('gateway.callbackReturnUrl')
+                           ->with('data', $data);
             }
         }
         else
@@ -133,27 +149,21 @@ class PaymentController extends BaseController
 
         $data = null;
 
-        try
+        $data = $this->payment->callback($id, $hash, $input);
+
+        if (isset($data['type']))
         {
-            $data = $this->payment->callback($id, $hash, $input);
-        }
-        catch (RecoverableException $exception)
-        {
-            if (App::runningUnitTests())
+            $type = $data['type'];
+
+            if ($type === 'return')
             {
-                throw $exception;
+                return View::make('gateway.callbackReturnUrl')->with('data', $data);
             }
-
-            $error = $exception->getError();
-
-            $data = $error->toPublicArray();
-            $data['http_status_code'] = $error->getHttpStatusCode();
         }
 
-        if ($data !== null)
-        {
-            return View::make('gateway.callback')->with('data', $data);
-        }
+        assert ($data !== null);
+
+        return View::make('gateway.callback')->with('data', $data);
     }
 
     public function getRefundsForPayment($paymentId)
@@ -235,5 +245,12 @@ class PaymentController extends BaseController
         $data = $this->payment->verifyAllPayments();
 
         return ApiResponse::json($data);
+    }
+
+    public function postDummyReturnCallback()
+    {
+        $input = Input::all();
+
+        return ApiResponse::json($input);
     }
 }

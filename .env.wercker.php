@@ -11,11 +11,18 @@ return array(
     'DB_LIVE_PASSWORD'                      => '',
 
     'DB_TEST_DRIVER'                        => 'mysql',
-    'DB_TEST_HOST'                          => getenv('WERCKER_MYSQL_HOST'),
-    'DB_TEST_PORT'                          => getenv('WERCKER_MYSQL_PORT'),
-    'DB_TEST_DATABASE'                      => getenv('WERCKER_MYSQL_DATABASE'),
-    'DB_TEST_USERNAME'                      => getenv('WERCKER_MYSQL_USERNAME'),
-    'DB_TEST_PASSWORD'                      => getenv('WERCKER_MYSQL_PASSWORD'),
+    'DB_TEST_HOST'                          => getenv('MYSQL_PORT_3306_TCP_ADDR'),
+    'DB_TEST_PORT'                          => getenv('MYSQL_PORT_3306_TCP_PORT'),
+    'DB_TEST_DATABASE'                      => 'root',
+    'DB_TEST_USERNAME'                      => 'root',
+    'DB_TEST_PASSWORD'                      => 'root',
+
+    // 'DB_TEST_DRIVER'                        => 'mysql',
+    // 'DB_TEST_HOST'                          => 'mysql',
+    // 'DB_TEST_PORT'                          => '',
+    // 'DB_TEST_DATABASE'                      => 'root',
+    // 'DB_TEST_USERNAME'                      => 'root',
+    // 'DB_TEST_PASSWORD'                      => 'root',
 
     'CONTEXT'                               => 'testing',
 

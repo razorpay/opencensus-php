@@ -115,6 +115,7 @@ final class Route
         'gateway_payment_callback_axis'     => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                        ],
         'gateway_payment_callback'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                     ],
         'gateway_payment_callback'          => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                     ],
+        'dummy_return_callback'             => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'             ],
     );
 
     public static $public = array(
@@ -138,6 +139,7 @@ final class Route
         'mock_billdesk_payment',
         'mock_sharp_payment',
         'mock_sharp_payment_submit',
+        'dummy_return_callback',
     );
 
     public static $publicCallback = array(

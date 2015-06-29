@@ -6,7 +6,7 @@ use Models\Bank\IFSC;
 
 class BankNames
 {
-    $names = array(
+    public $names = array(
         IFSC::AXIS => 'Axis Bank';
         IFSC::ICIC => 'ICICI Bank';
         IFSC::SBIN => 'State Bank of India';

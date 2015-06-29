@@ -14,3 +14,4 @@
 Artisan::add(new RzpDbRefresh);
 Artisan::add(new Uid);
 Artisan::add(new AddDbData);
+Artisan::add(new DocsGen);

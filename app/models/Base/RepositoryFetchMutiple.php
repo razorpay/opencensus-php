@@ -6,12 +6,13 @@ use EE\Exception;
 
 trait RepositoryFetch
 {
-    protected static $fetchParamRules = array(
-        'created'       => 'integer',
+    protected $fetchParamRules = array(
         'from'          => 'integer',
         'to'            => 'integer',
-        'count'         => 'integer|max:100',
+        'count'         => 'integer|max:100|min:1',
         'skip'          => 'integer');
+
+//    protected $appFetchParamRules = array();
 
     protected $params = array();
 
@@ -22,62 +23,47 @@ trait RepositoryFetch
      * @params array        $params
      * @return Collection   A collection of entities
      */
-    public function fetch($params, $merchantId = null)
+    public function fetch(array $params, $merchantId = null)
     {
         if ($params === null)
         {
             throw new Exception\InvalidArgumentException('$params not provided');
         }
 
+        $query = $this->newQuery();
+
+        if ($this->isMerchantIdRequiredForFetch())
+        {
+            if ($merchantId === null)
+            {
+                throw new Exception\InvalidArgumentException(
+                    'Merchant Id is required for fetch query');
+            }
+
+            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
+        }
+
+        $params = $this->unsetEmptyParams($params);
+
+        $this->addDefaultParams($params);
+
         $this->validateFetchParams($params);
 
         /*
          * Create the query.
          */
-        $query = $this->buildFetchQuery($params, $merchantId);
-
-        if (($this->isMerchantIdRequiredForFetch()) and
-            ($merchantId === null))
-        {
-            throw new Exception\InvalidArgumentException('Merchant Id is required for fetch query');
-        }
+        $query = $this->buildFetchQuery($query, $params);
 
         return $query->get();
     }
 
-    protected function buildFetchQuery($params, $merchantId = null)
+    protected function buildFetchQuery($query, $params)
     {
-        $repo = $this->repo;
-
-        $query = (new $repo)->newQuery();
-
-        if ($merchantId !== null)
+        foreach ($params as $key => $value)
         {
-            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
-        }
+            $func = 'addQueryParam'.studly_case($key);
 
-        if (empty($params['from']) === false)
-        {
-            $query = $query->where(Common::CREATED_AT, '>=', $params['from']);
-        }
-
-        if (empty($params['to']) === false)
-        {
-            $query = $query->where(Common::CREATED_AT, '<=', $params['to']);
-        }
-
-        if (empty($params['count']) === false)
-        {
-            $query->take($params['count']);
-        }
-        else
-        {
-            $query->take(10);
-        }
-
-        if (empty($params['skip']) === false)
-        {
-            $query->skip($params['skip']);
+            $this->$func($query, $params);
         }
 
         $this->addQueryOrder($query);
@@ -99,9 +85,28 @@ trait RepositoryFetch
 
     protected function validateFetchParams(array $params)
     {
-        validate(self::$fetchParamRules, $params);
+        if (($this->isAppAuth()) and
+            (isset($this->appFetchParamRules)))
+        {
+            $this->fetchParamRules = array_merge($this->fetchParamRules, $this->appFetchParamRules);
+        }
+
+        validate($this->fetchParamRules, $params);
 
         $this->validateAdditional($params);
+    }
+
+    protected function unsetEmptyParams(array $params)
+    {
+        $newParams = [];
+
+        foreach ($params as $key => $value)
+        {
+            if (($params[$key]) !== '')
+                $newParams[$key] = $value;
+        }
+
+        return $newParams;
     }
 
     protected function validateAdditional($params)
@@ -116,6 +121,9 @@ trait RepositoryFetch
 
     public function isMerchantIdRequiredForFetch()
     {
+        if ($this->isAppAuth() === true)
+            return false;
+
         return $this->merchantIdRequiredForMultipleFetch;
     }
 
@@ -126,5 +134,38 @@ trait RepositoryFetch
         $query = $repo::where(Common::MERCHANT_ID, $merchantId);
 
         return $query->findOrFailPublic($id);
+    }
+
+    protected function addQueryParamFrom($query, $params)
+    {
+        $query = $query->where(Common::CREATED_AT, '>=', $params['from']);
+    }
+
+    protected function addQueryParamTo($query, $params)
+    {
+        $query = $query->where(Common::CREATED_AT, '<=', $params['to']);
+    }
+
+    protected function addQueryParamCount($query, $params)
+    {
+        $query->take($params['count']);
+    }
+
+    protected function addQueryParamSkip($query, $params)
+    {
+        $query->skip($params['skip']);
+    }
+
+    protected function addDefaultParams(array & $params)
+    {
+        if (isset($params['count']) === false)
+        {
+            $params['count'] = 10;
+        }
+    }
+
+    public function isAppAuth()
+    {
+        return ($this->authType === 'app');
     }
 }

@@ -11,26 +11,11 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
-        $method = null;
+        parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
 
-        if (isset($input['PAYMENT_TYPE_ID']))
-        {
-            if ($input['PAYMENT_TYPE_ID'] === 'NB')
-                $method = 'netbanking';
-            else
-                $method = 'card';
-        }
-        else
-            $method = 'wallet';
-
-        // Format - YYYY-MM-DD HH:MM:SS.U
-        $date = Carbon::now('Asia/Kolkata')->format('Y-m-d H-i-s.0');
-
-        // Format YYYYMMDD
-        $bankTxnId = Carbon::today('Asia/Kolkata')->format('YmdHis');
-        $bankTxnId .=  random_integer(1);
+        $method = $this->getAuthMethod($input);
 
         $content = array(
             'MID'           => $input['MID'],
@@ -38,10 +23,10 @@ class Server extends Base\Mock\Server
             'TXNAMOUNT'     => $input['TXN_AMOUNT'],
             'CURRENCY'      => 'INR',
             'TXNID'         => random_integer(6),
-            'BANKTXNID'     => $bankTxnId,
+            'BANKTXNID'     => $this->getBankTxnId(),
             'STATUS'        => Paytm\Status::SUCCESS,
             'RESPCODE'      => '01',
-            'TXNDATE'       => $date,
+            'TXNDATE'       => $this->getTxnDate(),
             'RESPMSG'       => 'Txn Successful.',
             'GATEWAYNAME'   => 'ICICI',
             'BANKNAME'      => 'Axis Bank',
@@ -112,6 +97,32 @@ class Server extends Base\Mock\Server
         return $this->makeResponse(json_encode($content));
     }
 
+    public function refund($input)
+    {
+        $input = json_decode($input['JsonData'], true);
+
+        parent::refund($input);
+
+        $this->validateActionInput($input, 'refund');
+
+        $content = array(
+            'MID'           => $input['MID'],
+            'ORDERID'       => $input['ORDERID'],
+//            'TXNAMOUNT'     => $input['TXN_AMOUNT'],
+            'CURRENCY'      => 'INR',
+            'TXNID'         => random_integer(6),
+            'BANKTXNID'     => $this->getBankTxnId(),
+            'STATUS'        => Paytm\Status::SUCCESS,
+            'RESPCODE'      => '01',
+            'TXNDATE'       => $this->getTxnDate(),
+            'RESPMSG'       => 'Txn Successful.',
+            'GATEWAYNAME'   => 'ICICI',
+            'BANKNAME'      => 'Axis Bank',
+        );
+
+        return $this->makeResponse(json_encode($content));
+    }
+
     protected function makeResponse($json)
     {
         $response = \Response::make($json);
@@ -163,5 +174,37 @@ class Server extends Base\Mock\Server
         $card['expiry_date'] = $details[2];
 
         return $card;
+    }
+
+    protected function getAuthMethod($input)
+    {
+        $method = null;
+
+        if (isset($input['PAYMENT_TYPE_ID']))
+        {
+            if ($input['PAYMENT_TYPE_ID'] === 'NB')
+                $method = 'netbanking';
+            else
+                $method = 'card';
+        }
+        else
+            $method = 'wallet';
+
+        return $method;
+    }
+
+    protected function getBankTxnId()
+    {
+        // Format YYYYMMDD
+        $bankTxnId = Carbon::today('Asia/Kolkata')->format('YmdHis');
+        $bankTxnId .=  random_integer(1);
+
+        return $bankTxnId;
+    }
+
+    protected function getTxnDate()
+    {
+        // Format - YYYY-MM-DD HH:MM:SS.U
+        return Carbon::now('Asia/Kolkata')->format('Y-m-d H-i-s.0');
     }
 }

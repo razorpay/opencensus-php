@@ -93,6 +93,9 @@ class CreatePayments  extends Migration
             $table->boolean(Payment::VERIFIED)
                   ->nullable();
 
+            $table->string(Payment::CALLBACK_URL)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);

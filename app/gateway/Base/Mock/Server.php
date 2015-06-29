@@ -140,7 +140,7 @@ class Server
     protected function makePostResponse($request)
     {
         $content = '
-            <!doctype html>
+            <!doctype html public "-//w3c//dtd html 4.0 transitional//en">
             <html lang="en">
                 <body>
                 <form name="form1" action="'.$request['url'].'" method="post">';
@@ -161,7 +161,7 @@ class Server
 
         $response = \Response::make($content);
 
-        $response->headers->set('Content-Type', 'application/html; charset=UTF-8');
+        $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;

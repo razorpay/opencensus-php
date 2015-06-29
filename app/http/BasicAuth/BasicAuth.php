@@ -201,6 +201,8 @@ class BasicAuth
         }
         else if ($this->verifyInternalAppAsProxy() === true)
         {
+            $this->setType((Type::APP_AUTH));
+
             return;
         }
 
@@ -240,7 +242,7 @@ class BasicAuth
         if (($this->getSecret() !== '') and
             ($this->getSecret() !== null))
         {
-            return ApiResponse::generateResponse(
+            return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
@@ -344,7 +346,7 @@ class BasicAuth
         if (($this->getSecret() !== '') and
             ($this->getSecret() !== null))
         {
-            return ApiResponse::generateResponse(
+            return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
@@ -360,7 +362,7 @@ class BasicAuth
         if (($this->request->getHttpHost() === 'api.razorpay.com') and
             ($this->request->secure() === false))
         {
-            return ApiResponse::generateResponse(
+            return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
         }
     }
@@ -620,6 +622,11 @@ class BasicAuth
     protected function getCurrentRouteName()
     {
         return $this->router->currentRouteName();
+    }
+
+    public function getAuthType()
+    {
+        return $this->type;
     }
 
 // --------------------- Getters Ends ------------------------------------------

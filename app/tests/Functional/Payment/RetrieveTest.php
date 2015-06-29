@@ -2,9 +2,11 @@
 
 namespace Tests\Functional\Payment;
 
-use Laracasts\TestDummy\Factory;
 use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
+use EE\Error\ErrorCode;
+use EE\Error\PublicErrorCode;
+use EE\Error\PublicErrorDescription;
 
 /**
  * Tests that retreieving of payments is working fine.
@@ -14,7 +16,7 @@ use Tests\Functional\RequestResponseFlowTrait;
 
 class PaymentRetrieveTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -86,6 +88,8 @@ class PaymentRetrieveTest extends TestCase
      */
     public function testRetrievePaymentsWithCreatedAt()
     {
+        $this->markTestSkipped();
+
         $payments = $this->retrievePaymentsDefault();
         $id = $payments['items'][0]['id'];
 
@@ -101,5 +105,46 @@ class PaymentRetrieveTest extends TestCase
         $payment = json_decode($content, true);
 
         $this->assertEquals($id, $payment['items'][0]['id']);
+    }
+
+    public function testFetchAuthorizedPaymentsOnAppAuth()
+    {
+        $this->fixtures->create('payment:authorized');
+
+        $this->ba->appAuth();
+
+        $payments = $this->getEntities('payment', ['status' => 'authorized']);
+
+        $this->assertEquals($payments['count'], 1);
+        $this->assertEquals($payments['items'][0]['status'], 'authorized');
+    }
+
+    public function testFetchAuthorizedPaymentsOnPrivateAuth()
+    {
+        $this->fixtures->create('payment:authorized');
+
+        $this->ba->privateAuth();
+
+        $testData = array(
+            'request' => [
+                'url' => '/payments',
+                'method' => 'get',
+                'content' => ['status' => 'authorized'],
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'EE\Exception\ExtraFieldsException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+            ],
+        );
+
+        $this->startTest($testData);
     }
 }
