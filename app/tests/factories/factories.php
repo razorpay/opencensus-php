@@ -23,7 +23,7 @@ $factory('Models\MerchantDetails\Entity', [
     'business_type' => 2,
     'business_name' => $faker->word,
     'business_dba'  => $faker->word,
-    'business_website'  => $faker->word,
+    'business_website'  => $faker->url,
     'business_international'    => 1,
     'business_paymentdetails'   => $faker->text,
     'business_registered_address'   => $faker->text,
@@ -55,10 +55,10 @@ $factory('Models\MerchantDetails\Entity', [
     'bank_beneficiary_city' => $faker->word,
     'bank_beneficiary_state'    => 'RJ',
     'bank_beneficiary_pin'  => '123456',
-    'business_proof_url'    => $faker->text,
-    'business_pan_url'  => $faker->text,
-    'promoter_pan_url'  => $faker->text,
-    'address_proof_url' => $faker->text,
+    'business_proof_url'    => $faker->url,
+    'business_pan_url'  => $faker->url,
+    'promoter_pan_url'  => $faker->url,
+    'address_proof_url' => $faker->url,
     'steps_finished'    => "[1,3,5]",
     'submitted' => 1
 ]);

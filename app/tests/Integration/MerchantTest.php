@@ -236,14 +236,14 @@ class MerchantTest extends TestCase
         $this->browser
             ->click(l::css('form[name="step2"] > fieldset > .prev-next > .btn-next'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"]').is(':visible')", 20000)
-            ->type(l::IdOrName('business_website'), 'testing.com')
-            ->type(l::IdOrName('website_about'), 'testing.com')
-            ->type(l::IdOrName('website_contact'), 'testing.com')
-            ->type(l::IdOrName('website_privacy'), 'testing.com')
-            ->type(l::IdOrName('website_terms'), 'testing.com')
-            ->type(l::IdOrName('website_refund'), 'testing.com')
-            ->type(l::IdOrName('website_pricing'), 'testing.com')
-            ->type(l::IdOrName('website_login'), 'testing.com')
+            ->type(l::IdOrName('business_website'), 'http://testing.com')
+            ->type(l::IdOrName('website_about'), 'http://testing.com')
+            ->type(l::IdOrName('website_contact'), 'http://testing.com')
+            ->type(l::IdOrName('website_privacy'), 'http://testing.com')
+            ->type(l::IdOrName('website_terms'), 'http://testing.com')
+            ->type(l::IdOrName('website_refund'), 'http://testing.com')
+            ->type(l::IdOrName('website_pricing'), 'http://testing.com')
+            ->type(l::IdOrName('website_login'), 'http://testing.com')
             ->click(l::css('form[name="step3"] > fieldset > .prev-next > .btn-save'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step3\"] > fieldset > .alerts > .alert-success').length > 0", 20000);
 
