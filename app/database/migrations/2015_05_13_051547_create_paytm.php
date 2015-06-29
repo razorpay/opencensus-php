@@ -43,7 +43,7 @@ class CreatePaytm extends Migration
             $table->string('respmsg')->nullable();
             $table->string('bankname')->nullable();
             $table->string('paymentmode')->nullable();
-            $table->string('refundamt')->nullable();
+            $table->string('refundamount')->nullable();
             $table->string('gatewayname')->nullable();
             $table->string('txndate')->nullable();
             $table->string('txntype')->nullable();
