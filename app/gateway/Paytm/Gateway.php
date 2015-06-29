@@ -101,7 +101,6 @@ class Gateway extends Base\Gateway
             $input['gateway']['ORDERID'], Action::AUTHORIZE);
 
         $values = $this->lowerArrayKeys($input['gateway']);
-        $values['txntype'] = Type::SALE;
 
         $payment->fill($values);
         $payment->saveOrFail();
@@ -126,22 +125,28 @@ class Gateway extends Base\Gateway
 
         $this->addTestMerchantIdIfTestMode($content);
 
+        $storeContent = $content;
+        $storeContent['CUST_ID'] = $payment['cust_id'];
+        $storeContent['CHANNEL_ID'] = $payment['channel_id'];
+        $storeContent['INDUSTRY_TYPE_ID'] = $payment['industry_type_id'];
+        $storeContent['REQUEST_TYPE'] = RequestType::THEDEFAULT;
+        $storeContent['TXN_AMOUNT'] = $payment['txn_amount'];
+        $storeContent['PAYMENTMODE'] = $payment['paymentmode'];
+        $storeContent['PAYMENT_MODE_ONLY'] = $payment['payment_mode_only'];
+        $storeContent['AUTH_MODE'] = $payment['auth_mode'];
+        $storeContent['PAYMENT_TYPE_ID'] = $payment['payment_type_id'];
+        $storeContent['BANK_CODE'] = $payment['bank_code'];
+
+        $refund = $this->createGatewayRefundEntity($storeContent, $input);
+
         $content['CHECKSUM'] = $this->generateHash($content);
 
         $content = $this->postRequestToPaytm($content);
-// !d($content);
-        if ($content['ORDERID'])
-        {
-            $content['CUST_ID'] = $payment['cust_id'];
-            $content['CHANNEL_ID'] = $payment['channel_id'];
-            $content['INDUSTRY_TYPE_ID'] = $payment['industry_type_id'];
-            $content['REQUEST_TYPE'] = RequestType::THEDEFAULT;
-            $content['TXN_AMOUNT'] = $payment['txn_amount'];
-            $content['ORDER_ID'] = $content['ORDERID'];
-            unset($content['ORDERID']);
-        }
 
-        $refund = $this->createGatewayPaymentEntity($content);
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['paytm' => $content]);
+
+        $attr = $this->lowerArrayKeys($content);
+        $refund->fill($attr)->saveOrFail();
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {
@@ -243,9 +248,36 @@ class Gateway extends Base\Gateway
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->lowerArrayKeys($attributes);
+        $attr['txntype'] = Type::SALE;
 
         $payment = $this->getNewGatewayPaymentEntity();
         $payment->setPaymentId($attr['order_id']);
+        $payment->setAction($this->action);
+        $payment->setMethod($this->input['payment']['method']);
+
+        $payment->fill($attr);
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+    protected function createGatewayRefundEntity($attributes, $input)
+    {
+        $attributes['refund_id'] = $input['refund']['id'];
+        $attributes['payment_id'] = $input['payment']['id'];
+
+        $refund = $this->createGatewayEntity($attributes);
+
+        return $refund;
+    }
+
+    protected function createGatewayEntity($attributes)
+    {
+        $attr = $this->lowerArrayKeys($attributes);
+
+        $payment = $this->getNewGatewayPaymentEntity();
+
         $payment->setAction($this->action);
         $payment->setMethod($this->input['payment']['method']);
 
