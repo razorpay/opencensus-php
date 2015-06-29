@@ -39,14 +39,14 @@ class Validator extends Base\Validator
     );
 
     protected static $step3Rules = array(
-        'business_website'             => 'required|max:255',
-        'website_about'                => 'required|max:255',
-        'website_contact'              => 'required|max:255',
-        'website_privacy'              => 'required|max:255',
-        'website_terms'                => 'required|max:255',
-        'website_refund'               => 'required|max:255',
-        'website_pricing'              => 'required|max:255',
-        'website_login'                => 'required|max:255'        
+        'business_website'             => 'required|max:255|url',
+        'website_about'                => 'required|max:255|url',
+        'website_contact'              => 'required|max:255|url',
+        'website_privacy'              => 'required|max:255|url',
+        'website_terms'                => 'required|max:255|url',
+        'website_refund'               => 'required|max:255|url',
+        'website_pricing'              => 'required|max:255|url',
+        'website_login'                => 'required|max:255|url'        
     );
 
     protected static $step4Rules = array(
