@@ -16,8 +16,8 @@ build:
       # A custom script step, name value is used in the UI
       # and the code value contains the command that get executed
       - script:
-          name: Install php extensions dependencies
-          code: apt-get update && apt-get install -y libmcrypt-dev libssl-dev git-core libsqlite3-dev libmysqlclient18
+          name: Install linux packages
+          code: apt-get update && apt-get install -y libmcrypt-dev libssl-dev git-core libsqlite3-dev libmysqlclient18 python-pip
       - script:
           name: Install php extensions
           code: docker-php-ext-install mcrypt mbstring zip pcntl pdo_sqlite pdo_mysql
@@ -53,6 +53,12 @@ deploy:
       - script:
           name: Change to production mode
           code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
+      - script:
+          name: Install linux packages
+          code: apt-get update && apt-get install -y python-pip
+      - script:
+          name: Install aws cli
+          code: pip install awscli
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
