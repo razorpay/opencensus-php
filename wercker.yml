@@ -53,6 +53,9 @@ deploy:
       - script:
           name: Change to production mode
           code: sed -i "/'debug'/c\ 'debug' => false," app/config/app.php
+      - script:
+          name: Install aws cli
+          code: pip install awscli
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
