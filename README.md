@@ -1,6 +1,6 @@
 # Razorpay dashboard
 
-##Set up instructions
+## Set up instructions for development
 
 *  Copy over `dashboard.razorpay.dev.conf` to `/etc/apache2/sites-available/`.
 * `sudo a2ensite dashboard.razorpay.dev.conf`
@@ -12,3 +12,11 @@
 * `npm install -g grunt-cli`
 * `cp app/config/grunt.sample.json app/config/grunt.json`
 * `grunt`
+
+
+## Setup instructions for testing
+
+* copy over `.env.sample.php` to `.env.testing.php` and add db name & password
+* Create a `$HOME/.selenium` directory
+* Download the latest selenium server jar file from `http://www.seleniumhq.org/download/` and download it in the `~/.selenium` directory.
+* Make sure you have firefox installed.
