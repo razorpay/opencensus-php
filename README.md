@@ -8,4 +8,7 @@
 * Copy over `.env.sample.php` to `.env.php` and add db name & password.
 * Run `php artisan migrate --seed` to migrate and seed the db.
 * Run `php composer.phar install` to install laravel
-* Run grunt
+* `npm install`
+* `npm install -g grunt-cli`
+* `cp app/config/grunt.sample.json app/config/grunt.json`
+* `grunt`
