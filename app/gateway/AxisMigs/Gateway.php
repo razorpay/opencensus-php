@@ -118,7 +118,7 @@ class Gateway extends Base\Gateway
         $content = $this->getAmaTxnResponseContent($response, $input);
 
         $content['payment_id'] = $input['payment']['id'];
-        $content['refund_id'] = $input['refund']['amount'];
+        $content['refund_id'] = $input['refund']['id'];
 
         $payment = $this->createGatewayPaymentEntity($content);
 

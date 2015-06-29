@@ -7,6 +7,9 @@ use Models\Base;
 class Entity extends Base\PublicEntity
 {
     protected $fields = array(
+        'id',
+        'payment_id',
+        'refund_id',
         'request_type',
         'cust_id',
         'channel_id',
@@ -18,6 +21,7 @@ class Entity extends Base\PublicEntity
         'orderid',
         'txn_amount',
         'txnamount',
+        'refundamount',
         'txnid',
         'txntype',
         'banktxnid',
@@ -31,6 +35,9 @@ class Entity extends Base\PublicEntity
     );
 
     protected $fillable = array(
+        'id',
+        'payment_id',
+        'refund_id',
         'action',
         'request_type',
         'cust_id',
@@ -43,6 +50,7 @@ class Entity extends Base\PublicEntity
         'orderid',
         'txn_amount',
         'txnamount',
+        'refundamount',
         'txnid',
         'txntype',
         'banktxnid',
@@ -62,6 +70,8 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'pay';
 
     protected $entity = 'paytm';
+
+    public $incrementing = true;
 
     public function setPaymentId($paymentId)
     {

@@ -41,7 +41,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                              = 'Card is expired';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                  = 'Expiry date is not valid';
     const BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID                      = 'Card details entered by the user is/are invalid.';
-    const BAD_REQUEST_PAYMENT_TIMED_OUT                                 = 'Paymend was not completed on time.';
+    const BAD_REQUEST_PAYMENT_TIMED_OUT                                 = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH          = 'Capture amount must be equal to the amount authorized';
     const BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT             = 'This bank is either not valid or is not enabled for the merchant';
     const BAD_REQUEST_REFUND_FAILED                                     = 'Refund failed';
