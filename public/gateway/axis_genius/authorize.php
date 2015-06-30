@@ -16,7 +16,8 @@ session_start();
 $_SESSION['secret'] = $SECURE_SECRET;
 
 // add the start of the vpcURL querystring parameters
-$vpcURL = 'https://geniusepay.in/VAS/DCC/do.action?';
+$vpcURL = $_POST['vpc_URL'];
+unset($_POST['vpc_URL']);
 
 $_POST['vpc_MerchTxnRef'] = time() . rand(10000,99999999);
 $_POST['vpc_gateway'] = 'ssl';
@@ -30,6 +31,8 @@ if(isset($_SERVER['HTTPS'])) {
 
 $_POST['vpc_ReturnURL'] = $protocol.'://'.$_SERVER['HTTP_HOST'] .
                           '/gateway/axis_genius/callback.php';
+$_POST['vpc_Currency'] = 'INR';
+$_POST['vpc_Locale'] = 'en';
 
 // The URL link for the receipt to do another transaction.
 // Note: This is ONLY used for this example and is not required for
@@ -70,6 +73,7 @@ foreach($_POST as $key => $value) {
 if (strlen($SECURE_SECRET) > 0) {
     $vpcURL .= "&vpc_SecureHash=" . strtoupper(hash("sha256",$SHA256HashData,false));
 }
+//print_r($vpcURL);die();
 
 // FINISH TRANSACTION - Redirect the customers using the Digital Order
 // ===================================================================
