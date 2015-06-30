@@ -68,7 +68,8 @@ class Entity extends Base\Entity
         'steps_finished',
         'submitted',
         'locked',
-        'comment'
+        'comment',
+        'submitted_at'
     );
 
     protected static $ajaxFields = array(
@@ -263,9 +264,10 @@ class Entity extends Base\Entity
         }
     }
 
-    public function markSubmittedTrue()
+    public function markSubmitted()
     {
         $this->setAttribute('submitted', 1);
+        $this->setAttribute('submitted_at', time());
     }
 
     public function isLocked()

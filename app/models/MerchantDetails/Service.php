@@ -46,7 +46,7 @@ class Service extends Base\Service
             //
             if (empty($missingSteps))
             {
-                $merchantDetails->markSubmittedTrue();
+                $merchantDetails->markSubmitted();
 
                 // Updating the model
                 $merchantDetails->saveOrFail();

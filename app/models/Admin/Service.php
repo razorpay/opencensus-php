@@ -46,7 +46,7 @@ class Service extends Base\Service
 
     public function listMerchants($input)
     {
-        $data = Merchant\Entity::with('merchantDetails')->get()->sortBy('created_at');
+        $data = Merchant\Entity::with('merchantDetails')->get();
 
         if(reset($input) !== false)
         {
