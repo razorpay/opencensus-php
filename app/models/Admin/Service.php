@@ -212,7 +212,7 @@ class Service extends Base\Service
         $response = array(
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
-            'submitted'         => $merchant_details['submitted'],
+            'submitted'         => $merchant_details['submitted']
         ) + $data;
 
         return $response;

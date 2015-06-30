@@ -600,6 +600,8 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       if(!current.website) current.website = current.merchant_details.business_website;
 
+      if(!current.dba) current.dba = current.merchant_details.business_dba;
+
       $scope.current = current;
 
       $scope.ok = function (merchant) {

@@ -48,7 +48,7 @@
         <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
           Enable Card
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == true "ng-click="disableMethod('card')"
+        <a href class="list-group-item" ng-show="merchant.details.methods.card == true" ng-click="disableMethod('card')"
         >
           Disable Card
         </a>
@@ -65,7 +65,7 @@
           Add Adjustment
         </a>
         <a href class="list-group-item" ng-click="openEditMerchant()">
-          Edit Merchant MCC, Website & International
+          Edit Merchant MCC, Website, DBA &amp; International
         </a>
         <a href class="list-group-item" ng-click="openAutofillForms()">
           Autofill Activation Form
@@ -110,12 +110,12 @@
           MCC
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.details.international}}</span>
-          International
+          <span class="pull-right">{{merchant.details.dba}}</span>
+          Business DBA
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
-          Registration Date
+          <span class="pull-right">{{merchant.details.international}}</span>
+          International
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
@@ -424,7 +424,7 @@
     <h3 class="modal-title">Edit Merchant</h3>
   </div>
   <div class="modal-body merchant-modal">
-    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website}">
+    <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category, website:current.website, dba:current.dba}">
       <div class="form-group">
         <label class="col-lg-2 control-label">International:</label>
         <div class="col-lg-10" >
