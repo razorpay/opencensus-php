@@ -8,7 +8,7 @@ class Repository extends \Razorpay\Spine\Repository
 {
     protected $db;
 
-    protected $authType;
+    protected $auth;
 
     public function __construct()
     {
@@ -16,7 +16,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $app = \App::getFacadeRoot();
 
-        $this->authType = $app['basicauth']->getAuthType();
+        $this->auth = $app['basicauth'];
     }
 
     public function findOrFailPublic($id, $columns = array('*'))
