@@ -16,6 +16,7 @@ class Validator extends Base\Validator
     );
 
     protected static $editRules = array(
+        'hold_funds'                => 'sometimes|in:0,1',
         'website'                   => 'sometimes|url|max:255',
         'category'                  => 'sometimes|numeric|digits:4',
         'international'             => 'sometimes|boolean',

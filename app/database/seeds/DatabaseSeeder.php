@@ -42,7 +42,8 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'nodal@razorpay.com',
                     'category'      =>  '1234',
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'nodal@razorpay.com'
                     )
                 );
 
@@ -61,7 +62,8 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'atom@razorpay.com',
                     'category'      =>  '1234',
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'nodal@razorpay.com'
                     )
                 );
 
@@ -80,7 +82,8 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'fees@razorpay.com',
                     'category'      =>  '1234',
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'fees@razorpay.com'
                     )
                 );
 
@@ -100,7 +103,8 @@ class DatabaseSeeder extends Seeder
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'test@razorpay.com'
                     )
                 );
 
@@ -120,7 +124,8 @@ class DatabaseSeeder extends Seeder
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'demo@razorpay.com'
                     )
                 );
 
