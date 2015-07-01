@@ -57,7 +57,7 @@ class Validator extends Base\Validator
         'website'           => 'sometimes|url',
         'category'          => 'sometimes|numeric|digits:4',
         'international'     => 'sometimes|boolean',
-        'business_dba'      => 'sometimes'
+        'billing_label'             => 'sometimes|max:255',
     );
 
     protected static $api_dashboard_mappings = array(

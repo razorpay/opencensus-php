@@ -110,8 +110,8 @@
           MCC
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.details.dba}}</span>
-          Business DBA
+          <span class="pull-right">{{merchant.details.billing_label}}</span>
+          Billing Label
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.international}}</span>
@@ -444,6 +444,12 @@
         <label for="website" class="col-lg-2 control-label">Website:</label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="website" ng-model="merchant.website" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="billing_label" class="col-lg-2 control-label">Billing Label:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="billing_label" ng-model="merchant.billing_label" />
         </div>
       </div>
     </form>

@@ -596,11 +596,13 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 .controller('editMerchantModalCtrl', ['$scope', '$modalInstance', 'current',
   function ($scope, $modalInstance, current) {
 
+      // If these fields were not present in the API db, we copy them to the form from dashboard database
+
       if(!current.international) current.international = current.merchant_details.business_international;
 
       if(!current.website) current.website = current.merchant_details.business_website;
 
-      if(!current.dba) current.dba = current.merchant_details.business_dba;
+      if(!current.billing_label) current.billing_label = current.merchant_details.business_dba;
 
       $scope.current = current;
 

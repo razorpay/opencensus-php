@@ -81,7 +81,7 @@ class Validator extends Base\Validator
         'contact_landline'      => 'Landline',
         'business_type'         => 'Organisation Type',
         'business_name'         => 'Full Business Name',
-        'business_dba'          => 'Doing Business As',
+        'business_dba'                  => 'Billing Label',
         'business_international'        => 'International Payments Required?' ,
         'business_paymentdetails'       => 'Payments Accepted For',
         'business_registered_address'   => 'Registered Address',
