@@ -124,8 +124,8 @@ trait RepositoryFetch
 
     public function isMerchantIdRequiredForFetch()
     {
-        if ($this->isAppAuth() === true)
-            return false;
+        // if ($this->isAppAuth() === true)
+        //     return false;
 
         return $this->merchantIdRequiredForMultipleFetch;
     }
