@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         'business_operation_state'     => 'required|alpha_space|max:255',
         'business_operation_city'      => 'required|alpha_space|max:255',
         'business_operation_pin'       => 'required|max:15',
-        'business_doe'                 => 'required|date',
+        'business_doe'                 => 'required|date_format:"Y-m-d"|before:"today"',
         'company_cin'                   => 'alpha_num|max:21',
         'company_pan'                   => 'alpha_num|max:15',
         'company_pan_name'              => 'alpha_space|max:255|required_with:company_pan',
