@@ -2,7 +2,19 @@
 body{
   width: 7.4in;
   margin: 0 auto;
-  padding: 10% 10px 0;
+  padding: 0 10px;
+}
+pre{
+  padding-top: 0.75in;
+  font-family: serif;
+  line-height: 18px;
+  font-size: 14px;
+  margin: 40px 20px;
+  white-space: pre-wrap;
+}
+.break{
+  padding: 1in 20px;
+  page-break-before : always;
 }
 @media not print{
   span[contentEditable]{
@@ -10,8 +22,19 @@ body{
     padding: 2px 8px;
   }
 }
+td:last-child{
+  text-align: center;
+}
+table{
+  border-collapse: collapse;
+  width: 100%;
+}
+td{
+  border: 1px solid #000;
+  width: 50%;
+}
 </style>
-<pre style="font-family: serif; line-height: 18px; font-size: 14px; margin: 40px 20px; white-space: pre-wrap">
+<pre>
 Date: {{=it.date}}
 
 To,
@@ -41,7 +64,7 @@ Account title: <b>RAZORPAY SFT PVT LTD NODAL ACT</b>
 Bank’s IFSC Code: <b>KKBK0000958</b>
 
 With respect to our above mentioned nodal account, we specifically further confirm that we shall comply with the extant guidelines / directions of the Reserve Bank of India (RBI) vide RBI circular no. RBI/2009-10/231 DPSS.CO.PD.No.1102/02.14.08/2009-10 dated November 24, 2009, as amended from time to time. We acknowledge and confirm that we shall not be allowed to operate the aforesaid nodal account and all the debits, credits and settlement in our above mentioned nodal account shall be subject to the provisions of the aforesaid RBI circular.
-We also confirm that the aforesaid Merchant is not carrying out any unlawful activities which are prohibited by law and/or the activities as set out in Schedule I to the Agreement
+We also confirm that the aforesaid Merchant is not carrying out any unlawful activities which are prohibited by law and/or the activities as set out in Schedule I to the Agreement.
 Our parent ME code is ___________________. Please keep the DBA name as <span contentEditable>DBA Name</span> for this additional MID/TID.
 
 
@@ -52,3 +75,57 @@ Thanking you
 Name: Harshil Mathur
 ME Name: Razorpay Software Private Limited
 </pre>
+<pre class="break">
+Date: <b>{{=it.date}}</b>
+
+To, 
+       The Manager
+       HDFC Bank LTD
+       Merchant Services
+
+Dear Sir,
+
+      Kindly debit  an amount of Rs 11,400.00/- from my Current Account 50200001324291 with HDFC Bank towards the payment of Payment Gateway Services.
+
+The Break-up of the total amount is given below :
+  
+<table>
+  <tr>
+    <td></td>
+    <td><b><i>Amount (Rs.)</i></b></td>
+  </tr>
+  <tr>
+    <td> Integration Fees</td>
+    <td>Rs 5,000.00/-</td>
+  </tr>
+  <tr>
+    <td> Annual Maintenance Charges</td>
+    <td>Rs 5,000.00/-</td>
+  </tr>
+  <tr>
+    <td> Total</td>
+    <td>Rs 10,000.00/-</td>
+  </tr>
+  <tr>
+    <td> Service Tax + E. cess (14.00%)</td>
+    <td>Rs 1,400.00/-</td>
+  </tr>
+  <tr>
+    <td> Total Amount</td>
+    <td>Rs 11,400.00/-</td>
+  </tr>
+</table>
+
+Regards
+
+
+
+Harshil Mathur
+Director
+Razorpay Software Private Limited
+
+
+
+
+
+
