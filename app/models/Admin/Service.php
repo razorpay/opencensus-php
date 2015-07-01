@@ -27,8 +27,6 @@ class Service extends Base\Service
 
         $repo = new $repo;
 
-        $repo->setMerchantIdRequiredForMultipleFetch(false);
-
         $entities = $repo->fetch($input);
 
         return $entities->toArrayAdmin();
