@@ -88,7 +88,7 @@ trait RepositoryFetch
         if (($this->isAppAuth()) and
             (isset($this->appFetchParamRules)))
         {
-            $this->fetchParamRules = array_merge($this->fetchParamRules, $this->appFetchParamRules);
+//            $this->fetchParamRules = array_merge($this->fetchParamRules, $this->appFetchParamRules);
         }
 
         validate($this->fetchParamRules, $params);

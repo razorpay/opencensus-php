@@ -109,6 +109,7 @@ class PaymentRetrieveTest extends TestCase
 
     public function testFetchAuthorizedPaymentsOnAppAuth()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('payment:authorized');
 
         $this->ba->appAuth();
