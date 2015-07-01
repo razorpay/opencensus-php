@@ -32,6 +32,11 @@ trait RepositoryFetch
 
         $query = $this->newQuery();
 
+        if ($merchantId !== null)
+        {
+            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
+        }
+
         if ($this->isMerchantIdRequiredForFetch())
         {
             if ($merchantId === null)
@@ -39,8 +44,6 @@ trait RepositoryFetch
                 throw new Exception\InvalidArgumentException(
                     'Merchant Id is required for fetch query');
             }
-
-            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
         }
 
         $params = $this->unsetEmptyParams($params);
