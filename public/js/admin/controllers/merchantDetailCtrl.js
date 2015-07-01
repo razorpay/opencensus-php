@@ -74,6 +74,22 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.holdMerchantFunds = function(){
+      var merchantEdit = {
+        hold_funds: 1
+      }
+
+      $scope.editMerchant(merchantEdit);
+    };
+
+    $scope.releaseMerchantFunds = function(){
+      var merchantEdit = {
+        hold_funds: 0
+      }
+
+      $scope.editMerchant(merchantEdit);
+    };
+
     $scope.enableLive = function() {
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/enable");
 

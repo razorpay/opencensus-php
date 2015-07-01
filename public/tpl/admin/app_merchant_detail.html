@@ -30,6 +30,20 @@
         >
           Activate Merchant
         </a>
+        <a href class="list-group-item"
+        ng-show="merchant.details.hold_funds===0"
+        ng-confirm-click="Are you sure you want to hold funds for this merchant?"
+        ng-click="holdMerchantFunds()"
+        >
+          Hold Merchant Funds
+        </a>
+        <a href class="list-group-item"
+        ng-show="merchant.details.hold_funds===1"
+        ng-confirm-click="Are you sure you want to release this merchant's funds?"
+        ng-click="releaseMerchantFunds()"
+        >
+          Release Merchant Funds
+        </a>
         <a href class="list-group-item" ng-show="merchant.details.activated==1 && merchant.details.live==0" ng-click="enableLive()">
           Enable Live Transactions
         </a>
@@ -156,6 +170,10 @@
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.live == 1 ? 'Live' : 'Not Live'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.live == 1, 'fa-times text-danger':merchant.details.live == 0}"></i></span>
           Live
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.hold_funds == 1 ? 'Yes' : 'No'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.hold_funds == 1, 'fa-times text-danger':merchant.details.hold_funds == 0}"></i></span>
+          Funds on Hold
         </a>
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
