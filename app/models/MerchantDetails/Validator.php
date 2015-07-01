@@ -92,7 +92,7 @@ class Validator extends Base\Validator
         'business_operation_state'      => 'Operation Address State',
         'business_operation_city'       => 'Operation Address City',
         'business_operation_pin'        => 'Operation Address Pin',
-        'promoter_pan'                  => 'Auhorised Signatory PAN',
+        'promoter_pan'                  => 'Authorised Signatory PAN',
         'promoter_pan_name'             => 'Authorised Signatory Name',
         'business_doe'                  => 'Date of Establishment',
         'company_cin'                   => 'Company CIN Number',
