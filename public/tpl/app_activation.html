@@ -1,4 +1,5 @@
 <div class="bg-light lter b-b wrapper-md">
+
   <h1 class="m-n font-thin h3">
     Activation Form
     <spinner class="inline"></spinner>
@@ -36,6 +37,13 @@
           <label for="contact_email" class="col-sm-3 control-label">Email</label>
           <div class="col-sm-8">
             <input type="email" class="form-control" name="contact_email" ng-model="data.1.contact_email" placeholder="Email" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="transaction_report_email" class="col-sm-3 control-label">Transaction Report Email</label>
+          <div class="col-sm-8">
+            <input type="email" class="form-control" name="transaction_report_email" ng-model="data.1.transaction_report_email" placeholder="Email" required>
+            <span class="help-block">All payment related reports will be sent to this email address</span>
           </div>
         </div>
         <div class="form-group">
@@ -89,13 +97,14 @@
         <div class="form-group">
           <label for="business_name" class="col-sm-3 control-label">Full Business Name</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_name" ng-model="data.2.business_name" placeholder="Full business Name" required>
+            <input type="text" class="form-control" name="business_name" ng-model="data.2.business_name" placeholder="Acme Private Limited" required>
           </div>
         </div>
         <div class="form-group">
-          <label for="business_dba" class="col-sm-3 control-label">Doing Business As (If Different from Above)</label>
+          <label for="business_dba" class="col-sm-3 control-label">Billing Label</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_dba" ng-model="data.2.business_dba" placeholder="Doing Business As" >
+            <input type="text" class="form-control" name="business_dba" ng-model="data.2.business_dba" placeholder="Acme Watches" >
+            <span class="help-block">This is the label that will appear in your customer's bank statement.</span>
           </div>
         </div>
         <div class="form-group">
@@ -108,15 +117,15 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="business_paymentdetails" class="col-sm-3 control-label">Payments Accepted for (Also mention B2b or B2C):</label>
+          <label for="business_paymentdetails" class="col-sm-3 control-label">Payments Accepted for (Also mention B2B or B2C):</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_paymentdetails" ng-model="data.2.business_paymentdetails" placeholder="Payments Accepted for" required>
+            <input type="text" class="form-control" name="business_paymentdetails" ng-model="data.2.business_paymentdetails" placeholder="Selling watches online directly to customers (B2C)" required>
           </div>
         </div>
         <div class="form-group">
         <label for="business_model" class="col-sm-3 control-label">Business Model</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="business_model" ng-model="data.2.business_model" placeholder="business Model"></textarea>
+            <textarea class="form-control" name="business_model" ng-model="data.2.business_model" placeholder="Business Model"></textarea>
             <span class="help-block">Please give a brief explanation of your business model and future plans (Essential for startups)</span>
           </div>
         </div>
@@ -146,36 +155,37 @@
         </div>
 
         <div class="form-group">
-        <label for="or_same" class="col-sm-3 control-label">Operation Address same as Registered Address</label>
+        <label for="or_same" class="col-sm-3 control-label">Operational Address same as Registered Address</label>
           <div class="col-sm-8">
               <label class="i-switch m-t-xs m-r">
                 <input type="checkbox" ng-change="genOperation(or_same)" name="or_same" ng-model="or_same"><i></i>
               </label>
+              <span class="help-block">Physical Verification might be performed at your operational address.</span>
           </div>
         </div>
 
         <div class="form-group">
-        <label for="business_operation_address" class="col-sm-3 control-label">Operation Address</label>
+        <label for="business_operation_address" class="col-sm-3 control-label">Operational Address</label>
           <div class="col-sm-8">
-            <textarea class="form-control" name="business_operation_address" ng-model="data.2.business_operation_address" placeholder="Operation Address" ng-disabled="or_same" required></textarea>
+            <textarea class="form-control" name="business_operation_address" ng-model="data.2.business_operation_address" placeholder="Operational Address" ng-disabled="or_same" required></textarea>
             </div>
         </div>
         <div class="form-group">
-        <label for="business_operation_state" class="col-sm-3 control-label">Operation Address State</label>
+        <label for="business_operation_state" class="col-sm-3 control-label">Operational Address State</label>
           <div class="col-sm-8">
             <input type="text" class="form-control" name="business_operation_state" ng-model="data.2.business_operation_state" placeholder="Operation State" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="business_operation_city" class="col-sm-3 control-label">Operation Address City</label>
+        <label for="business_operation_city" class="col-sm-3 control-label">Operational Address City</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_operation_city" ng-model="data.2.business_operation_city" placeholder="Operation Address City" ng-disabled="or_same" required>
+            <input type="text" class="form-control" name="business_operation_city" ng-model="data.2.business_operation_city" placeholder="Operational Address City" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
-        <label for="business_operation_pin" class="col-sm-3 control-label">Operation Address Pincode</label>
+        <label for="business_operation_pin" class="col-sm-3 control-label">Operational Address Pincode</label>
           <div class="col-sm-8">
-            <input type="text" class="form-control" name="business_operation_pin" ng-model="data.2.business_operation_pin" placeholder="Operation Address Pincode" ng-disabled="or_same" required>
+            <input type="text" class="form-control" name="business_operation_pin" ng-model="data.2.business_operation_pin" placeholder="Operational Address Pincode" ng-disabled="or_same" required>
           </div>
         </div>
         <div class="form-group">
@@ -544,7 +554,7 @@
           <div class="col-sm-8">
             <span class="help-block">
             Upload address proof of at least one authorised signatory, whose details have been filled earlier.
-            In case of sole proprietership, upload your personal PAN.
+            In case of sole proprietership, upload your personal address proof.
             </span>
             <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="promoter_address_proof" ng-file-select="onFileSelect($files, 'promoter_address_proof')">
             <div class="text-center m-t m-b alerts">

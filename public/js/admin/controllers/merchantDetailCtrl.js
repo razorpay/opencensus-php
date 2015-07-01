@@ -74,6 +74,22 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.holdMerchantFunds = function(){
+      var merchantEdit = {
+        hold_funds: 1
+      }
+
+      $scope.editMerchant(merchantEdit);
+    };
+
+    $scope.releaseMerchantFunds = function(){
+      var merchantEdit = {
+        hold_funds: 0
+      }
+
+      $scope.editMerchant(merchantEdit);
+    };
+
     $scope.enableLive = function() {
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/enable");
 
@@ -596,9 +612,15 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 .controller('editMerchantModalCtrl', ['$scope', '$modalInstance', 'current',
   function ($scope, $modalInstance, current) {
 
+      // If these fields were not present in the API db, we copy them to the form from dashboard database
+
       if(!current.international) current.international = current.merchant_details.business_international;
 
       if(!current.website) current.website = current.merchant_details.business_website;
+
+      if(!current.billing_label) current.billing_label = current.merchant_details.business_dba;
+
+      if(!current.transaction_report_email) current.transaction_report_email = current.merchant_details.transaction_report_email;
 
       $scope.current = current;
 

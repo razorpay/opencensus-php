@@ -1,9 +1,8 @@
 <?php
 
 namespace RZP;
-use Razorpay\Api;
 
-class Payment extends Api\Payment
+class Payment extends \Razorpay\Api\Payment
 {   
     public function verify()
     {
