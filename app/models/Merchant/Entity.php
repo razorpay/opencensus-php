@@ -12,8 +12,11 @@ class Entity extends Base\PublicEntity
     const ACTIVATED         = 'activated';
     const ACTIVATED_AT      = 'activated_at';
     const LIVE              = 'live';
+    const HOLD_FUNDS        = 'hold_funds';
     const PRICING_PLAN_ID   = 'pricing_plan_id';
     const INTERNATIONAL     = 'international';
+    const BILLING_LABEL     = 'billing_label';
+    const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
     const WEBSITE           = 'website';
     const CATEGORY          = 'category';
 
@@ -33,7 +36,9 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CATEGORY,
         self::WEBSITE,
-        self::INTERNATIONAL);
+        self::HOLD_FUNDS,
+        self::INTERNATIONAL,
+        self::BILLING_LABEL);
 
     protected $public = array(
         self::ID,
@@ -43,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED,
         self::ACTIVATED_AT,
         self::LIVE,
+        self::HOLD_FUNDS,
         self::CATEGORY,
         self::WEBSITE,
         self::INTERNATIONAL,

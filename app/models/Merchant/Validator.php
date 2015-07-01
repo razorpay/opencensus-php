@@ -16,8 +16,11 @@ class Validator extends Base\Validator
     );
 
     protected static $editRules = array(
-        'website'           => 'sometimes|url|max:255',
-        'category'          => 'sometimes|numeric|digits:4',
-        'international'     => 'sometimes|boolean',
+        'hold_funds'                => 'sometimes|in:0,1',
+        'website'                   => 'sometimes|url|max:255',
+        'category'                  => 'sometimes|numeric|digits:4',
+        'international'             => 'sometimes|boolean',
+        'billing_label'             => 'sometimes|max:255',
+        'transaction_report_email'  => 'sometimes|email|max:255'
     );
 }

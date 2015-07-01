@@ -38,6 +38,9 @@ class CreateMerchants extends Migration
             $table->boolean(Merchant::LIVE)
                   ->default(0);
 
+            $table->boolean(Merchant::HOLD_FUNDS)
+                  ->default(0);
+
             $table->char(Merchant::PRICING_PLAN_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
@@ -49,6 +52,12 @@ class CreateMerchants extends Migration
 
             $table->boolean(Merchant::INTERNATIONAL)
                   ->default(0);
+
+            $table->string(Merchant::BILLING_LABEL)
+                  ->nullable();
+
+            $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
+                  ->nullable();
 
             $table->integer(Merchant::CREATED_AT);
             $table->integer(Merchant::UPDATED_AT);
