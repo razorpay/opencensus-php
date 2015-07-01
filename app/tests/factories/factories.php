@@ -18,6 +18,7 @@ $factory('Models\MerchantDetails\Entity', [
     'merchant_id'   => 'Models\Merchant\Entity',
     'contact_name'  => $faker->word,
     'contact_email' => $faker->email,
+    'transaction_report_email'=>$faker->email,
     'contact_mobile'    => 9000000000,
     'contact_landline'  => 1234567890,
     'business_type' => 2,

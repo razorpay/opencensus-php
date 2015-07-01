@@ -604,6 +604,8 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       if(!current.billing_label) current.billing_label = current.merchant_details.business_dba;
 
+      if(!current.transaction_report_email) current.transaction_report_email = current.merchant_details.transaction_report_email;
+
       $scope.current = current;
 
       $scope.ok = function (merchant) {

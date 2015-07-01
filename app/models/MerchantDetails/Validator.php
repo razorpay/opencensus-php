@@ -7,10 +7,11 @@ use Models\Base;
 class Validator extends Base\Validator
 {
     protected static $step1Rules = array(
-        'contact_name'          => 'required|alpha_space|max:255',
-        'contact_email'         => 'required|email|max:255',
-        'contact_mobile'        => 'required|numeric|digits_between:8,11',
-        'contact_landline'      => 'numeric|digits_between:8,11'
+        'contact_name'              => 'required|alpha_space|max:255',
+        'contact_email'             => 'required|email|max:255',
+        'transaction_report_email'  => 'required|email|max:255',
+        'contact_mobile'            => 'required|numeric|digits_between:8,11',
+        'contact_landline'          => 'numeric|digits_between:8,11'
     );
 
     protected static $step2Rules = array(
@@ -75,12 +76,13 @@ class Validator extends Base\Validator
     );
 
     protected  $customAttributes = array(
-        'contact_name'          => 'Contact Name',
-        'contact_email'         => 'Email',
-        'contact_mobile'        => 'Mobile',
-        'contact_landline'      => 'Landline',
-        'business_type'         => 'Organisation Type',
-        'business_name'         => 'Full Business Name',
+        'contact_name'                  => 'Contact Name',
+        'contact_email'                 => 'Email',
+        'transaction_report_email'      => 'Transaction Report Email',
+        'contact_mobile'                => 'Mobile',
+        'contact_landline'              => 'Landline',
+        'business_type'                 => 'Organisation Type',
+        'business_name'                 => 'Full Business Name',
         'business_dba'                  => 'Billing Label',
         'business_international'        => 'International Payments Required?' ,
         'business_paymentdetails'       => 'Payments Accepted For',

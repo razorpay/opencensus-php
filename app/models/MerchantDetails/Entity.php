@@ -69,7 +69,8 @@ class Entity extends Base\Entity
         'submitted',
         'locked',
         'comment',
-        'submitted_at'
+        'submitted_at',
+        'transaction_report_email'
     );
 
     protected static $ajaxFields = array(
@@ -129,7 +130,8 @@ class Entity extends Base\Entity
         'promoter_address_url',
         'steps_finished',
         'submitted',
-        'locked'
+        'locked',
+        'transaction_report_email'
     );
 
     protected static $uploadKeys = array(

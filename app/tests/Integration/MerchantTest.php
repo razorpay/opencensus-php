@@ -197,6 +197,7 @@ class MerchantTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"step1\"] > fieldset > .alerts > .alert-danger').length > 0", 20000)
             ->type(l::IdOrName('contact_name'), 'Yo Name')   // Fill name
             ->type(l::IdOrName('contact_email'), 'email@umail.com')   // Fill slug
+            ->type(l::IdOrName('transaction_report_email'), 'billing@umail.com')
             ->type(l::IdOrName('contact_mobile'), '9199192999')
             ->type(l::IdOrName('contact_landline'), '9191929393')
             ->click(l::css('form[name="step1"] > fieldset > .prev-next > .btn-save'))
