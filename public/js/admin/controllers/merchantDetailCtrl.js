@@ -626,6 +626,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
   function ($scope, $modalInstance, current) {
       var merchant_details = current && current.merchant_details || {};
       var html = "";
+
       $scope.ok = function () {
         if(html){
           var w = window.open();
@@ -638,8 +639,10 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       };
 
       $scope.select = function(bank){
+        $('.modal-ok').attr('disabled', 'disabled');
         $.ajax({
-          url: 'axis-form.html',
+          url: '/admin-forms/' + bank + '.html',
+          complete: function(){$('.modal-ok').removeAttr('disabled')},
           success: function(resp){
             doT.templateSettings.strip = false;
             var template = doT.template(resp);
@@ -667,7 +670,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
             var now = new Date();
             var nowdate = ("0"+now.getDate()).slice(-2);
-            var nowmonth = ("0"+now.getMonth()).slice(-2);
+            var nowmonth = ("0"+(1+now.getMonth())).slice(-2);
             var nowyear = now.getYear()+1900;
             html = template({
               date: nowdate + '/' + nowmonth + '/' + nowyear,
@@ -730,7 +733,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
               techpro_addr: "",
               paycli_merc: "",
               paycli_third: "Y",
-              paycli_hosting: "",
+              paycli_hosting: "Amazon Web Services",
               paycli_tel: "",
               paycli_win: "",
               paycli_winver: "",
@@ -759,7 +762,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
               payapp_dndcard: "",
               payapp_secyes: "Y",
               payapp_secno: "",
-              payapp_uid: "",
+              payapp_uid: "Razorpay",
               payapp_vbvyes: "Y",
               payapp_vbvno: "",
               payapp_mscyes: "Y",
