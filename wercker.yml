@@ -40,7 +40,7 @@ build:
           code: mkdir ./report
       - script:
           name: Run unit tests
-          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose # --coverage-clover /tmp/clover.xml
+          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose --coverage-clover /tmp/clover.xml
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
