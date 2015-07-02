@@ -103,7 +103,7 @@ class NodalAccount
             //        becomes recurring decimal in text file.
             //
 
-            $amount = (string) ($settlement->getAmount() / 100);
+            $amount = $settlement->getAmount() / 100;
 
             $array = array(
                 'Client_Code'           => 'NODAL',
@@ -123,7 +123,10 @@ class NodalAccount
 
             $array = $this->getAllFields($array);
 
-            array_push($textData, $array);
+            $textDataArray = $array;
+            $textDataArray['Amount'] = (string) $amount;
+
+            array_push($textData, $textDataArray);
 
             // Excel file has couple extra fields for calculating text data of that row.
             $array['Symbol'] = '~';
