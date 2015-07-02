@@ -32,7 +32,8 @@ trait FileHandlerTrait
         $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
         $fullpath = $fileMetadata['full'];
 
-        $url = $this->saveToAws($name.'.xlsx', $fullpath, 'application/vnd.ms-excel');
+        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
 
         return $url;
     }
@@ -98,7 +99,7 @@ trait FileHandlerTrait
 
     protected function saveLocally($name, $txt)
     {
-        $path = storage_path() . '/files/settlement/';
+        $path = $this->getStorageDir();
 
         $fullpath = $path . $name;
 

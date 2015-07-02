@@ -73,6 +73,10 @@ class NodalAccount
     {
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
+
+        $this->queue = \Queue::getFacadeRoot();
+
+        $this->mail = \Mail::getFacadeRoot();
     }
 
     public function generateSettlementFile($settlements, $txns)
@@ -84,26 +88,37 @@ class NodalAccount
 
         $row = 2; // row number
 
+        $totalAmount = $neftAmount = $iftAmount = 0;
+
         foreach ($settlements as $settlement)
         {
             $merchant = $settlement->merchant;
 
             $ba = $merchant->bankAccount;
 
+            //
+            // @note: Convert the amount to string for text file otherwise
+            //        sometimes float becomes recurring decimal in text file.
+            //        However in excel keep it as integer since it helps in
+            //        mathematical operations directly
+            //
+
+            $amount = $settlement->getAmount() / 100;
+            $totalAmount += $amount;
+
             $type = 'NEFT';
+
             $ifsc = $ba->getIfscCode();
 
             if (substr($ifsc, 0, 4) === 'KKBK')
             {
                 $type = 'IFT';
+                $iftAmount += $amount;
             }
-
-            //
-            // @note: Convert the amount to string otherwise sometimes float
-            //        becomes recurring decimal in text file.
-            //
-
-            $amount = $settlement->getAmount() / 100;
+            else
+            {
+                $neftAmount += $amount;
+            }
 
             $array = array(
                 'Client_Code'           => 'NODAL',
@@ -135,6 +150,12 @@ class NodalAccount
 
             array_push($excelData, $array);
         }
+
+        $amounts['total'] = $totalAmount;
+        $amounts['neft'] = $neftAmount;
+        $amounts['ift'] = $iftAmount;
+
+        $this->queueKotakSettlementMail($settlements->count(), $amounts);
 
         $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
 
@@ -170,5 +191,48 @@ class NodalAccount
         $str = str_replace('2', $i, $str);
 
         return $str;
+    }
+
+    protected function queueKotakSettlementMail($count, $amounts)
+    {
+        $data['message'] = '
+            Total transactions - ' . $count . '
+            NEFT Amount - ' . $amounts['neft'] . '
+            IFT Amount - ' . $amounts['ift'];
+
+        $fileName = $this->getFileToWriteNameWithoutExt();
+        $path = $this->getStorageDir();
+        $fullpath = $path . $fileName;
+
+        $data['file'] = $fullpath;
+
+        $func = __CLASS__ . '@sendSettlementMail';
+
+        $this->queue->push($func, $data);
+    }
+
+    public function sendSettlementMail($job, $data)
+    {
+        $job->delete();
+
+        $data['massage'] = $data['message'];
+
+        $this->mail->send('emails.message', $data, function($message) use ($data)
+        {
+            $emails = ['shashank@razorpay.com', 'harshil@razorpay.com'];
+
+            $message->from('settlement@mg.razorpay.com', 'Kotak Settlement');
+
+            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+            $message->subject('Kotak Settlement files for ' . $today);
+
+            $message->to($emails);
+
+            $file = $data['file'];
+
+            $message->attach($file . '.xlsx');
+            $message->attach($file . '.txt');
+        });
     }
 }
