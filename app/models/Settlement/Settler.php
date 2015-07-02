@@ -92,7 +92,8 @@ class Settler
                     $settlements->count(),
                     $txns->count());
 
-                $data['setlFile'] = $urlText;
+                $data['settlement_text_file'] = $urlText;
+                $data['settlement_excel_file'] = $urlExcel;
             }
             else
             {
