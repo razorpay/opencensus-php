@@ -32,24 +32,24 @@ build:
       - script:
           name: install dependencies
           code: php composer.phar install --no-interaction
-      - script:
-          name: install xdebug
-          code: pecl install xdebug && echo "zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" > /usr/local/etc/php/conf.d/xdebug.ini
+      # - script:
+      #     name: install xdebug
+      #     code: pecl install xdebug && echo "zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" > /usr/local/etc/php/conf.d/xdebug.ini
       - script:
           name: create report dir
           code: mkdir ./report
       - script:
           name: Run unit tests
-          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose --coverage-clover /tmp/clover.xml
+          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose # --coverage-clover /tmp/clover.xml
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
-      - script:
-          name: Upload coverage to codacy
-          code: vendor/bin/codacycoverage clover /tmp/clover.xml
+      # - script:
+      #     name: Upload coverage to codacy
+      #     code: vendor/bin/codacycoverage clover /tmp/clover.xml
 
 deploy:
     steps:
