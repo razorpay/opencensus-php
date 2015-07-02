@@ -33,6 +33,9 @@ build:
           name: install dependencies
           code: php composer.phar install --no-interaction
       - script:
+          name: install xdebug
+          code: pecl install xdebug && echo "zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" > /usr/local/etc/php/conf.d/xdebug.ini
+      - script:
           name: create report dir
           code: mkdir ./report
       - script:
