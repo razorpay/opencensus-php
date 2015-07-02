@@ -90,7 +90,13 @@ class BasicAuth
      * behalf
      * @var boolean
      */
-    private $proxy;
+    private $proxy = false;
+
+    /**
+     * Whether an internal app is doing an authentication
+     * @var boolean
+     */
+    private $appAuth = false;
 
     /**
      * Denotes whether authentication happens over query params.
@@ -201,7 +207,7 @@ class BasicAuth
         }
         else if ($this->verifyInternalAppAsProxy() === true)
         {
-            $this->setType((Type::APP_AUTH));
+            $this->setProxyTrue();
 
             return;
         }
@@ -267,7 +273,9 @@ class BasicAuth
 
     public function appAuth()
     {
-        $this->setType(Type::APP_AUTH);
+        $this->setType(Type::PRIVILEGE_AUTH);
+
+        $this->setAppTrue();
 
         $res = $this->setCredentials();
 
@@ -290,7 +298,7 @@ class BasicAuth
 
     public function proxyAuth()
     {
-        $this->setType(Type::APP_AUTH);
+        $this->setType(Type::PRIVATE_AUTH);
 
         $this->proxy = true;
 
@@ -643,7 +651,34 @@ class BasicAuth
         $this->type = $type;
     }
 
+    protected function setProxyTrue()
+    {
+        $this->proxy = true;
+
+        $this->setAppTrue();
+    }
+
+    protected function setAppTrue()
+    {
+        $this->appAuth = true;
+    }
+
 // --------------------- Setters Ends ------------------------------------------
+
+    public function isProxyAuth()
+    {
+        return $this->proxy;
+    }
+
+    public function isAppAuth()
+    {
+        return $this->appAuth;
+    }
+
+    public function isPrivilegeAuth()
+    {
+        return ($this->type === Type::PRIVILEGE_AUTH);
+    }
 
     protected function setKeyFromQueryParams()
     {

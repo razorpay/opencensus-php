@@ -32,6 +32,11 @@ trait RepositoryFetch
 
         $query = $this->newQuery();
 
+        if ($merchantId !== null)
+        {
+            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
+        }
+
         if ($this->isMerchantIdRequiredForFetch())
         {
             if ($merchantId === null)
@@ -39,8 +44,6 @@ trait RepositoryFetch
                 throw new Exception\InvalidArgumentException(
                     'Merchant Id is required for fetch query');
             }
-
-            $query = $query->where(Common::MERCHANT_ID, '=', $merchantId);
         }
 
         $params = $this->unsetEmptyParams($params);
@@ -85,10 +88,11 @@ trait RepositoryFetch
 
     protected function validateFetchParams(array $params)
     {
-        if (($this->isAppAuth()) and
+        if (($this->auth->isProxyAuth()) and
             (isset($this->appFetchParamRules)))
         {
-            $this->fetchParamRules = array_merge($this->fetchParamRules, $this->appFetchParamRules);
+            $this->fetchParamRules = array_merge(
+                    $this->fetchParamRules, $this->appFetchParamRules);
         }
 
         validate($this->fetchParamRules, $params);
@@ -121,8 +125,10 @@ trait RepositoryFetch
 
     public function isMerchantIdRequiredForFetch()
     {
-        if ($this->isAppAuth() === true)
-            return false;
+        if ($this->auth->isPrivilegeAuth() === true)
+        {
+             return false;
+        }
 
         return $this->merchantIdRequiredForMultipleFetch;
     }
@@ -162,10 +168,5 @@ trait RepositoryFetch
         {
             $params['count'] = 10;
         }
-    }
-
-    public function isAppAuth()
-    {
-        return ($this->authType === 'app');
     }
 }

@@ -14,6 +14,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'Merchant';
 
+    protected $appFetchParamRules = array(
+        Entity::ACTIVATED       => 'sometimes|boolean',
+    );
+
     public function getBalanceLockForUpdate($id)
     {
         return Merchant\Balance::lockForUpdate()->findOrFail($id);

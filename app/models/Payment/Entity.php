@@ -198,9 +198,18 @@ class Entity extends Base\PublicEntity
     protected function modifyBank(& $input)
     {
         if ((isset($input['method'])) and
-            ($input['method'] === 'card'))
+            ($input['method'] !== Method::NETBANKING))
         {
             $input['bank'] = null;
+        }
+    }
+
+    protected function modifyWallet(& $input)
+    {
+        if ((isset($input['method'])) and
+            ($input['method'] !== Method::WALLET))
+        {
+            $input['wallet'] = null;
         }
     }
 

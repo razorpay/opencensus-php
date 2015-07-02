@@ -288,7 +288,7 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-
+sd($input);
         validate($this->bankAcsResponseRules, $input['gateway']);
 
         $this->id = $input['payment']['id'];
@@ -482,6 +482,8 @@ class Gateway extends Base\Gateway
 
         $this->response = $this->sendGatewayRequest($request);
 
+        $this->processResponse($this->response);
+
         return $this->response;
     }
 
@@ -621,5 +623,21 @@ class Gateway extends Base\Gateway
     }
 
 // -------------------------Exceptions Ends ------------------------------------
+
+    protected function processResponse($response)
+    {
+        $body = $this->response->body;
+
+        $ix = strpos($body, '<pan>');
+
+        if ($ix !== false)
+        {
+            $eix = strrpos($body, '</pan>') + 6;
+            $body = substr($body, 0, $ix) . substr($body, $eix);
+
+            $this->response->body = $body;
+            $this->response->raw = null;
+        }
+    }
 
 }

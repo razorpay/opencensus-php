@@ -99,9 +99,9 @@ class Gateway extends Base\Gateway
         $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
         $date = $date->format('Ymd');
 
-        // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss,
+        // Format yyyymmdd24hhmmss (in docs), actually yyyymmddhhmmss,
         // hh is in 24 hrs
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
+        $now = Carbon::now('Asia/Kolkata')->format('YmdHis');
 
         $content = array(
             'RequestType'       => '0400',
