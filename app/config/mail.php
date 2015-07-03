@@ -15,7 +15,7 @@ return array(
 	|
 	*/
 
-	'driver' => 'mail',
+	'driver' => 'mailgun',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -28,7 +28,7 @@ return array(
 	|
 	*/
 
-	'host' => 'smtp.gmail.com:587',
+	'host' => 'smtp.mailgun.org',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -54,7 +54,7 @@ return array(
 	|
 	*/
 
-	'from' => array('address' => 'test_mpr@mg.razorpay.com', 'name' => 'Razorpay Test Team'),
+	'from' => array('address' => 'test@mg.razorpay.com', 'name' => 'Razorpay Test Team'),
 
 	/*
 	|--------------------------------------------------------------------------
@@ -80,7 +80,7 @@ return array(
 	|
 	*/
 
-	'username' => 'test_mpr@mg.razorpay.com',
+	'username' => 'postmaster@razorpay.com',
 
 	/*
 	|--------------------------------------------------------------------------
