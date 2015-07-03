@@ -35,7 +35,7 @@ $factory('Models\MerchantDetails\Entity', [
     'business_operation_state'  => $faker->word,
     'business_operation_city'   => $faker->word,
     'business_operation_pin'    => $faker->word,
-    'business_doe'  => $faker->word,
+    'business_doe'  => "1990-11-01",
     'company_cin'   => $faker->word,
     'company_pan'   => $faker->word,
     'company_pan_name'  => $faker->word,
