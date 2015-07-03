@@ -155,13 +155,13 @@ class NodalAccount
         $amounts['neft'] = $neftAmount;
         $amounts['ift'] = $iftAmount;
 
-        $this->queueKotakSettlementMail($settlements->count(), $amounts);
-
         $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
 
         $txt = $this->generateText($textData);
 
         $urlText = $this->writeToTextFile($txt);
+
+        $this->sendKotakSettlementMail($settlements->count(), $amounts);
 
         return [$urlText, $urlExcel];
     }
@@ -193,35 +193,24 @@ class NodalAccount
         return $str;
     }
 
-    protected function queueKotakSettlementMail($count, $amounts)
+    protected function sendKotakSettlementMail($count, $amounts)
     {
-        $data['message'] = '
-            Total transactions - ' . $count . '
-            NEFT Amount - ' . $amounts['neft'] . '
+        $data['body'] = '
+            Total transactions - ' . $count . '<br />
+            NEFT Amount - ' . $amounts['neft'] . '<br />
             IFT Amount - ' . $amounts['ift'];
 
         $fileName = $this->getFileToWriteNameWithoutExt();
         $path = $this->getStorageDir();
-        $fullpath = $path . $fileName;
+        $fullpath = $path . '/'. $fileName;
 
         $data['file'] = $fullpath;
 
-        $func = __CLASS__ . '@sendSettlementMail';
-
-        $this->queue->push($func, $data);
-    }
-
-    public function sendSettlementMail($job, $data)
-    {
-        $job->delete();
-
-        $data['massage'] = $data['message'];
-
-        $this->mail->send('emails.message', $data, function($message) use ($data)
+        $this->mail->queue('emails.message', $data, function($message) use ($data)
         {
-            $emails = ['shashank@razorpay.com', 'harshil@razorpay.com'];
+            $emails = ['shashank@razorpay.com'];
 
-            $message->from('settlement@mg.razorpay.com', 'Kotak Settlement');
+            $message->from('settlement@razorpay.com', 'Kotak Settlement');
 
             $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
@@ -231,8 +220,8 @@ class NodalAccount
 
             $file = $data['file'];
 
-            $message->attach($file . '.xlsx');
-            $message->attach($file . '.txt');
+           $message->attach($file . '.xlsx');
+           $message->attach($file . '.txt');
         });
     }
 }

@@ -99,13 +99,12 @@ trait FileHandlerTrait
 
     protected function saveLocally($name, $txt)
     {
-        $path = $this->getStorageDir();
-
-        $fullpath = $path . $name;
+        $fullpath = $this->getFullFilePath($name);
 
         $file = fopen($fullpath, 'w');
         fwrite($file, $txt);
         fclose($file);
+
         chmod($fullpath, 0777);  // keep it 0777. This step is important.
 
         return $fullpath;
@@ -321,5 +320,10 @@ trait FileHandlerTrait
     protected function getStorageDir()
     {
         return storage_path('files/settlement');
+    }
+
+    protected function getFullFilePath($filename)
+    {
+        return $this->getStorageDir() . '/' . $filename;
     }
 }
