@@ -22,6 +22,9 @@ build:
       - add-ssh-key:
           keyname: RZP_API
       - script:
+          name: enable composer cache
+          code: export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer" && mkdir -p $COMPOSER_CACHE_DIR
+      - script:
           name: install dependencies
           code: composer install --no-interaction
       - script:
