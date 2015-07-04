@@ -30,7 +30,7 @@ build:
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
-          channel: tech_bots
+          channel:  tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
 
