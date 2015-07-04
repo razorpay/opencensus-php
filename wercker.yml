@@ -18,12 +18,12 @@ build:
           code: cp .env.wercker.php .env.testing.php
       - script:
           name: set composer to use github oauth token
-          code: php composer.phar config -g github-oauth.github.com $github_token
+          code: composer config -g github-oauth.github.com $github_token
       - add-ssh-key:
           keyname: RZP_API
       - script:
           name: install dependencies
-          code: php composer.phar install --no-interaction
+          code: composer install --no-interaction
       - script:
           name: Run unit tests
           code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
