@@ -1,4 +1,4 @@
-box: php:5.6
+box: razorpay/docker:latest
 dev:
   steps:
     - internal/shell:
@@ -13,14 +13,6 @@ build:
           MYSQL_ROOT_PASSWORD: root
     # The steps that will be executed on build
     steps:
-      # A custom script step, name value is used in the UI
-      # and the code value contains the command that get executed
-      - script:
-          name: Install linux packages
-          code: apt-get update && apt-get install -y libmcrypt-dev libssl-dev git-core libsqlite3-dev libmysqlclient18 python-pip
-      - script:
-          name: Install php extensions
-          code: docker-php-ext-install mcrypt mbstring zip pcntl pdo_sqlite pdo_mysql
       - script:
           name: copy env file
           code: cp .env.wercker.php .env.testing.php
@@ -32,24 +24,15 @@ build:
       - script:
           name: install dependencies
           code: php composer.phar install --no-interaction
-      # - script:
-      #     name: install xdebug
-      #     code: pecl install xdebug && echo "zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" > /usr/local/etc/php/conf.d/xdebug.ini
-      - script:
-          name: create report dir
-          code: mkdir ./report
       - script:
           name: Run unit tests
-          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose # --coverage-clover /tmp/clover.xml
+          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
-      # - script:
-      #     name: Upload coverage to codacy
-      #     code: vendor/bin/codacycoverage clover /tmp/clover.xml
 
 deploy:
     steps:
