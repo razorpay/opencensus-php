@@ -73,7 +73,6 @@ return array(
     'SLACK_TOKEN'                           => '',
     'SLACK_MOCK'                            => true,
 
-    'MAILGUN_API_KEY'                       => '',
     'MAILGUN_SECRET'                        => '',
     'MAILGUN_MOCK'                          => true,
 
