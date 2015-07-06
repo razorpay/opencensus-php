@@ -103,10 +103,10 @@ function handleMessage(data){
   body{user-select: none; text-align: center; color: #444; font-family: 'lato', sans-serif; font-size: 16px; line-height: 30px; white-space: nowrap;}
   .middlechild,.container{display: inline-block; vertical-align: middle; white-space: normal;}
   .middlechild{width: 1px; height: 90%;}
-  .container{width: 80%; max-width: 900px; margin: 150px auto 0;}
-  #logo{padding-bottom: 20px;}
+  .container{width: 80%; max-width: 900px; margin: 80px auto 0;}
+  #logo{padding-bottom: 15px; margin: 0 auto;}
   #top{position: absolute; top: 20px; text-align: center; border-bottom: 2px solid #ddd; width: 80%; left: 10%;}
-  .heading{text-transform: uppercase; font-size: 36px; letter-spacing: 1px; line-height: 40px;}
+  .heading{text-transform: uppercase; font-size: 32px; letter-spacing: 1px; line-height: 40px;}
   #pro{border-radius: 6px; margin-top: 15px;}
   .powered-by{font-size: 50px;text-decoration: none; color: #999; margin-top: 10px; display: block; line-height: 60px}
   img{max-width: 100%; display: block; margin: 10px auto;}
@@ -128,7 +128,7 @@ function handleMessage(data){
     <div id="description"></div>
     <div class="heading amount">&#xe600;<span id="amount"></span></div>
   </div>
-  <div style="margin-top: 30px">Redirecting to bank page...</div>
+  <div style="margin-top: 25px">Redirecting to bank page...</div>
   <div class="powered-by">&#xe608;</div>
 <div class="autosubmit">
   <form method="POST" action="{{=it.data.url}}" id="rzp-dcform">

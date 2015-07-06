@@ -66,6 +66,9 @@ require('vars.php');
                     name: 'Harshil Mathur',
                     email: 'harshil@razorpay.com',
                     contact: '9999999999'
+                  },
+                  handler: function (transaction){
+                    alert('You have successfully purchased Fine tshirt\ntransaction id: ' + transaction.razorpay_payment_id);
                   }
                 }).open()
               }
