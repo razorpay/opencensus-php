@@ -170,4 +170,9 @@ class Entity extends Base\PublicEntity
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
+
+    public function holdFunds()
+    {
+        return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
 }

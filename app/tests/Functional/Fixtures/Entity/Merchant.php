@@ -150,4 +150,12 @@ class Merchant extends Base
         return $merchant;
     }
 
+    public function holdFunds($id, $hold = true)
+    {
+        $repo = new \Models\Merchant\Repository;
+        $merchant = $repo->findOrFail($id);
+        $merchant['hold_funds'] = '1';
+        $repo->saveOrFail($merchant);
+        return $merchant;
+    }
 }

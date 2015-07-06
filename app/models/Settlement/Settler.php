@@ -204,7 +204,7 @@ class Settler
             {
                 $txn = $txns[$i];
 
-                if ($this->shouldSettle($txn, $channel) === false)
+                if ($this->shouldSettle($txn, $channel, $merchant) === false)
                 {
                     $i++;
                     continue;
@@ -275,9 +275,10 @@ class Settler
         $dailySettlement->saveOrFail();
     }
 
-    protected function shouldSettle(Transaction\Entity $txn, $channel)
+    protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant)
     {
-        return ($txn->getChannel() === $channel);
+        return (($txn->getChannel() === $channel) and
+                ($merchant->holdFunds() === false));
     }
 
     protected function createSettlementFile($settlements, $txns)
