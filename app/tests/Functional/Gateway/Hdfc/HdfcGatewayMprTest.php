@@ -26,9 +26,9 @@ class HdfcGatewayMprTest extends TestCase
 
     public function testUploadMpr()
     {
-        $this->mockSlack();
+        $this->mockSlack(5);
 
-        $this->mockDashboardRequest();
+        $this->mockDashboardRequest(2);
 
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
@@ -49,7 +49,7 @@ class HdfcGatewayMprTest extends TestCase
         $txns = $this->matchTransactions($prEntities);
 
         // Generate settlements for above transactions
-        $setlFile = $this->initiateSettlements($txns);
+        $setlFile = $this->initiateSettlementsAndAssertSuccess();
 
         // Generate settlement reconciliation file
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
@@ -66,6 +66,17 @@ class HdfcGatewayMprTest extends TestCase
 //        $this->matchSetlEntities();
 
         $this->fetchAndMatchDailySettlement();
+    }
+
+    protected function initiateSettlementsAndAssertSuccess()
+    {
+        $content = $this->initiateSettlements();
+
+        $this->assertArrayHasKey('kotak', $content);
+        $this->assertArrayHasKey('settlement_text_file', $content['kotak']);
+        $this->assertArrayHasKey('settlement_excel_file', $content['kotak']);
+
+        return $content['kotak']['settlement_text_file'];
     }
 
     protected function matchTransactions($prEntities)
@@ -182,7 +193,7 @@ class HdfcGatewayMprTest extends TestCase
         $this->assertArraySelectiveEquals($this->testData['testUploadMprSettlementData'], $content);
     }
 
-    protected function mockSlack()
+    protected function mockSlack($times)
     {
         $slackPretend = $this->config->get('slack.mock');
 
@@ -196,11 +207,11 @@ class HdfcGatewayMprTest extends TestCase
         $this->app->instance('slack', $slack);
 
         $slack->shouldReceive('send')
-              ->times(5)
+              ->times($times)
               ->with(Mockery::type('string'), '#settlements', 'settlements');
     }
 
-    protected function mockDashboardRequest()
+    protected function mockDashboardRequest($times)
     {
         $config = $this->config->get('applications.dashboard');
 
@@ -214,7 +225,7 @@ class HdfcGatewayMprTest extends TestCase
         $this->app->instance('dashboard', $dashboard);
 
         $dashboard->shouldReceive('queueRecord')
-              ->times(2)
+              ->times($times)
               ->with('settlement', Mockery::type('Models\\Base\\PublicEntity'));
     }
 }

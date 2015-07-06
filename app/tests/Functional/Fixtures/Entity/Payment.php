@@ -60,6 +60,7 @@ class Payment extends Base
 
         $payment->save();
 
+
         $txn = (new \Models\Transaction\Core)->createFromPayment($payment);
         $txn->save();
 

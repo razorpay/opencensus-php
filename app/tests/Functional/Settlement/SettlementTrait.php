@@ -71,7 +71,7 @@ trait SettlementTrait
         $this->assertFileNotExists($mprFile);
     }
 
-    protected function initiateSettlements($txns, $channel = 'kotak')
+    protected function initiateSettlements($channel = 'kotak')
     {
         $request = [
             'url' => '/settlements/initiate/'.$channel,
@@ -83,11 +83,7 @@ trait SettlementTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('kotak', $content);
-        $this->assertArrayHasKey('settlement_text_file', $content['kotak']);
-        $this->assertArrayHasKey('settlement_excel_file', $content['kotak']);
-
-        return $content['kotak']['settlement_text_file'];
+        return $content;
     }
 
     protected function generateSetlReconciliationFile($setlFile)
