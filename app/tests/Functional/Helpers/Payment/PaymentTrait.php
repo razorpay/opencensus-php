@@ -264,7 +264,7 @@ trait PaymentTrait
             'url' => '/payments/'.$id.'/verify',
             'method' => 'GET');
 
-        $this->ba->proxyAuth();
+        $this->ba->appAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
