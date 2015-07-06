@@ -1,0 +1,72 @@
+/* Your custom styles go here */
+body, .body{
+	background:#EBECEE;
+}
+*{
+	font-family:"Century Gothic", "Lucida Sans", "Tahoma", "Arial" !important;
+}
+.white{
+	background:#ffffff;
+	background-color:#ffffff;
+}
+.lighttext{
+	color:#B2B2B2;
+	font-size:12px;
+}
+.subtext{
+	color:#7C8082;
+	line-height:10px;
+	font-size:16px;
+}
+.bluebg{
+	background:#39ACE5;
+}
+h1{
+	margin-top:40px;
+	color:#f2f2f2;
+	font-size:32px;
+	text-align:center;
+	font-weight:bold;
+}
+h3, h3 a, h3 a:visited{
+	font-size:22px;
+	color:#f2f2f2;
+	text-align:center;
+}
+.darktext{
+	line-height:25px;
+	line-height:25px;
+	color:#484B4C;
+}
+hr.small{
+	width:40%;
+}
+hr{
+	height:2px;
+	color:#E5E5E5;
+}
+hr.wide{
+	width:490px;
+}
+.last td{
+	text-align:right;
+}
+
+td>a, td>a:visited{
+	color:#39ACE5;
+}
+
+.logo{
+	height:22px;
+	width:22px;
+	display:inline;
+	float:none;
+	padding:0px 5px 0px 5px;
+}
+.right-text-pad{
+	text-align:right;
+}
+.email{
+	text-decoration: none;
+	color: inherit;
+}

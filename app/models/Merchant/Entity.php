@@ -170,4 +170,14 @@ class Entity extends Base\PublicEntity
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
+
+    public function getWebsite()
+    {
+        return $this->attributes[self::WEBSITE];
+    }
+
+    public function getBillingLabel()
+    {
+        return $this->attributes[self::BILLING_LABEL];
+    }
 }

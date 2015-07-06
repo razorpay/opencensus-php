@@ -7,6 +7,7 @@ use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Payment;
 use Models\Payment\Refund;
+use Models\Bank\Name as BankNames;
 
 class Entity extends Base\PublicEntity
 {
@@ -450,6 +451,59 @@ class Entity extends Base\PublicEntity
     public function getCallbackUrl()
     {
         return $this->getAttribute(self::CALLBACK_URL);
+    }
+
+    public function getCaptureTimestamp()
+    {
+        return $this->getAttribute(self::CAPTURED_AT);
+    }
+
+    public function getBankName()
+    {
+        $bankId = $this->getBank();
+        return BankNames::getName($bankId);
+    }
+
+    public function getWallet()
+    {
+        return $this->getAttribute(self::WALLET);
+    }
+
+    public function getFormattedCard()
+    {
+        return $this->card->getFormatted();
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
+    public function getContact()
+    {
+        return $this->getAttribute(self::CONTACT);
+    }
+
+    public function getMethodWithDetail()
+    {
+        $walletNames = [
+            'paytm' =>  'PayTM'
+        ];
+
+        $methodName = Method::formatted($this->getMethod());
+
+        switch($this->getMethod())
+        {
+            case Method::CARD:
+                return [$methodName, $this->getFormattedCard()];
+                break;
+            case Method::NETBANKING:
+                return [$methodName, $this->getBankName()];
+                break;
+            case Method::WALLET:
+                return [$methodName, $walletNames[$this->getWallet()]];
+                break;
+        }
     }
 
 // ----------------------- Getters Ends-----------------------------------------

@@ -7,4 +7,5 @@ Thumbs.db
 /bootstrap/environment.php
 /public/test/config.php
 docs/
+app/config/dev
 _*

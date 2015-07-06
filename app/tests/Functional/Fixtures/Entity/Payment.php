@@ -90,6 +90,7 @@ class Payment extends Base
     public function createNetbankingAuthorized(array $attributes = array())
     {
         $defaultValues = array(
+            'bank'  => 'HDFC',
             'status' => 'authorized',
             'gateway' => 'atom',
             'method' => 'netbanking',
@@ -110,6 +111,7 @@ class Payment extends Base
     public function createNetbankingFailed(array $attributes = array())
     {
         $defaultValues = array(
+            'bank'  => 'HDFC',
             'status' => 'failed',
             'gateway' => 'atom',
             'method' => 'netbanking',

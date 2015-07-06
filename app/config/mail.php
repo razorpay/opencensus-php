@@ -54,7 +54,7 @@ return array(
 	|
 	*/
 
-	'from' => array('address' => 'test@mg.razorpay.com', 'name' => 'Razorpay Test Team'),
+	'from' => array('address' => \Config::get('applications.mailgun.from_email'), 'name' => \Config::get('applications.mailgun.from_name')),
 
 	/*
 	|--------------------------------------------------------------------------

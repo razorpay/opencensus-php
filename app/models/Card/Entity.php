@@ -146,6 +146,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getLast4()
+    {
+        return $this->getAttribute(self::LAST4);
+    }
+
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);
@@ -201,5 +206,10 @@ class Entity extends Base\PublicEntity
     public function isInternational()
     {
         return (boolean) $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function getFormatted()
+    {
+        return 'XXXX-XXXX-XXXX-'.$this->getLast4();
     }
 }
