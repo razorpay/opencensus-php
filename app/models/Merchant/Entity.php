@@ -180,4 +180,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->attributes[self::BILLING_LABEL];
     }
+
+    public function holdFunds()
+    {
+        return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
 }
