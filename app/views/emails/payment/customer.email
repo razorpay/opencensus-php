@@ -1,0 +1,311 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body class="body" style="background: #EBECEE;">
+    <table class="container" style="background: #EBECEE;">
+      <tr>
+        <td>
+          <!-- EMail Header with date -->
+          <table class="row">
+            <tr>
+              <td class="wrapper">
+                <table class="three columns">
+                  <tr>
+                    <td class="left-text-pad">
+                      <img src="{{url('img/razorpay_grey.png')}}" alt="Razorpay Logo" title="Razorpay Logo"/>
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+              <td class="wrapper offset-by-six last">
+                <table class="three columns" style="margin-top:6px;">
+                  <tr>
+                    <td class="lighttext right-text-pad">
+                      {{date('j<\s\up>S F Y', $payment['timestamp'])}}
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Payment Successfull Header -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper center last">
+                        <center>
+                        <table class="twelve columns bluebg" style="background:#39ACE5;">
+                          <tr>
+                            <td class="center">
+                              <h1>
+                              <center>
+                                Payment Successful
+                              </center>
+                              </h1>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                        </center>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Money Image -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last bluebg" style="background:#39ACE5;">
+                        <table class="four columns">
+                          <tr>
+                            <td class="center">
+                              <center>
+                                <img src="{{url('img/payment_green.png')}}" alt="Payment Confirmation" title="Payment Confirmation"/>
+                              </center>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Merchant Name -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last bluebg" style="background:#39ACE5;">
+                        <table class="six columns bluebg" style="background:#39ACE5;">
+                          <tr>
+                            <td class="center">
+                              <center>
+                                <h3>
+                                <a href="{{$merchant['website']}}" title="{{$merchant['billing_label']}} Website">{{$merchant['billing_label']}}</a>
+                                </h3>
+                              </center>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Customer Information -->
+          <table class="row">
+            <tr>
+              <td class="wrapper white">
+                <table class="eight columns">
+                  <tr>
+                    <td class="lighttext left-text-pad">
+                      <a class="email">{{$customer['email']}}</a>
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+              <td class="wrapper white last">
+                <table class="four columns">
+                  <tr>
+                    <td class="right-text-pad lighttext" style="text-align: right;">
+                      {{$customer['phone']}}
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Payment Id -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white">
+                        <table class="six columns">
+                          <tr>
+                            <td class="center darktext">
+                              <center>
+                                Payment Id: {{$payment['id']}}
+                              </center>
+                              <hr class="small">
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Payment Details -->
+          <table class="row">
+            <tr>
+              <td class="wrapper white">
+                <table class="four columns">
+                  <tr>
+                    <td class="darktext left-text-pad">
+                      Amount
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+              <td class="wrapper white offset-by-five last">
+                <table class="three columns">
+                  <tr>
+                    <td class="right-text-pad darktext" style="text-align: right;">
+                      {{$payment['amount']}}
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Payment Method -->
+          <table class="row">
+            <tr>
+              <td class="wrapper white">
+                <table class="four columns">
+                  <tr>
+                    <td class="darktext left-text-pad">
+                      Payment Method
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+              <td class="wrapper white last">
+                <table class="eight columns">
+                  <tr>
+                    <td class="right-text-pad darktext" style="text-align: right">
+                      {{$payment['method'][0]}}<br>
+                      <span class="subtext">
+                      {{$payment['method'][1]}}
+                      </span>
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Contact Us -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white">
+                        <table class="twelve columns">
+                          <tr>
+                            <td class="center lighttext">
+                              <hr class="wide">
+                              <center>
+                                If this is correct, you don't need to take any further action.<br>
+                                Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com">contact us</a> in case of any discrepancy.
+                              </center>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Money Image -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white">
+                        <table class="four columns">
+                          <tr>
+                            <td class="center">
+                              <center>
+                                <img src="{{url('img/razorpay_color.png')}}" alt="Razorpay Logo" title="Razorpay Logo"/>
+                              </center>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- First Footer -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last">
+                        <table class="three columns">
+                          <tr>
+                            <td class="center lighttext">
+                              <center>
+                                <a href="https://facebook.com/razorpay" class="logo">
+                                  <img height="22" width="22" src="{{url('img/facebook.png')}}" alt="Facebook Icon" title="Razorpay on Facebook"/>
+                                </a>
+                                <a href="https://twitter.com/razorpay" class="logo">
+                                  <img height="22" width="22" src="{{url('img/twitter.png')}}" alt="Twitter Icon" title="Razorpay on Twitter"/>
+                                </a>
+                                <a href="https://github.com/razorpay" class="logo">
+                                  <img height="22" width="22" src="{{url('img/github.png')}}" alt="GitHub Icon" title="Razorpay on GitHub"/>
+                                </a>
+                              </center>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

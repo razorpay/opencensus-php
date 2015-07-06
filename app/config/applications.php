@@ -18,10 +18,12 @@ return array(
     ),
 
     'mailgun' => array(
-        'url'       =>  'mg.razorpay.com',
+        'url'       =>  'razorpay.com',
         'key'       =>  $_ENV['MAILGUN_API_KEY'],
         'secret'    =>  $_ENV['MAILGUN_SECRET'],
         'mock'      =>  $_ENV['MAILGUN_MOCK'],
+        'from_name' =>  'Team Razorpay',
+        'from_email' => 'noreply@razorpay.com'
     ),
 
     'slack' => array(

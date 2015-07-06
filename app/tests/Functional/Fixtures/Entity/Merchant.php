@@ -152,9 +152,18 @@ class Merchant extends Base
 
     public function holdFunds($id, $hold = true)
     {
+        return $this->editMerchant($id, ['hold_funds' => $hold]);
+    }
+
+    protected function editMerchant($id, $attributes)
+    {
         $repo = new \Models\Merchant\Repository;
         $merchant = $repo->findOrFail($id);
-        $merchant['hold_funds'] = '1';
+        foreach ($attributes as $key => $value)
+        {
+            $merchant[$key] = $value;
+        }
+
         $repo->saveOrFail($merchant);
         return $merchant;
     }

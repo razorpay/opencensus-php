@@ -36,7 +36,10 @@ require('vars.php');
             notes: {
                 'address': 'Hello World'
             },
-            netbanking: true
+            netbanking: true,
+            handler: function (transaction){
+                alert('You have successfully purchased Fine tshirt\ntransaction id: ' + transaction.razorpay_payment_id);
+            }
         }
         var rzp1 = new Razorpay(options);
 

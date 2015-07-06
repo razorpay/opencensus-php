@@ -47,7 +47,11 @@ class Service extends Base\Service
 
     public function verify($id)
     {
-        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+        $payment = $this->core->retrieveById($id);
+
+        $merchantId = $payment->getMerchantId();
+
+        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
         $payment = $this->processor()->verify($id);
 

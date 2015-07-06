@@ -82,7 +82,7 @@ return array(
 
     'MAILGUN_API_KEY'                       => getenv('MAILGUN_API_KEY'),
     'MAILGUN_SECRET'                        => 'DASHBOARD_AUTH_PASS',
-    'MAILGUN_MOCK'                          => false,
+    'MAILGUN_MOCK'                          => true,
 
     'QUEUE_DRIVER'                          => 'sync',
 

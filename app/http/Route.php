@@ -200,6 +200,7 @@ final class Route
         'setl_delete_file',
         'daily_setl_fetch_by_id',
         'daily_setl_fetch_multiple',
+        'payment_verify',
         'payment_timeout',
         'payment_auth_notify',
         'payment_auto_capture',
@@ -218,7 +219,6 @@ final class Route
         );
 
     public static $proxy = array(
-        'payment_verify',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'transaction_fetch_by_id',

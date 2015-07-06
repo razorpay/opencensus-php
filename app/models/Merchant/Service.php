@@ -335,4 +335,10 @@ class Service extends Base\Service
 
         return $file;
     }
+
+    public function getDailyDetails()
+    {
+        $details = [];
+        $details['merchant'] = $this->repo->findOrFailPublic($id);
+    }
 }

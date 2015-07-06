@@ -2,7 +2,7 @@
 
 return array(
     'mailgun' => array(
-        'domain' => 'razorpay.com',
+        'domain' => \Config::get('applications.mailgun.url'),
         'secret' => $_ENV['MAILGUN_API_KEY'],
     ),
 );
