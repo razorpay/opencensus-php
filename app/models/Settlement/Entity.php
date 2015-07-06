@@ -4,6 +4,7 @@ namespace Models\Settlement;
 
 use Models\Base;
 use Models\Transaction;
+use EE\Exception;
 
 class Entity extends Base\PublicEntity
 {

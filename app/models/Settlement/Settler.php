@@ -218,7 +218,7 @@ class Settler
                 $i++;
             }
 
-            if ($setlAmount < 0)
+            if ($setlAmount <= 0)
             {
                 $setlAmount = 0;
                 continue;
