@@ -34,7 +34,7 @@ class CreatePaytm extends Migration
             $table->string('bank_code', 10)->nullable();
             $table->string('payment_type_id', 5)->nullable();
             $table->string('industry_type_id');
-            $table->integer('txnid')->nullable();
+            $table->bigInteger('txnid')->nullable();
             $table->string('txnamount')->nullable();
             $table->string('banktxnid', 20)->nullable();
             $table->string('orderid', 25)->nullable();
