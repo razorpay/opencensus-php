@@ -3,6 +3,7 @@
 namespace Models\Merchant;
 
 use Constants\Mode;
+use Mail;
 use Models\Base;
 use Models\Merchant;
 use Models\Key;
@@ -167,6 +168,8 @@ class Service extends Base\Service
         $merchant->activate();
 
         $this->repo->saveOrFail($merchant);
+
+        $this->sendActivationEmail($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -340,5 +343,34 @@ class Service extends Base\Service
     {
         $details = [];
         $details['merchant'] = $this->repo->findOrFailPublic($id);
+    }
+
+    protected function sendActivationEmail($merchant)
+    {
+        $app = \App::getFacadeRoot();
+
+        //TODO: This needs to be refactored when we go for differentiated pricing
+        $plan = $merchant->getPricingPlan();
+
+        // array_values resets the array numeric keys and then we can pick the first rule
+        $plan = array_values(array_filter($plan['rules'], function($rule) {
+            return $rule['payment_method']  == 'card';
+        }))[0];
+
+        $data = [
+            'merchant'  =>  $merchant->toArray(),
+            'plan'      =>  $plan
+        ];
+
+        $config = $app->config->get('applications.mailgun');
+        $subject = "Your Razorpay account has been activated";
+
+        Mail::queue(['html'=> 'emails/merchant/activation', 'text'=> 'emails/merchant/activation_text'], $data,
+            function($message) use ($data, $config, $subject) {
+                $message->to($data['merchant']['email']);
+                $message->from($config['from_email'], $config['from_name']);
+                $message->subject($subject);
+            }
+        );
     }
 }

@@ -433,9 +433,9 @@ table.large-button td {
   display: block;
   width: auto !important;
   text-align: center;
-  background: #2ba6cb;
-  border: 1px solid #2284a1;
-  color: #ffffff;
+  background: #2F87C7;
+  border-bottom: 2px solid #2C7CAF;
+  color: #f2f2f2;
   padding: 8px 0;
 }
 
@@ -460,35 +460,17 @@ table.tiny-button td a,
 table.small-button td a,
 table.medium-button td a,
 table.large-button td a {
-  font-weight: bold;
   text-decoration: none;
   font-family: "Century Gothic", "Lucida Sans", "Helvetica", "Arial", sans-serif;
-  color: #ffffff;
-  font-size: 16px;
-}
-
-table.tiny-button td a {
+  color: #f2f2f2;
   font-size: 12px;
-  font-weight: normal;
 }
 
-table.small-button td a {
-  font-size: 16px;
-}
-
-table.medium-button td a {
-  font-size: 20px;
-}
-
-table.large-button td a {
-  font-size: 24px;
-}
-
-table.button:hover td,
+/* table.button:hover td,
 table.button:visited td,
 table.button:active td {
   background: #2795b6 !important;
-}
+} */
 
 table.button:hover td a,
 table.button:visited td a,
@@ -496,13 +478,13 @@ table.button:active td a {
   color: #fff !important;
 }
 
-table.button:hover td,
+/* table.button:hover td,
 table.tiny-button:hover td,
 table.small-button:hover td,
 table.medium-button:hover td,
 table.large-button:hover td {
   background: #2795b6 !important;
-}
+} */
 
 table.button:hover td a,
 table.button:active td a,
@@ -688,4 +670,10 @@ body.outlook p {
   table[class="body"] .hide-for-desktop {
     display: inherit !important;
   }
+}
+.logo img{
+	float: none;
+}
+.logo a{
+	float: left;
 }

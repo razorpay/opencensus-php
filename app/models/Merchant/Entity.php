@@ -3,6 +3,7 @@
 namespace Models\Merchant;
 
 use Models\Base;
+use Models\Pricing\Service as PricingService;
 
 class Entity extends Base\PublicEntity
 {
@@ -154,6 +155,11 @@ class Entity extends Base\PublicEntity
     public function getPricingPlanId()
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
+    }
+
+    public function getPricingPlan()
+    {
+        return (new PricingService)->getPricingPlanById($this->getPricingPlanId());
     }
 
     public function getActivatedAttribute()

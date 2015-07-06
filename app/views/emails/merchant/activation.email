@@ -25,7 +25,7 @@
                 <table class="three columns" style="margin-top:6px;">
                   <tr>
                     <td class="lighttext right-text-pad">
-                      {{date('j<\s\up>S F Y', $payment['timestamp'])}}
+                      {{date('j<\s\up>S F Y')}}
                     </td>
                     <td class="expander"></td>
                   </tr>
@@ -33,12 +33,11 @@
               </td>
             </tr>
           </table>
-          <!-- Payment Successfull Header -->
+          <!-- Activation Header -->
           <table class="row">
             <tr>
               <td class="center" align="center">
                 <center>
-
                   <table class="container">
                     <tr>
                       <td class="wrapper center last">
@@ -48,9 +47,12 @@
                             <td class="center">
                               <h1>
                               <center>
-                                Payment Successful
+                                Congratulations!
                               </center>
                               </h1>
+                              <center class="whitetext" style="text-align: center;">
+                              Your Razorpay account has been activated.
+                              </center>
                             </td>
                             <td class="expander"></td>
                           </tr>
@@ -63,7 +65,7 @@
               </td>
             </tr>
           </table>
-          <!-- Money Image -->
+          <!-- Verified Image -->
           <table class="row">
             <tr>
               <td class="center" align="center">
@@ -75,7 +77,7 @@
                           <tr>
                             <td class="center">
                               <center>
-                                <img src="<?php echo $message->embed(public_path().'/img/payment_green.png'); ?>" alt="Payment Confirmation" title="Payment Confirmation"/>
+                                <img src="<?php echo $message->embed(public_path().'/img/merchant_verified.png'); ?>" alt="Payment Confirmation" title="Payment Confirmation"/>
                               </center>
                             </td>
                             <td class="expander"></td>
@@ -88,7 +90,7 @@
               </td>
             </tr>
           </table>
-          <!-- Merchant Name -->
+          <!-- Header Subtext -->
           <table class="row">
             <tr>
               <td class="center" align="center">
@@ -96,13 +98,13 @@
                   <table class="container">
                     <tr>
                       <td class="wrapper last bluebg" style="background:#39ACE5;">
-                        <table class="six columns bluebg" style="background:#39ACE5;">
+                        <table class="twelve columns">
                           <tr>
                             <td class="center">
+                              <center class="whitetext" style="text-align: center;">
+                              You can now start accepting payments from your customers.
+                              </center>
                               <center>
-                                <h3>
-                                <a href="{{$merchant['website']}}" title="{{$merchant['billing_label']}} Website">{{$merchant['billing_label']}}</a>
-                                </h3>
                               </center>
                             </td>
                             <td class="expander"></td>
@@ -115,48 +117,25 @@
               </td>
             </tr>
           </table>
-          <!-- Customer Information -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="eight columns">
-                  <tr>
-                    <td class="lighttext left-text-pad">
-                      <a class="email">{{$customer['email']}}</a>
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white last">
-                <table class="four columns">
-                  <tr>
-                    <td class="right-text-pad lighttext" style="text-align: right;">
-                      {{$customer['phone']}}
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-          <!-- Payment Id -->
+          <!-- Header Subtext -->
           <table class="row">
             <tr>
               <td class="center" align="center">
                 <center>
                   <table class="container">
                     <tr>
-                      <td class="wrapper last white">
-                        <table class="six columns">
+                      <td class="wrapper last bluebg" style="background:#39ACE5;">
+                        <table class="three columns">
                           <tr>
-                            <td class="center darktext">
-                              <center>
-                                Payment Id: {{$payment['id']}}
-                              </center>
-                              <hr class="small">
+                            <td>
+                              <table class="tiny-button">
+                                <tr>
+                                  <td>
+                                    <a href="https://dashboard.razorpay.com">Go to Dashboard</a>
+                                  </td>
+                                </tr>
+                              </table>
                             </td>
-                            <td class="expander"></td>
                           </tr>
                         </table>
                       </td>
@@ -166,60 +145,7 @@
               </td>
             </tr>
           </table>
-          <!-- Payment Details -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="four columns">
-                  <tr>
-                    <td class="darktext left-text-pad">
-                      Amount
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white offset-by-five last">
-                <table class="three columns">
-                  <tr>
-                    <td class="right-text-pad darktext" style="text-align: right;">
-                      {{$payment['amount']}}
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-          <!-- Payment Method -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="four columns">
-                  <tr>
-                    <td class="darktext left-text-pad">
-                      Payment Method
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white last">
-                <table class="eight columns">
-                  <tr>
-                    <td class="right-text-pad darktext" style="text-align: right">
-                      {{$payment['method'][0]}}<br>
-                      <span class="subtext">
-                      {{$payment['method'][1]}}
-                      </span>
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-          <!-- Contact Us -->
+          <!-- Main text -->
           <table class="row">
             <tr>
               <td class="center" align="center">
@@ -229,12 +155,25 @@
                       <td class="wrapper last white">
                         <table class="twelve columns">
                           <tr>
-                            <td class="center lighttext">
-                              <hr class="wide">
-                              <center>
-                                If this is correct, you don't need to take any further action.<br>
-                                Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com">contact us</a> in case of any discrepancy.
-                              </center>
+                            <td class="darktext left-text-pad right-text-pad">
+<p>Hi {{{$merchant['name']}}},</p>
+<br>
+
+<p>Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You have opted for the {{{$plan['plan_name']}}} plan.
+(₹ {{{$plan['fixed_rate']}}} setup and annual maintenance charges and {{{$plan['percent_rate']/100}}}% TDR per transaction
+on all modes of payment).</p>
+
+<p>In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation">here</a>.</p>
+
+<p>If you face any issues while implementing this, feel free to drop us an <a href="mailto:support@razorpay.com">email</a>.</p>
+
+<p>We hope that the association between you and Razorpay will be fruitful for your organization.</p>
+
+<br>
+<p>
+Regards,<br>
+Team Razorpay
+</p>
                             </td>
                             <td class="expander"></td>
                           </tr>
@@ -282,7 +221,7 @@
                         <table class="three columns">
                           <tr>
                             <td class="center lighttext">
-                              <center>
+                              <center style="padding-left: 25px;">
                                 <a href="https://facebook.com/razorpay" class="logo">
                                   <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/facebook.png'); ?>" alt="Facebook Icon" title="Razorpay on Facebook"/>
                                 </a>
