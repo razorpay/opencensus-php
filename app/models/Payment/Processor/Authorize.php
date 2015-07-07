@@ -192,7 +192,7 @@ trait Authorize
             ],
             'payment'   =>  [
                 'id'        =>  $payment->getId(),
-                'amount'    =>  $payment->getAmount(),
+                'amount'    =>  "INR ".number_format($payment['amount']/100, 2),
                 'timestamp' =>  $payment->getUpdatedAt(),
                 'method'    =>  $payment->getMethodWithDetail()
             ]
@@ -206,7 +206,7 @@ trait Authorize
         }
         else
         {
-            $subject = "Payment Successful for {$templateData['payment']['amount']} INR";
+            $subject = "Payment Successful for {$templateData['payment']['amount']}";
         }
 
         Mail::queue(['html'=> 'emails/payment/customer', 'text'=> 'emails/payment/customer_text'], $templateData,
