@@ -193,7 +193,7 @@ trait Authorize
             'payment'   =>  [
                 'id'        =>  $payment->getId(),
                 'amount'    =>  $payment->getAmount(),
-                'timestamp' =>  $payment->getCaptureTimestamp(),
+                'timestamp' =>  $payment->getUpdatedAt(),
                 'method'    =>  $payment->getMethodWithDetail()
             ]
         ];

@@ -458,6 +458,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CAPTURED_AT);
     }
 
+    public function getUpdatedAt()
+    {
+        return $this->getAttribute(self::UPDATED_AT);
+    }
+
     public function getBankName()
     {
         $bankId = $this->getBank();
