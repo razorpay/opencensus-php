@@ -6,7 +6,6 @@ use Models\Merchant;
 use Models\Payment;
 use Models\Transaction;
 use Trace\TraceCode;
-use Mail;
 
 trait Capture
 {
@@ -120,11 +119,6 @@ trait Capture
         // Analytics
         //
         $this->notifyDashboard('payment', $this->payment);
-
-        //
-        // Mail Customer
-        //
-        $this->emailCustomer($this->payment);
     }
 
     protected function updatePaymentCaptured()
@@ -134,47 +128,5 @@ trait Capture
         $this->payment->setCaptureTimestamp();
 
         $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
-    }
-
-    protected function emailCustomer($payment)
-    {
-        $app = \App::getFacadeRoot();
-
-        $templateData = [
-            'customer'  =>  [
-                'email' =>  $payment->getEmail(),
-                'phone' =>  $payment->getContact()
-            ],
-            'merchant'  =>  [
-                'billing_label' =>  $payment->merchant->getBillingLabel(),
-                'website'       =>  $payment->merchant->getWebsite()
-            ],
-            'payment'   =>  [
-                'id'        =>  $payment->getId(),
-                'amount'    =>  $payment->getAmount(),
-                'timestamp' =>  $payment->getCaptureTimestamp(),
-                'method'    =>  $payment->getMethodWithDetail()
-            ]
-        ];
-
-        $config = $app->config->get('applications.mailgun');
-
-        if(isset($templateData['merchant']['billing_label']))
-        {
-            $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
-        }
-        else
-        {
-            $subject = "Payment Successful for {$templateData['payment']['amount']} INR";
-        }
-
-        Mail::queue(['html'=> 'emails/payment/customer', 'text'=> 'emails/payment/customer_text'], $templateData,
-            function($message) use ($templateData, $config, $subject) {
-                $message->to($templateData['customer']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->subject($subject);
-                $message->bcc('nemo@razorpay.com', 'Nemo');
-            }
-        );
     }
 }

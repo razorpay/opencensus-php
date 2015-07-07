@@ -10,6 +10,7 @@ use Models\Card;
 use Models\Payment;
 use Trace\Trace;
 use Trace\TraceCode;
+use Mail;
 
 trait Authorize
 {
@@ -169,7 +170,53 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
+        // Send email to the customer
+        // Can be extended later for SMS as well
+        $this->notifyCustomer($payment);
+
         return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    protected function notifyCustomer($payment)
+    {
+        $app = \App::getFacadeRoot();
+
+        $templateData = [
+            'customer'  =>  [
+                'email' =>  $payment->getEmail(),
+                'phone' =>  $payment->getContact()
+            ],
+            'merchant'  =>  [
+                'billing_label' =>  $payment->merchant->getBillingLabel(),
+                'website'       =>  $payment->merchant->getWebsite()
+            ],
+            'payment'   =>  [
+                'id'        =>  $payment->getId(),
+                'amount'    =>  $payment->getAmount(),
+                'timestamp' =>  $payment->getCaptureTimestamp(),
+                'method'    =>  $payment->getMethodWithDetail()
+            ]
+        ];
+
+        $config = $app->config->get('applications.mailgun');
+
+        if(isset($templateData['merchant']['billing_label']))
+        {
+            $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
+        }
+        else
+        {
+            $subject = "Payment Successful for {$templateData['payment']['amount']} INR";
+        }
+
+        Mail::queue(['html'=> 'emails/payment/customer', 'text'=> 'emails/payment/customer_text'], $templateData,
+            function($message) use ($templateData, $config, $subject) {
+                $message->to($templateData['customer']['email']);
+                $message->from($config['from_email'], $config['from_name']);
+                $message->subject($subject);
+                $message->bcc('nemo@razorpay.com', 'Nemo');
+            }
+        );
     }
 
     protected function callGatewayAuthorize(array $data)

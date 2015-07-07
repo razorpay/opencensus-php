@@ -369,6 +369,7 @@ class Service extends Base\Service
             function($message) use ($data, $config, $subject) {
                 $message->to($data['merchant']['email']);
                 $message->from($config['from_email'], $config['from_name']);
+                $message->cc('sales@razorpay.com', 'Razorpay Sales Team');
                 $message->subject($subject);
             }
         );
