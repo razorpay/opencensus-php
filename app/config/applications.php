@@ -21,6 +21,7 @@ return array(
         'url'       =>  'razorpay.com',
         'key'       =>  $_ENV['MAILGUN_SECRET'],
         'mock'      =>  $_ENV['MAILGUN_MOCK'],
+        'secret'    =>  '',
         'from_name' =>  'Team Razorpay',
         'from_email' => 'noreply@razorpay.com'
     ),
