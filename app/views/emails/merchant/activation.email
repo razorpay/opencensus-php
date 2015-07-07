@@ -157,7 +157,6 @@
                           <tr>
                             <td class="darktext left-text-pad right-text-pad">
 <p>Hi {{{$merchant['name']}}},</p>
-<br>
 
 <p>Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You have opted for the {{{$plan['plan_name']}}} plan.
 (₹ {{{$plan['fixed_rate']}}} setup and annual maintenance charges and {{{$plan['percent_rate']/100}}}% TDR per transaction
@@ -169,7 +168,6 @@ on all modes of payment).</p>
 
 <p>We hope that the association between you and Razorpay will be fruitful for your organization.</p>
 
-<br>
 <p>
 Regards,<br>
 Team Razorpay

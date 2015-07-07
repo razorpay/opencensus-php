@@ -3,7 +3,7 @@ body, .body{
 	background:#EBECEE;
 }
 *{
-	font-family:"Century Gothic", "Lucida Sans", "Tahoma", "Arial" !important;
+	font-family:"Lucida Sans", "Tahoma", "Arial" !important;
 }
 .white{
 	background:#ffffff;
@@ -38,8 +38,10 @@ h3, h3 a, h3 a:visited{
 }
 .darktext{
 	line-height:25px;
-	line-height:25px;
 	color:#484B4C;
+}
+.darktext p{
+	line-height: 25px;
 }
 hr.small{
 	width:40%;

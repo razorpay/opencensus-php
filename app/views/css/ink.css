@@ -321,7 +321,7 @@ body{
 }
 
 body, table.body, h1, h2, h3, h4, h5, h6, p, td {
-  font-family: "Century Gothic", "Lucida Sans", "Helvetica", "Arial", sans-serif;
+  font-family: "Lucida Sans", "Helvetica", "Arial", sans-serif;
   font-weight: normal;
   padding:0;
   margin: 0;
@@ -437,6 +437,7 @@ table.large-button td {
   border-bottom: 2px solid #2C7CAF;
   color: #f2f2f2;
   padding: 8px 0;
+  margin-bottom: 1em;
 }
 
 table.tiny-button td {
@@ -461,7 +462,7 @@ table.small-button td a,
 table.medium-button td a,
 table.large-button td a {
   text-decoration: none;
-  font-family: "Century Gothic", "Lucida Sans", "Helvetica", "Arial", sans-serif;
+  font-family: "Lucida Sans", "Helvetica", "Arial", sans-serif;
   color: #f2f2f2;
   font-size: 12px;
 }
