@@ -183,7 +183,7 @@
                 <table class="three columns">
                   <tr>
                     <td class="right-text-pad darktext" style="text-align: right;">
-                      {{$payment['amount']}}
+                    INR {{number_format($payment['amount']/100, 2)}}
                     </td>
                     <td class="expander"></td>
                   </tr>
