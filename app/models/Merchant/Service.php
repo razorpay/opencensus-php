@@ -7,6 +7,7 @@ use Models\Merchant;
 use Models\MerchantDetails;
 use Mail;
 use Mailgun;
+use Requests;
 
 class Service extends Base\Service
 {
@@ -29,12 +30,12 @@ class Service extends Base\Service
         $this->queueConfirmationMail($merchant);
 
         $slackData = [
-            'id'   => $merchant->id,
-            'name'          => $merchant->name,
-            'email'         => $merchant->email
+            'id'    => $merchant->id,
+            'name'  => $merchant->name,
+            'email' => $merchant->email
         ];
 
-        $this->slackPost('New Registration on Dashboard!', $slackData, '#sales', '@channel', 'good');
+        $this->slackSignupPost($slackData);
 
         return [$error, $slackData];
     }
@@ -47,6 +48,19 @@ class Service extends Base\Service
         {
             $m->to($merchant['email'], $merchant['name'])->subject('Welcome to Razorpay!');
         });
+    }
+
+    protected function slackSignupPost($slackData)
+    {
+        if($_ENV['SLACK_ENABLE'] === true)
+        {
+            $postData = [
+                'email' => $slackData['email'],
+                'name'  => $slackData['name']
+            ];
+
+            Requests::post('https://sorting-hat-slack.herokuapp.com/',[] , $postData);
+        }
     }
 
     public function changePassword(array $input)
