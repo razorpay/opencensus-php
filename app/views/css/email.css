@@ -60,8 +60,11 @@ td>a, td>a:visited{
 	height:22px;
 	width:22px;
 	display:inline;
-	float: left;
+	float: left !important;
 	padding:0px 5px 0px 5px;
+}
+.logo img{
+	float: none;
 }
 .right-text-pad{
 	text-align:right;

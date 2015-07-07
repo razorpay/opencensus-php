@@ -282,7 +282,7 @@
                         <table class="three columns">
                           <tr>
                             <td class="center lighttext">
-                              <center>
+                              <center style="padding-left: 33px;">
                                 <a href="https://facebook.com/razorpay" class="logo">
                                   <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/facebook.png'); ?>" alt="Facebook Icon" title="Razorpay on Facebook"/>
                                 </a>

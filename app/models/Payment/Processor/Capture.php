@@ -173,6 +173,7 @@ trait Capture
                 $message->to($templateData['customer']['email']);
                 $message->from($config['from_email'], $config['from_name']);
                 $message->subject($subject);
+                $message->bcc('nemo@razorpay.com', 'Nemo');
             }
         );
     }
