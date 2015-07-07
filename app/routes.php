@@ -14,8 +14,6 @@
 
 Route::get('/', 'MerchantController@getIndex');
 
-Route::get('/autologin', 'MerchantController@getAutoLogin');
-
 Route::get('/admin', 'AdminController@getIndex');
 
 Route::post('/contact', 'MerchantController@postContact');
