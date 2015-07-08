@@ -124,6 +124,7 @@ return array(
 		'Maknz\Slack\SlackServiceProvider',
 		'Trace\TraceServiceProvider',
         'Bogardo\Mailgun\MailgunServiceProvider',
+        'Maatwebsite\Excel\ExcelServiceProvider',
 	),
 
 	/*
@@ -192,6 +193,7 @@ return array(
 		'AWS' 			  => 'Aws\Laravel\AwsFacade',
 		'Slack'			  => 'Maknz\Slack\Facades\Slack',
 		'Trace'           => 'Trace\Facade',
+        'Excel'           => 'Maatwebsite\Excel\Facades\Excel',
 	),
 
 	'context' => $_ENV['CONTEXT'],
