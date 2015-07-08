@@ -326,8 +326,6 @@ class AdminController extends BaseController
         if (empty($error) === false)
             return AppResponse::jsonResponse($error);
 
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="hdfc_excel.xlsx"');
         $file->download('xlsx');
     }
 }
