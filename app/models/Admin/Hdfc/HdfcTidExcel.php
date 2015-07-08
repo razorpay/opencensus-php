@@ -14,7 +14,7 @@ class HdfcTidExcel
 
         $txnValue = $merchantDetails['transaction_value'] ?: 1;
 
-        $filePath = __DIR__ . '/MT Sample.xlsx';
+        $filePath = __DIR__ . '/HdfcMtExcelTemplate.xlsx';
 
         // Read the file
         $inputFileType = PHPExcel_IOFactory::identify($filePath);
