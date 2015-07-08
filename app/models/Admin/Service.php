@@ -175,12 +175,12 @@ class Service extends Base\Service
             return [['id' => 'Merchant id cannot be null'], []];
         }
 
-        $details = (new Admin\Service)->fetchMerchantDetails($id);
+        $details = $this->fetchMerchantDetails($id);
 
-        $activation_details = (new Admin\Service)->fetchMerchantActivationDetails($id);
+        $activationDetails = $this->fetchMerchantActivationDetails($id);
 
         $data = array(
-            'activation' => $activation_details,
+            'activation' => $activationDetails,
             'merchant'   => $details
         );
 
@@ -538,6 +538,20 @@ class Service extends Base\Service
         $this->lockMerchant($id);
 
         return array();
+    }
+
+    public function generateMerchantHdfcExcel($id)
+    {
+        if ($id === null)
+        {
+            return [['id' => 'Merchant id cannot be null'], []];
+        }
+
+        list(, $data) = $this->fetchMerchantAndActivationDetails($id);
+
+        $file = HdfcTidExcel::generateExcel($data);
+
+        return [[], $file];
     }
 
     public function liveEnableMerchant($id)
