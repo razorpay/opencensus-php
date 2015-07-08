@@ -648,9 +648,16 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
   function ($scope, $modalInstance, current) {
       var merchant_details = current && current.merchant_details || {};
       var html = "";
+      var bankDocument = "";
 
       $scope.ok = function () {
-        if(html){
+
+        if (bankDocument === 'hdfc-excel') {
+            var id = merchant_details.merchant_id;
+            window.location = '/admin/merchant/'+id+'/hdfc_excel';
+        }
+
+        if (html) {
           var w = window.open();
           w.document.body.innerHTML = html;
         }
@@ -660,10 +667,18 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         $modalInstance.dismiss('cancel');
       };
 
-      $scope.select = function(bank){
+      $scope.select = function(doc){
         $('.modal-ok').attr('disabled', 'disabled');
+
+        bankDocument = doc;
+
+        if (bankDocument === 'hdfc-excel') {
+            $('.modal-ok').removeAttr('disabled');
+            return;
+        }
+
         $.ajax({
-          url: '/admin-forms/' + bank + '.html',
+          url: '/admin-forms/' + bankDocument + '.html',
           complete: function(){$('.modal-ok').removeAttr('disabled')},
           success: function(resp){
             doT.templateSettings.strip = false;

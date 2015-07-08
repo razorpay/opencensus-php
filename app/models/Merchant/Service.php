@@ -253,5 +253,4 @@ class Service extends Base\Service
 
         return array($error, $key_data);
     }
-
 }

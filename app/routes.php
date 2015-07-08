@@ -124,6 +124,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
 
+    Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
@@ -164,11 +166,11 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/payment/{id}/verify', 'AdminController@getVerifyPayment');
     });
-    
+
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
 
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
-    
+
     Route::group(array('before' => 'auth.superadmin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');
