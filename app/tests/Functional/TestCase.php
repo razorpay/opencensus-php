@@ -19,6 +19,8 @@ class TestCase extends ParentTestCase
 
     protected $ba;
 
+    protected static $initialSetupDone = false;
+
     /**
      * To denote whether to simulate unit tests with
      * environment being in cloud
@@ -31,21 +33,40 @@ class TestCase extends ParentTestCase
     {
         parent::setUp();
 
-        $this->db = new Database($this->app['db']);
-
-        // Setup database
-        $this->db->setUp();
+        $this->db = new Database($this->app);
 
         // Instantiate fixture class
         $this->fixtures = Fixtures\Fixtures::getInstance();
 
-        $this->fixtures->setUp();
+        $this->initialSetup();
+
+        // Setup database
+        $this->db->setUp();
 
         // Instantiate auth class
         $this->ba = new Authorization($this);
 
         // Enable filters
         $this->app['router']->enableFilters();
+    }
+
+    public function initialSetup()
+    {
+        if (self::$initialSetupDone === true)
+        {
+            return;
+        }
+
+        // Run migrations
+        $this->db->migrate();
+
+        // Truncate tables
+        $this->db->truncate();
+
+        // Seed database
+        $this->fixtures->setUp();
+
+        self::$initialSetupDone = true;
     }
 
     public function tearDown()
