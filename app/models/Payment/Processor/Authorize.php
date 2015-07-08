@@ -2,6 +2,8 @@
 
 namespace Models\Payment\Processor;
 
+use App;
+use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Http\Route;
@@ -179,7 +181,13 @@ trait Authorize
 
     protected function notifyCustomer($payment)
     {
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
+
+        // Dont send mails in test mode
+        if($app['basicauth']->getMode() == Mode::TEST)
+        {
+            return true;
+        }
 
         $templateData = [
             'customer'  =>  [
