@@ -12,11 +12,9 @@ class HdfcTidExcel
         $merchant = $data['merchant'];
         $merchantDetails = $data['merchant']['merchant_details'];
 
-        $excelData = require ('HdfcTidExcelData.php');
-
         $txnValue = $merchantDetails['transaction_value'] ?: 1;
 
-        $filePath = __DIR__ . '/hdfc_merchant_template.xlsx';
+        $filePath = __DIR__ . '/MT Sample.xlsx';
 
         // Read the file
         $inputFileType = PHPExcel_IOFactory::identify($filePath);
@@ -24,28 +22,28 @@ class HdfcTidExcel
         $excel = $objReader->load($filePath);
 
         $excel->setActiveSheetIndex(0)
-            ->setCellValue('B10', $merchantDetails['business_operation_address'])
-            ->setCellValue('B13', $merchantDetails['business_operation_pin'])
-            ->setCellValue('B14', $merchantDetails['business_operation_city'])
-            ->setCellValue('B15', $merchantDetails['business_operation_state'])
-            ->setCellValue('B17', $merchantDetails['contact_name'])
-            ->setCellValue('B18', $merchantDetails['contact_mobile'])
-            ->setCellValue('B25', $merchant['category'])
-            ->setCellValue('B26', $merchantDetails['business_website'])
-            ->setCellValue('B28', $merchantDetails['business_doe'])
-            ->setCellValue('B32', $merchantDetails['business_website'])
-            ->setCellValue('B34', $merchantDetails['business_type'])
-            ->setCellValue('B50', $merchantDetails['transaction_volume'])
-            ->setCellValue('B51', $merchantDetails['transaction_volume'] / 12)
-            ->setCellValue('B52', $merchantDetails['transaction_volume'] / $txnValue)
-            ->setCellValue('B61', $merchantDetails['website_privacy'])
-            ->setCellValue('B62', $merchantDetails['website_refund'])
-            ->setCellValue('B63', $merchantDetails['website_terms'])
-            ->setCellValue('B64', $merchantDetails['website_about'])
-            ->setCellValue('B65', $merchantDetails['website_pricing'])
-            ->setCellValue('B66', $merchantDetails['business_website'])
-            ->setCellValue('B68', $merchantDetails['website_contact'])
-            ->setCellValue('B69', $merchantDetails['website_login']);
+            ->setCellValue('C10', $merchantDetails['business_operation_address'])
+            ->setCellValue('C14', $merchantDetails['business_operation_pin'])
+            ->setCellValue('C15', $merchantDetails['business_operation_city'])
+            ->setCellValue('C16', $merchantDetails['business_operation_state'])
+            ->setCellValue('C18', $merchantDetails['contact_name'])
+            ->setCellValue('C19', $merchantDetails['contact_mobile'])
+            ->setCellValue('C25', $merchant['category'])
+            ->setCellValue('C27', $merchantDetails['business_website'])
+            ->setCellValue('C28', $merchantDetails['business_doe'])
+            ->setCellValue('C33', $merchantDetails['business_website'])
+            ->setCellValue('C35', $merchantDetails['business_type'])
+            ->setCellValue('C51', $merchantDetails['transaction_volume'])
+            ->setCellValue('C52', $merchantDetails['transaction_volume'] / 12)
+            ->setCellValue('C53', $merchantDetails['transaction_volume'] / $txnValue)
+            ->setCellValue('C62', $merchantDetails['website_privacy'])
+            ->setCellValue('C63', $merchantDetails['website_refund'])
+            ->setCellValue('C64', $merchantDetails['website_terms'])
+            ->setCellValue('C65', $merchantDetails['website_about'])
+            ->setCellValue('C66', $merchantDetails['website_pricing'])
+            ->setCellValue('C67', $merchantDetails['business_website'])
+            ->setCellValue('C69', $merchantDetails['website_contact'])
+            ->setCellValue('C70', $merchantDetails['website_login']);
 
         $excelWriter = PHPExcel_IOFactory::createWriter($excel, $inputFileType);
 
