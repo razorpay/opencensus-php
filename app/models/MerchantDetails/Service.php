@@ -175,7 +175,8 @@ class Service extends Base\Service
             'name' => $merchantDetails->getAttribute('contact_name'),
             'email' => $merchantDetails->getAttribute('contact_email'),
             'business_name' => $merchantDetails->getAttribute('business_name'),
-            'dba' => $merchantDetails->getAttribute('business_dba')
+            'dba' => $merchantDetails->getAttribute('business_dba'),
+            'website' => $merchantDetails->getAttribute('business_website')
         );
 
         $salesEmail = 'sales@razorpay.com';

@@ -12,7 +12,10 @@
 
             <p>Please verify the details <a href="{{ URL::to('/admin#/app/merchants/'.$id.'/detail') }}" target="_blank">here</a> and communicate with the merchant as necessary.</p>
 
-            <p>The DBA for the merchant is: {{{$dba}}}.
+            <p>The DBA for the merchant is: {{{$dba}}}.</p>
+
+            <p>The website link for the business is: <a href="{{$website}}" title="{{{$dba}}}"></a>.
+
         </div>
 
         <div>
