@@ -219,7 +219,7 @@ class MerchantTest extends TestCase
             ->type(l::IdOrName('business_registered_city'), 'city')
             ->type(l::IdOrName('business_registered_pin'), '333333')
             ->click(l::IdOrName('or_same'))
-            ->type(l::IdOrName('business_doe'), '02/02/1992')
+            ->type(l::IdOrName('business_doe'), '1990-11-01')
             ->type(l::IdOrName('company_cin'), 'cin123455')
             ->type(l::IdOrName('company_pan'), 'pan12345')
             ->type(l::IdOrName('company_pan_name'), 'pan name')

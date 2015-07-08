@@ -710,6 +710,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
             var nowmonth = ("0"+(1+now.getMonth())).slice(-2);
             var nowyear = now.getYear()+1900;
             html = template({
+              billing_label: current.billing_label || '',
               date: nowdate + '/' + nowmonth + '/' + nowyear,
               reqdate: nowdate + nowmonth + nowyear,
               reqby: "Harshil Mathur",
