@@ -1,6 +1,7 @@
 <?php
 
 $checkout = 'https://checkout.razorpay.com';
+$fonts = 'https://s3.amazonaws.com/checkout-live/lato';
 
 $protocol = 'https';
 
@@ -9,6 +10,7 @@ $hostname = $_SERVER['HTTP_HOST'];
 if ($hostname === 'beta.razorpay.com')
 {
     $checkout = 'https://betacheckout.razorpay.com';
+    $fonts = 'https://s3.amazonaws.com/checkout-beta/lato';
 }
 
 $configFile = __DIR__ . '/config.php';
