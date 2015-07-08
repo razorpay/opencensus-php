@@ -173,7 +173,9 @@ class Service extends Base\Service
         $customer = array(
             'id' => $merchantDetails->getAttribute('merchant_id'),
             'name' => $merchantDetails->getAttribute('contact_name'),
-            'email' => $merchantDetails->getAttribute('contact_email')
+            'email' => $merchantDetails->getAttribute('contact_email'),
+            'business_name' => $merchantDetails->getAttribute('business_name'),
+            'dba' => $merchantDetails->getAttribute('business_dba')
         );
 
         $salesEmail = 'sales@razorpay.com';
@@ -188,7 +190,7 @@ class Service extends Base\Service
         Mailgun::send('emails.admin_notify', $customer, function($mail) use ($customer, $salesEmail)
         {
             $mail->to($salesEmail, 'Razorpay Sales Team')
-                 ->subject('New activation form submitted - '.$customer['id']);
+                 ->subject('New activation form submitted - '.$customer['business_name']);
         });
     }
 
