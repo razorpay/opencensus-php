@@ -51,7 +51,7 @@ class HdfcTidExcel
 
         if (file_exists($dir) === false)
         {
-            mkdir($dir, 0777);
+            mkdir($dir, 0777, true);
         }
 
         $filePath = $dir.'/hdfc_excel_'.$merchant['id'].'.xlsx';
