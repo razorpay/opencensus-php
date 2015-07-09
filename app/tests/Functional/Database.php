@@ -49,6 +49,8 @@ class Database
         $this->db->connection('live')->beginTransaction();
 
         $this->dbTransactionInProgress = true;
+
+        $this->config->set('database.default', 'test');
     }
 
     /**
@@ -62,11 +64,11 @@ class Database
 
     public function truncate()
     {
-        $this->config->set('database.default', 'test');
+        $this->config->set('database.default', 'live');
 
         $this->truncateAllTables();
 
-        $this->config->set('database.default', 'live');
+        $this->config->set('database.default', 'test');
 
         $this->truncateAllTables();
     }

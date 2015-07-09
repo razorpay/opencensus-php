@@ -16,7 +16,8 @@ class Merchant extends Base
     public function createDefaultTestMerchant()
     {
         $this->fixtures->create('merchant', ['id' => '10000000000000']);
-        $this->fixtures->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
+        $this->fixtures->on('test')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
+        $this->fixtures->on('live')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('test')->create('balance', ['id' => '10000000000000', 'balance' => '1000000']);
         $this->fixtures->on('live')->create('balance', ['id' => '10000000000000', 'balance' => '0']);
         $this->fixtures->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
