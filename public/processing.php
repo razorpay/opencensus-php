@@ -153,6 +153,9 @@ if (!window.CheckoutBridge){
   }
 }
 </script>
-<style>@font-face{font-family:'lato';src:url("/fonts/lato.eot?#iefix") format('embedded-opentype'),url("/fonts/lato.woff") format('woff'),url("/fonts/lato.ttf") format('truetype'),url("/fonts/lato.svg#lato") format('svg');font-weight:normal;font-style:normal}i{font-size:24px;font-style:normal}</style>
+<?php
+$fonts = 'https://s3.amazonaws.com/checkout-live/lato';
+?>
+<style>@font-face{font-family:'lato';src:url("<?= $fonts ?>.eot?#iefix") format('embedded-opentype'),url("<?= $fonts ?>.woff") format('woff'),url("<?= $fonts ?>.ttf") format('truetype'),url("<?= $fonts ?>.svg#lato") format('svg');font-weight:normal;font-style:normal}</style>
 </body>
 </html>
