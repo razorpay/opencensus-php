@@ -3,6 +3,7 @@
 namespace Models\Admin;
 
 use Excel;
+use Models\MerchantDetails;
 use PHPExcel_IOFactory;
 
 class HdfcTidExcel
@@ -21,8 +22,11 @@ class HdfcTidExcel
         $objReader = PHPExcel_IOFactory::createReader($inputFileType);
         $excel = $objReader->load($filePath);
 
+        $businessType = MerchantDetails\BusinessType::getType($merchantDetails['business_type']);
+        $txnVolume = MerchantDetails\TransactionVolume::getVolume($merchantDetails['transaction_volume']);
+
         $excel->setActiveSheetIndex(0)
-            ->setCellValue('C9',  'Razorpay - ' . $merchant['business_type'])
+            ->setCellValue('C9',  'Razorpay - ' . $merchant['billing_label'])
             ->setCellValue('C11', $merchantDetails['business_operation_address'])
             ->setCellValue('C14', $merchantDetails['business_operation_pin'])
             ->setCellValue('C15', $merchantDetails['business_operation_city'])
@@ -33,10 +37,10 @@ class HdfcTidExcel
             ->setCellValue('C27', $merchantDetails['business_website'])
             ->setCellValue('C29', $merchantDetails['business_doe'])
             ->setCellValue('C33', $merchantDetails['business_website'])
-            ->setCellValue('C35', $merchantDetails['business_type'])
-            ->setCellValue('C51', $merchantDetails['transaction_volume'])
-            ->setCellValue('C52', $merchantDetails['transaction_volume'] / 12)
-            ->setCellValue('C53', $merchantDetails['transaction_volume'] / $txnValue)
+            ->setCellValue('C35', $businessType)
+            ->setCellValue('C51', $txnVolume)
+            ->setCellValue('C52', $txnVolume / 12)
+            ->setCellValue('C53', (int) $txnVolume / $txnValue)
             ->setCellValue('C62', $merchantDetails['website_privacy'])
             ->setCellValue('C63', $merchantDetails['website_refund'])
             ->setCellValue('C64', $merchantDetails['website_terms'])

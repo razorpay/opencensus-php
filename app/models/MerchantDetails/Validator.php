@@ -15,28 +15,28 @@ class Validator extends Base\Validator
     );
 
     protected static $step2Rules = array(
-        'business_type'                => 'required|numeric|digits_between:1,10',
-        'business_name'                => 'required|max:255',
-        'business_dba'                 => 'required|max:255',
-        'business_international'       => 'required|in:0,1',
-        'business_paymentdetails'      => 'required|max:2000',
-        'business_registered_address'  => 'required|max:255',
-        'business_registered_state'    => 'required|alpha_space|max:255',
-        'business_registered_city'     => 'required|alpha_space|max:255',
-        'business_registered_pin'      => 'required|max:15',
-        'business_operation_address'   => 'required|max:255',
-        'business_operation_state'     => 'required|alpha_space|max:255',
-        'business_operation_city'      => 'required|alpha_space|max:255',
-        'business_operation_pin'       => 'required|max:15',
-        'business_doe'                 => 'required|date_format:"Y-m-d"|before:"today"',
+        'business_type'                 => 'required|numeric|digits_between:1,10',
+        'business_name'                 => 'required|max:255',
+        'business_dba'                  => 'required|max:255',
+        'business_international'        => 'required|in:0,1',
+        'business_paymentdetails'       => 'required|max:2000',
+        'business_registered_address'   => 'required|max:255',
+        'business_registered_state'     => 'required|alpha_space|max:255',
+        'business_registered_city'      => 'required|alpha_space|max:255',
+        'business_registered_pin'       => 'required|max:15',
+        'business_operation_address'    => 'required|max:255',
+        'business_operation_state'      => 'required|alpha_space|max:255',
+        'business_operation_city'       => 'required|alpha_space|max:255',
+        'business_operation_pin'        => 'required|max:15',
+        'business_doe'                  => 'required|date_format:"Y-m-d"|before:"today"',
         'company_cin'                   => 'alpha_num|max:21',
         'company_pan'                   => 'alpha_num|max:15',
-        'company_pan_name'              => 'alpha_space|max:255|required_with:company_pan',
-        'business_model'               => 'required|max:2000',
+        'company_pan_ame'               => 'alpha_space|max:255|required_with:company_pan',
+        'business_model'                => 'required|max:2000',
         'transaction_volume'            => 'required|numeric|digits_between:1,4',
         'transaction_value'             => 'required|numeric|min:1|max:10000000',
-        'promoter_pan'          => 'required|alpha_num|max:15',
-        'promoter_pan_name'     => 'required|alpha_space|max:255'
+        'promoter_pan'                  => 'required|alpha_num|max:15',
+        'promoter_pan_name'             => 'required|alpha_space|max:255',
     );
 
     protected static $step3Rules = array(
@@ -47,7 +47,7 @@ class Validator extends Base\Validator
         'website_terms'                => 'required|max:255|url',
         'website_refund'               => 'required|max:255|url',
         'website_pricing'              => 'required|max:255|url',
-        'website_login'                => 'required|max:255|url'        
+        'website_login'                => 'required|max:255|url'
     );
 
     protected static $step4Rules = array(
@@ -99,7 +99,7 @@ class Validator extends Base\Validator
         'business_doe'                  => 'Date of Establishment',
         'company_cin'                   => 'Company CIN Number',
         'company_pan'                   => 'Company PAN',
-        'company_pan_name'              => 'Company Name on PAN', 
+        'company_pan_name'              => 'Company Name on PAN',
         'business_model'                => 'Business Model',
         'transaction_volume'            => 'Transaction Volume',
         'transaction_value'             => 'Average Transaction value',
