@@ -1,3 +1,7 @@
+<?php
+$fonts = 'https://s3.amazonaws.com/checkout-live/lato';
+?>
+
 <!DOCTYPE html>
 <html dir="ltr">
   <head>
