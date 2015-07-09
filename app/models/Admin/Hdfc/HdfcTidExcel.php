@@ -22,7 +22,8 @@ class HdfcTidExcel
         $excel = $objReader->load($filePath);
 
         $excel->setActiveSheetIndex(0)
-            ->setCellValue('C10', $merchantDetails['business_operation_address'])
+            ->setCellValue('C9',  'Razorpay - ' . $merchant['business_type'])
+            ->setCellValue('C11', $merchantDetails['business_operation_address'])
             ->setCellValue('C14', $merchantDetails['business_operation_pin'])
             ->setCellValue('C15', $merchantDetails['business_operation_city'])
             ->setCellValue('C16', $merchantDetails['business_operation_state'])
@@ -30,7 +31,7 @@ class HdfcTidExcel
             ->setCellValue('C19', $merchantDetails['contact_mobile'])
             ->setCellValue('C25', $merchant['category'])
             ->setCellValue('C27', $merchantDetails['business_website'])
-            ->setCellValue('C28', $merchantDetails['business_doe'])
+            ->setCellValue('C29', $merchantDetails['business_doe'])
             ->setCellValue('C33', $merchantDetails['business_website'])
             ->setCellValue('C35', $merchantDetails['business_type'])
             ->setCellValue('C51', $merchantDetails['transaction_volume'])
