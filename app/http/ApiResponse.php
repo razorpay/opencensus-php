@@ -2,9 +2,12 @@
 
 namespace Http;
 
+use App;
 use EE\Error\Error;
 use EE\Error\ErrorCode;
+use Request;
 use Response;
+use View;
 
 class ApiResponse
 {
@@ -197,24 +200,19 @@ class ApiResponse
     {
         $request = \Request::getFacadeRoot();
 
-        $jsonp = null;
+        $response = Response::json();
 
         if ((self::$jsonp === null) and
             (self::isJsonpRequired($request->path())))
         {
             $data['http_status_code'] = $status;
-
             $status = 200;
 
-            $jsonp = true;
-        }
-
-        $response = Response::json($data, $status);
-
-        if ($jsonp)
-        {
             self::attachJsonpCallback($request, $response);
         }
+
+        $response->setData($data);
+        $response->setStatusCode($status);
 
         self::stopBrowserCaching($response);
 

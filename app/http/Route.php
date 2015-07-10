@@ -345,6 +345,8 @@ final class Route
 
     public static function isJsonpRoute($path)
     {
+        $jsonpRoutes = self::$jsonpRoutes;
+
         $jsonpRoute = array(
             'v1/payments/create/jsonp',
             'v1/banks',
