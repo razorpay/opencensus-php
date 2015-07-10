@@ -24,7 +24,7 @@ trait GatewayTrait
 
         if ($request['method'] === 'get')
         {
-            // The key thing now is to replace redirectUrl from kotak's to ours!
+            // The key thing now is to replace the url from gateway to our mock one!
             $parts = parse_url($request['url']);
 
             $url = $url . '&' .$parts['query'];
