@@ -260,7 +260,7 @@ trait PaymentTrait
     protected function cancelPayment($id)
     {
         $request = array(
-            'method' => 'POST',
+            'method' => 'GET',
             'url' => '/payments/'.$id.'/cancel');
 
         $this->ba->publicAuth();

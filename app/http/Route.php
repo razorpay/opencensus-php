@@ -22,7 +22,7 @@ final class Route
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
-        'payment_cancel'                    => ['post',     'payments/{id}/cancel',                     'PaymentController@postCancel'                          ],
+        'payment_cancel'                    => ['get',      'payments/{id}/cancel',                     'PaymentController@postCancel'                          ],
         'payment_fetch_by_id'               => ['get',      'payments/{id}',                            'PaymentController@getPayment'                          ],
         'payment_fetch_multiple'            => ['get',      'payments',                                 'PaymentController@getPayments'                         ],
         'payment_fetch_refunds'             => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                ],
