@@ -202,8 +202,12 @@ class ApiResponse
 
         $response = Response::json();
 
+        $app = \App::getFacadeRoot();
+        $router = $app['router'];
+        $route = $router->currentRouteName();
+
         if ((self::$jsonp === null) and
-            (self::isJsonpRequired($request->path())))
+            (self::isJsonpRoute($route)))
         {
             $data['http_status_code'] = $status;
             $status = 200;
@@ -249,6 +253,19 @@ class ApiResponse
         );
 
         return (in_array($route, $callbackRoutes));
+    }
+
+    protected static function isJsonpRoute($route)
+    {
+        $jsonpRoutes = array(
+            'checkout',
+            'merchant_methods',
+            'merchant_public_get_banks',
+            'payment_cancel',
+            'payment_create_jsonp',
+        );
+
+        return (in_array($route, $jsonpRoutes));
     }
 
     protected static function flattenArrayForPost($data)

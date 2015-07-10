@@ -343,18 +343,11 @@ final class Route
         return $doNotLogUrls;
     }
 
-    public static function isJsonpRoute($path)
+    public static function isJsonpRoute($route)
     {
         $jsonpRoutes = self::$jsonpRoutes;
 
-        $jsonpRoute = array(
-            'v1/payments/create/jsonp',
-            'v1/banks',
-            'v1/methods',
-            'v1/checkout',
-        );
-
-        return in_array($path, $jsonpRoute);
+        return in_array($route, $jsonpRoute);
     }
 
     protected static function addRoutes($type)
