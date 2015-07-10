@@ -122,8 +122,6 @@ final class Route
         'checkout',
         'payment_create',
         'payment_create_jsonp',
-        'payment_callback_post',
-        'payment_callback_get',
         'payment_cancel',
         'merchant_public_get_banks',
         'merchant_methods',
