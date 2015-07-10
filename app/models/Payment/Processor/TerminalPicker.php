@@ -180,14 +180,14 @@ class TerminalPicker
             }
         }
 
-        if (isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true)
-        {
-            return $gatewayTerms[Payment\Gateway::BILLDESK];
-        }
-
         if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
         {
             return $gatewayTerms[Payment\Gateway::PAYTM];
+        }
+
+        if (isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true)
+        {
+            return $gatewayTerms[Payment\Gateway::BILLDESK];
         }
 
         if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
