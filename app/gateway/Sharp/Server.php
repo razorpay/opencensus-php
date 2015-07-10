@@ -40,13 +40,12 @@ class Server
 
         $authorized = false;
 
+        $content['status'] = 'failed';
+
         if ($input['success'] === 'S')
         {
-            $authorized = true;
+            $content['status'] = 'authorized';
         }
-
-        $content = array(
-            'status' => 'authorized');
 
         $url = $url . '?' . http_build_query($content);
 

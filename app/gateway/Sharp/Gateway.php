@@ -41,6 +41,14 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        if ((isset($input['gateway']['status']) === false) or
+            ($input['gateway']['status'] !== 'authorized'))
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     public function capture(array $input)
