@@ -248,6 +248,8 @@ class ApiResponse
     protected static function isCallbackRoute($route)
     {
         $callbackRoutes = array(
+            'payment_callback_post',
+            'payment_callback_get',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
         );
