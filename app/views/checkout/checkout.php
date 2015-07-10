@@ -1,12 +1,12 @@
 <?php
 $fonts = 'https://s3.amazonaws.com/checkout-live/lato';
 ?>
-
 <!DOCTYPE html>
 <html dir="ltr">
   <head>
     <meta charset="utf-8">
     <title>Razorpay Checkout</title>
+    <link rel="icon" href="data:;base64,=">
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="cache-control" content="no-cache">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
