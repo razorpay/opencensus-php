@@ -19,3 +19,5 @@ if (file_exists($configFile))
 {
     require($configFile);
 }
+
+$domain = $protocol.'://'.$hostname;
