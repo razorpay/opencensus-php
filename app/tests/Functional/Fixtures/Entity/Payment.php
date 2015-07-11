@@ -36,39 +36,31 @@ class Payment extends Base
     public function createCardCaptured(array $attributes = array())
     {
         $defaultValues = array(
-            'status' => 'authorized',
-            'terminal_id' => '1n25f6uN5S1Z5a',
-            'method' => 'card',
-            'transaction_id' => null,
             'created_at' => time() - 10,
             'updated_at' => time() - 5);
 
         $attributes = array_merge($defaultValues, $attributes);
-        $attributes['captured_at'] = $attributes['created_at'] + 10;
 
-        $payment = $this->build('payment', $attributes);
+        $payment = $this->createCardAuthorized($attributes);
+
+        $payment['status'] = 'captured';
+        $payment['captured_at'] = $attributes['created_at'] + 10;
 
         $hdfcAttrArray = array(
-            'payment_id'    => $payment->getKey(),
+            'payment_id' => $payment->getKey(),
             'amount'     => $payment->getAmount(),
             'created_at' => $payment->created_at,
             'updated_at' => $payment->created_at);
 
-        $card = $this->fixtures->create('card');
-
-        $payment->card()->associate($card);
-
         $payment->save();
 
-
-        $txn = (new \Models\Transaction\Core)->createFromPaymentCaptured($payment);
+        $txn = (new \Models\Transaction\Core)->updateOnCapture($payment);
         $txn->save();
 
         $payment->setStatus('captured');
         $payment->save();
 
         $hdfcPaymentAuthorized = $this->fixtures->create('hdfc:authorized', $hdfcAttrArray);
-
         $hdfcPaymentCaptured = $this->fixtures->create('hdfc:captured', $hdfcAttrArray);
 
         return $payment;
@@ -79,7 +71,7 @@ class Payment extends Base
         $payment = $this->createNetbankingAuthorized($attributes);
         $payment['captured_at'] = $payment['created_at'] + 10;
 
-        $txn = (new \Models\Transaction\Core)->createFromPaymentCaptured($payment);
+        $txn = (new \Models\Transaction\Core)->updateOnCapture($payment);
         $txn->save();
 
         $payment->setStatus('captured');
@@ -103,6 +95,11 @@ class Payment extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         $payment = $this->build('payment', $attributes);
+
+        $payment->save();
+
+        $txn = (new \Models\Transaction\Core)->createFromPaymentAuthorized($payment);
+        $txn->save();
 
         $payment->save();
 
@@ -130,6 +127,15 @@ class Payment extends Base
         return $payment;
     }
 
+    public function createCardAuthorized(array $attributes = array())
+    {
+        $attributes['method'] = 'card';
+
+        $payment = $this->createAuthorized($attributes);
+
+        return $payment;
+    }
+
     public function createAuthorized(array $attributes = array())
     {
         $card = $this->fixtures->create('card');
@@ -151,6 +157,11 @@ class Payment extends Base
                 'created_at' => $payment->created_at,
                 'updated_at' => $payment->created_at,
             ));
+
+        $txn = (new \Models\Transaction\Core)->createFromPaymentAuthorized($payment);
+        $txn->save();
+
+        $payment->save();
 
         return $payment;
     }
