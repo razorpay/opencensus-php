@@ -109,7 +109,14 @@ trait Capture
 
             $this->updatePaymentCaptured();
 
-            $txn = (new Transaction\Core)->createFromPayment($this->payment);
+            if ($this->payment['created_at'] < 1)
+            {
+                $txn = (new Transaction\Core)->createFromPaymentCaptured($this->payment);
+            }
+            else
+            {
+                $txn = (new Transaction\Core)->updateOnCapture($this->payment);
+            }
 
             $txn->save();
             $this->payment->save();

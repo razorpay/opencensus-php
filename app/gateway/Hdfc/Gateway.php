@@ -232,6 +232,12 @@ class Gateway extends Base\Gateway
      */
     protected $response;
 
+    /**
+     * Whether the gateway supports authorizing payments.
+     * @var boolean
+     */
+    protected $authorize = true;
+
     public function __construct()
     {
         parent::__construct();

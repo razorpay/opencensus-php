@@ -61,7 +61,7 @@ class Payment extends Base
         $payment->save();
 
 
-        $txn = (new \Models\Transaction\Core)->createFromPayment($payment);
+        $txn = (new \Models\Transaction\Core)->createFromPaymentCaptured($payment);
         $txn->save();
 
         $payment->setStatus('captured');
@@ -79,7 +79,7 @@ class Payment extends Base
         $payment = $this->createNetbankingAuthorized($attributes);
         $payment['captured_at'] = $payment['created_at'] + 10;
 
-        $txn = (new \Models\Transaction\Core)->createFromPayment($payment);
+        $txn = (new \Models\Transaction\Core)->createFromPaymentCaptured($payment);
         $txn->save();
 
         $payment->setStatus('captured');

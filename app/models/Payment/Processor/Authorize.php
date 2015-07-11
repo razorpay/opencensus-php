@@ -10,6 +10,7 @@ use Http\Route;
 use Models\Merchant\Banks;
 use Models\Card;
 use Models\Payment;
+use Models\Transaction;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;
@@ -353,6 +354,12 @@ trait Authorize
 
         $payment->save();
         $payment->terminal->save();
+
+        $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+
+        $txn->save();
+
+        $payment->save();
 
         $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
     }
