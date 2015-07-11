@@ -67,6 +67,7 @@ class Core extends Base\Core
         $settledAt = $this->getSettledAtTimestamp($capturedAt, 3);
 
         $txnData = array(Transaction\Entity::SETTLED_AT => $settledAt);
+        $txn->fill($txnData);
 
         $this->updateMerchantBalance($txn);
 
