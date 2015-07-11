@@ -14,8 +14,8 @@ class Network
     const MAES  = 'MAES';
     const MC    = 'MC';
     const RUPAY = 'RUPAY';
-    const VISA  = 'VISA';
     const UNP   = 'UNP';
+    const VISA  = 'VISA';
 
     // Unidentified
     const UNKNOWN = 'UNKNOWN';
@@ -37,23 +37,12 @@ class Network
         self::DICL,
         self::DISC,
         self::JCB,
+        self::MAES,
         self::MC,
+        self::RUPAY,
+        self::UNP,
         self::VISA,
-        self::UNP);
-
-    public static $maestroFirstFour = array(
-        '5018',
-        '5020',
-        '5038',
-        '5612',
-        '5893',
-        '6304',
-        '6759',
-        '6761',
-        '6762',
-        '6763',
-        '0604',
-        '6390');
+    );
 
     public static $networkRegexes = array(
         self::MC    => '/^5[1-5][0-9]{5,}$/',
@@ -116,22 +105,6 @@ class Network
         {
             return (preg_match($regex, $iin) === 1);
         }
-    }
-
-    public static function isMAES($iin)
-    {
-        return in_array(substr($iin, 0, 4), self::$maestroFirstFour);
-    }
-
-    public static function isRUPAY($iin)
-    {
-        //
-        // @todo: determine regex for this one.
-        //
-        // Looking at lots of images of Rupay card suggests that it
-        // may start with 607*
-        //
-        return false;
     }
 
     public static function checkNetworkValidity($network)
