@@ -22,7 +22,7 @@ trait Refund
      *
      * @return Payment\Entity
      */
-    public function refund($id, $input)
+    protected function refund($id, $input)
     {
         $payment = $this->retrieve($id);
 
@@ -30,7 +30,10 @@ trait Refund
 
         $refund->merchant()->associate($this->merchant);
 
-        $this->validateMerchantBalance($refund);
+        if ($this->payment->isCaptured())
+        {
+            $this->validateMerchantBalance($refund);
+        }
 
         $this->refund = $refund;
 
@@ -67,6 +70,32 @@ trait Refund
         }
 
         return $refund;
+    }
+
+    public function refundAuthorizedPayment($id, $input)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($this->payment->isAuthorized() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+
+        return $this->refund($id, $input);
+    }
+
+    public function refundCapturedPayment($id, $input)
+    {
+        $payment = $this->retrieve($id);
+
+        if ($this->payment->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+
+        return $this->refund($id, $input);
     }
 
     protected function recordRefund()

@@ -20,6 +20,7 @@ final class Route
         'payment_callback_with_key_post'    => ['post',     'payments/{id}/callback/{hash}/{key}',      'PaymentController@postCallback'                        ],
         'payment_callback_with_key_get'     => ['get',      'payments/{id}/callback/{hash}/{key}',      'PaymentController@postCallback'                        ],
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
+        'payment_authorize_refund'          => ['post',     'payments/{id}/authorize_refund',           'PaymentController@postRefundAuthorized'                ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
         'payment_cancel'                    => ['get',      'payments/{id}/cancel',                     'PaymentController@postCancel'                          ],
@@ -229,6 +230,7 @@ final class Route
         'adj_add',
         'card_fetch_by_id',
         'card_fetch_multiple',
+        'payment_authorize_refund',
     );
 
     public static $internalApps = array(
