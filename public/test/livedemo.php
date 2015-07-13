@@ -53,24 +53,25 @@ require('vars.php');
             <div class="pay">
               <input type="button" value="" class="razorpay-payment-button" id="paybtn">
               <script>
+              window.r = new Razorpay({
+                key: 'rzp_live_ILgsfZCZoFIKMb',
+                protocol: 'https',
+                hostname: 'api.razorpay.com',
+                amount: '500',
+                name: 'Merchant Name',
+                description: 'Fine tshirt',
+                image: 'https://i.imgur.com/3g7nmJC.png',
+                prefill: {
+                  name: 'Harshil Mathur',
+                  email: 'harshil@razorpay.com',
+                  contact: '9999999999'
+                },
+                handler: function (transaction){
+                  alert('You have successfully purchased Fine tshirt\ntransaction id: ' + transaction.razorpay_payment_id);
+                }
+              })
               document.getElementById('paybtn').onclick = function(){
-                new Razorpay({
-                  key: 'rzp_live_ILgsfZCZoFIKMb',
-                  protocol: '<?= $protocol ?>',
-                  hostname: '<?= $hostname ?>',
-                  amount: '500',
-                  name: 'Merchant Name',
-                  description: 'Purchase Description',
-                  image: 'https://i.imgur.com/3g7nmJC.png',
-                  prefill: {
-                    name: 'Harshil Mathur',
-                    email: 'harshil@razorpay.com',
-                    contact: '9999999999'
-                  },
-                  handler: function (transaction){
-                    alert('You have successfully purchased Fine tshirt\ntransaction id: ' + transaction.razorpay_payment_id);
-                  }
-                }).open()
+                r.open()
               }
               </script>
             </div>
