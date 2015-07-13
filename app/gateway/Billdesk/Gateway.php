@@ -36,7 +36,7 @@ class Gateway extends Base\Gateway
             'CurrencyType'              => 'INR',
             'ItemCode'                  => 'DIRECT',
             'TypeField1'                => 'R',
-            'SecurityID'                => 'NG-NA',
+            'SecurityID'                => $this->config['live_access_code'],
             'Unknown4'                  => 'NA',
             'Unknown5'                  => 'NA',
             'TypeField2'                => 'F',
@@ -273,5 +273,10 @@ class Gateway extends Base\Gateway
         );
 
         return $request;
+    }
+
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
     }
 }

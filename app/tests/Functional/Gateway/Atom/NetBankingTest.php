@@ -19,7 +19,7 @@ class NetBankingTest extends TestCase
 
         $this->payment = array(
             'method' => 'netbanking',
-            'bank' => 'HDFC',
+            'bank' => 'ICIC',
             'amount' => '5000',
             'email' => 'ab@g.com',
             'contact' => '9431495816',

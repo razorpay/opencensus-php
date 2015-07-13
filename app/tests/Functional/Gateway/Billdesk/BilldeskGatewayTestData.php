@@ -15,7 +15,7 @@ return [
         'refund_status' => null,
         'currency' => 'INR',
         'description' => 'random description',
-        'bank' => 'HDFC',
+        'bank' => 'ICIC',
         'error_code' => null,
         'error_description' => null,
         'email' => 'a@b.com',
@@ -32,7 +32,7 @@ return [
 
     'testPaymentBilldeskEntity' => [
         'action'=> 'authorize',
-        'BankID'=> 'HDFC',
+        'BankID'=> 'ICI',
         'CurrencyType'=> 'INR',
         'ItemCode'=> 'DIRECT',
         'TypeField1'=> 'R',
