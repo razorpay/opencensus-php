@@ -51,12 +51,12 @@
     <!--rollbar-->
     <script>
       var _rollbarConfig = {
-          accessToken: "eadbbbbc3c1744c8bbdf23026a9cce41",
-          captureUncaught: true,
-          payload: {
-              environment: "dev"
-          },
-          enabled: false
+        accessToken: "eadbbbbc3c1744c8bbdf23026a9cce41",
+        captureUncaught: true,
+        payload: {
+            environment: "dev"
+        },
+        enabled: false
       };
 
       var list = {
@@ -80,17 +80,101 @@
     <!-- Supportkit for help -->
     <script src="//cdn.supportkit.io/supportkit.min.js"></script>
     <script>
-      var list = {
-        Production: 'dashboard.razorpay.com',
-        Beta: 'betadashboard.razorpay.com'
+
+      function createCookie(name, value, days){
+        if (days) {
+          var date = new Date();
+          date.setTime(date.getTime()+(days*24*60*60*1000));
+          var expires = "; expires="+date.toGMTString();
+        }
+        else var expires = "";
+        document.cookie = name+"="+value+expires+"; path=/";
+      }
+
+      function readCookie(name){
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++){
+          var c = ca[i];
+          while (c.charAt(0)==' ') c = c.substring(1,c.length);
+          if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return '';
       }
 
       if (screen && screen.width > 480) {
-        for(var i in list){
-          if(window.location.hostname == list[i]){
-            SupportKit.init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'});
+        var initOptions = {appToken: '02o6kuyoscqkwiqr3ld3lbehw'};
+        var rzp_email = rzp_phone = '';
+        try{
+          rzp_email = readCookie('rzp_email');
+          rzp_phone = readCookie('rzp_phone');
+
+          if(rzp_email){
+            initOptions.email = rzp_email;
+            initOptions.properties = {
+                email: rzp_email,
+                phone: rzp_phone
+            }
           }
-        }
+        } catch(e){}
+
+        SupportKit.init(initOptions);
+        
+        !rzp_email && SupportKit.on('ready', function(){
+          var intro_text = $('.sk-intro').html();
+          var sk_intro = $('.sk-intro').html('Please provide your email or phone number for further communication: <br>\
+                              <div class="sk-input-wrap"><input value="'+rzp_email+'" name="email" placeholder="Email*" type="email" pattern="^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$"></div>\
+                              <div class="sk-input-wrap"><input value="'+rzp_phone+'" name="phone" placeholder="10 digit phone number (optional)" type="tel" pattern="[0-9]{10}" maxlength="10"></div>');
+
+          $('#sk-header').click(function(){
+            setTimeout(function(){
+              if($('#sk-container').hasClass('sk-appear')){
+                  setTimeout(function(){
+                      sk_intro.find('input:eq(0)').focus();
+                      if(!window.sklistener){
+                          window.sklistener = $('#sk-footer input').on('focus', chat_attempt);
+                      }
+                  }, 420)
+              }
+            }, 0)
+          })
+
+          var chat_attempt = function(){
+            var props = {};
+            var inputs = sk_intro.find('input');
+            var prevent = false;
+            inputs.each(function(i, el){
+                if(el.validity && !el.validity.valid){
+                    el.focus();
+                    prevent = true;
+                }
+                if(new RegExp(el.getAttribute('pattern')).test(el.value)){
+                    props[el.name] = el.value;
+                }
+            });
+
+            if(prevent){
+                return;
+            }
+            if(!props.email){
+                inputs.eq(0).focus();
+                return;
+            }
+            
+            SupportKit.updateUser({
+                email: props.email,
+                properties: props
+            });
+
+            sk_intro.html(intro_text);
+            $(this).off('focus', chat_attempt);
+            
+            try{
+                createCookie('rzp_email', props.email, 1000);
+                createCookie('rzp_phone', props.phone, 1000);
+            } catch(e){}
+          }
+        })
       }
     </script>
 
