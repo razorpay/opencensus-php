@@ -94,7 +94,7 @@ class Merchant extends Base
 
     public function createAddPaymentBanks(array $attributes = array())
     {
-        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+        $banks = \Models\Payment\Processor\Netbanking::getAllBanks();
 
         $defaultValues = array(
             'merchant_id' => '10000000000000',

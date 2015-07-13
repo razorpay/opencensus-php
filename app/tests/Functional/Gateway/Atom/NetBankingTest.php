@@ -5,7 +5,7 @@ namespace Tests\Functional\Gateway\Atom;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
-class NetBankingTest extends TestCase
+class NetbankingTest extends TestCase
 {
     use PaymentTrait;
 
@@ -30,7 +30,7 @@ class NetBankingTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
     }
 
-    public function testNetBankingPaymentAuthorize()
+    public function testNetbankingPaymentAuthorize()
     {
         $this->ba->publicAuth();
 
@@ -39,14 +39,14 @@ class NetBankingTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $content);
     }
 
-    public function testNetBankingPaymentCapture()
+    public function testNetbankingPaymentCapture()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->assertTestResponse($payment);
     }
 
-    public function testNetBankingPaymentRefund()
+    public function testNetbankingPaymentRefund()
     {
         $payment = $this->fixtures->create('payment:netbanking_captured');
 

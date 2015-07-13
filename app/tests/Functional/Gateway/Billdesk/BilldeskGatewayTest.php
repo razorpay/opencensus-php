@@ -26,7 +26,7 @@ class BilldeskGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -41,7 +41,7 @@ class BilldeskGatewayTest extends TestCase
 
     public function testPaymentVerify()
     {
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->verifyPayment($payment['id']);
@@ -49,7 +49,7 @@ class BilldeskGatewayTest extends TestCase
 
     public function testPaymentRefund()
     {
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->refundPayment($payment['id']);

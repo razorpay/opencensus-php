@@ -32,7 +32,7 @@ class Core extends Base\Core
     {
         $banks = $this->repo->getMerchantBanks($merchant->getId());
 
-        $enabledBanks = Payment\Processor\NetBanking::getEnabledBanks();
+        $enabledBanks = Payment\Processor\Netbanking::getEnabledBanks();
 
         $banks->setBanks($enabledBanks);
 
@@ -77,7 +77,7 @@ class Core extends Base\Core
     public function setAllPaymentBanks($merchant)
     {
         $input = [
-            'banks' => \Models\Payment\Processor\NetBanking::getAllBanks()
+            'banks' => \Models\Payment\Processor\Netbanking::getAllBanks()
         ];
 
         $banks = $this->setPaymentBanksForMerchant($merchant, $input);
@@ -104,7 +104,7 @@ class Core extends Base\Core
             $enabled = $banks->getBanks();
         }
 
-        $disabled = Payment\Processor\NetBanking::getDisabledBanks($enabled);
+        $disabled = Payment\Processor\Netbanking::getDisabledBanks($enabled);
 
         $data = array(
             'enabled' => $this->getBankNames($enabled),

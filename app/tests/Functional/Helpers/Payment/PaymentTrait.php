@@ -384,7 +384,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultNetBankingPaymentArray()
+    protected function getDefaultNetbankingPaymentArray()
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';

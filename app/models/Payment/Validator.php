@@ -84,7 +84,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED);
         }
 
-        if (Payment\Processor\NetBanking::isSupportedBank($input['bank']) === false)
+        if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
