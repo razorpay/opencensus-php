@@ -3,6 +3,7 @@
 namespace Gateway\Billdesk;
 
 use Models\Bank\IFSC;
+use Models\Payment\Processor\Netbanking;
 
 class BankCodes
 {
@@ -51,11 +52,11 @@ class BankCodes
         IFSC::DCBL => 'DC2',
         IFSC::JSBP => 'JSB',
         IFSC::NKGS => 'NKB',
-     // IFSC::BARB => 'BBC',
-     // IFSC::BARB => 'BBR',
-     // IFSC::PUNB => 'CPN',
-     // IFSC::PUNB => 'PNB',
-     // IFSC::LAVB => 'LVC',
-     // IFSC::LAVB => 'LVR',
+        Netbanking::BARB_C => 'BBC',
+        Netbanking::BARB_R => 'BBR',
+        Netbanking::PUNB_C => 'CPN',
+        Netbanking::PUNB_R => 'PNB',
+        Netbanking::LAVB_C => 'LVC',
+        Netbanking::LAVB_R => 'LVR',
     );
 }
