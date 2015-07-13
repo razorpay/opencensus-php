@@ -9,6 +9,7 @@ require('vars.php');
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Razorpay - Automatic Checkout</title>
+  <link rel="icon" href="data:;base64,=">
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
   <script src="<?= $checkout ?>/v1/checkout.js" type="text/javascript"></script>
