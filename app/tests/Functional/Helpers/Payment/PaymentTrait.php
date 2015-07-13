@@ -310,6 +310,23 @@ trait PaymentTrait
         return $refund;
     }
 
+    protected function refundAuthorizedPayment($id)
+    {
+        $this->ba->proxyAuth();
+
+        $content = array();
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/authorize_refund',
+            'content' => []);
+
+        $refund = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('refund', $refund['entity']);
+
+        return $refund;
+    }
 
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {

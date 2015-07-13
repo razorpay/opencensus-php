@@ -93,7 +93,7 @@ class RefundTest extends TestCase
         $this->startTest($payment['id'], 100);
     }
 
-    public function testRefundOnAuthorizedPayment()
+    public function testRefundByMerchantOnAuthorizedPayment()
     {
         $payment = $this->defaultAuthPayment();
 

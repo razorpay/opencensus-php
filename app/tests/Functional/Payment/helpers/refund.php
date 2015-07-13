@@ -81,7 +81,7 @@ return [
         ],
     ],
 
-    'testRefundOnAuthorizedPayment' => [
+    'testRefundByMerchantOnAuthorizedPayment' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -96,6 +96,14 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED
         ],
     ],
+
+    // 'testRefundByAdminOnAuthorizedPayment' => [
+    //     'response' => [
+    //         'content' => [
+    //             'entity' => 'refund',
+    //         ],
+    //     ],
+    // ],
 
     'testRefundWithNegativeAmount' => [
         'response' => [

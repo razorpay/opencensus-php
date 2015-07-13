@@ -112,4 +112,15 @@ class PaytmGatewayTest extends TestCase
 
         $content = $this->startTest($testData);
     }
+
+    public function testRefundByAdminOnAuthorizedPayment()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $this->ba->proxyAuth();
+
+        $content = $this->refundAuthorizedPayment($payment['id']);
+
+        $this->assertEquals('refund', $content['entity']);
+    }
 }
