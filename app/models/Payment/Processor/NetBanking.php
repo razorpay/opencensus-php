@@ -45,10 +45,79 @@ class Netbanking
         self::LAVB_R => 'Lakshmi Vilas Bank - Retail Banking',
     );
 
-    protected static $processing = array(
+    protected static $paytm = array(
+        IFSC::CITI,
+        IFSC::CIUB,
+        IFSC::CSBK,
+        IFSC::FDRL,
+        IFSC::HDFC,
+        IFSC::ICIC,
+        IFSC::IDIB,
+        IFSC::INDB,
+        IFSC::IOBA,
+        IFSC::JAKA,
+        IFSC::KKBK,
+        IFSC::MAHB,
+        IFSC::PUNB,
+        IFSC::UBIN,
+        IFSC::UTIB,
+        IFSC::VIJB,
+        IFSC::VYSA,
+        IFSC::YESB,
+    );
+
+    protected static $billdesk = array(
+        IFSC::ALLA,
+        IFSC::BKID,
+        IFSC::CIUB,
+        IFSC::UTIB,
+        IFSC::ICIC,
+        IFSC::ANDB,
+        IFSC::BBKM,
+        IFSC::MAHB,
+        IFSC::CBIN,
+        IFSC::CNRB,
+        IFSC::COSB,
+        IFSC::CSBK,
+        IFSC::DEUT,
+        IFSC::DCBL,
+        IFSC::BKDN,
+        IFSC::DLXB,
+        IFSC::FDRL,
+        IFSC::IBKL,
+        IFSC::INDB,
+        IFSC::IDIB,
+        IFSC::VYSA,
+        IFSC::IOBA,
+        IFSC::JAKA,
+        IFSC::KARB,
+        IFSC::KVBL,
         IFSC::ORBC,
+        IFSC::PMCB,
+        IFSC::PSIB,
+        IFSC::ABNA,
+        IFSC::RATN,
+        IFSC::SIBL,
+        IFSC::SVCB,
+        IFSC::SRCB,
+        IFSC::SYNB,
+        IFSC::TMBL,
+        IFSC::TNSC,
+        IFSC::UBIN,
+        IFSC::UCBA,
         IFSC::UTBI,
-        IFSC::SRCB);
+        IFSC::VIJB,
+        IFSC::YESB,
+        IFSC::DCBL,
+        IFSC::JSBP,
+        IFSC::NKGS,
+        Netbanking::BARB_C,
+        Netbanking::BARB_R,
+        Netbanking::PUNB_C,
+        Netbanking::PUNB_R,
+        Netbanking::LAVB_C,
+        Netbanking::LAVB_R,
+    );
 
     public static function isSupportedBank($bank)
     {
@@ -82,5 +151,15 @@ class Netbanking
         $names = array_merge($names, Name::getNames($codes));
 
         return $names;
+    }
+
+    public static function getPaytmSupportedBanks()
+    {
+        return self::$paytm;
+    }
+
+    public static function getBilldeskSupportedBanks()
+    {
+        return self::$billdesk;
     }
 }
