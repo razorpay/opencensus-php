@@ -83,4 +83,25 @@ return [
         // 'updated_at'=> 1434753518,
         'entity'=> 'billdesk',
     ],
+
+    'testGetPaymentMethodsRoute' => [
+        'request' => [
+            'url' => '/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'card' => true,
+                'netbanking' => [
+                    'UTIB' => 'Axis Bank',
+//                    'BARB' => 'Bank of Baroda',
+                    'YESB' => 'Yes Bank',
+                ],
+                'wallet' => [
+                    'paytm' => false,
+                ],
+            ],
+        ],
+    ],
 ];
