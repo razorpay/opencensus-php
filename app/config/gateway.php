@@ -76,4 +76,6 @@ return array(
 
     'sharp' => array(
     ),
+
+    'proxy_address' => 'https://splunk.razorpay.com:8888',
 );
