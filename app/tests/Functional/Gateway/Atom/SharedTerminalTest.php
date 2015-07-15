@@ -27,7 +27,7 @@ class SharedTerminalTest extends TestCase
 
     public function testNBPaymentOnSharedTerminal()
     {
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
         $this->assertPaymentFields($payment);
 
         $txn = $this->getLastEntity('transaction', true);

@@ -24,6 +24,8 @@ class Merchant extends Base
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
 
         $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->on('test')->create('terminal:shared_netbanking_hdfc_terminal');
     }
 
     public function createNodalAccount()
@@ -92,7 +94,7 @@ class Merchant extends Base
 
     public function createAddPaymentBanks(array $attributes = array())
     {
-        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+        $banks = \Models\Payment\Processor\Netbanking::getAllBanks();
 
         $defaultValues = array(
             'merchant_id' => '10000000000000',

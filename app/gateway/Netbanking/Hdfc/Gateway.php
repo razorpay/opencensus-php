@@ -101,12 +101,12 @@ class Gateway extends Base\Gateway
         $data['TransactionId'] = 'XTXTV01';
         $data['FigVerify'] = 'Y';
 
-        $url = $this->getDomain() . Url::VERIFY_URL;
+        $url = $this->getUrlDomain() . Url::VERIFY;
         $request['url'] = $url . $this->buildQueryString($data);
 
         $request['method'] = 'GET';
 
-        $response = $this->postRequest($request);
+        $response = $this->sendGatewayRequest($request);
 
         $status = $response['data']['figSuccess'];
         $bankRefNo = $response['date']['BankRefNo'];

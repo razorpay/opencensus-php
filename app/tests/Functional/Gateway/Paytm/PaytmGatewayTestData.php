@@ -152,7 +152,7 @@ return [
         'channel_id' => 'WEB',
         'payment_mode_only' => 'Yes',
         'auth_mode' => 'USRPWD',
-        'bank_code' => 'HDFC',
+        'bank_code' => 'ICICI',
         'payment_type_id' => 'NB',
         'txnamount' => null,
         //'banktxnid' => '201506080000004',

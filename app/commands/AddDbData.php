@@ -6,7 +6,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 use Constants\Table;
 use Models\Merchant\Account;
-use Models\Payment\Processor\NetBanking;
+use Models\Payment\Processor\Netbanking;
 
 class AddDbData extends Command
 {
@@ -89,7 +89,7 @@ class AddDbData extends Command
             DB::table(Table::MERCHANT_BANKS)->insert(
                 array(
                     'merchant_id'   => Account::DEMO_ACCOUNT,
-                    'banks'         => json_encode(NetBanking::getAllBanks()),
+                    'banks'         => json_encode(Netbanking::getAllBanks()),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -99,7 +99,7 @@ class AddDbData extends Command
             DB::table(Table::MERCHANT_BANKS)->insert(
                 array(
                     'merchant_id'   => Account::TEST_ACCOUNT,
-                    'banks'         => json_encode(NetBanking::getAllBanks()),
+                    'banks'         => json_encode(Netbanking::getAllBanks()),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )

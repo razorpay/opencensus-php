@@ -7,6 +7,8 @@ use EE\Exception;
 use Models\Payment;
 use Models\Merchant;
 use Models\Merchant\Banks;
+use Models\Payment\Processor\Netbanking;
+use Models\Terminal;
 
 class Core extends Base\Core
 {
@@ -30,18 +32,28 @@ class Core extends Base\Core
 
     public function getMerchantBanks($merchant)
     {
+
         $banks = $this->repo->getMerchantBanks($merchant->getId());
 
-        $enabledBanks = Payment\Processor\NetBanking::getEnabledBanks();
+        $billdesk = (new Terminal\Repository)->getByMerchantIdAndGateway(
+                                                $merchant->getId(), 'billdesk');
+        if ($billdesk !== null)
+        {
+            $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+        }
+        else
+        {
+            $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
+        }
 
-        $banks->setBanks($enabledBanks);
+        $banks->setBanks($supportedBanks);
 
         return $banks;
     }
 
     public function getMerchantBanksArray($merchant)
     {
-        $banks = (new Banks\Core)->getMerchantBanks($merchant);
+        $banks = $this->getMerchantBanks($merchant);
 
         if ($banks === null)
             return [];
@@ -77,7 +89,7 @@ class Core extends Base\Core
     public function setAllPaymentBanks($merchant)
     {
         $input = [
-            'banks' => \Models\Payment\Processor\NetBanking::getAllBanks()
+            'banks' => \Models\Payment\Processor\Netbanking::getAllBanks()
         ];
 
         $banks = $this->setPaymentBanksForMerchant($merchant, $input);
@@ -104,7 +116,7 @@ class Core extends Base\Core
             $enabled = $banks->getBanks();
         }
 
-        $disabled = Payment\Processor\NetBanking::getDisabledBanks($enabled);
+        $disabled = Payment\Processor\Netbanking::getDisabledBanks($enabled);
 
         $data = array(
             'enabled' => $this->getBankNames($enabled),

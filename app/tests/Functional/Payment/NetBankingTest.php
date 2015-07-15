@@ -11,7 +11,7 @@ use Tests\Functional\TestCase;
  * All test cases follow, GIVEN, WHEN, THEN structure
  */
 
-class NetBankingTest extends TestCase
+class NetbankingTest extends TestCase
 {
     public function testDummy()
     {

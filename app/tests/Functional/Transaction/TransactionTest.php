@@ -76,7 +76,7 @@ class TransactionTest extends TestCase
         $this->gateway = 'atom';
         $this->fixtures->create('terminal:atom_terminal');
 
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $txn = $this->getLastTransaction();
@@ -92,7 +92,7 @@ class TransactionTest extends TestCase
         $this->gateway = 'atom';
         $this->fixtures->create('terminal:atom_terminal');
 
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
         $refund = $this->doAuthCaptureAndRefundPayment($payment);
 
         $txn = $this->getLastTransaction();
@@ -119,7 +119,7 @@ class TransactionTest extends TestCase
 
         $this->ba->setDefaultKey('rzp_test_AltTestAuthKey');
 
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -149,7 +149,7 @@ class TransactionTest extends TestCase
 
         $this->ba->setDefaultKey('rzp_test_AltTestAuthKey');
 
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);

@@ -36,7 +36,7 @@ class Gateway extends Base\Gateway
             'CurrencyType'              => 'INR',
             'ItemCode'                  => 'DIRECT',
             'TypeField1'                => 'R',
-            'SecurityID'                => 'NG-NA',
+            'SecurityID'                => $this->config['live_access_code'],
             'Unknown4'                  => 'NA',
             'Unknown5'                  => 'NA',
             'TypeField2'                => 'F',
@@ -123,11 +123,7 @@ class Gateway extends Base\Gateway
             $content['MerchantID'] = $this->getTestMerchantId();
         }
 
-        $request = $this->getRequestArray($content);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $content = $this->getContentAfterChecksumVerification($response->body);
+        $content = $this->postRequest($content);
 
         $content['refund_id'] = $input['refund']['id'];
         $content['CurrencyType'] = 'INR';
@@ -142,7 +138,6 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED);
         }
-
     }
 
     public function verify(array $input)
@@ -164,11 +159,7 @@ class Gateway extends Base\Gateway
             $content['Merchant ID'] = $this->getTestMerchantId();
         }
 
-        $request = $this->getRequestArray($content);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $content = $this->getContentAfterChecksumVerification($response->body);
+        $content = $this->postRequest($content);
 
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);
@@ -200,6 +191,24 @@ class Gateway extends Base\Gateway
 
             throw new Exception\PaymentVerificationException($res);
         }
+    }
+
+    protected function postRequest($content)
+    {
+        $request = $this->getRequestArrayWithProxy($content);
+
+        try
+        {
+            $response = $this->sendGatewayRequest($request);
+        }
+        catch (\Requests_Exception $e)
+        {
+            sd($e);
+        }
+
+        $content = $this->getContentAfterChecksumVerification($response->body);
+
+        return $content;
     }
 
     protected function getContentAfterChecksumVerification($msg)
@@ -262,6 +271,15 @@ class Gateway extends Base\Gateway
         return strtoupper(hash_hmac('sha256', $str, $secret, false));
     }
 
+    protected function getRequestArrayWithProxy($content)
+    {
+        $request = $this->getRequestArray($content);
+
+        $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+
+        return $request;
+    }
+
     protected function getRequestArray($content)
     {
         $msg = $this->getMessageStringWithHash($content);
@@ -273,5 +291,10 @@ class Gateway extends Base\Gateway
         );
 
         return $request;
+    }
+
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
     }
 }

@@ -105,7 +105,7 @@ class MerchantFluid extends Base
 
     public function addPaymentBanks(array $attributes = array())
     {
-        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+        $banks = \Models\Payment\Processor\Netbanking::getAllBanks();
 
         $defaultValues = array(
             'merchant_id' => $this->getId(),
@@ -132,7 +132,7 @@ class MerchantFluid extends Base
 
     public function disablePaytm()
     {
-        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+        $banks = \Models\Payment\Processor\Netbanking::getAllBanks();
 
         $defaultValues = array(
             'merchant_id' => $this->getId(),
