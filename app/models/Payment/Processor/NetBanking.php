@@ -14,28 +14,6 @@ class Netbanking
     const LAVB_C = 'PUNB_C';
     const LAVB_R = 'PUNB_R';
 
-    protected static $enabled = array(
-//        IFSC::BARB,
-        IFSC::CITI,
-        IFSC::CIUB,
-        IFSC::CSBK,
-        IFSC::FDRL,
-        IFSC::HDFC,
-        IFSC::ICIC,
-        IFSC::IDIB,
-        IFSC::INDB,
-        IFSC::IOBA,
-        IFSC::JAKA,
-        IFSC::KKBK,
-        IFSC::MAHB,
-        IFSC::PUNB,
-        IFSC::UBIN,
-        IFSC::UTIB,
-        IFSC::VIJB,
-        IFSC::VYSA,
-        IFSC::YESB,
-    );
-
     protected static $names = array(
         self::BARB_C => 'Bank of Baroda - Corporate Banking',
         self::BARB_R => 'Bank of Baroda - Retail Banking',
@@ -67,6 +45,7 @@ class Netbanking
     );
 
     protected static $billdesk = array(
+        IFSC::HDFC,
         IFSC::ALLA,
         IFSC::BKID,
         IFSC::CIUB,
@@ -121,34 +100,36 @@ class Netbanking
 
     public static function isSupportedBank($bank)
     {
-        return (in_array($bank, self::$enabled));
+        return (in_array($bank, self::getAllBanks()));
     }
 
     public static function findUnsupportedBanks($banks)
     {
-        return array_diff($banks, self::$enabled);
+        return array_diff($banks, self::getAllBanks());
     }
 
     public static function getAllBanks()
     {
-        return self::$enabled;
+        return array_merge(self::$paytm, self::$billdesk);
     }
 
     public static function getDisabledBanks($banks)
     {
-        return array_diff(self::$enabled, $banks);
+        return array_diff(self::getAllBanks(), $banks);
     }
 
     public static function getEnabledBanks()
     {
-        return self::$enabled;
+        return self::getAllBanks();
     }
 
     public static function getNames($codes)
     {
-        $names = array_intersect_key(self::$names, array_flip($codes));
+        $names = Name::getNames($codes);
 
-        $names = array_merge($names, Name::getNames($codes));
+        $names = array_merge($names, array_intersect_key(self::$names, array_flip($codes)));
+
+        asort($names);
 
         return $names;
     }
