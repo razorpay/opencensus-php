@@ -82,6 +82,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <tr>
             <td colspan='40'>Amount:</td>
             <td><input type="text" name="amount" size="25" value="500"></td>
+            <td><input type="text" name="notes[merchant_order_id]" size="25" value="12345" placeholder="Order Id"></td>
         </tr>
         <tr>
             <td colspan='40'>CardHolder/Member Name:</td>

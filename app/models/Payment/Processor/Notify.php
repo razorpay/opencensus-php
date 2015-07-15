@@ -69,9 +69,9 @@ class Notify
     protected function notifyMerchant()
     {
         $subject = $this->subject();
-        if(isset($this->template['payment']['orderId']))
+        if($this->template['payment']['orderId'])
         {
-            $subject = "Payment Successful for {$this->template['payment']['orderId']}";
+            $subject = "Payment Successful for #{$this->template['payment']['orderId']}";
         }
 
         $data = $this->template;
