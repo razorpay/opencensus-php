@@ -45,51 +45,51 @@ class Netbanking
     );
 
     protected static $billdesk = array(
-        IFSC::HDFC,
+        IFSC::ABNA,
         IFSC::ALLA,
-        IFSC::BKID,
-        IFSC::CIUB,
-        IFSC::UTIB,
-        IFSC::ICIC,
         IFSC::ANDB,
         IFSC::BBKM,
-        IFSC::MAHB,
+        IFSC::BKDN,
+        IFSC::BKID,
         IFSC::CBIN,
+        IFSC::CIUB,
         IFSC::CNRB,
         IFSC::COSB,
         IFSC::CSBK,
-        IFSC::DEUT,
         IFSC::DCBL,
-        IFSC::BKDN,
+        IFSC::DCBL,
+        IFSC::DEUT,
         IFSC::DLXB,
         IFSC::FDRL,
+        IFSC::HDFC,
         IFSC::IBKL,
-        IFSC::INDB,
+        IFSC::ICIC,
         IFSC::IDIB,
-        IFSC::VYSA,
+        IFSC::INDB,
         IFSC::IOBA,
         IFSC::JAKA,
+        IFSC::JSBP,
         IFSC::KARB,
         IFSC::KVBL,
+        IFSC::MAHB,
+        IFSC::NKGS,
         IFSC::ORBC,
         IFSC::PMCB,
         IFSC::PSIB,
-        IFSC::ABNA,
         IFSC::RATN,
         IFSC::SIBL,
-        IFSC::SVCB,
         IFSC::SRCB,
+        IFSC::SVCB,
         IFSC::SYNB,
         IFSC::TMBL,
         IFSC::TNSC,
         IFSC::UBIN,
         IFSC::UCBA,
         IFSC::UTBI,
+        IFSC::UTIB,
         IFSC::VIJB,
+        IFSC::VYSA,
         IFSC::YESB,
-        IFSC::DCBL,
-        IFSC::JSBP,
-        IFSC::NKGS,
         Netbanking::BARB_C,
         Netbanking::BARB_R,
         Netbanking::PUNB_C,
@@ -110,7 +110,11 @@ class Netbanking
 
     public static function getAllBanks()
     {
-        return array_merge(self::$paytm, self::$billdesk);
+        //
+        // Merge paytm and billdesk supported banks and remove
+        // duplicate values
+        //
+        return array_unique(array_merge(self::$paytm, self::$billdesk));
     }
 
     public static function getDisabledBanks($banks)
