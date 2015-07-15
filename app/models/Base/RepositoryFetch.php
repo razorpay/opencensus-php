@@ -88,7 +88,7 @@ trait RepositoryFetch
 
     protected function validateFetchParams(array $params)
     {
-        if (($this->auth->isProxyAuth()) and
+        if (($this->auth->isAppAuth()) and
             (isset($this->appFetchParamRules)))
         {
             $this->fetchParamRules = array_merge(

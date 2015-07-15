@@ -82,4 +82,9 @@ class Repository extends Base\Repository
     {
         return false;
     }
+
+    public function addQueryParamActivated($query, $params)
+    {
+        $query->where(Entity::ACTIVATED, '=', $params[Entity::ACTIVATED]);
+    }
 }

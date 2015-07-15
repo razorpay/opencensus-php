@@ -124,17 +124,17 @@ $factory('Models\Transaction\Entity', [
     'debit' => 0,
     'balance' => $faker->randomNumber,
     'gateway_fee' => null,
+    'channel' => 'kotak'
 ]);
 
 $factory('Models\Settlement\Entity', [
     'id' => $faker->uniqueid,
     'merchant_id' => 'factory:Models\Merchant\Entity',
     'amount' => $faker->randomNumber,
-    'currency' => 'INR',
     'status' => 'created',
     'transaction_id' => 'factory:Models\Transaction\Entity',
     'channel' => 'kotak',
-    'utr' => $faker->randomNumber(10),
+    'utr' => $faker->randomNumber(8),
     'failure_reason' => null,
     'return_utr' => null,
 ]);

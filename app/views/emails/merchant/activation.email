@@ -8,31 +8,7 @@
     <table class="container" style="background: #EBECEE;">
       <tr>
         <td>
-          <!-- EMail Header with date -->
-          <table class="row">
-            <tr>
-              <td class="wrapper">
-                <table class="three columns">
-                  <tr>
-                    <td class="left-text-pad">
-                      <img src="<?php echo $message->embed(public_path().'/img/razorpay_grey.png'); ?>" alt="Razorpay Logo" title="Razorpay Logo"/>
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper offset-by-six last">
-                <table class="three columns" style="margin-top:6px;">
-                  <tr>
-                    <td class="lighttext right-text-pad">
-                      {{date('j<\s\up>S F Y')}}
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
+          @include('emails.partials.header', ['message'=>$message])
           <!-- Activation Header -->
           <table class="row">
             <tr>
@@ -65,31 +41,7 @@
               </td>
             </tr>
           </table>
-          <!-- Verified Image -->
-          <table class="row">
-            <tr>
-              <td class="center" align="center">
-                <center>
-                  <table class="container">
-                    <tr>
-                      <td class="wrapper last bluebg" style="background:#39ACE5;">
-                        <table class="four columns">
-                          <tr>
-                            <td class="center">
-                              <center>
-                                <img src="<?php echo $message->embed(public_path().'/img/merchant_verified.png'); ?>" alt="Payment Confirmation" title="Payment Confirmation"/>
-                              </center>
-                            </td>
-                            <td class="expander"></td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </center>
-              </td>
-            </tr>
-          </table>
+          @include('emails.partials.header_image', ['image'=>'merchant_verified'], ['message'=>$message])
           <!-- Header Subtext -->
           <table class="row">
             <tr>
@@ -183,64 +135,7 @@ Team Razorpay
               </td>
             </tr>
           </table>
-          <!-- Money Image -->
-          <table class="row">
-            <tr>
-              <td class="center" align="center">
-                <center>
-                  <table class="container">
-                    <tr>
-                      <td class="wrapper last white">
-                        <table class="four columns">
-                          <tr>
-                            <td class="center">
-                              <center>
-                                <img src="<?php echo $message->embed(public_path().'/img/razorpay_color.png'); ?>" alt="Razorpay Logo" title="Razorpay Logo"/>
-                              </center>
-                            </td>
-                            <td class="expander"></td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </center>
-              </td>
-            </tr>
-          </table>
-          <!-- First Footer -->
-          <table class="row">
-            <tr>
-              <td class="center" align="center">
-                <center>
-                  <table class="container">
-                    <tr>
-                      <td class="wrapper last">
-                        <table class="three columns">
-                          <tr>
-                            <td class="center lighttext">
-                              <center style="padding-left: 33px;">
-                                <a href="https://facebook.com/razorpay" class="logo">
-                                  <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/facebook.png'); ?>" alt="Facebook Icon" title="Razorpay on Facebook"/>
-                                </a>
-                                <a href="https://twitter.com/razorpay" class="logo">
-                                  <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/twitter.png'); ?>" alt="Twitter Icon" title="Razorpay on Twitter"/>
-                                </a>
-                                <a href="https://github.com/razorpay" class="logo">
-                                  <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/github.png'); ?>" alt="GitHub Icon" title="Razorpay on GitHub"/>
-                                </a>
-                              </center>
-                            </td>
-                            <td class="expander"></td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </center>
-              </td>
-            </tr>
-          </table>
+          @include('emails.partials.footer', ['message'=>$message])
         </td>
       </tr>
     </table>
