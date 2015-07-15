@@ -2,7 +2,6 @@
 
 namespace Models\Payment\Processor;
 
-use App;
 use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
@@ -172,59 +171,11 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
-        // Send email to the customer
-        // Can be extended later for SMS as well
-        $this->notifyCustomer($payment);
+        // Trigger notification events for authorization
+        $notifier = new Notify($payment);
+        $notifier->trigger(Notify::AUTHORIZED);
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
-    }
-
-    protected function notifyCustomer($payment)
-    {
-        $app = App::getFacadeRoot();
-
-        // Dont send mails in test mode
-        if($this->mode === Mode::TEST and !$app->environment('dev'))
-        {
-            return true;
-        }
-
-        $templateData = [
-            'customer'  =>  [
-                'email' =>  $payment->getEmail(),
-                'phone' =>  $payment->getContact()
-            ],
-            'merchant'  =>  [
-                'billing_label' =>  $payment->merchant->getBillingLabel(),
-                'website'       =>  $payment->merchant->getWebsite()
-            ],
-            'payment'   =>  [
-                'id'        =>  $payment->getId(),
-                'amount'    =>  "INR ".number_format($payment['amount']/100, 2),
-                'timestamp' =>  $payment->getUpdatedAt(),
-                'method'    =>  $payment->getMethodWithDetail()
-            ]
-        ];
-
-        $config = $app->config->get('applications.mailgun');
-
-        if(isset($templateData['merchant']['billing_label']))
-        {
-            $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
-        }
-        else
-        {
-            $subject = "Payment Successful for {$templateData['payment']['amount']}";
-        }
-
-        Mail::queue(['html'=> 'emails/payment/customer', 'text'=> 'emails/payment/customer_text'], $templateData,
-            function($message) use ($templateData, $config, $subject) {
-                $message->to($templateData['customer']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->subject($subject);
-                $message->bcc('nemo@razorpay.com', 'Nemo');
-            }
-        );
     }
 
     protected function callGatewayAuthorize(array $data)
@@ -329,8 +280,7 @@ trait Authorize
     {
         if ($payment->getCallbackUrl() !== null)
         {
-            $app = \App::getFacadeRoot();
-            $app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
     }
 
@@ -395,7 +345,7 @@ trait Authorize
      */
     protected function getHashOfPaymentPublicId()
     {
-        $secret = \App::make('config')->get('app.key');
+        $secret = $this->app->config->get('app.key');
 
         $publicId = $this->payment->getPublicId();
 

@@ -2,6 +2,7 @@
 
 namespace Models\Payment\Processor;
 
+use App;
 use Constants\Mode;
 use BasicAuth;
 use Dashboard\Dashboard;
@@ -54,6 +55,8 @@ class Processor
         $this->checkMerchantPermissions();
 
         $this->repo = new Payment\Repository;
+
+        $this->app = App::getFacadeRoot();
     }
 
     public static function create($bindings)

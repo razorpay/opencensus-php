@@ -210,4 +210,9 @@ class Entity extends Base\PublicEntity
 
         return str_repeat('XXXX-', $repeat) . substr($ac, -4);
     }
+
+    public function getTransactionReportEmail()
+    {
+        return $this->attributes[self::TRANSACTION_REPORT_EMAIL];
+    }
 }
