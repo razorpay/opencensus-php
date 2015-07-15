@@ -1,0 +1,25 @@
+<!-- EMail Header with date -->
+<table class="row">
+  <tr>
+    <td class="wrapper">
+      <table class="three columns">
+        <tr>
+          <td class="left-text-pad">
+            <img src="<?php echo $message->embed(public_path().'/img/razorpay_grey.png'); ?>" alt="Razorpay Logo" title="Razorpay Logo"/>
+          </td>
+          <td class="expander"></td>
+        </tr>
+      </table>
+    </td>
+    <td class="wrapper offset-by-six last">
+      <table class="three columns" style="margin-top:6px;">
+        <tr>
+          <td class="lighttext right-text-pad">
+            {{\Carbon\Carbon::now("Asia/Kolkata")->format('j<\s\up>S F Y')}}
+          </td>
+          <td class="expander"></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

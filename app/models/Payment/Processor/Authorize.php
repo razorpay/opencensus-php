@@ -184,7 +184,7 @@ trait Authorize
         $app = App::getFacadeRoot();
 
         // Dont send mails in test mode
-        if($this->mode === Mode::TEST)
+        if($this->mode === Mode::TEST and !$app->environment('dev'))
         {
             return true;
         }

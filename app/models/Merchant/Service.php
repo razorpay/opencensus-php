@@ -339,12 +339,6 @@ class Service extends Base\Service
         return $file;
     }
 
-    public function getDailyDetails()
-    {
-        $details = [];
-        $details['merchant'] = $this->repo->findOrFailPublic($id);
-    }
-
     protected function sendActivationEmail($merchant)
     {
         $app = \App::getFacadeRoot();
@@ -365,7 +359,7 @@ class Service extends Base\Service
         $config = $app->config->get('applications.mailgun');
         $subject = "Your Razorpay account has been activated";
 
-        Mail::queue(['html'=> 'emails/merchant/activation', 'text'=> 'emails/merchant/activation_text'], $data,
+        Mail::queue(['html'=> 'emails.merchant.activation', 'text'=> 'emails.merchant.activation_text'], $data,
             function($message) use ($data, $config, $subject) {
                 $message->to($data['merchant']['email']);
                 $message->from($config['from_email'], $config['from_name']);
@@ -373,5 +367,20 @@ class Service extends Base\Service
                 $message->subject($subject);
             }
         );
+    }
+
+    /**
+     * sends daily reports for all merchants that are currently live
+     */
+    public function sendDailyReportForAllMerchants()
+    {
+        $merchants = $this->repo->fetch([Entity::ACTIVATED => 1]);
+
+        foreach ($merchants as $merchant)
+        {
+            $dailyReport = new DailyReport($merchant->getId());
+
+            $dailyReport->send();
+        }
     }
 }

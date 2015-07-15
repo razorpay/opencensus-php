@@ -255,4 +255,14 @@ class MerchantController extends BaseController
         return View::make('checkout.checkout')
                    ->with($data);
     }
+
+    /**
+     * Sends an email to every merchant
+     * with all transactions from yesterday
+     */
+    public function sendDailyReport()
+    {
+        (new Models\Merchant\Service)->sendDailyReportForAllMerchants();
+        return ApiResponse::json(['success'=>true]);
+    }
 }

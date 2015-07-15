@@ -6,6 +6,7 @@ use Config;
 use Eloquent;
 use Tests\TestDummy\Factory;
 use Tests\Functional\Fixtures\Fixtures;
+use Illuminate\Support\Facades\DB;
 
 class Base
 {
@@ -15,7 +16,7 @@ class Base
     {
         $this->fixtures = self::$fixturesInstance;
 
-        $this->db = \DB::getFacadeRoot();
+        $this->db = DB::getFacadeRoot();
     }
 
     protected static $map = array(

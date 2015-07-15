@@ -299,9 +299,20 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor --------------------------------------------
 
+    /**
+     * Makes sure that getNotes always returns an array
+     */
     public function getNotesAttribute($notes)
     {
-        return json_decode($notes, true);
+        $notesArray = json_decode($notes, true);
+        if($notesArray === '')
+        {
+            return [];
+        }
+        else
+        {
+            return $notesArray;
+        }
     }
 
     public function getAmountAttribute()
@@ -509,6 +520,28 @@ class Entity extends Base\PublicEntity
                 return [$methodName, $walletNames[$this->getWallet()]];
                 break;
         }
+    }
+
+    /**
+     * This is a heuristic method that tries to find
+     * an order id the notes section
+     * As of now, order_id is the first field inside notes
+     * that ends with `_order_id`
+     * We will shift to a standard field called `merchant_order_id`
+     * as our ecommerce plugins are migrated
+     * @return String order_id for the paymetn
+     */
+    public function getOrderId()
+    {
+        $notes = $this->getNotes();
+        foreach ($notes as $key => $value) {
+            $orderIdSuffix = '_order_id';
+            if(substr($key, -1 * strlen($orderIdSuffix)) === $orderIdSuffix)
+            {
+                return $value;
+            }
+        }
+        return false;
     }
 
 // ----------------------- Getters Ends-----------------------------------------
