@@ -42,10 +42,9 @@ class Service extends Base\Service
         // Only Payments analytics are stored
         if ($input['resource'] === "payment")
         {
-            if($mode === 'live') {
+            if($mode === 'live')
+            {
                 $this->slackPost('New Payment', $input + array('name' => $merchant->name), '#transactions', null);
-    
-                $this->sendMail($input);
             }
 
             $this->aggregatePayment($input, $mode);
@@ -209,22 +208,5 @@ class Service extends Base\Service
                 $data[] = ['amount' => '0', 'count' => '0', 'created_at' => "$i"];
         }
         return $data;
-    }
-
-    protected function sendMail($input)
-    {
-        if($_ENV['CONTEXT'] === 'production')
-        {
-            $merchant = Merchant\Entity::findorfail($input['merchant_id']);
-            
-            $input['email'] = $merchant->email;
-            $input['name'] = $merchant->name;
-
-            Mail::send('emails.payment',compact('input'), function($m) use($input)
-            {
-                $m->to($input['email'], $input['name'])
-                  ->subject('Razorpay - New Payment');
-            });  
-        }
     }
 }
