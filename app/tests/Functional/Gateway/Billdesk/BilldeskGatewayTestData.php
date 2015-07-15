@@ -71,7 +71,7 @@ return [
         'ErrorStatus'=> null,
         'ErrorDescription'=> null,
         'RequestType'=> '0410',
-        'RefAmount'=> '500',
+        'RefAmount'=> '500.00',
 //        'RefDateTime'=> '201506200040838',
         'RefStatus'=> '0799',
 //        'RefundId'=> 'hlbdtgwnofsxmcj',
