@@ -39,7 +39,9 @@ class Entity extends Base\PublicEntity
         self::WEBSITE,
         self::HOLD_FUNDS,
         self::INTERNATIONAL,
-        self::BILLING_LABEL);
+        self::BILLING_LABEL,
+        self::TRANSACTION_REPORT_EMAIL,
+    );
 
     protected $public = array(
         self::ID,
