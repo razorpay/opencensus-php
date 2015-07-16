@@ -54,9 +54,9 @@ require('vars.php');
               <input type="button" value="" class="razorpay-payment-button" id="paybtn">
               <script>
               window.r = new Razorpay({
-                key: 'rzp_live_ILgsfZCZoFIKMb',
-                protocol: 'https',
-                hostname: 'api.razorpay.com',
+                key: 'rzp_test_1DP5mmOlF5G5ag',
+                protocol: '<?= $protocol ?>',
+                hostname: '<?= $hostname ?>',
                 amount: '500',
                 name: 'Merchant Name',
                 description: 'Fine tshirt',
