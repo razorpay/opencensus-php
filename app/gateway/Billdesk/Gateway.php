@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
             $content['TxnAmount'] = '5.00';
         }
 
-        $this->createGatewayPaymentEntity($content);
+        $payment = $this->createGatewayPaymentEntity($content);
 
         return $this->getRequestArray($content);
     }
@@ -69,6 +69,15 @@ class Gateway extends Base\Gateway
         $msg = $input['gateway']['msg'];
 
         $content = $this->getContentAfterChecksumVerification($msg);
+
+        if ($content['CustomerID'] === 'NA')
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $content['AuthStatus'],
+                    '');
+        }
 
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $content['CustomerID'], Action::AUTHORIZE);
