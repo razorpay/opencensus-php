@@ -27,6 +27,17 @@ class Terminal extends Base
         return $term;
     }
 
+    public function createBilldeskTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'billdesk',
+            'gateway_merchant_id'   => 'abcd',
+            'card'                  => 0);
+
+        return $this->create('terminal', $attributes);
+    }
+
     public function createSharedAtomTerminal()
     {
         $termId = \Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
@@ -65,6 +76,19 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedBilldeskTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                    => $termId,
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'billdesk',
+            'gateway_merchant_id'   => 'abcd',
+            'card'                  => 0);
+
+        return $this->create('terminal', $attributes);
+    }
     public function createSharedAxisGeniusTerminal()
     {
         $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
@@ -162,20 +186,6 @@ class Terminal extends Base
             'gateway'               => 'netbanking_hdfc',
             'gateway_merchant_id'   => 'abcd',
             'gateway_terminal_id'   => 'abcde');
-
-        return $this->create('terminal', $attributes);
-    }
-
-    public function createSharedBilldeskTerminal(array $attributes = array())
-    {
-        $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
-
-        $attributes = array(
-            'id'                    => $termId,
-            'merchant_id'           => '10000000000000',
-            'gateway'               => 'billdesk',
-            'gateway_merchant_id'   => 'abcd',
-            'card'                  => 0);
 
         return $this->create('terminal', $attributes);
     }

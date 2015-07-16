@@ -308,11 +308,6 @@ class TerminalPicker
             $gatewayTerms[$gateway] = $term;
         }
 
-        $trace = \Trace::getFacadeRoot();
-
-        $trace->info(\Trace\TraceCode::MISC_TRACE_CODE,
-                        ['terminals' => array_keys($gatewayTerms)]);
-
         return $gatewayTerms;
     }
 
