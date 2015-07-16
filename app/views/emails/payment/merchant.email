@@ -184,7 +184,7 @@
                             <td class="center lighttext">
                               <hr class="wide">
                               <center>
-                                You can view more payment details on the <a href="https://dashboard.razorpay.com/#/app/payments/{{$payment['id']}}" title="Payment Details">Merchant Dashboard</a>.
+                                You can view more payment details on the <a href="https://dashboard.razorpay.com/#/app/payments/pay_{{$payment['id']}}" title="Payment Details">Merchant Dashboard</a>.
                               </center>
                             </td>
                             <td class="expander"></td>

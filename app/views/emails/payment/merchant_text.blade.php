@@ -17,7 +17,7 @@ If this is correct, you don't need to take any further action.
 
 You can view more payment details on the Merchant Dashboard [0].
 
-[0]: https://dashboard.razorpay.com/#/app/payments/{{$payment['id']}}
+[0]: https://dashboard.razorpay.com/#/app/payments/pay_{{$payment['id']}}
 
 --
 Team Razorpay
