@@ -19,9 +19,9 @@ $factory('Models\Terminal\Entity', [
     'gateway' => 'hdfc',
     'gateway_merchant_id' => $faker->word,
     'gateway_terminal_id' => $faker->word,
-    'gateway_terminal_password' => 'encryptpass',
-    'gateway_access_code' => 'RANDOMCODE',
-    'gateway_secure_secret' => 'SECURESECRET',
+    'gateway_terminal_password' => null,
+    'gateway_access_code' => null,
+    'gateway_secure_secret' => null,
 ]);
 
 $factory('Models\Merchant\Balance', [

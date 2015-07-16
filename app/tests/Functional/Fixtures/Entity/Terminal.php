@@ -175,9 +175,7 @@ class Terminal extends Base
             'merchant_id'           => '10000000000000',
             'gateway'               => 'billdesk',
             'gateway_merchant_id'   => 'abcd',
-            'gateway_terminal_id'   => 'abcde',
-            'gateway_terminal_password' => 'abcdef',
-            'card'                  => 1);
+            'card'                  => 0);
 
         return $this->create('terminal', $attributes);
     }
