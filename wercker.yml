@@ -3,6 +3,8 @@ services:
     - wercker/mysql
 build:
     steps:
+      - install-packages:
+          packages: lsof
       - add-ssh-key:
           keyname: RZP_API
       - script:
