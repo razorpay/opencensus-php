@@ -534,9 +534,12 @@ class Entity extends Base\PublicEntity
     public function getOrderId()
     {
         $notes = $this->getNotes();
-        foreach ($notes as $key => $value) {
+
+        foreach ($notes as $key => $value)
+        {
             $orderIdSuffix = '_order_id';
-            if(substr($key, -1 * strlen($orderIdSuffix)) === $orderIdSuffix)
+            $ix = -1 * strlen($orderIdSuffix); // index from back
+            if (substr($key, $ix) === $orderIdSuffix)
             {
                 return $value;
             }

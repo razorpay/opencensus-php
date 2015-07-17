@@ -20,6 +20,7 @@ class DailyReport
         $this->merchantId = $id;
         $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;   // 00:00 Yesterday
         $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;       // 00:00 Today
+
         // date format = 6th July 2015
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
 
@@ -86,30 +87,34 @@ class DailyReport
      *
      * @return Array
      */
-    private function summarizePayments($paymentCollection)
+    private function summarizePayments($payments)
     {
-        $isOrderIdSet = false;
-        $sum = 0;
-        $payments = [];
+        //
+        // Remove comment when we start using order id
+        //
 
-        // This loop makes sure that every member of payments is
-        // an array with all required attribute
-        foreach ($paymentCollection as $payment)
-        {
-            $isOrderIdSet = (bool) $payment->getOrderId();
+        // $isOrderIdSet = false;
+        // $sum = 0;
+        // $payments = [];
 
-            $sum += $payment->getAmount();
+        // // This loop makes sure that every member of payments is
+        // // an array with all required attribute
+        // foreach ($paymentCollection as $payment)
+        // {
+        //     $isOrderIdSet = (bool) $payment->getOrderId();
 
-            $paymentArray = $payment->toArray();
-            $paymentArray['orderId'] = $payment->getOrderId();
+        //     $sum += $payment->getAmount();
 
-            $payments[] = $paymentArray;
-        }
+        //     $paymentArray = $payment->toArray();
+        //     $paymentArray['orderId'] = $payment->getOrderId();
+
+        //     $payments[] = $paymentArray;
+        // }
 
         return [
-            'payments' => $payments,
-            'sum'      => $sum,
-            'orderId'  => $isOrderIdSet
+            'payments' => $payments->toArrayPublic(),
+            'sum'      => $payments->sum('amount'),
+            'orderId'  => false
         ];
     }
 
@@ -146,19 +151,12 @@ class DailyReport
 
     protected function getRefunds()
     {
-        $sum = 0;
-
         $refunds = (new Payment\Refund\Repository)->fetchBetweenTimestampsForMerchant(
             $this->timeLowerLimit, $this->timeUpperLimit, $this->merchantId);
 
-        foreach ($refunds as $refund)
-        {
-            $sum += $refund->getAmount();
-        }
-
         return [
-            'refunds'  => $refunds,
-            'sum'      => $sum
+            'sum'      => $refunds->sum('amount'),
+            'refunds'  => $refunds->toArrayPublic(),
         ];
     }
 
