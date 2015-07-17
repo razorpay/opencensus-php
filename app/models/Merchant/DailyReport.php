@@ -68,16 +68,26 @@ class DailyReport
      */
     protected function getAuthorizedPayments()
     {
-        $authorizedCollection = (new Payment\Repository)->fetchAuthorizedBetweenTimestamp(
-            $this->timeLowerLimit, $this->timeUpperLimit, $this->merchantId);
+        $authorizedCollection = (new Payment\Repository)->fetch(
+            [
+             'from' => $this->timeLowerLimit,
+             'to' => $this->timeUpperLimit,
+             'status' => 'authorized',
+            ],
+            $this->merchantId);
 
         return $this->summarizePayments($authorizedCollection);
     }
 
     protected function getCapturedPayments()
     {
-        $capturedCollection = (new Payment\Repository)->fetchCapturedBetweenTimestamp(
-            $this->timeLowerLimit, $this->timeUpperLimit, $this->merchantId);
+        $capturedCollection = (new Payment\Repository)->fetch(
+            [
+             'from' => $this->timeLowerLimit,
+             'to' => $this->timeUpperLimit,
+             'status' => 'captured',
+            ],
+            $this->merchantId);
 
         return $this->summarizePayments($capturedCollection);
     }
@@ -125,8 +135,8 @@ class DailyReport
      */
     protected function getSettlement()
     {
-        $settlements = (new Settlement\Repository)->fetchBetweenTimestamp(
-            $this->timeLowerLimit, $this->timeUpperLimit, $this->merchantId);
+        $settlements = (new Settlement\Repository)->fetch(
+            ['from' => $this->timeLowerLimit, 'to' => $this->timeUpperLimit], $this->merchantId);
 
         // Return null if no settlement found
         $settlement = null;
@@ -151,8 +161,8 @@ class DailyReport
 
     protected function getRefunds()
     {
-        $refunds = (new Payment\Refund\Repository)->fetchBetweenTimestampsForMerchant(
-            $this->timeLowerLimit, $this->timeUpperLimit, $this->merchantId);
+        $refunds = (new Payment\Refund\Repository)->fetch(
+            ['from' => $this->timeLowerLimit, 'to' => $this->timeUpperLimit], $this->merchantId);
 
         return [
             'sum'      => $refunds->sum('amount'),

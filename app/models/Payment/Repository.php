@@ -20,16 +20,6 @@ class Repository extends Base\Repository
         Entity::REFUND_STATUS   => 'sometimes|in:partial:full'
     );
 
-    public function findByStatusBetweenTimestamps($status, $from, $to)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Payment\Entity::STATUS, '=', $status)
-                    ->where(Common::CREATED_AT, '>=', $from)
-                    ->where(Common::CREATED_AT, '<=', $to)
-                    ->get();
-    }
-
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
         $repo = $this->repo;
