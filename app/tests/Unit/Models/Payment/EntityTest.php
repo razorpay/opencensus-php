@@ -1,7 +1,6 @@
 <?php
 namespace Tests\Unit\Models\Payment;
 
-use Tests\Functional\Fixtures\Entity\Payment as PaymentFixture;
 use Tests\Functional\TestCase;
 
 class EntityTest extends TestCase
@@ -9,8 +8,9 @@ class EntityTest extends TestCase
     function setUp()
     {
         parent::setUp();
-        $this->paymentFixture = (new PaymentFixture);
-        $this->payment = $this->paymentFixture->createCardCaptured();
+
+        $this->payment = new \Models\Payment\Entity;
+
         $this->payment->setNotesAttribute([
             'order_link'    =>  'https://github.com',
             'merchant_order_id' =>  '1235'
@@ -24,7 +24,7 @@ class EntityTest extends TestCase
 
     function testGetOrderIdForOpenCart()
     {
-        $payment = clone $this->payment;
+        $payment = $this->payment;
         $payment->setNotesAttribute([
             'opencart_order_id' => 'opencart_123'
         ]);
@@ -33,7 +33,7 @@ class EntityTest extends TestCase
 
     function getGetOrderIdForMagento()
     {
-        $payment = clone $this->payment;
+        $payment = $this->payment;
         $payment->setNotesAttribute([
             'magento_order_id' => 'magento_123'
         ]);
@@ -42,7 +42,7 @@ class EntityTest extends TestCase
 
     function testGetOrderIdForPrestashop()
     {
-        $payment = clone $this->payment;
+        $payment = $this->payment;
         $payment->setNotesAttribute([
             'prestashop_order_id' => 'prestashop_123'
         ]);
@@ -52,7 +52,7 @@ class EntityTest extends TestCase
     function testGetOrderIdForCsCart()
     {
 
-        $payment = clone $this->payment;
+        $payment = $this->payment;
         $payment->setNotesAttribute([
             'cs_order_id' => 'cascart_123'
         ]);
@@ -62,7 +62,7 @@ class EntityTest extends TestCase
     function testGetOrderIdForWooCommerce()
     {
 
-        $payment = clone $this->payment;
+        $payment = $this->payment;
         $payment->setNotesAttribute([
             'woocommerce_order_id' => 'wc_123'
         ]);
