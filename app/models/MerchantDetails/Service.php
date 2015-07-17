@@ -51,7 +51,7 @@ class Service extends Base\Service
                 // Updating the model
                 $merchantDetails->saveOrFail();
 
-                $this->sendActivationFormSubmissionMails($merchantDetails);
+                $this->fireActivationTrigger($merchantDetails);
             }
             else
             {
@@ -168,7 +168,7 @@ class Service extends Base\Service
      * On submission of activation form by user, send email
      * to the customer and sales team notifying them about the activity
      */
-    protected function sendActivationFormSubmissionMails($merchantDetails)
+    protected function fireActivationTrigger($merchantDetails)
     {
         $customer = array(
             'id' => $merchantDetails->getAttribute('merchant_id'),
@@ -193,6 +193,9 @@ class Service extends Base\Service
             $mail->to($salesEmail, 'Razorpay Sales Team')
                  ->subject('New activation form submitted - '.$customer['business_name']);
         });
+
+        // We also send over details to slack
+        $this->slackPost('New activation form submitted', $customer, '#sales');
     }
 
     protected function isLockedError()
