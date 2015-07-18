@@ -19,10 +19,10 @@ class Payment extends Base
     {
         $attributes['status'] = 'created';
 
-        return $this->create('payment', $attributes);
+        return $this->fixtures->create('payment', $attributes);
     }
 
-    public function create($entity, array $attributes = array())
+    public function create(array $attributes = array())
     {
         $defaultValues = array(
             'terminal_id' => '1n25f6uN5S1Z5a'
@@ -30,7 +30,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($entity, $attributes);
+        return parent::create($attributes);
     }
 
     public function createCardCaptured(array $attributes = array())
@@ -142,7 +142,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = $this->create('payment', $attributes);
+        $payment = parent::create($attributes);
 
         $hdfcPayment = $this->fixtures->create('hdfc:authorized',
             array(

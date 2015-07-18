@@ -38,14 +38,14 @@ class Base
         'transaction'   => 'Models\Transaction\Entity'
     );
 
-    public function createEntity(array $attributes = array())
+    public function create(array $attributes = array())
     {
-        $entity = lcfirst(explode('\\', get_class($this))[4]);
+        $entity = snake_case(explode('\\', get_class($this))[4]);
 
-        return $this->create($entity, $attributes);
+        return $this->createEntity($entity, $attributes);
     }
 
-    public function create($entity, array $attributes = array())
+    public function createEntity($entity, array $attributes = array())
     {
         if (($entity === 'merchant') or
             ($entity === 'pricing') or
@@ -107,6 +107,24 @@ class Base
         return $entity;
     }
 
+    protected function edit($id, $attributes)
+    {
+        sd(static::class);
+        $ns = $this->
+        $repo = new \Models\Merchant\Repository;
+
+        $merchant = $repo->findOrFail($id);
+
+        foreach ($attributes as $key => $value)
+        {
+            $merchant[$key] = $value;
+        }
+
+        $repo->saveOrFail($merchant);
+
+        return $merchant;
+    }
+
     protected function eloquentUnguard()
     {
         Eloquent::unguard();
@@ -147,5 +165,10 @@ class Base
         $this->on('test');
 
         return $this;
+    }
+
+    protected function getNamespace()
+    {
+        return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));
     }
 }

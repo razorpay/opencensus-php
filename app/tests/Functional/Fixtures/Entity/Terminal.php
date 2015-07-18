@@ -16,7 +16,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'card'                  => 1);
 
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
 
     public function createDisableDefaultHdfcTerminal()
@@ -35,7 +35,7 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0);
 
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
 
     public function createSharedAtomTerminal()
@@ -87,7 +87,7 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0);
 
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
     public function createSharedAxisGeniusTerminal()
     {
@@ -175,7 +175,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'card'                  => 1);
 
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
 
     public function createSharedNetbankingHdfcTerminal(array $attributes = array())
@@ -187,7 +187,7 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'gateway_terminal_id'   => 'abcde');
 
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
 
     public function createSharedSharpTerminal(array $attributes = array())
@@ -203,6 +203,6 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'card'                  => 1);
 
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
 }

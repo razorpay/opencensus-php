@@ -50,7 +50,7 @@ class Fixtures
         $this->merchant->setUp();
 
         $apiMerchant = $this->create('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
-        $apiBalance = $this->base->create('balance', ['id' => '1cXSLlUU8V9sXl']);
+        $apiBalance = $this->create('balance', ['id' => '1cXSLlUU8V9sXl']);
 
         $this->base->connection('test');
 
@@ -116,17 +116,21 @@ class Fixtures
 
         $arg1 = $entity;
         $arg2 = $attributes;
-        $obj = $this->base;
 
-        if (class_exists($class) and $method !== 'create')
+        if (class_exists($class) === false)
+        {
+            $obj = $this->base;
+
+            $method .= 'Entity';
+
+            return [$obj, $method, $entity, $attributes];
+        }
+        else
         {
             $obj = $this->getEntityFixtureInstance($class, $entity);
-
-            $arg1 = $attributes;
-            $arg2 = null;
         }
 
-        return [$obj, $method, $arg1, $arg2];
+        return [$obj, $method, $attributes, ''];
     }
 
     protected function getEntityFixtureInstance($class, $entity)
@@ -155,8 +159,6 @@ class Fixtures
 
         $entity = $pair[0];
         $method = $pair[1];
-
-        $obj = null;
 
         $method = 'create'.studly_case(ucfirst($method));
 
