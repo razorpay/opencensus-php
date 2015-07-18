@@ -108,27 +108,16 @@ class Fixtures
     {
         list($entity, $method) = $this->getEntityAndMethod($resource);
 
-        $obj = null;
-
-        $class = studly_case($entity);
-
-        $class = __NAMESPACE__.'\Entity\\'.$class;
-
-        $arg1 = $entity;
-        $arg2 = $attributes;
+        $class = __NAMESPACE__.'\Entity\\' . studly_case($entity);;
 
         if (class_exists($class) === false)
         {
-            $obj = $this->base;
-
             $method .= 'Entity';
 
-            return [$obj, $method, $entity, $attributes];
+            return [$this->base, $method, $entity, $attributes];
         }
-        else
-        {
-            $obj = $this->getEntityFixtureInstance($class, $entity);
-        }
+
+        $obj = $this->getEntityFixtureInstance($class, $entity);
 
         return [$obj, $method, $attributes, ''];
     }
