@@ -84,7 +84,7 @@ class Fixtures
 
     public function create($resource, array $attributes = array())
     {
-        list($obj, $method, $arg1, $arg2) = $this->getEntityMethodAndArgs($resource, $attributes);
+        list($obj, $method, $arg1, $arg2) = $this->getEntityMethodAndArgs($resource, $attributes, 'create');
 
         $times = $this->getTimes();
         $this->times = 1;
@@ -99,14 +99,21 @@ class Fixtures
         return count($entities) > 1 ? $entities : $entities[0];
     }
 
+    public function edit($resource, array $attributes = array())
+    {
+        list($obj, $method, $arg1, $arg2) = $this->getEntityMethodAndArgs($resource, $attributes, 'edit');
+
+        return $obj->$method($arg1, $arg2);
+    }
+
     public function getTimes()
     {
         return $this->times;
     }
 
-    protected function getEntityMethodAndArgs($resource, $attributes)
+    protected function getEntityMethodAndArgs($resource, $attributes, $action)
     {
-        list($entity, $method) = $this->getEntityAndMethod($resource);
+        list($entity, $method) = $this->getEntityAndMethod($resource, $action);
 
         $class = __NAMESPACE__.'\Entity\\' . studly_case($entity);;
 
@@ -137,7 +144,7 @@ class Fixtures
         }
     }
 
-    protected function getEntityAndMethod($resource)
+    protected function getEntityAndMethod($resource, $action)
     {
         $pair = explode(':', $resource);
 
@@ -149,7 +156,7 @@ class Fixtures
         $entity = $pair[0];
         $method = $pair[1];
 
-        $method = 'create'.studly_case(ucfirst($method));
+        $method = $action.studly_case(ucfirst($method));
 
         return [$entity, $method];
     }

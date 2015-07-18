@@ -57,6 +57,34 @@ class Base
         return $this->save($entity, $attributes);
     }
 
+    public function edit($id, array $attributes = array())
+    {
+        $entity = snake_case(explode('\\', get_class($this))[4]);
+
+        return $this->editEntity($entity, $attributes);
+    }
+
+    public function editEntity($entity, $id, array $attributes = array())
+    {
+        if (($entity === 'merchant') or
+            ($entity === 'pricing') or
+            ($entity === 'merchant_banks'))
+        {
+            return $this->editEntityInTestAndLive($entity, $attributes);
+        }
+
+        $entity = $entity::findOrFail($id);
+
+        foreach ($attributes as $key => $value)
+        {
+            $entity[$attribute] = $value;
+        }
+
+        $entity->saveOrFail($merchant);
+
+        return $entity;
+    }
+
     public function createEntityInTestAndLive($entity, $attributes = array())
     {
         $this->eloquentUnguard();
@@ -72,6 +100,33 @@ class Base
         $liveEntity->setConnection('live')->save();
 
         $entity->exists = true;
+        $entity->setRawAttributes($liveEntity->getAttributes(), true);
+
+        $this->eloquentReguard();
+
+        $this->fixtures->setDefaultConn();
+
+        return $entity;
+    }
+
+    public function editEntityInTestAndLive($entity, $attributes = array())
+    {
+        $this->eloquentUnguard();
+
+        $entity = self::$map[$entity];
+        $entity = $entity::findOrFail($id);
+
+        foreach ($attributes as $key => $value)
+        {
+            $entity[$attribute] = $value;
+        }
+
+        $testEntity = clone $entity;
+        $liveEntity = clone $entity;
+
+        $testEntity->setConnection('test')->save();
+        $liveEntity->setConnection('live')->save();
+
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
 
         $this->eloquentReguard();
@@ -105,24 +160,6 @@ class Base
         $this->eloquentReguard();
 
         return $entity;
-    }
-
-    protected function edit($id, $attributes)
-    {
-        sd(static::class);
-        $ns = $this->
-        $repo = new \Models\Merchant\Repository;
-
-        $merchant = $repo->findOrFail($id);
-
-        foreach ($attributes as $key => $value)
-        {
-            $merchant[$key] = $value;
-        }
-
-        $repo->saveOrFail($merchant);
-
-        return $merchant;
     }
 
     protected function eloquentUnguard()
