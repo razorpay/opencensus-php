@@ -46,20 +46,23 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     <script>
         Razorpay.configure({
           key: 'rzp_test_1DP5mmOlF5G5ag',
-          hostname: 'http://rzp',
           callback_url: '<?= $callback_url ?>',
           protocol: '<?= $protocol ?>',
           hostname: '<?= $hostname ?>'
         });
-        function updateAmount(el){
+
+        function updateAmount(el) {
             gel('amount').value = '₹ ' + parseInt(el.value)*200;
         }
-        function gel(id){
+
+        function gel(id) {
             return document.getElementById(id);
         }
-        function val(id){
+
+        function val(id) {
             return gel(id).value;
         }
+
         gel('container').onsubmit = function(e){
             e.preventDefault();
             gel('submit').setAttribute('disabled', 'disabled'); // add loading animation here
