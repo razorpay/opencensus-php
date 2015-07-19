@@ -7,19 +7,19 @@ use Models\Pricing\Service as PricingService;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const NAME              = 'name';
-    const EMAIL             = 'email';
-    const ACTIVATED         = 'activated';
-    const ACTIVATED_AT      = 'activated_at';
-    const LIVE              = 'live';
-    const HOLD_FUNDS        = 'hold_funds';
-    const PRICING_PLAN_ID   = 'pricing_plan_id';
-    const INTERNATIONAL     = 'international';
-    const BILLING_LABEL     = 'billing_label';
-    const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
-    const WEBSITE           = 'website';
-    const CATEGORY          = 'category';
+    const ID                        = 'id';
+    const NAME                      = 'name';
+    const EMAIL                     = 'email';
+    const ACTIVATED                 = 'activated';
+    const ACTIVATED_AT              = 'activated_at';
+    const LIVE                      = 'live';
+    const HOLD_FUNDS                = 'hold_funds';
+    const PRICING_PLAN_ID           = 'pricing_plan_id';
+    const INTERNATIONAL             = 'international';
+    const BILLING_LABEL             = 'billing_label';
+    const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
+    const WEBSITE                   = 'website';
+    const CATEGORY                  = 'category';
 
     const METHODS           = 'methods'; // Refers to methods relation and not a property;
 
