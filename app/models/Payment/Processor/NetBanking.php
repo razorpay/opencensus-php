@@ -147,4 +147,14 @@ class Netbanking
     {
         return self::$billdesk;
     }
+
+    public static function isPaytmSupportedBank($bank)
+    {
+        return in_array($bank, self::$paytm);
+    }
+
+    public static function isBilldeskSupportedBank($bank)
+    {
+        return in_array($bank, self::$billdesk);
+    }
 }
