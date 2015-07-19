@@ -18,9 +18,10 @@ trait Refund
 {
     /**
      * Refunds a payment
-     * @param  string   $id  Payment Id
+     * @param  string   $id     Payment Id
+     * @param  array    $input  Refund input params
      *
-     * @return Payment\Entity
+     * @return Payment\Refund\Entity
      */
     protected function refund($id, $input)
     {
