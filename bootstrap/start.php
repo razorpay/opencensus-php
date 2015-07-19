@@ -40,6 +40,7 @@ $env = $app->detectEnvironment( function () {
     return 'production';
 });
 
+
 /*
 |--------------------------------------------------------------------------
 | Bind Paths

@@ -89,7 +89,7 @@ class Name
         IFSC::KVBL => 'Karur Vysya Bank',
         IFSC::KKBK => 'Kotak Mahindra Bank',
         IFSC::KNSB => 'Kurmanchal Nagar Sahkari Bank Ltd',
-        IFSC::LAVB => 'Lakhsmi Vilas Bank',
+        IFSC::LAVB => 'Lakshmi Vilas Bank',
         IFSC::MCBL => 'Mahanagar Co-op Bank',
         IFSC::MSCI => 'Maharashtra State Co-operative Bank',
         IFSC::MSHQ => 'Mashreq Bank',

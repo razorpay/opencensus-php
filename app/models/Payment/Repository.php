@@ -20,16 +20,6 @@ class Repository extends Base\Repository
         Entity::REFUND_STATUS   => 'sometimes|in:partial:full'
     );
 
-    public function findByStatusBetweenTimestamps($status, $from, $to)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Payment\Entity::STATUS, '=', $status)
-                    ->where(Common::CREATED_AT, '>=', $from)
-                    ->where(Common::CREATED_AT, '<=', $to)
-                    ->get();
-    }
-
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
         $repo = $this->repo;
@@ -37,6 +27,31 @@ class Repository extends Base\Repository
         return $repo::whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    /**
+     * Returns the sum total of captured transactions
+     * between the given timestamps
+     * @param  int $from    timestamp for start of interval
+     * @param  int $to      timestamp for end of interval
+     * @return int total amount of captured transactions in paisa
+     */
+    public function fetchCapturedBetweenTimestamp($from, $to, $merchantId)
+    {
+        $repo = $this->repo;
+        return $repo::whereBetween(Payment\Entity::CAPTURED_AT, [$from, $to])
+                    ->where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
+                    ->where(Payment\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
+    }
+
+    public function fetchAuthorizedBetweenTimestamp($from, $to, $merchantId)
+    {
+        $repo = $this->repo;
+        return $repo::whereBetween(Payment\Entity::UPDATED_AT, [$from, $to])
+                    ->where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
+                    ->where(Payment\Entity::MERCHANT_ID, '=', $merchantId)
                     ->get();
     }
 

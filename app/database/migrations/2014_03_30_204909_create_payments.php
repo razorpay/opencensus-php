@@ -55,7 +55,7 @@ class CreatePayments  extends Migration
             $table->char(Payment::CARD_ID, Payment::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Payment::BANK, 4)
+            $table->char(Payment::BANK, 6)
                   ->nullable();
 
             $table->string(Payment::WALLET, 8)

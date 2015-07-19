@@ -9,6 +9,7 @@ require('vars.php');
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Razorpay - Automatic Checkout</title>
+  <link rel="icon" href="data:;base64,=">
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
   <script src="<?= $checkout ?>/v1/checkout.js" type="text/javascript"></script>
@@ -53,24 +54,25 @@ require('vars.php');
             <div class="pay">
               <input type="button" value="" class="razorpay-payment-button" id="paybtn">
               <script>
+              window.r = new Razorpay({
+                key: 'rzp_live_ILgsfZCZoFIKMb',
+                protocol: 'https',
+                hostname: 'api.razorpay.com',
+                amount: '500',
+                name: 'Merchant Name',
+                description: 'Fine tshirt',
+                image: 'https://i.imgur.com/3g7nmJC.png',
+                prefill: {
+                  name: 'Harshil Mathur',
+                  email: 'harshil@razorpay.com',
+                  contact: '9999999999'
+                },
+                handler: function (transaction){
+                  alert('You have successfully purchased Fine tshirt\ntransaction id: ' + transaction.razorpay_payment_id);
+                }
+              })
               document.getElementById('paybtn').onclick = function(){
-                new Razorpay({
-                  key: 'rzp_live_ILgsfZCZoFIKMb',
-                  protocol: '<?= $protocol ?>',
-                  hostname: '<?= $hostname ?>',
-                  amount: '500',
-                  name: 'Merchant Name',
-                  description: 'Purchase Description',
-                  image: 'https://i.imgur.com/3g7nmJC.png',
-                  prefill: {
-                    name: 'Harshil Mathur',
-                    email: 'harshil@razorpay.com',
-                    contact: '9999999999'
-                  },
-                  handler: function (transaction){
-                    alert('You have successfully purchased Fine tshirt\ntransaction id: ' + transaction.razorpay_payment_id);
-                  }
-                }).open()
+                r.open()
               }
               </script>
             </div>

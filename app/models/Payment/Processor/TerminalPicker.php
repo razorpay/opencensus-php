@@ -180,14 +180,14 @@ class TerminalPicker
             }
         }
 
-        if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
-        {
-            return $gatewayTerms[Payment\Gateway::PAYTM];
-        }
-
         if (isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true)
         {
             return $gatewayTerms[Payment\Gateway::BILLDESK];
+        }
+
+        if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+        {
+            return $gatewayTerms[Payment\Gateway::PAYTM];
         }
 
         if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
@@ -259,12 +259,12 @@ class TerminalPicker
                 }
             }
 
-            if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+            if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
             }
 
-            if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
+            if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
             }

@@ -36,7 +36,7 @@ class MerchantCreateTest extends TestCase
 
         $this->checkBalances();
 
-        $this->checkNetBankingBanks();
+        $this->checkNetbankingBanks();
     }
 
     protected function createMerchant()
@@ -72,14 +72,14 @@ class MerchantCreateTest extends TestCase
         $this->runRequestResponseFlow($this->testData['testBalanceInLiveAfterCreatedMerchant']);
     }
 
-    protected function checkNetBankingBanks()
+    protected function checkNetbankingBanks()
     {
-        $this->checkNetBankingBanksInMode('test');
+        $this->checkNetbankingBanksInMode('test');
 
-        $this->checkNetBankingBanksInMode('live');
+        $this->checkNetbankingBanksInMode('live');
     }
 
-    protected function checkNetBankingBanksInMode($mode)
+    protected function checkNetbankingBanksInMode($mode)
     {
         $func = 'appAuth'.ucfirst($mode);
         $this->ba->$func();

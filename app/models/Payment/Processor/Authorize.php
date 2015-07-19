@@ -185,7 +185,7 @@ trait Authorize
         $app = App::getFacadeRoot();
 
         // Dont send mails in test mode
-        if($this->mode === Mode::TEST)
+        if($this->mode === Mode::TEST and !$app->environment('dev'))
         {
             return true;
         }
@@ -223,7 +223,6 @@ trait Authorize
                 $message->to($templateData['customer']['email']);
                 $message->from($config['from_email'], $config['from_name']);
                 $message->subject($subject);
-                $message->bcc('nemo@razorpay.com', 'Nemo');
             }
         );
     }

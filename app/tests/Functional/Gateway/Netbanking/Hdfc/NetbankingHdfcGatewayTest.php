@@ -26,7 +26,8 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal');
 
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'HDFC';
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -43,9 +44,8 @@ class NetbankingHdfcGatewayTest extends TestCase
     {
         $this->setMockGatewayTrue();
 
-        $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
-
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'HDFC';
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);

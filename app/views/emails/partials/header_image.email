@@ -1,0 +1,25 @@
+<!-- Header Image -->
+<table class="row">
+  <tr>
+    <td class="center" align="center">
+      <center>
+        <table class="container">
+          <tr>
+            <td class="wrapper last bluebg" style="background:#39ACE5;">
+              <table class="four columns">
+                <tr>
+                  <td class="center">
+                    <center>
+                      <img src="<?php echo $message->embed(public_path().'/img/'.$image.'.png'); ?>" alt="Payment Confirmation" title="Payment Confirmation"/>
+                    </center>
+                  </td>
+                  <td class="expander"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>

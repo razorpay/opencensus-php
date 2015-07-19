@@ -4,7 +4,7 @@ namespace Models\Merchant;
 
 use EE\Exception;
 use Models\Base;
-use Models\Payment\Processor\NetBanking;
+use Models\Payment\Processor\Netbanking;
 use Illuminate\Support\MessageBag;
 
 class Validator extends Base\Validator

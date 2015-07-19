@@ -1,0 +1,58 @@
+<!-- Razorpay Logo -->
+<table class="row">
+<tr>
+  <td class="center" align="center">
+    <center>
+      <table class="container">
+        <tr>
+          <td class="wrapper last white">
+            <table class="four columns">
+              <tr>
+                <td class="center">
+                  <center>
+                    <img src="<?php echo $message->embed(public_path().'/img/razorpay_color.png'); ?>" alt="Razorpay Logo" title="Razorpay Logo"/>
+                  </center>
+                </td>
+                <td class="expander"></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </center>
+  </td>
+</tr>
+</table>
+<!-- Common Footer for emails -->
+<table class="row">
+  <tr>
+    <td class="center" align="center">
+      <center>
+        <table class="container">
+          <tr>
+            <td class="wrapper last">
+              <table class="three columns">
+                <tr>
+                  <td class="center lighttext">
+                    <center style="padding-left: 33px;">
+                      <a href="https://facebook.com/razorpay" class="logo">
+                        <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/facebook.png'); ?>" alt="Facebook Icon" title="Razorpay on Facebook"/>
+                      </a>
+                      <a href="https://twitter.com/razorpay" class="logo">
+                        <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/twitter.png'); ?>" alt="Twitter Icon" title="Razorpay on Twitter"/>
+                      </a>
+                      <a href="https://github.com/razorpay" class="logo">
+                        <img height="22" width="22" src="<?php echo $message->embed(public_path().'/img/github.png'); ?>" alt="GitHub Icon" title="Razorpay on GitHub"/>
+                      </a>
+                    </center>
+                  </td>
+                  <td class="expander"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>

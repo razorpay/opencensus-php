@@ -105,7 +105,7 @@ class Entity extends Base\PublicEntity
     {
         $banks = $this->getBanks();
 
-        $names = \Models\Bank\Name::getNames($banks);
+        $names = \Models\Payment\Processor\Netbanking::getNames($banks);
 
         return $names;
     }

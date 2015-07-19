@@ -4,7 +4,7 @@ use Constants\Mode;
 use Constants\Table;
 use Models\Merchant\Account;
 use Models\Pricing;
-use Models\Payment\Processor\NetBanking;
+use Models\Payment\Processor\Netbanking;
 use Models\Terminal;
 
 class DatabaseSeeder extends Seeder
@@ -145,7 +145,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::MERCHANT_BANKS)->insert(
                 array(
                     'merchant_id'   =>  Account::DEMO_ACCOUNT,
-                    'banks'         =>  json_encode(NetBanking::getAllBanks()),
+                    'banks'         =>  json_encode(Netbanking::getAllBanks()),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -154,7 +154,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::MERCHANT_BANKS)->insert(
                 array(
                     'merchant_id'   =>  Account::TEST_ACCOUNT,
-                    'banks'         =>  json_encode(NetBanking::getAllBanks()),
+                    'banks'         =>  json_encode(Netbanking::getAllBanks()),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )

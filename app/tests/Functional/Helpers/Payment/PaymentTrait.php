@@ -395,13 +395,13 @@ trait PaymentTrait
             'notes'             => array(
                 'merchant_order_id' => 'random order id'),
             'description'       => 'random description',
-            'bank'              => 'HDFC',
+            'bank'              => 'ICIC',
         ];
 
         return $payment;
     }
 
-    protected function getDefaultNetBankingPaymentArray()
+    protected function getDefaultNetbankingPaymentArray()
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';

@@ -16,7 +16,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'card'                  => 1);
 
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
 
     public function createDisableDefaultHdfcTerminal()
@@ -25,6 +25,17 @@ class Terminal extends Base
         $term->forceDelete();
 
         return $term;
+    }
+
+    public function createBilldeskTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'billdesk',
+            'gateway_merchant_id'   => 'abcd',
+            'card'                  => 0);
+
+        return parent::create($attributes);
     }
 
     public function createSharedAtomTerminal()
@@ -65,6 +76,19 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedBilldeskTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                    => $termId,
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'billdesk',
+            'gateway_merchant_id'   => 'abcd',
+            'card'                  => 0);
+
+        return parent::create($attributes);
+    }
     public function createSharedAxisGeniusTerminal()
     {
         $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
@@ -151,7 +175,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'card'                  => 1);
 
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
 
     public function createSharedNetbankingHdfcTerminal(array $attributes = array())
@@ -163,23 +187,7 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'gateway_terminal_id'   => 'abcde');
 
-        return $this->create('terminal', $attributes);
-    }
-
-    public function createSharedBilldeskTerminal(array $attributes = array())
-    {
-        $termId = \Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
-
-        $attributes = array(
-            'id'                    => $termId,
-            'merchant_id'           => '10000000000000',
-            'gateway'               => 'billdesk',
-            'gateway_merchant_id'   => 'abcd',
-            'gateway_terminal_id'   => 'abcde',
-            'gateway_terminal_password' => 'abcdef',
-            'card'                  => 1);
-
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
 
     public function createSharedSharpTerminal(array $attributes = array())
@@ -195,6 +203,6 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'card'                  => 1);
 
-        return $this->create('terminal', $attributes);
+        return parent::create($attributes);
     }
 }

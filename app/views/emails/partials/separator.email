@@ -1,0 +1,24 @@
+<!-- Separator -->
+<table class="row">
+  <tr>
+    <td class="center" align="center">
+      <center>
+        <table class="container">
+          <tr>
+            <td class="wrapper center last">
+              <center>
+              <table class="twelve columns grebg" style="background:#EBECEE;">
+                <tr>
+                  <td>
+                  </td>
+                  <td class="expander"></td>
+                </tr>
+              </table>
+              </center>
+            </td>
+          </tr>
+        </table>
+      </center>
+    </td>
+  </tr>
+</table>
