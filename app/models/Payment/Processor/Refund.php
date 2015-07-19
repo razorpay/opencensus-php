@@ -49,25 +49,12 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        try
-        {
-            $this->callGatewayFunction(Payment\Action::REFUND, $data);
+        $this->callGatewayForRefund($payment, $data);
 
-            $this->recordRefund();
-
-            //
-            // Analytics
-            //
-            $this->notifyDashboard('refund', $this->refund);
-        }
-        catch(BaseException $e)
-        {
-            $this->tracePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_REFUND_FAILURE);
-
-            throw $e;
-        }
+        //
+        // Analytics
+        //
+        $this->notifyDashboard('refund', $this->refund);
 
         return $refund;
     }
@@ -96,6 +83,30 @@ trait Refund
         }
 
         return $this->refund($id, $input);
+    }
+
+    protected function callGatewayForRefund($payment, $data)
+    {
+        try
+        {
+            $gateway = $payment->getGateway();
+
+            if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
+                ($payment->isAuthorized() === false))
+            {
+                $this->callGatewayFunction(Payment\Action::REFUND, $data);
+            }
+
+            $this->recordRefund();
+        }
+        catch(BaseException $e)
+        {
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_REFUND_FAILURE);
+
+            throw $e;
+        }
     }
 
     protected function recordRefund()
