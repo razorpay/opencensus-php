@@ -27,6 +27,7 @@ class DailyReportTest extends TestCase
         $content = $this->initiateSettlements();
 
         $setl = $this->getLastEntity('settlement', true);
+
         $id = substr($setl['id'], 5, 14);
         $setl = (new \Models\Settlement\Repository)->findOrFail($id);
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
@@ -57,8 +58,8 @@ class DailyReportTest extends TestCase
 
     protected function setUpFixture()
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 10;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 10;
 
         $capturedPayments = $this->fixtures->times(4)->create(
             'payment:captured',
