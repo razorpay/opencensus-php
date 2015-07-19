@@ -127,6 +127,28 @@ return [
         'entity'=> 'billdesk',
     ],
 
+    'testTransactionAfterRefundingAuthorizedPayment' => [
+        'type' => 'refund',
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'fee' => 0,
+        'pricing_rule_id' => null,
+        'debit' => 50000,
+        'credit' => 0,
+        'currency' => 'INR',
+        'balance' => 0,
+        'gateway_fee' => 0,
+        'api_fee' => 0,
+        'escrow_balance' => 998575,
+        'channel' => 'kotak',
+        'settled' => false,
+        'settled_at' => 1,
+        'settlement_id' => null,
+        'reconciled_at' => null,
+        'entity' => 'transaction',
+        'admin' => true,
+    ],
+
     'testGetPaymentMethodsRoute' => [
         'request' => [
             'url' => '/methods',

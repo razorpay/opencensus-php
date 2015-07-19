@@ -71,6 +71,22 @@ class BilldeskGatewayTest extends TestCase
         $this->assertTestResponse($refund);
     }
 
+    public function testAuthorizedPaymentRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $refund = $this->getLastEntity('billdesk', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentRefund'], $refund);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
+    }
+
     public function testGetPaymentMethodsRoute()
     {
         $this->ba->publicLiveAuth();

@@ -113,13 +113,22 @@ trait Refund
     {
         $this->repo->transaction(function()
         {
-            $this->repo->lockForUpdate($this->payment->getKey());
+            $payment = $this->payment;
+
+            $this->repo->lockForUpdate($payment->getKey());
 
             $this->updatePaymentRefunded();
 
-            $txn = (new Transaction\Core)->createFromRefund($this->refund);
+            $gateway = $payment->getGateway();
 
-            $txn->save();
+            if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
+                ($payment->isAuthorized() === false))
+            {
+                $txn = (new Transaction\Core)->createFromRefund($this->refund);
+
+                $txn->save();
+            }
+
             $this->payment->save();
             $this->refund->save();
         });
