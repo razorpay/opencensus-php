@@ -34,6 +34,8 @@ class BilldeskGatewayTest extends TestCase
             $this->testData['testTransactionAfterAuthorize'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
         $txn = $this->getLastEntity('transaction', true);

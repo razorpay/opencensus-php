@@ -31,6 +31,27 @@ return [
         'entity' => 'payment',
     ],
 
+    'testTransactionAfterCapture' => [
+        'type' => 'payment',
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'fee' => 1140,
+        'debit' => 0,
+        'credit' => 48860,
+        'currency' => 'INR',
+        'balance' => 1048860,
+        'gateway_fee' => 0,
+        'api_fee' => 0,
+        'escrow_balance' => 1048860,
+        'channel' => 'kotak',
+        'settled' => false,
+        'settled_at' => 1437589800,
+        'settlement_id' => null,
+        'reconciled_at' => null,
+        'entity' => 'transaction',
+        'admin' => true,
+    ],
+
     'testPaymentAxisMigsEntity' => [
 //        'id' => 'pay_53',
 //        'payment_id' => '3GZ95U9Rss628z',

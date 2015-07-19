@@ -24,7 +24,20 @@ class AxisGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->doAuthAndCapturePayment();
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['transaction_id'], null);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
 
