@@ -39,7 +39,7 @@ class Core extends Base\Core
                                                 $merchant->getId(), 'billdesk');
         if ($billdesk !== null)
         {
-            $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+            $supportedBanks = Netbanking::getAllBanks();
         }
         else
         {
