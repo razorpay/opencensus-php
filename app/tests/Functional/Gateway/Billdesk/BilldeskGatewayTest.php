@@ -27,7 +27,18 @@ class BilldeskGatewayTest extends TestCase
     public function testPayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
 
