@@ -348,6 +348,8 @@ trait Authorize
 
         $payment->setStatus(Payment\Status::AUTHORIZED);
 
+        $payment->setAuthorizeTimestamp();
+
         $payment->terminal->incrementUsedCount();
 
         $payment->save();
