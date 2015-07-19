@@ -354,9 +354,14 @@ trait Authorize
         $payment->save();
         $payment->terminal->save();
 
-        $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+        $gateway = $payment->getGateway();
 
-        $txn->save();
+        if (Payment\Gateway::supportsAuthAndCapture($gateway) === false)
+        {
+            $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+
+            $txn->save();
+        }
 
         $payment->save();
 

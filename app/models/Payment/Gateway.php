@@ -46,6 +46,11 @@ class Gateway
         ),
     );
 
+    public static $authAndCapture = array(
+        self::HDFC,
+        self::AXIS_MIGS,
+    );
+
     public static function getChannel($gateway)
     {
         return self::$channels[$gateway];
@@ -68,5 +73,10 @@ class Gateway
     public static function isMethodSupported($method, $gateway)
     {
         return (in_array($gateway, self::$methodMap[$method]));
+    }
+
+    public static function supportsAuthAndCapture($gateway)
+    {
+        return (in_array($gateway, self::$authAndCapture));
     }
 }

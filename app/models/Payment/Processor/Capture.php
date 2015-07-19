@@ -105,21 +105,24 @@ trait Capture
     {
         $this->repo->transaction(function()
         {
-            $this->repo->lockForUpdate($this->payment->getKey());
+            $payment = $this->payment;
+
+            $this->repo->lockForUpdate($payment->getKey());
 
             $this->updatePaymentCaptured();
 
-            if ($this->payment['created_at'] < 1)
+            if (($payment->getCreatedAt() < 1) or
+                (Payment\Gateway::supportsAuthAndCapture($payment->getGateway())))
             {
-                $txn = (new Transaction\Core)->createFromPaymentCaptured($this->payment);
+                $txn = (new Transaction\Core)->createFromPaymentCaptured($payment);
             }
             else
             {
-                $txn = (new Transaction\Core)->updateOnCapture($this->payment);
+                $txn = (new Transaction\Core)->updateOnCapture($payment);
             }
 
             $txn->save();
-            $this->payment->save();
+            $payment->save();
         });
 
         //
