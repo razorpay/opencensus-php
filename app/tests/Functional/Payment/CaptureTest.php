@@ -238,7 +238,7 @@ class CaptureTest extends TestCase
 
         $x = range(1,3);
 
-        $merchant = $this->fixtures->create('merchantFluid:entity')->get();
+        $merchant = $this->fixtures->create('merchant_fluid')->get();
 
         // Only the following 6 payments are actually auto-captured. The above rest is just noise
         foreach ($x as $i)

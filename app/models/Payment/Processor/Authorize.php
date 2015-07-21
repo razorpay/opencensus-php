@@ -171,9 +171,12 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
-        // Trigger notification events for authorization
-        $notifier = new Notify($payment);
-        $notifier->trigger(Notify::AUTHORIZED);
+        if ($payment->merchant->isReceiptEmailsEnabled())
+        {
+            // Trigger notification events for authorization
+            $notifier = new Notify($payment);
+            $notifier->trigger(Notify::AUTHORIZED);
+        }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
@@ -298,6 +301,8 @@ trait Authorize
         $payment->setAmountAuthorized();
 
         $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        $payment->setAuthorizeTimestamp();
 
         $payment->terminal->incrementUsedCount();
 

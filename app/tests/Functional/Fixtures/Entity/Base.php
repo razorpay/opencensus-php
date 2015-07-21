@@ -38,14 +38,14 @@ class Base
         'transaction'   => 'Models\Transaction\Entity'
     );
 
-    public function createEntity(array $attributes = array())
+    public function create(array $attributes = array())
     {
-        $entity = lcfirst(explode('\\', get_class($this))[4]);
+        $entity = snake_case(explode('\\', get_class($this))[4]);
 
-        return $this->create($entity, $attributes);
+        return $this->createEntity($entity, $attributes);
     }
 
-    public function create($entity, array $attributes = array())
+    public function createEntity($entity, array $attributes = array())
     {
         if (($entity === 'merchant') or
             ($entity === 'pricing') or
@@ -55,6 +55,34 @@ class Base
         }
 
         return $this->save($entity, $attributes);
+    }
+
+    public function edit($id, array $attributes = array())
+    {
+        $entity = snake_case(explode('\\', get_class($this))[4]);
+
+        return $this->editEntity($entity, $attributes);
+    }
+
+    public function editEntity($entity, $id, array $attributes = array())
+    {
+        if (($entity === 'merchant') or
+            ($entity === 'pricing') or
+            ($entity === 'merchant_banks'))
+        {
+            return $this->editEntityInTestAndLive($entity, $attributes);
+        }
+
+        $entity = $entity::findOrFail($id);
+
+        foreach ($attributes as $key => $value)
+        {
+            $entity[$attribute] = $value;
+        }
+
+        $entity->saveOrFail($merchant);
+
+        return $entity;
     }
 
     public function createEntityInTestAndLive($entity, $attributes = array())
@@ -72,6 +100,33 @@ class Base
         $liveEntity->setConnection('live')->save();
 
         $entity->exists = true;
+        $entity->setRawAttributes($liveEntity->getAttributes(), true);
+
+        $this->eloquentReguard();
+
+        $this->fixtures->setDefaultConn();
+
+        return $entity;
+    }
+
+    public function editEntityInTestAndLive($entity, $attributes = array())
+    {
+        $this->eloquentUnguard();
+
+        $entity = self::$map[$entity];
+        $entity = $entity::findOrFail($id);
+
+        foreach ($attributes as $key => $value)
+        {
+            $entity[$attribute] = $value;
+        }
+
+        $testEntity = clone $entity;
+        $liveEntity = clone $entity;
+
+        $testEntity->setConnection('test')->save();
+        $liveEntity->setConnection('live')->save();
+
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
 
         $this->eloquentReguard();
@@ -147,5 +202,10 @@ class Base
         $this->on('test');
 
         return $this;
+    }
+
+    protected function getNamespace()
+    {
+        return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));
     }
 }

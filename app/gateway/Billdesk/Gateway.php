@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
             $content['TxnAmount'] = '5.00';
         }
 
-        $this->createGatewayPaymentEntity($content);
+        $payment = $this->createGatewayPaymentEntity($content);
 
         return $this->getRequestArray($content);
     }
@@ -69,6 +69,15 @@ class Gateway extends Base\Gateway
         $msg = $input['gateway']['msg'];
 
         $content = $this->getContentAfterChecksumVerification($msg);
+
+        if ($content['CustomerID'] === 'NA')
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $content['AuthStatus'],
+                    '');
+        }
 
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $content['CustomerID'], Action::AUTHORIZE);
@@ -103,14 +112,20 @@ class Gateway extends Base\Gateway
         // hh is in 24 hrs
         $now = Carbon::now('Asia/Kolkata')->format('YmdHis');
 
+        $refundAmount = (float) ($input['refund']['amount']);
+
+        // The amount should have exact two decimal places
+        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+        $txnAmount = (string) number_format($payment['TxnAmount'], 2, '.', '');
+
         $content = array(
             'RequestType'       => '0400',
             'MerchantID'        => $input['terminal']['gateway_merchant_id'],
             'TxnReferenceNo'    => $payment['TxnReferenceNo'],
             'TxnDate'           => $date,
             'CustomerID'        => $input['payment']['id'],
-            'TxnAmount'         => (float) $payment['TxnAmount'],
-            'RefAmount'         => $input['refund']['amount'] / 100,
+            'TxnAmount'         => $txnAmount,
+            'RefAmount'         => $refundAmount,
             'RefDateTime'       => $now,
             'MerchantRefNo'     => $input['refund']['id'],
             'Filler1'           => 'NA',

@@ -30,25 +30,25 @@ class Merchant extends Base
 
     public function createNodalAccount()
     {
-        $apiMerchant = $this->create('merchant', ['id' => Account::NODAL_ACCOUNT]);
+        $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::NODAL_ACCOUNT]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::NODAL_ACCOUNT, 'balance' => '1000000']);
     }
 
     public function createAtomAccount()
     {
-        $apiMerchant = $this->create('merchant', ['id' => Account::ATOM_ACCOUNT]);
+        $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::ATOM_ACCOUNT]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000']);
     }
 
     public function createApiFeeAccount()
     {
-        $apiMerchant = $this->create('merchant', ['id' => Account::API_FEE_ACCOUNT]);
+        $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::API_FEE_ACCOUNT]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::API_FEE_ACCOUNT, 'balance' => '1000000']);
     }
 
     public function createWithBalanceTerminalsStandardPricing()
     {
-        $merchant = $this->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+        $merchant = $this->fixtures->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
         $merchantId = $merchant->getId();
 
         $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
@@ -61,7 +61,7 @@ class Merchant extends Base
 
     public function createWithKeys()
     {
-        $merchant = $this->create('merchant', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+        $merchant = $this->fixtures->create('merchant', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $merchantId = $merchant->getId();
 

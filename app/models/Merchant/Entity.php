@@ -7,19 +7,20 @@ use Models\Pricing\Service as PricingService;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const NAME              = 'name';
-    const EMAIL             = 'email';
-    const ACTIVATED         = 'activated';
-    const ACTIVATED_AT      = 'activated_at';
-    const LIVE              = 'live';
-    const HOLD_FUNDS        = 'hold_funds';
-    const PRICING_PLAN_ID   = 'pricing_plan_id';
-    const INTERNATIONAL     = 'international';
-    const BILLING_LABEL     = 'billing_label';
-    const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
-    const WEBSITE           = 'website';
-    const CATEGORY          = 'category';
+    const ID                        = 'id';
+    const NAME                      = 'name';
+    const EMAIL                     = 'email';
+    const ACTIVATED                 = 'activated';
+    const ACTIVATED_AT              = 'activated_at';
+    const LIVE                      = 'live';
+    const HOLD_FUNDS                = 'hold_funds';
+    const PRICING_PLAN_ID           = 'pricing_plan_id';
+    const INTERNATIONAL             = 'international';
+    const BILLING_LABEL             = 'billing_label';
+    const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
+    const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
+    const WEBSITE                   = 'website';
+    const CATEGORY                  = 'category';
 
     const METHODS           = 'methods'; // Refers to methods relation and not a property;
 
@@ -40,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
     );
 
@@ -64,7 +66,8 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = array(
         self::LIVE,
-        self::ACTIVATED);
+        self::ACTIVATED,
+        self::RECEIPT_EMAIL_ENABLED);
 
     protected function generateLive($input)
     {
@@ -75,6 +78,16 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ACTIVATED, false);
         $this->setAttribute(self::ACTIVATED_AT, null);
+    }
+
+    protected function generateReceiptEmailEnabled($input)
+    {
+        $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
+    }
+
+    protected function generateTrnasactionReceiptEmail($input)
+    {
+        $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $input[self::EMAIL]);
     }
 
     public function isActivated()
@@ -195,6 +208,12 @@ class Entity extends Base\PublicEntity
     {
         return (bool) $this->attributes[self::HOLD_FUNDS];
     }
+
+    public function isReceiptEmailsEnabled()
+    {
+        return (bool) $this->attribute[self::RECEIPT_EMAIL_ENABLED];
+    }
+
 
     public function getRedactedAccountNumber()
     {
