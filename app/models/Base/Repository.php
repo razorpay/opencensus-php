@@ -3,6 +3,7 @@
 namespace Models\Base;
 
 use DB;
+use Illuminate\Support\Facades\App;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -14,7 +15,7 @@ class Repository extends \Razorpay\Spine\Repository
     {
         parent::__construct();
 
-        $app = \App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
         $this->auth = $app['basicauth'];
     }

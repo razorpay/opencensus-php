@@ -111,7 +111,7 @@ class TransactionTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
 
-        $merchant = $this->fixtures->create('merchant_fluid:entity')
+        $merchant = $this->fixtures->create('merchant_fluid')
                          ->addKeys()
                          ->addPaymentBanks()
                          ->addBankAccount()

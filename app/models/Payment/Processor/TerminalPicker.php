@@ -5,6 +5,7 @@ namespace Models\Payment\Processor;
 use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
+use Models\Bank\IFSC;
 use Models\Card;
 use Models\Card\Network;
 use Models\Payment;
@@ -109,14 +110,12 @@ class TerminalPicker
 
         $func = 'pickTerminalFor'.ucfirst($method).'Method';
 
-        return $this->$func($gatewayTerms);
+        return $this->$func($gatewayTerms, $payment);
     }
 
-    protected function pickTerminalForCardMethod($gatewayTerms)
+    protected function pickTerminalForCardMethod($gatewayTerms, $payment)
     {
         $terminal = null;
-
-        $payment = $this->payment;
 
         if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
         {
@@ -166,13 +165,13 @@ class TerminalPicker
         return $terminal;
     }
 
-    protected function pickTerminalForNetbankingMethod($gatewayTerms)
+    protected function pickTerminalForNetbankingMethod($gatewayTerms, $payment)
     {
         $terminal = null;
 
         $bank = $this->payment->getBank();
 
-        if ($bank === 'HDFC')
+        if ($bank === IFSC::HDFC)
         {
             if (isset($gatewayTerms[Payment\Gateway::NETBANKING_HDFC]) === true)
             {
@@ -180,12 +179,14 @@ class TerminalPicker
             }
         }
 
-        if (isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true)
+        if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
+            (Netbanking::isBilldeskSupportedBank($bank)))
         {
             return $gatewayTerms[Payment\Gateway::BILLDESK];
         }
 
-        if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+        if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
+            (Netbanking::isPaytmSupportedBank($bank)))
         {
             return $gatewayTerms[Payment\Gateway::PAYTM];
         }

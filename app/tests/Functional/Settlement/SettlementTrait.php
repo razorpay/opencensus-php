@@ -86,6 +86,21 @@ trait SettlementTrait
         return $content;
     }
 
+    protected function generateDailyReport()
+    {
+        $request = [
+            'url' => '/merchants/report',
+            'method' => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function generateSetlReconciliationFile($setlFile)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);

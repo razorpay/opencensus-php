@@ -45,6 +45,7 @@ final class Route
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],
         'merchant_set_banks'                => ['post',     'merchants/{id}/banks',                     'MerchantController@setBanks'                           ],
         'merchant_set_all_banks'            => ['put',      'merchants/banks',                          'MerchantController@putBanksForAllMerchants'            ],
+        'merchant_daily_report'             => ['post',     'merchants/report',                         'MerchantController@sendDailyReport'                    ],
         'merchant_create'                   => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                 ],
         'merchant_fetch'                    => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                        ],
         'merchant_edit'                     => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                        ],
@@ -170,6 +171,7 @@ final class Route
         'merchant_add_bank_account',
         'merchant_fetch_bank_account',
         'merchant_create_terminal',
+        'merchant_daily_report',
         'merchant_delete_terminal',
         'merchant_get_terminals',
         'merchant_activate',
@@ -246,6 +248,7 @@ final class Route
                 'setl_return_generate',
                 'payment_auth_notify',
                 'payment_timeout',
+                'merchant_daily_report',
                 'payment_auto_capture'),
 
             'mailgun' => array(
