@@ -174,6 +174,14 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.setReceiptEmail = function(value) {
+      var editMerchant = {
+        'receipt_email_enabled': value
+      };
+      
+      $scope.editMerchant(editMerchant);
+    };
+
     $scope.assignPricing = function(plan_id){
       var data = {
         pricing_plan_id: plan_id

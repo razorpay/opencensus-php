@@ -59,7 +59,8 @@ class Validator extends Base\Validator
         'international'             => 'sometimes|boolean',
         'billing_label'             => 'sometimes|max:255',
         'transaction_report_email'  => 'sometimes|email|max:255',
-        'hold_funds'                => 'sometimes|in:0,1'
+        'hold_funds'                => 'sometimes|in:0,1',
+        'receipt_email_enabled'     => 'sometimes|in:0,1',
     );
 
     protected static $api_dashboard_mappings = array(

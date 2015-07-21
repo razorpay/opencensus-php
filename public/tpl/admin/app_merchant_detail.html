@@ -48,24 +48,28 @@
           Enable Live Transactions
         </a>
         <a href class="list-group-item" ng-show="merchant.details.live==1 "ng-click="disableLive()"
-        ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?"
-        >
+        ng-confirm-click="All future live transactions from merchant will fail, are you sure you want to do this?">
           Disable Live Transactions
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.paytm == false" ng-click="enableMethod('paytm')">
           Enable Paytm
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.paytm == true "ng-click="disableMethod('paytm')"
-        >
+        <a href class="list-group-item" ng-show="merchant.details.methods.paytm == true "ng-click="disableMethod('paytm')">
           Disable Paytm
         </a>
         <a href class="list-group-item" ng-show="merchant.details.methods.card == false" ng-click="enableMethod('card')">
           Enable Card
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == true" ng-click="disableMethod('card')"
-        >
+        <a href class="list-group-item" ng-show="merchant.details.methods.card == true" ng-click="disableMethod('card')">
           Disable Card
         </a>
+        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 0" ng-click="setReceiptEmail(1)">
+          Enable Receipt Email
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 1" ng-click="setReceiptEmail(0)">
+          Disable Receipt Email
+        </a>
+
         <a href class="list-group-item" ng-click="openAssignPricing()">
           Assign Pricing
         </a>
@@ -182,6 +186,10 @@
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.card == true, 'fa-times text-danger':merchant.details.methods.card == false}"></i></span>
           Card
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>
+          Customer Receipt Emails
         </a>
         <div href class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">
