@@ -54,7 +54,10 @@ return array(
 	|
 	*/
 
-	'from' => array('address' => \Config::get('applications.mailgun.from_email'), 'name' => \Config::get('applications.mailgun.from_name')),
+	'from' => array(
+        'address' => \Config::get('applications.mailgun.from_email'),
+        'name' => \Config::get('applications.mailgun.from_name')
+    ),
 
 	/*
 	|--------------------------------------------------------------------------

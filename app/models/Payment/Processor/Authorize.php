@@ -213,17 +213,21 @@ trait Authorize
 
         $config = $app->config->get('applications.mailgun');
 
-        if(isset($templateData['merchant']['billing_label']))
+        $subject = "Payment Successful for {$templateData['payment']['amount']}";
+
+        if (isset($templateData['merchant']['billing_label']))
         {
             $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
         }
-        else
-        {
-            $subject = "Payment Successful for {$templateData['payment']['amount']}";
-        }
 
-        Mail::queue(['html'=> 'emails/payment/customer', 'text'=> 'emails/payment/customer_text'], $templateData,
-            function($message) use ($templateData, $config, $subject) {
+        $app['mailer']->queue(
+            [
+                'html' => 'emails/payment/customer',
+                'text'=> 'emails/payment/customer_text'
+            ],
+            $templateData,
+            function ($message) use ($templateData, $config, $subject)
+            {
                 $message->to($templateData['customer']['email']);
                 $message->from($config['from_email'], $config['from_name']);
                 $message->subject($subject);
