@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const WALLET            = 'wallet';
     const TRANSACTION_ID    = 'transaction_id';
     const AUTO_CAPTURED     = 'auto_captured';
+    const AUTHORIZED_AT     = 'authorized_at';
     const CAPTURED_AT       = 'captured_at';
     const GATEWAY           = 'gateway';
     const TERMINAL_ID       = 'terminal_id';
@@ -82,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::GATEWAY,
         self::CARD_ID,
@@ -115,6 +117,8 @@ class Entity extends Base\PublicEntity
     protected $appends = array(self::PUBLIC_ID);
 
     protected static $modifiers = array(self::CONTACT, self::BANK);
+
+    protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
     protected static $generators = array(
         self::STATUS,
@@ -259,6 +263,11 @@ class Entity extends Base\PublicEntity
     public function setCaptureTimestamp()
     {
         $this->setAttribute(self::CAPTURED_AT, time());
+    }
+
+    public function setAuthorizeTimestamp()
+    {
+        $this->setAttribute(self::AUTHORIZED_AT, time());
     }
 
     public function setBank($bank)
@@ -467,6 +476,11 @@ class Entity extends Base\PublicEntity
     public function getCaptureTimestamp()
     {
         return $this->getAttribute(self::CAPTURED_AT);
+    }
+
+    public function getAuthorizeTimestamp()
+    {
+        return $this->getAttribute(self::AUTHORIZED_AT);
     }
 
     public function getUpdatedAt()

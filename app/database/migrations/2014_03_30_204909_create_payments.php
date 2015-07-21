@@ -77,6 +77,9 @@ class CreatePayments  extends Migration
             $table->char(Payment::TRANSACTION_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->integer(Payment::AUTHORIZED_AT)
+                  ->nullable();
+
             $table->boolean(Payment::AUTO_CAPTURED)
                   ->default(0);
 

@@ -172,9 +172,12 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
-        // Send email to the customer
-        // Can be extended later for SMS as well
-        $this->notifyCustomer($payment);
+        if ($payment->merchant->isReceiptEmailsEnabled())
+        {
+            // Send email to the customer
+            // Can be extended later for SMS as well
+            $this->notifyCustomer($payment);
+        }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
@@ -184,9 +187,11 @@ trait Authorize
         $app = App::getFacadeRoot();
 
         // Dont send mails in test mode
-        if($this->mode === Mode::TEST and !$app->environment('dev'))
+        // @todo: remove this somehow
+        if (($this->mode === Mode::TEST) and
+            ($app->environment('dev') === false))
         {
-            return true;
+            return;
         }
 
         $templateData = [
@@ -347,6 +352,8 @@ trait Authorize
         $payment->setAmountAuthorized();
 
         $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        $payment->setAuthorizeTimestamp();
 
         $payment->terminal->incrementUsedCount();
 
