@@ -81,6 +81,21 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testAuthorizeTimestamp()
+    {
+        $lower = time()-1;
+        $this->defaultAuthPayment();
+        $upper = time()+1;
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $authorizedAt = $payment['authorized_at'];
+
+        $this->assertLessThanOrEqual($authorizedAt, $lower);
+
+        $this->assertGreaterThanOrEqual($authorizedAt, $upper);
+    }
+
     public function testAmountLessThan50ForNetbanking()
     {
         $this->markTestSkipped();
