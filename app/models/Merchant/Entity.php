@@ -67,7 +67,8 @@ class Entity extends Base\PublicEntity
     protected static $generators = array(
         self::LIVE,
         self::ACTIVATED,
-        self::RECEIPT_EMAIL_ENABLED);
+        self::RECEIPT_EMAIL_ENABLED,
+        self::TRANSACTION_REPORT_EMAIL);
 
     protected function generateLive($input)
     {
@@ -85,7 +86,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
     }
 
-    protected function generateTrnasactionReceiptEmail($input)
+    protected function generateTransactionReportEmail($input)
     {
         $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $input[self::EMAIL]);
     }
