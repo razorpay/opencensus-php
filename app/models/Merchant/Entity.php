@@ -59,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
         self::METHODS,
         self::CREATED_AT,
