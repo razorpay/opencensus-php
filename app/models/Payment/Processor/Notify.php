@@ -19,6 +19,7 @@ class Notify
         $this->payment = $payment;
         $this->template = $this->templateData();
         $this->config = $this->app->config->get('applications.mailgun');
+        $this->mode = $this->app['rzp.mode'];
     }
 
     public function trigger($event)
