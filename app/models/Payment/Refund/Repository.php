@@ -43,14 +43,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchBetweenTimestampsForMerchant($from, $to, $merchantId)
-    {
-        $repo = $this->repo;
-        return $repo::whereBetween(Refund\Entity::CREATED_AT, [$from, $to])
-                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->get();
-    }
-
     public function findBetweenTimesampsForGateway($from, $to, $gateway)
     {
         $repo = $this->repo;
