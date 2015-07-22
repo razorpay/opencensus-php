@@ -78,9 +78,11 @@ class Entity extends Base\PublicEntity
 
     protected function generateAmount($input)
     {
-        if (isset($input['amount']) === false)
+        if (empty($input['amount']))
         {
-            $this->setAttribute(self::AMOUNT, $this->payment->getAmountUnrefunded());
+            $this->setAttribute(
+                self::AMOUNT,
+                $this->payment->getAmountUnrefunded());
         }
     }
 

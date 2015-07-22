@@ -66,26 +66,13 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT);
 
     protected static $generators = array(
-        self::LIVE,
-        self::ACTIVATED,
-        self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL);
 
-    protected function generateLive($input)
-    {
-        $this->setAttribute(self::LIVE, false);
-    }
-
-    protected function generateActivated($input)
-    {
-        $this->setAttribute(self::ACTIVATED, false);
-        $this->setAttribute(self::ACTIVATED_AT, null);
-    }
-
-    protected function generateReceiptEmailEnabled($input)
-    {
-        $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
-    }
+    protected $defaults = array(
+        self::LIVE                  => false,
+        self::ACTIVATED             => false,
+        self::ACTIVATED_AT          => null,
+        self::RECEIPT_EMAIL_ENABLED => true);
 
     protected function generateTransactionReportEmail($input)
     {

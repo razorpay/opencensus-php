@@ -55,7 +55,9 @@ class Entity extends Base\PublicEntity
 
     protected $table = 'terminals';
 
-    protected $hidden = array(self::GATEWAY_TERMINAL_PASSWORD);
+    protected $hidden = array(
+        self::GATEWAY_TERMINAL_PASSWORD,
+        self::GATEWAY_SECURE_SECRET);
 
     protected $genereateIdOnCreate = true;
 
@@ -68,6 +70,13 @@ class Entity extends Base\PublicEntity
     protected static $generators = array(
         'method',
         'thedefaults');
+
+    protected $defaults = array(
+        self::GATEWAY_MERCHANT_ID       => null,
+        self::GATEWAY_TERMINAL_ID       => null,
+        self::GATEWAY_TERMINAL_PASSWORD => null,
+        self::GATEWAY_ACCESS_CODE       => null,
+        self::GATEWAY_SECURE_SECRET     => null);
 
     public function generateMethod($input)
     {
