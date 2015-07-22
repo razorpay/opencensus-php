@@ -1788,12 +1788,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "73763c361617952451c1317d1e0c6558d994fe92"
+                "reference": "6fec7e8308c3e1c32645ec4369b3fa2d0f1ac11c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/73763c361617952451c1317d1e0c6558d994fe92",
-                "reference": "73763c361617952451c1317d1e0c6558d994fe92",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/6fec7e8308c3e1c32645ec4369b3fa2d0f1ac11c",
+                "reference": "6fec7e8308c3e1c32645ec4369b3fa2d0f1ac11c",
                 "shasum": ""
             },
             "require": {
@@ -1824,10 +1824,10 @@
                 "spine"
             ],
             "support": {
-                "source": "https://github.com/razorpay/spine/tree/no-facade",
+                "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2015-07-08 00:55:59"
+            "time": "2015-07-22 19:22:28"
         },
         {
             "name": "rmccue/requests",
