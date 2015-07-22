@@ -372,7 +372,7 @@ class Service extends Base\Service
             {
                 $message->to($data['merchant']['email']);
                 $message->from($config['from_email'], $config['from_name']);
-                $message->cc('notifications@razorpay.com', 'Razorpay Sales Team');
+                $message->cc('notifications@razorpay.com');
                 $message->subject($subject);
             }
         );
