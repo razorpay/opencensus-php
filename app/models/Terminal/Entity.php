@@ -66,7 +66,8 @@ class Entity extends Base\PublicEntity
     protected static $delimiter = '';
 
     protected static $generators = array(
-        'method');
+        'method',
+        'thedefaults');
 
     public function generateMethod($input)
     {
@@ -88,6 +89,24 @@ class Entity extends Base\PublicEntity
         else
         {
             $this->setAttribute(self::NETBANKING, 0);
+        }
+    }
+
+    protected function generateThedefaults($input)
+    {
+        if (empty($input[self::GATEWAY_MERCHANT_ID]))
+        {
+            $this->setAttribute(self::GATEWAY_MERCHANT_ID, null);
+        }
+
+        if (empty($input[self::GATEWAY_ACCESS_CODE]))
+        {
+            $this->setAttribute(self::GATEWAY_ACCESS_CODE, null);
+        }
+
+        if (empty($input[self::GATEWAY_TERMINAL_ID]))
+        {
+            $this->setAttribute(self::GATEWAY_TERMINAL_ID, null);
         }
     }
 
