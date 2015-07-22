@@ -179,7 +179,7 @@ class Service extends Base\Service
             'website' => $merchantDetails->getAttribute('business_website')
         );
 
-        $salesEmail = 'sales@razorpay.com';
+        $salesEmail = 'salesteam@razorpay.com';
 
         Mailgun::send('emails.submission', $customer, function($mail) use ($customer)
         {
