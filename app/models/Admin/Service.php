@@ -793,7 +793,7 @@ class Service extends Base\Service
             return [null, $this->getBeneficiaryFileUrl($date)];
         }
 
-        return [$error, $url];
+        return [$error, null];
     }
 
     /**

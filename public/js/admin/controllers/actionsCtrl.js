@@ -125,15 +125,17 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       $scope.date = moment().format('yyyy-MM-dd');
       var modalInstance = $modal.open({
         templateUrl: 'downloadBeneficiaryFile.html',
-        controller: 'downloadBeneficiaryFileCtrl',
-        data: {
-          date: $scope.date
-        }
+        controller: 'downloadBeneficiaryFileCtrl'
       });
 
       modalInstance.result.then(
         function (date) {
-          console.log(date);
+          if(date) {
+            window.open('/admin/beneficiary/dl');
+          }
+          else {
+            window.open('/admin/beneficiary/dl?date='+date);
+          }
         },
         function () {
           ;
