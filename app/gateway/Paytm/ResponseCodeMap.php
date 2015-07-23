@@ -3,34 +3,35 @@
 namespace Gateway\Paytm;
 
 use EE\Error;
+use EE\Error\ErrorCode;
 
 class ResponseCodeMap
 {
     public static $codes = array(
-        3       => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        3       => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         4       => 'Sent to Mina.',
         5       => 'Open',
         6       => 'Pending',
         7       => 'Failure after 70 min status query in case of Hybrid txn.',
         8       => 'Failure to Success',
         9       => 'OTP sent to your registered phone.',
-        100     => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
+        100     => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
         101     => 'The maximum limit on the number of users allowed to use this card as been reached. Please use another card for your transaction.',
         102     => 'The user attempted the transaction with more cards than specified limit in the last 1 year. The transaction has been classified as suspicious and is blocked.',
         103     => 'The user has made 3 unsuccessful attempts with the same card. The transaction has been classified as suspicious and the card has been blocked.',
         105     => 'The user has made 3 unsuccessful attempts. The transaction has been classified as suspicious and user has been blocked.',
         106     => 'Max Txn amount is crossed for Cust Id.',
-        107     => 'Perday Txn amount is crossed for Cust Id.',
-        108     => 'PerWeek Txn amount is crossed for Cust Id.',
-        109     => 'PerMonth Txn amount is crossed for Cust Id.',
-        110     => 'Max Txn amount is crossed on Customer Card Number.',
+        107     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED,
+        108     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_WEEK_LIMIT_EXCEEDED,
+        109     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED,
+        110     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_MAX_AMOUNT_LIMIT_CROSSED_FOR_CUSTOMER,
         1101    => 'Timeout from Wallet',
-        111     => 'Perday Txn amount is crossed on Customer Card Number.',
-        112     => 'PerWeek Txn amount is crossed on Customer Card Number.',
-        113     => 'PerMonth Txn amount is crossed on Customer Card Number.',
-        114     => 'Perday Txn count is crossed on Customer Card Number.',
-        115     => 'PerWeek Txn count is crossed on Customer Card Number.',
-        116     => 'PerMonth Txn count is crossed on Customer Card Number.',
+        111     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED,
+        112     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_WEEK_LIMIT_EXCEEDED,
+        113     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED,
+        114     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED,
+        115     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_WEEK_LIMIT_EXCEEDED,
+        116     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED,
         117     => 'The user has breached the limit of maximum number of different cards allowed. The transaction can be completed with a previously used card.',
         119     => 'Perday Txn amount is crossed.',
         120     => 'Perday Txn count is crossed for Cust Id.',
@@ -43,49 +44,49 @@ class ResponseCodeMap
         127     => 'Perday Txn count is crossed for NetBanking Transactions.',
         128     => 'PerWeek Txn count is crossed for NetBanking Transactions.',
         129     => 'PerMonth Txn count is crossed for NetBanking Transactions.',
-        130     => 'USER is blocked at Paytm end.',
-        131     => 'Credit Card is blocked at Paytm end.',
-        132     => 'IP Address is blocked at Paytm end.',
-        133     => 'MOBILE_NO. is blocked at Paytm end.',
+        130     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_BLOCKED_CUSTOMER,
+        131     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_BLOCKED_CARD,
+        132     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_BLOCKED_IP_ADDRESS,
+        133     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_BLOCKED_MOBILE_NUMBER,
         134     => 'Subscriber is blocked with the given DL Number',
         140     => 'Invalid Input Parameter from Merchant.',
-        141     => 'Cancel Request by Customer( After page load)',
-        142     => 'Cancel Request by Customer at login screen',
+        141     => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN,
+        142     => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN,
         143     => 'Cancel Request by Customer before login screen is displayed properly',
         150     => 'Duplicate Transaction as similar transaction was seen in 30 sec.',
         151     => 'Transaction with the same order Id already exists.',
         152     => 'Merchant is not associated with channel.',
         153     => 'Channel is not configured with the Payment Mode',
-        155     => 'Per Txn amount is crossed for wallet.',
-        156     => 'Per Day Txn amount is crossed for wallet.',
-        157     => 'Per Week Txn amount is crossed for wallet.',
-        158     => 'Per Month Txn amount is crossed for wallet.',
-        159     => 'Per Day Txn count is crossed for wallet.',
-        160     => 'Per Week Txn count is crossed for wallet.',
-        161     => 'Per Month Txn count is crossed for wallet.',
-        162     => 'Maximum wrong attempts limit allowed crossed for wallet.',
+        155     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED,
+        156     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED,
+        157     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_WEEK_LIMIT_EXCEEDED,
+        158     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED,
+        159     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED,
+        160     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_WEEK_LIMIT_EXCEEDED,
+        161     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED,
+        162     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_MAX_WRONG_ATTEMPT_LIMIT_CROSSED,
         163     => 'Could not pass velocity check for wallet.',
         164     => 'Wallet through put limit failure.',
         18      => 'Bank Failure in add money',
         180     => 'COD pending to be collected',
         19      => 'Bank Failure in add money withdraw',
-        190     => 'Perday Txn count is crossed for Cust Id',
-        191     => 'PerWeek Txn count is crossed for Cust Id',
-        192     => 'PerMonth Txn count is crossed for Cust Id',
-        196     => 'Max Txn amount is crossed for Cust Id',
-        197     => 'Perday Txn amount is crossed for Cust Id',
-        198     => 'PerWeek Txn amount is crossed for Cust Id',
-        199     => 'PerMonth Txn amount is crossed for Cust Id',
+        190     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED,
+        191     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_WEEK_LIMIT_EXCEEDED,
+        192     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED,
+        196     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_MAX_AMOUNT_LIMIT_CROSSED_FOR_CUSTOMER,
+        197     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED,
+        198     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_WEEK_LIMIT_EXCEEDED,
+        199     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED,
         200     => 'OTP request failed.',
         201     => 'Bank has blocked the card used to transact.',
-        202     => 'User does not have enough credit limit. Bank has declined the transaction.',
+        202     => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         203     => 'Card details entered by the user is/are invalid.',
         204     => 'Bank has declined the credit card used to transact.',
-        205     => 'Transaction has been declined by the bank.',
+        205     => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,
         206     => 'A duplicate transaction was being attempted at the bank.',
         207     => 'Card details entered by the user is/are invalid.',
         208     => 'Transaction has been declined by the acquirer bank.',
-        209     => 'Card details entered by the user is/are invalid.',
+        209     => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID,
         210     => 'Lost Card received.',
         211     => 'Failure received from bank.',
         212     => 'Transaction is on hold by bank. Please check the status after some time.',
@@ -105,7 +106,7 @@ class ResponseCodeMap
         226     => 'some error at response parsing.',
         227     => 'Txn Failed.',
         228     => 'Acquirer bank has been unable to authorize the transaction.',
-        229     => '3D Secure Verification failed.',
+        229     => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
         230     => '3D Secure Verification successful.',
         231     => 'Only Indian AMEX cards are allowed.',
         232     => 'Invalid account details.',
@@ -120,7 +121,7 @@ class ResponseCodeMap
         241     => 'First Txn Failed',
         242     => 'Child Txn auto refunded.',
         243     => 'Wallet Not Created',
-        244     => 'Wallet Not Activated',
+        244     => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ACTIVATED,
         245     => 'Redemption not allowed.',
         246     => 'OTP validation attempts exceeded.',
         247     => 'Wallet under maintenance.',
@@ -290,5 +291,19 @@ class ResponseCodeMap
     public static function getStatus($code)
     {
         ; // @todo
+    }
+
+    public static function getApiErrorCode($code)
+    {
+        $class = 'EE\Error\ErrorCode::';
+
+        $apiCode = self::$codes[$code];
+
+        if (defined($class . $apiCode))
+        {
+            return $apiCode;
+        }
+
+        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 }
