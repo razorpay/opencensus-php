@@ -10,3 +10,4 @@ tmp*.blade.php
 generated/
 bootstrap/environment.php
 app/storage/selenium.png
+app/config/**/dev/*

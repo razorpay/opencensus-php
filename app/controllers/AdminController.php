@@ -328,4 +328,18 @@ class AdminController extends BaseController
 
         $file->download('xlsx');
     }
+
+    public function getBeneficiaryFile()
+    {
+        $input = Input::all();
+
+        list($error, $url) = (new Admin\Service)->getBeneficiaryFile($input);
+
+        if(empty($error) === false)
+        {
+            return AppResponse::jsonResponse($error);
+        }
+
+        return Redirect::to($url);
+    }
 }

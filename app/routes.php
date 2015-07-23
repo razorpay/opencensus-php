@@ -124,6 +124,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
 
+    Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
