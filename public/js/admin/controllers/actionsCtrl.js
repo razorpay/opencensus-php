@@ -120,6 +120,26 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         });
     };
 
+    $scope.downloadBeneficiaryFile = function () {
+
+      $scope.date = moment().format('yyyy-MM-dd');
+      var modalInstance = $modal.open({
+        templateUrl: 'downloadBeneficiaryFile.html',
+        controller: 'downloadBeneficiaryFileCtrl',
+        data: {
+          date: $scope.date
+        }
+      });
+
+      modalInstance.result.then(
+        function (date) {
+          console.log(date);
+        },
+        function () {
+          ;
+      });
+    };
+
 }])
 .controller('initiateSetlModalCtrl', ['$scope', '$modalInstance', '$http',
   function ($scope, $modalInstance, $http) {
@@ -151,4 +171,13 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         $modalInstance.dismiss('cancel');
       };
 }])
+.controller('downloadBeneficiaryFileCtrl', ['$scope', '$modalInstance', '$http',
+  function ($scope, $modalInstance, $http) {
+      $scope.ok = function (id) {
+        $modalInstance.close(id);
+      };
 
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
