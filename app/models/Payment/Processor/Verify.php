@@ -52,9 +52,7 @@ trait Verify
         ];
 
         $message = 'Payment verification failed';
-        $channel = '#transactions';
-        $username = 'transactions';
 
-        $this->slackPost($message, $data, $channel, $username, '@harshil @shk', 'bad');
+        $this->slackPost($message, $data, '@harshil @shk', ['color'=>'bad']);
     }
 }

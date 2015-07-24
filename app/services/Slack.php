@@ -17,18 +17,26 @@ trait Slack
      * @param  string $color    good|bad
      * @return null
      */
-    public function slackPost($headline, $postdata, $channel, $username = 'razorpay', $pretext = '', $color = 'good')
+    public function slackPost($headline, $postdata, $pretext = '', array $settings)
     {
         // Note that api uses SLACK_MOCK instead of SLACK_ENABLE which dashboard uses
         if($_ENV['SLACK_MOCK'] === false)
         {
             $data = $this->getSlackContext();
-            $data['fallback'] = $headline.'\n';
-            $data['fields'] = array();
-            $data['color'] = $color;
-            $data['pretext'] = $pretext;
-            $data['link_names'] = 1;
-            $data['username'] - $username;
+            $data['fallback']   = $headline.'\n';
+            $data['fields']     = array();
+            $data['pretext']    = $pretext;
+
+            /**
+             * This should be used for username, channel, and color setting
+             */
+            foreach ($settings as $key => $value) {
+                $data[$key] = $value;
+            }
+
+            /**
+             * Attach all the extra fields
+             */
             foreach($postdata as $key => $value)
             {
                 $data['fallback'] .= $key . ': ' . $value . '\n';
