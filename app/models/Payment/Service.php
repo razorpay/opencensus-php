@@ -153,21 +153,21 @@ class Service extends Base\Service
 
         if ($count !== 0)
         {
-            $paymentIds = $payments->getIds();
-
-            $channel = '#transactions';
-            $username = 'transactions';
+            $payments->getIds();
 
             $date->subDay(1);
 
-            $message = '@harshil @shk Payment authorizations till ' . $date->format('d-m-y');
+            $message = 'Payment authorizations till ' . $date->format('d-m-y');
 
+            $data = ['payments' => ''];
             foreach ($payments as $payment)
             {
-                $message .= ' \n ' . $payment->getPublicId();
+                $data['payments'] .= $payment->getPublicId() . ' ';
             }
 
-            $this->app['slack']->send($message, $channel, $username);
+            $pretext .= '@harshil @shk';
+
+            $this->app['slack']->send($message, $data, $pretext);
         }
 
         return ['count' => $count];
