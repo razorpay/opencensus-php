@@ -220,8 +220,8 @@ class NodalAccount
 
             $file = $data['file'];
 
-           $message->attach($file . '.xlsx');
-           $message->attach($file . '.txt');
+            $message->attach($file . '.xlsx');
+            $message->attach($file . '.txt');
         });
     }
 }
