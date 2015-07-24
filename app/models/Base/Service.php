@@ -3,9 +3,11 @@
 namespace Models\Base;
 
 use App;
+use Services\Slack;
 
 class Service
 {
+    use Slack;
     /**
      * The application instance.
      *

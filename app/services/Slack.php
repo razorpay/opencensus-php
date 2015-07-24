@@ -2,104 +2,63 @@
 
 namespace Services;
 
-use EE\Exception;
-use Requests;
+use Slack;
 
-class Slack
+trait Slack
 {
-    protected $team = 'razorpay';
-
-    protected $token;
-
-    protected $url = 'https://%s.slack.com/services/hooks/incoming-webhook?token=%s';
-
-    protected $mock;
-
-    protected $config;
-
-    protected $instance;
-
-    public function __construct($app)
+    /**
+     * Posts information to slack
+     * method Copied from dashboard
+     * @param  string $headline headline for slack post
+     * @param  array $postdata  array of data to post
+     * @param  string $channel  Name of channel to post in
+     * @param  string $pretext  Pretext
+     * @param  string $color    good|bad
+     * @return null
+     */
+    public function slackPost($headline, $postdata, $channel, $pretext = '', $color = 'good')
     {
-        $this->env = $app['env'];
-        $this->context = $app['config']->get('app.context');
+        // Note that api uses SLACK_MOCK instead of SLACK_ENABLE which dashboard uses
+        if($_ENV['SLACK_MOCK'] === false)
+        {
+            $data = $this->getSlackContext();
+            $data['fallback'] = $headline.'\n';
+            $data['fields'] = array();
+            $data['color'] = $color;
+            $data['pretext'] = $pretext;
+            $data['link_names'] = 1;
+            foreach($postdata as $key => $value)
+            {
+                $data['fallback'] .= $key . ': ' . $value . '\n';
+                $data['fields'][] = array(
+                    'title' => $key,
+                    'value' => $value,
+                    'short' => false
+                );
+            }
 
-        $slackConfig = $app['config']->get('applications.slack');
-        $this->initSlackConfig($slackConfig);
-
-        $this->initInstanceData($app);
-    }
-
-    protected function initSlackConfig($config)
-    {
-        $this->token = $config['token'];
-        $this->team = $config['team'];
-        $this->mock = $config['mock'];
-    }
-
-    protected function initInstanceData($app)
-    {
-        $this->instanceId = $app['instance']->getInstanceId();
-
-        $this->cloud = $app['config']->get('app.cloud');
+            Slack::to($channel)->attach($data)->send($headline);
+        }
     }
 
     /**
-     * Send the Slack message.
-     *
-     * @return void
+     * Returns the default variable set we attach with every slack post
+     * @return array an array of some config options that help us trace the request
      */
-    public function send($message, $channel, $username)
+    protected function getSlackContext()
     {
-        $message .= $this->getGenericMessage();
+        $cloud = $this->app['config']->get('app.cloud');
+        $data = [
+            'env'           =>  $this->app['env'],
+            'context'       =>  $this->app['config']->get('app.context'),
+            'cloud'         =>  $cloud
+        ];
 
-        $payload = array(
-            'text' => $message,
-            'channel' => $channel,
-            'username' => $username,
-            'link_names' => 1);
-
-        $content = array('payload' => json_encode($payload));
-
-        if ($this->token === null)
+        if($cloud)
         {
-            throw new Exception\InvalidArgumentException(
-                'Slack token is null. Provide a meaninful token');
+            $data['instance'] = $app['instance']->getInstanceId();
         }
 
-        $url = sprintf($this->url, $this->team, $this->token);
-
-        if ($this->mock === true)
-        {
-            return;
-        }
-
-        $this->postRequest($url, $content);
-    }
-
-    protected function postRequest($url, $content)
-    {
-        $response = Requests::post($url, array(), $content);
-
-        if ($response->status_code !== 200)
-        {
-            throw new Exception\LogicException(
-                'Posting to slack failed with error message: ' . $response->body);
-        }
-    }
-
-    protected function getGenericMessage()
-    {
-        $message = ' Env: ' . $this->env . PHP_EOL . ' Context: ' . $this->context . PHP_EOL;
-
-        $cloud = ($this->cloud) ? 'true' : 'false';
-        $message .= ' Cloud: ' .  $cloud . ', ';
-
-        if ($this->cloud)
-        {
-            $message .= ' Instance Id: ' . $this->instanceId . PHP_EOL;
-        }
-
-        return $message;
+        return $data;
     }
 }
