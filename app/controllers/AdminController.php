@@ -342,4 +342,10 @@ class AdminController extends BaseController
 
         return Redirect::to($url);
     }
+
+    public function generateBeneficiaryFile()
+    {
+        $error = (new Admin\Service)->generateBeneficiaryFile();
+        return AppResponse::jsonResponse($error);
+    }
 }

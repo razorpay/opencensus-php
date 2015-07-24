@@ -812,4 +812,21 @@ class Service extends Base\Service
             'https'     => true
         ]);
     }
+
+    public function generateBeneficiaryFile()
+    {
+        $this->setApiCredentials();
+        try
+        {
+            $response = $this->api->merchant->generateBeneficiaryFile();
+        }
+
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array();
+
+    }
 }

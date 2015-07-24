@@ -142,6 +142,29 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
     };
 
+    $scope.generateBeneficiaryFile = function() {
+      var request = $http({
+        method: "post",
+        url: "/admin/beneficiary",
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Beneficary file generated successfully', true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
 }])
 .controller('initiateSetlModalCtrl', ['$scope', '$modalInstance', '$http',
   function ($scope, $modalInstance, $http) {
