@@ -42,10 +42,6 @@ class Service extends Base\Service
         // Only Payments analytics are stored
         if ($input['resource'] === "payment")
         {
-            if($mode === 'live')
-            {
-                $this->slackPost('New Payment', $input + array('name' => $merchant->name), '#transactions', null);
-            }
 
             $this->aggregatePayment($input, $mode);
 
