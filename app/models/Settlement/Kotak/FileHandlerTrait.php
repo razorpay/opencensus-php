@@ -11,6 +11,8 @@ trait FileHandlerTrait
 {
     protected $saveToAws = true;
 
+    protected $excel = null;
+
     public function writeToTextFile($txt)
     {
         $name = $this->getFileToWriteName();
@@ -49,6 +51,8 @@ trait FileHandlerTrait
         });
 
         $excel->getDefaultStyle()->getFont()->setName('Ubuntu Mono')->setSize(14);
+
+        $this->excel = $excel;
 
         return $excel;
     }
@@ -203,6 +207,13 @@ trait FileHandlerTrait
     protected function getExcelFileToWriteName()
     {
         return $this->getFileToWriteNameWithoutExt() . '.xlsx';
+    }
+
+    protected function getExcelFullFilePath()
+    {
+        $name = $this->getExcelFileToWriteName();
+
+        return $this->getFullFilePath($name);
     }
 
     protected function getFileToWriteNameWithoutExt()

@@ -59,33 +59,22 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
         self::METHODS,
         self::CREATED_AT,
         self::UPDATED_AT);
 
     protected static $generators = array(
-        self::LIVE,
-        self::ACTIVATED,
-        self::RECEIPT_EMAIL_ENABLED);
+        self::TRANSACTION_REPORT_EMAIL);
 
-    protected function generateLive($input)
-    {
-        $this->setAttribute(self::LIVE, false);
-    }
+    protected $defaults = array(
+        self::LIVE                  => false,
+        self::ACTIVATED             => false,
+        self::ACTIVATED_AT          => null,
+        self::RECEIPT_EMAIL_ENABLED => true);
 
-    protected function generateActivated($input)
-    {
-        $this->setAttribute(self::ACTIVATED, false);
-        $this->setAttribute(self::ACTIVATED_AT, null);
-    }
-
-    protected function generateReceiptEmailEnabled($input)
-    {
-        $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
-    }
-
-    protected function generateTrnasactionReceiptEmail($input)
+    protected function generateTransactionReportEmail($input)
     {
         $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $input[self::EMAIL]);
     }

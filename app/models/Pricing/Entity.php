@@ -42,7 +42,11 @@ class Entity extends Base\UniqueIdEntity
      */
     protected static $modifiers = array('inputRemoveBlanks', 'inputProvideDefaults');
 
-    protected static $generators = array('plan_id', 'rates');
+    protected static $generators = array('plan_id');
+
+    protected $defaults = array(
+        self::PERCENT_RATE  => 0,
+        self::FIXED_RATE    => 0);
 
     protected function modifyInputProvideDefaults(& $input)
     {
@@ -50,28 +54,10 @@ class Entity extends Base\UniqueIdEntity
 
         foreach ($nullables as $key)
         {
-            if (isset($input[$key]) === false)
+            if (empty($input[$key]))
             {
                 $input[$key] = null;
             }
-        }
-    }
-
-    protected function generateRates($input)
-    {
-        //
-        // Sets the rates at 0 if not provided via input
-        // The validator should check for the case where
-        // both the rates aren't set
-        //
-        if (isset($input[self::PERCENT_RATE]) === false)
-        {
-            $this->setAttribute(self::PERCENT_RATE, 0);
-        }
-
-        if (isset($input[self::FIXED_RATE]) === false)
-        {
-            $this->setAttribute(self::FIXED_RATE, 0);
         }
     }
 

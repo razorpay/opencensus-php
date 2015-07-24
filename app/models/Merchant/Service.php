@@ -341,29 +341,38 @@ class Service extends Base\Service
 
     protected function sendActivationEmail($merchant)
     {
-        $app = \App::getFacadeRoot();
-
         //TODO: This needs to be refactored when we go for differentiated pricing
         $plan = $merchant->getPricingPlan();
 
         // array_values resets the array numeric keys and then we can pick the first rule
-        $plan = array_values(array_filter($plan['rules'], function($rule) {
-            return $rule['payment_method']  == 'card';
-        }))[0];
+        // @todo: explain this part
+        $plan = array_values(array_filter(
+            $plan['rules'],
+            function($rule)
+            {
+                return $rule['payment_method']  == 'card';
+            }
+        ))[0];
 
         $data = [
             'merchant'  =>  $merchant->toArray(),
-            'plan'      =>  $plan
+            'plan'      =>  $plan,
         ];
 
-        $config = $app->config->get('applications.mailgun');
+        $config = $this->app->config->get('applications.mailgun');
         $subject = "Your Razorpay account has been activated";
 
-        Mail::queue(['html'=> 'emails.merchant.activation', 'text'=> 'emails.merchant.activation_text'], $data,
-            function($message) use ($data, $config, $subject) {
+        $this->app['mailer']->queue(
+            [
+                'html' => 'emails.merchant.activation',
+                'text' => 'emails.merchant.activation_text'
+            ],
+            $data,
+            function ($message) use ($data, $config, $subject)
+            {
                 $message->to($data['merchant']['email']);
                 $message->from($config['from_email'], $config['from_name']);
-                $message->cc('sales@razorpay.com', 'Razorpay Sales Team');
+                $message->cc('notifications@razorpay.com');
                 $message->subject($subject);
             }
         );

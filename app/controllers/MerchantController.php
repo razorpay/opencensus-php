@@ -218,19 +218,9 @@ class MerchantController extends BaseController
 
     public function getMerchantBeneficiaryFile()
     {
-        $file = (new Merchant\Service)->getMerchantBeneficiaryFile();
+        $data = (new Merchant\Service)->getMerchantBeneficiaryFile();
 
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="merchant_beneficiary_list.xlsx"');
-
-        $file->download('xlsx');
-        // $file->save('php://output');
-
-        // return Response::download($file);
-        // return ApiResponse::json($data);
+        return ApiResponse::json($data);
     }
 
     public function getCheckout()

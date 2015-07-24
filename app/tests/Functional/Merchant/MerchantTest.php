@@ -259,6 +259,21 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMercantBeneficiaryFile()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/merchants/beneficiary/file',
+            'method' => 'get',
+            'content' => [],
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('url', $content);
+    }
+
     protected function startTest()
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

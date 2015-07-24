@@ -15,6 +15,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_ID                                        = 'The id provided does not exist';
     const BAD_REQUEST_PAYMENT_FAILED                                    = 'Payment failed';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                         = 'Payment cancelled by user';
+    const BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN                 = 'Payment cancelled by customer at login screen';
     const BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED                        = 'The payment has already been processed. Did you press the back button in browser?';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                          = 'This payment has already been captured';
     const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                    = 'Invalid currency. Currently only INR is supported.';
@@ -44,6 +45,17 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                 = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH          = 'Capture amount must be equal to the amount authorized';
     const BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT             = 'This bank is either not valid or is not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED             = 'Per day payment amount is crossed for wallet for the customer';
+    const BAD_REQUEST_PAYMENT_WALLET_PER_WEEK_LIMIT_EXCEEDED            = 'Per week payment amount is crossed for wallet for the customer';
+    const BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED           = 'Per month payment amount is crossed for wallet for the customer';
+    const BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED         = 'Payment amount for wallet is above the limit';
+    const BAD_REQUEST_PAYMENT_WALLET_BLOCKED_CARD                       = 'Card has been blocked by the wallet';
+    const BAD_REQUEST_PAYMENT_WALLET_BLOCKED_MOBILE_NUMBER              = 'Mobile number has been blocked by the wallet';
+    const BAD_REQUEST_PAYMENT_WALLET_BLOCKED_IP_ADDRESS                 = 'Customer IP address has been blocked by the wallet';
+    const BAD_REQUEST_PAYMENT_WALLET_BLOCKED_CUSTOMER                   = 'Customer has been blocked by wallet';
+    const BAD_REQUEST_PAYMENT_WALLET_MAX_WRONG_ATTEMPT_LIMIT_CROSSED    = 'Maximum wrong attempt limit crossed for wallet';
+    const BAD_REQUEST_PAYMENT_WALLET_MAX_AMOUNT_LIMIT_CROSSED_FOR_CUSTOMER = 'Maximum wallet payment amount limit has been crossed ffor the customer';
+    const BAD_REQUEST_PAYMENT_WALLET_NOT_ACTIVATED                      = 'Wallet has not been activated for the customer';
     const BAD_REQUEST_REFUND_FAILED                                     = 'Refund failed';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                         = 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_KEY_EXPIRED                                       = 'Key is expired';
@@ -97,4 +109,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER              = 'Netbanking payment cancelled by user by clicking cancel on bank transfer page';
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED             = 'Payment processing failed due to 3dsecure authentication faliure';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK              = 'Payment processing failed by bank due to risk';
+    const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED     = 'Payment processing failed because OTP validation attempts limit exceeded';
+    const BAD_REQUEST_PAYMENT_OTP_INCORRECT                             = 'Payment processing failed because of incorrect OTP';
 }

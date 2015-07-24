@@ -14,6 +14,8 @@ class BeneficiaryFile
 
     protected static $fileToWriteName = 'Kotak_Beneficiary_File';
 
+    const DEFAULT_PRICING_RATE = 30000000;
+
     public static $headings = array(
         'Client_Code ',
         'Merchant_Code',
@@ -48,6 +50,7 @@ class BeneficiaryFile
             $agreementDateText = $agreementDate->format('dmY');
             $agreementExpiryDateText = $agreementDate->addYear()->format('dmY');
 
+            $ratesColumnHeader = 'Agreed rates with Merchant/participating bank';
             $array = array(
                 'Client_Code'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_CODE),
                 'Merchant_Code'         => '',
@@ -64,7 +67,7 @@ class BeneficiaryFile
                 'Bene_Email'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_EMAIL),
                 'Bene_Mobile'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_MOBILE),
                 'Agreement expiry date' => $agreementExpiryDateText,
-                'Agreed rates with Merchant/participating bank' => '30000000',
+                $ratesColumnHeader      => self::DEFAULT_PRICING_RATE,
                 'IFSC'                  => $ba->getAttribute(BankAccount\Entity::IFSC_CODE),
                 'Bene_A/c No.'          => $ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
             );
@@ -72,13 +75,30 @@ class BeneficiaryFile
             array_push($data, $array);
         }
 
-        // $this->saveToAws = false;
+        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
+        $fullpath = $this->getExcelFullFilePath();
 
-        // $filePath = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
+        return ['url' => $fullpath];
+    }
 
-        $name = $this->getFileToWriteNameWithoutExt();
-        $excel = $this->createExcelObject($data, $name);
+    protected function sendKotakBeneficiaryFileMail($fullpath)
+    {
+        $data['body'] = 'Please find attached updated beneficiary file for ' .
+                        'Razorpay and kindly update it on your end';
 
-        return $excel;
+        $data['file'] = $fullpath;
+
+        $this->mail->queue('emails.message', $data, function($message) use ($data)
+        {
+            $emails = ['shashank@razorpay.com', 'harshil@razorpay.com'];
+
+            $message->from('kotak_beneficiary_file@razorpay.com', 'Razorpay Kotak Beneficiary File');
+
+            $message->subject('Razorpay updated beneficiary file for Kotak');
+
+            $message->to($emails);
+
+            $message->attach($data['file']);
+        });
     }
 }
