@@ -10,6 +10,7 @@ use Trace\TraceCode;
 
 trait Verify
 {
+    use Slack;
     public function verify($id)
     {
         $payment = $this->retrieve($id);
@@ -45,14 +46,15 @@ trait Verify
 
     protected function notifyInSlack($payment)
     {
+        $data = [
+            'payment_id'    =>  $payment->getPublicId(),
+            'amount'        =>  $payment->getAmount()
+        ];
+
+        $message = 'Payment verification failed';
         $channel = '#transactions';
         $username = 'transactions';
 
-        $message = '@harhsil @shk Payment verification failed for ' .
-                    'payment id - ' . $payment->getPublicId() . ', ' .
-                    'amount - ' . $payment->getAmount();
-
-        $app = \App::getFacadeRoot();
-        $app['slack']->send($message, $channel, $username);
+        $this->slackPost($message, $data, $channel, $username, '@harshil @shk', 'bad');
     }
 }

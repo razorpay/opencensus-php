@@ -2,6 +2,7 @@
 
 namespace Services;
 
+use App;
 use Slack;
 
 trait Slack
@@ -16,7 +17,7 @@ trait Slack
      * @param  string $color    good|bad
      * @return null
      */
-    public function slackPost($headline, $postdata, $channel, $pretext = '', $color = 'good')
+    public function slackPost($headline, $postdata, $channel, $username = 'razorpay', $pretext = '', $color = 'good')
     {
         // Note that api uses SLACK_MOCK instead of SLACK_ENABLE which dashboard uses
         if($_ENV['SLACK_MOCK'] === false)
@@ -27,6 +28,7 @@ trait Slack
             $data['color'] = $color;
             $data['pretext'] = $pretext;
             $data['link_names'] = 1;
+            $data['username'] - $username;
             foreach($postdata as $key => $value)
             {
                 $data['fallback'] .= $key . ': ' . $value . '\n';
@@ -47,10 +49,11 @@ trait Slack
      */
     protected function getSlackContext()
     {
-        $cloud = $this->app['config']->get('app.cloud');
+        $app = App::getFacadeRoot();
+        $cloud = $app['config']->get('app.cloud');
         $data = [
-            'env'           =>  $this->app['env'],
-            'context'       =>  $this->app['config']->get('app.context'),
+            'env'           =>  $app['env'],
+            'context'       =>  $app['config']->get('app.context'),
             'cloud'         =>  $cloud
         ];
 
