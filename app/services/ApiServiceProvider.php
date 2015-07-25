@@ -20,11 +20,6 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $this->app->bindShared('slack', function($app)
-        {
-            return new Slack($app);
-        });
-
         $this->app->bindShared('mailgun', function($app)
         {
             return new Mailgun($app);
@@ -43,6 +38,6 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array('slack', 'mailgun', 'instance');
+        return array('mailgun', 'instance');
     }
 }

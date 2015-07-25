@@ -167,7 +167,7 @@ class Service extends Base\Service
 
             $pretext .= '@harshil @shk';
 
-            $this->app['slack']->send($message, $data, $pretext);
+            $this->slackPost($message, $data, $pretext);
         }
 
         return ['count' => $count];
