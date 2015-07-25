@@ -130,8 +130,10 @@ class Notify
     protected function flatten(array $data)
     {
         $result = [];
-        foreach ($data as $category => $arr) {
-            foreach ($arr as $key => $value) {
+        foreach ($data as $category => $arr)
+        {
+            foreach ($arr as $key => $value)
+            {
                 $result["$category.$key"] = $value;
             }
         }
