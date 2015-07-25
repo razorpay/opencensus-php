@@ -43,7 +43,7 @@ trait Slack
                 $data['fields'][] = array(
                     'title' => $key,
                     'value' => $value,
-                    'short' => false
+                    'short' => true
                 );
             }
 

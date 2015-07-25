@@ -2,13 +2,15 @@
 
 namespace Models\Payment\Processor;
 
-use Constants\Mode;
-use Models\Payment;
-use Mail;
 use App;
+use Constants\Mode;
+use Mail;
+use Models\Payment;
+use Services\Slack;
 
 class Notify
 {
+    use Slack;
     const AUTHORIZED = 'authorized';
     const CAPTURED   = 'captured';
 
@@ -18,6 +20,7 @@ class Notify
 
         $this->payment = $payment;
         $this->template = $this->templateData();
+        $this->flatTemplate = $this->flatten($this->template);
         $this->config = $this->app->config->get('applications.mailgun');
         $this->mode = $this->app['rzp.mode'];
     }
@@ -31,13 +34,25 @@ class Notify
         switch ($event) {
             case self::AUTHORIZED:
                 $this->notifyCustomer();
+                $this->postSlackAuthorized();
                 break;
 
             case self::CAPTURED:
+                $this->postSlackCaptured();
                 // We send an email to the merchant
                 $this->notifyMerchant();
                 break;
         }
+    }
+
+    protected function postSlackAuthorized()
+    {
+        $this->slackPost('Payment Authorized', $this->flatTemplate);
+    }
+
+    protected function postSlackCaptured()
+    {
+        $this->slackPost('Payment Captured', $this->template['payment']);
     }
 
     protected function subject()
@@ -110,6 +125,17 @@ class Notify
                 'orderId'   =>  $this->payment->getOrderId()
             ]
         ];
+    }
+
+    protected function flatten(array $data)
+    {
+        $result = [];
+        foreach ($data as $category => $arr) {
+            foreach ($arr as $key => $value) {
+                $result["$category.$key"] = $value;
+            }
+        }
+        return $result;
     }
 
     /**
