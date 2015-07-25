@@ -2,10 +2,12 @@
 
 namespace Models\Settlement;
 
+use Services\Slack;
 use Queue;
 
 class SlackNotification
 {
+    use Slack;
     protected $queue;
 
     protected $slack;
@@ -30,36 +32,42 @@ class SlackNotification
 
     public function queueOperationSuccess($operation, $data)
     {
-        $data = ['message' => $this->messages[$operation]] + $data;
-
-        $str = json_encode($data, JSON_PRETTY_PRINT);
-        $message = '```' . $str . '```';
+        $data = [
+            'message' => $this->messages[$operation],
+            'status'  => 'good'
+        ] + $data;
 
         $func = __CLASS__ . '@sendSlackNotification';
 
-        $this->queue->push($func, $message);
+        $this->queue->push($func, $data);
     }
 
     public function queueOperationFailure($operation, $e)
     {
-        $message = 'Failed operation: ' . $operation . PHP_EOL;
-
-        $message .= 'Exception class: ' . get_class($e) . ', ' .
-                    'Exception message: ' . $e->getMessage();
+        $data = [
+            'message'           => 'Failed operation: ' . $operation,
+            'exception_class'   => get_class($e),
+            'exception_message' => $e->getMessage(),
+            'status'            => 'bad'
+        ];
 
         $func = __CLASS__ . '@sendSlackNotification';
 
-        $this->queue->push($func, $message);
+        $this->queue->push($func, $data);
     }
 
     public function sendSlackNotification($job, $message)
     {
-        $channel = '#settlements';
-        $username = 'settlements';
-
         $job->delete();
 
-        $app = \App::getFacadeRoot();
-        $app['slack']->send($message, $channel, $username);
+        $message = $data['message'];
+        $color   = $data['status']
+        unset($data['message'], $data['status']);
+
+        $this->slackPost($message, $data, '@harshil @shk', [
+            'channel'   => '#settlements'
+            'username'  => 'settlements'
+            'color'     => $color
+        ]);
     }
 }
