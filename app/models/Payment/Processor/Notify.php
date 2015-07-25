@@ -6,11 +6,11 @@ use App;
 use Constants\Mode;
 use Mail;
 use Models\Payment;
-use Services\Slack;
+use Services\SlackPoster;
 
 class Notify
 {
-    use Slack;
+    use SlackPoster;
     const AUTHORIZED = 'authorized';
     const CAPTURED   = 'captured';
 

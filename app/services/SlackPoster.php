@@ -5,7 +5,7 @@ namespace Services;
 use App;
 use Slack;
 
-trait Slack
+trait SlackPoster
 {
     /**
      * Posts information to slack

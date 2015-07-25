@@ -7,10 +7,11 @@ use EE\Error\ErrorCode;
 use Models\Payment;
 use Trace\Trace;
 use Trace\TraceCode;
+use Services\SlackPoster;
 
 trait Verify
 {
-    use Slack;
+    use SlackPoster;
     public function verify($id)
     {
         $payment = $this->retrieve($id);

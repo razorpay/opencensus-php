@@ -2,12 +2,12 @@
 
 namespace Models\Settlement;
 
-use Services\Slack;
+use Services\SlackPoster;
 use Queue;
 
 class SlackNotification
 {
-    use Slack;
+    use SlackPoster;
     protected $queue;
 
     protected $slack;
@@ -56,17 +56,17 @@ class SlackNotification
         $this->queue->push($func, $data);
     }
 
-    public function sendSlackNotification($job, $message)
+    public function sendSlackNotification($job, $data)
     {
         $job->delete();
 
         $message = $data['message'];
-        $color   = $data['status']
+        $color   = $data['status'];
         unset($data['message'], $data['status']);
 
         $this->slackPost($message, $data, '@harshil @shk', [
-            'channel'   => '#settlements'
-            'username'  => 'settlements'
+            'channel'   => '#settlements',
+            'username'  => 'settlements',
             'color'     => $color
         ]);
     }
