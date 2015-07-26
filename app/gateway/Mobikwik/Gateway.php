@@ -1,14 +1,12 @@
 <?php
 
-namespace Gateway\Paytm;
+namespace Gateway\Mobikwik;
 
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
 use Gateway\Base\Action;
-use Gateway\Paytm;
-use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 

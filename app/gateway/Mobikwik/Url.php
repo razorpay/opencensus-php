@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Billdesk;
+namespace Gateway\Mobikwik;
 
 class Url
 {
-    const TEST_DOMAIN   = 'https://www.mobikwik.com';
-    const LIVE_DOMAIN   = 'https://test.mobikwik.com/mobikwik';
+    const LIVE_DOMAIN   = 'https://www.mobikwik.com';
+    const TEST_DOMAIN   = 'https://test.mobikwik.com/mobikwik';
 
     const AUTHORIZE     = '/wallet';
     const REFUND        = '/refund';

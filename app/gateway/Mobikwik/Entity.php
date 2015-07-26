@@ -30,7 +30,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'pay';
 
-    protected $entity = 'paytm';
+    protected $entity = 'mobikwik';
 
     public $incrementing = true;
 
