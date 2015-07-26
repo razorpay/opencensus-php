@@ -46,4 +46,15 @@ class AxisGatewayTest extends TestCase
 
         sd($content);
     }
+
+    public function testPaymentRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('axis_migs', true);
+
+        $this->assertTestResponse($refund);
+    }
 }

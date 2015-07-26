@@ -68,6 +68,8 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array('vpc_amount');
 
+    public $incrementing = true;
+
     public function setPaymentId($paymentId)
     {
         $this->attributes['payment_id'] = $paymentId;

@@ -113,14 +113,16 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
 
+        $toSaveContent = $content;
+        $toSaveContent['refund_id'] = $input['refund']['id'];
+        $refund = $this->createGatewayPaymentEntity($toSaveContent);
+
         $response = $this->postAmaTransactionRequest($content, $input);
 
         $content = $this->getAmaTxnResponseContent($response, $input);
 
-        $content['payment_id'] = $input['payment']['id'];
-        $content['refund_id'] = $input['refund']['id'];
-
-        $payment = $this->createGatewayPaymentEntity($content);
+        $refund->fill($content);
+        $refund->saveOrFail();
 
         $this->verifyAmaTransactionResponse($content);
     }
