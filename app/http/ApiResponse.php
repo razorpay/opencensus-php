@@ -67,11 +67,6 @@ class ApiResponse
         $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
     }
 
-    public static function setSameOriginInHeaders($response)
-    {
-        $response->headers->set('X-Frame-Options', 'SAMEORIGIN', false);
-    }
-
     protected static function attachJsonpCallback($request, $response)
     {
         $callback = $request->input('callback');
@@ -220,7 +215,7 @@ class ApiResponse
 
         self::stopBrowserCaching($response);
 
-        self::setSameOriginInHeaders($response);
+        self::setSameOriginInHeaders($response, $route);
 
         // This statement is needed for keeping tests functional since
         // we are using a static var here @todo: change this!
@@ -266,6 +261,23 @@ class ApiResponse
         );
 
         return (in_array($route, $jsonpRoutes));
+    }
+
+    public static function setSameOriginInHeaders($response, $route)
+    {
+        if (self::mustNotSetSameOriginHeaders($route))
+        {
+            return;
+        }
+
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN', false);
+    }
+
+    protected static function mustNotSetSameOriginHeaders($route)
+    {
+        $routes = array('checkout');
+
+        return (in_array($route, $routes));
     }
 
     protected static function flattenArrayForPost($data)
