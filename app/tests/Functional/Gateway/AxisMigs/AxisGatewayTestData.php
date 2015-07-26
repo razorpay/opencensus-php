@@ -64,7 +64,7 @@ return [
 //        'id' => '153',
 //        'payment_id' => '3dxwY5ZgxBnrQE',
         'genius' => false,
-        'vpc_Amount' => '50000',
+//        'vpc_Amount' => 50000,
         'vpc_AcqResponseCode' => '00',
         'vpc_Command' => 'refund',
         'vpc_Currency' => null,
