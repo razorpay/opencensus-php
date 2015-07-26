@@ -41,4 +41,16 @@ class GeniusGatewayTest extends TestCase
 
         sd($content);
     }
+
+    public function testPaymentRefund()
+    {
+        $this->markTestIncomplete();
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('axis_genius', true);
+
+        $this->assertTestResponse($refund);
+    }
 }
