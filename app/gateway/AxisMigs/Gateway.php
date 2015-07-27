@@ -80,6 +80,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
+        $payment = $this->createGatewayPaymentEntity($content, $input);
+
         $response = $this->postAmaTransactionRequest($content, $input);
 
         $content = $this->getAmaTxnResponseContent($response, $input);
@@ -99,7 +101,7 @@ class Gateway extends Base\Gateway
             $content['vpc_MerchTxnRef'] = $input['payment']['id'];
         }
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $payment->fill($content)->saveOrFail();
 
         $this->verifyAmaTransactionResponse($content);
     }
@@ -269,6 +271,7 @@ class Gateway extends Base\Gateway
     {
         $payment = $this->getNewGatewayPaymentEntity();
         $payment->setPaymentId($attributes['vpc_MerchTxnRef']);
+        $payment->setAction($this->action);
 
         $payment->fill($attributes);
 
@@ -396,11 +399,22 @@ class Gateway extends Base\Gateway
             return;
         }
 
+        $msg = null;
+
+        if (isset($content['vpc_Message']))
+        {
+            $msg = $content['vpc_Message'];
+        }
+        else if (isset($content['ERROR']))
+        {
+            $msg = $content['ERROR'];
+        }
+
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
                     Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                     null,
-                    $content['vpc_Message']);
+                    $msg);
     }
 
     protected function addTestCardDetailsInTestMode(array & $content)

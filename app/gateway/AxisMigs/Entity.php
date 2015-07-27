@@ -2,9 +2,9 @@
 
 namespace Gateway\AxisMigs;
 
-use Models\Base;
+use Gateway\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     protected $fields = array(
         'id',
@@ -69,11 +69,6 @@ class Entity extends Base\PublicEntity
     protected $appends = array('vpc_amount');
 
     public $incrementing = true;
-
-    public function setPaymentId($paymentId)
-    {
-        $this->attributes['payment_id'] = $paymentId;
-    }
 
     public function getGeniusAttribute()
     {
