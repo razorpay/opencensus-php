@@ -72,9 +72,9 @@ class DailyReport
     {
         $authorizedCollection = (new Payment\Repository)->fetch(
             [
-             'from' => $this->timeLowerLimit,
-             'to' => $this->timeUpperLimit,
-             'status' => 'authorized',
+                'from' => $this->timeLowerLimit,
+                'to' => $this->timeUpperLimit,
+                'status' => 'authorized',
             ],
             $this->merchantId);
 

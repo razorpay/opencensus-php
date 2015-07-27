@@ -163,6 +163,8 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
 
+        (new Merchant\Validator)->validateBeforeActivate($merchant);
+
         (new Merchant\Core)->createBalance($merchant, 'live');
 
         $merchant->activate();
