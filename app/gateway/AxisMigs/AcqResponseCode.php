@@ -2,8 +2,18 @@
 
 namespace Gateway\AxisMigs;
 
+use EE\Error;
+
 class AcqResponseCode
 {
+    protected static $map = array(
+        '01' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION,
+        '02' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION,
+        '03' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION,
+        '04' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION,
+        '05' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION,
+    );
+
     protected static $codes = array(
         '00' => 'Approved or completed successfully',
         '01' => 'Refer to card issuer',
