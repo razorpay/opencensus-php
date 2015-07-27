@@ -30,6 +30,7 @@ class Gateway extends Base\Gateway
         }
 
         $mobileNo = $this->getMobileNumber($input['payment']['contact']);
+        $email = $this->getFormattedEmail($input['payment']['email']);
 
         $content = array(
             'REQUEST_TYPE'              => $type,
@@ -388,6 +389,14 @@ class Gateway extends Base\Gateway
         $cardExp = $expiryMonth . $input['card']['expiry_year'];
 
         return $cardExp;
+    }
+
+    protected function getFormattedEmail($email)
+    {
+        //
+        // Remove all characters other than alhpanumeric, @ and .
+        //
+        return preg_replace("/[^a-zA-Z0-9@.]+/", '', $email);
     }
 
     protected function getMobileNumber($contact)
