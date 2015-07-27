@@ -18,8 +18,12 @@ class DailyReport
     function __construct($id)
     {
         $this->merchantId = $id;
-        $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;   // 00:00 Yesterday
-        $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;       // 00:00 Today
+
+        // 00:00 Yesterday
+        $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;
+
+        // 00:00 Today
+        $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;
 
         // date format = 6th July 2015
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
@@ -27,12 +31,18 @@ class DailyReport
         $this->data = $this->fetchDailyDetails();
     }
 
+    /**
+     * Sends the daily report
+     * @return boolean Whether the daily report was sent or not
+     */
     public function send()
     {
         if ($this->isBlank() === false)
         {
             $this->sendDailyReport();
+            return true;
         }
+        return false;
     }
 
     /**
@@ -137,8 +147,10 @@ class DailyReport
      */
     protected function getSettlement()
     {
-        $settlements = (new Settlement\Repository)->fetch(
-            ['from' => $this->timeLowerLimit, 'to' => $this->timeUpperLimit], $this->merchantId);
+        $settlements = (new Settlement\Repository)->fetch([
+            'from' => $this->timeLowerLimit,
+            'to' => $this->timeUpperLimit
+        ], $this->merchantId);
 
         // Return null if no settlement found
         $settlement = null;
@@ -163,8 +175,10 @@ class DailyReport
 
     protected function getRefunds()
     {
-        $refunds = (new Payment\Refund\Repository)->fetch(
-            ['from' => $this->timeLowerLimit, 'to' => $this->timeUpperLimit], $this->merchantId);
+        $refunds = (new Payment\Refund\Repository)->fetch([
+            'from' => $this->timeLowerLimit,
+            'to' => $this->timeUpperLimit
+        ], $this->merchantId);
 
         return [
             'sum'      => $refunds->sum('amount'),

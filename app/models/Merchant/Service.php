@@ -289,7 +289,9 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant($merchant, $input);
+        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant(
+            $merchant, $input
+        );
     }
 
     public function setBanksForAllMerchants($input)
@@ -387,11 +389,24 @@ class Service extends Base\Service
     {
         $merchants = $this->repo->fetch([Entity::ACTIVATED => 1]);
 
+        $counts = ['sent' => 0, 'skipped' => 0];
+
         foreach ($merchants as $merchant)
         {
             $dailyReport = new DailyReport($merchant->getId());
 
-            $dailyReport->send();
+            $sent = $dailyReport->send();
+
+            if($sent)
+            {
+                $counts['sent']++;
+            }
+            else
+            {
+                $counts['skipped']++;
+            }
         }
+
+        return $counts;
     }
 }
