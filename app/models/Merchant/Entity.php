@@ -205,16 +205,24 @@ class Entity extends Base\PublicEntity
 
     public function getRedactedAccountNumber()
     {
-        $ac = $this->bankAccount->getAccountNumber();
+        $bankAccount = $this->bankAccount()->first();
 
-        //
-        // How many times should we repeat the redacted portion
-        // This does not give a precise result,
-        // but it looks good in groups of 4
-        //
+        if($bankAccount !== null)
+        {
+            $ac = $bankAccount->getAccountNumber();
+            //
+            // How many times should we repeat the redacted portion
+            // This does not give a precise result,
+            // but it looks good in groups of 4
+            //
 
-        $repeat = ceil((strlen($ac) - 4)/4);
+            $repeat = ceil((strlen($ac) - 4)/4);
 
-        return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+            return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+        }
+        else
+        {
+            return 'XXXX-XXXX-XXXX';
+        }
     }
 }
