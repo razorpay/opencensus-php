@@ -31,14 +31,18 @@ class DailyReport
         $this->data = $this->fetchDailyDetails();
     }
 
+    /**
+     * Sends the daily report
+     * @return boolean Whether the daily report was sent or not
+     */
     public function send()
     {
         if ($this->isBlank() === false)
         {
             $this->sendDailyReport();
-            return ['success' => 'true'];
+            return true;
         }
-        return ['success' => false]
+        return false;
     }
 
     /**
