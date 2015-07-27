@@ -82,9 +82,12 @@ class DailyReport
     {
         $authorizedCollection = (new Payment\Repository)->fetch(
             [
-                'from' => $this->timeLowerLimit,
-                'to' => $this->timeUpperLimit,
-                'status' => 'authorized',
+                // Note: This is not correct and uses CREATED_AT
+                // instead of AUTHORIZED_AT
+
+                'from'      => $this->timeLowerLimit,
+                'to'        => $this->timeUpperLimit,
+                'status'    => 'authorized',
             ],
             $this->merchantId);
 
@@ -93,13 +96,12 @@ class DailyReport
 
     protected function getCapturedPayments()
     {
-        $capturedCollection = (new Payment\Repository)->fetch(
-            [
-             'from' => $this->timeLowerLimit,
-             'to' => $this->timeUpperLimit,
-             'status' => 'captured',
-            ],
-            $this->merchantId);
+        $capturedCollection = (new Payment\Repository)
+            ->fetchCapturedBetweenTimestamp(
+                $this->timeLowerLimit,
+                $this->timeUpperLimit,
+                $this->merchantId
+            );
 
         return $this->summarizePayments($capturedCollection);
     }
