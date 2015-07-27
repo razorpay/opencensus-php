@@ -365,13 +365,13 @@ class Gateway extends Base\Gateway
             return; // Payment succeeds
         }
 
-        $gatewayErrorCode = $input['gateway']['vpc_TxnResponseCode'];
+        $gatewayTxnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
 
         $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
-        if (isset(AxisMigs\ErrorCode::$errorMap[$gatewayErrorCode]))
+        if (isset(AxisMigs\TxnResponseCode::$map[$gatewayTxnResponseCode]))
         {
-            $apiErrorCode = AxisMigs\ErrorCode::$errorMap[$gatewayErrorCode];
+            $apiErrorCode = AxisMigs\TxnResponseCode::$map[$gatewayErrorCode];
         }
         else
         {
@@ -379,7 +379,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_UNKNOWN_ERROR,
                 ['payment_id' => $input['payment']['id'],
                 'action' => $this->action,
-                'gateway_error_code' => $gatewayErrorCode,
+                'gateway_error_code' => $gatewayTxnResponseCode,
                 'gateway' => $this->gateway,
                 'time' => time()]);
         }
@@ -387,7 +387,7 @@ class Gateway extends Base\Gateway
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
                     Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                    $gatewayErrorCode,
+                    $gatewayTxnResponseCode,
                     $input['gateway']['vpc_Message']);
     }
 
