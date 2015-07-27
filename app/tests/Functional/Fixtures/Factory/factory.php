@@ -10,6 +10,8 @@ $factory('Models\Merchant\Entity', [
     'international' => 0,
     'website' => $faker->url,
     'category' => 1100,
+    'transaction_report_email' => $faker->email,
+    'receipt_email_enabled' => true,
 ]);
 
 $factory('Models\Terminal\Entity', [

@@ -134,7 +134,7 @@ class DailyReport
         // }
 
         return [
-            'payments' => $payments->toArrayPublic(),
+            'payments' => $payments->toArrayAdmin(),
             'sum'      => $payments->sum('amount'),
             'orderId'  => false
         ];

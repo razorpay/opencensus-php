@@ -245,6 +245,42 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testGetCheckoutRoute()
+    {
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->links['merchant']->activate('10000000000000');
+
+        $request = array(
+            'url' => '/checkout',
+            'method' => 'get',
+            'content' => [],
+        );
+
+        $response = $this->makeRequest($request);
+
+        $headers = $response->headers->all();
+        $this->assertArrayNotHasKey('x-frame-options', $headers);
+    }
+
+    public function testGetCheckoutRouteWithWrongKey()
+    {
+        $this->ba->publicLiveAuth('random');
+
+        $this->fixtures->links['merchant']->activate('10000000000000');
+
+        $request = array(
+            'url' => '/checkout',
+            'method' => 'get',
+            'content' => [],
+        );
+
+        $response = $this->makeRequest($request);
+
+        $headers = $response->headers->all();
+        $this->assertArrayNotHasKey('x-frame-options', $headers);
+    }
+
     public function testPutPaytmMethod()
     {
         $this->ba->appAuth();
