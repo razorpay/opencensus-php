@@ -387,7 +387,7 @@ class Gateway extends Base\Gateway
                     $input['gateway']['vpc_Message']);
     }
 
-    protected function verifyAmaTransactionResponse($content)
+    protected function verifyAmaTransactionResponse($content, $input)
     {
         $txnResponseCode = null;
 
