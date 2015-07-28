@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
 
         $payment->fill($content)->saveOrFail();
 
-        $this->verifyAmaTransactionResponse($content);
+        $this->verifyAmaTransactionResponse($content, $input);
     }
 
     public function refund(array $input)
@@ -127,7 +127,7 @@ class Gateway extends Base\Gateway
         $refund->fill($content);
         $refund->saveOrFail();
 
-        $this->verifyAmaTransactionResponse($content);
+        $this->verifyAmaTransactionResponse($content, $input);
     }
 
     public function verify(array $input)
@@ -283,7 +283,7 @@ class Gateway extends Base\Gateway
 
     public function postRequest($request)
     {
-        $options['timeout'] = 30;
+        $options['timeout'] = 60;
         $request['options'] = $options;
 
         $this->response = $this->sendGatewayRequest($request);
@@ -389,8 +389,14 @@ class Gateway extends Base\Gateway
 
     protected function verifyAmaTransactionResponse($content)
     {
-        if ((isset($content['vpc_TxnResponseCode']) === true) and
-            ($content['vpc_TxnResponseCode'] === '0'))
+        $txnResponseCode = null;
+
+        if (isset($content['vpc_TxnResponseCode']))
+        {
+            $txnResponseCode = $content['vpc_TxnResponseCode'];
+        }
+
+        if ($txnResponseCode === '0')
         {
             return;
         }
@@ -406,11 +412,34 @@ class Gateway extends Base\Gateway
             $msg = $content['ERROR'];
         }
 
+        $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        if ($this->action === Base\Action::REFUND)
+        {
+            $ret = $this->returnIfRefundAmountMatches($content, $input);
+
+            if ($ret === true)
+            {
+                return;
+            }
+
+            $code = Error\ErrorCode::BAD_REQUEST_REFUND_FAILED;
+        }
+
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
-                    Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                    null,
-                    $msg);
+                    $code,
+                    $txnResponseCode,
+                    $input['gateway']['vpc_Message']);
+    }
+
+    protected function returnIfRefundAmountMatches($content, $input)
+    {
+        $amount = $input['payment']['amount_refunded'] + $input['refund']['amount'];
+
+        $vpcAmount = (int) $content['vpc_RefundedAmount'];
+
+        return ($amount === $content['vpc_Amount']);
     }
 
     protected function addTestCardDetailsInTestMode(array & $content)
