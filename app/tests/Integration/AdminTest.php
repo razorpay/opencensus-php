@@ -187,6 +187,21 @@ class AdminTest extends TestCase
 
         $this->assertBodyHasText('Terminal Assigned successfully');
 
+        // Edit Merchant Details
+        $this->browser
+            ->click(l::linkContaining('Edit Merchant MCC, Website, DBA & International'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-modal').length > 0", 20000)
+            ->select(l::IdOrName('international'), 'Yes')
+            ->type(l::IdOrName('category'), '1234')
+            ->type(l::IdOrName('website'), 'http://razorpay.com')
+            ->type(l::IdOrName('billing_label'), 'razorpay')
+            ->type(l::IdOrName('transaction_report_email'), 'test@razorpay.com')
+            ->click(l::css('.modal-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-modal').length == 0", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
+
         // Activate Merchant
         $this->browser
             ->click(l::linkContaining('Activate Merchant'))
