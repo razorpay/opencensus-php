@@ -58,7 +58,7 @@ class DailyReport
 
         $data = $this->data;
 
-        Mail::queue($view, $this->data, function($message) use ($config, $data)
+        Mail::send($view, $this->data, function($message) use ($config, $data)
         {
             $message->to($data['merchant']['transaction_report_email']);
 
