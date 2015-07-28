@@ -57,4 +57,16 @@ class AxisGatewayTest extends TestCase
 
         $this->assertTestResponse($refund);
     }
+
+    public function testPaymentPartialRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+        $amount = (int) ($payment['amount'] / 3);
+
+        $this->refundPayment($payment['id'], $amount);
+
+        $refund = $this->getLastEntity('axis_migs', true);
+
+        $this->assertEquals($amount, $refund['vpc_amount']);
+    }
 }
