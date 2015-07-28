@@ -5,9 +5,9 @@ namespace Gateway\AxisMigs;
 use EE\Error;
 use Gateway\AxisMigs;
 
-class ErrorCode
+class TxnResponseCode
 {
-    public static $errorMessages = array(
+    public static $messages = array(
         '0' => 'Transaction Successful',
         '1' => 'Unknown Error',
         '2' => 'Bank Declined Transaction',
@@ -37,7 +37,7 @@ class ErrorCode
     );
 
 //    'default' => 'Unable to be determined',
-    public static $errorMap = array(
+    public static $map = array(
         '1' => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         '2' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,
         '3' => Error\ErrorCode::BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK,

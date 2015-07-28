@@ -29,6 +29,8 @@ class CreateAxisGateway extends Migration
 
             $table->integer('vpc_Amount');
             $table->string('vpc_AcqResponseCode', 3)->nullable();
+            $table->integer('vpc_AuthorisedAmount')->nullable();
+            $table->integer('vpc_CapturedAmount')->nullable();
             $table->char('vpc_Command', 7);
             $table->char('vpc_Currency', 3)->nullable();
             $table->char('vpc_MerchTxnRef', 14)->nullable();
@@ -40,6 +42,7 @@ class CreateAxisGateway extends Migration
             $table->string('vpc_BatchNo', 8)->nullable();
             $table->char('vpc_Card', 2)->nullable();
             $table->string('vpc_ReceiptNo', 12)->nullable();
+            $table->integer('vpc_RefundedAmount')->nullable();
             $table->string('vpc_ShopTransactionNo', 19)->nullable();
             $table->string('vpc_TransactionNo', 19)->nullable();
             $table->string('vpc_TxnResponseCode')->nullable();

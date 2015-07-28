@@ -22,7 +22,10 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
 
-    const METHODS           = 'methods'; // Refers to methods relation and not a property;
+    /**
+     * Refers to methods relation and not a property;
+     */
+    const METHODS                   = 'methods';
 
     protected $table = \Constants\Table::MERCHANT;
 
