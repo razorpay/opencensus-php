@@ -34,7 +34,7 @@ class DailyReportTest extends TestCase
         $setl['created_at'] = $createdAt + 100;
         $setl->saveOrFail();
 
-        \Mail::shouldReceive('queue')
+        \Mail::shouldReceive('send')
               ->once()
               ->with(
                     Mockery::any(),

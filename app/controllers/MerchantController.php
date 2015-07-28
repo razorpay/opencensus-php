@@ -252,7 +252,7 @@ class MerchantController extends BaseController
      */
     public function sendDailyReport()
     {
-        (new Models\Merchant\Service)->sendDailyReportForAllMerchants();
-        return ApiResponse::json(['success'=>true]);
+        $counts = (new Models\Merchant\Service)->sendDailyReportForAllMerchants();
+        return ApiResponse::json($counts);
     }
 }
