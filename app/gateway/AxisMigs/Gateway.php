@@ -439,7 +439,7 @@ class Gateway extends Base\Gateway
 
         $vpcAmount = (int) $content['vpc_RefundedAmount'];
 
-        return ($amount === $content['vpc_Amount']);
+        return ($amount === $vpcAmount);
     }
 
     protected function addTestCardDetailsInTestMode(array & $content)
