@@ -168,14 +168,15 @@ class AdminTest extends TestCase
 
         $this->assertBodyHasText('Plan Assigned successfully');
 
+        $terminalPassword = static::generateRandomInteger(8);
         // Assign Terminal
         $this->browser
             ->click(l::linkContaining('Assign Terminal'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.terminal-modal').length > 0", 20000)
-            ->type(l::IdOrName('gateway_merchant_id'), static::generateRandomString(10))
-            ->type(l::IdOrName('gateway_terminal_id'), static::generateRandomString(10))
-            ->type(l::IdOrName('gateway_terminal_password'), 'testing')
-            ->type(l::IdOrName('gateway_terminal_password_confirmation'), 'testing')
+            ->type(l::IdOrName('gateway_merchant_id'), static::generateRandomInteger(5))
+            ->type(l::IdOrName('gateway_terminal_id'), static::generateRandomInteger(8))
+            ->type(l::IdOrName('gateway_terminal_password'),$terminalPassword)
+            ->type(l::IdOrName('gateway_terminal_password_confirmation'), $terminalPassword)
             ->click(l::css('.modal-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 20000)
             ->click(l::css('.confirm-ok'))
