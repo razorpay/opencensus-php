@@ -8,6 +8,7 @@ use Config;
 class Api extends Razorpay\Api\Api
 {
     public static $mock = false;
+
     /**
      * @param string $api_key
      */
@@ -17,7 +18,6 @@ class Api extends Razorpay\Api\Api
         self::$mock = Config::get('api.mock');
         parent::__construct($key, $secret);
     }
-
 
     /**
      * @param string $name

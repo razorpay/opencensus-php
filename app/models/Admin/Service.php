@@ -362,7 +362,9 @@ class Service extends Base\Service
 
         try
         {
-            $data = $this->api->payment->fetch($id)->verify()->toArray();
+            $data = $this->api->admin->fetchEntityById('payment', $id)
+                                    ->verify()
+                                    ->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
