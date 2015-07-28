@@ -44,7 +44,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $this->addTestCardDetailsInTestMode($content);
+//            $this->addTestCardDetailsInTestMode($content);
         }
 
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
@@ -80,7 +80,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
-        $payment = $this->createGatewayPaymentEntity($content, $input);
+        $payment = $this->createGatewayPaymentEntity($content, $input['payment']['id']);
 
         $response = $this->postAmaTransactionRequest($content, $input);
 
@@ -117,7 +117,8 @@ class Gateway extends Base\Gateway
 
         $toSaveContent = $content;
         $toSaveContent['refund_id'] = $input['refund']['id'];
-        $refund = $this->createGatewayPaymentEntity($toSaveContent);
+
+        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
 
         $response = $this->postAmaTransactionRequest($content, $input);
 
@@ -141,18 +142,20 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseQueryResponse($response);
 
+        $key = 'vpc_TxnResponseCode';
+
         if (isset($content['vpc_SecureHash']))
         {
             $this->verifySecureHash($content);
-
-            $key = 'vpc_TxnResponseCode';
+        }
 
         $match = ($payment[$key] === $content[$key]);
 
-        if ($match == true)
+        if ($match === true)
         {
-            $razorpayPaymentStatus = $this->isRazorpayPaymentStatusSuccess(
-                                                    $input['payment']);
+            $status = $input['payment']['status'];
+            $razorpayPaymentStatus =
+                (($status === 'authorized') or ($status === 'captured'));
 
             $migsPaymentStatus = ($content[$key] === '0');
 
@@ -173,24 +176,6 @@ class Gateway extends Base\Gateway
             }
 
             throw new Exception\PaymentVerificationException($res);
-        }
-
-            if ($payment['vpc_TxnResponseCode'] !== $content['vpc_TxnResponseCode'])
-            {
-                $res = array(
-                    'match' => false,
-                    'gateway_data' => $content,
-                    'rzp_payment' => $payment->toArray(),
-                    'payment_id' => $input['payment']['id'],
-                    'gateway' => $this->gateway,
-                );
-
-                throw new Exception\PaymentVerificationException($res);
-            }
-        }
-        else
-        {
-            ;
         }
     }
 
@@ -267,10 +252,14 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function createGatewayPaymentEntity($attributes)
+    protected function createGatewayPaymentEntity($attributes, $paymentId = null)
     {
         $payment = $this->getNewGatewayPaymentEntity();
-        $payment->setPaymentId($attributes['vpc_MerchTxnRef']);
+
+        if ($paymentId === null)
+            $paymentId = $attributes['vpc_MerchTxnRef'];
+
+        $payment->setPaymentId($paymentId);
         $payment->setAction($this->action);
 
         $payment->fill($attributes);
