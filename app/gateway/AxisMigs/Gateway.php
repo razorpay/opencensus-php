@@ -44,7 +44,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-//            $this->addTestCardDetailsInTestMode($content);
+            $this->addTestCardDetailsInTestMode($content);
         }
 
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
@@ -362,11 +362,14 @@ class Gateway extends Base\Gateway
         {
             $apiErrorCode = AxisMigs\TxnResponseCode::$map[$txnResponseCode];
 
-            $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
-
-            if (isset(AcqResponseCode::$map[$acqResponseCode]))
+            if (isset($input['gateway']['vpc_AcqResponseCode']))
             {
-                $apiErrorCode = AcqResponseCode::$map[$acqResponseCode];
+                $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+
+                if (isset(AcqResponseCode::$map[$acqResponseCode]))
+                {
+                    $apiErrorCode = AcqResponseCode::$map[$acqResponseCode];
+                }
             }
         }
         else
