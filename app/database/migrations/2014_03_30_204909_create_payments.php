@@ -107,6 +107,7 @@ class CreatePayments  extends Migration
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);
+            $table->index(Payment::AUTHORIZED_AT);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
