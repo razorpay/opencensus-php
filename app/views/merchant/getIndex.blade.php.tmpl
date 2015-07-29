@@ -76,11 +76,14 @@
 
     <!-- jQuery & angular -->
     <script src="{{asset('js/generated/pre.js')}}"></script>
-      
-    <!-- Supportkit for help -->
-    <script src="//cdn.supportkit.io/supportkit.min.js"></script>
-    <script>
 
+    <!-- Supportkit for help, only loaded on desktop -->
+    <script>
+    if (!((screen.width < 800) || /Android|iPhone|iPad/.test(navigator.userAgent))) {
+      document.write(unescape("%3Cscript src='//cdn.supportkit.io/supportkit.min.js' %3E%3C/script%3E"));
+    }
+    </script>
+    <script>
       function createCookie(name, value, days){
         if (days) {
           var date = new Date();
@@ -119,7 +122,7 @@
         } catch(e){}
 
         SupportKit.init(initOptions);
-        
+
         !rzp_email && SupportKit.on('ready', function(){
           var intro_text = $('.sk-intro').html();
           var sk_intro = $('.sk-intro').html('Please provide your email or phone number for further communication: <br>\
@@ -160,7 +163,7 @@
                 inputs.eq(0).focus();
                 return;
             }
-            
+
             SupportKit.updateUser({
                 email: props.email,
                 properties: props
@@ -168,7 +171,7 @@
 
             sk_intro.html(intro_text);
             $(this).off('focus', chat_attempt);
-            
+
             try{
                 createCookie('rzp_email', props.email, 1000);
                 createCookie('rzp_phone', props.phone, 1000);
@@ -188,7 +191,7 @@
       !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","group","track","ready","alias","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t){var e=document.createElement("script");e.type="text/javascript";e.async=!0;e.src=("https:"===document.location.protocol?"https://":"http://")+"cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(e,n)};analytics.SNIPPET_VERSION="3.0.1";
         if(window.location.hostname=="dashboard.razorpay.com") {
           analytics.load("RRXUUC0k2TlRbM7TlVFgh10dDVWuGn76");
-          analytics.page() 
+          analytics.page()
         }
       }}();
     </script>
