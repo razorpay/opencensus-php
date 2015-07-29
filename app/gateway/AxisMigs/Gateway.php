@@ -382,7 +382,7 @@ class Gateway extends Base\Gateway
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
-                    Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $apiErrorCode,
                     $txnResponseCode,
                     $input['gateway']['vpc_Message']);
     }

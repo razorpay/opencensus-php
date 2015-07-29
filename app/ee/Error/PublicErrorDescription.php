@@ -42,7 +42,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                                      = 'Card is expired';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                          = 'Expiry date is not valid';
     const BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID                              = 'Card details entered by the user is/are invalid.';
-    const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION         = 'The card issuing bank has prevented the payment from being authorized.';
+    const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION         = 'Payment processing declined. The card issuing bank has prevented the payment from being authorized.';
     const BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE                        = 'The card number provided is not a legitimate one.';
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
     const BAD_REQUEST_PAYMENT_BLOCKED_BY_BANK_DUE_TO_RISK_CHECKS_FAILURE        = 'Payment was blocked by bank because it failed certain risk checks';
