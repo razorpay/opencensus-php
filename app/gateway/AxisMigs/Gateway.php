@@ -360,7 +360,7 @@ class Gateway extends Base\Gateway
 
         if (isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode]))
         {
-            $apiErrorCode = AxisMigs\TxnResponseCode::$map[$gatewayErrorCode];
+            $apiErrorCode = AxisMigs\TxnResponseCode::$map[$txnResponseCode];
 
             $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
 

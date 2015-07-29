@@ -96,7 +96,7 @@ class ResponseCodeMap
         216     => 'Failure received from ICICI gateway.',
         217     => 'Gateway error.',
         218     => 'OTP Validated',
-        219     => 'User has entered an invalid OTP (One Time Password).',
+        219     => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         220     => 'Bank communication error.',
         221     => Error\ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
         222     => 'Transaction amount return by the gateway does not match with Paytm transaction amount.',

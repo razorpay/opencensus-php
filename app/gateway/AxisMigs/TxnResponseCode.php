@@ -19,7 +19,7 @@ class TxnResponseCode
         '8' => 'Transaction Type Not Supported',
         '9' => 'Bank declined transaction (Do not contact Bank)',
         'A' => 'Transaction Aborted',
-        'B' => 'Transaction was blocked by the Payment Server because it did not pass all risk checks.'
+        'B' => 'Transaction was blocked by the Payment Server because it did not pass all risk checks.',
         'C' => 'Transaction Cancelled',
         'D' => 'Deferred transaction has been received and is awaiting processing',
         'F' => '3D Secure Authentication failed',
