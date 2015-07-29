@@ -224,6 +224,23 @@ class AuthorizeTest extends TestCase
             ['created_at' => time() - 60*100, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
 
         $this->cancelPayment($payment->getPublicId());
+
+        $contentType = 'application/json';
+        $this->assertContentTypeForResponse($contentType, $this->response);
+    }
+
+    public function testContentTypeHtmlOnPaymentCreateRoute()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $contentType = 'text/html; charset=UTF-8';
+        $this->assertContentTypeForResponse($contentType, $this->response);
     }
 
     public function startTest()
