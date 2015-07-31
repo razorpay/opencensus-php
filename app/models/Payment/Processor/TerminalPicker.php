@@ -201,9 +201,20 @@ class TerminalPicker
 
     protected function pickTerminalForWalletMethod($gatewayTerms)
     {
-        if (isset($gatewayTerms[Payment\Gateway::PAYTM]) === true)
+        $terminal = null;
+
+        $wallet = $this->payment->getWallet();
+
+        if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
+            ($wallet === 'paytm'))
         {
             return $gatewayTerms[Payment\Gateway::PAYTM];
+        }
+
+        if ((isset($gatewayTerms[Payment\Gateway::MOBIKWIK]) === true) and
+            ($wallet === 'wallet'))
+        {
+            return $gatewayTerms[Payment\Gateway::MOBIKWIK];
         }
     }
 
