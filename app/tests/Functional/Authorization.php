@@ -95,9 +95,9 @@ class Authorization
         $this->publicAuth();
     }
 
-    public function publicLiveAuth()
+    public function publicLiveAuth($key = 'rzp_live_TheLiveAuthKey')
     {
-        $this->publicAuth('rzp_live_TheLiveAuthKey');
+        $this->publicAuth($key);
     }
 
     public function privateAuth($key = null, $secret = null)

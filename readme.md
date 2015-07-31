@@ -31,3 +31,14 @@ To generate documentation, run the following:
     ./apigen generate -d ./docs
 
 The documentation will be generated in the docs directory.
+
+
+# Email Templates
+
+All email templates are saved as `.email` files, which are then compiled to
+blade templates before committing. Run the following command to regenerate:
+
+	php artisan email:gen
+
+If you have created a new email template, make sure you edit the
+`GenerateEmailTemplate.php` file to add the template in the templates array.

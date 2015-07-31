@@ -14,8 +14,12 @@ trait Verify
     {
         $payment = $this->retrieve($id);
 
+        $refunds = $payment->refunds;
+
         $data = array(
-            'payment' => $payment->toArray());
+            'payment' => $payment->toArray(),
+            'refunds' => $refunds->toArray(),
+        );
 
         try
         {

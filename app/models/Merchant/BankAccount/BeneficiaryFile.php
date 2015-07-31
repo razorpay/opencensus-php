@@ -37,6 +37,11 @@ class BeneficiaryFile
         'Bene_A/c No.',
     );
 
+    public function __construct()
+    {
+        $this->mail = \Mail::getFacadeRoot();
+    }
+
     public function generate()
     {
         $list = (new BankAccount\Repository)->getAllOrderedByCreatedAt();
@@ -78,6 +83,8 @@ class BeneficiaryFile
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
         $fullpath = $this->getExcelFullFilePath();
 
+        $this->sendKotakBeneficiaryFileMail($fullpath);
+
         return ['url' => $fullpath];
     }
 
@@ -90,7 +97,7 @@ class BeneficiaryFile
 
         $this->mail->queue('emails.message', $data, function($message) use ($data)
         {
-            $emails = ['shashank@razorpay.com', 'harshil@razorpay.com'];
+            $emails = ['settlements@razorpay.com'];
 
             $message->from('kotak_beneficiary_file@razorpay.com', 'Razorpay Kotak Beneficiary File');
 
