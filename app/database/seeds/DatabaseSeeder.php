@@ -469,4 +469,37 @@ class DatabaseSeeder extends Seeder
                 )
             );
     }
+
+    protected function createMobikwikTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '2dAHgaZd63sHbl',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'mobikwik',
+                'card'                  => '0',
+                'netbanking'            => '0',
+                'gateway_merchant_id'   => 'test_merchant_mobikwik',
+                'gateway_terminal_id'   => 'test_terminal_mobikwik',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_mobikwik_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => 'mobikwik',
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_merchant_id'       => 'demo_merchant_mobikwik',
+                'gateway_terminal_id'       => 'demo_terminal_mobikwik',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_mobikwik_terminal_pass'),
+                'created_at'                =>  time(),
+                'updated_at'                =>  time(),
+                )
+            );
+    }
 }

@@ -30,6 +30,11 @@ class Gateway extends Base\Gateway
             'redirecturl'   => $input['callbackUrl'],
         );
 
+        if ($this->mode === Mode::TEST)
+        {
+            $this->addTerminalDetailsInTest($content);
+        }
+
         $content['checksum'] = $this->getPaymentHash($content);
 
         $request = array(
@@ -95,6 +100,20 @@ class Gateway extends Base\Gateway
         //     //error_log("sending return = " . print_r($return));
         //     return $return;
     }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+    }
+
+    protected function addTerminalDetailsInTest(array & $content)
+    {
+        $content = array(
+            'merchantname'  => 'TestMerchant',
+            'mid'           => 'MBK9002',
+        );
+    }
+
 
     protected function getPaymentHash($content)
     {

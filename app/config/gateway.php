@@ -65,6 +65,10 @@ return array(
         'test_terminal_id'  => $_ENV['KOTAK_GATEWAY_TEST_TERMINAL_ID'],
     ),
 
+    'mobikwik' => array(
+        'test_secret_key'   => $_ENV['MOBIKWIK_GATEWAY_TEST_HASH_SECRET'],
+    ),
+
     'paytm' => array(
         'test_merchant_id'  => $_ENV['PAYTM_GATEWAY_TEST_MERCHANT_ID'],
         'test_hash_secret'  => $_ENV['PAYTM_GATEWAY_TEST_HASH_SECRET'],
