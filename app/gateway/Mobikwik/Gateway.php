@@ -3,6 +3,7 @@
 namespace Gateway\Mobikwik;
 
 use Constants\Mode;
+use EE\Error;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
@@ -26,7 +27,7 @@ class Gateway extends Base\Gateway
             'cell'          => $input['payment']['contact'],
             'orderid'       => $input['payment']['id'],
             'merchantname'  => $input['terminal']['gateway_terminal_id'],
-            'mid'           => $input['termianl']['gateway_merchant_id'],
+            'mid'           => $input['terminal']['gateway_merchant_id'],
             'redirecturl'   => $input['callbackUrl'],
         );
 
@@ -51,37 +52,47 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $this->verifySecureHash($input['gateway']);
+
+        if ($input['gateway']['statuscode'] !== '0')
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                    $errorCode,
+                    $input['gateway']['statusmessage'],
+                    $input['gateway']['statuscode']);
+        }
     }
 
     public function verify(array $input)
     {
         parent::verify($input);
 
-        $content['mid'] = $input['terminal']['gateway_merchant_id'];
+        $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
         $content['orderid'] = $input['payment']['id'];
         $content['ver'] = 2;
+
         $content['checksum'] = $this->getHashForVerifyRequest(
                                         $content['mid'], $content['orderid']);
 
         $content = http_build_query($content);
 
         $request = array(
-            'url'     => $this->getUrl(),
+            'url'     => $this->getUrl($this->action),
             'method'  => 'post',
             'content' => $content);
 
         $response = $this->sendGatewayRequest($request);
 
-        // $recievedChecksum = validateChecksumMobikwik(
-        //                                             $outputXmlObject->statuscode,
-        //                                             $outputXmlObject->orderid,
-        //                                             $outputXmlObject->refid,
-        //                                             $outputXmlObject->amount,
-        //                                             $outputXmlObject->statusmessage,
-        //                                             $outputXmlObject->ordertype,
-        //                                             $WorkingKey);
+        // On error, only 3 fields, 'status', 'statuscode' and 'statusdescription' are returned
 
-        $content = simplexml_load_string($response->body);
+        $content = (array) simplexml_load_string($response->body);
+
+        if ($content['statuscode'] !== '0')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                'Payment verification failed with statuscode: ' . $content['statuscode']);
+        }
 
         $this->verifySecureHashForQueryRequest($content);
 
@@ -108,12 +119,24 @@ class Gateway extends Base\Gateway
 
     protected function addTerminalDetailsInTest(array & $content)
     {
-        $content = array(
-            'merchantname'  => 'TestMerchant',
-            'mid'           => 'MBK9002',
-        );
+        $content['merchantname']  = 'TestMerchant';
+        $content['mid']  = $this->getTestMerchantId();
     }
 
+    protected function getTestMerchantId()
+    {
+        return 'MBK9002';
+    }
+
+    protected function getMobikwikMerchantId($terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestMerchantId();
+        }
+
+        return $terminal['gateway_merchant_id'];
+    }
 
     protected function getPaymentHash($content)
     {
@@ -144,7 +167,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
-        $generatedHash = $this->getHashOfArray($content, $fieldsInOrder);
+        $generatedHash = $this->getHashOfArray($content);
 
         if ($generatedHash !== $hash)
         {
@@ -155,12 +178,12 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHashForQueryRequest($content)
     {
-        $str = "'{" . $content['statuscode'] . "}'" .
-               "'{" . $content['orderid'] . "}'" .
-               "'{" . $content['refid'] . "}'" .
-               "'{" . $content['amount'] . "}'" .
-               "'{" . $content['statusmessage'] . "}'" .
-               "'{" . $content['ordertype'] . "}'";
+        $str = "'" . $content['statuscode']     . "'" .
+               "'" . $content['orderid']        . "'" .
+               "'" . $content['refid']          . "'" .
+               "'" . $content['amount']         . "'" .
+               "'" . $content['statusmessage']  . "'" .
+               "'" . $content['ordertype']      . "'";
 
         $generatedHash = $this->getHashOfString($str);
 
@@ -171,13 +194,12 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                           Error\ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED);
         }
-
-
     }
 
     protected function getHashForVerifyRequest($mid, $orderId)
     {
-        $str = "'{$mid}''{$orderId}'";
+
+        $str = "'".$mid."''".$orderId."'";
 
         return $this->getHashOfString($str);
     }
@@ -189,7 +211,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfArray($content)
     {
-        $str = "'" . $this->getStringToHash($orderedData, "''") . "'";
+        $str = $this->getStringToHash($content, "''");
 
         return $this->getHashOfString($str);
     }
@@ -198,7 +220,7 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        return strtoupper(hash_hmac('sha256', $str, $secret, false));
+        return strtolower(hash_hmac('sha256', $str, $secret, false));
     }
 }
 
