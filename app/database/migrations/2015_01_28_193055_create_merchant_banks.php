@@ -29,6 +29,9 @@ class CreateMerchantBanks extends Migration {
             $table->boolean(MerchantBanks::PAYTM)
                   ->default(0);
 
+            $table->boolean(MerchantBanks::MOBIKWIK)
+                  ->default(0);
+
             $table->integer(MerchantBanks::CREATED_AT);
 
             $table->integer(MerchantBanks::UPDATED_AT);

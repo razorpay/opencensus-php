@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const CARD              = 'card';
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
+    const MOBIKWIK          = 'mobikwik';
 
     protected $primaryKey = self::MERCHANT_ID;
 
@@ -30,7 +31,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CARD,
         self::BANKS,
-        self::PAYTM);
+        self::PAYTM,
+        self::MOBIKWIK);
 
     protected $public = array(
         self::ENTITY,
@@ -69,6 +71,12 @@ class Entity extends Base\PublicEntity
     public function getPaytm()
     {
         return $this->getAttribute(self::PAYTM);
+    }
+
+    public function getMobikwik()
+    {
+//        return $this->getAttribute(self::MOBIKWIK);
+        return true;
     }
 
     public function setPaytm($paytm)
