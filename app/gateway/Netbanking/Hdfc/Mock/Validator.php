@@ -7,7 +7,7 @@ use Models\Base;
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        'ClientCode'            => 'required|email',
+        'ClientCode'            => 'required|alpha_num',
         'MerchantCode'          => 'required|alpha',
         'TxnCurrency'           => 'required|in:INR',
         'TxnAmount'             => 'required|numeric',

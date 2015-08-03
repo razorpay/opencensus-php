@@ -140,7 +140,7 @@ class Gateway extends Base\Gateway
         $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
 
         $data = array(
-            'ClientCode'        => $input['payment']['email'],
+            'ClientCode'        => $clientCode,
             'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
             'TxnCurrency'       => 'INR',
             'TxnAmount'         => $input['payment']['amount'] / 100,
