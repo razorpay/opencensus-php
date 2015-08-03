@@ -4,13 +4,12 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
 
   $scope.merchants = {};
   $scope.count = 0;
-  generate();
 
   $scope.regenerate = function() {
     $scope.merchant_type = "";
     generate();
   }
-  
+
 
   $scope.filter = function(){
     var query = ""
@@ -56,8 +55,8 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
         $scope.count = data.data.count;
 
         angular.forEach($scope.merchants, function(i){
-          i.activation_progress = parseInt((i.merchant_details.steps_finished.length * 100)/ 5);    
-        });     
+          i.activation_progress = parseInt((i.merchant_details.steps_finished.length * 100)/ 5);
+        });
 
       }
     });
