@@ -74,6 +74,22 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.holdMerchantFunds = function(){
+      var merchantEdit = {
+        hold_funds: 1
+      }
+
+      $scope.editMerchant(merchantEdit);
+    };
+
+    $scope.releaseMerchantFunds = function(){
+      var merchantEdit = {
+        hold_funds: 0
+      }
+
+      $scope.editMerchant(merchantEdit);
+    };
+
     $scope.enableLive = function() {
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/live/enable");
 
@@ -156,6 +172,14 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       .error(function(){
         $scope.alerts.addAlert('danger', null, true);
       });
+    };
+
+    $scope.setReceiptEmail = function(value) {
+      var editMerchant = {
+        'receipt_email_enabled': value
+      };
+      
+      $scope.editMerchant(editMerchant);
     };
 
     $scope.assignPricing = function(plan_id){
@@ -638,9 +662,15 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 .controller('editMerchantModalCtrl', ['$scope', '$modalInstance', 'current',
   function ($scope, $modalInstance, current) {
 
+      // If these fields were not present in the API db, we copy them to the form from dashboard database
+
       if(!current.international) current.international = current.merchant_details.business_international;
 
       if(!current.website) current.website = current.merchant_details.business_website;
+
+      if(!current.billing_label) current.billing_label = current.merchant_details.business_dba;
+
+      if(!current.transaction_report_email) current.transaction_report_email = current.merchant_details.transaction_report_email;
 
       $scope.current = current;
 
@@ -668,8 +698,16 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
   function ($scope, $modalInstance, current) {
       var merchant_details = current && current.merchant_details || {};
       var html = "";
+      var bankDocument = "";
+
       $scope.ok = function () {
-        if(html){
+
+        if (bankDocument === 'hdfc-excel') {
+            var id = merchant_details.merchant_id;
+            window.location = '/admin/merchant/'+id+'/hdfc_excel';
+        }
+
+        if (html) {
           var w = window.open();
           w.document.body.innerHTML = html;
         }
@@ -679,9 +717,19 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         $modalInstance.dismiss('cancel');
       };
 
-      $scope.select = function(bank){
+      $scope.select = function(doc){
+        $('.modal-ok').attr('disabled', 'disabled');
+
+        bankDocument = doc;
+
+        if (bankDocument === 'hdfc-excel') {
+            $('.modal-ok').removeAttr('disabled');
+            return;
+        }
+
         $.ajax({
-          url: 'axis-form.html',
+          url: '/admin-forms/' + bankDocument + '.html',
+          complete: function(){$('.modal-ok').removeAttr('disabled')},
           success: function(resp){
             doT.templateSettings.strip = false;
             var template = doT.template(resp);
@@ -709,9 +757,10 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
             var now = new Date();
             var nowdate = ("0"+now.getDate()).slice(-2);
-            var nowmonth = ("0"+now.getMonth()).slice(-2);
+            var nowmonth = ("0"+(1+now.getMonth())).slice(-2);
             var nowyear = now.getYear()+1900;
             html = template({
+              billing_label: current.billing_label || '',
               date: nowdate + '/' + nowmonth + '/' + nowyear,
               reqdate: nowdate + nowmonth + nowyear,
               reqby: "Harshil Mathur",
@@ -772,7 +821,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
               techpro_addr: "",
               paycli_merc: "",
               paycli_third: "Y",
-              paycli_hosting: "",
+              paycli_hosting: "Amazon Web Services",
               paycli_tel: "",
               paycli_win: "",
               paycli_winver: "",
@@ -801,7 +850,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
               payapp_dndcard: "",
               payapp_secyes: "Y",
               payapp_secno: "",
-              payapp_uid: "",
+              payapp_uid: "Razorpay",
               payapp_vbvyes: "Y",
               payapp_vbvno: "",
               payapp_mscyes: "Y",

@@ -6,6 +6,10 @@ use Models\Base;
 
 class Validator extends Base\Validator
 {
+    protected static $generators = array(
+        'date'
+    );
+
     protected static $loginRules = array(
         'username'  =>      'required|alpha_dash',
         'password'  =>      'required|between:6,50'
@@ -39,4 +43,8 @@ class Validator extends Base\Validator
             $this->addError('old_password', 'Incorrect password');
         }
     }
+
+    protected static $getBeneficiaryRules = array(
+        'date' => 'sometimes|date_format:Y-m-d',
+    );
 }

@@ -59,6 +59,8 @@
     /**
      * Should contact form submit details be sent to slack
      * Set false in testing/development
+     * This is also used for Sorting Hat integration
+     * Slack Key is not used for Sorting Hat
      */
     'SLACK_ENABLE'      => false,
     'SLACK_KEY'         => '', // Slack Incoming Webhook key

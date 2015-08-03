@@ -61,7 +61,8 @@ module.exports = function(grunt){
 
                     'public/js/generated/admin.js': [
                         'public/js/admin/**/*.js',
-                        'public/js/*.js'
+                        'public/js/*.js',
+                        'public/js/libs/moment.min.js'
                     ]
                 }
             }

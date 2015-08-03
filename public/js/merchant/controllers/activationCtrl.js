@@ -185,6 +185,17 @@ app.controller('ActivationCtrl', ['$scope', '$http', 'alertsFactory', 'transform
 
     };
 
+    function checkInputDateSupport()
+    {
+      var input = document.createElement('input');
+      input.setAttribute('type','date');
+
+      var notADateValue = 'not-a-date';
+      input.setAttribute('value', notADateValue); 
+
+      return !(input.value === notADateValue);
+    }
+
     function submitForm(step){
       if($scope.data[6].agree_terms !== true) {
         $scope.alerts[step].addAlert('danger', 'You must agree to the terms & conditions to use Razorpay services', true);

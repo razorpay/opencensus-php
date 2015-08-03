@@ -68,7 +68,9 @@ class Entity extends Base\Entity
         'steps_finished',
         'submitted',
         'locked',
-        'comment'
+        'comment',
+        'submitted_at',
+        'transaction_report_email'
     );
 
     protected static $ajaxFields = array(
@@ -128,7 +130,8 @@ class Entity extends Base\Entity
         'promoter_address_url',
         'steps_finished',
         'submitted',
-        'locked'
+        'locked',
+        'transaction_report_email'
     );
 
     protected static $uploadKeys = array(
@@ -263,9 +266,10 @@ class Entity extends Base\Entity
         }
     }
 
-    public function markSubmittedTrue()
+    public function markSubmitted()
     {
         $this->setAttribute('submitted', 1);
+        $this->setAttribute('submitted_at', time());
     }
 
     public function isLocked()

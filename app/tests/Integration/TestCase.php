@@ -60,6 +60,13 @@ class TestCase extends ZizacoIntegrationTestCase
         return bin2hex(openssl_random_pseudo_bytes($length/2));
     }
 
+    protected static function generateRandomInteger($digits)
+    {
+        $min = pow(10, $digits-1);
+        $max = pow(10, $digits) -1;
+        return rand($min, $max);
+    }
+
     protected static function generateMerchantEmail()
     {
         return static::generateRandomString()."@".static::generateRandomString().".com";

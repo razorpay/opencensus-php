@@ -134,4 +134,11 @@ class Merchant extends Entity
 
         return $this->request('GET', $relativeUrl);
     }
+
+    public function generateBeneficiaryFile()
+    {
+        $relativeUrl = $this->getEntityUrl().'beneficiary/file';
+
+        return $this->request('GET', $relativeUrl);
+    }
 }

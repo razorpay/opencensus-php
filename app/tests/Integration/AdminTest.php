@@ -113,10 +113,11 @@ class AdminTest extends TestCase
     public function testMerchantsList()
     {
         $this->browser
-            ->open(URL::to('/admin#'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#merchantsNav').length > 0", 20000)
-            ->click(l::linkContaining('Merchants'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table').length > 0", 20000);
+            ->open(URL::to('/admin#/app/merchants/list'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant_type').length > 0", 20000)
+            ->select(l::IdOrName('merchant_type'), 'label=All')
+            ->click(l::css('.merchant_go'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table-body').length > 0", 20000);
 
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText($this->merchant->email);
@@ -128,12 +129,8 @@ class AdminTest extends TestCase
     public function testMerchantDetails()
     {
         // Get merchant details & actions
-        $this->browser
-            ->open(URL::to('/admin#/app/merchants/list'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table > tbody > tr > td').length > 5", 20000)
-            ->click(l::linkContaining($this->merchant->id))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+        $this->click(l::linkContaining($this->merchant->id))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000);
 
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText("Merchant Detail");
@@ -168,14 +165,15 @@ class AdminTest extends TestCase
 
         $this->assertBodyHasText('Plan Assigned successfully');
 
+        $terminalPassword = static::generateRandomInteger(8);
         // Assign Terminal
         $this->browser
             ->click(l::linkContaining('Assign Terminal'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.terminal-modal').length > 0", 20000)
-            ->type(l::IdOrName('gateway_merchant_id'), static::generateRandomString(10))
-            ->type(l::IdOrName('gateway_terminal_id'), static::generateRandomString(10))
-            ->type(l::IdOrName('gateway_terminal_password'), 'testing')
-            ->type(l::IdOrName('gateway_terminal_password_confirmation'), 'testing')
+            ->type(l::IdOrName('gateway_merchant_id'), static::generateRandomInteger(5))
+            ->type(l::IdOrName('gateway_terminal_id'), static::generateRandomInteger(8))
+            ->type(l::IdOrName('gateway_terminal_password'),$terminalPassword)
+            ->type(l::IdOrName('gateway_terminal_password_confirmation'), $terminalPassword)
             ->click(l::css('.modal-ok'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.confirm-modal').length > 0", 20000)
             ->click(l::css('.confirm-ok'))
@@ -185,6 +183,21 @@ class AdminTest extends TestCase
         $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
         $this->assertBodyHasText('Terminal Assigned successfully');
+
+        // Edit Merchant Details
+        $this->browser
+            ->click(l::linkContaining('Edit Merchant MCC, Website, DBA & International'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-modal').length > 0", 20000)
+            ->select(l::IdOrName('international'), 'Yes')
+            ->type(l::IdOrName('category'), '1234')
+            ->type(l::IdOrName('website'), 'http://razorpay.com')
+            ->type(l::IdOrName('billing_label'), 'razorpay')
+            ->type(l::IdOrName('transaction_report_email'), 'test@razorpay.com')
+            ->click(l::css('.modal-ok'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-modal').length == 0", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+
+        $this->assertFalse($this->browser->isElementPresent(l::css('.alert-danger')));
 
         // Activate Merchant
         $this->browser

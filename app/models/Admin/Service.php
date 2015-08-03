@@ -2,6 +2,8 @@
 
 namespace Models\Admin;
 
+use AWS;
+use Config;
 use Models\Base;
 use Models\Admin;
 use Models\Merchant;
@@ -176,12 +178,12 @@ class Service extends Base\Service
             return [['id' => 'Merchant id cannot be null'], []];
         }
 
-        $details = (new Admin\Service)->fetchMerchantDetails($id);
+        $details = $this->fetchMerchantDetails($id);
 
-        $activation_details = (new Admin\Service)->fetchMerchantActivationDetails($id);
+        $activationDetails = $this->fetchMerchantActivationDetails($id);
 
         $data = array(
-            'activation' => $activation_details,
+            'activation' => $activationDetails,
             'merchant'   => $details
         );
 
@@ -214,7 +216,7 @@ class Service extends Base\Service
             'archived_at'       => $merchant['archived_at'],
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
-            'submitted'         => $merchant_details['submitted'],
+            'submitted'         => $merchant_details['submitted']
         ) + $data;
 
         return $response;
@@ -362,7 +364,9 @@ class Service extends Base\Service
 
         try
         {
-            $data = $this->api->payment->fetch($id)->verify()->toArray();
+            $data = $this->api->admin->fetchEntityById('payment', $id)
+                                    ->verify()
+                                    ->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -540,6 +544,20 @@ class Service extends Base\Service
         $this->lockMerchant($id);
 
         return array();
+    }
+
+    public function generateMerchantHdfcExcel($id)
+    {
+        if ($id === null)
+        {
+            return [['id' => 'Merchant id cannot be null'], []];
+        }
+
+        list(, $data) = $this->fetchMerchantAndActivationDetails($id);
+
+        $file = HdfcTidExcel::generateExcel($data);
+
+        return [[], $file];
     }
 
     public function liveEnableMerchant($id)
@@ -813,5 +831,55 @@ class Service extends Base\Service
         }
 
         return array($error, $response);
+    }
+
+    /**
+     * Sends a redirect the the file
+     */
+    public function getBeneficiaryFile($input)
+    {
+        $error = (new Validator)->validateInput('get_beneficiary', $input)->messages();
+
+        if (empty($error))
+        {
+            $date = \Input::get('date', date('Y-m-d'));
+            return [null, $this->getBeneficiaryFileUrl($date)];
+        }
+
+        return [$error, null];
+    }
+
+    /**
+     * Returns a pre-authed S3 URL to download beneficiary file
+     * @param  Date $date date in Y-m-d format (with leading zeroes)
+     * @return String URL
+     */
+    protected function getBeneficiaryFileUrl($date)
+    {
+        $s3 = AWS::get('s3');
+
+        $beneficiaryBucket = Config::get('aws::config.buckets')['beneficiary'];
+        $filename = $date.'.xls';
+
+        return $s3->getObjectUrl($beneficiaryBucket, $filename, '+2 minutes', [
+            'https'     => true
+        ]);
+    }
+
+    public function generateBeneficiaryFile()
+    {
+        $this->setApiCredentials();
+        try
+        {
+            $response = $this->api->merchant->generateBeneficiaryFile();
+        }
+
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array();
+
     }
 }

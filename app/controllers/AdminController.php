@@ -334,4 +334,34 @@ class AdminController extends BaseController
 
         return AppResponse::jsonResponse($error);
     }
+
+    public function getMerchantHdfcExcel($id)
+    {
+        list($error, $file) = (new Admin\Service)->generateMerchantHdfcExcel($id);
+
+        if (empty($error) === false)
+            return AppResponse::jsonResponse($error);
+
+        $file->download('xlsx');
+    }
+
+    public function getBeneficiaryFile()
+    {
+        $input = Input::all();
+
+        list($error, $url) = (new Admin\Service)->getBeneficiaryFile($input);
+
+        if(empty($error) === false)
+        {
+            return AppResponse::jsonResponse($error);
+        }
+
+        return Redirect::to($url);
+    }
+
+    public function generateBeneficiaryFile()
+    {
+        $error = (new Admin\Service)->generateBeneficiaryFile();
+        return AppResponse::jsonResponse($error);
+    }
 }

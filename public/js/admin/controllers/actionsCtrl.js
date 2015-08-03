@@ -120,6 +120,51 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         });
     };
 
+    $scope.downloadBeneficiaryFile = function () {
+
+      $scope.date = moment().format('yyyy-MM-dd');
+      var modalInstance = $modal.open({
+        templateUrl: 'downloadBeneficiaryFile.html',
+        controller: 'downloadBeneficiaryFileCtrl'
+      });
+
+      modalInstance.result.then(
+        function (date) {
+          if(date) {
+            window.open('/admin/beneficiary/dl');
+          }
+          else {
+            window.open('/admin/beneficiary/dl?date='+date);
+          }
+        },
+        function () {
+          ;
+      });
+    };
+
+    $scope.generateBeneficiaryFile = function() {
+      var request = $http({
+        method: "post",
+        url: "/admin/beneficiary",
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Beneficary file generated successfully', true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
 }])
 .controller('initiateSetlModalCtrl', ['$scope', '$modalInstance', '$http',
   function ($scope, $modalInstance, $http) {
@@ -151,4 +196,13 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         $modalInstance.dismiss('cancel');
       };
 }])
+.controller('downloadBeneficiaryFileCtrl', ['$scope', '$modalInstance', '$http',
+  function ($scope, $modalInstance, $http) {
+      $scope.ok = function (id) {
+        $modalInstance.close(id);
+      };
 
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])

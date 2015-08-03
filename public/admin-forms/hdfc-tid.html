@@ -1,0 +1,132 @@
+<style>
+body{
+  width: 7.4in;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+pre{
+  padding-top: 0.6in;
+  font-family: serif;
+  line-height: 18px;
+  font-size: 14px;
+  margin: 40px 20px;
+  white-space: pre-wrap;
+}
+.break{
+  padding: 1in 20px;
+  page-break-before : always;
+}
+@media not print{
+  span[contentEditable]{
+    border: 2px solid red;
+    padding: 0 8px;
+  }
+}
+td:last-child{
+  text-align: center;
+}
+table{
+  border-collapse: collapse;
+  width: 100%;
+}
+td{
+  padding: 0 5px;
+  border: 1px solid #000;
+  width: 50%;
+}
+</style>
+<pre>
+Date: {{=it.date}}
+
+To,
+The Manager
+HDFC BANK LTD
+Merchant Services
+Kamla Mills, Lower Parel
+Mumbai
+
+Subject: Request for MID / TID setup for sub-merchant – <span contentEditable>M/s. {{=it.mercop_company}}</span>
+
+Ref: Internet Payment Gateway Agreement dated 25th November, 2014 entered into between the Bank and the Aggregator dated 25th November, 2014 (“Agreement”)
+
+Dear Sir,
+
+In terms of the Agreement, we hereby request you to setup a MID/ TID for the website <span contentEditable>{{=it.merctech_web_addr}}</span> as our Merchant. <span contentEditable>{{=it.mercop_company}}</span> with MCC code <span contentEditable>{{=it.mercsetup_catcode}}</span> is in business of <span contentEditable>merchant business</span> with DBA name <span contentEditable>Razorpay - {{=it.billing_label}}</span>
+
+The above website will be used for <span contentEditable>merchant business</span> and we shall ensure to maintain the integrity of the Hot Link as mentioned in clause 7 of the Agreement. 
+We also understand that the terms of refunds and chargeback will be governed by clause 6 and right to termination will be governed by Clause 13 of the above mentioned Agreement. 
+We confirm that collection of funds through Cards received via the Internet Payment Gateway should be credited to our Nodal account. The details of the Nodal Account are mentioned below: 
+t Gateway should be credited to Kotak Mahindra Bank Nodal A/c of the merchant whose details are mentioned below:
+
+Bank Name: <b>KOTAK MAHINDRA BANK</b>
+A/c Number: <b>7911547334</b>
+Branch: <b>Nariman point branch</b>
+Account title: <b>RAZORPAY SFT PVT LTD NODAL ACT</b>
+Bank’s IFSC Code: <b>KKBK0000958</b>
+
+With respect to our above mentioned nodal account, we specifically further confirm that we shall comply with the extant guidelines / directions of the Reserve Bank of India (RBI) vide RBI circular no. RBI/2009-10/231 DPSS.CO.PD.No.1102/02.14.08/2009-10 dated November 24, 2009, as amended from time to time. We acknowledge and confirm that we shall not be allowed to operate the aforesaid nodal account and all the debits, credits and settlement in our above mentioned nodal account shall be subject to the provisions of the aforesaid RBI circular.
+We also confirm that the aforesaid Merchant is not carrying out any unlawful activities which are prohibited by law and/or the activities as set out in Schedule I to the Agreement.
+Our parent ME code is ___________________. Please keep the DBA name as <span contentEditable>DBA Name</span> for this additional MID/TID.
+
+
+Thanking you
+
+
+
+Name: Harshil Mathur
+ME Name: Razorpay Software Private Limited
+</pre>
+<pre class="break">
+Date: <b>{{=it.date}}</b>
+
+To, 
+       The Manager
+       HDFC Bank LTD
+       Merchant Services
+
+Dear Sir,
+
+      Kindly debit  an amount of Rs 11,400.00/- from my Current Account 50200001324291 with HDFC Bank towards the payment of Payment Gateway Services.
+
+The Break-up of the total amount is given below :
+  
+<table>
+  <tr>
+    <td></td>
+    <td><b><i>Amount (Rs.)</i></b></td>
+  </tr>
+  <tr>
+    <td> Integration Fees</td>
+    <td>Rs 5,000.00/-</td>
+  </tr>
+  <tr>
+    <td> Annual Maintenance Charges</td>
+    <td>Rs 5,000.00/-</td>
+  </tr>
+  <tr>
+    <td> Total</td>
+    <td>Rs 10,000.00/-</td>
+  </tr>
+  <tr>
+    <td> Service Tax + E. cess (14.00%)</td>
+    <td>Rs 1,400.00/-</td>
+  </tr>
+  <tr>
+    <td> Total Amount</td>
+    <td>Rs 11,400.00/-</td>
+  </tr>
+</table>
+
+Regards
+
+
+
+Harshil Mathur
+Director
+Razorpay Software Private Limited
+
+
+
+
+
+

@@ -23,6 +23,12 @@
         <a href class="list-group-item" ng-click="openVerifyPayment()">
           Verify Payment
         </a>
+        <a href class="list-group-item" ng-click="generateBeneficiaryFile()">
+          Generate Beneficiary File
+        </a>
+        <a href class="list-group-item" ng-click="downloadBeneficiaryFile()">
+          Download Beneficiary File
+        </a>
       </div>
     </div>
   </div>
@@ -162,5 +168,27 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(id)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="downloadBeneficiaryFile.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Download Beneficiary File</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="date" class="col-lg-2 control-label">Date: </label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="date">
+          </p>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date)">Download</button>
   </div>
 </script>

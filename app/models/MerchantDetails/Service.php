@@ -46,12 +46,12 @@ class Service extends Base\Service
             //
             if (empty($missingSteps))
             {
-                $merchantDetails->markSubmittedTrue();
+                $merchantDetails->markSubmitted();
 
                 // Updating the model
                 $merchantDetails->saveOrFail();
 
-                $this->sendActivationFormSubmissionMails($merchantDetails);
+                $this->fireActivationTrigger($merchantDetails);
             }
             else
             {
@@ -168,15 +168,18 @@ class Service extends Base\Service
      * On submission of activation form by user, send email
      * to the customer and sales team notifying them about the activity
      */
-    protected function sendActivationFormSubmissionMails($merchantDetails)
+    protected function fireActivationTrigger($merchantDetails)
     {
         $customer = array(
             'id' => $merchantDetails->getAttribute('merchant_id'),
             'name' => $merchantDetails->getAttribute('contact_name'),
-            'email' => $merchantDetails->getAttribute('contact_email')
+            'email' => $merchantDetails->getAttribute('contact_email'),
+            'business_name' => $merchantDetails->getAttribute('business_name'),
+            'dba' => $merchantDetails->getAttribute('business_dba'),
+            'website' => $merchantDetails->getAttribute('business_website')
         );
 
-        $salesEmail = 'sales@razorpay.com';
+        $salesEmail = 'salesteam@razorpay.com';
 
         Mailgun::send('emails.submission', $customer, function($mail) use ($customer)
         {
@@ -188,8 +191,12 @@ class Service extends Base\Service
         Mailgun::send('emails.admin_notify', $customer, function($mail) use ($customer, $salesEmail)
         {
             $mail->to($salesEmail, 'Razorpay Sales Team')
-                 ->subject('New activation form submitted - '.$customer['id']);
+                 ->subject('New activation form submitted - '.$customer['business_name']);
         });
+
+        // We also send over details to slack
+        $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$customer['id']}/activation|See activation form>";
+        $this->slackPost('New activation form submitted', $customer, '#sales', $link);
     }
 
     protected function isLockedError()

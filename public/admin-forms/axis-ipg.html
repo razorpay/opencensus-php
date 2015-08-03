@@ -4,6 +4,11 @@ input{
   font: inherit;
   outline: none;
 }
+@media not print{
+  input:invalid{
+    border: 2px solid red;
+  }
+}
 pre{
   margin: 0;
 }
@@ -155,7 +160,7 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
         <input class="input-sq" value="{{=it.contract_business}}"> Business Partner&nbsp;&nbsp;
         <input class="input-sq" value="{{=it.contract_software}}"> Software Trial&nbsp;&nbsp;
         <input class="input-sq" value="{{=it.contract_govt}}"> Govt./Govt. subsidiary<br>
-        <input class="input-sq" value="{{=it.contract_other}}"> Others &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please Specify <input class="input-u" style="width: 380px; margin-left: 14px" value="{{=it.contract_specify}}">
+        <input class="input-sq" value="{{=it.contract_other}}"> Others &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Please Specify <input required class="input-u" style="width: 380px; margin-left: 14px" value="{{=it.contract_specify}}">
       </div>
     </div>
     <div class="row">
@@ -194,7 +199,7 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
     <div class="row">
       <div class="col-xs-3">CPV to be conducted at:</div>
       <div class="col-xs-9">
-        <input class="input-sq" value="{{=it.cpv_head}}"> Head Office &nbsp;&nbsp; <input class="input-sq" value="{{=it.cpv_op}}"> Operational Address
+        <input class="input-sq" value="{{=it.cpv_head}}" required> Head Office &nbsp;&nbsp; <input required class="input-sq" value="{{=it.cpv_op}}"> Operational Address
       </div>
     </div>
   </div>
@@ -324,7 +329,7 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
       </div>
     </div>
     <div class="row">
-      <div class="col-xs-12">User ID required for Web access:<input class="input-u lg" value="{{=it.payapp_uid}}"></div>
+      <div class="col-xs-12">User ID required for Web access: <input class="input-u lg" value="{{=it.payapp_uid}}"></div>
     </div>
     <div class="row" style="margin-top: 8px">
       <div class="col-xs-3">Enablement for Verified by Visa</div>
@@ -348,43 +353,4 @@ Airoli- 400708<span class="gap"></span><span class="gap"></span>Signature : <inp
   </div>
 </div>
 </div>
-<pre style="font-family: serif; line-height: 18px; font-size: 14px; margin: 40px 20px; white-space: pre-wrap">
-<h3 style="text-decoration: underline; text-align: center">SUB-MERCHANT APPLICATION FORM</h3>
-Date: {{=it.date}}
-
-To,
-The Head IPG Business
-Merchant Acquiring Business
-Axis Bank Ltd,
-Mumbai 
-
-Subject: Request for MID setup of Sub-Merchant – <span contentEditable>M/s. {{=it.mercop_company}}</span>
-
-Ref: Internet Payment Gateway Agreement dated 20th February, 2015 entered into between the Bank and the Aggregator dated 20th February, 2015(Agreement)
-
-Dear Sir,
-
-In terms of the Agreement we hereby request you to setup a MID for the website<span contentEditable> {{=it.merctech_web_addr}} </span>as our Merchant.<span contentEditable> {{=it.mercop_company}} </span>is in business of <span contentEditable>merchant business</span> with DBA name <span contentEditable>DBA Name</span>
-
-We also understand that the terms of refunds and the chargeback will be governed by the necessary clause of the above mentioned Agreement.
-
-We confirm that collection of funds through Cards received via the Internet Payment Gateway should be credited to Kotak Mahindra Bank Nodal A/c of the merchant whose details are mentioned below:
-
-<div style="font-size: 16px;">
-Bank Name: <b>KOTAK MAHINDRA BANK</b>
-A/c Number: <b>7911547334</b>
-Branch: <b>Nariman point branch</b>
-Account title: <b>RAZORPAY SFT PVT LTD NODAL ACT</b>
-Bank’s IFSC Code: <b>KKBK0000958</b>
-</div>
-
-With respect to our above mentioned nodal account, we specifically further confirm that we shall comply with the extant guidelines / directions of the Reserve Bank of India (RBI) vide RBI Circular no. RBI/2009-10/231 DPSS.CO.PD.No. 1102/02.14.08/2009-10 dated November 24 2009, as amended from time to time. We acknowledge and confirm that we shall not be allowed to operate the aforesaid nodal account and all the debits, credits and settlement in our above mentioned nodal account shall be subject to the provisions of the aforesaid RBI circular.We confirm that we will be liable if the aforesaid Merchant is carrying out any unlawful activities which are prohibited by law and/or the activities as set out in the above mentioned Agreement.
-
-<div style="font-size: 16px;">
-Thanking you
-
-Name 
-M/s Harshil Mathur
-</div>
-</pre>
 </div>

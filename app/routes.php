@@ -14,8 +14,6 @@
 
 Route::get('/', 'MerchantController@getIndex');
 
-Route::get('/autologin', 'MerchantController@getAutoLogin');
-
 Route::get('/admin', 'AdminController@getIndex');
 
 Route::post('/contact', 'MerchantController@postContact');
@@ -124,6 +122,10 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
 
+    Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
+
+    Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
@@ -167,12 +169,14 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::post('/admin/iin/add', 'AdminController@postAddIIN');
 
         Route::get('/admin/payment/{id}/verify', 'AdminController@getVerifyPayment');
+
+        Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
     });
-    
+
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
 
     Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
-    
+
     Route::group(array('before' => 'auth.superadmin'), function()
     {
         Route::get('/admin/users', 'AdminController@getAdmins');
