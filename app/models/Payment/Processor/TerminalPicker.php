@@ -177,6 +177,8 @@ class TerminalPicker
             {
                 return $gatewayTerms[Payment\Gateway::NETBANKING_HDFC];
             }
+
+            return;
         }
 
         if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and

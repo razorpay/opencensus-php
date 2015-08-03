@@ -18,8 +18,12 @@ class DailyReport
     function __construct($id)
     {
         $this->merchantId = $id;
-        $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;   // 00:00 Yesterday
-        $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;       // 00:00 Today
+
+        // 00:00 Yesterday
+        $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;
+
+        // 00:00 Today
+        $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;
 
         // date format = 6th July 2015
         $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
@@ -27,12 +31,18 @@ class DailyReport
         $this->data = $this->fetchDailyDetails();
     }
 
+    /**
+     * Sends the daily report
+     * @return boolean Whether the daily report was sent or not
+     */
     public function send()
     {
         if ($this->isBlank() === false)
         {
             $this->sendDailyReport();
+            return true;
         }
+        return false;
     }
 
     /**
@@ -48,11 +58,13 @@ class DailyReport
 
         $data = $this->data;
 
-        Mail::queue($view, $this->data, function($message) use ($config, $data)
+        Mail::send($view, $this->data, function($message) use ($config, $data)
         {
             $message->to($data['merchant']['transaction_report_email']);
 
             $message->from($config['from_email'], $config['from_name']);
+
+            $message->cc('notifications@razorpay.com');
 
             $message->subject('Daily Transaction Report for ' . $data['date']);
         });
@@ -70,9 +82,12 @@ class DailyReport
     {
         $authorizedCollection = (new Payment\Repository)->fetch(
             [
-             'from' => $this->timeLowerLimit,
-             'to' => $this->timeUpperLimit,
-             'status' => 'authorized',
+                // Note: This is not correct and uses CREATED_AT
+                // instead of AUTHORIZED_AT
+
+                'from'      => $this->timeLowerLimit,
+                'to'        => $this->timeUpperLimit,
+                'status'    => 'authorized',
             ],
             $this->merchantId);
 
@@ -81,13 +96,12 @@ class DailyReport
 
     protected function getCapturedPayments()
     {
-        $capturedCollection = (new Payment\Repository)->fetch(
-            [
-             'from' => $this->timeLowerLimit,
-             'to' => $this->timeUpperLimit,
-             'status' => 'captured',
-            ],
-            $this->merchantId);
+        $capturedCollection = (new Payment\Repository)
+            ->fetchCapturedBetweenTimestamp(
+                $this->timeLowerLimit,
+                $this->timeUpperLimit,
+                $this->merchantId
+            );
 
         return $this->summarizePayments($capturedCollection);
     }
@@ -122,7 +136,7 @@ class DailyReport
         // }
 
         return [
-            'payments' => $payments->toArrayPublic(),
+            'payments' => $payments->toArrayAdmin(),
             'sum'      => $payments->sum('amount'),
             'orderId'  => false
         ];
@@ -135,8 +149,10 @@ class DailyReport
      */
     protected function getSettlement()
     {
-        $settlements = (new Settlement\Repository)->fetch(
-            ['from' => $this->timeLowerLimit, 'to' => $this->timeUpperLimit], $this->merchantId);
+        $settlements = (new Settlement\Repository)->fetch([
+            'from' => $this->timeLowerLimit,
+            'to' => $this->timeUpperLimit
+        ], $this->merchantId);
 
         // Return null if no settlement found
         $settlement = null;
@@ -161,8 +177,10 @@ class DailyReport
 
     protected function getRefunds()
     {
-        $refunds = (new Payment\Refund\Repository)->fetch(
-            ['from' => $this->timeLowerLimit, 'to' => $this->timeUpperLimit], $this->merchantId);
+        $refunds = (new Payment\Refund\Repository)->fetch([
+            'from' => $this->timeLowerLimit,
+            'to' => $this->timeUpperLimit
+        ], $this->merchantId);
 
         return [
             'sum'      => $refunds->sum('amount'),

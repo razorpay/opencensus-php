@@ -120,55 +120,16 @@ class Entity extends Base\PublicEntity
 
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
-    protected static $generators = array(
-        self::STATUS,
-        self::ID,
-        self::NOTES,
-        self::SIGNED,
-        self::REFUND_STATUS,
-        self::AMOUNT_REFUNDED,
-        self::AUTO_CAPTURED,
-        self::VERIFIED);
+    protected $defaults = array(
+        self::STATUS            => Status::CREATED,
+        self::REFUND_STATUS     => Refund\Status::NULL,
+        self::NOTES             => [],
+        self::AMOUNT_REFUNDED   => 0,
+        self::SIGNED            => 0,
+        self::VERIFIED          => null,
+        self::AUTO_CAPTURED     => 0);
 
 // --------------------- Generators --------------------------------------------
-
-    public function generateStatus($input)
-    {
-        $this->setAttribute(self::STATUS, Status::CREATED);
-    }
-
-    public function generateRefundStatus($input)
-    {
-        $this->setAttribute(self::REFUND_STATUS, Refund\Status::NULL);
-    }
-
-    public function generateNotes($input)
-    {
-        if (isset($input['notes']) === false)
-        {
-            $this->setAttribute(self::NOTES, array());
-        }
-    }
-
-    protected function generateAmountRefunded()
-    {
-        $this->setAttribute(self::AMOUNT_REFUNDED, 0);
-    }
-
-    protected function generateSigned()
-    {
-        $this->setAttribute(self::SIGNED, 0);
-    }
-
-    protected function generateAutoCaptured()
-    {
-        $this->setAttribute(self::AUTO_CAPTURED, 0);
-    }
-
-    protected function generateVerified()
-    {
-        $this->setAttribute(self::VERIFIED, null);
-    }
 
 // --------------------- Generators Ends ---------------------------------------
 

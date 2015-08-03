@@ -7,6 +7,7 @@ use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Netbanking\Base;
+use Gateway\Base\Action;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -76,10 +77,16 @@ class Gateway extends Base\Gateway
 
         $this->verifyCallbackChecksum($input);
 
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
         $bankRefNo = $input['gateway']['BankRefNo'];
         $message = $input['gateway']['Message'];
 
-        $content = $input['gateway'];
+        $attrs = $this->getMappedAttributes($input['gateway']);
+
+        $payment->fill($attrs);
+        $payment->saveOrFail();
 
         if (($bankRefNo === '') or
             ($message !== ''))
@@ -133,7 +140,7 @@ class Gateway extends Base\Gateway
         $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
 
         $data = array(
-            'ClientCode'        => $input['payment']['email'],
+            'ClientCode'        => $clientCode,
             'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
             'TxnCurrency'       => 'INR',
             'TxnAmount'         => $input['payment']['amount'] / 100,

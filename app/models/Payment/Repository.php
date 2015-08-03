@@ -17,7 +17,8 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed',
         Entity::VERIFIED        => 'sometimes|boolean',
-        Entity::REFUND_STATUS   => 'sometimes|in:partial:full'
+        Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
+        Entity::BANK            => 'sometimes',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
@@ -31,28 +32,19 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns the sum total of captured transactions
-     * between the given timestamps
+     * Returns the captured payments
+     * between the given timestamps (using CAPTURED_AT)
      * @param  int $from    timestamp for start of interval
      * @param  int $to      timestamp for end of interval
-     * @return int total amount of captured transactions in paisa
+     * @return Collection of Payment
      */
     public function fetchCapturedBetweenTimestamp($from, $to, $merchantId)
     {
         $repo = $this->repo;
-        return $repo::whereBetween(Payment\Entity::CAPTURED_AT, [$from, $to])
-                    ->where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
-                    ->where(Payment\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->get();
-    }
-
-    public function fetchAuthorizedBetweenTimestamp($from, $to, $merchantId)
-    {
-        $repo = $this->repo;
-        return $repo::whereBetween(Payment\Entity::UPDATED_AT, [$from, $to])
-                    ->where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED)
-                    ->where(Payment\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->get();
+        return $repo::whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where(Entity::STATUS, '=', Status::CAPTURED)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->get();
     }
 
     public function lockForUpdate($id)
@@ -140,5 +132,17 @@ class Repository extends Base\Repository
     protected function addQueryParamRefundStatus($query, $params)
     {
         $query = $query->where(Entity::REFUND_STATUS, '=', $params[Entity::REFUND_STATUS]);
+    }
+
+    protected function addQueryParamBank($query, $params)
+    {
+        if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
+                Entity::BANK);
+        }
+
+        $query = $query->where(Entity::BANK, '=', $params[Entity::BANK]);
     }
 }

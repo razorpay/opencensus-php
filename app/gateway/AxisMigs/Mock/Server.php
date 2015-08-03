@@ -106,7 +106,7 @@ class Server extends Base\Mock\Server
             'vpc_BatchNo'           => '20150503',
             'vpc_CapturedAmount'    => $input['vpc_Amount'],
             'vpc_Card'              => 'MC',
-            'vpc_Command'           => 'capture',
+            'vpc_Command'           => 'refund',
             'vpc_Locale'            => 'en_US',
             'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
             'vpc_Merchant'          => $input['vpc_Merchant'],

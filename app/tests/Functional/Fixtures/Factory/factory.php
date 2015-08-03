@@ -9,7 +9,10 @@ $factory('Models\Merchant\Entity', [
     'pricing_plan_id' => null,
     'international' => 0,
     'website' => $faker->url,
+    'billing_label' => $faker->word,
     'category' => 1100,
+    'transaction_report_email' => $faker->email,
+    'receipt_email_enabled' => true,
 ]);
 
 $factory('Models\Terminal\Entity', [

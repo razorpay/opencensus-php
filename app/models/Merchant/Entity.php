@@ -22,10 +22,10 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
 
-    /*
+    /**
      * Refers to methods relation and not a property;
      */
-    const METHODS           = 'methods';
+    const METHODS                   = 'methods';
 
     protected $table = \Constants\Table::MERCHANT;
 
@@ -62,33 +62,22 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::INTERNATIONAL,
         self::BILLING_LABEL,
+        self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
         self::METHODS,
         self::CREATED_AT,
         self::UPDATED_AT);
 
     protected static $generators = array(
-        self::LIVE,
-        self::ACTIVATED,
-        self::RECEIPT_EMAIL_ENABLED);
+        self::TRANSACTION_REPORT_EMAIL);
 
-    protected function generateLive($input)
-    {
-        $this->setAttribute(self::LIVE, false);
-    }
+    protected $defaults = array(
+        self::LIVE                  => false,
+        self::ACTIVATED             => false,
+        self::ACTIVATED_AT          => null,
+        self::RECEIPT_EMAIL_ENABLED => true);
 
-    protected function generateActivated($input)
-    {
-        $this->setAttribute(self::ACTIVATED, false);
-        $this->setAttribute(self::ACTIVATED_AT, null);
-    }
-
-    protected function generateReceiptEmailEnabled($input)
-    {
-        $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
-    }
-
-    protected function generateTrnasactionReceiptEmail($input)
+    protected function generateTransactionReportEmail($input)
     {
         $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $input[self::EMAIL]);
     }
@@ -219,16 +208,24 @@ class Entity extends Base\PublicEntity
 
     public function getRedactedAccountNumber()
     {
-        $ac = $this->bankAccount->getAccountNumber();
+        $bankAccount = $this->bankAccount()->first();
 
-        //
-        // How many times should we repeat the redacted portion
-        // This does not give a precise result,
-        // but it looks good in groups of 4
-        //
+        if($bankAccount !== null)
+        {
+            $ac = $bankAccount->getAccountNumber();
+            //
+            // How many times should we repeat the redacted portion
+            // This does not give a precise result,
+            // but it looks good in groups of 4
+            //
 
-        $repeat = ceil((strlen($ac) - 4)/4);
+            $repeat = ceil((strlen($ac) - 4)/4);
 
-        return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+            return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+        }
+        else
+        {
+            return 'XXXX-XXXX-XXXX';
+        }
     }
 }
