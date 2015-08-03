@@ -29,6 +29,9 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
       case '5':
           query="dead=1";
           break;
+      case '6':
+          query='archived=1';
+          break;
       default:
           query=null;
     }
