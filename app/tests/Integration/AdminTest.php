@@ -2,6 +2,7 @@
 namespace Tests\Integration;
 
 use Selenium\Locator as l;
+use Laracasts\TestDummy\Factory;
 use Models;
 use URL;
 use Exception;
@@ -19,6 +20,8 @@ class AdminTest extends TestCase
     public function setUp()
     {
         parent::setUp();
+
+        Factory::$factoriesPath = __DIR__.'/../factories/';
 
         if (static::$migrated === false)
         {
@@ -56,12 +59,11 @@ class AdminTest extends TestCase
     {
         $this->browser
             ->open(URL::to('/admin#/access/signin'))    // Visits login page
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 20000)
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('form[name=\"signin\"]').length > 0", 3000)
             ->type(l::IdOrName('username'), $this->admin->username)   // Fill username
             ->type(l::IdOrName('password'), '123456')   // Fill password
             ->click(l::IdOrName('submit'))                 // Click in the button
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 20000);
-
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.navbar').length > 0", 3000);
         $this->assertBodyHasText("Pending Activations");
     }
 
@@ -128,8 +130,13 @@ class AdminTest extends TestCase
      */
     public function testMerchantDetails()
     {
-        // Get merchant details & actions
-        $this->click(l::linkContaining($this->merchant->id))
+        $this->browser
+            ->open(URL::to('/admin#/app/merchants/list'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant_type').length > 0", 20000)
+            ->select(l::IdOrName('merchant_type'), 'label=All')
+            ->click(l::css('.merchant_go'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table-body').length > 0", 20000)
+            ->click(l::linkContaining($this->merchant->id))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000);
 
         $this->assertBodyHasText($this->merchant->id);
