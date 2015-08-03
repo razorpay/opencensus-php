@@ -117,7 +117,7 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#merchantsNav').length > 0", 20000)
             ->click(l::linkContaining('Merchants'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant_type').length > 0", 20000)
-            ->select(l::IdOrName('merchant_type'), 'index=1')
+            ->select(l::IdOrName('merchant_type'), 'index=2')
             ->click(l::css('.merchant_go'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table').length > 0", 20000);
 
