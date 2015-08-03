@@ -20,7 +20,8 @@ class Entity extends Base\Entity implements UserInterface, RemindableInterface
         'email',
         'password',
         'confirm_token',
-        'activated'
+        'activated',
+        'archived_at'
     );
 
     const ID_LENGTH = 14;

@@ -73,6 +73,14 @@
         <a href class="list-group-item" ng-click="openEditComment()">
           Edit Comment
         </a>
+        <a href class="list-group-item" ng-show="merchant.details.archived_at != null" ng-click="unarchiveMerchant()"
+        >
+          Unarchive Merchant
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.archived_at === null" ng-click="archiveMerchant()" ng-confirm-click="Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)"
+        >
+          Archive Merchant
+        </a>
       </div>
     </div>
   </div>
@@ -160,6 +168,10 @@
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.card == true, 'fa-times text-danger':merchant.details.methods.card == false}"></i></span>
           Card
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.archived_at == null ? 'Not Archived' : 'Archived'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.archived_at != null, 'fa-times text-danger':merchant.details.archived_at == null}"></i></span>
+          Archived
         </a>
         <div href class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">

@@ -139,6 +139,22 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    public function getMerchantArchive($id)
+    {
+
+        $error = (new Admin\Service)->archiveMerchant($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    public function getMerchantUnarchive($id)
+    {
+
+        $error = (new Admin\Service)->unarchiveMerchant($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
     public function getMerchantMethodEnable($id, $method)
     {
 

@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddWalletToPaymentAggregations extends Migration {
+class AddArchivedToMerchants extends Migration {
 
 	/**
 	 * Run the migrations.
@@ -12,11 +12,12 @@ class AddWalletToPaymentAggregations extends Migration {
 	 */
 	public function up()
 	{
-		Schema::table('payment_aggregations', function($table)
+		Schema::table('merchants', function($table)
         {
-            $table->integer('WALLET')
-                  ->unsigned()
-                  ->default(0);
+            $table->integer('archived_at')
+                  ->nullable();
+
+            $table->index('archived_at');
         });
 	}
 
@@ -27,9 +28,9 @@ class AddWalletToPaymentAggregations extends Migration {
 	 */
 	public function down()
 	{
-		Schema::table('payment_aggregations', function($table)
+		Schema::table('merchants', function($table)
         {
-            $table->dropColumn('WALLET');
+            $table->dropColumn('archived_at');
         });
 	}
 

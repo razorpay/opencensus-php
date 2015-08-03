@@ -327,6 +327,48 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.archiveMerchant = function(){
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/archive");
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Merchant archived successfully', true);
+          $scope.merchant.details.archived_at = Date.now()/1000;
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.unarchiveMerchant = function(){
+      var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/unarchive");
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Merchant unarchived successfully', true);
+          $scope.merchant.details.archived_at = null;
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || "";
 

@@ -46,7 +46,8 @@ class Service extends Base\Service
 
     public function listMerchants($input)
     {
-        $data = Merchant\Entity::with('merchantDetails')->get();
+        $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')->whereNull('archived_at')->get();       
+        // $data = Merchant\Entity::with('merchantDetails')->where('archived', '', 0)->get();
 
         if(reset($input) !== false)
         {
@@ -210,6 +211,7 @@ class Service extends Base\Service
         // Merchant\Validator::checkAPIMatch($merchant, $response);
 
         $response = array(
+            'archived_at'       => $merchant['archived_at'],
             'steps_finished'    => $merchant_details['steps_finished'],
             'locked'            => $merchant_details['locked'],
             'submitted'         => $merchant_details['submitted'],
@@ -546,10 +548,10 @@ class Service extends Base\Service
 
         $merchant = Merchant\Entity::findorfail($id);
 
-        if ((int)$merchant->activated === 0)
+        if ((int)$merchant->activated === 0 or $merchant->archived_at !== null)
         {
             return array(
-                'Merchant must be active before enabling/disabling live transactions.');
+                'Merchant must be active & unarchived before enabling/disabling live transactions.');
         }
 
         $this->setApiCredentials();
@@ -562,6 +564,55 @@ class Service extends Base\Service
         {
             return array($e->getMessage());
         }
+
+        return array();
+    }
+
+    public function archiveMerchant($id)
+    {
+        $error = array();
+
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if($merchant->archived_at !== null) 
+        {
+            return array("Merchant already archived.");
+        }
+
+        $this->setApiCredentials();
+        
+        try
+        {
+            $data = $this->api->merchant->fetch($id);
+            if ($data->live === true) 
+            {
+                return array("Live merchants can not be archived.");
+            }
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return array($e->getMessage());
+        }
+        
+        $merchant->archived_at = time();
+        $merchant->save();
+
+        return array();
+    }
+
+    public function unarchiveMerchant($id)
+    {
+        $error = array();
+
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if($merchant->archived_at === null) 
+        {
+            return array("Merchant not archived.");
+        }
+        
+        $merchant->archived_at = null;
+        $merchant->save();
 
         return array();
     }
