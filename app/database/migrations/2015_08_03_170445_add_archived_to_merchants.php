@@ -15,7 +15,8 @@ class AddArchivedToMerchants extends Migration {
 		Schema::table('merchants', function($table)
         {
             $table->integer('archived_at')
-                  ->nullable();
+                  ->nullable()
+                  ->default(null);;
 
             $table->index('archived_at');
         });
