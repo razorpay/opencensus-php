@@ -355,6 +355,12 @@ class Gateway extends Base\Gateway
         }
 
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $message = '';
+
+        if (isset($input['gateway']['vpc_Message']))
+        {
+            $message = $input['gateway']['vpc_Message'];
+        }
 
         $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
@@ -362,7 +368,12 @@ class Gateway extends Base\Gateway
         {
             $apiErrorCode = AxisMigs\TxnResponseCode::$map[$txnResponseCode];
 
-            if (isset($input['gateway']['vpc_AcqResponseCode']))
+            if (($txnResponseCode === 'Aborted') and
+                ($message === 'Your Session has expired'))
+            {
+                $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED;
+            }
+            else if (isset($input['gateway']['vpc_AcqResponseCode']))
             {
                 $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
 

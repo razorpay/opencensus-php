@@ -64,7 +64,7 @@ class TxnResponseCode
         'V' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         '?' => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
-        'Aborted' => Error\ErrorCode::SERVER_ERROR_PAYMENT_ABORTED,
+        'Aborted' => Error\ErrorCode::BAD_REQUEST_PAYMENT_ABORTED,
     );
 
 }
