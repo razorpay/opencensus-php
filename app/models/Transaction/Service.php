@@ -5,6 +5,7 @@ namespace Models\Transaction;
 use Models\Base;
 use Models\Transaction;
 use Models\Merchant;
+use Models\MerchantDetails;
 use Mail;
 
 class Service extends Base\Service
@@ -32,19 +33,24 @@ class Service extends Base\Service
 
         $this->aggregate($input, $mode);
 
-        $merchant = Merchant\Entity::find($input['merchant_id']);
-
         if($input['resource'] === "refund" and $mode === 'live')
         {
-            $this->slackPost('New Refund', $input + array('name' => $merchant->name), '#transactions', '@channel');
+            $this->slackPost('New Refund',
+                $this->slackData($input),
+                '#transactions', '@channel'
+            );
         }
 
         // Only Payments analytics are stored
         if ($input['resource'] === "payment")
         {
-            if($mode === 'live') {
-                $this->slackPost('New Payment', $input + array('name' => $merchant->name), '#transactions', null);
-    
+            if($mode === 'live')
+            {
+                $this->slackPost('New Payment',
+                    $this->slackData($input),
+                    '#transactions', null
+                );
+
                 $this->sendMail($input);
             }
 
@@ -67,6 +73,21 @@ class Service extends Base\Service
         }
 
         return array();
+    }
+
+    protected function slackData($input)
+    {
+        $merchant = MerchantDetails\Entity::findorfail($input['merchant_id']);
+
+        $keysToDrop = ['created_at', 'updated_at', 'merchant_id'];
+        foreach ($keysToDrop as $key)
+        {
+            unset($input[$key]);
+        }
+
+        $input['merchant'] = $merchant->business_dba;
+        $input['website'] = $merchant->business_website;
+        return $input;
     }
 
     protected function create($data, $type, $mode)
@@ -100,7 +121,7 @@ class Service extends Base\Service
         {
             $merchantDetails = Merchant\Entity::createAggregations($data, $mode);
         }
-        
+
         Merchant\Entity::updateAggregations($data, $merchantDetails, $mode);
 
     }
@@ -135,7 +156,7 @@ class Service extends Base\Service
         {
             $data = array('merchant_id' => $merchantId, 'resource' => $resource);
 
-            $response[$resource] = Merchant\Entity::getAggregations($data, $mode);      
+            $response[$resource] = Merchant\Entity::getAggregations($data, $mode);
         }
 
         return $response;
@@ -145,8 +166,8 @@ class Service extends Base\Service
     {
         $data = array('merchant_id' => $merchantId);
 
-        $response = Merchant\Entity::getPaymentAggregations($data, $mode);      
- 
+        $response = Merchant\Entity::getPaymentAggregations($data, $mode);
+
         return $response;
     }
 
@@ -196,7 +217,7 @@ class Service extends Base\Service
             }
 
             foreach ($array as $obj)
-            {   
+            {
                 if ((int)($obj->created_at) == $i)
                 {
                     $data[] = $obj->toArray();
@@ -216,7 +237,7 @@ class Service extends Base\Service
         if($_ENV['CONTEXT'] === 'production')
         {
             $merchant = Merchant\Entity::findorfail($input['merchant_id']);
-            
+
             $input['email'] = $merchant->email;
             $input['name'] = $merchant->name;
 
@@ -224,7 +245,7 @@ class Service extends Base\Service
             {
                 $m->to($input['email'], $input['name'])
                   ->subject('Razorpay - New Payment');
-            });  
+            });
         }
     }
 }
