@@ -48,7 +48,10 @@ class Service extends Base\Service
 
     public function listMerchants($input)
     {
-        $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')->whereNull('archived_at')->get();       
+        $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
+                                ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at')
+                                ->whereNull('archived_at')
+                                ->get();       
         // $data = Merchant\Entity::with('merchantDetails')->where('archived', '', 0)->get();
 
         if(reset($input) !== false)

@@ -60,7 +60,7 @@
               <i class="fa" ng-class="{'fa-check text-success': row.activated == 1, 'fa-times text-danger':row.activated == 0}"></i>
             </td>
             <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td>
-            <td data-value="{{(row.merchant_details.submitted_at ? row.merchant_details.submitted_at : row.updated_at)}}">{{(row.merchant_details.submitted_at ? row.merchant_details.submitted_at : row.updated_at)*1000 | date:'medium'}}</td>
+            <td data-value="{{(row.submitted_at ? row.submitted_at : row.updated_at)}}">{{(row.submitted_at ? row.submitted_at : row.updated_at)*1000 | date:'medium'}}</td>
           </tr>
           <tr ng-show="merchants.length == 0">
             <td colspan="7">No Merchants</td>
