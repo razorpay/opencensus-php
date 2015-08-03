@@ -116,6 +116,9 @@ class AdminTest extends TestCase
             ->open(URL::to('/admin#'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#merchantsNav').length > 0", 20000)
             ->click(l::linkContaining('Merchants'))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant_type').length > 0", 20000)
+            ->select(l::IdOrName('merchant_type'), 'index=1')
+            ->click(l::css('.merchant_go'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table').length > 0", 20000);
 
         $this->assertBodyHasText($this->merchant->id);

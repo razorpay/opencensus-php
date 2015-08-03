@@ -16,7 +16,7 @@
       </div>
       <div class="col-sm-3">
         <div class="input-group">
-          <select class="input-sm form-control" name="merchant_type" ng-model="merchant_type">
+          <select class="input-sm form-control merchant_type" name="merchant_type" ng-model="merchant_type">
             <option value="0">All</option>
             <option value="1" selected>Activated</option>
             <option value="2">Not Activated</option>
@@ -25,7 +25,7 @@
             <option value="5">Dead</option>
           </select>
           <span class="input-group-btn">
-            <button class="btn btn-sm btn-default" type="button" ng-click="filter()" busy="...">Go!</button>
+            <button class="btn btn-sm btn-default merchant_go" type="button" ng-click="filter()" busy="...">Go!</button>
             <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
           </span>
         </div>
