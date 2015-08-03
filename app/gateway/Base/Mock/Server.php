@@ -125,8 +125,13 @@ class Server
         $this->validateActionInput($input, 'auth');
     }
 
-    protected function validateActionInput($input, $action)
+    protected function validateActionInput($input, $action = null)
     {
+        if ($action === null)
+        {
+            $action = $this->action;
+        }
+
         $validator = $this->getValidator();
 
         $validator->validateInput($action, $input);

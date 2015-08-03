@@ -19,4 +19,16 @@ class Validator extends Base\Validator
         'DynamicUrl'            => 'required|url',
         'CheckSum'              => 'required',
     );
+
+    protected static $verifyRules = array(
+        'MerchantCode'          => 'required|',
+        'Date'                  => 'required|',
+        'MerchantRefNo'         => 'required|',
+        'TransactionId'         => 'required|in:XTXTV01',
+        'FigVerify'             => 'required|in:Y',
+        'ClientCode'            => 'required|',
+        'SuccessStaticFlag'     => 'required|in:N',
+        'FailureStaticFlag'     => 'required|in:N',
+        'TxnAmount'             => 'required|numeric',
+    );
 }
