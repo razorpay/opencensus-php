@@ -120,8 +120,8 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant_type').length > 0", 20000)
             ->select(l::IdOrName('merchant_type'), 'label=All')
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant_go').length > 0", 20000)
-            ->click(l::css('.merchant_go'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length > 1", 20000)
+            ->click(l::css('.merchant_go'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table-body').length > 0", 20000);
 
         $this->assertBodyHasText($this->merchant->id);
@@ -138,8 +138,8 @@ class AdminTest extends TestCase
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant_type').length > 0", 20000)
             ->select(l::IdOrName('merchant_type'), 'label=All')
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant_go').length > 0", 20000)
-            ->click(l::css('.merchant_go'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length > 1", 20000)
+            ->click(l::css('.merchant_go'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table-body').length > 0", 20000)
             ->click(l::linkContaining($this->merchant->id))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000);
