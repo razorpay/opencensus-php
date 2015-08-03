@@ -46,7 +46,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in merchants">
+          <tr ng-repeat="row in merchants" class="merchants-table-body">
             <td><a ui-sref="app.merchants.detail({id:row.id})">{{row.id}}</a></td>
             <td>{{row.name}}</td>
             <td>{{row.email}}</td>

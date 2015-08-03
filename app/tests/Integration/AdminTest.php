@@ -113,13 +113,11 @@ class AdminTest extends TestCase
     public function testMerchantsList()
     {
         $this->browser
-            ->open(URL::to('/admin#'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('#merchantsNav').length > 0", 20000)
-            ->click(l::linkContaining('Merchants'))
+            ->open(URL::to('/admin#/app/merchants/list'))
             ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant_type').length > 0", 20000)
-            ->select(l::IdOrName('merchant_type'), 'index=2')
+            ->select(l::IdOrName('merchant_type'), 'label=All')
             ->click(l::css('.merchant_go'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table').length > 0", 20000);
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table-body').length > 0", 20000);
 
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText($this->merchant->email);
@@ -131,12 +129,8 @@ class AdminTest extends TestCase
     public function testMerchantDetails()
     {
         // Get merchant details & actions
-        $this->browser
-            ->open(URL::to('/admin#/app/merchants/list'))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchants-table > tbody > tr > td').length > 5", 20000)
-            ->click(l::linkContaining($this->merchant->id))
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000)
-            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.butterbar.hide').length == 2", 20000);
+        $this->click(l::linkContaining($this->merchant->id))
+            ->waitForCondition("selenium.browserbot.getCurrentWindow().$('.merchant-wrapper').length > 0", 20000);
 
         $this->assertBodyHasText($this->merchant->id);
         $this->assertBodyHasText("Merchant Detail");
