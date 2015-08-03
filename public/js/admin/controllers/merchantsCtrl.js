@@ -58,7 +58,7 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
         $scope.count = data.data.count;
 
         angular.forEach($scope.merchants, function(i){
-          i.activation_progress = parseInt((i.merchant_details.steps_finished.length * 100)/ 5);
+          i.activation_progress = parseInt(($.parseJSON(i.steps_finished).length * 100)/ 5);
         });
 
       }
