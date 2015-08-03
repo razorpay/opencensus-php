@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking;
+namespace Gateway\Netbanking\Base;
 
 use Gateway\Base;
 
@@ -35,5 +35,10 @@ class Entity extends Base\Entity
     public function setBank($bank)
     {
         $this->setAttribute('bank', $bank);
+    }
+
+    public function getAmountAttribute()
+    {
+        return (int) $this->attributes['amount'];
     }
 }
