@@ -49,9 +49,17 @@ class Service extends Base\Service
     public function listMerchants($input)
     {
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
-                                ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at')
-                                ->whereNull('archived_at')
-                                ->get();       
+                                ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at');       
+
+        if(isset($input['archived']))
+        {
+            $data = $data->whereNotNull('archived_at')->get();
+        }
+        else
+        {
+            $data = $data->whereNull('archived_at')->get();
+        }
+
         // $data = Merchant\Entity::with('merchantDetails')->where('archived', '', 0)->get();
 
         if(reset($input) !== false)
@@ -595,17 +603,17 @@ class Service extends Base\Service
 
         $merchant = Merchant\Entity::findorfail($id);
 
-        if($merchant->archived_at !== null) 
+        if($merchant->archived_at !== null)
         {
             return array("Merchant already archived.");
         }
 
         $this->setApiCredentials();
-        
+
         try
         {
             $data = $this->api->merchant->fetch($id);
-            if ($data->live === true) 
+            if ($data->live === true)
             {
                 return array("Live merchants can not be archived.");
             }
@@ -614,7 +622,7 @@ class Service extends Base\Service
         {
             return array($e->getMessage());
         }
-        
+
         $merchant->archived_at = time();
         $merchant->save();
 
@@ -627,11 +635,11 @@ class Service extends Base\Service
 
         $merchant = Merchant\Entity::findorfail($id);
 
-        if($merchant->archived_at === null) 
+        if($merchant->archived_at === null)
         {
             return array("Merchant not archived.");
         }
-        
+
         $merchant->archived_at = null;
         $merchant->save();
 

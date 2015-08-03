@@ -24,6 +24,6 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
 
         $this->app['config']->set('mailgun::testmode', true);
 
-        Factory::$factoriesPath = 'app/tests/factories';
+        Factory::$factoriesPath = __DIR__.'/factories/';
     }
 }

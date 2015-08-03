@@ -16,13 +16,14 @@
       </div>
       <div class="col-sm-3">
         <div class="input-group">
-          <select class="input-sm form-control merchant_type" name="merchant_type" ng-model="merchant_type">
+          <select class="input-sm form-control merchant_type" name="merchant_type" ng-model="merchant_type" ng-init="merchant_type=1">
             <option value="0">All</option>
             <option value="1" selected>Activated</option>
             <option value="2">Not Activated</option>
             <option value="3">Pending Activation</option>
             <option value="4">Confirmed</option>
             <option value="5">Dead</option>
+            <option value="6">Archived</option>
           </select>
           <span class="input-group-btn">
             <button class="btn btn-sm btn-default merchant_go" type="button" ng-click="filter()" busy="...">Go!</button>
@@ -43,6 +44,7 @@
             <th data-type="numeric">Activated</th>
             <th data-hide="phone,tablet" data-type="numeric">Registration Date</th>
             <th data-hide="phone,tablet" data-type="numeric">Submission Date</th>
+            <th ng-show="merchant_type==6" data-hide="phone,tablet" data-type="numeric">Archival Date</th>
           </tr>
         </thead>
         <tbody>
@@ -61,6 +63,7 @@
             </td>
             <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td>
             <td data-value="{{(row.submitted_at ? row.submitted_at : row.updated_at)}}">{{(row.submitted_at ? row.submitted_at : row.updated_at)*1000 | date:'medium'}}</td>
+            <td data-value="{{row.archived_at}} " ng-show="merchant_type==6" data-hide="phone,tablet" data-type="numeric">{{row.archived_at * 1000| date:'medium'}}</td>
           </tr>
           <tr ng-show="merchants.length == 0">
             <td colspan="7">No Merchants</td>

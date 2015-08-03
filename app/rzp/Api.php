@@ -27,7 +27,7 @@ class Api extends Razorpay\Api\Api
         if (self::$mock === true)
         {
             // Delay the response by 0.5 secs (avoids issue with non loading of js before calls)
-            usleep(500000);
+            usleep(1000000);
             $className = __NAMESPACE__.'\\Mock\\'.ucwords($name);
         }
         else
