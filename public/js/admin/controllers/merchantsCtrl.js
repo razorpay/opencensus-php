@@ -10,6 +10,11 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
     generate();
   }
 
+  if($scope.pending === true)
+  {
+    generate();
+  }
+
 
   $scope.filter = function(){
     var query = ""
