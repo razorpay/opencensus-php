@@ -897,7 +897,15 @@ class Service extends Base\Service
     public function generateScreenshot($id)
     {
         $urls =  MerchantDetails\Entity::findorfail($id)->getUrls();
-        Creevey::takeScreenshot($id, $urls);
+
+        if(count($urls) > 0)
+        {
+            return Creevey::takeScreenshot($id, $urls);
+        }
+        else
+        {
+            return ["The merchant needs to submit atleast one website link before screenshots can be generated"];
+        }
     }
 
     public function getScreenshot($id)

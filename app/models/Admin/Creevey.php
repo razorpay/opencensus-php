@@ -16,9 +16,14 @@ class Creevey
             'token' =>  Config::get('creevey.token'),
             'id'    =>  $merchantId
         ];
-
-        $response = Requests::post($baseUrl, [], $postData);
-
-        sd($response->body);
+        try
+        {
+            $response = Requests::post($baseUrl, [], $postData);
+            return ["Screenshots generated successfully"];
+        }
+        catch(\Exception $e)
+        {
+            return ["There was an error in generating the screenshots"];
+        }
     }
 }
