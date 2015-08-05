@@ -899,4 +899,27 @@ class Service extends Base\Service
         $urls =  MerchantDetails\Entity::findorfail($id)->getUrls();
         Creevey::takeScreenshot($id, $urls);
     }
+
+    public function getScreenshot($id)
+    {
+        $s3 =  \AWS::get('s3');
+        $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
+        $filename = "$id/screenshots.pdf";
+
+        try
+        {
+            return
+            [
+                null,
+                $s3->getObjectUrl($bucket, $filename, '+10 minutes', [
+                    'https'     => true
+                ])
+            ];
+        }
+        catch(\Exception $e)
+        {
+            return ["Screenshot not yet generated", null];
+        }
+
+    }
 }
