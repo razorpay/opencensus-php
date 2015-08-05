@@ -224,6 +224,24 @@ class Entity extends Base\Entity
             'field' => $field);
     }
 
+    public function getUrls()
+    {
+        $urlKeys = [
+            'business_website',
+            'website_about',
+            'website_contact',
+            'website_privacy',
+            'website_terms',
+            'website_refund',
+            'website_pricing',
+            'website_login'
+        ];
+
+        return array_unique(array_values(array_intersect_key(
+            $this->attributes, array_flip($urlKeys)
+        )));
+    }
+
     public function checkUploadedFiles()
     {
         $error = array();
