@@ -31,6 +31,26 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.generateScreenshot = function(){
+      var request = $http.post("/admin/merchant/"+$scope.merchant.id+"/screenshot");
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Website screenshots generated successfully', true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.unlockForm = function(){
       var request = $http.get("/admin/merchant/"+$scope.merchant.id+"/unlock");
 
@@ -178,7 +198,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       var editMerchant = {
         'receipt_email_enabled': value
       };
-      
+
       $scope.editMerchant(editMerchant);
     };
 

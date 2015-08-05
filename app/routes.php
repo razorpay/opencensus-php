@@ -156,6 +156,10 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
 
+        Route::post('/admin/merchant/{id}/screenshot', 'AdminController@generateMerchantScreenshot');
+
+        Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
+
         Route::get('/admin/merchant/{id}/archive', 'AdminController@getMerchantArchive');
 
         Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');

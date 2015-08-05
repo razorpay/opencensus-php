@@ -147,6 +147,20 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
+    public function generateMerchantScreenshot($id)
+    {
+        $error = (new Admin\Service)->generateScreenshot($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    public function getMerchantScreenshot($id)
+    {
+        $error = (new Admin\Service)->getScreenshot($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
     public function getMerchantUnarchive($id)
     {
 

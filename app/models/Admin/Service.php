@@ -49,7 +49,7 @@ class Service extends Base\Service
     public function listMerchants($input)
     {
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
-                                ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at');       
+                                ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at');
 
         if(isset($input['archived']))
         {
@@ -892,5 +892,11 @@ class Service extends Base\Service
 
         return array();
 
+    }
+
+    public function generateScreenshot($id)
+    {
+        $urls =  MerchantDetails\Entity::findorfail($id)->getUrls();
+        Creevey::takeScreenshot($id, $urls);
     }
 }
