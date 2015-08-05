@@ -18,12 +18,23 @@ class Creevey
         ];
         try
         {
-            $response = Requests::post($baseUrl, [], $postData);
-            return ["Screenshots generated successfully"];
+            $response = Requests::post($baseUrl, [], $postData,[
+                'timeout'   => 120,
+                'useragent' => 'Razorpay/Dashboard'
+            ]);
+
+            if($response->status_code === 200)
+            {
+                return [];
+            }
+            else
+            {
+                throw new \Exception("Invalid response from creevey: {$response->status_code}");
+            }
         }
         catch(\Exception $e)
         {
-            return ["There was an error in generating the screenshots"];
+            return [$e->getMessage()];
         }
     }
 }
