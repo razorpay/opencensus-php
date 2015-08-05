@@ -926,6 +926,8 @@ class Service extends Base\Service
         }
         catch(\Exception $e)
         {
+            // This actually doesn't get called since S3 generates URL
+            // for a non-existent object as well :(
             return ["Screenshot not yet generated", null];
         }
 
