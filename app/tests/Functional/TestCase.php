@@ -40,9 +40,6 @@ class TestCase extends ParentTestCase
 
         $this->initialSetup();
 
-        // Setup database
-        $this->db->setUp();
-
         // Instantiate auth class
         $this->ba = new Authorization($this);
 
@@ -52,19 +49,34 @@ class TestCase extends ParentTestCase
 
     public function initialSetup()
     {
-        if (self::$initialSetupDone === true)
+        if ((self::$initialSetupDone === true) and
+            ($this->isTestRunningOnWercker()))
         {
+            // Setup database
+            $this->db->setUp();
+
             return;
         }
 
         // Run migrations
         $this->db->migrate();
 
-        // Truncate tables
-        $this->db->truncate();
+        // // Truncate tables
+        // $this->db->truncate();
+
+        if ($this->isTestRunningOnWercker() === false)
+        {
+            $this->db->setUp();
+        }
 
         // Seed database
         $this->fixtures->setUp();
+
+        if ($this->isTestRunningOnWercker() === true)
+        {
+            // Setup database
+            $this->db->setUp();
+        }
 
         self::$initialSetupDone = true;
     }
