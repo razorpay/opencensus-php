@@ -49,7 +49,7 @@ class Service extends Base\Service
     public function listMerchants($input)
     {
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
-                                ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at');       
+                                ->select('id', 'name', 'email', 'confirm_token', 'activated', 'steps_finished', 'merchants.created_at', 'merchant_details.updated_at', 'submitted_at', 'archived_at');
 
         if(isset($input['archived']))
         {
@@ -891,6 +891,45 @@ class Service extends Base\Service
         }
 
         return array();
+
+    }
+
+    public function generateScreenshot($id)
+    {
+        $urls =  MerchantDetails\Entity::findorfail($id)->getUrls();
+
+        if(count($urls) > 0)
+        {
+            return Creevey::takeScreenshot($id, $urls);
+        }
+        else
+        {
+            return ["The merchant needs to submit atleast one website link before screenshots can be generated"];
+        }
+    }
+
+    public function getScreenshot($id)
+    {
+        $s3 =  \AWS::get('s3');
+        $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
+        $filename = "$id/screenshots.pdf";
+
+        try
+        {
+            return
+            [
+                null,
+                $s3->getObjectUrl($bucket, $filename, '+10 minutes', [
+                    'https'     => true
+                ])
+            ];
+        }
+        catch(\Exception $e)
+        {
+            // This actually doesn't get called since S3 generates URL
+            // for a non-existent object as well :(
+            return ["Screenshot not yet generated", null];
+        }
 
     }
 }

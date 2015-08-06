@@ -126,6 +126,10 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
 
+    Route::post('/admin/merchant/{id}/screenshot', 'AdminController@generateMerchantScreenshot');
+
+    Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
+
     Route::group(array('before' => 'csrf'), function()
     {
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');

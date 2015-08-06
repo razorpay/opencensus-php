@@ -99,6 +99,9 @@
         >
           Archive Merchant
         </a>
+        <a href class="list-group-item" ng-click="generateScreenshot()" ng-confirm-click="This operation might take some time">
+          Generate Screenshots
+        </a>
       </div>
     </div>
   </div>
@@ -198,8 +201,14 @@
         <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.archived_at == null ? 'Not Archived' : 'Archived'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.archived_at != null, 'fa-times text-danger':merchant.details.archived_at == null}"></i></span>
           Archived
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>
           Customer Receipt Emails
+        </a>
+        <a href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
+          <span class="pull-right" tooltip="Download merchant screenshot PDF"><i class="fa fa-cloud-download"></i></span>
+          Screenshot PDF Download
         </a>
         <div href class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">
