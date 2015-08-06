@@ -25,6 +25,18 @@ class Server
 
     protected function authorize($input)
     {
+        if (isset($input['card_number']))
+        {
+            $number = $input['card_number'];
+
+            if ($number === '555555555555558')
+            {
+                $input['success'] = 'S';
+
+                return $this->authSubmit($input);
+            }
+        }
+
         $data['action'] = 'authorize';
         $data['url'] = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment_submit');
         $data['content'] = array(
@@ -40,13 +52,12 @@ class Server
 
         $authorized = false;
 
+        $content['status'] = 'failed';
+
         if ($input['success'] === 'S')
         {
-            $authorized = true;
+            $content['status'] = 'authorized';
         }
-
-        $content = array(
-            'status' => 'authorized');
 
         $url = $url . '?' . http_build_query($content);
 

@@ -22,7 +22,7 @@ final class Route
         'payment_refund'                    => ['post',     'payments/{id}/refund',                     'PaymentController@postRefund'                          ],
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                         ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                           ],
-        'payment_cancel'                    => ['post',     'payments/{id}/cancel',                     'PaymentController@postCancel'                          ],
+        'payment_cancel'                    => ['get',      'payments/{id}/cancel',                     'PaymentController@postCancel'                          ],
         'payment_fetch_by_id'               => ['get',      'payments/{id}',                            'PaymentController@getPayment'                          ],
         'payment_fetch_multiple'            => ['get',      'payments',                                 'PaymentController@getPayments'                         ],
         'payment_fetch_refunds'             => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                ],
@@ -45,6 +45,7 @@ final class Route
         'merchant_get_banks'                => ['get',      'merchants/{id}/banks',                     'MerchantController@getBanks'                           ],
         'merchant_set_banks'                => ['post',     'merchants/{id}/banks',                     'MerchantController@setBanks'                           ],
         'merchant_set_all_banks'            => ['put',      'merchants/banks',                          'MerchantController@putBanksForAllMerchants'            ],
+        'merchant_daily_report'             => ['post',     'merchants/report',                         'MerchantController@sendDailyReport'                    ],
         'merchant_create'                   => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                 ],
         'merchant_fetch'                    => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                        ],
         'merchant_edit'                     => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                        ],
@@ -122,8 +123,6 @@ final class Route
         'checkout',
         'payment_create',
         'payment_create_jsonp',
-        'payment_callback_post',
-        'payment_callback_get',
         'payment_cancel',
         'merchant_public_get_banks',
         'merchant_methods',
@@ -172,6 +171,7 @@ final class Route
         'merchant_add_bank_account',
         'merchant_fetch_bank_account',
         'merchant_create_terminal',
+        'merchant_daily_report',
         'merchant_delete_terminal',
         'merchant_get_terminals',
         'merchant_activate',
@@ -248,6 +248,7 @@ final class Route
                 'setl_return_generate',
                 'payment_auth_notify',
                 'payment_timeout',
+                'merchant_daily_report',
                 'payment_auto_capture'),
 
             'mailgun' => array(
@@ -343,16 +344,11 @@ final class Route
         return $doNotLogUrls;
     }
 
-    public static function isJsonpRoute($path)
+    public static function isJsonpRoute($route)
     {
-        $jsonpRoute = array(
-            'v1/payments/create/jsonp',
-            'v1/banks',
-            'v1/methods',
-            'v1/checkout',
-        );
+        $jsonpRoutes = self::$jsonpRoutes;
 
-        return in_array($path, $jsonpRoute);
+        return in_array($route, $jsonpRoute);
     }
 
     protected static function addRoutes($type)

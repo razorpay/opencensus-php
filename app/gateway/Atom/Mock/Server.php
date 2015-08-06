@@ -225,8 +225,9 @@ class Server extends Base\Mock\Server
     {
         $hash = $this->getHashOfPaymentPublicId($paymentPublicId);
 
-        $callbackUrl = Route::getUrlWithPublicAuth(
-            'payment_callback_post', ['id' => $paymentPublicId, 'hash' => $hash]);
+        $params = ['id' => $paymentPublicId, 'hash' => $hash];
+
+        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
     }

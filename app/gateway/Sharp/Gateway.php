@@ -21,12 +21,17 @@ class Gateway extends Base\Gateway
         $baseUrl = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment');
 
         $content = array(
-            'action' => 'authorize',
-            'amount' => $input['payment']['amount'],
-            'method' => $input['payment']['method'],
-            'payment_id' => $input['payment']['id'],
-            'callback_url' => $input['callbackUrl'],
+            'action'        => 'authorize',
+            'amount'        => $input['payment']['amount'],
+            'method'        => $input['payment']['method'],
+            'payment_id'    => $input['payment']['id'],
+            'callback_url'  => $input['callbackUrl'],
         );
+
+        if ($content['method'] === 'card')
+        {
+            $content['card_number'] = $input['card']['number'];
+        }
 
         $url = $baseUrl . '&' . http_build_query($content);
 
@@ -41,6 +46,14 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        if ((isset($input['gateway']['status']) === false) or
+            ($input['gateway']['status'] !== 'authorized'))
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     public function capture(array $input)

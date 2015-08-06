@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking;
+namespace Gateway\Netbanking\Base;
 
 use EE\Exception;
 use Gateway\Base;

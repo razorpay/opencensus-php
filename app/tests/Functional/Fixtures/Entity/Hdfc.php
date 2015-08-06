@@ -11,7 +11,7 @@ class Hdfc extends Base
         $attributes['action'] = 4;
         $attributes['status'] = 'authorized';
 
-        return $this->createEntity($attributes);
+        return $this->create($attributes);
     }
 
     public function createCaptured(array $attributes = array())
@@ -19,7 +19,7 @@ class Hdfc extends Base
         $attributes['action'] = 5;
         $attributes['status'] = 'captured';
 
-        return $this->createEntity($attributes);
+        return $this->create($attributes);
     }
 
     public function createRefunded(array $attributes = array())
@@ -27,7 +27,7 @@ class Hdfc extends Base
         $attributes['action'] = 2;
         $attributes['status'] = 'refunded';
 
-        return $this->createEntity($attributes);
+        return $this->create($attributes);
     }
 
     public function createFromRefund($attributes)

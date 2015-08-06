@@ -23,13 +23,13 @@ function c(name, value, days){
 var data = {{json_encode($data);}};
 // Callback data //
 
-if(window.CheckoutBridge){
-	if(typeof CheckoutBridge.oncomplete == 'function'){
+if (window.CheckoutBridge) {
+	if (typeof CheckoutBridge.oncomplete == 'function') {
 		CheckoutBridge.oncomplete(JSON.stringify(data));
 	}
 } else {
 	c('rzp', JSON.stringify(data));
-	if(window.opener && typeof window.opener.postMessage == 'function'){
+	if (window.opener && typeof window.opener.postMessage == 'function') {
 		window.opener.postMessage(data, '*');
 	}
 }

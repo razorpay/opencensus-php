@@ -110,14 +110,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
             'gateway_error_code'  => null
         ],
     ],
@@ -152,7 +152,7 @@ return [
         'channel_id' => 'WEB',
         'payment_mode_only' => 'Yes',
         'auth_mode' => 'USRPWD',
-        'bank_code' => 'HDFC',
+        'bank_code' => 'ICICI',
         'payment_type_id' => 'NB',
         'txnamount' => null,
         //'banktxnid' => '201506080000004',

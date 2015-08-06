@@ -37,7 +37,10 @@ class GenerateEmailTemplates extends Command {
 	public function fire()
 	{
         // This is a map of templates and the rendered file names
-		$templates = ['emails/payment/customer', 'emails/merchant/activation'];
+		$templates = [
+            'emails/payment/customer', 'emails/merchant/activation', 'emails/partials/header', 'emails/partials/footer', 'emails/partials/header_image',
+            'emails/partials/separator', 'emails/merchant/daily_report'
+        ];
 
         $view_directory = app_path()."/views/";
         $ink_css =      file_get_contents($view_directory.'css/ink.css');

@@ -26,7 +26,8 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal');
 
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'HDFC';
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -37,15 +38,17 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentNetbankingEntity'], $payment);
+
+        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testPaymentOnSharedTerminal()
     {
         $this->setMockGatewayTrue();
 
-        $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
-
-        $payment = $this->getDefaultNetBankingPaymentArray();
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'HDFC';
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -56,5 +59,8 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentNetbankingEntity'], $payment);
+
+        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 }

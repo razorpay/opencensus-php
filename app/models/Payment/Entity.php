@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const WALLET            = 'wallet';
     const TRANSACTION_ID    = 'transaction_id';
     const AUTO_CAPTURED     = 'auto_captured';
+    const AUTHORIZED_AT     = 'authorized_at';
     const CAPTURED_AT       = 'captured_at';
     const GATEWAY           = 'gateway';
     const TERMINAL_ID       = 'terminal_id';
@@ -82,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::GATEWAY,
         self::CARD_ID,
@@ -116,55 +118,18 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = array(self::CONTACT, self::BANK);
 
-    protected static $generators = array(
-        self::STATUS,
-        self::ID,
-        self::NOTES,
-        self::SIGNED,
-        self::REFUND_STATUS,
-        self::AMOUNT_REFUNDED,
-        self::AUTO_CAPTURED,
-        self::VERIFIED);
+    protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
+
+    protected $defaults = array(
+        self::STATUS            => Status::CREATED,
+        self::REFUND_STATUS     => Refund\Status::NULL,
+        self::NOTES             => [],
+        self::AMOUNT_REFUNDED   => 0,
+        self::SIGNED            => 0,
+        self::VERIFIED          => null,
+        self::AUTO_CAPTURED     => 0);
 
 // --------------------- Generators --------------------------------------------
-
-    public function generateStatus($input)
-    {
-        $this->setAttribute(self::STATUS, Status::CREATED);
-    }
-
-    public function generateRefundStatus($input)
-    {
-        $this->setAttribute(self::REFUND_STATUS, Refund\Status::NULL);
-    }
-
-    public function generateNotes($input)
-    {
-        if (isset($input['notes']) === false)
-        {
-            $this->setAttribute(self::NOTES, array());
-        }
-    }
-
-    protected function generateAmountRefunded()
-    {
-        $this->setAttribute(self::AMOUNT_REFUNDED, 0);
-    }
-
-    protected function generateSigned()
-    {
-        $this->setAttribute(self::SIGNED, 0);
-    }
-
-    protected function generateAutoCaptured()
-    {
-        $this->setAttribute(self::AUTO_CAPTURED, 0);
-    }
-
-    protected function generateVerified()
-    {
-        $this->setAttribute(self::VERIFIED, null);
-    }
 
 // --------------------- Generators Ends ---------------------------------------
 
@@ -261,6 +226,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
+    public function setAuthorizeTimestamp()
+    {
+        $this->setAttribute(self::AUTHORIZED_AT, time());
+    }
+
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
@@ -299,9 +269,20 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor --------------------------------------------
 
+    /**
+     * Makes sure that getNotes always returns an array
+     */
     public function getNotesAttribute($notes)
     {
-        return json_decode($notes, true);
+        $notesArray = json_decode($notes, true);
+        if($notesArray === '')
+        {
+            return [];
+        }
+        else
+        {
+            return $notesArray;
+        }
     }
 
     public function getAmountAttribute()
@@ -458,6 +439,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CAPTURED_AT);
     }
 
+    public function getAuthorizeTimestamp()
+    {
+        return $this->getAttribute(self::AUTHORIZED_AT);
+    }
+
     public function getUpdatedAt()
     {
         return $this->getAttribute(self::UPDATED_AT);
@@ -509,6 +495,31 @@ class Entity extends Base\PublicEntity
                 return [$methodName, $walletNames[$this->getWallet()]];
                 break;
         }
+    }
+
+    /**
+     * This is a heuristic method that tries to find
+     * an order id the notes section
+     * As of now, order_id is the first field inside notes
+     * that ends with `_order_id`
+     * We will shift to a standard field called `merchant_order_id`
+     * as our ecommerce plugins are migrated
+     * @return String order_id for the paymetn
+     */
+    public function getOrderId()
+    {
+        $notes = $this->getNotes();
+
+        foreach ($notes as $key => $value)
+        {
+            $orderIdSuffix = '_order_id';
+            $ix = -1 * strlen($orderIdSuffix); // index from back
+            if (substr($key, $ix) === $orderIdSuffix)
+            {
+                return $value;
+            }
+        }
+        return false;
     }
 
 // ----------------------- Getters Ends-----------------------------------------

@@ -7,6 +7,7 @@ use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Netbanking\Base;
+use Gateway\Base\Action;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -76,10 +77,16 @@ class Gateway extends Base\Gateway
 
         $this->verifyCallbackChecksum($input);
 
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
         $bankRefNo = $input['gateway']['BankRefNo'];
         $message = $input['gateway']['Message'];
 
-        $content = $input['gateway'];
+        $attrs = $this->getMappedAttributes($input['gateway']);
+
+        $payment->fill($attrs);
+        $payment->saveOrFail();
 
         if (($bankRefNo === '') or
             ($message !== ''))
@@ -96,22 +103,46 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $data = ''; // Get the parameters required from db or elsewhere
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
 
-        $data['TransactionId'] = 'XTXTV01';
-        $data['FigVerify'] = 'Y';
+        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
+                      ->format('d/m/Y H:m:s');
 
-        $url = $this->getDomain() . Url::VERIFY_URL;
-        $request['url'] = $url . $this->buildQueryString($data);
+        $content = array(
+            'MerchantCode'          => $input['termianl']['gateway_merchant_id'],
+            'Date'                  => $date,
+            'MerchantRefNo'         => $payment['payment_id'],
+            'TransactionId'         => 'XTXTV01',
+            'FigVerify'             => 'Y',
+            'ClientCode'            => $payment['client_code'],
+            'SuccessStaticFlag'     => 'N',
+            'FailureStaticFlag'     => 'N',
+            'TxnAmount'             => $payment['amount'],
+        );
 
+        $url = $this->getUrl();
+
+        $request['url'] = $url . $this->buildQueryString($content);
         $request['method'] = 'GET';
 
-        $response = $this->postRequest($request);
+        $response = $this->sendGatewayRequest($request);
 
-        $status = $response['data']['figSuccess'];
-        $bankRefNo = $response['date']['BankRefNo'];
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$response->body]);
 
-        // verify and match params
+        $data = [];
+        parse_str($response->body, $data);
+
+        $status = $data['figSuccess'];
+        $bankRefNo = $data['BankRefNo'];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$data]);
+
+        // @todo: verify and match params
     }
 
     protected function verifyCallbackChecksum($input)
@@ -133,7 +164,7 @@ class Gateway extends Base\Gateway
         $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
 
         $data = array(
-            'ClientCode'        => $input['payment']['email'],
+            'ClientCode'        => $clientCode,
             'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
             'TxnCurrency'       => 'INR',
             'TxnAmount'         => $input['payment']['amount'] / 100,

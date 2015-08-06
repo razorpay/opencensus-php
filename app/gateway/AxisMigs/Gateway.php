@@ -80,6 +80,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentCaptureRequestContent($input, $payment);
 
+        $payment = $this->createGatewayPaymentEntity($content, $input['payment']['id']);
+
         $response = $this->postAmaTransactionRequest($content, $input);
 
         $content = $this->getAmaTxnResponseContent($response, $input);
@@ -99,9 +101,9 @@ class Gateway extends Base\Gateway
             $content['vpc_MerchTxnRef'] = $input['payment']['id'];
         }
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $payment->fill($content)->saveOrFail();
 
-        $this->verifyAmaTransactionResponse($content);
+        $this->verifyAmaTransactionResponse($content, $input);
     }
 
     public function refund(array $input)
@@ -113,16 +115,19 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
 
+        $toSaveContent = $content;
+        $toSaveContent['refund_id'] = $input['refund']['id'];
+
+        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
+
         $response = $this->postAmaTransactionRequest($content, $input);
 
         $content = $this->getAmaTxnResponseContent($response, $input);
 
-        $content['payment_id'] = $input['payment']['id'];
-        $content['refund_id'] = $input['refund']['id'];
+        $refund->fill($content);
+        $refund->saveOrFail();
 
-        $payment = $this->createGatewayPaymentEntity($content);
-
-        $this->verifyAmaTransactionResponse($content);
+        $this->verifyAmaTransactionResponse($content, $input);
     }
 
     public function verify(array $input)
@@ -137,18 +142,20 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseQueryResponse($response);
 
+        $key = 'vpc_TxnResponseCode';
+
         if (isset($content['vpc_SecureHash']))
         {
             $this->verifySecureHash($content);
-
-            $key = 'vpc_TxnResponseCode';
+        }
 
         $match = ($payment[$key] === $content[$key]);
 
-        if ($match == true)
+        if ($match === true)
         {
-            $razorpayPaymentStatus = $this->isRazorpayPaymentStatusSuccess(
-                                                    $input['payment']);
+            $status = $input['payment']['status'];
+            $razorpayPaymentStatus =
+                (($status === 'authorized') or ($status === 'captured'));
 
             $migsPaymentStatus = ($content[$key] === '0');
 
@@ -169,24 +176,6 @@ class Gateway extends Base\Gateway
             }
 
             throw new Exception\PaymentVerificationException($res);
-        }
-
-            if ($payment['vpc_TxnResponseCode'] !== $content['vpc_TxnResponseCode'])
-            {
-                $res = array(
-                    'match' => false,
-                    'gateway_data' => $content,
-                    'rzp_payment' => $payment->toArray(),
-                    'payment_id' => $input['payment']['id'],
-                    'gateway' => $this->gateway,
-                );
-
-                throw new Exception\PaymentVerificationException($res);
-            }
-        }
-        else
-        {
-            ;
         }
     }
 
@@ -263,10 +252,15 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function createGatewayPaymentEntity($attributes)
+    protected function createGatewayPaymentEntity($attributes, $paymentId = null)
     {
         $payment = $this->getNewGatewayPaymentEntity();
-        $payment->setPaymentId($attributes['vpc_MerchTxnRef']);
+
+        if ($paymentId === null)
+            $paymentId = $attributes['vpc_MerchTxnRef'];
+
+        $payment->setPaymentId($paymentId);
+        $payment->setAction($this->action);
 
         $payment->fill($attributes);
 
@@ -289,7 +283,7 @@ class Gateway extends Base\Gateway
 
     public function postRequest($request)
     {
-        $options['timeout'] = 30;
+        $options['timeout'] = 60;
         $request['options'] = $options;
 
         $this->response = $this->sendGatewayRequest($request);
@@ -360,13 +354,34 @@ class Gateway extends Base\Gateway
             return; // Payment succeeds
         }
 
-        $gatewayErrorCode = $input['gateway']['vpc_TxnResponseCode'];
+        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $message = '';
+
+        if (isset($input['gateway']['vpc_Message']))
+        {
+            $message = $input['gateway']['vpc_Message'];
+        }
 
         $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
-        if (isset(AxisMigs\ErrorCode::$errorMap[$gatewayErrorCode]))
+        if (isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode]))
         {
-            $apiErrorCode = AxisMigs\ErrorCode::$errorMap[$gatewayErrorCode];
+            $apiErrorCode = AxisMigs\TxnResponseCode::$map[$txnResponseCode];
+
+            if (($txnResponseCode === 'Aborted') and
+                ($message === 'Your Session has expired'))
+            {
+                $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED;
+            }
+            else if (isset($input['gateway']['vpc_AcqResponseCode']))
+            {
+                $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
+
+                if (isset(AcqResponseCode::$map[$acqResponseCode]))
+                {
+                    $apiErrorCode = AcqResponseCode::$map[$acqResponseCode];
+                }
+            }
         }
         else
         {
@@ -374,31 +389,71 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_UNKNOWN_ERROR,
                 ['payment_id' => $input['payment']['id'],
                 'action' => $this->action,
-                'gateway_error_code' => $gatewayErrorCode,
+                'gateway_error_code' => $txnResponseCode,
                 'gateway' => $this->gateway,
                 'time' => time()]);
         }
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
-                    Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                    $gatewayErrorCode,
+                    $apiErrorCode,
+                    $txnResponseCode,
                     $input['gateway']['vpc_Message']);
     }
 
-    protected function verifyAmaTransactionResponse($content)
+    protected function verifyAmaTransactionResponse($content, $input)
     {
-        if ((isset($content['vpc_TxnResponseCode']) === true) and
-            ($content['vpc_TxnResponseCode'] === '0'))
+        $txnResponseCode = null;
+
+        if (isset($content['vpc_TxnResponseCode']))
+        {
+            $txnResponseCode = $content['vpc_TxnResponseCode'];
+        }
+
+        if ($txnResponseCode === '0')
         {
             return;
         }
 
+        $msg = null;
+
+        if (isset($content['vpc_Message']))
+        {
+            $msg = $content['vpc_Message'];
+        }
+        else if (isset($content['ERROR']))
+        {
+            $msg = $content['ERROR'];
+        }
+
+        $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        if ($this->action === Base\Action::REFUND)
+        {
+            $ret = $this->returnIfRefundAmountMatches($content, $input);
+
+            if ($ret === true)
+            {
+                return;
+            }
+
+            $code = Error\ErrorCode::BAD_REQUEST_REFUND_FAILED;
+        }
+
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
-                    Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                    null,
-                    $content['vpc_Message']);
+                    $code,
+                    $txnResponseCode,
+                    $input['gateway']['vpc_Message']);
+    }
+
+    protected function returnIfRefundAmountMatches($content, $input)
+    {
+        $amount = $input['payment']['amount_refunded'] + $input['refund']['amount'];
+
+        $vpcAmount = (int) $content['vpc_RefundedAmount'];
+
+        return ($amount === $vpcAmount);
     }
 
     protected function addTestCardDetailsInTestMode(array & $content)

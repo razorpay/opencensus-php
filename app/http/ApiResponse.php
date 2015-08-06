@@ -2,9 +2,12 @@
 
 namespace Http;
 
+use App;
 use EE\Error\Error;
 use EE\Error\ErrorCode;
+use Request;
 use Response;
+use View;
 
 class ApiResponse
 {
@@ -62,11 +65,6 @@ class ApiResponse
         // Put old time so that any browser cache gets expired
         //
         $response->headers->set('Expires','Fri, 01 Jan 1990 00:00:00 GMT');
-    }
-
-    public static function setSameOriginInHeaders($response)
-    {
-        $response->headers->set('X-Frame-Options', 'SAMEORIGIN', false);
     }
 
     protected static function attachJsonpCallback($request, $response)
@@ -197,28 +195,29 @@ class ApiResponse
     {
         $request = \Request::getFacadeRoot();
 
-        $jsonp = null;
+        $response = Response::json();
+
+        $app = \App::getFacadeRoot();
+        $router = $app['router'];
+        $route = $router->currentRouteName();
+
+        self::setContentTypeHtmlForSpecificRoutes($route, $response);
 
         if ((self::$jsonp === null) and
-            (self::isJsonpRequired($request->path())))
+            (self::isJsonpRoute($route)))
         {
             $data['http_status_code'] = $status;
-
             $status = 200;
 
-            $jsonp = true;
-        }
-
-        $response = Response::json($data, $status);
-
-        if ($jsonp)
-        {
             self::attachJsonpCallback($request, $response);
         }
 
+        $response->setData($data);
+        $response->setStatusCode($status);
+
         self::stopBrowserCaching($response);
 
-        self::setSameOriginInHeaders($response);
+        self::setSameOriginInHeaders($response, $route);
 
         // This statement is needed for keeping tests functional since
         // we are using a static var here @todo: change this!
@@ -251,6 +250,52 @@ class ApiResponse
         );
 
         return (in_array($route, $callbackRoutes));
+    }
+
+    protected static function isJsonpRoute($route)
+    {
+        $jsonpRoutes = array(
+            'checkout',
+            'merchant_methods',
+            'merchant_public_get_banks',
+            'payment_cancel',
+            'payment_create_jsonp',
+        );
+
+        return (in_array($route, $jsonpRoutes));
+    }
+
+    protected static function setContentTypeHtmlForSpecificRoutes($route, $response)
+    {
+        $routes = array(
+            'payment_create');
+
+        if (in_array($route, $routes))
+        {
+            //
+            // The content-type is set to text/html instead of json
+            // because on android 2.* json content is not being read on form
+            // post for cards with no 3d-secure.
+            //
+            $response->headers->set('content-type', 'text/html; charset=UTF-8');
+        }
+    }
+
+    public static function setSameOriginInHeaders($response, $route)
+    {
+        if (self::mustNotSetSameOriginHeaders($route))
+        {
+            return;
+        }
+
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN', false);
+    }
+
+    protected static function mustNotSetSameOriginHeaders($route)
+    {
+        $routes = array('checkout');
+
+        return (in_array($route, $routes));
     }
 
     protected static function flattenArrayForPost($data)

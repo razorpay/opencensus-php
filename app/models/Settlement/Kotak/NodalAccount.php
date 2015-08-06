@@ -208,7 +208,7 @@ class NodalAccount
 
         $this->mail->queue('emails.message', $data, function($message) use ($data)
         {
-            $emails = ['shashank@razorpay.com'];
+            $emails = ['settlements@razorpay.com'];
 
             $message->from('settlement@razorpay.com', 'Kotak Settlement');
 
@@ -220,8 +220,8 @@ class NodalAccount
 
             $file = $data['file'];
 
-           $message->attach($file . '.xlsx');
-           $message->attach($file . '.txt');
+            $message->attach($file . '.xlsx');
+            $message->attach($file . '.txt');
         });
     }
 }

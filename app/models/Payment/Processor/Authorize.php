@@ -172,9 +172,12 @@ trait Authorize
             return $this->getReturnRequestDataForMerchant($payment);
         }
 
-        // Send email to the customer
-        // Can be extended later for SMS as well
-        $this->notifyCustomer($payment);
+        if ($payment->merchant->isReceiptEmailsEnabled())
+        {
+            // Send email to the customer
+            // Can be extended later for SMS as well
+            $this->notifyCustomer($payment);
+        }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
@@ -184,9 +187,11 @@ trait Authorize
         $app = App::getFacadeRoot();
 
         // Dont send mails in test mode
-        if($this->mode === Mode::TEST)
+        // @todo: remove this somehow
+        if (($this->mode === Mode::TEST) and
+            ($app->environment('dev') === false))
         {
-            return true;
+            return;
         }
 
         $templateData = [
@@ -208,21 +213,24 @@ trait Authorize
 
         $config = $app->config->get('applications.mailgun');
 
-        if(isset($templateData['merchant']['billing_label']))
+        $subject = "Payment Successful for {$templateData['payment']['amount']}";
+
+        if (isset($templateData['merchant']['billing_label']))
         {
             $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
         }
-        else
-        {
-            $subject = "Payment Successful for {$templateData['payment']['amount']}";
-        }
 
-        Mail::queue(['html'=> 'emails/payment/customer', 'text'=> 'emails/payment/customer_text'], $templateData,
-            function($message) use ($templateData, $config, $subject) {
+        $app['mailer']->queue(
+            [
+                'html' => 'emails/payment/customer',
+                'text'=> 'emails/payment/customer_text'
+            ],
+            $templateData,
+            function ($message) use ($templateData, $config, $subject)
+            {
                 $message->to($templateData['customer']['email']);
                 $message->from($config['from_email'], $config['from_name']);
                 $message->subject($subject);
-                $message->bcc('nemo@razorpay.com', 'Nemo');
             }
         );
     }
@@ -348,6 +356,8 @@ trait Authorize
         $payment->setAmountAuthorized();
 
         $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        $payment->setAuthorizeTimestamp();
 
         $payment->terminal->incrementUsedCount();
 

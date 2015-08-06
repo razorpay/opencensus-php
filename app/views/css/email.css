@@ -1,5 +1,5 @@
 /* Your custom styles go here */
-body, .body{
+body, .body, .greybg{
 	background:#EBECEE;
 }
 *{
@@ -34,6 +34,9 @@ h1{
 h3, h3 a, h3 a:visited{
 	font-size:22px;
 	color:#f2f2f2;
+}
+
+h3.center{
 	text-align:center;
 }
 .darktext{
@@ -74,4 +77,19 @@ td>a, td>a:visited{
 .email{
 	text-decoration: none;
 	color: inherit;
+}
+.short, .short td{
+	line-height: 0.8em;
+	font-size: 12px;
+}
+h3{
+	font-size: 16px;
+	font-weight: bold;
+	color: #39ACE5;
+	margin-top: 10px;
+}
+.bluebg h2{
+	font-size: 20px;
+	font-weight: bold;
+	color: white;
 }

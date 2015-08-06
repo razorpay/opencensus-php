@@ -12,11 +12,12 @@ trait PaymentTrait
     use PaymentAtomTrait;
     use PaymentAxisGeniusTrait;
     use PaymentAxisMigsTrait;
+    use PaymentBilldeskTrait;
     use PaymentHdfcTrait;
     use PaymentKotakTrait;
-    use PaymentPaytmTrait;
     use PaymentNetbankingTrait;
-    use PaymentBilldeskTrait;
+    use PaymentPaytmTrait;
+    use PaymentSharpTrait;
 
     use RequestResponseFlowTrait
     {
@@ -28,6 +29,16 @@ trait PaymentTrait
     protected $merchantCallbackUrl = null;
 
     protected $merchantCallbackFlow = false;
+
+    /**
+     * For certain payments, user has the option to fail it
+     * on the bank page. If this property is set to true in
+     * the test, then we simulate submitting failure option
+     * on the bank page
+     *
+     * @var boolean
+     */
+    protected $failPaymentOnBankPage = false;
 
     protected function doAuthAndCapturePayment($payment = null)
     {
@@ -249,7 +260,7 @@ trait PaymentTrait
     protected function cancelPayment($id)
     {
         $request = array(
-            'method' => 'POST',
+            'method' => 'GET',
             'url' => '/payments/'.$id.'/cancel');
 
         $this->ba->publicAuth();
@@ -367,13 +378,13 @@ trait PaymentTrait
             'notes'             => array(
                 'merchant_order_id' => 'random order id'),
             'description'       => 'random description',
-            'bank'              => 'HDFC',
+            'bank'              => 'ICIC',
         ];
 
         return $payment;
     }
 
-    protected function getDefaultNetBankingPaymentArray()
+    protected function getDefaultNetbankingPaymentArray()
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
@@ -671,7 +682,12 @@ trait PaymentTrait
         if ($this->gateway === null)
             $this->gateway = 'hdfc';
 
-        return $gateway['mock_' . $this->gateway];
+        $var = 'mock_' . $this->gateway;
+
+        if (isset($gateway[$var]))
+            return $gateway['mock_' . $this->gateway];
+
+        return false;
     }
 
     protected function getDataForGatewayRequest($response, &$callback = null)
@@ -699,7 +715,8 @@ trait PaymentTrait
             if ($response->getStatusCode() === 302)
             {
                 $url = $response->getTargetUrl();
-                $method = $values = null;
+                $method = 'get';
+                $values = [];
             }
             else
             {

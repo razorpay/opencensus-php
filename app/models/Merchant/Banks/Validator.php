@@ -3,7 +3,7 @@
 namespace Models\Merchant\Banks;
 
 use Models\Base;
-use Models\Payment\Processor\NetBanking;
+use Models\Payment\Processor\Netbanking;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -42,7 +42,7 @@ class Validator extends Base\Validator
 
         $banks = $input['banks'];
 
-        $unsupported = NetBanking::findUnsupportedBanks($banks);
+        $unsupported = Netbanking::findUnsupportedBanks($banks);
 
         if (count($unsupported) !== 0)
         {

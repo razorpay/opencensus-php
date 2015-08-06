@@ -25,6 +25,34 @@ class Validator extends Base\Validator
     protected static $createValidators = array(
         Entity::GATEWAY);
 
+    protected static $hdfcTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:hdfc',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits:5',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|integer|digits:8'
+    );
+
+    protected static $billdeskTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:billdesk',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2'
+    );
+
+    protected static $axisGeniusTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:axis_genius',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|size:15',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|alhpa_num|size:8',
+    );
+
+    protected static $axisMigsTerminalRules = array(
+        Entity::GATEWAY                     => 'required|in:axis_migs',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|size:15',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
+        Entity::GATEWAY_TERMINAL_ID         => 'required',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+    );
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -32,6 +60,21 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid gateway: ' . $input['gateway'],
                 Entity::GATEWAY);
+        }
+
+        unset(
+            $input['card'],
+            $input['shared'],
+            $input['netbanking'],
+            $input['merchant_id']);
+
+        $op = $input['gateway'] . '_terminal';
+
+        $var = $this->getRulesVariableName($op);
+
+        if (property_exists(__CLASS__, $var))
+        {
+            $this->validateInput($op, $input);
         }
     }
 

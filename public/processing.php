@@ -100,7 +100,7 @@ function handleMessage(data){
 </script>
 <style>
   html, body{height: 100%; margin: 0; padding: 0}
-  body{user-select: none; text-align: center; color: #444; font-family: 'lato', sans-serif; font-size: 16px; line-height: 30px; white-space: nowrap;}
+  body{user-select: none; text-align: center; color: #444; font-family: verdana, helvetica, sans-serif; font-size: 16px; line-height: 30px; white-space: nowrap;}
   .middlechild,.container{display: inline-block; vertical-align: middle; white-space: normal;}
   .middlechild{width: 1px; height: 90%;}
   .container{width: 80%; max-width: 900px; margin: 80px auto 0;}
@@ -115,7 +115,6 @@ function handleMessage(data){
   .amount{font-size: 50px; line-height: 60px; color: #29b3d2;}
 @media (max-device-height: 450px),(max-device-width: 450px){
   .heading{font-size: 28px; line-height: 36px;}
-  .powered-by{font-size: 32px; line-height: 40px;}
 }
 </style>
 <div id="top"><img src="/logo.gif" width="200" height="52" id="logo"></div>
@@ -126,10 +125,10 @@ function handleMessage(data){
     <div id="name" style="float:left;"></div>
     <div id="date" style="float:right;"></div>
     <div id="description"></div>
-    <div class="heading amount">&#xe600;<span id="amount"></span></div>
+    <div class="heading amount">₹<span id="amount"></span></div>
   </div>
   <div style="margin-top: 25px">Redirecting to bank page...</div>
-  <div class="powered-by">&#xe608;</div>
+  <img width="300px" src="data:image/jpg;base64,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"/>
 <div class="autosubmit">
   <form method="POST" action="{{=it.data.url}}" id="rzp-dcform">
     <input type="hidden" id="PaReq" name="PaReq" value="{{=it.data.PAReq}}">
@@ -153,6 +152,5 @@ if (!window.CheckoutBridge){
   }
 }
 </script>
-<style>@font-face{font-family:'lato';src:url("/fonts/lato.eot?#iefix") format('embedded-opentype'),url("/fonts/lato.woff") format('woff'),url("/fonts/lato.ttf") format('truetype'),url("/fonts/lato.svg#lato") format('svg');font-weight:normal;font-style:normal}i{font-size:24px;font-style:normal}</style>
 </body>
 </html>

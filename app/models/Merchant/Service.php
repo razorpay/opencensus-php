@@ -163,6 +163,8 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
 
+        (new Merchant\Validator)->validateBeforeActivate($merchant);
+
         (new Merchant\Core)->createBalance($merchant, 'live');
 
         $merchant->activate();
@@ -287,7 +289,9 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant($merchant, $input);
+        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant(
+            $merchant, $input
+        );
     }
 
     public function setBanksForAllMerchants($input)
@@ -339,39 +343,70 @@ class Service extends Base\Service
         return $file;
     }
 
-    public function getDailyDetails()
-    {
-        $details = [];
-        $details['merchant'] = $this->repo->findOrFailPublic($id);
-    }
-
     protected function sendActivationEmail($merchant)
     {
-        $app = \App::getFacadeRoot();
-
         //TODO: This needs to be refactored when we go for differentiated pricing
         $plan = $merchant->getPricingPlan();
 
         // array_values resets the array numeric keys and then we can pick the first rule
-        $plan = array_values(array_filter($plan['rules'], function($rule) {
-            return $rule['payment_method']  == 'card';
-        }))[0];
+        // @todo: explain this part
+        $plan = array_values(array_filter(
+            $plan['rules'],
+            function($rule)
+            {
+                return $rule['payment_method']  == 'card';
+            }
+        ))[0];
 
         $data = [
             'merchant'  =>  $merchant->toArray(),
-            'plan'      =>  $plan
+            'plan'      =>  $plan,
         ];
 
-        $config = $app->config->get('applications.mailgun');
+        $config = $this->app->config->get('applications.mailgun');
         $subject = "Your Razorpay account has been activated";
 
-        Mail::queue(['html'=> 'emails/merchant/activation', 'text'=> 'emails/merchant/activation_text'], $data,
-            function($message) use ($data, $config, $subject) {
+        $this->app['mailer']->queue(
+            [
+                'html' => 'emails.merchant.activation',
+                'text' => 'emails.merchant.activation_text'
+            ],
+            $data,
+            function ($message) use ($data, $config, $subject)
+            {
                 $message->to($data['merchant']['email']);
                 $message->from($config['from_email'], $config['from_name']);
-                $message->cc('sales@razorpay.com', 'Razorpay Sales Team');
+                $message->cc('notifications@razorpay.com');
                 $message->subject($subject);
             }
         );
+    }
+
+    /**
+     * sends daily reports for all merchants that are currently live
+     */
+    public function sendDailyReportForAllMerchants()
+    {
+        $merchants = $this->repo->fetch([Entity::ACTIVATED => 1]);
+
+        $counts = ['sent' => 0, 'skipped' => 0];
+
+        foreach ($merchants as $merchant)
+        {
+            $dailyReport = new DailyReport($merchant->getId());
+
+            $sent = $dailyReport->send();
+
+            if($sent)
+            {
+                $counts['sent']++;
+            }
+            else
+            {
+                $counts['skipped']++;
+            }
+        }
+
+        return $counts;
     }
 }

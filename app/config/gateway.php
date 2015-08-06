@@ -51,9 +51,11 @@ return array(
     ),
 
     'billdesk' => array(
-        'test_hash_secret'  => $_ENV['BILLDESK_GATEWAY_TEST_HASH_SECRET'],
         'test_merchant_id'  => $_ENV['BILLDESK_GATEWAY_TEST_MERCHANT_ID'],
+        'test_hash_secret'  => $_ENV['BILLDESK_GATEWAY_TEST_HASH_SECRET'],
         'test_access_code'  => $_ENV['BILLDESK_GATEWAY_TEST_ACCESS_CODE'],
+        'live_hash_secret'  => $_ENV['BILLDESK_GATEWAY_TEST_HASH_SECRET'],
+        'live_access_code'  => $_ENV['BILLDESK_GATEWAY_TEST_ACCESS_CODE'],
     ),
 
     'kotak' => array(
@@ -74,4 +76,6 @@ return array(
 
     'sharp' => array(
     ),
+
+    'proxy_address' => 'https://splunk.razorpay.com:8888',
 );

@@ -110,6 +110,13 @@ table.container table.row {
   display: block;
 }
 
+td.shortwrapper {
+	padding: 0px 20px 0px 0px;
+  position: relative;
+  font-size: 12px;
+  line-height: 1em;
+}
+
 td.wrapper {
   padding: 10px 20px 0px 0px;
   position: relative;
@@ -204,6 +211,31 @@ table.twelve .panel center { min-width: 560px; }
 .body .column td.eleven { width: 91.666666%; }
 .body .columns td.twelve,
 .body .column td.twelve { width: 100%; }
+
+.body .columns th.one,
+.body .column th.one { width: 8.333333%; }
+.body .columns th.two,
+.body .column th.two { width: 16.666666%; }
+.body .columns th.three,
+.body .column th.three { width: 25%; }
+.body .columns th.four,
+.body .column th.four { width: 33.333333%; }
+.body .columns th.five,
+.body .column th.five { width: 41.666666%; }
+.body .columns th.six,
+.body .column th.six { width: 50%; }
+.body .columns th.seven,
+.body .column th.seven { width: 58.333333%; }
+.body .columns th.eight,
+.body .column th.eight { width: 66.666666%; }
+.body .columns th.nine,
+.body .column th.nine { width: 75%; }
+.body .columns th.ten,
+.body .column th.ten { width: 83.333333%; }
+.body .columns th.eleven,
+.body .column th.eleven { width: 91.666666%; }
+.body .columns th.twelve,
+.body .column th.twelve { width: 100%; }
 
 td.offset-by-one { padding-left: 50px; }
 td.offset-by-two { padding-left: 100px; }
@@ -678,3 +710,10 @@ body.outlook p {
 .logo a{
 	float: left;
 }
+pre{
+	font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace !important;
+}
+.leftalign{
+	text-align: left !important;
+}
+

@@ -25,6 +25,7 @@ return [
                 'live' => false,
                 'activated' => false,
                 'activated_at' => null,
+                'transaction_report_email' => 'test@localhost.com',
             ],
         ],
     ],

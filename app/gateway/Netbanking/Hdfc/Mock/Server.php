@@ -10,6 +10,8 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        parent::authorize($input);
+
         $this->validateAuthorizeInput($input);
 
         $content = array(
@@ -34,6 +36,35 @@ class Server extends Base\Mock\Server
         $url .= '?' . http_build_query($content);
 
         return $url;
+    }
+
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $this->validateActionInput($input);
+
+        $id = $input['MerchantRefNo'];
+
+        $payment = (new Paytm\Repository)->findByPaymentIdAndAction(
+                                                    $id, Action::AUTHORIZE);
+
+        $content = array(
+            'ClientCode'        => $payment['client_code'],
+            'MerchantCode'      => $input['MerchantCode'],
+            'TxnAmount'         => $payment['amount'],
+            'MerchantRefNo'     => $payment['id'],
+            'SuccessStaticFlag' => 'N',
+            'FailureStaticFlag' => 'N',
+            'Date'              => $input['Date'],
+            'TransactionId'     => 'XTXTV01',
+            'flgVerify'         => 'Y',
+            'BankRefNo'         => $payment['bank_payment_id'],
+            'flgSuccess'        => 'S',
+            'Message'           => $payment['error_message'],
+        );
+
+        return $this->prepareResponse($content);
     }
 
     protected function getCallbackChecksum($input)
@@ -78,5 +109,17 @@ class Server extends Base\Mock\Server
         }
 
         return $this->generateHash($data);
+    }
+
+    protected function prepareResponse($content)
+    {
+        $body = http_build_query($content);
+        $response = \Response::make($body);
+
+        $response->headers->set('Content-Type', 'text/plain;charset=iso-8859-1');
+        $response->headers->set('Cache-Control', 'no-cache');
+        $response->headers->set('Pragma', 'no-cache');
+
+        return $response;
     }
 }

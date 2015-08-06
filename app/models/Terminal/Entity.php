@@ -55,7 +55,9 @@ class Entity extends Base\PublicEntity
 
     protected $table = 'terminals';
 
-    protected $hidden = array(self::GATEWAY_TERMINAL_PASSWORD);
+    protected $hidden = array(
+        self::GATEWAY_TERMINAL_PASSWORD,
+        self::GATEWAY_SECURE_SECRET);
 
     protected $genereateIdOnCreate = true;
 
@@ -66,7 +68,15 @@ class Entity extends Base\PublicEntity
     protected static $delimiter = '';
 
     protected static $generators = array(
-        'method');
+        'method',
+        'thedefaults');
+
+    protected $defaults = array(
+        self::GATEWAY_MERCHANT_ID       => null,
+        self::GATEWAY_TERMINAL_ID       => null,
+        self::GATEWAY_TERMINAL_PASSWORD => null,
+        self::GATEWAY_ACCESS_CODE       => null,
+        self::GATEWAY_SECURE_SECRET     => null);
 
     public function generateMethod($input)
     {
@@ -88,6 +98,24 @@ class Entity extends Base\PublicEntity
         else
         {
             $this->setAttribute(self::NETBANKING, 0);
+        }
+    }
+
+    protected function generateThedefaults($input)
+    {
+        if (empty($input[self::GATEWAY_MERCHANT_ID]))
+        {
+            $this->setAttribute(self::GATEWAY_MERCHANT_ID, null);
+        }
+
+        if (empty($input[self::GATEWAY_ACCESS_CODE]))
+        {
+            $this->setAttribute(self::GATEWAY_ACCESS_CODE, null);
+        }
+
+        if (empty($input[self::GATEWAY_TERMINAL_ID]))
+        {
+            $this->setAttribute(self::GATEWAY_TERMINAL_ID, null);
         }
     }
 
