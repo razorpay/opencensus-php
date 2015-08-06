@@ -164,7 +164,8 @@ class AdminController extends BaseController
      */
     public function getMerchantScreenshot($id)
     {
-        return (new Admin\Service)->getScreenshot($id);
+        $links = (new Admin\Service)->getScreenshot($id);
+        return View::make('admin.screenshots', ['links' => $links]);
     }
 
     public function getMerchantUnarchive($id)
