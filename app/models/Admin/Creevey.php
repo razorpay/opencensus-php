@@ -4,6 +4,7 @@ namespace Models\Admin;
 use AWS;
 use Config;
 use Requests;
+use Slack;
 use VIPSoft\Unzip\Unzip;
 
 class Creevey
@@ -21,6 +22,7 @@ class Creevey
     {
         $this->merchantId = $data[0];
         $urls = $data[1];
+        $this->name = $data[2];
 
         $baseUrl = Config::get('creevey.root');
 
@@ -42,6 +44,12 @@ class Creevey
             // Now we save the file somewhere
             $images = $this->extract($response->body);
             $this->uploadToS3($images);
+
+            $url = action('AdminController@getMerchantScreenshot', $this->merchantId);
+
+            $link = "Screenshots Captured ({$this->name}): <$url|View>";
+
+            Slack::to('#sales')->from('creevey')->withIcon(':camera:')->send($link);
             $job->delete();
         }
         else

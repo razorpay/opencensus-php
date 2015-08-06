@@ -899,11 +899,13 @@ class Service extends Base\Service
      */
     public function captureScreenshot($id)
     {
-        $urls =  MerchantDetails\Entity::findorfail($id)->getUrls();
+        $merchant =  MerchantDetails\Entity::findorfail($id);
+        $urls = $merchant->getUrls();
+        $name = $merchant->business_name;
 
         if (count($urls) >= 7)
         {
-            \Queue::push('Models\Admin\Creevey', [$id, $urls]);
+            \Queue::push('Models\Admin\Creevey', [$id, $urls, $name]);
             return [];
         }
         else
