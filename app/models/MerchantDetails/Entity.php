@@ -6,6 +6,17 @@ use Models\Base;
 
 class Entity extends Base\Entity
 {
+    const URL_KEYS = [
+        'business_website',
+        'website_about',
+        'website_contact',
+        'website_privacy',
+        'website_terms',
+        'website_refund',
+        'website_pricing',
+        'website_login'
+    ];
+
     protected $table = 'merchant_details';
 
     protected $primaryKey = 'merchant_id';
@@ -226,20 +237,9 @@ class Entity extends Base\Entity
 
     public function getUrls()
     {
-        $urlKeys = [
-            'business_website',
-            'website_about',
-            'website_contact',
-            'website_privacy',
-            'website_terms',
-            'website_refund',
-            'website_pricing',
-            'website_login'
-        ];
-
-        // Intersect + Flip = filter to the above keys only
+        // Intersect + Flip = filter to the required keys
         return array_intersect_key(
-            $this->attributes, array_flip($urlKeys)
+            $this->attributes, array_flip(self::URL_KEYS)
         );
     }
 

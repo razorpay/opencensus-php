@@ -893,7 +893,11 @@ class Service extends Base\Service
         return array();
     }
 
-    public function generateScreenshot($id)
+    /**
+     * Fires off a queue worker to start capturing screenshots
+     * @param  string $id merchant id
+     */
+    public function captureScreenshot($id)
     {
         $urls =  MerchantDetails\Entity::findorfail($id)->getUrls();
 
@@ -912,9 +916,17 @@ class Service extends Base\Service
     {
         $s3 =  \AWS::get('s3');
         $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
-        $filename = "$id/screenshots.pdf";
-        return $s3->getObjectUrl($bucket, $filename, '+10 minutes', [
-            'https'     => true
-        ]);
+        $keys = Models\MerchantDetails\Entity::URL_KEYS;
+
+        $links = [];
+
+        foreach ($keys as $key)
+        {
+            $filename = "$id/screenshots/$key.jpg";
+            $links[$key] = $s3->getObjectUrl($bucket, $filename,
+                '+10 minutes', [
+                    'https'     => true
+            ]);
+        }
     }
 }

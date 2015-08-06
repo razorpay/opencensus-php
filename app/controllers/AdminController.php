@@ -147,18 +147,24 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function generateMerchantScreenshot($id)
+    /**
+     * Calls the Creevey service over a queue to capture screenshots
+     * @param  string $id Merchant Id
+     */
+    public function captureMerchantScreenshot($id)
     {
-        $error = (new Admin\Service)->generateScreenshot($id);
+        $error = (new Admin\Service)->captureScreenshot($id);
 
         return AppResponse::jsonResponse($error);
     }
 
+    /**
+     * Returns an HTML View for now
+     * @param  string $id merchant id
+     */
     public function getMerchantScreenshot($id)
     {
-        $url = (new Admin\Service)->getScreenshot($id);
-
-        return Redirect::to($url);
+        return (new Admin\Service)->getScreenshot($id);
     }
 
     public function getMerchantUnarchive($id)
