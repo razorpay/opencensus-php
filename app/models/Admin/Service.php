@@ -891,20 +891,20 @@ class Service extends Base\Service
         }
 
         return array();
-
     }
 
     public function generateScreenshot($id)
     {
         $urls =  MerchantDetails\Entity::findorfail($id)->getUrls();
 
-        if(count($urls) > 0)
+        if (count($urls) !== 7)
         {
-            return Creevey::takeScreenshot($id, $urls);
+            Queue::push('Admin/Creevey', [$id, $urls]);
+            return [];
         }
         else
         {
-            return ["The merchant needs to submit atleast one website link before screenshots can be generated"];
+            return ["The merchant needs to give all the website links before screenshots can be generated"];
         }
     }
 
@@ -913,23 +913,8 @@ class Service extends Base\Service
         $s3 =  \AWS::get('s3');
         $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
         $filename = "$id/screenshots.pdf";
-
-        try
-        {
-            return
-            [
-                null,
-                $s3->getObjectUrl($bucket, $filename, '+10 minutes', [
-                    'https'     => true
-                ])
-            ];
-        }
-        catch(\Exception $e)
-        {
-            // This actually doesn't get called since S3 generates URL
-            // for a non-existent object as well :(
-            return ["Screenshot not yet generated", null];
-        }
-
+        return $s3->getObjectUrl($bucket, $filename, '+10 minutes', [
+            'https'     => true
+        ]);
     }
 }

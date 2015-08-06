@@ -6,35 +6,43 @@ use Requests;
 
 class Creevey
 {
-    public static function takeScreenshot($merchantId, array $urls)
+    const HEADERS = [
+        'Content-Type' => 'application/json'
+    ];
+
+    const OPTIONS = [
+        'timeout'   => 120,
+        'useragent' => 'Razorpay/Dashboard'
+    ];
+
+    public function fire($job, array $data)
     {
+        $id = $data[0];
+        $urls = $data[1];
+
         $baseUrl = Config::get('creevey.root');
 
         // Now we make the post request
-        $postData = [
+        $postData = json_encode([
             'url'   =>  $urls,
             'token' =>  Config::get('creevey.token'),
             'id'    =>  $merchantId
-        ];
-        try
-        {
-            $response = Requests::post($baseUrl, [], $postData,[
-                'timeout'   => 120,
-                'useragent' => 'Razorpay/Dashboard'
-            ]);
+        ]);
 
-            if($response->status_code === 200)
-            {
-                return [];
-            }
-            else
-            {
-                throw new \Exception("Invalid response from creevey: {$response->status_code}");
-            }
-        }
-        catch(\Exception $e)
+        $response = Requests::post($baseUrl,
+            self::HEADERS,
+            $postData,
+            self::OPTIONS
+        );
+
+        if ($response->success)
         {
-            return [$e->getMessage()];
+            $job->delete();
+        }
+        else
+        {
+            // This will automatically release the job back to the queue
+            throw new \Exception("Invalid response from creevey: {$response->status_code}");
         }
     }
 }

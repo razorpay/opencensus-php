@@ -156,16 +156,9 @@ class AdminController extends BaseController
 
     public function getMerchantScreenshot($id)
     {
-        list($error, $url) = (new Admin\Service)->getScreenshot($id);
+        $url = (new Admin\Service)->getScreenshot($id);
 
-        if($error !== null)
-        {
-            App::abort(404, $error);
-        }
-        else
-        {
-            return Redirect::to($url);
-        }
+        return Redirect::to($url);
     }
 
     public function getMerchantUnarchive($id)
