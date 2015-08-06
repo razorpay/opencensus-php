@@ -47,12 +47,12 @@ class Fixtures
      */
     public function setUp()
     {
+        $this->base->connection('test');
+
         $this->merchant->setUp();
 
         $apiMerchant = $this->create('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
         $apiBalance = $this->create('balance', ['id' => '1cXSLlUU8V9sXl']);
-
-        $this->base->connection('test');
 
         $this->create('pricing:default_plan');
 
