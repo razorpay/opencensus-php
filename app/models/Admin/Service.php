@@ -897,14 +897,14 @@ class Service extends Base\Service
     {
         $urls =  MerchantDetails\Entity::findorfail($id)->getUrls();
 
-        if (count($urls) !== 7)
+        if (count($urls) >= 7)
         {
-            Queue::push('Admin/Creevey', [$id, $urls]);
+            \Queue::push('Models\Admin\Creevey', [$id, $urls]);
             return [];
         }
         else
         {
-            return ["The merchant needs to give all the website links before screenshots can be generated"];
+            return ["The merchant needs to give all atleast 7 links"];
         }
     }
 

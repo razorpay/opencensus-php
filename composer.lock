@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "946748b9ab099c48a62869b00a73c056",
+    "hash": "cc6348b8c09330a640c9d32741c87f35",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2825,6 +2825,51 @@
             "description": "CssToInlineStyles is a class that enables you to convert HTML-pages/files into HTML-pages/files with inline styles. This is very useful when you're sending emails.",
             "homepage": "https://github.com/tijsverkoyen/CssToInlineStyles",
             "time": "2015-04-01 14:40:03"
+        },
+        {
+            "name": "vipsoft/unzip",
+            "version": "1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vipsoft/Unzip.git",
+                "reference": "b9d4820cfe756f6b8295edd022961b9c40005f68"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/vipsoft/Unzip/zipball/b9d4820cfe756f6b8295edd022961b9c40005f68",
+                "reference": "b9d4820cfe756f6b8295edd022961b9c40005f68",
+                "shasum": ""
+            },
+            "require": {
+                "ext-zip": "*",
+                "php": ">=5.3.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "VIPSoft\\Unzip": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Anthon Pang",
+                    "email": "apang@softwaredevelopment.ca",
+                    "role": "developer"
+                }
+            ],
+            "description": "Unzip library - a ZipArchive wrapper",
+            "homepage": "http://github.com/vipsoft/",
+            "keywords": [
+                "pclzip",
+                "unzip",
+                "zip",
+                "ziparchive"
+            ],
+            "time": "2014-04-30 02:23:52"
         }
     ],
     "packages-dev": [
@@ -3027,7 +3072,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/971dcdfdc2239b3d516672139f4368c19f6c2060",
+                "url": "https://api.github.com/repos/padraic/mockery/zipball/e585573c91b0c821e511afd14666b4503ef7255b",
                 "reference": "971dcdfdc2239b3d516672139f4368c19f6c2060",
                 "shasum": ""
             },
