@@ -99,8 +99,8 @@
         >
           Archive Merchant
         </a>
-        <a href class="list-group-item" ng-click="generateScreenshot()" ng-confirm-click="This operation might take some time">
-          Generate Screenshots
+        <a href class="list-group-item" ng-click="captureScreenshot()">
+          Capture Screenshots
         </a>
       </div>
     </div>
@@ -207,8 +207,8 @@
           Customer Receipt Emails
         </a>
         <a target="_blank" href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
-          <span class="pull-right" tooltip="Download merchant screenshot PDF"><i class="fa fa-cloud-download"></i></span>
-          Screenshot PDF Download
+          <span class="pull-right" tooltip="Print screenshots"><i class="fa fa-cloud-download"></i></span>
+          Print screenshots
         </a>
         <div href class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">

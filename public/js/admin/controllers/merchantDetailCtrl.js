@@ -31,13 +31,13 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
-    $scope.generateScreenshot = function(){
+    $scope.captureScreenshot = function(){
       var request = $http.post("/admin/merchant/"+$scope.merchant.id+"/screenshot");
 
       request
       .success(function(data){
         if(data.success) {
-          $scope.alerts.addAlert('success', 'Website screenshots generated successfully', true);
+          $scope.alerts.addAlert('success', 'Website screenshots capture started. Wait for notification on Slack', true);
         }
         else {
           $scope.alerts.resetAlerts();
