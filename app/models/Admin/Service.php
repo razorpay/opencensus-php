@@ -914,6 +914,50 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * Saves provided screenshots to S3
+     * @param  string $id    Merchant Id
+     * @param  array $input  Laravel input array
+     * @return array error
+     */
+    public function saveScreenshot($id, array $input)
+    {
+        $keys = MerchantDetails\Entity::URL_KEYS;
+        foreach ($keys as $key)
+        {
+            if($input[$key]->isValid())
+            {
+                $S3Path = "$id/screenshots/$key.jpg";
+                $localFilePath = $input[$key]->getRealPath();
+
+                $this->uploadToS3($S3Path, $localFilePath);
+            }
+        }
+    }
+
+    /**
+     * Uploads a screenshot to S3
+     * @param  string $objectPath Object path on S2
+     * @param  String $filePath   Local file path
+     */
+    protected function uploadToS3($objectPath, $filePath)
+    {
+        $s3 =  AWS::get('s3');
+        $s3Obj = [
+            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Key'           => $objectPath,
+            'ContentType'   => "image/jpeg",
+            'SourceFile'    => $filePath,
+        ];
+
+        $s3->putObject($s3Obj);
+    }
+
+    /**
+     * Returns an associative array of links to S3
+     * @param  string $id merchant id
+     * @return array screenshot S3 links
+     */
     public function getScreenshot($id)
     {
         $s3 =  \AWS::get('s3');
