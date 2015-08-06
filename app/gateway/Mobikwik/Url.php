@@ -8,6 +8,6 @@ class Url
     const TEST_DOMAIN   = 'https://test.mobikwik.com/mobikwik';
 
     const AUTHORIZE     = '/wallet';
-    const REFUND        = '/refund';
+    const REFUND        = '/walletrefund';
     const VERIFY        = '/checkstatus';
 }
