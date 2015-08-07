@@ -188,6 +188,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
+    public function getReceiptEmailEnabledAttribute()
+    {
+        return (bool) $this->attributes[self::RECEIPT_EMAIL_ENABLED];
+    }
+
     public function getHoldFundsAttribute()
     {
         return (bool) $this->attributes[self::HOLD_FUNDS];
@@ -210,7 +215,7 @@ class Entity extends Base\PublicEntity
 
     public function isReceiptEmailsEnabled()
     {
-        return (bool) $this->attribute[self::RECEIPT_EMAIL_ENABLED];
+        return $this->getReceiptEmailEnabledAttribute();
     }
 
     public function getRedactedAccountNumber()

@@ -136,4 +136,23 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::IFSC_CODE);
     }
+
+    public function equals($baCopy)
+    {
+        $orig = $this->toArray();
+
+        unset(
+            $orig[self::CREATED_AT],
+            $orig[self::UPDATED_AT],
+            $orig[self::BENEFICIARY_CODE]);
+
+        $copy = $baCopy->toArray();
+
+        unset(
+            $copy[self::CREATED_AT],
+            $copy[self::UPDATED_AT],
+            $copy[self::BENEFICIARY_CODE]);
+
+        return ($orig === $copy);
+    }
 }

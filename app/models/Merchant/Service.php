@@ -231,6 +231,13 @@ class Service extends Base\Service
 
         if ($ba !== null)
         {
+            $baCopy = (new BankAccount)->build($input);
+
+            if ($ba->equals($baCopy))
+            {
+                return $ba->toArray();
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
         }
