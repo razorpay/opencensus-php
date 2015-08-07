@@ -128,6 +128,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::post('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
 
+    Route::put('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
+
     Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
     Route::group(array('before' => 'csrf'), function()

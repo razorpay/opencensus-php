@@ -917,15 +917,14 @@ class Service extends Base\Service
     /**
      * Saves provided screenshots to S3
      * @param  string $id    Merchant Id
-     * @param  array $input  Laravel input array
      * @return array error
      */
-    public function saveScreenshot($id, array $input)
+    public function saveScreenshot($id)
     {
         $keys = MerchantDetails\Entity::URL_KEYS;
         foreach ($keys as $key)
         {
-            if($input[$key]->isValid())
+            if (\Input::hasFile($key) and $input[$key]->isValid())
             {
                 $S3Path = "$id/screenshots/$key.jpg";
                 $localFilePath = $input[$key]->getRealPath();

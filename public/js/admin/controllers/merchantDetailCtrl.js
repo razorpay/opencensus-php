@@ -344,6 +344,10 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.uploadScreenshot = function(merchant){
+      console.log(merchant);
+    };
+
     $scope.editComment = function(new_comment){
       var data = {comment: new_comment};
 
@@ -468,6 +472,19 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
         function () {
           ;
         });
+    };
+
+    $scope.openUploadScreenshot = function () {
+      var currentId = $scope.merchant.id;
+      var modalInstance = $modal.open({
+        templateUrl: 'uploadScreenshotModalContent.html',
+        controller: 'uploadScreenshotModalCtrl',
+        resolve: {
+          current: function() {
+            return currentId;
+          }
+        }
+      });
     };
 
     $scope.openEditComment = function () {
@@ -708,6 +725,73 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       $scope.ok = function (merchant) {
         $modalInstance.close(merchant);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+.controller('uploadScreenshotModalCtrl', ['$scope', '$modalInstance', '$upload', 'current', 'alertsFactory',
+  function ($scope, $modalInstance, $upload, current, alertsFactory) {
+      $scope.files = {};
+      $scope.merchantId = current;
+
+      $scope.alerts = alertsFactory.getHandler();
+
+      $scope.onFileSelect = function ($files, fieldname){
+        var file = $files[0];
+        if(file.type !== "image/jpeg") {
+          $scope.alerts.addAlert('danger', 'Invalid filetype. Only jpg, png, pdf files are allowed.', true);
+          return;
+        }
+
+        if(file.size > 2000000){
+          $scope.alerts.addAlert('danger', 'Max file size 2 MB. Convert the file to an image before uploading if necessary.', true);
+          return;
+        }
+
+        $scope.alerts.addAlert('info', 'Uploading...', true);
+
+        console.log(fieldname);
+
+        var request = $upload.upload({
+          url: '/admin/merchant/'+$scope.merchantId+'/screenshot',
+          method: 'put',
+          file: file,
+          alias: fieldname,
+          name: fieldname,
+          fileFormDataName: fieldname,
+          formDataAppender: function(fd, key, val) {
+            if (angular.isArray(val)) {
+                angular.forEach(val, function(v) {
+                    fd.append(key, v);
+                });
+            } else {
+                fd.append(key, val);
+            }
+          }
+        });
+
+        request
+        .success(function(data, status, headers, config) {
+          if(data.success){
+            $scope.alerts.addAlert('success', 'File Uploaded Successfully', true);
+          }
+          else{
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key){
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function(){
+          $scope.alerts.addAlert('danger', 'File upload failed.', true);
+        })
+
+      };
+
+      $scope.ok = function (files) {
+        $modalInstance.close(files);
       };
 
       $scope.cancel = function () {
