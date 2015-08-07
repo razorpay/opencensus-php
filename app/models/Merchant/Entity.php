@@ -75,7 +75,9 @@ class Entity extends Base\PublicEntity
         self::LIVE                  => false,
         self::ACTIVATED             => false,
         self::ACTIVATED_AT          => null,
-        self::RECEIPT_EMAIL_ENABLED => true);
+        self::RECEIPT_EMAIL_ENABLED => true,
+        self::HOLD_FUNDS            => false,
+    );
 
     protected function generateTransactionReportEmail($input)
     {
@@ -184,6 +186,11 @@ class Entity extends Base\PublicEntity
     public function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
+    }
+
+    public function getHoldFundsAttribute()
+    {
+        return (bool) $this->attributes[self::HOLD_FUNDS];
     }
 
     public function getWebsite()

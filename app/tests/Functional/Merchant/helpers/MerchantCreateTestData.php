@@ -24,6 +24,7 @@ return [
                 'pricing_plan_id' => '2atGxLIYLyHWg7',
                 'live' => false,
                 'activated' => false,
+                'hold_funds' => false,
                 'activated_at' => null,
                 'transaction_report_email' => 'test@localhost.com',
             ],
