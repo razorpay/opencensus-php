@@ -99,6 +99,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
+    public function isEducationCategory()
+    {
+        $eduCategories = array(
+            '8211',
+            '8220',
+            '8241',
+            '8244',
+            '8249',
+            '8299');
+
+        return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
+    }
+
     public function activate()
     {
         $this->setAttribute(self::ACTIVATED, true);
