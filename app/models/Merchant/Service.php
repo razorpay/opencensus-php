@@ -231,7 +231,8 @@ class Service extends Base\Service
 
         if ($ba !== null)
         {
-            $baCopy = (new BankAccount)->build($input);
+            $baCopy = (new BankAccount\Entity)->build($input);
+            $baCopy->merchant()->associate($merchant);
 
             if ($ba->equals($baCopy))
             {
