@@ -31,14 +31,14 @@
           Activate Merchant
         </a>
         <a href class="list-group-item"
-        ng-show="merchant.details.hold_funds===0"
+        ng-show="merchant.details.hold_funds==0"
         ng-confirm-click="Are you sure you want to hold funds for this merchant?"
         ng-click="holdMerchantFunds()"
         >
           Hold Merchant Funds
         </a>
         <a href class="list-group-item"
-        ng-show="merchant.details.hold_funds===1"
+        ng-show="merchant.details.hold_funds==1"
         ng-confirm-click="Are you sure you want to release this merchant's funds?"
         ng-click="releaseMerchantFunds()"
         >
