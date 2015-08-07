@@ -5,6 +5,7 @@ namespace Gateway\Netbanking\Hdfc\Mock;
 use Carbon\Carbon;
 use Gateway\Paytm;
 use Gateway\Base;
+use Gateway\Netbanking;
 
 class Server extends Base\Mock\Server
 {
@@ -46,8 +47,8 @@ class Server extends Base\Mock\Server
 
         $id = $input['MerchantRefNo'];
 
-        $payment = (new Paytm\Repository)->findByPaymentIdAndAction(
-                                                    $id, Action::AUTHORIZE);
+        $payment = (new Netbanking\Base\Repository)->findByPaymentIdAndAction(
+                                                    $id, Base\Action::AUTHORIZE);
 
         $content = array(
             'ClientCode'        => $payment['client_code'],

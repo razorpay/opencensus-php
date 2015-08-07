@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
                       ->format('d/m/Y H:m:s');
 
         $content = array(
-            'MerchantCode'          => $input['termianl']['gateway_merchant_id'],
+            'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
             'Date'                  => $date,
             'MerchantRefNo'         => $payment['payment_id'],
             'TransactionId'         => 'XTXTV01',
@@ -123,8 +123,9 @@ class Gateway extends Base\Gateway
 
         $url = $this->getUrl();
 
-        $request['url'] = $url . $this->buildQueryString($content);
-        $request['method'] = 'GET';
+        $request['url'] = $url . '?' . $this->buildQueryString($content);
+        $request['method'] = 'get';
+        $request['content'] = [];
 
         $response = $this->sendGatewayRequest($request);
 
@@ -135,7 +136,7 @@ class Gateway extends Base\Gateway
         $data = [];
         parse_str($response->body, $data);
 
-        $status = $data['figSuccess'];
+        $status = $data['flgSuccess'];
         $bankRefNo = $data['BankRefNo'];
 
         $this->trace->info(
