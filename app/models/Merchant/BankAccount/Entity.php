@@ -157,6 +157,6 @@ class Entity extends Base\PublicEntity
             $copy[self::BENEFICIARY_ADDRESS4],
             $copy[self::BENEFICIARY_CODE]);
 
-        return ($orig === $copy);
+        return ($orig == $copy);
     }
 }
