@@ -136,12 +136,12 @@ class Gateway extends Base\Gateway
         $data = [];
         parse_str($response->body, $data);
 
-        $status = $data['flgSuccess'];
-        $bankRefNo = $data['BankRefNo'];
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [$data]);
+
+        $status = $data['flgSuccess'];
+        $bankRefNo = $data['BankRefNo'];
 
         // @todo: verify and match params
     }
