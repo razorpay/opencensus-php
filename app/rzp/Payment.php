@@ -8,6 +8,6 @@ class Payment extends \Razorpay\Api\Payment
     {
         $relativeUrl = $this->getEntityUrl() . $this->id . '/verify';
 
-        return $this->request('GET`', $relativeUrl, $attributes);
+        return $this->request('GET`', $relativeUrl);
     }
 }
