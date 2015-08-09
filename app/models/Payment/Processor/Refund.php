@@ -39,9 +39,9 @@ trait Refund
         $this->refund = $refund;
 
         $data = array(
-                    'payment' => $payment->toArray(),
-                    'refund' => $refund->toArray(),
-                    'amount' => $refund->getAmount());
+            'payment'   => $payment->toArray(),
+            'refund'    => $refund->toArray(),
+            'amount'    => $refund->getAmount());
 
         $method = $refund->payment->getMethod();
 
@@ -50,7 +50,15 @@ trait Refund
             $data['card'] = $refund->payment->card->toArray();
         }
 
-        $this->callGatewayForRefund($payment, $data);
+        $gateway = $payment->getGateway();
+
+        if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
+            ($payment->isAuthorized() === false))
+        {
+            $this->callGatewayForRefund($data);
+        }
+
+        $this->recordRefund();
 
         //
         // Analytics
@@ -86,19 +94,11 @@ trait Refund
         return $this->refund($id, $input);
     }
 
-    protected function callGatewayForRefund($payment, $data)
+    protected function callGatewayForRefund($data)
     {
         try
         {
-            $gateway = $payment->getGateway();
-
-            if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
-                ($payment->isAuthorized() === false))
-            {
-                $this->callGatewayFunction(Payment\Action::REFUND, $data);
-            }
-
-            $this->recordRefund();
+            $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch(BaseException $e)
         {

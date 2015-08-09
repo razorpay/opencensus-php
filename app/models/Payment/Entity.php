@@ -599,7 +599,8 @@ class Entity extends Base\PublicEntity
     {
         if (is_int($amount) === false)
         {
-            throw new Exception\InvalidArgumentException('amount should be an integer ' . $amount);
+            throw new Exception\InvalidArgumentException(
+                'amount should be an integer ' . $amount);
         }
 
         $amount = (int) $amount;
@@ -613,6 +614,8 @@ class Entity extends Base\PublicEntity
         else if ($amount === $amountUnrefunded)
         {
             $this->setRefundStatus(Refund\Status::FULL);
+
+            $this->setStatus(Payment\Status::REFUNDED);
         }
         else
         {
