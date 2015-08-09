@@ -66,9 +66,14 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected function markTestSkippedForWercker()
     {
-        if (getenv('WERCKER') === "true")
+        if ($this->isTestRunningOnWercker())
         {
             $this->markTestSkipped();
         }
+    }
+
+    protected function isTestRunningOnWercker()
+    {
+        return (getenv('WERCKER') === 'true');
     }
 }

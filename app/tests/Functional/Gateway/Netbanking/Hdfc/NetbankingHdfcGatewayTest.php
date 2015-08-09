@@ -18,17 +18,15 @@ class NetbankingHdfcGatewayTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'netbanking_hdfc';
+
+        $this->setMockGatewayTrue();
     }
 
     public function testPayment()
     {
-        $this->setMockGatewayTrue();
-
         $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal');
 
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment['bank'] = 'HDFC';
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -45,11 +43,7 @@ class NetbankingHdfcGatewayTest extends TestCase
 
     public function testPaymentOnSharedTerminal()
     {
-        $this->setMockGatewayTrue();
-
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment['bank'] = 'HDFC';
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -62,5 +56,21 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $this->assertArrayHasKey('bank_payment_id', $payment);
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
+
+        $this->verifyPayment($payment['id']);
+    }
+
+    protected function doNetbankingHdfcAuthAndCapturePayment()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'HDFC';
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        return $payment;
     }
 }

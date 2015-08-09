@@ -103,22 +103,47 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $data = ''; // Get the parameters required from db or elsewhere
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
 
-        $data['TransactionId'] = 'XTXTV01';
-        $data['FigVerify'] = 'Y';
+        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
+                      ->format('d/m/Y H:m:s');
 
-        $url = $this->getUrlDomain() . Url::VERIFY;
-        $request['url'] = $url . $this->buildQueryString($data);
+        $content = array(
+            'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
+            'Date'                  => $date,
+            'MerchantRefNo'         => $payment['payment_id'],
+            'TransactionId'         => 'XTXTV01',
+            'FigVerify'             => 'Y',
+            'ClientCode'            => $payment['client_code'],
+            'SuccessStaticFlag'     => 'N',
+            'FailureStaticFlag'     => 'N',
+            'TxnAmount'             => $payment['amount'],
+        );
 
-        $request['method'] = 'GET';
+        $url = $this->getUrl();
+
+        $request['url'] = $url . '?' . $this->buildQueryString($content);
+        $request['method'] = 'get';
+        $request['content'] = [];
 
         $response = $this->sendGatewayRequest($request);
 
-        $status = $response['data']['figSuccess'];
-        $bankRefNo = $response['date']['BankRefNo'];
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$response->body]);
 
-        // verify and match params
+        $data = [];
+        parse_str($response->body, $data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$data]);
+
+        $status = $data['flgSuccess'];
+        $bankRefNo = $data['BankRefNo'];
+
+        // @todo: verify and match params
     }
 
     protected function verifyCallbackChecksum($input)

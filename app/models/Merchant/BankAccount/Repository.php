@@ -54,5 +54,10 @@ class Repository extends Base\Repository
 
         return $repo::query()->orderBy(BankAccount\Entity::CREATED_AT)->get();
     }
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Entity::MERCHANT_ID, 'desc');
+    }
 }
 

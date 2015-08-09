@@ -47,6 +47,7 @@ class Service extends Base\Service
             'netbanking'        => 'Gateway\Netbanking\Base',
             'billdesk'          => 'Gateway\Billdesk',
             'hdfc'              => 'Gateway\Hdfc',
+            'bank_account'      => 'Models\Merchant\BankAccount',
         );
 
         if (array_key_exists($entity, $map))

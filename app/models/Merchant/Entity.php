@@ -75,7 +75,9 @@ class Entity extends Base\PublicEntity
         self::LIVE                  => false,
         self::ACTIVATED             => false,
         self::ACTIVATED_AT          => null,
-        self::RECEIPT_EMAIL_ENABLED => true);
+        self::RECEIPT_EMAIL_ENABLED => true,
+        self::HOLD_FUNDS            => false,
+    );
 
     protected function generateTransactionReportEmail($input)
     {
@@ -95,6 +97,19 @@ class Entity extends Base\PublicEntity
     public function isLive()
     {
         return $this->getAttribute(self::LIVE);
+    }
+
+    public function isEducationCategory()
+    {
+        $eduCategories = array(
+            '8211',
+            '8220',
+            '8241',
+            '8244',
+            '8249',
+            '8299');
+
+        return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
     public function activate()
@@ -186,6 +201,16 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
+    public function getReceiptEmailEnabledAttribute()
+    {
+        return (bool) $this->attributes[self::RECEIPT_EMAIL_ENABLED];
+    }
+
+    public function getHoldFundsAttribute()
+    {
+        return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
+
     public function getWebsite()
     {
         return $this->attributes[self::WEBSITE];
@@ -203,7 +228,7 @@ class Entity extends Base\PublicEntity
 
     public function isReceiptEmailsEnabled()
     {
-        return (bool) $this->attribute[self::RECEIPT_EMAIL_ENABLED];
+        return $this->getReceiptEmailEnabledAttribute();
     }
 
     public function getRedactedAccountNumber()
