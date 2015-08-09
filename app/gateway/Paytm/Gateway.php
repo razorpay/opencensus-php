@@ -352,10 +352,11 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
+        $code = (int) $input['gateway']['RESPCODE'];
+
         if ($content['STATUS'] !== Status::SUCCESS)
         {
-            $errorCode = ResponseCodeMap::getApiErrorCode(
-                                $input['gateway']['RESPCODE']);
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
 
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(

@@ -220,11 +220,17 @@ class Gateway
         return constant($ns.'\Url::'.$type);
     }
 
-    protected function getUrl($type)
+    protected function getUrl($type = null)
     {
         $url = $this->getUrlDomain();
 
+        if ($type === null)
+        {
+            $type = $this->action;
+        }
+
         $type = strtoupper($type);
+
         $url .= $this->getRelativeUrl($type);
 
         return $url;

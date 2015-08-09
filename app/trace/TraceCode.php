@@ -43,6 +43,7 @@ class TraceCode
     const GATEWAY_SUPPORT_RESPONSE                  = 'GATEWAY_SUPPORT_RESPONSE';
     const GATEWAY_SUPPORT_ERROR                     = 'GATEWAY_SUPPORT_ERROR';
     const GATEWAY_UNKNOWN_ERROR                     = 'GATEWAY_UNKNOWN_ERROR';
+    const GATEWAY_PAYMENT_VERIFY                    = 'GATEWAY_PAYMENT_VERIFY';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
