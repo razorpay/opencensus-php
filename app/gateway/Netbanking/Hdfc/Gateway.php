@@ -140,8 +140,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [$data]);
 
-        $status = $data['flgSuccess'];
-        $bankRefNo = $data['BankRefNo'];
+        // $status = $data['flgSuccess'];
+        // $bankRefNo = $data['BankRefNo'];
 
         // @todo: verify and match params
     }
