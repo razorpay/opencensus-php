@@ -197,16 +197,11 @@ class ApiResponse
 
         $response = Response::json();
 
-        //
-        // The content-type is set to text/html instead of json
-        // because on android 2.* json content is not being read on form
-        // post for cards with no 3d-secure.
-        //
-        $response->headers->set('content-type', 'text/html; charset=UTF-8');
-
         $app = \App::getFacadeRoot();
         $router = $app['router'];
         $route = $router->currentRouteName();
+
+        self::setContentTypeHtmlForSpecificRoutes($route, $response);
 
         if ((self::$jsonp === null) and
             (self::isJsonpRoute($route)))
@@ -268,6 +263,22 @@ class ApiResponse
         );
 
         return (in_array($route, $jsonpRoutes));
+    }
+
+    protected static function setContentTypeHtmlForSpecificRoutes($route, $response)
+    {
+        $routes = array(
+            'payment_create');
+
+        if (in_array($route, $routes))
+        {
+            //
+            // The content-type is set to text/html instead of json
+            // because on android 2.* json content is not being read on form
+            // post for cards with no 3d-secure.
+            //
+            $response->headers->set('content-type', 'text/html; charset=UTF-8');
+        }
     }
 
     public static function setSameOriginInHeaders($response, $route)

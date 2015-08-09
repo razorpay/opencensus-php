@@ -17,7 +17,8 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed',
         Entity::VERIFIED        => 'sometimes|boolean',
-        Entity::REFUND_STATUS   => 'sometimes|in:partial,full'
+        Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
+        Entity::BANK            => 'sometimes',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
@@ -131,5 +132,17 @@ class Repository extends Base\Repository
     protected function addQueryParamRefundStatus($query, $params)
     {
         $query = $query->where(Entity::REFUND_STATUS, '=', $params[Entity::REFUND_STATUS]);
+    }
+
+    protected function addQueryParamBank($query, $params)
+    {
+        if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
+                Entity::BANK);
+        }
+
+        $query = $query->where(Entity::BANK, '=', $params[Entity::BANK]);
     }
 }

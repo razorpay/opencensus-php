@@ -7,7 +7,7 @@ use Models\Base;
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        'ClientCode'            => 'required|email',
+        'ClientCode'            => 'required|alpha_num',
         'MerchantCode'          => 'required|alpha',
         'TxnCurrency'           => 'required|in:INR',
         'TxnAmount'             => 'required|numeric',
@@ -18,5 +18,17 @@ class Validator extends Base\Validator
         'Date'                  => 'required',
         'DynamicUrl'            => 'required|url',
         'CheckSum'              => 'required',
+    );
+
+    protected static $verifyRules = array(
+        'MerchantCode'          => 'required|',
+        'Date'                  => 'required|',
+        'MerchantRefNo'         => 'required|',
+        'TransactionId'         => 'required|in:XTXTV01',
+        'FigVerify'             => 'required|in:Y',
+        'ClientCode'            => 'required|',
+        'SuccessStaticFlag'     => 'required|in:N',
+        'FailureStaticFlag'     => 'required|in:N',
+        'TxnAmount'             => 'required|numeric',
     );
 }

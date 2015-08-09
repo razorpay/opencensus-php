@@ -24,6 +24,11 @@ build:
       - script:
           name: enable composer cache
           code: export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer" && mkdir -p $COMPOSER_CACHE_DIR
+      - create-file:
+          name: Create api_sqlite.db
+          filename: api_sqlite.db
+          overwrite: true
+          content:
       - script:
           name: install dependencies
           code: composer install --no-interaction

@@ -6,7 +6,7 @@ return array(
     'DB_LIVE_DRIVER'                        => 'sqlite',
     'DB_LIVE_HOST'                          => '',
     'DB_LIVE_PORT'                          => '',
-    'DB_LIVE_DATABASE'                      => ':memory:',
+    'DB_LIVE_DATABASE'                      => 'api_sqlite.db',
     'DB_LIVE_USERNAME'                      => '',
     'DB_LIVE_PASSWORD'                      => '',
 

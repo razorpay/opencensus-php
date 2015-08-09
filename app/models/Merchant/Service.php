@@ -231,6 +231,14 @@ class Service extends Base\Service
 
         if ($ba !== null)
         {
+            $baCopy = (new BankAccount\Entity)->build($input);
+            $baCopy->merchant()->associate($merchant);
+
+            if ($ba->equals($baCopy))
+            {
+                return $ba->toArray();
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
         }
@@ -310,6 +318,7 @@ class Service extends Base\Service
             'netbanking'    => [],
             'wallet'        => [
                 'paytm'     => false,
+                'mobikwik'  => false,
             ]);
 
         $methods = (new Merchant\Banks\Core)->getMerchantBanks($this->merchant);
@@ -318,7 +327,7 @@ class Service extends Base\Service
         {
             $data['card'] = $methods->isCardEnabled();
             $data['netbanking'] = $methods->toArrayWithBankNames();
-            $data['wallet']['paytm'] = $methods->isPaytmEnabled();
+            // $data['wallet']['paytm'] = $methods->isPaytmEnabled();
         }
 
         if ($this->mode === Mode::TEST)

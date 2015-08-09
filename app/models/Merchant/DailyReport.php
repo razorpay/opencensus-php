@@ -81,14 +81,7 @@ class DailyReport
     protected function getAuthorizedPayments()
     {
         $authorizedCollection = (new Payment\Repository)->fetch(
-            [
-                // Note: This is not correct and uses CREATED_AT
-                // instead of AUTHORIZED_AT
-
-                'from'      => $this->timeLowerLimit,
-                'to'        => $this->timeUpperLimit,
-                'status'    => 'authorized',
-            ],
+            ['status'    => 'authorized'],
             $this->merchantId);
 
         return $this->summarizePayments($authorizedCollection);
