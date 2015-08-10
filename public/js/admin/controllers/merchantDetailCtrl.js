@@ -344,10 +344,6 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
-    $scope.uploadScreenshot = function(merchant){
-      console.log(merchant);
-    };
-
     $scope.editComment = function(new_comment){
       var data = {comment: new_comment};
 
