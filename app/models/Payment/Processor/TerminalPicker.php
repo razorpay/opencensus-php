@@ -187,15 +187,18 @@ class TerminalPicker
             return $gatewayTerms[Payment\Gateway::BILLDESK];
         }
 
-        if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
-            (Netbanking::isPaytmSupportedBank($bank)))
+        if ($this->mode === Mode::TEST)
         {
-            return $gatewayTerms[Payment\Gateway::PAYTM];
-        }
+            if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
+                (Netbanking::isPaytmSupportedBank($bank)))
+            {
+                return $gatewayTerms[Payment\Gateway::PAYTM];
+            }
 
-        if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
-        {
-            return $gatewayTerms[Payment\Gateway::ATOM];
+            if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
+            {
+                return $gatewayTerms[Payment\Gateway::ATOM];
+            }
         }
 
         return $terminal;
@@ -262,12 +265,12 @@ class TerminalPicker
                 }
             }
 
-            if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
+            if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
             }
 
-            if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+            if ($this->terminalExists(Shared::PAYTM_RAZORPAY_TERMINAL))
             {
                 return $this->terminal;
             }

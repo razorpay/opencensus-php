@@ -176,6 +176,10 @@ class Gateway extends Base\Gateway
 
         $content = $this->postRequest($content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$content]);
+
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);
 
@@ -211,6 +215,7 @@ class Gateway extends Base\Gateway
     protected function postRequest($content)
     {
         $request = $this->getRequestArrayWithProxy($content);
+        $request['options']['timeout'] = 30;
 
         try
         {
@@ -218,7 +223,8 @@ class Gateway extends Base\Gateway
         }
         catch (\Requests_Exception $e)
         {
-            sd($e);
+            throw new Exception\RuntimeException(
+                'Billdesk payment verification request failed.', null, $e);
         }
 
         $content = $this->getContentAfterChecksumVerification($response->body);

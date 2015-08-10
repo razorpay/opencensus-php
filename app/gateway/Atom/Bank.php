@@ -3,6 +3,7 @@
 namespace Gateway\Atom;
 
 use Models\Bank\IFSC;
+use Models\Payment\Processor\Netbanking;
 
 class Bank
 {
@@ -49,6 +50,30 @@ class Bank
         IFSC::BARB => 2000,
         IFSC::PUNB => 2001,
         IFSC::VYSA => 2002,
+        IFSC::ALLA => 2003,
+        IFSC::ANDB => 2004,
+        IFSC::BBKM => 2005,
+        IFSC::COSB => 2006,
+        IFSC::BKDN => 2007,
+        IFSC::ORBC => 2008,
+        IFSC::PMCB => 2009,
+        IFSC::PSIB => 2010,
+        IFSC::ABNA => 2011,
+        IFSC::RATN => 2012,
+        IFSC::SVCB => 2013,
+        IFSC::SRCB => 2014,
+        IFSC::SYNB => 2015,
+        IFSC::TMBL => 2016,
+        IFSC::TNSC => 2017,
+        IFSC::UTBI => 2018,
+        IFSC::JSBP => 2019,
+        IFSC::NKGS => 2020,
+        Netbanking::BARB_C => 2021,
+        Netbanking::BARB_R => 2022,
+        Netbanking::PUNB_C => 2023,
+        Netbanking::PUNB_R => 2024,
+        Netbanking::LAVB_C => 2025,
+        Netbanking::LAVB_R => 2026,
     );
 
     public static function getAtomBankCode($ifsc)
