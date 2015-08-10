@@ -176,6 +176,10 @@ class Gateway extends Base\Gateway
 
         $content = $this->postRequest($content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$content]);
+
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);
 
