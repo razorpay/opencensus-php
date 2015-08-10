@@ -24,12 +24,19 @@ class Creevey
         $urls = $data[1];
         $this->name = $data[2];
 
-        $baseUrl = Config::get('creevey.root');
+        $config = Config::get('creevey');
+        $baseUrl = $config['root'];
+
+        if ($config['mock'])
+        {
+            $job->delete();
+            return;
+        }
 
         // Now we make the post request
         $postData = json_encode([
             'url'   =>  $urls,
-            'token' =>  Config::get('creevey.token'),
+            'token' =>  $config['token'],
             'id'    =>  $this->merchantId
         ]);
 
