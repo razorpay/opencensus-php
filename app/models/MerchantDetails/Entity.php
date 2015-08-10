@@ -325,4 +325,9 @@ class Entity extends Base\Entity
 
         return $error;
     }
+
+    public static function getUrlKeys()
+    {
+        return self::$URL_KEYS;
+    }
 }

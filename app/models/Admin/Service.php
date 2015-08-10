@@ -921,7 +921,7 @@ class Service extends Base\Service
      */
     public function saveScreenshot($id, $input)
     {
-        $keys = MerchantDetails\Entity::URL_KEYS;
+        $keys = MerchantDetails\Entity::getUrlKeys();
         $found = false;
 
         foreach ($keys as $key)
