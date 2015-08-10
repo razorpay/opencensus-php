@@ -979,7 +979,7 @@ class Service extends Base\Service
     {
         $s3 =  \AWS::get('s3');
         $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
-        $keys = MerchantDetails\Entity::URL_KEYS;
+        $keys = MerchantDetails\Entity::getUrlKeys();
 
         $links = [];
 
