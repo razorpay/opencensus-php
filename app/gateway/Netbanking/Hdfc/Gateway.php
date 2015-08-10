@@ -38,6 +38,7 @@ class Gateway extends Base\Gateway
         'Message'       => 'error_message',
         'BankRefNo'     => 'bank_payment_id',
         'fldSessionNbr' => 'reference1',
+        'Date'          => 'date',
     );
 
     /**
@@ -50,7 +51,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $this->createGatewayPaymentEntity($content);
+        $payment = $this->createGatewayPaymentEntity($content);
 
         $request = array(
             'url' => $this->getUrl('pay'),
@@ -108,6 +109,11 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
                       ->format('d/m/Y H:m:s');
+
+        if (empty($payment['date']) === false)
+        {
+            $date = $payment['date'];
+        }
 
         $content = array(
             'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
