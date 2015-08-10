@@ -324,7 +324,7 @@ class Entity extends Base\PublicEntity
 
     public function isCaptured()
     {
-        return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
+        return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
     public function isPartiallyOrFullyRefunded()

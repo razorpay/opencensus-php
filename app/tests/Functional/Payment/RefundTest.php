@@ -88,7 +88,7 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id']);
 
         $this->startTest($payment['id'], 100);
     }

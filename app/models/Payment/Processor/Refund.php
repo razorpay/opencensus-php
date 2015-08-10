@@ -74,8 +74,9 @@ trait Refund
 
         if ($this->payment->isAuthorized() === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+            throw new Exception\InvalidArgumentException(
+                'Can only refund authorized payments here but ' .
+                'the status is ' . $payment->getStatus());
         }
 
         return $this->refund($id, $input);
@@ -85,7 +86,13 @@ trait Refund
     {
         $payment = $this->retrieve($id);
 
-        if ($this->payment->isCaptured() === false)
+        if ($payment->isFullyRefunded())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
+        }
+
+        if ($payment->isCaptured() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
@@ -123,7 +130,7 @@ trait Refund
             $gateway = $payment->getGateway();
 
             if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
-                ($payment->isAuthorized() === false))
+                ($payment->getCaptureTimestamp() !== null))
             {
                 $txn = (new Transaction\Core)->createFromRefund($this->refund);
 

@@ -27,7 +27,7 @@ return [
                 'amount' => 50000,
                 'amount_refunded' => 50000,
                 'refund_status' => 'full',
-                'status' => 'captured',
+                'status' => 'refunded',
                 'currency' => 'INR',
             ],
         ],
