@@ -170,7 +170,9 @@ class AdminController extends BaseController
 
     public function saveMerchantScreenshot($id)
     {
-        return (new Admin\Service)->saveScreenshot($id);
+        $input = \Input::all();
+        $error = (new Admin\Service)->saveScreenshot($id, $input);
+        return AppResponse::jsonResponse($error);
     }
 
     public function getMerchantUnarchive($id)

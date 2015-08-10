@@ -32,7 +32,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
     };
 
     $scope.captureScreenshot = function(){
-      var request = $http.post("/admin/merchant/"+$scope.merchant.id+"/screenshot");
+      var request = $http.put("/admin/merchant/"+$scope.merchant.id+"/screenshot");
 
       request
       .success(function(data){
@@ -741,7 +741,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       $scope.onFileSelect = function ($files, fieldname){
         var file = $files[0];
         if(file.type !== "image/jpeg") {
-          $scope.alerts.addAlert('danger', 'Invalid filetype. Only jpg, png, pdf files are allowed.', true);
+          $scope.alerts.addAlert('danger', 'Invalid filetype. Only jpg files are allowed.', true);
           return;
         }
 
@@ -752,11 +752,9 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
         $scope.alerts.addAlert('info', 'Uploading...', true);
 
-        console.log(fieldname);
-
         var request = $upload.upload({
           url: '/admin/merchant/'+$scope.merchantId+'/screenshot',
-          method: 'put',
+          method: 'post',
           file: file,
           alias: fieldname,
           name: fieldname,

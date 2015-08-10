@@ -919,19 +919,37 @@ class Service extends Base\Service
      * @param  string $id    Merchant Id
      * @return array error
      */
-    public function saveScreenshot($id)
+    public function saveScreenshot($id, $input)
     {
         $keys = MerchantDetails\Entity::URL_KEYS;
+        $found = false;
+
         foreach ($keys as $key)
         {
             if (\Input::hasFile($key) and $input[$key]->isValid())
             {
+                $found = true;
                 $S3Path = "$id/screenshots/$key.jpg";
                 $localFilePath = $input[$key]->getRealPath();
 
-                $this->uploadToS3($S3Path, $localFilePath);
+                try
+                {
+                    $this->uploadToS3($S3Path, $localFilePath);
+                }
+                catch(\Exception $e)
+                {
+                    return [$e->getMessage()];
+                }
+
             }
         }
+
+        if ($found === false)
+        {
+            return ["No matching files found while uploading"];
+        }
+
+        return [];
     }
 
     /**
