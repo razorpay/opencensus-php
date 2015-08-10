@@ -6,6 +6,17 @@ use Models\Base;
 
 class Entity extends Base\Entity
 {
+    protected static $URL_KEYS = [
+        'business_website',
+        'website_about',
+        'website_contact',
+        'website_privacy',
+        'website_terms',
+        'website_refund',
+        'website_pricing',
+        'website_login'
+    ];
+
     protected $table = 'merchant_details';
 
     protected $primaryKey = 'merchant_id';
@@ -226,24 +237,11 @@ class Entity extends Base\Entity
 
     public function getUrls()
     {
-        $urlKeys = [
-            'business_website',
-            'website_about',
-            'website_contact',
-            'website_privacy',
-            'website_terms',
-            'website_refund',
-            'website_pricing',
-            'website_login'
-        ];
-
-        // Intersect + Flip = filter to the above keys only
-        // Values = Drop array keys, returns numeric array
-        // Unique = Drop duplicate entries
-        // Filter = Drop any null keys (side effect)
-        return array_filter(array_unique(array_values(array_intersect_key(
-            $this->attributes, array_flip($urlKeys)
-        ))));
+        // Filter = Remove null values
+        // Intersect + Flip = filter to the required keys
+        return array_filter(array_intersect_key(
+            $this->attributes, array_flip(self::$URL_KEYS)
+        ));
     }
 
     public function checkUploadedFiles()
@@ -326,5 +324,10 @@ class Entity extends Base\Entity
         }
 
         return $error;
+    }
+
+    public static function getUrlKeys()
+    {
+        return self::$URL_KEYS;
     }
 }

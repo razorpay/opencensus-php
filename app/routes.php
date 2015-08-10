@@ -126,7 +126,9 @@ Route::group(array('before' => 'auth.admin'), function()
 
     Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
 
-    Route::post('/admin/merchant/{id}/screenshot', 'AdminController@generateMerchantScreenshot');
+    Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
+
+    Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
 
     Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 

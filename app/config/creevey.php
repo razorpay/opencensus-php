@@ -5,5 +5,6 @@
  */
 return [
     'root'  =>  'http://rzp.cloudapp.net:8080',
-    'token' =>  $_ENV['CREEVEY_TOKEN']
+    'token' =>  $_ENV['CREEVEY_TOKEN'],
+    'mock'  =>  getenv('CREEVEY_MOCK')||false
 ];

@@ -5,6 +5,7 @@ namespace Models\MerchantDetails;
 use AWS;
 use Mailgun;
 use Models\Base;
+use Queue;
 
 class Service extends Base\Service
 {
@@ -193,6 +194,14 @@ class Service extends Base\Service
             $mail->to($salesEmail, 'Razorpay Sales Team')
                  ->subject('New activation form submitted - '.$customer['business_name']);
         });
+
+        // Take screenshots as well
+        $urls = $merchantDetails->getUrls();
+        Queue::push('Models\Admin\Creevey', [
+            $customer['id'],
+            $urls,
+            $customer['business_name']
+        ]);
 
         // We also send over details to slack
         $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$customer['id']}/activation|See activation form>";

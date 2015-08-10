@@ -891,45 +891,107 @@ class Service extends Base\Service
         }
 
         return array();
-
     }
 
-    public function generateScreenshot($id)
+    /**
+     * Fires off a queue worker to start capturing screenshots
+     * @param  string $id merchant id
+     */
+    public function captureScreenshot($id)
     {
-        $urls =  MerchantDetails\Entity::findorfail($id)->getUrls();
+        $merchant =  MerchantDetails\Entity::findorfail($id);
+        $urls = $merchant->getUrls();
+        $name = $merchant->business_name;
 
-        if(count($urls) > 0)
+        if (count($urls) >= 7)
         {
-            return Creevey::takeScreenshot($id, $urls);
+            \Queue::push('Models\Admin\Creevey', [$id, $urls, $name]);
+            return [];
         }
         else
         {
-            return ["The merchant needs to submit atleast one website link before screenshots can be generated"];
+            return ["The merchant needs to give all atleast 7 links"];
         }
     }
 
+    /**
+     * Saves provided screenshots to S3
+     * @param  string $id    Merchant Id
+     * @return array error
+     */
+    public function saveScreenshot($id, $input)
+    {
+        $keys = MerchantDetails\Entity::getUrlKeys();
+        $found = false;
+
+        foreach ($keys as $key)
+        {
+            if (\Input::hasFile($key) and $input[$key]->isValid())
+            {
+                $found = true;
+                $S3Path = "$id/screenshots/$key.jpg";
+                $localFilePath = $input[$key]->getRealPath();
+
+                try
+                {
+                    $this->uploadToS3($S3Path, $localFilePath);
+                }
+                catch(\Exception $e)
+                {
+                    return [$e->getMessage()];
+                }
+
+            }
+        }
+
+        if ($found === false)
+        {
+            return ["No matching files found while uploading"];
+        }
+
+        return [];
+    }
+
+    /**
+     * Uploads a screenshot to S3
+     * @param  string $objectPath Object path on S2
+     * @param  String $filePath   Local file path
+     */
+    protected function uploadToS3($objectPath, $filePath)
+    {
+        $s3 =  AWS::get('s3');
+        $s3Obj = [
+            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Key'           => $objectPath,
+            'ContentType'   => "image/jpeg",
+            'SourceFile'    => $filePath,
+        ];
+
+        $s3->putObject($s3Obj);
+    }
+
+    /**
+     * Returns an associative array of links to S3
+     * @param  string $id merchant id
+     * @return array screenshot S3 links
+     */
     public function getScreenshot($id)
     {
         $s3 =  \AWS::get('s3');
         $bucket = $_ENV['AWS_ACTIVATION_BUCKET'];
-        $filename = "$id/screenshots.pdf";
+        $keys = MerchantDetails\Entity::URL_KEYS;
 
-        try
+        $links = [];
+
+        foreach ($keys as $key)
         {
-            return
-            [
-                null,
-                $s3->getObjectUrl($bucket, $filename, '+10 minutes', [
+            $filename = "$id/screenshots/$key.jpg";
+            $links[$key] = $s3->getObjectUrl($bucket, $filename,
+                '+10 minutes', [
                     'https'     => true
-                ])
-            ];
-        }
-        catch(\Exception $e)
-        {
-            // This actually doesn't get called since S3 generates URL
-            // for a non-existent object as well :(
-            return ["Screenshot not yet generated", null];
+            ]);
         }
 
+        return $links;
     }
 }

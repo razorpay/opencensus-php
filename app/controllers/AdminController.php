@@ -147,25 +147,32 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error);
     }
 
-    public function generateMerchantScreenshot($id)
+    /**
+     * Calls the Creevey service over a queue to capture screenshots
+     * @param  string $id Merchant Id
+     */
+    public function captureMerchantScreenshot($id)
     {
-        $error = (new Admin\Service)->generateScreenshot($id);
+        $error = (new Admin\Service)->captureScreenshot($id);
 
         return AppResponse::jsonResponse($error);
     }
 
+    /**
+     * Returns an HTML View for now
+     * @param  string $id merchant id
+     */
     public function getMerchantScreenshot($id)
     {
-        list($error, $url) = (new Admin\Service)->getScreenshot($id);
+        $links = (new Admin\Service)->getScreenshot($id);
+        return View::make('admin.screenshots', ['links' => $links]);
+    }
 
-        if($error !== null)
-        {
-            App::abort(404, $error);
-        }
-        else
-        {
-            return Redirect::to($url);
-        }
+    public function saveMerchantScreenshot($id)
+    {
+        $input = \Input::all();
+        $error = (new Admin\Service)->saveScreenshot($id, $input);
+        return AppResponse::jsonResponse($error);
     }
 
     public function getMerchantUnarchive($id)

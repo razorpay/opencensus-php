@@ -99,8 +99,11 @@
         >
           Archive Merchant
         </a>
-        <a href class="list-group-item" ng-click="generateScreenshot()" ng-confirm-click="This operation might take some time">
-          Generate Screenshots
+        <a href class="list-group-item" ng-click="openUploadScreenshot()">
+          Upload screenshots
+        </a>
+        <a href class="list-group-item" ng-click="captureScreenshot()">
+          Capture Screenshots
         </a>
       </div>
     </div>
@@ -206,9 +209,9 @@
           <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>
           Customer Receipt Emails
         </a>
-        <a href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
-          <span class="pull-right" tooltip="Download merchant screenshot PDF"><i class="fa fa-cloud-download"></i></span>
-          Screenshot PDF Download
+        <a target="_blank" href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
+          <span class="pull-right" tooltip="Print screenshots"><i class="fa fa-cloud-download"></i></span>
+          Print screenshots
         </a>
         <div href class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">
@@ -512,6 +515,71 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(merchant)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="uploadScreenshotModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Upload Screenshots</h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <div class="text-center m-t m-b alerts">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Website home page</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="business_website" ng-file-select="onFileSelect($files, 'business_website')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">About Page</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_about" ng-file-select="onFileSelect($files, 'website_about')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Contact</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_contact" ng-file-select="onFileSelect($files, 'website_contact')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Privacy Policy</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_privacy" ng-file-select="onFileSelect($files, 'website_privacy')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Terms &amp; Conditions</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_terms" ng-file-select="onFileSelect($files, 'website_terms')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Refund Policy</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_refund" ng-file-select="onFileSelect($files, 'website_refund')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Pricing Policy</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_pricing" ng-file-select="onFileSelect($files, 'website_pricing')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Customer Login</label>
+        <div class="col-lg-10" >
+          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="website_login" ng-file-select="onFileSelect($files, 'website_login')">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(files)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="editCommentModalContent.html">
