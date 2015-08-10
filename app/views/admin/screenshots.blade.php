@@ -16,14 +16,17 @@ h1 { font-size: 250%; }
 </style>
 
 <body>
-{{ ''; $index = 0; }}
+<?php $index=0;?>
 @foreach ($links as $key => $url)
 <h1>{{trans("screenshots.$key")}}</h1>
 <img src="{{$url}}" width="800"><br>
-{{ ''; $index++}}
-@if ($index%2 === 0)
-    <p style="page-break-after: always; break-after: always;"></p>
-@endif
+<?php
+$index++;
+if ($index%2 === 0)
+{
+    echo '<p style="page-break-after: always; break-after: always;"></p>';
+}
+?>
 @endforeach
 <script>
     window.print();

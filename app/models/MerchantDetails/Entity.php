@@ -6,7 +6,7 @@ use Models\Base;
 
 class Entity extends Base\Entity
 {
-    const URL_KEYS = [
+    protected static $URL_KEYS = [
         'business_website',
         'website_about',
         'website_contact',
@@ -237,10 +237,11 @@ class Entity extends Base\Entity
 
     public function getUrls()
     {
+        // Filter = Remove null values
         // Intersect + Flip = filter to the required keys
-        return array_intersect_key(
-            $this->attributes, array_flip(self::URL_KEYS)
-        );
+        return array_filter(array_intersect_key(
+            $this->attributes, array_flip(self::$URL_KEYS)
+        ));
     }
 
     public function checkUploadedFiles()

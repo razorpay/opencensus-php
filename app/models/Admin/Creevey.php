@@ -9,11 +9,11 @@ use VIPSoft\Unzip\Unzip;
 
 class Creevey
 {
-    const HEADERS = [
+    protected static $HEADERS = [
         'Content-Type' => 'application/json'
     ];
 
-    const OPTIONS = [
+    protected static $OPTIONS = [
         'timeout'   => 120,
         'useragent' => 'Razorpay/Dashboard'
     ];
@@ -41,9 +41,9 @@ class Creevey
         ]);
 
         $response = Requests::post($baseUrl,
-            self::HEADERS,
+            self::$HEADERS,
             $postData,
-            self::OPTIONS
+            self::$OPTIONS
         );
 
         if ($response->success)
@@ -77,7 +77,7 @@ class Creevey
         $zipFilePath = $this->dir.'/screenshots.zip';
         file_put_contents($zipFilePath, $body);
 
-        $unzipper  = new Unzip();
+        $unzipper = new Unzip();
         return $unzipper->extract($zipFilePath, $this->dir);
     }
 
@@ -98,8 +98,8 @@ class Creevey
         }
     }
 
-    function tempdir($dir=false,$prefix='php') {
-        $tempfile=tempnam(storage_path('files'),'');
+    function tempdir($dir = false, $prefix = 'php') {
+        $tempfile = tempnam(storage_path('files'), '');
         if (file_exists($tempfile))
         {
             unlink($tempfile);
