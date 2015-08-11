@@ -19,6 +19,7 @@ class Repository extends Base\Repository
         Entity::VERIFIED        => 'sometimes|boolean',
         Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
         Entity::BANK            => 'sometimes',
+        Entity::METHOD          => 'sometimes',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
