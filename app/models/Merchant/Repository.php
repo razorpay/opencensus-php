@@ -16,6 +16,8 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::ACTIVATED       => 'sometimes|boolean',
+        Entity::HOLD_FUNDS      => 'sometimes|boolean',
+        Entity::LIVE            => 'sometimes|boolean',
     );
 
     public function getBalanceLockForUpdate($id)
