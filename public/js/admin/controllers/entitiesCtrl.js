@@ -4,12 +4,18 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.entity_type = "payment";
-    $scope.count = 20;
+    $scope.count = 10;
     $scope.filters = {};
+
+    var gatewayList = [
+      'all', 'atom', 'axis_genius', 'axis_migs', 'billdesk',
+      'hdfc', 'kotak', 'paytm', 'netbanking_hdfc', 'sharp',
+      'mobikwik'
+    ];
 
     $scope.availableFilters = {
       payment: {
-        status:       ['all', 'authorized', 'captured', 'refunded'],
+        status:       ['all', 'authorized', 'failed', 'captured', 'refunded'],
         verified:     ['all', 0, 1],
         method:       ['all', 'card', 'netbanking', 'wallet']
       },
@@ -17,6 +23,9 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         activated:    ['all', 0, 1],
         live:         ['all', 0, 1],
         hold_funds:   ['all', 0, 1]
+      },
+      terminal: {
+        gateway: gatewayList
       }
     };
 
