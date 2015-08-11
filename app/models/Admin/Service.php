@@ -801,8 +801,6 @@ class Service extends Base\Service
 
         $this->setApiCredentials(null, $mode);
 
-        $input['count'] = 20;
-
         try
         {
             $response = $this->api->admin->fetchMultipleEntities($entity, $input)->toArray();

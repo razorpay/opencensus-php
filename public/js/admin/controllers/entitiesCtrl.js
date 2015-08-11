@@ -4,6 +4,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.entity_type = "payment";
+    $scope.count = 20;
     $scope.filters = {};
 
     $scope.availableFilters = {
@@ -50,7 +51,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         skip: 0
     };
 
-    $scope.$watch('mode + entity_type', function() {
+    $scope.$watch('mode + entity_type + count', function() {
       showTable();
     });
 
@@ -141,7 +142,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         return;
       }
 
-      var query = "count=20&skip="+ $scope.entity.skip;
+      var query = "count="+$scope.count+"&skip="+ $scope.entity.skip;
       for(var filterName in $scope.filters[$scope.entity_type]) {
         var value = $scope.filters[$scope.entity_type][filterName];
         if(value !== 'all'){
