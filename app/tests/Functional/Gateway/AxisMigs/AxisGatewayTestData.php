@@ -44,7 +44,7 @@ return [
         'escrow_balance' => 1048860,
         'channel' => 'kotak',
         'settled' => false,
-        'settled_at' => 1437589800,
+//        'settled_at' => 1437589800,
         'settlement_id' => null,
         'reconciled_at' => null,
         'entity' => 'transaction',
