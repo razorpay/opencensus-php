@@ -178,7 +178,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$content]);
+            $content);
 
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $input['payment']['id'], Action::AUTHORIZE);
@@ -207,6 +207,10 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
                 'gateway' => $input['payment']['gateway'],
             );
+
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                $res);
 
             throw new Exception\PaymentVerificationException($res);
         }
