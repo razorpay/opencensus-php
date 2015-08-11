@@ -15,6 +15,10 @@ class AuthStatus
     );
 
     public static $messages = array(
-        '0300' => 'Success',
+        '0300'  => 'Success',
+        '0399'  => 'Invalid Authentication at Bank Cancel Transaction',
+        'NA'    => 'Invalid Input in the Request Message Cancel Transaction',
+        '0002'  => 'BillDesk is waiting for Response from Bank Pending Transaction',
+        '0001'  => 'Error at BillDesk Cancel Transaction',
     );
 }

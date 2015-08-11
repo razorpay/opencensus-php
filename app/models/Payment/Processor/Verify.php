@@ -23,7 +23,7 @@ trait Verify
 
         try
         {
-            $data = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+            $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
         }
         catch (Exception\PaymentVerificationException $e)
         {
@@ -35,7 +35,7 @@ trait Verify
                 TraceCode::PAYMENT_VERIFY_FAILED,
                 $e->getData());
 
-            $this->notifyInSlack($payment);
+            $this->notifyInSlack($data);
 
             throw $e;
         }
@@ -47,14 +47,13 @@ trait Verify
         return $payment;
     }
 
-    protected function notifyInSlack($payment)
+    protected function notifyInSlack($data)
     {
         $channel = '#transactions';
         $username = 'transactions';
 
-        $message = '@harhsil @shk Payment verification failed for ' .
-                    'payment id - ' . $payment->getPublicId() . ', ' .
-                    'amount - ' . $payment->getAmount();
+        $message = 'Payment verification failed. ' .
+                    'data - ' . json_encode($data, JSON_PRETTY_PRINT);
 
         $app = \App::getFacadeRoot();
         $app['slack']->send($message, $channel, $username);
