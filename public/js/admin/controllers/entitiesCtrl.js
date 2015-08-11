@@ -4,7 +4,39 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.entity_type = "payment";
-    $scope.entity_filter = "all";
+    $scope.filters = {};
+
+    $scope.availableFilters = {
+      payment: {
+        status:       ['all', 'authorized', 'captured', 'refunded'],
+        verified:     ['all', 0, 1],
+        method:       ['all', 'card', 'netbanking', 'wallet']
+      },
+      merchant: {
+        activated:    ['all', 0, 1],
+        live:         ['all', 0, 1],
+        hold_funds:   ['all', 0, 1]
+      }
+    };
+
+
+    // This loop initializes the filters object
+    for(var entity in $scope.availableFilters) {
+      $scope['filters'][entity] = {};
+      var filters = $scope.availableFilters[entity];
+      //console.debug(filters);
+      for(var filter in filters) {
+        // The first value is the default
+        var def = filters[filter][0];
+        $scope['filters'][entity][filter] = def;
+      }
+
+      // watchCollection is not nested
+      $scope.$watchCollection('filters.' + entity, function() {
+        showTable();
+      });
+    }
+
     $scope.mode = "live";
     $scope.headings =[];
     $scope.refreshTable = true;
@@ -18,10 +50,8 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         skip: 0
     };
 
-    $scope.$watch('mode + entity_type + entity_filter', function() {
-      clear('skip');
-      clear('id');
-      generateTable();
+    $scope.$watch('mode + entity_type', function() {
+      showTable();
     });
 
     $scope.notSorted = function(obj){
@@ -31,6 +61,16 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         var data = Object.keys(obj);
         data.splice(-1,1)
         return data;
+    }
+
+    $scope.displayFilter = function(val)
+    {
+      if(val===0)
+        return 'no';
+      else if(val===1)
+        return 'yes';
+      else
+        return val;
     }
 
     $scope.next= function() {
@@ -88,6 +128,12 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       });
     }
 
+    function showTable() {
+      clear('id');
+      clear('skip');
+      generateTable();
+    }
+
     function generateTable() {
 
       if(!$scope.entity_type){
@@ -96,8 +142,11 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       }
 
       var query = "count=20&skip="+ $scope.entity.skip;
-      if($scope.entity_filter !== 'all') {
-        query += ("&filter=" + $scope.entity_filter);
+      for(var filterName in $scope.filters[$scope.entity_type]) {
+        var value = $scope.filters[$scope.entity_type][filterName];
+        if(value !== 'all'){
+          query+= ('&' + filterName + '=' + value)
+        }
       }
 
       var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity_type + "?" + query);
