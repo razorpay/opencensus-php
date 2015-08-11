@@ -82,9 +82,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content, $input['payment']['id']);
 
-        $response = $this->postAmaTransactionRequest($content, $input);
-
-        $content = $this->getAmaTxnResponseContent($response, $input);
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
         if (isset($content['vpc_TxnResponseCode']) === false)
         {
@@ -120,9 +118,7 @@ class Gateway extends Base\Gateway
 
         $refund = $this->createGatewayPaymentEntity($toSaveContent, $input['payment']['id']);
 
-        $response = $this->postAmaTransactionRequest($content, $input);
-
-        $content = $this->getAmaTxnResponseContent($response, $input);
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
         $refund->fill($content);
         $refund->saveOrFail();
@@ -138,9 +134,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentVerifyRequestContent($input, $payment);
 
-        $response = $this->postAmaTransactionRequest($content, $input);
-
-        $content = $this->parseQueryResponse($response);
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
         $key = 'vpc_TxnResponseCode';
 
@@ -179,6 +173,15 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function postAmaTransactionRequestAndGetContent(array & $content, $input)
+    {
+        $response = $this->postAmaTransactionRequest($content, $input);
+
+        $content = $this->getAmaTxnResponseContent($response);
+
+        return $content;
+    }
+
     protected function parseQueryResponse($response)
     {
         parse_str($response->body, $content);
@@ -201,10 +204,9 @@ class Gateway extends Base\Gateway
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
         $content = array(
-            'vpc_Command'       => AxisMigs\Command::QUERY,
+            'vpc_Command'       => AxisMigs\Command::QUERYDR,
             'vpc_Amount'        => $input['payment']['amount'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
-            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
 
         return $content;

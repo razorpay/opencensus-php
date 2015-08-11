@@ -105,39 +105,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
-        // Format YYYYMMDD
-        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
-        $date = $date->format('Ymd');
-
-        // Format yyyymmdd24hhmmss (in docs), actually yyyymmddhhmmss,
-        // hh is in 24 hrs
-        $now = Carbon::now('Asia/Kolkata')->format('YmdHis');
-
-        $refundAmount = (float) ($input['refund']['amount']);
-
-        // The amount should have exact two decimal places
-        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
-        $txnAmount = (string) number_format($payment['TxnAmount'], 2, '.', '');
-
-        $content = array(
-            'RequestType'       => '0400',
-            'MerchantID'        => $input['terminal']['gateway_merchant_id'],
-            'TxnReferenceNo'    => $payment['TxnReferenceNo'],
-            'TxnDate'           => $date,
-            'CustomerID'        => $input['payment']['id'],
-            'TxnAmount'         => $txnAmount,
-            'RefAmount'         => $refundAmount,
-            'RefDateTime'       => $now,
-            'MerchantRefNo'     => $input['refund']['id'],
-            'Filler1'           => 'NA',
-            'Filler2'           => 'NA',
-            'Filler3'           => 'NA',
-        );
-
-        if ($this->mode === Mode::TEST)
-        {
-            $content['MerchantID'] = $this->getTestMerchantId();
-        }
+        $content = $this->getPaymentRefundRequestContent($payment, $input);
 
         $content = $this->postRequest($content);
 
@@ -160,7 +128,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $content = $this->getPaymentGatewayVerifyContent($input);
+        $content = $this->getPaymentGatewayVerifyResponseContent($input);
 
         $status = $this->verifyPaymentFields($input, $content);
 
@@ -243,7 +211,7 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function getPaymentGatewayVerifyContent($input)
+    protected function getPaymentGatewayVerifyResponseContent($input)
     {
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
         $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
@@ -265,6 +233,45 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             $content);
+
+        return $content;
+    }
+
+    protected function getPaymentRefundRequestContent($payment, $input)
+    {
+        // Format YYYYMMDD
+        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
+        $date = $date->format('Ymd');
+
+        // Format yyyymmdd24hhmmss (in docs), actually yyyymmddhhmmss,
+        // hh is in 24 hrs
+        $now = Carbon::now('Asia/Kolkata')->format('YmdHis');
+
+        $refundAmount = (float) ($input['refund']['amount']);
+
+        // The amount should have exact two decimal places, otherwise billdesk gives error
+        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+        $txnAmount = (string) number_format($payment['TxnAmount'], 2, '.', '');
+
+        $content = array(
+            'RequestType'       => '0400',
+            'MerchantID'        => $input['terminal']['gateway_merchant_id'],
+            'TxnReferenceNo'    => $payment['TxnReferenceNo'],
+            'TxnDate'           => $date,
+            'CustomerID'        => $input['payment']['id'],
+            'TxnAmount'         => $txnAmount,
+            'RefAmount'         => $refundAmount,
+            'RefDateTime'       => $now,
+            'MerchantRefNo'     => $input['refund']['id'],
+            'Filler1'           => 'NA',
+            'Filler2'           => 'NA',
+            'Filler3'           => 'NA',
+        );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $content['MerchantID'] = $this->getTestMerchantId();
+        }
 
         return $content;
     }

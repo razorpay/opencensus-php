@@ -25,6 +25,13 @@ class Server
         $this->input = $input;
     }
 
+    protected function capture($input)
+    {
+        $this->action = 'capture';
+
+        $this->input = $input;
+    }
+
     protected function refund($input)
     {
         $this->action = 'refund';
