@@ -40,30 +40,49 @@ class Creevey
             'id'    =>  $this->merchantId
         ]);
 
-        $response = Requests::post($baseUrl,
-            self::$HEADERS,
-            $postData,
-            self::$OPTIONS
-        );
-
-        if ($response->success)
+        try
         {
-            // Now we save the file somewhere
-            $images = $this->extract($response->body);
-            $this->uploadToS3($images);
+            $response = Requests::post($baseUrl,
+                self::$HEADERS,
+                $postData,
+                self::$OPTIONS
+            );
 
-            $url = action('AdminController@getMerchantScreenshot', $this->merchantId);
+            if ($response->success)
+            {
+                // Now we save the file somewhere
+                $images = $this->extract($response->body);
+                $this->uploadToS3($images);
 
-            $link = "Screenshots Captured ({$this->name}): <$url|View>";
+                $url = action('AdminController@getMerchantScreenshot', $this->merchantId);
 
-            Slack::to('#sales')->from('creevey')->withIcon(':camera:')->send($link);
+                $link = "Screenshots Captured ({$this->name}): <$url|View>";
+
+                Slack::to('#sales')->from('creevey')->withIcon(':camera:')->send($link);
+            }
+
+            else
+            {
+                $this->handleError($response->status_code);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->handleError($e->getMessage());
+        }
+
+        finally
+        {
             $job->delete();
         }
-        else
-        {
-            // This will automatically release the job back to the queue
-            throw new \Exception("Invalid response from creevey: {$response->status_code}");
-        }
+    }
+
+    public function handleError($status)
+    {
+        // Instead of throwing an exception, post on slack
+        $error = "Invalid response from creevey: $status";
+        Slack::to('#tech_bots')->from('creevey')->withIcon(':shit:')
+            ->send($error);
     }
 
     /**
