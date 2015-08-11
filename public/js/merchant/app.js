@@ -24,7 +24,7 @@ var app = angular.module('app', [
     'angulartics.segment.io'
   ])
 .run(
-  [          '$rootScope', '$state', '$stateParams', 'user', 'authorization', 
+  [          '$rootScope', '$state', '$stateParams', 'user', 'authorization',
     function ($rootScope,   $state,   $stateParams, user, authorization) {
         $rootScope.$on('$stateChangeStart', function(event, toState, toStateParams) {
             // track the state the user wants to go to; authorization service needs this
@@ -43,8 +43,8 @@ var app = angular.module('app', [
 )
 .config(
   [          '$stateProvider', '$urlRouterProvider', '$controllerProvider', '$compileProvider', '$filterProvider', '$provide', '$analyticsProvider',
-    function ($stateProvider,   $urlRouterProvider,   $controllerProvider,   $compileProvider,   $filterProvider,   $provide, $analyticsProvider) {
-        
+    function ($stateProvider,   $urlRouterProvider,   $controllerProvider,   $compileProvider,   $filterProvider,   $provide,   $analyticsProvider) {
+
         // lazy controller, directive and service
         app.controller = $controllerProvider.register;
         app.directive  = $compileProvider.directive;
@@ -57,7 +57,7 @@ var app = angular.module('app', [
         $urlRouterProvider
             .otherwise('/app/dashboard');
         $stateProvider
-            //Logged in routes            
+            //Logged in routes
             .state('app', {
                 abstract: true,
                 url: '/app',
@@ -164,6 +164,10 @@ var app = angular.module('app', [
                 url: '/lockme/:email',
                 templateUrl: 'tpl/page_lockme.html',
             })
+            .state('access.signupnasscom', {
+                url: '/signup/nasscom',
+                templateUrl: 'tpl/page_signup_nasscom.html'
+            })
             .state('access.signup', {
                 url: '/signup',
                 templateUrl: 'tpl/page_signup.html'
@@ -216,4 +220,4 @@ var app = angular.module('app', [
   $idleProvider.warningDuration(15);
   $keepaliveProvider.interval(60);
 }])
-;   
+;
