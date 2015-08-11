@@ -4,6 +4,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.entity_type = "payment";
+    $scope.entity_filter = "all";
     $scope.mode = "live";
     $scope.headings =[];
     $scope.refreshTable = true;
@@ -17,7 +18,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         skip: 0
     };
 
-    $scope.$watch('mode + entity_type', function() {
+    $scope.$watch('mode + entity_type + entity_filter', function() {
       clear('skip');
       clear('id');
       generateTable();
@@ -90,11 +91,14 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     function generateTable() {
 
       if(!$scope.entity_type){
-        console.log("Error: No Entity Type Sepcified");
+        console.log("Error: No Entity Type Specified");
         return;
       }
 
       var query = "count=20&skip="+ $scope.entity.skip;
+      if($scope.entity_filter !== 'all') {
+        query += ("&filter=" + $scope.entity_filter);
+      }
 
       var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity_type + "?" + query);
 

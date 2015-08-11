@@ -39,6 +39,15 @@
         </select>
       </div>
       <div class="col-sm-2">
+        <select name="entity_filter" ng-model="entity_filter" ng-show="entity_type!=='payment'">
+          <option value="all">All</option>
+        </select>
+        <select name="entity_filter" ng-model="entity_filter" ng-show="entity_type=='payment'">
+          <option selected value="all">All</option>
+          <option value="authorized">Authorized</option>
+          <option value="captured">Captured</option>
+          <option value="refunded">Refunded</option>
+        </select>
       </div>
       <div class="col-sm-2">
         Mode:
