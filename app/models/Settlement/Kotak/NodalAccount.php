@@ -195,6 +195,9 @@ class NodalAccount
 
     protected function sendKotakSettlementMail($count, $amounts)
     {
+        $amounts['neft'] = (string) $amounts['neft'];
+        $amounts['ift'] = (string) $amounts['ift'];
+
         $data['body'] = '
             Total transactions - ' . $count . '<br />
             NEFT Amount - ' . $amounts['neft'] . '<br />
