@@ -44,9 +44,10 @@ class PaymentCreateController extends BaseController
         if ((is_array($ret)) and
             (isset($ret['request'])) === false)
         {
-            return $this->returnCheckoutCallbackView($data);
+            return $this->returnCheckoutCallbackView($ret);
         }
 
+        return $ret;
     }
 
     protected function createPayment()

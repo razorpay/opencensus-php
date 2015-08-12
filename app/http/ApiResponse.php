@@ -21,7 +21,7 @@ class ApiResponse
     {
         self::$jsonp = false;
 
-        $response = self::generateErrorResponse(
+        $response = self::generateJsonErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
         $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
@@ -79,6 +79,13 @@ class ApiResponse
         list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
 
         return self::generateResponse($publicError, $httpStatusCode);
+    }
+
+    public static function generateJsonErrorResponse($code)
+    {
+        list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
+
+        return self::json($publicError, $httpStatusCode);
     }
 
     public static function getErrorResponseFields($code)
@@ -245,6 +252,7 @@ class ApiResponse
     protected static function isCallbackRoute($route)
     {
         $callbackRoutes = array(
+            'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
         );
@@ -267,9 +275,7 @@ class ApiResponse
 
     protected static function setContentTypeHtmlForSpecificRoutes($route, $response)
     {
-        $routes = array(
-            'payment_create',
-            'payment_create_checkout');
+        $routes = array('payment_create');
 
         if (in_array($route, $routes))
         {
