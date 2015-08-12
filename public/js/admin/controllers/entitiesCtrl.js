@@ -17,7 +17,8 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       payment: {
         status:       ['all', 'authorized', 'failed', 'captured', 'refunded'],
         verified:     ['all', 0, 1],
-        method:       ['all', 'card', 'netbanking', 'wallet']
+        method:       ['all', 'card', 'netbanking', 'wallet'],
+        gateway:      gatewayList
       },
       merchant: {
         activated:    ['all', 0, 1],
@@ -25,7 +26,11 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         hold_funds:   ['all', 0, 1]
       },
       terminal: {
-        gateway: gatewayList
+        gateway:      gatewayList
+      },
+      transaction: {
+        settled:      ['all', 0, 1],
+        type:         ['all', 'payment', 'refund', 'settlement', 'adjustment']
       }
     };
 
