@@ -42,9 +42,11 @@ trait Verify
 
         $payment->setVerified(true);
 
+        $data['payment'] = $payment->toArrayAdmin();
+
         $this->repo->saveOrFail($payment);
 
-        return $payment;
+        return $data;
     }
 
     protected function notifyInSlack($data)

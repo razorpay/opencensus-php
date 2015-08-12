@@ -155,7 +155,7 @@ class Server extends Base\Mock\Server
             'vpc_FoundMultipleDRs'  => 'N',
         );
 
-return $this->prepareResponse($content);
+        return $this->prepareResponse($content);
     }
 
     protected function getGatewayPaymentEntity($input)

@@ -53,9 +53,9 @@ class Service extends Base\Service
 
         $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $payment = $this->processor()->verify($id);
+        $data = $this->processor()->verify($id);
 
-        return $payment->toArrayAdmin();
+        return $data;
     }
 
     public function cancel($id)
