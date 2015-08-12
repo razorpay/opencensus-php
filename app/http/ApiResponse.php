@@ -268,7 +268,8 @@ class ApiResponse
     protected static function setContentTypeHtmlForSpecificRoutes($route, $response)
     {
         $routes = array(
-            'payment_create');
+            'payment_create',
+            'payment_create_checkout');
 
         if (in_array($route, $routes))
         {

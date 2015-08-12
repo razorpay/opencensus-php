@@ -24,14 +24,14 @@ var data = {{json_encode($data);}};
 // Callback data //
 
 if (window.CheckoutBridge) {
-	if (typeof CheckoutBridge.oncomplete == 'function') {
-		CheckoutBridge.oncomplete(JSON.stringify(data));
-	}
+    if (typeof CheckoutBridge.oncomplete == 'function') {
+        CheckoutBridge.oncomplete(JSON.stringify(data));
+    }
 } else {
-	c('rzp', JSON.stringify(data));
-	if (window.opener && typeof window.opener.postMessage == 'function') {
-		window.opener.postMessage(data, '*');
-	}
+    c('rzp', JSON.stringify(data));
+    if (window.opener && typeof window.opener.postMessage == 'function') {
+        window.opener.postMessage(data, '*');
+    }
 }
 </script>
 
