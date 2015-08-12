@@ -66,7 +66,14 @@ trait RepositoryFetch
         {
             $func = 'addQueryParam'.studly_case($key);
 
-            $this->$func($query, $params);
+            if (method_exists($this, $func))
+            {
+                $this->$func($query, $params);
+            }
+            else
+            {
+                $query = $query->where($key, '=', $params[$key]);
+            }
         }
 
         $this->addQueryOrder($query);
