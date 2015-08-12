@@ -437,7 +437,7 @@ trait PaymentTrait
 
         $content = $response->getContent();
 
-        if ($this->isResponse('http', $response))
+        if ($this->isResponseInstanceType('http', $response))
         {
             $formData = $this->getSecondFormDataFromResponse($content, 'http://localhost');
 
@@ -463,21 +463,56 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $response = $this->runPaymentCallbackFlow($response, $callback);
+        $url = $request['url'];
+
+        if ($this->isPaymentCreationUrl($url))
+        {
+            $response = $this->handlePaymentCreationFlow($response, $request, $callback);
+        }
 
         return $response;
     }
 
-    protected function runPaymentCallbackFlow($response, &$callback = null)
+    protected function isPaymentCreationUrl($url)
+    {
+        $urls = array(
+            '/payments/create/jsonp',
+            '/payments/create/checkout',
+            '/payments');
+
+        return in_array($url, $urls);
+    }
+
+    protected function handlePaymentCreationFlow($response, $request, &$callback = null)
     {
         $content = $response->getContent();
 
         $gateway = null;
 
+        if ($request['url'] === '/payments/create/checkout')
+        {
+            $this->assertTrue($this->isResponseInstanceType('http', $response));
+            $this->assertEquals($response->headers->get('content-type'), 'text/html; charset=UTF-8');
+
+            $marker = '// Callback data //';
+            if (strpos($content, $marker) !== false)
+            {
+                $content = $this->getPaymentJsonFromCallback($content);
+
+                $response->setContent($content);
+
+                return $response;
+            }
+        }
+
         if ($callback)
         {
+            // Should be the jsonp payment creation url
+            $this->assertEquals($request['url'], '/payments/create/jsonp');
+
             $content = $this->getJsonContentFromResponse($response, $callback);
 
+            // For no 2-auth payments, it could be a direct json response.
             if (isset($content['gateway']) === false)
             {
                 return $response;
@@ -487,9 +522,10 @@ trait PaymentTrait
 
             if (isset($content['type']) === 'return')
             {
-                $request = $content;
+                // @note: This case isn't happening right now but it can in future
+                $request = $content['request'];
 
-                $response = $this->makeRequestParent($request);
+                return $this->makeRequestParent($request);
             }
         }
         else
@@ -497,20 +533,19 @@ trait PaymentTrait
             // Has to be either redirect or a html form post.
             // First check for normal html form post.
             $ret = ((json_decode($content) === null) and
-                    ($this->isResponse('http', $response)) and
+                    ($this->isResponseInstanceType('http', $response)) and
                     ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
                     ($response->getStatusCode() === 200));
 
             if ($ret === false)
             {
                 // Now check for redirect
-                $ret = (($this->isResponse('redirect', $response)) and
+                $ret = (($this->isResponseInstanceType('redirect', $response)) and
                         ($response->getStatusCode() === 302));
 
                 if ($ret === true)
                 {
-                    $headers = $response->headers;
-                    $gateway = $headers->get('X-gateway');
+                    $gateway = $response->headers->get('X-gateway');
                 }
                 else
                 {
@@ -519,6 +554,12 @@ trait PaymentTrait
             }
             else
             {
+                //
+                // When doing form posts relevant here, we put in a
+                // second form which is not submitted but it contains gateway
+                // field in encrypted form and 'type' field with value as 'first'
+                // or 'return'. Otherwise, don't take an action here.
+                //
                 $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
 
                 if ((isset($content['type'])) and
@@ -533,20 +574,12 @@ trait PaymentTrait
             }
         }
 
-        if ($gateway !== null)
-        {
-            $gateway = $this->decryptGatewayText($gateway);
-        }
-
-        return $this->runPaymentCallbackFlowForGateway($response, $callback, $gateway);
+        return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
     }
 
-    protected function runPaymentCallbackFlowForGateway($response, &$callback = null, $gateway = null)
+    protected function runPaymentCallbackFlowForGateway($response,  $gateway, &$callback = null)
     {
-        if ($gateway === null)
-        {
-            $gateway = $this->gateway;
-        }
+        $gateway = $this->decryptGatewayText($gateway);
 
         if (strpos($gateway, 'netbanking') !== false)
             $gateway = 'netbanking';
@@ -760,7 +793,14 @@ trait PaymentTrait
         return $url;
     }
 
-    protected function isResponse($type = 'json', $response)
+    /**
+     * Checks the laravel class of $response,
+     * whether it's json, http or redirect.
+     * @param  string  $type
+     * @param  mixed   $response
+     * @return boolean
+     */
+    protected function isResponseInstanceType($type = 'json', $response)
     {
         $match = 'Response';
 
@@ -776,6 +816,6 @@ trait PaymentTrait
 
     protected function assertResponse($type, $response)
     {
-        $this->assertTrue($this->isResponse($type, $response));
+        $this->assertTrue($this->isResponseInstanceType($type, $response));
     }
 }

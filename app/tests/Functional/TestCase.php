@@ -104,4 +104,9 @@ class TestCase extends ParentTestCase
 
         return $this->runRequestResponseFlow($testData);
     }
+
+    protected function changeEnvToNonTest()
+    {
+        $this->app['env'] = 'production';
+    }
 }
