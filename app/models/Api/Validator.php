@@ -11,6 +11,7 @@ class Validator extends Base\Validator
         'from'          => 'numeric',
         'to'            => 'numeric',
         'count'         => 'numeric|max:100',
-        'skip'          => 'numeric'
+        'skip'          => 'numeric',
+        'status'        => 'sometimes'
     );
 }

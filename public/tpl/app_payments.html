@@ -14,14 +14,24 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="row wrapper">
-      <div class="col-sm-9 m-b-xs">
+      <div class="col-sm-7 m-b-xs">
+      </div>
+      <div class="col-sm-2">
+        Status:
+        <select class="form-control input-sm w-sm inline" name="filter" ng-model="filter" ng-change="regenerate(filter)">
+          <option value="all">All</option>
+          <option value="authorized">Authorized</option>
+          <option value="captured">Captured</option>
+          <!-- <option value="refunded">Refunded</option> -->
+          <option value="failed">Failed</option>
+        </select>
       </div>
       <div class="col-sm-3">
         <div class="input-group">
           <input type="text" class="input-sm form-control" placeholder="Search Payment Id" ng-model="entity.id">
           <span class="input-group-btn">
             <button class="btn btn-sm btn-default" type="button" ng-click="search()" busy="...">Go!</button>
-            <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
+            <button class="btn btn-sm btn-default" type="button" ng-click="regenerate(filter)" busy="...">Clear</button>
           </span>
         </div>
       </div>

@@ -13,6 +13,8 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
         skip: 0
     };
 
+    $scope.filter = 'all';
+
     $scope.generate = function(entity){
       $scope.entity.type = entity;
       generateTable();
@@ -44,7 +46,8 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
         $scope.entity.skip = 0;
     }
 
-    function regenerate(){
+    function regenerate(status){
+      $scope.filter = status;
       clear('skip');
       clear('id');
       generateTable();
@@ -60,6 +63,10 @@ app.controller('EntityListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
       var query =
         "count=10" +
         "&skip="+ $scope.entity.skip;
+
+      if($scope.filter !== 'all') {
+        query += ("&status=" + $scope.filter);
+      }
 
       if($scope.entity.id === '')
         var request = $http.get("/" + $scope.mode +  "/" + $scope.entity.type + "s?" + query);
