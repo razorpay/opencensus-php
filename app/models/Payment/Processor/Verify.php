@@ -35,6 +35,8 @@ trait Verify
                 TraceCode::PAYMENT_VERIFY_FAILED,
                 $e->getData());
 
+            $data['gateway'] = $e->getData();
+
             $this->notifyInSlack($data);
 
             throw $e;
