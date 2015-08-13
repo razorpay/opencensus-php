@@ -134,7 +134,7 @@ class Gateway extends Base\Gateway
 
         if ($status === VerifyResult::STATUS_MATCH)
         {
-            return;
+            return $content;
         }
 
         $res = array(
