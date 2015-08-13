@@ -120,7 +120,7 @@ class Gateway extends Base\Gateway
             'Date'                  => $date,
             'MerchantRefNo'         => $payment['payment_id'],
             'TransactionId'         => 'XTXTV01',
-            'FigVerify'             => 'Y',
+            'FlgVerify'             => 'Y',
             'ClientCode'            => $payment['client_code'],
             'SuccessStaticFlag'     => 'N',
             'FailureStaticFlag'     => 'N',
