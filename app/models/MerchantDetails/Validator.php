@@ -32,7 +32,7 @@ class Validator extends Base\Validator
         'company_cin'                   => 'alpha_num|max:21',
         'company_pan'                   => 'alpha_num|max:15',
         'company_pan_name'              => 'alpha_space|max:255|required_with:company_pan',
-        'business_model'                => 'required|max:2000',
+        'business_model'                => 'required|max:255',
         'transaction_volume'            => 'required|numeric|digits_between:1,4',
         'transaction_value'             => 'required|numeric|min:1|max:10000000',
         'promoter_pan'                  => 'required|alpha_num|max:15',
