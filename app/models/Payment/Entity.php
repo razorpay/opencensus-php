@@ -153,7 +153,8 @@ class Entity extends Base\PublicEntity
         $contact = str_replace(')', '', $contact);
 
         // Remove the 0 at the start
-        if ($contact[0] === '0')
+        if ((strlen($contact) > 1) and
+            ($contact[0] === '0'))
         {
             $contact = substr($contact, 1);
         }
