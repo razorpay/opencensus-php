@@ -123,7 +123,9 @@ class Gateway extends Base\Gateway
             throw new Exception\PaymentVerificationException($content);
         }
 
-        $payment->fill($content);
+        $attrs = $this->getMappedAttributes($content);
+
+        $payment->fill($attrs);
 
         $payment->saveOrFail();
 
