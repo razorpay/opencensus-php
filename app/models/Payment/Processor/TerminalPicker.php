@@ -129,6 +129,11 @@ class TerminalPicker
 
         $international = $payment->merchant->isInternational();
 
+        if (isset($gatewayTerms[Gateway::HDFC]))
+        {
+            return $gatewayTerms[Gateway::HDFC];
+        }
+
         if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
         {
             return $gatewayTerms[Gateway::AXIS_MIGS];
@@ -137,11 +142,6 @@ class TerminalPicker
         if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
         {
             return $gatewayTerms[Gateway::AXIS_GENIUS];
-        }
-
-        if (isset($gatewayTerms[Gateway::HDFC]))
-        {
-            return $gatewayTerms[Gateway::HDFC];
         }
 
         if ($this->mode === Mode::TEST)
