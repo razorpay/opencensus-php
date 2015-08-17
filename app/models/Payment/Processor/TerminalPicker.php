@@ -129,14 +129,6 @@ class TerminalPicker
 
         $international = $payment->merchant->isInternational();
 
-        if ($international)
-        {
-            if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
-            {
-                return $gatewayTerms[Gateway::AXIS_GENIUS];
-            }
-        }
-
         if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
         {
             return $gatewayTerms[Gateway::AXIS_MIGS];
