@@ -78,6 +78,11 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $this->verifyCallbackChecksum($input);
+        unset($input['gateway']['CheckSum']);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
