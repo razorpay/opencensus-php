@@ -31,6 +31,32 @@ class Mailgun
         $this->sendMessage($mailData);
     }
 
+    public function addToMailingList($list, $email, $name)
+    {
+        $domain = $this->config['url'];
+        $list = "$list@$domain";
+
+        if ($this->config['mock'] === false)
+        {
+            $this->getMailgunInstance()->post("lists/$list/members",[
+                'address'    => $email,
+                'name'       => $name,
+                'subscribed' => 'yes'
+            ]);
+        }
+    }
+
+    public function removeFromMailingList($list, $email)
+    {
+        $domain = $this->config['url'];
+        $list = "$list@$domain";
+
+        if ($this->config['mock'] === false)
+        {
+            $this->getMailgunInstance()->delete("lists/$list/members/$email");
+        }
+    }
+
     protected function getMailgunInstance()
     {
         if ($this->mgClient !== null)
@@ -54,8 +80,6 @@ class Mailgun
         if ($this->config['mock'] === false)
         {
             $res = $this->getMailgunInstance()->sendMessage($domain, $mailData);
-
-            sd($res);
 
             if ((isset($res['message']) === false) or
                 (isset($res['id']) === false))

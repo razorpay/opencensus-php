@@ -10,6 +10,7 @@ use Models\Key;
 use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
+use Services\Mailgun;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -33,6 +34,9 @@ class Service extends Base\Service
     public function create(array $input)
     {
         $merchant = (new Merchant\Core)->create($input);
+
+        $this->app['mailgun']->addToMailingList(
+            'allmerchants', $merchant->email, $merchant->name);
 
         return $merchant->toArrayPublic();
     }
@@ -194,6 +198,9 @@ class Service extends Base\Service
 
         $merchant->liveEnable();
 
+        $this->app['mailgun']->addToMailingList(
+            'livemerchants', $merchant->email, $merchant->name);
+
         $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
@@ -216,6 +223,10 @@ class Service extends Base\Service
         }
 
         $merchant->liveDisable();
+
+        // The merchant should be removed from the mailing list
+        $this->app['mailgun']->removeFromMailingList(
+            'livemerchants', $merchant->email);
 
         $this->repo->saveOrFail($merchant);
 
