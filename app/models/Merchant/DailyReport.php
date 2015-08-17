@@ -33,16 +33,17 @@ class DailyReport
 
     /**
      * Sends the daily report
-     * @return boolean Whether the daily report was sent or not
+     * @return array of summary data
+     * array is empty if mail wasn't sent
      */
     public function send()
     {
         if ($this->isBlank() === false)
         {
             $this->sendDailyReport();
-            return true;
+            return $this->data;
         }
-        return false;
+        return [];
     }
 
     /**
@@ -58,7 +59,7 @@ class DailyReport
 
         $data = $this->data;
 
-        Mail::send($view, $this->data, function($message) use ($config, $data)
+        Mail::send($view, $data, function($message) use ($config, $data)
         {
             $message->to($data['merchant']['transaction_report_email']);
 
@@ -202,9 +203,9 @@ class DailyReport
     {
         $data = $this->data;
 
-        return (($data['captured']['sum'] === 0) and
-                ($data['authorized']['sum'] === 0) and
-                ($data['refunds']['sum'] === 0) and
+        return (($data['captured']['payments']['count'] === 0) and
+                ($data['authorized']['payments']['count'] === 0) and
+                ($data['refunds']['refunds']['count'] === 0) and
                 ($data['settlement'] === null));
     }
 }

@@ -65,7 +65,7 @@
                   </tr></table></td>
             </tr></table>
           @include('emails.partials.separator', ['message' => $message])
-@if ($captured['payments']['count'] > 0)
+@if($captured['payments']['count'] > 0)
           <table class="white container" style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; background: #ffffff; background-color: #ffffff; margin: 0 auto; width: 580px;"><tr style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: left; vertical-align: top; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
                 <table class="row" style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><td class="shortwrapper last" style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 20px 0px 0px; text-align: left; vertical-align: top; font-weight: normal; line-height: 1em; margin: 0; font-size: 12px; position: relative; padding-right: 0px;">
                     <table class="twelve columns" style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="white left-text-pad right-text-pad" style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; padding-left: 45px; padding-right: 45px;">
@@ -157,7 +157,7 @@
           <!-- Note that separator is part of authorized section -->
           @include('emails.partials.separator', ['message' => $message])
 @endif
-@if ($settlement)
+@if($settlement)
 <!-- Settlement Section -->
           <table class="white container" style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; background: #ffffff; background-color: #ffffff; margin: 0 auto; width: 580px;"><tr style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: left; vertical-align: top; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
                 <table class="row" style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><tr style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="wrapper" style="font-family: 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; position: relative;">
@@ -194,6 +194,6 @@
 @endif
 
           @include('emails.partials.footer', ['message' => $message])
-
-
+        
+      
     </table></table></td></tr></table></body></html>

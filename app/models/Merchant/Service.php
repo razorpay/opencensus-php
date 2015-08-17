@@ -396,9 +396,18 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants()
     {
-        $merchants = $this->repo->fetch([Entity::ACTIVATED => 1]);
+        $filter = [];
 
-        $counts = ['sent' => 0, 'skipped' => 0];
+        //In test, none of the merchants are activated
+        if ($this->mode === Mode::LIVE)
+        {
+            $filter = [Entity::ACTIVATED => 1];
+        }
+
+        $merchants = $this->repo->fetch($filter);
+
+        // sent will hold array of merchant data
+        $response = ['sent' => [], 'skipped' => 0];
 
         foreach ($merchants as $merchant)
         {
@@ -406,16 +415,17 @@ class Service extends Base\Service
 
             $sent = $dailyReport->send();
 
-            if($sent)
+            if(empty($sent))
             {
-                $counts['sent']++;
+                $response['skipped']++;
             }
             else
             {
-                $counts['skipped']++;
+                $response['sent'][] = $sent;
             }
         }
 
-        return $counts;
+        return $response;
+
     }
 }
