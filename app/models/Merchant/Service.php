@@ -10,7 +10,6 @@ use Models\Key;
 use Models\Payment;
 use Models\Pricing;
 use Models\Terminal;
-use Services\Mailgun;
 use EE\Exception;
 use EE\Error\ErrorCode;
 
@@ -34,9 +33,6 @@ class Service extends Base\Service
     public function create(array $input)
     {
         $merchant = (new Merchant\Core)->create($input);
-
-        $this->app['mailgun']->addToMailingList(
-            'allmerchants', $merchant->email, $merchant->name);
 
         return $merchant->toArrayPublic();
     }
@@ -198,9 +194,6 @@ class Service extends Base\Service
 
         $merchant->liveEnable();
 
-        $this->app['mailgun']->addToMailingList(
-            'livemerchants', $merchant->email, $merchant->name);
-
         $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
@@ -223,10 +216,6 @@ class Service extends Base\Service
         }
 
         $merchant->liveDisable();
-
-        // The merchant should be removed from the mailing list
-        $this->app['mailgun']->removeFromMailingList(
-            'livemerchants', $merchant->email);
 
         $this->repo->saveOrFail($merchant);
 
@@ -444,7 +433,9 @@ class Service extends Base\Service
     {
         (new Merchant\Validator)->validateInput('sendNewsletter', $input);
 
-        $subject = $input['subject'];
-        $text    = $input['text'];
+        $mailer = new Mailer($input['list'], $input['subject'], $input['text']);
+
+        // This will only send if email mock is false
+        $mailer->send();
     }
 }
