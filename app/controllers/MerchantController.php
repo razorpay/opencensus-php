@@ -255,4 +255,12 @@ class MerchantController extends BaseController
         $counts = (new Models\Merchant\Service)->sendDailyReportForAllMerchants();
         return ApiResponse::json($counts);
     }
+
+    public function sendNewsletter($list)
+    {
+        $input = Input::all();
+        $data = (new Merchant\Service)->sendNewsletter($list, $input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -439,4 +439,12 @@ class Service extends Base\Service
         return $response;
 
     }
+
+    public function sendNewsletter($list, $input)
+    {
+        (new Merchant\Validator)->validateInput('sendNewsletter', $input);
+
+        $subject = $input['subject'];
+        $text    = $input['text'];
+    }
 }

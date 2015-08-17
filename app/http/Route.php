@@ -51,6 +51,7 @@ final class Route
         'merchant_fetch'                    => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                ],
         'merchant_edit'                     => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                ],
         'merchant_fetch_multiple'           => ['get',      'merchants',                                'MerchantController@getMerchants'                               ],
+        'merchant_send_newsletter'          => ['post',     'merchants/{list}/mail',                    'MerchantController@sendNewsletter'                               ],
         'merchant_create_key'               => ['post',     'merchants/{id}/keys',                      'MerchantController@postCreateKeys'                             ],
         'merchant_fetch_keys'               => ['get',      'merchants/{id}/keys',                      'MerchantController@getKeys'                                    ],
         'merchant_replace_key'              => ['put',      'merchants/{merchantId}/keys/{keyId}',      'MerchantController@putKeys'                                    ],
