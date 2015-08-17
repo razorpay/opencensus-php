@@ -29,10 +29,39 @@
         <a href class="list-group-item" ng-click="downloadBeneficiaryFile()">
           Download Beneficiary File
         </a>
+        <a href class="list-group-item" ng-click="sendNewsletter()">
+          Send Merchant Newsletter
+        </a>
       </div>
     </div>
   </div>
 </div>
+<script type="text/ng-template" id="sendNewsletter.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Send Newsletter</h3>
+  </div>
+  <div class="modal-body newsletter-modal">
+    <form class="form-horizontal" ng-init="list='all'">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">List</label>
+        <div class="col-lg-4">
+          <select class="form-control m-b" name="list" ng-model="list">
+            <option value="all">All Merchants</option>
+            <option value="live">Live Merchants</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Subject</label>
+        <input type="text" class="form-control m-b col-lg-4" name="subject" ng-model="subject">
+      </div>
+      <div class="form-group">
+        <label class="col-lg-4 control-label">Text (use markdown)</label>
+        <textarea class="form-control m-b" name="text" ng-model="text">
+        </textarea>
+      </div>
+    </form>
+  </div>
 <script type="text/ng-template" id="initiateSetlModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Initiate Settlement</h3>
