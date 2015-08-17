@@ -215,7 +215,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $response->body);
+            [$response->body]);
 
         $crawler = new Crawler($response->body, $request['url']);
         $form = $crawler->filter('form')->form();
