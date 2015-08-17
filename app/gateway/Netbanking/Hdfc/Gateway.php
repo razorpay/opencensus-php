@@ -213,6 +213,10 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $response->body);
+
         $crawler = new Crawler($response->body, $request['url']);
         $form = $crawler->filter('form')->form();
 
