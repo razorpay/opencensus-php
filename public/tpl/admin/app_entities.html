@@ -62,9 +62,10 @@
     <div class="row wrapper">
       <div class="col-sm-2" ng-repeat="(filter, values) in availableFilters[entity_type]">
         {{filter|titlecase}}:
-        <select class="form-control input-sm w-sm inline" ng-model="filters[entity_type][filter]">
+        <select ng-show="values.length !== 1" class="form-control input-sm w-sm" ng-model="filters[entity_type][filter]">
           <option value="{{value}}" ng-repeat="value in values">{{displayFilter(value)|titlecase}}</option>
         </select>
+        <input ng-show="values.length===1" type="text" class="input-sm form-control w-sm" placeholder="{{values[0]}}" value="" ng-model="filters[entity_type][filter]">
       </div>
     </div>
     <div class="table-responsive">

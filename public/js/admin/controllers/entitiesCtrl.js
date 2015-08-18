@@ -18,7 +18,8 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         status:       ['all', 'authorized', 'failed', 'captured', 'refunded'],
         verified:     ['all', 0, 1],
         method:       ['all', 'card', 'netbanking', 'wallet'],
-        gateway:      gatewayList
+        gateway:      gatewayList,
+        email:        ['Contact Email']
       },
       merchant: {
         activated:    ['all', 0, 1],
@@ -29,6 +30,8 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         gateway:      gatewayList
       },
       transaction: {
+        settlement_id: ['Settlement Id'],
+        payment_id:    ['Payment Id'],
         settled:      ['all', 0, 1],
         type:         ['all', 'payment', 'refund', 'settlement', 'adjustment']
       }
@@ -41,8 +44,14 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       var filters = $scope.availableFilters[entity];
       //console.debug(filters);
       for(var filter in filters) {
-        // The first value is the default
-        var def = filters[filter][0];
+        var def
+        if(filters[filter].length > 1) {
+          // The first value is the default
+          def = filters[filter][0];
+        }
+        else {
+          def = ""; // We will only use the placeholder instead
+        }
         $scope['filters'][entity][filter] = def;
       }
 
@@ -159,7 +168,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       var query = "count="+$scope.count+"&skip="+ $scope.entity.skip;
       for(var filterName in $scope.filters[$scope.entity_type]) {
         var value = $scope.filters[$scope.entity_type][filterName];
-        if(value !== 'all'){
+        if(value !== 'all' && value!== ''){
           query+= ('&' + filterName + '=' + value)
         }
       }
