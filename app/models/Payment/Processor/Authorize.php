@@ -68,6 +68,55 @@ trait Authorize
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
+    public function authorizeFailedPayment($payment)
+    {
+        if ($payment->isFailed() === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Non failed payment given for authorization where failed payment is needed',
+                ['payment_id' => $payment->getPublicId()]);
+        }
+
+        $data = array(
+            'payment' => $payment->toArray(),
+        );
+
+        $flag = $this->callGatewayFunction('authorizeFailed', $data);
+
+        if ($flag === false)
+        {
+            throw new Exception\LogicException(
+                'Payment expected to have succeded on the gateway has actually not. ' .
+                'Should not have called this function in this scenario');
+        }
+
+        $traceData = array(
+            'payment_id' => $payment->getId(),
+            'error' => $payment->getErrorDetails(),
+        );
+
+        $payment->setVerified(true);
+        $payment->setErrorNull();
+
+        $this->postPaymentAuthorizeProcessing($payment);
+
+        $data['message'] = 'Payment failed earlier converted to authorized';
+
+        $this->notifyInSlack($data);
+
+        $payment->setVerified(true);
+
+        $data['payment'] = $payment->toArrayAdmin();
+
+        $this->repo->saveOrFail($payment);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+            $traceData);
+
+        return $data;
+    }
+
     /**
      * After payment initiation, bank redirects to us
      * and we send it to gateway for further
