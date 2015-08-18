@@ -97,18 +97,16 @@ trait Authorize
 
         $payment->setVerified(true);
         $payment->setErrorNull();
+        $payment->setVerified(true);
 
         $this->postPaymentAuthorizeProcessing($payment);
 
+        $this->repo->saveOrFail($payment);
+
         $data['message'] = 'Payment failed earlier converted to authorized';
-
-        $this->notifyInSlack($data);
-
-        $payment->setVerified(true);
-
         $data['payment'] = $payment->toArrayAdmin();
 
-        $this->repo->saveOrFail($payment);
+        $this->notifyInSlack($data);
 
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
