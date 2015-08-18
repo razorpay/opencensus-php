@@ -31,7 +31,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       },
       transaction: {
         settlement_id: ['Settlement Id'],
-        payment_id:    ['Payment Id'],
+        entity_id:    ['Payment/Refund/Settlement Id'],
         settled:      ['all', 0, 1],
         type:         ['all', 'payment', 'refund', 'settlement', 'adjustment']
       }

@@ -61,7 +61,12 @@
     </div>
     <div class="row wrapper">
       <div class="col-sm-2" ng-repeat="(filter, values) in availableFilters[entity_type]">
-        {{filter|titlecase}}:
+        <label ng-show="values.length !== 1">
+          {{filter|titlecase}}:
+        </label>
+        <label ng-show="values.length === 1">
+          {{values[0]}}
+        </label>
         <select ng-show="values.length !== 1"
           class="form-control input-sm w-sm"
           ng-model="filters[entity_type][filter]"
@@ -72,7 +77,7 @@
         </select>
         <input ng-show="values.length===1" type="text"
           ng-enter="showTable()"
-          class="input-sm form-control w-sm" placeholder="{{values[0]}}"
+          class="input-sm form-control w-sm" placeholder="{{filter}}"
           value="" ng-model="filters[entity_type][filter]"
         >
       </div>
