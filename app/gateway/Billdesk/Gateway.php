@@ -186,7 +186,8 @@ class Gateway extends Base\Gateway
         {
             // Could be the case where the transaction didn't even hit billdesk
             if (($payment['received'] === false) and
-                ($payment['AuthStatus'] === null))
+                (($payment['AuthStatus'] === null) or
+                 ($payment['AuthStatus'] === AuthStatus::NA)))
             {
                 $verify->apiSuccess = false;
                 $verify->gatewaySuccess = false;
