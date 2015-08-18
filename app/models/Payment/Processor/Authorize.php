@@ -68,8 +68,10 @@ trait Authorize
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
-    public function authorizeFailedPayment($payment)
+    public function authorizeFailedPayment($id)
     {
+        $payment = $this->retrieve($id);
+
         if ($payment->isFailed() === false)
         {
             throw new Exception\InvalidArgumentException(

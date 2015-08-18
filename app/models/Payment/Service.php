@@ -65,6 +65,13 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    public function authorizeFailed($id)
+    {
+        $data = $this->processor()->authorizeFailedPayment($id);
+
+        return $data;
+    }
+
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
         Payment\Entity::verifyIdAndStripSign($paymentId);
