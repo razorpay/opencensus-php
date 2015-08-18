@@ -164,6 +164,11 @@ class Gateway extends Base\Gateway
             $payment->fill($verifyResponseContent);
             $payment->saveOrFail();
         }
+        else
+        {
+            throw new Exception\LogicException(
+                'Should not have reached here');
+        }
 
         return true;
     }
@@ -175,16 +180,25 @@ class Gateway extends Base\Gateway
 
         $amountRefunded = (int) ($content['TotalRefundAmount'] * 100);
 
-        if ($content['QueryStatus'] !== 'Y')
-        {
-            $verify->match = false;
-
-            return;
-        }
-
         $status = VerifyResult::STATUS_MATCH;
 
-        if ($payment['AuthStatus'] === AuthStatus::SUCCESS)
+        if ($content['QueryStatus'] !== QueryStatus::Y)
+        {
+            // Could be the case where the transaction didn't even hit billdesk
+            if (($payment['received'] === false) and
+                ($payment['AuthStatus'] === null))
+            {
+                $verify->apiSuccess = false;
+                $verify->gatewaySuccess = false;
+            }
+            else
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
+                $verify->gatewaySuccess = false;
+            }
+        }
+        else if ($payment['AuthStatus'] === AuthStatus::SUCCESS)
         {
             $verify->apiSuccess = true;
 
@@ -239,6 +253,11 @@ class Gateway extends Base\Gateway
         if (($verify->match === true) and
             ($payment['received'] === false))
         {
+            unset(
+                $content['TxnAmount'],
+                $content['BankID'],
+                $content['ItemCode']);
+
             $payment->fill($content);
             $payment->saveOrFail();
         }
@@ -276,6 +295,8 @@ class Gateway extends Base\Gateway
         }
 
         $content = $this->postRequest($content);
+
+        unset($content['checksum']);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
