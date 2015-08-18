@@ -97,13 +97,13 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
     $scope.next= function() {
       clear('id');
-      $scope.entity.skip += 20;
+      $scope.entity.skip += $scope.count;
       generateTable();
     }
 
     $scope.prev= function() {
       clear('id');
-      $scope.entity.skip -= 20;
+      $scope.entity.skip -= $scope.count;
       generateTable();
     }
 
