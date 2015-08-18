@@ -59,6 +59,7 @@ class Verify
             'apiSuccess'                => $this->apiSuccess,
             'verifyRequest'             => $this->verifyRequest,
             'gatewaySuccess'            => $this->gatewaySuccess,
+            'gatewayPayment'            => $this->payment->toArray(),
             'verifyResponseContent'     => $this->verifyResponseContent,
         );
     }
