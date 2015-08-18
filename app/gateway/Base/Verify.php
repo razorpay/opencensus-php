@@ -56,11 +56,11 @@ class Verify
         return array(
             'status'                    => $this->status,
             'gateway'                   => $this->gateway,
+            'verifyResponseContent'     => $this->verifyResponseContent,
             'apiSuccess'                => $this->apiSuccess,
             'verifyRequest'             => $this->verifyRequest,
             'gatewaySuccess'            => $this->gatewaySuccess,
             'gatewayPayment'            => $this->payment->toArray(),
-            'verifyResponseContent'     => $this->verifyResponseContent,
         );
     }
 }

@@ -235,7 +235,7 @@ class Gateway extends Base\Gateway
                 // then that means billdesk refunded the payment on it's own end
                 // and we don't need to worry.
 
-                if ($amountRefunded === $input['payment']['amount'])
+                if ($amountRefunded === $verify->input['payment']['amount'])
                 {
                     $status = VerifyResult::STATUS_MATCH;
                 }
