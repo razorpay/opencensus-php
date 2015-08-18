@@ -305,6 +305,13 @@ class Processor
         return $this->payment;
     }
 
+    protected function setPayment($payment)
+    {
+        $this->payment = $payment;
+
+        $card = $this->payment->card()->first();
+    }
+
     protected function tracePaymentNewRequest($input)
     {
         // @note: please keep this line here. It unsets card input in case

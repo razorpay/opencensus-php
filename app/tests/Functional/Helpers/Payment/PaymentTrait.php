@@ -310,6 +310,18 @@ trait PaymentTrait
         return $refund;
     }
 
+    protected function authorizeFailedPayment($id)
+    {
+        $request = array(
+            'url' => '/payments/'.$id.'/authorize_failed',
+            'method' => 'post');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
 
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {

@@ -222,6 +222,16 @@ class AuthorizeTest extends TestCase
         $this->assertContentTypeForResponse($contentType, $this->response);
     }
 
+    public function testAuthorizeFailedPayment()
+    {
+        $this->markTestIncomplete();
+
+        $payment = $this->fixtures->create(
+            'payment:failed');
+
+        $this->authorizeFailedPayment($payment['public_id']);
+    }
+
     public function testContentTypeHtmlOnPaymentCreateRoute()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');

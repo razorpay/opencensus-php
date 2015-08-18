@@ -10,9 +10,9 @@ use Trace\TraceCode;
 
 trait Verify
 {
-    public function verify($id)
+    public function verify($payment)
     {
-        $payment = $this->retrieve($id);
+        $this->setPayment($payment);
 
         $refunds = $payment->refunds;
 

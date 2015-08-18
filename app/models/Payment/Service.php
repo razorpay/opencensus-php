@@ -53,7 +53,7 @@ class Service extends Base\Service
 
         $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor()->verify($id);
+        $data = $this->processor()->verify($payment);
 
         return $data;
     }
@@ -67,7 +67,13 @@ class Service extends Base\Service
 
     public function authorizeFailed($id)
     {
-        $data = $this->processor()->authorizeFailedPayment($id);
+        $payment = $this->core->retrieveById($id);
+
+        $merchantId = $payment->getMerchantId();
+
+        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $data = $this->processor()->authorizeFailedPayment($payment);
 
         return $data;
     }
