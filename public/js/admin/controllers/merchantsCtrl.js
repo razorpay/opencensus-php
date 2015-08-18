@@ -4,15 +4,16 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
 
   $scope.merchants = {};
   $scope.count = 0;
+  $scope.merchant_type = '1';
 
   $scope.regenerate = function() {
-    $scope.merchant_type = "";
-    generate();
+    $scope.merchant_type = '1';
+    $scope.filter();
   }
 
   if($scope.pending === true)
   {
-    generate();
+    $scope.filter();
   }
 
 
