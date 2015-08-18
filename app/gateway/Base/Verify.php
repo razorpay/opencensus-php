@@ -24,13 +24,11 @@ class Verify
 
     public $throwExceptionOnMismatch = true;
 
-    public function __construct($gateway, array $input, $payment)
+    public function __construct($gateway, array $input)
     {
         $this->input = $input;
 
         $this->gateway = $gateway;
-
-        $this->payment = $payment;
     }
 
     public function setVerifyRequest($request)
@@ -53,5 +51,15 @@ class Verify
         ;
     }
 
-    public function
+    public function getDataToTrace()
+    {
+        return array(
+            'status'                    => $this->status,
+            'gateway'                   => $this->gateway,
+            'apiSuccess'                => $this->apiSuccess,
+            'verifyRequest'             => $this->verifyRequest,
+            'gatewaySuccess'            => $this->gatewaySuccess,
+            'verifyResponseContent'     => $this->verifyResponseContent,
+        );
+    }
 }

@@ -113,6 +113,24 @@ class Gateway
         return $response;
     }
 
+    protected function runPaymentVerifyFlow($verify)
+    {
+        $payment = $this->getPaymentToVerify($verify->input, $verify);
+
+        $content = $this->sendPaymentVerifyRequest($verify);
+
+        $status = $this->verifyPayment($verify);
+
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace());
+        }
+
+        return $verify->getDataToTrace();
+    }
+
     protected function getNamespace()
     {
         return substr(get_called_class(), 0, strrpos(get_called_class(), '\\'));
