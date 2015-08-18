@@ -252,6 +252,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERIFIED, $verified);
     }
 
+    public function setErrorNull()
+    {
+        $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::ERROR_DESCRIPTION, null);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -496,6 +502,14 @@ class Entity extends Base\PublicEntity
                 return [$methodName, $walletNames[$this->getWallet()]];
                 break;
         }
+    }
+
+    public function getErrorDetails()
+    {
+        return [
+            self::ERROR_CODE => $this->getAttribue(self::ERROR_CODE),
+            self::ERROR_DESCRIPTION => $this->getAttribue(self::ERROR_DESCRIPTION),
+        ];
     }
 
     /**

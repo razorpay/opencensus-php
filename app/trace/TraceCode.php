@@ -23,6 +23,7 @@ class TraceCode
     const PAYMENT_VERIFY_FAILED                     = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
     const PAYMENT_CANCELLED                         = 'PAYMENT_CANCELLED';
+    const PAYMENT_FAILED_TO_AUTHORIZED              = 'PAYMENT_FAILED_TO_AUTHORIZED';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
 
@@ -89,6 +90,7 @@ class TraceCode
         self::PAYMENT_CAPTURE_SUCCESS               => 'Payment captured successfully',
         self::PAYMENT_CAPTURE_FAILURE               => 'Payment capture failed',
         self::PAYMENT_VERIFY_FAILED                 => 'Payment verification with gateway failed',
+        self::PAYMENT_FAILED_TO_AUTHORIZED          => 'Payment failed but which succeded on gateway now successfully converted to authorized',
 
         self::BAD_REQUEST_INVALID_API_KEY           => 'The api key provided is invalid',
 

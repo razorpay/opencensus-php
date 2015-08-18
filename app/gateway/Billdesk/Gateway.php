@@ -133,6 +133,37 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function authorizeFailed(array $input)
+    {
+        $e = null;
+
+        try
+        {
+            $this->verify($input);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            ;
+        }
+
+        if ($e === null)
+        {
+            throw new Exception\LogicException(
+                'When converting failed payment to authorized, payment verification ' .
+                'should have failed but instead it did not');
+        }
+
+        $verify = $e->getVerify();
+
+        if (($verify->apiSuccess === false) and
+            ($verify->gatewaySuccess === true))
+        {
+            $verify->payment->fill($verify->verifyResponseContent);
+        }
+
+        return true;
+    }
+
     protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
