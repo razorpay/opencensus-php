@@ -158,7 +158,9 @@ class Gateway extends Base\Gateway
         if (($verify->apiSuccess === false) and
             ($verify->gatewaySuccess === true))
         {
-            $verify->payment->fill($verify->verifyResponseContent);
+            $payment = $verify->payment;
+            $payment->fill($verifyResponseContent);
+            $payment->saveOrFail();
         }
 
         return true;
