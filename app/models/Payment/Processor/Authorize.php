@@ -91,14 +91,13 @@ trait Authorize
 
             if ($flag === false)
             {
-                throw new Exception\LogicException(
+                throw new Exception\BadRequestValidationFailureException(
                     'Payment expected to have succeded on the gateway has actually not. ' .
                     'Should not have called this function in this scenario');
             }
 
             $payment = $this->payment;
 
-            $payment->setVerified(true);
             $payment->setErrorNull();
             $payment->setVerified(true);
 
