@@ -125,7 +125,8 @@ class Gateway
             ($verify->throwExceptionOnMismatch))
         {
             throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace());
+                $verify->getDataToTrace(),
+                $verify);
         }
 
         return $verify->getDataToTrace();

@@ -155,7 +155,7 @@ class Gateway extends Base\Gateway
                 'should have failed but instead it did not');
         }
 
-        $verify = $e->getData();
+        $verify = $e->getVerifyObject();
 
         if (($verify->apiSuccess === false) and
             ($verify->gatewaySuccess === true))
