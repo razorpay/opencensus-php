@@ -83,27 +83,32 @@ trait Authorize
             'payment' => $payment->toArray(),
         );
 
-        $flag = $this->callGatewayFunction('authorizeFailed', $data);
-
-        if ($flag === false)
+        $this->repo->transaction(function()
         {
-            throw new Exception\LogicException(
-                'Payment expected to have succeded on the gateway has actually not. ' .
-                'Should not have called this function in this scenario');
-        }
+            $this->repo->lockForUpdate($this->payment->getKey());
+
+            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+
+            if ($flag === false)
+            {
+                throw new Exception\LogicException(
+                    'Payment expected to have succeded on the gateway has actually not. ' .
+                    'Should not have called this function in this scenario');
+            }
+
+            $payment->setVerified(true);
+            $payment->setErrorNull();
+            $payment->setVerified(true);
+
+            $this->postPaymentAuthorizeProcessing($payment);
+
+            $this->repo->saveOrFail($payment);
+        });
 
         $traceData = array(
             'payment_id' => $payment->getId(),
             'error' => $payment->getErrorDetails(),
         );
-
-        $payment->setVerified(true);
-        $payment->setErrorNull();
-        $payment->setVerified(true);
-
-        $this->postPaymentAuthorizeProcessing($payment);
-
-        $this->repo->saveOrFail($payment);
 
         $data['message'] = 'Payment failed earlier converted to authorized';
         $data['payment'] = $payment->toArrayAdmin();
