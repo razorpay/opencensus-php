@@ -83,6 +83,7 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $content['CustomerID'], Action::AUTHORIZE);
 
+        $content['received'] = 1;
         $payment->fill($content);
         $payment->saveOrFail();
 
@@ -111,6 +112,7 @@ class Gateway extends Base\Gateway
 
         $content['refund_id'] = $input['refund']['id'];
         $content['CurrencyType'] = 'INR';
+        $content['received'] = 1;
         $refund = $this->createGatewayPaymentEntity($content);
 
         if ($content['ProcessStatus'] !== 'Y')

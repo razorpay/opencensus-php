@@ -13,4 +13,9 @@ class Entity extends \Models\Base\PublicEntity
     {
         $this->setAttribute('action', $action);
     }
+
+    public function getReceivedAttribute()
+    {
+        return (bool) $this->attributes['received'];
+    }
 }

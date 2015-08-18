@@ -2,14 +2,15 @@
 
 namespace Gateway\Billdesk;
 
-use Models\Base;
+use Gateway\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     protected $fields = array(
         'payment_id',
         'refund_id',
         'action',
+        'received',
         'MerchantID',
         'CustomerID',
         'TxnAmount',
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         'payment_id',
         'action',
         'refund_id',
+        'received',
         'MerchantID',
         'CustomerID',
         'TxnAmount',
@@ -75,14 +77,4 @@ class Entity extends Base\PublicEntity
     protected $guarded = array();
 
     protected $entity = 'billdesk';
-
-    public function setPaymentId($paymentId)
-    {
-        $this->attributes['payment_id'] = $paymentId;
-    }
-
-    public function setAction($action)
-    {
-        $this->setAttribute('action', $action);
-    }
 }
