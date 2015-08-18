@@ -39,6 +39,13 @@ class BilldeskGatewayTest extends TestCase
             $this->testData['testPaymentBilldeskEntity'], $payment);
     }
 
+    public function testPaymentFailed()
+    {
+        $this->markTestIncomplete();
+
+        $this->failPaymentOnBankPage = true;
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
