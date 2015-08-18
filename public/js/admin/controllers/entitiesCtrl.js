@@ -45,20 +45,18 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       //console.debug(filters);
       for(var filter in filters) {
         var def
+
+        // dropdown
         if(filters[filter].length > 1) {
           // The first value is the default
-          def = filters[filter][0];
-        }
-        else {
-          def = ""; // We will only use the placeholder instead
-        }
-        $scope['filters'][entity][filter] = def;
-      }
+          $scope['filters'][entity][filter] = filters[filter][0];
 
-      // watchCollection is not nested
-      $scope.$watchCollection('filters.' + entity, function() {
-        showTable();
-      });
+          // Only call watch if the property is a dropdown
+          $scope.$watch('filters.' + entity + '.' + filter, function() {
+            $scope.showTable();
+          });
+        }
+      }
     }
 
     $scope.mode = "live";
@@ -75,7 +73,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     };
 
     $scope.$watch('mode + entity_type + count', function() {
-      showTable();
+      $scope.showTable();
     });
 
     $scope.notSorted = function(obj){
@@ -152,7 +150,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       });
     }
 
-    function showTable() {
+    $scope.showTable = function() {
       clear('id');
       clear('skip');
       generateTable();
@@ -169,7 +167,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       for(var filterName in $scope.filters[$scope.entity_type]) {
         var value = $scope.filters[$scope.entity_type][filterName];
         if(value !== 'all' && value!== ''){
-          query+= ('&' + filterName + '=' + value)
+          query+= ('&' + filterName + '=' + encodeURIComponent(value))
         }
       }
 

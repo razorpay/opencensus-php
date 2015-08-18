@@ -34,7 +34,7 @@ angular.module('app.directives', ['ui.load'])
             ;
 
         !prev.length && (parent = _el.parent());
-        
+
         function sm(){
           $timeout(function () {
             var method = attr.uiShift;
@@ -42,7 +42,7 @@ angular.module('app.directives', ['ui.load'])
             _el.hasClass('in') || _el[method](target).addClass('in');
           });
         }
-        
+
         function md(){
           parent && parent['prepend'](el);
           !parent && _el['insertAfter'](prev);
@@ -72,7 +72,7 @@ angular.module('app.directives', ['ui.load'])
               targets = (attr.target && attr.target.split(',')) || Array(el),
               key = 0;
           angular.forEach(classes, function( _class ) {
-            var target = targets[(targets.length && key)];            
+            var target = targets[(targets.length && key)];
             ( _class.indexOf( '*' ) !== -1 ) && magic(_class, target);
             $( target ).toggleClass(_class);
             key ++;
@@ -80,11 +80,11 @@ angular.module('app.directives', ['ui.load'])
           $(el).toggleClass('active');
 
           function magic(_class, target){
-            var patt = new RegExp( '\\s' + 
+            var patt = new RegExp( '\\s' +
                 _class.
                   replace( /\*/g, '[A-Za-z0-9-_]+' ).
                   split( ' ' ).
-                  join( '\\s|\\s' ) + 
+                  join( '\\s|\\s' ) +
                 '\\s', 'g' );
             var cn = ' ' + $(target)[0].className + ' ';
             while ( patt.test( cn ) ) {
@@ -124,7 +124,7 @@ angular.module('app.directives', ['ui.load'])
           }else{
             return;
           }
-          
+
           next.appendTo(wrap).css('top', _this.offset().top - _this.height());
           next.on('mouseleave.nav', function(e){
             next.appendTo(_this.parent());
@@ -132,7 +132,7 @@ angular.module('app.directives', ['ui.load'])
             _this.parent().removeClass('active');
           });
           _this.parent().addClass('active');
-          
+
         });
 
         wrap.on('mouseleave', function(e){
@@ -164,7 +164,7 @@ angular.module('app.directives', ['ui.load'])
           }
           el.on('click', function(){
             var target;
-            attr.target && ( target = $(attr.target)[0] );            
+            attr.target && ( target = $(attr.target)[0] );
             el.toggleClass('active');
             screenfull.toggle(target);
           });
@@ -176,8 +176,8 @@ angular.module('app.directives', ['ui.load'])
      return {
       restrict: 'AC',
       template:'<span class="bar"></span>',
-      link: function(scope, el, attrs) {        
-        el.addClass('butterbar hide');        
+      link: function(scope, el, attrs) {
+        el.addClass('butterbar hide');
         scope.$on('$stateChangeStart', function(event) {
           $location.hash('app');
           $anchorScroll();
@@ -186,7 +186,7 @@ angular.module('app.directives', ['ui.load'])
         scope.$on('$stateChangeSuccess', function( event, toState, toParams, fromState ) {
           event.targetScope.$watch('$viewContentLoaded', function(){
             el.addClass('hide').removeClass('active');
-          })          
+          })
         });
       }
      };
@@ -197,7 +197,7 @@ angular.module('app.directives', ['ui.load'])
       restrict: 'AC',
       template:'<span class="bar"></span>',
       priority: -1,
-      link: function(scope, el, attrs) {        
+      link: function(scope, el, attrs) {
         el.addClass('butterbar hide');
         el.attr('busy', "");
         el.attr('busy-add-classes', "active");
@@ -209,12 +209,25 @@ angular.module('app.directives', ['ui.load'])
       }
      };
   }])
+  .directive('ngEnter', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if(event.which === 13) {
+                scope.$apply(function (){
+                    scope.$eval(attrs.ngEnter);
+                });
+
+                event.preventDefault();
+            }
+        });
+    };
+  })
   .directive('spinner',
     function() {
      return {
       restrict: 'E',
-      template:'<div busy not-busy-add-classes="hide" busy-remove-classes="hide" class="hide">' + 
-                  '<img src="img/loading-bubbles.svg" alt="Loading icon" />' + 
+      template:'<div busy not-busy-add-classes="hide" busy-remove-classes="hide" class="hide">' +
+                  '<img src="img/loading-bubbles.svg" alt="Loading icon" />' +
               '</div>',
       priority: -1
      };
@@ -244,7 +257,7 @@ angular.module('app.directives', ['ui.load'])
                 '<div class="confirm-modal modal-body">' +
                     '<h4>{{message}}</h4>' +
                 '</div>' +
-                '<div class="modal-footer">' +                  
+                '<div class="modal-footer">' +
                     '<button class="btn btn-default" ng-click="cancel()">Cancel</button>' +
                     '<button class="btn btn-primary confirm-ok" ng-click="ok()">OK</button>' +
                 '</div>'
@@ -252,11 +265,11 @@ angular.module('app.directives', ['ui.load'])
 
           modalInstance.result.then(
               function () {
-                scope.$eval(click); 
+                scope.$eval(click);
               },
               function () {
               });
-        
+
           e.stopImmediatePropagation();
           e.preventDefault();
         });
