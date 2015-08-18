@@ -153,7 +153,7 @@ class Gateway extends Base\Gateway
                 'should have failed but instead it did not');
         }
 
-        $verify = $e->getVerify();
+        $verify = $e->getData();
 
         if (($verify->apiSuccess === false) and
             ($verify->gatewaySuccess === true))
@@ -178,10 +178,6 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        //
-        // Check for success
-        //
-
         $status = VerifyResult::STATUS_MATCH;
 
         if ($payment['AuthStatus'] === AuthStatus::SUCCESS)
@@ -200,6 +196,7 @@ class Gateway extends Base\Gateway
             }
             else
             {
+                $verify->gatewaySuccess = false;
                 $status = VerifyResult::STATUS_MISMATCH;
             }
         }
@@ -221,7 +218,7 @@ class Gateway extends Base\Gateway
 
                 if ($amountRefunded === $input['payment']['amount'])
                 {
-                    ;
+                    $status = VerifyResult::STATUS_MATCH;
                 }
                 else
                 {
