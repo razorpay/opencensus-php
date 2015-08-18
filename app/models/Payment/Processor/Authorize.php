@@ -83,7 +83,7 @@ trait Authorize
             'payment' => $payment->toArray(),
         );
 
-        $this->repo->transaction(function()
+        $this->repo->transaction(function() use ($data)
         {
             $this->repo->lockForUpdate($this->payment->getKey());
 
@@ -95,6 +95,8 @@ trait Authorize
                     'Payment expected to have succeded on the gateway has actually not. ' .
                     'Should not have called this function in this scenario');
             }
+
+            $payment = $this->payment;
 
             $payment->setVerified(true);
             $payment->setErrorNull();

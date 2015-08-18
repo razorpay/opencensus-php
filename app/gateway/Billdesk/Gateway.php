@@ -161,7 +161,7 @@ class Gateway extends Base\Gateway
             ($verify->gatewaySuccess === true))
         {
             $payment = $verify->payment;
-            $payment->fill($verifyResponseContent);
+            $payment->fill($verify->verifyResponseContent);
             $payment->saveOrFail();
         }
         else

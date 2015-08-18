@@ -507,8 +507,8 @@ class Entity extends Base\PublicEntity
     public function getErrorDetails()
     {
         return [
-            self::ERROR_CODE => $this->getAttribue(self::ERROR_CODE),
-            self::ERROR_DESCRIPTION => $this->getAttribue(self::ERROR_DESCRIPTION),
+            self::ERROR_CODE => $this->getAttribute(self::ERROR_CODE),
+            self::ERROR_DESCRIPTION => $this->getAttribute(self::ERROR_DESCRIPTION),
         ];
     }
 
