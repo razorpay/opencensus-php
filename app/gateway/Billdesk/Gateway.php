@@ -297,7 +297,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->postRequest($content);
 
-        unset($content['checksum']);
+        unset($content['Checksum']);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
