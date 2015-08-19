@@ -11,6 +11,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'Terminal';
 
+    protected $appFetchParamRules = array(
+        Entity::GATEWAY         => 'sometimes',
+    );
+
     public function getByParams($params)
     {
         $repo = $this->repo;

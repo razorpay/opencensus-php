@@ -53,9 +53,9 @@ class Service extends Base\Service
 
         $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $payment = $this->processor()->verify($id);
+        $data = $this->processor()->verify($payment);
 
-        return $payment->toArrayAdmin();
+        return $data;
     }
 
     public function cancel($id)
@@ -63,6 +63,19 @@ class Service extends Base\Service
         $this->processor()->cancel($id);
 
         return ['success' => true];
+    }
+
+    public function authorizeFailed($id)
+    {
+        $payment = $this->core->retrieveById($id);
+
+        $merchantId = $payment->getMerchantId();
+
+        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $data = $this->processor()->authorizeFailedPayment($payment);
+
+        return $data;
     }
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
@@ -187,6 +200,11 @@ class Service extends Base\Service
         return ['count' => $count];
     }
 
+    public function updateOldPayments()
+    {
+        ;
+    }
+
     public function autoCaptureOldAuthorizedPayments()
     {
         $timeLowerLimit = time() - (48 * 60 * 60);
@@ -260,7 +278,7 @@ class Service extends Base\Service
             {
                 $this->merchant = $payment->merchant;
 
-                $res = $this->processor()->verify($payment->getPublicId());
+                $res = $this->processor()->verify($payment);
 
                 $success++;
             }

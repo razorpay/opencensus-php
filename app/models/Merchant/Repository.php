@@ -16,6 +16,8 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::ACTIVATED       => 'sometimes|boolean',
+        Entity::HOLD_FUNDS      => 'sometimes|boolean',
+        Entity::LIVE            => 'sometimes|boolean',
     );
 
     public function getBalanceLockForUpdate($id)
@@ -81,10 +83,5 @@ class Repository extends Base\Repository
     public function isMerchantIdRequiredForFetch()
     {
         return false;
-    }
-
-    public function addQueryParamActivated($query, $params)
-    {
-        $query->where(Entity::ACTIVATED, '=', $params[Entity::ACTIVATED]);
     }
 }

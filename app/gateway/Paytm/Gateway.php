@@ -163,7 +163,7 @@ class Gateway extends Base\Gateway
         parent::verify($input);
 
         $data = array(
-            'MID'       => $input['terminal']['gateway_terminal_id'],
+            'MID'       => $input['terminal']['gateway_merchant_id'],
             'ORDERID'  => $input['payment']['id']);
 
         $this->addTestMerchantIdIfTestMode($content);
@@ -184,7 +184,7 @@ class Gateway extends Base\Gateway
             'url' => $this->getUrl($this->action).'?'.$content,
             'content' => [],
             'method' => 'get');
-//!d($request);
+
         $response = $this->runRequestResponseFlow($request);
         $content = json_decode($response->body, true);
 

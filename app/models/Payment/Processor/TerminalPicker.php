@@ -129,12 +129,9 @@ class TerminalPicker
 
         $international = $payment->merchant->isInternational();
 
-        if ($international)
+        if (isset($gatewayTerms[Gateway::HDFC]))
         {
-            if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
-            {
-                return $gatewayTerms[Gateway::AXIS_GENIUS];
-            }
+            return $gatewayTerms[Gateway::HDFC];
         }
 
         if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
@@ -145,11 +142,6 @@ class TerminalPicker
         if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
         {
             return $gatewayTerms[Gateway::AXIS_GENIUS];
-        }
-
-        if (isset($gatewayTerms[Gateway::HDFC]))
-        {
-            return $gatewayTerms[Gateway::HDFC];
         }
 
         if ($this->mode === Mode::TEST)
@@ -187,15 +179,18 @@ class TerminalPicker
             return $gatewayTerms[Payment\Gateway::BILLDESK];
         }
 
-        if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
-            (Netbanking::isPaytmSupportedBank($bank)))
+        if ($this->mode === Mode::TEST)
         {
-            return $gatewayTerms[Payment\Gateway::PAYTM];
-        }
+            if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
+                (Netbanking::isPaytmSupportedBank($bank)))
+            {
+                return $gatewayTerms[Payment\Gateway::PAYTM];
+            }
 
-        if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
-        {
-            return $gatewayTerms[Payment\Gateway::ATOM];
+            if (isset($gatewayTerms[Payment\Gateway::ATOM]) === true)
+            {
+                return $gatewayTerms[Payment\Gateway::ATOM];
+            }
         }
 
         return $terminal;

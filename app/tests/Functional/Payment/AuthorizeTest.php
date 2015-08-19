@@ -5,13 +5,6 @@ namespace Tests\Functional\Payment;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
-/**
- * Tests that support payments (capture/refund) are working fine.
- * creates a hold payment using card 13 and then attempts to capture it followed by refund it
- * Is successful if captured successfully folowed by successful refund.
- * All test cases follow, GIVEN, WHEN, THEN structure
- */
-
 class AuthorizeTest extends TestCase
 {
     use PaymentTrait;
@@ -227,6 +220,16 @@ class AuthorizeTest extends TestCase
 
         $contentType = 'application/json';
         $this->assertContentTypeForResponse($contentType, $this->response);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->markTestIncomplete();
+
+        $payment = $this->fixtures->create(
+            'payment:failed');
+
+        $this->authorizeFailedPayment($payment['public_id']);
     }
 
     public function testContentTypeHtmlOnPaymentCreateRoute()

@@ -32,19 +32,20 @@ class Core extends Base\Core
 
     public function getMerchantBanks($merchant)
     {
-
         $banks = $this->repo->getMerchantBanks($merchant->getId());
 
-        $billdesk = (new Terminal\Repository)->getByMerchantIdAndGateway(
-                                                $merchant->getId(), 'billdesk');
-        if ($billdesk !== null)
-        {
-            $supportedBanks = Netbanking::getAllBanks();
-        }
-        else
-        {
-            $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
-        }
+        // $billdesk = (new Terminal\Repository)->getByMerchantIdAndGateway(
+        //                                         $merchant->getId(), 'billdesk');
+        // if ($billdesk !== null)
+        // {
+        //     $supportedBanks = Netbanking::getAllBanks();
+        // }
+        // else
+        // {
+        //     $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
+        // }
+
+        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
 
         $banks->setBanks($supportedBanks);
 

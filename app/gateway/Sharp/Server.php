@@ -23,18 +23,20 @@ class Server
         return $this->$action($input);
     }
 
+    protected function enroll($input)
+    {
+        $req = ($this->requireTwoStep($input));
+
+        return ($req) ? 'Y' : 'N';
+    }
+
     protected function authorize($input)
     {
-        if (isset($input['card_number']))
+        if ($this->requireTwoStep($input) === false)
         {
-            $number = $input['card_number'];
+            $input['success'] = 'S';
 
-            if ($number === '555555555555558')
-            {
-                $input['success'] = 'S';
-
-                return $this->authSubmit($input);
-            }
+            return $this->authSubmit($input);
         }
 
         $data['action'] = 'authorize';
@@ -62,5 +64,20 @@ class Server
         $url = $url . '?' . http_build_query($content);
 
         return $url;
+    }
+
+    public function requireTwoStep($input)
+    {
+        if (isset($input['card_number']))
+        {
+            $number = $input['card_number'];
+
+            if ($number === '555555555555558')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

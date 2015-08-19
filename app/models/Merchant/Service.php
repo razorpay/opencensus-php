@@ -318,6 +318,7 @@ class Service extends Base\Service
             'netbanking'    => [],
             'wallet'        => [
                 'paytm'     => false,
+                'mobikwik'  => false,
             ]);
 
         $methods = (new Merchant\Banks\Core)->getMerchantBanks($this->merchant);
@@ -326,7 +327,7 @@ class Service extends Base\Service
         {
             $data['card'] = $methods->isCardEnabled();
             $data['netbanking'] = $methods->toArrayWithBankNames();
-            $data['wallet']['paytm'] = $methods->isPaytmEnabled();
+            // $data['wallet']['paytm'] = $methods->isPaytmEnabled();
         }
 
         if ($this->mode === Mode::TEST)
@@ -395,9 +396,18 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants()
     {
-        $merchants = $this->repo->fetch([Entity::ACTIVATED => 1]);
+        $filter = [];
 
-        $counts = ['sent' => 0, 'skipped' => 0];
+        //In test, none of the merchants are activated
+        if ($this->mode === Mode::LIVE)
+        {
+            $filter = [Entity::ACTIVATED => 1];
+        }
+
+        $merchants = $this->repo->fetch($filter);
+
+        // sent will hold array of merchant data
+        $response = ['sent' => [], 'skipped' => 0];
 
         foreach ($merchants as $merchant)
         {
@@ -405,16 +415,17 @@ class Service extends Base\Service
 
             $sent = $dailyReport->send();
 
-            if($sent)
+            if(empty($sent))
             {
-                $counts['sent']++;
+                $response['skipped']++;
             }
             else
             {
-                $counts['skipped']++;
+                $response['sent'][] = $sent;
             }
         }
 
-        return $counts;
+        return $response;
+
     }
 }

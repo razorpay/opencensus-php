@@ -8,6 +8,7 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Netbanking\Base;
 use Gateway\Base\Action;
+use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -38,6 +39,7 @@ class Gateway extends Base\Gateway
         'Message'       => 'error_message',
         'BankRefNo'     => 'bank_payment_id',
         'fldSessionNbr' => 'reference1',
+        'Date'          => 'date',
     );
 
     /**
@@ -50,7 +52,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $this->createGatewayPaymentEntity($content);
+        $payment = $this->createGatewayPaymentEntity($content);
 
         $request = array(
             'url' => $this->getUrl('pay'),
@@ -76,6 +78,14 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $this->verifyCallbackChecksum($input);
+        unset($input['gateway']['CheckSum']);
+
+        // Unset date because format of date returned is different than what we sent
+        unset($input['gateway']['Date']);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -106,44 +116,28 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
-                      ->format('d/m/Y H:m:s');
-
-        $content = array(
-            'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
-            'Date'                  => $date,
-            'MerchantRefNo'         => $payment['payment_id'],
-            'TransactionId'         => 'XTXTV01',
-            'FigVerify'             => 'Y',
-            'ClientCode'            => $payment['client_code'],
-            'SuccessStaticFlag'     => 'N',
-            'FailureStaticFlag'     => 'N',
-            'TxnAmount'             => $payment['amount'],
-        );
-
-        $url = $this->getUrl();
-
-        $request['url'] = $url . '?' . $this->buildQueryString($content);
-        $request['method'] = 'get';
-        $request['content'] = [];
-
-        $response = $this->sendGatewayRequest($request);
+        $content = $this->getContentFromGatewayVerifyRequest($input, $payment);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$response->body]);
+            [$content]);
 
-        $data = [];
-        parse_str($response->body, $data);
+        if (($input['payment']['status'] === 'failed') and
+            ($content['flgSuccess'] === 'S'))
+        {
+            $content['message'] = 'Verification failed';
+            $content['match'] = false;
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$data]);
+            throw new Exception\PaymentVerificationException($content);
+        }
 
-        $status = $data['flgSuccess'];
-        $bankRefNo = $data['BankRefNo'];
+        $attrs = $this->getMappedAttributes($content);
 
-        // @todo: verify and match params
+        $payment->fill($attrs);
+
+        $payment->saveOrFail();
+
+        return $content;
     }
 
     protected function verifyCallbackChecksum($input)
@@ -186,6 +180,61 @@ class Gateway extends Base\Gateway
         $data['CheckSum'] = $this->generateHash($data);
 
         return $data;
+    }
+
+    protected function getContentFromGatewayVerifyRequest($input, $payment)
+    {
+        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
+                      ->format('d/m/Y H:m:s');
+
+        if (empty($payment['date']) === false)
+        {
+            // First verify all hdfc netbanking transactions here and
+            // then remove this in future.
+            // $date = $payment['date'];
+        }
+
+        $content = array(
+            'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
+            'Date'                  => $date,
+            'MerchantRefNo'         => $payment['payment_id'],
+            'TransactionId'         => 'XTXTV01',
+            'FlgVerify'             => 'Y',
+            'ClientCode'            => $payment['client_code'],
+            'SuccessStaticFlag'     => 'N',
+            'FailureStaticFlag'     => 'N',
+            'TxnAmount'             => $payment['amount'],
+        );
+
+        $url = $this->getUrl();
+
+        $request['url'] = $url . '?' . $this->buildQueryString($content);
+        $request['method'] = 'get';
+        $request['content'] = [];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$response->body]);
+
+        $crawler = new Crawler($response->body, $request['url']);
+
+        $form = $crawler->filter('form')->form();
+
+        $values = $form->getValues();
+
+        $url = $values['REDIRECTURL'];
+
+        $content = [];
+        $parts = parse_url($url);
+        parse_str($parts['query'], $content);
+
+        return $content;
     }
 
     protected function getCallbackChecksum($input)

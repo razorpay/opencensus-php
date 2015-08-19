@@ -11,6 +11,13 @@ class Repository extends Base\Repository
 
     protected $entity = 'Transaction';
 
+    protected $appFetchParamRules = array(
+        Entity::SETTLED         => 'sometimes|in:0,1',
+        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
+        Entity::SETTLEMENT_ID   => 'sometimes|alpha_num',
+        Entity::ENTITY_ID       => 'sometimes|alpha_num',
+    );
+
     public function fetchTxnsExpectedToSettle($timestamp)
     {
         $repo = $this->repo;

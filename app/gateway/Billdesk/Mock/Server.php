@@ -56,7 +56,7 @@ class Server extends Base\Mock\Server
         $request = array(
             'url' => $input['RU'],
             'content' => ['msg' => $msg],
-            'method' => 'post'
+            'method' => 'post',
         );
 
         return $this->makePostResponse($request);;
@@ -88,6 +88,8 @@ class Server extends Base\Mock\Server
         $refunds = $this->getRepo()->findRefunds($input['Customer ID']);
 
         $refundAmount = 0.00;
+
+//        $content['AuthStatus'] = '0200';
 
         foreach ($refunds as $refund)
         {

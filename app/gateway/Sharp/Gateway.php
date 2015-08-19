@@ -33,12 +33,12 @@ class Gateway extends Base\Gateway
             $content['card_number'] = $input['card']['number'];
         }
 
-        $url = $baseUrl . '&' . http_build_query($content);
+        if ($this->isEnrolled($content) === false)
+        {
+            return;
+        }
 
-        $request = array(
-            'url' => $url,
-            'method' => 'get'
-        );
+        $request = $this->getRequestArray($content);
 
         return $request;
     }
@@ -47,13 +47,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        if ((isset($input['gateway']['status']) === false) or
-            ($input['gateway']['status'] !== 'authorized'))
-        {
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
+        $this->verifyPaymentCreateResponse($input);
     }
 
     public function capture(array $input)
@@ -64,6 +58,28 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+    }
+
+    protected function verifyPaymentCreateResponse($input)
+    {
+        if ((isset($input['gateway']['status']) === false) or
+            ($input['gateway']['status'] !== 'authorized'))
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
+    protected function isEnrolled($content)
+    {
+        $content['action'] = 'enroll';
+
+        $server = new Server;
+
+        $content = $server->action($content);
+
+        return ($content !== 'N');
     }
 
     protected function createGatewayPaymentEntity($attributes)
@@ -83,5 +99,20 @@ class Gateway extends Base\Gateway
         assert ($mode === Mode::TEST);
 
         parent::setMode($mode);
+    }
+
+    protected function getRequestArray($content)
+    {
+        $baseUrl = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment');
+
+        $url = $baseUrl . '&' . http_build_query($content);
+
+        $request = array(
+            'url' => $url,
+            'method' => 'get',
+            'content' => [],
+        );
+
+        return $request;
     }
 }

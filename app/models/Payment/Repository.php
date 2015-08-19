@@ -19,6 +19,9 @@ class Repository extends Base\Repository
         Entity::VERIFIED        => 'sometimes|boolean',
         Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
         Entity::BANK            => 'sometimes',
+        Entity::METHOD          => 'sometimes',
+        Entity::GATEWAY         => 'sometimes',
+        Entity::EMAIL           => 'sometimes',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
@@ -115,23 +118,13 @@ class Repository extends Base\Repository
 
         return $repo::whereNull(Payment\Entity::VERIFIED)
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
+                    ->where(function($query)
+                        {
+                            $query->where(Payment\Entity::GATEWAY, '=', Payment\Gateway::BILLDESK)
+                                  ->orWhere(Payment\Entity::GATEWAY, '=', Payment\Gateway::NETBANKING_HDFC);
+                        })
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
                     ->get();
-    }
-
-    protected function addQueryParamStatus($query, $params)
-    {
-        $query = $query->where(Entity::STATUS, '=', $params[Entity::STATUS]);
-    }
-
-    protected function addQueryParamVerified($query, $params)
-    {
-        $query = $query->where(Entity::VERIFIED, '=', $params[Entity::VERIFIED]);
-    }
-
-    protected function addQueryParamRefundStatus($query, $params)
-    {
-        $query = $query->where(Entity::REFUND_STATUS, '=', $params[Entity::REFUND_STATUS]);
     }
 
     protected function addQueryParamBank($query, $params)

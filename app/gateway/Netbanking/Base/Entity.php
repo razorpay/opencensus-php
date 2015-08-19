@@ -19,6 +19,8 @@ class Entity extends Base\Entity
         'merchant_code',
         'bank_payment_id',
         'error_message',
+        'date',
+        'refund_id',
         'reference1',
     );
 
@@ -29,6 +31,8 @@ class Entity extends Base\Entity
         'merchant_code',
         'bank_payment_id',
         'error_message',
+        'date',
+        'refund_id',
         'reference1',
     );
 

@@ -23,6 +23,7 @@ class TraceCode
     const PAYMENT_VERIFY_FAILED                     = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
     const PAYMENT_CANCELLED                         = 'PAYMENT_CANCELLED';
+    const PAYMENT_FAILED_TO_AUTHORIZED              = 'PAYMENT_FAILED_TO_AUTHORIZED';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
 
@@ -44,6 +45,8 @@ class TraceCode
     const GATEWAY_SUPPORT_ERROR                     = 'GATEWAY_SUPPORT_ERROR';
     const GATEWAY_UNKNOWN_ERROR                     = 'GATEWAY_UNKNOWN_ERROR';
     const GATEWAY_PAYMENT_VERIFY                    = 'GATEWAY_PAYMENT_VERIFY';
+    const GATEWAY_PAYMENT_STATUS_CHANGED            = 'GATEWAY_PAYMENT_STATUS_CHANGED';
+    const GATEWAY_PAYMENT_CALLBACK                  = 'GATEWAY_PAYMENT_CALLBACK';
 
     const MPR_HDFC_GEN_INITIATED                    = 'MPR_HDFC_GEN_INITIATED';
     const MPR_HDFC_FILE_GENERATED                   = 'MPR_HDFC_FILE_GENERATED';
@@ -88,6 +91,7 @@ class TraceCode
         self::PAYMENT_CAPTURE_SUCCESS               => 'Payment captured successfully',
         self::PAYMENT_CAPTURE_FAILURE               => 'Payment capture failed',
         self::PAYMENT_VERIFY_FAILED                 => 'Payment verification with gateway failed',
+        self::PAYMENT_FAILED_TO_AUTHORIZED          => 'Payment failed but which succeded on gateway now successfully converted to authorized',
 
         self::BAD_REQUEST_INVALID_API_KEY           => 'The api key provided is invalid',
 

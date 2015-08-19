@@ -30,6 +30,9 @@ class CreateNetbanking extends Migration
             $table->string('bank_payment_id')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
+            $table->string('date')->nullable();
+
+            $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');

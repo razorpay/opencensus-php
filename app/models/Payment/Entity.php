@@ -153,7 +153,8 @@ class Entity extends Base\PublicEntity
         $contact = str_replace(')', '', $contact);
 
         // Remove the 0 at the start
-        if ($contact[0] === '0')
+        if ((strlen($contact) > 1) and
+            ($contact[0] === '0'))
         {
             $contact = substr($contact, 1);
         }
@@ -249,6 +250,12 @@ class Entity extends Base\PublicEntity
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setErrorNull()
+    {
+        $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
 // ----------------------- Setters Ends-----------------------------------------
@@ -495,6 +502,14 @@ class Entity extends Base\PublicEntity
                 return [$methodName, $walletNames[$this->getWallet()]];
                 break;
         }
+    }
+
+    public function getErrorDetails()
+    {
+        return [
+            self::ERROR_CODE => $this->getAttribute(self::ERROR_CODE),
+            self::ERROR_DESCRIPTION => $this->getAttribute(self::ERROR_DESCRIPTION),
+        ];
     }
 
     /**

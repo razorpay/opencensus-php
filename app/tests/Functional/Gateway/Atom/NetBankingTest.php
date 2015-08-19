@@ -104,9 +104,9 @@ class NetbankingTest extends TestCase
 
         $id = $payment['id'];
 
-        $payment = $this->verifyPayment($id);
+        $data = $this->verifyPayment($id);
 
-        $this->assertEquals($payment['verified'], true);
+        $this->assertEquals($data['payment']['verified'], true);
     }
 
     public function testAtomVerifyFailedPayment()
