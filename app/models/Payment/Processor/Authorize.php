@@ -18,27 +18,15 @@ trait Authorize
 {
     public function authorize($payment, $input)
     {
+        $this->verifyMerchantIsLiveForLiveRequest();
+
         $gatewayInput = [];
+
+        $this->verifyPaymentMethodEnabled($payment);
 
         if ($payment->isMethod(Payment\Method::CARD))
         {
-            $this->verifyCardEnabled($payment);
-
-            $cardData = $this->createCardEntity($input);
-
-            (new Card\Repository)->saveOrFail($payment->card);
-
-            $gatewayInput['card'] = $cardData;
-        }
-
-        if ($payment->isMethod(Payment\Method::NETBANKING))
-        {
-            $this->verifyBankEnabled($payment);
-        }
-
-        if ($payment->isMethod(Payment\Method::WALLET))
-        {
-            $this->verifyWalletEnabled($payment);
+            $gatewayInput['card'] = $this->createCardEntity($input);
         }
 
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
@@ -169,6 +157,24 @@ trait Authorize
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function verifyPaymentMethodEnabled($payment)
+    {
+        if ($payment->isMethod(Payment\Method::CARD))
+        {
+            $this->verifyCardEnabled($payment);
+        }
+
+        if ($payment->isMethod(Payment\Method::NETBANKING))
+        {
+            $this->verifyBankEnabled($payment);
+        }
+
+        if ($payment->isMethod(Payment\Method::WALLET))
+        {
+            $this->verifyWalletEnabled($payment);
+        }
     }
 
     protected function getReturnRequestDataForMerchant($payment)
@@ -340,6 +346,8 @@ trait Authorize
         }
 
         $this->payment->card()->associate($card);
+
+        (new Card\Repository)->saveOrFail($card);
 
         return $cardData;
     }
