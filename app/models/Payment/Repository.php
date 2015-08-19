@@ -117,6 +117,11 @@ class Repository extends Base\Repository
 
         return $repo::whereNull(Payment\Entity::VERIFIED)
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
+                    ->where(function($query)
+                        {
+                            $query->where(Payment\Entity::GATEWAY, '=', Payment\Gateway::BILLDESK)
+                                  ->orWhere(Payment\Entity::GATEWAY, '=', Payment\Gateway::NETBANKING_HDFC);
+                        })
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
                     ->get();
     }
