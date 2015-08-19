@@ -19,7 +19,8 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         verified:     ['all', 0, 1],
         method:       ['all', 'card', 'netbanking', 'wallet'],
         gateway:      gatewayList,
-        email:        ['Contact Email']
+        email:        ['Contact Email'],
+        refund_status: ['all', 'partial', 'full']
       },
       merchant: {
         activated:    ['all', 0, 1],
@@ -34,6 +35,10 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         entity_id:    ['Payment/Refund/Settlement Id'],
         settled:      ['all', 0, 1],
         type:         ['all', 'payment', 'refund', 'settlement', 'adjustment']
+      },
+      billdesk: {
+        AuthStatus: ['all', '0001', '0300', '0002', '0399', 'NA'],
+        received:   ['all', 0, 1]
       }
     };
 
@@ -87,12 +92,21 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
     $scope.displayFilter = function(val)
     {
-      if(val===0)
-        return 'no';
-      else if(val===1)
-        return 'yes';
-      else
+      var labels = {
+        0: 'no',
+        1: 'yes',
+        '0001': 'BillDesk Cancel',
+        '0300': 'Success',
+        '0002': 'Bank Pending',
+        '0399': 'Bank Cancel Auth Error',
+        'NA': 'Invalid Input'
+      }
+      if(val in labels) {
+        return labels[val];
+      }
+      else {
         return val;
+      }
     }
 
     $scope.next= function() {
