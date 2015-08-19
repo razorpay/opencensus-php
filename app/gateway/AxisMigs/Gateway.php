@@ -92,6 +92,7 @@ class Gateway extends Base\Gateway
                     'payment_id' => $input['payment']['id'],
                     'gateway' => $this->gateway,
                     'vpc_TxnResponseCode' => null,
+                    'content' => $content,
                 ]
             );
 
