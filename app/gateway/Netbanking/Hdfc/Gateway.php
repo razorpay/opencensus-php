@@ -80,6 +80,9 @@ class Gateway extends Base\Gateway
         $this->verifyCallbackChecksum($input);
         unset($input['gateway']['CheckSum']);
 
+        // Unset date because format of date returned is different than what we sent
+        unset($input['gateway']['Date']);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $input['gateway']);
@@ -186,7 +189,9 @@ class Gateway extends Base\Gateway
 
         if (empty($payment['date']) === false)
         {
-            $date = $payment['date'];
+            // First verify all hdfc netbanking transactions here and
+            // then remove this in future.
+            // $date = $payment['date'];
         }
 
         $content = array(
@@ -218,6 +223,7 @@ class Gateway extends Base\Gateway
             [$response->body]);
 
         $crawler = new Crawler($response->body, $request['url']);
+
         $form = $crawler->filter('form')->form();
 
         $values = $form->getValues();
