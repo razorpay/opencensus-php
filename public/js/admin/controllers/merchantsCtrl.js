@@ -11,12 +11,6 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
     $scope.filter();
   }
 
-  if($scope.pending === true)
-  {
-    $scope.filter();
-  }
-
-
   $scope.filter = function(){
     var query = ""
     switch($scope.merchant_type) {
@@ -42,6 +36,11 @@ app.controller('MerchantsCtrl', ['$scope', '$http',
           query=null;
     }
     generate(query);
+  }
+
+  if($scope.pending === true)
+  {
+    $scope.filter();
   }
 
   function generate(query) {
