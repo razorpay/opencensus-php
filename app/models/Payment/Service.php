@@ -278,7 +278,7 @@ class Service extends Base\Service
             {
                 $this->merchant = $payment->merchant;
 
-                $res = $this->processor()->verify($payment->getPublicId());
+                $res = $this->processor()->verify($payment);
 
                 $success++;
             }
