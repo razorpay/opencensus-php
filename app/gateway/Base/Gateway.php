@@ -5,7 +5,8 @@ namespace Gateway\Base;
 use Constants\Mode;
 use EE\Exception;
 use Requests;
-use Trace;
+use Trace\Trace;
+use Trace\TraceCode;
 
 class Gateway
 {
@@ -32,7 +33,7 @@ class Gateway
 
     public function __construct()
     {
-        $this->trace = Trace::getFacadeRoot();
+        $this->trace = \Trace::getFacadeRoot();
 
         $this->loadGatewayConfig();
     }
@@ -116,6 +117,17 @@ class Gateway
     protected function runPaymentVerifyFlow($verify)
     {
         $payment = $this->getPaymentToVerify($verify->input, $verify);
+
+        if (($payment === null) and
+            ($verify->input['payment']['status'] === 'failed'))
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                ['payment_id' => $verify->input['payment']['id'],
+                 'message' => 'payment id not found in the gateway database',
+                 'gateway' => $this->gateway]);
+            return;
+        }
 
         $content = $this->sendPaymentVerifyRequest($verify);
 
