@@ -446,7 +446,7 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
                     $code,
                     $txnResponseCode,
-                    $input['gateway']['vpc_Message']);
+                    $msg);
     }
 
     protected function returnIfRefundAmountMatches($content, $input)
