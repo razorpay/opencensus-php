@@ -14,7 +14,7 @@ class Creevey
     ];
 
     protected static $OPTIONS = [
-        'timeout'   => 120,
+        'timeout'   => 200,
         'useragent' => 'Razorpay/Dashboard'
     ];
 
