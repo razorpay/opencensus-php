@@ -7,6 +7,11 @@
 <div class="wrapper-md" ng-controller="EntitiesCtrl">
   <div class="panel panel-default">
     <div class="panel-heading">
+      <ul class="nav navbar-nav navbar-right pagination-sm m-t-none m-b-none">
+        <li ng-click="allowPrev && prev()"><button class="btn btn-default fa fa-chevron-left" ng-disabled="!allowPrev"></button></li>
+        <li ng-click="allowNext && next()"><button class="btn btn-default  fa fa-chevron-right" ng-disabled="!allowNext"></button></li>
+      </ul>
+
       List of all {{entity_type +  "s"| titlecase}} ({{mode + " mode" | titlecase}})
     </div>
     <div class="row wrapper">
