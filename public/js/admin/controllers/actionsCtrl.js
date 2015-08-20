@@ -61,7 +61,9 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       request
       .success(function(data){
         if(data.success) {
-          $scope.alerts.addAlert('success', 'Payment Verified successfully', true);
+          var payment = JSON.stringify(data.data.payment);
+          $scope.alerts.addAlert('success',
+            'Payment Verified successfully: '+payment, true);
         }
         else {
           $scope.alerts.resetAlerts();
