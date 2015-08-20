@@ -289,7 +289,11 @@ class Service extends Base\Service
             }
         }
 
-        return ['success' => $success, 'failed' => $failed];
+        $results = ['success' => $success, 'failed' => $failed];
+        $message = 'Payment verify result - ' . json_encode($results, JSON_PRETTY_PRINT);
+        $this->app['slack']->send($message, '#transactions', 'transactions');
+
+        return $results;
     }
 
     protected function processor()
