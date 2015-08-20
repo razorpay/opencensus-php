@@ -20,7 +20,9 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         method:       ['all', 'card', 'netbanking', 'wallet'],
         gateway:      gatewayList,
         email:        ['Contact Email'],
-        refund_status: ['all', 'partial', 'full']
+        refund_status: ['all', 'partial', 'full'],
+        bank:         ['Bank Code'],
+        wallet:       ['all', 'paytm', 'mobikwik']
       },
       merchant: {
         activated:    ['all', 0, 1],
@@ -38,7 +40,20 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       },
       billdesk: {
         AuthStatus: ['all', '0001', '0300', '0002', '0399', 'NA'],
-        received:   ['all', 0, 1]
+        received:   ['all', 0, 1],
+        payment_id: ['Payment Id']
+      },
+      hdfc: {
+        payment_id: ['Payment Id']
+      },
+      axis_migs: {
+        payment_id: ['Payment Id']
+      },
+      axis_genius: {
+        payment_id: ['Payment Id']
+      },
+      paytm: {
+        payment_id: ['Payment Id']
       }
     };
 
