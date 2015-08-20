@@ -43,6 +43,27 @@ h3.center{
 	line-height:25px;
 	color:#484B4C;
 }
+.dark {
+	color:#2d2d2d;
+}
+.newsletter {
+	padding: 40px;
+}
+.newsletter, .newsletter>p {
+	font-size: 16px;
+	color: #484b4c;
+	text-align: justify;
+	line-height: 1.4em;
+}
+.newsletter h2{
+	margin-top: 10px;
+	margin-bottom: 5px;
+	font-size: 24px;
+	color: #2d2d2d;
+}
+h1 .dark {
+	font-size: 28px;
+}
 .darktext p{
 	line-height: 25px;
 }

@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body class="body newsletter" style="background:#EBECEE;">
+    <table class="container" style="background:white;">
+      <tr>
+        <td>
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white" style="background:white;">
+                        <table class="four columns">
+                          <tr>
+                            <td class="center">
+                              <center>
+                                <img src="<?php echo $message->embed(public_path().'/img/header_logo.png'); ?>" alt="Razorpay Logo" title="Razorpay Logo"/>
+                              </center>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Payment Successfull Header -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper center last">
+                        <center>
+                        <table class="twelve columns white" style="background:white;">
+                          <tr>
+                            <td class="center">
+                              <h1>
+                              <center class="dark">
+                                Razorpay Newsletter
+                              </center>
+                              </h1>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                        </center>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <hr class="wide">
+          <!-- Contact Us -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row">
+                  <tr>
+                    <td class="wrapper last white">
+                      <table class="twelve columns">
+                        <tr>
+                          <td class="dark">
+                            <div class="newsletter">
+<p>Hi Nemo,</p>
+
+<p>This is an update regarding what we've been up to at Razorpay. This tiny newsletter
+will link you to the latest changes in our API and the new features we recently released
+as well as the things we are working on. Most sections link to their own blog posts,
+and you can check out the links individually. Thanks for signing up with Razorpay,
+and as always, you can reach out to us at contact@razorpay.com for any queries (or
+just reply to this email).</p>
+
+<h2>New Payment Status</h2>
+
+<p>In the only minor change to the API, we are adding a new status to the Payment object,
+"refunded". A payment status is set to refunded if and only if the payment
+is completely refunded. For partial refunds, the status remains the same at "captured".
+However, for a payment that is auto-refunded after not being captured, it is refunded
+completely and its status is set to "refunded" as well.</p>
+
+<p>This brings the total of payment status categories to 4: "created, authorized, captured
+, refunded".</p>
+
+<p>More details are at the <a href="">detailed post</a>.</p>
+
+<h2>Wallet Updates</h2>
+
+<p>For a while now, we have been working hard to integrate with Indian wallet systems.
+A lot of our merchants are already live on PayTM, and we are happy to announce that
+Mobiqwik will be available soon as a wallet option as well. The PayTM integration
+is currently unavailable because of issues on PayTM's side, but it should be back
+up soon.</p>
+
+<h2>Activation Time</h2>
+
+<p>This is where we are currently working hardest and trying to get each and every
+one of you onboarded as quickly as possible. We are working to achieve instant
+activations and completely online onboarding process for everyone. Meanwhile, we
+are at work continuously to improve the onboarding process for every one as well
+</p>
+
+<h2>Email Updates</h2>
+
+<p>Customers are automatically notified upon every payment being made via email.
+We are also sending out Daily Transaction Reports to all merchants as well.
+If you wish to disable the customer emails (for eg, if you send your own)
+or if you want to change your transaction report email, let us know.
+</p>
+
+<h2>Referrals</h2>
+
+<p>We now have a referral system for merchants in place. Reply to this mail to get
+more details on it. This is especially helpful if you are an incubator, for eg.
+</p>
+
+<h2>Dashboard Updates</h2>
+We have made lots of tiny changes to the merchant dashboard. You can now filter
+payments by status. If you wish to see a particular feature, let us know.
+
+<h2>Hiring &amp; Company Updates</h2>
+
+<p>We started Razorpay with a vision to improve the state of payments in India.
+Moving ahead, we have shifted operations to Bangalore, and are currently hiring
+for developer roles. If you are interested (or know someone who might be), drop
+us a mail at jobs@razorpay.com.
+</p>
+
+</div>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.footer', ['message'=>$message])
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
