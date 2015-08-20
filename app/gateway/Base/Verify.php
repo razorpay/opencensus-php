@@ -12,6 +12,8 @@ class Verify
 
     public $verifyResponse;
 
+    public $verifyResponseBody;
+
     public $verifyResponseContent;
 
     public $gateway;

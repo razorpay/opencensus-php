@@ -6,8 +6,10 @@ use Carbon\Carbon;
 use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
-use Gateway\Netbanking\Base;
 use Gateway\Base\Action;
+use Gateway\Base\Verify;
+use Gateway\Base\VerifyResult;
+use Gateway\Netbanking\Base;
 use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -113,31 +115,19 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+        $verify = new Verify($this->gateway, $input);
 
-        $content = $this->getContentFromGatewayVerifyRequest($input, $payment);
+        return $this->runPaymentVerifyFlow($verify);
+    }
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$content]);
+    protected function getPaymentToVerify($input, $verify)
+    {
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                    $input['payment']['id'], Action::AUTHORIZE);
 
-        if (($input['payment']['status'] === 'failed') and
-            ($content['flgSuccess'] === 'S'))
-        {
-            $content['message'] = 'Verification failed';
-            $content['match'] = false;
+        $verify->payment = $payment;
 
-            throw new Exception\PaymentVerificationException($content);
-        }
-
-        $attrs = $this->getMappedAttributes($content);
-
-        $payment->fill($attrs);
-
-        $payment->saveOrFail();
-
-        return $content;
+        return $payment;
     }
 
     protected function verifyCallbackChecksum($input)
@@ -182,8 +172,11 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getContentFromGatewayVerifyRequest($input, $payment)
+    protected function sendPaymentVerifyRequest($verify)
     {
+        $payment = $verify->payment;
+        $input = $verify->input;
+
         $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
                       ->format('d/m/Y H:m:s');
 
@@ -194,13 +187,20 @@ class Gateway extends Base\Gateway
             // $date = $payment['date'];
         }
 
+        $clientCode = $payment['client_code'];
+
+        if ($clientCode === 'client_code')
+        {
+            $clientCode = $input['payment']['email'];
+        }
+
         $content = array(
             'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
             'Date'                  => $date,
             'MerchantRefNo'         => $payment['payment_id'],
             'TransactionId'         => 'XTXTV01',
             'FlgVerify'             => 'Y',
-            'ClientCode'            => $payment['client_code'],
+            'ClientCode'            => $clientCode,
             'SuccessStaticFlag'     => 'N',
             'FailureStaticFlag'     => 'N',
             'TxnAmount'             => $payment['amount'],
@@ -234,7 +234,49 @@ class Gateway extends Base\Gateway
         $parts = parse_url($url);
         parse_str($parts['query'], $content);
 
+        $verify->verifyResponse = $response;
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $content;
+
         return $content;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+        $input = $verify->input;
+
+        $days = (time() - $input['payment']['created_at']) / (24*60*60);
+
+        if ($days > 45)
+        {
+            $verify->match = true;
+            $verify->status = VerifyResult::STATUS_MATCH;
+
+            return;
+        }
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        $verify->apiSuccess = (($input['payment']['status'] === 'authorized') or
+                               ($input['payment']['status'] === 'captured'));
+
+        $verify->gatewaySuccess = ($content['flgSuccess'] === 'S');
+
+        if (($verify->apiSuccess === false) and
+            ($verify->gatewaySuccess === true))
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        $attrs = $this->getMappedAttributes($content);
+        $payment->fill($attrs);
+        $payment->saveOrFail();
+
+        return $status;
     }
 
     protected function getCallbackChecksum($input)

@@ -305,6 +305,8 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponse = $this->response;
 
+        $verify->verifyResponseBody = $this->response->body;
+
         $verify->verifyResponseContent = $content;
 
         return $content;
