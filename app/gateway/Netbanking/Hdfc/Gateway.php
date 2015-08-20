@@ -204,7 +204,7 @@ class Gateway extends Base\Gateway
             'ClientCode'            => $clientCode,
             'SuccessStaticFlag'     => 'N',
             'FailureStaticFlag'     => 'N',
-            'TxnAmount'             => $payment['amount'],
+            'TxnAmount'             => $input['payment']['amount'] / 100,
         );
 
         $url = $this->getUrl();
