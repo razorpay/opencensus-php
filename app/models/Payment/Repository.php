@@ -129,7 +129,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamBank($query, $params)
     {
-        if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
+        if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
