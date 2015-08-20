@@ -40,6 +40,8 @@ class Settler
 
     public function settle($input = array(), $channel = null)
     {
+        $this->checkTime();
+
         $this->input = $input;
 
         $txns = $this->fetchTransactionsToSettle($input);
@@ -426,5 +428,28 @@ class Settler
         }
 
         return $channels;
+    }
+
+    protected function checkTime()
+    {
+        $app = \App::getFacadeRoot();
+        $mode = $app['rzp.mode'];
+        $env = $app['env'];
+
+        $sixPm = Carbon::today('Asia/Kolkata')->hour(18)->timestamp;
+        $now = time();
+
+        $crossed = false;
+
+        if ($now > ($sixPm - (5*60)))
+            $crossed = true;
+
+        if (($env === 'production') and
+            ($mode === 'live') and
+            ($crossed === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please settlements before 6 pm everyday');
+        }
     }
 }
