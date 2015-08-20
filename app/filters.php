@@ -77,6 +77,15 @@ Route::filter('auth.internal', function() use ($app)
     }
 });
 
+Route::filter('auth.cron', function() use ($app)
+{
+    if (($_SERVER['PHP_AUTH_USER'] !== \Config::get('cron.auth_user')) or
+        ($_SERVER['PHP_AUTH_PW'] !== \Config::get('cron.auth_pass')))
+    {
+        return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
+    }
+});
+
 /*
 |--------------------------------------------------------------------------
 | Guest Filter

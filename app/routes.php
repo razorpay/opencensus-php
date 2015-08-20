@@ -203,3 +203,9 @@ Route::group(array('before' => 'auth.internal'), function()
 {
     Route::post('/{mode}/transactions/{resource}', 'TransactionController@postIndex');
 });
+
+Route::group(array('before' => 'auth.cron'), function()
+{
+    Route::post('/{mode}/analytics/aggregations', 'TransactionController@updateAggregations');
+    Route::post('/{mode}/analytics/payment/aggregations', 'TransactionController@updatePaymentAggregations');
+});
