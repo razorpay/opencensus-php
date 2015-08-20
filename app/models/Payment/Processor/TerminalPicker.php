@@ -328,7 +328,7 @@ class TerminalPicker
 
     protected function filterTerminalsByMethod($terminals, $method)
     {
-        $terminals->filter(function($item)
+        $terminals->filter(function($item) use($method)
         {
             return ($item[$method] === '1');
         });
