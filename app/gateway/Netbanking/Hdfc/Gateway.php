@@ -79,7 +79,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->verifyCallbackChecksum($input);
+        $this->validateCallbackChecksum($input);
         unset($input['gateway']['CheckSum']);
 
         // Unset date because format of date returned is different than what we sent
@@ -96,6 +96,7 @@ class Gateway extends Base\Gateway
         $message = $input['gateway']['Message'];
 
         $attrs = $this->getMappedAttributes($input['gateway']);
+        $attrs['received'] = true;
 
         $payment->fill($attrs);
         $payment->saveOrFail();
@@ -130,7 +131,7 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-    protected function verifyCallbackChecksum($input)
+    protected function validateCallbackChecksum($input)
     {
         $expectedChecksum = $this->getCallbackChecksum($input['gateway']);
 
