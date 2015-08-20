@@ -250,12 +250,17 @@ class Gateway extends Base\Gateway
 
         $days = (time() - $input['payment']['created_at']) / (24*60*60);
 
+        // In HDFC netbnaking, the bank only stores the payment data for
+        // 45 days!
         if ($days > 45)
         {
-            $verify->match = true;
-            $verify->status = VerifyResult::STATUS_MATCH;
+            throw new Exception\BadRequestValidationFailureException(
+                'For hdfc netbanking, the bank only stores payment data for 45 days. ' .
+                'The given payment for verification is ' . $days . ' days old');
 
-            return;
+            // $verify->match = true;
+            // $verify->status = VerifyResult::STATUS_MATCH;
+            // return;
         }
 
         $status = VerifyResult::STATUS_MATCH;
@@ -273,11 +278,53 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $attrs = $this->getMappedAttributes($content);
-        $payment->fill($attrs);
-        $payment->saveOrFail();
+        if ($payment['received'] === false)
+        {
+            $attrs = $this->getMappedAttributes($content);
+            $payment->fill($attrs);
+            $payment->saveOrFail();
+        }
 
         return $status;
+    }
+
+    public function authorizeFailed(array $input)
+    {
+        $e = null;
+
+        try
+        {
+            $this->verify($input);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            ;
+        }
+
+        if ($e === null)
+        {
+            throw new Exception\LogicException(
+                'When converting failed payment to authorized, payment verification ' .
+                'should have failed but instead it did not. ' .
+                'Are you sure you want to convert this payment to authorized?');
+        }
+
+        $verify = $e->getVerifyObject();
+
+        if (($verify->apiSuccess === false) and
+            ($verify->gatewaySuccess === true))
+        {
+            $payment = $verify->payment;
+            $payment->fill($verify->verifyResponseContent);
+            $payment->saveOrFail();
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Should not have reached here');
+        }
+
+        return true;
     }
 
     protected function getCallbackChecksum($input)
