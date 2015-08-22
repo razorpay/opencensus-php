@@ -270,7 +270,7 @@ class Service extends Base\Service
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
-        $success = 0; $failed = 0; $time = time();
+        $verified = 0; $failed = 0; $time = time();
 
         foreach ($payments as $payment)
         {
@@ -280,7 +280,7 @@ class Service extends Base\Service
 
                 $res = $this->processor()->verify($payment);
 
-                $success++;
+                $verified++;
             }
             catch (Exception\PaymentVerificationException $e)
             {
@@ -291,7 +291,10 @@ class Service extends Base\Service
 
         $time = time() - $time;
 
-        $results = ['success' => $success, 'failed' => $failed, 'time' => $time . ' secs'];
+        $results = array(
+            'verified'  => $verified,
+            'failed'    => $failed,
+            'time'      => $time . ' secs');
 
         $message = 'Payment verify result - ' . json_encode($results, JSON_PRETTY_PRINT);
 
