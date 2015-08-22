@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                    $errorCode,
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
                     $input['gateway']['statusmessage'],
                     $input['gateway']['statuscode']);
         }
@@ -115,6 +115,45 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+        $content = [];
+        $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
+        $this->addTestMerchantIdIfTestMode($content);
+
+
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $content['orderid'] = $input['payment']['id'];
+        $content['email'] = $payment['email'];
+        $content['amount'] = $payment['amount'];
+
+        $content['checksum'] = $this->getHashForRefundRequest($content['mid'], $content['orderid'], $content['email'], $content['amount'] );
+
+
+        $content = http_build_query($content);
+
+        $request = array(
+            'url'     => $this->getUrl($this->action),
+            'method'  => 'post',
+            'content' => $content);
+
+        $refund = $this->createGatewayRefundEntity($content, $input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = (array) simplexml_load_string($response->body);
+
+        $attr = $this->lowerArrayKeys($content);
+
+        $refund->fill($attr)->saveOrFail();
+
+        if ($content['statuscode'] !== '0')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                'Payment refund failed with statuscode: ' . $content['statuscode']);
+        }
+
     }
 
     protected function addTerminalDetailsInTest(array & $content)
@@ -221,6 +260,45 @@ class Gateway extends Base\Gateway
         $secret = $this->getSecret();
 
         return strtolower(hash_hmac('sha256', $str, $secret, false));
+    }
+
+    protected function getHashForRefundRequest($mid, $orderId, $email, $amount)
+    {
+
+        $str = "'".$mid."''".$orderId."''".$email."''".$amount."'";
+
+        return $this->getHashOfString($str);
+    }
+
+    protected function addTestMerchantIdIfTestMode(array & $content)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $content['mid'] = $this->getTestMerchantId();
+        }
+    }
+
+    protected function createGatewayRefundEntity($attributes, $input)
+    {
+        $attributes['refund_id'] = $input['refund']['id'];
+        $attributes['payment_id'] = $input['payment']['id'];
+
+        $refund = $this->createGatewayEntity($attributes);
+
+        return $refund;
+    }
+
+
+    protected function lowerArrayKeys(array $array)
+    {
+        $ar = array();
+
+        foreach ($array as $key => $value)
+        {
+            $ar[strtolower($key)] = $value;
+        }
+
+        return $ar;
     }
 }
 
