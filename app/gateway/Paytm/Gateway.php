@@ -103,6 +103,7 @@ class Gateway extends Base\Gateway
 
         $values = $this->lowerArrayKeys($input['gateway']);
 
+        $values['received'] = 1;
         $payment->fill($values);
         $payment->saveOrFail();
 
@@ -147,6 +148,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::MISC_TRACE_CODE, ['paytm' => $content]);
 
         $attr = $this->lowerArrayKeys($content);
+        $attr['received'] = 1;
+
         $refund->fill($attr)->saveOrFail();
 
         if ($content['STATUS'] !== Status::SUCCESS)

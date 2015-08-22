@@ -24,7 +24,7 @@ class CreateAxisGateway extends Migration
 
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action', 10);
-
+            $table->boolean('received')->default(0);
             $table->boolean('genius')->default(0);
 
             $table->integer('vpc_Amount');
@@ -61,6 +61,7 @@ class CreateAxisGateway extends Migration
             $table->integer('updated_at');
 
             $table->index('genius');
+            $table->index('received');
 
             $table->foreign('payment_id')
                   ->references('id')

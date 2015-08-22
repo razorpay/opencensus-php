@@ -65,6 +65,7 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
+        $input['gateway']['received'] = 1;
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
 
@@ -100,6 +101,7 @@ class Gateway extends Base\Gateway
             $content['vpc_MerchTxnRef'] = $input['payment']['id'];
         }
 
+        $content['received'] = 1;
         $payment->fill($content)->saveOrFail();
 
         $this->verifyAmaTransactionResponse($content, $input);
@@ -121,6 +123,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
+        $content['received'] = 1;
         $refund->fill($content);
         $refund->saveOrFail();
 
