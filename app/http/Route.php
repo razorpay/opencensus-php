@@ -253,7 +253,8 @@ final class Route
                 'payment_auth_notify',
                 'payment_timeout',
                 'merchant_daily_report',
-                'payment_auto_capture'),
+                'payment_auto_capture',
+                'payment_verify_all'),
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),
