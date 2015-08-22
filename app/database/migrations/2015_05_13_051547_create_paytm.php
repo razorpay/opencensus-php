@@ -25,6 +25,7 @@ class CreatePaytm extends Migration
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action');
             $table->string('method');
+            $table->boolean('received')->default(0);
             $table->string('request_type');
             $table->string('txn_amount');
             $table->string('cust_id');
