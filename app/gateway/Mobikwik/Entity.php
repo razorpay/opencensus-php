@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
         'merchantname',
     );
 
-    protected $table = 'paytm';
+    protected $table = 'mobikwik';
 
     protected $guarded = array();
 
