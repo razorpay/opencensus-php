@@ -18,12 +18,11 @@
                 $table->engine = 'InnoDB';
 
                 $table->increments( 'id' );
-
+// base fields
                 $table->char( 'payment_id', UniqueIdEntity::ID_LENGTH );
                 $table->string( 'action' );
                 $table->string( 'method' );
-
-
+// request params
                 $table->string( 'email' );
                 $table->string( 'txnamount' )->nullable();
                 $table->string( 'cell' )->nullable();
@@ -31,13 +30,14 @@
                 $table->string( 'mid', 25 )->nullable();
                 $table->string( 'merchantname')->nullable();
                 $table->string( 'showmobile')->nullable();
-
+// response params
                 $table->string( 'statuscode')->nullable();
                 $table->string( 'statusmessage')->nullable();
                 $table->string( 'refid')->nullable();
-
+                $table->string( 'ispartial')->nullable();
+// rzp refund id
                 $table->char( 'refund_id', UniqueIdEntity::ID_LENGTH )->nullable();
-
+// timestamps
                 // Adds created_at and updated_at columns to the table
                 $table->integer( 'created_at' );
                 $table->integer( 'updated_at' );
