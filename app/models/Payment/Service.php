@@ -270,7 +270,7 @@ class Service extends Base\Service
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
-        $success = 0; $failed = 0;
+        $success = 0; $failed = 0; $time = time();
 
         foreach ($payments as $payment)
         {
@@ -289,8 +289,12 @@ class Service extends Base\Service
             }
         }
 
-        $results = ['success' => $success, 'failed' => $failed];
+        $time = time() - $time;
+
+        $results = ['success' => $success, 'failed' => $failed, 'time' => $time . ' secs'];
+
         $message = 'Payment verify result - ' . json_encode($results, JSON_PRETTY_PRINT);
+
         $this->app['slack']->send($message, '#transactions', 'transactions');
 
         return $results;
