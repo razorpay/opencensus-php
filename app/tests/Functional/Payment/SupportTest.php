@@ -81,9 +81,10 @@ class SupportTest extends TestCase
         $this->assertEquals(
             $content,
             [
-                'verified' => 0,
-                'failed' => 0,
-                'time' => '0 secs',
+                'verified'      => 0,
+                'failed'        => 0,
+                'timed out'     => 0,
+                'total time'    => '0 secs',
             ]);
     }
 }

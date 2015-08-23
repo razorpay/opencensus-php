@@ -139,7 +139,8 @@ class Gateway extends Base\Gateway
 
         if ($checksum !== $expectedChecksum)
         {
-            throw new Exception\BadRequestValidationFailureException('Failed checksum verification');
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed checksum verification');
         }
     }
 
@@ -219,21 +220,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [$response->body]);
-
-        $crawler = new Crawler($response->body, $request['url']);
-
-        $form = $crawler->filter('form')->form();
-
-        $values = $form->getValues();
-
-        $url = $values['REDIRECTURL'];
-
-        $content = [];
-        $parts = parse_url($url);
-        parse_str($parts['query'], $content);
+        $content = $this->processContentFromPaymentVerifyResponse($response, $request);
 
         $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
@@ -325,6 +312,39 @@ class Gateway extends Base\Gateway
         }
 
         return true;
+    }
+
+    protected function processContentFromPaymentVerifyResponse($response, $request)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [$response->body]);
+
+        try
+        {
+            $crawler = new Crawler($response->body, $request['url']);
+            $form = $crawler->filter('form')->form();
+            $values = $form->getValues();
+            $url = $values['REDIRECTURL'];
+        }
+        catch (\InvalidArgumentException $e)
+        {
+            $msg = $e->getMessage();
+
+            if ($msg === 'The current node list is empty')
+            {
+                // This happens because hdfc nb gateway is down.
+                // We will need to verify the request later.
+                throw new Exception\GatewayTimeoutException(
+                    'Payment verify request to Hdfc nb gateway timed out');
+            }
+        }
+
+        $content = [];
+        $parts = parse_url($url);
+        parse_str($parts['query'], $content);
+
+        return $content;
     }
 
     protected function getCallbackChecksum($input)
