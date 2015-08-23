@@ -2,9 +2,9 @@
 
 namespace Gateway\Hdfc;
 
-use Models\Base;
+use Gateway\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     protected $fields = array(
         'id',
