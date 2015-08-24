@@ -29,6 +29,9 @@
         <a href class="list-group-item" ng-click="downloadBeneficiaryFile()">
           Download Beneficiary File
         </a>
+        <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()">
+          Authorize Failed Payment
+        </a>
       </div>
     </div>
   </div>
@@ -154,6 +157,26 @@
 <script type="text/ng-template" id="verifyPaymentModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Verify Payment</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal" ng-init="id=''">
+      <div class="form-group">
+        <label for="payment-id" class="col-lg-2 control-label">Payment Id: </label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="payment" ng-model="id" placeholder="Payment Id"/>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(id)">OK</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="authorizeFailedPaymentModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Authorize Failed Payment</h3>
   </div>
   <div class="modal-body terminal-modal">
     <form class="form-horizontal" ng-init="id=''">

@@ -292,6 +292,13 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postAuthorizeFailedPayment($id)
+    {
+        list($error, $data) = (new Admin\Service)->authorizeFailedPayment($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getPricingList()
     {
         list($error, $data) = (new Admin\Service)->fetchPricingPlans();

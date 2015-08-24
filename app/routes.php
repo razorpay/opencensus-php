@@ -176,6 +176,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/payment/{id}/verify', 'AdminController@getVerifyPayment');
 
+        Route::post('/admin/payment/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
+
         Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
     });
 
