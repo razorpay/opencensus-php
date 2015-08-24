@@ -49,11 +49,9 @@ final class Route
         'merchant_set_all_banks'            => ['put',      'merchants/banks',                          'MerchantController@putBanksForAllMerchants'                    ],
         'merchant_daily_report'             => ['post',     'merchants/report',                         'MerchantController@sendDailyReport'                            ],
         'merchant_create'                   => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                         ],
-        'merchant_view_newsletter'          => ['get',      'merchants/newsletter/view',                'MerchantController@viewNewsletter'                             ],
         'merchant_fetch'                    => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                ],
         'merchant_edit'                     => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                ],
         'merchant_fetch_multiple'           => ['get',      'merchants',                                'MerchantController@getMerchants'                               ],
-        'merchant_send_newsletter'          => ['post',     'merchants/{list}/mail',                    'MerchantController@sendNewsletter'                             ],
         'merchant_create_key'               => ['post',     'merchants/{id}/keys',                      'MerchantController@postCreateKeys'                             ],
         'merchant_fetch_keys'               => ['get',      'merchants/{id}/keys',                      'MerchantController@getKeys'                                    ],
         'merchant_replace_key'              => ['put',      'merchants/{merchantId}/keys/{keyId}',      'MerchantController@putKeys'                                    ],
@@ -118,6 +116,7 @@ final class Route
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                             ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                 ],
         'send_test_newsletter'              => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                        ],
+        'send_newsletter'                   => ['post',     'admin/newsletter/mail',                    'AdminController@postSendNewsletter'                             ],
         'gateway_payment_callback_axis'     => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                                ],
         'gateway_payment_callback'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'gateway_payment_callback'          => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
@@ -223,8 +222,8 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
-        'merchant_view_newsletter',
-        'send_test_newsletter'
+        'send_test_newsletter',
+        'send_newsletter'
         );
 
     public static $proxy = array(

@@ -255,18 +255,4 @@ class MerchantController extends BaseController
         $counts = (new Models\Merchant\Service)->sendDailyReportForAllMerchants();
         return ApiResponse::json($counts);
     }
-
-    public function viewNewsletter()
-    {
-        Mail::send('emails.merchant.newsletter', [], function($message)
-        {
-            $message->to('nemo@razorpay.com');
-
-            $message->from('dory@mail.captnemo.in', 'Dory');
-
-            $message->subject('Razorpay Newsletter');
-        });
-
-        //return \Mail::send(, []);
-    }
 }

@@ -2,8 +2,10 @@
 
 namespace Models\Admin;
 
+use Carbon\Carbon;
 use cebe\markdown\MarkdownExtra;
 use Config;
+use Models\Merchant;
 use Mail;
 use Mailgun\Mailgun;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
@@ -49,33 +51,38 @@ class Newsletter
     {
         $repo = new Merchant\Repository();
         $merchants = [];
+
         switch($list)
         {
             case 'all':
-                $repo->select(['email', 'name'])->toArray();
+                $merchants = $repo->fetchAll()->toArray();
                 break;
 
             case 'live':
-                $repo->fetch([Entity::LIVE => 1])
+                $merchants = $repo->fetch([Entity::LIVE => 1])
                     ->select(['email', 'name'])->toArray();
                 break;
 
             case 'recent':
-                $repo->fetchRecentMerchants()
-                    ->select(['email', 'name'])->toArray();
+                $merchants = $repo->fetchRecentMerchants()
+                    ->select(['email', 'name'])->get();
                 break;
 
             case 'default':
                 break;
         }
 
+        $response = [];
+
         // Need to switch array key from email to address
-        foreach ($merchants as &$merchant) {
-            $merchant['address'] = $merchant['email'];
-            unset($merchant['email']);
+        foreach ($merchants as $merchant) {
+            $response[] = [
+                'address' => $merchant['email'],
+                'name'    => $merchant['name']
+            ];
         }
 
-        return $merchants;
+        return $response;
     }
 
     /**
@@ -87,11 +94,19 @@ class Newsletter
      */
     protected function getMerchantListChunks($lists)
     {
-        $lists = explode($lists, ',');
+        if(strpos($lists, ',') !== false)
+        {
+            $lists = explode($lists, ',');
+        }
+        else
+        {
+            $lists = [$lists];
+        }
+
         $merchants = [];
 
         foreach ($lists as $list) {
-            $merchants[] = $this->getEmailList($list);
+            $merchants = array_merge($merchants, $this->getEmailList($list));
         }
 
         return array_chunk($merchants, 1000);
@@ -104,14 +119,13 @@ class Newsletter
      */
     protected function createNewListOnMailgun()
     {
-        $timestamp = Carbon::now("Asia/Kolkata")->format('Y-m-d-H-i')
+        $timestamp = Carbon::now("Asia/Kolkata")->format('Y_m_d_H_i');
         $listAddress = $timestamp.'@'.$this->config['url'];
 
-        $this->getMailgunInstance()->post('/lists', [
+        $this->getMailgunInstance()->post('lists', [
             'address'       => $listAddress,
             'description'   => $this->getSubject(),
-            'name'          => "Newsletter at $timestamp",
-            'access_level'  => 'readonly'
+            'name'          => "Newsletter at $timestamp"
         ]);
 
         return $listAddress;
@@ -131,16 +145,20 @@ class Newsletter
         foreach ($chunks as $merchants) {
             // We take this list and push it to mailgun
 
-            $this->getMailgunInstance()->put("lists/$listAddress/members.json",[
+            $relativeUrl = "lists/$listAddress/members.json";
+
+            $this->getMailgunInstance()->post($relativeUrl,[
                 'upsert'     => true,
-                'members'    => json_encode($merchants);
+                'members'    => json_encode($merchants)
             ]);
         }
+
+        return $listAddress;
     }
 
     protected function getMailgunInstance()
     {
-        return new Mailgun($this->config['key']);
+        return new Mailgun($this->config['key'], 'api-mailgun-net-46ttasxaxkwp.runscope.net');
     }
 
     public function send()
@@ -159,10 +177,10 @@ class Newsletter
             $this->email = $this->createMailingList($this->lists);
         }
 
-        $this->sendEmail()
+        $this->sendEmail();
     }
 
-    public function sendSingleEmail()
+    public function sendEmail()
     {
         $view = ['html' => 'emails.merchant.newsletter'];
         $config = $this->config;
@@ -183,7 +201,7 @@ class Newsletter
 
     protected function getSubject()
     {
-        return implode(' ', $data['subject'])
+        return implode(' ', $this->data['subject']);
     }
 
     protected function getBody($msg)

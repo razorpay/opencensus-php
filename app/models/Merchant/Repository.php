@@ -90,9 +90,9 @@ class Repository extends Base\Repository
         $repo = $this->repo;
 
         // 00:00 Today
-        $today = Carbon::today("Asia/Kolkata")->timestamp;
+        $today = \Carbon\Carbon::today("Asia/Kolkata")->timestamp;
 
-        $start = Carbon::today("Asia/Kolkata")->subDays(3);
+        $start = \Carbon\Carbon::today("Asia/Kolkata")->subDays(3);
 
         return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
