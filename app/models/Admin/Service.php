@@ -89,4 +89,22 @@ class Service extends Base\Service
             return $errors;
         }
     }
+
+    public function sendNewsletter($input)
+    {
+        $errors = (new Validator)->validateInput('send_newsletter', $input);
+
+        if(empty($errors))
+        {
+            $mailer = new Newsletter($input['lists'],
+                [$input['subj_1'], $input['subj_2']], $input['msg']
+            );
+
+            return $mailer->send();
+        }
+        else
+        {
+            return $errors;
+        }
+    }
 }

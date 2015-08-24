@@ -36,16 +36,20 @@ class Newsletter
     {
         return [
             'subject'   =>  $subject,
-            'body'      =>  $this->getBody($msg),
-            'email'     =>  $this->email
+            'body'      =>  $this->getBody($msg)
         ];
     }
 
-    protected function getEmailList()
+    /**
+     * Returns all the merchants who match a particular filter
+     * @param  string $list valid list name
+     * @return array
+     */
+    protected function getEmailList($list)
     {
         $repo = new Merchant\Repository();
         $merchants = [];
-        switch($this->list)
+        switch($list)
         {
             case 'all':
                 $repo->select(['email', 'name'])->toArray();
@@ -55,6 +59,14 @@ class Newsletter
                 $repo->fetch([Entity::LIVE => 1])
                     ->select(['email', 'name'])->toArray();
                 break;
+
+            case 'recent':
+                $repo->fetchRecentMerchants()
+                    ->select(['email', 'name'])->toArray();
+                break;
+
+            case 'default':
+                break;
         }
 
         // Need to switch array key from email to address
@@ -63,24 +75,67 @@ class Newsletter
             unset($merchant['email']);
         }
 
+        return $merchants;
+    }
+
+    /**
+     * Given multiple lists in csv format, returns all merchants fulfilling
+     * any of the filters, with duplicates. Returned values are in a sub-array
+     * that is chunked in batch size of 1000
+     * @param  string $lists csv of valid list names
+     * @return array chunked list of merchants
+     */
+    protected function getMerchantListChunks($lists)
+    {
+        $lists = explode($lists, ',');
+        $merchants = [];
+
+        foreach ($lists as $list) {
+            $merchants[] = $this->getEmailList($list);
+        }
+
         return array_chunk($merchants, 1000);
     }
 
-    protected function updateMailingList()
+    /**
+     * Creates a new mailing list on mailgun and returns the
+     * generated mailing list address
+     * @return string generated email address of mailing list
+     */
+    protected function createNewListOnMailgun()
     {
-        // $chunks = $this->getEmailList();
+        $timestamp = Carbon::now("Asia/Kolkata")->format('Y-m-d-H-i')
+        $listAddress = $timestamp.'@'.$this->config['url'];
 
-        // // This contains the complete list addresss, not the alias
-        // $list = $this->data['list'];
+        $this->getMailgunInstance()->post('/lists', [
+            'address'       => $listAddress,
+            'description'   => $this->getSubject(),
+            'name'          => "Newsletter at $timestamp",
+            'access_level'  => 'readonly'
+        ]);
 
-        // foreach ($chunks as $merchants) {
-        //     // We take this list and push it to mailgun
+        return $listAddress;
+    }
 
-        //     $this->getMailgunInstance()->post("lists/$list/members.json",[
-        //         'upsert'     => true,
-        //         'members'    => json_encode($merchants);
-        //     ]);
-        // }
+    /**
+     * Creates a new mailing list for the given filters
+     * @param  string $lists list of applied filters in csv
+     * @return null
+     */
+    protected function createMailingList($lists)
+    {
+        $listAddress = $this->createNewListOnMailgun();
+
+        $chunks = $this->getMerchantListChunks($lists);
+
+        foreach ($chunks as $merchants) {
+            // We take this list and push it to mailgun
+
+            $this->getMailgunInstance()->put("lists/$listAddress/members.json",[
+                'upsert'     => true,
+                'members'    => json_encode($merchants);
+            ]);
+        }
     }
 
     protected function getMailgunInstance()
@@ -90,7 +145,6 @@ class Newsletter
 
     public function send()
     {
-        //return $this->data['body'];
         // No need to do anything if we are mocking
         if($this->config['mock'] === true)
         {
@@ -100,21 +154,20 @@ class Newsletter
         $data = $this->data;
         $config = $this->config;
 
-        if(isset($this->email))
+        if(isset($this->lists))
         {
-            return $this->sendSingleEmail($this->email);
+            $this->email = $this->createMailingList($this->lists);
         }
-        else
-        {
-            $this->updateMailingList();
-        }
+
+        $this->sendEmail()
     }
 
-    public function sendSingleEmail($email)
+    public function sendSingleEmail()
     {
         $view = ['html' => 'emails.merchant.newsletter'];
         $config = $this->config;
         $data   = $this->data;
+        $data['email'] = $this->email;
 
         Mail::send($view, $this->data, function($message) use ($config, $data)
         {
@@ -122,10 +175,15 @@ class Newsletter
 
             $message->from($config['from_email'], $config['from_name']);
 
-            $message->subject(implode(' ', $data['subject']));
+            $message->subject($this->getSubject());
         });
 
         return [];
+    }
+
+    protected function getSubject()
+    {
+        return implode(' ', $data['subject'])
     }
 
     protected function getBody($msg)
