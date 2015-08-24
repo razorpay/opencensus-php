@@ -92,8 +92,8 @@
       The test email will be sent to {{adminEmail}}
     </div>
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-info" ng-click="test(lists, subject_line_1, subject_line_2, message)">Send Test</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok()"
+    <button class="btn btn-info" ng-click="test(subject_line_1, subject_line_2, message)">Send Test</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(lists, subject_line_1, subject_line_2, message)"
       ng-confirm-click="Please make sure you have sent a test email to yourself before sending a newsletter. Click OK only after that."
     >OK</button>
   </div>

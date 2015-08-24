@@ -52,11 +52,7 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
     };
 
-    $scope.sendTestEmail = function(subj_1, subj_2, msg){
-      var data = {
-        subject: [subj_1, subj_2],
-        msg: msg
-      };
+    $scope.sendTestEmail = function(data){
 
       var request = $http({
         method: "post",
@@ -187,8 +183,18 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         size: 'lg'
       });
 
-      modalInstance.result.then(function(){
-      });
+      modalInstance.result.then(
+        function (data) {
+          if(data.lists) {
+            // Confirm email bhena hain
+          }
+          else {
+            $scope.sendTestEmail(data);
+          }
+        },
+        function (a,b,c,d) {
+          console.log([a,b,c,d]);
+        });
     }
 
     $scope.downloadBeneficiaryFile = function () {
@@ -280,10 +286,6 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
 
       $scope.message = "Hi %recipient_name%,\n\nThanks for doing business with Razorpay.";
 
-      var getLists = function(lists) {
-        return Object.keys(lists);
-      }
-
       $scope.lists = {
         all: true
       };
@@ -292,12 +294,22 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         $scope.adminEmail = admin.email;
       });
 
-      $scope.test = function (lists, subj_1, subj_2, msg) {
-        lists = getLists(lists);
+      $scope.test = function (subj_1, subj_2, msg) {
+        $modalInstance.close({
+          subj_1: subj_1,
+          subj_2: subj_2,
+          msg: msg
+        });
       };
 
-      $scope.ok = function () {
-        $modalInstance.close();
+      $scope.ok = function (lists, subj_1, subj_2, msg) {
+        lists = Object.keys(lists);
+        $modalInstance.close({
+          subj_1: subj_1,
+          subj_2: subj_2,
+          msg: msg,
+          lists: lists
+        });
       };
 
       $scope.cancel = function () {
@@ -306,8 +318,8 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
 }])
 .controller('downloadBeneficiaryFileCtrl', ['$scope', '$modalInstance', '$http',
   function ($scope, $modalInstance, $http) {
-      $scope.ok = function (id) {
-        $modalInstance.close(id);
+      $scope.ok = function (date) {
+        $modalInstance.close(date);
       };
 
       $scope.cancel = function () {

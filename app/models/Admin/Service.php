@@ -992,4 +992,29 @@ class Service extends Base\Service
 
         return $links;
     }
+
+    public function sendTestNewsletter($input)
+    {
+        $error = (new Admin\Validator)
+            ->validateInput('send_test_newsletter', $input)->messages();
+
+        if(empty($error))
+        {
+            $this->setApiCredentials();
+
+            try
+            {
+                $input['email'] = \Auth::admin()->get()->email;
+
+                $data = $this->api->admin->sendTestNewsletter($input)
+                    ->toArray();
+            }
+            catch(\Razorpay\Api\Errors\BadRequestError $e)
+            {
+                $error[] = $e->getMessage();
+            }
+        }
+
+        return [$error, null];
+    }
 }

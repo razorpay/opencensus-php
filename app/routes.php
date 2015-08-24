@@ -177,6 +177,8 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::get('/admin/payment/{id}/verify', 'AdminController@getVerifyPayment');
 
         Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
+
+        Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
     });
 
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
