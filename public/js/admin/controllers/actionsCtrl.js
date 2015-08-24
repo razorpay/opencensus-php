@@ -210,9 +210,25 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
 .controller('sendNewsletterCtrl', ['$scope', '$modalInstance', '$http', 'admin',
   function ($scope, $modalInstance, $http, admin) {
 
+      $scope.mailingLists = {
+        all:      'All merchants',
+        live:     'Live Merchants',
+        recent:   'Recently signed up merchants',
+        paytm:    'Paytm enabled merchants',
+        mobiqwik: 'Mobiqwik enabled merchants'
+      };
+
+      $scope.lists = {
+        all: true
+      };
+
       admin.identity().then(function(admin) {
         $scope.adminEmail = admin.email;
       });
+
+      $scope.test = function () {
+        console.debug(arguments);
+      };
 
       $scope.ok = function () {
         $modalInstance.close();

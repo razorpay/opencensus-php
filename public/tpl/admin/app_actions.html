@@ -41,43 +41,15 @@
     <h3 class="modal-title">Send Newsletter</h3>
   </div>
   <div class="modal-body newsletter-modal">
-    <form class="form-horizontal" ng-init="list=['all']">
+    <form class="form-horizontal">
       <div class="form-group">
-        <label class="col-lg-3 control-label" for="list">Email list</label>
+        <label class="col-lg-3 control-label" for="lists">Email list</label>
         <div class="col-lg-9">
-          <div class="checkbox">
+          <div class="checkbox" ng-repeat="(list, label) in mailingLists">
             <label class="i-checks">
-              <input name="list[]" type="checkbox" value="all">
+              <input ng-model="lists[list]" type="checkbox">
               <i></i>
-              All Merchants
-            </label>
-          </div>
-          <div class="checkbox">
-            <label class="i-checks">
-              <input name="list[]" type="checkbox" value="live">
-              <i></i>
-              Live Merchants
-            </label>
-          </div>
-          <div class="checkbox">
-            <label class="i-checks">
-              <input name="list[]" type="checkbox" value="recent">
-              <i></i>
-              Recently signed up merchants
-            </label>
-          </div>
-          <div class="checkbox">
-            <label class="i-checks">
-              <input disabled="" name="list[]" type="checkbox" value="paytm">
-              <i></i>
-              Paytm enabled merchants
-            </label>
-          </div>
-          <div class="checkbox">
-            <label class="i-checks">
-              <input disabled="" name="list[]" type="checkbox" value="mobiqwik">
-              <i></i>
-              Mobiqwik enabled merchants
+              {{label}}
             </label>
           </div>
           <span class="help-block m-b-none">Choose the mailing lists to which the message will be sent. You can select multiple lists and email will be sent
@@ -102,7 +74,7 @@
       <div class="form-group">
         <label for="message" class="col-lg-3">Message</label>
         <div class="col-lg-12 col-sm-12">
-          <textarea class="form-control" name="message" id="message" required="required"></textarea>
+          <textarea ng-model="message" class="form-control" name="message" id="message" required="required"></textarea>
           <span class="help-block m-b-none">You can use <a href="https://five.squarespace.com/display/ShowHelp?section=Markdown">markdown</a> for formatting. Please restrict yourself to level 1 headings</span>
         </div>
       </div>
@@ -113,7 +85,7 @@
       The test email will be sent to {{adminEmail}}
     </div>
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-info" ng-click="test()">Send Test</button>
+    <button class="btn btn-info" ng-click="test(lists, subject_line_1, subject_line_2, message)">Send Test</button>
     <button class="btn btn-primary modal-ok" ng-click="ok()">OK</button>
   </div>
 </script>
