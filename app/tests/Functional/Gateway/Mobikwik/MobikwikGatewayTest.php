@@ -66,50 +66,50 @@ class MobikwikGatewayTest extends TestCase
         $this->markTestIncomplete();
     }
 
-    public function testPayment3dsecureFailed()
-    {
-        $payment = $this->getDefaultPaymentArray();
+//    public function testPayment3dsecureFailed()
+//    {
+//        $payment = $this->getDefaultPaymentArray();
+//
+//        $payment = $this->runTestForAuthPayment();
+//    }
 
-        $payment = $this->runTestForAuthPayment();
-    }
+//    public function testVerifyPayment()
+//    {
+//        $this->markTestIncomplete();
+//
+//        $this->setMockGatewayTrue();
+//
+//        $payment = $this->doAuthAndCapturePayment($this->payment);
+//
+//        $id = $payment['id'];
+//
+//        $payment = $this->verifyPayment($id);
+//
+//        $this->assertEquals($payment['verified'], true);
+//    }
 
-    public function testVerifyPayment()
-    {
-        $this->markTestIncomplete();
+//    public function testRefundPayment()
+//    {
+//        $payment = $this->getDefaultNetbankingPaymentArray();
+//        $payment = $this->doAuthAndCapturePayment($payment);
+//
+//        $this->refundPayment($payment['id']);
+//
+//        $refund = $this->getLastEntity('mobikwik', true);
+//
+//        $this->assertTestResponse($refund);
+//    }
 
-        $this->setMockGatewayTrue();
-
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $id = $payment['id'];
-
-        $payment = $this->verifyPayment($id);
-
-        $this->assertEquals($payment['verified'], true);
-    }
-
-    public function testRefundPayment()
-    {
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $this->refundPayment($payment['id']);
-
-        $refund = $this->getLastEntity('mobikwik', true);
-
-        $this->assertTestResponse($refund);
-    }
-
-    public function testMobikwikWhenNotEnabled()
-    {
-        $this->ba->publicAuth();
-
-        $payment = $this->getDefaultPaymentArray();
-        $payment['method'] = 'wallet';
-        $payment['wallet'] = 'mobikwik';
-
-        $testData['request']['content'] = $payment;
-
-        $content = $this->startTest($testData);
-    }
+//    public function testMobikwikWhenNotEnabled()
+//    {
+//        $this->ba->publicAuth();
+//
+//        $payment = $this->getDefaultPaymentArray();
+//        $payment['method'] = 'wallet';
+//        $payment['wallet'] = 'mobikwik';
+//
+//        $testData['request']['content'] = $payment;
+//
+//        $content = $this->startTest($testData);
+//    }
 }
