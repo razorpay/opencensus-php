@@ -387,6 +387,27 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    public function authorizeFailedPayment($id)
+    {
+        $data = [];
+        $error = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->admin->fetchEntityById('payment', $id)
+                ->authorize()
+                ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
     public function lockMerchant($id)
     {
         $error = array();

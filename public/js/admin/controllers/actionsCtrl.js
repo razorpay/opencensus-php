@@ -77,6 +77,31 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
     };
 
+    $scope.authorizeFailedPayment = function(payment_id){
+      var request = $http({
+        method: "post",
+        url: "/admin/payment/" + payment_id + "/authorize_failed"
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          var payment = JSON.stringify(data.data.payment);
+          $scope.alerts.addAlert('success',
+            'Payment Authorized Successfully: '+payment, true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.openInitiateSetl = function () {
       var modalInstance = $modal.open({
         templateUrl: 'initiateSetlModalContent.html',
@@ -116,6 +141,21 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       modalInstance.result.then(
         function (id) {
           $scope.verifyPayment(id);
+        },
+        function () {
+          ;
+        });
+    };
+
+    $scope.openAuthorizeFailedPayment = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'authorizeFailedPaymentModalContent.html',
+        controller: 'authorizeFailedPaymentModalCtrl',
+      });
+
+      modalInstance.result.then(
+        function (id) {
+          $scope.authorizeFailedPayment(id);
         },
         function () {
           ;
@@ -189,6 +229,16 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       };
 }])
 .controller('verifyPaymentModalCtrl', ['$scope', '$modalInstance', '$http',
+  function ($scope, $modalInstance, $http) {
+      $scope.ok = function (id) {
+        $modalInstance.close(id);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+.controller('authorizeFailedPaymentModalCtrl', ['$scope', '$modalInstance', '$http',
   function ($scope, $modalInstance, $http) {
       $scope.ok = function (id) {
         $modalInstance.close(id);

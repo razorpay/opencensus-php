@@ -176,6 +176,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/payment/{id}/verify', 'AdminController@getVerifyPayment');
 
+        Route::post('/admin/payment/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
+
         Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
     });
 
@@ -202,4 +204,10 @@ Route::group(array('before' => 'guest.admin'), function()
 Route::group(array('before' => 'auth.internal'), function()
 {
     Route::post('/{mode}/transactions/{resource}', 'TransactionController@postIndex');
+});
+
+Route::group(array('before' => 'auth.cron'), function()
+{
+    Route::post('/{mode}/analytics/aggregations', 'TransactionController@updateAggregations');
+    Route::post('/{mode}/analytics/payment/aggregations', 'TransactionController@updatePaymentAggregations');
 });
