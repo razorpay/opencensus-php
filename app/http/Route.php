@@ -37,6 +37,7 @@ final class Route
         'payment_verify_all'                => ['get',      'payments/verify/all',                      'PaymentController@getVerifyPayments'                           ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                   ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                                  ],
+        'refund_hdfcnb'                     => ['get',      'refunds/hdfcnb/generate',                  'PaymentController@generateHdfcNetbankingRefunds'               ],
         'card_fetch_by_id'                  => ['get',      'cards/{id}',                               'PaymentController@getCard'                                     ],
         'card_fetch_multiple'               => ['get',      'cards',                                    'PaymentController@getCards'                                    ],
         'iin_fetch_by_iin'                  => ['get',      'iins/{id}',                                'CardController@getIin'                                         ],

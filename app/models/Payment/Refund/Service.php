@@ -10,6 +10,37 @@ use Trace\TraceCode;
 
 class Service extends Base\Service
 {
+    public function getHdfcNetbankingRefundsFile()
+    {
+        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+
+        $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
+            'HDFC', $from, $to);
+
+        $input = [];
+
+        foreach ($refunds as $refund)
+        {
+            $payment = $refund->payment;
+            $terminal = $payment->terminal;
+
+            $col['refund'] = $refund->toArray();
+            $col['payment'] = $refund->payment->toArray();
+            $col['terminal'] = $refund->payment->termnal->toArray();
+
+            $input[] = $col;
+        }
+
+        $gateway = $terminal->getGateway();
+
+        assert ($gateway === Payment\Gateway::NETBANKING_HDFC);
+
+        $action = 'generateRefundsExcel';
+
+        $file = Gateway::call($gateway, $action, $input, $this->mode);
+    }
+
     public function fetch($id)
     {
         Refund\Entity::verifyIdAndStripSign($id);
