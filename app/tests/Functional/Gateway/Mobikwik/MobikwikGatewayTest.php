@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Functional\Gateway\Paytm;
+namespace Tests\Functional\Gateway\Mobikwik;
 
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
@@ -11,43 +11,43 @@ class MobikwikGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/PaytmGatewayTestData.php';
+        $this->testDataFilePath = __DIR__.'/MobikwikGatewayTestData.php';
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paytm_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->gateway = 'paytm';
+        $this->gateway = 'mobikwik';
     }
 
-    public function testPayment()
+//    public function testPayment()
+//    {
+//        $this->setMockGatewayTrue();
+//
+//        $payment = $this->getDefaultPaymentArray();
+//        $payment = $this->doAuthAndCapturePayment($payment);
+//
+//        $payment = $this->getLastEntity('payment', true);
+//
+//        $this->assertTestResponse($payment);
+//
+//        $payment = $this->getLastEntity('mobikwik', true);
+//
+//        $this->assertArraySelectiveEquals(
+//            $this->testData['testPaymentMobikwikEntity'], $payment);
+//    }
+
+    public function testMobikwikWallet()
     {
-        $this->setMockGatewayTrue();
-
-        $payment = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertTestResponse($payment);
-
-        $payment = $this->getLastEntity('paytm', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentPaytmEntity'], $payment);
-    }
-
-    public function testPaytmWallet()
-    {
-        $this->fixtures->links['merchant']->enablePaytm('10000000000000');
+        $this->fixtures->links['merchant']->enableMobikwik('10000000000000');
 
         $this->setMockGatewayTrue();
 
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'wallet';
-        $payment['wallet'] = 'paytm';
+        $payment['wallet'] = 'mobikwik';
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
@@ -55,10 +55,10 @@ class MobikwikGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('paytm', true);
+        $payment = $this->getLastEntity('mobikwik', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaytmWalletEntity'], $payment);
+            $this->testData['testMobikwikWalletEntity'], $payment);
     }
 
     public function testFailedPayment()
@@ -95,18 +95,18 @@ class MobikwikGatewayTest extends TestCase
 
         $this->refundPayment($payment['id']);
 
-        $refund = $this->getLastEntity('paytm', true);
+        $refund = $this->getLastEntity('mobikwik', true);
 
         $this->assertTestResponse($refund);
     }
 
-    public function testPaytmWhenNotEnabled()
+    public function testMobikwikWhenNotEnabled()
     {
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'wallet';
-        $payment['wallet'] = 'paytm';
+        $payment['wallet'] = 'mobikwik';
 
         $testData['request']['content'] = $payment;
 
