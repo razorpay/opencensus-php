@@ -41,7 +41,7 @@ class MobikwikGatewayTest extends TestCase
 
     public function testMobikwikWallet()
     {
-        $this->fixtures->links['merchant']->enableMobikwik('10000000000000');
+//        $this->fixtures->links['merchant']->enableMobikwik('10000000000000');
 
         $this->setMockGatewayTrue();
 
