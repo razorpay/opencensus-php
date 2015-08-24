@@ -41,7 +41,7 @@ class PaytmGatewayTest extends TestCase
 
     public function testPaytmWallet()
     {
-        $this->fixtures->links['merchant']->enablePaytm('10000000000000');
+//        $this->fixtures->links['merchant']->enablePaytm('10000000000000');
 
         $this->setMockGatewayTrue();
 
