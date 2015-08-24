@@ -44,16 +44,24 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         payment_id: ['Payment Id']
       },
       hdfc: {
-        payment_id: ['Payment Id']
+        payment_id: ['Payment Id'],
+        received:   ['all', 0, 1]
       },
       axis_migs: {
-        payment_id: ['Payment Id']
+        payment_id: ['Payment Id'],
+        received:   ['all', 0, 1]
+      },
+      netbanking: {
+        payment_id: ['Payment Id'],
+        received:   ['all', 0, 1]
       },
       axis_genius: {
-        payment_id: ['Payment Id']
+        payment_id: ['Payment Id'],
+        received:   ['all', 0, 1]
       },
       paytm: {
-        payment_id: ['Payment Id']
+        payment_id: ['Payment Id'],
+        received:   ['all', 0, 1]
       }
     };
 
