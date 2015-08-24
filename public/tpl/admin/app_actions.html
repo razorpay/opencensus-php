@@ -29,7 +29,7 @@
         <a href class="list-group-item" ng-click="downloadBeneficiaryFile()">
           Download Beneficiary File
         </a>
-        <a href class="list-group-item" ng-click="sendNewsletter()">
+        <a href class="list-group-item" ng-click="openEditNewsletter()">
           Send Merchant Newsletter
         </a>
       </div>
@@ -41,27 +41,82 @@
     <h3 class="modal-title">Send Newsletter</h3>
   </div>
   <div class="modal-body newsletter-modal">
-    <form class="form-horizontal" ng-init="list='all'">
+    <form class="form-horizontal" ng-init="list=['all']">
       <div class="form-group">
-        <label class="col-lg-2 control-label">List</label>
-        <div class="col-lg-4">
-          <select class="form-control m-b" name="list" ng-model="list">
-            <option value="all">All Merchants</option>
-            <option value="live">Live Merchants</option>
-          </select>
+        <label class="col-lg-3 control-label" for="list">Email list</label>
+        <div class="col-lg-9">
+          <div class="checkbox">
+            <label class="i-checks">
+              <input name="list[]" type="checkbox" value="all">
+              <i></i>
+              All Merchants
+            </label>
+          </div>
+          <div class="checkbox">
+            <label class="i-checks">
+              <input name="list[]" type="checkbox" value="live">
+              <i></i>
+              Live Merchants
+            </label>
+          </div>
+          <div class="checkbox">
+            <label class="i-checks">
+              <input name="list[]" type="checkbox" value="recent">
+              <i></i>
+              Recently signed up merchants
+            </label>
+          </div>
+          <div class="checkbox">
+            <label class="i-checks">
+              <input disabled="" name="list[]" type="checkbox" value="paytm">
+              <i></i>
+              Paytm enabled merchants
+            </label>
+          </div>
+          <div class="checkbox">
+            <label class="i-checks">
+              <input disabled="" name="list[]" type="checkbox" value="mobiqwik">
+              <i></i>
+              Mobiqwik enabled merchants
+            </label>
+          </div>
+          <span class="help-block m-b-none">Choose the mailing lists to which the message will be sent. You can select multiple lists and email will be sent
+            exactly once at most to any merchant.
+          </span>
         </div>
       </div>
       <div class="form-group">
-        <label class="col-lg-2 control-label">Subject</label>
-        <input type="text" class="form-control m-b col-lg-4" name="subject" ng-model="subject">
+        <label class="col-lg-3 control-label" for="subject_line_1">Subject Line 1</label>
+        <div class="col-lg-9">
+          <input type="text" class="form-control m-b" maxlength="100" name="subject_line_1" ng-model="subject_line_1" placeholder="Razorpay">
+        </div>
       </div>
       <div class="form-group">
-        <label class="col-lg-4 control-label">Text (use markdown)</label>
-        <textarea class="form-control m-b" name="text" ng-model="text">
-        </textarea>
+        <label class="col-lg-3 control-label" for="subject_line_2">Subject Line 2</label>
+        <div class="col-lg-9">
+          <input type="text" class="form-control m-b" maxlength="100" name="subject_line_2" ng-model="subject_line_2" placeholder="Newsletter">
+          <span class="help-block m-b-none">Try to break your subject in two lines
+          equally. They will be joined together to form the subject.</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="message" class="col-lg-3">Message</label>
+        <div class="col-lg-12 col-sm-12">
+          <textarea class="form-control" name="message" id="message" required="required"></textarea>
+          <span class="help-block m-b-none">You can use <a href="https://five.squarespace.com/display/ShowHelp?section=Markdown">markdown</a> for formatting. Please restrict yourself to level 1 headings</span>
+        </div>
       </div>
     </form>
   </div>
+  <div class="modal-footer">
+    <div class="col-lg-12 col-sm-12" ng-model="adminEmail">
+      The test email will be sent to {{adminEmail}}
+    </div>
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-info" ng-click="test()">Send Test</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok()">OK</button>
+  </div>
+</script>
 <script type="text/ng-template" id="initiateSetlModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Initiate Settlement</h3>

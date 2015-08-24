@@ -120,13 +120,15 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         });
     };
 
-    $scope.sendNewsletter = function () {
+    $scope.openEditNewsletter = function () {
+
       var modalInstance = $modal.open({
         templateUrl: 'sendNewsletter.html',
         controller: 'sendNewsletterCtrl'
       });
 
-      //modalInstance.result.then()
+      modalInstance.result.then(function(){
+      });
     }
 
     $scope.downloadBeneficiaryFile = function () {
@@ -205,9 +207,20 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         $modalInstance.dismiss('cancel');
       };
 }])
-.controller('sendNewsletterCtrl', ['$scope', '$modalInstance', '$http',
-  function ($scope, $modalInstance, $http) {
-      //$scope.ok = function ()
+.controller('sendNewsletterCtrl', ['$scope', '$modalInstance', '$http', 'admin',
+  function ($scope, $modalInstance, $http, admin) {
+
+      admin.identity().then(function(admin) {
+        $scope.adminEmail = admin.email;
+      });
+
+      $scope.ok = function () {
+        $modalInstance.close();
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
 }])
 .controller('downloadBeneficiaryFileCtrl', ['$scope', '$modalInstance', '$http',
   function ($scope, $modalInstance, $http) {
