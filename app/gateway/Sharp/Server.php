@@ -13,11 +13,25 @@ class Server
 {
     public function __construct()
     {
-        ;
+        $this->trace = \Trace::getFacadeRoot();
     }
 
     public function action($input)
     {
+        if (isset($input['action']) === false)
+        {
+            $this->trace->error(
+                TraceCode::MISC_TRACE_CODE,
+                [
+                    'message' => 'Sharp gateway, action field not set',
+                    'input' => $input
+                ]);
+
+            $input['success'] = 'F';
+
+            return $this->authSubmit($input);
+        }
+
         $action = $input['action'];
 
         return $this->$action($input);
@@ -50,6 +64,12 @@ class Server
 
     public function authSubmit($input)
     {
+        if (isset($input['callback_url']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Input fields not set properly');
+        }
+
         $url = $input['callback_url'];
 
         $authorized = false;
