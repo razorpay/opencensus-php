@@ -20,7 +20,7 @@ class Admin extends Entity
 
     public function sendTestNewsletter($params)
     {
-        $relativeUrl = $this->getEntityUrl(). '/newsletter/test';
+        $relativeUrl = $this->getEntityUrl(). 'newsletter/test';
 
         return $this->request('POST', $relativeUrl, $params);
     }

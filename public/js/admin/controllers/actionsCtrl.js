@@ -57,7 +57,8 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       var request = $http({
         method: "post",
         url: "/admin/newsletter/test",
-        data: data
+        data: data,
+        transformRequest: transformRequestAsFormPost,
       });
 
       request

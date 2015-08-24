@@ -995,26 +995,18 @@ class Service extends Base\Service
 
     public function sendTestNewsletter($input)
     {
-        $error = (new Admin\Validator)
-            ->validateInput('send_test_newsletter', $input)->messages();
+        $this->setApiCredentials();
 
-        if(empty($error))
+        try
         {
-            $this->setApiCredentials();
+            $input['email'] = \Auth::admin()->get()->email;
 
-            try
-            {
-                $input['email'] = \Auth::admin()->get()->email;
-
-                $data = $this->api->admin->sendTestNewsletter($input)
-                    ->toArray();
-            }
-            catch(\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error[] = $e->getMessage();
-            }
+            return $this->api->admin->sendTestNewsletter($input)
+                ->toArray();
         }
-
-        return [$error, null];
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage()];
+        }
     }
 }
