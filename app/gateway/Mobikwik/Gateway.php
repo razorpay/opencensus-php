@@ -127,7 +127,9 @@ class Gateway extends Base\Gateway
         $content['email'] = $payment['email'];
         $content['amount'] = $payment['amount'];
 
-        $content['checksum'] = $this->getHashForRefundRequest($content['mid'], $content['orderid'], $content['email'], $content['amount'] );
+        $content['checksum'] = $this->getHashForRefundRequest($content['mid'],
+                                                        $content['orderid'], $content['email'],
+                                                        $content['amount'] );
 
 
         $content = http_build_query($content);
@@ -289,16 +291,6 @@ class Gateway extends Base\Gateway
     }
 
 
-    protected function lowerArrayKeys(array $array)
-    {
-        $ar = array();
 
-        foreach ($array as $key => $value)
-        {
-            $ar[strtolower($key)] = $value;
-        }
-
-        return $ar;
-    }
 }
 
