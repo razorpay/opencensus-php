@@ -13,6 +13,14 @@ class Entity extends Base\PublicEntity
         'action',
         'orderid',
         'merchantname',
+        'email',
+        'txnamount',
+        'cell',
+        'showmobile',
+        'statuscode',
+        'statusmessage',
+        'refid',
+        'ispartial'
     );
 
     protected $fillable = array(
@@ -22,6 +30,14 @@ class Entity extends Base\PublicEntity
         'action',
         'orderid',
         'merchantname',
+        'email',
+        'txnamount',
+        'cell',
+        'showmobile',
+        'statuscode',
+        'statusmessage',
+        'refid',
+        'ispartial'
     );
 
     protected $table = 'mobikwik';
