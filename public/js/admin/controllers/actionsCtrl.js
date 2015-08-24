@@ -285,7 +285,7 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         mobiqwik: 'Mobiqwik enabled merchants'
       };
 
-      $scope.message = "Hi %recipient_name%,\n\nThanks for doing business with Razorpay.";
+      $scope.message = "Hi %recipient_name%,\n\nThanks for doing business with Razorpay.\n\n# section heading\n\ncontent\ncontent\n\nmore content\n\n---\n\nTeam Razorpay";
 
       $scope.lists = {
         all: true
