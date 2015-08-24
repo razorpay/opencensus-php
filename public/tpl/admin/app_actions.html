@@ -41,41 +41,48 @@
     <h3 class="modal-title">Send Newsletter</h3>
   </div>
   <div class="modal-body newsletter-modal">
-    <form class="form-horizontal">
-      <div class="form-group">
-        <label class="col-lg-3 control-label" for="lists">Email list</label>
-        <div class="col-lg-9">
-          <div class="checkbox" ng-repeat="(list, label) in mailingLists">
-            <label class="i-checks">
-              <input ng-model="lists[list]" type="checkbox">
-              <i></i>
-              {{label}}
-            </label>
+    <form class="form-horizontal row">
+      <div class="col-lg-5">
+        <div class="form-group">
+          <label class="col-lg-3 control-label" for="lists">Email list</label>
+          <div class="col-lg-9">
+            <div class="checkbox" ng-repeat="(list, label) in mailingLists">
+              <label class="i-checks">
+                <input ng-model="lists[list]" type="checkbox">
+                <i></i>
+                {{label}}
+              </label>
+            </div>
+            <span class="help-block m-b-none">Choose the mailing lists to which the message will be sent. You can select multiple lists and email will be sent
+              exactly once at most to any merchant.
+            </span>
           </div>
-          <span class="help-block m-b-none">Choose the mailing lists to which the message will be sent. You can select multiple lists and email will be sent
-            exactly once at most to any merchant.
-          </span>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-3 control-label" for="subject_line_1">Subject Line 1</label>
+          <div class="col-lg-9">
+            <input type="text" class="form-control m-b" maxlength="100" name="subject_line_1" ng-model="subject_line_1" placeholder="Razorpay">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-3 control-label" for="subject_line_2">Subject Line 2</label>
+          <div class="col-lg-9">
+            <input type="text" class="form-control m-b" maxlength="100" name="subject_line_2" ng-model="subject_line_2" placeholder="Newsletter">
+            <span class="help-block m-b-none">Try to break your subject in two lines
+            equally. They will be joined together to form the subject.</span>
+          </div>
         </div>
       </div>
-      <div class="form-group">
-        <label class="col-lg-3 control-label" for="subject_line_1">Subject Line 1</label>
-        <div class="col-lg-9">
-          <input type="text" class="form-control m-b" maxlength="100" name="subject_line_1" ng-model="subject_line_1" placeholder="Razorpay">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="col-lg-3 control-label" for="subject_line_2">Subject Line 2</label>
-        <div class="col-lg-9">
-          <input type="text" class="form-control m-b" maxlength="100" name="subject_line_2" ng-model="subject_line_2" placeholder="Newsletter">
-          <span class="help-block m-b-none">Try to break your subject in two lines
-          equally. They will be joined together to form the subject.</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="message" class="col-lg-3">Message</label>
-        <div class="col-lg-12 col-sm-12">
-          <textarea ng-model="message" class="form-control" name="message" id="message" required="required"></textarea>
-          <span class="help-block m-b-none">You can use <a href="https://five.squarespace.com/display/ShowHelp?section=Markdown">markdown</a> for formatting. Please restrict yourself to level 1 headings</span>
+      <div class="col-lg-7">
+        <div class="form-group">
+          <label for="message" class="col-lg-3">Message</label>
+          <div class="col-lg-12 col-sm-12">
+            <textarea rows="17" ng-model="message" class="form-control" name="message" id="message" required="required"></textarea>
+            <span class="help-block m-b-none">You can use <a href="https://five.squarespace.com/display/ShowHelp?section=Markdown">markdown</a> for formatting. Please restrict yourself to level 1 headings. <br>
+              You can use <code>%recipient_email%</code> and <code>%recipient_name%</code>
+              to match the merchant email and name.
+            </span>
+          </div>
         </div>
       </div>
     </form>
@@ -86,7 +93,9 @@
     </div>
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
     <button class="btn btn-info" ng-click="test(lists, subject_line_1, subject_line_2, message)">Send Test</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok()">OK</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok()"
+      ng-confirm-click="Please make sure you have sent a test email to yourself before sending a newsletter. Click OK only after that."
+    >OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="initiateSetlModalContent.html">

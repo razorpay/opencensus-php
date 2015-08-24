@@ -52,6 +52,65 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
     };
 
+    $scope.sendTestEmail = function(subj_1, subj_2, msg){
+      var data = {
+        subject: [subj_1, subj_2],
+        msg: msg
+      };
+
+      var request = $http({
+        method: "post",
+        url: "/admin/newsletter/test",
+        data: data
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Test mail sent successfully to ' + data.data.email, true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.sendNewsletter = function(lists, subj_1, subj_2, msg){
+      var data = {
+        subject: [subj_1, subj_2],
+        msg: msg,
+        lists: lists
+      };
+
+      var request = $http({
+        method: "post",
+        url: "/admin/newsletter",
+        data: data
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Newsletter sent successfully', true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.verifyPayment = function(payment_id){
       var request = $http({
                     method: "get",
@@ -124,7 +183,8 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
 
       var modalInstance = $modal.open({
         templateUrl: 'sendNewsletter.html',
-        controller: 'sendNewsletterCtrl'
+        controller: 'sendNewsletterCtrl',
+        size: 'lg'
       });
 
       modalInstance.result.then(function(){
@@ -218,6 +278,12 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         mobiqwik: 'Mobiqwik enabled merchants'
       };
 
+      $scope.message = "Hi %recipient_name%,\n\nThanks for doing business with Razorpay.";
+
+      var getLists = function(lists) {
+        return Object.keys(lists);
+      }
+
       $scope.lists = {
         all: true
       };
@@ -226,8 +292,8 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         $scope.adminEmail = admin.email;
       });
 
-      $scope.test = function () {
-        console.debug(arguments);
+      $scope.test = function (lists, subj_1, subj_2, msg) {
+        lists = getLists(lists);
       };
 
       $scope.ok = function () {
