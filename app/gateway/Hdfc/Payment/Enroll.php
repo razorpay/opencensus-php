@@ -138,7 +138,7 @@ trait Enroll
         //
         $data['currencycode'] = self::INR_CODE;
 
-        $data['action'] = Action::AUTHORIZE;
+        $data['action'] = Action::PURCHASE;
     }
 
     /**

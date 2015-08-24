@@ -37,7 +37,7 @@ class Network
         self::DICL,
         self::DISC,
         self::JCB,
-        self::MAES,
+//        self::MAES,
         self::MC,
         self::RUPAY,
         self::UNP,
