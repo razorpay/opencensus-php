@@ -31,7 +31,8 @@ return [
     ],
 
     'testPaymentBilldeskEntity' => [
-        'action'=> 'authorize',
+        'action' => 'authorize',
+        'received' => true,
         'BankID'=> 'ICI',
         'CurrencyType'=> 'INR',
         'ItemCode'=> 'DIRECT',
@@ -52,6 +53,7 @@ return [
 //        'id'=> '76',
 //        'payment_id'=> '3PgPULSRMSgExV',
         'action'=> 'refund',
+        'received' => true,
 //        'MerchantID'=> 'random',
 //        'CustomerID'=> '3PgPULSRMSgExV',
         'TxnAmount'=> '5.00',

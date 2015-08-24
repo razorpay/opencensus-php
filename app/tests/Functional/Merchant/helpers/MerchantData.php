@@ -202,6 +202,11 @@ return [
         'request' => [
             'content' => [
                 'amount' => '500',
+                'currency' => 'INR',
+                'email' => 'a@b.com',
+                'contact' => '8383883838',
+                'method' => 'netbanking',
+                'bank' => 'HDFC',
             ],
             'url' => '/payments',
             'method' => 'post',

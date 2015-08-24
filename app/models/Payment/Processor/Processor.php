@@ -170,21 +170,18 @@ class Processor
         $this->trace->info(
             TraceCode::MISC_TRACE_CODE,
             ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive(),
-             'reach' => true]);
+             'live' => $merchant->isLive()]);
+    }
 
+    protected function verifyMerchantIsLiveForLiveRequest()
+    {
         // On live request, ensure that merchant isn't blocked temporarily
-        if ($merchant->isLive() === false)
+        if (($this->mode === Mode::LIVE) and
+            ($this->merchant->isLive() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
-
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive(),
-             'reach' => false]);
     }
 
     /**
@@ -303,6 +300,13 @@ class Processor
 
         $card = $this->payment->card()->first();
         return $this->payment;
+    }
+
+    protected function setPayment($payment)
+    {
+        $this->payment = $payment;
+
+        $card = $this->payment->card()->first();
     }
 
     protected function tracePaymentNewRequest($input)

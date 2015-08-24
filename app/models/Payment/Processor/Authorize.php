@@ -18,27 +18,15 @@ trait Authorize
 {
     public function authorize($payment, $input)
     {
+        $this->verifyMerchantIsLiveForLiveRequest();
+
         $gatewayInput = [];
+
+        $this->verifyPaymentMethodEnabled($payment);
 
         if ($payment->isMethod(Payment\Method::CARD))
         {
-            $this->verifyCardEnabled($payment);
-
-            $cardData = $this->createCardEntity($input);
-
-            (new Card\Repository)->saveOrFail($payment->card);
-
-            $gatewayInput['card'] = $cardData;
-        }
-
-        if ($payment->isMethod(Payment\Method::NETBANKING))
-        {
-            $this->verifyBankEnabled($payment);
-        }
-
-        if ($payment->isMethod(Payment\Method::WALLET))
-        {
-            $this->verifyWalletEnabled($payment);
+            $gatewayInput['card'] = $this->createCardEntity($input);
         }
 
         (new TerminalPicker)->selectTerminal($payment, $this->mode);
@@ -66,6 +54,61 @@ trait Authorize
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    public function authorizeFailedPayment($payment)
+    {
+        $this->setPayment($payment);
+
+        if ($payment->isFailed() === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Non failed payment given for authorization where failed payment is needed',
+                ['payment_id' => $payment->getPublicId()]);
+        }
+
+        $data = array(
+            'payment' => $payment->toArray(),
+        );
+
+        $this->repo->transaction(function() use ($data)
+        {
+            $this->repo->lockForUpdate($this->payment->getKey());
+
+            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+
+            if ($flag === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment expected to have succeded on the gateway has actually not. ' .
+                    'Should not have called this function in this scenario');
+            }
+
+            $payment = $this->payment;
+
+            $payment->setErrorNull();
+            $payment->setVerified(true);
+
+            $this->postPaymentAuthorizeProcessing($payment);
+
+            $this->repo->saveOrFail($payment);
+        });
+
+        $traceData = array(
+            'payment_id' => $payment->getId(),
+            'error' => $payment->getErrorDetails(),
+        );
+
+        $data['message'] = 'Payment failed earlier converted to authorized';
+        $data['payment'] = $payment->toArrayAdmin();
+
+        $this->notifyInSlack($data);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+            $traceData);
+
+        return $data;
     }
 
     /**
@@ -114,6 +157,24 @@ trait Authorize
         }
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function verifyPaymentMethodEnabled($payment)
+    {
+        if ($payment->isMethod(Payment\Method::CARD))
+        {
+            $this->verifyCardEnabled($payment);
+        }
+
+        if ($payment->isMethod(Payment\Method::NETBANKING))
+        {
+            $this->verifyBankEnabled($payment);
+        }
+
+        if ($payment->isMethod(Payment\Method::WALLET))
+        {
+            $this->verifyWalletEnabled($payment);
+        }
     }
 
     protected function getReturnRequestDataForMerchant($payment)
@@ -285,6 +346,8 @@ trait Authorize
         }
 
         $this->payment->card()->associate($card);
+
+        (new Card\Repository)->saveOrFail($card);
 
         return $cardData;
     }

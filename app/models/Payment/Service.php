@@ -53,7 +53,7 @@ class Service extends Base\Service
 
         $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
 
-        $data = $this->processor()->verify($id);
+        $data = $this->processor()->verify($payment);
 
         return $data;
     }
@@ -63,6 +63,19 @@ class Service extends Base\Service
         $this->processor()->cancel($id);
 
         return ['success' => true];
+    }
+
+    public function authorizeFailed($id)
+    {
+        $payment = $this->core->retrieveById($id);
+
+        $merchantId = $payment->getMerchantId();
+
+        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $data = $this->processor()->authorizeFailedPayment($payment);
+
+        return $data;
     }
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
@@ -265,7 +278,7 @@ class Service extends Base\Service
             {
                 $this->merchant = $payment->merchant;
 
-                $res = $this->processor()->verify($payment->getPublicId());
+                $res = $this->processor()->verify($payment);
 
                 $success++;
             }

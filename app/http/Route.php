@@ -24,6 +24,7 @@ final class Route
         'payment_capture'                   => ['post',     'payments/{id}/capture',                    'PaymentController@postCapture'                                 ],
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                   ],
         'payment_cancel'                    => ['get',      'payments/{id}/cancel',                     'PaymentController@postCancel'                                  ],
+        'payment_authorize_failed'          => ['post',     'payments/{id}/authorize_failed',           'PaymentController@postAuthorizeFailedPayment'                  ],
         'payment_fetch_by_id'               => ['get',      'payments/{id}',                            'PaymentController@getPayment'                                  ],
         'payment_fetch_multiple'            => ['get',      'payments',                                 'PaymentController@getPayments'                                 ],
         'payment_fetch_refunds'             => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                        ],
@@ -48,10 +49,11 @@ final class Route
         'merchant_set_all_banks'            => ['put',      'merchants/banks',                          'MerchantController@putBanksForAllMerchants'                    ],
         'merchant_daily_report'             => ['post',     'merchants/report',                         'MerchantController@sendDailyReport'                            ],
         'merchant_create'                   => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                         ],
+        'merchant_view_newsletter'          => ['get',      'merchants/newsletter/view',                'MerchantController@viewNewsletter'                             ],
         'merchant_fetch'                    => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                ],
         'merchant_edit'                     => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                ],
         'merchant_fetch_multiple'           => ['get',      'merchants',                                'MerchantController@getMerchants'                               ],
-        'merchant_send_newsletter'          => ['post',     'merchants/{list}/mail',                    'MerchantController@sendNewsletter'                               ],
+        'merchant_send_newsletter'          => ['post',     'merchants/{list}/mail',                    'MerchantController@sendNewsletter'                             ],
         'merchant_create_key'               => ['post',     'merchants/{id}/keys',                      'MerchantController@postCreateKeys'                             ],
         'merchant_fetch_keys'               => ['get',      'merchants/{id}/keys',                      'MerchantController@getKeys'                                    ],
         'merchant_replace_key'              => ['put',      'merchants/{merchantId}/keys/{keyId}',      'MerchantController@putKeys'                                    ],
@@ -204,6 +206,7 @@ final class Route
         'daily_setl_fetch_by_id',
         'daily_setl_fetch_multiple',
         'payment_verify',
+        'payment_authorize_failed',
         'payment_timeout',
         'payment_auth_notify',
         'payment_auto_capture',
@@ -219,6 +222,7 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
+        'merchant_view_newsletter'
         );
 
     public static $proxy = array(

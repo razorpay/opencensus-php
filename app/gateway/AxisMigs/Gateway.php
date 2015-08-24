@@ -92,6 +92,7 @@ class Gateway extends Base\Gateway
                     'payment_id' => $input['payment']['id'],
                     'gateway' => $this->gateway,
                     'vpc_TxnResponseCode' => null,
+                    'content' => $content,
                 ]
             );
 
@@ -446,7 +447,7 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
                     $code,
                     $txnResponseCode,
-                    $input['gateway']['vpc_Message']);
+                    $msg);
     }
 
     protected function returnIfRefundAmountMatches($content, $input)

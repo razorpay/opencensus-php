@@ -21,6 +21,7 @@ class Repository extends Base\Repository
         Entity::BANK            => 'sometimes',
         Entity::METHOD          => 'sometimes',
         Entity::GATEWAY         => 'sometimes',
+        Entity::EMAIL           => 'sometimes',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
@@ -117,13 +118,18 @@ class Repository extends Base\Repository
 
         return $repo::whereNull(Payment\Entity::VERIFIED)
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
+                    ->where(function($query)
+                        {
+                            $query->where(Payment\Entity::GATEWAY, '=', Payment\Gateway::BILLDESK)
+                                  ->orWhere(Payment\Entity::GATEWAY, '=', Payment\Gateway::NETBANKING_HDFC);
+                        })
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
                     ->get();
     }
 
     protected function addQueryParamBank($query, $params)
     {
-        if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
+        if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,

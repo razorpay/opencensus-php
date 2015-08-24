@@ -263,4 +263,18 @@ class MerchantController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function viewNewsletter()
+    {
+        Mail::send('emails.merchant.newsletter', [], function($message)
+        {
+            $message->to('nemo@razorpay.com');
+
+            $message->from('dory@mail.captnemo.in', 'Dory');
+
+            $message->subject('Razorpay Newsletter');
+        });
+
+        //return \Mail::send(, []);
+    }
 }

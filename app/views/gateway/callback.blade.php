@@ -33,6 +33,11 @@ if (window.CheckoutBridge) {
         window.opener.postMessage(data, '*');
     }
 }
+
+function razorpay_callback(){
+  return JSON.stringify(data);
+}
+
 </script>
 
 <pre>
