@@ -69,4 +69,24 @@ class Service extends Base\Service
 
         return $namespace.'\Repository';
     }
+
+    public function sendTestNewsletter($input)
+    {
+        $errors = (new Validator)->validateInput('send_test_newsletter', $input);
+
+        if(empty($errors))
+        {
+            // Now we send the newsletter
+            $mailer = new Newsletter($input['email'],
+                [$input['subj_1'], $input['subj_2']], $input['msg'],
+                true // Test Email to self
+            );
+
+            return $mailer->send();
+        }
+        else
+        {
+            return $errors;
+        }
+    }
 }

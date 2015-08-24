@@ -117,6 +117,7 @@ final class Route
         'mock_netbanking_payment'           => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'                   ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                             ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                 ],
+        'send_test_newsletter'              => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                        ],
         'gateway_payment_callback_axis'     => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                                ],
         'gateway_payment_callback'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'gateway_payment_callback'          => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
@@ -222,7 +223,8 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
-        'merchant_view_newsletter'
+        'merchant_view_newsletter',
+        'send_test_newsletter'
         );
 
     public static $proxy = array(

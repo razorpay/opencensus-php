@@ -24,12 +24,6 @@ class Validator extends Base\Validator
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
     );
 
-    protected static $sendNewsletterRules = [
-        'subject'       =>  'required|alpha_space_num|max:200',
-        'text'          =>  'required',
-        'list'          =>  'required|in:all,paytm,card,netbanking,live'
-    ];
-
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {
         $attributes = array(

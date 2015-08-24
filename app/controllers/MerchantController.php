@@ -256,14 +256,6 @@ class MerchantController extends BaseController
         return ApiResponse::json($counts);
     }
 
-    public function sendNewsletter($list)
-    {
-        $input = Input::all();
-        $data = (new Merchant\Service)->sendNewsletter($list, $input);
-
-        return ApiResponse::json($data);
-    }
-
     public function viewNewsletter()
     {
         Mail::send('emails.merchant.newsletter', [], function($message)
