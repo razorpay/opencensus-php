@@ -5,6 +5,37 @@
     <meta name="viewport" content="width=device-width"/>
   </head>
   <body class="body newsletter" style="background:#EBECEE;">
+    <table class="row"> <!-- Styles go on the row -->
+    <tr>
+      <td class="center" align="center"> <!-- Center the container -->
+        <center>
+
+          <table class="container"> <!-- Container restricts the content width -->
+            <tr>
+              <td class="wrapper last"> <!-- Wrapper stays on the inner table -->
+
+                <table class="twelve columns">
+                  <tr class="newsletter-header-bg">
+                    <td>
+                      <h1>
+                        Hello
+                      </h1>
+                      <h1>
+                        World
+                      </h1>
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+          </table>
+
+        </center>
+      </td>
+    </tr>
+  </table>
     <table class="container" style="background:white;">
       <tr>
         <td>
