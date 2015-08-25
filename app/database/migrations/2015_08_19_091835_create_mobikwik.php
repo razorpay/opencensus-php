@@ -26,7 +26,7 @@
 // request params
                 $table->string( 'email' );
                 $table->string( 'amount' );
-                $table->string( 'cell' );
+                $table->string( 'cell' )->nullable();
                 $table->char( 'orderid', UniqueIdEntity::ID_LENGTH );
                 $table->string( 'mid', 25 )->nullable();
                 $table->string( 'merchantname',50)->nullable();
