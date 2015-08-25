@@ -25,7 +25,7 @@
                 $table->boolean('received')->default(0);
 // request params
                 $table->string( 'email' );
-                $table->string( 'txnamount' )->nullable();
+                $table->string( 'amount' )->nullable();
                 $table->string( 'cell' )->nullable();
                 $table->string( 'orderid', 25 )->nullable();
                 $table->string( 'mid', 25 )->nullable();
