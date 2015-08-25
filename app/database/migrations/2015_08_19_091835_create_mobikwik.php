@@ -43,7 +43,7 @@
                 // Adds created_at and updated_at columns to the table
                 $table->integer( 'created_at' );
                 $table->integer( 'updated_at' );
-
+                $table->index('received');
                 $table->foreign( 'payment_id' )
                     ->references( 'id' )
                     ->on( 'payments' )

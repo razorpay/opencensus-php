@@ -19,7 +19,7 @@ class Gateway extends Base\Gateway
     protected $sortRequestContent = false;
 
     public function authorize(array $input)
-    {sd($input);
+    {
         parent::authorize($input);
         $content = array(
             'email'         => $input['payment']['email'],
