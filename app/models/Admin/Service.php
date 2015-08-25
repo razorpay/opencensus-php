@@ -1001,12 +1001,27 @@ class Service extends Base\Service
         {
             $input['email'] = \Auth::admin()->get()->email;
 
-            return $this->api->admin->sendTestNewsletter($input)
-                ->toArray();
+            return [null, $this->api->admin->sendTestNewsletter($input)
+                ->toArray()];
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return [$e->getMessage()];
+            return [$e->getMessage(), null];
+        }
+    }
+
+    public function sendNewsletter($input)
+    {
+        $this->setApiCredentials();
+
+        try
+        {
+            return [null, $this->api->admin->sendNewsletter($input)
+                ->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
         }
     }
 }

@@ -78,23 +78,21 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
     };
 
-    $scope.sendNewsletter = function(lists, subj_1, subj_2, msg){
-      var data = {
-        subject: [subj_1, subj_2],
-        msg: msg,
-        lists: lists
-      };
-
+    $scope.sendNewsletter = function(data){
       var request = $http({
         method: "post",
-        url: "/admin/newsletter",
-        data: data
+        url: "/admin/newsletter/mail",
+        data: data,
+        transformRequest: transformRequestAsFormPost,
       });
 
       request
       .success(function(data){
         if(data.success) {
-          $scope.alerts.addAlert('success', 'Newsletter sent successfully', true);
+          $scope.alerts.addAlert('success', 'Test mail sent successfully to '
+              + data.data.count + ' addresses ('
+              + data.data.email +')',
+          true);
         }
         else {
           $scope.alerts.resetAlerts();
@@ -188,13 +186,13 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         function (data) {
           if(data.lists) {
             // Confirm email bhena hain
+            $scope.sendNewsletter(data);
           }
           else {
             $scope.sendTestEmail(data);
           }
         },
-        function (a,b,c,d) {
-          console.log([a,b,c,d]);
+        function () {
         });
     }
 
@@ -304,12 +302,11 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       };
 
       $scope.ok = function (lists, subj_1, subj_2, msg) {
-        lists = Object.keys(lists);
         $modalInstance.close({
+          lists: Object.keys(lists).join(),
           subj_1: subj_1,
           subj_2: subj_2,
-          msg: msg,
-          lists: lists
+          msg: msg
         });
       };
 

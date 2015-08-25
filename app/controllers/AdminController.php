@@ -397,7 +397,15 @@ class AdminController extends BaseController
     {
         $input = Input::all();
 
-        $error = (new Admin\Service)->sendTestNewsletter($input);
-        return AppResponse::jsonResponse($error);
+        list($error, $data) = (new Admin\Service)->sendTestNewsletter($input);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postSendNewsletter()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->sendNewsletter($input);
+        return AppResponse::jsonResponse($error, $data);
     }
 }
