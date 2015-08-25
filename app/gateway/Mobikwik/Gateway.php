@@ -58,7 +58,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['gateway']['orderid'], Action::AUTHORIZE);
-
+        $input['received'] = 1;
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
 
@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
         if ($content['statuscode'] !== '0')
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 'Payment verification failed with statuscode: ' . $content['statuscode']);
         }
 //sd($content);
@@ -157,13 +157,14 @@ class Gateway extends Base\Gateway
 //sd($response);
         $content = (array) simplexml_load_string($response->body);
 //sd($content);
+        $content['received'] = 1;
 
         $refund->fill($content)->saveOrFail();
 
         if ($content['statuscode'] !== '0')
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                ErrorCode::BAD_REQUEST_REFUND_FAILED,
                 'Payment refund failed with statuscode: ' . $content['statuscode']);
         }
 
@@ -246,7 +247,7 @@ class Gateway extends Base\Gateway
         if ($generatedHash !== $hash)
         {
             throw new Exception\GatewayErrorException(
-                          Error\ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED);
+                          Error\ErrorCode::BAD_REQUEST_ERROR);
         }
     }
 

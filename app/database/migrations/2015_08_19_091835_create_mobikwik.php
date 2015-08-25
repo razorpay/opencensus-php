@@ -25,17 +25,17 @@
                 $table->boolean('received')->default(0);
 // request params
                 $table->string( 'email' );
-                $table->string( 'amount' )->nullable();
+                $table->string( 'amount' );
                 $table->string( 'cell' )->nullable();
-                $table->string( 'orderid', 25 )->nullable();
+                $table->char( 'orderid', UniqueIdEntity::ID_LENGTH );
                 $table->string( 'mid', 25 )->nullable();
-                $table->string( 'merchantname')->nullable();
-                $table->string( 'showmobile')->nullable();
+                $table->string( 'merchantname',50)->nullable();
+                $table->string( 'showmobile',4)->nullable();
 // response params
-                $table->string( 'statuscode')->nullable();
-                $table->string( 'statusmessage')->nullable();
+                $table->string( 'statuscode',3);
+                $table->string( 'statusmessage');
                 $table->string( 'refid')->nullable();
-                $table->string( 'ispartial')->nullable();
+                $table->string( 'ispartial',3)->nullable();
 // rzp refund id
                 $table->char( 'refund_id', UniqueIdEntity::ID_LENGTH )->nullable();
 // timestamps
