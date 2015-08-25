@@ -55,12 +55,12 @@ class Newsletter
         switch($list)
         {
             case 'all':
-                $merchants = $repo->fetchAll()->toArray();
+                $merchants = $repo->fetch([])->toArray();
                 break;
 
             case 'live':
-                $merchants = $repo->fetch([Entity::LIVE => 1])
-                    ->select(['email', 'name'])->toArray();
+                $merchants = $repo->fetch([Merchant\Entity::LIVE => 1])
+                    ->toArray();
                 break;
 
             case 'recent':
@@ -75,11 +75,16 @@ class Newsletter
         $response = [];
 
         // Need to switch array key from email to address
+        // And convert from collection to plain array
         foreach ($merchants as $merchant) {
-            $response[] = [
+            // We store every merchant as string
+            // because array_unique only works on strings
+            // This isn't precise but it doesn't matter
+            // because mailgun is set to ignore duplicate entries
+            $response[] = json_encode([
                 'address' => $merchant['email'],
                 'name'    => $merchant['name']
-            ];
+            ]);
         }
 
         return $response;
@@ -96,7 +101,7 @@ class Newsletter
     {
         if(strpos($lists, ',') !== false)
         {
-            $lists = explode($lists, ',');
+            $lists = explode(',', $lists);
         }
         else
         {
@@ -109,6 +114,10 @@ class Newsletter
             $merchants = array_merge($merchants, $this->getEmailList($list));
         }
 
+        // Make it unique and then run json_decode
+        $merchants = array_map('json_decode', array_unique($merchants));
+
+        // Chunks of 1000
         return array_chunk($merchants, 1000);
     }
 
@@ -158,7 +167,7 @@ class Newsletter
 
     protected function getMailgunInstance()
     {
-        return new Mailgun($this->config['key'], 'api-mailgun-net-46ttasxaxkwp.runscope.net');
+        return new Mailgun($this->config['key']);
     }
 
     public function send()
@@ -166,7 +175,7 @@ class Newsletter
         // No need to do anything if we are mocking
         if($this->config['mock'] === true)
         {
-            return;
+            return ['Email is mocked'];
         }
 
         $data = $this->data;
@@ -177,7 +186,7 @@ class Newsletter
             $this->email = $this->createMailingList($this->lists);
         }
 
-        $this->sendEmail();
+        return $this->sendEmail();
     }
 
     public function sendEmail()
