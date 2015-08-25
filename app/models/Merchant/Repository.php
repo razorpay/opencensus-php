@@ -92,7 +92,7 @@ class Repository extends Base\Repository
         // 00:00 Today
         $today = \Carbon\Carbon::today("Asia/Kolkata")->timestamp;
 
-        $start = \Carbon\Carbon::today("Asia/Kolkata")->subDays(3);
+        $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
 
         return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
