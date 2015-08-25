@@ -176,10 +176,10 @@ class Newsletter
     public function send()
     {
         // No need to do anything if we are mocking
-        if($this->config['mock'] === true)
-        {
-            return ['Email is mocked'];
-        }
+        // if($this->config['mock'] === true)
+        // {
+        //     return ['Email is mocked'];
+        // }
 
         $data = $this->data;
         $config = $this->config;
