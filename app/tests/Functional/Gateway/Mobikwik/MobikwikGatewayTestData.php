@@ -9,7 +9,7 @@ return [
     'testPayment' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
-        'method' => 'card',
+        'method' => 'wallet',
         'status' => 'captured',
         'amount_authorized' => 50000,
         'amount_refunded' => 0,
@@ -24,8 +24,8 @@ return [
         'notes' => [
             'merchant_order_id' => 'random order id',
         ],
-        'gateway' => 'paytm',
-        'terminal_id' => '1000PaytmTrmnl',
+        'gateway' => 'mobikwik',
+        'terminal_id' => '1000MobiKwikTl',
         'signed' => false,
         'verified' => null,
         'entity' => 'payment',
@@ -33,14 +33,14 @@ return [
 
     'testPaymentMobikwikEntity' => [
         'action' => 'authorize',
-        'method' => 'card',
+        'method' => 'wallet',
 //        'orderid' => '',
 //        'merchantname' => '',
         'email' => 'a@b.com',
-        'txnamount' => '500',
+        'amount' => '500',
         'cell' => '9918899029',
-        'showmobile' => '1',
-        'statuscode' => 1,
+        'showmobile' => null,
+        'statuscode' => '0',
         'statusmessage' => 'Transaction completed Successfully',
 //        'refid',
 //        'ispartial'
@@ -55,7 +55,7 @@ return [
         'wallet' => 'mobikwik',
         'status' => 'captured',
         'gateway' => 'mobikwik',
-        'terminal_id' => '1000PaytmTrmnl',
+        'terminal_id' => '1000MobiKwikTl',
         'signed' => false,
         'verified' => null,
         'entity' => 'payment',
@@ -63,14 +63,14 @@ return [
 
     'testMobikwikWalletEntity' => [
         'action' => 'authorize',
-        'method' => 'card',
+        'method' => 'wallet',
 //        'orderid' => '',
 //        'merchantname' => '',
         'email' => 'a@b.com',
-        'txnamount' => '500',
+        'amount' => '500',
         'cell' => '9918899029',
-        'showmobile' => '1',
-        'statuscode' => 1,
+        'showmobile' => null,
+        'statuscode' => '0',
         'statusmessage' => 'Transaction completed Successfully',
 //        'refid',
 //        'ispartial'
