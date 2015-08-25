@@ -24,6 +24,7 @@ class Newsletter
         if($test === true)
         {
             $this->email = $recipient;
+            $this->count = 1;
         }
 
         else
@@ -117,6 +118,8 @@ class Newsletter
         // Make it unique and then run json_decode
         $merchants = array_map('json_decode', array_unique($merchants));
 
+        $this->count = count($merchants);
+
         // Chunks of 1000
         return array_chunk($merchants, 1000);
     }
@@ -183,6 +186,7 @@ class Newsletter
 
         if(isset($this->lists))
         {
+            // This also sets the count internally
             $this->email = $this->createMailingList($this->lists);
         }
 
@@ -205,7 +209,10 @@ class Newsletter
             $message->subject($this->getSubject());
         });
 
-        return [];
+        return [
+            'email' => $this->email,
+            'count' => $this->count
+        ];
     }
 
     protected function getSubject()
