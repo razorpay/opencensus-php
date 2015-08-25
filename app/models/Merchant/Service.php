@@ -428,14 +428,4 @@ class Service extends Base\Service
         return $response;
 
     }
-
-    public function sendNewsletter($list, $input)
-    {
-        (new Merchant\Validator)->validateInput('sendNewsletter', $input);
-
-        $mailer = new Mailer($input['list'], $input['subject'], $input['text']);
-
-        // This will only send if email mock is false
-        $mailer->send();
-    }
 }
