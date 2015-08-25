@@ -39,42 +39,37 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
+        $inputArray = [];
+
+        $input = parse_str($input,$inputArray);
+        $input = $inputArray;
         $id = $input['orderid'];
 //        $merchantId = $input['mid'];
-
         $payment = (new Mobikwik\Repository)->findByPaymentIdAndAction(
                                                     $id, Action::AUTHORIZE);
-
-        $fields = array(
-            'txnid',
-            'banktxnid',
-            'orderid',
-            'txnamount',
-            'status',
-            'txntype',
-            'gatewayname',
-            'respcode',
-            'respmsg',
-            'bankname',
-            'mid',
-            'paymentmode',
-            'refundamt',
-            'txndate',
+//sd($payment);
+        $content = array(
+            'statuscode'     => '0',
+            'orderid'       => $input['orderid'],
+            'refid'      => '12345',
+            'amount'       => $payment['amount'],
+            'statusmessage'        => 'success',
+            'ordertype' => 'payment'
         );
 
-        $content = [];
-
-        foreach ($fields as $field)
-        {
-            $content[strtoupper($field)] = $payment[$field];
-        }
-
-        return $this->makeResponse(json_encode($content));
+        $content['checksum'] = $this->generateHash($content);
+        $content = array_flip($content);
+        $xml = new \SimpleXMLElement('<wallet/>');
+        array_walk_recursive($content, array ($xml, 'addChild'));
+        return $this->makeResponse($xml->asXML());
     }
 
     public function refund($input)
     {
-        $input = json_decode($input['JsonData'], true);
+        $inputArray = [];
+
+        $input = parse_str($input,$inputArray);
+        $input = $inputArray;
 
         parent::refund($input);
 
@@ -88,14 +83,17 @@ class Server extends Base\Mock\Server
             'statusmessage'       => 'Some message'
         );
 
-        return $this->makeResponse(json_encode($content));
+        $content = array_flip($content);
+        $xml = new \SimpleXMLElement('<wallet/>');
+        array_walk_recursive($content, array ($xml, 'addChild'));
+        return $this->makeResponse($xml->asXML());
     }
 
     protected function makeResponse($json)
     {
         $response = \Response::make($json);
 
-        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+        $response->headers->set('Content-Type', 'text/xml; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;

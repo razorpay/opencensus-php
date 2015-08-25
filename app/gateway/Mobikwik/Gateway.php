@@ -82,7 +82,7 @@ class Gateway extends Base\Gateway
 
         $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
         $content['orderid'] = $input['payment']['id'];
-        $content['ver'] = 2;
+//        $content['ver'] = 2;
 
         $content['checksum'] = $this->getHashForVerifyRequest(
                                         $content['mid'], $content['orderid']);
@@ -106,7 +106,7 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
                 'Payment verification failed with statuscode: ' . $content['statuscode']);
         }
-
+//sd($content);
         $this->verifySecureHashForQueryRequest($content);
 
         // if(($OrderId == $outputXmlObject->orderid) && ($outputXmlObject->amount == $Amount) && ($outputXmlObject->checksum == $recievedChecksum)){
@@ -136,28 +136,27 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $content['orderid'] = $input['payment']['id'];
+        $content['txid'] = $input['payment']['id'];
         $content['email'] = $payment['email'];
         $content['amount'] = $payment['amount'];
 
         $content['checksum'] = $this->getHashForRefundRequest($content['mid'],
-                                                        $content['orderid'], $content['email'],
+                                                        $content['txid'], $content['email'],
                                                         $content['amount'] );
 
+        $refund = $this->createGatewayRefundEntity($content, $input);
 
         $content = http_build_query($content);
-
         $request = array(
             'url'     => $this->getUrl($this->action),
             'method'  => 'post',
             'content' => $content);
 
-        $refund = $this->createGatewayRefundEntity($content, $input);
 
         $response = $this->sendGatewayRequest($request);
-
+//sd($response);
         $content = (array) simplexml_load_string($response->body);
-
+//sd($content);
 
         $refund->fill($content)->saveOrFail();
 
@@ -308,9 +307,24 @@ class Gateway extends Base\Gateway
 
         return $payment;
     }
+    protected function createGatewayEntity($attributes)
+    {
+//        $attr = $this->lowerArrayKeys($attributes);
 
+        $payment = $this->getNewGatewayPaymentEntity();
+
+        $payment->setAction($this->action);
+        $payment->setMethod($this->input['payment']['method']);
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
     protected function createGatewayRefundEntity($attributes, $input)
     {
+//        sd($attributes);
         $attributes['refund_id'] = $input['refund']['id'];
         $attributes['payment_id'] = $input['payment']['id'];
 
