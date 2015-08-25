@@ -26,14 +26,14 @@
 // request params
                 $table->string( 'email' );
                 $table->string( 'amount' );
-                $table->string( 'cell' )->nullable();
+                $table->string( 'cell' );
                 $table->char( 'orderid', UniqueIdEntity::ID_LENGTH );
                 $table->string( 'mid', 25 )->nullable();
                 $table->string( 'merchantname',50)->nullable();
                 $table->string( 'showmobile',4)->nullable();
 // response params
-                $table->string( 'statuscode',3);
-                $table->string( 'statusmessage');
+                $table->string( 'statuscode',3)->nullable();
+                $table->string( 'statusmessage')->nullable();
                 $table->string( 'refid')->nullable();
                 $table->string( 'ispartial',3)->nullable();
 // rzp refund id
