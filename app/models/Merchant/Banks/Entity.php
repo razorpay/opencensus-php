@@ -73,7 +73,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PAYTM);
     }
-
+    public function setMobikwik($mobikwik)
+    {
+        $this->setAttribute(self::MOBIKWIK, $mobikwik);
+    }
     public function getMobikwik()
     {
         return $this->getAttribute(self::MOBIKWIK);
