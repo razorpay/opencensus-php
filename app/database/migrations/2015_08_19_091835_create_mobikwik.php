@@ -27,7 +27,8 @@
                 $table->string( 'email' );
                 $table->string( 'amount' );
                 $table->string( 'cell' )->nullable();
-                $table->char( 'orderid', UniqueIdEntity::ID_LENGTH );
+                $table->char( 'orderid', UniqueIdEntity::ID_LENGTH )->nullable();
+                $table->char( 'txid', UniqueIdEntity::ID_LENGTH )->nullable();
                 $table->string( 'mid', 25 )->nullable();
                 $table->string( 'merchantname',50)->nullable();
                 $table->string( 'showmobile',4)->nullable();

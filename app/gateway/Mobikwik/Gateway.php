@@ -19,7 +19,7 @@ class Gateway extends Base\Gateway
     protected $sortRequestContent = false;
 
     public function authorize(array $input)
-    {
+    {sd($input);
         parent::authorize($input);
         $content = array(
             'email'         => $input['payment']['email'],
@@ -36,10 +36,7 @@ class Gateway extends Base\Gateway
             $this->addTerminalDetailsInTest($content);
         }
 
-//        $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
-
-       $payment =  $this->createGatewayPaymentEntity($content);
-//sd($payment);
+        $payment =  $this->createGatewayPaymentEntity($content);
         $content['checksum'] = $this->getPaymentHash($content);
 
         $request = array(
@@ -63,17 +60,6 @@ class Gateway extends Base\Gateway
         $payment->saveOrFail();
 
         $this->verifyPaymentCallbackResponse($input);
-
-//
-//        if ($input['gateway']['statuscode'] !== '0')
-//        {
-//            // Payment fails, throw exception
-//            throw new Exception\GatewayErrorException(
-//                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-//                    $input['gateway']['statusmessage'],
-//                    $input['gateway']['statuscode']);
-//        }
-
     }
 
     public function verify(array $input)
@@ -82,7 +68,6 @@ class Gateway extends Base\Gateway
 
         $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
         $content['orderid'] = $input['payment']['id'];
-//        $content['ver'] = 2;
 
         $content['checksum'] = $this->getHashForVerifyRequest(
                                         $content['mid'], $content['orderid']);
@@ -96,8 +81,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        // On error, only 3 fields, 'status', 'statuscode' and 'statusdescription' are returned
-
         $content = (array) simplexml_load_string($response->body);
 
         if ($content['statuscode'] !== '0')
@@ -106,23 +89,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 'Payment verification failed with statuscode: ' . $content['statuscode']);
         }
-//sd($content);
         $this->verifySecureHashForQueryRequest($content);
 
-        // if(($OrderId == $outputXmlObject->orderid) && ($outputXmlObject->amount == $Amount) && ($outputXmlObject->checksum == $recievedChecksum)){
-
-        //         //error_log("entered in verifcation final box");
-        //         $return['statuscode'] = $outputXmlObject->statuscode;
-        //         $return['orderid']  = $outputXmlObject->orderid;
-        //         $return['refid']        = $outputXmlObject->refid;
-        //         $return['amount']       = $outputXmlObject->amount;
-        //         $return['statusmessage']    = $outputXmlObject->statusmessage;
-        //         $return['ordertype']        = $outputXmlObject->ordertype;
-        //         $return['checksum']     = $outputXmlObject->checksum;
-        //         $return['flag'] = true;
-        //     }
-        //     //error_log("sending return = " . print_r($return));
-        //     return $return;
     }
 
     public function refund(array $input)
@@ -143,7 +111,6 @@ class Gateway extends Base\Gateway
         $content['checksum'] = $this->getHashForRefundRequest($content['mid'],
                                                         $content['txid'], $content['email'],
                                                         $content['amount'] );
-
         $refund = $this->createGatewayRefundEntity($content, $input);
 
         $content = http_build_query($content);
@@ -154,11 +121,8 @@ class Gateway extends Base\Gateway
 
 
         $response = $this->sendGatewayRequest($request);
-//sd($response);
         $content = (array) simplexml_load_string($response->body);
-//sd($content);
         $content['received'] = 1;
-
         $refund->fill($content)->saveOrFail();
 
         if ($content['statuscode'] !== '0')
@@ -218,12 +182,10 @@ class Gateway extends Base\Gateway
         );
 
         $hash = $content['checksum'];
-//        var_dump($hash);
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
         $generatedHash = $this->getHashOfArray($content);
-//sd($generatedHash);
         if ($generatedHash !== $hash)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -310,8 +272,6 @@ class Gateway extends Base\Gateway
     }
     protected function createGatewayEntity($attributes)
     {
-//        $attr = $this->lowerArrayKeys($attributes);
-
         $payment = $this->getNewGatewayPaymentEntity();
 
         $payment->setAction($this->action);
@@ -325,7 +285,6 @@ class Gateway extends Base\Gateway
     }
     protected function createGatewayRefundEntity($attributes, $input)
     {
-//        sd($attributes);
         $attributes['refund_id'] = $input['refund']['id'];
         $attributes['payment_id'] = $input['payment']['id'];
 
@@ -338,12 +297,11 @@ class Gateway extends Base\Gateway
     protected function verifyPaymentCallbackResponse($input)
     {
         $content = $input['gateway'];
-//sd($input);
         $code = (int) $input['gateway']['statuscode'];
 
         if ($content['statuscode'] !== Status::SUCCESS)
         {
-            $errorCode = ResponC::getApiErrorCode($code);
+            $errorCode = Response::getApiErrorCode($code);
 
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
