@@ -6,7 +6,6 @@
   </head>
   <body class="body" style="background:#EBECEE;">
     @include('emails.partials.css')
-    <?php $headerImg = $message->embed(public_path().'/img/newsletter-header-bg.png');?>
     <table class="row"> <!-- Styles go on the row -->
       <tr>
         <td class="center" align="center"> <!-- Center the container -->
@@ -16,15 +15,26 @@
               <tr>
                 <td class="wrapper last"> <!-- Wrapper stays on the inner table -->
 
-                  <table class="twelve columns newsletter-header-bg" style="background-image: url(<?=$headerImg?>)">
-                    <tr>
-                      <td>
-                        <h1>
-                          {{{$subject[0]}}}
-                        </h1>
-                        <h1>
-                          {{{$subject[1]}}}
-                        </h1>
+                  <table class="twelve columns newsletter-header-bg">
+                    <tr height="180" style="height:180px;">
+                      <td background="https://s3.amazonaws.com/checkout-live/newsletter-header-bg.png" bgcolor="#24bbea" width="580" height="180" valign="top" style="padding-bottom: 0px;">
+                        <!--[if gte mso 9]>
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:580px;height:180px;">
+                          <v:fill type="tile" src="https://s3.amazonaws.com/checkout-live/newsletter-header-bg.png" color="#24bbea" />
+                          <v:textbox inset="0,0,0,0">
+                        <![endif]-->
+                        <div>
+                          <h1>
+                            {{{$subject[0]}}}
+                          </h1>
+                          <h1>
+                            {{{$subject[1]}}}
+                          </h1>
+                        </div>
+                        <!--[if gte mso 9]>
+                          </v:textbox>
+                          </v:rect>
+                        <![endif]-->
                       </td>
                       <td class="expander"></td>
                     </tr>

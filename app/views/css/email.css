@@ -3,7 +3,7 @@ body, .body, .greybg{
 	background:#EBECEE;
 }
 *{
-	font-family: 'Century Gothic', Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important;
+	font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important;
 }
 .white{
 	background:#ffffff;
@@ -50,7 +50,6 @@ h3.center{
 	padding: 40px;
 }
 .newsletter-header-bg {
-	background-repeat: no-repeat;
 	max-width: 580px;
 	min-height: 180px;
 }
@@ -69,13 +68,18 @@ h3.center{
 	text-align: justify;
 	line-height: 24px;
 	background: white;
+	margin: 10px 0px 10px 0px;
+}
+.newsletter a, .newsletter a:hover {
+	color: #24bbea;
+	text-decoration: none !important;
 }
 .newsletter h1{
 	font-size: 24px;
 	line-height: 24px;
 	color: #24bbea;
 	background: white;
-	margin-top: 20px;
+	margin-top: 40px;
 	text-align: left;
 }
 h1 .dark {
