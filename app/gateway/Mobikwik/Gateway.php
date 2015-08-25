@@ -10,6 +10,7 @@ use Gateway\Base;
 use Gateway\Base\Action;
 use Trace\Trace;
 use Trace\TraceCode;
+use Gateway\Mobikwik\Type;
 
 class Gateway extends Base\Gateway
 {
@@ -20,13 +21,12 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
-
         $content = array(
             'email'         => $input['payment']['email'],
             'amount'        => $input['payment']['amount'] / 100,
             'cell'          => $input['payment']['contact'],
             'orderid'       => $input['payment']['id'],
-            'merchantname'  => $input['terminal']['gateway_terminal_id'],
+//            'merchantname'  => $input['terminal']['gateway_terminal_id'],
             'mid'           => $input['terminal']['gateway_merchant_id'],
             'redirecturl'   => $input['callbackUrl'],
         );
@@ -36,6 +36,10 @@ class Gateway extends Base\Gateway
             $this->addTerminalDetailsInTest($content);
         }
 
+//        $this->addMerchantIdAndOtherDetails($content, $input['terminal']);
+
+       $payment =  $this->createGatewayPaymentEntity($content);
+//sd($payment);
         $content['checksum'] = $this->getPaymentHash($content);
 
         $request = array(
@@ -43,7 +47,6 @@ class Gateway extends Base\Gateway
             'method' => 'post',
             'content' => $content,
         );
-
         return $request;
     }
 
@@ -53,14 +56,24 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
-        if ($input['gateway']['statuscode'] !== '0')
-        {
-            // Payment fails, throw exception
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                    $input['gateway']['statusmessage'],
-                    $input['gateway']['statuscode']);
-        }
+        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+            $input['gateway']['orderid'], Action::AUTHORIZE);
+
+        $payment->fill($input['gateway']);
+        $payment->saveOrFail();
+
+        $this->verifyPaymentCallbackResponse($input);
+
+//
+//        if ($input['gateway']['statuscode'] !== '0')
+//        {
+//            // Payment fails, throw exception
+//            throw new Exception\GatewayErrorException(
+//                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+//                    $input['gateway']['statusmessage'],
+//                    $input['gateway']['statuscode']);
+//        }
+
     }
 
     public function verify(array $input)
@@ -145,9 +158,8 @@ class Gateway extends Base\Gateway
 
         $content = (array) simplexml_load_string($response->body);
 
-        $attr = $this->lowerArrayKeys($content);
 
-        $refund->fill($attr)->saveOrFail();
+        $refund->fill($content)->saveOrFail();
 
         if ($content['statuscode'] !== '0')
         {
@@ -202,14 +214,16 @@ class Gateway extends Base\Gateway
             'amount',
             'statusmessage',
             'mid',
+            'refid'
         );
 
         $hash = $content['checksum'];
+//        var_dump($hash);
 
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
         $generatedHash = $this->getHashOfArray($content);
-
+//sd($generatedHash);
         if ($generatedHash !== $hash)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -280,6 +294,21 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function createGatewayPaymentEntity($attributes)
+    {
+        $attr['txntype'] = Type::SALE;
+        $payment = $this->getNewGatewayPaymentEntity();
+        $payment->setPaymentId($attributes['orderid']);
+        $payment->setAction($this->action);
+        $payment->setMethod($this->input['payment']['method']);
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
     protected function createGatewayRefundEntity($attributes, $input)
     {
         $attributes['refund_id'] = $input['refund']['id'];
@@ -288,6 +317,25 @@ class Gateway extends Base\Gateway
         $refund = $this->createGatewayEntity($attributes);
 
         return $refund;
+    }
+
+
+    protected function verifyPaymentCallbackResponse($input)
+    {
+        $content = $input['gateway'];
+//sd($input);
+        $code = (int) $input['gateway']['statuscode'];
+
+        if ($content['statuscode'] !== Status::SUCCESS)
+        {
+            $errorCode = ResponC::getApiErrorCode($code);
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $input['gateway']['statuscode'],
+                $input['gateway']['statusmessage']);
+        }
     }
 
 
