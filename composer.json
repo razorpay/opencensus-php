@@ -9,10 +9,10 @@
         "razorpay/razorpay": "dev-master",
         "razorpay/spine": "dev-master",
         "maatwebsite/excel": "1.*",
-        "mailgun/mailgun-php": "~1.7.1",
+        "mailgun/mailgun-php": "~1.8",
         "aws/aws-sdk-php-laravel": "1.*",
         "symfony/event-dispatcher": "~2.2",
-        "guzzlehttp/guzzle": "~4.0"
+        "cebe/markdown": "~1.0.1"
     },
     "repositories": [
         {
