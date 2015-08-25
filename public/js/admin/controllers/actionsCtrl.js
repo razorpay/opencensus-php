@@ -52,6 +52,60 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
     };
 
+    $scope.sendTestEmail = function(data){
+
+      var request = $http({
+        method: "post",
+        url: "/admin/newsletter/test",
+        data: data,
+        transformRequest: transformRequestAsFormPost,
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Test mail sent successfully to ' + data.data.email, true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.sendNewsletter = function(data){
+      var request = $http({
+        method: "post",
+        url: "/admin/newsletter/mail",
+        data: data,
+        transformRequest: transformRequestAsFormPost,
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Test mail sent successfully to '
+              + data.data.count + ' addresses ('
+              + data.data.email +')',
+          true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.verifyPayment = function(payment_id){
       var request = $http({
                     method: "get",
@@ -161,6 +215,27 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
           ;
         });
     };
+    $scope.openEditNewsletter = function () {
+
+      var modalInstance = $modal.open({
+        templateUrl: 'sendNewsletter.html',
+        controller: 'sendNewsletterCtrl',
+        size: 'lg'
+      });
+
+      modalInstance.result.then(
+        function (data) {
+          if(data.lists) {
+            // Confirm email bhena hain
+            $scope.sendNewsletter(data);
+          }
+          else {
+            $scope.sendTestEmail(data);
+          }
+        },
+        function () {
+        });
+    }
 
     $scope.downloadBeneficiaryFile = function () {
 
@@ -243,6 +318,44 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       $scope.ok = function (id) {
         $modalInstance.close(id);
       };
+}])
+.controller('sendNewsletterCtrl', ['$scope', '$modalInstance', '$http', 'admin',
+  function ($scope, $modalInstance, $http, admin) {
+
+      $scope.mailingLists = {
+        all:      'All merchants',
+        live:     'Live Merchants',
+        recent:   'Recently signed up merchants',
+        paytm:    'Paytm enabled merchants',
+        mobiqwik: 'Mobiqwik enabled merchants'
+      };
+
+      $scope.message = "Hi %recipient_name%,\n\nThanks for doing business with Razorpay.\n\n# section heading\n\ncontent\ncontent\n\nmore content\n\n---\n\nTeam Razorpay";
+
+      $scope.lists = {
+        all: true
+      };
+
+      admin.identity().then(function(admin) {
+        $scope.adminEmail = admin.email;
+      });
+
+      $scope.test = function (subj_1, subj_2, msg) {
+        $modalInstance.close({
+          subj_1: subj_1,
+          subj_2: subj_2,
+          msg: msg
+        });
+      };
+
+      $scope.ok = function (lists, subj_1, subj_2, msg) {
+        $modalInstance.close({
+          lists: Object.keys(lists).join(),
+          subj_1: subj_1,
+          subj_2: subj_2,
+          msg: msg
+        });
+      };
 
       $scope.cancel = function () {
         $modalInstance.dismiss('cancel');
@@ -250,8 +363,8 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
 }])
 .controller('downloadBeneficiaryFileCtrl', ['$scope', '$modalInstance', '$http',
   function ($scope, $modalInstance, $http) {
-      $scope.ok = function (id) {
-        $modalInstance.close(id);
+      $scope.ok = function (date) {
+        $modalInstance.close(date);
       };
 
       $scope.cancel = function () {

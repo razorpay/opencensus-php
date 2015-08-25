@@ -1013,4 +1013,36 @@ class Service extends Base\Service
 
         return $links;
     }
+
+    public function sendTestNewsletter($input)
+    {
+        $this->setApiCredentials();
+
+        try
+        {
+            $input['email'] = \Auth::admin()->get()->email;
+
+            return [null, $this->api->admin->sendTestNewsletter($input)
+                ->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
+
+    public function sendNewsletter($input)
+    {
+        $this->setApiCredentials();
+
+        try
+        {
+            return [null, $this->api->admin->sendNewsletter($input)
+                ->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
 }

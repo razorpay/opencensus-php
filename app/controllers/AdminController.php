@@ -399,4 +399,20 @@ class AdminController extends BaseController
         $error = (new Admin\Service)->generateBeneficiaryFile();
         return AppResponse::jsonResponse($error);
     }
+
+    public function postSendTestNewsletter()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->sendTestNewsletter($input);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postSendNewsletter()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->sendNewsletter($input);
+        return AppResponse::jsonResponse($error, $data);
+    }
 }
