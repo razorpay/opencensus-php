@@ -376,8 +376,11 @@ trait Authorize
     {
         $methods = $this->methods;
 
+        $wallet = $payment->getWallet();
+        $func = 'get'.ucfirst($wallet);
+// sd($func, $methods->$func());
         if (($methods === null) or
-            ($methods->getPaytm() === false))
+            ($methods->$func() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT);
