@@ -204,7 +204,9 @@ class Newsletter
         {
             $message->to($data['email']);
 
-            $message->from($config['from_email'], $config['from_name']);
+            $from = 'support@' . $config['url'];
+
+            $message->from($from, $config['from_name']);
 
             $message->subject($this->getSubject());
         });
