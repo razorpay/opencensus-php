@@ -1,12 +1,12 @@
 <?php
 
-namespace Models\Merchant\Banks;
+namespace Models\Merchant\Methods;
 
 use Models\Base;
 use EE\Exception;
 use Models\Payment;
 use Models\Merchant;
-use Models\Merchant\Banks;
+use Models\Merchant\Methods;
 use Models\Payment\Processor\Netbanking;
 use Models\Terminal;
 
@@ -80,7 +80,7 @@ class Core extends Base\Core
 
         if ($banks === null)
         {
-            $banks = new Banks\Entity;
+            $banks = new Methods\Entity;
             $banks->merchant()->associate($merchant);
         }
 

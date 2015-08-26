@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Merchant\Banks;
+namespace Models\Merchant\Methods;
 
 use EE\Exception;
 use Models\Base;

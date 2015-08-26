@@ -278,14 +278,14 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $banks = (new Banks\Core)->getEnabledAndDisabledBanks($merchant);
+        $banks = (new Methods\Core)->getEnabledAndDisabledBanks($merchant);
 
         return $banks;
     }
 
     public function getEnabledBanks()
     {
-        $banks = (new Banks\Core)->getMerchantBanks($this->merchant);
+        $banks = (new Methods\Core)->getMerchantBanks($this->merchant);
 
         if ($banks === null)
             return [];
@@ -297,7 +297,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant(
+        return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input
         );
     }
@@ -305,7 +305,7 @@ class Service extends Base\Service
     public function setBanksForAllMerchants($input)
     {
         // @todo: finish this.
-        // return (new Merchant\Banks\Core)->setPaymentBanksForAllMerchants($input);
+        // return (new Merchant\Methods\Core)->setPaymentBanksForAllMerchants($input);
     }
 
     public function getPaymentMethods()
@@ -321,7 +321,7 @@ class Service extends Base\Service
                 'mobikwik'  => false,
             ]);
 
-        $methods = (new Merchant\Banks\Core)->getMerchantBanks($this->merchant);
+        $methods = (new Merchant\Methods\Core)->getMerchantBanks($this->merchant);
 
         if ($methods !== null)
         {
@@ -342,7 +342,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentMethods($merchant, $input);
+        return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
     }
 
     public function getMerchantBeneficiaryFile()

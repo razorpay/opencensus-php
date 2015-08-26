@@ -29,7 +29,7 @@ class Base
         'card_detail'   => 'Models\Card\Detail',
         'key'           => 'Models\Key\Entity',
         'merchant'      => 'Models\Merchant\Entity',
-        'merchant_banks'=> 'Models\Merchant\Banks\Entity',
+        'methods'       => 'Models\Merchant\Methods\Entity',
         'payment'       => 'Models\Payment\Entity',
         'pricing'       => 'Models\Pricing\Entity',
         'refund'        => 'Models\Payment\Refund\Entity',
@@ -49,7 +49,7 @@ class Base
     {
         if (($entity === 'merchant') or
             ($entity === 'pricing') or
-            ($entity === 'merchant_banks'))
+            ($entity === 'methods'))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
@@ -68,7 +68,7 @@ class Base
     {
         if (($entity === 'merchant') or
             ($entity === 'pricing') or
-            ($entity === 'merchant_banks'))
+            ($entity === 'methods'))
         {
             return $this->editEntityInTestAndLive($entity, $attributes);
         }

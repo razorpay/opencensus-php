@@ -156,7 +156,7 @@ class Entity extends Base\PublicEntity
     public function methods()
     {
         return $this->hasOne(
-            'Models\Merchant\Banks\Entity');
+            'Models\Merchant\Methods\Entity');
     }
 
     public function terminals()

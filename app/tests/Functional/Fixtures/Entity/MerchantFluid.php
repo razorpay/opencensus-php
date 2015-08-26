@@ -114,14 +114,14 @@ class MerchantFluid extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('merchant_banks', $attributes);
+        $this->fixtures->create('methods', $attributes);
 
         return $this;
     }
 
     public function enablePaytm()
     {
-        $methods = \Models\Merchant\Banks\Repository::find($this->getId());
+        $methods = \Models\Merchant\Methods\Repository::find($this->getId());
 
         $methods->setPaytm(true);
 
@@ -142,7 +142,7 @@ class MerchantFluid extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('merchant_banks', $attributes);
+        $this->fixtures->create('methods', $attributes);
 
         return $this;
     }

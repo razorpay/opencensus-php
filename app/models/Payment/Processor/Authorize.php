@@ -7,7 +7,7 @@ use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Http\Route;
-use Models\Merchant\Banks;
+use Models\Merchant\Methods;
 use Models\Card;
 use Models\Payment;
 use Trace\Trace;
@@ -356,7 +356,7 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        $banks = (new Banks\Core)->getMerchantBanks($merchant);
+        $banks = (new Methods\Core)->getMerchantBanks($merchant);
 
         if ($banks === null)
             $banks = [];

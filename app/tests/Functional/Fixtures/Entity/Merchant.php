@@ -104,12 +104,12 @@ class Merchant extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('merchant_banks', $attributes);
+        $this->fixtures->create('methods', $attributes);
     }
 
     public function enablePaytm($id = '10000000000000')
     {
-        $repo = new \Models\Merchant\Banks\Repository;
+        $repo = new \Models\Merchant\Methods\Repository;
         $methods = $repo->findOrFail($id);
         $methods->setPaytm(true);
         $repo->saveOrFail($methods);
@@ -118,7 +118,7 @@ class Merchant extends Base
 
     public function disablePaytm($id = '10000000000000')
     {
-        $repo = new \Models\Merchant\Banks\Repository;
+        $repo = new \Models\Merchant\Methods\Repository;
         $methods = $repo->findOrFail($id);
         $methods->setPaytm(false);
         $repo->saveOrFail($methods);
@@ -127,7 +127,7 @@ class Merchant extends Base
 
     public function enableCard($id = '10000000000000')
     {
-        $repo = new \Models\Merchant\Banks\Repository;
+        $repo = new \Models\Merchant\Methods\Repository;
         $methods = $repo->findOrFail($id);
         $methods->setCard(true);
         $repo->saveOrFail($methods);
@@ -137,7 +137,7 @@ class Merchant extends Base
 
     public function disableCard($id = '10000000000000')
     {
-        $repo = new \Models\Merchant\Banks\Repository;
+        $repo = new \Models\Merchant\Methods\Repository;
         $methods = $repo->findOrFail($id);
         $methods->setCard(false);
         $repo->saveOrFail($methods);
