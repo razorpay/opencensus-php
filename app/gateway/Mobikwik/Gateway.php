@@ -111,8 +111,8 @@ class Gateway extends Base\Gateway
 
         $content['checksum'] = $this->getHashForRefundRequest($content['mid'],
                                                               $content['txid'],
-                                                              $content['email'],
-                                                              $content['amount']);
+                                                              $content['amount'],
+                                                              $content['email']);
         if($input['refund']['amount'] < $input['payment']['amount'])
         {
             $content['ispartial'] = 'yes';
@@ -246,10 +246,10 @@ class Gateway extends Base\Gateway
         return strtolower(hash_hmac('sha256', $str, $secret, false));
     }
 
-    protected function getHashForRefundRequest($mid, $orderId, $email, $amount)
+    protected function getHashForRefundRequest($mid, $orderId, $amount, $email)
     {
 
-        $str = "'" . $mid . "''" . $orderId . "''" . $email . "''" . $amount . "'";
+        $str = "'" . $mid . "''" . $orderId . "''" . $amount . "''" . $email . "'";
 
         return $this->getHashOfString($str);
     }

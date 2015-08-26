@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
         'statuscode',
         'statusmessage',
         'refid',
+        'received',
         'ispartial'
     );
 
@@ -39,6 +40,7 @@ class Entity extends Base\PublicEntity
         'statuscode',
         'statusmessage',
         'refid',
+        'received',
         'ispartial'
     );
 
