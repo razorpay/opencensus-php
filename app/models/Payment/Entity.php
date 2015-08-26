@@ -485,22 +485,18 @@ class Entity extends Base\PublicEntity
 
     public function getMethodWithDetail()
     {
-        $walletNames = [
-            'paytm' =>  'PayTM'
-        ];
-
-        $methodName = Method::formatted($this->getMethod());
+        $method = Method::formatted($this->getMethod());
 
         switch($this->getMethod())
         {
             case Method::CARD:
-                return [$methodName, $this->getFormattedCard()];
+                return [$method, $this->getFormattedCard()];
                 break;
             case Method::NETBANKING:
-                return [$methodName, $this->getBankName()];
+                return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
-                return [$methodName, $walletNames[$this->getWallet()]];
+                return [$method, ucfirst($this->getWallet()];
                 break;
         }
     }
