@@ -53,6 +53,19 @@ class Server
             return $this->authSubmit($input);
         }
 
+        if (isset($input['callback_url']) === false)
+        {
+            $this->trace->warning(
+                TraceCode::MISC_TRACE_CODE,
+                [
+                    'message' => 'callback_url not set for sharp authorize request',
+                    'input' => $input,
+                ]);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Input fields not set properly');
+        }
+
         $data['action'] = 'authorize';
         $data['url'] = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment_submit');
         $data['content'] = array(
