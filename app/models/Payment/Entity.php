@@ -496,7 +496,7 @@ class Entity extends Base\PublicEntity
                 return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
-                return [$method, ucfirst($this->getWallet()];
+                return [$method, ucfirst($this->getWallet())];
                 break;
         }
     }
