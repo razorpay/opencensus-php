@@ -113,7 +113,7 @@ class Gateway extends Base\Gateway
                                                               $content['txid'],
                                                               $content['email'],
                                                               $content['amount']);
-        if($input['refund']['amount'] < $payment['amount'])
+        if($input['refund']['amount'] < $input['payment']['amount'])
         {
             $content['ispartial'] = 'yes';
         }
@@ -130,7 +130,6 @@ class Gateway extends Base\Gateway
         $content = (array)simplexml_load_string($response->body);
         $content['received'] = 1;
         $refund->fill($content)->saveOrFail();
-
         if ($content['statuscode'] !== '0')
         {
             throw new Exception\GatewayErrorException(

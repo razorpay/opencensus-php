@@ -13,10 +13,10 @@ class Validator extends Base\Validator
         'cell'         => 'required|numeric',
         'email'        => 'required|email',
         'merchantname' => 'required|alpha_num',
-        'redirecturl'  => 'sometimes|url',
+        'redirecturl'  => 'required|url',
         'showmobile'   => 'sometimes|',
         'version'      => 'sometimes|numeric',
-        'checksum'     => 'sometimes'
+        'checksum'     => 'required'
     );
 
     protected static $refundRules = array(
