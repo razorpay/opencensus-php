@@ -7,6 +7,7 @@ use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Payment;
 use Models\Payment\Refund;
+use Models\Payment\Processor\Netbanking;
 use Models\Bank\Name as BankNames;
 
 class Entity extends Base\PublicEntity
@@ -459,7 +460,7 @@ class Entity extends Base\PublicEntity
     public function getBankName()
     {
         $bankId = $this->getBank();
-        return BankNames::getName($bankId);
+        return Netbanking::getName($bankId);
     }
 
     public function getWallet()

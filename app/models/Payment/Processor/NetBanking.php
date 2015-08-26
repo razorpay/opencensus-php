@@ -131,11 +131,25 @@ class Netbanking
     {
         $names = Name::getNames($codes);
 
-        $names = array_merge($names, array_intersect_key(self::$names, array_flip($codes)));
+        $names = array_merge(
+                    $names,
+                    array_intersect_key(
+                        self::$names,
+                        array_flip($codes)));
 
         asort($names);
 
         return $names;
+    }
+
+    public static function getName($code)
+    {
+        if (defined(__CLASS__ . '::' . $code))
+        {
+            return self::$names[$ifsc];
+        }
+
+        return Name::getName($code);
     }
 
     public static function getPaytmSupportedBanks()
