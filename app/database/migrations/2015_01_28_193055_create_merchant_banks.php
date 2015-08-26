@@ -40,6 +40,12 @@ class CreateMerchantBanks extends Migration {
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->index(MerchantBanks::CARD);
+
+            $table->index(MerchantBanks::PAYTM);
+
+            $table->index(MerchantBanks::MOBIKWIK);
         });
     }
 
