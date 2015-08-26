@@ -16,7 +16,7 @@ class CreateMerchantBanks extends Migration {
      */
     public function up()
     {
-        Schema::create(Table::MERCHANT_BANKS, function(Blueprint $table)
+        Schema::create(Table::METHODS, function(Blueprint $table)
         {
             $table->char(Methods::MERCHANT_ID, Methods::ID_LENGTH)
                   ->primary();
@@ -47,11 +47,11 @@ class CreateMerchantBanks extends Migration {
      */
     public function down()
     {
-        Schema::table(Table::MERCHANT_BANKS, function($table)
+        Schema::table(Table::METHODS, function($table)
         {
-            $table->dropForeign(Table::MERCHANT_BANKS.'_'.Methods::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::METHODS.'_'.Methods::MERCHANT_ID.'_foreign');
         });
 
-        Schema::drop(Table::MERCHANT_BANKS);
+        Schema::drop(Table::METHODS);
     }
 }

@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::MERCHANT_ID;
 
-    protected $table = \Constants\Table::MERCHANT_BANKS;
+    protected $table = \Constants\Table::METHODS;
 
     protected $entity = 'methods';
 
