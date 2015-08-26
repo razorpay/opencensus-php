@@ -98,7 +98,7 @@ return [
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
-            'gateway_error_code'  => null
+            'gateway_error_code' => null
         ],
     ],
 

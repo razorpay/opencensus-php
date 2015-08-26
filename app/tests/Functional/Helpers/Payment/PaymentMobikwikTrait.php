@@ -15,14 +15,11 @@ trait PaymentMobikwikTrait
 
         list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
 
-        if ($mock)
-        {
+        if ($mock) {
             $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
 
             return $this->submitPaymentCallbackRedirect($url);
-        }
-        else
-        {
+        } else {
             $options = ['follow_redirects' => false];
             list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, [], $values, $options);
             list($url, $method, $values) = $this->makeRequestAndGetFormData($url, $method, [], $values, $options);

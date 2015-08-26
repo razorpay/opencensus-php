@@ -18,12 +18,12 @@ class Server extends Base\Mock\Server
         $method = $this->getAuthMethod($input);
 
         $content = array(
-            'statuscode'           => '0',
+            'statuscode'    => '0',
             'orderid'       => $input['orderid'],
-            'amount'     => $input['amount'],
-            'statusmessage'      => 'Transaction completed Successfully',
-            'mid'         => $input['mid'],
-            'refid'     => '12345'
+            'amount'        => $input['amount'],
+            'statusmessage' => 'Transaction completed Successfully',
+            'mid'           => $input['mid'],
+            'refid'         => '12345'
         );
 
 
@@ -41,26 +41,27 @@ class Server extends Base\Mock\Server
     {
         $inputArray = [];
 
-        $input = parse_str($input,$inputArray);
+        $input = parse_str($input, $inputArray);
         $input = $inputArray;
         $id = $input['orderid'];
 //        $merchantId = $input['mid'];
         $payment = (new Mobikwik\Repository)->findByPaymentIdAndAction(
-                                                    $id, Action::AUTHORIZE);
+            $id, Action::AUTHORIZE);
 //sd($payment);
         $content = array(
-            'statuscode'     => '0',
+            'statuscode'    => '0',
             'orderid'       => $input['orderid'],
-            'refid'      => '12345',
-            'amount'       => $payment['amount'],
-            'statusmessage'        => 'success',
-            'ordertype' => 'payment'
+            'refid'         => '12345',
+            'amount'        => $payment['amount'],
+            'statusmessage' => 'success',
+            'ordertype'     => 'payment'
         );
 
         $content['checksum'] = $this->generateHash($content);
         $content = array_flip($content);
         $xml = new \SimpleXMLElement('<wallet/>');
-        array_walk_recursive($content, array ($xml, 'addChild'));
+        array_walk_recursive($content, array($xml, 'addChild'));
+
         return $this->makeResponse($xml->asXML());
     }
 
@@ -68,7 +69,7 @@ class Server extends Base\Mock\Server
     {
         $inputArray = [];
 
-        $input = parse_str($input,$inputArray);
+        $input = parse_str($input, $inputArray);
         $input = $inputArray;
 
         parent::refund($input);
@@ -76,16 +77,17 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'refund');
 
         $content = array(
-            'txid'       => $input['txid'],
-            'statuscode'     => '0',
+            'txid'          => $input['txid'],
+            'statuscode'    => '0',
             'status'        => 'success',
-            'refid'      => '12345',
-            'statusmessage'       => 'Some message'
+            'refid'         => '12345',
+            'statusmessage' => 'Some message'
         );
 
         $content = array_flip($content);
         $xml = new \SimpleXMLElement('<wallet/>');
-        array_walk_recursive($content, array ($xml, 'addChild'));
+        array_walk_recursive($content, array($xml, 'addChild'));
+
         return $this->makeResponse($xml->asXML());
     }
 
@@ -144,17 +146,7 @@ class Server extends Base\Mock\Server
 
     protected function getAuthMethod($input)
     {
-//        $method = null;
-//
-//        if (isset($input['PAYMENT_TYPE_ID']))
-//        {
-//            if ($input['PAYMENT_TYPE_ID'] === 'NB')
-//                $method = 'netbanking';
-//            else
-//                $method = 'card';
-//        }
-//        else
-            $method = 'wallet';
+        $method = 'wallet';
 
         return $method;
     }
