@@ -108,7 +108,8 @@ class Gateway extends Base\Gateway
         $content['amount'] = $payment['amount'];
 
         $content['checksum'] = $this->getHashForRefundRequest($content['mid'],
-                                                              $content['txid'], $content['email'],
+                                                              $content['txid'],
+                                                              $content['email'],
                                                               $content['amount']);
         $refund = $this->createGatewayRefundEntity($content, $input);
 
@@ -127,7 +128,8 @@ class Gateway extends Base\Gateway
         if ($content['statuscode'] !== '0') {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                'Payment refund failed with statuscode: ' . $content['statuscode']);
+                $content['statuscode'],
+                $content['statusmessage']);
         }
 
     }
