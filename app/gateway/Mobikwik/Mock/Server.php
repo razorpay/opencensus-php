@@ -34,20 +34,18 @@ class Server extends Base\Mock\Server
         $url .= '?' . http_build_query($content);
 
         return $url;
-//        return ($this->makeResponse(json_encode($content)));
     }
 
     public function verify($input)
     {
         $inputArray = [];
 
-        $input = parse_str($input, $inputArray);
+        parse_str($input, $inputArray);
         $input = $inputArray;
         $id = $input['orderid'];
 //        $merchantId = $input['mid'];
         $payment = (new Mobikwik\Repository)->findByPaymentIdAndAction(
             $id, Action::AUTHORIZE);
-//sd($payment);
         $content = array(
             'statuscode'    => '0',
             'orderid'       => $input['orderid'],
@@ -58,18 +56,17 @@ class Server extends Base\Mock\Server
         );
 
         $content['checksum'] = $this->generateHash($content);
-        $content = array_flip($content);
-        $xml = new \SimpleXMLElement('<wallet/>');
-        array_walk_recursive($content, array($xml, 'addChild'));
 
-        return $this->makeResponse($xml->asXML());
+        $responseContent = $this->generateXMLResponse($content);
+
+        return $this->makeResponse($responseContent);
     }
 
     public function refund($input)
     {
         $inputArray = [];
 
-        $input = parse_str($input, $inputArray);
+        parse_str($input, $inputArray);
         $input = $inputArray;
 
         parent::refund($input);
@@ -84,11 +81,9 @@ class Server extends Base\Mock\Server
             'statusmessage' => 'Some message'
         );
 
-        $content = array_flip($content);
-        $xml = new \SimpleXMLElement('<wallet/>');
-        array_walk_recursive($content, array($xml, 'addChild'));
+        $responseContent = $this->generateXMLResponse($content);
 
-        return $this->makeResponse($xml->asXML());
+        return $this->makeResponse($responseContent);
     }
 
     protected function makeResponse($json)
@@ -101,48 +96,6 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-//    protected function getStatusAndResponseDetails(array & $content, $input)
-//    {
-//        if (isset($input['PAYMENT_DETAILS']))
-//        {
-//            // Card flow
-//            $this->getStatusAndResponseDetailsForCard($content, $input);
-//        }
-//        else
-//        {
-//            ;
-//        }
-//
-//        if ($content['RESPCODE'] !== '01')
-//        {
-////            $content['STATUS'] = Mobikwik\Status::FAILURE;
-//        }
-//    }
-
-//    protected function getStatusAndResponseDetailsForCard(array & $content, $input)
-//    {
-//        $card = $this->getCardDetails($input);
-//
-//        if ($card['number'] === '4012001036275556')
-//        {
-//            $content['RESPCODE'] = 229;
-//        }
-//    }
-//
-//    protected function getCardDetails($input)
-//    {
-//        $secret = \Config::get('gateway.paytm')['test_hash_secret'];
-//
-//        $cardData = Paytm\Checksum::decrypt_e(
-//                            $input['PAYMENT_DETAILS'], $secret);
-//
-//        $details = explode('|', $cardData);
-//        $card['number'] = $details[0];
-//        $card['cvv'] = $details[1];
-//        $card['expiry_date'] = $details[2];
-//
-//        return $card;
-//    }
 
     protected function getAuthMethod($input)
     {
@@ -151,5 +104,12 @@ class Server extends Base\Mock\Server
         return $method;
     }
 
+    protected function generateXMLResponse($content)
+    {
+        $content = array_flip($content);
+        $xml = new \SimpleXMLElement('<wallet/>');
+        array_walk_recursive($content, array($xml, 'addChild'));
+        return ($xml->asXML());
+    }
 
 }
