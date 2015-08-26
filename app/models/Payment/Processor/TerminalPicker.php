@@ -209,7 +209,7 @@ class TerminalPicker
         }
 
         if ((isset($gatewayTerms[Payment\Gateway::MOBIKWIK]) === true) and
-            ($wallet === 'wallet'))
+            ($wallet === 'mobikwik'))
         {
             return $gatewayTerms[Payment\Gateway::MOBIKWIK];
         }

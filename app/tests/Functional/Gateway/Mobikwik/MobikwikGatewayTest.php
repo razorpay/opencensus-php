@@ -22,25 +22,7 @@ class MobikwikGatewayTest extends TestCase
         $this->gateway = 'mobikwik';
     }
 
-//    public function testPayment()
-//    {
-//        $this->setMockGatewayTrue();
-//        $this->fixtures->links['merchant']->enableMobikwik('10000000000000');
-//
-//        $payment = $this->getDefaultPaymentArray();
-//        $payment['wallet'] = 'mobikwik';
-//        $payment['method'] = 'wallet';
-//        $payment = $this->doAuthAndCapturePayment($payment);
-//
-//        $payment = $this->getLastEntity('payment', true);
-//        $this->assertTestResponse($payment);
-//
-//        $payment = $this->getLastEntity('mobikwik', true);
-//        $this->assertArraySelectiveEquals(
-//            $this->testData['testPaymentMobikwikEntity'], $payment);
-//    }
-
-    public function testMobikwikWallet()
+    public function testPayment()
     {
         $this->fixtures->links['merchant']->enableMobikwik('10000000000000');
 
@@ -63,13 +45,6 @@ class MobikwikGatewayTest extends TestCase
 //    public function testFailedPayment()
 //    {
 //        $this->markTestIncomplete();
-//    }
-
-//    public function testPayment3dsecureFailed()
-//    {
-//        $payment = $this->getDefaultPaymentArray();
-//
-//        $payment = $this->runTestForAuthPayment();
 //    }
 
     public function testVerifyPayment()
@@ -98,22 +73,9 @@ class MobikwikGatewayTest extends TestCase
         $payment['method'] = 'wallet';
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $this->refundPayment($payment['id']);
-
+        $refund = $this->refundPayment($payment['id']);
         $refund = $this->getLastEntity('mobikwik', true);
         $this->assertTestResponse($refund);
     }
 
-//    public function testMobikwikWhenNotEnabled()
-//    {
-//        $this->ba->publicAuth();
-//
-//        $payment = $this->getDefaultPaymentArray();
-//        $payment['method'] = 'wallet';
-//        $payment['wallet'] = 'mobikwik';
-//
-//        $testData['request']['content'] = $payment;
-//
-//        $content = $this->startTest($testData);
-//    }
 }

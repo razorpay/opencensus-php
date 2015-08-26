@@ -60,13 +60,15 @@ class ResponseCodeMap
     {
         $class = 'EE\Error\ErrorCode::';
 
-        if (isset(self::$codes[$code]) === false) {
+        if (isset(self::$codes[$code]) === false)
+        {
             return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
         }
 
         $apiCode = self::$codes[$code];
 
-        if (defined($class . $apiCode)) {
+        if (defined($class . $apiCode))
+        {
             return $apiCode;
         }
 

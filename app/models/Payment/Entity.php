@@ -485,7 +485,8 @@ class Entity extends Base\PublicEntity
     public function getMethodWithDetail()
     {
         $walletNames = [
-            'paytm' =>  'PayTM'
+            'paytm' =>  'PayTM',
+            'mobikwik' =>  'Mobikwik'
         ];
 
         $methodName = Method::formatted($this->getMethod());

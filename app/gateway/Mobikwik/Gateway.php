@@ -31,12 +31,13 @@ class Gateway extends Base\Gateway
             'redirecturl' => $input['callbackUrl'],
         );
 
-        if ($this->mode === Mode::TEST) {
+        if ($this->mode === Mode::TEST)
+        {
             $this->addTerminalDetailsInTest($content);
         }
 
         $payment = $this->createGatewayPaymentEntity($content);
-        $content['checksum'] = $this->getPaymentHash($content);
+        $content['checksum'] = $this->getHashForAuthorizeRequest($content);
 
         $request = array(
             'url'     => $this->getUrl($this->action),
@@ -83,7 +84,8 @@ class Gateway extends Base\Gateway
 
         $content = (array)simplexml_load_string($response->body);
 
-        if ($content['statuscode'] !== '0') {
+        if ($content['statuscode'] !== '0')
+        {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 'Payment verification failed with statuscode: ' . $content['statuscode']);
@@ -105,12 +107,16 @@ class Gateway extends Base\Gateway
 
         $content['txid'] = $input['payment']['id'];
         $content['email'] = $payment['email'];
-        $content['amount'] = $payment['amount'];
+        $content['amount'] = (string) ($input['refund']['amount'] / 100);
 
         $content['checksum'] = $this->getHashForRefundRequest($content['mid'],
                                                               $content['txid'],
                                                               $content['email'],
                                                               $content['amount']);
+        if($input['refund']['amount'] < $payment['amount'])
+        {
+            $content['ispartial'] = 'yes';
+        }
         $refund = $this->createGatewayRefundEntity($content, $input);
 
         $content = http_build_query($content);
@@ -125,7 +131,8 @@ class Gateway extends Base\Gateway
         $content['received'] = 1;
         $refund->fill($content)->saveOrFail();
 
-        if ($content['statuscode'] !== '0') {
+        if ($content['statuscode'] !== '0')
+        {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED,
                 $content['statuscode'],
@@ -147,7 +154,8 @@ class Gateway extends Base\Gateway
 
     protected function getMobikwikMerchantId($terminal)
     {
-        if ($this->mode === Mode::TEST) {
+        if ($this->mode === Mode::TEST)
+        {
             return $this->getTestMerchantId();
         }
 
@@ -164,7 +172,7 @@ class Gateway extends Base\Gateway
             'redirecturl',
             'mid');
 
-//        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
         return $this->getHashOfArray($content);
     }
@@ -185,7 +193,8 @@ class Gateway extends Base\Gateway
         $content = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
         $generatedHash = $this->getHashOfArray($content);
-        if ($generatedHash !== $hash) {
+        if ($generatedHash !== $hash)
+        {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
         }
@@ -204,7 +213,8 @@ class Gateway extends Base\Gateway
 
         $hash = $content['checksum'];
 
-        if ($generatedHash !== $hash) {
+        if ($generatedHash !== $hash)
+        {
             throw new Exception\GatewayErrorException(
                 Error\ErrorCode::BAD_REQUEST_ERROR);
         }
@@ -245,9 +255,18 @@ class Gateway extends Base\Gateway
         return $this->getHashOfString($str);
     }
 
+    protected function getHashForAuthorizeRequest($content)
+    {
+
+        $str = "'" . $content['cell'] . "''" . $content['email'] . "''" . $content['amount'] . "''" . $content['orderid'] . "''" . $content['redirecturl'] . "''" . $content['mid'] . "'";
+
+        return $this->getHashOfString($str);
+    }
+
     protected function addTestMerchantIdIfTestMode(array & $content)
     {
-        if ($this->mode === Mode::TEST) {
+        if ($this->mode === Mode::TEST)
+        {
             $content['mid'] = $this->getTestMerchantId();
         }
     }
@@ -297,8 +316,9 @@ class Gateway extends Base\Gateway
         $content = $input['gateway'];
         $code = (int)$input['gateway']['statuscode'];
 
-        if ($content['statuscode'] !== Status::SUCCESS) {
-            $errorCode = Response::getApiErrorCode($code);
+        if ($content['statuscode'] !== Status::SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
 
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
@@ -312,13 +332,16 @@ class Gateway extends Base\Gateway
     {
         $e = null;
 
-        try {
+        try
+        {
             $this->verify($input);
-        } catch (Exception\PaymentVerificationException $e) {
+        } catch (Exception\PaymentVerificationException $e)
+        {
             ;
         }
 
-        if ($e === null) {
+        if ($e === null)
+        {
             throw new Exception\LogicException(
                 'When converting failed payment to authorized, payment verification ' .
                 'should have failed but instead it did not');
@@ -328,11 +351,13 @@ class Gateway extends Base\Gateway
 
         if (($verify->apiSuccess === false) and
             ($verify->gatewaySuccess === true)
-        ) {
+        )
+        {
             $payment = $verify->payment;
             $payment->fill($verify->verifyResponseContent);
             $payment->saveOrFail();
-        } else {
+        } else
+        {
             throw new Exception\LogicException(
                 'Should not have reached here');
         }

@@ -35,5 +35,5 @@ class ResponseCode
         '74' => 'KYC Transactions is not allowed',
         '80' => 'Checksum Mismatch',
         '99' => 'Unexpected Error',
-    }
+    );
 }
