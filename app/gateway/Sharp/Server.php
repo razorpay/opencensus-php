@@ -94,6 +94,8 @@ class Server
             $content['status'] = 'authorized';
         }
 
+        unset($content['card_number']);
+
         $url = $url . '?' . http_build_query($content);
 
         return $url;
