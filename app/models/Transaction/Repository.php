@@ -16,6 +16,7 @@ class Repository extends Base\Repository
         Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_num',
         Entity::ENTITY_ID       => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
     );
 
     public function fetchTxnsExpectedToSettle($timestamp)

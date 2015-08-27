@@ -22,6 +22,7 @@ class Repository extends Base\Repository
         Entity::METHOD          => 'sometimes',
         Entity::GATEWAY         => 'sometimes',
         Entity::EMAIL           => 'sometimes',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
