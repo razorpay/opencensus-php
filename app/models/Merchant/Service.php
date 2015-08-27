@@ -373,7 +373,7 @@ class Service extends Base\Service
         ];
 
         $config = $this->app->config->get('applications.mailgun');
-        $subject = "Your Razorpay account has been activated";
+        $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
 
         $this->app['mailer']->queue(
             [
