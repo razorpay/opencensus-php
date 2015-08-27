@@ -6,3 +6,4 @@ Thumbs.db
 /.git/*
 /node_modules/*
 app/storage/selenium.png
+app/config/dev/*
