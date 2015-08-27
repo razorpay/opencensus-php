@@ -78,6 +78,8 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
+        return;
+
         $payment = $this->getRepo()->findByPaymentIdAndCommand(
             $input['payment']['id'], Command::PAY);
 
