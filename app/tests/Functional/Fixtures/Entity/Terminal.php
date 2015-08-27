@@ -205,4 +205,25 @@ class Terminal extends Base
 
         return parent::create($attributes);
     }
+
+
+
+    public function createSharedMobikwikTerminal()
+    {
+        $termId = \Models\Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL;
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => $merchant['id'],
+            'gateway'                   => 'mobikwik',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay paytm',
+            'gateway_terminal_id'       => 'nodal account paytm',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

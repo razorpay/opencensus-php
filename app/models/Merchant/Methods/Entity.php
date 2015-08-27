@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const CARD              = 'card';
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
+    const MOBIKWIK          = 'mobikwik';
 
     protected $primaryKey = self::MERCHANT_ID;
 
@@ -24,13 +25,15 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CARD,
         self::BANKS,
-        self::PAYTM);
+        self::PAYTM,
+        self::MOBIKWIK);
 
     protected $visible = array(
         self::MERCHANT_ID,
         self::CARD,
         self::BANKS,
-        self::PAYTM);
+        self::PAYTM,
+        self::MOBIKWIK);
 
     protected $public = array(
         self::ENTITY,
@@ -69,6 +72,15 @@ class Entity extends Base\PublicEntity
     public function getPaytm()
     {
         return $this->getAttribute(self::PAYTM);
+    }
+    public function setMobikwik($mobikwik)
+    {
+        $this->setAttribute(self::MOBIKWIK, $mobikwik);
+    }
+    public function getMobikwik()
+    {
+//        return true;
+        return $this->getAttribute(self::MOBIKWIK);
     }
 
     public function setPaytm($paytm)
@@ -113,5 +125,10 @@ class Entity extends Base\PublicEntity
     public function getWalletAttribute()
     {
         return array('paytm' => $this->getPaytmAttribute());
+    }
+
+    public function getMobikwikAttribute()
+    {
+        return (bool) $this->attributes[self::MOBIKWIK];
     }
 }

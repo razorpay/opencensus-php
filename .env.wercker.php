@@ -48,6 +48,8 @@ return array(
     'HDFC_GATEWAY_TEST_TERMINAL_ID'         => getenv('HDFC_GATEWAY_TEST_TERMINAL_ID'),
     'HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'   => getenv('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
 
+    'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'     => 'randomkuchbhi',
+
     'KOTAK_GATEWAY_TEST_HASH_SECRET'        => getenv('KOTAK_GATEWAY_TEST_HASH_SECRET'),
     'KOTAK_GATEWAY_TEST_MERCHANT_ID'        => getenv('KOTAK_GATEWAY_TEST_MERCHANT_ID'),
     'KOTAK_GATEWAY_TEST_ACCESS_CODE'        => getenv('KOTAK_GATEWAY_TEST_ACCESS_CODE'),
@@ -66,6 +68,7 @@ return array(
     'BILLDESK_MOCK'                         => true,
     'HDFC_MOCK'                             => true,
     'KOTAK_MOCK'                            => true,
+    'MOBIKWIK_MOCK'                         => true,
     'PAYTM_MOCK'                            => true,
     'NETBANKING_HDFC_MOCK'                  => true,
 

@@ -275,10 +275,6 @@ class ResponseCode
         923     => 'Invalid parameters',
     );
 
-    protected static $success = array(
-        1, 8,
-    );
-
     public static function getResponseMessage($code)
     {
         $codes = self::$codes;

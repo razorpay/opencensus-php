@@ -18,6 +18,7 @@ trait PaymentTrait
     use PaymentNetbankingTrait;
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
+    use PaymentMobikwikTrait;
 
     use RequestResponseFlowTrait
     {

@@ -298,4 +298,19 @@ class Gateway
 
         return $code;
     }
+
+    protected function getDataWithFieldsInOrder($content, $orderedFields)
+    {
+        $orderedData = [];
+
+        foreach ($orderedFields as $key)
+        {
+            if (isset($content[$key]))
+            {
+                $orderedData[$key] = $content[$key];
+            }
+        }
+
+        return $orderedData;
+    }
 }

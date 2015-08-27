@@ -30,6 +30,10 @@ class CreateMerchantBanks extends Migration {
                   ->default(0);
 
             $table->integer(Methods::CREATED_AT);
+            $table->boolean(MerchantBanks::MOBIKWIK)
+                  ->default(0);
+
+            $table->integer(MerchantBanks::CREATED_AT);
 
             $table->integer(Methods::UPDATED_AT);
 
@@ -37,6 +41,12 @@ class CreateMerchantBanks extends Migration {
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->index(MerchantBanks::CARD);
+
+            $table->index(MerchantBanks::PAYTM);
+
+            $table->index(MerchantBanks::MOBIKWIK);
         });
     }
 

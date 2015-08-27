@@ -170,4 +170,24 @@ class Merchant extends Base
         $repo->saveOrFail($merchant);
         return $merchant;
     }
+
+
+    public function enableMobikwik($id = '10000000000000')
+    {
+        $repo = new \Models\Merchant\Banks\Repository;
+        $methods = $repo->findOrFail($id);
+        $methods->setMobikwik(true);
+        $repo->saveOrFail($methods);
+        return $methods;
+    }
+
+    public function disableMobikwik($id = '10000000000000')
+    {
+        $repo = new \Models\Merchant\Banks\Repository;
+        $methods = $repo->findOrFail($id);
+        $methods->setMobikwik(false);
+        $repo->saveOrFail($methods);
+        return $methods;
+    }
+
 }
