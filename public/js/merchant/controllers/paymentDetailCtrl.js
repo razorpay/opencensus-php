@@ -7,12 +7,12 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
         created: "bg-light",
         authorized: "bg-info",
         captured: "bg-success",
-        refunded: "bg-warning",
+        refunded: "bg-primary",
         failed: "bg-danger"
       }
       return mapper[status];
     }
-    
+
     $scope.openRefundModal  = function () {
       var modalInstance = $modal.open({
         templateUrl: 'refundModalContent.html',
@@ -117,13 +117,13 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
       request.success(function(data){
         if(data.success){
           $scope.alerts.addAlert('success', "Payment Refunded", true);
-      
+
           if(refundAmount == unrefundedAmount)
             $scope.entity.refund_status = 'full';
           else
             $scope.entity.refund_status = 'partial';
 
-          $scope.entity.amount_refunded = parseInt($scope.entity.amount_refunded) + refundAmount; 
+          $scope.entity.amount_refunded = parseInt($scope.entity.amount_refunded) + refundAmount;
         }
         else {
           angular.forEach(data.errors, function(value, key){
@@ -147,7 +147,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
 
       request.success(function(data){
         $scope.alerts.resetAlerts();
-        
+
         if(data.success){
           $scope.entity.refunds = data.data;
           $scope.isRefundsCollapsed = false;
@@ -164,7 +164,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
     };
 }])
 //Capture Modal Box Controller
-.controller('CaptureModalCtrl', ['$scope', '$modalInstance', 'amount', 
+.controller('CaptureModalCtrl', ['$scope', '$modalInstance', 'amount',
   function($scope, $modalInstance, amount) {
     $scope.amount = amount;
     $scope.ok = function (amount) {
@@ -176,7 +176,7 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
     };
 }])
 //Refund Modal Box Controller
-.controller('RefundModalCtrl', ['$scope', '$modalInstance', 'amount', 
+.controller('RefundModalCtrl', ['$scope', '$modalInstance', 'amount',
   function($scope, $modalInstance, amount) {
     $scope.amount = amount;
     $scope.ok = function (amount) {
