@@ -142,7 +142,7 @@ class DatabaseSeeder extends Seeder
                 $this->createTestTerminals();
             }
 
-            DB::table(Table::MERCHANT_BANKS)->insert(
+            DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   =>  Account::DEMO_ACCOUNT,
                     'banks'         =>  json_encode(Netbanking::getAllBanks()),
@@ -151,7 +151,7 @@ class DatabaseSeeder extends Seeder
                 )
             );
 
-            DB::table(Table::MERCHANT_BANKS)->insert(
+            DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   =>  Account::TEST_ACCOUNT,
                     'banks'         =>  json_encode(Netbanking::getAllBanks()),
