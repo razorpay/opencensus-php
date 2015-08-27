@@ -174,7 +174,7 @@ class Merchant extends Base
 
     public function enableMobikwik($id = '10000000000000')
     {
-        $repo = new \Models\Merchant\Banks\Repository;
+        $repo = new \Models\Merchant\Methods\Repository;
         $methods = $repo->findOrFail($id);
         $methods->setMobikwik(true);
         $repo->saveOrFail($methods);
@@ -183,7 +183,7 @@ class Merchant extends Base
 
     public function disableMobikwik($id = '10000000000000')
     {
-        $repo = new \Models\Merchant\Banks\Repository;
+        $repo = new \Models\Merchant\Methods\Repository;
         $methods = $repo->findOrFail($id);
         $methods->setMobikwik(false);
         $repo->saveOrFail($methods);
