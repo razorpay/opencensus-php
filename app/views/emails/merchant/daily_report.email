@@ -288,7 +288,7 @@
                     <table class="three columns">
                       <tr>
                         <td class="darktext center">
-                          {{{\Carbon\Carbon::createFromTimeStamp($payment['updated_at'], "Asia/Kolkata")->format('h:i a')}}}
+                          {{{\Carbon\Carbon::createFromTimeStamp($payment['authorized_at'], "Asia/Kolkata")->format('j M h:i a')}}}
                         </td>
                       </tr>
                     </table>
