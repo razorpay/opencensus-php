@@ -22,7 +22,8 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         email:        ['Contact Email'],
         refund_status: ['all', 'partial', 'full'],
         bank:         ['Bank Code'],
-        wallet:       ['all', 'paytm', 'mobikwik']
+        wallet:       ['all', 'paytm', 'mobikwik'],
+        merchant_id:  ['Merchant Id']
       },
       merchant: {
         activated:    ['all', 0, 1],
@@ -36,7 +37,13 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         settlement_id: ['Settlement Id'],
         entity_id:    ['Payment/Refund/Settlement Id'],
         settled:      ['all', 0, 1],
-        type:         ['all', 'payment', 'refund', 'settlement', 'adjustment']
+        type:         ['all', 'payment', 'refund', 'settlement', 'adjustment'],
+        merchant_id:  ['Merchant Id']
+      },
+      card: {
+        network:      ['all', 'visa', 'mastercard', 'maestro', 'dinersclub', 'amex', 'rupay'],
+        merchant_id:  ['Merchant Id'],
+        iin:          ['IIN']
       },
       billdesk: {
         AuthStatus: ['all', '0001', '0300', '0002', '0399', 'NA'],
@@ -62,6 +69,12 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       paytm: {
         payment_id: ['Payment Id'],
         received:   ['all', 0, 1]
+      },
+      adjustment: {
+        merchant_id: ['Merchant Id']
+      },
+      refund: {
+        merchant_id: ['Merchant Id']
       }
     };
 
