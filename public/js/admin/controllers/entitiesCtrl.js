@@ -13,44 +13,14 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       'mobikwik'
     ];
 
+    // This is the list of available filters
+    // len==1 means a text input, rest are drop-downs
+    // This list is alphabetically sorted, take care to maintain that
     $scope.availableFilters = {
-      payment: {
-        status:       ['all', 'authorized', 'failed', 'captured', 'refunded'],
-        verified:     ['all', 0, 1],
-        method:       ['all', 'card', 'netbanking', 'wallet'],
-        gateway:      gatewayList,
-        email:        ['Contact Email'],
-        refund_status: ['all', 'partial', 'full'],
-        bank:         ['Bank Code'],
-        wallet:       ['all', 'paytm', 'mobikwik'],
-        merchant_id:  ['Merchant Id']
+      adjustment: {
+        merchant_id: ['Merchant Id']
       },
-      merchant: {
-        activated:    ['all', 0, 1],
-        live:         ['all', 0, 1],
-        hold_funds:   ['all', 0, 1]
-      },
-      terminal: {
-        gateway:      gatewayList
-      },
-      transaction: {
-        settlement_id: ['Settlement Id'],
-        entity_id:    ['Payment/Refund/Settlement Id'],
-        settled:      ['all', 0, 1],
-        type:         ['all', 'payment', 'refund', 'settlement', 'adjustment'],
-        merchant_id:  ['Merchant Id']
-      },
-      card: {
-        network:      ['all', 'visa', 'mastercard', 'maestro', 'dinersclub', 'amex', 'rupay'],
-        merchant_id:  ['Merchant Id'],
-        iin:          ['IIN']
-      },
-      billdesk: {
-        AuthStatus: ['all', '0001', '0300', '0002', '0399', 'NA'],
-        received:   ['all', 0, 1],
-        payment_id: ['Payment Id']
-      },
-      hdfc: {
+      axis_genius: {
         payment_id: ['Payment Id'],
         received:   ['all', 0, 1]
       },
@@ -58,23 +28,56 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         payment_id: ['Payment Id'],
         received:   ['all', 0, 1]
       },
+      billdesk: {
+        AuthStatus: ['all', '0001', '0300', '0002', '0399', 'NA'],
+        received:   ['all', 0, 1],
+        payment_id: ['Payment Id']
+      },
+      card: {
+        iin:          ['IIN'],
+        merchant_id:  ['Merchant Id'],
+        network:      ['all', 'visa', 'mastercard', 'maestro', 'dinersclub', 'amex', 'rupay']
+      },
+      hdfc: {
+        payment_id: ['Payment Id'],
+        received:   ['all', 0, 1]
+      },
+      merchant: {
+        activated:    ['all', 0, 1],
+        hold_funds:   ['all', 0, 1],
+        live:         ['all', 0, 1]
+      },
       netbanking: {
         payment_id: ['Payment Id'],
         received:   ['all', 0, 1]
       },
-      axis_genius: {
-        payment_id: ['Payment Id'],
-        received:   ['all', 0, 1]
+      payment: {
+        bank:         ['Bank Code'],
+        email:        ['Contact Email'],
+        gateway:      gatewayList,
+        merchant_id:  ['Merchant Id'],
+        method:       ['all', 'card', 'netbanking', 'wallet'],
+        refund_status: ['all', 'partial', 'full'],
+        status:       ['all', 'authorized', 'failed', 'captured', 'refunded'],
+        verified:     ['all', 0, 1],
+        wallet:       ['all', 'paytm', 'mobikwik']
       },
       paytm: {
         payment_id: ['Payment Id'],
         received:   ['all', 0, 1]
       },
-      adjustment: {
-        merchant_id: ['Merchant Id']
-      },
       refund: {
         merchant_id: ['Merchant Id']
+      },
+      terminal: {
+        gateway:      gatewayList
+      },
+      transaction: {
+        entity_id:    ['Payment/Refund/Settlement Id'],
+        merchant_id:  ['Merchant Id'],
+        settled:      ['all', 0, 1],
+        settlement_id: ['Settlement Id'],
+        type:         ['all', 'payment', 'refund', 'settlement', 'adjustment']
       }
     };
 
