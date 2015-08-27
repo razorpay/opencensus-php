@@ -14,6 +14,8 @@
 
             <p>The DBA for the merchant is: {{{$dba}}}.</p>
 
+            <p>Contact name for merchant is: {{{$name}}}</p>
+
             <p>The website link for the business is: <a href="{{$website}}" title="{{{$dba}}}">{{{$dba}}}</a>.
 
         </div>
