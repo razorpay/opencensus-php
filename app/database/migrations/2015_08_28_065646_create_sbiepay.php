@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Models\Base\UniqueIdEntity;
 
 class CreateSbiepay extends Migration {
 
