@@ -47,7 +47,7 @@ return [
         'vpc_3DSenrolled' => 'Y',
         'vpc_3DSstatus' => 'A',
         'vpc_AuthorizeId' => null,
-        'vpc_BatchNo' => '20150827', // '20150503',
+        //'vpc_BatchNo' => '20150827', // '20150503',
         'vpc_Card' => 'MC',
         'vpc_ReceiptNo' => '511415585968',
 //        'vpc_ShopTransactionNo' => '1100087478',
