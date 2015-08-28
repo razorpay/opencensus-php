@@ -8,7 +8,8 @@ app.controller('PaymentListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
         created: "bg-light",
         authorized: "bg-info",
         captured: "bg-success",
-        failed: "bg-danger"
+        failed: "bg-danger",
+        refunded: "bg-primary"
       }
       return mapper[status];
     }
