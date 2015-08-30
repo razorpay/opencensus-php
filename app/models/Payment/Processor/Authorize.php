@@ -359,10 +359,7 @@ trait Authorize
 
         $banks = (new Methods\Core)->getMerchantBanks($merchant);
 
-        if ($banks === null)
-            $banks = [];
-        else
-            $banks = $banks->getBanks();
+        $banks = ($banks === null) ? [] : $banks->getBanks();
 
         $bank = $payment->getBank();
 
