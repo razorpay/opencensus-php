@@ -52,14 +52,6 @@
         <td colspan="2" height="25"><p><strong>&nbsp;Basic 3-Party Transaction Fields</strong></p></td>
     </tr>
     <tr>
-        <!-- <td align="right"><strong><em> VPC Version: </em></strong></td> -->
-        <td><input type="hidden" name="vpc_Version" value="1" size="20" maxlength="8"/></td>
-    </tr>
-    <tr class="shade">
-        <!-- <td align="right"><strong><em>Command Type: </em></strong></td> -->
-        <td><input type="hidden" name="vpc_Command" value="pay" size="20" maxlength="16"/></td>
-    </tr>
-    <tr>
         <td align="right"><strong><em>MerchantID: </em></strong></td>
         <td><input name="vpc_Merchant" value="" size="20" maxlength="16"/></td>
     </tr>
@@ -71,27 +63,11 @@
         <td align="right"><strong><em>Secure secret: </em></strong></td>
         <td><input name="vpc_Secret" value="" size="20" maxlength="40"/></td>
     </tr>
-    <tr class="shade">
+<!--     <tr class="shade">
         <td align="right"><strong><em>Transaction OrderInfo: </em></strong></td>
         <td><input name="vpc_OrderInfo" value="" size="20" maxlength="34"/></td>
     </tr>
-    <tr>
-        <td align="right"><strong><em>Purchase Amount: </em></strong></td>
-        <td><input name="vpc_Amount" value="500" maxlength="10"/></td>
-    </tr>
-    <tr>
-        <td align="right"><strong><em>Currency: </em></strong></td>
-        <td><input name="vpc_Currency" value="INR" maxlength="10"/></td>
-    </tr>
-    <tr class="shade">
-        <!-- <td align="right"><strong><em>Receipt ReturnURL: </em></strong></td> -->
-        <!-- <td><input name="vpc_ReturnURL" size="65" value="http://127.0.0.1/migs2/vpc_php_authenticate_and_pay_merchanthost_dr.php" maxlength="250"/></td> -->
-    </tr>
-    <tr>
-        <!-- <td align="right"><strong><em>Payment Server Display Language Locale: </em></strong></td> -->
-        <!-- <td><input name="vpc_Locale" value="en" size="20" maxlength="5"/></td> -->
-    </tr>
-
+ -->
     <tr>    <td colspan="2">&nbsp;</td></tr>
 
     <tr>
@@ -100,81 +76,6 @@
     </tr>
 
 
-    <tr><td colspan="2">&nbsp;<hr width="75%">&nbsp;</td></tr>
-    <tr class="title">
-        <td colspan="2"><p><b>&nbsp;Optional External Payment Selection Fields</b></p></td>
-    </tr>
-    <tr>
-        <td align="right"><strong><em>Gateway: </em></strong></td>
-        <td><select name=vpc_gateway>
-        	      <option value="">None</option>
-        	      <option value="ssl" selected="selected">3 Party Gateway</option>
-        	      <option value="threeDSecure">3D Secure Authentication Only Gateway</option>
-        	   </select></td>
-    </tr>
-    <tr class="shade">
-        <td align="right"><strong><em>Card: </em></strong></td>
-        <td><select name="vpc_Card">
-        	      <option value="">None</option>
-                <option value="MasterCard" selected="selected">MasterCard</option>
-                <option value="Visa">Visa</option>
-                <option value="VisaDebit">VisaDebit</option>
-                <option value="Amex">American Express</option>
-                <option value="AmexPurchaseCard">Amex Corporate Purchase Card</option>
-                <option value="Dinersclub">Diners Club</option>
-        	   </select></td>
-    </tr>
-
-    <tr><td colspan="2">&nbsp;<hr width="75%">&nbsp;</td></tr>
-    <tr class="title">
-        <td colspan="2"><p><b>&nbsp;Optional Card Details (Requires External Payment Selection)</b></p></td>
-    </tr>
-    <tr>
-        <td align="right"><strong><em>Card Number: </em></strong></td>
-        <td><input type="text" name="vpc_CardNum" maxlength="16" value="5123456789012346"></td>
-    </tr>
-    <tr class="shade">
-        <td align="right"><strong><em>Card Expiry (YYMM): </em></strong></td>
-        <td><input type="text" name="vpc_CardExp" maxlength="4" value="1705"></td>
-    </tr>
-
-    <tr><td colspan="2">&nbsp;<hr width="75%">&nbsp;</td></tr>
-    <tr class="title">
-        <td colspan="2"><p><b>&nbsp;Optional Card Security Code (CVV2) Field (Requires Card Details)</b></p></td>
-    </tr>
-    <tr>
-        <td align="right"><strong><em>Card Security Code (CVV2): </em></strong></td>
-        <td><input type="text" name="vpc_CardSecurityCode" maxlength="4" value="333"/></td>
-    </tr>
-
-    <tr><td colspan="2">&nbsp;<hr width="75%">&nbsp;</td></tr>
-    <tr class="title">
-        <td colspan="2"><p><strong>&nbsp;Optional Ticket Number Field</strong></p></td>
-    </tr>
-    <tr>
-        <td align="right"><strong><em>TicketNo: </em></strong></td>
-        <td><input name="vpc_TicketNo" maxlength="15" value=""></td>
-    </tr>
-
-    <tr><td colspan="2">&nbsp;<hr width="75%">&nbsp;</td></tr>
-	<tr>
-        <td colspan="2">
-        <p class='blue'><strong><em><u>Note</u>:</em></strong><br/>
-        Any information passed through the customer's browser
-        can potentially be modified by the customer, or even by third parties to
-        fraudulently alter the transaction data. Therefore all transactional
-        information should <strong>not</strong> be passed through the browser in
-        a way that could potentially be modified (e.g. hidden form fields).
-        Transaction data should only be accepted once from a browser at the
-        point of input, and then kept in a way that does not allow others
-        to modify it (e.g. database, server session, etc.). Any transaction
-        information displayed to a customer, such as amount, should be passed
-        only as display information and the actual transactional data should be
-        retrieved from the secure source at the point of processing the transaction.<br><br>
-        Fields like return links back to the order page (AgainLink), titles, and any other non-transactional information are only included here in the example for information purposes. They do not apply to the transaction and do not have be included in production code orders.
-        </p>
-        </td>
-    </tr>
 
     <tr>
         <td width="40%">&nbsp;</td>

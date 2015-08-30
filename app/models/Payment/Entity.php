@@ -7,6 +7,7 @@ use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Payment;
 use Models\Payment\Refund;
+use Models\Payment\Processor\Netbanking;
 use Models\Bank\Name as BankNames;
 
 class Entity extends Base\PublicEntity
@@ -153,7 +154,8 @@ class Entity extends Base\PublicEntity
         $contact = str_replace(')', '', $contact);
 
         // Remove the 0 at the start
-        if ($contact[0] === '0')
+        if ((strlen($contact) > 1) and
+            ($contact[0] === '0'))
         {
             $contact = substr($contact, 1);
         }
@@ -249,6 +251,12 @@ class Entity extends Base\PublicEntity
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setErrorNull()
+    {
+        $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
 // ----------------------- Setters Ends-----------------------------------------
@@ -452,7 +460,7 @@ class Entity extends Base\PublicEntity
     public function getBankName()
     {
         $bankId = $this->getBank();
-        return BankNames::getName($bankId);
+        return Netbanking::getName($bankId);
     }
 
     public function getWallet()
@@ -477,24 +485,32 @@ class Entity extends Base\PublicEntity
 
     public function getMethodWithDetail()
     {
+        $method = Method::formatted($this->getMethod());
         $walletNames = [
-            'paytm' =>  'PayTM'
+            'paytm' =>  'PayTM',
+            'mobikwik' =>  'Mobikwik'
         ];
-
-        $methodName = Method::formatted($this->getMethod());
 
         switch($this->getMethod())
         {
             case Method::CARD:
-                return [$methodName, $this->getFormattedCard()];
+                return [$method, $this->getFormattedCard()];
                 break;
             case Method::NETBANKING:
-                return [$methodName, $this->getBankName()];
+                return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
-                return [$methodName, $walletNames[$this->getWallet()]];
+                return [$method, ucfirst($this->getWallet())];
                 break;
         }
+    }
+
+    public function getErrorDetails()
+    {
+        return [
+            self::ERROR_CODE => $this->getAttribute(self::ERROR_CODE),
+            self::ERROR_DESCRIPTION => $this->getAttribute(self::ERROR_DESCRIPTION),
+        ];
     }
 
     /**

@@ -278,14 +278,14 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $banks = (new Banks\Core)->getEnabledAndDisabledBanks($merchant);
+        $banks = (new Methods\Core)->getEnabledAndDisabledBanks($merchant);
 
         return $banks;
     }
 
     public function getEnabledBanks()
     {
-        $banks = (new Banks\Core)->getMerchantBanks($this->merchant);
+        $banks = (new Methods\Core)->getMerchantBanks($this->merchant);
 
         if ($banks === null)
             return [];
@@ -297,7 +297,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant(
+        return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input
         );
     }
@@ -305,7 +305,7 @@ class Service extends Base\Service
     public function setBanksForAllMerchants($input)
     {
         // @todo: finish this.
-        // return (new Merchant\Banks\Core)->setPaymentBanksForAllMerchants($input);
+        // return (new Merchant\Methods\Core)->setPaymentBanksForAllMerchants($input);
     }
 
     public function getPaymentMethods()
@@ -321,7 +321,7 @@ class Service extends Base\Service
                 'mobikwik'  => false,
             ]);
 
-        $methods = (new Merchant\Banks\Core)->getMerchantBanks($this->merchant);
+        $methods = (new Merchant\Methods\Core)->getMerchantBanks($this->merchant);
 
         if ($methods !== null)
         {
@@ -342,7 +342,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentMethods($merchant, $input);
+        return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
     }
 
     public function getMerchantBeneficiaryFile()
@@ -373,7 +373,7 @@ class Service extends Base\Service
         ];
 
         $config = $this->app->config->get('applications.mailgun');
-        $subject = "Your Razorpay account has been activated";
+        $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
 
         $this->app['mailer']->queue(
             [
@@ -396,9 +396,18 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants()
     {
-        $merchants = $this->repo->fetch([Entity::ACTIVATED => 1]);
+        $filter = [];
 
-        $counts = ['sent' => 0, 'skipped' => 0];
+        //In test, none of the merchants are activated
+        if ($this->mode === Mode::LIVE)
+        {
+            $filter = [Entity::ACTIVATED => 1];
+        }
+
+        $merchants = $this->repo->fetch($filter);
+
+        // sent will hold array of merchant data
+        $response = ['sent' => [], 'skipped' => 0];
 
         foreach ($merchants as $merchant)
         {
@@ -406,16 +415,17 @@ class Service extends Base\Service
 
             $sent = $dailyReport->send();
 
-            if($sent)
+            if(empty($sent))
             {
-                $counts['sent']++;
+                $response['skipped']++;
             }
             else
             {
-                $counts['skipped']++;
+                $response['sent'][] = $sent;
             }
         }
 
-        return $counts;
+        return $response;
+
     }
 }

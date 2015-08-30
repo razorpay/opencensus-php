@@ -13,6 +13,7 @@ class Gateway
     const BILLDESK          = 'billdesk';
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
+    const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const SHARP             = 'sharp';
@@ -24,6 +25,7 @@ class Gateway
         self::BILLDESK          => Settlement\Channel::KOTAK,
         self::HDFC              => Settlement\Channel::KOTAK,
         self::KOTAK             => Settlement\Channel::KOTAK,
+        self::MOBIKWIK          => Settlement\Channel::KOTAK,
         self::PAYTM             => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
         self::SHARP             => Settlement\Channel::KOTAK,
@@ -43,6 +45,11 @@ class Gateway
             self::PAYTM,
             self::BILLDESK,
             self::NETBANKING_HDFC,
+        ),
+
+        Method::WALLET => array(
+            self::MOBIKWIK,
+            self::PAYTM,
         ),
     );
 

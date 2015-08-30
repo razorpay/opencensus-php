@@ -9,7 +9,7 @@ trait RepositoryFetch
     protected $fetchParamRules = array(
         'from'          => 'integer',
         'to'            => 'integer',
-        'count'         => 'integer|max:100|min:1',
+        'count'         => 'integer|min:1',
         'skip'          => 'integer');
 
 //    protected $appFetchParamRules = array();
@@ -66,7 +66,14 @@ trait RepositoryFetch
         {
             $func = 'addQueryParam'.studly_case($key);
 
-            $this->$func($query, $params);
+            if (method_exists($this, $func))
+            {
+                $this->$func($query, $params);
+            }
+            else
+            {
+                $query = $query->where($key, '=', $params[$key]);
+            }
         }
 
         $this->addQueryOrder($query);
@@ -164,9 +171,14 @@ trait RepositoryFetch
 
     protected function addDefaultParams(array & $params)
     {
-        if (isset($params['count']) === false)
+        if ($this->auth->isPrivilegeAuth() === false)
         {
-            $params['count'] = 10;
+            $this->fetchParamRules['count'] .= '|max:100';
+
+            if (isset($params['count']) === false)
+            {
+                $params['count'] = 10;
+            }
         }
     }
 }

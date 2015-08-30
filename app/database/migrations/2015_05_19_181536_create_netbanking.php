@@ -25,6 +25,7 @@ class CreateNetbanking extends Migration
             $table->string('action');
             $table->string('amount');
             $table->string('bank');
+            $table->boolean('received')->default(0);
             $table->string('client_code')->nullable();
             $table->string('merchant_code')->nullable();
             $table->string('bank_payment_id')->nullable();
@@ -42,6 +43,8 @@ class CreateNetbanking extends Migration
                   ->references('id')
                   ->on('payments')
                   ->on_delete('restrict');
+
+            $table->index('received');
         });
     }
 

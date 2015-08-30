@@ -8,7 +8,6 @@ use EE\Exception;
 use Gateway\Base;
 use Gateway\Base\Action;
 use Gateway\Paytm;
-use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -103,6 +102,7 @@ class Gateway extends Base\Gateway
 
         $values = $this->lowerArrayKeys($input['gateway']);
 
+        $values['received'] = 1;
         $payment->fill($values);
         $payment->saveOrFail();
 
@@ -147,6 +147,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::MISC_TRACE_CODE, ['paytm' => $content]);
 
         $attr = $this->lowerArrayKeys($content);
+        $attr['received'] = 1;
+
         $refund->fill($attr)->saveOrFail();
 
         if ($content['STATUS'] !== Status::SUCCESS)
@@ -164,7 +166,7 @@ class Gateway extends Base\Gateway
         parent::verify($input);
 
         $data = array(
-            'MID'       => $input['terminal']['gateway_terminal_id'],
+            'MID'       => $input['terminal']['gateway_merchant_id'],
             'ORDERID'  => $input['payment']['id']);
 
         $this->addTestMerchantIdIfTestMode($content);
@@ -185,7 +187,7 @@ class Gateway extends Base\Gateway
             'url' => $this->getUrl($this->action).'?'.$content,
             'content' => [],
             'method' => 'get');
-//!d($request);
+
         $response = $this->runRequestResponseFlow($request);
         $content = json_decode($response->body, true);
 

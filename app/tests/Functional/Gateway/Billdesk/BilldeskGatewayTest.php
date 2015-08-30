@@ -52,6 +52,13 @@ class BilldeskGatewayTest extends TestCase
             $this->testData['testPaymentBilldeskEntity'], $payment);
     }
 
+    public function testPaymentFailed()
+    {
+        $this->markTestIncomplete();
+
+        $this->failPaymentOnBankPage = true;
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -107,6 +114,6 @@ class BilldeskGatewayTest extends TestCase
         $content = $this->startTest();
 
         $count = count($content['netbanking']);
-        $this->assertEquals(48, $count);
+        $this->assertEquals(56, $count);
     }
 }

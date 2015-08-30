@@ -82,4 +82,11 @@ class AxisGatewayTest extends TestCase
 
         $this->assertEquals($amount, $refund['vpc_amount']);
     }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->verifyPayment($payment['id']);
+    }
 }

@@ -14,6 +14,7 @@ class Entity extends Base\Entity
         'id',
         'payment_id',
         'bank',
+        'received',
         'amount',
         'client_code',
         'merchant_code',
@@ -27,6 +28,7 @@ class Entity extends Base\Entity
     protected $fillable = array(
         'bank',
         'amount',
+        'received',
         'client_code',
         'merchant_code',
         'bank_payment_id',

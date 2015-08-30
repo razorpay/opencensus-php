@@ -178,4 +178,15 @@ class MockGatewayController extends BaseController
 
         return Redirect::to($url);
     }
+
+    public function postMobikwikPayment()
+    {
+        $input = Input::all();
+
+        $server = new Gateway\Mobikwik\Mock\Server;
+
+        $url = $server->authorize($input);
+
+        return Redirect::to($url);
+    }
 }

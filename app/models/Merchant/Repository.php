@@ -16,6 +16,8 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::ACTIVATED       => 'sometimes|boolean',
+        Entity::HOLD_FUNDS      => 'sometimes|boolean',
+        Entity::LIVE            => 'sometimes|boolean',
     );
 
     public function getBalanceLockForUpdate($id)
@@ -83,8 +85,15 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function addQueryParamActivated($query, $params)
+    public function fetchRecentMerchants()
     {
-        $query->where(Entity::ACTIVATED, '=', $params[Entity::ACTIVATED]);
+        $repo = $this->repo;
+
+        // 00:00 Today
+        $today = \Carbon\Carbon::today("Asia/Kolkata")->timestamp;
+
+        $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
+
+        return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
 }

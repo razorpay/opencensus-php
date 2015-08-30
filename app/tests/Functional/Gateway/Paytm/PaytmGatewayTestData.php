@@ -77,6 +77,7 @@ return [
 
     'testPaymentPaytmEntity' => [
         'action' => 'authorize',
+        'received' => true,
         'request_type' => 'SEAMLESS',
         'method' => 'card',
         'txn_amount' => '500',
@@ -117,6 +118,7 @@ return [
 
     'testPaytmWalletEntity' => [
         'action' => 'authorize',
+        'received' => true,
         'request_type' => 'DEFAULT',
         'method' => 'wallet',
         'txn_amount' => '500',
@@ -189,6 +191,7 @@ return [
 
     'testRefundPayment' => [
         'action' => 'refund',
+        'received' => true,
         'request_type' => 'DEFAULT',
         'method' => 'netbanking',
         'txn_amount' => '500',

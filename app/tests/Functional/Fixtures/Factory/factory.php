@@ -189,7 +189,7 @@ $factory('Models\Card\Detail', [
     'trivia' => $faker->sentence,
 ]);
 
-$factory('Models\Merchant\Banks\Entity', [
+$factory('Models\Merchant\Methods\Entity', [
     'merchant_id' => 10000000000000,
     'card'  => '1',
     'banks' => '[]',

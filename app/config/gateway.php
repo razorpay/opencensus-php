@@ -16,6 +16,7 @@ return array(
         'billdesk',
         'hdfc',
         'kotak',
+        'mobikwik',
         'paytm',
         'netbanking_hdfc',
         'sharp',
@@ -26,6 +27,7 @@ return array(
     'mock_axis_migs'        => $_ENV['AXIS_MIGS_MOCK'],
     'mock_axis_genius'      => $_ENV['AXIS_GENIUS_MOCK'],
     'mock_kotak'            => $_ENV['KOTAK_MOCK'],
+    'mock_mobikwik'         => $_ENV['MOBIKWIK_MOCK'],
     'mock_paytm'            => $_ENV['PAYTM_MOCK'],
     'mock_netbanking_hdfc'  => $_ENV['NETBANKING_HDFC_MOCK'],
     'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
@@ -63,6 +65,10 @@ return array(
         'test_merchant_id'  => $_ENV['KOTAK_GATEWAY_TEST_MERCHANT_ID'],
         'test_access_code'  => $_ENV['KOTAK_GATEWAY_TEST_ACCESS_CODE'],
         'test_terminal_id'  => $_ENV['KOTAK_GATEWAY_TEST_TERMINAL_ID'],
+    ),
+
+    'mobikwik' => array(
+        'test_hash_secret'  => $_ENV['MOBIKWIK_GATEWAY_TEST_HASH_SECRET'],
     ),
 
     'paytm' => array(

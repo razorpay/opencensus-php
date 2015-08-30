@@ -112,15 +112,15 @@ trait Enroll
         $data['amt'] = $payment['amount']/100;
 
         // Collect udf fields
-        $data['udf1'] = 'junk';
+        $data['udf1'] = 'test';
 
         $data['udf2'] = $payment['email'];
 
         $data['udf3'] = $payment['contact'];
 
-        $data['udf4'] = 'junk';
+        $data['udf4'] = 'test';
 
-        $data['udf5'] = 'junk';
+        $data['udf5'] = 'test';
 
         $this->udfCheckAndMeetHdfcRequirements($data);
 

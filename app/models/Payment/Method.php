@@ -11,9 +11,9 @@ class Method
     public static function formatted($method)
     {
         $methodFormat = [
-            'card'          => 'Card',
-            'netbanking'    => 'Net Banking',
-            'wallet'        => 'Wallet'
+            self::CARD          => 'Card',
+            self::NETBANKING    => 'Net Banking',
+            self::WALLET        => 'Wallet'
         ];
 
         return $methodFormat[$method];

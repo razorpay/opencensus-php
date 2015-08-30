@@ -165,4 +165,19 @@ class Payment extends Base
 
         return $payment;
     }
+
+    public function createFailed(array $attributes = array())
+    {
+        $defaultValues = array(
+            'status' => 'failed',
+            'terminal_id' => '1n25f6uN5S1Z5a',
+            'card_id' => '12345678901234',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = parent::create($attributes);
+
+        return $payment;
+    }
 }
