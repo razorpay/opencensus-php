@@ -105,24 +105,13 @@ trait Capture
     {
         $this->repo->transaction(function()
         {
-            $payment = $this->payment;
-
-            $this->repo->lockForUpdate($payment->getKey());
+            $this->repo->lockForUpdate($this->payment->getKey());
 
             $this->updatePaymentCaptured();
 
-            if (($payment->getCreatedAt() < 1) or
-                (Payment\Gateway::supportsAuthAndCapture($payment->getGateway())))
-            {
-                $txn = (new Transaction\Core)->createFromPaymentCaptured($payment);
-            }
-            else
-            {
-                $txn = (new Transaction\Core)->updateOnCapture($payment);
-            }
+            $this->createTransactionFromCapturedPayment($this->payment);
 
-            $txn->save();
-            $payment->save();
+            $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
         //
@@ -136,7 +125,25 @@ trait Capture
         $this->payment->setStatus(Payment\Status::CAPTURED);
 
         $this->payment->setCaptureTimestamp();
+    }
 
-        $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
+    protected function createTransactionFromCapturedPayment($payment)
+    {
+        $txnCore = new Transaction\Core;
+
+        $auth = (($payment->getAuthorizeTimestamp() < 1) or
+                 (Payment\Gateway::supportsAuthAndCapture($payment->getGateway())));
+
+        if ($auth === true)
+        {
+            $txn = $txnCore->createFromPaymentCaptured($payment);
+        }
+        else
+        {
+            $txn = $txnCore->updateOnCapture($payment);
+        }
+
+        $txn->saveOrFail();
+        $payment->saveOrFail();
     }
 }
