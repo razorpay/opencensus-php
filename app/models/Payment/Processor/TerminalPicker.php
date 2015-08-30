@@ -367,7 +367,7 @@ class TerminalPicker
 
     protected function getTerminals($merchant)
     {
-        return $this->repo->getByMerchantId($merchant->getId());
+        return $this->repo->fetch([], $merchant->getId());
     }
 
     protected function filterTerminalsByMethod($terminals, $method)
