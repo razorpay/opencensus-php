@@ -134,11 +134,11 @@ trait Refund
             {
                 $txn = (new Transaction\Core)->createFromRefund($this->refund);
 
-                $txn->save();
+                $txn->saveOrFail();
             }
 
-            $this->payment->save();
-            $this->refund->save();
+            $this->payment->saveOrFail();
+            $this->refund->saveOrFail();
         });
     }
 

@@ -52,13 +52,13 @@ class Payment extends Base
             'created_at' => $payment->created_at,
             'updated_at' => $payment->created_at);
 
-        $payment->save();
+        $payment->saveOrFail();
 
         $txn = (new \Models\Transaction\Core)->updateOnCapture($payment);
-        $txn->save();
+        $txn->saveOrFail();
 
         $payment->setStatus('captured');
-        $payment->save();
+        $payment->saveOrFail();
 
         $hdfcPaymentAuthorized = $this->fixtures->create('hdfc:authorized', $hdfcAttrArray);
         $hdfcPaymentCaptured = $this->fixtures->create('hdfc:captured', $hdfcAttrArray);
@@ -72,10 +72,10 @@ class Payment extends Base
         $payment['captured_at'] = $payment['created_at'] + 10;
 
         $txn = (new \Models\Transaction\Core)->updateOnCapture($payment);
-        $txn->save();
+        $txn->saveOrFail();
 
         $payment->setStatus('captured');
-        $payment->save();
+        $payment->saveOrFail();
 
         return $payment;
     }
@@ -96,12 +96,12 @@ class Payment extends Base
 
         $payment = $this->build('payment', $attributes);
 
-        $payment->save();
+        $payment->saveOrFail();
 
         $txn = (new \Models\Transaction\Core)->createFromPaymentAuthorized($payment);
-        $txn->save();
+        $txn->saveOrFail();
 
-        $payment->save();
+        $payment->saveOrFail();
 
         return $payment;
     }
@@ -122,7 +122,7 @@ class Payment extends Base
 
         $payment = $this->build('payment', $attributes);
 
-        $payment->save();
+        $payment->saveOrFail();
 
         return $payment;
     }
@@ -159,9 +159,9 @@ class Payment extends Base
             ));
 
         $txn = (new \Models\Transaction\Core)->createFromPaymentAuthorized($payment);
-        $txn->save();
+        $txn->saveOrFail();
 
-        $payment->save();
+        $payment->saveOrFail();
 
         return $payment;
     }

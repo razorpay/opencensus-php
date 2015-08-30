@@ -96,8 +96,8 @@ class Base
         $testEntity = clone $entity;
         $liveEntity = clone $entity;
 
-        $testEntity->setConnection('test')->save();
-        $liveEntity->setConnection('live')->save();
+        $testEntity->setConnection('test')->saveOrFail();
+        $liveEntity->setConnection('live')->saveOrFail();
 
         $entity->exists = true;
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
@@ -124,8 +124,8 @@ class Base
         $testEntity = clone $entity;
         $liveEntity = clone $entity;
 
-        $testEntity->setConnection('test')->save();
-        $liveEntity->setConnection('live')->save();
+        $testEntity->setConnection('test')->saveOrFail();
+        $liveEntity->setConnection('live')->saveOrFail();
 
         $entity->setRawAttributes($liveEntity->getAttributes(), true);
 

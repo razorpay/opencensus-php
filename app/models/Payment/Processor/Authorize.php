@@ -424,8 +424,8 @@ trait Authorize
 
         $payment->terminal->incrementUsedCount();
 
-        $payment->save();
-        $payment->terminal->save();
+        $payment->saveOrFail();
+        $payment->terminal->saveOrFail();
 
         $gateway = $payment->getGateway();
 
@@ -433,10 +433,10 @@ trait Authorize
         {
             $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
 
-            $txn->save();
+            $txn->saveOrFail();
         }
 
-        $payment->save();
+        $payment->saveOrFail();
 
         $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
     }
