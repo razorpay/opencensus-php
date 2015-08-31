@@ -98,6 +98,53 @@ class Netbanking
         Netbanking::LAVB_R,
     );
 
+    protected static $sbiepay = array(
+        IFSC::SBTR,
+        IFSC::CSBK,
+        IFSC::JAKA,
+        IFSC::MAHB,
+        IFSC::DEUT,
+        IFSC::VIJB,
+        IFSC::PSIB,
+        IFSC::SIBL,
+        IFSC::BKID,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::UTBI,
+        IFSC::IDIB,
+        IFSC::CIUB,
+        IFSC::DLXB,
+        IFSC::ICIC,
+        IFSC::YESB,
+        IFSC::KVBL,
+        IFSC::FDRL,
+        IFSC::ORBC,
+        IFSC::CORP,
+        IFSC::INDB,
+        IFSC::HDFC,
+        IFSC::BBKM,
+        IFSC::KARB,
+        IFSC::ANDB,
+        IFSC::CNRB,
+        IFSC::RATN,
+        IFSC::UBIN,
+        IFSC::CBIN,
+        IFSC::PUNB,
+        IFSC::IOBA,
+        IFSC::SBIN,
+        IFSC::VYSA,
+        IFSC::IBKL,
+        IFSC::BKDN,
+        IFSC::DCBL,
+        IFSC::TMBL,
+        IFSC::SYNB,
+        IFSC::CITI,
+        IFSC::LAVB
+    );
+
+
     public static function isSupportedBank($bank)
     {
         return (in_array($bank, self::getAllBanks()));
@@ -146,7 +193,7 @@ class Netbanking
     {
         if (defined(__CLASS__ . '::' . $code))
         {
-            return self::$names[$ifsc];
+            return self::$names[$code];
         }
 
         return Name::getName($code);
