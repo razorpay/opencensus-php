@@ -225,8 +225,13 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doAuthPayment($payment)
+    protected function doAuthPayment($payment = null)
     {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
         $request = array(
             'method' => 'POST',
             'url' => '/payments',
