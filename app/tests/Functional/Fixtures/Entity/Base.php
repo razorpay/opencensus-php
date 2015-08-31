@@ -24,6 +24,7 @@ class Base
         'adjustment'    => 'Models\Adjustment\Entity',
         'balance'       => 'Models\Merchant\Balance',
         'bank_account'  => 'Models\Merchant\BankAccount\Entity',
+        'methods'       => 'Models\Merchant\Methods\Entity',
         'card'          => 'Models\Card\Entity',
         'hdfc'          => 'Gateway\Hdfc\Entity',
         'card_detail'   => 'Models\Card\Detail',
@@ -61,7 +62,7 @@ class Base
     {
         $entity = snake_case(explode('\\', get_class($this))[4]);
 
-        return $this->editEntity($entity, $attributes);
+        return $this->editEntity($entity, $id, $attributes);
     }
 
     public function editEntity($entity, $id, array $attributes = array())
@@ -70,7 +71,7 @@ class Base
             ($entity === 'pricing') or
             ($entity === 'methods'))
         {
-            return $this->editEntityInTestAndLive($entity, $attributes);
+            return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
 
         $entity = $entity::findOrFail($id);
@@ -109,7 +110,7 @@ class Base
         return $entity;
     }
 
-    public function editEntityInTestAndLive($entity, $attributes = array())
+    public function editEntityInTestAndLive($entity, $id, $attributes = array())
     {
         $this->eloquentUnguard();
 
@@ -118,7 +119,7 @@ class Base
 
         foreach ($attributes as $key => $value)
         {
-            $entity[$attribute] = $value;
+            $entity[$key] = $value;
         }
 
         $testEntity = clone $entity;

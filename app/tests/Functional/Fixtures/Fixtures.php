@@ -84,12 +84,24 @@ class Fixtures
 
     public function create($resource, array $attributes = array())
     {
-        list($obj, $method, $arg1, $arg2) = $this->getEntityMethodAndArgs($resource, $attributes, 'create');
+        list($obj, $method, $entity) = $this->getEntityMethodAndArgs($resource, 'create');
 
         $times = $this->getTimes();
         $this->times = 1;
 
         $entities = [];
+
+        $arg1 = $arg2 = null;
+
+        if ($entity === null)
+        {
+            $arg1 = $attributes;
+        }
+        else
+        {
+            $arg1 = $entity;
+            $arg2 = $attributes;
+        }
 
         while ($times--)
         {
@@ -99,11 +111,25 @@ class Fixtures
         return count($entities) > 1 ? $entities : $entities[0];
     }
 
-    public function edit($resource, array $attributes = array())
+    public function edit($resource, $id, array $attributes = array())
     {
-        list($obj, $method, $arg1, $arg2) = $this->getEntityMethodAndArgs($resource, $attributes, 'edit');
+        list($obj, $method, $entity) = $this->getEntityMethodAndArgs($resource, 'edit');
 
-        return $obj->$method($arg1, $arg2);
+        $arg1 = $arg2 = $arg3 = null;
+        $arg1 = $entity;
+
+        if ($entity === null)
+        {
+            $arg1 = $id;
+            $arg2 = $attributes;
+        }
+        else
+        {
+            $arg2 = $id;
+            $arg3 = $attributes;
+        }
+
+        return $obj->$method($arg1, $arg2, $arg3);
     }
 
     public function getTimes()
@@ -111,7 +137,7 @@ class Fixtures
         return $this->times;
     }
 
-    protected function getEntityMethodAndArgs($resource, $attributes, $action)
+    protected function getEntityMethodAndArgs($resource, $action)
     {
         list($entity, $method) = $this->getEntityAndMethod($resource, $action);
 
@@ -121,12 +147,12 @@ class Fixtures
         {
             $method .= 'Entity';
 
-            return [$this->base, $method, $entity, $attributes];
+            return [$this->base, $method, $entity];
         }
 
         $obj = $this->getEntityFixtureInstance($class, $entity);
 
-        return [$obj, $method, $attributes, ''];
+        return [$obj, $method, null];
     }
 
     protected function getEntityFixtureInstance($class, $entity)
