@@ -204,6 +204,10 @@
           Paytm
         </a>
         <a href class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.methods.mobikwik == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.mobikwik == true, 'fa-times text-danger':merchant.details.methods.mobikwik == false}"></i></span>
+          Mobikwik
+        </a>
+        <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.card == true, 'fa-times text-danger':merchant.details.methods.card == false}"></i></span>
           Card
         </a>
@@ -358,6 +362,7 @@
              <option value="axis_migs">Axis MIGS</option>
              <option value="axis_genius">Axis Genius</option>
              <option value="paytm">Paytm</option>
+             <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="kotak">Kotak</option>
              <option value="netbanking_hdfc">Netbanking HDFC</option>

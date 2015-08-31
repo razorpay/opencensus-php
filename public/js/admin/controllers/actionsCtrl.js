@@ -327,7 +327,7 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
         live:     'Live Merchants',
         recent:   'Recently signed up merchants',
         paytm:    'Paytm enabled merchants',
-        mobiqwik: 'Mobiqwik enabled merchants'
+        mobikwik: 'Mobikwik enabled merchants'
       };
 
       $scope.message = "Hi %recipient_name%,\n\nThanks for doing business with Razorpay.\n\n# section heading\n\ncontent\ncontent\n\nmore content\n\n---\n\nTeam Razorpay";

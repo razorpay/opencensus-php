@@ -9,7 +9,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
     var gatewayList = [
       'all', 'atom', 'axis_genius', 'axis_migs', 'billdesk',
-      'hdfc', 'kotak', 'paytm', 'netbanking_hdfc', 'sharp',
+      'hdfc', 'kotak', 'paytm', 'mobikwik', 'netbanking_hdfc', 'sharp',
       'mobikwik'
     ];
 
@@ -63,6 +63,10 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         wallet:       ['all', 'paytm', 'mobikwik']
       },
       paytm: {
+        payment_id: ['Payment Id'],
+        received:   ['all', 0, 1]
+      },
+      mobikwik: {
         payment_id: ['Payment Id'],
         received:   ['all', 0, 1]
       },
