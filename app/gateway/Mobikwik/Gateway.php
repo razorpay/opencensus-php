@@ -151,32 +151,31 @@ class Gateway extends Base\Gateway
                 $verify->apiSuccess = false;
                 $verify->gatewaySuccess = false;
             }
-            else
+            //Gateway Failed but we have marked Success.
+            else if($payment['statuscode'] === Status::SUCCESS)
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = true;
+                $verify->gatewaySuccess = false;
+                //need to add a Trace/alert
+            }
+        }
+        else if ($content['statuscode'] === Status::SUCCESS)
+        {
+            //Gateway success , api success
+            if($payment['statuscode'] === Status::SUCCESS)
+            {
+                $verify->apiSuccess = true;
+                $verify->gatewaySuccess = true;
+            }
+            //Gateway Success, we false : Mismatch
+            if($payment['statuscode'] !== Status::SUCCESS)
             {
                 $verify->status = VerifyResult::STATUS_MISMATCH;
                 $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
-            }
-        }
-        else if ($payment['statuscode'] === Status::SUCCESS)
-        {
-            $verify->apiSuccess = true;
-
-            if ($content['statuscode'] === Status::SUCCESS)
-            {
                 $verify->gatewaySuccess = true;
+            }
 
-            }
-            else
-            {
-                $verify->gatewaySuccess = false;
-                $status = VerifyResult::STATUS_MISMATCH;
-            }
-        }
-        else
-        {
-            $verify->apiSuccess = false;
-            $verify->gatewaySuccess = false;
         }
 
         $verify->status = $status;
