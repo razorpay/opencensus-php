@@ -143,16 +143,18 @@ class Fixtures
 
         $class = __NAMESPACE__.'\Entity\\' . studly_case($entity);;
 
-        if (class_exists($class) === false)
-        {
-            $method .= 'Entity';
-
-            return [$this->base, $method, $entity];
-        }
-
         $obj = $this->getEntityFixtureInstance($class, $entity);
 
-        return [$obj, $method, null];
+        if (class_exists($class))
+        {
+            $entity = null;
+        }
+        else
+        {
+            $method .= 'Entity';
+        }
+
+        return [$obj, $method, $entity];
     }
 
     protected function getEntityFixtureInstance($class, $entity)
@@ -168,6 +170,8 @@ class Fixtures
 
             return $obj;
         }
+
+        return $this->base;
     }
 
     protected function getEntityAndMethod($resource, $action)

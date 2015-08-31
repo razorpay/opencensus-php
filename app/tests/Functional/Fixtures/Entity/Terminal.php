@@ -6,6 +6,11 @@ use Models\Terminal\Shared;
 
 class Terminal extends Base
 {
+    public function createSharedTerminals()
+    {
+
+    }
+
     public function createAtomTerminal(array $attributes = array())
     {
         $attributes = array(
