@@ -6,9 +6,16 @@ use Models\Terminal\Shared;
 
 class Terminal extends Base
 {
-    public function createSharedTerminals()
+    public function createAllSharedTerminals()
     {
-
+        $this->createSharedAtomTerminal();
+        $this->createSharedAxisTerminal();
+        $this->createSharedBilldeskTerminal();
+        $this->createAxisGeniusTerminal();
+        $this->createSharedKotakTerminal();
+        $this->createSharedPaytmTerminal();
+        $this->createSharedMobikwikTerminal();
+        $this->createSharedNetbankingHdfcTerminal();
     }
 
     public function createAtomTerminal(array $attributes = array())
@@ -47,11 +54,9 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '10AtomRazorpay']);
-
         $attributes = array(
             'id'                    => $termId,
-            'merchant_id'           => $merchant['id'],
+            'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'atom',
             'card'                  => 1,
             'gateway_merchant_id'   => 'razorpay',
@@ -66,11 +71,11 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 
         $attributes = array(
             'id'                        => $termId,
-            'merchant_id'               => $merchant['id'],
+            'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'axis_migs',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay axis_migs',
@@ -87,7 +92,7 @@ class Terminal extends Base
 
         $attributes = array(
             'id'                    => $termId,
-            'merchant_id'           => '10000000000000',
+            'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'billdesk',
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0);
@@ -98,11 +103,11 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 
         $attributes = array(
             'id'                        => $termId,
-            'merchant_id'               => $merchant['id'],
+            'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'axis_genius',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay axis_genius',
@@ -117,11 +122,11 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 
         $attributes = array(
             'id'                        => $termId,
-            'merchant_id'               => $merchant['id'],
+            'merchant_id'               => '10000000000000',
             'gateway'                   => 'axis_genius',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay axis_genius',
@@ -136,11 +141,11 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::KOTAK_RAZORPAY_TERMINAL;
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 
         $attributes = array(
             'id'                        => $termId,
-            'merchant_id'               => $merchant['id'],
+            'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'kotak',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay kotak',
@@ -155,11 +160,11 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::PAYTM_RAZORPAY_TERMINAL;
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+//      $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 
         $attributes = array(
             'id'                        => $termId,
-            'merchant_id'               => $merchant['id'],
+            'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'paytm',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay paytm',
@@ -187,7 +192,7 @@ class Terminal extends Base
     {
         $attributes = array(
             'id'                    => Shared::NETBANKING_HDFC_TERMINAL,
-            'merchant_id'           => '10000000000000',
+            'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'netbanking_hdfc',
             'gateway_merchant_id'   => 'abcd',
             'gateway_terminal_id'   => 'abcde');
@@ -201,7 +206,7 @@ class Terminal extends Base
 
         $attributes = array(
             'id'                    => $termId,
-            'merchant_id'           => '10000000000000',
+            'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'sharp',
             'gateway_merchant_id'   => 'abcd',
             'gateway_terminal_id'   => 'abcde',
@@ -217,11 +222,11 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL;
 
-        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
+//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 
         $attributes = array(
             'id'                        => $termId,
-            'merchant_id'               => $merchant['id'],
+            'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'mobikwik',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay paytm',

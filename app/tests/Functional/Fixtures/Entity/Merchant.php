@@ -15,7 +15,12 @@ class Merchant extends Base
 
     public function createDefaultTestMerchant()
     {
+        // Default merchant to be used for tests
         $this->fixtures->create('merchant', ['id' => '10000000000000']);
+
+        // Merchant on whom all shared terminals are created
+        $this->fixtures->create('merchant', ['id' => '1MercShareTerm']);
+
         $this->fixtures->on('test')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('live')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('test')->create('balance', ['id' => '10000000000000', 'balance' => '1000000']);
@@ -25,8 +30,6 @@ class Merchant extends Base
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
 
         $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => '10000000000000']);
-
-        $this->fixtures->on('test')->create('terminal:shared_netbanking_hdfc_terminal');
     }
 
     public function createNodalAccount()
