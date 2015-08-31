@@ -143,37 +143,32 @@ class Gateway extends Base\Gateway
 
         if ($content['statuscode'] !== Status::SUCCESS)
         {
+            $verify->gatewaySuccess = false;
             // Could be the case where the transaction didn't even hit mobikwik
             if (($payment['received'] === false) and
                 (($payment['statuscode'] === null) or
                     ($payment['statuscode'] !== Status::SUCCESS)))
             {
                 $verify->apiSuccess = false;
-                $verify->gatewaySuccess = false;
             }
-            //Gateway Failed but we have marked Success.
-            else if($payment['statuscode'] === Status::SUCCESS)
+            else if ($payment['statuscode'] === Status::SUCCESS)
             {
                 $verify->status = VerifyResult::STATUS_MISMATCH;
                 $verify->apiSuccess = true;
-                $verify->gatewaySuccess = false;
-                //need to add a Trace/alert
             }
         }
         else if ($content['statuscode'] === Status::SUCCESS)
         {
+            $verify->gatewaySuccess = true;
             //Gateway success , api success
-            if($payment['statuscode'] === Status::SUCCESS)
+            if ($payment['statuscode'] === Status::SUCCESS)
             {
                 $verify->apiSuccess = true;
-                $verify->gatewaySuccess = true;
             }
-            //Gateway Success, we false : Mismatch
-            if($payment['statuscode'] !== Status::SUCCESS)
+            else if ($payment['statuscode'] !== Status::SUCCESS)
             {
                 $verify->status = VerifyResult::STATUS_MISMATCH;
                 $verify->apiSuccess = false;
-                $verify->gatewaySuccess = true;
             }
 
         }
