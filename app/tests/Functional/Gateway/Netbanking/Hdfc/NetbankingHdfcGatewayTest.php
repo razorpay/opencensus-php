@@ -20,6 +20,8 @@ class NetbankingHdfcGatewayTest extends TestCase
         $this->gateway = 'netbanking_hdfc';
 
         $this->setMockGatewayTrue();
+
+        $this->fixtures->on('test')->create('terminal:shared_netbanking_hdfc_terminal');
     }
 
     public function testPayment()
