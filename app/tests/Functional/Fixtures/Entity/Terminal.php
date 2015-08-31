@@ -8,10 +8,11 @@ class Terminal extends Base
 {
     public function createAllSharedTerminals()
     {
+        $this->createSharedHdfcTerminal();
         $this->createSharedAtomTerminal();
         $this->createSharedAxisTerminal();
         $this->createSharedBilldeskTerminal();
-        $this->createAxisGeniusTerminal();
+        $this->createSharedAxisGeniusTerminal();
         $this->createSharedKotakTerminal();
         $this->createSharedPaytmTerminal();
         $this->createSharedMobikwikTerminal();
@@ -71,8 +72,6 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
 
-//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
-
         $attributes = array(
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
@@ -103,8 +102,6 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
 
-//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
-
         $attributes = array(
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
@@ -121,8 +118,6 @@ class Terminal extends Base
     public function createAxisGeniusTerminal(array $attributes = array())
     {
         $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
-
-//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 
         $attributes = array(
             'id'                        => $termId,
@@ -141,8 +136,6 @@ class Terminal extends Base
     {
         $termId = \Models\Terminal\Shared::KOTAK_RAZORPAY_TERMINAL;
 
-//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
-
         $attributes = array(
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
@@ -159,8 +152,6 @@ class Terminal extends Base
     public function createSharedPaytmTerminal()
     {
         $termId = \Models\Terminal\Shared::PAYTM_RAZORPAY_TERMINAL;
-
-//      $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 
         $attributes = array(
             'id'                        => $termId,
@@ -216,13 +207,9 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
-
-
     public function createSharedMobikwikTerminal()
     {
         $termId = \Models\Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL;
-
-//        $merchant = $this->fixtures->create('merchant', ['id' => '10AxisRazorpay']);
 
         $attributes = array(
             'id'                        => $termId,
@@ -231,6 +218,23 @@ class Terminal extends Base
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay paytm',
             'gateway_terminal_id'       => 'nodal account paytm',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedHdfcTerminal()
+    {
+        $termId = \Models\Terminal\Shared::HDFC_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'hdfc',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay hdfc',
+            'gateway_terminal_id'       => 'account hdfc',
             'gateway_terminal_password' => 'razorpay_password',
         );
 

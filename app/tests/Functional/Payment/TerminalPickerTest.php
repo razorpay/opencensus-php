@@ -27,7 +27,21 @@ class TerminalTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals($payment['gateway'], 'billdesk');
-        $this->assertEquals($payment['terminal_id'], '1000BdeskTrmnl');
+        $this->assertEquals('billdesk', $payment['gateway']);
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+    }
+
+    public function testHdfcGatewayOnSharedTerminals()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        // Create all shared terminals
+        $payment = $this->doAuthAndCapturePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
     }
 }
