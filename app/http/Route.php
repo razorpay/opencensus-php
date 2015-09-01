@@ -72,6 +72,7 @@ final class Route
         'merchant_beneficiary_file'         => ['get',      'merchants/beneficiary/file',               'MerchantController@getMerchantBeneficiaryFile'                 ],
         'key_fetch_by_id'                   => ['get',      'keys/{id}',                                'KeyController@getKey'                                          ],
         'key_fetch_multiple'                => ['get',      'keys',                                     'KeyController@getKeys'                                         ],
+        'terminal_delete'                   => ['delete',   'terminals/{id}',                           'MerchantController@deleteTermianl2'                            ],
         'pricing_create_plan'               => ['post',     'pricing',                                  'PricingController@postCreatePricingPlan'                       ],
         'pricing_get_plans'                 => ['get',      'pricing',                                  'PricingController@getPricingPlans'                             ],
         'pricing_get_merchant_plans'        => ['get',      'pricing/merchants',                        'PricingController@getMerchantPricingPlans'                     ],
