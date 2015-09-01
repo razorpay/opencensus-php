@@ -139,10 +139,10 @@ class TerminalPicker
             return $gatewayTerms[Gateway::AXIS_MIGS];
         }
 
-        if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
-        {
-            return $gatewayTerms[Gateway::AXIS_GENIUS];
-        }
+        // if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
+        // {
+        //     return $gatewayTerms[Gateway::AXIS_GENIUS];
+        // }
 
         if ($this->mode === Mode::TEST)
         {
