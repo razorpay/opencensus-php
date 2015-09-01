@@ -173,11 +173,11 @@ class TerminalPicker
             return;
         }
 
-        if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
-            (Netbanking::isBilldeskSupportedBank($bank)))
-        {
-            return $gatewayTerms[Payment\Gateway::BILLDESK];
-        }
+        // if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
+        //     (Netbanking::isBilldeskSupportedBank($bank)))
+        // {
+        //     return $gatewayTerms[Payment\Gateway::BILLDESK];
+        // }
 
         if ($this->mode === Mode::TEST)
         {
