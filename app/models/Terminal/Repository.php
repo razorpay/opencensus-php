@@ -20,7 +20,7 @@ class Repository extends Base\Repository
         'deleted'               => 'sometimes|boolean',
     );
 
-    public function addQueryDeleted($query, $params)
+    public function addQueryParamDeleted($query, $params)
     {
         if ($params['deleted'] === '1')
         {
@@ -71,6 +71,8 @@ class Repository extends Base\Repository
 
     public function deleteOrFail($entity)
     {
+        $repo = $this->repo;
+
         if ($entity->getUsedCount() === 0)
         {
             $entity->forceDelete();

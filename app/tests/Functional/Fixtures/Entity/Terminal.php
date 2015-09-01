@@ -51,6 +51,25 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createAxisGeniusTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
+
+        $defaultValues = array(
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'axis_genius',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay axis_genius',
+            'gateway_terminal_id'       => 'razorpay_axis_genius_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedAtomTerminal()
     {
         $termId = \Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
@@ -105,23 +124,6 @@ class Terminal extends Base
         $attributes = array(
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
-            'gateway'                   => 'axis_genius',
-            'card'                      => 1,
-            'gateway_merchant_id'       => 'razorpay axis_genius',
-            'gateway_terminal_id'       => 'nodal account axis_genius',
-            'gateway_terminal_password' => 'razorpay_password',
-        );
-
-        return $this->createEntityInTestAndLive('terminal', $attributes);
-    }
-
-    public function createAxisGeniusTerminal(array $attributes = array())
-    {
-        $termId = \Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
-
-        $attributes = array(
-            'id'                        => $termId,
-            'merchant_id'               => '10000000000000',
             'gateway'                   => 'axis_genius',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay axis_genius',

@@ -329,6 +329,17 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function deleteTerminal($mid, $tid)
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/terminals/'.$tid,
+            'method' => 'delete');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {
         $testData['request']['url'] = '/payments/'.$id;
