@@ -44,6 +44,7 @@ class Service extends Base\Service
             'axis_migs'         => 'Gateway\AxisMigs',
             'axis_genius'       => 'Gateway\AxisGenius',
             'paytm'             => 'Gateway\Paytm',
+            'mobikwik'             => 'Gateway\Mobikwik',
             'netbanking'        => 'Gateway\Netbanking\Base',
             'billdesk'          => 'Gateway\Billdesk',
             'hdfc'              => 'Gateway\Hdfc',
@@ -68,5 +69,43 @@ class Service extends Base\Service
         $namespace = $this->getEntityNamespace($entity);
 
         return $namespace.'\Repository';
+    }
+
+    public function sendTestNewsletter($input)
+    {
+        $errors = (new Validator)->validateInput('send_test_newsletter', $input);
+
+        if(empty($errors))
+        {
+            // Now we send the newsletter
+            $mailer = new Newsletter($input['email'],
+                [$input['subj_1'], $input['subj_2']], $input['msg'],
+                true // Test Email to self
+            );
+
+            return $mailer->send();
+        }
+        else
+        {
+            return $errors;
+        }
+    }
+
+    public function sendNewsletter($input)
+    {
+        $errors = (new Validator)->validateInput('send_newsletter', $input);
+
+        if(empty($errors))
+        {
+            $mailer = new Newsletter($input['lists'],
+                [$input['subj_1'], $input['subj_2']], $input['msg']
+            );
+
+            return $mailer->send();
+        }
+        else
+        {
+            return $errors;
+        }
     }
 }

@@ -21,4 +21,22 @@ class AdminController extends BaseController
 
         return ApiResponse::json($data);
     }
+
+    public function postSendTestNewsletter()
+    {
+        $input = Input::all();
+
+        $data = (new Admin\Service)->sendTestNewsletter($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSendNewsletter()
+    {
+        $input = Input::all();
+
+        $data = (new Admin\Service)->sendNewsletter($input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -105,12 +105,12 @@ class Gateway extends Base\Gateway
     {
         $baseUrl = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment');
 
-        $url = $baseUrl . '&' . http_build_query($content);
+        $url = $baseUrl;
 
         $request = array(
             'url' => $url,
-            'method' => 'get',
-            'content' => [],
+            'method' => 'post',
+            'content' => $content,
         );
 
         return $request;

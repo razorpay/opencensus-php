@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Merchant\Banks;
+namespace Models\Merchant\Methods;
 
 use EE\Exception;
 use EE\Error\ErrorCode;
@@ -12,7 +12,7 @@ class Repository extends Base\Repository
     use Base\RepositoryUpdateTestAndLive;
     use Base\RepositoryFetch;
 
-    protected $entity = 'Banks';
+    protected $entity = 'Methods';
 
     public function getMerchantBanks($id)
     {

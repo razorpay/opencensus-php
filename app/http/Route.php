@@ -72,6 +72,7 @@ final class Route
         'merchant_beneficiary_file'         => ['get',      'merchants/beneficiary/file',               'MerchantController@getMerchantBeneficiaryFile'                 ],
         'key_fetch_by_id'                   => ['get',      'keys/{id}',                                'KeyController@getKey'                                          ],
         'key_fetch_multiple'                => ['get',      'keys',                                     'KeyController@getKeys'                                         ],
+        'terminal_delete'                   => ['delete',   'terminals/{id}',                           'MerchantController@deleteTermianl2'                            ],
         'pricing_create_plan'               => ['post',     'pricing',                                  'PricingController@postCreatePricingPlan'                       ],
         'pricing_get_plans'                 => ['get',      'pricing',                                  'PricingController@getPricingPlans'                             ],
         'pricing_get_merchant_plans'        => ['get',      'pricing/merchants',                        'PricingController@getMerchantPricingPlans'                     ],
@@ -109,12 +110,15 @@ final class Route
         'mock_axis_genius_payment'          => ['post',     'gateway/mockaxisgenius/payment',           'MockGatewayController@postAxisGeniusPayment'                   ],
         'mock_kotak_payment'                => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                         ],
         'mock_paytm_payment'                => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                        ],
+        'mock_mobikwik_payment'             => ['post',     'gateway/mockmobikwik/payment',             'MockGatewayController@postMobikwikPayment'                        ],
         'mock_billdesk_payment'             => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'                     ],
-        'mock_sharp_payment'                => ['get',      'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                         ],
-        'mock_sharp_payment_submit'         => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@postSharpPayment'                        ],
+        'mock_sharp_payment'                => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                         ],
+        'mock_sharp_payment_submit'         => ['post',     'gateway/mocksharp/payment/submit',         'MockGatewayController@postSharpPayment'                        ],
         'mock_netbanking_payment'           => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'                   ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                             ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                 ],
+        'send_test_newsletter'              => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                        ],
+        'send_newsletter'                   => ['post',     'admin/newsletter/mail',                    'AdminController@postSendNewsletter'                             ],
         'gateway_payment_callback_axis'     => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                                ],
         'gateway_payment_callback'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'gateway_payment_callback'          => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
@@ -137,6 +141,7 @@ final class Route
         'mock_axis_genius_payment',
         'mock_kotak_payment',
         'mock_paytm_payment',
+        'mock_mobikwik_payment',
         'mock_netbanking_payment',
         'mock_billdesk_payment',
         'mock_sharp_payment',
@@ -220,6 +225,8 @@ final class Route
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
+        'send_test_newsletter',
+        'send_newsletter'
         );
 
     public static $proxy = array(

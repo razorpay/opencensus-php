@@ -60,7 +60,17 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        return $this->getRequestArray($content);
+        $request = $this->getRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => 'billdesk',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
     }
 
     public function callback(array $input)
@@ -310,7 +320,6 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $content;
 
         return $content;
-
     }
 
     protected function getPaymentRefundRequestContent($payment, $input)

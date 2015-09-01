@@ -2,14 +2,16 @@
 
 namespace Gateway\Paytm;
 
-use Models\Base;
+use Gateway\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     protected $fields = array(
         'id',
         'payment_id',
         'refund_id',
+        'action',
+        'received',
         'request_type',
         'cust_id',
         'channel_id',
@@ -39,6 +41,7 @@ class Entity extends Base\PublicEntity
         'payment_id',
         'refund_id',
         'action',
+        'received',
         'request_type',
         'cust_id',
         'channel_id',

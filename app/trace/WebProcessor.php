@@ -60,6 +60,14 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
             'context'       => $this->context);
 
+        $userData = array(
+            'script_owner'  => get_current_user(),
+            'user_info'     => posix_getpwuid(posix_getuid()),
+            'group_info'    => posix_getgrgid(posix_getgid()),
+        );
+
+        $serverData = array_merge($serverData, $userData);
+
         $this->unsetUrlForSensitiveUrls($serverData);
 
         return $serverData;
