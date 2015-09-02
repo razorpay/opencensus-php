@@ -20,6 +20,7 @@ return array(
         'paytm',
         'netbanking_hdfc',
         'sharp',
+        'sbiepay'
     ),
 
     'mock_hdfc'             => $_ENV['HDFC_MOCK'],
@@ -31,6 +32,7 @@ return array(
     'mock_paytm'            => $_ENV['PAYTM_MOCK'],
     'mock_netbanking_hdfc'  => $_ENV['NETBANKING_HDFC_MOCK'],
     'mock_billdesk'         => $_ENV['BILLDESK_MOCK'],
+    'mock_sbiepay'         => $_ENV['SBIEPAY_MOCK'],
 
     'hdfc' => array(
         'test_terminal_id'  => $_ENV['HDFC_GATEWAY_TEST_TERMINAL_ID'],
@@ -82,6 +84,12 @@ return array(
 
     'sharp' => array(
     ),
+
+    'sbiepay' => array(
+        'test_merchant_id'  => $_ENV['SBIEPAY_GATEWAY_TEST_MERCHANT_ID'],
+        'test_hash_secret'  => $_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET'],
+    ),
+
 
     'proxy_address' => 'https://splunk.razorpay.com:8888',
 );
