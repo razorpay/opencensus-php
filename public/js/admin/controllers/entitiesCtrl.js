@@ -202,6 +202,9 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         resolve: {
           data: function() {
             return data;
+          },
+          mode: function() {
+            return $scope.mode;
           }
         }
       });
@@ -266,17 +269,94 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       });
     }
 }])
-.controller('entityDetailModalCtrl', ['$scope', '$modalInstance', 'data',
-  function ($scope, $modalInstance, data) {
+.controller('entityDetailModalCtrl', ['$scope', '$modalInstance', '$http', 'data', 'mode',
+  function ($scope, $modalInstance, $http, data, mode) {
       $scope.data = data;
+      $scope.mode = mode;
 
+      // Removes the last key from the obj
       $scope.notSorted = function(obj){
         if (!obj) {
             return [];
         }
-        var data = Object.keys(obj);
-        data.splice(-1,1)
-        return data;
+        return Object.keys(obj).slice(0, -1).sort();
+      }
+
+      $scope.getType = function(key, value) {
+        var entity = key.substr(0, key.length - 3);
+
+        var isTimestamp = function(key) {
+          return key.substr(-3) === '_at';
+        }
+
+        var isId = function(key) {
+          var validEntities = ["adjustment", "atom", "axis_genius",
+            "axis_migs", "bank_account", "bank_account", "billdesk",
+            "card", "dailysettlement", "hdfc", "iin", "kotak", "merchant",
+            "mobikwik", "netbanking", "payment", "paytm", "refund",
+            "settlement", "terminal", "transaction"
+          ];
+
+          // It needs to be suffixed with _id
+          // and be a valid entity name for this to work
+
+          return (key.substr(-3) === '_id')
+            && (validEntities.indexOf(entity) > -1);
+        }
+
+        // Timestamps could be blank, which is why
+        // we consider its value as well
+        if(value && isTimestamp(key)) {
+          return 'timestamp';
+        }
+
+        else if(key.substr(0, 6) === 'amount') {
+          return 'amount';
+        }
+
+        // We have a separate view for merchant entity
+        else if(entity === 'merchant') {
+          return 'merchant';
+        }
+
+        // All other entity links are considered here
+        else if(isId(key)) {
+          return 'id';
+        }
+
+        // Unknown type is entity specific things, like amount
+        else {
+          return 'unknown';
+        }
+      }
+
+      $scope.showEntity = function(key, value) {
+        // Remove `_id` from the end
+        var entity_type = key.substr(0, key.length -3);
+
+        var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + entity_type + "/" + value);
+
+        request
+        .success(function(data){
+
+          if(data.success) {
+            $scope.data = data.data;
+          }
+        })
+        .error(function(){
+          //$scope.alerts.addAlert('danger', null, true);
+        });
+      }
+
+      $scope.displayValue = function(value, type) {
+        // Set timezone to IST
+        moment().zone(5.5);
+        switch(type) {
+          case 'timestamp':
+            return moment(value*1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
+          case 'amount':
+            return 'INR ' + (value/100).toFixed(2);
+        }
       }
 
       $scope.ok = function () {
