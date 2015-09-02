@@ -122,7 +122,8 @@ class Repository extends Base\Repository
                     ->where(function($query)
                         {
                             $query->where(Payment\Entity::GATEWAY, '=', Payment\Gateway::BILLDESK)
-                                  ->orWhere(Payment\Entity::GATEWAY, '=', Payment\Gateway::NETBANKING_HDFC);
+                                  ->orWhere(Payment\Entity::GATEWAY, '=', Payment\Gateway::NETBANKING_HDFC)
+                                  ->orWhere(Payment\Entity::GATEWAY, '=', Payment\Gateway::SBIEPAY);
                         })
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
                     ->get();
