@@ -17,6 +17,7 @@ class Channel
             Payment\Gateway::HDFC,
             Payment\Gateway::KOTAK,
             Payment\Gateway::PAYTM,
+            Payment\Gateway::SBIEPAY
         ),
 
         self::ATOM => array(

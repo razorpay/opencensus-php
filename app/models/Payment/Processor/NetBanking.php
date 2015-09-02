@@ -218,4 +218,9 @@ class Netbanking
     {
         return in_array($bank, self::$billdesk);
     }
+
+    public static function isSbiepaySupportedBank($bank)
+    {
+        return in_array($bank, self::$sbiepay);
+    }
 }
