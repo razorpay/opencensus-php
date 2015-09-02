@@ -44,7 +44,7 @@ class Service extends Base\Service
             'axis_migs'         => 'Gateway\AxisMigs',
             'axis_genius'       => 'Gateway\AxisGenius',
             'paytm'             => 'Gateway\Paytm',
-            'mobikwik'             => 'Gateway\Mobikwik',
+            'mobikwik'          => 'Gateway\Mobikwik',
             'netbanking'        => 'Gateway\Netbanking\Base',
             'billdesk'          => 'Gateway\Billdesk',
             'hdfc'              => 'Gateway\Hdfc',
