@@ -306,9 +306,13 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
           return 'timestamp';
         }
 
+        else if(key.substr(0, 6) === 'amount') {
+          return 'amount';
+        }
+
         // We have a separate view for merchant entity
         else if(entity === 'merchant') {
-          return 'merchant'
+          return 'merchant';
         }
 
         // All other entity links are considered here
@@ -341,9 +345,13 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       }
 
       $scope.displayValue = function(value, type) {
+        // Set timezone to IST
+        moment().zone(5.5);
         switch(type) {
           case 'timestamp':
-            return moment(value*1000).format('lll');
+            return moment(value*1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
+          case 'amount':
+            return 'INR ' + (value/100).toFixed(2);
         }
       }
 

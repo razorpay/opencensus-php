@@ -125,18 +125,21 @@
   <div class="modal-body">
     <div>
       <table class="table table-striped b-t b-light">
-        <tr ng-repeat="key in notSorted(data)" ng-init="value = data[key]">
-          <td>{{key}}</td>
-          <td ng-show="getType(key, value)==='timestamp'">
-            {{displayValue(value, 'timestamp')}}
+        <tr ng-repeat="key in notSorted(data)" ng-init="value = data[key]; type = getType(key, value)">
+          <th>{{key}}</th>
+          <td ng-show="type==='timestamp' || type === 'amount'">
+            {{displayValue(value, type)}}
           </td>
-          <td ng-show="getType(key, value)==='id'" ng-click='showEntity(key, value)'>
-            {{value}}
+          <td ng-show="type==='id'" ng-click='showEntity(key, value)'>
+            <a href>{{value}}</a>
           </td>
-          <td ng-show="getType(key, value) === 'merchant'">
-            <a ui-sref="app.merchants.detail({id:value})" target="_blank">{{value}}</a>
+          <td ng-show="type === 'merchant'">
+            <a ui-sref="app.merchants.detail({id:value})" target="_blank">
+              {{value}}
+            </a>
+            (will open in new tab)
           </td>
-          <td ng-show="getType(key, value)==='unknown'">
+          <td ng-show="type==='unknown'">
             {{value}}
           </td>
         </tr>
