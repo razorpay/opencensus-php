@@ -15,7 +15,6 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
-    use ResponseFieldsTrait;
 
     protected $gateway = 'sbiepay';
 
@@ -35,31 +34,30 @@ class Gateway extends Base\Gateway
             'OtherDetails'       => '',
             'SuccessURL'         => $input['callbackUrl'],
             'FailURL'            => $input['callbackUrl'],
-            'AggregatorId'       => 'NA',
+            'AggregatorId'       => 'SBIEPAY',
             'MerchantOrderNo'    => $input['payment']['id'],
             'MerchantCustomerID' => $input['payment']['email'],
-            'Paymode'            => 'DIRECT',
+            'Paymode'            => 'NB',
             'Accesmedium'        => 'ONLINE',
             'TransactionSource'  => 'ONLINE'
         );
-
         if ($this->mode === Mode::TEST)
         {
             $requestParameter['MerchantId'] = $this->getTestMerchantId();
             $requestParameter['PostingAmount'] = '5.00';
         }
-
         if ($method === 'netbanking')
         {
-
+            $paymentDetails = [$aggGtwmapID," "," "," "," "," "," "," "];
+            $requestParameter['Paymode'] = 'NB';
         }
         $content = [
-            'EncryptTrans'          => EncryptDecrypt::encrypt_e($requestParameter, $_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET']),
-            'EncryptpaymentDetails' => EncryptDecrypt::encrypt_e($requestParameter, $_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET']),
-            'merchIdVal'            => $input['terminal']['gateway_merchant_id']
+            'EncryptTrans'          => EncryptDecrypt::encrypt_e($requestParameter, base64_decode($_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET'])),
+            'EncryptpaymentDetails' => EncryptDecrypt::encrypt_e($paymentDetails, base64_decode($_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET'])),
+            'merchIdVal'            => $requestParameter['MerchantId']
         ];
 
-        $payment = $this->createGatewayPaymentEntity($requestParameter);
+        $payment = $this->createGatewayPaymentEntity(array_merge($requestParameter,['method'=>$method]));
 
         $request = array(
             'url'     => $this->getUrl('pay'),
@@ -74,7 +72,7 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $msg = $input['gateway']['encData'];
-
+dd('1');
         $content = $this->getContentAfterChecksumVerification($msg);
 
         if ($content['CustomerID'] === 'NA')
@@ -399,7 +397,7 @@ class Gateway extends Base\Gateway
     protected function createGatewayPaymentEntity($attributes)
     {
         $payment = $this->getNewGatewayPaymentEntity();
-        $payment->setPaymentId($attributes['CustomerID']);
+        $payment->setPaymentId($attributes['MerchantOrderNo']);
 
         $payment->fill($attributes);
         $payment->setAction($this->action);
@@ -468,5 +466,10 @@ class Gateway extends Base\Gateway
     protected function getLiveSecret()
     {
         return $this->config['live_hash_secret'];
+    }
+
+    protected function getTestMerchantId()
+    {
+        return '1000003';
     }
 }
