@@ -284,7 +284,19 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
           return key.substr(-3) === '_at';
         }
         var isId = function(key) {
-          return key.substr(-3) === '_id';
+          var validEntities = ["adjustment", "atom", "axis_genius",
+            "axis_migs", "bank_account", "bank_account", "billdesk",
+            "card", "dailysettlement", "hdfc", "iin", "kotak", "merchant",
+            "mobikwik", "netbanking", "payment", "paytm", "refund",
+            "settlement", "terminal", "transaction"
+          ];
+
+          var entity = key.substr(0, key.length - 3);
+
+          // It needs to be suffixed with _id
+          // and be a valid entity name for this to work
+          return (key.substr(-3) === '_id')
+            && (validEntities.indexOf(entity) > -1);
         }
 
         if(value && isTimestamp(key)) {
