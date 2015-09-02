@@ -127,7 +127,8 @@
       <table class="table table-striped b-t b-light">
         <tr ng-repeat="key in notSorted(data)" ng-init="value = data[key]">
           <td>{{key}}</td>
-          <td>{{value}}</td>
+          <td ng-show="key.substr(-3)==='_at'">{{displayTimestamp(value)}}</td>
+          <td ng-show="key.substr(-3)!=='_at'">{{value}}</td>
         </tr>
       </table>
     </div>

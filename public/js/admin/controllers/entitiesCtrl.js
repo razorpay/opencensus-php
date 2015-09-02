@@ -275,6 +275,15 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         return data;
       }
 
+      $scope.displayTimestamp = function(timestamp) {
+        if(timestamp) {
+          return moment(timestamp*1000).format('lll');
+        }
+        else {
+          return "Not set";
+        }
+      }
+
       $scope.ok = function () {
         $modalInstance.close();
       };
