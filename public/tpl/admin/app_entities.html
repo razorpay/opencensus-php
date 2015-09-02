@@ -127,8 +127,15 @@
       <table class="table table-striped b-t b-light">
         <tr ng-repeat="key in notSorted(data)" ng-init="value = data[key]">
           <td>{{key}}</td>
-          <td ng-show="key.substr(-3)==='_at'">{{displayTimestamp(value)}}</td>
-          <td ng-show="key.substr(-3)!=='_at'">{{value}}</td>
+          <td ng-show="getType(key, value)==='timestamp'">
+            {{displayValue(value, 'timestamp')}}
+          </td>
+          <td ng-show="getType(key, value)==='id'" ng-click='showEntity(key, value)'>
+            {{value}}
+          </td>
+          <td ng-show="getType(key, value)==='unknown'">
+            {{value}}
+          </td>
         </tr>
       </table>
     </div>

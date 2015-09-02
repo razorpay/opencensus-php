@@ -198,6 +198,9 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         resolve: {
           data: function() {
             return data;
+          },
+          mode: function() {
+            return $scope.mode;
           }
         }
       });
@@ -262,25 +265,62 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       });
     }
 }])
-.controller('entityDetailModalCtrl', ['$scope', '$modalInstance', 'data',
-  function ($scope, $modalInstance, data) {
+.controller('entityDetailModalCtrl', ['$scope', '$modalInstance', '$http', 'data', 'mode',
+  function ($scope, $modalInstance, $http, data, mode) {
       $scope.data = data;
+      $scope.mode = mode;
 
+      // Removes the last key from the obj
       $scope.notSorted = function(obj){
         if (!obj) {
             return [];
         }
-        var data = Object.keys(obj);
-        data.splice(-1,1)
-        return data;
+        return Object.keys(obj).slice(0, -1).sort();
       }
 
-      $scope.displayTimestamp = function(timestamp) {
-        if(timestamp) {
-          return moment(timestamp*1000).format('lll');
+      $scope.getType = function(key, value) {
+
+        var isTimestamp = function(key) {
+          return key.substr(-3) === '_at';
+        }
+        var isId = function(key) {
+          return key.substr(-3) === '_id';
+        }
+
+        if(value && isTimestamp(key)) {
+          return 'timestamp';
+        }
+
+        else if(isId(key)) {
+          return 'id';
         }
         else {
-          return "Not set";
+          return 'unknown';
+        }
+      }
+
+      $scope.showEntity = function(key, value) {
+        // Remove `_id` from the end
+        var entity_type = key.substr(0, key.length -3);
+
+        var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + entity_type + "/" + value);
+
+        request
+        .success(function(data){
+
+          if(data.success) {
+            $scope.data = data.data;
+          }
+        })
+        .error(function(){
+          //$scope.alerts.addAlert('danger', null, true);
+        });
+      }
+
+      $scope.displayValue = function(value, type) {
+        switch(type) {
+          case 'timestamp':
+            return moment(value*1000).format('lll');
         }
       }
 
