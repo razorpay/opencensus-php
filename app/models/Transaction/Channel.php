@@ -2,7 +2,9 @@
 
 namespace Models\Transaction;
 
+use EE\Exception\LogicException;
 use Models\Payment;
+use Models\Terminal\Shared;
 
 class Channel
 {
@@ -17,7 +19,8 @@ class Channel
             Payment\Gateway::HDFC,
             Payment\Gateway::KOTAK,
             Payment\Gateway::PAYTM,
-            Payment\Gateway::SBIEPAY
+            Payment\Gateway::MOBIKWIK,
+            Payment\Gateway::SBIEPAY,
         ),
 
         self::ATOM => array(
@@ -64,7 +67,7 @@ class Channel
                 break;
 
             default:
-                throw new Exception\LogicException('Invalid type: ' . $type);
+                throw new LogicException('Invalid type: ' . $type);
         }
 
         if ($channel === null)
@@ -83,9 +86,9 @@ class Channel
 
             $terminal = $payment->terminal;
 
-            if (Terminal\Shared::isSharedTerminal($terminal))
+            if (Shared::isSharedTerminal($terminal))
             {
-                $channel = Transaction\Channel::KOTAK;
+                $channel = Channel::KOTAK;
             }
         }
 
