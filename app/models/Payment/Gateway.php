@@ -16,6 +16,7 @@ class Gateway
     const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
+    const SBIEPAY           = 'sbiepay';
     const SHARP             = 'sharp';
 
     public static $channels = array(
@@ -28,6 +29,7 @@ class Gateway
         self::MOBIKWIK          => Settlement\Channel::KOTAK,
         self::PAYTM             => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
+        self::SBIEPAY           => Settlement\Channel::KOTAK,
         self::SHARP             => Settlement\Channel::KOTAK,
     );
 
@@ -45,6 +47,7 @@ class Gateway
             self::PAYTM,
             self::BILLDESK,
             self::NETBANKING_HDFC,
+            self::SBIEPAY
         ),
 
         Method::WALLET => array(
