@@ -241,7 +241,9 @@ class Service extends Base\Service
             $input['email'] = $merchant->email;
             $input['name'] = $merchant->name;
 
-            Mail::send('emails.payment',compact('input'), function($m) use($input)
+            $input['amount'] = "INR ".number_format($input['amount']/100, 2);
+
+            Mail::send('emails.payment', compact('input'), function($m) use($input)
             {
                 $m->to($input['email'], $input['name'])
                   ->subject('Razorpay - New Payment');
