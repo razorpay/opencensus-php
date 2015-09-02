@@ -64,7 +64,7 @@ on all modes of payment).</p>
 
 <p style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; margin: 0; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">If you face any issues while implementing this, feel free to drop us an <a href="mailto:support@razorpay.com" style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; color: #2ba6cb; text-decoration: none;">email</a>.</p>
 
-<p style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; margin: 0; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">We hope that the association between you and Razorpay will be fruitful for your organization.</p>
+<p style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; margin: 0; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">We hope that the association between you and Razorpay will be fruitful for both organizations.</p>
 
 <p style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important; margin: 0; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">
 Regards,<br style="font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important;">
