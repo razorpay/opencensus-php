@@ -133,6 +133,9 @@
           <td ng-show="getType(key, value)==='id'" ng-click='showEntity(key, value)'>
             {{value}}
           </td>
+          <td ng-show="getType(key, value) === 'merchant'">
+            <a ui-sref="app.merchants.detail({id:value})" target="_blank">{{value}}</a>
+          </td>
           <td ng-show="getType(key, value)==='unknown'">
             {{value}}
           </td>
