@@ -161,7 +161,7 @@ class Netbanking
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
-        return array_unique(array_merge(self::$paytm, self::$billdesk));
+        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$sbiepay));
     }
 
     public static function getDisabledBanks($banks)
@@ -207,6 +207,11 @@ class Netbanking
     public static function getBilldeskSupportedBanks()
     {
         return self::$billdesk;
+    }
+
+    public static function getSbiepaySupportedBanks()
+    {
+        return self::$sbiepay;
     }
 
     public static function isPaytmSupportedBank($bank)
