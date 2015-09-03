@@ -110,7 +110,7 @@ final class Route
         'mock_axis_genius_payment'          => ['post',     'gateway/mockaxisgenius/payment',           'MockGatewayController@postAxisGeniusPayment'                   ],
         'mock_kotak_payment'                => ['get',      'gateway/mockkotak/payment',                'MockGatewayController@getKotakPayment'                         ],
         'mock_paytm_payment'                => ['post',     'gateway/mockpaytm/payment',                'MockGatewayController@postPaytmPayment'                        ],
-        'mock_mobikwik_payment'             => ['post',     'gateway/mockmobikwik/payment',             'MockGatewayController@postMobikwikPayment'                        ],
+        'mock_mobikwik_payment'             => ['post',     'gateway/mockmobikwik/payment',             'MockGatewayController@postMobikwikPayment'                     ],
         'mock_billdesk_payment'             => ['post',     'gateway/mockbilldesk/payment',             'MockGatewayController@postBilldeskPayment'                     ],
         'mock_sharp_payment'                => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                         ],
         'mock_sharp_payment_submit'         => ['post',     'gateway/mocksharp/payment/submit',         'MockGatewayController@postSharpPayment'                        ],
@@ -118,11 +118,12 @@ final class Route
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                             ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                 ],
         'send_test_newsletter'              => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                        ],
-        'send_newsletter'                   => ['post',     'admin/newsletter/mail',                    'AdminController@postSendNewsletter'                             ],
+        'send_newsletter'                   => ['post',     'admin/newsletter/mail',                    'AdminController@postSendNewsletter'                            ],
         'gateway_payment_callback_axis'     => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                                ],
         'gateway_payment_callback'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'gateway_payment_callback'          => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'dummy_return_callback'             => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                     ],
+        'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
     );
 
     public static $public = array(
@@ -147,6 +148,7 @@ final class Route
         'mock_sharp_payment',
         'mock_sharp_payment_submit',
         'dummy_return_callback',
+        'dummy_critical_error',
     );
 
     public static $publicCallback = array(
