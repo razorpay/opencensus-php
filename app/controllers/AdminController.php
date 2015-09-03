@@ -415,4 +415,10 @@ class AdminController extends BaseController
         list($error, $data) = (new Admin\Service)->sendNewsletter($input);
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function triggerError()
+    {
+        list($error, $data) = (new Admin\Service)->triggerError();
+        return AppResponse::jsonResponse($error, $data);
+    }
 }

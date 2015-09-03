@@ -215,6 +215,31 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
           ;
         });
     };
+
+    $scope.triggerError = function() {
+      var request = $http({
+        method: "post",
+        url: "/admin/trigger/error"
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Error triggerred successfully',
+          true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     $scope.openEditNewsletter = function () {
 
       var modalInstance = $modal.open({
