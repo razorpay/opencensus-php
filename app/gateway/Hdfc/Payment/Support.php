@@ -5,6 +5,7 @@ namespace Gateway\Hdfc\Payment;
 use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
+use Models\Card;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -23,6 +24,25 @@ trait Support
     protected function supportPayment($input, $type)
     {
         $this->retrievePreviousGatewayTransaction($input, $type);
+
+        $result = $this->model['result'];
+
+        if (($result === Result::CAPTURED) and
+            ($type === 'capture'))
+        {
+            $network = Card\Network::getFullName(Card\Network::MAES);
+
+            if ($input['card']['network'] === $network)
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Illogical place reached',
+                    ['input' => $input, 'model' => $this->model, 'type' => $type]);
+            }
+        }
 
         //
         // Mark the type of support payment.
@@ -64,6 +84,10 @@ trait Support
         if ($type === 'capture')
         {
             $status = Status::AUTHORIZED;
+
+            $network = Card\Network::getFullName(Card\Network::MAES);
+            if ($input['card']['network'] === Card\Network::getFullName(Card\Network::MAES))
+                $status = Status::CAPTURED;
         }
         else if ($type === 'refund')
         {

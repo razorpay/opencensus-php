@@ -111,7 +111,7 @@ class Gateway
 
         // echo 'Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL;
         // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
-sd($response->body);
+
         return $response;
     }
 
