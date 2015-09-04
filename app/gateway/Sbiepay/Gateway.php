@@ -15,6 +15,7 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use ResponseFieldsTrait;
 
     protected $gateway = 'sbiepay';
 
@@ -31,7 +32,7 @@ class Gateway extends Base\Gateway
             'MerchantCountry'    => 'IN',
             'MerchantCurrency'   => 'INR',
             'PostingAmount'      => $input['payment']['amount'] / 100,
-            'OtherDetails'       => '',
+            'OtherDetails'       => 'NA',
             'SuccessURL'         => $input['callbackUrl'],
             'FailURL'            => $input['callbackUrl'],
             'AggregatorId'       => 'SBIEPAY',
@@ -48,16 +49,19 @@ class Gateway extends Base\Gateway
         }
         if ($method === 'netbanking')
         {
-            $paymentDetails = [$aggGtwmapID," "," "," "," "," "," "," "];
+            $paymentDetails = [$aggGtwmapID, " ", " ", " ", " ", " ", " ", " "];
             $requestParameter['Paymode'] = 'NB';
         }
-        $content = [
-            'EncryptTrans'          => EncryptDecrypt::encrypt_e($requestParameter, base64_decode($_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET'])),
-            'EncryptpaymentDetails' => EncryptDecrypt::encrypt_e($paymentDetails, base64_decode($_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET'])),
-            'merchIdVal'            => $requestParameter['MerchantId']
-        ];
 
-        $payment = $this->createGatewayPaymentEntity(array_merge($requestParameter,['method'=>$method]));
+        $content = EncryptDecrypt::encryptData(array(
+                                                   'EncryptTrans'          => $requestParameter,
+                                                   'EncryptpaymentDetails' => $paymentDetails,
+                                                   'EncryptshippingDetails' => explode("|","Demo Demo|Mayuresh Enclave, Sector 20, Plat A-211, Nerul(w),Navi-Mumbai,403706|Mumbai|Maharastra|India|403706|91|222|30988373|981234567|N")
+                                               ));
+
+        $content['merchIdVal'] = $requestParameter['MerchantId'];
+
+        $payment = $this->createGatewayPaymentEntity(array_merge($requestParameter, ['method' => $method]));
 
         $request = array(
             'url'     => $this->getUrl('pay'),
@@ -71,10 +75,11 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $msg = $input['gateway']['encData'];
-dd('1');
-        $content = $this->getContentAfterChecksumVerification($msg);
+        $encData = $input['gateway']['encData'];
 
+        $decryptedContent = EncryptDecrypt::decrypt_e($encData, $_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET']);
+
+        $content = EncryptDecrypt::getStr2Array($decryptedContent);
         if ($content['CustomerID'] === 'NA')
         {
             // Payment fails, throw exception
@@ -472,4 +477,6 @@ dd('1');
     {
         return '1000003';
     }
+
+
 }
