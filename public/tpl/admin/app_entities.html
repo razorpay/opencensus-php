@@ -131,8 +131,13 @@
           <td ng-show="type==='timestamp' || type === 'amount'">
             {{displayValue(value, type)}}
           </td>
-          <td ng-show="type==='id'" ng-click='showEntity(key, value)'>
+          <td ng-show="type==='id'" ng-click='updateEntity(key, value)'>
             <a href>{{value}}</a>
+          </td>
+          <td ng-show="type === 'payment'">
+            <a ui-sref="app.payments.detail({id:122})" target="_blank">
+              {{value}}
+            </a>
           </td>
           <td ng-show="type === 'merchant'">
             <a ui-sref="app.merchants.detail({id:value})" target="_blank">
@@ -148,6 +153,17 @@
     </div>
   </div>
   <div class="modal-footer">
-      <button class="btn btn-primary" ng-click="ok()">OK</button>
+    <div class="btn-group col-lg-11 text-left" role="group"
+      aria-label="Payment actions" ng-show="data['entity'] == 'payment'"
+    >
+      <button class="btn btn-success">Verify</button>
+      <button ng-show="data['status'] == 'failed'" class="btn btn-info">
+        Authorize Failed
+      </button>
+      <button ng-show="data['status'] !== 'refunded'" class="btn btn-primary">
+        Refund
+      </button>
+    </div>
+    <button class="col-lg-1 text-right btn btn-primary" ng-click="ok()">OK</button>
   </div>
 </script>

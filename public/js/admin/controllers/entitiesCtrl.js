@@ -313,6 +313,10 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
           return 'amount';
         }
 
+        else if(entity === 'payment') {
+          return 'payment';
+        }
+
         // We have a separate view for merchant entity
         else if(entity === 'merchant') {
           return 'merchant';
@@ -329,7 +333,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         }
       }
 
-      $scope.showEntity = function(key, value) {
+      $scope.updateEntity = function(key, value) {
         // Remove `_id` from the end
         var entity_type = key.substr(0, key.length -3);
 

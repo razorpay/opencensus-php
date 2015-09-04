@@ -73,6 +73,10 @@ var app = angular.module('app', [
                   role: 'auth'
                 }
             })
+            .state('app.payments.detail', {
+                url: '/payments/:id',
+                templateUrl: 'tpl/admin/app_payment_detail.html'
+            })
             .state('app.dashboard', {
                 url: '/dashboard',
                 templateUrl: 'tpl/admin/app_dashboard.html'

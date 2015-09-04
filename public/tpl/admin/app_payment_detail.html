@@ -1,0 +1,135 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Payment Detail ({{mode + " Mode"| titlecase }})
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md payment-wrapper" ng-controller="EntityDetailCtrl" ng-init="generate('payment')">
+  <div ng-controller="PaymentDetailCtrl">
+    <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+      <div class="panel-heading m-t m-b">
+        Payment Id: <strong>{{entity.id}}</strong>
+      </div>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+      <div class="row wrapper">
+        <div class="list-group">
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.amount/100 | currency:""}}</span>
+            Amount
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.amount_refunded/100 | currency:""}}</span>
+            Amount Refunded
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.currency}}</span>
+            Currency
+          </a>
+          <a href class="list-group-item">
+            <span class="label text-base pull-right" title="{{entity.status}}" ng-class="getStatusClass(entity.status)">{{entity.status | titlecase}}</span>
+            Status
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right" ng-show="entity.refund_status">{{entity.refund_status | titlecase}}</span>
+            <span class="pull-right" ng-hide="entity.refund_status">None</span>
+            Refund Status
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.description}}<span ng-hide="entity.description">No Description</span></span>
+            Description
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.email}}</span>
+            Email
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.contact}}</span>
+            Contact
+          </a>
+          <a href class="list-group-item" ng-show="entity.error_code">
+            <span class="pull-right">
+              {{entity.error_code}}
+            </span>
+            Error
+          </a>
+          <div href class="list-group-item panel-body" ng-show="entity.error_description">
+            <span class="pull-right col-lg-8 text-right">
+              {{entity.error_description}}
+            </span>
+            Error Description
+          </div>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
+            Created At
+          </a>
+          <a href class="list-group-item" ng-init="isCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isCollapsed = !isCollapsed" ng-show="entity.notes.length != 0">Show/Hide</button>
+              <span ng-hide="entity.notes.length != 0">No Notes</span>
+            </span>
+            Notes
+          </a>
+          <div collapse="isCollapsed" class="panel-body">
+            <a href class="list-group-item" ng-repeat="(label,key) in entity.notes">
+              <span class="pull-right">{{key}}</span>
+              {{label}}
+            </a>
+          </div>
+          <a href class="list-group-item"  ng-init="isRefundsCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="entity.refund_status">Show/Hide</button>
+              <span ng-hide="entity.refund_status">No Refunds</span>
+            </span>
+            Refunds
+          </a>
+          <div collapse="isRefundsCollapsed" class="panel-body">
+            <a class="list-group-item" ng-repeat="refund in entity.refunds" ui-sref="app.refunds.detail({id:refund.id})">
+              <span class="pull-right">{{refund.created_at*1000 | fromNow}} ({{refund.created_at*1000 | date:'medium'}})</span>
+              {{refund.amount/100 | currency:refund.currency + " "}}
+            </a>
+          </div>
+        </div>
+        <div class="text-center">
+          <div  ng-show="entity.status==='authorized'">
+            <script type="text/ng-template" id="captureModalContent.html">
+              <div class="modal-header">
+                <h3 class="modal-title">Capture Payment</h3>
+              </div>
+              <div class="modal-body">
+                  <form>
+                  <label>Amount to capture (in Paisa):</label>
+                    <input type="text" placeholder="Amount to Capture (in Paisa)" class="form-control" ng-model="amount">
+                  </form>
+              </div>
+              <div class="modal-footer">
+                  <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+                  <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
+              </div>
+            </script>
+            <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openCaptureModal()">Capture Payment</button>
+          </div>
+          <div  ng-show="entity.status==='captured' && entity.refund_status !== 'full'">
+            <script type="text/ng-template" id="refundModalContent.html">
+              <div class="modal-header">
+                <h3 class="modal-title">Refund Payment</h3>
+              </div>
+              <div class="modal-body">
+                  <form>
+                  <label>Amount to refund (in Paisa):</label>
+                    <input type="text" placeholder="Amount to Refund (in Paisa)" class="form-control" ng-model="amount">
+                  </form>
+              </div>
+              <div class="modal-footer">
+                  <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+                  <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
+              </div>
+            </script>
+            <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openRefundModal()">Refund Payment</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
