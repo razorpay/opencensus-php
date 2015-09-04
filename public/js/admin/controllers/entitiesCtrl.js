@@ -9,8 +9,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
     var gatewayList = [
       'all', 'atom', 'axis_genius', 'axis_migs', 'billdesk',
-      'hdfc', 'kotak', 'paytm', 'mobikwik', 'netbanking_hdfc', 'sharp',
-      'mobikwik'
+      'hdfc', 'kotak', 'paytm', 'mobikwik', 'netbanking_hdfc', 'sharp'
     ];
 
     // This is the list of available filters
