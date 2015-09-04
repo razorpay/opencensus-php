@@ -279,7 +279,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         if (!obj) {
             return [];
         }
-        return Object.keys(obj).slice(0, -1).sort();
+        return Object.keys(obj).slice(0, -1);
       }
 
       $scope.getType = function(key, value) {
