@@ -117,26 +117,22 @@ class TerminalPicker
     {
         $terminal = null;
 
-        if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
-        {
-            if (isset($gatewayTerms[Gateway::KOTAK]))
-            {
-                $terminal = $gatewayTerms[Gateway::KOTAK];
-            }
-
-            return $terminal;
-        }
-
         $international = $payment->merchant->isInternational();
 
-        if (isset($gatewayTerms[Gateway::HDFC]))
-        {
-            return $gatewayTerms[Gateway::HDFC];
-        }
+        $network = $payment->card->getNetworkCode();
 
-        if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
+        $gatewayOrder = array(
+            Gateway::HDFC,
+            Gateway::AXIS_MIGS,
+            Gateway::KOTAK);
+
+        foreach ($gatewayOrder as $gateway)
         {
-            return $gatewayTerms[Gateway::AXIS_MIGS];
+            if ((isset($gatewayTerms[$gateway])) and
+                (Gateway::isCardNetworkSupported($network, $gateway)))
+            {
+                return $gatewayTerms[$gateway];
+            }
         }
 
         // if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))

@@ -130,9 +130,14 @@ class Repository extends Base\Repository
 
     public function persistAfterAuthEnrolled($model, $data)
     {
+        $status = Payment\Status::AUTHORIZED;
+
+        if ($data['result'] === Payment\Result::CAPTURED)
+            $status = Payment\Status::CAPTURED;
+
         $attributes = array(
             'payment_id'    => $data['trackid'],
-            'status'        => Payment\Status::AUTHORIZED,
+            'status'        => $status,
             'result'        => $data['result'],
             'ref'           => $data['ref'],
             'auth'          => $data['auth'],

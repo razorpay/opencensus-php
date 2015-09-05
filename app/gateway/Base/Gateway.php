@@ -80,6 +80,7 @@ class Gateway
 
     protected function sendGatewayRequest($request)
     {
+        s($request);
         if (isset($request['options']) === false)
         {
             $request['options']  = array();
