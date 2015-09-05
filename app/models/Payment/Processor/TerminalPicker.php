@@ -199,13 +199,13 @@ class TerminalPicker
         $wallet = $this->payment->getWallet();
 
         if ((isset($gatewayTerms[Payment\Gateway::PAYTM]) === true) and
-            ($wallet === 'paytm'))
+            ($wallet === WALLET::PAYTM))
         {
             return $gatewayTerms[Payment\Gateway::PAYTM];
         }
 
         if ((isset($gatewayTerms[Payment\Gateway::MOBIKWIK]) === true) and
-            ($wallet === 'mobikwik'))
+            ($wallet === WALLET::MOBIKWIK))
         {
             return $gatewayTerms[Payment\Gateway::MOBIKWIK];
         }
