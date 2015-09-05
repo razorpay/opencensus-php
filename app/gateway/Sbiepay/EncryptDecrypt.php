@@ -40,7 +40,6 @@ class EncryptDecrypt
 
     public static function encryptData($dataArray)
     {
-
         $aes = new CryptAES();
         $aes->set_key(base64_decode($_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET']));
         $aes->require_pkcs5();
@@ -51,6 +50,17 @@ class EncryptDecrypt
         }
 
         return $dataArray;
+    }
+
+
+    public static function decryptData($dataStr)
+    {
+        $aes = new CryptAES();
+        $aes->set_key(base64_decode($_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET']));
+        $aes->require_pkcs5();
+        $data = $aes->decrypt($dataStr);
+
+        return $data;
     }
 
 }

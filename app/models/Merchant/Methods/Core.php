@@ -45,7 +45,8 @@ class Core extends Base\Core
         //     $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
         // }
 
-        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+//        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+        $supportedBanks = array_merge(Netbanking::getBilldeskSupportedBanks(),Netbanking::getSbiepaySupportedBanks());
 
         $banks->setBanks($supportedBanks);
 

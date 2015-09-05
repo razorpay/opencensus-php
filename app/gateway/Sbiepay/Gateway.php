@@ -29,7 +29,7 @@ class Gateway extends Base\Gateway
         $requestParameter = array(
             'MerchantId'         => $input['terminal']['gateway_merchant_id'],
             'OperatingMode'      => 'DOM',
-            'MerchantCountry'    => 'IN',
+            'MerchantCountry'    => 'IND',
             'MerchantCurrency'   => 'INR',
             'PostingAmount'      => $input['payment']['amount'] / 100,
             'OtherDetails'       => 'NA',
@@ -53,10 +53,17 @@ class Gateway extends Base\Gateway
             $requestParameter['Paymode'] = 'NB';
         }
 
+        if ($method === 'card')
+        {
+            $paymentDetails = [$aggGtwmapID, " ", " ", " ", " ", " ", " ", " "];
+            $requestParameter['Paymode'] = 'NB';
+        }
+
         $content = EncryptDecrypt::encryptData(array(
                                                    'EncryptTrans'          => $requestParameter,
                                                    'EncryptpaymentDetails' => $paymentDetails,
-                                                   'EncryptshippingDetails' => explode("|","Demo Demo|Mayuresh Enclave, Sector 20, Plat A-211, Nerul(w),Navi-Mumbai,403706|Mumbai|Maharastra|India|403706|91|222|30988373|981234567|N")
+                                                   'EncryptbillingDetails' => explode("|","NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N"),
+                                                   'EncryptshippingDetails' => explode("|","NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N")
                                                ));
 
         $content['merchIdVal'] = $requestParameter['MerchantId'];
@@ -77,7 +84,7 @@ class Gateway extends Base\Gateway
 
         $encData = $input['gateway']['encData'];
 
-        $decryptedContent = EncryptDecrypt::decrypt_e($encData, $_ENV['SBIEPAY_GATEWAY_TEST_HASH_SECRET']);
+        $decryptedContent = EncryptDecrypt::decryptData($encData);
 
         $content = EncryptDecrypt::getStr2Array($decryptedContent);
         if ($content['CustomerID'] === 'NA')
@@ -475,7 +482,7 @@ class Gateway extends Base\Gateway
 
     protected function getTestMerchantId()
     {
-        return '1000003';
+        return '1000109';
     }
 
 
