@@ -30,9 +30,7 @@ trait Support
         if (($result === Result::CAPTURED) and
             ($type === 'capture'))
         {
-            $network = Card\Network::getFullName(Card\Network::MAES);
-
-            if ($input['card']['network'] === $network)
+            if ($input['card']['network_code'] === Card\Network::MAES)
             {
                 return;
             }
@@ -85,8 +83,7 @@ trait Support
         {
             $status = Status::AUTHORIZED;
 
-            $network = Card\Network::getFullName(Card\Network::MAES);
-            if ($input['card']['network'] === Card\Network::getFullName(Card\Network::MAES))
+            if ($input['card']['network_code'] === Card\Network::MAES)
                 $status = Status::CAPTURED;
         }
         else if ($type === 'refund')

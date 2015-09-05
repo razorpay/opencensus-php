@@ -25,6 +25,8 @@ class Entity extends Base\PublicEntity
 
     const COUNTRY_LENGTH = 2;
 
+    const NETWORK_CODE      = 'network_code';
+
     protected $table = \Constants\Table::CARD;
 
     protected static $sign = 'card';
@@ -72,6 +74,9 @@ class Entity extends Base\PublicEntity
         self::TRIVIA,
         self::CREATED_AT,
         self::UPDATED_AT);
+
+    protected $appends = array(
+        self::NETWORK_CODE);
 
     public function merchant()
     {
@@ -142,6 +147,11 @@ class Entity extends Base\PublicEntity
     }
 
     public function getNetworkCode()
+    {
+        return $this->getNetworkCodeAttribute();
+    }
+
+    public function getNetworkCodeAttribute()
     {
         return Card\Network::getCode($this->getNetwork());
     }
