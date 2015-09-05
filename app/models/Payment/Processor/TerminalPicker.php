@@ -28,11 +28,6 @@ class TerminalPicker
      * @var Terminal\Repository
      */
     protected $repo;
-
-    /**
-     * Payment for which terminal has to be picked
-     * @var Models\Payment\Entity
-     */
     protected $payment;
 
     protected $merchant;
@@ -173,10 +168,16 @@ class TerminalPicker
             return;
         }
 
-        if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
-            (Netbanking::isBilldeskSupportedBank($bank)))
+//        if ((isset($gatewayTerms[Payment\Gateway::BILLDESK]) === true) and
+//            (Netbanking::isBilldeskSupportedBank($bank)))
+//        {
+//            return $gatewayTerms[Payment\Gateway::BILLDESK];
+//        }
+
+        if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true) and
+            (Netbanking::isSbiepaySupportedBank($bank)))
         {
-            return $gatewayTerms[Payment\Gateway::BILLDESK];
+            return $gatewayTerms[Payment\Gateway::SBIEPAY];
         }
 
         if ($this->mode === Mode::TEST)
@@ -306,7 +307,12 @@ class TerminalPicker
             }
         }
 
-        if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+//        if ($this->terminalExists(Shared::BILLDESK_RAZORPAY_TERMINAL))
+//        {
+//            return $this->terminal;
+//        }
+
+        if ($this->terminalExists(Shared::SBIEPAY_RAZORPAY_TERMINAL))
         {
             return $this->terminal;
         }
