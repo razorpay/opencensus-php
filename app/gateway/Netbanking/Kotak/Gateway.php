@@ -21,31 +21,26 @@ class Gateway extends Base\Gateway
     protected $bank = 'kotak';
 
     protected $sortRequestContent = false;
-
-    protected $fields = array(
-        'ClientCode',
-        'MerchantCode',
-        'TxnCurrency',
-        'TxnAmount',
-        'TxnScAmount',
-        'MerchantRefNo',
-        'SuccessStatifFlag',
-        'FailureStaticFlag',
-        'Date',
+    protected $fields             = array(
+        'MessageCode',
+        'DateTimeInGMT',
+        'MerchantId',
+        'TraceNumber',
+        'Amount',
+        'TransactionDescription',
     );
 
     protected $map = array(
-        'ClientCode'    => 'client_code',
-        'MerchantCode'  => 'merchant_code',
-        'TxnAmount'     => 'amount',
-        'Message'       => 'error_message',
-        'BankRefNo'     => 'bank_payment_id',
-        'fldSessionNbr' => 'reference1',
-        'Date'          => 'date',
+        'MessageCode'            => 'reference1',
+        'DateTimeInGMT'          => 'date',
+        'MerchantId'             => 'merchant_code',
+        'TraceNumber'            => 'client_code',
+        'Amount'                 => 'amount',
+        'TransactionDescription' => 'client_code',
     );
 
     /**
-     * @param  array  $input
+     * @param  array $input
      * @return void
      */
     public function authorize(array $input)
@@ -56,29 +51,25 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
 
-        $request = array(
-            'url' => $this->getUrl('pay'),
-            'method' => 'post',
-            'content' => $content);
+        $content = $this->getDataWithChecksum($content);
 
+        $request = array(
+            'url'     => $this->getUrl('pay'),
+            'method'  => 'post',
+            'content' => ['msg' => $content]);
+//sd($content);
         return $request;
     }
+//
+//    public function capture(array $input = array())
+//    {
+//        return parent::capture($input);
+//    }
 
-    public function capture(array $input = array())
-    {
-        return parent::capture($input);
-    }
-
-    /**
-     * We recieve callback from atom after bank net-banking
-     * transaction is complete
-     *
-     * @param  array    $input
-     */
     public function callback(array $input)
     {
         parent::callback($input);
-
+ddd($input);
         $this->validateCallbackChecksum($input);
         unset($input['gateway']['CheckSum']);
 
@@ -102,13 +93,14 @@ class Gateway extends Base\Gateway
         $payment->saveOrFail();
 
         if (($bankRefNo === '') or
-            ($message !== ''))
+            ($message !== '')
+        )
         {
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
-                    '',
-                    $message);
+                ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
+                '',
+                $message);
         }
     }
 
@@ -124,7 +116,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentToVerify($input, $verify)
     {
         $payment = $this->getRepo()->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $verify->payment = $payment;
 
@@ -146,30 +138,20 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData($input)
     {
-        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
-
-        $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
-
+        $date = Carbon::now('Asia/Kolkata')->format('dmYhis');
         $data = array(
-            'MessageCode'        => $clientCode,
-            'DateTimeInGMT'      => $input['terminal']['gateway_merchant_id'],
-            'MerchantId'       => 'INR',
-            'TraceNumber'         => $input['payment']['amount'] / 100,
-            'Amount'       => '0',
-            'TransactionDescription'     => $input['payment']['id'],
-            'Checksum' => 'N',
-            'FailureStaticFlag' => 'N',
-            'Date'              => $date,
-            'DynamicUrl'        => $input['callbackUrl'],
+            'MessageCode'            => MessageCodes::AUTHORIZE,
+            'DateTimeInGMT'          => $date,
+            'MerchantId'             => $input['terminal']['gateway_merchant_id'],
+            'TraceNumber'            => $input['payment']['id'],
+            'Amount'                 => $input['payment']['amount'] / 100,
+            'TransactionDescription' => $input['payment']['email'],
         );
 
         if ($this->mode === Mode::TEST)
         {
-            $data['MerchantCode'] = 'RAZORPAY';
-//            $data['ClientCode'] = random_alpha_string(10);
+            $data['MerchantId'] = $this->getTestMerchantId();
         }
-
-        $data['CheckSum'] = $this->generateHash($data);
 
         return $data;
     }
@@ -180,7 +162,7 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
-                      ->format('d/m/Y H:m:s');
+            ->format('d/m/Y H:m:s');
 
         if (empty($payment['date']) === false)
         {
@@ -197,15 +179,15 @@ class Gateway extends Base\Gateway
         }
 
         $content = array(
-            'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
-            'Date'                  => $date,
-            'MerchantRefNo'         => $payment['payment_id'],
-            'TransactionId'         => 'XTXTV01',
-            'FlgVerify'             => 'Y',
-            'ClientCode'            => $clientCode,
-            'SuccessStaticFlag'     => 'N',
-            'FailureStaticFlag'     => 'N',
-            'TxnAmount'             => $input['payment']['amount'] / 100,
+            'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
+            'Date'              => $date,
+            'MerchantRefNo'     => $payment['payment_id'],
+            'TransactionId'     => 'XTXTV01',
+            'FlgVerify'         => 'Y',
+            'ClientCode'        => $clientCode,
+            'SuccessStaticFlag' => 'N',
+            'FailureStaticFlag' => 'N',
+            'TxnAmount'         => $input['payment']['amount'] / 100,
         );
 
         $url = $this->getUrl();
@@ -235,7 +217,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
 
-        $days = (time() - $input['payment']['created_at']) / (24*60*60);
+        $days = (time() - $input['payment']['created_at']) / (24 * 60 * 60);
 
         // In HDFC netbnaking, the bank only stores the payment data for
         // 45 days!
@@ -253,12 +235,13 @@ class Gateway extends Base\Gateway
         $status = VerifyResult::STATUS_MATCH;
 
         $verify->apiSuccess = (($input['payment']['status'] === 'authorized') or
-                               ($input['payment']['status'] === 'captured'));
+            ($input['payment']['status'] === 'captured'));
 
         $verify->gatewaySuccess = ($content['flgSuccess'] === 'S');
 
         if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true))
+            ($verify->gatewaySuccess === true)
+        )
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -282,8 +265,7 @@ class Gateway extends Base\Gateway
         try
         {
             $this->verify($input);
-        }
-        catch (Exception\PaymentVerificationException $e)
+        } catch (Exception\PaymentVerificationException $e)
         {
             ;
         }
@@ -299,7 +281,8 @@ class Gateway extends Base\Gateway
         $verify = $e->getVerifyObject();
 
         if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true))
+            ($verify->gatewaySuccess === true)
+        )
         {
             $payment = $verify->payment;
             $payment->fill($verify->verifyResponseContent);
@@ -326,8 +309,7 @@ class Gateway extends Base\Gateway
             $form = $crawler->filter('form')->form();
             $values = $form->getValues();
             $url = $values['REDIRECTURL'];
-        }
-        catch (\InvalidArgumentException $e)
+        } catch (\InvalidArgumentException $e)
         {
             $msg = $e->getMessage();
 
@@ -396,42 +378,29 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        return (string) crc32($str . $secret);
+        return (string)crc32($str . $secret);
     }
 
-    protected function getTestSecret()
-    {
-        assert ($this->mode === Mode::TEST);
-
-        return '123456';
-    }
 
     protected function getLiveSecret()
     {
-        assert ($this->mode === Mode::LIVE);
+        assert($this->mode === Mode::LIVE);
 
         return $this->config['live_hash_secret'];
     }
 
-    protected function buildQueryString($data)
+
+    protected function getTestMerchantId()
     {
-        $str = '';
-
-        $amp = '';
-
-        foreach ($data as $key => $value)
-        {
-            $str .= $amp .$key.'='.$value;
-
-            if ($amp === '')
-                $amp = '&';
-        }
-
-        return $str;
+        return 'OSTEST';
     }
 
-    protected function stripEmailSpecialChars($email)
+
+    protected function getDataWithChecksum($data)
     {
-        return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
+        $dataStr = implode("|", $data);
+        $dataStrWithSecret = $dataStr . "|" . $_ENV['NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'];
+//var_dump($dataStrWithSecret);
+        return (string)$dataStr . '|' . str_pad((crc32($dataStrWithSecret)), 8, '0', STR_PAD_LEFT);
     }
 }
