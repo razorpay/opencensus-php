@@ -1,12 +1,12 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc;
+namespace Gateway\Netbanking\Kotak;
 
 class Url
 {
     const LIVE_DOMAIN   = 'https://netbanking.hdfcbank.com';
-    const TEST_DOMAIN   = 'https://flexatsup.hdfcbank.com';
+    const TEST_DOMAIN   = 'https://203.196.200.42';
 
-    const PAY           = '/netbanking/merchant';
-    const VERIFY        = '/netbanking/epi';
+    const PAY           = '/pgx/ksecLogin.jsp';
+    const VERIFY        = '/pg/kbsegquery.jsp';
 }
