@@ -341,9 +341,12 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
             if(data.success) {
               alert("Terminal deleted");
             }
+            else {
+              alert(data.errors);
+            }
           })
           .error(function(){
-            //$scope.alerts.addAlert('danger', null, true);
+            alert("There was an error while deleting the terminal");
           });
         }
       }

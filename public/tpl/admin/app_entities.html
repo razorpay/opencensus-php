@@ -157,18 +157,26 @@
       aria-label="Payment actions" ng-show="data['entity'] == 'payment'"
     >
       <button class="btn btn-success">Verify</button>
-      <button ng-show="data['status'] == 'failed'" class="btn btn-info">
+      <button ng-show="data['status'] == 'failed'" class="btn btn-info"
+        ng-confirm-click="Are you sure you want to authorize this failed payment?"
+        ng-click="payment.authorize(data['id'])"
+      >
         Authorize Failed
       </button>
-      <button ng-show="data['status'] !== 'refunded'" class="btn btn-primary">
+      <button ng-show="data['status'] !== 'refunded'" class="btn btn-primary"
+        ng-click="payment.refund(data['id'])"
+      >
         Refund
       </button>
     </div>
     <div class="btn-group col-lg-11 text-left" role="group"
       aria-label="Terminal Actions" ng-show="data['entity'] == 'terminal'"
-      ng-confirm-click="Are you sure you want to delete this terminal?"
     >
-      <button class="btn btn-danger" ng-click="terminal.delete(data['id'])">Delete</button>
+      <button class="btn btn-danger" ng-click="terminal.delete(data['id'])"
+        ng-confirm-click="Are you sure you want to delete this terminal?"
+      >
+        Delete
+      </button>
     </div>
     <button class="col-lg-1 text-right btn btn-primary" ng-click="ok()">OK</button>
   </div>
