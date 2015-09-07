@@ -73,6 +73,10 @@ class NodalAccount
     {
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
+
+        $this->queue = \Queue::getFacadeRoot();
+
+        $this->mail = \Mail::getFacadeRoot();
     }
 
     public function generateSettlementFile($settlements, $txns)
@@ -84,18 +88,36 @@ class NodalAccount
 
         $row = 2; // row number
 
+        $totalAmount = $neftAmount = $iftAmount = 0;
+
         foreach ($settlements as $settlement)
         {
             $merchant = $settlement->merchant;
 
             $ba = $merchant->bankAccount;
 
+            //
+            // @note: Convert the amount to string for text file otherwise
+            //        sometimes float becomes recurring decimal in text file.
+            //        However in excel keep it as integer since it helps in
+            //        mathematical operations directly
+            //
+
+            $amount = $settlement->getAmount() / 100;
+            $totalAmount += $amount;
+
             $type = 'NEFT';
+
             $ifsc = $ba->getIfscCode();
 
             if (substr($ifsc, 0, 4) === 'KKBK')
             {
                 $type = 'IFT';
+                $iftAmount += $amount;
+            }
+            else
+            {
+                $neftAmount += $amount;
             }
 
             $array = array(
@@ -105,7 +127,7 @@ class NodalAccount
                 'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
-                'Amount'                => (string) $settlement->getAmount() / 100,
+                'Amount'                => $amount,
                 'Bank_Code_Indicator'   => 'M',
 //                'Beneficiary_Code'      => $ba->beneficiary_code,
                 'Beneficiary_Name'      => $ba->getBeneficiaryName(),
@@ -116,7 +138,10 @@ class NodalAccount
 
             $array = $this->getAllFields($array);
 
-            array_push($textData, $array);
+            $textDataArray = $array;
+            $textDataArray['Amount'] = (string) $amount;
+
+            array_push($textData, $textDataArray);
 
             // Excel file has couple extra fields for calculating text data of that row.
             $array['Symbol'] = '~';
@@ -126,11 +151,17 @@ class NodalAccount
             array_push($excelData, $array);
         }
 
+        $amounts['total'] = $totalAmount;
+        $amounts['neft'] = $neftAmount;
+        $amounts['ift'] = $iftAmount;
+
         $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
 
         $txt = $this->generateText($textData);
 
         $urlText = $this->writeToTextFile($txt);
+
+        $this->sendKotakSettlementMail($settlements->count(), $amounts);
 
         return [$urlText, $urlExcel];
     }
@@ -160,5 +191,40 @@ class NodalAccount
         $str = str_replace('2', $i, $str);
 
         return $str;
+    }
+
+    protected function sendKotakSettlementMail($count, $amounts)
+    {
+        $amounts['neft'] = sprintf('%.2f', $amounts['neft']);
+        $amounts['ift'] = sprintf('%.2f', $amounts['ift']);
+
+        $data['body'] = '
+            Total transactions - ' . $count . '<br />
+            NEFT Amount - ' . $amounts['neft'] . '<br />
+            IFT Amount - ' . $amounts['ift'];
+
+        $fileName = $this->getFileToWriteNameWithoutExt();
+        $path = $this->getStorageDir();
+        $fullpath = $path . '/'. $fileName;
+
+        $data['file'] = $fullpath;
+
+        $this->mail->queue('emails.message', $data, function($message) use ($data)
+        {
+            $emails = ['settlements@razorpay.com'];
+
+            $message->from('settlement@razorpay.com', 'Kotak Settlement');
+
+            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+            $message->subject('Kotak Settlement files for ' . $today);
+
+            $message->to($emails);
+
+            $file = $data['file'];
+
+            $message->attach($file . '.xlsx');
+            $message->attach($file . '.txt');
+        });
     }
 }

@@ -181,3 +181,27 @@ if (! function_exists('array_replace_intersect'))
         return $array1;
     }
 }
+
+if (! function_exists('flatten_array'))
+{
+    function flatten_array($array, $separator = '.', $prefix = '')
+    {
+        $result = array();
+
+        foreach ($array as $key => $value)
+        {
+            $newKey = $prefix . (empty($prefix) ? '' : $separator) . $key;
+
+            if (is_array($value))
+            {
+                $result = array_merge($result, flatten_array($value, $separator, $newKey));
+            }
+            else
+            {
+                $result[$newKey] = $value;
+            }
+        }
+
+        return $result;
+    }
+}

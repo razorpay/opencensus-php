@@ -33,30 +33,6 @@
 <form action="./authorize.php" method="post">
     <!-- get user input -->
     <table width="80%" align="center" border="0" cellpadding='0' cellspacing='0'>
-
-
-    <tr bgcolor="#E1E1E1">
-        <td width="1%">&nbsp;</td>
-        <td width="40%" align="right"><b><i></i></b></td>
-        <!--<td width="40%" align="right"><b><i>ePP Client URL:&nbsp;</i></b></td> -->
-        <td width="59%"><input type="hidden" name="vpc_URL" size="63" value="https://geniusepay.in/VAS/DCC/do.action" maxlength="250"></td>
-    </tr>
-    <tr>
-        <td colspan="3">&nbsp;<hr width="75%">&nbsp;</td>
-    </tr>
-    <tr bgcolor="#C1C1C1">
-        <td colspan="3" height="25"><p><b>&nbsp;Basic 2.5-Party Transaction Fields</b></p></td>
-    </tr>
-    <tr>
-        <td>&nbsp;</td>
-        <!-- <td align="right"><b><i> VPC Version: </i></b></td> -->
-        <td><input type="hidden" name="vpc_Version" value="1" size="20" maxlength="8"></td>
-    </tr>
-    <tr bgcolor="#E1E1E1">
-        <td>&nbsp;</td>
-        <!-- <td align="right"><b><i>Command Type: </i></b></td> -->
-        <td><input type="hidden" name="vpc_Command" value="pay" size="20" maxlength="16"></td>
-    </tr>
     <tr>
         <td>&nbsp;</td>
         <td align="right"><b><i>MerchantID: </i></b></td>
@@ -64,46 +40,31 @@
     </tr>
     <tr>
         <td>&nbsp;</td>
-        <td align="right"><b><i>Merchant AccessCode: </i></b></td>
-       <td><input type="text" name="vpc_AccessCode" value="" size="20" maxlength="8"></td>
-   </tr>    <tr bgcolor="#E1E1E1">
-        <td>&nbsp;</td>
-        <!-- <td align="right"><b><i>Merchant Transaction Reference: </i></b></td> -->
-        <!-- <td><input type="hidden" name="vpc_MerchTxnRef" value="" size="20" maxlength="40"></td> -->
-    </tr>
-    <tr bgcolor="#E1E1E1">
-        <td>&nbsp;</td>
-        <td align="right"><b><i>Transaction OrderInfo: </i></b></td>
-        <td><input type="text" name="vpc_OrderInfo" value="VPC Example" size="20" maxlength="34"></td>
-    </tr>
-    <tr>
-        <td>&nbsp;</td>
-        <td align="right"><b><i>Purchase Amount: </i></b></td>
-        <td><input type="text" name="vpc_Amount" value="100" size="20" maxlength="10"></td>
-    </tr>
-    <tr bgcolor="#E1E1E1">
-        <td>&nbsp;</td>
-        <td align="right"><b><i>Secure Secret: </i></b></td>
+        <td align="right"><b><i>Merchant Secret: </i></b></td>
         <td><input type="text" name="vpc_Secret" size="63" value="" maxlength="250"></td>
     </tr>
-
     <tr>
-	<td>&nbsp;</td>
-        <td align="right"><strong><em>Card Number: </em></strong></td>
-        <td><input type="text" name="vpc_CardNum" maxlength="19" value="5123456789012346"></td>
+        <td>&nbsp;</td>
+        <td align="right"><b><i>Merchant AccessCode: </i></b></td>
+       <td><input type="text" name="vpc_AccessCode" value="" size="20" maxlength="8"></td>
     </tr>
-
-    <tr bgcolor="#E1E1E1">
-	<td>&nbsp;</td>
-        <td align="right"><strong><em>Card Expiry (YYMM): </em></strong></td>
-        <td><input type="text" name="vpc_CardExp" maxlength="4" value="1705"></td>
-    </tr>
-
     <tr>
-	<td>&nbsp;</td>
-        <td align="right"><strong><em>Card Security Code (CVV2): </em></strong></td>
-        <td><input type="text" name="vpc_CardSecurityCode" maxlength="4" value="333"/></td>
+        <td>&nbsp;</td>
+        <td align="right"><b><i>Environment: </i></b></td>
+        <td>
+          <select name="vpc_URL" >
+            <option value="https://uat-geniusepay.in/VAS/DCC/do.action?" selected>Test</option>
+            <option value="https://geniusepay.in/VAS/DCC/do.action?">Live</option>
+          </select>
+        </td>
     </tr>
+    </tr>
+        <td><input type="hidden" name="vpc_Amount" value="100" size="20" maxlength="10"></td>
+        <td><input type="hidden" name="vpc_CardNum" maxlength="19" value="5123456789012346"></td>
+        <td><input type="hidden" name="vpc_CardExp" maxlength="4" value="1705"></td>
+        <td><input type="hidden" name="vpc_CardSecurityCode" maxlength="4" value="333"/></td>
+        <td><input type="hidden" name="vpc_Command" value="pay" size="20" maxlength="16"></td>
+        <input type="hidden" name="vpc_Version" value="1" size="20" maxlength="8">
     <tr bgcolor="#E1E1E1">
             <td colspan="2">&nbsp;</td>
             <td><input type="submit" value="Pay Now!"></td>

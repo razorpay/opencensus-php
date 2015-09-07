@@ -18,7 +18,7 @@ class Refund extends Base
         $attributes['payment_id'] = $payment->getId();
         $attributes['merchant_id'] = $payment->merchant->getId();
 
-        $refund = $this->create('refund', $attributes);
+        $refund = parent::create($attributes);
 
         $hdfcRefund = $this->fixtures->create('hdfc:from_refund', ['refund' => $refund]);
 

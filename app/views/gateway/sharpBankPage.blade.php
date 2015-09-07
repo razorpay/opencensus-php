@@ -29,7 +29,7 @@
   </head>
 
   <body>
-    <h1><img src="/logo.jpg" width="400" height="104"></h1>
+    <h1><img src="/logo.gif" width="400" height="104"></h1>
     <h3>Welcome to Razorpay Bank</h3>
     This is just a demo bank page.<br>
     You can choose whether to make this payment successful or not: <br>

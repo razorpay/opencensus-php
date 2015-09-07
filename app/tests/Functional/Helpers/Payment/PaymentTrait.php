@@ -12,11 +12,13 @@ trait PaymentTrait
     use PaymentAtomTrait;
     use PaymentAxisGeniusTrait;
     use PaymentAxisMigsTrait;
+    use PaymentBilldeskTrait;
     use PaymentHdfcTrait;
     use PaymentKotakTrait;
-    use PaymentPaytmTrait;
     use PaymentNetbankingTrait;
-    use PaymentBilldeskTrait;
+    use PaymentPaytmTrait;
+    use PaymentSharpTrait;
+    use PaymentMobikwikTrait;
 
     use RequestResponseFlowTrait
     {
@@ -24,6 +26,20 @@ trait PaymentTrait
     }
 
     protected $gateway = null;
+
+    protected $merchantCallbackUrl = null;
+
+    protected $merchantCallbackFlow = false;
+
+    /**
+     * For certain payments, user has the option to fail it
+     * on the bank page. If this property is set to true in
+     * the test, then we simulate submitting failure option
+     * on the bank page
+     *
+     * @var boolean
+     */
+    protected $failPaymentOnBankPage = false;
 
     protected function doAuthAndCapturePayment($payment = null)
     {
@@ -209,8 +225,13 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doAuthPayment($payment)
+    protected function doAuthPayment($payment = null)
     {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
         $request = array(
             'method' => 'POST',
             'url' => '/payments',
@@ -245,7 +266,7 @@ trait PaymentTrait
     protected function cancelPayment($id)
     {
         $request = array(
-            'method' => 'POST',
+            'method' => 'GET',
             'url' => '/payments/'.$id.'/cancel');
 
         $this->ba->publicAuth();
@@ -260,7 +281,7 @@ trait PaymentTrait
             'url' => '/payments/'.$id.'/verify',
             'method' => 'GET');
 
-        $this->ba->proxyAuth();
+        $this->ba->appAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -295,6 +316,29 @@ trait PaymentTrait
         return $refund;
     }
 
+    protected function authorizeFailedPayment($id)
+    {
+        $request = array(
+            'url' => '/payments/'.$id.'/authorize_failed',
+            'method' => 'post');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function deleteTerminal($mid, $tid)
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/terminals/'.$tid,
+            'method' => 'delete');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
 
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {
@@ -363,13 +407,13 @@ trait PaymentTrait
             'notes'             => array(
                 'merchant_order_id' => 'random order id'),
             'description'       => 'random description',
-            'bank'              => 'HDFC',
+            'bank'              => 'ICIC',
         ];
 
         return $payment;
     }
 
-    protected function getDefaultNetBankingPaymentArray()
+    protected function getDefaultNetbankingPaymentArray()
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
@@ -420,9 +464,20 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $this->ba->publicAuth();
-
         $content = $response->getContent();
+
+        if ($this->isResponseInstanceType('http', $response))
+        {
+            $formData = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+            if ((isset($formData['type'])) and
+                ($formData['type'] === 'return'))
+            {
+                return $this->processMerchantReturnCallbackForm($response);
+            }
+        }
+
+        $this->ba->publicAuth();
 
         $content = $this->getPaymentJsonFromCallback($content);
 
@@ -437,62 +492,123 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $response = $this->runPaymentCallbackFlow($response, $callback);
+        $url = $request['url'];
+
+        if ($this->isPaymentCreationUrl($url))
+        {
+            $response = $this->handlePaymentCreationFlow($response, $request, $callback);
+        }
 
         return $response;
     }
 
-    protected function runPaymentCallbackFlow($response, &$callback = null)
+    protected function isPaymentCreationUrl($url)
+    {
+        $urls = array(
+            '/payments/create/jsonp',
+            '/payments/create/checkout',
+            '/payments');
+
+        return in_array($url, $urls);
+    }
+
+    protected function handlePaymentCreationFlow($response, $request, &$callback = null)
     {
         $content = $response->getContent();
 
         $gateway = null;
 
+        if ($request['url'] === '/payments/create/checkout')
+        {
+            $this->assertTrue($this->isResponseInstanceType('http', $response));
+            $this->assertEquals($response->headers->get('content-type'), 'text/html; charset=UTF-8');
+
+            $marker = '// Callback data //';
+            if (strpos($content, $marker) !== false)
+            {
+                $content = $this->getPaymentJsonFromCallback($content);
+
+                $response->setContent($content);
+
+                return $response;
+            }
+        }
+
         if ($callback)
         {
+            // Should be the jsonp payment creation url
+            $this->assertEquals($request['url'], '/payments/create/jsonp');
+
             $content = $this->getJsonContentFromResponse($response, $callback);
 
+            // For no 2-auth payments, it could be a direct json response.
             if (isset($content['gateway']) === false)
             {
                 return $response;
             }
 
-            list($gateway, ) = explode('__', \Crypt::decrypt($content['gateway'], 2));
+            $gateway = $content['gateway'];
+
+            if (isset($content['type']) === 'return')
+            {
+                // @note: This case isn't happening right now but it can in future
+                $request = $content['request'];
+
+                return $this->makeRequestParent($request);
+            }
         }
         else
         {
-            // Has to be either redirect or a gateway form post.
+            // Has to be either redirect or a html form post.
             // First check for normal html form post.
             $ret = ((json_decode($content) === null) and
-                    (get_class($response) === 'Illuminate\Http\Response') and
+                    ($this->isResponseInstanceType('http', $response)) and
                     ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
                     ($response->getStatusCode() === 200));
 
             if ($ret === false)
             {
                 // Now check for redirect
-                $ret = ((get_class($response) === 'Illuminate\Http\RedirectResponse') and
+                $ret = (($this->isResponseInstanceType('redirect', $response)) and
                         ($response->getStatusCode() === 302));
 
-                if ($ret === false)
+                if ($ret === true)
+                {
+                    $gateway = $response->headers->get('X-gateway');
+                }
+                else
+                {
                     return $response;
+                }
+            }
+            else
+            {
+                //
+                // When doing form posts relevant here, we put in a
+                // second form which is not submitted but it contains gateway
+                // field in encrypted form and 'type' field with value as 'first'
+                // or 'return'. Otherwise, don't take an action here.
+                //
+                $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+                if ((isset($content['type'])) and
+                    ($content['type'] === 'first'))
+                {
+                    $gateway = $content['gateway'];
+                }
+                else if ($content['type'] === 'return')
+                {
+                    return $this->processMerchantReturnCallbackForm($response);
+                }
             }
         }
 
-        return $this->runPaymentCallbackFlowForGateway($response, $callback, $gateway);
+        return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
     }
 
-    protected function runPaymentCallbackFlowForGateway($response, &$callback = null, $gateway = null)
+    protected function runPaymentCallbackFlowForGateway($response,  $gateway, &$callback = null)
     {
-        if ($gateway === null)
-        {
-            $gateway = $this->gateway;
-        }
-
-        if ($gateway === null)
-        {
-            $gateway = 'hdfc';
-        }
+        $gateway = $this->decryptGatewayText($gateway);
 
         if (strpos($gateway, 'netbanking') !== false)
             $gateway = 'netbanking';
@@ -500,6 +616,35 @@ trait PaymentTrait
         $func = 'runPaymentCallbackFlow'.studly_case($gateway);
 
         return $this->$func($response, $callback);
+    }
+
+    protected function processMerchantReturnCallbackForm($response)
+    {
+        $content = $response->getContent();
+
+        $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+        if ($content['type'] === 'return')
+        {
+            $this->merchantCallbackFlow = true;
+
+            $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
+
+            $this->assertEquals($request['url'], $this->getLocalMerchantCallbackUrl());
+
+            $response = $this->makeRequestParent($request);
+
+            $this->assertResponse('json', $response);
+
+            return $response;
+        }
+    }
+
+    protected function decryptGatewayText($gateway)
+    {
+        list($gateway, ) = explode('__', \Crypt::decrypt($gateway, 2));
+
+        return $gateway;
     }
 
     protected function getIdFromUri($uri)
@@ -557,6 +702,24 @@ trait PaymentTrait
         return $this->getDataFromForm($form);
     }
 
+    protected function getSecondFormDataFromResponse($content)
+    {
+        $url = 'http://localhost';
+
+        $crawler = new Crawler($content, $url);
+
+        $last = $crawler->filter('form')->last();
+
+        if (count($last) === 0)
+            return false;
+
+        $form = $last->form();
+
+        list(, , $content) = $this->getDataFromForm($form);
+
+        return $content;
+    }
+
     protected function getDataFromForm($form)
     {
         $uri = $form->getUri();
@@ -581,7 +744,12 @@ trait PaymentTrait
         if ($this->gateway === null)
             $this->gateway = 'hdfc';
 
-        return $gateway['mock_' . $this->gateway];
+        $var = 'mock_' . $this->gateway;
+
+        if (isset($gateway[$var]))
+            return $gateway['mock_' . $this->gateway];
+
+        return false;
     }
 
     protected function getDataForGatewayRequest($response, &$callback = null)
@@ -609,7 +777,8 @@ trait PaymentTrait
             if ($response->getStatusCode() === 302)
             {
                 $url = $response->getTargetUrl();
-                $method = $values = null;
+                $method = 'get';
+                $values = [];
             }
             else
             {
@@ -635,5 +804,47 @@ trait PaymentTrait
         $url = $response->getTargetUrl();
 
         return $url;
+    }
+
+    public function getLocalMerchantCallbackUrl()
+    {
+        if ($this->merchantCallbackUrl !== null)
+        {
+            return $this->merchantCallbackUrl;
+        }
+
+        $params = ['key_id' => $this->ba->getKey()];
+        $url = \URL::route('dummy_return_callback', $params, false);
+        $url = 'http://localhost'.$url;
+
+        $this->merchantCallbackUrl = $url;
+
+        return $url;
+    }
+
+    /**
+     * Checks the laravel class of $response,
+     * whether it's json, http or redirect.
+     * @param  string  $type
+     * @param  mixed   $response
+     * @return boolean
+     */
+    protected function isResponseInstanceType($type = 'json', $response)
+    {
+        $match = 'Response';
+
+        if ($type !== 'http')
+            $match = ucfirst($type) . $match;
+
+        $match = 'Illuminate\Http\\'.$match;
+
+        $class = get_class($response);
+
+        return ($match === $class);
+    }
+
+    protected function assertResponse($type, $response)
+    {
+        $this->assertTrue($this->isResponseInstanceType($type, $response));
     }
 }

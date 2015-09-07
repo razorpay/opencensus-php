@@ -112,15 +112,15 @@ s($this->enrollResponse);
         $data['amt'] = $payment['amount']/100;
 
         // Collect udf fields
-        $data['udf1'] = 'junk';
+        $data['udf1'] = 'test';
 
         $data['udf2'] = $payment['email'];
 
         $data['udf3'] = $payment['contact'];
 
-        $data['udf4'] = 'junk';
+        $data['udf4'] = 'test';
 
-        $data['udf5'] = 'junk';
+        $data['udf5'] = 'test';
 
         $this->udfCheckAndMeetHdfcRequirements($data);
 
@@ -138,7 +138,14 @@ s($this->enrollResponse);
         //
         $data['currencycode'] = self::INR_CODE;
 
-        $data['action'] = Action::AUTHORIZE;
+        if ($input['card']['network_code'] === Card\Network::MAES)
+        {
+            $data['action'] = Action::PURCHASE;
+        }
+        else
+        {
+            $data['action'] = Action::AUTHORIZE;
+        }
     }
 
     /**

@@ -3,7 +3,6 @@
 use EE\Error\ErrorCode;
 use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
-use Gateway\Hdfc;
 
 return [
     'testPayment' => [
@@ -16,7 +15,7 @@ return [
         'refund_status' => null,
         'currency' => 'INR',
         'description' => 'random description',
-        'bank' => 'HDFC',
+        'bank' => 'ICIC',
         'error_code' => null,
         'error_description' => null,
         'email' => 'a@b.com',
@@ -32,8 +31,9 @@ return [
     ],
 
     'testPaymentBilldeskEntity' => [
-        'action'=> 'authorize',
-        'BankID'=> 'HDFC',
+        'action' => 'authorize',
+        'received' => true,
+        'BankID'=> 'ICI',
         'CurrencyType'=> 'INR',
         'ItemCode'=> 'DIRECT',
         'TypeField1'=> 'R',
@@ -53,6 +53,7 @@ return [
 //        'id'=> '76',
 //        'payment_id'=> '3PgPULSRMSgExV',
         'action'=> 'refund',
+        'received' => true,
 //        'MerchantID'=> 'random',
 //        'CustomerID'=> '3PgPULSRMSgExV',
         'TxnAmount'=> '5.00',
@@ -72,7 +73,7 @@ return [
         'ErrorStatus'=> null,
         'ErrorDescription'=> null,
         'RequestType'=> '0410',
-        'RefAmount'=> '500',
+        'RefAmount'=> '500.00',
 //        'RefDateTime'=> '201506200040838',
         'RefStatus'=> '0799',
 //        'RefundId'=> 'hlbdtgwnofsxmcj',
@@ -83,5 +84,26 @@ return [
         // 'created_at'=> 1434753518,
         // 'updated_at'=> 1434753518,
         'entity'=> 'billdesk',
+    ],
+
+    'testGetPaymentMethodsRoute' => [
+        'request' => [
+            'url' => '/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'card' => true,
+                'netbanking' => [
+                    'UTIB' => 'Axis Bank',
+//                    'BARB' => 'Bank of Baroda',
+                    'YESB' => 'Yes Bank',
+                ],
+                'wallet' => [
+                    'paytm' => false,
+                ],
+            ],
+        ],
     ],
 ];

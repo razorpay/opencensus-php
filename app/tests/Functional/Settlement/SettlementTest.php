@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Settlement;
 
+use Carbon\Carbon;
 use Tests\Functional\TestCase;
 use Tests\Functional\RequestResponseFlowTrait;
 
@@ -85,6 +86,34 @@ class SettlementTest extends TestCase
 
             $this->assertResponseStatus(200);
         }
+    }
+
+    public function testHoldFundsDuringSettlement()
+    {
+        $this->fixtures->links['merchant']->holdFunds('10000000000000');
+
+        // Create payments and refunds with timestamps two days back
+        $payments = $this->createPaymentEntities();
+
+        // Generate settlements for above transactions
+        $content = $this->initiateSettlements();
+
+        $this->assertEquals(0, $content['kotak']['transaction_count']);
+    }
+
+    public function createPaymentEntities()
+    {
+        $prEntities = array();
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
+
+        $payments = $this->fixtures->times(5)->create('payment:captured',
+                ['captured_at' => $capturedAt,
+                 'created_at' => $createdAt,
+                 'updated_at' => $createdAt + 10]);
+
+        return $payments;
     }
 
     protected function startTest($testDataToReplace = array())

@@ -40,6 +40,8 @@ class Settler
 
     public function settle($input = array(), $channel = null)
     {
+        $this->checkTime();
+
         $this->input = $input;
 
         $txns = $this->fetchTransactionsToSettle($input);
@@ -92,7 +94,8 @@ class Settler
                     $settlements->count(),
                     $txns->count());
 
-                $data['setlFile'] = $urlText;
+                $data['settlement_text_file'] = $urlText;
+                $data['settlement_excel_file'] = $urlExcel;
             }
             else
             {
@@ -203,7 +206,7 @@ class Settler
             {
                 $txn = $txns[$i];
 
-                if ($this->shouldSettle($txn, $channel) === false)
+                if ($this->shouldSettle($txn, $channel, $merchant) === false)
                 {
                     $i++;
                     continue;
@@ -217,7 +220,7 @@ class Settler
                 $i++;
             }
 
-            if ($setlAmount < 0)
+            if ($setlAmount <= 0)
             {
                 $setlAmount = 0;
                 continue;
@@ -274,9 +277,10 @@ class Settler
         $dailySettlement->saveOrFail();
     }
 
-    protected function shouldSettle(Transaction\Entity $txn, $channel)
+    protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant)
     {
-        return ($txn->getChannel() === $channel);
+        return (($txn->getChannel() === $channel) and
+                ($merchant->holdFunds() === false));
     }
 
     protected function createSettlementFile($settlements, $txns)
@@ -424,5 +428,28 @@ class Settler
         }
 
         return $channels;
+    }
+
+    protected function checkTime()
+    {
+        $app = \App::getFacadeRoot();
+        $mode = $app['rzp.mode'];
+        $env = $app['env'];
+
+        $sixPm = Carbon::today('Asia/Kolkata')->hour(18)->timestamp;
+        $now = time();
+
+        $crossed = false;
+
+        if ($now > ($sixPm - (5*60)))
+            $crossed = true;
+
+        if (($env === 'production') and
+            ($mode === 'live') and
+            ($crossed === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please settlements before 6 pm everyday');
+        }
     }
 }

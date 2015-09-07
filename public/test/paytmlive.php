@@ -23,7 +23,7 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
 </table>
 <br><br>
 <form method="post" id="paymentform" action="//<?=$public_url?>/payments">
-<table border="1" align="center"  width="300">
+<table border="1" align="center"  width="500">
     <tr>
     <th colspan="50" bgcolor="brown" ><font  size = 2 color = White face = verdana >Enter Parameters</th>
     </tr>
@@ -32,6 +32,15 @@ $private_url = $key_id.':'.$secret.'@'.$baseurl;
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
+                <option value="wallet">Wallet</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="40">Select Wallet: </td>
+        <td>
+            <select name="wallet">
+                <option value="paytm">Paytm</option>
             </select>
         </td>
     </tr>

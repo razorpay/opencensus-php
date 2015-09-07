@@ -55,7 +55,7 @@ class CreatePayments  extends Migration
             $table->char(Payment::CARD_ID, Payment::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Payment::BANK, 4)
+            $table->char(Payment::BANK, 6)
                   ->nullable();
 
             $table->string(Payment::WALLET, 8)
@@ -77,6 +77,9 @@ class CreatePayments  extends Migration
             $table->char(Payment::TRANSACTION_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->integer(Payment::AUTHORIZED_AT)
+                  ->nullable();
+
             $table->boolean(Payment::AUTO_CAPTURED)
                   ->default(0);
 
@@ -93,6 +96,9 @@ class CreatePayments  extends Migration
             $table->boolean(Payment::VERIFIED)
                   ->nullable();
 
+            $table->text(Payment::CALLBACK_URL)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
@@ -101,6 +107,9 @@ class CreatePayments  extends Migration
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);
+            $table->index(Payment::AUTHORIZED_AT);
+            $table->index(Payment::EMAIL);
+            $table->index(Payment::BANK);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

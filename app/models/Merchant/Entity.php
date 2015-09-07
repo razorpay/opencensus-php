@@ -3,21 +3,29 @@
 namespace Models\Merchant;
 
 use Models\Base;
+use Models\Pricing\Service as PricingService;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const NAME              = 'name';
-    const EMAIL             = 'email';
-    const ACTIVATED         = 'activated';
-    const ACTIVATED_AT      = 'activated_at';
-    const LIVE              = 'live';
-    const PRICING_PLAN_ID   = 'pricing_plan_id';
-    const INTERNATIONAL     = 'international';
-    const WEBSITE           = 'website';
-    const CATEGORY          = 'category';
+    const ID                        = 'id';
+    const NAME                      = 'name';
+    const EMAIL                     = 'email';
+    const ACTIVATED                 = 'activated';
+    const ACTIVATED_AT              = 'activated_at';
+    const LIVE                      = 'live';
+    const HOLD_FUNDS                = 'hold_funds';
+    const PRICING_PLAN_ID           = 'pricing_plan_id';
+    const INTERNATIONAL             = 'international';
+    const BILLING_LABEL             = 'billing_label';
+    const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
+    const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
+    const WEBSITE                   = 'website';
+    const CATEGORY                  = 'category';
 
-    const METHODS           = 'methods'; // Refers to methods relation and not a property;
+    /**
+     * Refers to methods relation and not a property;
+     */
+    const METHODS                   = 'methods';
 
     protected $table = \Constants\Table::MERCHANT;
 
@@ -33,7 +41,12 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CATEGORY,
         self::WEBSITE,
-        self::INTERNATIONAL);
+        self::HOLD_FUNDS,
+        self::INTERNATIONAL,
+        self::BILLING_LABEL,
+        self::RECEIPT_EMAIL_ENABLED,
+        self::TRANSACTION_REPORT_EMAIL,
+    );
 
     protected $public = array(
         self::ID,
@@ -43,27 +56,32 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED,
         self::ACTIVATED_AT,
         self::LIVE,
-        self::CATEGORY,
-        self::WEBSITE,
-        self::INTERNATIONAL,
+        self::HOLD_FUNDS,
         self::PRICING_PLAN_ID,
+        self::WEBSITE,
+        self::CATEGORY,
+        self::INTERNATIONAL,
+        self::BILLING_LABEL,
+        self::RECEIPT_EMAIL_ENABLED,
+        self::TRANSACTION_REPORT_EMAIL,
         self::METHODS,
         self::CREATED_AT,
         self::UPDATED_AT);
 
     protected static $generators = array(
-        self::LIVE,
-        self::ACTIVATED);
+        self::TRANSACTION_REPORT_EMAIL);
 
-    protected function generateLive($input)
-    {
-        $this->setAttribute(self::LIVE, false);
-    }
+    protected $defaults = array(
+        self::LIVE                  => false,
+        self::ACTIVATED             => false,
+        self::ACTIVATED_AT          => null,
+        self::RECEIPT_EMAIL_ENABLED => true,
+        self::HOLD_FUNDS            => false,
+    );
 
-    protected function generateActivated($input)
+    protected function generateTransactionReportEmail($input)
     {
-        $this->setAttribute(self::ACTIVATED, false);
-        $this->setAttribute(self::ACTIVATED_AT, null);
+        $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $input[self::EMAIL]);
     }
 
     public function isActivated()
@@ -79,6 +97,19 @@ class Entity extends Base\PublicEntity
     public function isLive()
     {
         return $this->getAttribute(self::LIVE);
+    }
+
+    public function isEducationCategory()
+    {
+        $eduCategories = array(
+            '8211',
+            '8220',
+            '8241',
+            '8244',
+            '8249',
+            '8299');
+
+        return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
     public function activate()
@@ -125,7 +156,7 @@ class Entity extends Base\PublicEntity
     public function methods()
     {
         return $this->hasOne(
-            'Models\Merchant\Banks\Entity');
+            'Models\Merchant\Methods\Entity');
     }
 
     public function terminals()
@@ -150,6 +181,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 
+    public function getPricingPlan()
+    {
+        return (new PricingService)->getPricingPlanById($this->getPricingPlanId());
+    }
+
     public function getActivatedAttribute()
     {
         return (bool) $this->attributes[self::ACTIVATED];
@@ -163,5 +199,58 @@ class Entity extends Base\PublicEntity
     public function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
+    }
+
+    public function getReceiptEmailEnabledAttribute()
+    {
+        return (bool) $this->attributes[self::RECEIPT_EMAIL_ENABLED];
+    }
+
+    public function getHoldFundsAttribute()
+    {
+        return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
+
+    public function getWebsite()
+    {
+        return $this->attributes[self::WEBSITE];
+    }
+
+    public function getBillingLabel()
+    {
+        return $this->attributes[self::BILLING_LABEL];
+    }
+
+    public function holdFunds()
+    {
+        return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
+
+    public function isReceiptEmailsEnabled()
+    {
+        return $this->getReceiptEmailEnabledAttribute();
+    }
+
+    public function getRedactedAccountNumber()
+    {
+        $bankAccount = $this->bankAccount()->first();
+
+        if($bankAccount !== null)
+        {
+            $ac = $bankAccount->getAccountNumber();
+            //
+            // How many times should we repeat the redacted portion
+            // This does not give a precise result,
+            // but it looks good in groups of 4
+            //
+
+            $repeat = ceil((strlen($ac) - 4)/4);
+
+            return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+        }
+        else
+        {
+            return 'XXXX-XXXX-XXXX';
+        }
     }
 }

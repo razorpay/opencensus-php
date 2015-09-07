@@ -7,6 +7,8 @@ use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Payment;
 use Models\Payment\Refund;
+use Models\Payment\Processor\Netbanking;
+use Models\Bank\Name as BankNames;
 
 class Entity extends Base\PublicEntity
 {
@@ -30,11 +32,13 @@ class Entity extends Base\PublicEntity
     const WALLET            = 'wallet';
     const TRANSACTION_ID    = 'transaction_id';
     const AUTO_CAPTURED     = 'auto_captured';
+    const AUTHORIZED_AT     = 'authorized_at';
     const CAPTURED_AT       = 'captured_at';
     const GATEWAY           = 'gateway';
     const TERMINAL_ID       = 'terminal_id';
     const SIGNED            = 'signed';
     const VERIFIED          = 'verified';
+    const CALLBACK_URL      = 'callback_url';
 
     const CURRENCY_LENGTH   = 3;
 
@@ -59,7 +63,8 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::EMAIL,
         self::CONTACT,
-        self::NOTES);
+        self::NOTES,
+        self::CALLBACK_URL);
 
     protected $visible = array(
         self::ID,
@@ -79,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::GATEWAY,
         self::CARD_ID,
@@ -87,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::SIGNED,
         self::VERIFIED,
+        self::CALLBACK_URL,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -112,55 +119,18 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = array(self::CONTACT, self::BANK);
 
-    protected static $generators = array(
-        self::STATUS,
-        self::ID,
-        self::NOTES,
-        self::SIGNED,
-        self::REFUND_STATUS,
-        self::AMOUNT_REFUNDED,
-        self::AUTO_CAPTURED,
-        self::VERIFIED);
+    protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
+
+    protected $defaults = array(
+        self::STATUS            => Status::CREATED,
+        self::REFUND_STATUS     => Refund\Status::NULL,
+        self::NOTES             => [],
+        self::AMOUNT_REFUNDED   => 0,
+        self::SIGNED            => 0,
+        self::VERIFIED          => null,
+        self::AUTO_CAPTURED     => 0);
 
 // --------------------- Generators --------------------------------------------
-
-    public function generateStatus($input)
-    {
-        $this->setAttribute(self::STATUS, Status::CREATED);
-    }
-
-    public function generateRefundStatus($input)
-    {
-        $this->setAttribute(self::REFUND_STATUS, Refund\Status::NULL);
-    }
-
-    public function generateNotes($input)
-    {
-        if (isset($input['notes']) === false)
-        {
-            $this->setAttribute(self::NOTES, array());
-        }
-    }
-
-    protected function generateAmountRefunded()
-    {
-        $this->setAttribute(self::AMOUNT_REFUNDED, 0);
-    }
-
-    protected function generateSigned()
-    {
-        $this->setAttribute(self::SIGNED, 0);
-    }
-
-    protected function generateAutoCaptured()
-    {
-        $this->setAttribute(self::AUTO_CAPTURED, 0);
-    }
-
-    protected function generateVerified()
-    {
-        $this->setAttribute(self::VERIFIED, null);
-    }
 
 // --------------------- Generators Ends ---------------------------------------
 
@@ -184,7 +154,8 @@ class Entity extends Base\PublicEntity
         $contact = str_replace(')', '', $contact);
 
         // Remove the 0 at the start
-        if ($contact[0] === '0')
+        if ((strlen($contact) > 1) and
+            ($contact[0] === '0'))
         {
             $contact = substr($contact, 1);
         }
@@ -195,9 +166,18 @@ class Entity extends Base\PublicEntity
     protected function modifyBank(& $input)
     {
         if ((isset($input['method'])) and
-            ($input['method'] === 'card'))
+            ($input['method'] !== Method::NETBANKING))
         {
             $input['bank'] = null;
+        }
+    }
+
+    protected function modifyWallet(& $input)
+    {
+        if ((isset($input['method'])) and
+            ($input['method'] !== Method::WALLET))
+        {
+            $input['wallet'] = null;
         }
     }
 
@@ -248,6 +228,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
+    public function setAuthorizeTimestamp()
+    {
+        $this->setAttribute(self::AUTHORIZED_AT, time());
+    }
+
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
@@ -268,6 +253,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERIFIED, $verified);
     }
 
+    public function setErrorNull()
+    {
+        $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::ERROR_DESCRIPTION, null);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -286,9 +277,20 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Accessor --------------------------------------------
 
+    /**
+     * Makes sure that getNotes always returns an array
+     */
     public function getNotesAttribute($notes)
     {
-        return json_decode($notes, true);
+        $notesArray = json_decode($notes, true);
+        if($notesArray === '')
+        {
+            return [];
+        }
+        else
+        {
+            return $notesArray;
+        }
     }
 
     public function getAmountAttribute()
@@ -433,6 +435,107 @@ class Entity extends Base\PublicEntity
     public function getBank()
     {
         return $this->getAttribute(self::BANK);
+    }
+
+    public function getCallbackUrl()
+    {
+        return $this->getAttribute(self::CALLBACK_URL);
+    }
+
+    public function getCaptureTimestamp()
+    {
+        return $this->getAttribute(self::CAPTURED_AT);
+    }
+
+    public function getAuthorizeTimestamp()
+    {
+        return $this->getAttribute(self::AUTHORIZED_AT);
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->getAttribute(self::UPDATED_AT);
+    }
+
+    public function getBankName()
+    {
+        $bankId = $this->getBank();
+        return Netbanking::getName($bankId);
+    }
+
+    public function getWallet()
+    {
+        return $this->getAttribute(self::WALLET);
+    }
+
+    public function getFormattedCard()
+    {
+        return $this->card->getFormatted();
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
+    public function getContact()
+    {
+        return $this->getAttribute(self::CONTACT);
+    }
+
+    public function getMethodWithDetail()
+    {
+        $method = Method::formatted($this->getMethod());
+        $walletNames = [
+            'paytm' =>  'PayTM',
+            'mobikwik' =>  'Mobikwik'
+        ];
+
+        switch($this->getMethod())
+        {
+            case Method::CARD:
+                return [$method, $this->getFormattedCard()];
+                break;
+            case Method::NETBANKING:
+                return [$method, $this->getBankName()];
+                break;
+            case Method::WALLET:
+                return [$method, ucfirst($this->getWallet())];
+                break;
+        }
+    }
+
+    public function getErrorDetails()
+    {
+        return [
+            self::ERROR_CODE => $this->getAttribute(self::ERROR_CODE),
+            self::ERROR_DESCRIPTION => $this->getAttribute(self::ERROR_DESCRIPTION),
+        ];
+    }
+
+    /**
+     * This is a heuristic method that tries to find
+     * an order id the notes section
+     * As of now, order_id is the first field inside notes
+     * that ends with `_order_id`
+     * We will shift to a standard field called `merchant_order_id`
+     * as our ecommerce plugins are migrated
+     * @return String order_id for the paymetn
+     */
+    public function getOrderId()
+    {
+        $notes = $this->getNotes();
+
+        foreach ($notes as $key => $value)
+        {
+            $orderIdSuffix = '_order_id';
+            $ix = -1 * strlen($orderIdSuffix); // index from back
+            if (substr($key, $ix) === $orderIdSuffix)
+            {
+                return $value;
+            }
+        }
+        return false;
     }
 
 // ----------------------- Getters Ends-----------------------------------------

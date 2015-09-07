@@ -9,9 +9,9 @@
     <meta http-equiv="expires" content="0">
     <style>
         img{max-width: 100%; height: auto;}
-        body{font-family: sans; font-size: 14px; text-align: center; color: #414141; padding-top: 40px; line-height: 24px;background:#fff;}
+        body{font-family: sans-serif; font-size: 14px; text-align: center; color: #414141; padding-top: 40px; line-height: 24px;background:#fff;}
         label{position: absolute; top: 0; left: 0; right: 0; height: 100%; line-height: 32px; padding-left: 30px;}
-        input[type=button]{font-family: inherit; padding: 12px 20px; text-decoration: none; border-radius: 2px; border: 0; width: 124px; background: none; margin: 0 5px; color: #fff; cursor: pointer;}
+        input[type=button]{display: inline-block; font-family: inherit; padding: 12px 20px; text-decoration: none; border-radius: 2px; border: none; width: 124px; background: none; margin: 0 5px; color: #fff; cursor: pointer;}
         input[type=button]:hover{background-image: linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1))}
         .grey{color: #777; margin-top: 20px; font-size: 12px; line-height: 18px;}
         .danger{background-color: rgb(202, 60, 60)!important}
@@ -45,7 +45,7 @@
   </head>
 
   <body>
-    <h1><img src="/logo.jpg" width="400" height="104"></h1>
+    <h1><img src="/logo.gif" width="400" height="104"></h1>
     <h3>Welcome to Razorpay Bank</h3>
     This is just a demo netbanking page.<br>
     You can choose whether to make this payment successful or not: <br>

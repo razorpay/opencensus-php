@@ -76,31 +76,7 @@ class Processor
 
         $this->checkSignature($input, $payment);
 
-        $data = $this->authorize($payment, $input);
-
-        //
-        // The returned value could be either Payment
-        // model or an array containing callback data.
-        // We convert payment model to array
-        // if it's a payment model
-        //
-        if ($data instanceof Payment\Entity)
-        {
-            // This is a payment instance
-            $payment = $data;
-
-            if ($payment->isSigned())
-            {
-                $data = $this->captureSignedPayment($payment);
-            }
-            else
-            {
-                // Return array with fields after authorized
-                $data = ['razorpay_payment_id' => $payment->getPublicId()];
-            }
-        }
-
-        return $data;
+        return $this->authorize($payment, $input);
     }
 
     protected function checkSignature($input, $payment)
@@ -194,21 +170,18 @@ class Processor
         $this->trace->info(
             TraceCode::MISC_TRACE_CODE,
             ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive(),
-             'reach' => true]);
+             'live' => $merchant->isLive()]);
+    }
 
+    protected function verifyMerchantIsLiveForLiveRequest()
+    {
         // On live request, ensure that merchant isn't blocked temporarily
-        if ($merchant->isLive() === false)
+        if (($this->mode === Mode::LIVE) and
+            ($this->merchant->isLive() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
-
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive(),
-             'reach' => false]);
     }
 
     /**
@@ -277,6 +250,11 @@ class Processor
 
         $gateway = $this->payment->getGateway();
 
+        if ($terminal === null)
+        {
+            return;
+        }
+
         $input['terminal'] = $terminal;
         $input['merchant'] = $terminal->merchant;
 
@@ -327,6 +305,13 @@ class Processor
 
         $card = $this->payment->card()->first();
         return $this->payment;
+    }
+
+    protected function setPayment($payment)
+    {
+        $this->payment = $payment;
+
+        $card = $this->payment->card()->first();
     }
 
     protected function tracePaymentNewRequest($input)

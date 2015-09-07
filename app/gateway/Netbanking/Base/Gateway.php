@@ -25,7 +25,7 @@ class Gateway extends \Gateway\Base\Gateway
 
     protected function getNewGatewayPaymentEntity()
     {
-        return new Netbanking\Entity;
+        return new Netbanking\Base\Entity;
     }
 
     protected function getMappedAttributes($attributes)
@@ -39,10 +39,15 @@ class Gateway extends \Gateway\Base\Gateway
             if (isset($map[$key]))
             {
                 $newKey = $map[$key];
-                $attr[$newKey] = $map[$key];
+                $attr[$newKey] = $value;
             }
         }
 
         return $attr;
+    }
+
+    protected function getRepo()
+    {
+        return new Repository();
     }
 }

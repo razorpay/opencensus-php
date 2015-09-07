@@ -25,6 +25,13 @@ class Server
         $this->input = $input;
     }
 
+    protected function capture($input)
+    {
+        $this->action = 'capture';
+
+        $this->input = $input;
+    }
+
     protected function refund($input)
     {
         $this->action = 'refund';
@@ -125,8 +132,13 @@ class Server
         $this->validateActionInput($input, 'auth');
     }
 
-    protected function validateActionInput($input, $action)
+    protected function validateActionInput($input, $action = null)
     {
+        if ($action === null)
+        {
+            $action = $this->action;
+        }
+
         $validator = $this->getValidator();
 
         $validator->validateInput($action, $input);
@@ -140,7 +152,7 @@ class Server
     protected function makePostResponse($request)
     {
         $content = '
-            <!doctype html>
+            <!doctype html public "-//w3c//dtd html 4.0 transitional//en">
             <html lang="en">
                 <body>
                 <form name="form1" action="'.$request['url'].'" method="post">';
@@ -161,7 +173,7 @@ class Server
 
         $response = \Response::make($content);
 
-        $response->headers->set('Content-Type', 'application/html; charset=UTF-8');
+        $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;

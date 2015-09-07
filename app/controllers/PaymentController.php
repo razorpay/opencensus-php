@@ -33,53 +33,6 @@ class PaymentController extends BaseController
         return ApiResponse::json($payments);
     }
 
-    /**
-     * Create a new payment
-     */
-    public function postCreatePayment()
-    {
-        $input = Input::all();
-
-        $data = $this->payment->process($input);
-
-        //
-        // Check for call from API
-        //
-        if (isset($data['request']))
-        {
-            if ($data['request']['method'] === 'post')
-            {
-            	return View::make('gateway.gatewayPostForm')
-                    ->with('data', $data);
-            }
-            else if ($data['request']['method'] === 'get')
-            {
-                return Redirect::away($data['request']['url']);
-            }
-        }
-        else
-        {
-            return ApiResponse::json($data);
-        }
-    }
-
-    /**
-     * Creates a new payment on a JSONP Request
-     */
-    public function getJSONP()
-    {
-        $input = Input::all();
-
-        unset($input['callback']);
-        // jQuery inserts underscore var with timestamp
-        // when cache is set to false. See jQuery docs for details
-        unset($input['_']);
-
-        $data = $this->payment->process($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function getVerify($id)
     {
         $data = $this->payment->verify($id);
@@ -97,6 +50,13 @@ class PaymentController extends BaseController
         $payment = $this->payment->refund($id, $input);
 
         return ApiResponse::json($payment);
+    }
+
+    public function postAuthorizeFailedPayment($id)
+    {
+        $data = $this->payment->authorizeFailed($id);
+
+        return ApiResponse::json($data);
     }
 
     /**
@@ -125,35 +85,6 @@ class PaymentController extends BaseController
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
 
         return ApiResponse::json($data);
-    }
-
-    public function postCallback($id, $hash)
-    {
-        $input = Input::all();
-
-        $data = null;
-
-        try
-        {
-            $data = $this->payment->callback($id, $hash, $input);
-        }
-        catch (RecoverableException $exception)
-        {
-            if (App::runningUnitTests())
-            {
-                throw $exception;
-            }
-
-            $error = $exception->getError();
-
-            $data = $error->toPublicArray();
-            $data['http_status_code'] = $error->getHttpStatusCode();
-        }
-
-        if ($data !== null)
-        {
-            return View::make('gateway.callback')->with('data', $data);
-        }
     }
 
     public function getRefundsForPayment($paymentId)
@@ -235,5 +166,12 @@ class PaymentController extends BaseController
         $data = $this->payment->verifyAllPayments();
 
         return ApiResponse::json($data);
+    }
+
+    public function postDummyReturnCallback()
+    {
+        $input = Input::all();
+
+        return ApiResponse::json($input);
     }
 }

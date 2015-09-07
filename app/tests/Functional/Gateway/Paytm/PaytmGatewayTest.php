@@ -88,6 +88,18 @@ class PaytmGatewayTest extends TestCase
         $this->assertEquals($payment['verified'], true);
     }
 
+    public function testRefundPayment()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('paytm', true);
+
+        $this->assertTestResponse($refund);
+    }
+
     public function testPaytmWhenNotEnabled()
     {
         $this->ba->publicAuth();

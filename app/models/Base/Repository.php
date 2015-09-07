@@ -3,14 +3,21 @@
 namespace Models\Base;
 
 use DB;
+use Illuminate\Support\Facades\App;
 
 class Repository extends \Razorpay\Spine\Repository
 {
     protected $db;
 
+    protected $auth;
+
     public function __construct()
     {
         parent::__construct();
+
+        $app = App::getFacadeRoot();
+
+        $this->auth = $app['basicauth'];
     }
 
     public function findOrFailPublic($id, $columns = array('*'))

@@ -89,9 +89,9 @@ class Server extends Base\Mock\Server
         $this->input = $input;
     }
 
-    public function capture(array $input)
+    public function capture($input)
     {
-        ;
+        parent::capture($input);
     }
 
     public function atomRzpPayment($input)
@@ -225,8 +225,9 @@ class Server extends Base\Mock\Server
     {
         $hash = $this->getHashOfPaymentPublicId($paymentPublicId);
 
-        $callbackUrl = Route::getUrlWithPublicAuth(
-            'payment_callback_post', ['id' => $paymentPublicId, 'hash' => $hash]);
+        $params = ['id' => $paymentPublicId, 'hash' => $hash];
+
+        $callbackUrl = Route::getUrlWithPublicCallbackAuth($params);
 
         return $callbackUrl;
     }

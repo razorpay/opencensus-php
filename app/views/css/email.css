@@ -1,0 +1,137 @@
+/* Your custom styles go here */
+body, .body, .greybg{
+	background:#EBECEE;
+}
+*{
+	font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important;
+}
+.white{
+	background:#ffffff;
+	background-color:#ffffff;
+}
+.lighttext{
+	color:#B2B2B2;
+	font-size:12px;
+}
+.subtext{
+	color:#7C8082;
+	line-height:10px;
+	font-size:16px;
+}
+.bluebg{
+	background:#39ACE5;
+}
+.whitetext{
+	color:#f2f2f2;
+}
+h1{
+	margin-top:40px;
+	color:#f2f2f2;
+	font-size:32px;
+	text-align:center;
+	font-weight:bold;
+}
+h3, h3 a, h3 a:visited{
+	font-size:22px;
+	color:#f2f2f2;
+}
+
+h3.center{
+	text-align:center;
+}
+.darktext{
+	line-height:25px;
+	color:#484B4C;
+}
+.dark {
+	color:#2d2d2d;
+}
+.newsletter {
+	padding: 40px;
+}
+.newsletter-header-bg {
+	max-width: 580px;
+	min-height: 180px;
+}
+.newsletter-header-bg h1{
+	text-align: left;
+	margin-left: 40px;
+	margin-top: 40px;
+	font-size: 36px;
+	line-height: 20px;
+	font-weight: 200 !important;
+	color: white;
+}
+.newsletter, .newsletter p {
+	font-size: 16px;
+	color: #2d2d2d;
+	text-align: justify;
+	line-height: 24px;
+	background: white;
+	margin: 10px 0px 10px 0px;
+}
+.newsletter a, .newsletter a:hover {
+	color: #24bbea;
+	text-decoration: none !important;
+}
+.newsletter h1{
+	font-size: 24px;
+	line-height: 24px;
+	color: #24bbea;
+	background: white;
+	margin-top: 40px;
+	text-align: left;
+}
+h1 .dark {
+	font-size: 28px;
+}
+.darktext p{
+	line-height: 25px;
+}
+hr.small{
+	width:40%;
+}
+hr{
+	height:2px;
+	color:#E5E5E5;
+}
+hr.wide{
+	width:490px;
+}
+
+td>a, td>a:visited{
+	color:#39ACE5;
+}
+
+.logo{
+	height:22px;
+	width:22px;
+	display:inline;
+	float: left !important;
+	padding:0px 5px 0px 5px;
+}
+.logo img{
+	float: none;
+}
+.right-text-pad{
+	text-align:right;
+}
+.email{
+	text-decoration: none;
+	color: inherit;
+}
+.short, .short td{
+	line-height: 0.8em;
+	font-size: 12px;
+}
+h3{
+	font-size: 16px;
+	font-weight: bold;
+	color: #39ACE5;
+	margin-top: 10px;
+}
+.bluebg h2{
+	font-size: 20px;
+	font-weight: bold;
+	color: white;
+}

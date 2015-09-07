@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY             => 'sometimes|',
         Entity::PAYMENT_METHOD      => 'required|alpha_space|in:card,netbanking,wallet',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes|in:debit,credit',
-        Entity::PAYMENT_NETWORK     => 'required_if:payment_method,card|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY',
+        Entity::PAYMENT_NETWORK     => 'sometimes|alpha|in:VISA,MC,DICL,RP,MAES,RUPAY',
         Entity::PAYMENT_ISSUER      => 'sometimes|alpha|max:10',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000');

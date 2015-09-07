@@ -24,7 +24,7 @@ trait GatewayTrait
 
         if ($request['method'] === 'get')
         {
-            // The key thing now is to replace redirectUrl from kotak's to ours!
+            // The key thing now is to replace the url from gateway to our mock one!
             $parts = parse_url($request['url']);
 
             $url = $url . '&' .$parts['query'];
@@ -51,6 +51,9 @@ trait GatewayTrait
         $ns = $this->getNamespace();
         $class = $ns.'\Server';
         $server = new $class;
+        $input = [];
+
+        $request['method'] = strtolower($request['method']);
 
         if ($request['method'] === 'post')
         {
@@ -60,7 +63,6 @@ trait GatewayTrait
         {
             $url = $request['url'];
             $parts = parse_url($url);
-
             parse_str($parts['query'], $input);
         }
 

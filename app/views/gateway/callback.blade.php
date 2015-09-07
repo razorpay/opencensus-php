@@ -1,7 +1,7 @@
 <!doctype html>
 <head>
     <title>Razorpay - Payment in progress</title>
-    <style>body{background:#fff;}</style>
+    <style>body{background:#fff; font-family: sans-serif;}</style>
 </head>
 <body>
 <script>
@@ -23,16 +23,21 @@ function c(name, value, days){
 var data = {{json_encode($data);}};
 // Callback data //
 
-if(window.CheckoutBridge){
-	if(typeof CheckoutBridge.oncomplete == 'function'){
-		CheckoutBridge.oncomplete(JSON.stringify(data));
-	}
+if (window.CheckoutBridge) {
+    if (typeof CheckoutBridge.oncomplete == 'function') {
+        CheckoutBridge.oncomplete(JSON.stringify(data));
+    }
 } else {
-	c('rzp', JSON.stringify(data));
-	if(window.opener && typeof window.opener.postMessage == 'function'){
-		window.opener.postMessage(data, '*');
-	}
+    c('rzp', JSON.stringify(data));
+    if (window.opener && typeof window.opener.postMessage == 'function') {
+        window.opener.postMessage(data, '*');
+    }
 }
+
+function razorpay_callback(){
+  return JSON.stringify(data);
+}
+
 </script>
 
 <pre>

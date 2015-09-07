@@ -21,6 +21,8 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
+        parent::authorize($input);
+
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
@@ -68,8 +70,10 @@ class Server extends Base\Mock\Server
         return $url;
     }
 
-    public function capture(array $input)
+    public function capture($input)
     {
+        parent::capture($input);
+
         $payment = $this->getGatewayPaymentEntity($input);
 
         $content = array(
@@ -97,6 +101,8 @@ class Server extends Base\Mock\Server
 
     public function refund($input)
     {
+        parent::refund($input);
+
         $payment = $this->getGatewayPaymentEntity($input);
 
         $content = array(
@@ -106,7 +112,7 @@ class Server extends Base\Mock\Server
             'vpc_BatchNo'           => '20150503',
             'vpc_CapturedAmount'    => $input['vpc_Amount'],
             'vpc_Card'              => 'MC',
-            'vpc_Command'           => 'capture',
+            'vpc_Command'           => 'refund',
             'vpc_Locale'            => 'en_US',
             'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
             'vpc_Merchant'          => $input['vpc_Merchant'],
@@ -117,6 +123,36 @@ class Server extends Base\Mock\Server
             'vpc_TransactionNo'     => $this->generateTransactionNo(),
             'vpc_TxnResponseCode'   => '0',
             'vpc_Version'           => '1',
+        );
+
+        return $this->prepareResponse($content);
+    }
+
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $payment = $this->getGatewayPaymentEntity($input);
+
+        $content = array(
+            'vpc_AcqResponseCode'   => '00',
+            'vpc_Amount'            => $input['vpc_Amount'],
+            'vpc_AuthorisedAmount'  => $input['vpc_Amount'],
+            'vpc_BatchNo'           => $payment['vpc_BatchNo'],
+            'vpc_CapturedAmount'    => $input['vpc_Amount'],
+            'vpc_Card'              => 'MC',
+            'vpc_Command'           => 'queryDR',
+            'vpc_Locale'            => 'en_US',
+            'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
+            'vpc_Merchant'          => $input['vpc_Merchant'],
+            'vpc_Message'           => 'Approved',
+            'vpc_ReceiptNo'         => $payment['vpc_ReceiptNo'],
+            'vpc_RefundedAmount'    => '0',
+            'vpc_TransactionNo'     => $payment['vpc_TransactionNo'],
+            'vpc_TxnResponseCode'   => '0',
+            'vpc_Version'           => '1',
+            'vpc_DRExists'          => 'Y',
+            'vpc_FoundMultipleDRs'  => 'N',
         );
 
         return $this->prepareResponse($content);

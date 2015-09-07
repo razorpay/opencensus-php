@@ -10,16 +10,16 @@ return [
         'request' => [
             'content' => [
                 'gateway' => 'hdfc',
-                'gateway_merchant_id' => '123abcd',
-                'gateway_terminal_id' => '123abcde',
-                'gateway_terminal_password' => '123abcdef'
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'gateway_terminal_password' => '12345678'
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'gateway_merchant_id' => '123abcd',
-                'gateway_terminal_id' => '123abcde',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
             ]
         ]
     ],
@@ -28,9 +28,9 @@ return [
         'request' => [
             'content' => [
                 'gateway' => 'hdfc',
-                'gateway_merchant_id' => '123abcd',
-                'gateway_terminal_id' => '123abcde',
-                'gateway_terminal_password' => '123abcdef'
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'gateway_terminal_password' => '12345678'
             ],
             'url' => '/merchants/10000000000000/terminals',
             'method' => 'POST'
@@ -55,9 +55,9 @@ return [
             'content' => [
                 'gateway' => 'atom',
                 'card' => 0,
-                'gateway_merchant_id' => '123abcd',
-                'gateway_terminal_id' => 'product_id',
-                'gateway_terminal_password' => '123abcdef'
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'gateway_terminal_password' => ''
             ],
             'url' => '/merchants/10000000000000/terminals',
             'method' => 'POST'
@@ -65,8 +65,8 @@ return [
         'response' => [
               'content' => [
                 'gateway' => 'atom',
-                'gateway_merchant_id' => '123abcd',
-                'gateway_terminal_id' => 'product_id',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
             ]
         ],
     ],

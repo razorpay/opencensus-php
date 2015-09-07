@@ -176,6 +176,9 @@ trait Authorize
             case Payment\Result::APPROVED:
                 break;
 
+            case Payment\Result::CAPTURED:
+                break;
+
             case Payment\Result::NOT_APPROVED:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $authResponse,

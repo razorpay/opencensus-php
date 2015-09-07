@@ -9,9 +9,10 @@
         "razorpay/razorpay": "dev-master",
         "razorpay/spine": "dev-master",
         "maatwebsite/excel": "1.*",
-        "mailgun/mailgun-php": "~1.7.1",
+        "mailgun/mailgun-php": "~1.8",
         "aws/aws-sdk-php-laravel": "1.*",
-        "symfony/event-dispatcher": "~2.2"
+        "symfony/event-dispatcher": "~2.2",
+        "cebe/markdown": "~1.0.1"
     },
     "repositories": [
         {
@@ -21,8 +22,11 @@
     ],
     "require-dev": {
         "raveren/kint": "1.*",
+        "phpunit/phpunit": "^4.7",
         "laracasts/testdummy": "2.*",
-        "mockery/mockery": "*"
+        "mockery/mockery": "*",
+        "codacy/coverage": "dev-master",
+        "tijsverkoyen/css-to-inline-styles": "^1.5"
     },
     "autoload": {
         "classmap": [

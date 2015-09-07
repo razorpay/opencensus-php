@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body class="body" style="background:#EBECEE;">
+    @include('emails.partials.css')
+    <table class="row"> <!-- Styles go on the row -->
+      <tr>
+        <td class="center" align="center"> <!-- Center the container -->
+          <center>
+
+            <table class="container"> <!-- Container restricts the content width -->
+              <tr>
+                <td class="wrapper last"> <!-- Wrapper stays on the inner table -->
+
+                  <table class="twelve columns newsletter-header-bg">
+                    <tr height="180" style="height:180px;">
+                      <td background="https://s3.amazonaws.com/checkout-live/newsletter-header-bg.png" bgcolor="#24bbea" width="580" height="180" valign="top" style="padding-bottom: 0px;">
+                        <!--[if gte mso 9]>
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:580px;height:180px;">
+                          <v:fill type="tile" src="https://s3.amazonaws.com/checkout-live/newsletter-header-bg.png" color="#24bbea" />
+                          <v:textbox inset="0,0,0,0">
+                        <![endif]-->
+                        <div>
+                          <h1>
+                            {{{$subject[0]}}}
+                          </h1>
+                          <h1>
+                            {{{$subject[1]}}}
+                          </h1>
+                        </div>
+                        <!--[if gte mso 9]>
+                          </v:textbox>
+                          </v:rect>
+                        <![endif]-->
+                      </td>
+                      <td class="expander"></td>
+                    </tr>
+                  </table>
+
+                </td>
+              </tr>
+            </table>
+
+          </center>
+        </td>
+      </tr>
+    </table>
+    <!-- Contact Us -->
+    <table class="container">
+      <tr>
+        <td>
+          <table class="row">
+            <tr>
+              <td class="wrapper last white">
+                <table class="twelve columns">
+                  <tr>
+                    <td class="dark">
+                        {{$body}}
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    @include('emails.partials.footer', ['message'=>$message])
+  </body>
+</html>

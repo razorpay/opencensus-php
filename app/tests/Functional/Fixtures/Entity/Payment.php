@@ -19,10 +19,10 @@ class Payment extends Base
     {
         $attributes['status'] = 'created';
 
-        return $this->create('payment', $attributes);
+        return $this->fixtures->create('payment', $attributes);
     }
 
-    public function create($entity, array $attributes = array())
+    public function create(array $attributes = array())
     {
         $defaultValues = array(
             'terminal_id' => '1n25f6uN5S1Z5a'
@@ -30,7 +30,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($entity, $attributes);
+        return parent::create($attributes);
     }
 
     public function createCardCaptured(array $attributes = array())
@@ -59,6 +59,7 @@ class Payment extends Base
         $payment->card()->associate($card);
 
         $payment->save();
+
 
         $txn = (new \Models\Transaction\Core)->createFromPayment($payment);
         $txn->save();
@@ -90,6 +91,7 @@ class Payment extends Base
     public function createNetbankingAuthorized(array $attributes = array())
     {
         $defaultValues = array(
+            'bank'  => 'HDFC',
             'status' => 'authorized',
             'gateway' => 'atom',
             'method' => 'netbanking',
@@ -110,6 +112,7 @@ class Payment extends Base
     public function createNetbankingFailed(array $attributes = array())
     {
         $defaultValues = array(
+            'bank'  => 'HDFC',
             'status' => 'failed',
             'gateway' => 'atom',
             'method' => 'netbanking',
@@ -139,7 +142,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = $this->create('payment', $attributes);
+        $payment = parent::create($attributes);
 
         $hdfcPayment = $this->fixtures->create('hdfc:authorized',
             array(
@@ -148,6 +151,21 @@ class Payment extends Base
                 'created_at' => $payment->created_at,
                 'updated_at' => $payment->created_at,
             ));
+
+        return $payment;
+    }
+
+    public function createFailed(array $attributes = array())
+    {
+        $defaultValues = array(
+            'status' => 'failed',
+            'terminal_id' => '1n25f6uN5S1Z5a',
+            'card_id' => '12345678901234',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = parent::create($attributes);
 
         return $payment;
     }

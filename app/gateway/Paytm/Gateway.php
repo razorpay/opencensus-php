@@ -8,7 +8,6 @@ use EE\Exception;
 use Gateway\Base;
 use Gateway\Base\Action;
 use Gateway\Paytm;
-use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -29,6 +28,9 @@ class Gateway extends Base\Gateway
             $type = RequestType::SEAMLESS;
         }
 
+        $mobileNo = $this->getMobileNumber($input['payment']['contact']);
+        $email = $this->getFormattedEmail($input['payment']['email']);
+
         $content = array(
             'REQUEST_TYPE'              => $type,
             'MID'                       => $input['terminal']['gateway_merchant_id'],
@@ -39,7 +41,7 @@ class Gateway extends Base\Gateway
             'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
             'WEBSITE'                   => $input['terminal']['gateway_access_code'],
             'CALLBACK_URL'              => $input['callbackUrl'],
-            'MOBILE_NO'                 => $input['payment']['contact'],
+            'MOBILE_NO'                 => $mobileNo,
             'EMAIL'                     => $input['payment']['email'],
         );
 
@@ -99,8 +101,8 @@ class Gateway extends Base\Gateway
             $input['gateway']['ORDERID'], Action::AUTHORIZE);
 
         $values = $this->lowerArrayKeys($input['gateway']);
-        $values['txntype'] = Type::SALE;
 
+        $values['received'] = 1;
         $payment->fill($values);
         $payment->saveOrFail();
 
@@ -124,22 +126,30 @@ class Gateway extends Base\Gateway
 
         $this->addTestMerchantIdIfTestMode($content);
 
+        $storeContent = $content;
+        $storeContent['CUST_ID'] = $payment['cust_id'];
+        $storeContent['CHANNEL_ID'] = $payment['channel_id'];
+        $storeContent['INDUSTRY_TYPE_ID'] = $payment['industry_type_id'];
+        $storeContent['REQUEST_TYPE'] = RequestType::THEDEFAULT;
+        $storeContent['TXN_AMOUNT'] = $payment['txn_amount'];
+        $storeContent['PAYMENTMODE'] = $payment['paymentmode'];
+        $storeContent['PAYMENT_MODE_ONLY'] = $payment['payment_mode_only'];
+        $storeContent['AUTH_MODE'] = $payment['auth_mode'];
+        $storeContent['PAYMENT_TYPE_ID'] = $payment['payment_type_id'];
+        $storeContent['BANK_CODE'] = $payment['bank_code'];
+
+        $refund = $this->createGatewayRefundEntity($storeContent, $input);
+
         $content['CHECKSUM'] = $this->generateHash($content);
 
         $content = $this->postRequestToPaytm($content);
-// !d($content);
-        if ($content['ORDERID'])
-        {
-            $content['CUST_ID'] = $payment['cust_id'];
-            $content['CHANNEL_ID'] = $payment['channel_id'];
-            $content['INDUSTRY_TYPE_ID'] = $payment['industry_type_id'];
-            $content['REQUEST_TYPE'] = RequestType::THEDEFAULT;
-            $content['TXN_AMOUNT'] = $payment['txn_amount'];
-            $content['ORDER_ID'] = $content['ORDERID'];
-            unset($content['ORDERID']);
-        }
 
-        $refund = $this->createGatewayPaymentEntity($content);
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['paytm' => $content]);
+
+        $attr = $this->lowerArrayKeys($content);
+        $attr['received'] = 1;
+
+        $refund->fill($attr)->saveOrFail();
 
         if ($content['STATUS'] !== Status::SUCCESS)
         {
@@ -156,7 +166,7 @@ class Gateway extends Base\Gateway
         parent::verify($input);
 
         $data = array(
-            'MID'       => $input['terminal']['gateway_terminal_id'],
+            'MID'       => $input['terminal']['gateway_merchant_id'],
             'ORDERID'  => $input['payment']['id']);
 
         $this->addTestMerchantIdIfTestMode($content);
@@ -177,7 +187,7 @@ class Gateway extends Base\Gateway
             'url' => $this->getUrl($this->action).'?'.$content,
             'content' => [],
             'method' => 'get');
-//!d($request);
+
         $response = $this->runRequestResponseFlow($request);
         $content = json_decode($response->body, true);
 
@@ -241,9 +251,36 @@ class Gateway extends Base\Gateway
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->lowerArrayKeys($attributes);
+        $attr['txntype'] = Type::SALE;
 
         $payment = $this->getNewGatewayPaymentEntity();
         $payment->setPaymentId($attr['order_id']);
+        $payment->setAction($this->action);
+        $payment->setMethod($this->input['payment']['method']);
+
+        $payment->fill($attr);
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+    protected function createGatewayRefundEntity($attributes, $input)
+    {
+        $attributes['refund_id'] = $input['refund']['id'];
+        $attributes['payment_id'] = $input['payment']['id'];
+
+        $refund = $this->createGatewayEntity($attributes);
+
+        return $refund;
+    }
+
+    protected function createGatewayEntity($attributes)
+    {
+        $attr = $this->lowerArrayKeys($attributes);
+
+        $payment = $this->getNewGatewayPaymentEntity();
+
         $payment->setAction($this->action);
         $payment->setMethod($this->input['payment']['method']);
 
@@ -318,11 +355,15 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
+        $code = (int) $input['gateway']['RESPCODE'];
+
         if ($content['STATUS'] !== Status::SUCCESS)
         {
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $errorCode,
                     $input['gateway']['RESPCODE'],
                     $input['gateway']['RESPMSG']);
         }
@@ -351,5 +392,19 @@ class Gateway extends Base\Gateway
         $cardExp = $expiryMonth . $input['card']['expiry_year'];
 
         return $cardExp;
+    }
+
+    protected function getFormattedEmail($email)
+    {
+        //
+        // Remove all characters other than alhpanumeric, @ and .
+        //
+        return preg_replace("/[^a-zA-Z0-9@.]+/", '', $email);
+    }
+
+    protected function getMobileNumber($contact)
+    {
+        $chars = ['+', '(', ')'];
+        return str_replace($chars, '', $contact);
     }
 }

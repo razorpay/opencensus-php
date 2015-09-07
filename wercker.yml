@@ -1,11 +1,18 @@
-box: wercker/php
-services:
-    - wercker/mysql
+box: razorpay/docker:latest
+dev:
+  steps:
+    - internal/shell:
+      code: echo "Welcome to Razorpay\\Api"
 build:
+    services:
+      - id: mysql
+        tag: latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: root
+          MYSQL_ROOT_PASSWORD: root
     # The steps that will be executed on build
     steps:
-      # A custom script step, name value is used in the UI
-      # and the code value contains the command that get executed
       - script:
           name: copy env file
           code: cp .env.wercker.php .env.testing.php
@@ -15,28 +22,26 @@ build:
       - add-ssh-key:
           keyname: RZP_API
       - script:
+          name: enable composer cache
+          code: export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer" && mkdir -p $COMPOSER_CACHE_DIR
+      - create-file:
+          name: Create api_sqlite.db
+          filename: api_sqlite.db
+          overwrite: true
+          content:
+      - script:
           name: install dependencies
           code: composer install --no-interaction
       - script:
-          name: create report dir
-          code: mkdir ./report
-      - script:
-          name: Activate PHP 5.5
-          code: phpenv global 5.5
-      - script:
-          name: run unit tests
-          code: phpunit --debug --verbose --coverage-html ./report
-      - script:
-          name: Generate coverage zip for upload
-          code: (cd ./report && tar zcvf /tmp/$WERCKER_GIT_BRANCH.tar.gz .)
-      - script:
-          name: Upload Coverage to cc.razorpay.com
-          code: curl -F "coverage=@/tmp/$WERCKER_GIT_BRANCH.tar.gz" https://cc.razorpay.com/$WERCKER_GIT_REPOSITORY/upload/?token=$COVERAGE_TOKEN
+          name: Run unit tests
+          code: php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
     after-steps:
-      - williamli/slack-notify-no-owner-info:
-          subdomain: razorpay
-          token: $SLACK_TOKEN
-          channel: tech
+      - slack-notifier:
+          url: $SLACK_URL
+          channel:  tech_bots
+          username: wercker
+          icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+
 deploy:
     steps:
       - script:
@@ -50,7 +55,8 @@ deploy:
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: rzp-codedeploy
     after-steps:
-      - williamli/slack-notify-no-owner-info:
-          subdomain: razorpay
-          token: $SLACK_TOKEN
-          channel: tech
+      - slack-notifier:
+          url: $SLACK_URL
+          channel: tech_bots
+          username: wercker
+          icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg

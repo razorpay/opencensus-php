@@ -209,7 +209,7 @@ return [
         ],
     ],
 
-    'testAmountLessThan50ForNetBanking' => [
+    'testAmountLessThan50ForNetbanking' => [
         'request' => [
             'content' => [
                 'method' => 'netbanking',

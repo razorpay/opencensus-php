@@ -29,10 +29,6 @@ class SupportTest extends TestCase
      */
     public function testSupport()
     {
-        //
-        // GIVEN
-        // create an auth payment using card 1
-        //
         $this->ba->publicAuth();
         $testData = array(
             'request' => [
@@ -85,8 +81,10 @@ class SupportTest extends TestCase
         $this->assertEquals(
             $content,
             [
-                'success' => 0,
-                'failed' => 0,
+                'verified'      => 0,
+                'failed'        => 0,
+                'timed out'     => 0,
+                'total time'    => '0 secs',
             ]);
     }
 }

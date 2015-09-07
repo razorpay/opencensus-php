@@ -37,6 +37,18 @@ if(isset($_SERVER['HTTPS'])) {
 
 $_POST['vpc_ReturnURL'] = $protocol.'://'.$_SERVER['HTTP_HOST'] .
                           '/gateway/axis_migs/callback.php';
+$_POST['vpc_Currency'] = 'INR';
+$_POST['vpc_Locale'] = 'en';
+$_POST['vpc_Amount'] = '500';
+$_POST['vpc_Currency'] = 'INR';
+$_POST['vpc_gateway'] = 'ssl';
+$_POST['vpc_CardNum'] = '5123456789012346';
+$_POST['vpc_CardExp'] = '1705';
+$_POST['vpc_CardSecurityCode'] = '333';
+$_POST['vpc_Card'] = 'MasterCard';
+$_POST['vpc_Command'] = 'pay';
+$_POST['vpc_Version'] = '1';
+
 // The URL link for the receipt to do another transaction.
 // Note: This is ONLY used for this example and is not required for
 // production code. You would hard code your own URL into your application.

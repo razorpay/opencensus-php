@@ -5,13 +5,6 @@ namespace Tests\Functional\Payment;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
-/**
- * Tests that support payments (capture/refund) are working fine.
- * creates a hold payment using card 13 and then attempts to capture it followed by refund it
- * Is successful if captured successfully folowed by successful refund.
- * All test cases follow, GIVEN, WHEN, THEN structure
- */
-
 class AuthorizeTest extends TestCase
 {
     use PaymentTrait;
@@ -81,7 +74,22 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
-    public function testAmountLessThan50ForNetBanking()
+    public function testAuthorizeTimestamp()
+    {
+        $lower = time()-1;
+        $this->defaultAuthPayment();
+        $upper = time()+1;
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $authorizedAt = $payment['authorized_at'];
+
+        $this->assertLessThanOrEqual($authorizedAt, $lower);
+
+        $this->assertGreaterThanOrEqual($authorizedAt, $upper);
+    }
+
+    public function testAmountLessThan50ForNetbanking()
     {
         $this->markTestSkipped();
         $this->fixtures->create('terminal:atom_terminal');
@@ -209,6 +217,33 @@ class AuthorizeTest extends TestCase
             ['created_at' => time() - 60*100, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
 
         $this->cancelPayment($payment->getPublicId());
+
+        $contentType = 'application/json';
+        $this->assertContentTypeForResponse($contentType, $this->response);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->markTestIncomplete();
+
+        $payment = $this->fixtures->create(
+            'payment:failed');
+
+        $this->authorizeFailedPayment($payment['public_id']);
+    }
+
+    public function testContentTypeHtmlOnPaymentCreateRoute()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $contentType = 'text/html; charset=UTF-8';
+        $this->assertContentTypeForResponse($contentType, $this->response);
     }
 
     public function startTest()

@@ -1,0 +1,37 @@
+# Source file or directory to parse
+source:
+	- app/lang
+	- app/commands
+	- app/ee
+	- app/views
+	- app/controllers
+	- app/database
+	- app/constants
+	- app/lib
+	- app/models
+	- app/gateway
+	- app/trace
+	- app/http
+	- app/storage
+	- app/dashboard
+	- app/services
+	- app/start
+	- app/config
+
+# List of allowed file extensions
+extensions: [php]
+title: Razorpay API
+
+accessLevels: [public, protected, private]
+# Generate documentation for elements marked as internal and display internal documentation parts
+internal: Yes
+# Generate documentation for PHP internal classes
+php: Yes
+tree: Yes
+deprecated: Yes
+todo: Yes
+sourceCode: Yes
+download: No
+quiet: yes
+# Display additional information in case of an error
+debug: Yes

@@ -19,6 +19,8 @@ class TestCase extends ParentTestCase
 
     protected $ba;
 
+    protected static $initialSetupDone = false;
+
     /**
      * To denote whether to simulate unit tests with
      * environment being in cloud
@@ -31,15 +33,12 @@ class TestCase extends ParentTestCase
     {
         parent::setUp();
 
-        $this->db = new Database($this->app['db']);
-
-        // Setup database
-        $this->db->setUp();
+        $this->db = new Database($this->app);
 
         // Instantiate fixture class
         $this->fixtures = Fixtures\Fixtures::getInstance();
 
-        $this->fixtures->setUp();
+        $this->initialSetup();
 
         // Instantiate auth class
         $this->ba = new Authorization($this);
@@ -48,9 +47,44 @@ class TestCase extends ParentTestCase
         $this->app['router']->enableFilters();
     }
 
+    public function initialSetup()
+    {
+        if ((self::$initialSetupDone === true) and
+            ($this->isTestRunningOnWercker()))
+        {
+            // Setup database
+            $this->db->setUp();
+
+            return;
+        }
+
+        // Run migrations
+        $this->db->migrate();
+
+        // // Truncate tables
+        // $this->db->truncate();
+
+        if ($this->isTestRunningOnWercker() === false)
+        {
+            $this->db->setUp();
+        }
+
+        // Seed database
+        $this->fixtures->setUp();
+
+        if ($this->isTestRunningOnWercker() === true)
+        {
+            // Setup database
+            $this->db->setUp();
+        }
+
+        self::$initialSetupDone = true;
+    }
+
     public function tearDown()
     {
-        $this->db->tearDown();
+        if ($this->db !== null)
+            $this->db->tearDown();
 
         parent::tearDown();
     }
@@ -69,5 +103,10 @@ class TestCase extends ParentTestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function changeEnvToNonTest()
+    {
+        $this->app['env'] = 'production';
     }
 }

@@ -11,13 +11,21 @@ class Repository extends Base\Repository
 
     protected $entity = 'Transaction';
 
+    protected $appFetchParamRules = array(
+        Entity::SETTLED         => 'sometimes|in:0,1',
+        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
+        Entity::SETTLEMENT_ID   => 'sometimes|alpha_num',
+        Entity::ENTITY_ID       => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+    );
+
     public function fetchTxnsExpectedToSettle($timestamp)
     {
         $repo = $this->repo;
 
         return $repo::where(Transaction\Entity::SETTLED_AT, '=', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
-                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
+//                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)
@@ -30,7 +38,7 @@ class Repository extends Base\Repository
 
         return $repo::where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
-                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
+//                    ->whereNotNull(Transaction\Entity::RECONCILED_AT)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->orderBy(Transaction\Entity::MERCHANT_ID)
                     ->orderBy(Transaction\Entity::ID)

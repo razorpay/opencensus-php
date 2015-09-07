@@ -8,6 +8,7 @@ use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base;
 use Gateway\Base\Action;
+use Gateway\Base\VerifyResult;
 use Gateway\Billdesk;
 use Requests;
 use Trace\Trace;
@@ -36,7 +37,7 @@ class Gateway extends Base\Gateway
             'CurrencyType'              => 'INR',
             'ItemCode'                  => 'DIRECT',
             'TypeField1'                => 'R',
-            'SecurityID'                => 'NG-NA',
+            'SecurityID'                => $this->config['live_access_code'],
             'Unknown4'                  => 'NA',
             'Unknown5'                  => 'NA',
             'TypeField2'                => 'F',
@@ -57,9 +58,19 @@ class Gateway extends Base\Gateway
             $content['TxnAmount'] = '5.00';
         }
 
-        $this->createGatewayPaymentEntity($content);
+        $payment = $this->createGatewayPaymentEntity($content);
 
-        return $this->getRequestArray($content);
+        $request = $this->getRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => 'billdesk',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
     }
 
     public function callback(array $input)
@@ -70,9 +81,19 @@ class Gateway extends Base\Gateway
 
         $content = $this->getContentAfterChecksumVerification($msg);
 
+        if ($content['CustomerID'] === 'NA')
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $content['AuthStatus'],
+                    '');
+        }
+
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $content['CustomerID'], Action::AUTHORIZE);
 
+        $content['received'] = 1;
         $payment->fill($content);
         $payment->saveOrFail();
 
@@ -95,42 +116,13 @@ class Gateway extends Base\Gateway
         $payment = $this->getRepo()->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
-        // Format YYYYMMDD
-        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
-        $date = $date->format('Ymd');
+        $content = $this->getPaymentRefundRequestContent($payment, $input);
 
-        // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss,
-        // hh is in 24 hrs
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
-
-        $content = array(
-            'RequestType'       => '0400',
-            'MerchantID'        => $input['terminal']['gateway_merchant_id'],
-            'TxnReferenceNo'    => $payment['TxnReferenceNo'],
-            'TxnDate'           => $date,
-            'CustomerID'        => $input['payment']['id'],
-            'TxnAmount'         => (float) $payment['TxnAmount'],
-            'RefAmount'         => $input['refund']['amount'] / 100,
-            'RefDateTime'       => $now,
-            'MerchantRefNo'     => $input['refund']['id'],
-            'Filler1'           => 'NA',
-            'Filler2'           => 'NA',
-            'Filler3'           => 'NA',
-        );
-
-        if ($this->mode === Mode::TEST)
-        {
-            $content['MerchantID'] = $this->getTestMerchantId();
-        }
-
-        $request = $this->getRequestArray($content);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $content = $this->getContentAfterChecksumVerification($response->body);
+        $content = $this->postRequest($content);
 
         $content['refund_id'] = $input['refund']['id'];
         $content['CurrencyType'] = 'INR';
+        $content['received'] = 1;
         $refund = $this->createGatewayPaymentEntity($content);
 
         if ($content['ProcessStatus'] !== 'Y')
@@ -142,15 +134,164 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED);
         }
-
     }
 
     public function verify(array $input)
     {
         parent::verify($input);
 
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function authorizeFailed(array $input)
+    {
+        $e = null;
+
+        try
+        {
+            $this->verify($input);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            ;
+        }
+
+        if ($e === null)
+        {
+            throw new Exception\LogicException(
+                'When converting failed payment to authorized, payment verification ' .
+                'should have failed but instead it did not');
+        }
+
+        $verify = $e->getVerifyObject();
+
+        if (($verify->apiSuccess === false) and
+            ($verify->gatewaySuccess === true))
+        {
+            $payment = $verify->payment;
+            $payment->fill($verify->verifyResponseContent);
+            $payment->saveOrFail();
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Should not have reached here');
+        }
+
+        return true;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
+        $amountRefunded = (int) ($content['TotalRefundAmount'] * 100);
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        if ($content['QueryStatus'] !== QueryStatus::Y)
+        {
+            // Could be the case where the transaction didn't even hit billdesk
+            if (($payment['received'] === false) and
+                (($payment['AuthStatus'] === null) or
+                 ($payment['AuthStatus'] === AuthStatus::NA)))
+            {
+                $verify->apiSuccess = false;
+                $verify->gatewaySuccess = false;
+            }
+            else
+            {
+                $verify->status = VerifyResult::STATUS_MISMATCH;
+                $verify->apiSuccess = false;
+                $verify->gatewaySuccess = false;
+            }
+        }
+        else if ($payment['AuthStatus'] === AuthStatus::SUCCESS)
+        {
+            $verify->apiSuccess = true;
+
+            if ($content['AuthStatus'] === AuthStatus::SUCCESS)
+            {
+                $verify->gatewaySuccess = true;
+
+                // Check that refund amount matches.
+                if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
+                {
+                    $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
+                }
+            }
+            else
+            {
+                $verify->gatewaySuccess = false;
+                $status = VerifyResult::STATUS_MISMATCH;
+            }
+        }
+        else
+        {
+            $verify->apiSuccess = false;
+            $verify->gatewaySuccess = false;
+
+            //
+            // If payment is not marked as success then it shouldn't be success
+            // on billdesk end as well.
+            //
+
+            if ($content['AuthStatus'] === AuthStatus::SUCCESS)
+            {
+                // It's marked as success, in this case, if it's totally refunded,
+                // then that means billdesk refunded the payment on it's own end
+                // and we don't need to worry.
+
+                if ($amountRefunded === $verify->input['payment']['amount'])
+                {
+                    $status = VerifyResult::STATUS_MATCH;
+                }
+                else
+                {
+                    $verify->gatewaySuccess = true;
+                    $status = VerifyResult::STATUS_MISMATCH;
+                }
+            }
+        }
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        if (($verify->match === true) and
+            ($payment['received'] === false))
+        {
+            unset(
+                $content['TxnAmount'],
+                $content['BankID'],
+                $content['ItemCode']);
+
+            $payment->fill($content);
+            $payment->saveOrFail();
+        }
+
+        return $status;
+    }
+
+    protected function getPaymentToVerify($input, $verify)
+    {
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+                    $input['payment']['id'], Action::AUTHORIZE);
+
+        $verify->payment = $payment;
+
+        return $payment;
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
         $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
+
+        $input = $verify->input;
 
         $content = array(
             'RequestType'   => '0122',
@@ -164,42 +305,82 @@ class Gateway extends Base\Gateway
             $content['Merchant ID'] = $this->getTestMerchantId();
         }
 
-        $request = $this->getRequestArray($content);
+        $content = $this->postRequest($content);
 
-        $response = $this->sendGatewayRequest($request);
+        unset($content['Checksum']);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $content);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function getPaymentRefundRequestContent($payment, $input)
+    {
+        // Format YYYYMMDD
+        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
+        $date = $date->format('Ymd');
+
+        // Format yyyymmdd24hhmmss (in docs), actually yyyymmddhhmmss,
+        // hh is in 24 hrs
+        $now = Carbon::now('Asia/Kolkata')->format('YmdHis');
+
+        $refundAmount = (float) ($input['refund']['amount']);
+
+        // The amount should have exact two decimal places, otherwise billdesk gives error
+        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+        $txnAmount = (string) number_format($payment['TxnAmount'], 2, '.', '');
+
+        $content = array(
+            'RequestType'       => '0400',
+            'MerchantID'        => $input['terminal']['gateway_merchant_id'],
+            'TxnReferenceNo'    => $payment['TxnReferenceNo'],
+            'TxnDate'           => $date,
+            'CustomerID'        => $input['payment']['id'],
+            'TxnAmount'         => $txnAmount,
+            'RefAmount'         => $refundAmount,
+            'RefDateTime'       => $now,
+            'MerchantRefNo'     => $input['refund']['id'],
+            'Filler1'           => 'NA',
+            'Filler2'           => 'NA',
+            'Filler3'           => 'NA',
+        );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $content['MerchantID'] = $this->getTestMerchantId();
+        }
+
+        return $content;
+    }
+
+    protected function postRequest($content)
+    {
+        $request = $this->getRequestArrayWithProxy($content);
+        $request['options']['timeout'] = 30;
+
+        try
+        {
+            $response = $this->sendGatewayRequest($request);
+        }
+        catch (\Requests_Exception $e)
+        {
+            throw new Exception\RuntimeException(
+                'Billdesk payment verification request failed.', null, $e);
+        }
+
+        $this->response = $response;
 
         $content = $this->getContentAfterChecksumVerification($response->body);
 
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                        $input['payment']['id'], Action::AUTHORIZE);
-
-        $amountRefunded = (int) ($content['TotalRefundAmount'] * 100);
-
-        if ($content['QueryStatus'] !== 'Y')
-        {
-            $res = array(
-                'match' => 'unknown',
-                'gateway_data' => $content);
-
-            throw new Exception\PaymentVerificationException($res);
-        }
-
-        $gatewayPaymentSuccess = ($content['AuthStatus'] === AuthStatus::SUCCESS);
-        $apiPaymentSuccess = ($payment['AuthStatus'] === AuthStatus::SUCCESS);
-
-        if (($gatewayPaymentSuccess !== $apiPaymentSuccess) or
-            ($amountRefunded !== $input['payment']['amount_refunded']))
-        {
-            $res = array(
-                'match' => false,
-                'payment' => [$payment->toArray()],
-                'gateway_data' => $content,
-                'payment_id' => $input['payment']['id'],
-                'gateway' => $input['payment']['gateway'],
-            );
-
-            throw new Exception\PaymentVerificationException($res);
-        }
+        return $content;
     }
 
     protected function getContentAfterChecksumVerification($msg)
@@ -262,6 +443,15 @@ class Gateway extends Base\Gateway
         return strtoupper(hash_hmac('sha256', $str, $secret, false));
     }
 
+    protected function getRequestArrayWithProxy($content)
+    {
+        $request = $this->getRequestArray($content);
+
+        $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
+
+        return $request;
+    }
+
     protected function getRequestArray($content)
     {
         $msg = $this->getMessageStringWithHash($content);
@@ -273,5 +463,10 @@ class Gateway extends Base\Gateway
         );
 
         return $request;
+    }
+
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
     }
 }

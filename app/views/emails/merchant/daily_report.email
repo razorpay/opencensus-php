@@ -1,0 +1,379 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body class="body" style="background: #EBECEE;">
+    <table class="container" style="background: #EBECEE;">
+      <tr>
+        <td>
+          @include('emails.partials.header', ['message' => $message])
+          <!-- Text Header -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg" style="background:#39ACE5;">
+                  <tr>
+                    <td class="wrapper offset-by-two">
+                      <table class="eight columns ">
+                        <tr>
+                          <td class="center">
+                            <center>
+                              <h2 class="center">
+                                Daily Transaction Report
+                              </h2>
+                            </center>
+                            <center class="whitetext" style="text-align: center;">
+                            for {{$date}}
+                            </center>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.header_image', ['image' => 'report', 'alt' => 'Daily Transaction Report'], ['message' => $message])
+          <!-- Header Subtext -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg">
+                  <tr>
+                    <td class="wrapper offset-by-two" style="background:#39ACE5;">
+                      <table class="eight columns">
+                        <tr>
+                          <td class="center">
+                            <center>
+                            <h2 class="center" style="text-align: center;">
+                              {{{$merchant['billing_label']}}}
+                            </h2>
+                            </center>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg">
+                  <tr>
+                    <td class="wrapper whitetext">
+                      <table class="four columns">
+                        <tr>
+                          <td class="center"><center>
+                            Captured: {{{$captured['payments']['count']}}}<br>
+                            INR {{{number_format($captured['sum']/100, 2)}}}
+                          </center></td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="wrapper whitetext">
+                      <table class="four columns">
+                        <tr>
+                          <td class="center"><center>
+                            Authorized: {{{$authorized['payments']['count']}}}<br>
+                            INR {{{number_format($authorized['sum']/100, 2)}}}
+                          </center></td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="wrapper last whitetext">
+                      <table class="four columns">
+                        <tr>
+                          <td class="center"><center>
+                            Refunds: {{{$refunds['refunds']['count']}}}<br>
+                            INR {{{number_format($refunds['sum']/100, 2)}}}
+                          </center></td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Header Subtext -->
+          <table class="container">
+            <tr>
+              <td>
+                <table class="row bluebg">
+                  <tr>
+                    <td class="wrapper offset-by-four">
+                      <table class="four columns">
+                        <tr>
+                          <td>
+                            <table class="small-button">
+                              <tr>
+                                <td>
+                                  <a title="Open Dashboard" href="https://dashboard.razorpay.com">Open Dashboard</a>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.separator', ['message' => $message])
+@if($captured['payments']['count'] > 0)
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <td class="shortwrapper last">
+                    <table class="twelve columns">
+                      <tr>
+                        <td class="white left-text-pad right-text-pad">
+                          <h3>Captured Payments</h3>
+                        </td>
+                        <td class="expander"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <td class="shortwrapper">
+                    <table class="five columns">
+                      <tr>
+                        <td class="lighttext left-text-pad">Payment ID</td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper">
+                    <table class="three columns">
+                      <tr>
+                        <td class="lighttext center">Time</td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper last">
+                    <table class="four columns">
+                      <tr>
+                        <td class="lighttext right-text-pad">Amount</td>
+                        <td class="expander"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </table>
+              </td>
+            </tr>
+          @foreach ($captured['payments']['items'] as $payment)
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <td class="shortwrapper">
+                    <table class="five columns">
+                      <tr>
+                        <td class="darktext left-text-pad">
+                          <a href="https://dashboard.razorpay.com/#/app/payments/{{{$payment['public_id']}}}">
+                          {{{$payment['public_id']}}}
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper">
+                    <table class="three columns">
+                      <tr>
+                        <td class="darktext center">
+                          {{{\Carbon\Carbon::createFromTimeStamp($payment['captured_at'], "Asia/Kolkata")->format('h:i a')}}}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper last">
+                    <table class="four columns">
+                      <tr>
+                        <td class="darktext right-text-pad">INR {{{number_format($payment['amount']/100, 2)}}}</td>
+                        <td class="expander"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </table>
+              </td>
+            </tr>
+          </table>
+          @endforeach
+          <!-- Note that separator is part of captured section -->
+          @include('emails.partials.separator', ['message' => $message])
+@endif
+@if ($authorized['payments']['count'] > 0)
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <td class="shortwrapper last">
+                    <table class="twelve columns">
+                      <tr>
+                        <td class="white left-text-pad right-text-pad">
+                          <h3>Authorized Payments</h3>
+                        </td>
+                        <td class="expander"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <td class="shortwrapper">
+                    <table class="five columns">
+                      <tr>
+                        <td class="lighttext left-text-pad">Payment ID</td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper">
+                    <table class="three columns">
+                      <tr>
+                        <td class="lighttext center">Time</td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper last">
+                    <table class="four columns">
+                      <tr>
+                        <td class="lighttext right-text-pad">Amount</td>
+                        <td class="expander"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </table>
+              </td>
+            </tr>
+          @foreach ($authorized['payments']['items'] as $payment)
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <td class="shortwrapper">
+                    <table class="five columns">
+                      <tr>
+                        <td class="darktext left-text-pad">
+                          <a href="https://dashboard.razorpay.com/#/app/payments/{{{$payment['public_id']}}}">
+                          {{{$payment['public_id']}}}
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper">
+                    <table class="three columns">
+                      <tr>
+                        <td class="darktext center">
+                          {{{\Carbon\Carbon::createFromTimeStamp($payment['authorized_at'], "Asia/Kolkata")->format('j M h:i a')}}}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="shortwrapper last">
+                    <table class="four columns">
+                      <tr>
+                        <td class="darktext right-text-pad">INR {{{number_format($payment['amount']/100, 2)}}}</td>
+                        <td class="expander"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </table>
+              </td>
+            </tr>
+          </table>
+          @endforeach
+          <!-- Note that separator is part of authorized section -->
+          @include('emails.partials.separator', ['message' => $message])
+@endif
+@if($settlement)
+<!-- Settlement Section -->
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <tr>
+                    <td class="wrapper">
+                      <table class="ten columns">
+                        <tr>
+                          <td class="white left-text-pad right-text-pad">
+                            <a href="https://dashboard.razorpay.com/#/app/settlements/list"><h3>Settlements</h3></a>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+                <table class="row">
+                  <tr>
+                    <td class="wrapper">
+                      <table class="four columns">
+                        <tr>
+                          <td>
+                            <p class="left-text-pad">
+                              Settled Amount
+                            </p>
+                            <p class="left-text-pad">
+                              Account Number
+                            </p>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+
+                    </td>
+                    <td class="wrapper last">
+
+                      <table class="eight columns">
+                        <tr>
+                          <td class="lighttext">
+                            <p class="right-text-pad">
+                              INR {{{number_format($settlement['amount']/100, 2)}}}
+                            </p>
+                            <p class="right-text-pad">
+                              {{{$account_number}}}
+                            </p>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- There is no separator after settlements -->
+@endif
+
+          @include('emails.partials.footer', ['message' => $message])
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

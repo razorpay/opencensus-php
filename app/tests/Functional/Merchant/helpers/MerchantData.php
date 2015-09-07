@@ -202,6 +202,11 @@ return [
         'request' => [
             'content' => [
                 'amount' => '500',
+                'currency' => 'INR',
+                'email' => 'a@b.com',
+                'contact' => '8383883838',
+                'method' => 'netbanking',
+                'bank' => 'HDFC',
             ],
             'url' => '/payments',
             'method' => 'post',
@@ -292,7 +297,7 @@ return [
             'content' => [
                 'ifsc_code'             => 'ICIC0001206',
                 'account_number'        => '0002020000304030434',
-                'beneficiary_name'      => 'Test beneficiary random name',
+                'beneficiary_name'      => 'Test R4zorpay',
                 'beneficiary_address1'  => 'address 1',
                 'beneficiary_address2'  => 'address 2',
                 'beneficiary_address3'  => 'address 3',
@@ -313,7 +318,7 @@ return [
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '0002020000304030434',
                 'beneficiary_code' => 'TEST',
-                'beneficiary_name' => 'Test beneficiary random name',
+                'beneficiary_name' => 'Test R4zorpay',
                 'beneficiary_address1' => 'address 1',
                 'beneficiary_address2' => 'address 2',
                 'beneficiary_address3' => 'address 3',
@@ -337,7 +342,7 @@ return [
                 'merchant_id' => '10000000000000',
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '0002020000304030434',
-                'beneficiary_name' => 'Test beneficiary random name',
+                'beneficiary_name' => 'Test R4zorpay',
                 'beneficiary_address1' => 'address 1',
                 'beneficiary_address2' => 'address 2',
                 'beneficiary_address3' => 'address 3',

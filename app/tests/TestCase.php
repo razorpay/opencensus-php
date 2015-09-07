@@ -17,23 +17,25 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected $testData = array();
 
-	/**
-	 * Creates the application.
-	 *
-	 * @return \Symfony\Component\HttpKernel\HttpKernelInterface
-	 */
-	public function createApplication()
-	{
-		$unitTesting = true;
+    protected static $t = 1;
 
-		$testEnvironment = 'testing';
+    /**
+     * Creates the application.
+     *
+     * @return \Symfony\Component\HttpKernel\HttpKernelInterface
+     */
+    public function createApplication()
+    {
+        $unitTesting = true;
 
-		return require __DIR__.'/../../bootstrap/start.php';
-	}
+        $testEnvironment = 'testing';
+
+        return require __DIR__.'/../../bootstrap/start.php';
+    }
 
     public function setUp()
     {
-        $this->markTestSkippedForWercker();
+        //     $this->markTestSkippedForWercker();
         parent::setUp();
 
         // Load test data
@@ -64,9 +66,14 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected function markTestSkippedForWercker()
     {
-        if (getenv('WERCKER') === "true")
+        if ($this->isTestRunningOnWercker())
         {
             $this->markTestSkipped();
         }
+    }
+
+    protected function isTestRunningOnWercker()
+    {
+        return (getenv('WERCKER') === 'true');
     }
 }

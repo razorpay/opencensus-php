@@ -25,6 +25,7 @@ class CreatePaytm extends Migration
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action');
             $table->string('method');
+            $table->boolean('received')->default(0);
             $table->string('request_type');
             $table->string('txn_amount');
             $table->string('cust_id');
@@ -34,7 +35,7 @@ class CreatePaytm extends Migration
             $table->string('bank_code', 10)->nullable();
             $table->string('payment_type_id', 5)->nullable();
             $table->string('industry_type_id');
-            $table->integer('txnid')->nullable();
+            $table->bigInteger('txnid')->nullable();
             $table->string('txnamount')->nullable();
             $table->string('banktxnid', 20)->nullable();
             $table->string('orderid', 25)->nullable();
@@ -43,7 +44,7 @@ class CreatePaytm extends Migration
             $table->string('respmsg')->nullable();
             $table->string('bankname')->nullable();
             $table->string('paymentmode')->nullable();
-            $table->string('refundamt')->nullable();
+            $table->string('refundamount')->nullable();
             $table->string('gatewayname')->nullable();
             $table->string('txndate')->nullable();
             $table->string('txntype')->nullable();
@@ -58,6 +59,8 @@ class CreatePaytm extends Migration
                   ->references('id')
                   ->on('payments')
                   ->on_delete('restrict');
+
+            $table->index('received');
         });
     }
 

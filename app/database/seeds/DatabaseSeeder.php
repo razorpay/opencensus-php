@@ -4,7 +4,7 @@ use Constants\Mode;
 use Constants\Table;
 use Models\Merchant\Account;
 use Models\Pricing;
-use Models\Payment\Processor\NetBanking;
+use Models\Payment\Processor\Netbanking;
 use Models\Terminal;
 
 class DatabaseSeeder extends Seeder
@@ -42,7 +42,8 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'nodal@razorpay.com',
                     'category'      =>  '1234',
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'nodal@razorpay.com'
                     )
                 );
 
@@ -61,7 +62,8 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'atom@razorpay.com',
                     'category'      =>  '1234',
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'nodal@razorpay.com'
                     )
                 );
 
@@ -80,7 +82,8 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'fees@razorpay.com',
                     'category'      =>  '1234',
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'fees@razorpay.com'
                     )
                 );
 
@@ -100,7 +103,8 @@ class DatabaseSeeder extends Seeder
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'test@razorpay.com'
                     )
                 );
 
@@ -120,7 +124,8 @@ class DatabaseSeeder extends Seeder
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
                     'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'updated_at'    =>  time(),
+                    'transaction_report_email'=>'demo@razorpay.com'
                     )
                 );
 
@@ -137,19 +142,19 @@ class DatabaseSeeder extends Seeder
                 $this->createTestTerminals();
             }
 
-            DB::table(Table::MERCHANT_BANKS)->insert(
+            DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   =>  Account::DEMO_ACCOUNT,
-                    'banks'         =>  json_encode(NetBanking::getAllBanks()),
+                    'banks'         =>  json_encode(Netbanking::getAllBanks()),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
             );
 
-            DB::table(Table::MERCHANT_BANKS)->insert(
+            DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   =>  Account::TEST_ACCOUNT,
-                    'banks'         =>  json_encode(NetBanking::getAllBanks()),
+                    'banks'         =>  json_encode(Netbanking::getAllBanks()),
                     'created_at'    =>  time(),
                     'updated_at'    =>  time()
                 )
@@ -363,6 +368,7 @@ class DatabaseSeeder extends Seeder
 
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
+        $this->createMobikwikTerminals();
         $this->createSharpGatewayTerminals();
     }
 
@@ -461,6 +467,39 @@ class DatabaseSeeder extends Seeder
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_sharp_terminal_pass'),
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
+                )
+            );
+    }
+
+    protected function createMobikwikTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '2dAHgaZd63sHbl',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'mobikwik',
+                'card'                  => '0',
+                'netbanking'            => '0',
+                'gateway_merchant_id'   => 'test_merchant_mobikwik',
+                'gateway_terminal_id'   => 'test_terminal_mobikwik',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_mobikwik_terminal_pass'),
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => 'mobikwik',
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_merchant_id'       => 'demo_merchant_mobikwik',
+                'gateway_terminal_id'       => 'demo_terminal_mobikwik',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_mobikwik_terminal_pass'),
+                'created_at'                =>  time(),
+                'updated_at'                =>  time(),
                 )
             );
     }

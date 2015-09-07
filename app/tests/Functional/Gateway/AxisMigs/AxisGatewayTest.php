@@ -46,4 +46,47 @@ class AxisGatewayTest extends TestCase
 
         sd($content);
     }
+
+    public function testPaymentRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('axis_migs', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentPartialRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+        $amount = (int) ($payment['amount'] / 3);
+
+        $this->refundPayment($payment['id'], $amount);
+
+        $refund = $this->getLastEntity('axis_migs', true);
+
+        $this->assertEquals($amount, $refund['vpc_amount']);
+    }
+
+    public function testMaestroOnMigs()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5081597022059105';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->verifyPayment($payment['id']);
+    }
 }

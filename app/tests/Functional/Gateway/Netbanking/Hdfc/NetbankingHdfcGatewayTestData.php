@@ -32,12 +32,13 @@ return [
 
     'testPaymentNetbankingEntity' => [
         'action' => 'authorize',
-        'amount' => 'amount',
+        'amount' => 500,
         'bank' => 'HDFC',
-        'client_code' => 'client_code',
-        'merchant_code' => 'merchant_code',
-        'bank_payment_id' => null,
-        'error_message' => null,
+        'received' => true,
+        'client_code' => 'abcom',
+        'merchant_code' => 'RAZORPAY',
+//        'bank_payment_id' => null,
+        'error_message' => '',
         'entity' => 'netbanking',
     ],
 

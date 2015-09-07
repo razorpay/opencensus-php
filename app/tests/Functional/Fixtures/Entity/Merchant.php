@@ -15,8 +15,14 @@ class Merchant extends Base
 
     public function createDefaultTestMerchant()
     {
+        // Default merchant to be used for tests
         $this->fixtures->create('merchant', ['id' => '10000000000000']);
-        $this->fixtures->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
+
+        // Merchant on whom all shared terminals are created
+        $this->fixtures->create('merchant', ['id' => '1MercShareTerm']);
+
+        $this->fixtures->on('test')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
+        $this->fixtures->on('live')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('test')->create('balance', ['id' => '10000000000000', 'balance' => '1000000']);
         $this->fixtures->on('live')->create('balance', ['id' => '10000000000000', 'balance' => '0']);
         $this->fixtures->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
@@ -28,25 +34,25 @@ class Merchant extends Base
 
     public function createNodalAccount()
     {
-        $apiMerchant = $this->create('merchant', ['id' => Account::NODAL_ACCOUNT]);
+        $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::NODAL_ACCOUNT]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::NODAL_ACCOUNT, 'balance' => '1000000']);
     }
 
     public function createAtomAccount()
     {
-        $apiMerchant = $this->create('merchant', ['id' => Account::ATOM_ACCOUNT]);
+        $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::ATOM_ACCOUNT]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000']);
     }
 
     public function createApiFeeAccount()
     {
-        $apiMerchant = $this->create('merchant', ['id' => Account::API_FEE_ACCOUNT]);
+        $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::API_FEE_ACCOUNT]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::API_FEE_ACCOUNT, 'balance' => '1000000']);
     }
 
     public function createWithBalanceTerminalsStandardPricing()
     {
-        $merchant = $this->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+        $merchant = $this->fixtures->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
         $merchantId = $merchant->getId();
 
         $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
@@ -59,11 +65,13 @@ class Merchant extends Base
 
     public function createWithKeys()
     {
-        $merchant = $this->create('merchant', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+        $merchant = $this->fixtures->create('merchant', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $merchantId = $merchant->getId();
 
         $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
+
+        $this->createAddPaymentBanks(['merchant_id' => $merchantId]);
 
         $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => 'AltLiveAuthKey'], 'live');
@@ -90,7 +98,7 @@ class Merchant extends Base
 
     public function createAddPaymentBanks(array $attributes = array())
     {
-        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+        $banks = \Models\Payment\Processor\Netbanking::getAllBanks();
 
         $defaultValues = array(
             'merchant_id' => '10000000000000',
@@ -99,34 +107,47 @@ class Merchant extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('merchant_banks', $attributes);
-    }
-
-    public function enablePaytm($id = '10000000000000')
-    {
-        $repo = new \Models\Merchant\Banks\Repository;
-        $methods = $repo->findOrFail($id);
-        $methods->setPaytm(true);
-        $repo->saveOrFail($methods);
-        return $methods;
-    }
-
-    public function disablePaytm($id = '10000000000000')
-    {
-        $repo = new \Models\Merchant\Banks\Repository;
-        $methods = $repo->findOrFail($id);
-        $methods->setPaytm(false);
-        $repo->saveOrFail($methods);
-        return $methods;
+        $this->fixtures->create('methods', $attributes);
     }
 
     public function activate($id)
     {
-        $repo = new \Models\Merchant\Repository;
-        $merchant = $repo->findOrFail($id);
-        $merchant->activated = 1;
-        $repo->saveOrFail($merchant);
-        return $merchant;
+        return $this->edit($id, ['activated' => 1]);
+    }
+
+    public function holdFunds($id, $hold = true)
+    {
+        return $this->edit($id, ['hold_funds' => $hold]);
+    }
+
+    public function enablePaytm($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['paytm' => true]);
+    }
+
+    public function disablePaytm($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['paytm' => false]);
+    }
+
+    public function enableCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['card' => true]);
+    }
+
+    public function disableCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['card' => false]);
+    }
+
+    public function enableMobikwik($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['mobikwik' => true]);
+    }
+
+    public function disableMobikwik($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['mobikwik' => false]);
     }
 
 }

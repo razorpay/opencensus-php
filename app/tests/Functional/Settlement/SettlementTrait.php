@@ -71,7 +71,7 @@ trait SettlementTrait
         $this->assertFileNotExists($mprFile);
     }
 
-    protected function initiateSettlements($txns, $channel = 'kotak')
+    protected function initiateSettlements($channel = 'kotak')
     {
         $request = [
             'url' => '/settlements/initiate/'.$channel,
@@ -83,10 +83,22 @@ trait SettlementTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('kotak', $content);
-        $this->assertArrayHasKey('setlFile', $content['kotak']);
+        return $content;
+    }
 
-        return $content['kotak']['setlFile'];
+    protected function generateDailyReport()
+    {
+        $request = [
+            'url' => '/merchants/report',
+            'method' => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 
     protected function generateSetlReconciliationFile($setlFile)

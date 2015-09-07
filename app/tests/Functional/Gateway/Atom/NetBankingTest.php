@@ -5,7 +5,7 @@ namespace Tests\Functional\Gateway\Atom;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 use Tests\Functional\TestCase;
 
-class NetBankingTest extends TestCase
+class NetbankingTest extends TestCase
 {
     use PaymentTrait;
 
@@ -19,7 +19,7 @@ class NetBankingTest extends TestCase
 
         $this->payment = array(
             'method' => 'netbanking',
-            'bank' => 'HDFC',
+            'bank' => 'ICIC',
             'amount' => '5000',
             'email' => 'ab@g.com',
             'contact' => '9431495816',
@@ -30,7 +30,7 @@ class NetBankingTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_atom_terminal');
     }
 
-    public function testNetBankingPaymentAuthorize()
+    public function testNetbankingPaymentAuthorize()
     {
         $this->ba->publicAuth();
 
@@ -39,14 +39,14 @@ class NetBankingTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $content);
     }
 
-    public function testNetBankingPaymentCapture()
+    public function testNetbankingPaymentCapture()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->assertTestResponse($payment);
     }
 
-    public function testNetBankingPaymentRefund()
+    public function testNetbankingPaymentRefund()
     {
         $payment = $this->fixtures->create('payment:netbanking_captured');
 
@@ -104,9 +104,9 @@ class NetBankingTest extends TestCase
 
         $id = $payment['id'];
 
-        $payment = $this->verifyPayment($id);
+        $data = $this->verifyPayment($id);
 
-        $this->assertEquals($payment['verified'], true);
+        $this->assertEquals($data['payment']['verified'], true);
     }
 
     public function testAtomVerifyFailedPayment()

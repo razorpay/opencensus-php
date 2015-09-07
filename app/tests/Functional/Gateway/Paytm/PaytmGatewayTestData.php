@@ -33,6 +33,7 @@ return [
 
     'testPaymentPaytmEntity' => [
         'action' => 'authorize',
+        'received' => true,
         'request_type' => 'SEAMLESS',
         'method' => 'card',
         'txn_amount' => '500',
@@ -50,7 +51,7 @@ return [
         'respmsg' => 'Txn Success',
         //'bankname' => 'Axis Bank',
         'paymentmode' => 'DC',
-        'refundamt' => null,
+        'refundamount' => null,
         'gatewayname' => 'ICICI',
         //'txndate' => '2015-06-08 03-28-34.0',
         'txntype' => 'SALE',
@@ -73,6 +74,7 @@ return [
 
     'testPaytmWalletEntity' => [
         'action' => 'authorize',
+        'received' => true,
         'request_type' => 'DEFAULT',
         'method' => 'wallet',
         'txn_amount' => '500',
@@ -90,7 +92,7 @@ return [
         'respmsg' => 'Txn Success',
         //'bankname' => 'Axis Bank',
         'paymentmode' => 'PPI',
-        'refundamt' => null,
+        'refundamount' => null,
         'gatewayname' => 'WALLET',
         //'txndate' => '2015-06-08 03-28-34.0',
         'txntype' => 'SALE',
@@ -110,14 +112,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'EE\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
             'gateway_error_code'  => null
         ],
     ],
@@ -141,5 +143,33 @@ return [
             'class' => 'EE\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT
         ],
+    ],
+
+    'testRefundPayment' => [
+        'action' => 'refund',
+        'received' => true,
+        'request_type' => 'DEFAULT',
+        'method' => 'netbanking',
+        'txn_amount' => '500',
+        'cust_id' => 'a@b.com',
+        'channel_id' => 'WEB',
+        'payment_mode_only' => 'Yes',
+        'auth_mode' => 'USRPWD',
+        'bank_code' => 'ICICI',
+        'payment_type_id' => 'NB',
+        'txnamount' => null,
+        //'banktxnid' => '201506080000004',
+        //'orderid' => '3KvJj9YNa60mBt',
+        'status' => 'TXN_SUCCESS',
+        'respcode' => '01',
+        'respmsg' => 'Txn Successful.',
+        //'bankname' => 'Axis Bank',
+        'paymentmode' => 'NB',
+        'refundamount' => '500',
+        'gatewayname' => 'ICICI',
+        //'txndate' => '2015-06-08 03-28-34.0',
+        'txntype' => 'REFUND',
+        // 'refund_id' => null,
+        'entity' => 'paytm',
     ],
 ];

@@ -6,7 +6,7 @@ use EE\Error;
 
 class ErrorCode
 {
-    const TRANSFER_TERMINATED_BY_USER;
+    const TRANSFER_TERMINATED_BY_USER = 'TRANSFER_TERMINATED_BY_USER';
 
     protected static $messages = array(
         self::TRANSFER_TERMINATED_BY_USER => 'Funds transfer terminated by user',

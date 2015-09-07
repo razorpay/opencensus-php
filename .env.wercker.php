@@ -6,23 +6,27 @@ return array(
     'DB_LIVE_DRIVER'                        => 'sqlite',
     'DB_LIVE_HOST'                          => '',
     'DB_LIVE_PORT'                          => '',
-    'DB_LIVE_DATABASE'                      => ':memory:',
+    'DB_LIVE_DATABASE'                      => 'api_sqlite.db',
     'DB_LIVE_USERNAME'                      => '',
     'DB_LIVE_PASSWORD'                      => '',
 
     'DB_TEST_DRIVER'                        => 'mysql',
-    'DB_TEST_HOST'                          => getenv('WERCKER_MYSQL_HOST'),
-    'DB_TEST_PORT'                          => getenv('WERCKER_MYSQL_PORT'),
-    'DB_TEST_DATABASE'                      => getenv('WERCKER_MYSQL_DATABASE'),
-    'DB_TEST_USERNAME'                      => getenv('WERCKER_MYSQL_USERNAME'),
-    'DB_TEST_PASSWORD'                      => getenv('WERCKER_MYSQL_PASSWORD'),
+    'DB_TEST_HOST'                          => getenv('MYSQL_PORT_3306_TCP_ADDR'),
+    'DB_TEST_PORT'                          => getenv('MYSQL_PORT_3306_TCP_PORT'),
+    'DB_TEST_DATABASE'                      => 'root',
+    'DB_TEST_USERNAME'                      => 'root',
+    'DB_TEST_PASSWORD'                      => 'root',
+
+    // 'DB_TEST_DRIVER'                        => 'mysql',
+    // 'DB_TEST_HOST'                          => 'mysql',
+    // 'DB_TEST_PORT'                          => '',
+    // 'DB_TEST_DATABASE'                      => 'root',
+    // 'DB_TEST_USERNAME'                      => 'root',
+    // 'DB_TEST_PASSWORD'                      => 'root',
 
     'CONTEXT'                               => 'testing',
 
     'CLOUD'                                 => false,
-
-    'HDFC_ID'                               => getenv('HDFC_ID'),
-    'HDFC_PASSWORD'                         => getenv('HDFC_PASSWORD'),
 
     'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'    => getenv('AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'),
     'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'    => getenv('AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'),
@@ -40,6 +44,8 @@ return array(
 
     'HDFC_GATEWAY_TEST_TERMINAL_ID'         => getenv('HDFC_GATEWAY_TEST_TERMINAL_ID'),
     'HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'   => getenv('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
+
+    'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'     => 'randomkuchbhi',
 
     'KOTAK_GATEWAY_TEST_HASH_SECRET'        => getenv('KOTAK_GATEWAY_TEST_HASH_SECRET'),
     'KOTAK_GATEWAY_TEST_MERCHANT_ID'        => getenv('KOTAK_GATEWAY_TEST_MERCHANT_ID'),
@@ -59,6 +65,7 @@ return array(
     'BILLDESK_MOCK'                         => true,
     'HDFC_MOCK'                             => true,
     'KOTAK_MOCK'                            => true,
+    'MOBIKWIK_MOCK'                         => true,
     'PAYTM_MOCK'                            => true,
     'NETBANKING_HDFC_MOCK'                  => true,
 
@@ -73,9 +80,8 @@ return array(
     'SLACK_TOKEN'                           => '',
     'SLACK_MOCK'                            => true,
 
-    'MAILGUN_API_KEY'                       => getenv('MAILGUN_API_KEY'),
-    'MAILGUN_SECRET'                        => 'DASHBOARD_AUTH_PASS',
-    'MAILGUN_MOCK'                          => false,
+    'MAILGUN_SECRET'                        => getenv('MAILGUN_API_KEY'),
+    'MAILGUN_MOCK'                          => true,
 
     'QUEUE_DRIVER'                          => 'sync',
 

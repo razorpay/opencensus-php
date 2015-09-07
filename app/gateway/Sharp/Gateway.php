@@ -21,19 +21,24 @@ class Gateway extends Base\Gateway
         $baseUrl = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment');
 
         $content = array(
-            'action' => 'authorize',
-            'amount' => $input['payment']['amount'],
-            'method' => $input['payment']['method'],
-            'payment_id' => $input['payment']['id'],
-            'callback_url' => $input['callbackUrl'],
+            'action'        => 'authorize',
+            'amount'        => $input['payment']['amount'],
+            'method'        => $input['payment']['method'],
+            'payment_id'    => $input['payment']['id'],
+            'callback_url'  => $input['callbackUrl'],
         );
 
-        $url = $baseUrl . '&' . http_build_query($content);
+        if ($content['method'] === 'card')
+        {
+            $content['card_number'] = $input['card']['number'];
+        }
 
-        $request = array(
-            'url' => $url,
-            'method' => 'get'
-        );
+        if ($this->isEnrolled($content) === false)
+        {
+            return;
+        }
+
+        $request = $this->getRequestArray($content);
 
         return $request;
     }
@@ -41,6 +46,8 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        $this->verifyPaymentCreateResponse($input);
     }
 
     public function capture(array $input)
@@ -51,6 +58,28 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+    }
+
+    protected function verifyPaymentCreateResponse($input)
+    {
+        if ((isset($input['gateway']['status']) === false) or
+            ($input['gateway']['status'] !== 'authorized'))
+        {
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
+    protected function isEnrolled($content)
+    {
+        $content['action'] = 'enroll';
+
+        $server = new Server;
+
+        $content = $server->action($content);
+
+        return ($content !== 'N');
     }
 
     protected function createGatewayPaymentEntity($attributes)
@@ -70,5 +99,20 @@ class Gateway extends Base\Gateway
         assert ($mode === Mode::TEST);
 
         parent::setMode($mode);
+    }
+
+    protected function getRequestArray($content)
+    {
+        $baseUrl = \Http\Route::getUrlWithPublicAuth('mock_sharp_payment');
+
+        $url = $baseUrl;
+
+        $request = array(
+            'url' => $url,
+            'method' => 'post',
+            'content' => $content,
+        );
+
+        return $request;
     }
 }

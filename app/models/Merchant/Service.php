@@ -3,6 +3,7 @@
 namespace Models\Merchant;
 
 use Constants\Mode;
+use Mail;
 use Models\Base;
 use Models\Merchant;
 use Models\Key;
@@ -162,11 +163,15 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
 
+        (new Merchant\Validator)->validateBeforeActivate($merchant);
+
         (new Merchant\Core)->createBalance($merchant, 'live');
 
         $merchant->activate();
 
         $this->repo->saveOrFail($merchant);
+
+        $this->sendActivationEmail($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -226,6 +231,14 @@ class Service extends Base\Service
 
         if ($ba !== null)
         {
+            $baCopy = (new BankAccount\Entity)->build($input);
+            $baCopy->merchant()->associate($merchant);
+
+            if ($ba->equals($baCopy))
+            {
+                return $ba->toArray();
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
         }
@@ -265,14 +278,14 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $banks = (new Banks\Core)->getEnabledAndDisabledBanks($merchant);
+        $banks = (new Methods\Core)->getEnabledAndDisabledBanks($merchant);
 
         return $banks;
     }
 
     public function getEnabledBanks()
     {
-        $banks = (new Banks\Core)->getMerchantBanks($this->merchant);
+        $banks = (new Methods\Core)->getMerchantBanks($this->merchant);
 
         if ($banks === null)
             return [];
@@ -284,40 +297,42 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant($merchant, $input);
+        return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
+            $merchant, $input
+        );
     }
 
     public function setBanksForAllMerchants($input)
     {
         // @todo: finish this.
-        // return (new Merchant\Banks\Core)->setPaymentBanksForAllMerchants($input);
+        // return (new Merchant\Methods\Core)->setPaymentBanksForAllMerchants($input);
     }
 
     public function getPaymentMethods()
     {
         $picker = new Payment\Processor\TerminalPicker;
 
-        $hasCardTerminal = $picker->hasCardTerminal($this->merchant);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $hasCardTerminal = true;
-        }
-
         $data = array(
             'entity'        => 'methods',
-            'card'          => $hasCardTerminal,
+            'card'          => true,
             'netbanking'    => [],
             'wallet'        => [
                 'paytm'     => false,
+                'mobikwik'  => false,
             ]);
 
-        $methods = (new Merchant\Banks\Core)->getMerchantBanks($this->merchant);
+        $methods = (new Merchant\Methods\Core)->getMerchantBanks($this->merchant);
 
         if ($methods !== null)
         {
+            $data['card'] = $methods->isCardEnabled();
             $data['netbanking'] = $methods->toArrayWithBankNames();
-            $data['wallet']['paytm'] = $methods->isPaytmEnabled();
+            // $data['wallet']['paytm'] = $methods->isPaytmEnabled();
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            $data['card'] = true;
         }
 
         return $data;
@@ -327,7 +342,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentMethods($merchant, $input);
+        return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
     }
 
     public function getMerchantBeneficiaryFile()
@@ -335,5 +350,82 @@ class Service extends Base\Service
         $file = (new BankAccount\BeneficiaryFile)->generate();
 
         return $file;
+    }
+
+    protected function sendActivationEmail($merchant)
+    {
+        //TODO: This needs to be refactored when we go for differentiated pricing
+        $plan = $merchant->getPricingPlan();
+
+        // array_values resets the array numeric keys and then we can pick the first rule
+        // @todo: explain this part
+        $plan = array_values(array_filter(
+            $plan['rules'],
+            function($rule)
+            {
+                return $rule['payment_method']  == 'card';
+            }
+        ))[0];
+
+        $data = [
+            'merchant'  =>  $merchant->toArray(),
+            'plan'      =>  $plan,
+        ];
+
+        $config = $this->app->config->get('applications.mailgun');
+        $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
+
+        $this->app['mailer']->queue(
+            [
+                'html' => 'emails.merchant.activation',
+                'text' => 'emails.merchant.activation_text'
+            ],
+            $data,
+            function ($message) use ($data, $config, $subject)
+            {
+                $message->to($data['merchant']['email']);
+                $message->from($config['from_email'], $config['from_name']);
+                $message->cc('notifications@razorpay.com');
+                $message->subject($subject);
+            }
+        );
+    }
+
+    /**
+     * sends daily reports for all merchants that are currently live
+     */
+    public function sendDailyReportForAllMerchants()
+    {
+        $filter = [];
+
+        //In test, none of the merchants are activated
+        if ($this->mode === Mode::LIVE)
+        {
+            $filter = [Entity::ACTIVATED => 1];
+        }
+
+        $merchants = $this->repo->fetch($filter);
+
+        // sent will hold array of merchant data
+        $response = ['sent' => [], 'skipped' => 0];
+
+        foreach ($merchants as $merchant)
+        {
+            $dailyReport = new DailyReport($merchant->getId());
+
+            $sent = $dailyReport->send();
+
+            if(empty($sent))
+            {
+                $response['skipped']++;
+            }
+            else
+            {
+                $response['sent'][] = $sent;
+            }
+        }
+
+        return $response;
+
     }
 }

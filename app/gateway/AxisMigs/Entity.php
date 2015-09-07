@@ -2,28 +2,34 @@
 
 namespace Gateway\AxisMigs;
 
-use Models\Base;
+use Gateway\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     protected $fields = array(
         'id',
         'payment_id',
         'refund_id',
+        'received',
         'vpc_3DSECI',
         'vpc_3DSenrolled',
         'vpc_3DSstatus',
         'vpc_3DSXID',
+        'vpc_AcqCSCRespCode',
         'vpc_AcqResponseCode',
         'vpc_Amount',
         'vpc_AuthorizeId',
+        'vpc_AuthorisedAmount',
         'vpc_BatchNo',
         'vpc_Card',
+        'vpc_CapturedAmount',
         'vpc_Command',
+        'vpc_CSCResultCode',
         'vpc_Currency',
         'vpc_MerchTxnRef',
         'vpc_Message',
         'vpc_ReceiptNo',
+        'vpc_RefundedAmount',
         'vpc_SecureHash',
         'vpc_ShopTransactionNo',
         'vpc_TransactionNo',
@@ -37,20 +43,26 @@ class Entity extends Base\PublicEntity
     protected $fillable = array(
         'id',
         'refund_id',
+        'received',
         'vpc_3DSECI',
         'vpc_3DSenrolled',
         'vpc_3DSstatus',
         'vpc_3DSXID',
+        'vpc_AcqCSCRespCode',
         'vpc_AcqResponseCode',
         'vpc_Amount',
+        'vpc_AuthorisedAmount',
         'vpc_AuthorizeId',
         'vpc_BatchNo',
         'vpc_Card',
+        'vpc_CapturedAmount',
         'vpc_Command',
+        'vpc_CSCResultCode',
         'vpc_Currency',
         'vpc_MerchTxnRef',
         'vpc_Message',
         'vpc_ReceiptNo',
+        'vpc_RefundedAmount',
         'vpc_ShopTransactionNo',
         'vpc_TransactionNo',
         'vpc_TxnResponseCode',
@@ -68,10 +80,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = array('vpc_amount');
 
-    public function setPaymentId($paymentId)
-    {
-        $this->attributes['payment_id'] = $paymentId;
-    }
+    public $incrementing = true;
 
     public function getGeniusAttribute()
     {

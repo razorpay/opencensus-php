@@ -26,11 +26,11 @@ class MerchantFluid extends Base
         return $this;
     }
 
-    public function createEntity(array $attributes = array())
+    public function create(array $attributes = array())
     {
         $attributes['pricing_plan_id'] = '1hDYlICobzOCYt';
 
-        $merchant = parent::create('merchant', $attributes);
+        $merchant = $this->createEntity('merchant', $attributes);
 
         $this->setMerchant($merchant);
 
@@ -73,7 +73,7 @@ class MerchantFluid extends Base
 
         $attributes = array_merge($defaultAttributes, $attributes);
 
-        $terminal = $this->create('terminal', $attributes);
+        $terminal = $this->fixtures->create('terminal', $attributes);
 
         $terminal->merchant()->associate($this->merchant);
 
@@ -105,7 +105,7 @@ class MerchantFluid extends Base
 
     public function addPaymentBanks(array $attributes = array())
     {
-        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+        $banks = \Models\Payment\Processor\Netbanking::getAllBanks();
 
         $defaultValues = array(
             'merchant_id' => $this->getId(),
@@ -114,14 +114,14 @@ class MerchantFluid extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('merchant_banks', $attributes);
+        $this->fixtures->create('methods', $attributes);
 
         return $this;
     }
 
     public function enablePaytm()
     {
-        $methods = \Models\Merchant\Banks\Repository::find($this->getId());
+        $methods = \Models\Merchant\Methods\Repository::find($this->getId());
 
         $methods->setPaytm(true);
 
@@ -132,7 +132,7 @@ class MerchantFluid extends Base
 
     public function disablePaytm()
     {
-        $banks = \Models\Payment\Processor\NetBanking::getAllBanks();
+        $banks = \Models\Payment\Processor\Netbanking::getAllBanks();
 
         $defaultValues = array(
             'merchant_id' => $this->getId(),
@@ -142,7 +142,7 @@ class MerchantFluid extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('merchant_banks', $attributes);
+        $this->fixtures->create('methods', $attributes);
 
         return $this;
     }

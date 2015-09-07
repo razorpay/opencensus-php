@@ -41,7 +41,7 @@ class TerminalTest extends TestCase
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
-                         ->create('merchant_fluid:entity', ['id' => '10abcdefghsdfs'])
+                         ->create('merchant_fluid', ['id' => '10abcdefghsdfs'])
                          ->addTerminal('atom', ['id' => 'testatomrandom'])
                          ->get();
 

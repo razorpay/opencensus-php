@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body class="body" style="background: #EBECEE;">
+    <table class="container" style="background: #EBECEE;">
+      <tr>
+        <td>
+          @include('emails.partials.header', ['message'=>$message])
+          <!-- Activation Header -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper center last">
+                        <center>
+                        <table class="twelve columns bluebg" style="background:#39ACE5;">
+                          <tr>
+                            <td class="center">
+                              <h1>
+                              <center>
+                                Congratulations!
+                              </center>
+                              </h1>
+                              <center class="whitetext" style="text-align: center;">
+                              Your Razorpay account has been activated.
+                              </center>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                        </center>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.header_image', ['image'=>'merchant_verified'], ['message'=>$message])
+          <!-- Header Subtext -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last bluebg" style="background:#39ACE5;">
+                        <table class="twelve columns">
+                          <tr>
+                            <td class="center">
+                              <center class="whitetext" style="text-align: center;">
+                              You can now start accepting payments from your customers.
+                              </center>
+                              <center>
+                              </center>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Header Subtext -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last bluebg" style="background:#39ACE5;">
+                        <table class="three columns">
+                          <tr>
+                            <td>
+                              <table class="tiny-button">
+                                <tr>
+                                  <td>
+                                    <a href="https://dashboard.razorpay.com">Go to Dashboard</a>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Main text -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white">
+                        <table class="twelve columns">
+                          <tr>
+                            <td class="darktext left-text-pad right-text-pad">
+<p>Hi {{{$merchant['name']}}},</p>
+
+<p>Your Razorpay account for {{{$merchant['billing_label']}}} is now active. You have opted for the {{{$plan['plan_name']}}} plan.
+(₹ {{{$plan['fixed_rate']}}} setup and annual maintenance charges and {{{$plan['percent_rate']/100}}}% TDR per transaction
+on all modes of payment).</p>
+
+<p>In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation">here</a>.</p>
+
+<p>If you face any issues while implementing this, feel free to drop us an <a href="mailto:support@razorpay.com">email</a>.</p>
+
+<p>We hope that the association between you and Razorpay will be fruitful for both organizations.</p>
+
+<p>
+Regards,<br>
+Team Razorpay
+</p>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.footer', ['message'=>$message])
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

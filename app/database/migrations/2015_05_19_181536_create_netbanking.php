@@ -25,11 +25,15 @@ class CreateNetbanking extends Migration
             $table->string('action');
             $table->string('amount');
             $table->string('bank');
+            $table->boolean('received')->default(0);
             $table->string('client_code')->nullable();
             $table->string('merchant_code')->nullable();
             $table->string('bank_payment_id')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
+            $table->string('date')->nullable();
+
+            $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');
@@ -39,6 +43,8 @@ class CreateNetbanking extends Migration
                   ->references('id')
                   ->on('payments')
                   ->on_delete('restrict');
+
+            $table->index('received');
         });
     }
 

@@ -47,11 +47,15 @@ class Service extends Base\Service
 
     public function verify($id)
     {
-        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+        $payment = $this->core->retrieveById($id);
 
-        $payment = $this->processor()->verify($id);
+        $merchantId = $payment->getMerchantId();
 
-        return $payment->toArrayAdmin();
+        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $data = $this->processor()->verify($payment);
+
+        return $data;
     }
 
     public function cancel($id)
@@ -59,6 +63,19 @@ class Service extends Base\Service
         $this->processor()->cancel($id);
 
         return ['success' => true];
+    }
+
+    public function authorizeFailed($id)
+    {
+        $payment = $this->core->retrieveById($id);
+
+        $merchantId = $payment->getMerchantId();
+
+        $this->merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $data = $this->processor()->authorizeFailedPayment($payment);
+
+        return $data;
     }
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
@@ -183,6 +200,11 @@ class Service extends Base\Service
         return ['count' => $count];
     }
 
+    public function updateOldPayments()
+    {
+        ;
+    }
+
     public function autoCaptureOldAuthorizedPayments()
     {
         $timeLowerLimit = time() - (48 * 60 * 60);
@@ -248,7 +270,7 @@ class Service extends Base\Service
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
-        $success = 0; $failed = 0;
+        $timedOut = 0; $verified = 0; $failed = 0; $time = time();
 
         foreach ($payments as $payment)
         {
@@ -256,18 +278,35 @@ class Service extends Base\Service
             {
                 $this->merchant = $payment->merchant;
 
-                $res = $this->processor()->verify($payment->getPublicId());
+                $res = $this->processor()->verify($payment);
 
-                $success++;
+                $verified++;
             }
             catch (Exception\PaymentVerificationException $e)
             {
                 $failed++;
-                // just continue
+                // Just continue
+            }
+            catch (Exception\GatewayTimeoutException $e)
+            {
+                // Just continue
+                $timedOut++;
             }
         }
 
-        return ['success' => $success, 'failed' => $failed];
+        $time = time() - $time;
+
+        $results = array(
+            'verified'      => $verified,
+            'failed'        => $failed,
+            'timed out'     => $timedOut,
+            'total time'    => $time . ' secs');
+
+        $message = 'Payment verify result - ' . json_encode($results, JSON_PRETTY_PRINT);
+
+        $this->app['slack']->send($message, '#transactions', 'transactions');
+
+        return $results;
     }
 
     protected function processor()

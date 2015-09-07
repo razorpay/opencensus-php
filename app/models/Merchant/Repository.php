@@ -14,6 +14,12 @@ class Repository extends Base\Repository
 
     protected $entity = 'Merchant';
 
+    protected $appFetchParamRules = array(
+        Entity::ACTIVATED       => 'sometimes|boolean',
+        Entity::HOLD_FUNDS      => 'sometimes|boolean',
+        Entity::LIVE            => 'sometimes|boolean',
+    );
+
     public function getBalanceLockForUpdate($id)
     {
         return Merchant\Balance::lockForUpdate()->findOrFail($id);
@@ -77,5 +83,17 @@ class Repository extends Base\Repository
     public function isMerchantIdRequiredForFetch()
     {
         return false;
+    }
+
+    public function fetchRecentMerchants()
+    {
+        $repo = $this->repo;
+
+        // 00:00 Today
+        $today = \Carbon\Carbon::today("Asia/Kolkata")->timestamp;
+
+        $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
+
+        return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
 }

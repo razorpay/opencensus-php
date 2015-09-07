@@ -5,7 +5,8 @@ namespace Gateway\Base;
 use Constants\Mode;
 use EE\Exception;
 use Requests;
-use Trace;
+use Trace\Trace;
+use Trace\TraceCode;
 
 class Gateway
 {
@@ -32,7 +33,7 @@ class Gateway
 
     public function __construct()
     {
-        $this->trace = Trace::getFacadeRoot();
+        $this->trace = \Trace::getFacadeRoot();
 
         $this->loadGatewayConfig();
     }
@@ -111,6 +112,36 @@ class Gateway
         // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
 
         return $response;
+    }
+
+    protected function runPaymentVerifyFlow($verify)
+    {
+        $payment = $this->getPaymentToVerify($verify->input, $verify);
+
+        if (($payment === null) and
+            ($verify->input['payment']['status'] === 'failed'))
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                ['payment_id' => $verify->input['payment']['id'],
+                 'message' => 'payment id not found in the gateway database',
+                 'gateway' => $this->gateway]);
+            return;
+        }
+
+        $content = $this->sendPaymentVerifyRequest($verify);
+
+        $status = $this->verifyPayment($verify);
+
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
+
+        return $verify->getDataToTrace();
     }
 
     protected function getNamespace()
@@ -220,11 +251,17 @@ class Gateway
         return constant($ns.'\Url::'.$type);
     }
 
-    protected function getUrl($type)
+    protected function getUrl($type = null)
     {
         $url = $this->getUrlDomain();
 
+        if ($type === null)
+        {
+            $type = $this->action;
+        }
+
         $type = strtoupper($type);
+
         $url .= $this->getRelativeUrl($type);
 
         return $url;
@@ -260,5 +297,20 @@ class Gateway
         }
 
         return $code;
+    }
+
+    protected function getDataWithFieldsInOrder($content, $orderedFields)
+    {
+        $orderedData = [];
+
+        foreach ($orderedFields as $key)
+        {
+            if (isset($content[$key]))
+            {
+                $orderedData[$key] = $content[$key];
+            }
+        }
+
+        return $orderedData;
     }
 }

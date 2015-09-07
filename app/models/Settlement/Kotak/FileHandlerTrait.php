@@ -11,6 +11,8 @@ trait FileHandlerTrait
 {
     protected $saveToAws = true;
 
+    protected $excel = null;
+
     public function writeToTextFile($txt)
     {
         $name = $this->getFileToWriteName();
@@ -32,7 +34,8 @@ trait FileHandlerTrait
         $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
         $fullpath = $fileMetadata['full'];
 
-        $url = $this->saveToAws($name.'.xlsx', $fullpath, 'application/vnd.ms-excel');
+        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
 
         return $url;
     }
@@ -48,6 +51,8 @@ trait FileHandlerTrait
         });
 
         $excel->getDefaultStyle()->getFont()->setName('Ubuntu Mono')->setSize(14);
+
+        $this->excel = $excel;
 
         return $excel;
     }
@@ -98,13 +103,12 @@ trait FileHandlerTrait
 
     protected function saveLocally($name, $txt)
     {
-        $path = storage_path() . '/files/settlement/';
-
-        $fullpath = $path . $name;
+        $fullpath = $this->getFullFilePath($name);
 
         $file = fopen($fullpath, 'w');
         fwrite($file, $txt);
         fclose($file);
+
         chmod($fullpath, 0777);  // keep it 0777. This step is important.
 
         return $fullpath;
@@ -203,6 +207,13 @@ trait FileHandlerTrait
     protected function getExcelFileToWriteName()
     {
         return $this->getFileToWriteNameWithoutExt() . '.xlsx';
+    }
+
+    protected function getExcelFullFilePath()
+    {
+        $name = $this->getExcelFileToWriteName();
+
+        return $this->getFullFilePath($name);
     }
 
     protected function getFileToWriteNameWithoutExt()
@@ -320,5 +331,10 @@ trait FileHandlerTrait
     protected function getStorageDir()
     {
         return storage_path('files/settlement');
+    }
+
+    protected function getFullFilePath($filename)
+    {
+        return $this->getStorageDir() . '/' . $filename;
     }
 }

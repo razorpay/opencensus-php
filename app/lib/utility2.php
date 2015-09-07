@@ -4,11 +4,12 @@ use EE\Exception;
 
 if (! function_exists('validate'))
 {
-    function validate($rules, $data)
+    function validate($rules, $data, $strict = true)
     {
-        $invalid_keys = array_diff_key($data, $rules);
+        $invalid_keys = array_keys(array_diff_key($data, $rules));
 
-        if (count($invalid_keys) !== 0)
+        if ((count($invalid_keys) !== 0) and
+            ($strict === true))
         {
             throw new Exception\ExtraFieldsException($invalid_keys);
         }

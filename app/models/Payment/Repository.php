@@ -14,15 +14,16 @@ class Repository extends Base\Repository
 
     protected $entity = 'Payment';
 
-    public function findByStatusBetweenTimestamps($status, $from, $to)
-    {
-        $repo = $this->repo;
-
-        return $repo::where(Payment\Entity::STATUS, '=', $status)
-                    ->where(Common::CREATED_AT, '>=', $from)
-                    ->where(Common::CREATED_AT, '<=', $to)
-                    ->get();
-    }
+    protected $appFetchParamRules = array(
+        Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed',
+        Entity::VERIFIED        => 'sometimes|boolean',
+        Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
+        Entity::BANK            => 'sometimes',
+        Entity::METHOD          => 'sometimes',
+        Entity::GATEWAY         => 'sometimes',
+        Entity::EMAIL           => 'sometimes',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+    );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
@@ -32,6 +33,22 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
+    }
+
+    /**
+     * Returns the captured payments
+     * between the given timestamps (using CAPTURED_AT)
+     * @param  int $from    timestamp for start of interval
+     * @param  int $to      timestamp for end of interval
+     * @return Collection of Payment
+     */
+    public function fetchCapturedBetweenTimestamp($from, $to, $merchantId)
+    {
+        $repo = $this->repo;
+        return $repo::whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where(Entity::STATUS, '=', Status::CAPTURED)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->get();
     }
 
     public function lockForUpdate($id)
@@ -102,7 +119,24 @@ class Repository extends Base\Repository
 
         return $repo::whereNull(Payment\Entity::VERIFIED)
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
+                    ->where(function($query)
+                        {
+                            $query->where(Payment\Entity::GATEWAY, '=', Payment\Gateway::BILLDESK)
+                                  ->orWhere(Payment\Entity::GATEWAY, '=', Payment\Gateway::NETBANKING_HDFC);
+                        })
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
                     ->get();
+    }
+
+    protected function addQueryParamBank($query, $params)
+    {
+        if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
+                Entity::BANK);
+        }
+
+        $query = $query->where(Entity::BANK, '=', $params[Entity::BANK]);
     }
 }
