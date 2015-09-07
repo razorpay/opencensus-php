@@ -250,6 +250,11 @@ class Processor
 
         $gateway = $this->payment->getGateway();
 
+        if ($terminal === null)
+        {
+            return;
+        }
+
         $input['terminal'] = $terminal;
         $input['merchant'] = $terminal->merchant;
 

@@ -73,6 +73,7 @@ final class Route
         'merchant_beneficiary_file'         => ['get',      'merchants/beneficiary/file',               'MerchantController@getMerchantBeneficiaryFile'                 ],
         'key_fetch_by_id'                   => ['get',      'keys/{id}',                                'KeyController@getKey'                                          ],
         'key_fetch_multiple'                => ['get',      'keys',                                     'KeyController@getKeys'                                         ],
+        'terminal_delete'                   => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                            ],
         'pricing_create_plan'               => ['post',     'pricing',                                  'PricingController@postCreatePricingPlan'                       ],
         'pricing_get_plans'                 => ['get',      'pricing',                                  'PricingController@getPricingPlans'                             ],
         'pricing_get_merchant_plans'        => ['get',      'pricing/merchants',                        'PricingController@getMerchantPricingPlans'                     ],
@@ -123,6 +124,7 @@ final class Route
         'gateway_payment_callback'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'gateway_payment_callback'          => ['get',      'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
         'dummy_return_callback'             => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                     ],
+        'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
     );
 
     public static $public = array(
@@ -147,6 +149,7 @@ final class Route
         'mock_sharp_payment',
         'mock_sharp_payment_submit',
         'dummy_return_callback',
+        'dummy_critical_error',
     );
 
     public static $publicCallback = array(
@@ -191,6 +194,7 @@ final class Route
         'merchant_set_all_banks',
         'merchant_fetch_balance',
         'merchant_beneficiary_file',
+        'terminal_delete',
         'key_fetch_by_id',
         'key_fetch_multiple',
         'pricing_create_plan',

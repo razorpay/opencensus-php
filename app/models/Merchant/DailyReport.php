@@ -67,7 +67,7 @@ class DailyReport
 
             $message->cc('notifications@razorpay.com');
 
-            $message->subject('Daily Transaction Report for ' . $data['date']);
+            $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);
         });
     }
 

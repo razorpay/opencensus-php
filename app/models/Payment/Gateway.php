@@ -3,6 +3,7 @@
 namespace Models\Payment;
 
 use EE\Exception;
+use Models\Card\Network;
 use Models\Settlement;
 
 class Gateway
@@ -58,6 +59,24 @@ class Gateway
         self::AXIS_MIGS,
     );
 
+    public static $cardNetworkMap = array(
+        self::HDFC => array(
+            Network::MC,
+            Network::VISA,
+            Network::MAES),
+        self::AXIS_MIGS => array(
+            Network::MC,
+            Network::VISA),
+        self::AXIS_GENIUS => array(
+            Network::MC,
+            Network::VISA),
+        self::ATOM => array(
+            Network::MC,
+            Network::VISA),
+        self::KOTAK => array(
+            Network::RUPAY),
+    );
+
     public static function getChannel($gateway)
     {
         return self::$channels[$gateway];
@@ -85,5 +104,11 @@ class Gateway
     public static function supportsAuthAndCapture($gateway)
     {
         return (in_array($gateway, self::$authAndCapture));
+    }
+
+    public static function isCardNetworkSupported($network, $gateway)
+    {
+        return ((array_key_exists($gateway, self::$cardNetworkMap)) and
+                (in_array($network, self::$cardNetworkMap[$gateway])));
     }
 }

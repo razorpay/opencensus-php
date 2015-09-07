@@ -142,10 +142,10 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
+        Payment\Validator::bankAcsCallbackValidate($payment, $input);
+
         try
         {
-            Payment\Validator::bankAcsCallbackValidate($payment, $input);
-
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
         }
         catch (Exception\BaseException $e)

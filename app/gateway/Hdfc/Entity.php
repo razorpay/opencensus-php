@@ -38,7 +38,7 @@ class Entity extends Base\Entity
 
     public function payment()
     {
-        return $this->belongsTo('Payment', 'payment_id', 'id');
+        return $this->belongsTo('Models\Payment\Entity', 'payment_id', 'id');
     }
 
     public function getPaymentId()

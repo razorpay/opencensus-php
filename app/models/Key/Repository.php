@@ -10,6 +10,10 @@ class Repository extends Base\Repository
 
     protected $entity = 'Key';
 
+    protected $appFetchParamRules = array(
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+    );
+
     public function getKeysForMerchant($merchantId, $expired = false)
     {
         $repo = $this->repo;

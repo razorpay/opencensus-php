@@ -5,6 +5,8 @@ namespace Models\Admin;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Models\Base;
+use Models;
+use Gateway;
 
 class Service extends Base\Service
 {
@@ -35,20 +37,20 @@ class Service extends Base\Service
     protected function getEntityNamespace($entity)
     {
         $map = array(
-            'refund'            => 'Models\Payment\Refund',
-            'iin'               => 'Models\Card\IIN',
-            'dailysettlement'   => 'Models\Settlement\Daily',
-            'atom'              => 'Gateway\Atom',
-            'bank_account'      => 'Models\Merchant\BankAccount',
-            'kotak'             => 'Gateway\Kotak',
-            'axis_migs'         => 'Gateway\AxisMigs',
-            'axis_genius'       => 'Gateway\AxisGenius',
-            'paytm'             => 'Gateway\Paytm',
-            'mobikwik'             => 'Gateway\Mobikwik',
-            'netbanking'        => 'Gateway\Netbanking\Base',
-            'billdesk'          => 'Gateway\Billdesk',
-            'hdfc'              => 'Gateway\Hdfc',
-            'bank_account'      => 'Models\Merchant\BankAccount',
+            'refund'            => Models\Payment\Refund::class,
+            'iin'               => Models\Card\IIN::class,
+            'dailysettlement'   => Models\Settlement\Daily::class,
+            'atom'              => Gateway\Atom::class,
+            'bank_account'      => Models\Merchant\BankAccount::class,
+            'kotak'             => Gateway\Kotak::class,
+            'axis_migs'         => Gateway\AxisMigs::class,
+            'axis_genius'       => Gateway\AxisGenius::class,
+            'paytm'             => Gateway\Paytm::class,
+            'mobikwik'          => Gateway\Mobikwik::class,
+            'netbanking'        => Gateway\Netbanking\Base::class,
+            'billdesk'          => Gateway\Billdesk::class,
+            'hdfc'              => Gateway\Hdfc::class,
+            'bank_account'      => Models\Merchant\BankAccount::class,
         );
 
         if (array_key_exists($entity, $map))
