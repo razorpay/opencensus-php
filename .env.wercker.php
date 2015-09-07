@@ -28,9 +28,6 @@ return array(
 
     'CLOUD'                                 => false,
 
-    'HDFC_ID'                               => getenv('HDFC_ID'),
-    'HDFC_PASSWORD'                         => getenv('HDFC_PASSWORD'),
-
     'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'    => getenv('AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'),
     'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'    => getenv('AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'),
     'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'    => getenv('AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'),
