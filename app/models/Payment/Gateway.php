@@ -64,12 +64,10 @@ class Gateway
             Network::VISA),
         self::AXIS_GENIUS => array(
             Network::MC,
-            Network::VISA,
-            Network::MAES),
+            Network::VISA),
         self::ATOM => array(
             Network::MC,
-            Network::VISA,
-            Network::MAES),
+            Network::VISA),
         self::KOTAK => array(
             Network::RUPAY),
     );
