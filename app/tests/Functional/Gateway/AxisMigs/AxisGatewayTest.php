@@ -70,6 +70,19 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($amount, $refund['vpc_amount']);
     }
 
+    public function testMaestroOnMigs()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5081597022059105';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment();
