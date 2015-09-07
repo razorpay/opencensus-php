@@ -283,7 +283,7 @@ class TerminalPicker
             if (($this->terminalExists($terminal)) and
                 (Gateway::isCardNetworkSupported($network, $gateway)))
             {
-                return $gatewayTerms[$gateway];
+                return $this->terminal;
             }
         }
 
