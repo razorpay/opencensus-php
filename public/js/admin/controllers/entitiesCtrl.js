@@ -333,6 +333,21 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         }
       }
 
+      $scope.terminal = {
+        delete: function(id) {
+          var request = $http.delete("/admin/" + $scope.mode +  "/terminal/" + id);
+          request
+          .success(function(data){
+            if(data.success) {
+              alert("Terminal deleted");
+            }
+          })
+          .error(function(){
+            //$scope.alerts.addAlert('danger', null, true);
+          });
+        }
+      }
+
       $scope.updateEntity = function(key, value) {
         // Remove `_id` from the end
         var entity_type = key.substr(0, key.length -3);

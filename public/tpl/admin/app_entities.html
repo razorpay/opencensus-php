@@ -164,6 +164,12 @@
         Refund
       </button>
     </div>
+    <div class="btn-group col-lg-11 text-left" role="group"
+      aria-label="Terminal Actions" ng-show="data['entity'] == 'terminal'"
+      ng-confirm-click="Are you sure you want to delete this terminal?"
+    >
+      <button class="btn btn-danger" ng-click="terminal.delete(data['id'])">Delete</button>
+    </div>
     <button class="col-lg-1 text-right btn btn-primary" ng-click="ok()">OK</button>
   </div>
 </script>

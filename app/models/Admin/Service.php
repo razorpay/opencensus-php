@@ -1066,4 +1066,18 @@ class Service extends Base\Service
             return [$e->getMessage(), null];
         }
     }
+
+    public function deleteTerminal($mode, $terminalId)
+    {
+        $this->setApiCredentials(null, $mode);
+        try
+        {
+            $response = $this->api->terminal->delete($terminalId);
+            return [null, $response->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [$e->getMessage(), null];
+        }
+    }
 }

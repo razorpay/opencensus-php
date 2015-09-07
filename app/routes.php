@@ -185,6 +185,8 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
 
         Route::post('/admin/trigger/error', 'AdminController@triggerError');
+
+        Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
     });
 
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');

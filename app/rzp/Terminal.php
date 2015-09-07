@@ -16,4 +16,10 @@ class Terminal extends Entity
     {
         return parent::all();
     }
+
+    public function delete($id)
+    {
+        $relativeUrl = $this->getEntityUrl() . $id;
+        return $this->request('DELETE', $relativeUrl);
+    }
 }
