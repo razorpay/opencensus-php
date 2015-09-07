@@ -151,13 +151,13 @@ class Gateway extends Base\Gateway
         $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
 
         $data = array(
-            'ClientCode'        => $clientCode,
-            'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
-            'TxnCurrency'       => 'INR',
-            'TxnAmount'         => $input['payment']['amount'] / 100,
-            'TxnScAmount'       => '0',
-            'MerchantRefNo'     => $input['payment']['id'],
-            'SuccessStaticFlag' => 'N',
+            'MessageCode'        => $clientCode,
+            'DateTimeInGMT'      => $input['terminal']['gateway_merchant_id'],
+            'MerchantId'       => 'INR',
+            'TraceNumber'         => $input['payment']['amount'] / 100,
+            'Amount'       => '0',
+            'TransactionDescription'     => $input['payment']['id'],
+            'Checksum' => 'N',
             'FailureStaticFlag' => 'N',
             'Date'              => $date,
             'DynamicUrl'        => $input['callbackUrl'],

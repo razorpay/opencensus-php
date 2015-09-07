@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc;
+namespace Gateway\Netbanking\Kotak;
 
 class Fields
 {
