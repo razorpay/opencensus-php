@@ -1,14 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ayush
- * Date: 07/09/15
- * Time: 11:58 AM
- */
 
 namespace Gateway\Netbanking\Kotak;
 
 
-class MessageCodes {
-    const
+class MessageCodes
+{
+    const AUTHORIZE = '0500';
+    const CALLBACK_M = '0501';
+    const CALLBACK_C = '0502';
+    const VERIFY = '0520';
+    const VERIFY_RESPONSE = '0521';
 }
