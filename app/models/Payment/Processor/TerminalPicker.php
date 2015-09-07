@@ -124,32 +124,6 @@ class TerminalPicker
 
         $international = $payment->merchant->isInternational();
 
-<<<<<<< HEAD
-        // if ($payment->card->getNetwork() === Network::$fullName[Network::RUPAY])
-        // {
-        //     if (isset($gatewayTerms[Gateway::KOTAK]))
-        //     {
-        //         $terminal = $gatewayTerms[Gateway::KOTAK];
-        //     }
-
-        //     return $terminal;
-        // }
-
-        // $international = $payment->merchant->isInternational();
-
-        // if ($international)
-        // {
-        //     if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
-        //     {
-        //         return $gatewayTerms[Gateway::AXIS_GENIUS];
-        //     }
-        // }
-
-        // if (isset($gatewayTerms[Gateway::AXIS_MIGS]))
-        // {
-        //     return $gatewayTerms[Gateway::AXIS_MIGS];
-        // }
-=======
         $network = $payment->card->getNetworkCode();
 
         $this->network = $network;
@@ -167,20 +141,11 @@ class TerminalPicker
                 return $gatewayTerms[$gateway];
             }
         }
->>>>>>> development
 
         // if (isset($gatewayTerms[Gateway::AXIS_GENIUS]))
         // {
         //     return $gatewayTerms[Gateway::AXIS_GENIUS];
         // }
-<<<<<<< HEAD
-
-        if (isset($gatewayTerms[Gateway::HDFC]))
-        {
-            return $gatewayTerms[Gateway::HDFC];
-        }
-=======
->>>>>>> development
 
         if ($this->mode === Mode::TEST)
         {
