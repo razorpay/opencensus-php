@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Netbanking\Hdfc\Mock;
+namespace Gateway\Netbanking\Kotak\Mock;
 
 use Carbon\Carbon;
 use Gateway\Paytm;
