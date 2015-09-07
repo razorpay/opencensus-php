@@ -193,6 +193,7 @@ final class Route
         'merchant_set_all_banks',
         'merchant_fetch_balance',
         'merchant_beneficiary_file',
+        'terminal_delete',
         'key_fetch_by_id',
         'key_fetch_multiple',
         'pricing_create_plan',
