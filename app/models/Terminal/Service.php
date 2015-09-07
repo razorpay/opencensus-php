@@ -62,7 +62,7 @@ class Service extends Base\Service
     {
         $terminalRepo = new Terminal\Repository;
 
-        $terminal = $terminalRepo->getByIdAndMerchantId($id);
+        $terminal = $terminalRepo->findOrFailPublic($id);
 
         $terminal = $terminalRepo->deleteOrFail($terminal);
 
