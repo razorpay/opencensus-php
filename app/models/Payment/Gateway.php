@@ -64,7 +64,8 @@ class Gateway
             Network::VISA),
         self::AXIS_GENIUS => array(
             Network::MC,
-            Network::VISA),
+            Network::VISA,
+            Network::MAES),
         self::ATOM => array(
             Network::MC,
             Network::VISA,
