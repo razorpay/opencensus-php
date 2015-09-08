@@ -13,10 +13,6 @@ class Validator extends Base\Validator
         'TraceNumber'            => 'required|numeric',
         'Amount'                 => 'required|in:0',
         'TransactionDescription' => 'required|alpha_num|size:14',
-        'SuccessStaticFlag'      => 'required|in:N',
-        'FailureStaticFlag'      => 'required|in:N',
-        'Date'                   => 'required',
-        'DynamicUrl'             => 'required|url',
         'CheckSum'               => 'required',
     );
 
