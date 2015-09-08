@@ -19,31 +19,37 @@ class Server extends Base\Mock\Server
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
-
         $content = array(
-
-            'MerchantId'         => $input['terminal']['gateway_merchant_id'],
-            'OperatingMode'      => 'DOM',
-            'MerchantCountry'    => 'IN',
-            'MerchantCurrency'   => 'INR',
-            'PostingAmount'      => $input['payment']['amount'] / 100,
-            'OtherDetails'       => '',
-            'SuccessURL'         => $input['SuccessURL'],
-            'FailURL'            => $input['FailURL'],
-            'AggregatorId'       => 'SBIEPAY',
-            'MerchantOrderNo'    => $input['payment']['id'],
-            'MerchantCustomerID' => $input['payment']['email'],
-            'Paymode'            => 'NB',
-            'Accesmedium'        => 'ONLINE',
-            'TransactionSource'  => 'ONLINE'
+            'MerchantOrderNo'     => $input['MerchantOrderNo'],
+            'SbiepayReferenceId'  => random_integer(6),
+            'Status'              => 'SUCCESS',
+            'PostingAmount'       => $input['PostingAmount'],
+            'MerchantCurrency'    => $input['MerchantCurrency'],
+            'Paymode'             => $input['Paymode'],
+            'OtherDetails'        => $input['OtherDetails'],
+            'Reason'              => 'Some Reason',
+            'BankCode'            => random_integer(6),
+            'BankReferenceNumber' => random_integer(6),
+            'TrasactionDate'      => Carbon::now()->toDateTimeString(),
+            'MerchantCountry'     => $input['MerchantCountry'],
+            'CIN'                 => random_integer(4),
+            'AdditionalInfo1'     => null,
+            'AdditionalInfo2'     => null,
+            'AdditionalInfo3'     => null,
+            'AdditionalInfo4'     => null,
+            'AdditionalInfo5'     => null,
+            'AdditionalInfo6'     => null,
+            'AdditionalInfo7'     => null,
+            'AdditionalInfo8'     => null,
+            'AdditionalInfo9'     => null,
         );
 
-        $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
+        $encData = Sbiepay\EncryptDecrypt::encryptData(['encData' => $content]);
 
         $request = array(
-            'url' => $input['SuccessURL'],
-            'content' => ['encData' => $msg],
-            'method' => 'post',
+            'url'     => $input['SuccessURL'],
+            'content' => $encData,
+            'method'  => 'post',
         );
 
         return $this->makePostResponse($request);;
@@ -58,7 +64,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'verify');
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-                        $input['Customer ID'], Action::AUTHORIZE);
+            $input['Customer ID'], Action::AUTHORIZE);
 
         $fields = $this->getGatewayInstance()->getFieldsForAction('verify');
 
@@ -69,7 +75,9 @@ class Server extends Base\Mock\Server
         foreach ($content as $key => $value)
         {
             if (isset($payment[$key]) === true)
+            {
                 $content[$key] = $payment[$key];
+            }
         }
 
         $refunds = $this->getRepo()->findRefunds($input['Customer ID']);
@@ -80,7 +88,7 @@ class Server extends Base\Mock\Server
 
         foreach ($refunds as $refund)
         {
-            $refundAmount += (double) $refunds['RefAmount'];
+            $refundAmount += (double)$refunds['RefAmount'];
 
             $content['TotalRefundAmount'] = $refundAmount;
             $content['LastRefundDate'] = $refunds['RefDateTime'];
@@ -105,7 +113,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'refund');
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-                        $input['CustomerID'], Action::AUTHORIZE);
+            $input['CustomerID'], Action::AUTHORIZE);
 
         $fields = $this->getGatewayInstance()->getFieldsForAction('refund');
 
@@ -116,19 +124,19 @@ class Server extends Base\Mock\Server
         $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
 
         $content = array(
-            'RequestType'   => '0410',
-            'MerchantID'    => $payment['MerchantID'],
+            'RequestType'    => '0410',
+            'MerchantID'     => $payment['MerchantID'],
             'TxnReferenceNo' => $payment['TxnReferenceNo'],
-            'TxnDate'       => $payment['TxnDate'],
-            'CustomerID'    => $payment['CustomerID'],
-            'TxnAmount'     => $payment['TxnAmount'],
-            'RefAmount'     => $input['RefAmount'],
-            'RefDateTime'   => $now,
-            'RefStatus'     => '0799',
-            'RefundId'      => random_alpha_string(15),
-            'ErrorCode'     => 'NA',
-            'ErrorReason'   => 'NA',
-            'ProcessStatus' => 'Y',
+            'TxnDate'        => $payment['TxnDate'],
+            'CustomerID'     => $payment['CustomerID'],
+            'TxnAmount'      => $payment['TxnAmount'],
+            'RefAmount'      => $input['RefAmount'],
+            'RefDateTime'    => $now,
+            'RefStatus'      => '0799',
+            'RefundId'       => random_alpha_string(15),
+            'ErrorCode'      => 'NA',
+            'ErrorReason'    => 'NA',
+            'ProcessStatus'  => 'Y',
         );
 
         $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
@@ -152,8 +160,7 @@ class Server extends Base\Mock\Server
         $name = $trace[1]['function'];
 
         $fields = $this->getGatewayInstance()->getFields($name, 'request');
-
-        $content = explode('|', $input['msg']);
+        $content = explode('|', Sbiepay\EncryptDecrypt::decryptData($input['EncryptTrans']));
         $input = array_combine($fields, $content);
 
         return $input;
