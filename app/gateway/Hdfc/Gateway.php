@@ -289,7 +289,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        validate($this->bankAcsResponseRules, $input['gateway']);
+        validate($this->bankAcsResponseRules, $input['gateway'], false);
 
         $this->id = $input['payment']['id'];
 

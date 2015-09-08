@@ -3,6 +3,7 @@
 namespace Models\Payment;
 
 use EE\Exception;
+use Models\Card\Network;
 use Models\Settlement;
 
 class Gateway
@@ -13,6 +14,7 @@ class Gateway
     const BILLDESK          = 'billdesk';
     const HDFC              = 'hdfc';
     const KOTAK             = 'kotak';
+    const MOBIKWIK          = 'mobikwik';
     const PAYTM             = 'paytm';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const SHARP             = 'sharp';
@@ -24,6 +26,7 @@ class Gateway
         self::BILLDESK          => Settlement\Channel::KOTAK,
         self::HDFC              => Settlement\Channel::KOTAK,
         self::KOTAK             => Settlement\Channel::KOTAK,
+        self::MOBIKWIK          => Settlement\Channel::KOTAK,
         self::PAYTM             => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
         self::SHARP             => Settlement\Channel::KOTAK,
@@ -44,6 +47,29 @@ class Gateway
             self::BILLDESK,
             self::NETBANKING_HDFC,
         ),
+
+        Method::WALLET => array(
+            self::MOBIKWIK,
+            self::PAYTM,
+        ),
+    );
+
+    public static $cardNetworkMap = array(
+        self::HDFC => array(
+            Network::MC,
+            Network::VISA,
+            Network::MAES),
+        self::AXIS_MIGS => array(
+            Network::MC,
+            Network::VISA),
+        self::AXIS_GENIUS => array(
+            Network::MC,
+            Network::VISA),
+        self::ATOM => array(
+            Network::MC,
+            Network::VISA),
+        self::KOTAK => array(
+            Network::RUPAY),
     );
 
     public static function getChannel($gateway)
@@ -68,5 +94,11 @@ class Gateway
     public static function isMethodSupported($method, $gateway)
     {
         return (in_array($gateway, self::$methodMap[$method]));
+    }
+
+    public static function isCardNetworkSupported($network, $gateway)
+    {
+        return ((array_key_exists($gateway, self::$cardNetworkMap)) and
+                (in_array($network, self::$cardNetworkMap[$gateway])));
     }
 }

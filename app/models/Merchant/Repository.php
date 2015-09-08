@@ -84,4 +84,16 @@ class Repository extends Base\Repository
     {
         return false;
     }
+
+    public function fetchRecentMerchants()
+    {
+        $repo = $this->repo;
+
+        // 00:00 Today
+        $today = \Carbon\Carbon::today("Asia/Kolkata")->timestamp;
+
+        $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
+
+        return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
+    }
 }

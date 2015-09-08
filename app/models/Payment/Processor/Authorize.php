@@ -7,7 +7,7 @@ use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
 use Http\Route;
-use Models\Merchant\Banks;
+use Models\Merchant\Methods;
 use Models\Card;
 use Models\Payment;
 use Trace\Trace;
@@ -141,10 +141,10 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
+        Payment\Validator::bankAcsCallbackValidate($payment, $input);
+
         try
         {
-            Payment\Validator::bankAcsCallbackValidate($payment, $input);
-
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
         }
         catch (Exception\BaseException $e)
@@ -163,7 +163,7 @@ trait Authorize
     {
         if ($payment->isMethod(Payment\Method::CARD))
         {
-            $this->verifyCardEnabled($payment);
+            $this->verifyCardEnabledInLive($payment);
         }
 
         if ($payment->isMethod(Payment\Method::NETBANKING))
@@ -356,7 +356,7 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        $banks = (new Banks\Core)->getMerchantBanks($merchant);
+        $banks = (new Methods\Core)->getMerchantBanks($merchant);
 
         if ($banks === null)
             $banks = [];
@@ -376,16 +376,25 @@ trait Authorize
     {
         $methods = $this->methods;
 
+        $wallet = $payment->getWallet();
+        $func = 'get'.ucfirst($wallet);
+// sd($func, $methods->$func());
         if (($methods === null) or
-            ($methods->getPaytm() === false))
+            ($methods->$func() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT);
         }
     }
 
-    protected function verifyCardEnabled($payment)
+    protected function verifyCardEnabledInLive($payment)
     {
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        // Only check enabled or not on live mode
         $methods = $this->methods;
 
         if (($methods === null) or

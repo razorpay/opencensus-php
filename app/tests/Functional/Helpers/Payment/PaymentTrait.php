@@ -18,6 +18,7 @@ trait PaymentTrait
     use PaymentNetbankingTrait;
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
+    use PaymentMobikwikTrait;
 
     use RequestResponseFlowTrait
     {
@@ -224,8 +225,13 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doAuthPayment($payment)
+    protected function doAuthPayment($payment = null)
     {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
         $request = array(
             'method' => 'POST',
             'url' => '/payments',
@@ -321,6 +327,17 @@ trait PaymentTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function deleteTerminal($mid, $tid)
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/terminals/'.$tid,
+            'method' => 'delete');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function getAndMatchPayment($id, $paymentResponse = array())

@@ -117,6 +117,13 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function deleteTerminal2($id)
+    {
+        $data = (new Terminal\Service)->deleteTerminal2($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function putTerminal($mid, $tid)
     {
         $input = Input::all();
