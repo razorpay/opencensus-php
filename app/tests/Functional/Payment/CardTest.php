@@ -70,11 +70,12 @@ class CardTest extends TestCase
         }
     }
 
-    public function testCardWhenNotEnabled()
+    public function testCardWhenNotEnabledOnLive()
     {
         $this->fixtures->links['merchant']->disableCard('10000000000000');
+        $this->fixtures->links['merchant']->activate('10000000000000');
 
-        $this->ba->publicAuth();
+        $this->ba->publicLiveAuth();
 
         $payment = $this->getDefaultPaymentArray();
 
