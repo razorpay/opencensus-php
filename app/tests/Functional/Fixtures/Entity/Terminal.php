@@ -17,6 +17,7 @@ class Terminal extends Base
         $this->createSharedPaytmTerminal();
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
+        $this->createSharedNetbankingKotakTerminal();
     }
 
     public function createAtomTerminal(array $attributes = array())
@@ -241,5 +242,31 @@ class Terminal extends Base
         );
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+
+    public function createNetbankingKotakTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'netbanking_kotak',
+            'gateway_merchant_id'   => 'abcd',
+            'gateway_terminal_id'   => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'card'                  => 1);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingKotakTerminal(array $attributes = array())
+    {
+        $attributes = array(
+            'id'                    => Shared::NETBANKING_KOTAK_TERMINAL,
+            'merchant_id'           => '1MercShareTerm',
+            'gateway'               => 'netbanking_kotak',
+            'gateway_merchant_id'   => 'abcd',
+            'gateway_terminal_id'   => 'abcde');
+
+        return parent::create($attributes);
     }
 }
