@@ -114,6 +114,7 @@ final class Route
         'mock_sharp_payment'                => ['post',     'gateway/mocksharp/payment',                'MockGatewayController@getSharpPayment'                         ],
         'mock_sharp_payment_submit'         => ['post',     'gateway/mocksharp/payment/submit',         'MockGatewayController@postSharpPayment'                        ],
         'mock_netbanking_payment'           => ['post',     'gateway/mock/netbanking/{bank}',           'MockGatewayController@postNetbankingPayment'                   ],
+        'mock_sbiepay_payment'              => ['post',     'gateway/mocksbiepay/payment',              'MockGatewayController@postSbiepayPayment'                     ],
         'admin_fetch_entity_multiple'       => ['get',      'admin/{type}',                             'AdminController@getEntityMultiple'                             ],
         'admin_fetch_entity_by_id'          => ['get',      'admin/{type}/{id}',                        'AdminController@getEntityById'                                 ],
         'send_test_newsletter'              => ['post',     'admin/newsletter/test',                    'AdminController@postSendTestNewsletter'                        ],
@@ -145,6 +146,7 @@ final class Route
         'mock_billdesk_payment',
         'mock_sharp_payment',
         'mock_sharp_payment_submit',
+        'mock_sbiepay_payment',
         'dummy_return_callback',
     );
 
