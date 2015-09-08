@@ -16,6 +16,8 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use ResponseFieldsTrait;
+
     protected $gateway = 'netbanking_kotak';
 
     protected $bank = 'kotak';
@@ -28,6 +30,7 @@ class Gateway extends Base\Gateway
         'TraceNumber',
         'Amount',
         'TransactionDescription',
+        'Checksum',
     );
 
     protected $map = array(
