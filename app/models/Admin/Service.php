@@ -35,20 +35,21 @@ class Service extends Base\Service
     protected function getEntityNamespace($entity)
     {
         $map = array(
-            'refund'            => 'Models\Payment\Refund',
-            'iin'               => 'Models\Card\IIN',
-            'dailysettlement'   => 'Models\Settlement\Daily',
-            'atom'              => 'Gateway\Atom',
-            'bank_account'      => 'Models\Merchant\BankAccount',
-            'kotak'             => 'Gateway\Kotak',
-            'axis_migs'         => 'Gateway\AxisMigs',
-            'axis_genius'       => 'Gateway\AxisGenius',
-            'paytm'             => 'Gateway\Paytm',
-            'mobikwik'             => 'Gateway\Mobikwik',
-            'netbanking'        => 'Gateway\Netbanking\Base',
-            'billdesk'          => 'Gateway\Billdesk',
-            'hdfc'              => 'Gateway\Hdfc',
-            'bank_account'      => 'Models\Merchant\BankAccount',
+            'refund'          => 'Models\Payment\Refund',
+            'iin'             => 'Models\Card\IIN',
+            'dailysettlement' => 'Models\Settlement\Daily',
+            'atom'            => 'Gateway\Atom',
+            'bank_account'    => 'Models\Merchant\BankAccount',
+            'kotak'           => 'Gateway\Kotak',
+            'axis_migs'       => 'Gateway\AxisMigs',
+            'axis_genius'     => 'Gateway\AxisGenius',
+            'paytm'           => 'Gateway\Paytm',
+            'mobikwik'        => 'Gateway\Mobikwik',
+            'netbanking'      => 'Gateway\Netbanking\Base',
+            'billdesk'        => 'Gateway\Billdesk',
+            'hdfc'            => 'Gateway\Hdfc',
+            'bank_account'    => 'Models\Merchant\BankAccount',
+            'sbiepay'         => 'Gateway\Sbiepay',
         );
 
         if (array_key_exists($entity, $map))
@@ -56,7 +57,7 @@ class Service extends Base\Service
             return $map[$entity];
         }
 
-        return 'Models\\'.ucfirst($entity);
+        return 'Models\\' . ucfirst($entity);
     }
 
     protected function getEntityClass($entity)
@@ -68,19 +69,19 @@ class Service extends Base\Service
     {
         $namespace = $this->getEntityNamespace($entity);
 
-        return $namespace.'\Repository';
+        return $namespace . '\Repository';
     }
 
     public function sendTestNewsletter($input)
     {
         $errors = (new Validator)->validateInput('send_test_newsletter', $input);
 
-        if(empty($errors))
+        if (empty($errors))
         {
             // Now we send the newsletter
             $mailer = new Newsletter($input['email'],
-                [$input['subj_1'], $input['subj_2']], $input['msg'],
-                true // Test Email to self
+                                     [$input['subj_1'], $input['subj_2']], $input['msg'],
+                                     true // Test Email to self
             );
 
             return $mailer->send();
@@ -95,10 +96,10 @@ class Service extends Base\Service
     {
         $errors = (new Validator)->validateInput('send_newsletter', $input);
 
-        if(empty($errors))
+        if (empty($errors))
         {
             $mailer = new Newsletter($input['lists'],
-                [$input['subj_1'], $input['subj_2']], $input['msg']
+                                     [$input['subj_1'], $input['subj_2']], $input['msg']
             );
 
             return $mailer->send();
