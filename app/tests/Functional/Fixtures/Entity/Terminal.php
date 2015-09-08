@@ -226,4 +226,19 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+
+    public function createSharedSbiepayTerminal(array $attributes = array())
+    {
+        $termId = \Models\Terminal\Shared::SBIEPAY_RAZORPAY_TERMINAL;
+
+        $attributes = array(
+            'id'                    => $termId,
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'sbiepay',
+            'gateway_merchant_id'   => 'abcd',
+            'card'                  => 0);
+
+        return parent::create($attributes);
+    }
 }
