@@ -3,6 +3,7 @@ namespace Models\Admin;
 
 use AWS;
 use Config;
+use GuzzleHttp\Client as Guzzle;
 use Requests;
 use Slack;
 use VIPSoft\Unzip\Unzip;
@@ -15,8 +16,91 @@ class Creevey
 
     protected static $OPTIONS = [
         'timeout'   => 200,
+        // This is not used for authentication, as expected
         'useragent' => 'Razorpay/Dashboard'
     ];
+
+    /**
+     * Create new Creevey instance
+     * @param string $merchantId merchantId to be used
+     */
+    public function __construct($merchantId)
+    {
+        $this->merchantId = $merchantId;
+    }
+    /**
+     * Compress an image using Creevey
+     * And uploads it to S3
+     * @param  string $key key to be used while uploading to S3
+     * @param  string $file path to the file
+     * @param  string $originalFileName originalfilename used to upload
+     * @return
+     */
+    public function compressAndSave($key, $file, $originalFileName)
+    {
+        $success = false;
+
+        $data = [
+            'multipart'=> [
+                [
+                    'name'  => 'token',
+                    'contents' => Config::get('creevey.token')
+                ],
+                [
+                    'name'      => 'file',
+                    'contents'  => fopen($file, 'r'),
+                    'filename'  => $originalFileName
+                ]
+            ]
+        ];
+
+        $relativeUrl = '/1n9zuwq1';
+        $relativeUrl = "/convert/$key.jpg";
+
+        $response = $this->getGuzzleInstance()->post($relativeUrl, $data);
+
+        if ($response->getStatusCode() == 200)
+        {
+            $this->uploadSingleImageToS3("$key.jpg", $response->getBody(true));
+        }
+        else
+        {
+            throw new \Exception("Invalid Response from Creevey: {$response->status_code}");
+        }
+    }
+
+    protected function getGuzzleInstance()
+    {
+        $config = Config::get('creevey');
+        return new Guzzle([
+            // Base URI is used with relative requests
+            //'base_uri' => 'http://requestb.in',
+            'base_uri' => $config['root'],
+            // You can set any number of default request options.
+            'timeout'  => 200,
+            //'headers'  => self::$HEADERS
+        ]);
+    }
+
+    /**
+     * Key of the image to be uploaded
+     * Force saved as a JPEG
+     * @param  string $remoteFileName filename to be used while uploading
+     * @param  binary $data Imagefile contents
+     */
+    protected function uploadSingleImageToS3($remoteFilename, $data)
+    {
+        $s3 =  AWS::get('s3');
+
+        $s3Obj = [
+            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Key'           => $this->merchantId."/screenshots/$remoteFilename",
+            'ContentType'   => "image/jpeg",
+            'Body'          => $data
+        ];
+
+        $s3->putObject($s3Obj);
+    }
 
     public function fire($job, array $data)
     {
