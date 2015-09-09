@@ -45,13 +45,14 @@ class SbiepayGatewayTest extends TestCase
 //        $this->failPaymentOnBankPage = true;
 //    }
 //
-//    public function testPaymentVerify()
-//    {
-//        $payment = $this->getDefaultNetbankingPaymentArray();
-//        $payment = $this->doAuthAndCapturePayment($payment);
-//
-//        $this->verifyPayment($payment['id']);
-//    }
+    public function testPaymentVerify()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'SBIN';
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->verifyPayment($payment['id']);
+    }
 //
 //    public function testPaymentRefund()
 //    {
