@@ -736,13 +736,8 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       $scope.onFileSelect = function ($files, fieldname){
         var file = $files[0];
-        if(file.type !== "image/jpeg") {
-          $scope.alerts.addAlert('danger', 'Invalid filetype. Only jpg files are allowed.', true);
-          return;
-        }
-
-        if(file.size > 2000000){
-          $scope.alerts.addAlert('danger', 'Max file size 2 MB. Convert the file to an image before uploading if necessary.', true);
+        if(file.type !== "image/jpeg" && file.type !== "image/png") {
+          $scope.alerts.addAlert('danger', 'Invalid filetype. Only jpg and png files are allowed.', true);
           return;
         }
 
