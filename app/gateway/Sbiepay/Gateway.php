@@ -22,8 +22,6 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
-
-        $aggGtwmapID = BankCodes::$bankCodeMap[$input['payment']['bank']];
         $method = $input['payment']['method'];
 
         $requestParameter = array(
@@ -49,21 +47,61 @@ class Gateway extends Base\Gateway
         }
         if ($method === 'netbanking')
         {
+            $aggGtwmapID = BankCodes::$bankCodeMap[$input['payment']['bank']];
             $paymentDetails = [$aggGtwmapID, "", "", "", "", "", "", ""];
             $requestParameter['Paymode'] = 'NB';
         }
 
         if ($method === 'card')
         {
-            $paymentDetails = [$aggGtwmapID, " ", " ", " ", " ", " ", " ", " "];
-            $requestParameter['Paymode'] = 'NB';
+            if ($input['card']['type'] == 'credit')
+            {
+                $requestParameter['Paymode'] = 'CC';
+                if ($input['card']['network'] == 'Visa')
+                {
+                    $aggGtwmapID = 2;
+                }
+                else if ($input['card']['network'] == 'Master')
+                {
+                    $aggGtwmapID = 1;
+                }
+
+
+            }
+            else
+            {
+                if ($input['card']['type'] == 'debit')
+                {
+                    $requestParameter['Paymode'] = 'DB';
+                    if ($input['card']['network'] == 'Visa')
+                    {
+                        $aggGtwmapID = 5;
+                    }
+                    else if ($input['card']['network'] == 'Master')
+                    {
+                        $aggGtwmapID = 4;
+                    }
+                    else if ($input['card']['network'] == 'Maestro')
+                    {
+                        $aggGtwmapID = 3;
+                    }
+                    else if ($input['card']['network'] == 'Rupay')
+                    {
+                        $aggGtwmapID = 55;
+                    }
+
+
+                }
+            }
+            $paymentDetails = [$aggGtwmapID, $input['card']['number'], $input['card']['cvv'], $input['card']['expiry_year'] . $input['card']['expiry_month'], "NA", "SBIN", strtoupper($input['card']['network']), $input['payment']['contact'], $input['payment']['name']];
         }
+
 
         $content = EncryptDecrypt::encryptData(array(
                                                    'EncryptTrans'          => $requestParameter,
                                                    'EncryptpaymentDetails' => $paymentDetails,
-                                                   'EncryptbillingDetails' => explode("|","NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N"),
-                                                   'EncryptshippingDetais' => explode("|","NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N")
+                                                   'EncryptbillingDetails' => explode("|", "NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N"),
+                                                   'EncryptshippingDetais' => explode("|", "NA|NA|NA|NA|NA|NA|NA|NA|NA|NA|N")
                                                ));
 
         $content['merchIdVal'] = $requestParameter['MerchantId'];
@@ -77,7 +115,8 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function callback(array $input)
+    public
+    function callback(array $input)
     {
         parent::callback($input);
 
@@ -92,7 +131,7 @@ class Gateway extends Base\Gateway
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content['AuthStatus'],
+                $content['Status'],
                 '');
         }
 
@@ -104,6 +143,7 @@ class Gateway extends Base\Gateway
         $payment->saveOrFail();
 
     }
+
 //
 //    public function refund(array $input)
 //    {
@@ -132,196 +172,176 @@ class Gateway extends Base\Gateway
 //        }
 //    }
 //
-//    public function verify(array $input)
-//    {
-//        parent::verify($input);
+    public
+    function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
 //
-//        $verify = new Base\Verify($this->gateway, $input);
+    public
+    function authorizeFailed(array $input)
+    {
+        $e = null;
+
+        try
+        {
+            $this->verify($input);
+        } catch (Exception\PaymentVerificationException $e)
+        {
+            ;
+        }
+
+        if ($e === null)
+        {
+            throw new Exception\LogicException(
+                'When converting failed payment to authorized, payment verification ' .
+                'should have failed but instead it did not');
+        }
+
+        $verify = $e->getVerifyObject();
+
+        if (($verify->apiSuccess === false) and
+            ($verify->gatewaySuccess === true)
+        )
+        {
+            $payment = $verify->payment;
+            $payment->fill($verify->verifyResponseContent);
+            $payment->saveOrFail();
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Should not have reached here');
+        }
+
+        return true;
+    }
+
 //
-//        return $this->runPaymentVerifyFlow($verify);
-//    }
-//
-//    public function authorizeFailed(array $input)
-//    {
-//        $e = null;
-//
-//        try
-//        {
-//            $this->verify($input);
-//        } catch (Exception\PaymentVerificationException $e)
-//        {
-//            ;
-//        }
-//
-//        if ($e === null)
-//        {
-//            throw new Exception\LogicException(
-//                'When converting failed payment to authorized, payment verification ' .
-//                'should have failed but instead it did not');
-//        }
-//
-//        $verify = $e->getVerifyObject();
-//
-//        if (($verify->apiSuccess === false) and
-//            ($verify->gatewaySuccess === true)
-//        )
-//        {
-//            $payment = $verify->payment;
-//            $payment->fill($verify->verifyResponseContent);
-//            $payment->saveOrFail();
-//        }
-//        else
-//        {
-//            throw new Exception\LogicException(
-//                'Should not have reached here');
-//        }
-//
-//        return true;
-//    }
-//
-//    protected function verifyPayment($verify)
-//    {
-//        $payment = $verify->payment;
-//        $content = $verify->verifyResponseContent;
-//
+    protected
+    function verifyPayment($verify)
+    {
+        $payment = $verify->payment;
+        $content = $verify->verifyResponseContent;
+
 //        $amountRefunded = (int)($content['TotalRefundAmount'] * 100);
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        if ($content['Status'] !== Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = false;
+            // Could be the case where the transaction didn't even hit mobikwik
+            if (($payment['received'] === false) and
+                (($payment['Status'] === null) or
+                    ($payment['Status'] !== Status::SUCCESS))
+            )
+            {
+                $verify->apiSuccess = false;
+            }
+            else
+            {
+                if ($payment['Status'] === Status::SUCCESS)
+                {
+                    $verify->status = VerifyResult::STATUS_MISMATCH;
+                    $verify->apiSuccess = true;
+                }
+            }
+        }
+        else
+        {
+            if ($content['Status'] === Status::SUCCESS)
+            {
+                $verify->gatewaySuccess = true;
+                //Gateway success , api success
+                if ($payment['Status'] === Status::SUCCESS)
+                {
+                    $verify->apiSuccess = true;
+                }
+                else
+                {
+                    if ($payment['Status'] !== Status::SUCCESS)
+                    {
+                        $verify->status = VerifyResult::STATUS_MISMATCH;
+                        $verify->apiSuccess = false;
+                    }
+                }
+            }
+        }
+        $verify->status = $status;
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+        if (($verify->match === true) and
+            ($payment['received'] === false)
+        )
+        {
+            $payment->fill($content);
+            $payment->saveOrFail();
+        }
+
+        return $status;
+    }
+
 //
-//        $status = VerifyResult::STATUS_MATCH;
+    protected
+    function getPaymentToVerify($input, $verify)
+    {
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $verify->payment = $payment;
+
+        return $payment;
+    }
+
 //
-//        if ($content['QueryStatus'] !== QueryStatus::Y)
-//        {
-//            // Could be the case where the transaction didn't even hit billdesk
-//            if (($payment['received'] === false) and
-//                (($payment['AuthStatus'] === null) or
-//                    ($payment['AuthStatus'] === AuthStatus::NA))
-//            )
-//            {
-//                $verify->apiSuccess = false;
-//                $verify->gatewaySuccess = false;
-//            }
-//            else
-//            {
-//                $verify->status = VerifyResult::STATUS_MISMATCH;
-//                $verify->apiSuccess = false;
-//                $verify->gatewaySuccess = false;
-//            }
-//        }
-//        else
-//        {
-//            if ($payment['AuthStatus'] === AuthStatus::SUCCESS)
-//            {
-//                $verify->apiSuccess = true;
-//
-//                if ($content['AuthStatus'] === AuthStatus::SUCCESS)
-//                {
-//                    $verify->gatewaySuccess = true;
-//
-//                    // Check that refund amount matches.
-//                    if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
-//                    {
-//                        $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
-//                    }
-//                }
-//                else
-//                {
-//                    $verify->gatewaySuccess = false;
-//                    $status = VerifyResult::STATUS_MISMATCH;
-//                }
-//            }
-//            else
-//            {
-//                $verify->apiSuccess = false;
-//                $verify->gatewaySuccess = false;
-//
-//                //
-//                // If payment is not marked as success then it shouldn't be success
-//                // on billdesk end as well.
-//                //
-//
-//                if ($content['AuthStatus'] === AuthStatus::SUCCESS)
-//                {
-//                    // It's marked as success, in this case, if it's totally refunded,
-//                    // then that means billdesk refunded the payment on it's own end
-//                    // and we don't need to worry.
-//
-//                    if ($amountRefunded === $verify->input['payment']['amount'])
-//                    {
-//                        $status = VerifyResult::STATUS_MATCH;
-//                    }
-//                    else
-//                    {
-//                        $verify->gatewaySuccess = true;
-//                        $status = VerifyResult::STATUS_MISMATCH;
-//                    }
-//                }
-//            }
-//        }
-//
-//        $verify->status = $status;
-//
-//        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
-//
-//        if (($verify->match === true) and
-//            ($payment['received'] === false)
-//        )
-//        {
-//            unset(
-//                $content['TxnAmount'],
-//                $content['BankID'],
-//                $content['ItemCode']);
-//
-//            $payment->fill($content);
-//            $payment->saveOrFail();
-//        }
-//
-//        return $status;
-//    }
-//
-//    protected function getPaymentToVerify($input, $verify)
-//    {
-//        $payment = $this->getRepo()->findByPaymentIdAndAction(
-//            $input['payment']['id'], Action::AUTHORIZE);
-//
-//        $verify->payment = $payment;
-//
-//        return $payment;
-//    }
-//
-//    protected function sendPaymentVerifyRequest($verify)
-//    {
-//        // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
-//        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
-//
-//        $input = $verify->input;
-//
-//        $content = array(
-//            'RequestType'             => '0122',
-//            'Merchant ID'             => $input['terminal']['gateway_merchant_id'],
-//            'Customer ID'             => $input['payment']['id'],
-//            'Current Date/ Timestamp' => $now,
-//        );
-//
-//        if ($this->mode === Mode::TEST)
-//        {
-//            $content['Merchant ID'] = $this->getTestMerchantId();
-//        }
-//
-//        $content = $this->postRequest($content);
-//
-//        unset($content['Checksum']);
-//
-//        $this->trace->info(
-//            TraceCode::GATEWAY_PAYMENT_VERIFY,
-//            $content);
-//
-//        $verify->verifyResponse = $this->response;
-//
-//        $verify->verifyResponseBody = $this->response->body;
-//
-//        $verify->verifyResponseContent = $content;
-//
-//        return $content;
-//    }
+    protected
+    function sendPaymentVerifyRequest($verify)
+    {
+
+        $input = $verify->payment;
+//        sd($verify->payment);
+        $requestParameter = array(
+            'Atrn'            => $input['SBIePayReferenceID'],
+            'MerchantId'      => $input['MerchantId'],
+            'MerchantOrderNo' => $input['MerchantOrderNo'],
+            'ReturnURL'       => $this->getUrl($this->action),
+        );
+
+        if ($this->mode === Mode::TEST)
+        {
+            $requestParameter['MerchantId'] = $this->getTestMerchantId();
+        }
+
+        $content = EncryptDecrypt::encryptData([
+                                                   'encryptQuery' => $requestParameter
+                                               ]);
+
+        $content['merchIdVal'] = $requestParameter['MerchantId'];
+        $content['aggIdVal'] = 'SBIEPAY';
+        $request = array(
+            'url'     => $this->getUrl($this->action),
+            'method'  => 'post',
+            'content' => $content);
+        $this->response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $content);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+        sd($verify->verifyResponseBody);
+        $verify->verifyResponseContent = $requestParameter;
+
+        return $content;
+    }
+
 //
 //    protected function getPaymentRefundRequestContent($payment, $input)
 //    {
@@ -362,40 +382,36 @@ class Gateway extends Base\Gateway
 //        return $content;
 //    }
 
-//    protected function postRequest($content)
-//    {
-//        $request = $this->getRequestArrayWithProxy($content);
-//        $request['options']['timeout'] = 30;
-//
-//        try
-//        {
-//            $response = $this->sendGatewayRequest($request);
-//        } catch (\Requests_Exception $e)
-//        {
-//            throw new Exception\RuntimeException(
-//                'Billdesk payment verification request failed.', null, $e);
-//        }
-//
-//        $this->response = $response;
-//
-//        $content = $this->getContentAfterChecksumVerification($response->body);
-//
-//        return $content;
-//    }
+    protected
+    function postRequest($content)
+    {
+        $content = http_build_query($content);
+        $request = array(
+            'url'     => $this->getUrl($this->action),
+            'method'  => 'post',
+            'content' => $content);
+        $response = $this->sendGatewayRequest($request);
+    }
 
-    protected function getContent($msg)
+    protected
+    function getContent($msg)
     {
         $fields = $this->getFieldsForAction($this->action);
 
         $content = explode('|', $msg);
-        var_dump($content);
-sd($fields);
+        if (count($content) == 23 && ($content[count($content) - 1] == '' || $content[count($content) - 1] == null))
+        {
+            unset($content[count($content) - 1]);
+        }
+//        var_dump($content);
+//        sd($fields);
         $content = array_combine($fields, $content);
 
         return $content;
     }
 
-    protected function createGatewayPaymentEntity($attributes)
+    protected
+    function createGatewayPaymentEntity($attributes)
     {
         $payment = $this->getNewGatewayPaymentEntity();
         $payment->setPaymentId($attributes['MerchantOrderNo']);
@@ -451,25 +467,15 @@ sd($fields);
 //        return $request;
 //    }
 
-//    protected function getRequestArray($content)
-//    {
-//        $msg = $this->getMessageStringWithHash($content);
-//
-//        $request = array(
-//            'url'     => $this->getUrl($this->action),
-//            'method'  => 'post',
-//            'content' => ['msg' => $msg],
-//        );
-//
-//        return $request;
-//    }
 
-    protected function getLiveSecret()
+    protected
+    function getLiveSecret()
     {
         return $this->config['live_hash_secret'];
     }
 
-    protected function getTestMerchantId()
+    protected
+    function getTestMerchantId()
     {
         return '1000109';
     }
