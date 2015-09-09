@@ -8,6 +8,6 @@ class Url
     const LIVE_DOMAIN   = '';
 
     const PAY           = '/MerchantHostedListener';
-    const QUERY         = '/AggMerchantStatusQueryAction';
+    const VERIFY         = '/AggMerchantStatusQueryAction';
     const REFUND        = '/AggregatorRefundRequest';
 }
