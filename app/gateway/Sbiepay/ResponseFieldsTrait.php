@@ -33,7 +33,7 @@ trait ResponseFieldsTrait
 
     protected static $callbackResponseFields = array(
         'MerchantOrderNo',
-        'SbiepayReferenceId',
+        'SBIePayReferenceID',
         'Status',
         'Amount',
         'Currency',
@@ -90,11 +90,10 @@ trait ResponseFieldsTrait
     );
 
     protected static $verifyRequestFields = array(
-        'RequestType',
-        'Merchant ID',
-        'Customer ID',
-        'Current Date/ Timestamp',
-        'Checksum',
+        'Atrn',
+        'merchantId',
+        'MerchantOrderNo',
+        'ReturnURL',
     );
 
     protected static $verifyResponseFields = array(
