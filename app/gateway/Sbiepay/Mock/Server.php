@@ -8,20 +8,21 @@ use EE\Error\ErrorCode;
 use Gateway\Sbiepay;
 use Gateway\Base;
 use Gateway\Base\Action;
+use Illuminate\Support\Facades\Response;
 use Models\Card;
 
 class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
-        $input = $this->getContentFromInput($input);
+        $input = $this->getContentFromInputAuthorize($input);
 
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
         $content = array(
             'MerchantOrderNo'     => $input['MerchantOrderNo'],
-            'SbiepayReferenceId'  => random_integer(6),
+            'SBIePayReferenceID'  => random_integer(6),
             'Status'              => 'SUCCESS',
             'PostingAmount'       => $input['PostingAmount'],
             'MerchantCurrency'    => $input['MerchantCurrency'],
@@ -52,56 +53,47 @@ class Server extends Base\Mock\Server
             'method'  => 'post',
         );
 
-        return $this->makePostResponse($request);;
+        return $this->makePostResponse($request);
     }
 
     public function verify($input)
     {
-        $input = $this->getContentFromInput($input);
+        $input = $this->getContentFromInputVerify($input);
 
         parent::verify($input);
 
         $this->validateActionInput($input, 'verify');
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['Customer ID'], Action::AUTHORIZE);
+            $input['MerchantOrderNo'], Action::AUTHORIZE);
 
-        $fields = $this->getGatewayInstance()->getFieldsForAction('verify');
+        $content = array(
+            'MerchantOrderNo'     => $payment['MerchantOrderNo'],
+            'SBIePayReferenceID'  => random_integer(6),
+            'Status'              => 'SUCCESS',
+            'PostingAmount'       => $payment['PostingAmount'],
+            'MerchantCurrency'    => $payment['MerchantCurrency'],
+            'Paymode'             => $payment['Paymode'],
+            'OtherDetails'        => $payment['OtherDetails'],
+            'Reason'              => 'Some Reason',
+            'BankCode'            => random_integer(6),
+            'BankReferenceNumber' => random_integer(6),
+            'TrasactionDate'      => Carbon::now()->toDateTimeString(),
+            'MerchantCountry'     => $payment['MerchantCountry'],
+            'CIN'                 => random_integer(4),
+            'AdditionalInfo1'     => null,
+            'AdditionalInfo2'     => null,
+            'AdditionalInfo3'     => null,
+            'AdditionalInfo4'     => null,
+            'AdditionalInfo5'     => null,
+            'AdditionalInfo6'     => null,
+            'AdditionalInfo7'     => null,
+            'AdditionalInfo8'     => null,
+            'AdditionalInfo9'     => null,
+        );
+        $encData = Sbiepay\EncryptDecrypt::encryptData(['encData' => $content]);
 
-        $content = array_combine($fields, array_fill(0, count($fields), 'NA'));
-
-        $payment = $payment->toArray();
-
-        foreach ($content as $key => $value)
-        {
-            if (isset($payment[$key]) === true)
-            {
-                $content[$key] = $payment[$key];
-            }
-        }
-
-        $refunds = $this->getRepo()->findRefunds($input['Customer ID']);
-
-        $refundAmount = 0.00;
-
-//        $content['AuthStatus'] = '0200';
-
-        foreach ($refunds as $refund)
-        {
-            $refundAmount += (double)$refunds['RefAmount'];
-
-            $content['TotalRefundAmount'] = $refundAmount;
-            $content['LastRefundDate'] = $refunds['RefDateTime'];
-            $content['LastRefundRefNo'] = $refunds['RefundId'];
-            $content['RefundStatus'] = $refunds['RefStatus]'];
-        }
-
-        $content['QueryStatus'] = 'Y';
-
-        unset($content['Checksum']);
-        $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
-
-        return $this->makeResponse($msg);
+        return $this->makeResponse($encData);
     }
 
     public function refund($input)
@@ -144,6 +136,23 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($msg);
     }
 
+//    protected function makeResponse($msg)
+//    {
+////        $response = \Response::make($msg);
+//        $response = Response::make($msg, 200);
+//
+//        $response->header('Content-Type', 'application/text');
+//
+//        return $response;
+//        //->header('Content-Type', 'application/text; charset=UTF-8');
+//
+////        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
+////        $response->headers->set('Cache-Control', 'no-cache');
+//sd($response);
+//        return $response;
+//    }
+
+
     protected function makeResponse($msg)
     {
         $response = \Response::make($msg);
@@ -154,7 +163,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function getContentFromInput($input)
+    protected function getContentFromInputAuthorize($input)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
@@ -165,4 +174,17 @@ class Server extends Base\Mock\Server
 
         return $input;
     }
+
+    protected function getContentFromInputVerify($input)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+
+        $fields = $this->getGatewayInstance()->getFields($name, 'request');
+        $content = explode('|', Sbiepay\EncryptDecrypt::decryptData($input['encryptQuery']));
+        $input = array_combine($fields, $content);
+
+        return $input;
+    }
+
 }
