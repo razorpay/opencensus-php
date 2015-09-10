@@ -24,9 +24,12 @@ class Creevey
      * Create new Creevey instance
      * @param string $merchantId merchantId to be used
      */
-    public function __construct($merchantId)
+    public function __construct($merchantId = null)
     {
-        $this->merchantId = $merchantId;
+        if ($merchantId)
+        {
+            $this->merchantId = $merchantId;
+        }
     }
     /**
      * Compress an image using Creevey
