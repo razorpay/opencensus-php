@@ -185,8 +185,6 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
-        $amountRefunded = (int) $content['vpc_RefundedAmount'];
-
         if ($content['vpc_DRExists'] !== 'Y')
         {
             // Could be the case where the transaction didn't even hit migs
@@ -207,6 +205,8 @@ class Gateway extends Base\Gateway
         else
         {
             assert ($content['vpc_DRExists'] === 'Y');
+
+            $amountRefunded = (int) $content['vpc_RefundedAmount'];
 
             if ($payment['vpc_TxnResponseCode'] === '0')
             {
