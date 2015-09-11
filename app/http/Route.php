@@ -219,6 +219,7 @@ final class Route
         'payment_auto_capture',
         'payment_auto_capture_email',
         'payment_verify_all',
+        'refund_hdfcnb',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',

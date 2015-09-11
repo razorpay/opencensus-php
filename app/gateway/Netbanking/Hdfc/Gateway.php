@@ -135,13 +135,11 @@ class Gateway extends Base\Gateway
     {
         foreach ($input as $col)
         {
-           $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $payment = $this->getRepo()->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
             $col['gateway'] = $payment->toArray();
         }
-
-
     }
 
     protected function validateCallbackChecksum($input)

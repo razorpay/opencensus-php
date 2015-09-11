@@ -413,6 +413,17 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function generateRefundsExcelForHdfcNB()
+    {
+        $request = array(
+            'url' => '/refunds/hdfcnb/generate',
+            'method' => 'get',
+            'content' => [],
+        );
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getDefaultNetbankingPaymentArray()
     {
         $payment = $this->getDefaultPaymentArray();

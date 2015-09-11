@@ -54,10 +54,10 @@ class RefundExcel
         $data['file'] = $fullpath;
         $data['body'] = '
             Please forward the HDFC Netbanking refunds file to:
+                Directpay.Refunds@hdfcbank.com,
                 Kavita.Puthran@hdfcbank.com,
                 Charusheela.Ghorpade@hdfcbank.com,
                 Santosh.Ghorpade@hdfcbank.com,
-                Directpay.Refunds@hdfcbank.com,
                 Santosh.Malap@hdfcbank.com,
                 Keshav.Mishra@hdfcbank.com,
                 Ashish.Mandhare@hdfcbank.com';
