@@ -373,6 +373,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAmaRequestArray($content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REFUND,
+            ['action' => 'Refund request array',
+            'content' => $content]);
+
         // send the request and get response
         $response = $this->postRequest($request);
 
@@ -502,6 +507,13 @@ class Gateway extends Base\Gateway
     protected function verifyAmaTransactionResponse($content, $input)
     {
         $txnResponseCode = null;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REFUND,
+            ['content' => $content,
+            'action' => $this->action,
+            'payment' => $input['payment'],
+            'refund' => $input['refund']);
 
         if (isset($content['vpc_TxnResponseCode']))
         {
