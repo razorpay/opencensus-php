@@ -540,6 +540,10 @@ class Gateway extends Base\Gateway
 
         if ($this->action === Base\Action::REFUND)
         {
+            // Refund request failed. Just check if refund amount due to
+            // previous requests matches the expected amount.
+            // In that case, we will mark it as success.
+
             $ret = $this->returnIfRefundAmountMatches($content, $input);
 
             if ($ret === true)
@@ -559,6 +563,11 @@ class Gateway extends Base\Gateway
 
     protected function returnIfRefundAmountMatches($content, $input)
     {
+        if (isset($content['vpc_RefundedAmount']) === false)
+        {
+            return false;
+        }
+
         $amount = $input['payment']['amount_refunded'] + $input['refund']['amount'];
 
         $vpcAmount = (int) $content['vpc_RefundedAmount'];
