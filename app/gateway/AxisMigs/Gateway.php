@@ -513,7 +513,7 @@ class Gateway extends Base\Gateway
             ['content' => $content,
             'action' => $this->action,
             'payment' => $input['payment'],
-            'refund' => $input['refund']);
+            'refund' => $input['refund']]);
 
         if (isset($content['vpc_TxnResponseCode']))
         {
