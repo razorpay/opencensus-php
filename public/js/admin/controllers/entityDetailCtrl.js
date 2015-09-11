@@ -16,14 +16,15 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
     }
 
     function fetchEntity() {
-      var request = $http.get("/" + $scope.mode +  "/" + $scope.entity.type + "s/" + $scope.entity.id);
+      var url = "/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity.type + "/" + $scope.entity.id;
+      var request = $http.get(url);
 
       request
       .success(function(data) {
         $scope.alerts.resetAlerts();
 
         if(data.success) {
-          $scope.entity = data.data.items[0];
+          $scope.entity = data.data;
         }
         else {
           angular.forEach(data.errors, function(error, key) {
@@ -31,7 +32,7 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
           });
         }
       })
-      .error(function() {
+      .error(function(er) {
         $scope.alerts.addAlert('danger', null, true);
       });
     };

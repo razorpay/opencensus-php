@@ -1,4 +1,4 @@
-<div class="bg-light lter b-b wrapper-md">
+<div class="bg-light lter b-b wrapper-md" ng-controller="EntityDetailCtrl">
   <h1 class="m-n font-thin h3">
     Payment Detail ({{mode + " Mode"| titlecase }})
     <spinner class="inline"></spinner>
@@ -63,6 +63,12 @@
           <a href class="list-group-item">
             <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
             Created At
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right" tooltip="{{entity.verified == 1 ? 'Verified' : 'Not Verified'}}">
+              <i class="fa" ng-class="{'fa-check text-success': entity.verified == 1, ' fa-times text-danger':entity.verified !== 1}"></i>
+            </span>
+            Verified {{entity.verified}}
           </a>
           <a href class="list-group-item" ng-init="isCollapsed = true">
             <span class="pull-right">
