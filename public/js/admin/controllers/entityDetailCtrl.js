@@ -4,12 +4,14 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
+    $scope.mode = $stateParams.mode;
+
     $scope.entity = {
       id: $stateParams.id
     };
 
-    $scope.generate = function(entity){
-      $scope.entity.type = entity;
+    $scope.generate = function(entityType){
+      $scope.entity.type = entityType;
       fetchEntity();
     }
 

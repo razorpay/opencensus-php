@@ -73,8 +73,8 @@ var app = angular.module('app', [
                   role: 'auth'
                 }
             })
-            .state('app.payments.detail', {
-                url: '/payments/:id',
+            .state('app.payments', {
+                url: '/payments/:mode/:id',
                 templateUrl: 'tpl/admin/app_payment_detail.html'
             })
             .state('app.dashboard', {

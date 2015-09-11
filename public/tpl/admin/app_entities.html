@@ -135,9 +135,10 @@
             <a href>{{value}}</a>
           </td>
           <td ng-show="type === 'payment'">
-            <a ui-sref="app.payments.detail({id:122})" target="_blank">
+            <a ui-sref="app.payments({id:value, mode: mode})" target="_blank">
               {{value}}
             </a>
+            (will open in new tab)
           </td>
           <td ng-show="type === 'merchant'">
             <a ui-sref="app.merchants.detail({id:value})" target="_blank">
