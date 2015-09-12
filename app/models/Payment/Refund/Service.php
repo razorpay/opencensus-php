@@ -20,9 +20,11 @@ class Service extends Base\Service
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
             'HDFC', $from, $to);
 
-        if ($refunds->count() === 0)
+        $count = $refunds->count();
+
+        if ($count === 0)
         {
-            return [];
+            return ['count' => $count];
         }
 
         $input = [];
@@ -47,7 +49,7 @@ class Service extends Base\Service
 
         $file = Gateway::call($gateway, $action, $input, $this->mode);
 
-        return ['file' => $file];
+        return ['file' => $file, 'count' => $count];
     }
 
     public function fetch($id)

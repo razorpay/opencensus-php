@@ -79,6 +79,8 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $refunds = $this->getEntities('refund', [], true);
 
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
             $id = substr($refund['id'], 5);
@@ -86,7 +88,12 @@ class NetbankingHdfcGatewayTest extends TestCase
             $this->fixtures->edit('refund', $id, ['created_at' => $createdAt]);
         }
 
-        $file = $this->generateRefundsExcelForHdfcNB();
+        $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
+        $this->refundPayment($payment['id']);
+
+        $data = $this->generateRefundsExcelForHdfcNB();
+
+        $this->assertEquals($data['count'], 3);
     }
 
     protected function doNetbankingHdfcAuthAndCapturePayment()
