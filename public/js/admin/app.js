@@ -88,7 +88,6 @@ var app = angular.module('app', [
             .state('app.merchants.list', {
                 url: '/list',
                 templateUrl: 'tpl/admin/app_merchants.html',
-                // use resolve to load other dependences
             })
             .state('app.merchants.detail', {
                 url: '/:id/detail',
@@ -104,6 +103,10 @@ var app = angular.module('app', [
             })
             .state('app.entities', {
                 url: '/entities',
+                templateUrl: 'tpl/admin/app_entities.html'
+            })
+            .state('app.entitiesdetail', {
+                url: '/entities/:mode/:type/:id',
                 templateUrl: 'tpl/admin/app_entities.html'
             })
             .state('app.actions', {
