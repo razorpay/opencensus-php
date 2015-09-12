@@ -121,7 +121,7 @@
 </div>
 <script type="text/ng-template" id="entityDetailModalContent.html">
   <div class="modal-header">
-    <h3 class="modal-title">{{data['entity'].toUpperCase()}} entity details</h3>
+    <h3 class="modal-title">{{data['entity'] | titlecase}} entity details</h3>
   </div>
   <div class="modal-body">
     <div>
@@ -131,8 +131,10 @@
           <td ng-show="type==='timestamp'">
             {{displayValue(value, type)}}
           </td>
-          <td ng-show="type==='id'" ng-click='updateEntity(key, value)'>
-            <a href>{{value}}</a>
+          <td ng-show="type==='id'">
+            <a ui-sref="app.entitiesdetail({mode: mode, type: entity_type, id: value})">
+              {{value}} {{entity_type}}
+            </a>
           </td>
           <td ng-show="type === 'payment'">
             <a ui-sref="app.payments({id:value, mode: mode})" target="_blank">

@@ -330,6 +330,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
         // All other entity links are considered here
         else if(isId(key)) {
+          $scope.entity_type = entity;
           return 'id';
         }
 
@@ -357,11 +358,11 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         }
       }
 
-      $scope.updateEntity = function(key, value) {
+      /*$scope.updateEntity = function(key, value) {
         // Remove `_id` from the end
-        var entity_type = key.substr(0, key.length -3);
+        $scope.entity_type = key.substr(0, key.length -3);
 
-        var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + entity_type + "/" + value);
+        var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity_type + "/" + value);
 
         request
         .success(function(data){
@@ -373,7 +374,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         .error(function(){
           //$scope.alerts.addAlert('danger', null, true);
         });
-      }
+      }*/
 
       $scope.displayValue = function(value, type) {
         // Set timezone to IST
