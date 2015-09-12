@@ -185,8 +185,6 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
-        $amountRefunded = (int) $content['vpc_RefundedAmount'];
-
         if ($content['vpc_DRExists'] !== 'Y')
         {
             // Could be the case where the transaction didn't even hit migs
@@ -207,6 +205,8 @@ class Gateway extends Base\Gateway
         else
         {
             assert ($content['vpc_DRExists'] === 'Y');
+
+            $amountRefunded = (int) $content['vpc_RefundedAmount'];
 
             if ($payment['vpc_TxnResponseCode'] === '0')
             {
@@ -373,6 +373,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAmaRequestArray($content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REFUND,
+            ['action' => 'Refund request array',
+            'content' => $content]);
+
         // send the request and get response
         $response = $this->postRequest($request);
 
@@ -503,6 +508,13 @@ class Gateway extends Base\Gateway
     {
         $txnResponseCode = null;
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REFUND,
+            ['content' => $content,
+            'action' => $this->action,
+            'payment' => $input['payment'],
+            'refund' => $input['refund']]);
+
         if (isset($content['vpc_TxnResponseCode']))
         {
             $txnResponseCode = $content['vpc_TxnResponseCode'];
@@ -528,6 +540,10 @@ class Gateway extends Base\Gateway
 
         if ($this->action === Base\Action::REFUND)
         {
+            // Refund request failed. Just check if refund amount due to
+            // previous requests matches the expected amount.
+            // In that case, we will mark it as success.
+
             $ret = $this->returnIfRefundAmountMatches($content, $input);
 
             if ($ret === true)
@@ -547,6 +563,11 @@ class Gateway extends Base\Gateway
 
     protected function returnIfRefundAmountMatches($content, $input)
     {
+        if (isset($content['vpc_RefundedAmount']) === false)
+        {
+            return false;
+        }
+
         $amount = $input['payment']['amount_refunded'] + $input['refund']['amount'];
 
         $vpcAmount = (int) $content['vpc_RefundedAmount'];

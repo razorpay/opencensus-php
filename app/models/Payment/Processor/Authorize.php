@@ -163,7 +163,7 @@ trait Authorize
     {
         if ($payment->isMethod(Payment\Method::CARD))
         {
-            $this->verifyCardEnabled($payment);
+            $this->verifyCardEnabledInLive($payment);
         }
 
         if ($payment->isMethod(Payment\Method::NETBANKING))
@@ -387,8 +387,14 @@ trait Authorize
         }
     }
 
-    protected function verifyCardEnabled($payment)
+    protected function verifyCardEnabledInLive($payment)
     {
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        // Only check enabled or not on live mode
         $methods = $this->methods;
 
         if (($methods === null) or

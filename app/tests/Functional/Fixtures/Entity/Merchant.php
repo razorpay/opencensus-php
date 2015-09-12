@@ -112,7 +112,7 @@ class Merchant extends Base
 
     public function activate($id)
     {
-        return $this->edit($id, ['activated' => 1]);
+        return $this->edit($id, ['activated' => 1, 'live' => 1]);
     }
 
     public function holdFunds($id, $hold = true)
