@@ -20,8 +20,48 @@
             Amount
           </a>
           <a href class="list-group-item">
+            <span class="pull-right">{{entity.amount_authorized/100 | currency:""}}</span>
+            Amount Authorized
+          </a>
+          <a href class="list-group-item">
             <span class="pull-right">{{entity.amount_refunded/100 | currency:""}}</span>
             Amount Refunded
+          </a>
+          <a class="list-group-item" ui-sref="app.merchants.detail({id:entity.merchant_id})">
+            <span class="pull-right">
+              {{entity.merchant_id}}
+            </span>
+            Merchant Id
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">
+              {{entity.method|titlecase}}
+            </span>
+            Payment Method
+          </a>
+          <a href class="list-group-item" ng-show="entity.method==='netbanking'">
+            <span class="pull-right">
+              {{entity.bank}}
+            </span>
+            Netbanking Bank
+          </a>
+          <a href class="list-group-item" ng-show="entity.method==='wallet'">
+            <span class="pull-right">
+              {{entity.wallet}}
+            </span>
+            Wallet
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">
+              {{entity.gateway|titlecase}}
+            </span>
+            Gateway
+          </a>
+          <a class="list-group-item">
+            <span class="pull-right">
+              {{entity.terminal_id|titlecase}}
+            </span>
+            Terminal Id
           </a>
           <a href class="list-group-item">
             <span class="pull-right">{{entity.currency}}</span>
@@ -63,6 +103,14 @@
           <a href class="list-group-item">
             <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
             Created At
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.authorized_at*1000 | fromNow}} ({{entity.authorized_at*1000 | date : 'medium'}})</span>
+            Authorized At
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.captured_at*1000 | fromNow}} ({{entity.captured_at*1000 | date : 'medium'}})</span>
+            Captured At
           </a>
           <a href class="list-group-item">
             <span class="pull-right" tooltip="{{entity.verified == 1 ? 'Verified' : 'Not Verified'}}">
