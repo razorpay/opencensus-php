@@ -2,6 +2,7 @@
 
 namespace Gateway\Netbanking\Hdfc;
 
+use Carbon\Carbon;
 use Models\Settlement\Kotak\FileHandlerTrait;
 
 class RefundExcel
@@ -21,22 +22,27 @@ class RefundExcel
 
     );
 
-    public static function generate($input)
+    public function __construct()
+    {
+        $this->mail = \Mail::getFacadeRoot();
+    }
+
+    public function generate($input)
     {
         $data = [];
 
         $i = 1;
 
-        foreach ($input as $col)
+        foreach ($input as $row)
         {
             $data = array(
                 'Sr No'             => $i++,
-                'Transaction date'  => $col['gateway']['date'],
-                'Bank reference #'  => $col['gateway']['bank_payment_id'],
-                'Order #'           => $col['payment']['id'],
-                'Order Amount'      => $col['gateway']['amount'],
-                'Refund Amount'     => $col['refund']['amount'] / 100,
-                'Merchant Code'     => $col['gateway']['gateway_merchant_id'],
+                'Transaction date'  => $row['gateway']['date'],
+                'Bank reference #'  => $row['gateway']['bank_payment_id'],
+                'Order #'           => $row['payment']['id'],
+                'Order Amount'      => $row['gateway']['amount'],
+                'Refund Amount'     => $row['refund']['amount'] / 100,
+                'Merchant Code'     => $row['terminal']['gateway_merchant_id'],
             );
         }
 
@@ -44,12 +50,12 @@ class RefundExcel
 
         $this->sendHdfcNbRefundEmail();
 
-        return [$urlText, $urlExcel];
+        return $urlExcel;
     }
 
     protected function sendHdfcNbRefundEmail()
     {
-        $fileName = $this->getExcelFullFilePath();
+        $fullpath = $this->getExcelFullFilePath();
 
         $data['file'] = $fullpath;
         $data['body'] = '
@@ -74,7 +80,7 @@ class RefundExcel
 
             $message->to($emails);
 
-            $message->attach($data['file'];
+            $message->attach($data['file']);
         });
     }
 }

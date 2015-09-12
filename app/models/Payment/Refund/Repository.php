@@ -4,6 +4,7 @@ namespace Models\Payment\Refund;
 
 use EE\Exception;
 use Models\Base;
+use Models\Payment;
 use Models\Payment\Refund;
 
 class Repository extends Base\Repository
@@ -85,19 +86,23 @@ class Repository extends Base\Repository
         $entity = (new $this->repo);
 
         $rid = $entity->getAttributeWithTableName(Refund\Entity::ID);
+        $rtable = $entity->getTable();
 
         $query = $entity->newQuery();
 
         return $query->where(Payment\Entity::BANK, '=', $bank)
                     ->leftJoin(
-                        $rtable,
-                        function($join) use ($bank, $pid, $rid, $from, $to)
+                        $ptable,
+                        function($join) use ($pid, $rid, $from, $to, $rtable)
                         {
+        $rPaymentId = $rtable . '.' . Refund\Entity::PAYMENT_ID;
+        $rCreatedAt = $rtable . '.' . Refund\Entity::CREATED_AT;
+
                             $join->on($rPaymentId, '=', $pid)
                                  ->where($rCreatedAt, '>=', $from)
                                  ->where($rCreatedAt, '<=', $to);
                         })
-                    ->with($ptable)
+                    ->with('payment')
                     ->get();
     }
 }

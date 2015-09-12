@@ -133,13 +133,15 @@ class Gateway extends Base\Gateway
 
     public function generateRefundsExcel($input)
     {
-        foreach ($input as $col)
+        foreach ($input as & $row)
         {
             $payment = $this->getRepo()->findByPaymentIdAndAction(
-                                $input['payment']['id'], Action::AUTHORIZE);
+                                $row['payment']['id'], Action::AUTHORIZE);
 
-            $col['gateway'] = $payment->toArray();
+            $row['gateway'] = $payment->toArray();
         }
+
+        return (new RefundExcel)->generate($input);
     }
 
     protected function validateCallbackChecksum($input)

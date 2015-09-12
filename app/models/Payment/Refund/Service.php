@@ -2,7 +2,9 @@
 
 namespace Models\Payment\Refund;
 
+use Carbon\Carbon;
 use Models\Base;
+use Models\Gateway;
 use Models\Payment;
 use Models\Payment\Refund;
 use Trace\Trace;
@@ -18,6 +20,11 @@ class Service extends Base\Service
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
             'HDFC', $from, $to);
 
+        if ($refunds->count() === 0)
+        {
+            return [];
+        }
+
         $input = [];
 
         foreach ($refunds as $refund)
@@ -27,7 +34,7 @@ class Service extends Base\Service
 
             $col['refund'] = $refund->toArray();
             $col['payment'] = $refund->payment->toArray();
-            $col['terminal'] = $refund->payment->termnal->toArray();
+            $col['terminal'] = $refund->payment->terminal->toArray();
 
             $input[] = $col;
         }
@@ -39,6 +46,8 @@ class Service extends Base\Service
         $action = 'generateRefundsExcel';
 
         $file = Gateway::call($gateway, $action, $input, $this->mode);
+
+        return ['file' => $file];
     }
 
     public function fetch($id)

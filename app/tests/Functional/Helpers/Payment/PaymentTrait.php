@@ -415,6 +415,8 @@ trait PaymentTrait
 
     protected function generateRefundsExcelForHdfcNB()
     {
+        $this->ba->appAuth();
+
         $request = array(
             'url' => '/refunds/hdfcnb/generate',
             'method' => 'get',

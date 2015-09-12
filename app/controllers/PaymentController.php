@@ -119,7 +119,9 @@ class PaymentController extends BaseController
 
     public function generateHdfcNetbankingRefunds()
     {
-        $refunds = (new Payment\Refund\Service)->getHdfcNetbankingRefundsFile();
+        $refundExcel = (new Payment\Refund\Service)->getHdfcNetbankingRefundsFile();
+
+        return ApiResponse::json($refundExcel);
     }
 
     public function postAuthExpire()
