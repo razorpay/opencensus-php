@@ -33,10 +33,10 @@ class Validator extends Base\Validator
     protected static $refundRules = array(
         'AggregatorId'      => 'required',
         'MerchantId'        => 'required|alpha_num',
-        'RefundRequestID'   => 'required',
+        'RefundRequestId'   => 'required',
         'ATRN'              => 'required',
-        'RefundAmount'      => 'required|numeric',
-        'AmountCurrency'    => 'required|numeric',
+        'PostingAmount'      => 'required|numeric',
+        'MerchantCurrency'  => 'required',
         'MerchantOrderNo'   => 'required',
         'RefundResponseURL' => 'required|url',
     );

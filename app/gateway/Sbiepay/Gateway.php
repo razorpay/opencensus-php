@@ -144,36 +144,61 @@ class Gateway extends Base\Gateway
 
     }
 
-//
-//    public function refund(array $input)
-//    {
-//        parent::refund($input);
-//
-//        $payment = $this->getRepo()->findByPaymentIdAndAction(
-//            $input['payment']['id'], Action::AUTHORIZE);
-//
-//        $content = $this->getPaymentRefundRequestContent($payment, $input);
-//
-//        $content = $this->postRequest($content);
-//
-//        $content['refund_id'] = $input['refund']['id'];
-//        $content['CurrencyType'] = 'INR';
-//        $content['received'] = 1;
-//        $refund = $this->createGatewayPaymentEntity($content);
-//
-//        if ($content['ProcessStatus'] !== 'Y')
-//        {
-//            $this->trace->error(
-//                TraceCode::PAYMENT_REFUND_FAILURE,
-//                [$content]);
-//
-//            throw new Exception\GatewayErrorException(
-//                ErrorCode::BAD_REQUEST_REFUND_FAILED);
-//        }
-//    }
-//
-    public
-    function verify(array $input)
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+//sd($input);
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $requestParameter['AggregatorId'] = $payment['AggregatorId'];
+        $requestParameter['MerchantId'] = $payment['MerchantId'];
+        $requestParameter['RefundRequestId'] = $input['refund']['id'];
+        $requestParameter['ATRN'] = $payment['SBIePayReferenceID'];
+        $requestParameter['PostingAmount'] = $input['refund']['amount'];
+        $requestParameter['MerchantCurrency'] = $input['refund']['currency'];
+        $requestParameter['MerchantOrderNo'] = $payment['MerchantOrderNo'];
+        $requestParameter['RefundResponseURL'] = 'http://www.example.com';
+        if ($this->mode === Mode::TEST)
+        {
+            $requestParameter['MerchantId'] = $this->getTestMerchantId();
+        }
+        $content = EncryptDecrypt::encryptData(array(
+                                                   'EncryptRefundDetails' => $requestParameter,
+                                               ));
+        $content['merchIdVal'] = $requestParameter['MerchantId'];
+
+        $request = array(
+            'url'     => $this->getUrl($this->action),
+            'method'  => 'post',
+            'content' => $content);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $crawler = new Crawler($response->body, 'http://www.example.com');
+        $form = $crawler->filter('form')->form();
+        $values = $form->getValues();
+        $values = EncryptDecrypt::decryptData($values['encRefundData']);
+        $values = $this->getContent($values);
+
+        $requestParameter['refund_id'] = $input['refund']['id'];
+        $requestParameter['received'] = 1;
+        $requestParameter['method'] = $payment['method'];
+        $refund = $this->createGatewayPaymentEntity($requestParameter);
+
+        if ($values['Status'] !== Status::SUCCESS)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_REFUND_FAILURE,
+                [$content]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+        }
+    }
+
+    public function verify(array $input)
     {
         parent::verify($input);
 
@@ -183,8 +208,7 @@ class Gateway extends Base\Gateway
     }
 
 //
-    public
-    function authorizeFailed(array $input)
+    public function authorizeFailed(array $input)
     {
         $e = null;
 
@@ -223,13 +247,11 @@ class Gateway extends Base\Gateway
     }
 
 //
-    protected
-    function verifyPayment($verify)
+    protected function verifyPayment($verify)
     {
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
-//        $amountRefunded = (int)($content['TotalRefundAmount'] * 100);
 
         $status = VerifyResult::STATUS_MATCH;
 
@@ -237,7 +259,6 @@ class Gateway extends Base\Gateway
         if ($content['Status'] !== Status::SUCCESS)
         {
             $verify->gatewaySuccess = false;
-            // Could be the case where the transaction didn't even hit mobikwik
             if (($payment['received'] === false) and
                 (($payment['Status'] === null) or
                     ($payment['Status'] !== Status::SUCCESS))
@@ -309,12 +330,6 @@ class Gateway extends Base\Gateway
             'MerchantOrderNo' => $input['MerchantOrderNo'],
             'ReturnURL'       => $this->getUrl($this->action),
         );
-//        $requestParameter = array(
-//            'Atrn'            => '2844308681441',
-//            'MerchantId'      => $input['MerchantId'],
-//            'MerchantOrderNo' => '3wGVAyNQJJjLQX',
-//            'ReturnURL'       => 'http://www.example.com',
-//        );
 
         if ($this->mode === Mode::TEST)
         {
@@ -331,13 +346,6 @@ class Gateway extends Base\Gateway
             'url'     => $this->getUrl($this->action),
             'method'  => 'post',
             'content' => $content);
-//        $data = $content;
-//        $response = Requests::post('http://test.sbiepay.com/secure/AggMerchantStatusQueryAction', array(), $data);
-//        $crawler = new Crawler($response->body,'http://www.example.com');
-//        $form = $crawler->filter('form')->form();
-//        $values = $form->getValues();
-//
-//sd($values);
         $this->response = $this->sendGatewayRequest($request);
         $data = $this->response->body;
         $crawler = new Crawler($data, 'http://www.example.com');
@@ -356,48 +364,8 @@ class Gateway extends Base\Gateway
         return $verify;
     }
 
-//
-//    protected function getPaymentRefundRequestContent($payment, $input)
-//    {
-//        // Format YYYYMMDD
-//        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
-//        $date = $date->format('Ymd');
-//
-//        // Format yyyymmdd24hhmmss (in docs), actually yyyymmddhhmmss,
-//        // hh is in 24 hrs
-//        $now = Carbon::now('Asia/Kolkata')->format('YmdHis');
-//
-//        $refundAmount = (float)($input['refund']['amount']);
-//
-//        // The amount should have exact two decimal places, otherwise billdesk gives error
-//        $refundAmount = (string)number_format($refundAmount / 100, 2, '.', '');
-//        $txnAmount = (string)number_format($payment['TxnAmount'], 2, '.', '');
-//
-//        $content = array(
-//            'RequestType'    => '0400',
-//            'MerchantID'     => $input['terminal']['gateway_merchant_id'],
-//            'TxnReferenceNo' => $payment['TxnReferenceNo'],
-//            'TxnDate'        => $date,
-//            'CustomerID'     => $input['payment']['id'],
-//            'TxnAmount'      => $txnAmount,
-//            'RefAmount'      => $refundAmount,
-//            'RefDateTime'    => $now,
-//            'MerchantRefNo'  => $input['refund']['id'],
-//            'Filler1'        => 'NA',
-//            'Filler2'        => 'NA',
-//            'Filler3'        => 'NA',
-//        );
-//
-//        if ($this->mode === Mode::TEST)
-//        {
-//            $content['MerchantID'] = $this->getTestMerchantId();
-//        }
-//
-//        return $content;
-//    }
 
-    protected
-    function postRequest($content)
+    protected function postRequest($content)
     {
         $content = http_build_query($content);
         $request = array(
@@ -423,8 +391,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected
-    function createGatewayPaymentEntity($attributes)
+    protected function createGatewayPaymentEntity($attributes)
     {
         $payment = $this->getNewGatewayPaymentEntity();
         $payment->setPaymentId($attributes['MerchantOrderNo']);
@@ -436,59 +403,13 @@ class Gateway extends Base\Gateway
         return $payment;
     }
 
-//    protected function verifySecureHash($content)
-//    {
-//        $hash = $content['Checksum'];
-//        unset($content['Checksum']);
-//
-//        $generatedHash = $this->getHashOfArray($content);
-//
-//        if ($generatedHash !== $hash)
-//        {
-//            throw new Exception\BadRequestValidationFailureException(
-//                'Failed checksum verification');
-//        }
-//    }
 
-//    public function getMessageStringWithHash($content)
-//    {
-//        $str = $this->getStringToHash($content, '|');
-//
-//        return $str . '|' . $this->getHashOfString($str);
-//    }
-
-//    protected function getHashOfArray($content)
-//    {
-//        $str = $this->getStringToHash($content, '|');
-//
-//        return $this->getHashOfString($str);
-//    }
-
-//    protected function getHashOfString($str)
-//    {
-//        $secret = $this->getSecret();
-//
-//        return strtoupper(hash_hmac('sha256', $str, $secret, false));
-//    }
-
-//    protected function getRequestArrayWithProxy($content)
-//    {
-//        $request = $this->getRequestArray($content);
-//
-//        $request['options']['proxy'] = 'https://splunk.razorpay.com:8888';
-//
-//        return $request;
-//    }
-
-
-    protected
-    function getLiveSecret()
+    protected function getLiveSecret()
     {
         return $this->config['live_hash_secret'];
     }
 
-    protected
-    function getTestMerchantId()
+    protected function getTestMerchantId()
     {
         return '1000109';
     }

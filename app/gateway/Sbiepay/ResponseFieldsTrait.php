@@ -57,36 +57,21 @@ trait ResponseFieldsTrait
     );
 
     protected static $refundRequestFields = array(
-        'RequestType',
-        'MerchantID',
-        'TxnReferenceNo',
-        'TxnDate',
-        'CustomerID',
-        'TxnAmount',
-        'RefAmount',
-        'RefDateTime',
-        'MerchantRefNo',
-        'Filler1',
-        'Filler2',
-        'Filler3',
-        'Checksum',
+        'AggregatorId',
+        'MerchantId',
+        'RefundRequestId',
+        'ATRN',
+        'PostingAmount',
+        'MerchantCurrency',
+        'MerchantOrderNo',
+        'RefundResponseURL'
     );
 
     protected static $refundResponseFields = array(
-        'RequestType',
-        'MerchantID',
-        'TxnReferenceNo',
-        'TxnDate',
-        'CustomerID',
-        'TxnAmount',
-        'RefAmount',
-        'RefDateTime',
-        'RefStatus',
-        'RefundId',
-        'ErrorCode',
-        'ErrorReason',
-        'ProcessStatus',
-        'Checksum',
+        'RefundRequestId',
+        'Status',
+        'Message',
+        'RefundRequestId',
     );
 
     protected static $verifyRequestFields = array(

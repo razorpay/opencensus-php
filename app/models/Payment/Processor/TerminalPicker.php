@@ -123,7 +123,10 @@ class TerminalPicker
         }
 
         $international = $payment->merchant->isInternational();
-
+        if ((isset($gatewayTerms[Payment\Gateway::SBIEPAY]) === true))
+        {
+            return $gatewayTerms[Payment\Gateway::SBIEPAY];
+        }
         if (isset($gatewayTerms[Gateway::HDFC]))
         {
             return $gatewayTerms[Gateway::HDFC];

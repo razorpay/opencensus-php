@@ -103,59 +103,34 @@ class Server extends Base\Mock\Server
 
     public function refund($input)
     {
-        $input = $this->getContentFromInput($input);
+        $input = $this->getContentFromInputRefund($input);
 
         parent::verify($input);
 
         $this->validateActionInput($input, 'refund');
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
-            $input['CustomerID'], Action::AUTHORIZE);
+            $input['MerchantOrderNo'], Action::AUTHORIZE);
 
-        $fields = $this->getGatewayInstance()->getFieldsForAction('refund');
-
-        $content = array_combine($fields, array_fill(0, count($fields), 'NA'));
-
-        // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss,
-        // hh is in 24 hrs
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
+        //$fields = $this->getGatewayInstance()->getFieldsForAction('refund');
 
         $content = array(
-            'RequestType'    => '0410',
-            'MerchantID'     => $payment['MerchantID'],
-            'TxnReferenceNo' => $payment['TxnReferenceNo'],
-            'TxnDate'        => $payment['TxnDate'],
-            'CustomerID'     => $payment['CustomerID'],
-            'TxnAmount'      => $payment['TxnAmount'],
-            'RefAmount'      => $input['RefAmount'],
-            'RefDateTime'    => $now,
-            'RefStatus'      => '0799',
-            'RefundId'       => random_alpha_string(15),
-            'ErrorCode'      => 'NA',
-            'ErrorReason'    => 'NA',
-            'ProcessStatus'  => 'Y',
+            'RefundRequestId'   => $input['RefundRequestId'],
+            'Status'            => 'SUCCESS',
+            'Message'           => 'Refund Booked',
+            'RefundReferenceNo' => random_integer(6)
         );
+        $encData = Sbiepay\EncryptDecrypt::encryptData(['encRefundData' => $content]);
+        ob_start();
 
-        $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
+        require('RefundResponseHtml.php');
 
-        return $this->makeResponse($msg);
+        $html = ob_get_clean();
+
+        return $this->prepareResponse($html);
     }
 
-//    protected function makeResponse($msg)
-//    {
-////        $response = \Response::make($msg);
-//        $response = Response::make($msg, 200);
-//
-//        $response->header('Content-Type', 'application/text');
-//
-//        return $response;
-//        //->header('Content-Type', 'application/text; charset=UTF-8');
-//
-////        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
-////        $response->headers->set('Cache-Control', 'no-cache');
-//sd($response);
-//        return $response;
-//    }
+
 
 
     protected function makeResponse($msg)
@@ -187,6 +162,18 @@ class Server extends Base\Mock\Server
 
         $fields = $this->getGatewayInstance()->getFields($name, 'request');
         $content = explode('|', Sbiepay\EncryptDecrypt::decryptData($input['encryptQuery']));
+        $input = array_combine($fields, $content);
+
+        return $input;
+    }
+
+    protected function getContentFromInputRefund($input)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+
+        $fields = $this->getGatewayInstance()->getFields($name, 'request');
+        $content = explode('|', Sbiepay\EncryptDecrypt::decryptData($input['EncryptRefundDetails']));
         $input = array_combine($fields, $content);
 
         return $input;

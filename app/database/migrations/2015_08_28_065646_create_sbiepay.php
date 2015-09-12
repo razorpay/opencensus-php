@@ -25,17 +25,17 @@ class CreateSbiepay extends Migration {
             $table->boolean('received')->default(0);
 
             $table->string('MerchantId', 20);
-            $table->string('OperatingMode', 10);
-            $table->string('MerchantCountry', 10);
-            $table->string('MerchantCurrency', 10);
-            $table->string('PostingAmount', 19);
-            $table->string('OtherDetails', 1000);
+            $table->string('OperatingMode', 10)->nullable();
+            $table->string('MerchantCountry', 10)->nullable();
+            $table->string('MerchantCurrency', 10)->nullable();
+            $table->string('PostingAmount', 19)->nullable();
+            $table->string('OtherDetails', 1000)->nullable();
             $table->string('AggregatorId', 10);
             $table->string('MerchantOrderNo', 100);
-            $table->string('MerchantCustomerID', 100);
-            $table->string('Paymode', 10);
-            $table->string('Accesmedium', 10);
-            $table->string('TransactionSource', 10);
+            $table->string('MerchantCustomerID', 100)->nullable();
+            $table->string('Paymode', 10)->nullable();
+            $table->string('Accesmedium', 10)->nullable();
+            $table->string('TransactionSource', 10)->nullable();
 
             $table->string('SBIePayReferenceID', 20)->nullable();
             $table->string('Status', 20)->nullable();
