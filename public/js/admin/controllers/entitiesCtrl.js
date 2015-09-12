@@ -309,10 +309,6 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
           return 'timestamp';
         }
 
-        else if(key.substr(0, 6) === 'amount') {
-          return 'amount';
-        }
-
         else if(entity === 'payment') {
           return 'payment';
         }

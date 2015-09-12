@@ -128,7 +128,7 @@
       <table class="table table-striped b-t b-light">
         <tr ng-repeat="key in notSorted(data)" ng-init="value = data[key]; type = getType(key, value)">
           <th>{{key}}</th>
-          <td ng-show="type==='timestamp' || type === 'amount'">
+          <td ng-show="type==='timestamp'">
             {{displayValue(value, type)}}
           </td>
           <td ng-show="type==='id'" ng-click='updateEntity(key, value)'>
