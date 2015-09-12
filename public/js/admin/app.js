@@ -102,12 +102,17 @@ var app = angular.module('app', [
                 templateUrl: 'tpl/admin/app_pricing.html'
             })
             .state('app.entities', {
-                url: '/entities',
-                templateUrl: 'tpl/admin/app_entities.html'
+                url: '/entities/:mode/:type',
+                templateUrl: 'tpl/admin/app_entities.html',
+                // reloadOnSearch: false,
+                params: {
+                  mode: "live",
+                  type: "payment"
+                }
             })
             .state('app.entitiesdetail', {
-                url: '/entities/:mode/:type/:id',
-                templateUrl: 'tpl/admin/app_entities.html'
+                url: '/entity/:mode/:type/:id',
+                templateUrl: 'tpl/admin/app_entity_detail.html'
             })
             .state('app.actions', {
                 url: '/actions',

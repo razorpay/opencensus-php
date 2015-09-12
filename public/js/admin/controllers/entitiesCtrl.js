@@ -1,13 +1,15 @@
 //Entities Listing Controller
 app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$modal', '$stateParams',
   function($scope, $http, alertsFactory, $state, $modal, $stateParams){
+
+    $scope.entity_type = $stateParams.type;
+    $scope.mode = $stateParams.mode;
+
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
-    $scope.entity_type = "payment";
     $scope.count = 10;
     $scope.filters = {};
 
-    $scope.mode = "live";
     $scope.headings =[];
     $scope.refreshTable = true;
 
@@ -19,10 +21,6 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         countEnd: 0,
         skip: 0
     };
-
-    if($stateParams.mode) {
-      $scope.mode = $stateParams.mode;
-    }
 
     var gatewayList = [
       'all', 'atom', 'axis_genius', 'axis_migs', 'billdesk',
@@ -123,7 +121,10 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       }
     }
 
-    $scope.$watch('mode + entity_type + count', function() {
+    $scope.$watch('mode + entity_type + count', function(x) {
+      $stateParams.mode = $scope.mode;
+      $stateParams.entity_type = $scope.entity_type;
+
       $scope.showTable();
     });
 

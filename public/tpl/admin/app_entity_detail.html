@@ -1,0 +1,46 @@
+<div class="bg-light lter b-b wrapper-md" ng-controller="EntityDetailCtrl">
+  <h1 class="m-n font-thin h3">
+    {{entity.type | titlecase}} Entity Detail ({{mode + " Mode"| titlecase }})
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md entity-wrapper" ng-controller="EntityDetailCtrl" ng-init="generate(entity.type)">
+  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+    <div class="panel-heading m-t m-b">
+      Entity Id: <strong>{{entity.id}}</strong>
+    </div>
+  <div class="text-center m-t">
+    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+  </div>
+    <div class="row wrapper">
+      <div class="list-group">
+        <a href class="list-group-item" ng-repeat="key in entity" ng-init="value = data[key]; type = getType(key, value)">
+          <span class="pull-right" ng-show="type==='timestamp'">
+            {{displayValue(value, type)}}
+          </span>
+          <span class="pull-right" ng-show="type==='id'">
+            <a ui-sref="app.entitiesdetail({mode: mode, type: entity_type, id: value})">
+              {{value}} {{entity_type}}
+            </a>
+          </span>
+          <span class="pull-right" ng-show="type === 'payment'">
+            <a ui-sref="app.payments({id:value, mode: mode})" target="_blank">
+              {{value}}
+            </a>
+            (will open in new tab)
+          </span>
+          <span class="pull-right" ng-show="type === 'merchant'">
+            <a ui-sref="app.merchants.detail({id:value})" target="_blank">
+              {{value}}
+            </a>
+            (will open in new tab)
+          </span>
+          <span class="pull-right" ng-show="type==='unknown'">
+            {{value}}
+          </span>
+          {{key|titlecase}}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
