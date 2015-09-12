@@ -10,6 +10,7 @@ use Gateway\Base;
 use Gateway\Base\Action;
 use Gateway\Base\VerifyResult;
 use Requests;
+use Symfony\Component\DomCrawler\Crawler;
 use Trace\Trace;
 use Trace\TraceCode;
 
@@ -23,7 +24,6 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
         $method = $input['payment']['method'];
-
         $requestParameter = array(
             'MerchantId'         => $input['terminal']['gateway_merchant_id'],
             'OperatingMode'      => 'DOM',
@@ -93,9 +93,9 @@ class Gateway extends Base\Gateway
 
                 }
             }
-            $paymentDetails = [$aggGtwmapID, $input['card']['number'], $input['card']['cvv'], $input['card']['expiry_year'] . $input['card']['expiry_month'], "NA", "SBIN", strtoupper($input['card']['network']), $input['payment']['contact'], $input['payment']['name']];
+            $paymentDetails = [$aggGtwmapID, $input['card']['number'], $input['card']['cvv'], $input['card']['expiry_year'] . str_pad($input['card']['expiry_month'], 2, "0", STR_PAD_LEFT), "NA", "SBIN", strtoupper($input['card']['network']), $input['payment']['contact'], $input['card']['name']];
         }
-
+//sd($paymentDetails);
 
         $content = EncryptDecrypt::encryptData(array(
                                                    'EncryptTrans'          => $requestParameter,
@@ -115,8 +115,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public
-    function callback(array $input)
+    public function callback(array $input)
     {
         parent::callback($input);
 
@@ -126,6 +125,14 @@ class Gateway extends Base\Gateway
 
         $content = $this->getContent($decryptedContent);
 
+
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $content['MerchantOrderNo'], Action::AUTHORIZE);
+
+        $content['received'] = 1;
+        $payment->fill($content);
+        $payment->saveOrFail();
+
         if ($content['Status'] === Status::FAILURE)
         {
             // Payment fails, throw exception
@@ -134,13 +141,6 @@ class Gateway extends Base\Gateway
                 $content['Status'],
                 '');
         }
-
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-            $content['MerchantOrderNo'], Action::AUTHORIZE);
-
-        $content['received'] = 1;
-        $payment->fill($content);
-        $payment->saveOrFail();
 
     }
 
@@ -233,6 +233,7 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
+        $content = $this->getContent($content);
         if ($content['Status'] !== Status::SUCCESS)
         {
             $verify->gatewaySuccess = false;
@@ -287,8 +288,7 @@ class Gateway extends Base\Gateway
     }
 
 //
-    protected
-    function getPaymentToVerify($input, $verify)
+    protected function getPaymentToVerify($input, $verify)
     {
         $payment = $this->getRepo()->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -299,10 +299,8 @@ class Gateway extends Base\Gateway
     }
 
 //
-    protected
-    function sendPaymentVerifyRequest($verify)
+    protected function sendPaymentVerifyRequest($verify)
     {
-
         $input = $verify->payment;
 //        sd($verify->payment);
         $requestParameter = array(
@@ -311,6 +309,12 @@ class Gateway extends Base\Gateway
             'MerchantOrderNo' => $input['MerchantOrderNo'],
             'ReturnURL'       => $this->getUrl($this->action),
         );
+//        $requestParameter = array(
+//            'Atrn'            => '2844308681441',
+//            'MerchantId'      => $input['MerchantId'],
+//            'MerchantOrderNo' => '3wGVAyNQJJjLQX',
+//            'ReturnURL'       => 'http://www.example.com',
+//        );
 
         if ($this->mode === Mode::TEST)
         {
@@ -327,7 +331,18 @@ class Gateway extends Base\Gateway
             'url'     => $this->getUrl($this->action),
             'method'  => 'post',
             'content' => $content);
+//        $data = $content;
+//        $response = Requests::post('http://test.sbiepay.com/secure/AggMerchantStatusQueryAction', array(), $data);
+//        $crawler = new Crawler($response->body,'http://www.example.com');
+//        $form = $crawler->filter('form')->form();
+//        $values = $form->getValues();
+//
+//sd($values);
         $this->response = $this->sendGatewayRequest($request);
+        $data = $this->response->body;
+        $crawler = new Crawler($data, 'http://www.example.com');
+        $form = $crawler->filter('form')->form();
+        $values = $form->getValues();
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
@@ -336,10 +351,9 @@ class Gateway extends Base\Gateway
         $verify->verifyResponse = $this->response;
 
         $verify->verifyResponseBody = $this->response->body;
-        sd($verify->verifyResponseBody);
-        $verify->verifyResponseContent = $requestParameter;
+        $verify->verifyResponseContent = EncryptDecrypt::decryptData($values['encStatusData']);
 
-        return $content;
+        return $verify;
     }
 
 //
@@ -393,8 +407,7 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
     }
 
-    protected
-    function getContent($msg)
+    protected function getContent($msg)
     {
         $fields = $this->getFieldsForAction($this->action);
 
@@ -404,7 +417,7 @@ class Gateway extends Base\Gateway
             unset($content[count($content) - 1]);
         }
 //        var_dump($content);
-//        sd($fields);
+//        s($fields);
         $content = array_combine($fields, $content);
 
         return $content;

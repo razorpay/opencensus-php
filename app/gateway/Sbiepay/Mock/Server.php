@@ -91,9 +91,14 @@ class Server extends Base\Mock\Server
             'AdditionalInfo8'     => null,
             'AdditionalInfo9'     => null,
         );
-        $encData = Sbiepay\EncryptDecrypt::encryptData(['encData' => $content]);
+        $encData = Sbiepay\EncryptDecrypt::encryptData(['encStatusData' => $content]);
+        ob_start();
 
-        return $this->makeResponse($encData);
+        require('VerifyResponseHtml.php');
+
+        $html = ob_get_clean();
+
+        return $this->prepareResponse($html);
     }
 
     public function refund($input)
@@ -185,6 +190,17 @@ class Server extends Base\Mock\Server
         $input = array_combine($fields, $content);
 
         return $input;
+    }
+
+    protected function prepareResponse($content)
+    {
+        $response = \Response::make($content);
+
+        $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+        $response->headers->set('Pragma', 'no-cache');
+
+        return $response;
     }
 
 }
