@@ -4,6 +4,7 @@ namespace Models\Payment\Refund;
 
 use EE\Exception;
 use Models\Base;
+use Models\Payment;
 use Models\Payment\Refund;
 
 class Repository extends Base\Repository
@@ -70,5 +71,38 @@ class Repository extends Base\Repository
         return $repo::where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
                     ->findOrFailPublic($id);
+    }
+
+    public function fetchRefundsForBankBetweenTimestamps($bank, $from, $to)
+    {
+        $repo = $this->repo;
+
+        $payment = (new Payment\Entity);
+
+        $ptable = $payment->getTable();
+        $pid = $payment->getAttributeWithTableName(Payment\Entity::ID);
+        $pbank = $payment->getAttributeWithTableName(Payment\Entity::BANK);
+
+        $entity = (new $this->repo);
+
+        $rid = $entity->getAttributeWithTableName(Refund\Entity::ID);
+        $rtable = $entity->getTable();
+
+        $query = $entity->newQuery();
+
+        return $query->where(Payment\Entity::BANK, '=', $bank)
+                    ->leftJoin(
+                        $ptable,
+                        function($join) use ($pid, $rid, $from, $to, $rtable)
+                        {
+        $rPaymentId = $rtable . '.' . Refund\Entity::PAYMENT_ID;
+        $rCreatedAt = $rtable . '.' . Refund\Entity::CREATED_AT;
+
+                            $join->on($rPaymentId, '=', $pid)
+                                 ->where($rCreatedAt, '>=', $from)
+                                 ->where($rCreatedAt, '<=', $to);
+                        })
+                    ->with('payment')
+                    ->get();
     }
 }
