@@ -54,6 +54,11 @@ class Entity extends Base\PublicEntity
         return $this->getPaytmAttribute();
     }
 
+    public function isMobikwikEnabled()
+    {
+        return $this->getMobikwikAttribute();
+    }
+
     public function isCardEnabled()
     {
         return $this->getCardAttribute();

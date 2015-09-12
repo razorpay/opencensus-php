@@ -328,6 +328,7 @@ class Service extends Base\Service
             $data['card'] = $methods->isCardEnabled();
             $data['netbanking'] = $methods->toArrayWithBankNames();
             // $data['wallet']['paytm'] = $methods->isPaytmEnabled();
+            $data['wallet']['mobikwik'] = $methods->isMobikwikEnabled();
         }
 
         if ($this->mode === Mode::TEST)
