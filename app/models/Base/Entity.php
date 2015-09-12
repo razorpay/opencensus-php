@@ -76,4 +76,9 @@ class Entity extends EloquentEx
             return class_basename($this);
         }
     }
+
+    public function getAttributeWithTableName($col)
+    {
+        return $this->table . '.' . $col;
+    }
 }

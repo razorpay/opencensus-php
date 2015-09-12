@@ -76,14 +76,15 @@ class Base
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
 
+        $entity = self::$map[$entity];
         $entity = $entity::findOrFail($id);
 
         foreach ($attributes as $key => $value)
         {
-            $entity[$attribute] = $value;
+            $entity[$key] = $value;
         }
 
-        $entity->saveOrFail($merchant);
+        $entity->saveOrFail();
 
         return $entity;
     }
