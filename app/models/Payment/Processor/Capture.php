@@ -131,7 +131,7 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $auth = (($payment->getAuthorizeTimestamp() < 1) or
+        $auth = (($payment->getAuthorizeTimestamp() < 1442174411) or
                  ($payment->transaction === null));
 
         if ($auth === true)
