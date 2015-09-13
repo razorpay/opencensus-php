@@ -185,6 +185,14 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
+        if (isset($content['vpc_DRExists']) === false)
+        {
+            $this->trace->error(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                ['payment_id' => $input['payment']['id'],
+                 'content' => $content]);
+        }
+
         if ($content['vpc_DRExists'] !== 'Y')
         {
             // Could be the case where the transaction didn't even hit migs
