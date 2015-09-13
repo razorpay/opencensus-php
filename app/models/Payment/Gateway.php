@@ -55,8 +55,7 @@ class Gateway
     );
 
     public static $authAndCapture = array(
-        self::HDFC,
-        self::AXIS_MIGS,
+        self::HDFC
     );
 
     public static $cardNetworkMap = array(

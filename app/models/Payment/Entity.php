@@ -483,6 +483,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT);
     }
 
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
     public function getMethodWithDetail()
     {
         $method = Method::formatted($this->getMethod());

@@ -435,7 +435,7 @@ trait Authorize
 
         $gateway = $payment->getGateway();
 
-        if (Payment\Gateway::supportsAuthAndCapture($gateway) === false)
+        if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
         {
             $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
 
@@ -445,6 +445,29 @@ trait Authorize
         $payment->saveOrFail();
 
         $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+    }
+
+    protected function isGatewayActuallyAuthorizingPayment($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if (Payment\Gateway::supportsAuthAndCapture($gateway) === false)
+        {
+            return false;
+        }
+
+        if ($gateway === Payment\Gateway::HDFC)
+        {
+            $network = $payment->card->getNetwork();
+            $network = Card\Network::getCode($network);
+
+            if ($network === Card\Network::MAES)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function verifyHash($hash, $paymentPublicId)

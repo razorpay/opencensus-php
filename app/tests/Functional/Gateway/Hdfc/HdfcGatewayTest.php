@@ -46,6 +46,17 @@ class HdfcGatewayTest extends TestCase
             $this->testData['testHdfcPaymentEntity'], $payment);
     }
 
+    public function testMaestroCard()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5081597022059105';
+
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNotNull($payment['transaction_id']);
+    }
+
     public function testPaymentVerify()
     {
         $this->markTestSkipped();

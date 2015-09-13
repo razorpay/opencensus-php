@@ -132,7 +132,7 @@ trait Capture
         $txnCore = new Transaction\Core;
 
         $auth = (($payment->getAuthorizeTimestamp() < 1) or
-                 (Payment\Gateway::supportsAuthAndCapture($payment->getGateway())));
+                 ($payment->transaction === null));
 
         if ($auth === true)
         {

@@ -52,7 +52,7 @@ trait Refund
 
         $gateway = $payment->getGateway();
 
-        if ((Payment\Gateway::supportsAuthAndCapture($gateway) === false) or
+        if (($payment->getTransactionId() !== null) or
             ($payment->isAuthorized() === false))
         {
             $this->callGatewayForRefund($data);
