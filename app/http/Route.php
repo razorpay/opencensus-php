@@ -266,7 +266,8 @@ final class Route
                 'payment_timeout',
                 'merchant_daily_report',
                 'payment_auto_capture',
-                'payment_verify_all'),
+                'payment_verify_all',
+                'refund_hdfcnb'),
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),
