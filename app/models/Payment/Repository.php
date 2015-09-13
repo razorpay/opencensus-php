@@ -117,13 +117,11 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
+        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+
         return $repo::whereNull(Payment\Entity::VERIFIED)
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
-                    ->where(function($query)
-                        {
-                            $query->where(Payment\Entity::GATEWAY, '=', Payment\Gateway::BILLDESK)
-                                  ->orWhere(Payment\Entity::GATEWAY, '=', Payment\Gateway::NETBANKING_HDFC);
-                        })
+                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
                     ->get();
     }
