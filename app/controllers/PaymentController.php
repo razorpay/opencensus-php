@@ -52,6 +52,15 @@ class PaymentController extends BaseController
         return ApiResponse::json($payment);
     }
 
+    public function postRefundAuthorized($id)
+    {
+        $input = Input::all();
+
+        $payment = $this->payment->refundAuthorized($id, $input);
+
+        return ApiResponse::json($payment);
+    }
+
     public function postAuthorizeFailedPayment($id)
     {
         $data = $this->payment->authorizeFailed($id);

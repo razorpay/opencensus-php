@@ -332,7 +332,7 @@ class Entity extends Base\PublicEntity
 
     public function isCaptured()
     {
-        return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
+        return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
     public function isPartiallyOrFullyRefunded()
@@ -483,6 +483,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT);
     }
 
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
     public function getMethodWithDetail()
     {
         $method = Method::formatted($this->getMethod());
@@ -615,7 +620,8 @@ class Entity extends Base\PublicEntity
     {
         if (is_int($amount) === false)
         {
-            throw new Exception\InvalidArgumentException('amount should be an integer ' . $amount);
+            throw new Exception\InvalidArgumentException(
+                'amount should be an integer ' . $amount);
         }
 
         $amount = (int) $amount;
@@ -629,6 +635,8 @@ class Entity extends Base\PublicEntity
         else if ($amount === $amountUnrefunded)
         {
             $this->setRefundStatus(Refund\Status::FULL);
+
+            $this->setStatus(Payment\Status::REFUNDED);
         }
         else
         {

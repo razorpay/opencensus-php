@@ -54,6 +54,10 @@ class Gateway
         ),
     );
 
+    public static $authAndCapture = array(
+        self::HDFC
+    );
+
     public static $cardNetworkMap = array(
         self::HDFC => array(
             Network::MC,
@@ -99,6 +103,11 @@ class Gateway
     public static function isMethodSupported($method, $gateway)
     {
         return (in_array($gateway, self::$methodMap[$method]));
+    }
+
+    public static function supportsAuthAndCapture($gateway)
+    {
+        return (in_array($gateway, self::$authAndCapture));
     }
 
     public static function isCardNetworkSupported($network, $gateway)

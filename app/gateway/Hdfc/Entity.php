@@ -30,6 +30,8 @@ class Entity extends Base\Entity
 
     protected $primaryKey = 'id';
 
+    protected $entity = 'hdfc';
+
     public $incrementing = true;
 
     protected $guarded = array();

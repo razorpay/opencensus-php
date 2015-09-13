@@ -109,10 +109,9 @@ trait Capture
 
             $this->updatePaymentCaptured();
 
-            $txn = (new Transaction\Core)->createFromPayment($this->payment);
+            $this->createTransactionFromCapturedPayment($this->payment);
 
-            $txn->save();
-            $this->payment->save();
+            $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
         //
@@ -126,7 +125,25 @@ trait Capture
         $this->payment->setStatus(Payment\Status::CAPTURED);
 
         $this->payment->setCaptureTimestamp();
+    }
 
-        $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
+    protected function createTransactionFromCapturedPayment($payment)
+    {
+        $txnCore = new Transaction\Core;
+
+        $auth = (($payment->getAuthorizeTimestamp() < 1442174411) or
+                 ($payment->transaction === null));
+
+        if ($auth === true)
+        {
+            $txn = $txnCore->createFromPaymentCaptured($payment);
+        }
+        else
+        {
+            $txn = $txnCore->updateOnCapture($payment);
+        }
+
+        $txn->saveOrFail();
+        $payment->saveOrFail();
     }
 }

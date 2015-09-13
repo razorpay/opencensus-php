@@ -25,6 +25,7 @@ final class Route
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                   ],
         'payment_cancel'                    => ['get',      'payments/{id}/cancel',                     'PaymentController@postCancel'                                  ],
         'payment_authorize_failed'          => ['post',     'payments/{id}/authorize_failed',           'PaymentController@postAuthorizeFailedPayment'                  ],
+        'payment_authorize_refund'          => ['post',     'payments/{id}/authorize_refund',           'PaymentController@postRefundAuthorized'                        ],
         'payment_fetch_by_id'               => ['get',      'payments/{id}',                            'PaymentController@getPayment'                                  ],
         'payment_fetch_multiple'            => ['get',      'payments',                                 'PaymentController@getPayments'                                 ],
         'payment_fetch_refunds'             => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                        ],
@@ -247,6 +248,7 @@ final class Route
         'adj_add',
         'card_fetch_by_id',
         'card_fetch_multiple',
+        'payment_authorize_refund',
     );
 
     public static $internalApps = array(

@@ -88,12 +88,12 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id']);
 
         $this->startTest($payment['id'], 100);
     }
 
-    public function testRefundOnAuthorizedPayment()
+    public function testRefundByMerchantOnAuthorizedPayment()
     {
         $payment = $this->defaultAuthPayment();
 

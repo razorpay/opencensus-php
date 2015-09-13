@@ -10,6 +10,7 @@ use Http\Route;
 use Models\Merchant\Methods;
 use Models\Card;
 use Models\Payment;
+use Models\Transaction;
 use Trace\Trace;
 use Trace\TraceCode;
 use Mail;
@@ -284,7 +285,7 @@ trait Authorize
         $app['mailer']->queue(
             [
                 'html' => 'emails/payment/customer',
-                'text'=> 'emails/payment/customer_text'
+                'text' => 'emails/payment/customer_text'
             ],
             $templateData,
             function ($message) use ($templateData, $config, $subject)
@@ -358,10 +359,7 @@ trait Authorize
 
         $banks = (new Methods\Core)->getMerchantBanks($merchant);
 
-        if ($banks === null)
-            $banks = [];
-        else
-            $banks = $banks->getBanks();
+        $banks = ($banks === null) ? [] : $banks->getBanks();
 
         $bank = $payment->getBank();
 
@@ -377,10 +375,9 @@ trait Authorize
         $methods = $this->methods;
 
         $wallet = $payment->getWallet();
-        $func = 'get'.ucfirst($wallet);
-// sd($func, $methods->$func());
+
         if (($methods === null) or
-            ($methods->$func() === false))
+            ($methods->isWalletEnabled($wallet) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT);
@@ -433,10 +430,44 @@ trait Authorize
 
         $payment->terminal->incrementUsedCount();
 
-        $payment->save();
-        $payment->terminal->save();
+        $payment->saveOrFail();
+        $payment->terminal->saveOrFail();
+
+        $gateway = $payment->getGateway();
+
+        if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
+        {
+            $txn = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+
+            $txn->saveOrFail();
+        }
+
+        $payment->saveOrFail();
 
         $this->trace(TraceCode::PAYMENT_AUTH_SUCCESS);
+    }
+
+    protected function isGatewayActuallyAuthorizingPayment($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if (Payment\Gateway::supportsAuthAndCapture($gateway) === false)
+        {
+            return false;
+        }
+
+        if ($gateway === Payment\Gateway::HDFC)
+        {
+            $network = $payment->card->getNetwork();
+            $network = Card\Network::getCode($network);
+
+            if ($network === Card\Network::MAES)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function verifyHash($hash, $paymentPublicId)

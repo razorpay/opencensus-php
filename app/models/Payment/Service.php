@@ -40,7 +40,21 @@ class Service extends Base\Service
      */
     public function refund($id, $input)
     {
-        $refund = $this->processor()->refund($id, $input);
+        $refund = $this->processor()->refundCapturedPayment($id, $input);
+
+        return $refund->toArrayPublic();
+    }
+
+    /**
+     * Refunds a payment
+     *
+     * @param  string   $id
+     *
+     * @return Payment\Entity
+     */
+    public function refundAuthorized($id, $input)
+    {
+        $refund = $this->processor()->refundAuthorizedPayment($id, $input);
 
         return $refund->toArrayPublic();
     }

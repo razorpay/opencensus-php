@@ -77,6 +77,16 @@ class Entity extends EloquentEx
         }
     }
 
+    public function getCreatedAt()
+    {
+        return $this->getAttribute(self::CREATED_AT);
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->getAttribute(self::UPDATED_AT);
+    }
+
     public function getAttributeWithTableName($col)
     {
         return $this->table . '.' . $col;

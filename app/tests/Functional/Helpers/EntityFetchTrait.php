@@ -17,7 +17,10 @@ trait EntityFetchTrait
 
         $content = $this->getEntities($entity, $input, $admin);
 
-        return $content['items'][0];
+        if ($content['count'])
+            return $content['items'][0];
+
+        return null;
     }
 
     protected function getEntities($entity, array $input = array(), $admin = false)
