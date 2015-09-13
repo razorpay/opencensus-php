@@ -15,7 +15,7 @@ class Repository extends Base\Repository
     protected $entity = 'Payment';
 
     protected $appFetchParamRules = array(
-        Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed',
+        Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed,refunded',
         Entity::VERIFIED        => 'sometimes|boolean',
         Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
         Entity::BANK            => 'sometimes',
