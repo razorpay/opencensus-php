@@ -187,6 +187,11 @@ Route::group(array('before' => 'auth.admin'), function()
         Route::post('/admin/trigger/error', 'AdminController@triggerError');
 
         Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
+
+        Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
+
+        Route::post('/admin/refunds/hdfc', 'AdminController@generateHDFCRefunds');
+
     });
 
     Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');

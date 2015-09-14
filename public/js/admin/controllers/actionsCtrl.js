@@ -52,6 +52,52 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
     };
 
+    $scope.verifyAllPayments = function() {
+      var request = $http({
+        method: "POST",
+        url: "/admin/payments/verify"
+      });
+
+      request
+      .success(function(data) {
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Payments Verified successfully ' + JSON.stringify(data.data), true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
+    $scope.generateHDFCRefunds = function() {
+      var request = $http({
+        method: "POST",
+        url: "/admin/refunds/hdfc"
+      });
+
+      request
+      .success(function(data) {
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'HDFC Refunds Excel Generated ' + JSON.stringify(data.data), true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     $scope.sendTestEmail = function(data){
 
       var request = $http({

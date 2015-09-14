@@ -942,24 +942,24 @@ class Service extends Base\Service
     {
         $keys = MerchantDetails\Entity::getUrlKeys();
         $found = false;
+        $creevey = new Creevey($id);
 
         foreach ($keys as $key)
         {
             if (\Input::hasFile($key) and $input[$key]->isValid())
             {
                 $found = true;
-                $S3Path = "$id/screenshots/$key.jpg";
                 $localFilePath = $input[$key]->getRealPath();
 
                 try
                 {
-                    $this->uploadToS3($S3Path, $localFilePath);
+                    $creevey->compressAndSave($key, $localFilePath,
+                        $input[$key]->getClientOriginalName());
                 }
                 catch(\Exception $e)
                 {
                     return [$e->getMessage()];
                 }
-
             }
         }
 
@@ -1079,5 +1079,34 @@ class Service extends Base\Service
         {
             return [$e->getMessage(), null];
         }
+    }
+
+    public function verifyAllPayments()
+    {
+        $this->setApiCredentials(null, 'live');
+        try
+        {
+            $response = $this->api->payment->verifyAll();
+            return [null, $response->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [[$e->getMessage()], null];
+        }
+    }
+
+    public function generateHDFCRefundsExcel()
+    {
+        $this->setApiCredentials(null, 'test');
+        try
+        {
+            $response = $this->api->refund->generateHDFCRefundsExcel();
+            return [null, $response->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [[$e->getMessage()], null];
+        }
+
     }
 }
