@@ -86,9 +86,4 @@ class Entity extends EloquentEx
     {
         return $this->getAttribute(self::UPDATED_AT);
     }
-
-    public function getAttributeWithTableName($col)
-    {
-        return $this->table . '.' . $col;
-    }
 }

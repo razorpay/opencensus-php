@@ -80,29 +80,31 @@ class Repository extends Base\Repository
         $payment = (new Payment\Entity);
 
         $ptable = $payment->getTable();
-        $pid = $payment->getAttributeWithTableName(Payment\Entity::ID);
-        $pbank = $payment->getAttributeWithTableName(Payment\Entity::BANK);
 
         $entity = (new $this->repo);
 
-        $rid = $entity->getAttributeWithTableName(Refund\Entity::ID);
-        $rtable = $entity->getTable();
-
         $query = $entity->newQuery();
 
-        return $query->where(Payment\Entity::BANK, '=', $bank)
-                    ->leftJoin(
-                        $ptable,
-                        function($join) use ($pid, $rid, $from, $to, $rtable)
-                        {
-        $rPaymentId = $rtable . '.' . Refund\Entity::PAYMENT_ID;
-        $rCreatedAt = $rtable . '.' . Refund\Entity::CREATED_AT;
+        $refunds = $query->join(
+            $ptable,
+            function ($join) use ($from, $to, $bank)
+            {
+                $rPaymentId = Refund\Entity::getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = Refund\Entity::getAttributeWithTableName(Refund\Entity::CREATED_AT);
 
-                            $join->on($rPaymentId, '=', $pid)
-                                 ->where($rCreatedAt, '>=', $from)
-                                 ->where($rCreatedAt, '<=', $to);
-                        })
-                    ->with('payment')
-                    ->get();
+                $pid = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
+                $pbank = Payment\Entity::getAttributeWithTableName(Payment\Entity::BANK);
+                $pgateway = Payment\Entity::getAttributeWithTableName(Payment\Entity::GATEWAY);
+
+                $join->on($rPaymentId, '=', $pid)
+                     ->where($rCreatedAt, '>=', $from)
+                     ->where($rCreatedAt, '<=', $to)
+                     ->where($pbank, '=', $bank)
+                     ->where($pgateway, '=', Payment\Gateway::NETBANKING_HDFC);
+            })
+            ->with('payment')
+            ->get();
+
+        return $refunds;
     }
 }
