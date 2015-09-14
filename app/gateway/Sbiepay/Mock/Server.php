@@ -118,7 +118,7 @@ class Server extends Base\Mock\Server
             'RefundRequestId'   => $input['RefundRequestId'],
             'Status'            => 'SUCCESS',
             'Message'           => 'Refund Booked',
-            'RefundReferenceNo' => random_integer(6)
+            'SBIePayReferenceID' => random_integer(6)
         );
         $encData = Sbiepay\EncryptDecrypt::encryptData(['encRefundData' => $content]);
         ob_start();

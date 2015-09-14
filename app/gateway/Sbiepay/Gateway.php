@@ -156,7 +156,7 @@ class Gateway extends Base\Gateway
         $requestParameter['MerchantId'] = $payment['MerchantId'];
         $requestParameter['RefundRequestId'] = $input['refund']['id'];
         $requestParameter['ATRN'] = $payment['SBIePayReferenceID'];
-        $requestParameter['PostingAmount'] = $input['refund']['amount'];
+        $requestParameter['PostingAmount'] = number_format($input['refund']['amount']/100,2);
         $requestParameter['MerchantCurrency'] = $input['refund']['currency'];
         $requestParameter['MerchantOrderNo'] = $payment['MerchantOrderNo'];
         $requestParameter['RefundResponseURL'] = 'http://www.example.com';
@@ -181,10 +181,11 @@ class Gateway extends Base\Gateway
         $values = $form->getValues();
         $values = EncryptDecrypt::decryptData($values['encRefundData']);
         $values = $this->getContent($values);
-
         $requestParameter['refund_id'] = $input['refund']['id'];
         $requestParameter['received'] = 1;
         $requestParameter['method'] = $payment['method'];
+        $requestParameter['Status'] = $values['Status'];
+        $requestParameter['SBIePayReferenceID'] = $values['SBIePayReferenceID'];
         $refund = $this->createGatewayPaymentEntity($requestParameter);
 
         if ($values['Status'] !== Status::SUCCESS)

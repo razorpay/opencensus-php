@@ -7,10 +7,10 @@ use EE\Error\PublicErrorDescription;
 return [
     'testPayment' => [
         'merchant_id' => '10000000000000',
-        'amount' => 50000,
+        'amount' => 500,
         'method' => 'netbanking',
         'status' => 'captured',
-        'amount_authorized' => 50000,
+        'amount_authorized' => 500,
         'amount_refunded' => 0,
         'refund_status' => null,
         'currency' => 'INR',
@@ -68,7 +68,7 @@ return [
 //        'OtherDetails'=> 'NA',
         'AggregatorId'=> 'SBIEPAY',
 //        'MerchantOrderNo'=> null,
-        'MerchantCustomerID'=> 'a@b.com',
+//        'MerchantCustomerID'=> 'a@b.com',
 //        'Paymode'=> 'NB',
 //        'Accesmedium'=> 'ONLINE',
 //        'TransactionSource'=> 'ONLINE',

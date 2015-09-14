@@ -28,8 +28,10 @@ class SbiepayGatewayTest extends TestCase
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'SBIN';
+        $payment['amount'] = '500';
         $payment = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertTestResponse($payment);
 
         $payment = $this->getLastEntity('sbiepay', true);
@@ -49,6 +51,7 @@ class SbiepayGatewayTest extends TestCase
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'SBIN';
+        $payment['amount'] = '500';
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->verifyPayment($payment['id']);
@@ -58,12 +61,9 @@ class SbiepayGatewayTest extends TestCase
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'SBIN';
+        $payment['amount'] = '500';
         $payment = $this->doAuthAndCapturePayment($payment);
-sd($payment);
-        $this->refundPayment($payment['id']);
-
         $refund = $this->getLastEntity('sbiepay', true);
-
         $this->assertTestResponse($refund);
     }
 

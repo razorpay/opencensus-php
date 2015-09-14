@@ -71,7 +71,7 @@ trait ResponseFieldsTrait
         'RefundRequestId',
         'Status',
         'Message',
-        'RefundRequestId',
+        'SBIePayReferenceID',
     );
 
     protected static $verifyRequestFields = array(
