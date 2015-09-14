@@ -122,8 +122,12 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     }
 
     $scope.$watch('mode + entity_type + count', function(x) {
-      $stateParams.mode = $scope.mode;
-      $stateParams.entity_type = $scope.entity_type;
+      $state.go('app.entities', {
+        mode: $scope.mode,
+        type: $scope.entity_type
+      }, {
+        notify: false
+      })
 
       $scope.showTable();
     });

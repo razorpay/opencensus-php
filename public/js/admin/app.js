@@ -104,7 +104,7 @@ var app = angular.module('app', [
             .state('app.entities', {
                 url: '/entities/:mode/:type',
                 templateUrl: 'tpl/admin/app_entities.html',
-                // reloadOnSearch: false,
+                reloadOnSearch: false,
                 params: {
                   mode: "live",
                   type: "payment"
