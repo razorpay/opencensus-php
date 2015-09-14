@@ -18,6 +18,7 @@ class Repository extends Base\Repository
         Entity::ACTIVATED       => 'sometimes|boolean',
         Entity::HOLD_FUNDS      => 'sometimes|boolean',
         Entity::LIVE            => 'sometimes|boolean',
+        Entity::METHODS         => 'sometimes|string',
     );
 
     public function getBalanceLockForUpdate($id)
@@ -95,5 +96,25 @@ class Repository extends Base\Repository
         $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
 
         return $repo::whereBetween(Entity::CREATED_AT, [$start, $today]);
+    }
+
+    public function addQueryParamMethods($query, $params)
+    {
+        $query->join(
+            Methods\Entity::getTableName(),
+            function ($join) use ($params)
+            {
+                $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
+                $methodsMerchantId = Methods\Entity::getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
+
+                $methods = json_decode($params[Entity::METHODS]);
+
+                $join->on($methodsMerchantId, '=', $methodsMerchantId);
+
+                foreach ($methods as $method => $value)
+                {
+                    $join->where($method, '=', $value);
+                }
+            });
     }
 }
