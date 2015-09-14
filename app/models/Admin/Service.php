@@ -1080,4 +1080,18 @@ class Service extends Base\Service
             return [$e->getMessage(), null];
         }
     }
+
+    public function verifyAllPayments()
+    {
+        $this->setApiCredentials(null, 'test');
+        try
+        {
+            $response = $this->api->payment->verifyAll();
+            return [null, $response->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [[$e->getMessage()], null];
+        }
+    }
 }

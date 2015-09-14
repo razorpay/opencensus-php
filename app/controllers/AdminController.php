@@ -427,4 +427,10 @@ class AdminController extends BaseController
         list($error, $data) = (new Admin\Service)->deleteTerminal($mode, $terminalId);
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function verifyAllPayments()
+    {
+        list($error, $data) = (new Admin\Service)->verifyAllPayments();
+        return AppResponse::jsonResponse($error, $data);
+    }
 }
