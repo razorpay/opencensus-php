@@ -97,7 +97,12 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in entity.items">
-            <td ng-repeat="key in notSorted(row) | limitTo: 7" ng-init="value = row[key]" ng-click="showDetail(row)" style="cursor: pointer;">{{value}}</td>
+            <td ng-repeat="key in notSorted(row) | limitTo: 7" ng-init="value = row[key]"
+              ui-sref="app.entitiesdetail({mode:mode, type: entity_type, id:row.id})"
+              style="cursor: pointer;"
+            >
+              {{value}}
+            </td>
           </tr>
         </tbody>
       </table>

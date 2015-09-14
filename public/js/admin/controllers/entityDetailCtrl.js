@@ -15,6 +15,10 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
       fetchEntity();
     }
 
+    if($stateParams.type) {
+      $scope.entity.type = $stateParams.type;
+    }
+
     function fetchEntity() {
       var url = "/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity.type + "/" + $scope.entity.id;
       var request = $http.get(url);
@@ -37,12 +41,48 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
       });
     };
 
+    // Type is same as returned by getType
+    $scope.getState = function(type) {
+      switch(type) {
+        case 'merchant':
+          return "app.merchants.detail({id: value})";
+        case 'payment':
+          return "app.payments({id:value, mode:mode})";
+        case 'id':
+          return "app.entitiesdetail({id:value, mode:mode, type: getEntity(key)})";
+        default:
+          // This needs to be a non-empty string
+          return '-';
+      }
+    }
+
+    $scope.displayValue = function(value, type) {
+      // Set timezone to IST
+      moment().zone(5.5);
+      switch(type) {
+        case 'timestamp':
+          return moment(value*1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
+        case 'amount':
+          return 'INR ' + (value/100).toFixed(2);
+        default:
+          return value;
+      }
+    }
+
+    // Removes _id from end
+    $scope.getEntity = function(key) {
+      return key.substr(0, key.length-3);
+    }
+
     $scope.getType = function(key, value) {
       var entity = key.substr(0, key.length - 3);
 
       var isTimestamp = function(key) {
         return key.substr(-3) === '_at';
       }
+
+      // These have their own views
+      var specialEntities = ['merchant_id', 'payment_id'];
 
       var isId = function(key) {
         var validEntities = ["adjustment", "atom", "axis_genius",
@@ -65,22 +105,17 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
         return 'timestamp';
       }
 
-      else if(entity === 'payment') {
-        return 'payment';
-      }
-
-      // We have a separate view for merchant entity
-      else if(entity === 'merchant') {
-        return 'merchant';
-      }
-
       // All other entity links are considered here
       else if(isId(key)) {
-        $scope.entity_type = entity;
-        return 'id';
+        if (specialEntities.indexOf(key) > -1) {
+          return $scope.getEntity(key);
+        }
+        else {
+          return 'id';
+        }
       }
 
-      // Unknown type is entity specific things, like amount
+      // Unknown type is entity specific things, like currency
       else {
         return 'unknown';
       }
