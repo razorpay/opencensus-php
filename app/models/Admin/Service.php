@@ -1083,7 +1083,7 @@ class Service extends Base\Service
 
     public function verifyAllPayments()
     {
-        $this->setApiCredentials(null, 'test');
+        $this->setApiCredentials(null, 'live');
         try
         {
             $response = $this->api->payment->verifyAll();
@@ -1093,5 +1093,20 @@ class Service extends Base\Service
         {
             return [[$e->getMessage()], null];
         }
+    }
+
+    public function generateHDFCRefundsExcel()
+    {
+        $this->setApiCredentials(null, 'test');
+        try
+        {
+            $response = $this->api->refund->generateHDFCRefundsExcel();
+            return [null, $response->toArray()];
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            return [[$e->getMessage()], null];
+        }
+
     }
 }
