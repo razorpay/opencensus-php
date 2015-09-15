@@ -63,6 +63,8 @@ class SbiepayGatewayTest extends TestCase
         $payment['bank'] = 'SBIN';
         $payment['amount'] = '500';
         $payment = $this->doAuthAndCapturePayment($payment);
+        $this->refundPayment($payment['id']);
+
         $refund = $this->getLastEntity('sbiepay', true);
         $this->assertTestResponse($refund);
     }
