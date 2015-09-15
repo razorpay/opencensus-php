@@ -222,8 +222,6 @@ class Gateway extends Base\Gateway
         {
             assert ($content['vpc_DRExists'] === 'Y');
 
-            $amountRefunded = (int) $content['vpc_RefundedAmount'];
-
             if ($payment['vpc_TxnResponseCode'] === '0')
             {
                 $verify->apiSuccess = true;
@@ -231,6 +229,8 @@ class Gateway extends Base\Gateway
                 if ($content['vpc_TxnResponseCode'] === '0')
                 {
                     $verify->gatewaySuccess = true;
+
+                    $amountRefunded = (int) $content['vpc_RefundedAmount'];
 
                     // Check that refund amount matches.
                     if ($amountRefunded !== $input['payment']['amount_refunded'])
