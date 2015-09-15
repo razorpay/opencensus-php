@@ -38,6 +38,7 @@ class ErrorCode
     const GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR                                        = 'GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR';
     const GATEWAY_ERROR_CHECKSUM_MATCH_FAILED                                       = 'GATEWAY_ERROR_CHECKSUM_MATCH_FAILED';
     const GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED                              = 'GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED';
+    const GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR                                  = 'GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR';
     const GATEWAY_ERROR_UNKNOWN_ERROR                                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
 
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';

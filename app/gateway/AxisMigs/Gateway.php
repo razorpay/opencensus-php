@@ -185,12 +185,20 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
-        if (isset($content['vpc_DRExists']) === false)
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            ['payment_id' => $input['payment']['id'],
+             'content' => $content]);
+
+        if ((isset($content['vpc_DRExists']) === false) and
+            ($content['vpc_TxnResponseCode'] === '7'))
         {
-            $this->trace->error(
-                TraceCode::GATEWAY_PAYMENT_VERIFY,
-                ['payment_id' => $input['payment']['id'],
-                 'content' => $content]);
+            // Most probably means AMA credentials are not correct.
+            // However, not sure. Read the error message provided.
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                $content['vpc_TxnResponseCode'],
+                $content['vpc_Message']);
         }
 
         if ($content['vpc_DRExists'] !== 'Y')
