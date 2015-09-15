@@ -60,6 +60,7 @@ class Gateway extends Base\Gateway
             'url'     => $this->getUrl('pay'),
             'method'  => 'post',
             'content' => ['msg' => $content]);
+
 //sd($content);
         return $request;
     }
@@ -72,7 +73,7 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-ddd($input);
+        ddd($input);
         $this->validateCallbackChecksum($input);
         unset($input['gateway']['CheckSum']);
 
@@ -385,12 +386,12 @@ ddd($input);
     }
 
 
-    protected function getLiveSecret()
-    {
-        assert($this->mode === Mode::LIVE);
-
-        return $this->config['live_hash_secret'];
-    }
+//    protected function getLiveSecret()
+//    {
+//        assert($this->mode === Mode::LIVE);
+//
+//        return $this->config['live_hash_secret'];
+//    }
 
 
     protected function getTestMerchantId()
@@ -398,12 +399,22 @@ ddd($input);
         return 'OSTEST';
     }
 
+    protected function getHashSecret()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->config['live_hash_secret'];
+        }
+        else
+        {
+            return $this->config['test_hash_secret'];
+        }
+    }
 
     protected function getDataWithChecksum($data)
     {
         $dataStr = implode("|", $data);
-        $dataStrWithSecret = $dataStr . "|" . $_ENV['NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'];
-//var_dump($dataStrWithSecret);
+        $dataStrWithSecret = $dataStr . "|" . $this->getHashSecret();
         return (string)$dataStr . '|' . str_pad((crc32($dataStrWithSecret)), 8, '0', STR_PAD_LEFT);
     }
 }
