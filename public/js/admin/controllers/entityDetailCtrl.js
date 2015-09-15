@@ -74,6 +74,25 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
       return key.substr(0, key.length-3);
     }
 
+    // Terminal Specific actions
+    $scope.terminal = {
+      delete: function(id) {
+        var request = $http.delete("/admin/" + $scope.mode +  "/terminal/" + id);
+        request
+        .success(function(data){
+          if(data.success) {
+            alert("Terminal deleted");
+          }
+          else {
+            alert(data.errors);
+          }
+        })
+        .error(function(){
+          alert("There was an error while deleting the terminal");
+        });
+      }
+    }
+
     $scope.getType = function(key, value) {
       var entity = key.substr(0, key.length - 3);
 
