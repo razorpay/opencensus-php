@@ -11,24 +11,20 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        $input = $this->getContentFromInput($input);
+
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
 
         $content = array(
-            'MerchRefNo'    => $input['MerchantRefNo'],
-            'TxnAmount'     => $input['TxnAmount'],
-            'TxnCurrency'   => 'INR',
-            'ClientCode'    => $input['ClientCode'],
-            'TxnScAmount'   => $input['TxnScAmount'],
-            'CheckSum'      => '',
-            'BankRefNo'     => random_integer(6),
-            'MerchantCode'  => $input['MerchantCode'],
-            'Date'          => $input['Date'],
-            'StFailFlg'     => 'N',
-            'StSucFlg'      => 'N',
-            'Message'       => '',
-            'fldSessionNbr' => '5',
+            'MessageCode' => $input['MessageCode'],
+            'DateTimeInGMT' => $input['DateTimeInGMT'],
+            'MerchantId' => $input['MerchantId'],
+            'TraceNumber' => $input['TraceNumber'],
+            'Amount' => $input['amount'],
+            'AuthorizationStatus' => 'Y',
+            'BankReference' => random_integer(6),
         );
 
         $content['CheckSum'] = $this->getCallbackChecksum($content);
@@ -137,5 +133,18 @@ class Server extends Base\Mock\Server
         $response->headers->set('Pragma', 'no-cache');
 
         return $response;
+    }
+
+    protected function getContentFromInput($input)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+
+        $fields = $this->getGatewayInstance()->getFields($name, 'request');
+
+        $content = explode('|', $input['msg']);
+        $input = array_combine($fields, $content);
+
+        return $input;
     }
 }
