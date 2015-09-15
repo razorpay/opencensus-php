@@ -22,4 +22,10 @@ class Terminal extends Entity
         $relativeUrl = $this->getEntityUrl() . $id;
         return $this->request('DELETE', $relativeUrl);
     }
+
+    public function edit($id, $input)
+    {
+        $relativeUrl = $this->getEntityUrl() . $id;
+        return $this->request('PUT', $relativeUrl, $input);
+    }
 }

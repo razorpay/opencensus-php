@@ -188,6 +188,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::delete('/admin/{mode}/terminal/{id}', 'AdminController@deleteTerminal');
 
+        Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
+
         Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
 
         Route::post('/admin/refunds/hdfc', 'AdminController@generateHDFCRefunds');

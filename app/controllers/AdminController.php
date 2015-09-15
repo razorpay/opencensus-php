@@ -428,6 +428,13 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function editTerminal($mode, $terminalId)
+    {
+        $input = Input::all();
+        list($error, $data) = (new Admin\Service)->editTerminal($mode, $terminalId, $input);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function verifyAllPayments()
     {
         list($error, $data) = (new Admin\Service)->verifyAllPayments();
