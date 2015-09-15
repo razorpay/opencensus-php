@@ -29,13 +29,21 @@ class RefundExcel
 
     public function generate($input)
     {
-        $data = [];
+        $data = [
+                'Sr No'             => 'Sr No' ,
+                'Transaction date'  => 'Transaction date',
+                'Transaction date'  => 'Transaction date',
+                'Order #'           => 'Order #',
+                'Order Amount'      => 'Order Amount',
+                'Refund Amount'     => 'Refund Amount',
+                'Merchant Code'     => 'Merchant Code',
+        ];
 
         $i = 1;
 
         foreach ($input as $row)
         {
-            $data = array(
+            $data[] = array(
                 'Sr No'             => $i++,
                 'Transaction date'  => $row['gateway']['date'],
                 'Bank reference #'  => $row['gateway']['bank_payment_id'],
