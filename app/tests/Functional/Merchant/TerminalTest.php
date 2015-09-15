@@ -3,11 +3,11 @@
 namespace Tests\Functional\Merchant;
 
 use Tests\Functional\TestCase;
-use Tests\Functional\RequestResponseFlowTrait;
+use Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TerminalTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -46,6 +46,17 @@ class TerminalTest extends TestCase
                          ->get();
 
         $content = $this->startTest();
+    }
+
+    public function testEditAxisMigsTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', ['used_count' => 2]);
+
+        $tid = $terminal['id'];
+        $data = array('gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random');
+
+        $content = $this->editTerminal($tid, $data);
     }
 
     public function startTest()

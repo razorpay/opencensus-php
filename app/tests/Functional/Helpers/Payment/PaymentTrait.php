@@ -358,6 +358,18 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function editTerminal($tid, $input)
+    {
+        $request = array(
+            'url' => '/terminals/'.$tid,
+            'method' => 'put',
+            'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getAndMatchPayment($id, $paymentResponse = array())
     {
         $testData['request']['url'] = '/payments/'.$id;

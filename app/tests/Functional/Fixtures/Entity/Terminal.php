@@ -87,11 +87,11 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedAxisTerminal()
+    public function createSharedAxisTerminal(array $attributes = array())
     {
         $termId = \Models\Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $defaultValues = array(
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'axis_migs',
@@ -100,6 +100,8 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'nodal account axis_migs',
             'gateway_terminal_password' => 'razorpay_password',
         );
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }

@@ -25,6 +25,8 @@ class TraceCode
     const PAYMENT_CANCELLED                         = 'PAYMENT_CANCELLED';
     const PAYMENT_FAILED_TO_AUTHORIZED              = 'PAYMENT_FAILED_TO_AUTHORIZED';
 
+    const TERMINAL_EDIT                             = 'TERMINAL_EDIT';
+
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
 
     /*
