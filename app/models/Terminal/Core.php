@@ -48,11 +48,6 @@ class Core extends Base\Core
 
             (new Terminal\Repository)->saveOrFail($terminal);
         }
-        // else
-        // {
-        //     throw new Exception\BadRequestValidationFailureException(
-        //         'Editing terminal not possible');
-        // }
 
         return $terminal;
     }

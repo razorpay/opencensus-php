@@ -143,6 +143,8 @@ class Entity extends Base\PublicEntity
         assert ($this->getUsedCount() !== 0);
 
         $this->getValidator()->usedTerminalValidator($this, $input);
+
+        $this->fill($input);
     }
 
     public function incrementUsedCount()

@@ -57,6 +57,7 @@ class TerminalTest extends TestCase
         $data = array('gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random');
 
         $content = $this->editTerminal($tid, $data);
+        $this->assertEquals($content['gateway_terminal_id'], 'random');
     }
 
     public function startTest()
