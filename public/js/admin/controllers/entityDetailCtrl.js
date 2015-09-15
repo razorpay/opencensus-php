@@ -92,7 +92,14 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
         });
       },
       edit: function(id, data) {
-        var request = $http.put("/admin/" + $scope.mode +  "/terminal/" + id);
+        delete data['id'];
+        // Lets remove all the empty variables
+        for(var i in data) {
+          if(data[i] === '' || data[i] === null) {
+            delete data[i];
+          }
+        }
+        var request = $http.put("/admin/" + $scope.mode +  "/terminal/" + id, data);
         request
         .success(function(data){
           if(data.success) {
