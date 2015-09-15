@@ -33,10 +33,79 @@
         >
           Delete Terminal
         </button>
-        <button class="btn btn-warning" ng-click="terminal.edit(entity)">
+        <button class="btn btn-info" ng-click="open.terminalEdit(entity)"
+          ng-show="entity.used_count===0">
           Edit Terminal
         </button>
       </div>
     </div>
   </div>
 </div>
+<script type="text/ng-template" id="editTerminal.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Edit Terminal</h3>
+  </div>
+  <div class="modal-body terminal-modal" ng-init="terminal=terminal">
+    <span class="text-danger"><strong>
+    Warning: Terminals can only be edit before any transactions happen through them
+    </strong></span>
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-4 control-label">Gateway:</label>
+        <div class="col-lg-8" >
+          <select disabled class="form-control m-b" ng-model="terminal.gateway">
+             <option value="hdfc" selected>HDFC</option>
+             <option value="atom">Atom</option>
+             <option value="axis_migs">Axis MIGS</option>
+             <option value="axis_genius">Axis Genius</option>
+             <option value="paytm">Paytm</option>
+             <option value="mobikwik">Mobikwik</option><
+             <option value="billdesk">Billdesk</option>
+             <option value="kotak">Kotak</option>
+             <option value="netbanking_hdfc">Netbanking HDFC</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_merchant_id" class="col-lg-4 control-label">Gateway Merchant Id:</label>
+        <div class="col-lg-8" >
+          <input disabled type="text" class="form-control m-b" name="gateway_merchant_id" ng-model="terminal.gateway_merchant_id" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_terminal_id" class="col-lg-4 control-label">Gateway Terminal Id:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="gateway_terminal_id" ng-model="terminal.gateway_terminal_id" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_terminal_password" class="col-lg-4 control-label">Gateway Terminal Password:</label>
+        <div class="col-lg-8" >
+          <input type="password" class="form-control m-b" name="gateway_terminal_password" ng-model="terminal.gateway_terminal_password" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_terminal_password_confirmation" class="col-lg-4 control-label">Confirm Gateway Terminal Password:</label>
+        <div class="col-lg-8" >
+          <input type="password" class="form-control m-b" name="gateway_terminal_password_confirmation" ng-model="terminal.gateway_terminal_password_confirmation" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_access_code" class="col-lg-4 control-label">Gateway Access Code:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="gateway_access_code" ng-model="terminal.gateway_access_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_secure_secret" class="col-lg-4 control-label">Gateway Secure Secret:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="gateway_secure_secret" ng-model="terminal.gateway_secure_secret" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Terminal editing is dangerous. Please ensure you have filled the correct details." ng-click="ok(terminal)">OK</button>
+  </div>
+</script>

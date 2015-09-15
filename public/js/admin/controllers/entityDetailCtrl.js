@@ -1,6 +1,6 @@
 //Single Entity Details controller
-app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFactory',
-  function($scope, $http, $stateParams, alertsFactory) {
+app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFactory', '$modal',
+  function($scope, $http, $stateParams, alertsFactory, $modal) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
@@ -90,6 +90,35 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
         .error(function(){
           alert("There was an error while deleting the terminal");
         });
+      },
+      edit: function(id, data) {
+        console.debug([id, data]);
+      }
+    }
+
+    $scope.open = {
+      'terminalEdit': function(terminal) {
+        console.debug(terminal);
+        var modalInstance = $modal.open({
+          templateUrl: 'editTerminal.html',
+          controller: 'editTerminalModalCtrl',
+          resolve: {
+            current: function() {
+              return terminal;
+            }
+          }
+        });
+
+        modalInstance.result.then(
+          function (input) {
+            // These fields are unused, but just to be safe lets not send them
+            delete input['id'];
+            delete input['merchant_id'];
+            $scope.terminal.edit(terminal.id, input);
+          },
+          function () {
+            ;
+          });
       }
     }
 
@@ -139,4 +168,18 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
         return 'unknown';
       }
     }
+}])
+.controller('editTerminalModalCtrl', ['$scope', '$modalInstance', '$http', 'current',
+  function ($scope, $modalInstance, $http, current) {
+    // This is the current terminal current
+    $scope.terminal = current;
+    console.debug($scope.terminal);
+
+    $scope.ok = function (terminal) {
+      $modalInstance.close(terminal);
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
 }]);
