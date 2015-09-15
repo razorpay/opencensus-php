@@ -92,7 +92,20 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
         });
       },
       edit: function(id, data) {
-        console.debug([id, data]);
+        var request = $http.put("/admin/" + $scope.mode +  "/terminal/" + id);
+        request
+        .success(function(data){
+          if(data.success) {
+            alert("Terminal edit successfully");
+            window.location.reload();
+          }
+          else {
+            alert(data.errors);
+          }
+        })
+        .error(function(){
+          alert("There was an error while deleting the terminal");
+        });
       }
     }
 
@@ -111,10 +124,8 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
 
         modalInstance.result.then(
           function (input) {
-            // These fields are unused, but just to be safe lets not send them
-            delete input['id'];
             delete input['merchant_id'];
-            $scope.terminal.edit(terminal.id, input);
+            $scope.terminal.edit(input.id, input);
           },
           function () {
             ;
@@ -172,7 +183,15 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
 .controller('editTerminalModalCtrl', ['$scope', '$modalInstance', '$http', 'current',
   function ($scope, $modalInstance, $http, current) {
     // This is the current terminal current
-    $scope.terminal = current;
+    $scope.terminal = {
+      gateway_access_code: current.gateway_access_code,
+      gateway_merchant_id: current.gateway_merchant_id,
+      gateway_terminal_id: current.gateway_terminal_id,
+      id: current.id,
+      card: current.card,
+      gateway: current.gateway
+    };
+
     console.debug($scope.terminal);
 
     $scope.ok = function (terminal) {
