@@ -72,7 +72,7 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
-    public function editTerminal($mid, $tid, $input)
+    public function modifyTerminal($mid, $tid, $input)
     {
         $merchant = $this->repo->findOrFailPublic($mid);
 
