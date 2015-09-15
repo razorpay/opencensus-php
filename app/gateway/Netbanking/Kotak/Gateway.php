@@ -147,9 +147,10 @@ class Gateway extends Base\Gateway
             'MessageCode'            => MessageCodes::AUTHORIZE,
             'DateTimeInGMT'          => $date,
             'MerchantId'             => $input['terminal']['gateway_merchant_id'],
-            'TraceNumber'            => $input['payment']['id'],
+//            'TraceNumber'            => $input['payment']['id'],
+            'TraceNumber'            => random_integer(5),
             'Amount'                 => $input['payment']['amount'] / 100,
-            'TransactionDescription' => $input['payment']['email'],
+            'TransactionDescription' => 'ayushghoshrazorpaycom',
         );
 
         if ($this->mode === Mode::TEST)
