@@ -54,8 +54,10 @@ class Validator extends Base\Validator
     );
 
     protected static $axisMigsEditTerminalRules = array(
+        Entity::GATEWAY                     => 'sometimes|in:axis_migs',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::CARD                        => 'sometimes|boolean|in:1',
     );
 
     protected function validateGateway($input)
