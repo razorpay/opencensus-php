@@ -120,7 +120,7 @@ class Netbanking
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
-        return array_unique(array_merge(self::$paytm, self::$billdesk));
+        return array_unique(array_merge(self::$paytm, self::$billdesk,[IFSC::KKBK]));
     }
 
     public static function getDisabledBanks($banks)

@@ -2,6 +2,7 @@
 
 namespace Models\Merchant\Methods;
 
+use Models\Bank\IFSC;
 use Models\Base;
 use EE\Exception;
 use Models\Payment;
@@ -45,7 +46,7 @@ class Core extends Base\Core
         //     $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
         // }
 
-        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
+        $supportedBanks = array_merge(Netbanking::getBilldeskSupportedBanks(),[IFSC::KKBK]);
 
         $banks->setBanks($supportedBanks);
 
