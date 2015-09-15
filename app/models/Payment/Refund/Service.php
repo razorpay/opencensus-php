@@ -12,10 +12,19 @@ use Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function getHdfcNetbankingRefundsFile()
+    public function getHdfcNetbankingRefundsFile(array $input = array())
     {
         $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+
+        if (isset($input['from']))
+        {
+            $from = $input['from'];
+        }
+        else if (isset($input['to']))
+        {
+            $to = $input['to'];
+        }
 
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
             'HDFC', $from, $to);

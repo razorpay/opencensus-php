@@ -29,15 +29,7 @@ class RefundExcel
 
     public function generate($input)
     {
-        $data[] = [
-            'Sr No'            => 'Sr No',
-            'Transaction date' => 'Transaction date',
-            'Transaction date' => 'Transaction date',
-            'Order #'          => 'Order #',
-            'Order Amount'     => 'Order Amount',
-            'Refund Amount'    => 'Refund Amount',
-            'Merchant Code'    => 'Merchant Code',
-        ];
+        $data[] = array_combine(self::$headers, self::$headers);
 
         $i = 1;
 
@@ -53,6 +45,7 @@ class RefundExcel
                 'Merchant Code'    => $row['terminal']['gateway_merchant_id'],
             );
         }
+
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
 
         $this->sendHdfcNbRefundEmail();
