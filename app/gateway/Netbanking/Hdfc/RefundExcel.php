@@ -29,14 +29,14 @@ class RefundExcel
 
     public function generate($input)
     {
-        $data = [
-                'Sr No'             => 'Sr No' ,
-                'Transaction date'  => 'Transaction date',
-                'Transaction date'  => 'Transaction date',
-                'Order #'           => 'Order #',
-                'Order Amount'      => 'Order Amount',
-                'Refund Amount'     => 'Refund Amount',
-                'Merchant Code'     => 'Merchant Code',
+        $data[] = [
+            'Sr No'            => 'Sr No',
+            'Transaction date' => 'Transaction date',
+            'Transaction date' => 'Transaction date',
+            'Order #'          => 'Order #',
+            'Order Amount'     => 'Order Amount',
+            'Refund Amount'    => 'Refund Amount',
+            'Merchant Code'    => 'Merchant Code',
         ];
 
         $i = 1;
@@ -44,16 +44,15 @@ class RefundExcel
         foreach ($input as $row)
         {
             $data[] = array(
-                'Sr No'             => $i++,
-                'Transaction date'  => $row['gateway']['date'],
-                'Bank reference #'  => $row['gateway']['bank_payment_id'],
-                'Order #'           => $row['payment']['id'],
-                'Order Amount'      => $row['gateway']['amount'],
-                'Refund Amount'     => $row['refund']['amount'] / 100,
-                'Merchant Code'     => $row['terminal']['gateway_merchant_id'],
+                'Sr No'            => $i++,
+                'Transaction date' => $row['gateway']['date'],
+                'Bank reference #' => $row['gateway']['bank_payment_id'],
+                'Order #'          => $row['payment']['id'],
+                'Order Amount'     => $row['gateway']['amount'],
+                'Refund Amount'    => $row['refund']['amount'] / 100,
+                'Merchant Code'    => $row['terminal']['gateway_merchant_id'],
             );
         }
-
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
 
         $this->sendHdfcNbRefundEmail();
@@ -76,7 +75,7 @@ class RefundExcel
                 Keshav.Mishra@hdfcbank.com,
                 Ashish.Mandhare@hdfcbank.com';
 
-        $this->mail->queue('emails.message', $data, function($message) use ($data)
+        $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
             $emails = ['settlements@razorpay.com'];
 
