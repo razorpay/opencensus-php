@@ -83,6 +83,7 @@ return array(
     ),
     'netbanking_kotak' => array(
         'live_hash_secret'  => $_ENV['NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'],
+        'test_hash_secret'  => $_ENV['NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'],
     ),
 
     'sharp' => array(
