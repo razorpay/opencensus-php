@@ -77,6 +77,7 @@ class Gateway
     );
 
     public static $verifyEnabled = array(
+        self::AXIS_MIGS,
         self::BILLDESK,
         self::MOBIKWIK,
         self::NETBANKING_HDFC);
