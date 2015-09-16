@@ -96,9 +96,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in entity.items">
+          <tr ng-repeat="row in entity.items" ui-sref="{{getState(row['entity'])}}">
             <td ng-repeat="key in notSorted(row) | limitTo: 7" ng-init="value = row[key]"
-              ui-sref="app.entitiesdetail({mode:mode, type: entity_type, id:row.id})"
               style="cursor: pointer;"
             >
               {{value}}

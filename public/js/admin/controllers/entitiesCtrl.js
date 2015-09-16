@@ -230,6 +230,18 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       generateTable();
     }
 
+
+    $scope.getState = function(type) {
+      switch(type) {
+        case 'merchant':
+          return "app.merchants.detail({id: row.id})";
+        case 'payment':
+          return "app.payments({id:row.id, mode:mode})";
+        default:
+          return "app.entitiesdetail({id:row.id, mode:mode, type: row.entity})";
+      }
+    }
+
     function generateTable() {
 
       if(!$scope.entity_type){
