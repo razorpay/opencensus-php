@@ -14,8 +14,8 @@
   </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a class="list-group-item" ng-repeat="(key,value) in entity"
-          ng-init="type = getType(key, value)" ui-sref="{{getState(type)}}"
+        <a class="list-group-item" ng-repeat="key in getKeys()"
+          ng-init="value = entity[key];type = getType(key, value)" ui-sref="{{getState(type)}}"
         >
           <span class="pull-right">
             {{displayValue(value, type)}}

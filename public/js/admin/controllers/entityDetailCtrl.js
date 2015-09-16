@@ -140,6 +140,11 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
       }
     }
 
+    $scope.getKeys = function() {
+      var keys = Object.keys($scope.entity);
+      return keys;
+    }
+
     $scope.getType = function(key, value) {
       var entity = key.substr(0, key.length - 3);
 
