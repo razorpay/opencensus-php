@@ -104,18 +104,19 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     for(var entity in $scope.availableFilters) {
       $scope['filters'][entity] = {};
       var filters = $scope.availableFilters[entity];
-      //console.debug(filters);
       for(var filter in filters) {
         var def
 
         // dropdown
+        // Only call watch if the property is a dropdown
         if(filters[filter].length > 1) {
           // The first value is the default
           $scope['filters'][entity][filter] = filters[filter][0];
 
-          // Only call watch if the property is a dropdown
-          $scope.$watch('filters.' + entity + '.' + filter, function() {
-            $scope.showTable();
+          $scope.$watch('filters.' + entity + '.' + filter, function(newValue, oldValue) {
+            if(newValue!== oldValue) {
+              showTable();
+            }
           });
         }
       }
@@ -133,12 +134,12 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     });
 
     $scope.notSorted = function(obj){
-        if (!obj) {
-            return [];
-        }
-        var data = Object.keys(obj);
-        data.splice(-1,1)
-        return data;
+      if (!obj) {
+          return [];
+      }
+      var data = Object.keys(obj);
+      data.splice(-1,1)
+      return data;
     }
 
     $scope.displayFilter = function(val)
@@ -182,7 +183,21 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         $scope.alerts.resetAlerts();
 
         if(data.success) {
-          $scope.showDetail(data.data);
+          var entity = data.data.entity;
+          var stateArray = {
+            'payment' : 'app.payments',
+            'merchant': 'app.merchants.detail'
+          }, state = 'app.entitiesdetail';
+
+          if(entity in stateArray) {
+            state = stateArray[entity];
+          }
+
+          $state.go(state, {
+            mode: $scope.mode,
+            id: data.data.id,
+            type: entity
+          });
         }
         else {
           angular.forEach(data.errors, function(value, key){
@@ -208,26 +223,33 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         $scope.entity.skip = 0;
     }
 
-    $scope.showDetail = function(data) {
-      var modalInstance = $modal.open({
-        templateUrl: 'entityDetailModalContent.html',
-        controller: 'entityDetailModalCtrl',
-        size: 'lg',
-        resolve: {
-          data: function() {
-            return data;
-          },
-          mode: function() {
-            return $scope.mode;
-          }
-        }
-      });
-    }
-
     $scope.showTable = function() {
       clear('id');
       clear('skip');
       generateTable();
+    }
+
+
+    $scope.getState = function(type, force) {
+
+      switch(type) {
+        case 'merchant_id':
+        case 'merchant':
+          return "app.merchants.detail({id: value})";
+        case 'payment_id':
+        case 'payment':
+          return "app.payments({id:value, mode:mode})";
+        default:
+          if(force === true) {
+            return "app.entitiesdetail({id:value, mode:mode, type: row.entity})";
+          }
+          if(type.substr(-3) === '_id') {
+            return "app.entitiesdetail({id:value, mode:mode, type: key})";
+          }
+          else {
+            return '-';
+          }
+      }
     }
 
     function generateTable() {

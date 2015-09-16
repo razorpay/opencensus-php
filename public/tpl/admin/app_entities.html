@@ -37,11 +37,11 @@
           <option value="netbanking">Netbanking</option>
           <option value="payment">Payments</option>
           <option value="paytm">Paytm</option>
-          <option value="mobikwik">Paytm</option>
+          <option value="mobikwik">Mobikwik</option>
           <option value="refund">Refunds</option>
           <option value="settlement">Settlements</option>
           <option value="terminal">Terminal</option>
-          <option value="transaction">Transactions</option>
+          <option value="transaction">Tran  sactions</option>
         </select>
       </div>
       <div class="col-sm-2">
@@ -92,16 +92,22 @@
       <table id="merchants-table" class="table table-striped b-t b-light">
         <thead>
           <tr>
-            <th ng-repeat="(key, value) in headings | limitTo: 7" data-hide="{{key != 0 ? 'phone,tablet' : ''}}">{{value}}</th>
+            <th ng-repeat="(key, value) in headings | limitTo: 9" data-hide="{{key != 0 ? 'phone,tablet' : ''}}">{{value}}</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="row in entity.items">
-            <td ng-repeat="key in notSorted(row) | limitTo: 7" ng-init="value = row[key]"
-              ui-sref="app.entitiesdetail({mode:mode, type: entity_type, id:row.id})"
-              style="cursor: pointer;"
+            <td ng-repeat="key in notSorted(row) | limitTo: 9" ng-init="value = row[key]"
             >
-              {{value}}
+              <a ui-sref="{{getState(row.entity, true)}}" ng-show="key==='id'">
+                {{value}}
+              </a>
+              <a ui-sref="{{getState(key, false)}}" ng-show="getState(key)!=='-'">
+                {{value}}
+              </a>
+              <span ng-show="key!=='id' && getState(key)==='-'">
+                {{value}}
+              </span>
             </td>
           </tr>
         </tbody>
