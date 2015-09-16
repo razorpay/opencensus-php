@@ -37,7 +37,7 @@
           <option value="netbanking">Netbanking</option>
           <option value="payment">Payments</option>
           <option value="paytm">Paytm</option>
-          <option value="mobikwik">Paytm</option>
+          <option value="mobikwik">Mobikwik</option>
           <option value="refund">Refunds</option>
           <option value="settlement">Settlements</option>
           <option value="terminal">Terminal</option>
@@ -92,15 +92,19 @@
       <table id="merchants-table" class="table table-striped b-t b-light">
         <thead>
           <tr>
-            <th ng-repeat="(key, value) in headings | limitTo: 7" data-hide="{{key != 0 ? 'phone,tablet' : ''}}">{{value}}</th>
+            <th ng-repeat="(key, value) in headings | limitTo: 9" data-hide="{{key != 0 ? 'phone,tablet' : ''}}">{{value}}</th>
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in entity.items" ui-sref="{{getState(row['entity'])}}">
-            <td ng-repeat="key in notSorted(row) | limitTo: 7" ng-init="value = row[key]"
-              style="cursor: pointer;"
+          <tr ng-repeat="row in entity.items">
+            <td ng-repeat="key in notSorted(row) | limitTo: 9" ng-init="value = row[key]"
             >
-              {{value}}
+              <a ui-sref="{{getState(key)}}" ng-show="getState(key)!=='-'">
+                {{value}}
+              </a>
+              <span ng-show="getState(key)==='-'">
+                {{value}}
+              </span>
             </td>
           </tr>
         </tbody>

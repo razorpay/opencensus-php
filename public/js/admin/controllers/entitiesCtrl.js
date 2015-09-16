@@ -217,13 +217,21 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
 
     $scope.getState = function(type) {
+
       switch(type) {
+        case 'merchant_id':
         case 'merchant':
-          return "app.merchants.detail({id: row.id})";
+          return "app.merchants.detail({id: value})";
+        case 'payment_id':
         case 'payment':
-          return "app.payments({id:row.id, mode:mode})";
+          return "app.payments({id:value, mode:mode})";
         default:
-          return "app.entitiesdetail({id:row.id, mode:mode, type: row.entity})";
+          if(type.substr(-3) === '_id') {
+            return "app.entitiesdetail({id:value, mode:mode, type: key})";
+          }
+          else {
+            return '-';
+          }
       }
     }
 
