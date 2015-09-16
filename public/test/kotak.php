@@ -45,7 +45,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             </select>
         </td>
     </tr>
-    <tr>
+    <tr style="display:none">
         <td colspan="40">Select Wallet </td>
         <td>
             <select name="wallet">
@@ -54,21 +54,21 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             </select>
         </td>
     </tr>
-    <tr>
+    <tr style="display:none">
         <td colspan='40'>CardHolder/Member Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
         <!-- <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td> -->
         <input type="hidden" value="INR" name="currency">
     </tr>
-    <tr>
+    <tr style="display:none">
         <td colspan="40">Card No: </b> </td>
         <td><input type="text" name="card[number]" value="4012001038443335" size="25"></td>
     </tr>
-    <tr>
+    <tr style="display:none">
         <td colspan="40">CVV:</td>
         <td><input size="3" type="text" name="card[cvv]" value="880" maxlength=4></td>
     </tr>
-    <tr>
+    <tr style="display:none">
         <td colspan ='40'>Exp Date:</td>
         <td><input type="text" name="card[expiry_month]" value="11"></td>
         <td><input type="text" name="card[expiry_year]" value="2015"></td>
@@ -76,7 +76,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             <td colspan='40'>Amount:</td>
             <td><input type="text" name="amount" size="25" value="500"></td>
     </tr>
-    <tr>
+    <tr style="display:none">
         <td colspan='40'>Email:</td>
         <td><input type="text" name="email" size="25" value="nemo+test@razorpay.com"></td>
         <td><input type="text" name="contact" size="25" value="1234567890"></td>
