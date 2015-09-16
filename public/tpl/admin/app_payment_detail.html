@@ -15,23 +15,15 @@
     </div>
       <div class="row wrapper">
         <div class="list-group">
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount/100 | currency:""}}</span>
-            Amount
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount_authorized/100 | currency:""}}</span>
-            Amount Authorized
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.amount_refunded/100 | currency:""}}</span>
-            Amount Refunded
-          </a>
           <a class="list-group-item" ui-sref="app.merchants.detail({id:entity.merchant_id})">
             <span class="pull-right">
               {{entity.merchant_id}}
             </span>
             Merchant Id
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.amount/100 | currency:""}}</span>
+            Amount
           </a>
           <a href class="list-group-item">
             <span class="pull-right">
@@ -51,25 +43,29 @@
             </span>
             Wallet
           </a>
+          <a ui-sref="app.entitiesdetail({mode:mode, type: card, id:entity.card_id})" class="list-group-item" ng-show="entity.method==='card'">
+            <span class="pull-right">
+              {{entity.card_id}}
+            </span>
+            Card Id
+          </a>
           <a href class="list-group-item">
             <span class="pull-right">
               {{entity.gateway|titlecase}}
             </span>
             Gateway
           </a>
-          <a class="list-group-item">
-            <span class="pull-right">
-              {{entity.terminal_id|titlecase}}
-            </span>
-            Terminal Id
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.currency}}</span>
-            Currency
-          </a>
           <a href class="list-group-item">
             <span class="label text-base pull-right" title="{{entity.status}}" ng-class="getStatusClass(entity.status)">{{entity.status | titlecase}}</span>
             Status
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.amount_authorized/100 | currency:""}}</span>
+            Amount Authorized
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right">{{entity.amount_refunded/100 | currency:""}}</span>
+            Amount Refunded
           </a>
           <a href class="list-group-item">
             <span class="pull-right" ng-show="entity.refund_status">{{entity.refund_status | titlecase}}</span>
@@ -77,16 +73,12 @@
             Refund Status
           </a>
           <a href class="list-group-item">
+            <span class="pull-right">{{entity.currency}}</span>
+            Currency
+          </a>
+          <a href class="list-group-item">
             <span class="pull-right">{{entity.description}}<span ng-hide="entity.description">No Description</span></span>
             Description
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.email}}</span>
-            Email
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.contact}}</span>
-            Contact
           </a>
           <a href class="list-group-item" ng-show="entity.error_code">
             <span class="pull-right">
@@ -101,22 +93,12 @@
             Error Description
           </div>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
-            Created At
+            <span class="pull-right">{{entity.email}}</span>
+            Email
           </a>
           <a href class="list-group-item">
-            <span class="pull-right">{{entity.authorized_at*1000 | fromNow}} ({{entity.authorized_at*1000 | date : 'medium'}})</span>
-            Authorized At
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right">{{entity.captured_at*1000 | fromNow}} ({{entity.captured_at*1000 | date : 'medium'}})</span>
-            Captured At
-          </a>
-          <a href class="list-group-item">
-            <span class="pull-right" tooltip="{{entity.verified == 1 ? 'Verified' : 'Not Verified'}}">
-              <i class="fa" ng-class="{'fa-check text-success': entity.verified == 1, ' fa-times text-danger':entity.verified !== 1}"></i>
-            </span>
-            Verified {{entity.verified}}
+            <span class="pull-right">{{entity.contact}}</span>
+            Contact
           </a>
           <a href class="list-group-item" ng-init="isCollapsed = true">
             <span class="pull-right">
@@ -131,6 +113,46 @@
               {{label}}
             </a>
           </div>
+          <a ui-sref="app.entitiesdetail({mode:mode, type: transaction, id:entity.transaction_id})" class="list-group-item">
+            <span class="pull-right">
+              {{entity.card_id}}
+            </span>
+            Transaction Id
+          </a>
+          <a href class="list-group-item" ng-show="entity.authorized_at!==0">
+            <span class="pull-right">{{entity.authorized_at*1000 | fromNow}} ({{entity.authorized_at*1000 | date : 'medium'}})</span>
+            Authorized At
+          </a>
+          <a href class="list-group-item" ng-show="entity.created_at!==0">
+            <span class="pull-right">{{entity.created_at*1000 | fromNow}} ({{entity.created_at*1000 | date : 'medium'}})</span>
+            Created At
+          </a>
+          <a href class="list-group-item" ng-show="entity.updated_at2!==0">
+            <span class="pull-right">{{entity.updated_at*1000 | fromNow}} ({{entity.updated_at*1000 | date : 'medium'}})</span>
+            Updated At
+          </a>
+          <a href class="list-group-item" ng-show="entity.captured_at!==null">
+            <span class="pull-right">{{entity.captured_at*1000 | fromNow}} ({{entity.captured_at*1000 | date : 'medium'}})</span>
+            Captured At
+          </a>
+          <a class="list-group-item">
+            <span class="pull-right">
+              {{entity.terminal_id|titlecase}}
+            </span>
+            Terminal Id
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right" tooltip="{{entity.signed == 1 ? 'signed' : 'Not signed'}}">
+              <i class="fa" ng-class="{'fa-check text-success': entity.signed == 1, ' fa-times text-danger':entity.signed !== 1}"></i>
+            </span>
+            Signed
+          </a>
+          <a href class="list-group-item">
+            <span class="pull-right" tooltip="{{entity.verified == 1 ? 'Verified' : 'Not Verified'}}">
+              <i class="fa" ng-class="{'fa-check text-success': entity.verified == 1, ' fa-times text-danger':entity.verified !== 1}"></i>
+            </span>
+            Verified
+          </a>
           <a href class="list-group-item"  ng-init="isRefundsCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="showRefunds()" ng-show="entity.refund_status">Show/Hide</button>
