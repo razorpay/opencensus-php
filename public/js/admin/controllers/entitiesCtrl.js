@@ -183,7 +183,21 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         $scope.alerts.resetAlerts();
 
         if(data.success) {
-          $scope.showDetail(data.data);
+          var entity = data.data.entity;
+          var stateArray = {
+            'payment' : 'app.payments',
+            'merchant': 'app.merchants.detail'
+          }, state = 'app.entitiesdetail';
+
+          if(entity in stateArray) {
+            state = stateArray[entity];
+          }
+
+          $state.go(state, {
+            mode: $scope.mode,
+            id: data.data.id,
+            type: entity
+          });
         }
         else {
           angular.forEach(data.errors, function(value, key){
