@@ -41,7 +41,7 @@
           <option value="refund">Refunds</option>
           <option value="settlement">Settlements</option>
           <option value="terminal">Terminal</option>
-          <option value="transaction">Transactions</option>
+          <option value="transaction">Tran  sactions</option>
         </select>
       </div>
       <div class="col-sm-2">
@@ -99,10 +99,13 @@
           <tr ng-repeat="row in entity.items">
             <td ng-repeat="key in notSorted(row) | limitTo: 9" ng-init="value = row[key]"
             >
-              <a ui-sref="{{getState(key)}}" ng-show="getState(key)!=='-'">
+              <a ui-sref="{{getState(row.entity, true)}}" ng-show="key==='id'">
                 {{value}}
               </a>
-              <span ng-show="getState(key)==='-'">
+              <a ui-sref="{{getState(key, false)}}" ng-show="getState(key)!=='-'">
+                {{value}}
+              </a>
+              <span ng-show="key!=='id' && getState(key)==='-'">
                 {{value}}
               </span>
             </td>

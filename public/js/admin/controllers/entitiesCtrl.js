@@ -216,7 +216,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
     }
 
 
-    $scope.getState = function(type) {
+    $scope.getState = function(type, force) {
 
       switch(type) {
         case 'merchant_id':
@@ -226,6 +226,9 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         case 'payment':
           return "app.payments({id:value, mode:mode})";
         default:
+          if(force === true) {
+            return "app.entitiesdetail({id:value, mode:mode, type: row.entity})";
+          }
           if(type.substr(-3) === '_id') {
             return "app.entitiesdetail({id:value, mode:mode, type: key})";
           }
