@@ -121,17 +121,30 @@ class Entity extends Base\PublicEntity
 
     public function edit(array $input = array(), $operation = 'edit')
     {
-        // Ensure this terminal hasn't produced successful transaction yet.
-        assert ($this->getUsedCount() === 0);
+        if ($this->getUsedCount() === 0)
+        {
+            // Essentially we ask for all the input anew and fill it in.
+            // Put the values which are not changing like gateway and merchant_id
+            // by ourselves.
 
-        // Essentially we ask for all the input anew and fill it in.
-        // Put the values which are not changing like gateway and merchant_id
-        // by ourselves.
+            $input[Entity::GATEWAY] = $this->getGateway();
+            $input[Entity::MERCHANT_ID] = $this->getMerchantId();
 
-        $input[Entity::GATEWAY] = $this->getGateway();
-        $input[Entity::MERCHANT_ID] = $this->getMerchantId();
+            return parent::edit($input, 'create');
+        }
+        else
+        {
+            $this->editUsedTerminal($input);
+        }
+    }
 
-        return parent::edit($input, 'create');
+    protected function editUsedTerminal($input)
+    {
+        assert ($this->getUsedCount() !== 0);
+
+        $this->getValidator()->usedTerminalValidator($this, $input);
+
+        $this->fill($input);
     }
 
     public function incrementUsedCount()

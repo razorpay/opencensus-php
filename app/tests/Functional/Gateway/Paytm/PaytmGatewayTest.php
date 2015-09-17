@@ -27,7 +27,18 @@ class PaytmGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $payment = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -111,5 +122,16 @@ class PaytmGatewayTest extends TestCase
         $testData['request']['content'] = $payment;
 
         $content = $this->startTest($testData);
+    }
+
+    public function testRefundByAdminOnAuthorizedPayment()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $this->ba->proxyAuth();
+
+        $content = $this->refundAuthorizedPayment($payment['id']);
+
+        $this->assertEquals('refund', $content['entity']);
     }
 }

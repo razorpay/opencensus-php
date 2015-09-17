@@ -25,6 +25,7 @@ final class Route
         'payment_verify'                    => ['get',      'payments/{id}/verify',                     'PaymentController@getVerify'                                   ],
         'payment_cancel'                    => ['get',      'payments/{id}/cancel',                     'PaymentController@postCancel'                                  ],
         'payment_authorize_failed'          => ['post',     'payments/{id}/authorize_failed',           'PaymentController@postAuthorizeFailedPayment'                  ],
+        'payment_authorize_refund'          => ['post',     'payments/{id}/authorize_refund',           'PaymentController@postRefundAuthorized'                        ],
         'payment_fetch_by_id'               => ['get',      'payments/{id}',                            'PaymentController@getPayment'                                  ],
         'payment_fetch_multiple'            => ['get',      'payments',                                 'PaymentController@getPayments'                                 ],
         'payment_fetch_refunds'             => ['get',      'payments/{id}/refunds',                    'PaymentController@getRefundsForPayment'                        ],
@@ -37,6 +38,7 @@ final class Route
         'payment_verify_all'                => ['get',      'payments/verify/all',                      'PaymentController@getVerifyPayments'                           ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                   ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                                  ],
+        'refund_hdfcnb'                     => ['get',      'refunds/hdfcnb/generate',                  'PaymentController@generateHdfcNetbankingRefunds'               ],
         'card_fetch_by_id'                  => ['get',      'cards/{id}',                               'PaymentController@getCard'                                     ],
         'card_fetch_multiple'               => ['get',      'cards',                                    'PaymentController@getCards'                                    ],
         'iin_fetch_by_iin'                  => ['get',      'iins/{id}',                                'CardController@getIin'                                         ],
@@ -61,7 +63,7 @@ final class Route
         'merchant_fetch_bank_account'       => ['get',      'merchants/{id}/bank_account',              'MerchantController@getBankAccount'                             ],
         'merchant_create_terminal'          => ['post',     'merchants/{id}/terminals',                 'MerchantController@postCreateTerminal'                         ],
         'merchant_get_terminals'            => ['get',      'merchants/{id}/terminals',                 'MerchantController@getTerminals'                               ],
-        'merchant_get_terminal'             => ['get',      'merchants/{mid}/terminals/{tid}',          'MerchantController@getTermianl'                                ],
+        'merchant_get_terminal'             => ['get',      'merchants/{mid}/terminals/{tid}',          'MerchantController@getTerminal'                                ],
         'merchant_delete_terminal'          => ['delete',   'merchants/{mid}/terminals/{tid}',          'MerchantController@deleteTerminal'                             ],
         'merchant_modify_terminal'          => ['put',      'merchants/{mid}/terminals/{tid}',          'MerchantController@putTerminal'                                ],
         'merchant_put_payment_methods'      => ['put',      'merchants/{mid}/methods',                  'MerchantController@putMethods'                                 ],
@@ -73,6 +75,7 @@ final class Route
         'key_fetch_by_id'                   => ['get',      'keys/{id}',                                'KeyController@getKey'                                          ],
         'key_fetch_multiple'                => ['get',      'keys',                                     'KeyController@getKeys'                                         ],
         'terminal_delete'                   => ['delete',   'terminals/{id}',                           'MerchantController@deleteTerminal2'                            ],
+        'terminal_edit'                     => ['put',      'terminals/{id}',                           'MerchantController@putTerminal2'                               ],
         'pricing_create_plan'               => ['post',     'pricing',                                  'PricingController@postCreatePricingPlan'                       ],
         'pricing_get_plans'                 => ['get',      'pricing',                                  'PricingController@getPricingPlans'                             ],
         'pricing_get_merchant_plans'        => ['get',      'pricing/merchants',                        'PricingController@getMerchantPricingPlans'                     ],
@@ -194,6 +197,7 @@ final class Route
         'merchant_fetch_balance',
         'merchant_beneficiary_file',
         'terminal_delete',
+        'terminal_edit',
         'key_fetch_by_id',
         'key_fetch_multiple',
         'pricing_create_plan',
@@ -218,6 +222,7 @@ final class Route
         'payment_auto_capture',
         'payment_auto_capture_email',
         'payment_verify_all',
+        'refund_hdfcnb',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
@@ -245,6 +250,7 @@ final class Route
         'adj_add',
         'card_fetch_by_id',
         'card_fetch_multiple',
+        'payment_authorize_refund',
     );
 
     public static $internalApps = array(
@@ -264,7 +270,8 @@ final class Route
                 'payment_timeout',
                 'merchant_daily_report',
                 'payment_auto_capture',
-                'payment_verify_all'),
+                'payment_verify_all',
+                'refund_hdfcnb'),
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),

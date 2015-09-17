@@ -316,6 +316,24 @@ trait PaymentTrait
         return $refund;
     }
 
+    protected function refundAuthorizedPayment($id)
+    {
+        $this->ba->proxyAuth();
+
+        $content = array();
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/'.$id.'/authorize_refund',
+            'content' => []);
+
+        $refund = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('refund', $refund['entity']);
+
+        return $refund;
+    }
+
     protected function authorizeFailedPayment($id)
     {
         $request = array(
@@ -334,6 +352,18 @@ trait PaymentTrait
         $request = array(
             'url' => '/merchants/'.$mid.'/terminals/'.$tid,
             'method' => 'delete');
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function editTerminal($tid, $input)
+    {
+        $request = array(
+            'url' => '/terminals/'.$tid,
+            'method' => 'put',
+            'content' => $input);
 
         $this->ba->appAuth();
 
@@ -411,6 +441,19 @@ trait PaymentTrait
         ];
 
         return $payment;
+    }
+
+    protected function generateRefundsExcelForHdfcNB()
+    {
+        $this->ba->appAuth();
+
+        $request = array(
+            'url' => '/refunds/hdfcnb/generate',
+            'method' => 'get',
+            'content' => [],
+        );
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function getDefaultNetbankingPaymentArray()

@@ -230,7 +230,7 @@ class Processor
 
         $payment->setError($code, $desc);
 
-        $payment->save();
+        $payment->saveOrFail();
 
         $this->tracePaymentFailed($error, $traceCode);
     }

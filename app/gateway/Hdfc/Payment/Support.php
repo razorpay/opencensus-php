@@ -23,6 +23,11 @@ trait Support
      */
     protected function supportPayment($input, $type)
     {
+        if ($this->isRefundingAuthorizedPayment($input, $type))
+        {
+            return;
+        }
+
         $this->retrievePreviousGatewayTransaction($input, $type);
 
         $result = $this->model['result'];
@@ -267,5 +272,11 @@ trait Support
                 TraceCode::GATEWAY_SUPPORT_RESPONSE,
                 $this->supportPaymentResponse);
         }
+    }
+
+    protected function isRefundingAuthorizedPayment($input, $type)
+    {
+        return (($type === 'refund') and
+                ($input['payment']['status'] === 'authorized'));
     }
 }

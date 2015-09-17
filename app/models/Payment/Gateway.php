@@ -54,6 +54,10 @@ class Gateway
         ),
     );
 
+    public static $authAndCapture = array(
+        self::HDFC
+    );
+
     public static $cardNetworkMap = array(
         self::HDFC => array(
             Network::MC,
@@ -71,6 +75,12 @@ class Gateway
         self::KOTAK => array(
             Network::RUPAY),
     );
+
+    public static $verifyEnabled = array(
+        self::AXIS_MIGS,
+        self::BILLDESK,
+        self::MOBIKWIK,
+        self::NETBANKING_HDFC);
 
     public static function getChannel($gateway)
     {
@@ -94,6 +104,11 @@ class Gateway
     public static function isMethodSupported($method, $gateway)
     {
         return (in_array($gateway, self::$methodMap[$method]));
+    }
+
+    public static function supportsAuthAndCapture($gateway)
+    {
+        return (in_array($gateway, self::$authAndCapture));
     }
 
     public static function isCardNetworkSupported($network, $gateway)

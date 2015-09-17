@@ -10,11 +10,28 @@ use Trace\TraceCode;
 
 class Gateway
 {
+    /**
+     * Trace instance for tracing
+     * @var Trace\Trace
+     */
     protected $trace;
 
+    /**
+     * @var array
+     */
     protected $input;
 
+    /**
+     * Action being taken currently
+     * @var string
+     */
     protected $action;
+
+    /**
+     * Whether the gateway supports authorizing payments.
+     * @var boolean
+     */
+    protected $authorize = false;
 
     /**
      * The state in which the api is operating

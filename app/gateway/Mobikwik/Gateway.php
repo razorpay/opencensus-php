@@ -45,6 +45,13 @@ class Gateway extends Base\Gateway
             'method'  => 'post',
             'content' => $content,
         );
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         return $request;
     }
@@ -52,15 +59,20 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-
         $this->verifySecureHash($input['gateway']);
 
         $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
             $input['gateway']['orderid'], Action::AUTHORIZE);
-        $input['received'] = 1;
+        $input['gateway']['received'] = 1;
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
-
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'request' => $input['gateway'],
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
         $this->verifyPaymentCallbackResponse($input);
     }
 
@@ -100,6 +112,13 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponseContent = $content;
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'request' => $verify->verifyResponseBody,
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
         return $content;
 
 

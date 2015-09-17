@@ -185,6 +185,22 @@ class Gateway extends Base\Gateway
 
         $status = VerifyResult::STATUS_MATCH;
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            ['payment_id' => $input['payment']['id'],
+             'content' => $content]);
+
+        if ((isset($content['vpc_DRExists']) === false) and
+            ($content['vpc_TxnResponseCode'] === '7'))
+        {
+            // Most probably means AMA credentials are not correct.
+            // However, not sure. Read the error message provided.
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                $content['vpc_TxnResponseCode'],
+                $content['vpc_Message']);
+        }
+
         if ($content['vpc_DRExists'] !== 'Y')
         {
             // Could be the case where the transaction didn't even hit migs
@@ -206,8 +222,6 @@ class Gateway extends Base\Gateway
         {
             assert ($content['vpc_DRExists'] === 'Y');
 
-            $amountRefunded = (int) $content['vpc_RefundedAmount'];
-
             if ($payment['vpc_TxnResponseCode'] === '0')
             {
                 $verify->apiSuccess = true;
@@ -215,6 +229,8 @@ class Gateway extends Base\Gateway
                 if ($content['vpc_TxnResponseCode'] === '0')
                 {
                     $verify->gatewaySuccess = true;
+
+                    $amountRefunded = (int) $content['vpc_RefundedAmount'];
 
                     // Check that refund amount matches.
                     if ($amountRefunded !== $input['payment']['amount_refunded'])

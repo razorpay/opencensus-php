@@ -133,6 +133,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function putTerminal2($tid)
+    {
+        $input = Input::all();
+
+        $data = (new Terminal\Service)->editTerminal($tid, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postActivate($id)
     {
         $data = (new Merchant\Service)->activate($id);
