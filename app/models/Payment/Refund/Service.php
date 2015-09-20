@@ -3,6 +3,7 @@
 namespace Models\Payment\Refund;
 
 use Carbon\Carbon;
+use Models\Bank\IFSC;
 use Models\Base;
 use Models\Gateway;
 use Models\Payment;
@@ -17,17 +18,27 @@ class Service extends Base\Service
         $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
 
-        if (isset($input['from']))
+        if (isset($input['on']))
         {
-            $from = $input['from'];
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+            $to = $from->addDay()->timestamp - 1;
+            $from = $from->timestamp;
         }
-        else if (isset($input['to']))
+        else
         {
-            $to = $input['to'];
+            if (isset($input['from']))
+            {
+                $from = $input['from'];
+            }
+
+            if (isset($input['to']))
+            {
+                $to = $input['to'];
+            }
         }
 
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-            'HDFC', $from, $to);
+            IFSC::HDFC, $from, $to);
 
         $count = $refunds->count();
 
