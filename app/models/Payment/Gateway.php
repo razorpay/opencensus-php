@@ -62,7 +62,8 @@ class Gateway
         self::HDFC => array(
             Network::MC,
             Network::VISA,
-            Network::MAES),
+            Network::MAES,
+            Network::RUPAY),
         self::AXIS_MIGS => array(
             Network::MC,
             Network::VISA),

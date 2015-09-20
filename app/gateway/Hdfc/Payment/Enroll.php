@@ -55,7 +55,7 @@ trait Enroll
         $this->runRequestResponseFlow(
             $this->enrollRequest,
             $this->enrollResponse);
-s($this->enrollResponse);
+
         //
         // If there is an error then just return
         //
@@ -138,13 +138,22 @@ s($this->enrollResponse);
         //
         $data['currencycode'] = self::INR_CODE;
 
-        if ($input['card']['network_code'] === Card\Network::MAES)
+        $network = $input['card']['network_code'];
+
+        if ($network === Card\Network::MAES)
         {
             $data['action'] = Action::PURCHASE;
         }
         else
         {
             $data['action'] = Action::AUTHORIZE;
+        }
+
+        // Only required in case of Rupay. Weird! But ... !
+        if ($network === Card\Network::RUPAY)
+        {
+            $data['merchantResponseUrl'] = $input['callbackUrl'];
+            $data['merchantErrorUrl'] = $input['callbackUrl'];
         }
     }
 
