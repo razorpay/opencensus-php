@@ -1109,12 +1109,17 @@ class Service extends Base\Service
         }
     }
 
-    public function generateHDFCRefundsExcel()
+    public function generateNetBankingRefunds($input)
     {
-        $this->setApiCredentials(null, 'test');
+        $bank = $input['bank'];
+        unset($input['bank']);
+
+        $this->setApiCredentials(null, $input['mode']);
+        unset($input['mode']);
+
         try
         {
-            $response = $this->api->refund->generateHDFCRefundsExcel();
+            $response = $this->api->refund->generateNetBankingExcel($bank, $input);
             return [null, $response->toArray()];
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)

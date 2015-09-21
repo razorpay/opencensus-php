@@ -77,7 +77,6 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
 
     $scope.generateNetBankingRefunds = function(data) {
       var url = "admin/"+data.mode+"/refunds/netbanking";
-      console.log(url);
       var request = $http({
         method: "POST",
         url: url,

@@ -192,7 +192,7 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
 
-        Route::post('/admin/refunds/hdfc', 'AdminController@generateHDFCRefunds');
+        Route::post('/admin/{mode}/refunds/netbanking', 'AdminController@generateNetBankingRefunds');
 
     });
 

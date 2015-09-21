@@ -17,10 +17,12 @@ class Refund extends Entity
         return parent::all();
     }
 
-    public function generateHDFCRefundsExcel()
+    public function generateNetBankingExcel($bank, $params)
     {
-        $relativeUrl = $this->getEntityUrl() . 'hdfcnb/generate';
+        // this includes date/to/from
+        $query = http_build_query($params);
 
+        $relativeUrl = $this->getEntityUrl() . "{$bank}nb/generate?$query";
         return $this->request('GET', $relativeUrl);
     }
 }

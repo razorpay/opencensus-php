@@ -441,9 +441,10 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function generateHDFCRefunds()
+    public function generateNetBankingRefunds()
     {
-        list($error, $data) = (new Admin\Service)->generateHDFCRefundsExcel();
+        $input = Input::all();
+        list($error, $data) = (new Admin\Service)->generateNetBankingRefunds($input);
         return AppResponse::jsonResponse($error, $data);
     }
 }
