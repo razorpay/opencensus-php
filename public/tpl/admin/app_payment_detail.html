@@ -168,7 +168,7 @@
           </div>
         </div>
         <div class="text-center">
-          <div  ng-show="entity.status==='authorized'">
+          <span ng-show="entity.status==='authorized'">
             <script type="text/ng-template" id="captureModalContent.html">
               <div class="modal-header">
                 <h3 class="modal-title">Capture Payment</h3>
@@ -185,8 +185,8 @@
               </div>
             </script>
             <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openCaptureModal()">Capture Payment</button>
-          </div>
-          <div  ng-show="entity.status==='captured' && entity.refund_status !== 'full'">
+          </span>
+          <span ng-show="entity.status==='captured' && entity.refund_status !== 'full'">
             <script type="text/ng-template" id="refundModalContent.html">
               <div class="modal-header">
                 <h3 class="modal-title">Refund Payment</h3>
@@ -203,7 +203,8 @@
               </div>
             </script>
             <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openRefundModal()">Refund Payment</button>
-          </div>
+          </span>
+          <button class="btn btn-default btn-rounded" ng-click="verifyPayment()">Verify Payment</button>
         </div>
       </div>
     </div>

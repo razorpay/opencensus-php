@@ -55,6 +55,32 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
       );
     };
 
+    $scope.verifyPayment = function(){
+      var request = $http({
+                    method: "get",
+                    url: "/admin/payment/" + $scope.entity.id + "/verify"
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          var payment = JSON.stringify(data.data.payment);
+          $scope.alerts.addAlert('success',
+            'Payment Verified successfully: '+payment, true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+        window.scrollTo(0, 0);
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.capture = function(amount) {
 
       var captureAmount = parseInt(amount);
