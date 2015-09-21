@@ -115,7 +115,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
           $scope.$watch('filters.' + entity + '.' + filter, function(newValue, oldValue) {
             if(newValue!== oldValue) {
-              showTable();
+              $scope.showTable();
             }
           });
         }
