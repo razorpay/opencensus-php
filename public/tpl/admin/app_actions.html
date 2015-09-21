@@ -26,8 +26,8 @@
         <a href class="list-group-item" ng-click="verifyAllPayments()">
           Verify All Payments
         </a>
-        <a href class="list-group-item" ng-click="generateHDFCRefunds()">
-          Generate HDFC Refunds Excel (Netbanking)
+        <a href class="list-group-item" ng-click="openGenerateRefund()">
+          Generate Refunds Excel (Netbanking)
         </a>
         <a href class="list-group-item" ng-click="generateBeneficiaryFile()">
           Generate Beneficiary File
@@ -118,7 +118,7 @@
   <div class="modal-body settlement-modal">
     <form class="form-horizontal" ng-init="channel='kotak'">
       <div class="form-group">
-        <label class="col-lg-2 control-label">Channel</label>
+        <label for="channel" class="col-lg-2 control-label">Channel</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="channel" ng-model="channel">
             <option value="kotak">Kotak</option>
@@ -288,5 +288,51 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(date)">Download</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="refundGenerateModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Generate Refund Excel</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="date" class="col-lg-2 control-label">Date: </label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="from" class="col-lg-2 control-label">From</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="from">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="to" class="col-lg-2 control-label">To</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="to">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="bank" class="col-lg-2 control-label">Bank</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="bank" ng-model="bank">
+            <option value="hdfc">HDFC</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date,from,do,bank)">Generate</button>
   </div>
 </script>

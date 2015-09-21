@@ -75,16 +75,17 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
     }
 
-    $scope.generateHDFCRefunds = function() {
+    $scope.generateNetBankingRefunds = function(data) {
       var request = $http({
         method: "POST",
-        url: "/admin/refunds/hdfc"
+        url: "admin/refunds/netbanking",
+        data: data
       });
 
       request
       .success(function(data) {
         if(data.success) {
-          $scope.alerts.addAlert('success', 'HDFC Refunds Excel Generated ' + JSON.stringify(data.data), true);
+          $scope.alerts.addAlert('success', bank+ ' Refunds Excel Generated ' + JSON.stringify(data.data), true);
         }
         else {
           $scope.alerts.resetAlerts();
@@ -211,6 +212,21 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       modalInstance.result.then(
         function (channel) {
           $scope.initiateSetl(channel);
+        },
+        function () {
+          ;
+        });
+    };
+
+    $scope.openGenerateRefund = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'refundGenerateModalContent.html',
+        controller: 'generateRefundModalCtrl'
+      });
+
+      modalInstance.result.then(
+        function (data) {
+          console.debug(data);
         },
         function () {
           ;
@@ -436,6 +452,32 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
   function ($scope, $modalInstance, $http) {
       $scope.ok = function (date) {
         $modalInstance.close(date);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+.controller('generateRefundModalCtrl', ['$scope', '$modalInstance', '$http',
+  function ($scope, $modalInstance, $http) {
+
+    $scope.bank = "hdfc";
+    $scope.date = moment().format('YYYY-MM-DD');
+
+      $scope.ok = function (date, from, to, bank) {
+        var data = {
+          bank: bank
+        };
+
+        if(from && to) {
+          data.from = from;
+          data.to = to;
+        }
+        else {
+          data.date = date;
+        }
+
+        $modalInstance.close(data);
       };
 
       $scope.cancel = function () {
