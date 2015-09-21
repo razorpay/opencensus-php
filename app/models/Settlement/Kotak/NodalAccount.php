@@ -204,8 +204,12 @@ class NodalAccount
     {
         $amounts['neft'] = sprintf('%.2f', $amounts['neft']);
         $amounts['ift'] = sprintf('%.2f', $amounts['ift']);
+        $amounts['total'] = sprintf('%.2f', $amounts['total']);
 
-        $data = compact('amounts', 'count');
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $subject = "Kotak Settlement files for $today";
+
+        $data = compact('amounts', 'count', 'subject');
 
         $fileName = $this->getFileToWriteNameWithoutExt();
         $path = $this->getStorageDir();
@@ -219,9 +223,7 @@ class NodalAccount
 
             $message->from('settlement@razorpay.com', 'Kotak Settlement');
 
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('Kotak Settlement files for ' . $today);
+            $message->subject($data['subject']);
 
             $message->to($emails);
 

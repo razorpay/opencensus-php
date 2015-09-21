@@ -17,27 +17,29 @@
       <table style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;"><tr style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
 <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
 <p>PFA Settlement files.</p>
-            <table>
+            <table style="border: 1px solid grey;">
                 <thead>
-                    <th>Description</th>
-                    <th>Amount</th>
-                    <th>Count</th>
+                    <tr style="border: 1px solid grey">
+                        <th style="border: 1px solid grey">Description</th>
+                        <th style="border: 1px solid grey">Amount</th>
+                        <th style="border: 1px solid grey">Count</th>
+                    </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>NEFT</td>
-                        <td>{{{$amounts['neft']}}}</td>
-                        <td>{{{$count['neft']}}}</td>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">NEFT</td>
+                        <td style="border: 1px solid grey">{{{$amounts['neft']}}}</td>
+                        <td style="border: 1px solid grey">{{{$count['neft']}}}</td>
                     </tr>
-                    <tr>
-                        <td>IFT</td>
-                        <td>{{{$amounts['ift']}}}</td>
-                        <td>{{{$count['ift']}}}</td>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">IFT</td>
+                        <td style="border: 1px solid grey">{{{$amounts['ift']}}}</td>
+                        <td style="border: 1px solid grey">{{{$count['ift']}}}</td>
                     </tr>
-                    <tr>
-                        <td>Total</td>
-                        <td>{{{$amounts['total']}}}</td>
-                        <td>{{{$count['total']}}}</td>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">Total</td>
+                        <td style="border: 1px solid grey">{{{$amounts['total']}}}</td>
+                        <td style="border: 1px solid grey">{{{$count['total']}}}</td>
                     </tr>
                 </tbody>
             </table>
