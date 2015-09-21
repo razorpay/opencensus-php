@@ -59,7 +59,10 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       merchant: {
         activated:    ['all', 0, 1],
         hold_funds:   ['all', 0, 1],
-        live:         ['all', 0, 1]
+        live:         ['all', 0, 1],
+        paytm:        ['all', true, false],
+        mobikwik:     ['all', true, false],
+        card:         ['all', true, false]
       },
       netbanking: {
         payment_id: ['Payment Id'],
@@ -147,6 +150,8 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       var labels = {
         0: 'no',
         1: 'yes',
+        true: 'yes',
+        false: 'no',
         '0001': 'BillDesk Cancel',
         '0300': 'Success',
         '0002': 'Bank Pending',
@@ -252,6 +257,36 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
       }
     }
 
+    function generateQueryParams(count, skip, entity, filters) {
+      var query = "count="+count+"&skip="+ skip;
+
+      // We send the methods param in a JSON encoded format
+      if(entity === 'merchant') {
+
+        var methods = {}, validMethods = ['paytm', 'mobikwik', 'card'];
+
+        for(var i in validMethods) {
+          var method = validMethods[i];
+          var value = filters['merchant'][method];
+
+          if(value && value !== 'all') {
+            methods[method] = value;
+          }
+        }
+
+        filters['merchant']['methods'] = JSON.stringify(methods);
+      }
+
+      for(var filterName in filters[entity]) {
+        var value = filters[entity][filterName];
+        console.log([filterName, value]);
+        if(value !== 'all' && value!== '' && value!== 'true' && value!== 'false'){
+          query+= ('&' + filterName + '=' + encodeURIComponent(value))
+        }
+      }
+
+      return query;
+    }
     function generateTable() {
 
       if(!$scope.entity_type){
@@ -259,13 +294,7 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
         return;
       }
 
-      var query = "count="+$scope.count+"&skip="+ $scope.entity.skip;
-      for(var filterName in $scope.filters[$scope.entity_type]) {
-        var value = $scope.filters[$scope.entity_type][filterName];
-        if(value !== 'all' && value!== ''){
-          query+= ('&' + filterName + '=' + encodeURIComponent(value))
-        }
-      }
+      var query = generateQueryParams($scope.count, $scope.entity.skip, $scope.entity_type, $scope.filters);
 
       var request = $http.get("/admin/" + $scope.mode +  "/fetchentity/" + $scope.entity_type + "?" + query);
 
