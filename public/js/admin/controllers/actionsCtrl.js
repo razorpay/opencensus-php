@@ -75,18 +75,18 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
     }
 
-    $scope.generateNetBankingRefunds = function(data) {
-      var url = "admin/"+data.mode+"/refunds/netbanking";
+    $scope.generateNetBankingRefunds = function(params) {
+      var url = "admin/"+params.mode+"/refunds/netbanking";
       var request = $http({
         method: "POST",
         url: url,
-        data: data
+        data: params
       });
 
       request
       .success(function(data) {
         if(data.success) {
-          $scope.alerts.addAlert('success', bank+ ' Refunds Excel Generated ' + JSON.stringify(data.data), true);
+          $scope.alerts.addAlert('success', params.bank.toUpperCase()+ ' Refunds Excel Generated (Count = ' + data.data.count + ')', true);
         }
         else {
           $scope.alerts.resetAlerts();
