@@ -279,7 +279,6 @@ app.controller('EntitiesCtrl', ['$scope', '$http', 'alertsFactory', '$state', '$
 
       for(var filterName in filters[entity]) {
         var value = filters[entity][filterName];
-        console.log([filterName, value]);
         if(value !== 'all' && value!== '' && value!== 'true' && value!== 'false'){
           query+= ('&' + filterName + '=' + encodeURIComponent(value))
         }
