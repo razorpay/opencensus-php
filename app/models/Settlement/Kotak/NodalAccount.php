@@ -160,7 +160,7 @@ class NodalAccount
 
         $count['total'] = $settlements->count();
         $count['neft']  = $neftCount;
-        $count['ift']   = $iftAmount;
+        $count['ift']   = $iftCount;
 
         $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
 
