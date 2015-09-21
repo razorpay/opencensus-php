@@ -43,7 +43,7 @@
             </span>
             Wallet
           </a>
-          <a ui-sref="app.entitiesdetail({mode:mode, type: card, id:entity.card_id})" class="list-group-item" ng-show="entity.method==='card'">
+          <a ui-sref="app.entitiesdetail({mode:mode, type: 'card', id:entity.card_id})" class="list-group-item" ng-show="entity.method==='card'">
             <span class="pull-right">
               {{entity.card_id}}
             </span>
@@ -113,9 +113,9 @@
               {{label}}
             </a>
           </div>
-          <a ui-sref="app.entitiesdetail({mode:mode, type: transaction, id:entity.transaction_id})" class="list-group-item">
+          <a ui-sref="app.entitiesdetail({mode:mode, type: 'transaction', id:entity.transaction_id})" class="list-group-item">
             <span class="pull-right">
-              {{entity.card_id}}
+              {{entity.transaction_id}}
             </span>
             Transaction Id
           </a>
@@ -135,10 +135,10 @@
             <span class="pull-right">{{entity.captured_at*1000 | fromNow}} ({{entity.captured_at*1000 | date : 'medium'}})</span>
             Captured At
           </a>
-          <a class="list-group-item">
-            <span class="pull-right">
-              {{entity.terminal_id|titlecase}}
-            </span>
+          <a class="list-group-item" ui-sref="app.entitiesdetail({mode:mode, type: 'terminal', id:entity.terminal_id})">
+              <span class="pull-right">
+                {{entity.terminal_id}}
+              </span>
             Terminal Id
           </a>
           <a href class="list-group-item">
