@@ -329,10 +329,19 @@
           </select>
         </div>
       </div>
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Mode</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="mode">
+            <option value="live">Live</option>
+            <option value="test">Test</option>
+          </select>
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(date,from,do,bank)">Generate</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date,from,do,bank, mode)">Generate</button>
   </div>
 </script>

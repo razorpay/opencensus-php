@@ -76,9 +76,11 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
     }
 
     $scope.generateNetBankingRefunds = function(data) {
+      var url = "admin/"+data.mode+"/refunds/netbanking";
+      console.log(url);
       var request = $http({
         method: "POST",
-        url: "admin/refunds/netbanking",
+        url: url,
         data: data
       });
 
@@ -210,12 +212,9 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
 
       modalInstance.result.then(
-        function (channel) {
-          $scope.initiateSetl(channel);
-        },
-        function () {
-          ;
-        });
+        $scope.initiateSetl,
+        $.noop
+      );
     };
 
     $scope.openGenerateRefund = function () {
@@ -225,12 +224,8 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
 
       modalInstance.result.then(
-        function (data) {
-          console.debug(data);
-        },
-        function () {
-          ;
-        });
+        $scope.generateNetBankingRefunds,
+        $.noop);
     };
 
     $scope.openAddIIN = function () {
@@ -240,12 +235,9 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
 
       modalInstance.result.then(
-        function (iin) {
-          $scope.addIIN(iin);
-        },
-        function () {
-          ;
-        });
+        $scope.addIIN,
+        $.noop
+      );
     };
 
     $scope.openVerifyPayment = function () {
@@ -255,12 +247,9 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
 
       modalInstance.result.then(
-        function (id) {
-          $scope.verifyPayment(id);
-        },
-        function () {
-          ;
-        });
+        $scope.verifyPayment,
+        $.noop
+      );
     };
 
     $scope.openAuthorizeFailedPayment = function () {
@@ -270,12 +259,9 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
       });
 
       modalInstance.result.then(
-        function (id) {
-          $scope.authorizeFailedPayment(id);
-        },
-        function () {
-          ;
-        });
+        $scope.authorizeFailedPayment,
+        $.noop
+      );
     };
 
     $scope.triggerError = function() {
@@ -320,8 +306,8 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
             $scope.sendTestEmail(data);
           }
         },
-        function () {
-        });
+        $.noop
+      );
     }
 
     $scope.downloadBeneficiaryFile = function () {
@@ -341,9 +327,8 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
             window.open('/admin/beneficiary/dl?date='+date);
           }
         },
-        function () {
-          ;
-      });
+        $.noop
+      );
     };
 
     $scope.generateBeneficiaryFile = function() {
@@ -462,11 +447,13 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
   function ($scope, $modalInstance, $http) {
 
     $scope.bank = "hdfc";
+    $scope.mode = "live";
     $scope.date = moment().format('YYYY-MM-DD');
 
-      $scope.ok = function (date, from, to, bank) {
+      $scope.ok = function (date, from, to, bank, mode) {
         var data = {
-          bank: bank
+          bank: bank,
+          mode: mode
         };
 
         if(from && to) {
