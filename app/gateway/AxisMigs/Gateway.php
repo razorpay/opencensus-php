@@ -229,14 +229,6 @@ class Gateway extends Base\Gateway
                 if ($content['vpc_TxnResponseCode'] === '0')
                 {
                     $verify->gatewaySuccess = true;
-
-                    $amountRefunded = (int) $content['vpc_RefundedAmount'];
-
-                    // Check that refund amount matches.
-                    if ($amountRefunded !== $input['payment']['amount_refunded'])
-                    {
-                        $status = VerifyResult::REFUND_AMOUNT_MISMATCH;
-                    }
                 }
                 else
                 {
