@@ -284,7 +284,8 @@ class Service extends Base\Service
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
-        $timedOut = 0; $verified = 0; $failed = 0; $time = time();
+        $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0;
+        $time = time();
 
         foreach ($payments as $payment)
         {
@@ -299,7 +300,13 @@ class Service extends Base\Service
             catch (Exception\PaymentVerificationException $e)
             {
                 $failed++;
-                // Just continue
+
+                // Attempt to authorize payments whose verification failed
+                $this->processor()->authorizeFailedPayment($payment);
+
+                $authorized++;
+
+                // Now Just continue
             }
             catch (Exception\GatewayTimeoutException $e)
             {
@@ -313,6 +320,7 @@ class Service extends Base\Service
         $results = array(
             'verified'      => $verified,
             'failed'        => $failed,
+            'authorized'    => $authorized,
             'timed out'     => $timedOut,
             'total time'    => $time . ' secs');
 
