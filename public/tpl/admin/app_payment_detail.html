@@ -205,6 +205,7 @@
             <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openRefundModal()">Refund Payment</button>
           </span>
           <button class="btn btn-default btn-rounded" ng-click="verifyPayment()">Verify Payment</button>
+          <button ng-show="entity.status==='failed'" class="btn btn-default btn-rounded" ng-click="authorizeFailedPayment()">Authorize</button>
         </div>
       </div>
     </div>

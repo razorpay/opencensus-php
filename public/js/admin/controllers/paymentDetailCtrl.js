@@ -34,6 +34,31 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
       );
     };
 
+    $scope.authorizeFailedPayment = function(){
+      var request = $http({
+        method: "post",
+        url: "/admin/payment/" + $scope.entity.id  + "/authorize_failed"
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          var payment = JSON.stringify(data.data.payment);
+          $scope.alerts.addAlert('success',
+            'Payment Authorized Successfully: '+payment, true);
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.openCaptureModal = function() {
       var modalInstance = $modal.open({
         templateUrl: 'captureModalContent.html',
