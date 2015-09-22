@@ -116,5 +116,7 @@ class Repository extends Base\Repository
                     $join->where($method, '=', $value);
                 }
             });
+
+        $query->select($query->getModel()->getTable().'.*');
     }
 }

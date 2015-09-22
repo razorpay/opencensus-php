@@ -61,6 +61,14 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantFetchCardEnabled()
+    {
+        $merchants = $this->getEntities(
+                'merchant', ['methods' => "{'card':true}"], true);
+
+        $this->assertEquals($merchants['entity'], 'collection');
+    }
+
     /**
      * Updates a key
      */
