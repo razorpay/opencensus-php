@@ -110,7 +110,7 @@ class TransactionController extends BaseController
 
         $id = Input::get('razorpay_payment_id');
 
-        $amount = Input::get('amount'); 
+        $amount = Input::get('amount');
 
         $error = (new Api\Service)->capturePayment($id, $amount, $mode);
 

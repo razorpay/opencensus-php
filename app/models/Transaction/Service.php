@@ -61,7 +61,7 @@ class Service extends Base\Service
                 $obj = Transaction\Entity::retrieveLastByType($input['merchant_id'], $type, $mode);
 
                 if (($obj === null) or
-                    ((int) $obj->create_at + $interval <= $input['updated_at']))
+                    ((int) $obj->created_at + $interval <= $input['updated_at']))
                 {
                     $this->create($input, $type, $mode);
                 }
