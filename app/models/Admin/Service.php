@@ -274,6 +274,23 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    public function postEditMerchantEmail($id, $input)
+    {
+        $data = [];
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $data);
+    }
+
     public function postEditMerchantComment($id, $comment)
     {
         $error = array();

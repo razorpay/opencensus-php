@@ -208,6 +208,7 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::get('/admin/users/{id}/delete', array('before'=>'csrf', 'uses'=>'AdminController@getDeleteAdmin'));
 
+        Route::post('/admin/merchant/{id}/email', 'AdminController@postEditMerchantEmail');
     });
 });
 
