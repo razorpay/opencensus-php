@@ -198,6 +198,22 @@ return [
         ]
     ],
 
+    'testEditMerchantEmail' => [
+        'request' => [
+            'content' => [
+                'email' => 'shake@razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'email' => 'shake@razorpay.com'
+            ]
+        ]
+    ],
+
     'testAttemptPaymentOnNonLiveMerchant' => [
         'request' => [
             'content' => [

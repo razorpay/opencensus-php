@@ -39,6 +39,15 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    public function editEmail($merchant, $input)
+    {
+        $merchant->edit($input, 'editEmail');
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant;
+    }
+
     public function createBalance($merchant, $mode)
     {
         $merchantBalance = Merchant\Balance::buildFromMerchant($merchant);
