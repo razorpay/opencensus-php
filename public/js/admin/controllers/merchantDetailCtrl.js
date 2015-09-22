@@ -429,10 +429,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       modalInstance.result.then(
         function (plan_id) {
           $scope.assignPricing(plan_id);
-        },
-        function () {
-          ;
-        });
+        },$.noop);
     };
 
     $scope.openAssignTerminal = function () {
@@ -444,10 +441,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       modalInstance.result.then(
         function (terminal) {
           $scope.assignTerminal(terminal);
-        },
-        function () {
-          ;
-        });
+        },$.noop);
     };
 
     $scope.openEditMerchant = function () {
@@ -464,10 +458,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       modalInstance.result.then(
         function (merchant) {
           $scope.editMerchant(merchant);
-        },
-        function () {
-          ;
-        });
+        },$.noop);
     };
 
     $scope.openUploadScreenshot = function () {
@@ -497,10 +488,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       modalInstance.result.then(
         function (merchant) {
           $scope.editComment(merchant);
-        },
-        function () {
-          ;
-        });
+        },$.noop);
     };
 
     $scope.openAssignBanks = function () {
@@ -519,10 +507,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       modalInstance.result.then(
         function (bankdata) {
           $scope.assignBanks(bankdata);
-        },
-        function () {
-          ;
-        });
+        },$.noop);
     };
 
     $scope.openAddAdjustment = function () {
@@ -534,10 +519,7 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       modalInstance.result.then(
         function (adjustment) {
           $scope.addAdjustment(adjustment);
-        },
-        function () {
-          ;
-        }
+        },$.noop
       );
     };
 
