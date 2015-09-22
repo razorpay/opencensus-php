@@ -344,6 +344,33 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       });
     };
 
+    $scope.editMerchantEmail = function(email){
+      var request = $http({
+        method: "put",
+        url: "/admin/merchant/"+$scope.merchant.id+"/email",
+        data: {
+          email: email
+        }
+      });
+
+      request
+      .success(function(data){
+        if(data.success) {
+          $scope.alerts.addAlert('success', 'Merchant email edited successfully', true);
+          generateMerchant();
+        }
+        else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function(value, key){
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+      .error(function(){
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
     $scope.editComment = function(new_comment){
       var data = {comment: new_comment};
 
@@ -458,6 +485,23 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
       modalInstance.result.then(
         function (merchant) {
           $scope.editMerchant(merchant);
+        },$.noop);
+    };
+
+    $scope.openEditMerchantEmail = function () {
+      var modalInstance = $modal.open({
+        templateUrl: 'editMerchantEmailModalContent.html',
+        controller: 'editMerchantEmailModalCtrl',
+        resolve: {
+          current: function() {
+            return $scope.merchant.details;
+          }
+        }
+      });
+
+      modalInstance.result.then(
+        function (email) {
+          $scope.editMerchantEmail(email);
         },$.noop);
     };
 
@@ -691,6 +735,19 @@ app.controller('MerchantDetailCtrl', ['$scope', '$http', '$stateParams', 'alerts
 
       $scope.ok = function (merchant) {
         $modalInstance.close(merchant);
+      };
+
+      $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+      };
+}])
+.controller('editMerchantEmailModalCtrl', ['$scope', '$modalInstance', 'current',
+  function ($scope, $modalInstance, current) {
+
+      $scope.current = current;
+
+      $scope.ok = function (email) {
+        $modalInstance.close(email);
       };
 
       $scope.cancel = function () {

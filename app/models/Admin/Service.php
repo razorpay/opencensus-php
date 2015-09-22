@@ -276,7 +276,7 @@ class Service extends Base\Service
 
     public function postEditMerchantEmail($id, $input)
     {
-        $data = [];
+        $data = $error = [];
         $this->setApiCredentials();
 
         try
