@@ -65,19 +65,23 @@ class Service extends Base\Service
         if(reset($input) !== false)
         {
             list($key, $value) = each($input);
-            switch($key){
+
+            switch($key)
+            {
                 case "activated":
                     $response = $data->filter(function($merchant) use($value)
                     {
                         return ($merchant->activated == $value);
                     });
                     break;
+
                 case "pending":
                     $response = $data->filter(function($merchant)
                     {
                         return ($merchant->activated == 0 and $merchant->merchant_details->submitted == 1);
                     });
                     break;
+
                 case "confirmed":
                     $response = $data->filter(function($merchant) use($value)
                     {
@@ -87,6 +91,7 @@ class Service extends Base\Service
                             return !($merchant->confirm_token == null);
                     });
                     break;
+
                 case "dead":
                     $response = $data->filter(function($merchant) use($value)
                     {
@@ -96,6 +101,7 @@ class Service extends Base\Service
                             return !($merchant->created_at < time() - 24*7*3600 and empty($merchant->merchant_details->steps_finished));
                     });
                     break;
+
                 default:
                    $response = $data;
             }
