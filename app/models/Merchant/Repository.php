@@ -109,7 +109,7 @@ class Repository extends Base\Repository
 
                 $methods = json_decode($params[Entity::METHODS], true);
 
-                $join->on($methodsMerchantId, '=', $methodsMerchantId);
+                $join->on($methodsMerchantId, '=', $merchantId);
 
                 foreach ($methods as $method => $value)
                 {
