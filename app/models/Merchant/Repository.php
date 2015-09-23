@@ -113,6 +113,8 @@ class Repository extends Base\Repository
 
                 foreach ($methods as $method => $value)
                 {
+                    $queryValue = null;
+
                     if ($value === 'true')
                         $queryValue = '1';
                     else if ($value === 'false')
