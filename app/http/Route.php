@@ -255,6 +255,9 @@ final class Route
         'payment_authorize_refund',
     );
 
+    public static $direct = array(
+    );
+
     public static $internalApps = array(
             'dashboard' => array('*'),
 
@@ -420,6 +423,7 @@ final class Route
             self::addFilterOnRouteGroups($router, 'auth.public', 'public');
             self::addFilterOnRouteGroups($router, 'auth.public_callback', 'publicCallback');
             self::addFilterOnRouteGroups($router, 'auth.proxy', 'proxy');
+            self::addFilterOnRouteGroups($router, 'auth.direct', 'direct');
         });
 
         $router->get('/', function()

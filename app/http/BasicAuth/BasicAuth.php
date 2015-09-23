@@ -255,7 +255,7 @@ class BasicAuth
         $this->fetchMerchantOfKey($this->key);
     }
 
-    public function noAuth()
+    public function directAuth()
     {
         $key = $this->request->input('key_id');
 
@@ -264,11 +264,7 @@ class BasicAuth
             return $this->publicAuth();
         }
 
-        $key = \Route::current()->getParameter('key');
-
-        $this->request->query->add(['key_id' => $key]);
-
-        return $this->publicAuth();
+        $this->setType(Type::DIRECT_AUTH);
     }
 
     public function appAuth()
