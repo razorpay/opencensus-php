@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Gateway\Paytm;
 use Gateway\Base;
 use Gateway\Netbanking;
+use Models\Payment\Processor\Processor;
 
 class Server extends Base\Mock\Server
 {
@@ -18,18 +19,16 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         $content = array(
-            'MessageCode' => $input['MessageCode'],
-            'DateTimeInGMT' => $input['DateTimeInGMT'],
-            'MerchantId' => $input['MerchantId'],
-            'TraceNumber' => $input['TraceNumber'],
-            'Amount' => $input['amount'],
+            'MessageCode'         => $input['MessageCode'],
+            'DateTimeInGMT'       => $input['DateTimeInGMT'],
+            'MerchantId'          => $input['MerchantId'],
+            'TraceNumber'         => $input['TraceNumber'],
+            'Amount'              => $input['Amount'],
             'AuthorizationStatus' => 'Y',
-            'BankReference' => random_integer(6),
+            'BankReference'       => random_integer(6),
         );
-
-        $content['CheckSum'] = $this->getCallbackChecksum($content);
-
-        $url = $input['DynamicUrl'];
+        $content = ['msg' => $this->getDataWithChecksum($content)];
+        $url = route('gateway_payment_callback_kotak');
         $url .= '?' . http_build_query($content);
 
         return $url;
@@ -44,9 +43,14 @@ class Server extends Base\Mock\Server
         $id = $input['MerchantRefNo'];
 
         $payment = (new Netbanking\Base\Repository)->findByPaymentIdAndAction(
-                                                    $id, Base\Action::AUTHORIZE);
+            $id, Base\Action::AUTHORIZE);
 
         $content = array(
+            'MessageCode'       => '0502',
+            'DateTimeInGMT'     => '0502',
+            'MerchantId'        => '0502',
+            'TraceNumber'       => '0502',
+            'Amount'            => '0502',
             'ClientCode'        => $payment['client_code'],
             'MerchantCode'      => $input['MerchantCode'],
             'TxnAmount'         => $payment['amount'],
@@ -117,7 +121,7 @@ class Server extends Base\Mock\Server
 
         ob_start();
 
-        require ('VerifyResponseHtml.php');
+        require('VerifyResponseHtml.php');
 
         $html = ob_get_clean();
 
@@ -146,5 +150,20 @@ class Server extends Base\Mock\Server
         $input = array_combine($fields, $content);
 
         return $input;
+    }
+
+    protected function getDataWithChecksum($data)
+    {
+        $dataStr = implode("|", $data);
+        $dataStrWithSecret = $dataStr . "|" . $this->getHashSecret();
+
+        return (string)$dataStr . '|' . str_pad((crc32($dataStrWithSecret)), 8, '0', STR_PAD_LEFT);
+    }
+
+    protected function getHashSecret()
+    {
+
+        return 'KMBANK';
+
     }
 }

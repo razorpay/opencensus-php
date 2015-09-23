@@ -8,11 +8,11 @@ class Validator extends Base\Validator
 {
     protected static $authRules = array(
         'MessageCode'            => 'required|alpha_num',
-        'DateTimeInGMT'          => 'required|alpha',
-        'MerchantId'             => 'required|in:INR',
+        'DateTimeInGMT'          => 'required',
+        'MerchantId'             => 'required',
         'TraceNumber'            => 'required|numeric',
-        'Amount'                 => 'required|in:0',
-        'TransactionDescription' => 'required|alpha_num|size:14',
+        'Amount'                 => 'required',
+        'TransactionDescription' => 'required',
         'CheckSum'               => 'required',
     );
 
