@@ -107,7 +107,7 @@ class Repository extends Base\Repository
                 $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
                 $methodsMerchantId = Methods\Entity::getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
 
-                $methods = json_decode($params[Entity::METHODS]);
+                $methods = json_decode($params[Entity::METHODS], true);
 
                 $join->on($methodsMerchantId, '=', $methodsMerchantId);
 
