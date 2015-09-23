@@ -21,7 +21,7 @@ trait ResponseFieldsTrait
         'TraceNumber',
         'Amount',
         'TransactionDescription',
-        'Checksum',
+        'CheckSum',
     );
 
     protected static $callbackResponseFields = array(
