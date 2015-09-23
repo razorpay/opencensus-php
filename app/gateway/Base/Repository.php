@@ -29,6 +29,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByTraceIdAndAction($paymentId, $action)
+    {
+        $repo = $this->repo;
+
+        return $repo::where('client_code', '=', $paymentId)
+            ->where('action', '=', $action)
+            ->first();
+    }
+
     public function findRefunds($paymentId)
     {
         $repo = $this->repo;
