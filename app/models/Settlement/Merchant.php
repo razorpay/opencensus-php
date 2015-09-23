@@ -17,6 +17,8 @@ class Merchant
 
     protected $amount;
 
+    protected $apiFee;
+
     protected $setl;
 
     protected $setlTransaction;
@@ -40,6 +42,7 @@ class Merchant
     public function settle($txns, $amount, $apiFee, $gatewayFee)
     {
         $this->amount = $amount;
+        $this->apiFee = $apiFee;
         $this->txns = $txns;
 
         $setl = $this->createSetlEntityAndTxn();
@@ -122,6 +125,7 @@ class Merchant
 
         $setl->setAmount($this->amount);
         $setl->setStatus(Status::CREATED);
+        $setl->setFee($this->apiFee);
         $setl->setChannel($this->channel);
 
         $setl->transaction()->associate($this->setlTransaction);

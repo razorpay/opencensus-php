@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
+    const FEE                   = 'fee';
     const STATUS                = 'status';
     const TRANSACTION_ID        = 'transaction_id';
     const CHANNEL               = 'channel';
@@ -34,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::AMOUNT,
+        self::FEE,
         self::STATUS,
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
@@ -46,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::AMOUNT,
+        self::FEE,
         self::STATUS,
         self::CREATED_AT);
 
@@ -116,6 +119,11 @@ class Entity extends Base\PublicEntity
     public function setFailureReason($reason)
     {
         $this->setAttribute(self::FAILURE_REASON, $reason);
+    }
+
+    public function setFee($fee)
+    {
+        $this->setAttribute(self::FEE, $fee);
     }
 
     public function getTransactionId()
