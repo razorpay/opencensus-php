@@ -113,7 +113,12 @@ class Repository extends Base\Repository
 
                 foreach ($methods as $method => $value)
                 {
-                    $join->where($method, '=', $value);
+                    if ($value === 'true')
+                        $queryValue = '1';
+                    else if ($value === 'false')
+                        $queryValue = '0';
+
+                    $join->where($method, '=', $queryValue);
                 }
             });
 
