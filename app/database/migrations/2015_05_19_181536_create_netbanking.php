@@ -32,6 +32,7 @@ class CreateNetbanking extends Migration
             $table->string('status')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
+            $table->string('reference2')->nullable();
             $table->string('date')->nullable();
 
             $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
