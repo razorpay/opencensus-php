@@ -206,6 +206,10 @@
           </span>
           <button class="btn btn-default btn-rounded" ng-click="verifyPayment()">Verify Payment</button>
           <button ng-show="entity.status==='failed'" class="btn btn-default btn-rounded" ng-click="authorizeFailedPayment()">Authorize</button>
+          <a ui-sref="app.entitiesdetail({type:'payment', mode: mode, id: entity.id})"
+            class="btn btn-primary btn-rounded"
+          >View as Entity
+          </a>
         </div>
       </div>
     </div>
