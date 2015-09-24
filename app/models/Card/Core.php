@@ -3,6 +3,8 @@
 namespace Models\Card;
 
 use Models\Card;
+use EE\Error\ErrorCode;
+use EE\Exception;
 
 class Core
 {
@@ -85,6 +87,23 @@ class Core
             $card->setType(Type::UNKNOWN);
         }
 
+        $this->checkCvvLength($card, $input);
+
         $card->saveOrFail();
+    }
+
+    protected function checkCvvLength($card, $input)
+    {
+        $cvvLength = strlen($input['cvv']);
+
+        if (($card->getNetworkCode() === Card\Network::AMEX) and
+            ($cvvLength !== 4))
+        {
+            ;
+        }
+        else if ($cvvLength !== 3)
+        {
+            ;
+        }
     }
 }
