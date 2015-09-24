@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         'TraceNumber'            => 'required|numeric',
         'Amount'                 => 'required',
         'TransactionDescription' => 'required',
-        'CheckSum'               => 'required',
+        'Checksum'               => 'required',
     );
 
     protected static $verifyRules = array(
