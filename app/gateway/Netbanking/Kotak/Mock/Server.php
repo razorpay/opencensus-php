@@ -14,16 +14,16 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
-        $resp_url = $input['msg'];
+        //fot test only
         $resp_url = explode('|',$input['msg']);
         $resp_url1 =$resp_url[7];
         unset($resp_url[7]);
         $input['msg'] = implode('|',$resp_url);
-
+        //-
         $input = $this->getContentFromInput($input);
 
         parent::authorize($input);
-//        unset($input['Checksum']);
+
         $this->validateAuthorizeInput($input);
 
         $content = array(
@@ -65,11 +65,9 @@ class Server extends Base\Mock\Server
             'BankReference'       => random_integer(6),
         );
 
-        return $content = ['msg' => $this->getDataWithChecksum($content)];
+        $content = ['msg' => $this->getDataWithChecksum($content)];
 
-        $html = $this->prepareVerifyResponseHtml($content);
-
-        return $this->prepareResponse($html);
+        return $this->makeResponse($content);
     }
 
 
@@ -110,11 +108,11 @@ class Server extends Base\Mock\Server
 
     }
 
-    protected function makeResponse($data)
+    protected function makeResponse($msg)
     {
-        $response = Response::make($data);
+        $response = \Response::make($msg);
 
-        $response->headers->set('Content-Type', 'text/plain; charset=UTF-8');
+        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
