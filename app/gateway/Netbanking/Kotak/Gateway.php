@@ -37,7 +37,7 @@ class Gateway extends Base\Gateway
         'MessageCode'            => 'reference1',
         'DateTimeInGMT'          => 'date',
         'MerchantId'             => 'merchant_code',
-        'TraceNumber'            => 'trace_id',
+        'TraceNumber'            => 'int_payment_id',
         'Amount'                 => 'amount',
         'TransactionDescription' => 'client_code',
         'AuthorizationStatus'    => 'status',
@@ -179,7 +179,7 @@ class Gateway extends Base\Gateway
             'MessageCode'   => MessageCodes::VERIFY,
             'DateTimeInGMT' => $payment['date'],
             'MerchantId'    => $payment['merchant_code'],
-            'TraceNumber'   => $payment['client_code'],
+            'TraceNumber'   => $payment['int_payment_id'],
             'Future1'       => '',
             'Future2'       => '',
         );
@@ -196,7 +196,6 @@ class Gateway extends Base\Gateway
             $request);
 
         $response = $this->sendGatewayRequest($request);
-        sd($response);
         $content = $this->processContentFromPaymentVerifyResponse($response, $request);
 
         $verify->verifyResponse = $response;
