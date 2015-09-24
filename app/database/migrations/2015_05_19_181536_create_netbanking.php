@@ -47,6 +47,7 @@ class CreateNetbanking extends Migration
                   ->on_delete('restrict');
 
             $table->index('received');
+            $table->index('trace_id');
         });
     }
 
