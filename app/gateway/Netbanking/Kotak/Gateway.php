@@ -37,11 +37,11 @@ class Gateway extends Base\Gateway
         'MessageCode'            => 'reference1',
         'DateTimeInGMT'          => 'date',
         'MerchantId'             => 'merchant_code',
-        'TraceNumber'            => 'client_code',
+        'TraceNumber'            => 'trace_id',
         'Amount'                 => 'amount',
-        'TransactionDescription' => 'reference2',
-        'AuthorizationStatus' => 'status',
-        'BankReference' => 'bank_payment_id',
+        'TransactionDescription' => 'client_code',
+        'AuthorizationStatus'    => 'status',
+        'BankReference'          => 'bank_payment_id',
     );
 
     /**
@@ -56,9 +56,9 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
         $content = $this->getDataWithChecksum($content);
-        if($this->mode == Mode::TEST)
+        if ($this->mode == Mode::TEST)
         {
-            $content = $content.'|'.$input['callbackUrl'];
+            $content = $content . '|' . $input['callbackUrl'];
         }
         $request = array(
             'url'     => $this->getUrl('pay'),
@@ -176,12 +176,12 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         $content = array(
-            'MessageCode' => MessageCodes::VERIFY,
+            'MessageCode'   => MessageCodes::VERIFY,
             'DateTimeInGMT' => $payment['date'],
-            'MerchantId' => $payment['merchant_code'],
-            'TraceNumber' => $payment['client_code'],
-            'Future1'=>'',
-            'Future2'=>'',
+            'MerchantId'    => $payment['merchant_code'],
+            'TraceNumber'   => $payment['client_code'],
+            'Future1'       => '',
+            'Future2'       => '',
         );
         $content = $this->getDataWithChecksum($content);
 
@@ -196,7 +196,7 @@ class Gateway extends Base\Gateway
             $request);
 
         $response = $this->sendGatewayRequest($request);
-sd($response);
+        sd($response);
         $content = $this->processContentFromPaymentVerifyResponse($response, $request);
 
         $verify->verifyResponse = $response;
