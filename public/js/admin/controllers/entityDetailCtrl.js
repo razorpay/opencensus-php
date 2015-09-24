@@ -117,7 +117,7 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
     }
 
     $scope.toJson = function(data) {
-      return angular.toJson(data, true);
+      return angular.toJson(data, 4);
     };
 
     $scope.open = {

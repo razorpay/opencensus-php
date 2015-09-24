@@ -2000,7 +2000,7 @@ fieldset[disabled] .i-checks input + i:before {
 }
 .form-validation .form-control.ng-dirty.ng-invalid {
   color: #FF0000;
-  
+
 }
 .form-validation .form-control.ng-dirty.ng-valid,
 .form-validation .form-control.ng-dirty.ng-valid:focus {
@@ -3902,4 +3902,9 @@ a.text-black:hover {
 }
 .sk-intro input:invalid {
   border-color: #e74c3c;
+}
+.list-group-item pre {
+	font-family: Lucida Console,Lucida Sans Typewriter,monaco,Bitstream Vera Sans Mono,monospace;
+	letter-spacing: 0.0625em;
+	word-spacing: 5px;
 }
