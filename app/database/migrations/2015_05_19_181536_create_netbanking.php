@@ -29,7 +29,7 @@ class CreateNetbanking extends Migration
             $table->string('client_code')->nullable();
             $table->string('merchant_code')->nullable();
             $table->string('bank_payment_id')->nullable();
-            $table->bigInteger('trace_id')->nullable();
+            $table->bigInteger('int_payment_id')->nullable();
             $table->string('status')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
@@ -47,7 +47,7 @@ class CreateNetbanking extends Migration
                   ->on_delete('restrict');
 
             $table->index('received');
-            $table->index('trace_id');
+            $table->index('int_payment_id');
         });
     }
 
