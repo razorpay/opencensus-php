@@ -30,7 +30,7 @@ class Gateway extends Base\Gateway
         'TraceNumber',
         'Amount',
         'TransactionDescription',
-        'CheckSum',
+        'Checksum',
     );
 
     protected $map = array(
@@ -56,7 +56,10 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
         $content = $this->getDataWithChecksum($content);
-
+        if($this->mode == Mode::TEST)
+        {
+            $content = $content.'|'.$input['callbackUrl'];
+        }
         $request = array(
             'url'     => $this->getUrl('pay'),
             'method'  => 'post',
@@ -104,24 +107,24 @@ class Gateway extends Base\Gateway
         }
     }
 
-//    public function verify(array $input)
-//    {
-//        parent::verify($input);
-//
-//        $verify = new Verify($this->gateway, $input);
-//
-//        return $this->runPaymentVerifyFlow($verify);
-//    }
-//
-//    protected function getPaymentToVerify($input, $verify)
-//    {
-//        $payment = $this->getRepo()->findByPaymentIdAndAction(
-//            $input['payment']['id'], Action::AUTHORIZE);
-//
-//        $verify->payment = $payment;
-//
-//        return $payment;
-//    }
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function getPaymentToVerify($input, $verify)
+    {
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $verify->payment = $payment;
+
+        return $payment;
+    }
 
     protected function validateCallbackChecksum($input)
     {
@@ -167,60 +170,41 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-//    protected function sendPaymentVerifyRequest($verify)
-//    {
-//        $payment = $verify->payment;
-//        $input = $verify->input;
-//
-//        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
-//            ->format('d/m/Y H:m:s');
-//
-//        if (empty($payment['date']) === false)
-//        {
-//            // First verify all hdfc netbanking transactions here and
-//            // then remove this in future.
-//            // $date = $payment['date'];
-//        }
-//
-//        $clientCode = $payment['client_code'];
-//
-//        if ($clientCode === 'client_code')
-//        {
-//            $clientCode = $input['payment']['email'];
-//        }
-//
-//        $content = array(
-//            'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
-//            'Date'              => $date,
-//            'MerchantRefNo'     => $payment['payment_id'],
-//            'TransactionId'     => 'XTXTV01',
-//            'FlgVerify'         => 'Y',
-//            'ClientCode'        => $clientCode,
-//            'SuccessStaticFlag' => 'N',
-//            'FailureStaticFlag' => 'N',
-//            'TxnAmount'         => $input['payment']['amount'] / 100,
-//        );
-//
-//        $url = $this->getUrl();
-//
-//        $request['url'] = $url . '?' . $this->buildQueryString($content);
-//        $request['method'] = 'get';
-//        $request['content'] = [];
-//
-//        $this->trace->info(
-//            TraceCode::GATEWAY_PAYMENT_VERIFY,
-//            $request);
-//
-//        $response = $this->sendGatewayRequest($request);
-//
-//        $content = $this->processContentFromPaymentVerifyResponse($response, $request);
-//
-//        $verify->verifyResponse = $response;
-//        $verify->verifyResponseBody = $response->body;
-//        $verify->verifyResponseContent = $content;
-//
-//        return $content;
-//    }
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $payment = $verify->payment;
+        $input = $verify->input;
+
+        $content = array(
+            'MessageCode' => MessageCodes::VERIFY,
+            'DateTimeInGMT' => $payment['date'],
+            'MerchantId' => $payment['merchant_code'],
+            'TraceNumber' => $payment['client_code'],
+            'Future1'=>'',
+            'Future2'=>'',
+        );
+        $content = $this->getDataWithChecksum($content);
+
+        $request = array(
+            'url'     => $this->getUrl(),
+            'method'  => 'post',
+            'content' => ['msg' => $content]);
+
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            $request);
+
+        $response = $this->sendGatewayRequest($request);
+sd($response);
+        $content = $this->processContentFromPaymentVerifyResponse($response, $request);
+
+        $verify->verifyResponse = $response;
+        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
 
 //    protected function verifyPayment($verify)
 //    {
