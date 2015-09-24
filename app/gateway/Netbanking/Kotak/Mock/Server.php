@@ -6,16 +6,24 @@ use Carbon\Carbon;
 use Gateway\Paytm;
 use Gateway\Base;
 use Gateway\Netbanking;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Response;
 use Models\Payment\Processor\Processor;
 
 class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        $resp_url = $input['msg'];
+        $resp_url = explode('|',$input['msg']);
+        $resp_url1 =$resp_url[7];
+        unset($resp_url[7]);
+        $input['msg'] = implode('|',$resp_url);
+
         $input = $this->getContentFromInput($input);
 
         parent::authorize($input);
-
+//        unset($input['Checksum']);
         $this->validateAuthorizeInput($input);
 
         $content = array(
@@ -29,6 +37,7 @@ class Server extends Base\Mock\Server
         );
         $content = ['msg' => $this->getDataWithChecksum($content)];
         $url = route('gateway_payment_callback_kotak');
+        $url = $resp_url1;
         $url .= '?' . http_build_query($content);
 
         return $url;
@@ -38,106 +47,32 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->validateActionInput($input);
+        $input = $this->getContentFromInput($input);
 
-        $id = $input['MerchantRefNo'];
+//        $this->validateActionInput($input,'verify');
+        $id = $input['TraceNumber'];
 
-        $payment = (new Netbanking\Base\Repository)->findByPaymentIdAndAction(
+        $payment = (new Netbanking\Base\Repository)->findByTraceIdAndAction(
             $id, Base\Action::AUTHORIZE);
 
         $content = array(
-            'MessageCode'       => '0502',
-            'DateTimeInGMT'     => '0502',
-            'MerchantId'        => '0502',
-            'TraceNumber'       => '0502',
-            'Amount'            => '0502',
-            'ClientCode'        => $payment['client_code'],
-            'MerchantCode'      => $input['MerchantCode'],
-            'TxnAmount'         => $payment['amount'],
-            'MerchantRefNo'     => $payment['id'],
-            'SuccessStaticFlag' => 'N',
-            'FailureStaticFlag' => 'N',
-            'Date'              => $input['Date'],
-            'TransactionId'     => 'XTXTV01',
-            'flgVerify'         => 'Y',
-            'BankRefNo'         => $payment['bank_payment_id'],
-            'flgSuccess'        => 'S',
-            'Message'           => $payment['error_message'],
+            'MessageCode'         => $input['MessageCode'],
+            'DateTimeInGMT'       => $input['DateTimeInGMT'],
+            'MerchantId'          => $input['MerchantId'],
+            'TraceNumber'         => $input['TraceNumber'],
+            'Amount'              => $payment['Amount'],
+            'AuthorizationStatus' => 'Y',
+            'BankReference'       => random_integer(6),
         );
+
+        return $content = ['msg' => $this->getDataWithChecksum($content)];
 
         $html = $this->prepareVerifyResponseHtml($content);
 
         return $this->prepareResponse($html);
     }
 
-    protected function getCallbackChecksum($input)
-    {
-        $paramsOrder = array(
-            'ClientCode',
-            'MerchantCode',
-            'TxnCurrency',
-            'TxnAmount',
-            'TxnScAmount',
-            'MerchRefNo',
-            'StSucFlg',
-            'StFailFlg',
-            'Date',
-            'Ref1',
-            'Ref2',
-            'Ref3',
-            'Ref4',
-            'Ref5',
-            'Ref6',
-            'Ref7',
-            'Ref8',
-            'Ref9',
-            'Ref10',
-            'Ref11',
-            'Date1',
-            'Date2',
-            'BankRefNo',
-            'Message',
-        );
 
-        $str = '';
-
-        $data = [];
-
-        foreach ($paramsOrder as $param)
-        {
-            if (isset($input[$param]))
-            {
-                $data[$param] = $input[$param];
-            }
-        }
-
-        return $this->generateHash($data);
-    }
-
-    protected function prepareVerifyResponseHtml($content)
-    {
-        $content = http_build_query($content);
-        $redirectUrl = 'api.razorpay.com' . '?' . $content;
-
-        ob_start();
-
-        require('VerifyResponseHtml.php');
-
-        $html = ob_get_clean();
-
-        return $html;
-    }
-
-    protected function prepareResponse($content)
-    {
-        $response = \Response::make($content);
-
-        $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
-        $response->headers->set('Cache-Control', 'no-cache');
-        $response->headers->set('Pragma', 'no-cache');
-
-        return $response;
-    }
 
     protected function getContentFromInput($input)
     {
@@ -162,8 +97,26 @@ class Server extends Base\Mock\Server
 
     protected function getHashSecret()
     {
-
         return 'KMBANK';
+//        if ($this->mode === Mode::LIVE)
+//        {
+//            return $this->config['live_hash_secret'];
+//        }
+//        else
+//        {
+//            return $this->config['test_hash_secret'];
+//        }
 
+
+    }
+
+    protected function makeResponse($data)
+    {
+        $response = Response::make($data);
+
+        $response->headers->set('Content-Type', 'text/plain; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 }
