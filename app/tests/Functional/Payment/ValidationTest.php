@@ -2,6 +2,7 @@
 
 namespace Tests\Functional\Payment;
 
+use EE;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -63,6 +64,18 @@ class PaymentValidationTest extends TestCase
         $payment['card']['number'] = '40 1 2001 0384 43 33 5';
 
         $payment = $this->doAuthAndGetPayment($payment);
+    }
+
+    public function testCardCvvLengthNot3()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['cvv'] = '4111';
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $payment = $this->doAuthPayment($payment);
+        });
     }
 
     public function testDescriptionMissing()
