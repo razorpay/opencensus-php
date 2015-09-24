@@ -121,7 +121,7 @@ final class Route
         'send_newsletter'                   => ['post',     'admin/newsletter/mail',                    'AdminController@postSendNewsletter'                            ],
         'gateway_payment_callback_axis'     => ['post',     'callback/axis',                            'GatewayController@callbackAxis'                                ],
         'gateway_payment_callback'          => ['post',     'callback/{gateway}',                       'GatewayController@callbackGateway'                             ],
-        'gateway_payment_callback_kotak'    => ['get',      'gateway/kotak/callback',                   'GatewayController@callbackKotak'                               ],
+        'gateway_payment_callback_kotak'    => ['get',      'gateway/netbanking_kotak/callback',        'GatewayController@callbackKotak'                               ],
         'dummy_return_callback'             => ['post',     'return/callback',                          'PaymentController@postDummyReturnCallback'                     ],
         'dummy_critical_error'              => ['get',      'trigger/error',                            'AdminController@getTriggerError'                               ],
     );
