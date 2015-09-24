@@ -116,9 +116,12 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
       }
     }
 
+    $scope.toJson = function(data) {
+      return angular.toJson(data, true);
+    };
+
     $scope.open = {
       'terminalEdit': function(terminal) {
-        console.debug(terminal);
         var modalInstance = $modal.open({
           templateUrl: 'editTerminal.html',
           controller: 'editTerminalModalCtrl',
