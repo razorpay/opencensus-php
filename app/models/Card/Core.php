@@ -96,11 +96,13 @@ class Core
     {
         $cvvLength = strlen($input['cvv']);
 
-        if (($card->getNetworkCode() === Card\Network::AMEX) and
-            ($cvvLength !== 4))
+        if ($card->getNetworkCode() === Card\Network::AMEX)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR);
+            if ($cvvLength !== 4)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR);
+            }
         }
         else if ($cvvLength !== 3)
         {

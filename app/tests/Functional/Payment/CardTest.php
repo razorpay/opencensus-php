@@ -31,6 +31,10 @@ class CardTest extends TestCase
         foreach ($numbers as $number)
         {
             $this->testData[__FUNCTION__]['request']['content']['card']['number'] = $number;
+            if (substr($number, 0, 2) === '37')
+                $this->testData[__FUNCTION__]['request']['content']['card']['cvv'] ='1111';
+            else
+                $this->testData[__FUNCTION__]['request']['content']['card']['cvv'] ='111';
             $this->startTest();
         }
     }
