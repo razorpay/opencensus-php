@@ -148,8 +148,8 @@
             Signed
           </a>
           <a href class="list-group-item">
-            <span class="pull-right" tooltip="{{entity.verified == 1 ? 'Verified' : 'Not Verified'}}">
-              <i class="fa" ng-class="{'fa-check text-success': entity.verified == 1, ' fa-times text-danger':entity.verified !== 1}"></i>
+            <span class="pull-right" tooltip="{{getVerifiedStatus()}}">
+              <i class="fa" ng-class="{'fa-check text-success': entity.verified === 1, ' fa-times text-danger':entity.verified === 0, 'fa-meh-o': entity.verified===null}"></i>
             </span>
             Verified
           </a>
@@ -205,7 +205,7 @@
             <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openRefundModal()">Refund Payment</button>
           </span>
           <button class="btn btn-default btn-rounded" ng-click="verifyPayment()">Verify Payment</button>
-          <button ng-show="entity.status==='failed'" class="btn btn-default btn-rounded" ng-click="authorizeFailedPayment()">Authorize</button>
+          <button ng-show="entity.status==='failed' && entity.verified===false" class="btn btn-default btn-rounded" ng-click="authorizeFailedPayment()">Authorize</button>
           <a ui-sref="app.entitiesdetail({type:'payment', mode: mode, id: entity.id})"
             class="btn btn-primary btn-rounded"
           >View as Entity

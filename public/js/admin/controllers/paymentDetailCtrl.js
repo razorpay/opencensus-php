@@ -59,6 +59,17 @@ app.controller('PaymentDetailCtrl', ['$scope', '$http', '$stateParams', '$modal'
       });
     };
 
+    $scope.getVerifiedStatus = function() {
+      switch($scope.entity.verified) {
+        case 1:
+          return 'Verified';
+        case 0:
+          return 'Not Verified';
+        case null:
+          return 'Unknown';
+      }
+    }
+
     $scope.openCaptureModal = function() {
       var modalInstance = $modal.open({
         templateUrl: 'captureModalContent.html',
