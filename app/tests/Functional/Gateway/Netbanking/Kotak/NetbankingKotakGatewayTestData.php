@@ -35,7 +35,7 @@ return [
         'amount' => 500,
         'bank' => 'KKBK',
         'received' => true,
-        'client_code' => 'a@b.com',
+//        'client_code' => 'a@b.com',
         'merchant_code' => 'OSTEST',
 //        'bank_payment_id' => null,
 //        'error_message' => '',
