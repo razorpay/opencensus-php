@@ -255,7 +255,7 @@ class BasicAuth
         $this->fetchMerchantOfKey($this->key);
     }
 
-    public function noAuth()
+    public function directAuth()
     {
         $key = $this->request->input('key_id');
 
@@ -264,11 +264,7 @@ class BasicAuth
             return $this->publicAuth();
         }
 
-        $key = \Route::current()->getParameter('key');
-
-        $this->request->query->add(['key_id' => $key]);
-
-        return $this->publicAuth();
+        $this->setType(Type::DIRECT_AUTH);
     }
 
     public function appAuth()
@@ -689,7 +685,7 @@ class BasicAuth
         if (($key === null) or
             ($key === ''))
         {
-           return ApiResponse::provideApiKey();
+            return ApiResponse::provideApiKey();
         }
 
         $this->viaQueryParams = true;
@@ -744,7 +740,7 @@ class BasicAuth
 
     protected function invalidApiKey()
     {
-       return ApiResponse::unauthorized(
+        return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 

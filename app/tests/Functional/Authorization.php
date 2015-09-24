@@ -32,8 +32,8 @@ class Authorization
     public function basicAuth($user = null, $pwd = null)
     {
         $this->auth = array(
-               'PHP_AUTH_USER' => $user,
-               'PHP_AUTH_PW' => $pwd);
+            'PHP_AUTH_USER' => $user,
+            'PHP_AUTH_PW' => $pwd);
     }
 
     public function appAuth($user = 'rzp_test', $pwd = '')
@@ -131,7 +131,14 @@ class Authorization
 
     public function noAuth()
     {
-        $this->type = '';
+        $this->type = 'direct';
+
+        $this->basicAuth(null, null);
+    }
+
+    public function directAuth()
+    {
+        $this->type = 'direct';
 
         $this->basicAuth(null, null);
     }
