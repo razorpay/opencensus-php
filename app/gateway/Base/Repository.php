@@ -33,7 +33,7 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
-        return $repo::where('trace_id', '=', $paymentId)
+        return $repo::where('int_payment_id', '=', $paymentId)
             ->where('action', '=', $action)
             ->first();
     }
