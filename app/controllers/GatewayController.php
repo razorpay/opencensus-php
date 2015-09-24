@@ -23,7 +23,10 @@ class GatewayController extends BaseController
         //check mode before search
         $nb = (new \Gateway\Netbanking\Base\Repository)->findByTraceIdAndAction(
             $input[3], \Gateway\Base\Action::AUTHORIZE);
-
+        if(!$nb)
+        {
+            return;
+        }
         $payment_id_public = 'pay_' . $nb->payment_id;
         $secret = \App::make('config')->get('app.key');
 
