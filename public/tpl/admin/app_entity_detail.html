@@ -17,7 +17,7 @@
         <a class="list-group-item" ng-repeat="key in getKeys()"
           ng-init="value = entity[key];type = getType(key, value)" ui-sref="{{getState(type)}}"
         >
-          <span class="pull-right">
+          <span class="pull-right" ng-class="displayClass(value)">
             {{displayValue(value, type)}}
           </span>
           {{key|titlecase}}

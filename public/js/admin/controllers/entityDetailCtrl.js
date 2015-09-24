@@ -65,7 +65,27 @@ app.controller('EntityDetailCtrl', ['$scope', '$http', '$stateParams', 'alertsFa
         case 'amount':
           return 'INR ' + (value/100).toFixed(2);
         default:
-          return value;
+          if(value === null) {
+            return 'null';
+          }
+          else if(value === '') {
+            return '" "';
+          }
+          else {
+            return value;
+          }
+      }
+    }
+
+    $scope.displayClass = function(value) {
+      if(value === null) {
+        return 'label label-warning';
+      }
+      else if(value === '') {
+        return 'label label-info';
+      }
+      else {
+        return '';
       }
     }
 
