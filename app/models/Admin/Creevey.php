@@ -26,10 +26,7 @@ class Creevey
      */
     public function __construct($merchantId = null)
     {
-        if ($merchantId)
-        {
-            $this->merchantId = $merchantId;
-        }
+        $this->merchantId = $merchantId;
     }
     /**
      * Compress an image using Creevey
