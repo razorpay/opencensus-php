@@ -1,17 +1,20 @@
 // Payment Listing Controller
 // Child of TransactionListCtrl
-app.controller('PaymentListCtrl', ['$scope', '$http', 'alertsFactory', '$state',
-  function($scope, $http, alertsFactory, $state){
-
-    $scope.getStatusClass = function(status) {
+app.controller('PaymentListCtrl', [
+  '$scope',
+  '$http',
+  'alertsFactory',
+  '$state',
+  function ($scope, $http, alertsFactory, $state) {
+    $scope.getStatusClass = function (status) {
       var mapper = {
-        created: "bg-light",
-        authorized: "bg-info",
-        captured: "bg-success",
-        failed: "bg-danger",
-        refunded: "bg-primary"
-      }
+        created: 'bg-light',
+        authorized: 'bg-info',
+        captured: 'bg-success',
+        failed: 'bg-danger',
+        refunded: 'bg-primary'
+      };
       return mapper[status];
-    }
-
-}]);
+    };
+  }
+]);
