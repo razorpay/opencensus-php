@@ -448,9 +448,11 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = array(
-            'url' => '/refunds/hdfcnb/generate',
-            'method' => 'get',
-            'content' => [],
+            'url' => '/refunds/netbanking/excel',
+            'method' => 'post',
+            'content' => [
+                'bank'  => 'HDFC'
+            ],
         );
 
         return $this->makeRequestAndGetContent($request);

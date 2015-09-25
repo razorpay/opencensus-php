@@ -13,7 +13,7 @@ use Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function getHdfcNetbankingRefundsFile(array $input = array())
+    public function getNetbankingRefundsFile(array $input = array())
     {
         $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
         $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
@@ -37,8 +37,10 @@ class Service extends Base\Service
             }
         }
 
+        $bankCode = $input['bank'];
+
         $refunds = (new Refund\Repository)->fetchRefundsForBankBetweenTimestamps(
-            IFSC::HDFC, $from, $to);
+            $bankCode, $from, $to);
 
         $count = $refunds->count();
 
@@ -62,8 +64,6 @@ class Service extends Base\Service
         }
 
         $gateway = $terminal->getGateway();
-
-        assert ($gateway === Payment\Gateway::NETBANKING_HDFC);
 
         $action = 'generateRefundsExcel';
 
