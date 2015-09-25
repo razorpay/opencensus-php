@@ -244,6 +244,23 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doAuthPaymentViaCheckoutRoute($payment)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'content' => $payment,
+            'url' => '/payments/create/checkout',
+            'method' => 'post');
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function capturePayment($id, $amount)
     {
         $request = array(
@@ -345,6 +362,15 @@ trait PaymentTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function timeoutOldPayment()
+    {
+        $this->ba->appAuth();
+
+        $request = array('url' => '/payments/timeout');
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function deleteTerminal($mid, $tid)
