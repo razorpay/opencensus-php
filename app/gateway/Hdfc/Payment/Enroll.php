@@ -140,13 +140,11 @@ trait Enroll
 
         $network = $input['card']['network_code'];
 
-        if ($network === Card\Network::MAES)
+        $data['action'] = Action::AUTHORIZE;
+
+        if (in_array($network, $this->purchase))
         {
             $data['action'] = Action::PURCHASE;
-        }
-        else
-        {
-            $data['action'] = Action::AUTHORIZE;
         }
 
         // Only required in case of Rupay. Weird! But ... !

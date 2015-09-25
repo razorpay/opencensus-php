@@ -30,6 +30,7 @@ use EE\Exception;
 use Gateway\Base;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
+use Models\Card;
 use Requests;
 use Trace\Trace;
 use Trace\TraceCode;
@@ -237,6 +238,12 @@ class Gateway extends Base\Gateway
      * @var boolean
      */
     protected $authorize = true;
+
+    protected $purchase = array(
+        Card\Network::MAES,
+        Card\Network::RUPAY,
+        Card\Network::DICL,
+    );
 
     public function __construct()
     {
