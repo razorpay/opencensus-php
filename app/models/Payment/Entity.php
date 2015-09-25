@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY          = 'currency';
     const DESCRIPTION       = 'description';
     const ERROR_CODE        = 'error_code';
+    const INTERNAL_ERROR_CODE = 'internal_error_code';
     const ERROR_DESCRIPTION = 'error_description';
     const EMAIL             = 'email';
     const CONTACT           = 'contact';
@@ -83,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::NOTES,
         self::ERROR_CODE,
+        self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
@@ -217,10 +219,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY, $gateway);
     }
 
-    public function setError($code, $desc)
+    public function setError($errorCode, $errorDesc, $internalErrorCode)
     {
-        $this->setAttribute(self::ERROR_CODE, $code);
-        $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
+        $this->setAttribute(self::ERROR_CODE, $errorCode);
+        $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
     public function setCaptureTimestamp()
