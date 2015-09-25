@@ -18,6 +18,7 @@ class Gateway
     const PAYTM             = 'paytm';
     const NETBANKING_HDFC   = 'netbanking_hdfc';
     const SHARP             = 'sharp';
+    const AMEX              = 'amex';
 
     public static $channels = array(
         self::ATOM              => Settlement\Channel::ATOM,
@@ -30,6 +31,7 @@ class Gateway
         self::PAYTM             => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC   => Settlement\Channel::KOTAK,
         self::SHARP             => Settlement\Channel::KOTAK,
+        self::AMEX              => Settlement\Channel::KOTAK,
     );
 
     public static $methodMap = array(
@@ -40,6 +42,7 @@ class Gateway
             self::AXIS_GENIUS,
             self::KOTAK,
             self::PAYTM,
+            self::AMEX,
         ),
 
         Method::NETBANKING => array(
@@ -74,6 +77,8 @@ class Gateway
             Network::VISA),
         self::KOTAK => array(
             Network::RUPAY),
+        self::AMEX => array(
+            Network::AMEX),
     );
 
     public static $verifyEnabled = array(
