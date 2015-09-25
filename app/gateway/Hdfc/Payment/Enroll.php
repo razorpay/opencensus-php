@@ -147,11 +147,16 @@ trait Enroll
             $data['action'] = Action::PURCHASE;
         }
 
+        $url = $input['callbackUrl'];
+        $parts = parse_url($url);
+        $parts['host'] = 'rzp.ngrok.com';
+        $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+
         // Only required in case of Rupay. Weird! But ... !
         if ($network === Card\Network::RUPAY)
         {
-            $data['merchantResponseUrl'] = $input['callbackUrl'];
-            $data['merchantErrorUrl'] = $input['callbackUrl'];
+            $data['merchantResponseUrl'] = $url;
+            $data['merchantErrorUrl'] = $url;
         }
     }
 

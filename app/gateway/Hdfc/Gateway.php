@@ -300,6 +300,7 @@ class Gateway extends Base\Gateway
      */
     public function callback(array $input)
     {
+        \Log::info($input['gateway']);
         parent::callback($input);
 
         validate($this->bankAcsResponseRules, $input['gateway'], false);
