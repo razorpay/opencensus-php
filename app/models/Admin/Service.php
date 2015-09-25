@@ -1134,15 +1134,12 @@ class Service extends Base\Service
 
     public function generateNetBankingRefunds($input)
     {
-        $bank = $input['bank'];
-        unset($input['bank']);
-
         $this->setApiCredentials(null, $input['mode']);
         unset($input['mode']);
 
         try
         {
-            $response = $this->api->refund->generateNetBankingExcel($bank, $input);
+            $response = $this->api->refund->generateNetBankingExcel($input);
             return [null, $response->toArray()];
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)

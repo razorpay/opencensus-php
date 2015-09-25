@@ -445,7 +445,7 @@ app.controller('ActionsCtrl', ['$scope', '$http', 'alertsFactory', 'transformReq
 .controller('generateRefundModalCtrl', ['$scope', '$modalInstance', '$http',
   function ($scope, $modalInstance, $http) {
 
-    $scope.bank = "hdfc";
+    $scope.bank = "HDFC";
     $scope.mode = "live";
     $scope.date = moment().format('YYYY-MM-DD');
 

@@ -17,12 +17,10 @@ class Refund extends Entity
         return parent::all();
     }
 
-    public function generateNetBankingExcel($bank, $params)
+    public function generateNetBankingExcel($params)
     {
-        // this includes date/to/from
-        $query = http_build_query($params);
+        $relativeUrl = $this->getEntityUrl() . "netbanking/excel";
 
-        $relativeUrl = $this->getEntityUrl() . "{$bank}nb/generate?$query";
-        return $this->request('GET', $relativeUrl);
+        return $this->request('POST', $relativeUrl, $params);
     }
 }
