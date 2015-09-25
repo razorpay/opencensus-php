@@ -14,6 +14,8 @@ trait RepositoryFetch
 
 //    protected $appFetchParamRules = array();
 
+//    protected $proxyFetchParamRules = array();
+
     protected $params = array();
 
     protected $merchantIdRequiredForMultipleFetch = true;
@@ -95,6 +97,13 @@ trait RepositoryFetch
 
     protected function validateFetchParams(array $params)
     {
+        if (($this->auth->isProxyAuth()) and
+            (isset($this->proxyAuthFetchParamRules)))
+        {
+            $this->fetchParamRules = array_merge(
+                    $this->fetchParamRules, $this->proxyAuthFetchParamRules);
+        }
+
         if (($this->auth->isAppAuth()) and
             (isset($this->appFetchParamRules)))
         {
