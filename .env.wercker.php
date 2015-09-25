@@ -94,4 +94,6 @@ return array(
     'AWS_S3_SETTLEMENT_BUCKET'              => '',
 
     'CRON_PASSWORD'                         => 'a923r8u98uwaf98uw9w8fu',
+
+    'RUN_FIXTURES_ONCE'                     => true,
 );

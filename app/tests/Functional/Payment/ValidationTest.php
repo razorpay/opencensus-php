@@ -116,8 +116,7 @@ class PaymentValidationTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $request = ['method' => 'GET', 'url' => '/payments/'.$payment['id'].'/verify'];
-        $content = $this->makeRequestAndGetContent($request);
+        $this->verifyPayment($payment['id']);
     }
 
     public function startTest()

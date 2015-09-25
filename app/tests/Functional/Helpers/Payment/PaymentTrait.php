@@ -244,6 +244,23 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doAuthPaymentViaCheckoutRoute($payment)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'content' => $payment,
+            'url' => '/payments/create/checkout',
+            'method' => 'post');
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function capturePayment($id, $amount)
     {
         $request = array(
@@ -347,6 +364,15 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function timeoutOldPayment()
+    {
+        $this->ba->appAuth();
+
+        $request = array('url' => '/payments/timeout');
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function deleteTerminal($mid, $tid)
     {
         $request = array(
@@ -448,9 +474,11 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = array(
-            'url' => '/refunds/hdfcnb/generate',
-            'method' => 'get',
-            'content' => [],
+            'url' => '/refunds/netbanking/excel',
+            'method' => 'post',
+            'content' => [
+                'bank'  => 'HDFC'
+            ],
         );
 
         return $this->makeRequestAndGetContent($request);

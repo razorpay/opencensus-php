@@ -5,7 +5,6 @@ use EE\Error\PublicErrorCode;
 use EE\Error\PublicErrorDescription;
 use Gateway\HdfcGateway\HdfcGatewayErrorCode;
 
-//contain array of test cards
 return [
     'testShortCardNumber' => [
         'request' => [
