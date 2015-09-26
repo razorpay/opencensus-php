@@ -127,8 +127,12 @@
     <div class="row wrapper">
       <div class="list-group">
         <a href class="list-group-item">
-          <span class="pull-right">{{merchant.balance/100 | currency:'INR ' }}</span>
-          Balance
+          <span class="pull-right">{{merchant.balance.test/100 | currency:'INR ' }}</span>
+          Balance (Test)
+        </a>
+        <a href class="list-group-item">
+          <span class="pull-right">{{merchant.balance.live/100 | currency:'INR ' }}</span>
+          Balance (Live)
         </a>
         <a href class="list-group-item">
           <span class="pull-right">{{merchant.details.name}}</span>

@@ -241,11 +241,15 @@ class Service extends Base\Service
 
     public function fetchMerchantBalance($id)
     {
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, 'test');
 
-        $response = $this->api->merchant->fetch($id)->fetchBalance()->toArray();
+        $test = $this->api->merchant->fetch($id)->fetchBalance()->toArray();
 
-        return $response;
+        $this->setApiCredentials(null, 'live');
+
+        $live = $this->api->merchant->fetch($id)->fetchBalance()->toArray();
+
+        return compact('test', 'live');
     }
 
     public function fetchMerchantBanks($id)

@@ -10,7 +10,10 @@ app.controller('MerchantDetailCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {
       id: $stateParams.id,
-      balance: 0
+      balance: {
+        test: 0,
+        live: 0
+      }
     };
     generateMerchant();
     $scope.lockForm = function () {
@@ -459,10 +462,7 @@ app.controller('MerchantDetailCtrl', [
           $scope.merchant = data.data;
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
-          if ($scope.merchant.details.activated == 1)
-            fetchBalance();
-          else
-            $scope.merchant.balance = 0;
+          fetchBalance();
         } else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value, key) {
@@ -478,7 +478,10 @@ app.controller('MerchantDetailCtrl', [
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/balance');
       request.success(function (data) {
         if (data.success) {
-          $scope.merchant.balance = data.data.balance;
+          $scope.merchant.balance = {
+            test: data.data.test.balance,
+            live: data.data.live.balance
+          }
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
