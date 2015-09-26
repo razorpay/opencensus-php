@@ -337,7 +337,10 @@ class Service extends Base\Service
         $data = [];
         $error = [];
 
-        $this->setApiCredentials($id);
+        $mode = $input['mode'];
+        unset($input['mode']);
+
+        $this->setApiCredentials($id, $mode);
 
         try
         {
