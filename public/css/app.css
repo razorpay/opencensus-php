@@ -3908,3 +3908,12 @@ a.text-black:hover {
 	letter-spacing: 0.0625em;
 	word-spacing: 5px;
 }
+
+.panel code {
+	color: inherit;
+	background-color: inherit;
+}
+a code {
+	color: #58666e;
+	font-size: inherit;
+}

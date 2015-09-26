@@ -99,12 +99,15 @@
           <tr ng-repeat="row in entity.items">
             <td ng-repeat="key in notSorted(row) | limitTo: 9" ng-init="value = row[key]"
             >
+              <!-- This is the entity.id -->
               <a ui-sref="{{getState(row.entity, true)}}" ng-show="key==='id'">
-                {{value}}
+                <code>{{value}}</code>
               </a>
+              <!-- References to other entities -->
               <a ui-sref="{{getState(key, false)}}" ng-show="getState(key)!=='-'">
-                {{value}}
+                <code>{{value}}</code>
               </a>
+              <!-- Just entity fields -->
               <span ng-show="key!=='id' && getState(key)==='-'">
                 {{value}}
               </span>
