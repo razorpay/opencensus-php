@@ -64,6 +64,9 @@ class CreatePayments  extends Migration
             $table->string(Payment::ERROR_CODE, 100)
                   ->nullable();
 
+            $table->string(Payment::INTERNAL_ERROR_CODE)
+                  ->nullable();
+
             $table->string(Payment::ERROR_DESCRIPTION, 255)
                   ->nullable();
 
