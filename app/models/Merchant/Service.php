@@ -46,6 +46,15 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function editEmail($id, array $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
     public function fetch($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);
@@ -327,7 +336,7 @@ class Service extends Base\Service
         {
             $data['card'] = $methods->isCardEnabled();
             $data['netbanking'] = $methods->toArrayWithBankNames();
-            // $data['wallet']['paytm'] = $methods->isPaytmEnabled();
+            $data['wallet']['paytm'] = $methods->isPaytmEnabled();
             $data['wallet']['mobikwik'] = $methods->isMobikwikEnabled();
         }
 

@@ -137,9 +137,7 @@ class Server extends Base\Mock\Server
         $content = array(
             'vpc_AcqResponseCode'   => '00',
             'vpc_Amount'            => $input['vpc_Amount'],
-            'vpc_AuthorisedAmount'  => $input['vpc_Amount'],
             'vpc_BatchNo'           => $payment['vpc_BatchNo'],
-            'vpc_CapturedAmount'    => $input['vpc_Amount'],
             'vpc_Card'              => 'MC',
             'vpc_Command'           => 'queryDR',
             'vpc_Locale'            => 'en_US',
@@ -147,7 +145,6 @@ class Server extends Base\Mock\Server
             'vpc_Merchant'          => $input['vpc_Merchant'],
             'vpc_Message'           => 'Approved',
             'vpc_ReceiptNo'         => $payment['vpc_ReceiptNo'],
-            'vpc_RefundedAmount'    => '0',
             'vpc_TransactionNo'     => $payment['vpc_TransactionNo'],
             'vpc_TxnResponseCode'   => '0',
             'vpc_Version'           => '1',

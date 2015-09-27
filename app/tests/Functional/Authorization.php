@@ -131,7 +131,14 @@ class Authorization
 
     public function noAuth()
     {
-        $this->type = '';
+        $this->type = 'direct';
+
+        $this->basicAuth(null, null);
+    }
+
+    public function directAuth()
+    {
+        $this->type = 'direct';
 
         $this->basicAuth(null, null);
     }

@@ -107,14 +107,23 @@ class Repository extends Base\Repository
                 $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
                 $methodsMerchantId = Methods\Entity::getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
 
-                $methods = json_decode($params[Entity::METHODS]);
+                $methods = json_decode($params[Entity::METHODS], true);
 
-                $join->on($methodsMerchantId, '=', $methodsMerchantId);
+                $join->on($methodsMerchantId, '=', $merchantId);
 
                 foreach ($methods as $method => $value)
                 {
-                    $join->where($method, '=', $value);
+                    $queryValue = null;
+
+                    if ($value === 'true')
+                        $queryValue = '1';
+                    else if ($value === 'false')
+                        $queryValue = '0';
+
+                    $join->where($method, '=', $queryValue);
                 }
             });
+
+        $query->select($query->getModel()->getTable().'.*');
     }
 }

@@ -21,8 +21,12 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|email|max:255',
-        Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
+        Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean'
     );
+
+    protected static $editEmailRules = [
+        Entity::EMAIL                       => 'sometimes|email|unique:merchants'
+    ];
 
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {

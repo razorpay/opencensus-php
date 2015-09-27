@@ -38,7 +38,7 @@ final class Route
         'payment_verify_all'                => ['get',      'payments/verify/all',                      'PaymentController@getVerifyPayments'                           ],
         'refund_fetch_by_id'                => ['get',      'refunds/{id}',                             'PaymentController@getRefund'                                   ],
         'refund_fetch_multiple'             => ['get',      'refunds',                                  'PaymentController@getRefunds'                                  ],
-        'refund_hdfcnb'                     => ['get',      'refunds/hdfcnb/generate',                  'PaymentController@generateHdfcNetbankingRefunds'               ],
+        'refund_netbanking_generate_excel'  => ['post',     'refunds/netbanking/excel',                 'PaymentController@generateNetbankingRefunds'                   ],
         'card_fetch_by_id'                  => ['get',      'cards/{id}',                               'PaymentController@getCard'                                     ],
         'card_fetch_multiple'               => ['get',      'cards',                                    'PaymentController@getCards'                                    ],
         'iin_fetch_by_iin'                  => ['get',      'iins/{id}',                                'CardController@getIin'                                         ],
@@ -53,6 +53,7 @@ final class Route
         'merchant_create'                   => ['post',     'merchants',                                'MerchantController@postCreateMerchant'                         ],
         'merchant_fetch'                    => ['get',      'merchants/{id}',                           'MerchantController@getMerchant'                                ],
         'merchant_edit'                     => ['put',      'merchants/{id}',                           'MerchantController@putMerchant'                                ],
+        'merchant_edit_email'               => ['put',      'merchants/{id}/email',                     'MerchantController@putMerchantEmail'                                ],
         'merchant_fetch_multiple'           => ['get',      'merchants',                                'MerchantController@getMerchants'                               ],
         'merchant_create_key'               => ['post',     'merchants/{id}/keys',                      'MerchantController@postCreateKeys'                             ],
         'merchant_fetch_keys'               => ['get',      'merchants/{id}/keys',                      'MerchantController@getKeys'                                    ],
@@ -174,6 +175,7 @@ final class Route
         'merchant_secret',
         'merchant_create',
         'merchant_edit',
+        'merchant_edit_email',
         'merchant_fetch',
         'merchant_fetch_multiple',
         'merchant_create_key',
@@ -222,7 +224,7 @@ final class Route
         'payment_auto_capture',
         'payment_auto_capture_email',
         'payment_verify_all',
-        'refund_hdfcnb',
+        'refund_netbanking_generate_excel',
         'hdfc_mpr_reconcile',
         'hdfc_mpr_generate',
         'mockhdfc_enroll',
@@ -251,6 +253,9 @@ final class Route
         'card_fetch_by_id',
         'card_fetch_multiple',
         'payment_authorize_refund',
+    );
+
+    public static $direct = array(
     );
 
     public static $internalApps = array(
@@ -418,6 +423,7 @@ final class Route
             self::addFilterOnRouteGroups($router, 'auth.public', 'public');
             self::addFilterOnRouteGroups($router, 'auth.public_callback', 'publicCallback');
             self::addFilterOnRouteGroups($router, 'auth.proxy', 'proxy');
+            self::addFilterOnRouteGroups($router, 'auth.direct', 'direct');
         });
 
         $router->get('/', function()
