@@ -132,7 +132,8 @@ app.controller('EntitiesCtrl', [
           'all',
           0,
           1
-        ]
+        ],
+        caps_payment_id: ['Caps Payment Id']
       },
       payment: {
         bank: ['Bank Code'],
