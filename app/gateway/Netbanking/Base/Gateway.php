@@ -11,7 +11,9 @@ class Gateway extends \Gateway\Base\Gateway
         $attr = $this->getMappedAttributes($attributes);
 
         $payment = $this->getNewGatewayPaymentEntity();
+
         $payment->setPaymentId($this->input['payment']['id']);
+
         $payment->setAction($this->action);
 
         $payment->setBank($this->input['payment']['bank']);
