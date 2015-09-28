@@ -79,7 +79,8 @@ class HdfcGatewayTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
 
-        $this->refundAuthorizedPayment($payment['id']);
+        $input['force'] = '1';
+        $this->refundAuthorizedPayment($payment['id'], $input);
 
         $hdfcEntity = $this->getLastEntity('hdfc', true);
         $this->assertEquals('authorized', $hdfcEntity['status']);

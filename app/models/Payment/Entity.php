@@ -496,6 +496,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNAL_ERROR_CODE);
     }
 
+    public function getDaysSinceAuthorized()
+    {
+        $now = time();
+
+        $at = $this->getAuthorizeTimestamp();
+        $diff = $now - $at;
+
+        return floor($diff / (60*24*24));
+    }
+
     public function getMethodWithDetail()
     {
         $method = Method::formatted($this->getMethod());

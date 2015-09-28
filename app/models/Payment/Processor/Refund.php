@@ -79,6 +79,22 @@ trait Refund
                 'the status is ' . $payment->getStatus());
         }
 
+        $days = 5;
+
+        if ($this->payment->getDaysSinceAuthorized() <= $days)
+        {
+            if ((isset($input['force'])) and
+                ($input['force'] === '1'))
+            {
+                unset($input['force']);
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The authorized payment is not older than: ' . $days . ' days');
+            }
+        }
+
         return $this->refund($id, $input);
     }
 
