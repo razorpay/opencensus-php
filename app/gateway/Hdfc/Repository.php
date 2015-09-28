@@ -5,12 +5,10 @@ namespace Gateway\Hdfc;
 use EE\Exception;
 use Gateway\Hdfc;
 use Gateway\Hdfc\Payment;
-use Models\Base;
+use Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'Hdfc';
 
     public function __construct()
