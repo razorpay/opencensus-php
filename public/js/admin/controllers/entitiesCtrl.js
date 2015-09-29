@@ -110,6 +110,17 @@ app.controller('EntitiesCtrl', [
           0,
           1
         ],
+        international: [
+          'all',
+          0,
+          1
+        ],
+        category: ['MCC Code'],
+        receipt_email_enabled: [
+          'all',
+          0,
+          1
+        ],
         paytm: [
           'all',
           true,
