@@ -15,10 +15,13 @@ class Repository extends Base\Repository
     protected $entity = 'Merchant';
 
     protected $appFetchParamRules = array(
-        Entity::ACTIVATED       => 'sometimes|boolean',
-        Entity::HOLD_FUNDS      => 'sometimes|boolean',
-        Entity::LIVE            => 'sometimes|boolean',
-        Entity::METHODS         => 'sometimes|string',
+        Entity::ACTIVATED               => 'sometimes|boolean',
+        Entity::HOLD_FUNDS              => 'sometimes|boolean',
+        Entity::LIVE                    => 'sometimes|boolean',
+        Entity::CATEGORY                => 'sometimes|integer|digits:4',
+        Entity::INTERNATIONAL           => 'sometimes|boolean',
+        Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
+        Entity::METHODS                 => 'sometimes|string',
     );
 
     public function getBalanceLockForUpdate($id)
