@@ -13,7 +13,7 @@ class Repository extends Base\Repository
 
     public function __construct()
     {
-        $this->repo = __NAMESPACE__.'\Entity';
+        $this->repo = Entity::class;
 
         parent::__construct();
     }
@@ -22,7 +22,7 @@ class Repository extends Base\Repository
     {
         $oldRepo = $this->repo;
 
-        $this->repo = __NAMESPACE__.'\ResponseXml';
+        $this->repo = ResponseXml::class;
 
         $repo = $this->repo;
 

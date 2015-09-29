@@ -137,10 +137,10 @@ class TraceCode
 
     public static function checkCode($code)
     {
-        if (! defined(__NAMESPACE__."\TraceCode::$code"))
+        if (defined(TraceCode::class.'::'.$code) === false)
         {
             throw new InvalidArgumentException(
-                __NAMESPACE__.'\TraceCode::'.$code.'not defined');
+                TraceCode::class.'::'.$code.' not defined');
         }
     }
 }
