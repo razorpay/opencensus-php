@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "58aa374c1238b03d52675bd02ace16e8",
-    "content-hash": "896657b5988a940fb1de2783b24b16cc",
+    "hash": "28d329a866456306b2ed148fedf2d44f",
+    "content-hash": "800fc2526941cd91cf2764c40ef9b5aa",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1362,16 +1362,16 @@
         },
         {
             "name": "maknz/slack",
-            "version": "1.7.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/maknz/slack.git",
-                "reference": "7f21fefc70c76b304adc1b3a780c8740dfcfb595"
+                "url": "https://github.com/razorpay/slack.git",
+                "reference": "c8ed3e4f919358af43516e7ab8d7fa39d3d2f736"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/maknz/slack/zipball/7f21fefc70c76b304adc1b3a780c8740dfcfb595",
-                "reference": "7f21fefc70c76b304adc1b3a780c8740dfcfb595",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/c8ed3e4f919358af43516e7ab8d7fa39d3d2f736",
+                "reference": "c8ed3e4f919358af43516e7ab8d7fa39d3d2f736",
                 "shasum": ""
             },
             "require": {
@@ -1392,7 +1392,6 @@
                     "Maknz\\Slack\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-2-Clause"
             ],
@@ -1407,7 +1406,10 @@
                 "laravel",
                 "slack"
             ],
-            "time": "2015-06-03 03:35:16"
+            "support": {
+                "source": "https://github.com/razorpay/slack/tree/master"
+            },
+            "time": "2015-06-15 07:59:39"
         },
         {
             "name": "monolog/monolog",
@@ -4332,6 +4334,7 @@
     "stability-flags": {
         "razorpay/razorpay": 20,
         "razorpay/spine": 20,
+        "maknz/slack": 20,
         "codacy/coverage": 20
     },
     "prefer-stable": false,
