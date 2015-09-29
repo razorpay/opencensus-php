@@ -3,7 +3,7 @@ body, .body, .greybg{
 	background:#EBECEE;
 }
 *{
-	font-family:"Lucida Sans", "Tahoma", "Arial" !important;
+	font-family: Geneva, 'Lucida', 'Lucida Sans', 'Lucida Grande', Arial, Tahoma, Verdana, sans-serif !important;
 }
 .white{
 	background:#ffffff;
@@ -42,6 +42,48 @@ h3.center{
 .darktext{
 	line-height:25px;
 	color:#484B4C;
+}
+.dark {
+	color:#2d2d2d;
+}
+.newsletter {
+	padding: 40px;
+}
+.newsletter-header-bg {
+	max-width: 580px;
+	min-height: 180px;
+}
+.newsletter-header-bg h1{
+	text-align: left;
+	margin-left: 40px;
+	margin-top: 40px;
+	font-size: 36px;
+	line-height: 20px;
+	font-weight: 200 !important;
+	color: white;
+}
+.newsletter, .newsletter p {
+	font-size: 16px;
+	color: #2d2d2d;
+	text-align: justify;
+	line-height: 24px;
+	background: white;
+	margin: 10px 0px 10px 0px;
+}
+.newsletter a, .newsletter a:hover {
+	color: #24bbea;
+	text-decoration: none !important;
+}
+.newsletter h1{
+	font-size: 24px;
+	line-height: 24px;
+	color: #24bbea;
+	background: white;
+	margin-top: 40px;
+	text-align: left;
+}
+h1 .dark {
+	font-size: 28px;
 }
 .darktext p{
 	line-height: 25px;

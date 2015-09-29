@@ -33,16 +33,17 @@ class DailyReport
 
     /**
      * Sends the daily report
-     * @return boolean Whether the daily report was sent or not
+     * @return array of summary data
+     * array is empty if mail wasn't sent
      */
     public function send()
     {
         if ($this->isBlank() === false)
         {
             $this->sendDailyReport();
-            return true;
+            return $this->data;
         }
-        return false;
+        return [];
     }
 
     /**
@@ -58,7 +59,7 @@ class DailyReport
 
         $data = $this->data;
 
-        Mail::queue($view, $this->data, function($message) use ($config, $data)
+        Mail::send($view, $data, function($message) use ($config, $data)
         {
             $message->to($data['merchant']['transaction_report_email']);
 
@@ -66,7 +67,7 @@ class DailyReport
 
             $message->cc('notifications@razorpay.com');
 
-            $message->subject('Daily Transaction Report for ' . $data['date']);
+            $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);
         });
     }
 
@@ -81,11 +82,7 @@ class DailyReport
     protected function getAuthorizedPayments()
     {
         $authorizedCollection = (new Payment\Repository)->fetch(
-            [
-             'from' => $this->timeLowerLimit,
-             'to' => $this->timeUpperLimit,
-             'status' => 'authorized',
-            ],
+            ['status'    => 'authorized'],
             $this->merchantId);
 
         return $this->summarizePayments($authorizedCollection);
@@ -93,13 +90,12 @@ class DailyReport
 
     protected function getCapturedPayments()
     {
-        $capturedCollection = (new Payment\Repository)->fetch(
-            [
-             'from' => $this->timeLowerLimit,
-             'to' => $this->timeUpperLimit,
-             'status' => 'captured',
-            ],
-            $this->merchantId);
+        $capturedCollection = (new Payment\Repository)
+            ->fetchCapturedBetweenTimestamp(
+                $this->timeLowerLimit,
+                $this->timeUpperLimit,
+                $this->merchantId
+            );
 
         return $this->summarizePayments($capturedCollection);
     }
@@ -207,9 +203,9 @@ class DailyReport
     {
         $data = $this->data;
 
-        return (($data['captured']['sum'] === 0) and
-                ($data['authorized']['sum'] === 0) and
-                ($data['refunds']['sum'] === 0) and
+        return (($data['captured']['payments']['count'] === 0) and
+                ($data['authorized']['payments']['count'] === 0) and
+                ($data['refunds']['refunds']['count'] === 0) and
                 ($data['settlement'] === null));
     }
 }

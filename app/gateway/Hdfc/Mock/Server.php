@@ -56,6 +56,9 @@ class Server
 
         switch ($action)
         {
+            case Action::PURCHASE:
+                $xml = $this->authNotEnrolledOnGateway();
+                break;
             case Action::AUTHORIZE:
                 $xml = $this->authNotEnrolledOnGateway();
                 break;
@@ -114,6 +117,7 @@ class Server
         $txnId = $this->data['paymentid'];
 
         $gatewayTransaction = (new Hdfc\Repository)->findByGatewayTransactionIdOrFail($txnId);
+        $card = $gatewayTransaction->payment->card;
 
         if ($gatewayTransaction === null)
         {
@@ -131,6 +135,9 @@ class Server
             'trackid'   => $gatewayTransaction['payment_id'],
             'amt'       => $gatewayTransaction['amount']);
 
+        if ($card['network'] === 'Maestro')
+            $res['result'] = 'CAPTURED';
+
 //        $this->copyUdfValues($res);
 
         $xml = Hdfc\Utility::createXml($res);
@@ -144,6 +151,8 @@ class Server
 
         $cardNumber = $this->data['card'];
 
+        $network = Card\Network::detectNetwork($cardNumber);
+
         if ($this->isSpecialCardNumber($cardNumber))
         {
             $res = $this->handleSpecialCardNumber($cardNumber);
@@ -152,6 +161,9 @@ class Server
         {
             $res = $this->getDefaultPaymentSuccessArray();
             $res['result'] = 'APPROVED';
+
+            if ($network === 'MAES')
+                $res['result'] = 'CAPTURED';
 
             $this->copyUdfValues($res);
         }
@@ -232,6 +244,10 @@ class Server
     protected function getCardType($cardNumber, $iin)
     {
         if (in_array($cardNumber, $this->debitCardNumbers))
+        {
+            return 'debit';
+        }
+        else if (Card\Network::detectNetwork($cardNumber) === Card\Network::MAES)
         {
             return 'debit';
         }

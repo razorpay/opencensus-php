@@ -4,8 +4,7 @@ namespace Models\Merchant;
 
 use EE\Exception;
 use Models\Base;
-use Models\Payment\Processor\Netbanking;
-use Illuminate\Support\MessageBag;
+use Models\Merchant;
 
 class Validator extends Base\Validator
 {
@@ -22,6 +21,30 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|email|max:255',
-        Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
+        Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean'
     );
+
+    protected static $editEmailRules = [
+        Entity::EMAIL                       => 'sometimes|email|unique:merchants'
+    ];
+
+    public function validateBeforeActivate(Merchant\Entity $merchant)
+    {
+        $attributes = array(
+            Entity::WEBSITE,
+            Entity::CATEGORY,
+            Entity::BILLING_LABEL,
+            Entity::TRANSACTION_REPORT_EMAIL);
+
+        foreach ($attributes as $attribute)
+        {
+            $value = $merchant->getAttribute($attribute);
+
+            if (empty($value))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Please set value for attribute: ' . $attribute);
+            }
+        }
+    }
 }

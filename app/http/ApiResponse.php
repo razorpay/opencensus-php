@@ -21,7 +21,7 @@ class ApiResponse
     {
         self::$jsonp = false;
 
-        $response = self::generateErrorResponse(
+        $response = self::generateJsonErrorResponse(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED);
 
         $response->header('WWW-Authenticate', 'Basic realm="Razorpay"');
@@ -79,6 +79,13 @@ class ApiResponse
         list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
 
         return self::generateResponse($publicError, $httpStatusCode);
+    }
+
+    public static function generateJsonErrorResponse($code)
+    {
+        list($publicError, $httpStatusCode) = self::getErrorResponseFields($code);
+
+        return self::json($publicError, $httpStatusCode);
     }
 
     public static function getErrorResponseFields($code)
@@ -197,16 +204,11 @@ class ApiResponse
 
         $response = Response::json();
 
-        //
-        // The content-type is set to text/html instead of json
-        // because on android 2.* json content is not being read on form
-        // post for cards with no 3d-secure.
-        //
-        $response->headers->set('content-type', 'text/html; charset=UTF-8');
-
         $app = \App::getFacadeRoot();
         $router = $app['router'];
         $route = $router->currentRouteName();
+
+        self::setContentTypeHtmlForSpecificRoutes($route, $response);
 
         if ((self::$jsonp === null) and
             (self::isJsonpRoute($route)))
@@ -250,6 +252,7 @@ class ApiResponse
     protected static function isCallbackRoute($route)
     {
         $callbackRoutes = array(
+            'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
         );
@@ -268,6 +271,21 @@ class ApiResponse
         );
 
         return (in_array($route, $jsonpRoutes));
+    }
+
+    protected static function setContentTypeHtmlForSpecificRoutes($route, $response)
+    {
+        $routes = array('payment_create');
+
+        if (in_array($route, $routes))
+        {
+            //
+            // The content-type is set to text/html instead of json
+            // because on android 2.* json content is not being read on form
+            // post for cards with no 3d-secure.
+            //
+            $response->headers->set('content-type', 'text/html; charset=UTF-8');
+        }
     }
 
     public static function setSameOriginInHeaders($response, $route)

@@ -58,6 +58,20 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
+    public function deleteTerminal2($id)
+    {
+        $terminalRepo = new Terminal\Repository;
+
+        $terminal = $terminalRepo->findOrFailPublic($id);
+
+        $terminal = $terminalRepo->deleteOrFail($terminal);
+
+        if ($terminal === null)
+            return [];
+
+        return $terminal->toArrayPublic();
+    }
+
     public function modifyTerminal($mid, $tid, $input)
     {
         $merchant = $this->repo->findOrFailPublic($mid);
@@ -66,13 +80,18 @@ class Service extends Base\Service
 
         $terminal = $terminalRepo->getByIdAndMerchantId($mid, $tid);
 
-        (new Terminal\Core)->validateExistingTerminal($terminal);
+        $terminal = (new Terminal\Core)->edit($terminal, $input);
 
-        if ((isset($input['restore'])) and
-            ($input['restore'] === '1'))
-        {
-            $terminal->restoreOrFail();
-        }
+        return $terminal->toArrayPublic();
+    }
+
+    public function editTerminal($tid, $input)
+    {
+        $terminalRepo = new Terminal\Repository;
+
+        $terminal = $terminalRepo->findOrFail($tid);
+
+        $terminal = (new Terminal\Core)->edit($terminal, $input);
 
         return $terminal->toArrayPublic();
     }

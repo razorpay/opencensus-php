@@ -15,8 +15,14 @@ class Merchant extends Base
 
     public function createDefaultTestMerchant()
     {
+        // Default merchant to be used for tests
         $this->fixtures->create('merchant', ['id' => '10000000000000']);
-        $this->fixtures->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
+
+        // Merchant on whom all shared terminals are created
+        $this->fixtures->create('merchant', ['id' => '1MercShareTerm']);
+
+        $this->fixtures->on('test')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
+        $this->fixtures->on('live')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('test')->create('balance', ['id' => '10000000000000', 'balance' => '1000000']);
         $this->fixtures->on('live')->create('balance', ['id' => '10000000000000', 'balance' => '0']);
         $this->fixtures->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
@@ -24,8 +30,6 @@ class Merchant extends Base
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
 
         $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => '10000000000000']);
-
-        $this->fixtures->on('test')->create('terminal:shared_netbanking_hdfc_terminal');
     }
 
     public function createNodalAccount()
@@ -103,70 +107,47 @@ class Merchant extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('merchant_banks', $attributes);
-    }
-
-    public function enablePaytm($id = '10000000000000')
-    {
-        $repo = new \Models\Merchant\Banks\Repository;
-        $methods = $repo->findOrFail($id);
-        $methods->setPaytm(true);
-        $repo->saveOrFail($methods);
-        return $methods;
-    }
-
-    public function disablePaytm($id = '10000000000000')
-    {
-        $repo = new \Models\Merchant\Banks\Repository;
-        $methods = $repo->findOrFail($id);
-        $methods->setPaytm(false);
-        $repo->saveOrFail($methods);
-        return $methods;
-    }
-
-    public function enableCard($id = '10000000000000')
-    {
-        $repo = new \Models\Merchant\Banks\Repository;
-        $methods = $repo->findOrFail($id);
-        $methods->setCard(true);
-        $repo->saveOrFail($methods);
-
-        return $methods;
-    }
-
-    public function disableCard($id = '10000000000000')
-    {
-        $repo = new \Models\Merchant\Banks\Repository;
-        $methods = $repo->findOrFail($id);
-        $methods->setCard(false);
-        $repo->saveOrFail($methods);
-        return $methods;
+        $this->fixtures->create('methods', $attributes);
     }
 
     public function activate($id)
     {
-        $repo = new \Models\Merchant\Repository;
-        $merchant = $repo->findOrFail($id);
-        $merchant->activated = 1;
-        $repo->saveOrFail($merchant);
-        return $merchant;
+        return $this->edit($id, ['activated' => 1, 'live' => 1]);
     }
 
     public function holdFunds($id, $hold = true)
     {
-        return $this->editMerchant($id, ['hold_funds' => $hold]);
+        return $this->edit($id, ['hold_funds' => $hold]);
     }
 
-    protected function editMerchant($id, $attributes)
+    public function enablePaytm($id = '10000000000000')
     {
-        $repo = new \Models\Merchant\Repository;
-        $merchant = $repo->findOrFail($id);
-        foreach ($attributes as $key => $value)
-        {
-            $merchant[$key] = $value;
-        }
-
-        $repo->saveOrFail($merchant);
-        return $merchant;
+        return $this->fixtures->edit('methods', $id, ['paytm' => true]);
     }
+
+    public function disablePaytm($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['paytm' => false]);
+    }
+
+    public function enableCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['card' => true]);
+    }
+
+    public function disableCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['card' => false]);
+    }
+
+    public function enableMobikwik($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['mobikwik' => true]);
+    }
+
+    public function disableMobikwik($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['mobikwik' => false]);
+    }
+
 }

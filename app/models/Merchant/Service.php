@@ -46,6 +46,15 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function editEmail($id, array $input)
+    {
+        $merchant = $this->repo->findOrFailPublic($id);
+
+        $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
     public function fetch($id)
     {
         $merchant = $this->repo->findOrFailPublic($id);
@@ -163,6 +172,8 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
 
+        (new Merchant\Validator)->validateBeforeActivate($merchant);
+
         (new Merchant\Core)->createBalance($merchant, 'live');
 
         $merchant->activate();
@@ -229,6 +240,14 @@ class Service extends Base\Service
 
         if ($ba !== null)
         {
+            $baCopy = (new BankAccount\Entity)->build($input);
+            $baCopy->merchant()->associate($merchant);
+
+            if ($ba->equals($baCopy))
+            {
+                return $ba->toArray();
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED);
         }
@@ -268,14 +287,14 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        $banks = (new Banks\Core)->getEnabledAndDisabledBanks($merchant);
+        $banks = (new Methods\Core)->getEnabledAndDisabledBanks($merchant);
 
         return $banks;
     }
 
     public function getEnabledBanks()
     {
-        $banks = (new Banks\Core)->getMerchantBanks($this->merchant);
+        $banks = (new Methods\Core)->getMerchantBanks($this->merchant);
 
         if ($banks === null)
             return [];
@@ -287,7 +306,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentBanksForMerchant(
+        return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input
         );
     }
@@ -295,7 +314,7 @@ class Service extends Base\Service
     public function setBanksForAllMerchants($input)
     {
         // @todo: finish this.
-        // return (new Merchant\Banks\Core)->setPaymentBanksForAllMerchants($input);
+        // return (new Merchant\Methods\Core)->setPaymentBanksForAllMerchants($input);
     }
 
     public function getPaymentMethods()
@@ -308,15 +327,17 @@ class Service extends Base\Service
             'netbanking'    => [],
             'wallet'        => [
                 'paytm'     => false,
+                'mobikwik'  => false,
             ]);
 
-        $methods = (new Merchant\Banks\Core)->getMerchantBanks($this->merchant);
+        $methods = (new Merchant\Methods\Core)->getMerchantBanks($this->merchant);
 
         if ($methods !== null)
         {
             $data['card'] = $methods->isCardEnabled();
             $data['netbanking'] = $methods->toArrayWithBankNames();
             $data['wallet']['paytm'] = $methods->isPaytmEnabled();
+            $data['wallet']['mobikwik'] = $methods->isMobikwikEnabled();
         }
 
         if ($this->mode === Mode::TEST)
@@ -331,7 +352,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($id);
 
-        return (new Merchant\Banks\Core)->setPaymentMethods($merchant, $input);
+        return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
     }
 
     public function getMerchantBeneficiaryFile()
@@ -362,7 +383,7 @@ class Service extends Base\Service
         ];
 
         $config = $this->app->config->get('applications.mailgun');
-        $subject = "Your Razorpay account has been activated";
+        $subject = "Razorpay | Account activated for {$data['merchant']['name']}";
 
         $this->app['mailer']->queue(
             [
@@ -385,7 +406,18 @@ class Service extends Base\Service
      */
     public function sendDailyReportForAllMerchants()
     {
-        $merchants = $this->repo->fetch([Entity::ACTIVATED => 1]);
+        $filter = [];
+
+        //In test, none of the merchants are activated
+        if ($this->mode === Mode::LIVE)
+        {
+            $filter = [Entity::ACTIVATED => 1];
+        }
+
+        $merchants = $this->repo->fetch($filter);
+
+        // sent will hold array of merchant data
+        $response = ['sent' => [], 'skipped' => 0];
 
         $counts = ['sent' => 0, 'skipped' => 0];
 
@@ -395,16 +427,16 @@ class Service extends Base\Service
 
             $sent = $dailyReport->send();
 
-            if($sent)
+            if(empty($sent))
             {
-                $counts['sent']++;
+                $response['skipped']++;
             }
             else
             {
-                $counts['skipped']++;
+                $response['sent'][] = $sent;
             }
         }
 
-        return $counts;
+        return $response;
     }
 }

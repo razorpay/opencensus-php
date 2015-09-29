@@ -11,6 +11,23 @@ class Repository extends Base\Repository
 
     protected $entity = 'Terminal';
 
+    protected $appFetchParamRules = array(
+        Entity::GATEWAY         => 'sometimes',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::GATEWAY         => 'sometimes',
+        Entity::CARD            => 'sometimes|boolean',
+        Entity::NETBANKING      => 'sometimes|boolean',
+        'deleted'               => 'sometimes|boolean',
+    );
+
+    public function addQueryParamDeleted($query, $params)
+    {
+        if ($params['deleted'] === '1')
+        {
+            $query->withTrashed();
+        }
+    }
+
     public function getByParams($params)
     {
         $repo = $this->repo;
@@ -52,16 +69,10 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getByGatewayTerminalId($gatewayTerminalId)
+    public function deleteOrFail($entity)
     {
         $repo = $this->repo;
 
-        return $repo::where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
-                    ->findOrFail();
-    }
-
-    public function deleteOrFail($entity)
-    {
         if ($entity->getUsedCount() === 0)
         {
             $entity->forceDelete();

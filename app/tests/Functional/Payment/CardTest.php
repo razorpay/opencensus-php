@@ -31,6 +31,10 @@ class CardTest extends TestCase
         foreach ($numbers as $number)
         {
             $this->testData[__FUNCTION__]['request']['content']['card']['number'] = $number;
+            if (substr($number, 0, 2) === '37')
+                $this->testData[__FUNCTION__]['request']['content']['card']['cvv'] ='1111';
+            else
+                $this->testData[__FUNCTION__]['request']['content']['card']['cvv'] ='111';
             $this->startTest();
         }
     }
@@ -63,40 +67,25 @@ class CardTest extends TestCase
             $this->ba->publicAuth();
             $payment = $this->doAuthAndGetPayment($payment);
 
-            $card = $this->getLastCard();
+            $card = $this->getLastEntity('card');
 
             $this->assertArraySelectiveEquals($cardInfo, $card);
             $this->assertArrayNotHasKey('number', $card);
         }
     }
 
-    public function testCardWhenNotEnabled()
+    public function testCardWhenNotEnabledOnLive()
     {
         $this->fixtures->links['merchant']->disableCard('10000000000000');
+        $this->fixtures->links['merchant']->activate('10000000000000');
 
-        $this->ba->publicAuth();
+        $this->ba->publicLiveAuth();
 
         $payment = $this->getDefaultPaymentArray();
 
         $testData['request']['content'] = $payment;
 
         $content = $this->startTest($testData);
-    }
-
-    protected function getLastCard()
-    {
-        $this->ba->proxyAuth();
-
-        $request = array(
-            'method' => 'GET',
-            'url' => '/cards?count=1');
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertSame('collection', $content['entity']);
-        $this->assertSame(1, $content['count']);
-
-        return $content['items'][0];
     }
 
     public function startTest()

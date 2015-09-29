@@ -22,7 +22,10 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
 
-    const METHODS           = 'methods'; // Refers to methods relation and not a property;
+    /**
+     * Refers to methods relation and not a property;
+     */
+    const METHODS                   = 'methods';
 
     protected $table = \Constants\Table::MERCHANT;
 
@@ -72,7 +75,9 @@ class Entity extends Base\PublicEntity
         self::LIVE                  => false,
         self::ACTIVATED             => false,
         self::ACTIVATED_AT          => null,
-        self::RECEIPT_EMAIL_ENABLED => true);
+        self::RECEIPT_EMAIL_ENABLED => true,
+        self::HOLD_FUNDS            => false,
+    );
 
     protected function generateTransactionReportEmail($input)
     {
@@ -92,6 +97,19 @@ class Entity extends Base\PublicEntity
     public function isLive()
     {
         return $this->getAttribute(self::LIVE);
+    }
+
+    public function isEducationCategory()
+    {
+        $eduCategories = array(
+            '8211',
+            '8220',
+            '8241',
+            '8244',
+            '8249',
+            '8299');
+
+        return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
     public function activate()
@@ -138,7 +156,7 @@ class Entity extends Base\PublicEntity
     public function methods()
     {
         return $this->hasOne(
-            'Models\Merchant\Banks\Entity');
+            'Models\Merchant\Methods\Entity');
     }
 
     public function terminals()
@@ -183,6 +201,16 @@ class Entity extends Base\PublicEntity
         return (bool) $this->attributes[self::INTERNATIONAL];
     }
 
+    public function getReceiptEmailEnabledAttribute()
+    {
+        return (bool) $this->attributes[self::RECEIPT_EMAIL_ENABLED];
+    }
+
+    public function getHoldFundsAttribute()
+    {
+        return (bool) $this->attributes[self::HOLD_FUNDS];
+    }
+
     public function getWebsite()
     {
         return $this->attributes[self::WEBSITE];
@@ -193,6 +221,11 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::BILLING_LABEL];
     }
 
+    public function getEmail()
+    {
+        return $this->attributes[self::EMAIL];
+    }
+
     public function holdFunds()
     {
         return (bool) $this->attributes[self::HOLD_FUNDS];
@@ -200,23 +233,31 @@ class Entity extends Base\PublicEntity
 
     public function isReceiptEmailsEnabled()
     {
-        return (bool) $this->attribute[self::RECEIPT_EMAIL_ENABLED];
+        return $this->getReceiptEmailEnabledAttribute();
     }
 
 
     public function getRedactedAccountNumber()
     {
-        $ac = $this->bankAccount->getAccountNumber();
+        $bankAccount = $this->bankAccount()->first();
 
-        //
-        // How many times should we repeat the redacted portion
-        // This does not give a precise result,
-        // but it looks good in groups of 4
-        //
+        if($bankAccount !== null)
+        {
+            $ac = $bankAccount->getAccountNumber();
+            //
+            // How many times should we repeat the redacted portion
+            // This does not give a precise result,
+            // but it looks good in groups of 4
+            //
 
-        $repeat = ceil((strlen($ac) - 4)/4);
+            $repeat = ceil((strlen($ac) - 4)/4);
 
-        return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+            return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+        }
+        else
+        {
+            return 'XXXX-XXXX-XXXX';
+        }
     }
 
     public function getTransactionReportEmail()

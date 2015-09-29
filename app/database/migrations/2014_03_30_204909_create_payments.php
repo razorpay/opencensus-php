@@ -64,6 +64,9 @@ class CreatePayments  extends Migration
             $table->string(Payment::ERROR_CODE, 100)
                   ->nullable();
 
+            $table->string(Payment::INTERNAL_ERROR_CODE)
+                  ->nullable();
+
             $table->string(Payment::ERROR_DESCRIPTION, 255)
                   ->nullable();
 
@@ -107,6 +110,9 @@ class CreatePayments  extends Migration
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);
+            $table->index(Payment::AUTHORIZED_AT);
+            $table->index(Payment::EMAIL);
+            $table->index(Payment::BANK);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

@@ -31,21 +31,25 @@ class TestCase extends ParentTestCase
     {
         parent::setUp();
 
-        $this->db = new Database($this->app['db']);
-
-        // Setup database
-        $this->db->setUp();
+        $this->db = new Database($this->app);
 
         // Instantiate fixture class
         $this->fixtures = Fixtures\Fixtures::getInstance();
 
-        $this->fixtures->setUp();
+        $this->initialSetup();
 
         // Instantiate auth class
         $this->ba = new Authorization($this);
 
         // Enable filters
         $this->app['router']->enableFilters();
+    }
+
+    public function initialSetup()
+    {
+        $this->db->setUp();
+
+        $this->db->runFixtures($this->fixtures);
     }
 
     public function tearDown()
@@ -70,5 +74,10 @@ class TestCase extends ParentTestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function changeEnvToNonTest()
+    {
+        $this->app['env'] = 'production';
     }
 }

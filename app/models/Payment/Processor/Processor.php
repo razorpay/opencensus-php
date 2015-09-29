@@ -173,21 +173,18 @@ class Processor
         $this->trace->info(
             TraceCode::MISC_TRACE_CODE,
             ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive(),
-             'reach' => true]);
+             'live' => $merchant->isLive()]);
+    }
 
+    protected function verifyMerchantIsLiveForLiveRequest()
+    {
         // On live request, ensure that merchant isn't blocked temporarily
-        if ($merchant->isLive() === false)
+        if (($this->mode === Mode::LIVE) and
+            ($this->merchant->isLive() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
-
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            ['merchant_id' => $merchant->getId(),
-             'live' => $merchant->isLive(),
-             'reach' => false]);
     }
 
     /**
@@ -230,13 +227,15 @@ class Processor
 
         $desc = $error->getDescription();
 
+        $internalCode = $error->getInternalErrorCode();
+
         $payment = $this->payment;
 
         $payment->setStatus(Payment\Status::FAILED);
 
-        $payment->setError($code, $desc);
+        $payment->setError($code, $desc, $internalCode);
 
-        $payment->save();
+        $payment->saveOrFail();
 
         $this->tracePaymentFailed($error, $traceCode);
     }
@@ -255,6 +254,11 @@ class Processor
         $terminal = $this->payment->terminal;
 
         $gateway = $this->payment->getGateway();
+
+        if ($terminal === null)
+        {
+            return;
+        }
 
         $input['terminal'] = $terminal;
         $input['merchant'] = $terminal->merchant;
@@ -306,6 +310,13 @@ class Processor
 
         $card = $this->payment->card()->first();
         return $this->payment;
+    }
+
+    protected function setPayment($payment)
+    {
+        $this->payment = $payment;
+
+        $card = $this->payment->card()->first();
     }
 
     protected function tracePaymentNewRequest($input)

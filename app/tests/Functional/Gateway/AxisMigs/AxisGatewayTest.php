@@ -24,7 +24,20 @@ class AxisGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->doAuthAndCapturePayment();
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNotNull($txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNotNull($payment['transaction_id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -56,5 +69,37 @@ class AxisGatewayTest extends TestCase
         $refund = $this->getLastEntity('axis_migs', true);
 
         $this->assertTestResponse($refund);
+    }
+
+    public function testPaymentPartialRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+        $amount = (int) ($payment['amount'] / 3);
+
+        $this->refundPayment($payment['id'], $amount);
+
+        $refund = $this->getLastEntity('axis_migs', true);
+
+        $this->assertEquals($amount, $refund['vpc_amount']);
+    }
+
+    public function testMaestroOnMigs()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5081597022059105';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->verifyPayment($payment['id']);
     }
 }

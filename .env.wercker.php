@@ -6,7 +6,7 @@ return array(
     'DB_LIVE_DRIVER'                        => 'sqlite',
     'DB_LIVE_HOST'                          => '',
     'DB_LIVE_PORT'                          => '',
-    'DB_LIVE_DATABASE'                      => ':memory:',
+    'DB_LIVE_DATABASE'                      => 'api_sqlite.db',
     'DB_LIVE_USERNAME'                      => '',
     'DB_LIVE_PASSWORD'                      => '',
 
@@ -28,9 +28,6 @@ return array(
 
     'CLOUD'                                 => false,
 
-    'HDFC_ID'                               => getenv('HDFC_ID'),
-    'HDFC_PASSWORD'                         => getenv('HDFC_PASSWORD'),
-
     'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'    => getenv('AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'),
     'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'    => getenv('AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'),
     'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'    => getenv('AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'),
@@ -47,6 +44,8 @@ return array(
 
     'HDFC_GATEWAY_TEST_TERMINAL_ID'         => getenv('HDFC_GATEWAY_TEST_TERMINAL_ID'),
     'HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'   => getenv('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
+
+    'MOBIKWIK_GATEWAY_TEST_HASH_SECRET'     => 'randomkuchbhi',
 
     'KOTAK_GATEWAY_TEST_HASH_SECRET'        => getenv('KOTAK_GATEWAY_TEST_HASH_SECRET'),
     'KOTAK_GATEWAY_TEST_MERCHANT_ID'        => getenv('KOTAK_GATEWAY_TEST_MERCHANT_ID'),
@@ -66,6 +65,7 @@ return array(
     'BILLDESK_MOCK'                         => true,
     'HDFC_MOCK'                             => true,
     'KOTAK_MOCK'                            => true,
+    'MOBIKWIK_MOCK'                         => true,
     'PAYTM_MOCK'                            => true,
     'NETBANKING_HDFC_MOCK'                  => true,
 
@@ -94,4 +94,6 @@ return array(
     'AWS_S3_SETTLEMENT_BUCKET'              => '',
 
     'CRON_PASSWORD'                         => 'a923r8u98uwaf98uw9w8fu',
+
+    'RUN_FIXTURES_ONCE'                     => true,
 );

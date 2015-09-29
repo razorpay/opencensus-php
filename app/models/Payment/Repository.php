@@ -15,9 +15,14 @@ class Repository extends Base\Repository
     protected $entity = 'Payment';
 
     protected $appFetchParamRules = array(
-        Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed',
+        Entity::STATUS          => 'sometimes|in:created,authorized,captured,failed,refunded',
         Entity::VERIFIED        => 'sometimes|boolean',
-        Entity::REFUND_STATUS   => 'sometimes|in:partial:full'
+        Entity::REFUND_STATUS   => 'sometimes|in:partial,full',
+        Entity::BANK            => 'sometimes',
+        Entity::METHOD          => 'sometimes',
+        Entity::GATEWAY         => 'sometimes',
+        Entity::EMAIL           => 'sometimes',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
     );
 
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
@@ -28,6 +33,22 @@ class Repository extends Base\Repository
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
+    }
+
+    /**
+     * Returns the captured payments
+     * between the given timestamps (using CAPTURED_AT)
+     * @param  int $from    timestamp for start of interval
+     * @param  int $to      timestamp for end of interval
+     * @return Collection of Payment
+     */
+    public function fetchCapturedBetweenTimestamp($from, $to, $merchantId)
+    {
+        $repo = $this->repo;
+        return $repo::whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where(Entity::STATUS, '=', Status::CAPTURED)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->get();
     }
 
     public function lockForUpdate($id)
@@ -96,24 +117,24 @@ class Repository extends Base\Repository
     {
         $repo = $this->repo;
 
+        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+
         return $repo::whereNull(Payment\Entity::VERIFIED)
                     ->where(Payment\Entity::STATUS, '=', Payment\Status::FAILED)
+                    ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways)
                     ->where(Payment\Entity::CREATED_AT, '<', $ts)
                     ->get();
     }
 
-    protected function addQueryParamStatus($query, $params)
+    protected function addQueryParamBank($query, $params)
     {
-        $query = $query->where(Entity::STATUS, '=', $params[Entity::STATUS]);
-    }
+        if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
+                Entity::BANK);
+        }
 
-    protected function addQueryParamVerified($query, $params)
-    {
-        $query = $query->where(Entity::VERIFIED, '=', $params[Entity::VERIFIED]);
-    }
-
-    protected function addQueryParamRefundStatus($query, $params)
-    {
-        $query = $query->where(Entity::REFUND_STATUS, '=', $params[Entity::REFUND_STATUS]);
+        $query = $query->where(Entity::BANK, '=', $params[Entity::BANK]);
     }
 }

@@ -8,6 +8,9 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryFetch;
 
+    protected $appFetchParamRules = array(
+        Entity::PAYMENT_ID          => 'sometimes|string|size:14');
+
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
         $repo = $this->repo;

@@ -7,47 +7,49 @@ use EE\Error\ErrorCode;
 use Models\Base;
 use Models\Payment;
 use Models\Payment\Refund;
+use Models\Payment\Processor\Netbanking;
 use Models\Bank\Name as BankNames;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const AMOUNT            = 'amount';
-    const AMOUNT_AUTHORIZED = 'amount_authorized';
-    const AMOUNT_REFUNDED   = 'amount_refunded';
-    const STATUS            = 'status';
-    const METHOD            = 'method';
-    const REFUND_STATUS     = 'refund_status';
-    const CURRENCY          = 'currency';
-    const DESCRIPTION       = 'description';
-    const ERROR_CODE        = 'error_code';
-    const ERROR_DESCRIPTION = 'error_description';
-    const EMAIL             = 'email';
-    const CONTACT           = 'contact';
-    const NOTES             = 'notes';
-    const BANK              = 'bank';
-    const CARD_ID           = 'card_id';
-    const WALLET            = 'wallet';
-    const TRANSACTION_ID    = 'transaction_id';
-    const AUTO_CAPTURED     = 'auto_captured';
-    const AUTHORIZED_AT     = 'authorized_at';
-    const CAPTURED_AT       = 'captured_at';
-    const GATEWAY           = 'gateway';
-    const TERMINAL_ID       = 'terminal_id';
-    const SIGNED            = 'signed';
-    const VERIFIED          = 'verified';
-    const CALLBACK_URL      = 'callback_url';
+    const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
+    const AMOUNT                = 'amount';
+    const AMOUNT_AUTHORIZED     = 'amount_authorized';
+    const AMOUNT_REFUNDED       = 'amount_refunded';
+    const STATUS                = 'status';
+    const METHOD                = 'method';
+    const REFUND_STATUS         = 'refund_status';
+    const CURRENCY              = 'currency';
+    const DESCRIPTION           = 'description';
+    const ERROR_CODE            = 'error_code';
+    const INTERNAL_ERROR_CODE   = 'internal_error_code';
+    const ERROR_DESCRIPTION     = 'error_description';
+    const EMAIL                 = 'email';
+    const CONTACT               = 'contact';
+    const NOTES                 = 'notes';
+    const BANK                  = 'bank';
+    const CARD_ID               = 'card_id';
+    const WALLET                = 'wallet';
+    const TRANSACTION_ID        = 'transaction_id';
+    const AUTO_CAPTURED         = 'auto_captured';
+    const AUTHORIZED_AT         = 'authorized_at';
+    const CAPTURED_AT           = 'captured_at';
+    const GATEWAY               = 'gateway';
+    const TERMINAL_ID           = 'terminal_id';
+    const SIGNED                = 'signed';
+    const VERIFIED              = 'verified';
+    const CALLBACK_URL          = 'callback_url';
 
-    const CURRENCY_LENGTH   = 3;
+    const CURRENCY_LENGTH       = 3;
 
-    const MIN_PAYMENT_AMOUNT = 100;
+    const MIN_PAYMENT_AMOUNT    = 100;
 
-    protected $table = \Constants\Table::PAYMENT;
+    protected static $sign      = 'pay';
 
-    protected static $sign = 'pay';
+    protected $entity           = 'payment';
 
-    protected $entity = 'payment';
+    protected $table            = \Constants\Table::PAYMENT;
 
     protected $genereateIdOnCreate = true;
 
@@ -82,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::NOTES,
         self::ERROR_CODE,
+        self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
@@ -153,7 +156,8 @@ class Entity extends Base\PublicEntity
         $contact = str_replace(')', '', $contact);
 
         // Remove the 0 at the start
-        if ($contact[0] === '0')
+        if ((strlen($contact) > 1) and
+            ($contact[0] === '0'))
         {
             $contact = substr($contact, 1);
         }
@@ -215,10 +219,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY, $gateway);
     }
 
-    public function setError($code, $desc)
+    public function setError($errorCode, $errorDesc, $internalErrorCode)
     {
-        $this->setAttribute(self::ERROR_CODE, $code);
-        $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
+        $this->setAttribute(self::ERROR_CODE, $errorCode);
+        $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
     public function setCaptureTimestamp()
@@ -249,6 +254,12 @@ class Entity extends Base\PublicEntity
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setErrorNull()
+    {
+        $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
 // ----------------------- Setters Ends-----------------------------------------
@@ -324,7 +335,7 @@ class Entity extends Base\PublicEntity
 
     public function isCaptured()
     {
-        return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
+        return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
     public function isPartiallyOrFullyRefunded()
@@ -452,7 +463,7 @@ class Entity extends Base\PublicEntity
     public function getBankName()
     {
         $bankId = $this->getBank();
-        return BankNames::getName($bankId);
+        return Netbanking::getName($bankId);
     }
 
     public function getWallet()
@@ -475,26 +486,54 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT);
     }
 
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getInternalErrorCode()
+    {
+        return $this->getAttribute(self::INTERNAL_ERROR_CODE);
+    }
+
+    public function getDaysSinceAuthorized()
+    {
+        $now = time();
+
+        $at = $this->getAuthorizeTimestamp();
+        $diff = $now - $at;
+
+        return floor($diff / (60*24*24));
+    }
+
     public function getMethodWithDetail()
     {
+        $method = Method::formatted($this->getMethod());
         $walletNames = [
-            'paytm' =>  'PayTM'
+            'paytm' =>  'PayTM',
+            'mobikwik' =>  'Mobikwik'
         ];
-
-        $methodName = Method::formatted($this->getMethod());
 
         switch($this->getMethod())
         {
             case Method::CARD:
-                return [$methodName, $this->getFormattedCard()];
+                return [$method, $this->getFormattedCard()];
                 break;
             case Method::NETBANKING:
-                return [$methodName, $this->getBankName()];
+                return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
-                return [$methodName, $walletNames[$this->getWallet()]];
+                return [$method, ucfirst($this->getWallet())];
                 break;
         }
+    }
+
+    public function getErrorDetails()
+    {
+        return [
+            self::ERROR_CODE => $this->getAttribute(self::ERROR_CODE),
+            self::ERROR_DESCRIPTION => $this->getAttribute(self::ERROR_DESCRIPTION),
+        ];
     }
 
     /**
@@ -599,7 +638,8 @@ class Entity extends Base\PublicEntity
     {
         if (is_int($amount) === false)
         {
-            throw new Exception\InvalidArgumentException('amount should be an integer ' . $amount);
+            throw new Exception\InvalidArgumentException(
+                'amount should be an integer ' . $amount);
         }
 
         $amount = (int) $amount;
@@ -613,6 +653,8 @@ class Entity extends Base\PublicEntity
         else if ($amount === $amountUnrefunded)
         {
             $this->setRefundStatus(Refund\Status::FULL);
+
+            $this->setStatus(Payment\Status::REFUNDED);
         }
         else
         {

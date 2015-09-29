@@ -92,4 +92,15 @@ trait CustomAssertions
 
         $this->assertArraySelectiveEquals($this->testData[$key], $content);
     }
+
+    public function assertContentTypeForResponse($type, $response)
+    {
+        $headers = $this->response->headers->all();
+
+        $this->assertArrayHasKey('content-type', $headers);
+
+        $contentType = $headers['content-type'][0];
+
+        $this->assertEquals($type, $contentType);
+    }
 }

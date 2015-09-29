@@ -5,13 +5,6 @@ namespace Tests\Functional\Payment;
 use Tests\Functional\TestCase;
 use Tests\Functional\Helpers\Payment\PaymentTrait;
 
-/**
- * Tests that support payments (capture/refund) are working fine.
- * creates a hold payment using card 13 and then attempts to capture it followed by refund it
- * Is successful if captured successfully folowed by successful refund.
- * All test cases follow, GIVEN, WHEN, THEN structure
- */
-
 class AuthorizeTest extends TestCase
 {
     use PaymentTrait;
@@ -185,10 +178,7 @@ class AuthorizeTest extends TestCase
     {
         $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - 60*100]);
 
-        $this->ba->appAuth();
-
-        $request = array('url' => '/payments/timeout');
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->timeoutOldPayment();
 
         $this->assertEquals($content['count'], 1);
 
@@ -204,10 +194,7 @@ class AuthorizeTest extends TestCase
             'payment',
             ['created_at' => time() - 60*100, 'status' => 'authorized', 'terminal_id' => '1n25f6uN5S1Z5a']);
 
-        $this->ba->appAuth();
-
-        $request = array('url' => '/payments/timeout');
-        $content = $this->makeRequestAndGetContent($request);
+        $content = $this->timeoutOldPayment();
 
         $this->assertEquals($content['count'], 0);
 
@@ -224,6 +211,33 @@ class AuthorizeTest extends TestCase
             ['created_at' => time() - 60*100, 'status' => 'created', 'terminal_id' => '1n25f6uN5S1Z5a']);
 
         $this->cancelPayment($payment->getPublicId());
+
+        $contentType = 'application/json';
+        $this->assertContentTypeForResponse($contentType, $this->response);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->markTestIncomplete();
+
+        $payment = $this->fixtures->create(
+            'payment:failed');
+
+        $this->authorizeFailedPayment($payment['public_id']);
+    }
+
+    public function testContentTypeHtmlOnPaymentCreateRoute()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $contentType = 'text/html; charset=UTF-8';
+        $this->assertContentTypeForResponse($contentType, $this->response);
     }
 
     public function startTest()

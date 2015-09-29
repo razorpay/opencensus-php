@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Merchant\Banks;
+namespace Models\Merchant\Methods;
 
 use Models\Base;
 use Models\Payment\Processor\Netbanking;
@@ -16,9 +16,10 @@ class Validator extends Base\Validator
         'banks');
 
     protected static $setMethodsRules = array(
-        'paytm' => 'sometimes|boolean',
-        'card'  => 'sometimes|boolean',
-        'banks' => 'sometimes|array');
+        'paytm'     => 'sometimes|boolean',
+        'card'      => 'sometimes|boolean',
+        'banks'     => 'sometimes|array',
+        'mobikwik'  => 'sometimes|boolean');
 
     protected static $setMethodsValidators = array(
         'methodBanks');

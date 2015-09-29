@@ -47,12 +47,12 @@ class Fixtures
      */
     public function setUp()
     {
+        $this->base->connection('test');
+
         $this->merchant->setUp();
 
         $apiMerchant = $this->create('merchant', ['id' => '1cXSLlUU8V9sXl', 'pricing_plan_id' => '1hDYlICobzOCYt']);
         $apiBalance = $this->create('balance', ['id' => '1cXSLlUU8V9sXl']);
-
-        $this->base->connection('test');
 
         $this->create('pricing:default_plan');
 
@@ -84,12 +84,24 @@ class Fixtures
 
     public function create($resource, array $attributes = array())
     {
-        list($obj, $method, $arg1, $arg2) = $this->getEntityMethodAndArgs($resource, $attributes, 'create');
+        list($obj, $method, $entity) = $this->getEntityMethodAndArgs($resource, 'create');
 
         $times = $this->getTimes();
         $this->times = 1;
 
         $entities = [];
+
+        $arg1 = $arg2 = null;
+
+        if ($entity === null)
+        {
+            $arg1 = $attributes;
+        }
+        else
+        {
+            $arg1 = $entity;
+            $arg2 = $attributes;
+        }
 
         while ($times--)
         {
@@ -99,11 +111,25 @@ class Fixtures
         return count($entities) > 1 ? $entities : $entities[0];
     }
 
-    public function edit($resource, array $attributes = array())
+    public function edit($resource, $id, array $attributes = array())
     {
-        list($obj, $method, $arg1, $arg2) = $this->getEntityMethodAndArgs($resource, $attributes, 'edit');
+        list($obj, $method, $entity) = $this->getEntityMethodAndArgs($resource, 'edit');
 
-        return $obj->$method($arg1, $arg2);
+        $arg1 = $arg2 = $arg3 = null;
+        $arg1 = $entity;
+
+        if ($entity === null)
+        {
+            $arg1 = $id;
+            $arg2 = $attributes;
+        }
+        else
+        {
+            $arg2 = $id;
+            $arg3 = $attributes;
+        }
+
+        return $obj->$method($arg1, $arg2, $arg3);
     }
 
     public function getTimes()
@@ -111,22 +137,24 @@ class Fixtures
         return $this->times;
     }
 
-    protected function getEntityMethodAndArgs($resource, $attributes, $action)
+    protected function getEntityMethodAndArgs($resource, $action)
     {
         list($entity, $method) = $this->getEntityAndMethod($resource, $action);
 
         $class = __NAMESPACE__.'\Entity\\' . studly_case($entity);;
 
-        if (class_exists($class) === false)
-        {
-            $method .= 'Entity';
-
-            return [$this->base, $method, $entity, $attributes];
-        }
-
         $obj = $this->getEntityFixtureInstance($class, $entity);
 
-        return [$obj, $method, $attributes, ''];
+        if (class_exists($class))
+        {
+            $entity = null;
+        }
+        else
+        {
+            $method .= 'Entity';
+        }
+
+        return [$obj, $method, $entity];
     }
 
     protected function getEntityFixtureInstance($class, $entity)
@@ -142,6 +170,8 @@ class Fixtures
 
             return $obj;
         }
+
+        return $this->base;
     }
 
     protected function getEntityAndMethod($resource, $action)

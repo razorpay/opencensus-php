@@ -19,19 +19,19 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected static $t = 1;
 
-	/**
-	 * Creates the application.
-	 *
-	 * @return \Symfony\Component\HttpKernel\HttpKernelInterface
-	 */
-	public function createApplication()
-	{
-		$unitTesting = true;
+    /**
+     * Creates the application.
+     *
+     * @return \Symfony\Component\HttpKernel\HttpKernelInterface
+     */
+    public function createApplication()
+    {
+        $unitTesting = true;
 
-		$testEnvironment = 'testing';
+        $testEnvironment = 'testing';
 
-		return require __DIR__.'/../../bootstrap/start.php';
-	}
+        return require __DIR__.'/../../bootstrap/start.php';
+    }
 
     public function setUp()
     {
@@ -66,9 +66,14 @@ class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected function markTestSkippedForWercker()
     {
-        if (getenv('WERCKER') === "true")
+        if ($this->isTestRunningOnWercker())
         {
             $this->markTestSkipped();
         }
+    }
+
+    protected function isTestRunningOnWercker()
+    {
+        return (getenv('WERCKER') === 'true');
     }
 }

@@ -160,7 +160,7 @@ class Error extends Support\Fluent
         return $this->publicError;
     }
 
-    protected function getInternalErrorCode()
+    public function getInternalErrorCode()
     {
         return $this->getAttribute(self::INTERNAL_ERROR_CODE);
     }

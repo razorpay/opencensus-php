@@ -25,6 +25,15 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function putMerchantEmail($id)
+    {
+        $input = Input::all();
+
+        $data = (new Merchant\Service)->editEmail($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getMerchant($id)
     {
         $data = (new Merchant\Service)->fetch($id);
@@ -117,11 +126,27 @@ class MerchantController extends BaseController
         return ApiResponse::json($data);
     }
 
+    public function deleteTerminal2($id)
+    {
+        $data = (new Terminal\Service)->deleteTerminal2($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function putTerminal($mid, $tid)
     {
         $input = Input::all();
 
         $data = (new Terminal\Service)->modifyTerminal($mid, $tid, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putTerminal2($tid)
+    {
+        $input = Input::all();
+
+        $data = (new Terminal\Service)->editTerminal($tid, $input);
 
         return ApiResponse::json($data);
     }

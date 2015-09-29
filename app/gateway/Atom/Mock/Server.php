@@ -89,9 +89,9 @@ class Server extends Base\Mock\Server
         $this->input = $input;
     }
 
-    public function capture(array $input)
+    public function capture($input)
     {
-        ;
+        parent::capture($input);
     }
 
     public function atomRzpPayment($input)

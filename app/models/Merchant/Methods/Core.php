@@ -1,12 +1,12 @@
 <?php
 
-namespace Models\Merchant\Banks;
+namespace Models\Merchant\Methods;
 
 use Models\Base;
 use EE\Exception;
 use Models\Payment;
 use Models\Merchant;
-use Models\Merchant\Banks;
+use Models\Merchant\Methods;
 use Models\Payment\Processor\Netbanking;
 use Models\Terminal;
 
@@ -32,19 +32,20 @@ class Core extends Base\Core
 
     public function getMerchantBanks($merchant)
     {
-
         $banks = $this->repo->getMerchantBanks($merchant->getId());
 
-        $billdesk = (new Terminal\Repository)->getByMerchantIdAndGateway(
-                                                $merchant->getId(), 'billdesk');
-        if ($billdesk !== null)
-        {
-            $supportedBanks = Netbanking::getAllBanks();
-        }
-        else
-        {
-            $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
-        }
+        // $billdesk = (new Terminal\Repository)->getByMerchantIdAndGateway(
+        //                                         $merchant->getId(), 'billdesk');
+        // if ($billdesk !== null)
+        // {
+        //     $supportedBanks = Netbanking::getAllBanks();
+        // }
+        // else
+        // {
+        //     $supportedBanks = Payment\Processor\Netbanking::getPaytmSupportedBanks();
+        // }
+
+        $supportedBanks = Netbanking::getBilldeskSupportedBanks();
 
         $banks->setBanks($supportedBanks);
 
@@ -79,7 +80,7 @@ class Core extends Base\Core
 
         if ($banks === null)
         {
-            $banks = new Banks\Entity;
+            $banks = new Methods\Entity;
             $banks->merchant()->associate($merchant);
         }
 

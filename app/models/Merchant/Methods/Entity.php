@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Merchant\Banks;
+namespace Models\Merchant\Methods;
 
 use EE\Exception;
 use Models\Base;
@@ -11,10 +11,11 @@ class Entity extends Base\PublicEntity
     const CARD              = 'card';
     const BANKS             = 'banks';
     const PAYTM             = 'paytm';
+    const MOBIKWIK          = 'mobikwik';
 
     protected $primaryKey = self::MERCHANT_ID;
 
-    protected $table = \Constants\Table::MERCHANT_BANKS;
+    protected $table = \Constants\Table::METHODS;
 
     protected $entity = 'methods';
 
@@ -24,13 +25,15 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CARD,
         self::BANKS,
-        self::PAYTM);
+        self::PAYTM,
+        self::MOBIKWIK);
 
     protected $visible = array(
         self::MERCHANT_ID,
         self::CARD,
         self::BANKS,
-        self::PAYTM);
+        self::PAYTM,
+        self::MOBIKWIK);
 
     protected $public = array(
         self::ENTITY,
@@ -46,14 +49,24 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('Models\Merchant\Entity');
     }
 
+    public function isCardEnabled()
+    {
+        return $this->getCardAttribute();
+    }
+
+    public function isWalletEnabled($wallet)
+    {
+        return $this->{'is'.ucfirst($wallet).'Enabled'}();
+    }
+
     public function isPaytmEnabled()
     {
         return $this->getPaytmAttribute();
     }
 
-    public function isCardEnabled()
+    public function isMobikwikEnabled()
     {
-        return $this->getCardAttribute();
+        return $this->getMobikwikAttribute();
     }
 
     public function getBanks()
@@ -69,6 +82,15 @@ class Entity extends Base\PublicEntity
     public function getPaytm()
     {
         return $this->getAttribute(self::PAYTM);
+    }
+    public function setMobikwik($mobikwik)
+    {
+        $this->setAttribute(self::MOBIKWIK, $mobikwik);
+    }
+    public function getMobikwik()
+    {
+//        return true;
+        return $this->getAttribute(self::MOBIKWIK);
     }
 
     public function setPaytm($paytm)
@@ -113,5 +135,10 @@ class Entity extends Base\PublicEntity
     public function getWalletAttribute()
     {
         return array('paytm' => $this->getPaytmAttribute());
+    }
+
+    public function getMobikwikAttribute()
+    {
+        return (bool) $this->attributes[self::MOBIKWIK];
     }
 }

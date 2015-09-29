@@ -9,6 +9,7 @@ $factory('Models\Merchant\Entity', [
     'pricing_plan_id' => null,
     'international' => 0,
     'website' => $faker->url,
+    'billing_label' => $faker->word,
     'category' => 1100,
     'transaction_report_email' => $faker->email,
     'receipt_email_enabled' => true,
@@ -188,7 +189,7 @@ $factory('Models\Card\Detail', [
     'trivia' => $faker->sentence,
 ]);
 
-$factory('Models\Merchant\Banks\Entity', [
+$factory('Models\Merchant\Methods\Entity', [
     'merchant_id' => 10000000000000,
     'card'  => '1',
     'banks' => '[]',

@@ -11,8 +11,8 @@ class Netbanking
     const BARB_R = 'BARB_R';
     const PUNB_C = 'PUNB_C';
     const PUNB_R = 'PUNB_R';
-    const LAVB_C = 'PUNB_C';
-    const LAVB_R = 'PUNB_R';
+    const LAVB_C = 'LAVB_C';
+    const LAVB_R = 'LAVB_R';
 
     protected static $names = array(
         self::BARB_C => 'Bank of Baroda - Corporate Banking',
@@ -77,6 +77,12 @@ class Netbanking
         IFSC::PMCB,
         IFSC::PSIB,
         IFSC::RATN,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBIN,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
         IFSC::SIBL,
         IFSC::SRCB,
         IFSC::SVCB,
@@ -131,11 +137,25 @@ class Netbanking
     {
         $names = Name::getNames($codes);
 
-        $names = array_merge($names, array_intersect_key(self::$names, array_flip($codes)));
+        $names = array_merge(
+                    $names,
+                    array_intersect_key(
+                        self::$names,
+                        array_flip($codes)));
 
         asort($names);
 
         return $names;
+    }
+
+    public static function getName($code)
+    {
+        if (defined(__CLASS__ . '::' . $code))
+        {
+            return self::$names[$ifsc];
+        }
+
+        return Name::getName($code);
     }
 
     public static function getPaytmSupportedBanks()

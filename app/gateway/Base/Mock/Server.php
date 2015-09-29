@@ -25,6 +25,13 @@ class Server
         $this->input = $input;
     }
 
+    protected function capture($input)
+    {
+        $this->action = 'capture';
+
+        $this->input = $input;
+    }
+
     protected function refund($input)
     {
         $this->action = 'refund';
@@ -125,8 +132,13 @@ class Server
         $this->validateActionInput($input, 'auth');
     }
 
-    protected function validateActionInput($input, $action)
+    protected function validateActionInput($input, $action = null)
     {
+        if ($action === null)
+        {
+            $action = $this->action;
+        }
+
         $validator = $this->getValidator();
 
         $validator->validateInput($action, $input);

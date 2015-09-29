@@ -31,8 +31,53 @@ return [
         'entity' => 'payment',
     ],
 
+
+    'testTransactionAfterAuthorize' => [
+        'type' => 'payment',
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'fee' => 1140,
+        'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        'debit' => 0,
+        'credit' => 48860,
+        'currency' => 'INR',
+        'balance' => 0,
+        'gateway_fee' => 0,
+        'api_fee' => 0,
+        'escrow_balance' => 1048860,
+        'channel' => 'kotak',
+        'settled' => false,
+        'settled_at' => null,
+        'settlement_id' => null,
+        'reconciled_at' => null,
+        'entity' => 'transaction',
+        'admin' => true,
+    ],
+
+    'testTransactionAfterCapture' => [
+        'type' => 'payment',
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'fee' => 1140,
+        'debit' => 0,
+        'credit' => 48860,
+        'currency' => 'INR',
+        'balance' => 1048860,
+        'gateway_fee' => 0,
+        'api_fee' => 0,
+        'escrow_balance' => 1048860,
+        'channel' => 'kotak',
+        'settled' => false,
+//        'settled_at' => 1437589800,
+        'settlement_id' => null,
+        'reconciled_at' => null,
+        'entity' => 'transaction',
+        'admin' => true,
+    ],
+
     'testPaymentPaytmEntity' => [
         'action' => 'authorize',
+        'received' => true,
         'request_type' => 'SEAMLESS',
         'method' => 'card',
         'txn_amount' => '500',
@@ -73,6 +118,7 @@ return [
 
     'testPaytmWalletEntity' => [
         'action' => 'authorize',
+        'received' => true,
         'request_type' => 'DEFAULT',
         'method' => 'wallet',
         'txn_amount' => '500',
@@ -145,6 +191,7 @@ return [
 
     'testRefundPayment' => [
         'action' => 'refund',
+        'received' => true,
         'request_type' => 'DEFAULT',
         'method' => 'netbanking',
         'txn_amount' => '500',

@@ -26,7 +26,7 @@ return [
         ],
     ],
 
-    'testCardWhenNotEnabled' => [
+    'testCardWhenNotEnabledOnLive' => [
         'request' => [
             'content' => [
             ],

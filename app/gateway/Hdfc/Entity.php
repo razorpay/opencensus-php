@@ -2,9 +2,9 @@
 
 namespace Gateway\Hdfc;
 
-use Models\Base;
+use Gateway\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     protected $fields = array(
         'id',
@@ -30,22 +30,14 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = 'id';
 
+    protected $entity = 'hdfc';
+
     public $incrementing = true;
 
     protected $guarded = array();
 
     public function payment()
     {
-        return $this->belongsTo('Payment', 'payment_id', 'id');
-    }
-
-    public function getPaymentId()
-    {
-        return $this->getAttribute('payment_id');
-    }
-
-    public function getRefundId()
-    {
-        return $this->getAttribute('refund_id');
+        return $this->belongsTo('Models\Payment\Entity', 'payment_id', 'id');
     }
 }

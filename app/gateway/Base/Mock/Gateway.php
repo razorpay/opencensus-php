@@ -51,6 +51,9 @@ trait GatewayTrait
         $ns = $this->getNamespace();
         $class = $ns.'\Server';
         $server = new $class;
+        $input = [];
+
+        $request['method'] = strtolower($request['method']);
 
         if ($request['method'] === 'post')
         {
@@ -60,7 +63,6 @@ trait GatewayTrait
         {
             $url = $request['url'];
             $parts = parse_url($url);
-
             parse_str($parts['query'], $input);
         }
 
