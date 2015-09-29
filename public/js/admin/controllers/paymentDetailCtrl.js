@@ -37,11 +37,12 @@ app.controller('PaymentDetailCtrl', [
     $scope.refundAuthorized = function() {
       var request = $http({
         method: 'post',
-        url: '/admin/payment/' + $scope.entity.id + '/refund_authorized'
+        url: '/admin/' + $scope.mode + '/' + $scope.entity.merchant_id + '/payments/' + $scope.entity.id + '/refund_authorized'
       });
+
       request.success(function (data) {
         if (data.success) {
-          var payment = JSON.stringify(data.data.payment);
+          var payment = JSON.stringify(data.data);
           $scope.alerts.addAlert('success', 'Payment Refunded Successfully: ' + payment, true);
         } else {
           $scope.alerts.resetAlerts();
@@ -56,7 +57,7 @@ app.controller('PaymentDetailCtrl', [
     $scope.authorizeFailedPayment = function () {
       var request = $http({
         method: 'post',
-        url: '/admin/payment/' + $scope.entity.id + '/authorize_failed'
+        url: '/admin/' + $scope.mode + '/payments/' + $scope.entity.id + '/authorize_failed'
       });
       request.success(function (data) {
         if (data.success) {

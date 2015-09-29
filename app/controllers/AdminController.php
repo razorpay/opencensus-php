@@ -301,16 +301,16 @@ class AdminController extends BaseController
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postAuthorizeFailedPayment($id)
+    public function postAuthorizeFailedPayment($mode, $id)
     {
-        list($error, $data) = (new Admin\Service)->authorizeFailedPayment($id);
+        list($error, $data) = (new Admin\Service)->authorizeFailedPayment($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postRefundAuthorizedPayment($id)
+    public function postRefundAuthorizedPayment($mode, $merchantId, $id)
     {
-        list($error, $data) = (new Admin\Service)->refundAuthorizedPayment($id);
+        list($error, $data) = (new Admin\Service)->refundAuthorizedPayment($mode, $merchantId, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }

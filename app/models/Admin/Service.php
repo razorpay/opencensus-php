@@ -417,12 +417,12 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function authorizeFailedPayment($id)
+    public function authorizeFailedPayment($mode, $id)
     {
         $data = [];
         $error = [];
 
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, $mode);
 
         try
         {
@@ -438,16 +438,16 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function refundAuthorizedPayment($id)
+    public function refundAuthorizedPayment($mode, $merchantId, $id)
     {
         $data = [];
         $error = [];
 
-        $this->setApiCredentials();
+        $this->setApiCredentials($merchantId, $mode);
 
         try
         {
-            $data = $this->api->admin->fetchEntityById('payment', $id)
+            $data = $this->api->payment->fetch($id)
                 ->refundAuthorized()
                 ->toArray();
         }

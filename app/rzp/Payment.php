@@ -31,4 +31,15 @@ class Payment extends \Razorpay\Api\Payment
 
         return $this->request('POST', $relativeUrl);
     }
+
+    /**
+     * Overridden here because we need to use RZP\Payment instead of
+     * Razorpay\Api\Payment
+     * Because Payment class was missing this method because of being
+     * derived from Razorpay\Api\Payment
+     */
+    protected static function getEntityClass($name)
+    {
+        return 'RZP\Payment';
+    }
 }

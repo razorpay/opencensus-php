@@ -28,11 +28,11 @@ class Api extends Razorpay\Api\Api
         {
             // Delay the response by 0.5 secs (avoids issue with non loading of js before calls)
             usleep(1000000);
-            $className = __NAMESPACE__.'\\Mock\\'.ucwords($name);
+            $className = __NAMESPACE__ . '\\Mock\\' . ucwords($name);
         }
         else
         {
-            $className = __NAMESPACE__.'\\'.ucwords($name);
+            $className = __NAMESPACE__ . '\\' . ucwords($name);
         }
 
         if (class_exists($className) === true)
