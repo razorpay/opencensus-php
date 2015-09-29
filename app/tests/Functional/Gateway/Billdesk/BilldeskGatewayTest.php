@@ -83,7 +83,8 @@ class BilldeskGatewayTest extends TestCase
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthPayment($payment);
 
-        $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+        $input['force'] = '1';
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
 
         $refund = $this->getLastEntity('billdesk', true);
         $this->assertArraySelectiveEquals(

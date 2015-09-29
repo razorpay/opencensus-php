@@ -224,11 +224,13 @@ class Processor
 
         $desc = $error->getDescription();
 
+        $internalCode = $error->getInternalErrorCode();
+
         $payment = $this->payment;
 
         $payment->setStatus(Payment\Status::FAILED);
 
-        $payment->setError($code, $desc);
+        $payment->setError($code, $desc, $internalCode);
 
         $payment->saveOrFail();
 

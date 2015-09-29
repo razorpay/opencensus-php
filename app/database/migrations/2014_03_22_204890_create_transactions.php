@@ -60,7 +60,7 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::API_FEE)
                   ->nullable();
 
-            $table->integer(Transaction::ESCROW_BALANCE)
+            $table->bigInteger(Transaction::ESCROW_BALANCE)
                   ->nullable();
 
             $table->string(Transaction::CHANNEL, 8);

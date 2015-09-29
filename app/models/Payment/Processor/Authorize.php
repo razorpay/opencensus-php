@@ -142,6 +142,8 @@ trait Authorize
         $input['payment'] = $payment->toArray();
         $input['gateway'] = $gatewayInput;
 
+        $this->checkForRecentFailedPayment($payment);
+
         Payment\Validator::bankAcsCallbackValidate($payment, $input);
 
         try
@@ -242,6 +244,48 @@ trait Authorize
         }
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    protected function checkForRecentFailedPayment($payment)
+    {
+        // Difference should be less than 30 minutes
+        $diff = time() - $payment->getUpdatedAt();
+
+        if (($payment->isFailed()) and
+            ($diff < 30 * 60))
+        {
+            $this->rethrowFailedPaymentErrorException($payment);
+        }
+    }
+
+    protected function rethrowFailedPaymentErrorException($payment)
+    {
+        $internalErrorCode = $payment->getInternalErrorCode();
+        $publicErrorCode = $payment->getErrorCode();
+        $errorDesc = $payment->getErrorDescription();
+
+        Error\Map::throwExceptionFromErrorDetails(
+            $publicErrorCode, $internalErrorCode, $errorDesc);
+
+        //
+        // If it has reached here, then an edge case occurred, for which
+        // a suitable exception was not found and which must be handled.
+        // So, we trace an error message, ringing alerts to our devs.
+        //
+
+        $this->trace->error(
+            TraceCode::PAYMENT_CALLBACK_FAILURE,
+            ['payment_id' => $payment->getPublicId(),
+             'public_error_code' => $publicErrorCode,
+             'internal_error_code' => $internalErrorCode,
+             'error_description' => $errorDesc,
+             'message' => 'Failed to convert error code to the appropriate exception']);
+
+        // If no appropriate exception mapping was found then show
+        // the usual message that payment already processed.
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
     }
 
     protected function notifyCustomer($payment)

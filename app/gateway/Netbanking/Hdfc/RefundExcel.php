@@ -29,18 +29,19 @@ class RefundExcel
 
     public function generate($input)
     {
-        $data[] = array_combine(self::$headers, self::$headers);
-
         $i = 1;
 
         foreach ($input as $row)
         {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
+
             $data[] = array(
                 'Sr No'            => $i++,
-                'Transaction date' => $row['gateway']['date'],
+                'Transaction date' => $date,
                 'Bank reference #' => $row['gateway']['bank_payment_id'],
                 'Order #'          => $row['payment']['id'],
-                'Order Amount'     => $row['gateway']['amount'],
+                'Order Amount'     => $row['payment']['amount'] / 100,
                 'Refund Amount'    => $row['refund']['amount'] / 100,
                 'Merchant Code'    => $row['terminal']['gateway_merchant_id'],
             );
