@@ -24,4 +24,11 @@ class Payment extends \Razorpay\Api\Payment
 
         return $this->request('POST', $relativeUrl);
     }
+
+    public function refundAuthorized()
+    {
+        $relativeUrl = $this->getEntityUrl() . $this->id . '/authorize_refund';
+
+        return $this->request('POST', $relativeUrl);
+    }
 }

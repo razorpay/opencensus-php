@@ -185,6 +185,7 @@
               </div>
             </script>
             <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openCaptureModal()">Capture Payment</button>
+            <button  class="btn btn-warning btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="refundAuthorized()" ng-confirm-click="This will refund an authorized payment. Are you sure?">Refund Payment</button>
           </span>
           <span ng-show="entity.status==='captured' && entity.refund_status !== 'full'">
             <script type="text/ng-template" id="refundModalContent.html">

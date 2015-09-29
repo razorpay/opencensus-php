@@ -178,6 +178,8 @@ Route::group(array('before' => 'auth.admin'), function()
 
         Route::post('/admin/payment/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
 
+        Route::post('/admin/payment/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
+
         Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
 
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');

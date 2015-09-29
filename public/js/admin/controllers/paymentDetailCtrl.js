@@ -33,6 +33,26 @@ app.controller('PaymentDetailCtrl', [
       }, function () {
       });
     };
+
+    $scope.refundAuthorized = function() {
+      var request = $http({
+        method: 'post',
+        url: '/admin/payment/' + $scope.entity.id + '/refund_authorized'
+      });
+      request.success(function (data) {
+        if (data.success) {
+          var payment = JSON.stringify(data.data.payment);
+          $scope.alerts.addAlert('success', 'Payment Refunded Successfully: ' + payment, true);
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
     $scope.authorizeFailedPayment = function () {
       var request = $http({
         method: 'post',
