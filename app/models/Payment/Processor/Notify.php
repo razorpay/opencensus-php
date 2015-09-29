@@ -13,6 +13,7 @@ class Notify
     use SlackPoster;
     const AUTHORIZED = 'authorized';
     const CAPTURED   = 'captured';
+    const REFUNDED   = 'refunded';
 
     function __construct(Payment\Entity $payment)
     {
@@ -25,6 +26,15 @@ class Notify
         $this->mode = $this->app['rzp.mode'];
     }
 
+    /**
+     * Allows the notifier to be used for a refund as well
+     * @param Payment\Refund\Entity $refund Refund entity
+     */
+    public function addRefund(Payment\Refund\Entity $refund)
+    {
+        $this->refund = $refund;
+    }
+
     public function trigger($event)
     {
         if(!$this->isEnabled())
@@ -33,15 +43,20 @@ class Notify
         }
         switch ($event) {
             case self::AUTHORIZED:
-                $this->notifyCustomer();
+                $this->notifyCustomerAuthorized();
                 $this->postSlackAuthorized();
                 break;
 
             case self::CAPTURED:
                 $this->postSlackCaptured();
                 // We send an email to the merchant
-                $this->notifyMerchant();
+                $this->notifyMerchantCaptured();
                 break;
+
+            case self::REFUNDED:
+                $this->postSlackRefunded();
+                $this->notifyMerchantRefunded();
+                $this->notifyCustomerRefunded();
         }
     }
 
@@ -55,22 +70,22 @@ class Notify
         $this->slackPost('Payment Captured', $this->template['payment']);
     }
 
-    protected function subject()
+    protected function subjectPaymentSuccessful()
     {
         if(isset($this->template['merchant']['billing_label']))
         {
-            return "Payment Successful for {$this->template['merchant']['billing_label']}";
+            return "Razorpay | Payment Successful for {$this->template['merchant']['billing_label']}";
         }
         else
         {
-            return "Payment Successful for {$this->template['payment']['amount']}";
+            return "Razorpay | Payment Successful for {$this->template['payment']['amount']}";
         }
     }
 
-    protected function notifyCustomer()
+    protected function notifyCustomerAuthorized()
     {
         $data = $this->template;
-        $subject = $this->subject();
+        $subject = $this->subjectPaymentSuccessful();
         $config = $this->config;
 
         Mail::queue(['html'=> 'emails.payment.customer', 'text'=> 'emails.payment.customer_text'], $this->template,
@@ -82,9 +97,9 @@ class Notify
         );
     }
 
-    protected function notifyMerchant()
+    protected function notifyMerchantCaptured()
     {
-        $subject = $this->subject();
+        $subject = $this->subjectPaymentSuccessful();
         if($this->template['payment']['orderId'])
         {
             $subject = "Payment Successful for #{$this->template['payment']['orderId']}";
@@ -104,7 +119,7 @@ class Notify
 
     protected function templateData()
     {
-        return [
+        $data  = [
             'customer'  =>  [
                 'email' =>  $this->payment->getEmail(),
                 'phone' =>  $this->payment->getContact()
@@ -120,11 +135,22 @@ class Notify
                 'amount'    =>  "INR ".number_format($this->payment['amount']/100, 2),
                 'timestamp' =>  $this->payment->getUpdatedAt(),
                 'captured_at' => $this->payment->getAttribute('captured_at'),
-                // note that method is unavailable to the merchant
+                // note that payment method is unavailable to the merchant
                 'method'    =>  $this->payment->getMethodWithDetail(),
                 'orderId'   =>  $this->payment->getOrderId()
             ]
         ];
+
+        if ($this->refund)
+        {
+            $data['refund'] = [
+                'id'        =>  $this->refund->getId(),
+                'amount'    =>  $this->refund->getAmount(),
+                'timestamp' =>  $this->refund->getCreatedAt()
+            ];
+        }
+
+        return $data;
     }
 
     protected function flatten(array $data)
