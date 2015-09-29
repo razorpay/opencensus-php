@@ -21,35 +21,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $attributes = array(
-            'vpc_Command'               => Command::PAY,
-            'vpc_Amount'                => $input['payment']['amount'],
-            'vpc_Currency'              => $input['payment']['currency'],
-            'vpc_MerchTxnRef'           => $input['payment']['id'],
-        );
-
-        $this->createGatewayPaymentEntity($attributes);
-
-        $content = array(
-            'vpc_Version'           => '1',
-            'vpc_ReturnURL'         => $input['callbackUrl'],
-            'vpc_Locale'            => 'en',
-            'vpc_gateway'           => 'ssl',
-            'vpc_Card'              => $input['card']['network'],
-            'vpc_CardNum'           => $input['card']['number'],
-            'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
-            'vpc_CardSecurityCode'  => $input['card']['cvv'],
-//            'vpc_OrderInfo'             => 'testinfo',
-        );
-
-        $content = array_merge($attributes, $content);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $this->addTestCardDetailsInTestMode($content);
-        }
-
-        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
+        $content = $this->getPaymentAuthorizeRequestContent($input);
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
@@ -289,6 +261,41 @@ class Gateway extends Base\Gateway
     protected function parseQueryResponse($response)
     {
         parse_str($response->body, $content);
+
+        return $content;
+    }
+
+    protected function getPaymentAuthorizeRequestContent($input)
+    {
+        $attributes = array(
+            'vpc_Command'               => Command::PAY,
+            'vpc_Amount'                => $input['payment']['amount'],
+            'vpc_Currency'              => $input['payment']['currency'],
+            'vpc_MerchTxnRef'           => $input['payment']['id'],
+        );
+
+        $this->createGatewayPaymentEntity($attributes);
+
+        $content = array(
+            'vpc_Version'           => '1',
+            'vpc_ReturnURL'         => $input['callbackUrl'],
+            'vpc_Locale'            => 'en',
+            'vpc_gateway'           => 'ssl',
+//            'vpc_Card'              => $input['card']['network'],
+            'vpc_CardNum'           => $input['card']['number'],
+            'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
+            'vpc_CardSecurityCode'  => $input['card']['cvv'],
+//            'vpc_OrderInfo'             => 'testinfo',
+        );
+
+        $content = array_merge($attributes, $content);
+
+        if ($this->mode === Mode::TEST)
+        {
+            $this->addTestCardDetailsInTestMode($content);
+        }
+
+        $this->addMerchantIdAndAccessCode($content, $input['terminal']);
 
         return $content;
     }

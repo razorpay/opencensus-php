@@ -1,11 +1,11 @@
 <?php
 
-namespace Gateway\Ame;
+namespace Gateway\Amex;
 
 class Url
 {
-    const LIVE_DOMAIN           = 'https://vpos.amxvpos.com/vpcpay';
-    const TEST_DOMAIN           = 'https://vpos.amxvpos.com/vpcdps';
+    const LIVE_DOMAIN           = 'https://vpos.amxvpos.com';
+    const TEST_DOMAIN           = 'https://vpos.amxvpos.com';
 
     const PAY                   = '/vpcpay';
     const AMA                   = '/vpcdps';

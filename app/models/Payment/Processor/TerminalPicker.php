@@ -129,6 +129,7 @@ class TerminalPicker
         $this->network = $network;
 
         $gatewayOrder = array(
+            Gateway::AMEX,
             Gateway::HDFC,
             Gateway::AXIS_MIGS,
             Gateway::KOTAK);

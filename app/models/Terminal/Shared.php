@@ -7,6 +7,7 @@ use Models\Terminal;
 
 class Shared
 {
+    const AMEX_RAZORPAY_TERMINAL        = '1000AmexShared';
     const ATOM_RAZORPAY_TERMINAL        = '1000AtomShared';
     const AXIS_MIGS_RAZORPAY_TERMINAL   = '1000AxisMigsTl';
     const AXIS_GENIUS_RAZORPAY_TERMINAL = '1000AxisGenius';
@@ -32,6 +33,7 @@ class Shared
     );
 
     protected static $map = array(
+        self::AMEX_RAZORPAY_TERMINAL         =>  Gateway::AMEX,
         self::ATOM_RAZORPAY_TERMINAL         =>  Gateway::ATOM,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL  =>  Gateway::AXIS_GENIUS,
         self::AXIS_MIGS_RAZORPAY_TERMINAL    =>  Gateway::AXIS_MIGS,

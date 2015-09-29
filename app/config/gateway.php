@@ -23,6 +23,7 @@ return array(
         'sharp',
     ),
 
+    'mock_amex'             => $_ENV['AMEX_MOCK'],
     'mock_hdfc'             => $_ENV['HDFC_MOCK'],
     'mock_atom'             => $_ENV['ATOM_MOCK'],
     'mock_axis_migs'        => $_ENV['AXIS_MIGS_MOCK'],
