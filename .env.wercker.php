@@ -28,6 +28,12 @@ return array(
 
     'CLOUD'                                 => false,
 
+    'AMEX_GATEWAY_TEST_HASH_SECRET'             => 'FFCEE4555198EAE939A98F13A3FCF13C',
+    'AMEX_GATEWAY_TEST_MERCHANT_ID'             => 'asldkfjlajsf',
+    'AMEX_GATEWAY_TEST_ACCESS_CODE'             => 'Q2RE2EFN',
+    'AMEX_GATEWAY_TEST_AMA_USER'                => 'razorpayama',
+    'AMEX_GATEWAY_TEST_AMA_PASSWORD'            => 'password',
+
     'AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'    => getenv('AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'),
     'AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'    => getenv('AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'),
     'AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'    => getenv('AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'),
@@ -59,6 +65,7 @@ return array(
 
     'MOCK_GATEWAY_SECRET'                   => 'wercker_random_password',
 
+    'AMEX_MOCK'                             => true,
     'ATOM_MOCK'                             => true,
     'AXIS_MIGS_MOCK'                        => true,
     'AXIS_GENIUS_MOCK'                      => true,
