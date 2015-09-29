@@ -15,15 +15,26 @@ class Notify
     const CAPTURED   = 'captured';
     const REFUNDED   = 'refunded';
 
+    protected $payment;
+    protected $refund;
+    protected $config;
+    protected $mode;
+
     function __construct(Payment\Entity $payment)
     {
         $this->app = App::getFacadeRoot();
 
         $this->payment = $payment;
-        $this->template = $this->templateData();
-        $this->flatTemplate = $this->flatten($this->template);
+        $this->refreshTemplate();
+
         $this->config = $this->app->config->get('applications.mailgun');
         $this->mode = $this->app['rzp.mode'];
+    }
+
+    protected function refreshTemplate()
+    {
+        $this->template = $this->templateData();
+        $this->flatTemplate = $this->flatten($this->template);
     }
 
     /**
@@ -33,6 +44,7 @@ class Notify
     public function addRefund(Payment\Refund\Entity $refund)
     {
         $this->refund = $refund;
+        $this->refreshTemplate();
     }
 
     public function trigger($event)
