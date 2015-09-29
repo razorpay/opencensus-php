@@ -114,6 +114,11 @@ trait Capture
             $this->trace(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
+        //
+        // Analytics
+        //
+        $this->notifyDashboard('payment', $this->payment);
+
         $notifier = new Notify($this->payment);
         $notifier->trigger(Notify::CAPTURED);
     }
