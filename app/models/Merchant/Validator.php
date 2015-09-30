@@ -35,6 +35,10 @@ class Validator extends Base\Validator
         'password_confirmation'     => 'required|between:6,50'
     );
 
+    protected static $changeEmailRules = array(
+        'email'         => 'required|email'
+    );
+
     protected static $changePasswordValidators = array('changePassword');
 
     protected static $terminalRules = array(

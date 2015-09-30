@@ -63,6 +63,30 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * take care when calling this function
+     * This is only called from the admin service
+     * @param  string $id    Merchant Id
+     * @param  array $input  Array with new Merchant Email Address
+     */
+    public function changeEmail($id, $input)
+    {
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if ($merchant->isTestAccount()) {
+            return [["Email change forbidden on this account"], null];
+        }
+
+        $error = $merchant->changeEmail($input);
+
+        if (empty($error))
+        {
+            $merchant->save();
+        }
+
+        return [$error, null];
+    }
+
     public function changePassword(array $input)
     {
         $merchant = \Auth::merchant()->user();
