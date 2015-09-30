@@ -5,8 +5,8 @@ use Illuminate\Database\Migrations\Migration;
 
 use Models\Base\UniqueIdEntity;
 
-class CreateNetbanking extends Migration
-{
+class CreateWallet extends Migration {
+
     /**
      * Run the migrations.
      *
@@ -14,7 +14,7 @@ class CreateNetbanking extends Migration
      */
     public function up()
     {
-        Schema::create('netbanking', function(Blueprint $table)
+        Schema::create('wallet', function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -23,11 +23,17 @@ class CreateNetbanking extends Migration
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action');
             $table->string('amount');
-            $table->string('bank');
+            $table->string('wallet');
             $table->boolean('received')->default(0);
-            $table->string('client_code')->nullable();
-            $table->string('merchant_code')->nullable();
-            $table->string('bank_payment_id')->nullable();
+            $table->string('email')->nullable();
+            $table->string('contact')->nullable();
+            $table->string('gateway_merchant_id')->nullable();
+            $table->string('gateway_payment_id')->nullable();
+            $table->string('gateway_payment_id_2')->nullable();
+            $table->string('gateway_refund_id')->nullable();
+            $table->string('response_code')->nullable();
+            $table->string('response_description')->nullable();
+            $table->string('status_code')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
             $table->string('date')->nullable();
@@ -56,12 +62,7 @@ class CreateNetbanking extends Migration
      */
     public function down()
     {
-        Schema::table('netbanking', function($table)
-        {
-            $table->dropForeign('netbanking_payment_id_foreign');
-        });
-
-        Schema::drop('netbanking');
+        //
     }
 
 }
