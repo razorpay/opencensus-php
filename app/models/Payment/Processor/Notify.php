@@ -54,22 +54,29 @@ class Notify
             return;
         }
         switch ($event) {
-            case self::AUTHORIZED:
-                $this->notifyCustomerAuthorized();
-                $this->postSlackAuthorized();
-                break;
+            // case self::AUTHORIZED:
+            //     $this->notifyCustomerAuthorized();
+            //     $this->postSlackAuthorized();
+            //     break;
 
-            case self::CAPTURED:
-                $this->postSlackCaptured();
-                // We send an email to the merchant
-                $this->notifyMerchantCaptured();
-                break;
+            // case self::CAPTURED:
+            //     $this->postSlackCaptured();
+            //     // We send an email to the merchant
+            //     $this->notifyMerchantCaptured();
+            //     break;
 
             case self::REFUNDED:
                 $this->postSlackRefunded();
-                $this->notifyMerchantRefunded();
-                $this->notifyCustomerRefunded();
+                //$this->notifyMerchantRefunded();
+                //$this->notifyCustomerRefunded();
+            default:
+                break;
         }
+    }
+
+    protected function postSlackRefunded()
+    {
+        $this->slackPost('Payment Refunded', $this->template['refund']);
     }
 
     protected function postSlackAuthorized()
@@ -158,7 +165,8 @@ class Notify
             $data['refund'] = [
                 'id'        =>  $this->refund->getId(),
                 'amount'    =>  $this->refund->getAmount(),
-                'timestamp' =>  $this->refund->getCreatedAt()
+                'timestamp' =>  $this->refund->getCreatedAt(),
+                'payment_id'=>  $this->refund->payment->getId()
             ];
         }
 

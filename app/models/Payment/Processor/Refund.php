@@ -63,6 +63,11 @@ trait Refund
         //
         // Analytics
         //
+
+        $notifier = new Notify($payment);
+        $notifier->addRefund($refund);
+        $notifier->trigger(Notify::REFUNDED);
+
         $this->notifyDashboard('refund', $this->refund);
 
         return $refund;

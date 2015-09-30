@@ -17,7 +17,7 @@ trait SlackPoster
      * @param  string $color    good|bad
      * @return null
      */
-    public function slackPost($headline, $postdata, $pretext = '', array $settings)
+    public function slackPost($headline, $postdata, $pretext = '', array $settings = [])
     {
         // Note that api uses SLACK_MOCK instead of SLACK_ENABLE which dashboard uses
         if($_ENV['SLACK_MOCK'] === false)
@@ -30,9 +30,9 @@ trait SlackPoster
             /**
              * This should be used for username, channel, and color setting
              */
-            foreach ($settings as $key => $value) {
-                $data[$key] = $value;
-            }
+            // foreach ($settings as $key => $value) {
+            //     $data[$key] = $value;
+            // }
 
             /**
              * Attach all the extra fields
@@ -47,7 +47,15 @@ trait SlackPoster
                 );
             }
 
-            Slack::to($channel)->attach($data)->send($headline);
+            if (isset($settings['channel']))
+            {
+                Slack::to($settings['channel'])->attach($data)->queue($headline);
+            }
+            else
+            {
+                Slack::attach($data)->queue($headline);
+            }
+
         }
     }
 

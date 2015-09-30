@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "28d329a866456306b2ed148fedf2d44f",
-    "content-hash": "800fc2526941cd91cf2764c40ef9b5aa",
+    "hash": "0ad0b36ee726100ee78f91fba8e16a95",
+    "content-hash": "dfbac72f4d4e0ef8535df124fa69832d",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1362,16 +1362,16 @@
         },
         {
             "name": "maknz/slack",
-            "version": "dev-master",
+            "version": "dev-queue",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack.git",
-                "reference": "c8ed3e4f919358af43516e7ab8d7fa39d3d2f736"
+                "reference": "c8436fa0a50c2f5ec2748a305f567abcc2f751b1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack/zipball/c8ed3e4f919358af43516e7ab8d7fa39d3d2f736",
-                "reference": "c8ed3e4f919358af43516e7ab8d7fa39d3d2f736",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/c8436fa0a50c2f5ec2748a305f567abcc2f751b1",
+                "reference": "c8436fa0a50c2f5ec2748a305f567abcc2f751b1",
                 "shasum": ""
             },
             "require": {
@@ -1380,6 +1380,7 @@
                 "php": ">=5.4.0"
             },
             "require-dev": {
+                "illuminate/queue": "4.*",
                 "mockery/mockery": "0.9.*",
                 "phpunit/phpunit": "4.2.*"
             },
@@ -1407,9 +1408,9 @@
                 "slack"
             ],
             "support": {
-                "source": "https://github.com/razorpay/slack/tree/master"
+                "source": "https://github.com/razorpay/slack/tree/queue"
             },
-            "time": "2015-06-15 07:59:39"
+            "time": "2015-07-28 22:53:55"
         },
         {
             "name": "monolog/monolog",
