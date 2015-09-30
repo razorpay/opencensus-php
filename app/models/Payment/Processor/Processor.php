@@ -2,6 +2,7 @@
 
 namespace Models\Payment\Processor;
 
+use App;
 use Constants\Mode;
 use BasicAuth;
 use Dashboard\Dashboard;
@@ -50,6 +51,7 @@ class Processor
         $this->core = $core;
         $this->trace = $trace;
         $this->mode = $mode;
+        $this->app  = App::getFacadeRoot();
 
         $this->checkMerchantPermissions();
 
