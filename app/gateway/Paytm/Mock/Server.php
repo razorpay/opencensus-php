@@ -64,6 +64,10 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
+        $input = json_decode($input['JsonData'], true);
+
+        parent::verify($input);
+
         $id = $input['ORDERID'];
         $merchantId = $input['MID'];
 

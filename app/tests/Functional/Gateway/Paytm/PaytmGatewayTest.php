@@ -19,6 +19,8 @@ class PaytmGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
+        $this->fixtures->merchant->enablePaytm('10000000000000');
+
         $this->gateway = 'paytm';
     }
 
@@ -52,8 +54,6 @@ class PaytmGatewayTest extends TestCase
 
     public function testPaytmWallet()
     {
-        $this->fixtures->links['merchant']->enablePaytm('10000000000000');
-
         $this->setMockGatewayTrue();
 
         $payment = $this->getDefaultPaymentArray();
@@ -86,17 +86,18 @@ class PaytmGatewayTest extends TestCase
 
     public function testVerifyPayment()
     {
-        $this->markTestIncomplete();
-
         $this->setMockGatewayTrue();
 
-        $payment = $this->doAuthAndCapturePayment($this->payment);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'wallet';
+        $payment['wallet'] = 'paytm';
+        $payment = $this->doAuthAndCapturePayment($payment);
 
         $id = $payment['id'];
 
-        $payment = $this->verifyPayment($id);
+        $data = $this->verifyPayment($id);
 
-        $this->assertEquals($payment['verified'], true);
+        $this->assertEquals($data['payment']['verified'], true);
     }
 
     public function testRefundPayment()
