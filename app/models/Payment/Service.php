@@ -313,6 +313,14 @@ class Service extends Base\Service
                 // Just continue
                 $timedOut++;
             }
+            catch (\Exception $e)
+            {
+                $stack = $e->getTraceAsString();
+
+                $this->trace->error(
+                    TraceCode::PAYMENT_VERIFY_FAILED,
+                    [$stack]);
+            }
         }
 
         $time = time() - $time;

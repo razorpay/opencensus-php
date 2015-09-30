@@ -441,42 +441,5 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function authorizeFailed(array $input)
-    {
-        $e = null;
-
-        try
-        {
-            $this->verify($input);
-        } catch (Exception\PaymentVerificationException $e)
-        {
-            ;
-        }
-
-        if ($e === null)
-        {
-            throw new Exception\LogicException(
-                'When converting failed payment to authorized, payment verification ' .
-                'should have failed but instead it did not');
-        }
-
-        $verify = $e->getVerifyObject();
-
-        if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true)
-        )
-        {
-            $payment = $verify->payment;
-            $payment->fill($verify->verifyResponseContent);
-            $payment->saveOrFail();
-        } else
-        {
-            throw new Exception\LogicException(
-                'Should not have reached here');
-        }
-
-        return true;
-    }
-
 }
 
