@@ -333,7 +333,7 @@ trait PaymentTrait
         return $refund;
     }
 
-    protected function refundAuthorizedPayment($id)
+    protected function refundAuthorizedPayment($id, array $input = array())
     {
         $this->ba->proxyAuth();
 
@@ -342,7 +342,7 @@ trait PaymentTrait
         $request = array(
             'method' => 'POST',
             'url' => '/payments/'.$id.'/authorize_refund',
-            'content' => []);
+            'content' => $input);
 
         $refund = $this->makeRequestAndGetContent($request);
 

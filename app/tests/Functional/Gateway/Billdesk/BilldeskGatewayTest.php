@@ -83,7 +83,8 @@ class BilldeskGatewayTest extends TestCase
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthPayment($payment);
 
-        $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+        $input['force'] = '1';
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
 
         $refund = $this->getLastEntity('billdesk', true);
         $this->assertArraySelectiveEquals(
@@ -98,7 +99,7 @@ class BilldeskGatewayTest extends TestCase
     {
         $this->ba->publicLiveAuth();
 
-        $this->fixtures->links['merchant']->activate('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
 
         $attributes = array(
             'merchant_id'               => '10000000000000',

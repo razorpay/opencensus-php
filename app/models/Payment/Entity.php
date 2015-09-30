@@ -12,44 +12,44 @@ use Models\Bank\Name as BankNames;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const AMOUNT            = 'amount';
-    const AMOUNT_AUTHORIZED = 'amount_authorized';
-    const AMOUNT_REFUNDED   = 'amount_refunded';
-    const STATUS            = 'status';
-    const METHOD            = 'method';
-    const REFUND_STATUS     = 'refund_status';
-    const CURRENCY          = 'currency';
-    const DESCRIPTION       = 'description';
-    const ERROR_CODE        = 'error_code';
-    const INTERNAL_ERROR_CODE = 'internal_error_code';
-    const ERROR_DESCRIPTION = 'error_description';
-    const EMAIL             = 'email';
-    const CONTACT           = 'contact';
-    const NOTES             = 'notes';
-    const BANK              = 'bank';
-    const CARD_ID           = 'card_id';
-    const WALLET            = 'wallet';
-    const TRANSACTION_ID    = 'transaction_id';
-    const AUTO_CAPTURED     = 'auto_captured';
-    const AUTHORIZED_AT     = 'authorized_at';
-    const CAPTURED_AT       = 'captured_at';
-    const GATEWAY           = 'gateway';
-    const TERMINAL_ID       = 'terminal_id';
-    const SIGNED            = 'signed';
-    const VERIFIED          = 'verified';
-    const CALLBACK_URL      = 'callback_url';
+    const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
+    const AMOUNT                = 'amount';
+    const AMOUNT_AUTHORIZED     = 'amount_authorized';
+    const AMOUNT_REFUNDED       = 'amount_refunded';
+    const STATUS                = 'status';
+    const METHOD                = 'method';
+    const REFUND_STATUS         = 'refund_status';
+    const CURRENCY              = 'currency';
+    const DESCRIPTION           = 'description';
+    const ERROR_CODE            = 'error_code';
+    const INTERNAL_ERROR_CODE   = 'internal_error_code';
+    const ERROR_DESCRIPTION     = 'error_description';
+    const EMAIL                 = 'email';
+    const CONTACT               = 'contact';
+    const NOTES                 = 'notes';
+    const BANK                  = 'bank';
+    const CARD_ID               = 'card_id';
+    const WALLET                = 'wallet';
+    const TRANSACTION_ID        = 'transaction_id';
+    const AUTO_CAPTURED         = 'auto_captured';
+    const AUTHORIZED_AT         = 'authorized_at';
+    const CAPTURED_AT           = 'captured_at';
+    const GATEWAY               = 'gateway';
+    const TERMINAL_ID           = 'terminal_id';
+    const SIGNED                = 'signed';
+    const VERIFIED              = 'verified';
+    const CALLBACK_URL          = 'callback_url';
 
-    const CURRENCY_LENGTH   = 3;
+    const CURRENCY_LENGTH       = 3;
 
-    const MIN_PAYMENT_AMOUNT = 100;
+    const MIN_PAYMENT_AMOUNT    = 100;
 
-    protected $table = \Constants\Table::PAYMENT;
+    protected static $sign      = 'pay';
 
-    protected static $sign = 'pay';
+    protected $entity           = 'payment';
 
-    protected $entity = 'payment';
+    protected $table            = \Constants\Table::PAYMENT;
 
     protected $genereateIdOnCreate = true;
 
@@ -259,6 +259,7 @@ class Entity extends Base\PublicEntity
     public function setErrorNull()
     {
         $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
@@ -489,6 +490,26 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    public function getInternalErrorCode()
+    {
+        return $this->getAttribute(self::INTERNAL_ERROR_CODE);
+    }
+
+    public function getDaysSinceAuthorized()
+    {
+        $now = time();
+
+        $at = $this->getAuthorizeTimestamp();
+        $diff = $now - $at;
+
+        return floor($diff / (60*24*24));
     }
 
     public function getMethodWithDetail()

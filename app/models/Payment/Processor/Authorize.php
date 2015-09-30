@@ -2,7 +2,6 @@
 
 namespace Models\Payment\Processor;
 
-use App;
 use Constants\Mode;
 use EE\Exception;
 use EE\Error\ErrorCode;
@@ -290,12 +289,10 @@ trait Authorize
 
     protected function notifyCustomer($payment)
     {
-        $app = App::getFacadeRoot();
-
         // Dont send mails in test mode
         // @todo: remove this somehow
         if (($this->mode === Mode::TEST) and
-            ($app->environment('dev') === false))
+            ($this->app->environment('dev') === false))
         {
             return;
         }
@@ -317,7 +314,7 @@ trait Authorize
             ]
         ];
 
-        $config = $app->config->get('applications.mailgun');
+        $config = $this->app->config->get('applications.mailgun');
 
         $subject = "Payment Successful for {$templateData['payment']['amount']}";
 
@@ -326,7 +323,7 @@ trait Authorize
             $subject = "Payment Successful for {$templateData['merchant']['billing_label']}";
         }
 
-        $app['mailer']->queue(
+        $this->app['mailer']->queue(
             [
                 'html' => 'emails/payment/customer',
                 'text' => 'emails/payment/customer_text'
@@ -450,8 +447,7 @@ trait Authorize
     {
         if ($payment->getCallbackUrl() !== null)
         {
-            $app = \App::getFacadeRoot();
-            $app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
     }
 

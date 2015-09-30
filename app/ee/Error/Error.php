@@ -258,9 +258,9 @@ class Error extends Support\Fluent
     {
         $code = strtoupper($code);
 
-        if (defined(__NAMESPACE__.'\PublicErrorDescription::' . $code))
+        if (defined(PublicErrorDescription::class . '::' . $code))
         {
-            return constant(__NAMESPACE__.'\PublicErrorDescription::' . $code);
+            return constant(PublicErrorDescription::class.'::'.$code);
         }
     }
 
@@ -284,7 +284,8 @@ class Error extends Support\Fluent
         {
             throw new Exception\InvalidArgumentException('null provided for errorcode');
         }
-        if (defined(__NAMESPACE__.'\ErrorCode::'.$code) === false)
+
+        if (defined(ErrorCode::class.'::'.$code) === false)
         {
             throw new Exception\InvalidArgumentException('ErrorCode: ' . $code . ' is not defined');
         }
@@ -292,7 +293,7 @@ class Error extends Support\Fluent
 
     protected static function checkErrorClass($class)
     {
-        if (defined(__NAMESPACE__.'\ErrorClass::'.$class) === false)
+        if (defined(ErrorClass::class.'::'.$class) === false)
         {
             throw new Exception\InvalidArgumentException($class . ' is not a valid class');
         }

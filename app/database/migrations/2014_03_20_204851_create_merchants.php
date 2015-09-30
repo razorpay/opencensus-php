@@ -66,6 +66,12 @@ class CreateMerchants extends Migration
             $table->integer(Merchant::UPDATED_AT);
 
             $table->index(Merchant::ACTIVATED_AT);
+            $table->index(Merchant::ACTIVATED);
+            $table->index(Merchant::LIVE);
+            $table->index(Merchant::HOLD_FUNDS);
+            $table->index(Merchant::CATEGORY);
+            $table->index(Merchant::INTERNATIONAL);
+            $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
         });
     }
 
