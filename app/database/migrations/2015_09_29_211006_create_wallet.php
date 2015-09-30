@@ -36,6 +36,7 @@ class CreateWallet extends Migration {
             $table->string('status_code')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
+            $table->string('reference2')->nullable();
             $table->string('date')->nullable();
 
             $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
@@ -51,7 +52,9 @@ class CreateWallet extends Migration {
                   ->on_delete('restrict');
 
             $table->index('received');
-            $table->index('caps_payment_id');
+            $table->index('gateway_payment_id');
+            $table->index('gateway_payment_id_2');
+            $table->index('refund_id');
         });
     }
 
