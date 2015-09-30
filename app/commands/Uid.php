@@ -41,9 +41,9 @@ class Uid extends Command
     {
         $array = parent::getOptions();
 
-        array_push($array, ['timestamp', null, InputOption::VALUE_OPTIONAL, 'Convert timestamp to Uid']);
+        array_push($array, ['nt', null, InputOption::VALUE_OPTIONAL, 'Convert nanotime+random to Uid']);
 
-        array_push($array, ['uid', null, InputOption::VALUE_OPTIONAL, 'Convert Uid to timestamp']);
+        array_push($array, ['uid', null, InputOption::VALUE_OPTIONAL, 'Convert Uid to integer']);
 
         return $array;
     }
