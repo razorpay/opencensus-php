@@ -17,6 +17,7 @@ use Trace\TraceCode;
 class Gateway extends Base\Gateway
 {
     use ResponseFieldsTrait;
+    use Base\AuthorizeFailed;
 
     protected $gateway = 'billdesk';
 
@@ -236,16 +237,6 @@ class Gateway extends Base\Gateway
         }
 
         return $status;
-    }
-
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
     }
 
     protected function sendPaymentVerifyRequest($verify)

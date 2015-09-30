@@ -15,6 +15,8 @@ use Gateway\Mobikwik\Type;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     protected $gateway = 'mobikwik';
 
     protected $sortRequestContent = false;
@@ -119,19 +121,9 @@ class Gateway extends Base\Gateway
                 'gateway' => 'mobikwik',
                 'payment_id' => $input['payment']['id'],
             ]);
+
         return $content;
-
-
-//        if ($content['statuscode'] !== '0')
-//        {
-//            throw new Exception\GatewayErrorException(
-//                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-//                'Payment verification failed with statuscode: ' . $content['statuscode']);
-//        }
-
     }
-
-
 
     public function verify(array $input)
     {
@@ -140,16 +132,6 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
     }
 
     protected function verifyPayment($verify)
@@ -205,8 +187,6 @@ class Gateway extends Base\Gateway
 
         return $status;
     }
-
-
 
     public function refund(array $input)
     {

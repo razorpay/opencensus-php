@@ -7,6 +7,7 @@ use Constants\Mode;
 use EE\Error\ErrorCode;
 use EE\Exception;
 use Gateway\Base\Action;
+use Gateway\Base\AuthorizeFailed;
 use Gateway\Base\Verify;
 use Gateway\Base\VerifyResult;
 use Gateway\Netbanking\Base;
@@ -16,6 +17,8 @@ use Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'netbanking_hdfc';
 
     protected $bank = 'hdfc';
@@ -119,16 +122,6 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    protected function getPaymentToVerify($input, $verify)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $payment;
-
-        return $payment;
     }
 
     public function generateRefundsExcel($input)
