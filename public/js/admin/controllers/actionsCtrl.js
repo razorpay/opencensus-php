@@ -145,7 +145,7 @@ app.controller('ActionsCtrl', [
     $scope.authorizeFailedPayment = function (payment_id) {
       var request = $http({
         method: 'post',
-        url: '/admin/payment/' + payment_id + '/authorize_failed'
+        url: '/admin/live/payments/' + payment_id + '/authorize_failed'
       });
       request.success(function (data) {
         if (data.success) {
