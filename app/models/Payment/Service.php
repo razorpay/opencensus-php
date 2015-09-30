@@ -284,7 +284,7 @@ class Service extends Base\Service
 
         $payments = (new Payment\Repository)->getUnverifiedPayments($ts);
 
-        $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0;
+        $timedOut = 0; $verified = 0; $failed = 0; $authorized = 0; $error = 0;
         $time = time();
 
         foreach ($payments as $payment)
@@ -315,11 +315,23 @@ class Service extends Base\Service
             }
             catch (\Exception $e)
             {
+                // @note: If payment verification failes due to any reason
+                // other than expected ones, we should log it as an error
+                // exception.
+                //
+                // If for eg, exception is BadRequestException, then it won't
+                // get logged by global handler because it's not a critical
+                // exception but in this context it really shouldn't have
+                // occurred.
+
                 $stack = $e->getTraceAsString();
 
                 $this->trace->error(
                     TraceCode::PAYMENT_VERIFY_FAILED,
                     [$stack]);
+
+                // Just continue
+                $error++;
             }
         }
 
@@ -330,6 +342,7 @@ class Service extends Base\Service
             'failed'        => $failed,
             'authorized'    => $authorized,
             'timed out'     => $timedOut,
+            'error'         => $error,
             'total time'    => $time . ' secs');
 
         $message = 'Payment verify result - ' . json_encode($results, JSON_PRETTY_PRINT);
