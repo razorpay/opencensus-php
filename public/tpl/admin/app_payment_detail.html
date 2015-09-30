@@ -206,7 +206,7 @@
             <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openRefundModal()">Refund Payment</button>
           </span>
           <button class="btn btn-default btn-rounded" ng-click="verifyPayment()">Verify Payment</button>
-          <button ng-show="entity.status==='failed' && entity.verified===false" class="btn btn-default btn-rounded" ng-click="authorizeFailedPayment()">Authorize</button>
+          <button ng-show="entity.status==='failed' && entity.verified===0" class="btn btn-default btn-rounded" ng-click="authorizeFailedPayment()">Authorize</button>
           <a ui-sref="app.entitiesdetail({type:'payment', mode: mode, id: entity.id})"
             class="btn btn-primary btn-rounded"
           >View as Entity
