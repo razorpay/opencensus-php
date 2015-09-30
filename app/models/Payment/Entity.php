@@ -259,6 +259,7 @@ class Entity extends Base\PublicEntity
     public function setErrorNull()
     {
         $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
