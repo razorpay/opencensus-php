@@ -491,6 +491,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
     public function getInternalErrorCode()
     {
         return $this->getAttribute(self::INTERNAL_ERROR_CODE);
