@@ -187,7 +187,7 @@ trait Refund
         // Dont send mails in test mode
         // @todo: remove this somehow
         if (($this->mode === Mode::TEST) and
-            ($this->app->environment('dev') === false))
+            ($this->app->environment('production') === true))
         {
             return;
         }
