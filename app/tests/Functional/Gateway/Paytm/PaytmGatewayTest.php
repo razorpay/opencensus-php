@@ -114,6 +114,8 @@ class PaytmGatewayTest extends TestCase
 
     public function testPaytmWhenNotEnabled()
     {
+        $this->fixtures->merchant->disablePaytm('10000000000000');
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
