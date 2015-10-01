@@ -40,7 +40,6 @@ class CreateWallet extends Migration {
             $table->string('date')->nullable();
 
             $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
-            $table->char('caps_payment_id', UniqueIdEntity::ID_LENGTH);
 
             // Adds created_at and updated_at columns to the table
             $table->integer('created_at');
