@@ -21,6 +21,7 @@ return array(
         'paytm',
         'netbanking_hdfc',
         'sharp',
+        'wallet_payzapp',
     ),
 
     'mock_amex'             => $_ENV['AMEX_MOCK'],
