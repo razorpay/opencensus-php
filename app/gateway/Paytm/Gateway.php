@@ -159,7 +159,7 @@ class Gateway extends Base\Gateway
             if ($content['RESPCODE'] === '610')
             {
                 // This means payment is already refunded fully or partially.
-                $refundAmt = (int) ($content['REFUNDAMT'] * 100);
+                $refundAmt = (int) ($content['REFUNDAMOUNT'] * 100);
 
                 if ($refundAmt === $input['refund']['amount'])
                 {
