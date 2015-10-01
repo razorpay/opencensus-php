@@ -67,7 +67,7 @@ trait Refund
         //
         $this->notifyDashboard('refund', $this->refund);
 
-        $this->sendRefundNotification();
+//        $this->sendRefundNotification();
 
         return $refund;
     }
