@@ -22,7 +22,7 @@ class ExceptionTest extends TestCase
     {
         $exception = new Exception\LogicException('logical flaw occurred');
 
-        $handler = new Exception\Handler;
+        $handler = $this->app['exception.handler'];
 
         $response = $handler->genericExceptionHandler($exception);
 

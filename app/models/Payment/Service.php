@@ -324,11 +324,7 @@ class Service extends Base\Service
                 // exception but in this context it really shouldn't have
                 // occurred.
 
-                $stack = $e->getTraceAsString();
-
-                $this->trace->error(
-                    TraceCode::PAYMENT_VERIFY_FAILED,
-                    [$stack]);
+                $this->app['exception.handler']->traceException($e);
 
                 // Just continue
                 $error++;
