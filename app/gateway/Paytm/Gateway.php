@@ -247,12 +247,13 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        // if (($verify->match === true) and
-        //     ($payment['received'] === false))
-        // {
-        //     $payment->fill($content);
-        //     $payment->saveOrFail();
-        // }
+        if (($verify->match === true) and
+            ($payment['received'] === false))
+        {
+            $attr = $this->lowerArrayKeys($content);
+            $payment->fill($attr);
+            $payment->saveOrFail();
+        }
 
         return $status;
     }
