@@ -276,7 +276,7 @@ final class Route
                 'merchant_daily_report',
                 'payment_auto_capture',
                 'payment_verify_all',
-                'refund_hdfcnb'),
+                'refund_netbanking_generate_excel'),
 
             'mailgun' => array(
                 'hdfc_mpr_reconcile'),
