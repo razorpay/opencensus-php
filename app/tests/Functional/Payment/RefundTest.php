@@ -42,7 +42,7 @@ class RefundTest extends TestCase
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $this->mockDashboardRequest();
-        $this->mockRefundEmail();
+//        $this->mockRefundEmail();
 
         $refund = $this->startTest($payment['id'], (string)$payment['amount']);
 
