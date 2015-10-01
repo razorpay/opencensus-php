@@ -75,6 +75,15 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->findOrFailPublic($merchantId);
 
+        if (($this->mode === Mode::LIVE) and
+            ($merchant->getActivatedAttribute() === false))
+        {
+            $balance[Balance::ID] = $merchantId;
+            $balance[Balance::BALANCE] = 0;
+
+            return $balance;
+        }
+
         $balance = $this->repo->getMerchantBalance($merchant);
 
         return $balance->toArray();
