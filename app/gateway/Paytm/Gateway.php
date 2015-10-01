@@ -258,15 +258,35 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if (($verify->match === true) and
-            ($payment['received'] === false))
+        $this->verifyContentSaveIfNeeded($verify->match, $payment, $content);
+
+        return $status;
+    }
+
+    protected function verifyContentSaveIfNeeded($match, $payment, $content)
+    {
+        $invalidOrderIdRespCode = array(
+            '334',
+            '309');
+
+        if (($match === true) and
+            ($payment['received'] === false) and
+            (in_array($content['RESPCODE'], $invalidOrderIdRespCode) === false))
         {
-            $attr = $this->lowerArrayKeys($content);
+            $contentToStore = [];
+
+            foreach ($content as $key => & $value)
+            {
+                if ($value !== '')
+                {
+                    $contentToStore[$key] = $value;
+                }
+            }
+
+            $attr = $this->lowerArrayKeys($contentToStore);
             $payment->fill($attr);
             $payment->saveOrFail();
         }
-
-        return $status;
     }
 
     protected function postRequestToPaytm($content)
