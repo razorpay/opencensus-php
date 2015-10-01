@@ -147,7 +147,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->postRequestToPaytm($content);
 
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['paytm' => $content]);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REFUND, ['paytm' => $content]);
 
         $attr = $this->lowerArrayKeys($content);
         $attr['received'] = 1;
@@ -391,7 +391,7 @@ class Gateway extends Base\Gateway
 
         if (isset($input['gateway']['CHECKSUMHASH']) === false)
         {
-            $this->trace->error(TraceCode::MISC_TRACE_CODE, $input['gateway']);
+            $this->trace->error(TraceCode::GATEWAY_PAYMENT_ERROR, $input['gateway']);
 
             if ($input['gateway']['STATUS'] === Status::FAILURE)
             {
